@@ -4,15 +4,18 @@ import matplotlib.ticker as ticker
 import seaborn as sns
 import numpy as np
 import scipy as sp
-def getsig(insumstats,id,chrom,pos,p,windowsizekb=500):
+def getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-8):
+    
+    if verbose: print("  - Processing "+str(len(insumstats))+" variants...")
     sumstats=insumstats.loc[~insumstats[id].isna(),:]
-    print("Processing "+str(len(sumstats))+" variants...")
-    sumstats_sig = sumstats.loc[sumstats[p]<5e-8,:]
-    print("Found "+str(len(sumstats_sig))+" significant variants...")
+    sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:]
+    if verbose:print("  - Found "+str(len(sumstats_sig))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
     sumstats_sig = sumstats_sig.sort_values([chrom,pos])
+    
     if len(sumstats_sig)==0:
-        print("No lead snps at given significance threshold!")
+        if verbose:print("  - No lead snps at given significance threshold!")
         return None
+    
     sig_index_list=[]
     current_sig_index = False
     current_sig_p = 1
@@ -43,5 +46,5 @@ def getsig(insumstats,id,chrom,pos,p,windowsizekb=500):
             current_sig_index=row[id]
         else:
             current_sig_pos=row[pos]
-    print("Identified "+str(len(sig_index_list))+" lead variants!")
+    if verbose:print("  - Identified "+str(len(sig_index_list))+" lead variants!")
     return sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:]
