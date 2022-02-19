@@ -5,6 +5,9 @@ A collection of handy python scripts for GWAS.
 2. QQ plot
 3. Calculate lamda GC
 4. Select top SNPs based on a given window size.
+5. Convert beta/se <-> OR/95%L_U/95%L_L
+6. Select hapmap3 SNPs from sumstats
+7. Convert Observed scale heritability to liability scale heritability 
 
 Requirements:
 1. Python>3
