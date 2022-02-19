@@ -76,7 +76,7 @@ def mplot(insumstats,chrom,pos,p,
     chrom_df=chrom_df+((chrom_df.index.astype(int))-1)*len(sumstats)*0.02
 
     sumstats["i"]=sumstats["i"]+((sumstats["CHROM"].astype(int))-1)*len(sumstats)*0.01
-    plt.figure(figsize=figsize)
+
 # assign marker size ##############################################
     sumstats["s"]=1
     sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
@@ -84,7 +84,8 @@ def mplot(insumstats,chrom,pos,p,
     sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=10
 
 # Plotting ########################################################  
-    plot = sns.relplot(data=sumstats, x='i', y='scaled_P', aspect=2.5,
+    plt.figure(figsize=figsize,constrained_layout=True)
+    plot = sns.relplot(data=sumstats, x='i', y='scaled_P', aspect=2.3,
                        hue='CHROM',
                        palette=sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
                        legend=None,
@@ -93,7 +94,6 @@ def mplot(insumstats,chrom,pos,p,
                        linewidth=0,
                        zorder=2)   
         
-    #chrom_df=sumstats.groupby('CHROM')['i'].median()
     plot.ax.set_xlabel('CHROM'); plot.ax.set_xticks(chrom_df);
     plot.ax.set_xticklabels(chrom_df.index)
     
@@ -102,7 +102,6 @@ def mplot(insumstats,chrom,pos,p,
         cutline=plot.ax.axhline(y=cut, linewidth = 2,linestyle="--",color="#ebebeb",zorder=1)
         plot.ax.set_yticks([x for x in range(0,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
         plot.ax.set_yticklabels([x for x in range(0,cut+1,2)]+[maxticker])
-        #plot.ax.set_ylim(0,maxy)
 
 # Annotation #######################################################
     if anno and anno!=True:
@@ -110,16 +109,18 @@ def mplot(insumstats,chrom,pos,p,
     else:
         to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],"i",'CHROM',"POS","P-value_association",windowsizekb=windowsizekb,verbose=False,sig_level=sig_level)
     if verbose:print("  - Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
+
 # Annotation #######################################################
-    if len(to_annotate)>0:
+    if anno and len(to_annotate)>0:
         text = []
         last_pos=0
+        
         for rowi,row in to_annotate.iterrows():
-            if row["i"]>last_pos+0.02*sumstats["i"].max():
+            if row["i"]>last_pos+0.03*sumstats["i"].max():
                 last_pos=row["i"]
             else:
-                last_pos+=0.02*sumstats["i"].max()
-            
+                last_pos+=0.03*sumstats["i"].max()
+                
             armB_length_in_point=plot.ax.transData.transform((0, 0.95*maxy))[1]-plot.ax.transData.transform((0, row["scaled_P"]+1))[1]
             armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.ax.transData.transform((0, maxy+2))[1]-plot.ax.transData.transform((0,  row["scaled_P"]+1))[1] 
             
@@ -129,25 +130,32 @@ def mplot(insumstats,chrom,pos,p,
             elif anno:
                 annotation_text=row["Annotation"]
                 annotation_col=anno
-    
+                
             text.append(plot.ax.annotate(annotation_text,
                              xy=(row["i"],row["scaled_P"]+1),
-                             xytext=(last_pos,1.15*maxy),rotation=45,
+                             xytext=(last_pos,1.15*maxy),rotation=40,
                                         ha="left",va="bottom",
-                             arrowprops=dict(arrowstyle="-|>",relpos=(0,0.5),color="#ebebeb",
+                             arrowprops=dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                              connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
                                         )
+            
                        )
+        #plt.subplots_adjust(top=0.7, wspace=None, hspace=None)
         
         if verbose: print("  - Annotating using column "+annotation_col+"...")
     else:
         if verbose: print("  - Skip annotating")
-    
+
     plot.ax.set_ylabel("-log10(P)")
     plot.ax.set_xlabel("Chromosomes")
     plot.ax.spines["top"].set_visible(False)
     plot.ax.spines["right"].set_visible(False)
     plot.ax.spines["left"].set_visible(True)
+    
     if verbose: print("  - Created Manhattan plot successfully!")
-    if title: plt.title(title)
+    if title and anno and len(to_annotate)>0: 
+        pad=(plot.ax.transData.transform((0, 1.35*maxy))[1]-plot.ax.transData.transform((0, maxy)))[1]
+        plt.title(title,pad=pad)
+    elif title:
+        plt.title(title)
     return plot
