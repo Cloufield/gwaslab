@@ -2,7 +2,7 @@
 Current version: 0.0.4
 A collection of handy python scripts for GWAS. This package is based on matplotlib and seaborn.
 
-What you can do with gwaslab:
+## What you can do with gwaslab:
 1. Manhattan plot
 2. QQ plot
 3. Calculate lamda GC
@@ -13,7 +13,7 @@ What you can do with gwaslab:
 
 ![manhattan_qq_plot](https://user-images.githubusercontent.com/40289485/154832769-eddaf72e-9664-4f33-86e9-199e8fe92e56.png)
 
-Requirements:
+## Requirements:
 1. Python>3
 2. scipy
 3. numpy
@@ -21,23 +21,33 @@ Requirements:
 5. matplotlib
 6. seaborn
 
-Install:
+## Install:
 ```
 pip install gwaslab
 ```
 --
 
-Usage:
+## Usage:
+
+Input: pandas dataframe
 
 ```
 import gwaslab as gl
 
-gl.mqqplot(sumstats,"CHR","POS","PVALUE",cut=20,cutfactor=10,anno=True,verbose=True,save=True,title="gwaslab")
+## creat qqplot and manhattan plot with just one line
+## pass a dataframe in, and specify the column name for chromosome, base pair position, and also the p values.
+gl.mqqplot(sumstats,"CHR","POS","PVALUE")
 
+## adjust the plot, select top snps and add annotation sutomatically.
+gl.mqqplot(sumstats,"CHR","POS","PVALUE",cut=20,cutfactor=10,anno=True,verbose=True,save=True,title="gwaslab"
+```
+Or you can plot it separately.
+```
 gl.mplot()
-
+```
+```
 gl.qqplot()
-
+```
 gl.gc()
 
 gl.getsig()
