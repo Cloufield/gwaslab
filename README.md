@@ -11,7 +11,7 @@ Just want to save myself from repetitive work.
 5. [Select top SNPs based on a given window size.]
 6. Convert beta/se <-> OR/95%L_U/95%L_L
 7. Select hapmap3 SNPs from sumstats
-8. [Convert Observed scale heritability to liability scale heritability](#coverting-observed-scale-heritability-to-liability-scale-heritability)
+8. [Convert Observed scale heritability to liability scale heritability](#converting-observed-scale-heritability-to-liability-scale-heritability)
 
 ![manhattan_qq_plot](https://user-images.githubusercontent.com/40289485/154832769-eddaf72e-9664-4f33-86e9-199e8fe92e56.png)
 
@@ -29,9 +29,7 @@ pip install gwaslab
 ```
 Current version: 0.0.4
 
-# foo
-
-## Usage:
+# Usage:
 
 Input: pandas dataframe
 
@@ -97,12 +95,13 @@ gl.getsig(insumstats,id,chrom,pos,p)
 gl.getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-8)
 ```
 
-### Coverting observed scale heritability to liability scale heritability
+### Converting observed scale heritability to liability scale heritability
 ```
 gl.h2_obs_to_liab(h2_obs, P, K)
 
 gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)
 ```
+Ref: 
 
 --------------------------
 # Log
