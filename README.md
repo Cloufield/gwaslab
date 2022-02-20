@@ -30,6 +30,7 @@ Current version: 0.0.4
 
 Input: pandas dataframe
 
+### Create Manhattan plot and QQ plot with just one line
 ```
 import gwaslab as gl
 
@@ -75,21 +76,21 @@ gl.mplot()
 gl.qqplot()
 ```
 
-### calculate genomic inflation factor
+### Calculate genomic inflation factor
 ```
 gc(insumstats{"PVALUE"},mode="p",level=0.5)
 gc(insumstats["Z"],mode="z",level=0.5)
 gc(insumstats["chi2"],mode="chi2",level=0.5)
 ```
 
-### extract top snps given a sliding window size
+### Extract top snps given a sliding window size
 ```
 gl.getsig(insumstats,id,chrom,pos,p)
 
 gl.getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-8)
 ```
 
-### coverting observed scale heritability to liability scale heritability.
+### Coverting observed scale heritability to liability scale heritability.
 ```
 gl.h2_obs_to_liab(h2_obs, P, K)
 
