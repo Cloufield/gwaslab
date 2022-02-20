@@ -9,6 +9,8 @@ A collection of handy python scripts for GWAS.
 6. Select hapmap3 SNPs from sumstats
 7. Convert Observed scale heritability to liability scale heritability 
 
+![manhattan_qq_plot](https://user-images.githubusercontent.com/40289485/154832769-eddaf72e-9664-4f33-86e9-199e8fe92e56.png)
+
 Requirements:
 1. Python>3
 2. scipy
@@ -28,7 +30,9 @@ Usage:
 ```
 import gwaslab as gl
 
-gl.mplot(df,chr,pos,p,cut,cutfactor)
+gl.mqqplot(sumstats,"CHR","POS","PVALUE",cut=20,cutfactor=10,anno=True,verbose=True,save=True,title="gwaslab")
+
+gl.mplot()
 
 gl.qqplot()
 
@@ -36,3 +40,6 @@ gl.gc()
 
 gl.getsig()
 ```
+
+
+
