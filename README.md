@@ -1,6 +1,8 @@
 # gwaslab
-A collection of handy python scripts for GWAS.
+Current version: 0.0.4
+A collection of handy python scripts for GWAS. This package is based on matplotlib and seaborn.
 
+What you can do with gwaslab:
 1. Manhattan plot
 2. QQ plot
 3. Calculate lamda GC
@@ -41,5 +43,10 @@ gl.gc()
 gl.getsig()
 ```
 
-
+--------------------------
+log
+- 0.0.4  
+  -  added mqqplot feature
+  -  fixed gtesig algorithm
+  -  recreated mplot and qqplot
 
