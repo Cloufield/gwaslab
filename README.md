@@ -1,14 +1,17 @@
 # gwaslab
-A collection of handy python scripts for GWAS. This package is based on matplotlib and seaborn.
+A collection of handy python scripts for GWAS. 
+This package is based on matplotlib and seaborn.
+Just want to save myself from repetitive work.
 
 ## What you can do with gwaslab:
-1. Manhattan plot
-2. QQ plot
-3. Calculate lamda GC
-4. Select top SNPs based on a given window size.
-5. Convert beta/se <-> OR/95%L_U/95%L_L
-6. Select hapmap3 SNPs from sumstats
-7. Convert Observed scale heritability to liability scale heritability 
+1. [Side-by-side Manhattan and QQ plot](#create-manhattan-plot-and-qq-plot-with-just-one-line)
+2. [Manhattan plot](#manhattan-plot)
+3. [QQ plot](#qq-plot)
+4. [Calculate lamda GC](#calculate-genomic-inflation-factor)
+5. [Select top SNPs based on a given window size.]
+6. Convert beta/se <-> OR/95%L_U/95%L_L
+7. Select hapmap3 SNPs from sumstats
+8. [Convert Observed scale heritability to liability scale heritability](#coverting-observed-scale-heritability-to-liability-scale-heritability)
 
 ![manhattan_qq_plot](https://user-images.githubusercontent.com/40289485/154832769-eddaf72e-9664-4f33-86e9-199e8fe92e56.png)
 
@@ -25,6 +28,8 @@ A collection of handy python scripts for GWAS. This package is based on matplotl
 pip install gwaslab
 ```
 Current version: 0.0.4
+
+# foo
 
 ## Usage:
 
@@ -69,9 +74,11 @@ gl.mqqplot(insumstats,
           )
 ```
 Or you can plot it separately.
+### Manhattan plot
 ```
 gl.mplot()
 ```
+### QQ plot
 ```
 gl.qqplot()
 ```
@@ -90,7 +97,7 @@ gl.getsig(insumstats,id,chrom,pos,p)
 gl.getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-8)
 ```
 
-### Coverting observed scale heritability to liability scale heritability.
+### Coverting observed scale heritability to liability scale heritability
 ```
 gl.h2_obs_to_liab(h2_obs, P, K)
 
@@ -98,11 +105,16 @@ gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)
 ```
 
 --------------------------
-log
+# Log
 - 0.0.4  
   -  added mqqplot feature
   -  fixed gtesig algorithm
   -  recreated mplot and qqplot
+
+# Next 
+- beta to OR
+- OR to beta 
+- (Possibly intergrate ldsc's munge.py)
 
 For more information: 
 https://gwaslab.com/
