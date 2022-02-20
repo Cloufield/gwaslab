@@ -108,7 +108,6 @@ Ref:
 # Next 
 - beta to OR
 - OR to beta 
-- (Possibly intergrate ldsc's munge.py)
 
 For more information: 
 https://gwaslab.com/
