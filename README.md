@@ -50,3 +50,5 @@ log
   -  fixed gtesig algorithm
   -  recreated mplot and qqplot
 
+For more information: 
+https://gwaslab.com/
