@@ -16,12 +16,7 @@ Just want to save myself from repetitive work.
 ![manhattan_qq_plot](https://user-images.githubusercontent.com/40289485/154832769-eddaf72e-9664-4f33-86e9-199e8fe92e56.png)
 
 ## Requirements:
-1. Python>3
-2. scipy
-3. numpy
-4. pandas
-5. matplotlib
-6. seaborn
+1. Python>3  2. "scipy"  3. "numpy"  4. "pandas"  5. "matplotlib"  6. "seaborn"
 
 ## Install:
 ```
