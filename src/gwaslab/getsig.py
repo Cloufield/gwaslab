@@ -22,7 +22,7 @@ def getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-
     current_sig_pos = 0
     current_sig_chr = 0
     for line_number,(index, row) in enumerate(sumstats_sig.iterrows()):
-        #new chr
+        #when finished one chr 
         if row[chrom]>current_sig_chr:
             if current_sig_index:sig_index_list.append(current_sig_index)
             current_sig_chr=row[chrom]
@@ -30,9 +30,7 @@ def getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-
             current_sig_p=row[p]
             current_sig_index=row[id]
             continue
-        if  line_number == len(sumstats_sig)-1:
-            sig_index_list.append(current_sig_index)
-            continue
+        
         #next loci
         if row[pos]>current_sig_pos + windowsizekb*1000:
             sig_index_list.append(current_sig_index)
@@ -40,11 +38,16 @@ def getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-
             current_sig_p=row[p]
             current_sig_index=row[id]
             continue
+        # update current pos and p
         if row[p]<current_sig_p:
             current_sig_pos=row[pos]
             current_sig_p=row[p]
             current_sig_index=row[id]
         else:
             current_sig_pos=row[pos]
+        #when last line
+        if  line_number == len(sumstats_sig)-1:
+            sig_index_list.append(current_sig_index)
+            continue
     if verbose:print("  - Identified "+str(len(sig_index_list))+" lead variants!")
     return sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:]

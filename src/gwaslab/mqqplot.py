@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import seaborn as sns
 import numpy as np
+import scipy as sp
 from gwaslab import getsig
 
-def mplot(insumstats,
+def mqqplot(insumstats,
           chrom,
           pos,
           p,
@@ -20,13 +21,16 @@ def mplot(insumstats,
           suggestive_sig_level=5e-6,
           title =None,
           mtitle=None,
+          qtitle=None,
           figsize =(15,5),
           fontsize = 10,
           colors = ["#000042", "#7878BA"],
           verbose=True,
           repel_force=0.03,
+          gc=True,
           save=None,
           saveargs={"dpi":300,"facecolor":"white"}
+          
           ):
     
 # printing meta info ###############################
@@ -100,7 +104,7 @@ def mplot(insumstats,
 
 # Plotting ########################################################  
     # manhattanplot : ax1
-    fig,  ax1 = plt.subplots(1,1,figsize=figsize)
+    fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, 3]},figsize=figsize)
     plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                        hue='CHROM',
                        palette=sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
@@ -196,12 +200,56 @@ def mplot(insumstats,
     elif title:
         plot.set_title(mtitle,fontsize=fontsize)
     
+## qq plot #############################################
+    # ax2
+
+    p_toplot = sumstats["scaled_P"]
+    
+    # sort x,y for qq plot
+    minit=1/len(p_toplot)
+    observed = p_toplot.sort_values(ascending=False)
+    expected = -np.log10(np.linspace(minit,1,len(observed)))
+    
+    
+    ax2.scatter(expected,observed,s=3,color=colors[0])
+    ax2.plot([0,-np.log10(minit)],[0,-np.log10(minit)],linestyle="--",color=sig_line_color)
+    
+    ax2.set_xlabel("Expected -log10(p)",fontsize=fontsize)
+    ax2.set_ylabel("Observed -log10(p)",fontsize=fontsize)
+    ax2.spines["top"].set_visible(False)
+    ax2.spines["right"].set_visible(False)
+    ax2.spines["left"].set_visible(True)
+    if gc:
+        observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot)) ,1)
+        expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
+        lambdagc=observedMedianChi2/expectedMedianChi2
+        ax2.text(0.05, 0.95,"Lambda GC = "+"{:.4f}".format(lambdagc),
+                 horizontalalignment='left',
+                 verticalalignment='top',
+                 transform=ax2.transAxes,
+                 fontsize=fontsize)
+    if cut:
+        qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+        ax2.set_yticks([x for x in range(0,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
+        ax2.set_yticklabels([x for x in range(0,cut+1,2)]+[maxticker])
+
+    if qtitle:
+        ax2.set_title(qtitle,fontsize=fontsize,pad=10)
+
+    if verbose: print("  - Created QQ plot successfully!")
+################################################################
     ## return figure
+    if verbose: print("Saving plot:")
     if save:
         if save==True:
-            fig.savefig("./manhattanplot.png",bbox_inches="tight",**saveargs)
-            print("Saved to "+ "./manhattanplot.png" + " successfully!" )
+            fig.savefig("./manhattan_qq_plot.png",bbox_inches="tight",**saveargs)
+            print("  - Saved to "+ "./manhattan_qq_plot.png" + " successfully!" )
         else:
             fig.savefig(save,bbox_inches="tight",**saveargs)
-            print("Saved to "+ save + " successfully!" )
-    return plot
+            print("  - Saved to "+ save + " successfully!" )
+    if title and anno and len(to_annotate)>0:
+        fig.suptitle(title ,x=0.5, y=1.2)
+    else:
+        fig.suptitle(title ,x=0.5,y=1)
+###################################################################    
+    return fig.axes
