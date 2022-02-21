@@ -39,8 +39,8 @@ def qqplot(insumstats,
     fig, ax2 = plt.subplots(1, 1,figsize=figsize)
     ax2.scatter(expected,observed,s=s,color=color)
     ax2.plot([0,-np.log10(minit)],[0,-np.log10(minit)],linestyle="--",color=sig_line_color)
-    ax2.set_xlabel("Expected -log10(p)",fontsize=fontsize)
-    ax2.set_ylabel("Observed -log10(p)",fontsize=fontsize)
+    ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize)
+    ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize)
     if not rtspine:
         ax2.spines["top"].set_visible(False)
         ax2.spines["right"].set_visible(False)

@@ -183,7 +183,7 @@ def mplot(insumstats,
     else:
         if verbose: print("  - Skip annotating")
 
-    plot.set_ylabel("-log10(P)",fontsize=fontsize)
+    plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize)
     plot.set_xlabel("Chromosomes",fontsize=fontsize)
     plot.spines["top"].set_visible(False)
     plot.spines["right"].set_visible(False)
