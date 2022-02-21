@@ -33,7 +33,7 @@ def mplot(insumstats,
     if verbose: print("Basic settings:")
     if verbose: print("  - Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: print("  - Raw input contains "+str(len(insumstats))+" variants...")
-    if verbose: print("Strat conversion and QC:")
+    if verbose: print("Start conversion and QC:")
     
 # read sumstats ###############################
     sumstats=pd.DataFrame()
@@ -45,14 +45,14 @@ def mplot(insumstats,
             
 # P value conversion ###############################  
     if scaled:
-        if verbose:print("  - P values are already -log10 scaled!")
+        if verbose:print("  - P values are already converted to -log10(P)!")
         sumstats["scaled_P"] = sumstats["P-value_association"]
     else:
-        if verbose:print("  - P values are being -log10 scaled...")
+        if verbose:print("  - P values are being converted to -log10(P)...")
         #sanity check
-        outside_01_p_value_number=len(sumstats.loc[(sumstats["P-value_association"]>1)|(sumstats["P-value_association"]<0),:])
-        if verbose:print("  - Sanity check: "+ str(outside_01_p_value_number) +" variants with P value outside of (0,1) will be removed...")
-        sumstats = sumstats.loc[(sumstats["P-value_association"]<1)&(sumstats["P-value_association"]>0),:]
+        outside_01_p_value_number=len(sumstats.loc[(sumstats["P-value_association"]>1)|(sumstats["P-value_association"]<=0),:])
+        if verbose:print("  - Sanity check: "+ str(outside_01_p_value_number) +" variants with P value outside of (0,1] will be removed...")
+        sumstats = sumstats.loc[(sumstats["P-value_association"]<=1)&(sumstats["P-value_association"]>0),:]
         sumstats["scaled_P"] = -np.log10(sumstats["P-value_association"])
 
     if verbose: print("  - Sanity check: "+str(len(sumstats[sumstats["scaled_P"].isin([np.nan, np.inf, -np.inf, float('inf'), None])])) + " na/inf/-inf variants will be removed..." )
@@ -62,7 +62,7 @@ def mplot(insumstats,
     maxy = sumstats["scaled_P"].max()
     if verbose: print("  - Maximum -log10(P) values are "+str(maxy) +" .")
     if cut:
-        if verbose: print("  - Minus log10(P) values will be shrunk at " + str(cut)+" with a shrinkage factor of " + str(cutfactor)+"...")
+        if verbose: print("  - Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
         maxticker=int(np.round(sumstats["scaled_P"].max()))
         sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
         maxy = (maxticker-cut)/cutfactor + cut
@@ -198,10 +198,11 @@ def mplot(insumstats,
     
     ## return figure
     if save:
+        if verbose: print("Saving plot:")
         if save==True:
             fig.savefig("./manhattanplot.png",bbox_inches="tight",**saveargs)
-            print("Saved to "+ "./manhattanplot.png" + " successfully!" )
+            print("  - Saved to "+ "./manhattanplot.png" + " successfully!" )
         else:
             fig.savefig(save,bbox_inches="tight",**saveargs)
-            print("Saved to "+ save + " successfully!" )
+            print("  - Saved to "+ save + " successfully!" )
     return plot

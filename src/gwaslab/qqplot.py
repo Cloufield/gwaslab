@@ -5,12 +5,7 @@ import seaborn as sns
 import numpy as np
 import scipy as sp
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import seaborn as sns
-import numpy as np
-import scipy as sp
+
 def qqplot(insumstats,
            p,
            title="QQ plot",
@@ -30,10 +25,10 @@ def qqplot(insumstats,
     if verbose: print(" - Processing "+ str(len(sumstats)) +" non-missing variants...")
     
     if scaled:
-        if verbose:print(" - P values are already -log10 scaled.")
+        if verbose:print(" - P values are already converted to -log10(P).")
         p_toplot = sumstats
     else:
-        if verbose:print(" - P values are being scaled to -log10(P)...")
+        if verbose:print(" - P values are being converted to -log10(P)...")
         p_toplot = -np.log10(sumstats)    
 
     # sort x,y for qq plot
@@ -55,7 +50,7 @@ def qqplot(insumstats,
         observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot)) ,1)
         expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
         lambdagc=observedMedianChi2/expectedMedianChi2
-        ax2.text(0.05, 0.95,"Lambda GC = "+"{:.4f}".format(lambdagc),
+        ax2.text(0.05, 0.95,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
                  horizontalalignment='left',
                  verticalalignment='top',
                  transform=ax2.transAxes,
@@ -65,13 +60,14 @@ def qqplot(insumstats,
     if title:
         plt.title(title,fontsize=fontsize,pad=10)
     if save:
+        if verbose: print("Saving plot:")
         if save==True:
             plt.savefig("./qqplot.png",bbox_inches="tight",**saveargs)
             if verbose: print(" - Saved to "+ "./qqplot.png" + " successfully!" )
         else:    
             plt.savefig(save,bbox_inches="tight",**saveargs)
             if verbose: print(" - Saved to "+ save + " successfully!" )
-    return ax2
+    return fig
     
 def maf_qqplot():
     return 0

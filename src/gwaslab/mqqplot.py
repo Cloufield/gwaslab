@@ -25,19 +25,19 @@ def mqqplot(insumstats,
           figsize =(15,5),
           fontsize = 10,
           colors = ["#000042", "#7878BA"],
+          layout="qqm",
           verbose=True,
           repel_force=0.03,
           gc=True,
           save=None,
-          saveargs={"dpi":300,"facecolor":"white"}
-          
+          saveargs={"dpi":300,"facecolor":"white"}        
           ):
     
 # printing meta info ###############################
     if verbose: print("Basic settings:")
     if verbose: print("  - Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: print("  - Raw input contains "+str(len(insumstats))+" variants...")
-    if verbose: print("Strat conversion and QC:")
+    if verbose: print("Start conversion and QC:")
     
 # read sumstats ###############################
     sumstats=pd.DataFrame()
@@ -49,14 +49,14 @@ def mqqplot(insumstats,
             
 # P value conversion ###############################  
     if scaled:
-        if verbose:print("  - P values are already -log10 scaled!")
+        if verbose:print("  - P values are already converted to -log10(P)!")
         sumstats["scaled_P"] = sumstats["P-value_association"]
     else:
-        if verbose:print("  - P values are being -log10 scaled...")
+        if verbose:print("  - P values are being converted to -log10(P)...")
         #sanity check
-        outside_01_p_value_number=len(sumstats.loc[(sumstats["P-value_association"]>1)|(sumstats["P-value_association"]<0),:])
-        if verbose:print("  - Sanity check: "+ str(outside_01_p_value_number) +" variants with P value outside of (0,1) will be removed...")
-        sumstats = sumstats.loc[(sumstats["P-value_association"]<1)&(sumstats["P-value_association"]>0),:]
+        outside_01_p_value_number=len(sumstats.loc[(sumstats["P-value_association"]>1)|(sumstats["P-value_association"]<=0),:])
+        if verbose:print("  - Sanity check: "+ str(outside_01_p_value_number) +" variants with P value outside of (0,1] will be removed...")
+        sumstats = sumstats.loc[(sumstats["P-value_association"]<=1)&(sumstats["P-value_association"]>0),:]
         sumstats["scaled_P"] = -np.log10(sumstats["P-value_association"])
 
     if verbose: print("  - Sanity check: "+str(len(sumstats[sumstats["scaled_P"].isin([np.nan, np.inf, -np.inf, float('inf'), None])])) + " na/inf/-inf variants will be removed..." )
@@ -64,9 +64,9 @@ def mqqplot(insumstats,
 
     # shrink at a certain value #############################################
     maxy = sumstats["scaled_P"].max()
-    if verbose: print("  - Maximum -log10(P) values are "+str(maxy) +" .")
+    if verbose: print("  - Maximum -log10(P) values is "+str(maxy) +" .")
     if cut:
-        if verbose: print("  - Minus log10(P) values will be shrunk at " + str(cut)+" with a shrinkage factor of " + str(cutfactor)+"...")
+        if verbose: print("  - Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
         maxticker=int(np.round(sumstats["scaled_P"].max()))
         sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
         maxy = (maxticker-cut)/cutfactor + cut
@@ -104,7 +104,11 @@ def mqqplot(insumstats,
 
 # Plotting ########################################################  
     # manhattanplot : ax1
-    fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, 3]},figsize=figsize)
+    if layout=="qqm":
+        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, 3]},figsize=figsize)
+    elif layout=="mqq":
+        fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [3, 1]},figsize=figsize)
+        
     plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                        hue='CHROM',
                        palette=sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
@@ -211,7 +215,7 @@ def mqqplot(insumstats,
     expected = -np.log10(np.linspace(minit,1,len(observed)))
     
     
-    ax2.scatter(expected,observed,s=3,color=colors[0])
+    ax2.scatter(expected,observed,s=8,color=colors[0])
     ax2.plot([0,-np.log10(minit)],[0,-np.log10(minit)],linestyle="--",color=sig_line_color)
     
     ax2.set_xlabel("Expected -log10(p)",fontsize=fontsize)
@@ -223,7 +227,7 @@ def mqqplot(insumstats,
         observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot)) ,1)
         expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
         lambdagc=observedMedianChi2/expectedMedianChi2
-        ax2.text(0.05, 0.95,"Lambda GC = "+"{:.4f}".format(lambdagc),
+        ax2.text(0.05, 0.95,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
                  horizontalalignment='left',
                  verticalalignment='top',
                  transform=ax2.transAxes,
@@ -239,8 +243,8 @@ def mqqplot(insumstats,
     if verbose: print("  - Created QQ plot successfully!")
 ################################################################
     ## return figure
-    if verbose: print("Saving plot:")
     if save:
+        if verbose: print("Saving plot:")
         if save==True:
             fig.savefig("./manhattan_qq_plot.png",bbox_inches="tight",**saveargs)
             print("  - Saved to "+ "./manhattan_qq_plot.png" + " successfully!" )
@@ -252,4 +256,4 @@ def mqqplot(insumstats,
     else:
         fig.suptitle(title ,x=0.5,y=1)
 ###################################################################    
-    return fig.axes
+    return fig
