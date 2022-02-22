@@ -12,7 +12,8 @@ Just want to save myself from repetitive work.
 6. Convert beta/se <-> OR/95%L_U/95%L_L
 7. Select hapmap3 SNPs from sumstats
 8. [Convert Observed scale heritability to liability scale heritability](#converting-observed-scale-heritability-to-liability-scale-heritability)
-
+9. [read ldsc log and extract numeric results directly into a pandas dataframe.](#read-ldsc-results-in-to-pandas-dataframe)
+10. compare the effect size of select variants / or automatically detected lead variants from two sumstats.
 ![manhattan_qq_plot](https://user-images.githubusercontent.com/40289485/154832769-eddaf72e-9664-4f33-86e9-199e8fe92e56.png)
 
 ## Requirements:
@@ -22,7 +23,7 @@ Just want to save myself from repetitive work.
 ```
 pip install gwaslab
 ```
-Current version: 0.0.4
+Current version: 0.0.6
 
 # Usage:
 
@@ -98,8 +99,41 @@ gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)
 ```
 Ref: 
 
+
+
+### Read ldsc results in to pandas DataFrame
+```
+pathlist=["./test.results.log","./test2.results.log"]
+
+ldsc_h2 = gl.read_ldsc(pathlist, mode="h2")
+ldsc_rg = gl.read_ldsc(pathlist, mode="rg")
+
+ldsc_h2
+Filename	h2_obs	h2_se	Lambda_gc	Mean_chi2	Intercept	Intercept_se	Ratio	Ratio_se
+test.results.log	42.9954	8.657	1.2899	1.3226	0.0098	0.0098	0.6538	0.0304
+test2.results.log	NA	NA	1.2899	1.3226	0.0098	0.0098	Ratio < 0	NA
+
+ldsc_rg
+p1	p2	rg	se	z	p	h2_obs	h2_obs_se	h2_int	h2_int_se	gcov_int	gcov_int_se
+./test.results.log	./test.results.log	0.2317	0.0897	2.5824	0.0098	0.3305	0.0571	0.9612	0.009	-0.0001	0.0062
+./test.results.log	./test2.results.log	0.2317	0.0897	2.5824	0.0098	0.3305	0.0571	0.9612	0.009	-0.0001	0.0062
+
+```
+
+### Compare effect sizes of selected variants from two sumstats
+```
+gl.compare_effect()
+```
+
+
+
+
+
 --------------------------
 # Log
+- 0.0.5 - 0.0.6
+- added  compare_effect, read_ldsc 
+
 - 0.0.4  
   -  added mqqplot feature
   -  fixed gtesig algorithm
