@@ -20,7 +20,7 @@ def read_ldsc(filelist=[],mode="h2"):
                     if not line: break
                         
                 
-                ## first line h2 se
+                        ## first line h2 se
                 objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+|NA').findall(line)
                 row["h2_obs"]=objects[1]
                 row["h2_se"]=objects[2]
@@ -52,6 +52,36 @@ def read_ldsc(filelist=[],mode="h2"):
                     row["Ratio"]=objects[1]
                     row["Ratio_se"]=objects[2]
             summary = summary.append(row,ignore_index=True)
-        print("Extracting finished !")
 ###############################################################################
-        return summary     
+    if mode=="rg":
+        summary = pd.DataFrame(columns = ['p1',
+                                          'p2',
+                                          'rg',
+                                          'se' ,
+                                          'z','p',
+                                          'h2_obs','h2_obs_se',
+                                          'h2_int','h2_int_se',
+                                          'gcov_int','gcov_int_se']
+                               )
+        
+        for index, ldscfile in enumerate(filelist):
+            print("Loading file "+str(index+1)+" :" + ldscfile +" ...")
+            
+            with open(ldscfile,"r") as file:
+                line=""
+                while not re.compile('^Summary of Genetic Correlation Results').match(line):
+                    line = file.readline()
+                    if not line: break
+                line = file.readline() # header        
+                
+                line = file.readline() #line1
+                
+                ## first line h2 se
+                while line.strip():
+                    row = line.split()
+                    row_series = pd.Series(row, index = summary.columns)
+                    summary = summary.append(row_series, ignore_index=True)
+                    line = file.readline()
+            
+        summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']]  = summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']] .astype("float32")            
+    return summary   
