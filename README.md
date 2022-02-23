@@ -1,7 +1,7 @@
 # gwaslab
 A collection of handy python scripts for GWAS. 
-This package is based on matplotlib and seaborn.
-Just want to save myself from repetitive work.
+
+Just want to make lif eaiser and save myself from repetitive work.
 
 ## What you can do with gwaslab:
 1. [Side-by-side Manhattan and QQ plot](#create-manhattan-plot-and-qq-plot-with-just-one-line)
@@ -85,11 +85,14 @@ gc(insumstats["chi2"],mode="chi2",level=0.5)
 ```
 
 ### Extract top snps given a sliding window size
+
 ```
 gl.getsig(insumstats,id,chrom,pos,p)
 
 gl.getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-8)
 ```
+Ref:
+Zhou, Wei, and Global Biobank Meta-analysis Initiative. "Global Biobank Meta-analysis Initiative: Powering genetic discovery across human diseases." medRxiv (2021).
 
 ### Converting observed scale heritability to liability scale heritability
 ```
@@ -98,10 +101,14 @@ gl.h2_obs_to_liab(h2_obs, P, K)
 gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)
 ```
 Ref: 
-
+Equation 23
+Lee, Sang Hong, et al. "Estimating missing heritability for disease from genome-wide association studies." The American Journal of Human Genetics 88.3 (2011): 294-305.
 
 
 ### Read ldsc results in to pandas DataFrame
+
+Directly read ldsc -h2 or -rg into pandas dataframe...
+
 ```
 pathlist=["./test.results.log","./test2.results.log"]
 
@@ -125,7 +132,7 @@ p1	p2	rg	se	z	p	h2_obs	h2_obs_se	h2_int	h2_int_se	gcov_int	gcov_int_se
 gl.compare_effect()
 ```
 
-
+### preformat your sumstats for a qc workflow
 
 
 
