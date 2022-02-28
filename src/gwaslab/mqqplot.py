@@ -4,7 +4,7 @@ import matplotlib.ticker as ticker
 import seaborn as sns
 import numpy as np
 import scipy as sp
-from gwaslab import getsig
+import gwaslab as gl
 
 def mqqplot(insumstats,
           chrom,
@@ -13,6 +13,8 @@ def mqqplot(insumstats,
           scaled=False,
           cut=0,
           cutfactor=10,
+          mode="mqq",
+          mqqratio=3,
           cut_line_color="#ebebeb",
           windowsizekb=500,
           anno=None,
@@ -25,25 +27,40 @@ def mqqplot(insumstats,
           figsize =(15,5),
           fontsize = 10,
           colors = ["#000042", "#7878BA"],
-          layout="qqm",
           verbose=True,
           repel_force=0.03,
           gc=True,
           save=None,
-          saveargs={"dpi":300,"facecolor":"white"}        
+          saveargs={"dpi":300,"facecolor":"white"}  
           ):
     
-# printing meta info ###############################
+# Printing meta info ##################################################################
     if verbose: print("Basic settings:")
     if verbose: print("  - Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: print("  - Raw input contains "+str(len(insumstats))+" variants...")
     if verbose: print("Start conversion and QC:")
+
+# Plotting mode selection ##############################################################
+    # ax1 : manhattanplot : 
+    # ax2 : qq plot 
     
-# read sumstats ###############################
-    sumstats=pd.DataFrame()
-    sumstats["P-value_association"]=insumstats[p].astype(np.float64)
-    sumstats["CHROM"]=insumstats[chrom].astype(int)
-    sumstats["POS"]=insumstats[pos].astype(int)
+    if   mode=="qqm":   
+        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},figsize=figsize)
+    elif mode=="mqq":
+        fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},figsize=figsize)
+    elif mode=="m":
+        fig, ax1 = plt.subplots(1, 1,figsize=figsize)
+    elif mode=="qq":
+        fig, ax2 = plt.subplots(1, 1,figsize=figsize) 
+    else:
+        raise ValueError("Please select one from the 4 modes: mqq/qqm/m/qq/")
+        
+# Read sumstats ###############################
+    
+    sumstats = pd.DataFrame()
+    sumstats["P-value_association"] = insumstats[p].astype(np.float64)
+    if "m" in mode: sumstats["CHROM"] = insumstats[chrom].astype(int)
+    if "m" in mode: sumstats["POS"] = insumstats[pos].astype(int)
     if anno and anno!=True:
             sumstats["Annotation"]=insumstats[anno].astype(object)
             
@@ -71,189 +88,213 @@ def mqqplot(insumstats,
         sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
         maxy = (maxticker-cut)/cutfactor + cut
 
-# create index ##########################
+# Manhattan plot #####################################################################################################
+## Create index for plotting ###################################################
 
     if verbose:print("Plotting "+str(len(sumstats))+" variants:")
     #sort & add id
-    sumstats = sumstats.sort_values(["CHROM","POS"])
-    sumstats["id"]=range(len(sumstats))
-    sumstats=sumstats.set_index("id")
+    if "m" in mode: 
+        sumstats = sumstats.sort_values(["CHROM","POS"])
+        sumstats["id"]=range(len(sumstats))
+        sumstats=sumstats.set_index("id")
 
-    #create a position dictionary
-    posdic=sumstats.groupby("CHROM")["POS"].max()
-    posdiccul=dict(posdic)
-    posdiccul[0]=0
-    for i in range(2,sumstats["CHROM"].nunique()+1):
-        posdiccul[i]=posdiccul[i-1]+posdiccul[i]
+        #create a position dictionary
+        posdic = sumstats.groupby("CHROM")["POS"].max()
 
-    #convert base pair postion to x axis position
-    sumstats["add"]=sumstats["CHROM"].apply(lambda x : posdiccul[int(x)-1])
-    sumstats["i"]=sumstats["POS"]+sumstats["add"]
+        posdiccul = dict(posdic)
+        for i in range(0,23):
+            if i in posdiccul: continue
+            else: posdiccul[i]=0
 
-    #for plot
-    chrom_df=sumstats.groupby('CHROM')['i'].median()
-    chrom_df=chrom_df+((chrom_df.index.astype(int))-1)*len(sumstats)*0.02
 
-    sumstats["i"]=sumstats["i"]+((sumstats["CHROM"].astype(int))-1)*len(sumstats)*0.01
 
-# assign marker size ##############################################
-    sumstats["s"]=1
-    sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
-    sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
-    sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=10
+        for i in range(2,sumstats["CHROM"].nunique()+1):
+            posdiccul[i]=posdiccul[i-1]+posdiccul[i]
 
-# Plotting ########################################################  
-    # manhattanplot : ax1
-    if layout=="qqm":
-        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, 3]},figsize=figsize)
-    elif layout=="mqq":
-        fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [3, 1]},figsize=figsize)
-        
-    plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
-                       hue='CHROM',
-                       palette=sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
-                       legend=None,
-                       size="s",
-                       sizes=(10,40),
-                       linewidth=0,
-                       zorder=2,ax=ax1)   
-        
-    plot.set_xlabel('CHROM'); 
-    plot.set_xticks(chrom_df);
-    plot.set_xticklabels(chrom_df.index)
-    
-    sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
-    if cut:
-        cutline=plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
-        plot.set_yticks([x for x in range(0,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-        plot.set_yticklabels([x for x in range(0,cut+1,2)]+[maxticker])
+        #convert base pair postion to x axis position
+        sumstats["add"]=sumstats["CHROM"].apply(lambda x : posdiccul[int(x)-1])
+        sumstats["i"]=sumstats["POS"]+sumstats["add"]
 
-# Annotation #######################################################
-    #!!!!!!!!!!!!!!! scale problem
-    if anno and anno!=True:
-        to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
-                           "Annotation",
-                           'CHROM',
-                           "POS",
-                           "P-value_association",
-                           sig_level=sig_level,
-                           windowsizekb=windowsizekb,
-                           verbose=False)
-    else:
-        to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
-                           "i",
-                           'CHROM',
-                           "POS",
-                           "P-value_association",
-                           windowsizekb=windowsizekb,
-                           verbose=False,
-                           sig_level=sig_level)
-        
-    if verbose:print("  - Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
+        #for plot
+        chrom_df=sumstats.groupby('CHROM')['i'].median()
+        chrom_df=chrom_df+((chrom_df.index.astype(int))-1)*len(sumstats)*0.02
 
-# Annotation #######################################################
-    
-    if anno and len(to_annotate)>0:
-        #initiate a list for text and a starting position
-        text = []
-        last_pos=0
-        
-        for rowi,row in to_annotate.iterrows():
-            # avoid text overlapping
-            if row["i"]>last_pos+repel_force*sumstats["i"].max():
-                last_pos=row["i"]
+        sumstats["i"]=sumstats["i"]+((sumstats["CHROM"].astype(int))-1)*len(sumstats)*0.01
+
+## Assign marker size ##############################################
+
+        sumstats["s"]=1
+        sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
+        sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
+        sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=10
+
+## Manhatann plot ###################################################
+        plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
+                           hue='CHROM',
+                           palette=sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
+                           legend=None,
+                           size="s",
+                           sizes=(10,40),
+                           linewidth=0,
+                           zorder=2,ax=ax1)   
+
+        chrom_df = (sumstats.groupby('CHROM')['i'].max() + sumstats.groupby('CHROM')['i'].min())/2
+        plot.set_xlabel('CHROM'); 
+        plot.set_xticks(chrom_df);
+        plot.set_xticklabels(chrom_df.index)
+
+        sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
+        if cut:
+            cutline=plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+            if ((maxticker-cut)/cutfactor + cut) > cut:
+                plot.set_yticks([x for x in range(0,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
+                plot.set_yticklabels([x for x in range(0,cut+1,2)]+[maxticker])
             else:
-                last_pos+=repel_force*sumstats["i"].max()
-            # data to pixels
-            armB_length_in_point=plot.transData.transform((0, 0.95*maxy))[1]-plot.transData.transform((0, row["scaled_P"]+1))[1]
-            
-            #  
-            armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((0, maxy+2))[1]-plot.transData.transform((0,  row["scaled_P"]+1))[1] 
-            
-            if anno==True:
-                annotation_text=str(int(row["CHROM"])) +":"+ str(int(row["POS"]))
-                annotation_col="CHR:POS"
-            elif anno:
-                annotation_text=row["Annotation"]
-                annotation_col=anno
-                
-            text.append(plot.annotate(annotation_text,
-                                         xy=(row["i"],row["scaled_P"]+1),
-                                         xytext=(last_pos,1.15*maxy),rotation=40,
-                                         ha="left",va="bottom",
-                                         fontsize=fontsize,
-                                         arrowprops=dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                         connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
-                                        )
-                       )
+                plot.set_yticks([x for x in range(0,cut+1,2)])
+                plot.set_yticklabels([x for x in range(0,cut+1,2)])
+
+# Get top variants for annotation #######################################################
+        if anno and anno!=True:
+            to_annotate=gl.getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
+                               "Annotation",
+                               'CHROM',
+                               "POS",
+                               "P-value_association",
+                               sig_level=sig_level,
+                               windowsizekb=windowsizekb,
+                               verbose=False)
+        else:
+            to_annotate=gl.getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
+                               "i",
+                               'CHROM',
+                               "POS",
+                               "P-value_association",
+                               windowsizekb=windowsizekb,
+                               verbose=False,
+                               sig_level=sig_level)
         
-        if verbose: print("  - Annotating using column "+annotation_col+"...")
-    else:
-        if verbose: print("  - Skip annotating")
+        if to_annotate is not None:
+            if verbose: print("  - Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
 
-    plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize)
-    plot.set_xlabel("Chromosomes",fontsize=fontsize)
-    plot.spines["top"].set_visible(False)
-    plot.spines["right"].set_visible(False)
-    plot.spines["left"].set_visible(True)
-    
-    if verbose: print("  - Created Manhattan plot successfully!")
-    if mtitle and anno and len(to_annotate)>0: 
-        pad=(plot.transData.transform((0, 1.35*maxy))[1]-plot.transData.transform((0, maxy)))[1]
-        plot.set_title(mtitle,pad=pad)
-    elif title:
-        plot.set_title(mtitle,fontsize=fontsize)
-    
-## qq plot #############################################
-    # ax2
+# Add Annotation to manhattan plot #######################################################
+        if anno and (to_annotate is not None):
+            #initiate a list for text and a starting position
+            text = []
+            last_pos=0
 
-    p_toplot = sumstats["scaled_P"]
-    
-    # sort x,y for qq plot
-    minit=1/len(p_toplot)
-    observed = p_toplot.sort_values(ascending=False)
-    expected = -np.log10(np.linspace(minit,1,len(observed)))
-    
-    
-    ax2.scatter(expected,observed,s=8,color=colors[0])
-    ax2.plot([0,-np.log10(minit)],[0,-np.log10(minit)],linestyle="--",color=sig_line_color)
-    
-    ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize)
-    ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize)
-    ax2.spines["top"].set_visible(False)
-    ax2.spines["right"].set_visible(False)
-    ax2.spines["left"].set_visible(True)
-    if gc:
-        observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot)) ,1)
-        expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
-        lambdagc=observedMedianChi2/expectedMedianChi2
-        ax2.text(0.05, 0.95,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
-                 horizontalalignment='left',
-                 verticalalignment='top',
-                 transform=ax2.transAxes,
-                 fontsize=fontsize)
-    if cut:
-        qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
-        ax2.set_yticks([x for x in range(0,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-        ax2.set_yticklabels([x for x in range(0,cut+1,2)]+[maxticker])
+            for rowi,row in to_annotate.iterrows():
+                # avoid text overlapping
+                if row["i"]>last_pos+repel_force*sumstats["i"].max():
+                    last_pos=row["i"]
+                else:
+                    last_pos+=repel_force*sumstats["i"].max()
+                # data to pixels
+                armB_length_in_point=plot.transData.transform((0, 0.95*maxy))[1]-plot.transData.transform((0, row["scaled_P"]+1))[1]
 
-    if qtitle:
-        ax2.set_title(qtitle,fontsize=fontsize,pad=10)
+                #  
+                armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((0, maxy+2))[1]-plot.transData.transform((0,  row["scaled_P"]+1))[1] 
 
-    if verbose: print("  - Created QQ plot successfully!")
-################################################################
-    ## return figure
+                if anno==True:
+                    annotation_text=str(int(row["CHROM"])) +":"+ str(int(row["POS"]))
+                    annotation_col="CHR:POS"
+                elif anno:
+                    annotation_text=row["Annotation"]
+                    annotation_col=anno
+
+                text.append(plot.annotate(annotation_text,
+                                             xy=(row["i"],row["scaled_P"]+1),
+                                             xytext=(last_pos,1.15*maxy),rotation=40,
+                                             ha="left",va="bottom",
+                                             fontsize=fontsize,
+                                             arrowprops=dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                             connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
+                                            )
+                           )
+
+            if verbose: print("  - Annotating using column "+annotation_col+"...")
+        else:
+            if verbose: print("  - Skip annotating")
+
+        plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize)
+        plot.set_xlabel("Chromosomes",fontsize=fontsize)
+        plot.spines["top"].set_visible(False)
+        plot.spines["right"].set_visible(False)
+        plot.spines["left"].set_visible(True)
+
+        if verbose: print("  - Created Manhattan plot successfully!")
+        if mtitle and anno and len(to_annotate)>0: 
+            pad=(plot.transData.transform((0, 1.35*maxy))[1]-plot.transData.transform((0, maxy)))[1]
+            plot.set_title(mtitle,pad=pad)
+        elif title:
+            plot.set_title(mtitle,fontsize=fontsize)
+# Creating Manhatann plot Finished #####################################################################
+
+# QQ plot #########################################################################################################
+    # ax2 qqplot
+    if "qq" in mode:
+        
+        # select -log10 scaled p to plot
+        p_toplot = sumstats["scaled_P"]
+        
+        # sort x,y for qq plot
+        minit=1/len(p_toplot)
+        observed = p_toplot.sort_values(ascending=False)
+        expected = -np.log10(np.linspace(minit,1,len(observed)))
+
+        ax2.scatter(expected,observed,s=8,color=colors[0])
+        ax2.plot([0,-np.log10(minit)],[0,-np.log10(minit)],linestyle="--",color=sig_line_color)
+
+        ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize)
+        ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize)
+        ax2.spines["top"].set_visible(False)
+        ax2.spines["right"].set_visible(False)
+        ax2.spines["left"].set_visible(True)
+        
+        # calculate genomic inflation factor and add annotation
+        if gc:
+            observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot)) ,1)
+            expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
+            lambdagc=observedMedianChi2/expectedMedianChi2
+            ax2.text(0.05, 0.95,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
+                     horizontalalignment='left',
+                     verticalalignment='top',
+                     transform=ax2.transAxes,
+                     fontsize=fontsize)
+        
+        #
+        if cut:
+            qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+            if ((maxticker-cut)/cutfactor + cut) > cut:
+                ax2.set_yticks([x for x in range(0,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
+                ax2.set_yticklabels([x for x in range(0,cut+1,2)]+[maxticker])
+            else:
+                ax2.set_yticks([x for x in range(0,cut+1,2)])
+                ax2.set_yticklabels([x for x in range(0,cut+1,2)])
+        
+        #
+        if qtitle:
+            ax2.set_title(qtitle,fontsize=fontsize,pad=10)
+
+        if verbose: print("  - Created QQ plot successfully!")
+# Creating QQ plot Finished #############################################################################################
+
+
+# Saving plot ##########################################################################################################
     if save:
         if verbose: print("Saving plot:")
         if save==True:
-            fig.savefig("./manhattan_qq_plot.png",bbox_inches="tight",**saveargs)
-            print("  - Saved to "+ "./manhattan_qq_plot.png" + " successfully!" )
+            fig.savefig("./"+mode+"_plot.png",bbox_inches="tight",**saveargs)
+            print("  - Saved to "+ "./"+mode+"_plot.png" + " successfully!" )
         else:
             fig.savefig(save,bbox_inches="tight",**saveargs)
             print("  - Saved to "+ save + " successfully!" )
+    
+    # add title 
     if title and anno and len(to_annotate)>0:
+        # increase height if annotation 
         fig.suptitle(title ,x=0.5, y=1.2)
     else:
         fig.suptitle(title ,x=0.5,y=1)
-###################################################################    
+
+# Return matplotlib figure object #######################################################################################
     return fig
