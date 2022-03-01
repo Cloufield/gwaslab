@@ -36,7 +36,7 @@ def read_ldsc(filelist=[],mode="h2"):
                 ##next line Intercept
 
                 objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+|NA').findall(file.readline())
-                row["Intercept"]=objects[2]
+                row["Intercept"]=objects[1]
                 row["Intercept_se"]=objects[2]
                 ##next line Ratio
                 

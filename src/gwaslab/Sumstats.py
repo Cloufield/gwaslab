@@ -36,27 +36,66 @@ class Sumstats():
                  verbose=True,**arguments):
             
             usecols=[]
-            
-            if snpid: usecols.append(snpid)
-            if rsid: usecols.append(rsid)
-            if chrom: usecols.append(chrom)
-            if pos: usecols.append(pos)
-            if ea: usecols.append(ea)
-            if nea: usecols.append(nea)
-            if eaf: usecols.append(eaf)
-            if n and (type(n) is str): usecols.append(n)
-            if beta: usecols.append(beta)
-            if se: usecols.append(se)
-            if chisq: usecols.append(chisq)
-            if z:usecols.append(z)
-            if p: usecols.append(p)
-            if mlog10p: usecols.append(mlog10p)
-            if info: usecols.append(info)
-            if OR: usecols.append(OR)
-            if OR_se:usecols.append(OR_se)
-            if OR_95L: usecols.append(OR_95L)
-            if OR_95U: usecols.append(OR_95U)
-            if other: usecols = usecols + other
+            datatype={}
+            if snpid: 
+                usecols.append(snpid)
+                datatype[snpid]="string"
+            if rsid: 
+                usecols.append(rsid)
+                datatype[rsid]="string"
+            if chrom: 
+                usecols.append(chrom)
+                datatype[chrom]="string"
+            if pos: 
+                usecols.append(pos)
+                datatype[pos]="int"
+            if ea: 
+                usecols.append(ea)
+                datatype[ea]="string"
+            if nea: 
+                usecols.append(nea)
+                datatype[nea]="string"
+            if eaf: 
+                usecols.append(eaf)
+                datatype[eaf]="float"
+            if n and (type(n) is str): 
+                usecols.append(n)
+                datatype[n]="int"
+            if beta: 
+                usecols.append(beta)
+                datatype[beta]="float"
+            if se: 
+                usecols.append(se)
+                datatype[se]="float"
+            if chisq: 
+                usecols.append(chisq)
+                datatype[chisq]="float"
+            if z:
+                usecols.append(z)
+                datatype[z]="float"
+            if p: 
+                usecols.append(p)
+                datatype[p]="float"
+            if mlog10p: 
+                usecols.append(mlog10p)
+                datatype[mlog10p]="float"
+            if info: 
+                usecols.append(info)
+                datatype[info]="float"
+            if OR: 
+                usecols.append(OR)
+                datatype[OR]="float"
+            if OR_se:
+                usecols.append(OR_se)
+                datatype[OR_se]="float"
+            if OR_95L: 
+                usecols.append(OR_95L)
+                datatype[OR_95L]="float"
+            if OR_95U: 
+                usecols.append(OR_95U)
+                datatype[OR_95U]="float"
+            if other: 
+                usecols = usecols + other
                 
             rename_dictionary={snpid:   "MARKERNAME",
                                rsid:    "rsID",
@@ -84,11 +123,11 @@ class Sumstats():
             if type(sumstats) is str:
                 inpath = sumstats
                 if verbose:print("Initiating Sumstats Object form file :"+ inpath)
-                self.data = pd.read_table(inpath,usecols=usecols,sep="\s+")
+                self.data = pd.read_table(inpath,usecols=usecols,sep="\s+",dtype=datatype)
                 
             elif type(sumstats) is pd.DataFrame:
                 if verbose:print("Initiating Sumstats Object form pandas dataframe object ...")
-                self.data = sumstats.loc[:,usecols]
+                self.data = sumstats.loc[:,usecols].astype(datatype)
                 
             self.data = self.data.rename(columns=rename_dictionary)
             
