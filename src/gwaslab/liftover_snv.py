@@ -10,22 +10,23 @@ def liftover_snv(row,converter):
         return results[0][0].strip("chr"),results[0][1]+1
     else:
         return "unmapped","unmapped"
-    
+
 def liftover(insumstats, 
              chrom, 
              pos, 
              from_build="hg19", 
              to_build="hg38",
              remove_unmapped=True):
-    
-    sumstats = insumstats.copy()
+
+    sumstats = insumstats
     print("Creating converter : " + from_build +" to "+ to_build)
     converter = get_lifter(from_build, to_build)
-    
     print("Converting variants: "+str(len(sumstats)))
-    sumstats.loc[:,"CHR_POS_"+to_build] = sumstats.loc[:,["CHR","POS"]].apply(lambda x: liftover_snv(x[["CHR","POS"]],converter),axis=1)
-    sumstats.loc[:,"CHR_"+to_build] = sumstats.loc[:,"CHR_POS_"+to_build].apply(lambda x :str(x[0]))
-    sumstats.loc[:,"POS_"+to_build] = sumstats.loc[:,"CHR_POS_"+to_build].apply(lambda x :str(x[1]))
+    #sumstats["CHR_"+to_build]="unmapped"
+    #sumstats["POS_"+to_build]="unmapped"
+    lifted = sumstats.loc[:,["CHR","POS"]].apply(lambda x: liftover_snv(x[["CHR","POS"]],converter),axis=1)
+    sumstats.loc[:,"CHR_"+to_build] = lifted.apply(lambda x :str(x[0]))
+    sumstats.loc[:,"POS_"+to_build] = lifted.apply(lambda x :str(x[1]))
     
     map_num= len(sumstats.loc[sumstats["POS_"+to_build]!="unmapped",:])
     unmap_num = len(sumstats.loc[sumstats["POS_"+to_build]=="unmapped",:])
@@ -37,4 +38,4 @@ def liftover(insumstats,
         output.loc[:,["POS_"+to_build]] = output.loc[:,"POS_"+to_build].astype("int")
     else:
         output = sumstats.copy()
-    return output.drop("CHR_POS_"+to_build,axis=1)
+    return output

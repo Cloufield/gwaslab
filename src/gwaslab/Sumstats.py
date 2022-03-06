@@ -116,6 +116,9 @@ class Sumstats():
             datatype_dictionary[OR_95U] = "float"
         if other:
             usecols = usecols + other
+            for i in other:
+                rename_dictionary[i] = i
+                datatype_dictionary[i]="string"
 
 #loading data ##################################################################################
         if type(sumstats) is str:
@@ -182,6 +185,9 @@ class Sumstats():
             "OR_95L": "OR_95L",
             "OR_95U": "OR_95U",
         }
+        for key in self.data.columns:
+            if key not in dic.keys():
+                dic[key] = key
         if columns is not None:
             col_subset = {dic[key]: key for key in columns}
         else:
@@ -218,22 +224,27 @@ class Sumstats():
         return output
     
     def exclude_hla(self, **args):
-        is_hla = (self.data["CHR"] == 6) & (self.data["POS"] > 25000000) & (
+        is_hla = (self.data["CHR"] == "6") & (self.data["POS"] > 25000000) & (
             self.data["POS"] < 34000000)
         output = self.data.loc[~is_hla]  #not in hla
         return Sumstats(output, **self.get_columns(), verbose=False)
 
     def extract_hla(self, **args):
-        is_hla = (self.data["CHR"] == 6) & (self.data["POS"] > 25000000) & (
+        is_hla = (self.data["CHR"] == "6") & (self.data["POS"] > 25000000) & (
             self.data["POS"] < 34000000)
         output = self.data.loc[is_hla]  #in hla
         return Sumstats(output, **self.get_columns(), verbose=False)
     
+    def extract_chr(self,chrom="1", **args):
+        is_chr = (self.data["CHR"] == str(chrom))
+        output = self.data.loc[is_chr]  #in hla
+        return Sumstats(output, **self.get_columns(), verbose=False)
+    
     def lift_over(self,from_build="hg19" ,to_build="hg38",remove_unmapped=True):
-        output = gl.liftover(self.data,chrom="CHR",pos="POS",
+        output = liftover(self.data,chrom="CHR",pos="POS",
                                 from_build=from_build,to_build=to_build,
                                 remove_unmapped=remove_unmapped)
-        return Sumstats(output, **self.get_columns(), verbose=False)
+        return Sumstats(output, other=["CHR_"+to_build,"POS_"+to_build], **self.get_columns(), verbose=False)
         
 # to_format ###############################################################################################       
     ## ldsc ##################################################################################################
@@ -251,7 +262,7 @@ class Sumstats():
         if exclude_hla is True:
             print("  - Excluding variants in HLA region ...")
             is_hla = (self.hapmap3["CHR"]
-                      == 6) & (self.hapmap3["POS"] >
+                      == "6") & (self.hapmap3["POS"] >
                                25000000) & (self.hapmap3["POS"] < 34000000)
             self.hapmap3 = self.hapmap3.loc[~is_hla]
             print("  - Hapmap3 variants in sumstas : ", len(self.hapmap3))
