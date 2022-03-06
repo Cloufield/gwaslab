@@ -4,23 +4,39 @@ import matplotlib.ticker as ticker
 import seaborn as sns
 import numpy as np
 import scipy as sp
-def getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-8):
+
+def getsig(insumstats,
+           id,
+           chrom,
+           pos,
+           p,
+           windowsizekb=500,
+           verbose=True,
+           sig_level=5e-8):
     
     if verbose: print("  - Processing "+str(len(insumstats))+" variants...")
+    
+    #load data
     sumstats=insumstats.loc[~insumstats[id].isna(),:]
+    #convert chrom to int
+    sumstats[chrom]=sumstats[chrom].astype("int")
+    #extract all significant variants
     sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:]
     if verbose:print("  - Found "+str(len(sumstats_sig))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
+    #sort the coordinates
     sumstats_sig = sumstats_sig.sort_values([chrom,pos])
     
-    if len(sumstats_sig)==0:
+    if sumstats_sig is None:
         if verbose:print("  - No lead snps at given significance threshold!")
         return None
     
+
     sig_index_list=[]
     current_sig_index = False
     current_sig_p = 1
     current_sig_pos = 0
     current_sig_chr = 0
+    
     for line_number,(index, row) in enumerate(sumstats_sig.iterrows()):
         #when finished one chr 
         if row[chrom]>current_sig_chr:
