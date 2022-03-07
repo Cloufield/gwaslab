@@ -12,3 +12,19 @@ def tobed(sumstats,snpid,chrom,pos,ref=None,alt=None,flank=500, to_path=""):
     output["Name"]=  sumstats[snpid]
     return output
 
+def tofuma(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA", nea="NEA", beta="BETA", se="SE" ,p="P" ,n="N"):
+        rename_dictionary = {
+        snpid: "MARKERNAME",
+        chrom: "CHR",
+        pos: "POS",
+        nea: "A2",
+        ea: "A1",
+        n: "N",
+        beta: "BETA",
+        se: "SE",
+        p: "P"
+        }
+        sumstats = sumstats.rename(columns=rename_dictionary)
+        sumstats = sumstats.loc[:,list(rename_dictionary.values())]
+        if path is not None: sumstats.to_csv(path," ",index=None)
+        return sumstats

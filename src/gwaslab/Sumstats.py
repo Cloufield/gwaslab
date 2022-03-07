@@ -172,3 +172,7 @@ class Sumstats():
             output.to_csv(path,"\t",header=None)
         else:
             return output
+    #fuma ############################################################################################
+    def to_fuma(self,path=None):
+        sumstats_fuma = gl.tofuma(self.data,path)
+        return sumstats_fuma
