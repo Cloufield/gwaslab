@@ -1,12 +1,11 @@
 import pandas as pd
 import gwaslab as gl
 
-#20220306
+#20220307
 class Sumstats():
-
     # Sumstats.data will store a pandas df
     data = pd.DataFrame()
-
+    build = "Unknown"
     def __init__(self,
                  sumstats,
                  snpid=None,
@@ -30,130 +29,11 @@ class Sumstats():
                  OR_95U=None,
                  other=[],
                  verbose=True,
+                 build="hg19",
                  **arguments):
-
-        #renaming dictionary
-        rename_dictionary = {
-            snpid: "MARKERNAME",
-            rsid: "rsID",
-            chrom: "CHR",
-            pos: "POS",
-            nea: "NEA",
-            ea: "EA",
-            eaf: "EAF",
-            n: "N",
-            beta: "BETA",
-            se: "SE",
-            z: "Z",
-            chisq: "CHISQ",
-            p: "P",
-            mlog10p: "MLOG10P",
-            info: "INFO",
-            OR: "OR",
-            OR_se: "OR_SE",
-            OR_95L: "OR_95L",
-            OR_95U: "OR_95U"
-        }
-
-        usecols = []
-        datatype_dictionary = {}
-        if snpid:
-            usecols.append(snpid)
-            datatype_dictionary[snpid] = "string"
-        if rsid:
-            usecols.append(rsid)
-            datatype_dictionary[rsid] = "string"
-        if chrom:
-            usecols.append(chrom)
-            datatype_dictionary[chrom] = "string"
-        if pos:
-            usecols.append(pos)
-            datatype_dictionary[pos] = "int"
-        if ea:
-            usecols.append(ea)
-            datatype_dictionary[ea] = "string"
-        if nea:
-            usecols.append(nea)
-            datatype_dictionary[nea] = "string"
-        if eaf:
-            usecols.append(eaf)
-            datatype_dictionary[eaf] = "float"
-        if n and (type(n) is str):
-            usecols.append(n)
-            datatype_dictionary[n] = "int"
-        if beta:
-            usecols.append(beta)
-            datatype_dictionary[beta] = "float"
-        if se:
-            usecols.append(se)
-            datatype_dictionary[se] = "float"
-        if chisq:
-            usecols.append(chisq)
-            datatype_dictionary[chisq] = "float"
-        if z:
-            usecols.append(z)
-            datatype_dictionary[z] = "float"
-        if p:
-            usecols.append(p)
-            datatype_dictionary[p] = "float"
-        if mlog10p:
-            usecols.append(mlog10p)
-            datatype_dictionary[mlog10p] = "float"
-        if info:
-            usecols.append(info)
-            datatype_dictionary[info] = "float"
-        if OR:
-            usecols.append(OR)
-            datatype_dictionary[OR] = "float"
-        if OR_se:
-            usecols.append(OR_se)
-            datatype_dictionary[OR_se] = "float"
-        if OR_95L:
-            usecols.append(OR_95L)
-            datatype_dictionary[OR_95L] = "float"
-        if OR_95U:
-            usecols.append(OR_95U)
-            datatype_dictionary[OR_95U] = "float"
-        if other:
-            usecols = usecols + other
-            for i in other:
-                rename_dictionary[i] = i
-                datatype_dictionary[i]="string"
-
-#loading data ##################################################################################
-        if type(sumstats) is str:
-            ## loading data from path
-            inpath = sumstats
-            if verbose:
-                print("Initiating Sumstats Object form file :" + inpath)
-            self.data = pd.read_table(inpath,
-                                      usecols=usecols,
-                                      sep="\s+",
-                                      dtype=datatype_dictionary)
-        elif type(sumstats) is pd.DataFrame:
-            ## loading data from dataframe
-            if verbose:
-                print(
-                    "Initiating Sumstats Object from pandas dataframe object ..."
-                )
-            self.data = sumstats.loc[:, usecols].astype(datatype_dictionary)
-
-        ##renaming columns
-        conveted_columns = list(map(lambda x: rename_dictionary[x], usecols))
-        datatype_columns = list(map(lambda x: datatype_dictionary[x], usecols))
         
-        if verbose: print("Reading columns          :", ",".join(usecols))
-        if verbose: print("Renaming columns to      :", ",".join(conveted_columns))
-        if verbose: print("Datatype of each columns :", ",".join(datatype_columns))
-        if verbose: print("Current dataframe shape  : Rows ", len(self.data)," x ",len(self.data.columns)," Columns")
-        self.data = self.data.rename(columns=rename_dictionary)
-
-        if type(n) is int:
-            self.data["N"] = n
-
-        if not snpid:
-            self.data["MARKERNAME"] = self.data["CHR"].astype(
-                "string") + ":" + self.data["POS"].astype("string")
+        self.data  = gl.preformat(sumstats,snpid,rsid,chrom,pos,ea,nea,eaf,n,beta,se,chisq,z,p,mlog10p,info,OR,OR_se,OR_95L,OR_95U,other,verbose,**arguments)
+        self.build = build
 
     def __getattr__(self, name):
         if name == 'gc':
@@ -162,8 +42,8 @@ class Sumstats():
             raise AttributeError        
             
 #### healper #################################################################################
-
-    def get_columns(self, columns=None):
+    #value to arguement name 
+    def get_columns(self, columns=[]):
         dic = {
             "MARKERNAME": "snpid",
             "rsID": "rsid",
@@ -185,16 +65,23 @@ class Sumstats():
             "OR_95L": "OR_95L",
             "OR_95U": "OR_95U",
         }
-        for key in self.data.columns:
-            if key not in dic.keys():
-                dic[key] = key
-        if columns is not None:
+        if len(columns)>0:
             col_subset = {dic[key]: key for key in columns}
+            return col_subset
         else:
-            col_subset = {dic[key]: key for key in self.data.columns}
-        return col_subset
+            other=[]
+            for key in self.data.columns:
+                if key not in dic.keys():
+                    other.append(key)
+                else:
+                    columns.append(key)
+              
+            col_subset = {dic[key]: key for key in columns}
+            if len(other)>0: col_subset["other"] = other  
+            return col_subset
     
 # QC ######################################################################################
+    
     def fix_chr(self,chrom="CHR",add_prefix=""):
         self.data[chr] = self.data[chr].astype("string")
         self.data[chr] = self.data[chr].str.lstrip("chr|CHR|Chr")
@@ -241,7 +128,7 @@ class Sumstats():
         return Sumstats(output, **self.get_columns(), verbose=False)
     
     def lift_over(self,from_build="hg19" ,to_build="hg38",remove_unmapped=True):
-        output = liftover(self.data,chrom="CHR",pos="POS",
+        output = gl.liftover(self.data,chrom="CHR",pos="POS",
                                 from_build=from_build,to_build=to_build,
                                 remove_unmapped=remove_unmapped)
         return Sumstats(output, other=["CHR_"+to_build,"POS_"+to_build], **self.get_columns(), verbose=False)

@@ -173,11 +173,11 @@ def mqqplot(insumstats,
                                verbose=False,
                                sig_level=sig_level)
         
-        if to_annotate is not None:
+        if to_annotate.empty is not True:
             if verbose: print("  - Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
 
 # Add Annotation to manhattan plot #######################################################
-        if anno and (to_annotate is not None):
+        if anno and (to_annotate.empty is not True):
             #initiate a list for text and a starting position
             text = []
             last_pos=0
