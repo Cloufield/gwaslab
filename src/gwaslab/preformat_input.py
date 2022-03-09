@@ -152,13 +152,13 @@ def preformat(sumstats,
     if type(n) is int:
         sumstats["N"] = n
     ## if markername was nor provided
-    if not snpid:
+    if (not snpid) and (not rsid):
         sumstats["MARKERNAME"] = sumstats["CHR"].astype(
             "string") + ":" + sumstats["POS"].astype("string")
     
     ##reodering 
     order = [
-        "MARKERNAME", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
+        "MARKERNAME","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
         "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N"
     ] + other
     output_columns = []

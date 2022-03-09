@@ -34,7 +34,7 @@ class Sumstats():
                  **arguments):
         
         self.data  = gl.preformat(sumstats,snpid,rsid,chrom,pos,ea,nea,eaf,n,beta,se,chisq,z,p,mlog10p,info,OR,OR_se,OR_95L,OR_95U,other,verbose,**arguments)
-        self.build = build
+        self.meta = {"Genome build":build}
 
     def __getattr__(self, name):
         if name == 'gc':
@@ -66,15 +66,18 @@ class Sumstats():
             "OR_95L": "OR_95L",
             "OR_95U": "OR_95U",
         }
+        other=[]
+        for key in self.data.columns:
+            if key not in dic.keys():
+                other.append(key)
+                
         if len(columns)>0:
             col_subset = {dic[key]: key for key in columns}
+            if len(other)>0: col_subset["other"] = other  
             return col_subset
         else:
-            other=[]
             for key in self.data.columns:
-                if key not in dic.keys():
-                    other.append(key)
-                else:
+                if key in dic.keys():
                     columns.append(key)
               
             col_subset = {dic[key]: key for key in columns}
@@ -135,7 +138,7 @@ class Sumstats():
         return Sumstats(output, **self.get_columns(), verbose=False)
     
     def lift_over(self,from_build="hg19" ,to_build="hg38",remove_unmapped=True):
-        output = gl.liftover(self.data,chrom="CHR",pos="POS",
+        output = gl.liftover_variant(self.data,chrom="CHR",pos="POS",
                                 from_build=from_build,to_build=to_build,
                                 remove_unmapped=remove_unmapped)
         return Sumstats(output, other=["CHR_"+to_build,"POS_"+to_build], **self.get_columns(), verbose=False)
@@ -144,25 +147,28 @@ class Sumstats():
     ## ldsc ##################################################################################################
     def to_ldsc(self, path="", exclude_hla=True, **args):
         if "rsID" in list(self.data.columns.values):
-            self.hapmap3 = gl.ldsc(self.data, rsid="rsID", **args)
+            self.hapmap3 = gl.forldsc(self.data, rsid="rsID", **args)
         else:
-            self.hapmap3 = gl.ldsc(self.data, chrom="CHR", pos="POS", **args)
-        if path:
-            self.hapmap3.to_csv(path, sep="\t", index=False)
-            print(
-                "  - Saving sumstats in ldsc format at Hapmap3 variants(excluding hla region) to : "
-            )
-            print("  - " + path)
+            self.hapmap3 = gl.forldsc(self.data, chrom="CHR", pos="POS", **args)
+           
         if exclude_hla is True:
             print("  - Excluding variants in HLA region ...")
             is_hla = (self.hapmap3["CHR"]
                       == "6") & (self.hapmap3["POS"] >
                                25000000) & (self.hapmap3["POS"] < 34000000)
             self.hapmap3 = self.hapmap3.loc[~is_hla]
-            print("  - Hapmap3 variants in sumstas : ", len(self.hapmap3))
+            print("  - Hapmap3 variants in sumstats : ", len(self.hapmap3))
+        
+        if path:
+            self.hapmap3.to_csv(path, sep="\t", index=False)
+            print(
+                "  - Saving sumstats in ldsc format at Hapmap3 variants(excluding hla region) to : "
+            )
+            print("  - " + path)
+        
         return Sumstats(self.hapmap3,
-                        **self.get_columns(self.hapmap3.columns),
-                        verbose=False)
+                    **self.get_columns(self.hapmap3.columns),
+                    verbose=False)
     
     ## bed ##################################################################################################
     def to_bed(self, path="",snpid="MARKERNAME",chrom="CHR",pos="POS",ref="NEA",alt="EA",other=[],flank=0):

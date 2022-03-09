@@ -11,7 +11,7 @@ def liftover_snv(row,converter):
     else:
         return "unmapped","unmapped"
 
-def liftover(insumstats, 
+def liftover_variant(insumstats, 
              chrom, 
              pos, 
              from_build="hg19", 
