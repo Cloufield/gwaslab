@@ -16,6 +16,7 @@ def compare_effect(path1,
                    label1="Sumstats_1",
                    label2="Sumstats_2",
                    label3="Both",
+                   label0="Not in any",
                    snplist=None,
                    anno=False,
                    verbose=False,
@@ -194,10 +195,12 @@ def compare_effect(path1,
     save_path = label1+"_"+label2+"_beta_sig_list_merged.tsv"
     sig_list_merged.to_csv(save_path,"\t")
     
+    sum0 = sig_list_merged.loc[sig_list_merged["indicator"]==0,:].dropna(axis=0)
     sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:].dropna(axis=0)
     sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:].dropna(axis=0)
     both     = sig_list_merged.loc[sig_list_merged["indicator"]==3,:].dropna(axis=0)
     
+    if verbose: print("Identified "+str(len(sum0)) + " variants which are not significant in " + label3+".")
     if verbose: print("Identified "+str(len(sum1only)) + " variants which are only significant in " + label1+".")
     if verbose: print("Identified "+str(len(sum2only)) + " variants which are only significant in " + label2+".")
     if verbose: print("Identified "+str(len(both)) + " variants which are significant in " + label3 + ".")
@@ -207,7 +210,10 @@ def compare_effect(path1,
     #plt.style.use("ggplot")
     sns.set_style("ticks")
     fig,ax = plt.subplots(figsize=(8,8)) 
-    
+    if len(sum0)>0:
+        ax.errorbar(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"], xerr=sum0["SE_1"],yerr=sum0["SE_2"],
+                    linewidth=0,zorder=1,**errargs)
+        ax.scatter(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"],label=label0,zorder=2,color="#cccccc",marker="^",**scatterargs)
     if len(sum1only)>0:
         ax.errorbar(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"], xerr=sum1only["SE_1"],yerr=sum1only["SE_2"],
                     linewidth=0,zorder=1,**errargs)

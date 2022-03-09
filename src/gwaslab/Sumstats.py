@@ -1,7 +1,8 @@
 import pandas as pd
 import gwaslab as gl
 
-#20220307
+
+#20220309
 class Sumstats():
     # Sumstats.data will store a pandas df
     data = pd.DataFrame()
@@ -82,14 +83,20 @@ class Sumstats():
     
 # QC ######################################################################################
     
-    def fix_chr(self,chrom="CHR",add_prefix=""):
-        self.data[chr] = self.data[chr].astype("string")
-        self.data[chr] = self.data[chr].str.lstrip("chr|CHR|Chr")
-        self.data[chr] = self.data[chr].str.lstrip("0")
-        self.data[chr] = self.data[chr].str.upper()
-        if add_prefix:
-            self.data[chr] = add_prefix + sumstats[chr]
+    def fix_chr(self,**args):
         #return sumstats
+        self.data = gl.fixchr(self.data,**args)
+        self.data.reset_index(drop=True,inplace=True)
+        return self
+        
+    def fix_allele(self,**args):
+        self.data = gl.fixallele(self.data,**args)
+        self.data.reset_index(drop=True, inplace=True)
+        return self
+    
+    def normalize_allele(self,**args):
+        self.data = gl.normalizeallele(self.data,**args)
+        return self
 
 # utilities ###############################################################################
 
