@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import scipy.stats as ss
 
-#20220306
+#20220310
 def preformat(sumstats,
               snpid=None,
               rsid=None,
@@ -52,6 +52,7 @@ def preformat(sumstats,
 
     usecols = []
     datatype_dictionary = {}
+    
     if snpid:
         usecols.append(snpid)
         datatype_dictionary[snpid] = "string"
@@ -130,16 +131,16 @@ def preformat(sumstats,
     elif type(sumstats) is pd.DataFrame:
         ## loading data from dataframe
         if verbose:
-            print("Initiating from pandas dataframe ...")
+            print("Initiating from pandas DataFrame ...")
         sumstats = sumstats.loc[:, usecols].astype(datatype_dictionary)
 
-    ##renaming columns
-    conveted_columns = list(map(lambda x: rename_dictionary[x], usecols))
+    ## renaming columns
+    converted_columns = list(map(lambda x: rename_dictionary[x], usecols))
     datatype_columns = list(map(lambda x: datatype_dictionary[x], usecols))
     
     ## renaming log
     if verbose: print("Reading columns          :", ",".join(usecols))
-    if verbose: print("Renaming columns to      :", ",".join(conveted_columns))
+    if verbose: print("Renaming columns to      :", ",".join(converted_columns))
     if verbose: print("Datatype of each columns :", ",".join(datatype_columns))
     if verbose:
         print("Current dataframe shape  : Rows ", len(sumstats), " x ",
@@ -147,11 +148,10 @@ def preformat(sumstats,
     ## renaming
     sumstats = sumstats.rename(columns=rename_dictionary)
 
-    ## fix
     ## if n was provided as int
     if type(n) is int:
         sumstats["N"] = n
-    ## if markername was nor provided
+    ## if markername was not provided
     if (not snpid) and (not rsid):
         sumstats["MARKERNAME"] = sumstats["CHR"].astype(
             "string") + ":" + sumstats["POS"].astype("string")

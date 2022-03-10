@@ -108,8 +108,12 @@ class Sumstats():
         return plot
 
     def get_lead(self, **args):
+        if "MARKERNAME" in self.data.columns:
+            id_to_use = "MARKERNAME"
+        else:
+            id_to_use = "rsID"
         output = gl.getsig(self.data,
-                           id="MARKERNAME",
+                           id=id_to_use,
                            chrom="CHR",
                            pos="POS",
                            p="P",

@@ -5,11 +5,12 @@ import seaborn as sns
 import numpy as np
 import scipy as sp
 import gwaslab as gl
-
+#20220310
 def mqqplot(insumstats,
           chrom,
           pos,
           p,
+          snpid=None,
           scaled=False,
           cut=0,
           cutfactor=10,
@@ -21,6 +22,13 @@ def mqqplot(insumstats,
           sig_level=5e-8,
           sig_line_color="grey",
           suggestive_sig_level=5e-6,
+          stratified=False,
+          eaf=None,
+          maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
+          maf_bin_colors = ["#27ace2","#4186c6", "#7878BA","#000042"],
+          highlight = [],
+          highlight_color ="#F6949E",
+          highlight_windowkb = 500,
           title =None,
           mtitle=None,
           qtitle=None,
@@ -62,7 +70,20 @@ def mqqplot(insumstats,
     if "m" in mode: sumstats["CHROM"] = insumstats[chrom].astype(int)
     if "m" in mode: sumstats["POS"] = insumstats[pos].astype(int)
     if anno and anno!=True:
-            sumstats["Annotation"]=insumstats[anno].astype(object)
+        sumstats["Annotation"]=insumstats[anno].astype(object)
+    if stratified is True:
+        sumstats["MAF"] = insumstats[eaf].copy()
+        sumstats.loc[sumstats["MAF"]>0.5,"MAF"] = 1 - sumstats.loc[sumstats["MAF"]>0.5,"MAF"]
+    
+    if len(highlight)>0:
+        sumstats["MARKERNAME"] = insumstats[snpid]
+        sumstats["HUE"] = sumstats["CHROM"]
+        to_highlight = sumstats.loc[sumstats["MARKERNAME"].isin(highlight)]
+        for i,row in to_highlight.iterrows():
+            sumstats.loc[(sumstats["CHROM"]==row["CHROM"])
+                         &(sumstats["POS"]>row["POS"]-highlight_windowkb*1000)
+                         &(sumstats["POS"]<row["POS"]+highlight_windowkb*1000),"HUE"]="0"
+            
             
 # P value conversion ###############################  
     if scaled:
@@ -126,17 +147,37 @@ def mqqplot(insumstats,
         sumstats["s"]=1
         sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
         sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
-        sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=10
+        sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=4
 
 ## Manhatann plot ###################################################
-        plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
-                           hue='CHROM',
-                           palette=sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
-                           legend=None,
-                           size="s",
-                           sizes=(10,40),
-                           linewidth=0,
-                           zorder=2,ax=ax1)   
+        if len(highlight) >0:
+            plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
+                               hue='CHROM',
+                               palette=sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
+                               legend=None,
+                               size="s",
+                               sizes=(10,35),
+                               linewidth=0,
+                               zorder=2,ax=ax1)   
+            if verbose: print("  - Loci to highlight :",highlight)
+            if verbose: print("  - Highlight range +- :",highlight_windowkb , " kb")
+            sns.scatterplot(data=sumstats.loc[sumstats["HUE"]=="0"], x='i', y='scaled_P',
+                   hue="HUE",
+                   palette={"0":highlight_color},
+                   legend=None,
+                   size="s",
+                   sizes=(45,45),
+                   linewidth=0,
+                   zorder=3,ax=ax1)   
+        else:
+            plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
+                   hue='CHROM',
+                   palette= sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
+                   legend=None,
+                   size="s",
+                   sizes=(10,40),
+                   linewidth=0,
+                   zorder=2,ax=ax1)   
 
         chrom_df = (sumstats.groupby('CHROM')['i'].max() + sumstats.groupby('CHROM')['i'].min())/2
         plot.set_xlabel('CHROM'); 
@@ -233,15 +274,24 @@ def mqqplot(insumstats,
     # ax2 qqplot
     if "qq" in mode:
         
-        # select -log10 scaled p to plot
+            # select -log10 scaled p to plot
         p_toplot = sumstats["scaled_P"]
-        
-        # sort x,y for qq plot
+            # sort x,y for qq plot
         minit=1/len(p_toplot)
-        observed = p_toplot.sort_values(ascending=False)
-        expected = -np.log10(np.linspace(minit,1,len(observed)))
-
-        ax2.scatter(expected,observed,s=8,color=colors[0])
+        if stratified is False:
+            observed = p_toplot.sort_values(ascending=False)
+            expected = -np.log10(np.linspace(minit,1,len(observed)))
+            ax2.scatter(expected,observed,s=8,color=colors[0])
+        else:
+            # stratified qq plot
+            for i,(lower, upper) in enumerate(maf_bins):
+                databin = sumstats.loc[(sumstats["MAF"]>lower) &( sumstats["MAF"]<=upper),["MAF","scaled_P"]]
+                observed = databin["scaled_P"].sort_values(ascending=False)
+                expected = -np.log10(np.linspace(minit,1,len(observed)))
+                label ="("+str(lower)+","+str(upper) +"]"
+                ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
+                ax2.legend(loc="center left",fontsize=10)
+        
         ax2.plot([0,-np.log10(minit)],[0,-np.log10(minit)],linestyle="--",color=sig_line_color)
 
         ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize)

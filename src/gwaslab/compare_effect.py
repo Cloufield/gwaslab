@@ -8,7 +8,7 @@ from adjustText import adjust_text
 import scipy.stats as ss
 import seaborn as sns
 
-#20220306
+#20220310
 def compare_effect(path1,
                    cols_name_list_1,
                    path2,
@@ -23,6 +23,7 @@ def compare_effect(path1,
                    sig_level=5e-8,
                    scatterargs={"s":30},
                    reg=True,
+                   legend_pos='upper left',
                    fontargs={'family':'sans','fontname':'Arial','fontsize':12},
                    errargs={"ecolor":"#cccccc","elinewidth":1}):
     
@@ -261,7 +262,7 @@ def compare_effect(path1,
         ax.text(0.98,0.02,"y = "+"{:.3f}".format(reg[1]) +" + "+ "{:.3f}".format(reg[0])+"x , $r^{2}$ =" +"{:.3f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,**fontargs)
         ax.axline(xy1=(0,reg[1]),slope=reg[0],color="#cccccc",zorder=1)
     
-    L = ax.legend(title=r'$ P < 5 x 10^{-8}$ in:',loc='upper left')
+    L = ax.legend(title=r'$ P < 5 x 10^{-8}$ in:',loc=legend_pos)
     plt.setp(L.texts,**fontargs)
     plt.setp(L.get_title(),**fontargs)
     ##plot finished########################################################################################

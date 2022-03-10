@@ -1,7 +1,6 @@
-## Sumstats Object
 from gwaslab.Sumstats import Sumstats
 from gwaslab.preformat_input import preformat
-
+## Sumstats Object
 
 ## QC
 from gwaslab.fixdata import fixchr
