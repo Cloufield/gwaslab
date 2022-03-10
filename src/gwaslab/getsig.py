@@ -42,6 +42,8 @@ def getsig(insumstats,
             current_sig_pos=row[pos]
             current_sig_p=row[p]
             current_sig_index=row[id]
+            if  line_number == len(sumstats_sig)-1:
+                sig_index_list.append(current_sig_index)
             continue
         
         #next loci
@@ -59,7 +61,7 @@ def getsig(insumstats,
         else:
             current_sig_pos=row[pos]
         #when last line
-        if  line_number == len(sumstats_sig)-1 or len(sumstats[sumstats[chrom]==row[chrom]])==1:
+        if  line_number == len(sumstats_sig)-1:
             sig_index_list.append(current_sig_index)
             continue
     if verbose:print("  - Identified "+str(len(sig_index_list))+" lead variants!")
