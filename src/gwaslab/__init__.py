@@ -8,10 +8,8 @@ from gwaslab.fixdata import fixallele
 from gwaslab.fixdata import normalizeallele
 
 ## utility
-from gwaslab.manhattan import mplot
 from gwaslab.mqqplot import mqqplot
-from gwaslab.qqplot import qqplot
-from gwaslab.qqplot import gc
+from gwaslab.calculate_gc import gc
 from gwaslab.getsig import getsig
 from gwaslab.get_hapmap3 import forldsc
 from gwaslab.liftover_snv import liftover_variant

@@ -139,11 +139,11 @@ def preformat(sumstats,
     datatype_columns = list(map(lambda x: datatype_dictionary[x], usecols))
     
     ## renaming log
-    if verbose: print("Reading columns          :", ",".join(usecols))
-    if verbose: print("Renaming columns to      :", ",".join(converted_columns))
-    if verbose: print("Datatype of each columns :", ",".join(datatype_columns))
+    if verbose: print("  - Reading columns          :", ",".join(usecols))
+    if verbose: print("  - Renaming columns to      :", ",".join(converted_columns))
+    if verbose: print("  - Datatype of each columns :", ",".join(datatype_columns))
     if verbose:
-        print("Current dataframe shape  : Rows ", len(sumstats), " x ",
+        print("  - Current dataframe shape  : Rows ", len(sumstats), " x ",
               len(sumstats.columns), " Columns")
     ## renaming
     sumstats = sumstats.rename(columns=rename_dictionary)
@@ -165,6 +165,7 @@ def preformat(sumstats,
     for i in order:
         if i in sumstats.columns: output_columns.append(i)
             
-    if verbose: print("Reordering columns to    :", ",".join(output_columns))
+    if verbose: print("  - Reordering columns to    :", ",".join(output_columns))
     sumstats = sumstats.loc[:, output_columns]
+    if verbose: print("Loading data finished successfully!")
     return sumstats

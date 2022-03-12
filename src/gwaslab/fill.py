@@ -8,17 +8,19 @@ def filldata(
     overwirte=False,
     verbose=True
     ):
-    if verbose: print("Strat filling data using existing columns...")
-    if verbose: print("Raw input columns: ",list(sumstats.columns))
     
+
+    if verbose: print("Strat filling data using existing columns...")
+    if verbose: print("  - Raw input columns: ",list(sumstats.columns))
+# check dupication ##############################################################################################
     skip_cols=[]
-    if verbose: print("Overwirte mode: ",overwirte)
+    if verbose: print("  - Overwirte mode: ",overwirte)
     if overwirte is False:
         for i in to_fill:
             if i in sumstats.columns:
                 to_fill.remove(i)
                 skip_cols.append(i)
-        if verbose: print("Skipping columns: ",skip_cols) 
+        if verbose: print("  - Skipping columns: ",skip_cols) 
     if verbose: print("Filling columns: ",to_fill)
         
 # beta to or ####################################################################################################     
@@ -64,12 +66,14 @@ def filldata(
         elif "MLOG10P" in sumstats.columns:    
             if verbose: print("  - Filling P value using MLOG10P column...")
             sumstats["P"] = np.power(10,-sumstats["MLOG10P"])
-            
+
+# beta/se to z ##################################################################################################            
     if "Z" in to_fill:    
         if ("BETA" in sumstats.columns) and ("SE" in sumstats.columns):
             if verbose: print("  - Filling Z using BETA/SE column...")
             sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
-            
+
+# z/p to chisq ##################################################################################################             
     if "CHISQ" in to_fill:
         if "Z" in sumstats.columns:
             if verbose: print("  - Filling CHISQ using Z column...")
@@ -77,7 +81,8 @@ def filldata(
         elif "P" in sumstats.columns:
             if verbose: print("  - Filling CHISQ using P column...")
             sumstats["CHISQ"] = ss.chi2.isf(sumstats["P"], 1)
-# p to -log10(P)
+            
+# p to -log10(P)  ###############################################################################################
     if "MLOG10P" in to_fill:
         if verbose: print("  - Filling MLOG10P using P column...")
         sumstats["MLOG10P"] = -np.log10(sumstats["P"])

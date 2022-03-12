@@ -91,22 +91,16 @@ class Sumstats():
             "OR_95U": "OR_95U",
         }
         other=[]
-        for key in self.data.columns:
+        col_subset={}
+        for key in columns:
             if key not in dic.keys():
                 other.append(key)
+            else:
+                col_subset[dic[key]] = key
                 
-        if len(columns)>0:
-            col_subset = {dic[key]: key for key in columns}
-            if len(other)>0: col_subset["other"] = other  
-            return col_subset
-        else:
-            for key in self.data.columns:
-                if key in dic.keys():
-                    columns.append(key)
-              
-            col_subset = {dic[key]: key for key in columns}
-            if len(other)>0: col_subset["other"] = other  
-            return col_subset
+        if len(other)>0: col_subset["other"] = other  
+        
+        return col_subset
     
 # QC ######################################################################################
     
@@ -124,6 +118,9 @@ class Sumstats():
     def normalize_allele(self,**args):
         self.data = gl.normalizeallele(self.data,**args)
         return self
+    
+    def fill_data(self, **args):
+        self.data = gl.filldata(self.data,**args)
 
 # utilities ###############################################################################
 
@@ -143,42 +140,52 @@ class Sumstats():
                            pos="POS",
                            p="P",
                            **args)
-        return Sumstats(output, **self.get_columns(), verbose=False)
+        # return sumstats object    
+        return Sumstats(output, **self.get_columns(output.columns), verbose=False)
 
     
     def get_per_snp_h2(self,**args):
         self.data = gl.getpersnph2(self.data,beta="BETA",af="EAF",**args)
-    
-    def fill_data(self, **args):
-        self.data = gl.filldata(self.data,**args)
+        #add data inplace
+
     
     def get_gc(self, **args):
-        output = gl.gc(self.data["P"], **args)
-        return output
-    
+        if "P" in self.data.columns:
+            output = gl.gc(self.data["P"],mode="p",**args)
+        elif "Z" in self.data.columns:
+            output = gl.gc(self.data["Z"],mode="z",**args)
+        elif "CHISQ" in self.data.columns:
+            output = gl.gc(self.data["CHISQ"],mode="chi2",**args)
+        #return scalar
+        return output    
     
     def exclude_hla(self, **args):
         is_hla = (self.data["CHR"] == "6") & (self.data["POS"] > 25000000) & (
             self.data["POS"] < 34000000)
         output = self.data.loc[~is_hla]  #not in hla
+        # return sumstats object    
         return Sumstats(output, **self.get_columns(), verbose=False)
 
     def extract_hla(self, **args):
         is_hla = (self.data["CHR"] == "6") & (self.data["POS"] > 25000000) & (
             self.data["POS"] < 34000000)
         output = self.data.loc[is_hla]  #in hla
-        return Sumstats(output, **self.get_columns(), verbose=False)
+        # return sumstats object    
+        return Sumstats(output, **self.get_columns(self.data.columns), verbose=False)
     
     def extract_chr(self,chrom="1", **args):
         is_chr = (self.data["CHR"] == str(chrom))
         output = self.data.loc[is_chr]  #in hla
-        return Sumstats(output, **self.get_columns(), verbose=False)
+        # return sumstats object    
+        return Sumstats(output, **self.get_columns(self.data.columns), verbose=False)
+    
     
     def lift_over(self,from_build="hg19" ,to_build="hg38",remove_unmapped=True):
         output = gl.liftover_variant(self.data,chrom="CHR",pos="POS",
                                 from_build=from_build,to_build=to_build,
                                 remove_unmapped=remove_unmapped)
-        return Sumstats(output, other=["CHR_"+to_build,"POS_"+to_build], **self.get_columns(), verbose=False)
+        # return sumstats object    
+        return Sumstats(output, other=["CHR_"+to_build,"POS_"+to_build], **self.get_columns(self.data.columns), verbose=False)
         
 # to_format ###############################################################################################       
     ## ldsc ##################################################################################################
@@ -224,5 +231,5 @@ class Sumstats():
             return output
     #fuma ############################################################################################
     def to_fuma(self,path=None):
-        sumstats_fuma = gl.tofuma(self.data,path)
+        sumstats_fuma = gl.tofuma(self.data.copy(),path)
         return sumstats_fuma

@@ -9,7 +9,7 @@ from os import path
 #A signed summary statistic (beta, OR, log odds, Z-score, etc)
 
 def forldsc(sumstats,chrom=None,pos=None,rsid=None,signedstats=["BETA"],verbose=True):
-    
+    if verbose: print("Start fornmatting to ldsc input format...")
     ldsc_cols = ["EA","NEA","N","P","EAF"] + signedstats +["SE"]
     usecols =[]
     for i in sumstats.columns:
@@ -44,7 +44,7 @@ def forldsc(sumstats,chrom=None,pos=None,rsid=None,signedstats=["BETA"],verbose=
     elif chrom and pos:
         insumstats["chr:pos"]=insumstats[chrom].astype("string")+":"+insumstats[pos].astype("string")
         
-        hapmap3_ref["chr:pos"]=hapmap3_ref["#CHROM"]+":"+hapmap3_ref["POS"]
+        hapmap3_ref["chr:pos"]=hapmap3_ref["#CHROM"]+":"+hapmap3_ref["POS"].astype("string")
         
         output = pd.merge(insumstats,hapmap3_ref,left_on="chr:pos",right_on="chr:pos",how="inner",suffixes=('', '_hapmap3'))
         
