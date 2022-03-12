@@ -30,10 +30,34 @@ class Sumstats():
                  OR_95U=None,
                  other=[],
                  verbose=True,
-                 build="hg19",
+                 build="Unknown",
                  **arguments):
         
-        self.data  = gl.preformat(sumstats,snpid,rsid,chrom,pos,ea,nea,eaf,n,beta,se,chisq,z,p,mlog10p,info,OR,OR_se,OR_95L,OR_95U,other,verbose,**arguments)
+        # preformat the data
+        self.data  = gl.preformat(sumstats,
+                          snpid,
+                          rsid,
+                          chrom,
+                          pos,
+                          ea,
+                          nea,
+                          eaf,
+                          n,
+                          beta,
+                          se,
+                          chisq,
+                          z,
+                          p,
+                          mlog10p,
+                          info,
+                          OR,
+                          OR_se,
+                          OR_95L,
+                          OR_95U,
+                          other,
+                          verbose,
+                          **arguments)
+        
         self.meta = {"Genome build":build}
 
     def __getattr__(self, name):
@@ -103,6 +127,7 @@ class Sumstats():
 
 # utilities ###############################################################################
 
+    
     def plot_mqq(self, **args):
         plot = gl.mqqplot(self.data, chrom="CHR", pos="POS", p="P", **args)
         return plot
@@ -120,9 +145,17 @@ class Sumstats():
                            **args)
         return Sumstats(output, **self.get_columns(), verbose=False)
 
+    
+    def get_per_snp_h2(self,**args):
+        self.data = gl.getpersnph2(self.data,beta="BETA",af="EAF",**args)
+    
+    def fill_data(self, **args):
+        self.data = gl.filldata(self.data,**args)
+    
     def get_gc(self, **args):
         output = gl.gc(self.data["P"], **args)
         return output
+    
     
     def exclude_hla(self, **args):
         is_hla = (self.data["CHR"] == "6") & (self.data["POS"] > 25000000) & (

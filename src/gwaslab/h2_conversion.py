@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import norm
+
 def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
     '''
     Converts heritability on the observed scale in an ascertained sample to heritability
@@ -41,3 +42,13 @@ def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
     if se_obs:
         return h2_obs * conversion_factor, se_lia
     return h2_obs * conversion_factor
+
+
+def getpersnph2(sumstats,
+           beta,
+           af,
+           verbose=True):
+    if verbose: print("Calculating per-SNP heritibility by 2 * BETA * AF * (1-AF)...")
+    sumstats["PerSNPh2"] = 2*sumstats[beta]**2*sumstats[af]*(1-sumstats[af])
+    sumstats["PerSNPh2"]= sumstats["PerSNPh2"].round(5)
+    return sumstats

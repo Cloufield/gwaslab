@@ -25,9 +25,9 @@ def mqqplot(insumstats,
           stratified=False,
           eaf=None,
           maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
-          maf_bin_colors = ["#27ace2","#4186c6", "#7878BA","#000042"],
+          maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
           highlight = [],
-          highlight_color ="#F6949E",
+          highlight_color ="#33FFA0",
           highlight_windowkb = 500,
           title =None,
           mtitle=None,
@@ -39,13 +39,14 @@ def mqqplot(insumstats,
           repel_force=0.03,
           gc=True,
           save=None,
-          saveargs={"dpi":300,"facecolor":"white"}  
+          saveargs={"dpi":400,"facecolor":"white"}  
           ):
     
 # Printing meta info ##################################################################
     if verbose: print("Basic settings:")
     if verbose: print("  - Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: print("  - Raw input contains "+str(len(insumstats))+" variants...")
+    if verbose: print("  - Ploy layout mode is : "+mode)
     if verbose: print("Start conversion and QC:")
 
 # Plotting mode selection ##############################################################
@@ -67,10 +68,18 @@ def mqqplot(insumstats,
     
     sumstats = pd.DataFrame()
     sumstats["P-value_association"] = insumstats[p].astype(np.float64)
-    if "m" in mode: sumstats["CHROM"] = insumstats[chrom].astype(int)
-    if "m" in mode: sumstats["POS"] = insumstats[pos].astype(int)
+    if "m" in mode: 
+        sumstats["CHROM"] = insumstats[chrom].copy()
+        # CHR X,Y,MT conversion ############################
+        sumstats.loc[sumstats["CHROM"]=="X","CHROM"] = "23"
+        sumstats.loc[sumstats["CHROM"]=="Y","CHROM"] = "24"
+        sumstats.loc[sumstats["CHROM"]=="MT","CHROM"] = "25"
+        sumstats["CHROM"] = sumstats["CHROM"].astype("int")
+        
+    if "m" in mode: 
+        sumstats["POS"] = insumstats[pos].astype("int")
     if anno and anno!=True:
-        sumstats["Annotation"]=insumstats[anno].astype(object)
+        sumstats["Annotation"]=insumstats[anno].astype("string")
     if stratified is True:
         sumstats["MAF"] = insumstats[eaf].copy()
         sumstats.loc[sumstats["MAF"]>0.5,"MAF"] = 1 - sumstats.loc[sumstats["MAF"]>0.5,"MAF"]
@@ -83,7 +92,8 @@ def mqqplot(insumstats,
             sumstats.loc[(sumstats["CHROM"]==row["CHROM"])
                          &(sumstats["POS"]>row["POS"]-highlight_windowkb*1000)
                          &(sumstats["POS"]<row["POS"]+highlight_windowkb*1000),"HUE"]="0"
-            
+
+    
             
 # P value conversion ###############################  
     if scaled:
@@ -123,7 +133,7 @@ def mqqplot(insumstats,
         posdic = sumstats.groupby("CHROM")["POS"].max()
 
         posdiccul = dict(posdic)
-        for i in range(0,23):
+        for i in range(0,26):
             if i in posdiccul: continue
             else: posdiccul[i]=0
 
@@ -182,7 +192,11 @@ def mqqplot(insumstats,
         chrom_df = (sumstats.groupby('CHROM')['i'].max() + sumstats.groupby('CHROM')['i'].min())/2
         plot.set_xlabel('CHROM'); 
         plot.set_xticks(chrom_df);
-        plot.set_xticklabels(chrom_df.index)
+        chromosome_conversion_dict = {i:str(i) for i in range(1,23)}
+        chromosome_conversion_dict[23] = "X"
+        chromosome_conversion_dict[24] = "Y"
+        chromosome_conversion_dict[25] = "MT"
+        plot.set_xticklabels(chrom_df.index.map(chromosome_conversion_dict))
 
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
         if cut:
@@ -216,7 +230,6 @@ def mqqplot(insumstats,
         
         if to_annotate.empty is not True:
             if verbose: print("  - Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
-
 # Add Annotation to manhattan plot #######################################################
         if anno and (to_annotate.empty is not True):
             #initiate a list for text and a starting position
@@ -236,7 +249,7 @@ def mqqplot(insumstats,
                 armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((0, maxy+2))[1]-plot.transData.transform((0,  row["scaled_P"]+1))[1] 
 
                 if anno==True:
-                    annotation_text=str(int(row["CHROM"])) +":"+ str(int(row["POS"]))
+                    annotation_text="Chr"+ row["CHROM"] +":"+ str(int(row["POS"]))
                     annotation_col="CHR:POS"
                 elif anno:
                     annotation_text=row["Annotation"]
@@ -290,7 +303,7 @@ def mqqplot(insumstats,
                 expected = -np.log10(np.linspace(minit,1,len(observed)))
                 label ="("+str(lower)+","+str(upper) +"]"
                 ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
-                ax2.legend(loc="center left",fontsize=10)
+                ax2.legend(loc="center left",fontsize=10,markerscale=3)
         
         ax2.plot([0,-np.log10(minit)],[0,-np.log10(minit)],linestyle="--",color=sig_line_color)
 
