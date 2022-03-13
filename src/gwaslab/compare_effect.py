@@ -259,7 +259,11 @@ def compare_effect(path1,
         ax.spines[spine].set_visible(False)
     if reg:
         reg = ss.linregress(sig_list_merged["EFFECT_1"],sig_list_merged["EFFECT_2_aligned"])
-        ax.text(0.98,0.02,"y = "+"{:.3f}".format(reg[1]) +" + "+ "{:.3f}".format(reg[0])+"x , $r^{2}$ =" +"{:.3f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,**fontargs)
+        if reg[0] > 0:
+            ax.text(0.98,0.02,"y = "+"{:.2f}".format(reg[1]) +" + "+ "{:.2f}".format(reg[0])+"x ,p ="+ "{:.3e}".format(reg[3])+ ",$r^{2}$ =" +"{:.2f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,**fontargs)
+        else:
+            ax.text(0.98,0.02,"y = "+"{:.2f}".format(reg[1]) +" - "+ "{:.2f}".format(abs(reg[0]))+"x ,p ="+"{:.3e}".format(reg[3])+ ",$r^{2}$ =" +"{:.2f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,**fontargs)
+            
         ax.axline(xy1=(0,reg[1]),slope=reg[0],color="#cccccc",zorder=1)
     
     L = ax.legend(title=r'$ P < 5 x 10^{-8}$ in:',loc=legend_pos)
