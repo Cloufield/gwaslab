@@ -11,13 +11,13 @@ from gwaslab.fixdata import normalizeallele
 from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import gc
 from gwaslab.getsig import getsig
-from gwaslab.get_hapmap3 import forldsc
 from gwaslab.liftover_snv import liftover_variant
 from gwaslab.fill import filldata
 
 # to format
 from gwaslab.to_format import tobed
 from gwaslab.to_format import tofuma
+from gwaslab.get_hapmap3 import forldsc
 
 # standalone function
 from gwaslab.compare_effect import compare_effect
