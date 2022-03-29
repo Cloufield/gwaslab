@@ -19,17 +19,23 @@ Just want to make lif eaiser and save myself from repetitive work.
 
 
 ## Requirements:
-1. Python>3  2. "scipy"  3. "numpy"  4. "pandas"  5. "matplotlib"  6. "seaborn" 7."adjustText"
+1. Python>3  
+2. "scipy"  
+3. "numpy"  
+4. "pandas"  
+5. "matplotlib"  
+6. "seaborn" 
+7. "adjustText"
 
 ## Install:
 ```
 pip install gwaslab
 ```
-Current version: 1.0.2
+Current version: 1.0.4
 
 # Usage:
 
-Input: pandas dataframe
+Input: pandas dataframe or directly import form text files.
 
 ### Create Manhattan plot and QQ plot with just one line
 ```
