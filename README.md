@@ -10,20 +10,22 @@ Just want to make lif eaiser and save myself from repetitive work.
 4. [Calculate lamda GC](#calculate-genomic-inflation-factor)
 5. [Select top SNPs based on a given window size.]
 6. Convert beta/se <-> OR/95%L_U/95%L_L
-7. Select hapmap3 SNPs from sumstats
+7. Select hapmap3 SNPs from sumstats and convert to ldsc format
 8. [Convert Observed scale heritability to liability scale heritability](#converting-observed-scale-heritability-to-liability-scale-heritability)
 9. [read ldsc log and extract numeric results directly into a pandas dataframe.](#read-ldsc-results-in-to-pandas-dataframe)
 10. compare the effect size of select variants / or automatically detected lead variants from two sumstats.
-![manhattan_qq_plot](https://user-images.githubusercontent.com/40289485/154832769-eddaf72e-9664-4f33-86e9-199e8fe92e56.png)
+
+![屏幕截图 2022-03-28 235029](https://user-images.githubusercontent.com/40289485/160425251-63549fcd-73b8-4328-b00d-d7b83e26d4e9.jpg)
+
 
 ## Requirements:
-1. Python>3  2. "scipy"  3. "numpy"  4. "pandas"  5. "matplotlib"  6. "seaborn"
+1. Python>3  2. "scipy"  3. "numpy"  4. "pandas"  5. "matplotlib"  6. "seaborn" 7."adjustText"
 
 ## Install:
 ```
 pip install gwaslab
 ```
-Current version: 0.0.6
+Current version: 1.0.2
 
 # Usage:
 
@@ -33,63 +35,43 @@ Input: pandas dataframe
 ```
 import gwaslab as gl
 
+## load gwaslab Sumstats object
+AF = gl.Sumstats("./AF_bbj.txt.gz",
+                   snpid="SNP",
+                   eaf="FREQ1",
+                   chrom="CHR",
+                   pos="POS",
+                   ea="A1",
+                   nea="A2",
+                   n=12121,
+                   p="PVALUE",
+                   beta="EFFECT1",
+                   se="STDERR",
+                   other=["WALDCHISQ"])
+
 ## creat qqplot and manhattan plot with just one line
-## pass a dataframe in, and specify the column name for chromosome, base pair position, and also the p values.
-gl.mqqplot(sumstats,"CHR","POS","PVALUE")
-
-## adjust the plot, select top snps and add annotation sutomatically.
-gl.mqqplot(sumstats,"CHR","POS","PVALUE",cut=20,cutfactor=10,anno=True,verbose=True,save=True,title="gwaslab")
-
-## all options
-gl.mqqplot(insumstats,
-          chrom,
-          pos,
-          p,
-          scaled=False,
-          cut=0,
-          cutfactor=10,
-          cut_line_color="#ebebeb",
-          windowsizekb=500,
-          anno=None,
-          sig_level=5e-8,
-          sig_line_color="grey",
-          suggestive_sig_level=5e-6,
-          title =None,
-          mtitle=None,
-          qtitle=None,
-          figsize =(15,5),
-          fontsize = 10,
-          colors = ["#000042", "#7878BA"],
-          verbose=True,
-          repel_force=0.03,
-          gc=True,
-          save=None,
-          saveargs={"dpi":300,"facecolor":"white"}
-          )
+myplot = AF.plot_mqq(
+        snpid="MARKERNAME",
+        mode="mqq",
+        stratified=True,
+        eaf="EAF",
+        anno=True,
+        cut=20,
+        highlight=["rs7434417","rs12044963"], #the lead SNPs to highlight
+        highlight_color="#33FFA0", 
+        maf_bin_colors = ["#f0ad4e","#5cb85c", "#7878BA","#000042"])
 ```
 Or you can plot it separately.
-### Manhattan plot
-```
-gl.mplot()
-```
-### QQ plot
-```
-gl.qqplot()
-```
 
 ### Calculate genomic inflation factor
 ```
-gc(insumstats{"PVALUE"},mode="p",level=0.5)
-gc(insumstats["Z"],mode="z",level=0.5)
-gc(insumstats["chi2"],mode="chi2",level=0.5)
+AF.get_gc()
 ```
 
 ### Extract top snps given a sliding window size
 
 ```
-gl.getsig(insumstats,id,chrom,pos,p)
-
-gl.getsig(insumstats,id,chrom,pos,p,windowsizekb=500,verbose=True,sig_level=5e-8)
+AF.get_lead()
 ```
 Ref:
 Zhou, Wei, and Global Biobank Meta-analysis Initiative. "Global Biobank Meta-analysis Initiative: Powering genetic discovery across human diseases." medRxiv (2021).
@@ -138,6 +120,8 @@ gl.compare_effect()
 
 --------------------------
 # Log
+- 1.0.0 implemented Sumstats object
+
 - 0.0.5 - 0.0.6
 - added  compare_effect, read_ldsc 
 
@@ -146,9 +130,6 @@ gl.compare_effect()
   -  fixed gtesig algorithm
   -  recreated mplot and qqplot
 
-# Next 
-- beta to OR
-- OR to beta 
 
 For more information: 
 https://gwaslab.com/
