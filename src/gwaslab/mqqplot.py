@@ -35,11 +35,13 @@ def mqqplot(insumstats,
           figsize =(15,5),
           fontsize = 10,
           colors = ["#000042", "#7878BA"],
+          use_id=False,
           verbose=True,
           repel_force=0.03,
           gc=True,
           save=None,
           saveargs={"dpi":400,"facecolor":"white"}  
+          
           ):
     
 # Printing meta info ##################################################################
@@ -78,6 +80,7 @@ def mqqplot(insumstats,
         
     if "m" in mode: 
         sumstats["POS"] = insumstats[pos].astype("int")
+
     if anno and anno!=True:
         sumstats["Annotation"]=insumstats[anno].astype("string")
     if stratified is True:
@@ -126,12 +129,15 @@ def mqqplot(insumstats,
     #sort & add id
     if "m" in mode: 
         sumstats = sumstats.sort_values(["CHROM","POS"])
+        if use_id is True: sumstats["POS_RANK"] = sumstats.groupby("CHROM")["POS"].rank("dense", ascending=True)
         sumstats["id"]=range(len(sumstats))
         sumstats=sumstats.set_index("id")
 
         #create a position dictionary
-        posdic = sumstats.groupby("CHROM")["POS"].max()
-
+        if use_id is True: 
+            posdic = sumstats.groupby("CHROM")["POS_RANK"].max()
+        else:
+            posdic = sumstats.groupby("CHROM")["POS"].max()
         posdiccul = dict(posdic)
         for i in range(0,26):
             if i in posdiccul: continue
@@ -144,7 +150,11 @@ def mqqplot(insumstats,
 
         #convert base pair postion to x axis position
         sumstats["add"]=sumstats["CHROM"].apply(lambda x : posdiccul[int(x)-1])
-        sumstats["i"]=sumstats["POS"]+sumstats["add"]
+        if use_id is True: 
+            sumstats["i"]=sumstats["POS_RANK"]+sumstats["add"]
+        else:
+            sumstats["i"]=sumstats["POS"]+sumstats["add"]
+        
 
         #for plot
         chrom_df=sumstats.groupby('CHROM')['i'].median()
@@ -199,6 +209,7 @@ def mqqplot(insumstats,
         plot.set_xticklabels(chrom_df.index.map(chromosome_conversion_dict))
 
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
+        if cut == 0: plot.set_ylim(0,maxy*1.2)
         if cut:
             cutline=plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
@@ -325,6 +336,7 @@ def mqqplot(insumstats,
                      fontsize=fontsize)
         
         #
+        if cut == 0: ax2.set_ylim(0,maxy*1.2)
         if cut:
             qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
