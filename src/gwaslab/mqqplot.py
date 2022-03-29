@@ -35,7 +35,7 @@ def mqqplot(insumstats,
           figsize =(15,5),
           fontsize = 10,
           colors = ["#000042", "#7878BA"],
-          use_id=False,
+          use_rank=False,
           verbose=True,
           repel_force=0.03,
           gc=True,
@@ -134,7 +134,7 @@ def mqqplot(insumstats,
         sumstats=sumstats.set_index("id")
 
         #create a position dictionary
-        if use_id is True: 
+        if use_rank is True: 
             posdic = sumstats.groupby("CHROM")["POS_RANK"].max()
         else:
             posdic = sumstats.groupby("CHROM")["POS"].max()
@@ -150,7 +150,7 @@ def mqqplot(insumstats,
 
         #convert base pair postion to x axis position
         sumstats["add"]=sumstats["CHROM"].apply(lambda x : posdiccul[int(x)-1])
-        if use_id is True: 
+        if use_rank is True: 
             sumstats["i"]=sumstats["POS_RANK"]+sumstats["add"]
         else:
             sumstats["i"]=sumstats["POS"]+sumstats["add"]
