@@ -129,7 +129,7 @@ def mqqplot(insumstats,
     #sort & add id
     if "m" in mode: 
         sumstats = sumstats.sort_values(["CHROM","POS"])
-        if use_id is True: sumstats["POS_RANK"] = sumstats.groupby("CHROM")["POS"].rank("dense", ascending=True)
+        if use_rank is True: sumstats["POS_RANK"] = sumstats.groupby("CHROM")["POS"].rank("dense", ascending=True)
         sumstats["id"]=range(len(sumstats))
         sumstats=sumstats.set_index("id")
 
