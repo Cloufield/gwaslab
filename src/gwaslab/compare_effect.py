@@ -7,15 +7,12 @@ import matplotlib.pyplot as plt
 import scipy.stats as ss
 import seaborn as sns
 
-#20220417
+#20220422
 def compare_effect(path1,
                    cols_name_list_1, effect_cols_list_1,
                    path2,
                    cols_name_list_2, effect_cols_list_2,
-                   label1="Sumstats_1",
-                   label2="Sumstats_2",
-                   label3="Both",
-                   label0="Not in any",
+                   label=["Sumstats_1","Sumstats_2","Both","None"],
                    snplist=None,
                    mode="beta",
                    anno=False,
@@ -23,6 +20,7 @@ def compare_effect(path1,
                    sig_level=5e-8,
                    legend_title=r'$ P < 5 x 10^{-8}$ in:',
                    legend_pos='upper left',
+                   reg_box=dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey"),
                    is_reg=True,
                    is_45_helper_line=True,
                    scatterargs={"s":20},
@@ -41,7 +39,7 @@ def compare_effect(path1,
         raise ValueError("Please input Beta or OR")
     
     ######### 2 extract snplist2
-    if verbose: print("Loading "+label2+" SNP list...")
+    if verbose: print("Loading "+label[1]+" SNP list...")
     sumstats = pd.read_table(path2,sep="\s+",usecols=[cols_name_list_2[0]])
     common_snp_set=set(sumstats[cols_name_list_2[0]].values)
     
@@ -52,7 +50,7 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[1],cols_name_list_1[4],cols_name_list_1[5]]
     
     ######### 4 load sumstats1
-    if verbose: print("Loading sumstats: "+label1+"...")
+    if verbose: print("Loading sumstats: "+label[0]+"...")
     sumstats = pd.read_table(path1,sep="\s+",usecols=cols_to_extract)
     
     ######### 5 extract the common set
@@ -74,11 +72,11 @@ def compare_effect(path1,
     
     ######### 8 extact SNPs for comparison 
     
-    if verbose: print("Extract top/given snps from "+label1+"...")
+    if verbose: print("Extract top/given snps from "+label[0]+"...")
     
     if snplist is not None: 
         ######### 8.1 if a snplist is provided, use the snp list
-        if verbose: print("Extract snps in the given list from "+label1+"...")
+        if verbose: print("Extract snps in the given list from "+label[0]+"...")
         sig_list_1 = sumstats.loc[sumstats["SNPID"].isin(snplist),:]
     else:
         ######### 8,2 otherwise use the sutomatically detected lead SNPs
@@ -90,7 +88,7 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1]]
     else:
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1],cols_name_list_2[4],cols_name_list_2[5]]
-    if verbose: print("Loading sumstats:"+label2+"...")
+    if verbose: print("Loading sumstats:"+label[1]+"...")
     sumstats = pd.read_table(path2,sep="\s+",usecols=cols_to_extract)
     
     ######### 10 rename sumstats2
@@ -110,23 +108,23 @@ def compare_effect(path1,
     ######## 12 extact SNPs for comparison 
     if snplist: 
         ######### 12.1 if a snplist is provided, use the snp list
-        if verbose: print("Extract snps in the given list from "+label2+"...")
+        if verbose: print("Extract snps in the given list from "+label[1]+"...")
         sig_list_2 = sumstats.loc[sumstats["SNPID"].isin(snplist),:]
     else: 
-        if verbose: print("Extract lead snps from "+label2+"...")
+        if verbose: print("Extract lead snps from "+label[1]+"...")
         ######### 12.2 otherwise use the sutomatically detected lead SNPs
         sig_list_2 = gl.getsig(sumstats,"SNPID","CHR","POS","P",
                                  verbose=verbose,sig_level=sig_level)
     
     ######### 13 Merge two list using SNPID
     ##############################################################################
-    if verbose: print("Merging snps from "+label1+" and "+label2+"...")
+    if verbose: print("Merging snps from "+label[0]+" and "+label[1]+"...")
     sig_list_merged = pd.merge(sig_list_1,sig_list_2,left_on="SNPID",right_on="SNPID",how="outer",suffixes=('_1', '_2'))
     
     ###############################################################################
     
     ########## 14 Merging sumstats1
-    if verbose: print("Extract EFFECT_ALLELE, NON_EFFECT_ALLELE, EFFECT_SIZE/SE, OR/OR_L/OR_H of selected snps from "+label1+"...")
+    if verbose: print("Extract EFFECT_ALLELE, NON_EFFECT_ALLELE, EFFECT_SIZE/SE, OR/OR_L/OR_H of selected snps from "+label[0]+"...")
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1]]
     else:
@@ -152,13 +150,13 @@ def compare_effect(path1,
     
     sumstats.rename(columns=rename_dict, inplace=True)
     
-    if verbose: print("Merging "+label1+" effect information...")
+    if verbose: print("Merging "+label[0]+" effect information...")
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
                                left_on="SNPID",right_on="SNPID",
                                how="left")
     
     ############ 15 merging sumstats2
-    if verbose: print("Extract EFFECT_ALLELE, NON_EFFECT_ALLELE, EFFECT_SIZE/SE , OR/OR_L/OR_H of selected snps from "+label2+"...")
+    if verbose: print("Extract EFFECT_ALLELE, NON_EFFECT_ALLELE, EFFECT_SIZE/SE , OR/OR_L/OR_H of selected snps from "+label[1]+"...")
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1]]
     else:
@@ -184,7 +182,7 @@ def compare_effect(path1,
     sumstats.rename(columns=rename_dict, inplace=True)         
     
     
-    if verbose: print("Merging "+label2+" effect information...")
+    if verbose: print("Merging "+label[1]+" effect information...")
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
                                left_on="SNPID",right_on="SNPID",
                                how="left")
@@ -253,7 +251,7 @@ def compare_effect(path1,
         
     
     ####################################################################################################################################
-    save_path = label1+"_"+label2+"_beta_sig_list_merged.tsv"
+    save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
     sig_list_merged.to_csv(save_path,"\t")
     
     sum0 = sig_list_merged.loc[sig_list_merged["indicator"]==0,:].dropna(axis=0)
@@ -261,10 +259,10 @@ def compare_effect(path1,
     sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:].dropna(axis=0)
     both     = sig_list_merged.loc[sig_list_merged["indicator"]==3,:].dropna(axis=0)
     
-    if verbose: print("Identified "+str(len(sum0)) + " variants which are not significant in " + label3+".")
-    if verbose: print("Identified "+str(len(sum1only)) + " variants which are only significant in " + label1+".")
-    if verbose: print("Identified "+str(len(sum2only)) + " variants which are only significant in " + label2+".")
-    if verbose: print("Identified "+str(len(both)) + " variants which are significant in " + label3 + ".")
+    if verbose: print("Identified "+str(len(sum0)) + " variants which are not significant in " + label[3]+".")
+    if verbose: print("Identified "+str(len(sum1only)) + " variants which are only significant in " + label[0]+".")
+    if verbose: print("Identified "+str(len(sum2only)) + " variants which are only significant in " + label[1]+".")
+    if verbose: print("Identified "+str(len(both)) + " variants which are significant in " + label[2] + ".")
     
     ##plot########################################################################################
     if verbose: print("Plotting the scatter plot for effect size comparison...")
@@ -276,41 +274,41 @@ def compare_effect(path1,
         if len(sum0)>0:
             ax.errorbar(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"], xerr=sum0["SE_1"],yerr=sum0["SE_2"],
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"],label=label0,zorder=2,color="#cccccc",marker="^",**scatterargs)
+            ax.scatter(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"],label=label[3],zorder=2,color="#cccccc",marker=".",**scatterargs)
         if len(sum1only)>0:
             ax.errorbar(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"], xerr=sum1only["SE_1"],yerr=sum1only["SE_2"],
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"],label=label1,zorder=2,color="#e6320e",marker="^",**scatterargs)
+            ax.scatter(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"],label=label[0],zorder=2,color="#e6320e",marker="^",**scatterargs)
 
         if len(sum2only)>0:
             ax.errorbar(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"], xerr=sum2only["SE_1"],yerr=sum2only["SE_2"],
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"],label=label2,zorder=2,color="#41e620",marker="o",**scatterargs)
+            ax.scatter(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"],label=label[1],zorder=2,color="#41e620",marker="o",**scatterargs)
 
         if len(both)>0:
             ax.errorbar(both["EFFECT_1"],both["EFFECT_2_aligned"], xerr=both["SE_1"],yerr=both["SE_2"],
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(both["EFFECT_1"],both["EFFECT_2_aligned"],label=label3,zorder=2,color="#205be6",marker="s",**scatterargs)  
+            ax.scatter(both["EFFECT_1"],both["EFFECT_2_aligned"],label=label[2],zorder=2,color="#205be6",marker="s",**scatterargs)  
     else:
         ## if OR
         if len(sum0)>0:
             ax.errorbar(sum0["OR_1"],sum0["OR_2_aligned"], xerr=sum0[["OR_L_1","OR_H_1"]],yerr=sum0[["OR_L_2_aligned","OR_H_2_aligned"]],
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum0["OR_1"],sum0["OR_2_aligned"],label=label0,zorder=2,color="#cccccc",marker="^",**scatterargs)
+            ax.scatter(sum0["OR_1"],sum0["OR_2_aligned"],label=label[3],zorder=2,color="#cccccc",marker=".",**scatterargs)
         if len(sum1only)>0:
             ax.errorbar(sum1only["OR_1"],sum1only["OR_2_aligned"], xerr=sum1only[["OR_L_1","OR_H_1"]],yerr=sum1only[["OR_L_2_aligned","OR_H_2_aligned"]],
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum1only["OR_1"],sum1only["OR_2_aligned"],label=label1,zorder=2,color="#205be6",marker="^",**scatterargs)
+            ax.scatter(sum1only["OR_1"],sum1only["OR_2_aligned"],label=label[0],zorder=2,color="#205be6",marker="^",**scatterargs)
 
         if len(sum2only)>0:
             ax.errorbar(sum2only["OR_1"],sum2only["OR_2_aligned"], xerr=sum2only[["OR_L_1","OR_H_1"]],yerr=sum2only[["OR_L_2_aligned","OR_H_2_aligned"]],
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum2only["OR_1"],sum2only["OR_2_aligned"],label=label2,zorder=2,color="#41e620",marker="o",**scatterargs)
+            ax.scatter(sum2only["OR_1"],sum2only["OR_2_aligned"],label=label[1],zorder=2,color="#41e620",marker="o",**scatterargs)
 
         if len(both)>0:
             ax.errorbar(both["OR_1"],both["OR_2_aligned"], xerr=both[["OR_L_1","OR_H_1"]].values.T,yerr=both[["OR_L_2_aligned","OR_H_2_aligned"]].values.T,
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label3,zorder=2,color="#e6320e",marker="s",**scatterargs)
+            ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label[2],zorder=2,color="#e6320e",marker="s",**scatterargs)
     
     ## annotation
     if anno==True:
@@ -331,9 +329,6 @@ def compare_effect(path1,
         for index, row in sig_list_toanno.iterrows():
             texts.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index], ha='right', va='top')) 
         adjust_text(texts,ha='right', va='top',arrowprops=dict(arrowstyle='->', color='grey'))
-        
-    ax.set_xlabel("Per-allele effect size in "+label1,**fontargs)
-    ax.set_ylabel("Per-allele effect size in "+label2,**fontargs)
     
     # plot x=0,y=0, and a 45 degree line
     xl,xh=ax.get_xlim()
@@ -362,7 +357,8 @@ def compare_effect(path1,
         degree = len(sig_list_merged.dropna())-2
         p = ss.t.sf(abs(t_score), df=degree)*2
         print("Beta_se = ", reg[4])
-        print("H0 beta=",null_beta ,", p =", p)
+        print("H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
+        print("H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]))
         
         
         if reg[0] > 0:
@@ -374,7 +370,7 @@ def compare_effect(path1,
                 else:
                     #if OR: auxiliary line pass (1,1)
                     ax.axline([min(xl,yl)+1,min(xl,yl)+1], [max(xh, yh)+1,max(xh, yh)+1],zorder=1, **helper_line_args)
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, $p =$ "+ "{:.2e}".format(p)+ ", $r^{2} =$" +"{:.2f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,**fontargs)
+            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, $p =$ "+ "{:.2e}".format(p)+ ", $r^{2} =$" +"{:.2f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
         else:
             #if regression coeeficient <0 : auxiliary line slope = -1
             if is_45_helper_line is True:
@@ -382,7 +378,7 @@ def compare_effect(path1,
                     ax.axline([min(xl,yl),-min(xl,yl)], [max(xh, yh),-max(xh, yh)],zorder=1,**helper_line_args)
                 else:
                     ax.axline([min(xl,yl)+1,-min(xl,yl)+1], [max(xh, yh)+1,-max(xh, yh)+1],zorder=1,**helper_line_args)
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, $p =$ "+"{:.2e}".format(p)+ ", $r^{2} =$" +"{:.2f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,**fontargs)
+            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, $p =$ "+"{:.2e}".format(p)+ ", $r^{2} =$" +"{:.2f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
         
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             middle = sig_list_merged["EFFECT_1"].mean()
@@ -391,7 +387,10 @@ def compare_effect(path1,
         
         ax.axline(xy1=(0,reg[1]),slope=reg[0],color="#cccccc",linestyle='--',zorder=1)
     
-    L = ax.legend(title=legend_title,loc=legend_pos)
+    ax.set_xlabel("Per-allele effect size in "+label[0],**fontargs)
+    ax.set_ylabel("Per-allele effect size in "+label[1],**fontargs)
+    
+    L = ax.legend(title=legend_title,loc=legend_pos,framealpha=1,edgecolor="grey")
     plt.setp(L.texts,**fontargs)
     plt.setp(L.get_title(),**fontargs)
     ##plot finished########################################################################################
