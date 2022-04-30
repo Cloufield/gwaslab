@@ -6,12 +6,13 @@ import numpy as np
 import scipy as sp
 import gwaslab as gl
 #20220310
-def mqqplot(insumstats,
+def mqqplot(insumstats,            
           chrom,
           pos,
-          p,
+          p="P",
           snpid=None,
           scaled=False,
+          eaf=None,
           cut=0,
           cutfactor=10,
           mode="mqq",
@@ -23,7 +24,6 @@ def mqqplot(insumstats,
           sig_line_color="grey",
           suggestive_sig_level=5e-6,
           stratified=False,
-          eaf=None,
           maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
           maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
           highlight = [],
@@ -40,22 +40,25 @@ def mqqplot(insumstats,
           repel_force=0.03,
           gc=True,
           save=None,
-          saveargs={"dpi":400,"facecolor":"white"}  
-          
+          saveargs={"dpi":400,"facecolor":"white"},
+          log=gl.Log()
           ):
     
-# Printing meta info ##################################################################
-    if verbose: print("Basic settings:")
-    if verbose: print("  - Genome-wide significance level is set to "+str(sig_level)+" ...")
-    if verbose: print("  - Raw input contains "+str(len(insumstats))+" variants...")
-    if verbose: print("  - Ploy layout mode is : "+mode)
-    if verbose: print("Start conversion and QC:")
+# log.writeing meta info ##################################################################
+    if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
+    if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
+    if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
+    if verbose: log.write(" -Plot layout mode is : "+mode)
+    if len(highlight)>0 and ("m" in mode):
+        if verbose: log.write(" -Variants to highlight : "+",".join(highlight))    
+        if verbose: log.write(" -Highlight_window is set to: ", highlight_windowkb, " kb")  
+    if verbose: log.write("Start conversion and QC:")
 
 # Plotting mode selection ##############################################################
     # ax1 : manhattanplot : 
     # ax2 : qq plot 
     
-    if   mode=="qqm":   
+    if  mode=="qqm":   
         fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},figsize=figsize)
     elif mode=="mqq":
         fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},figsize=figsize)
@@ -67,57 +70,80 @@ def mqqplot(insumstats,
         raise ValueError("Please select one from the 4 modes: mqq/qqm/m/qq/")
         
 # Read sumstats ###############################
-    
     sumstats = pd.DataFrame()
-    sumstats["P-value_association"] = insumstats[p].astype(np.float64)
+    ## P value
+    sumstats["P-value_association"] = pd.to_numeric(insumstats[p], errors='coerce')
+    ## CHR
     if "m" in mode: 
         sumstats["CHROM"] = insumstats[chrom].copy()
         # CHR X,Y,MT conversion ############################
         sumstats.loc[sumstats["CHROM"]=="X","CHROM"] = "23"
         sumstats.loc[sumstats["CHROM"]=="Y","CHROM"] = "24"
         sumstats.loc[sumstats["CHROM"]=="MT","CHROM"] = "25"
-        sumstats["CHROM"] = sumstats["CHROM"].astype("int")
-        
-    if "m" in mode: 
-        sumstats["POS"] = insumstats[pos].astype("int")
+        ## CHR
+        sumstats["CHROM"] = np.floor(pd.to_numeric(insumstats[chrom], errors='coerce')).astype('Int64')
+        ## POS
+        sumstats["POS"] = np.floor(pd.to_numeric(insumstats[pos], errors='coerce')).astype('Int64')
 
-    if anno and anno!=True:
+        
+    ## Annotation
+    if anno and (anno != True):
         sumstats["Annotation"]=insumstats[anno].astype("string")
-    if stratified is True:
-        sumstats["MAF"] = insumstats[eaf].copy()
+        
+    ## EAF
+    if stratified is True: 
+        sumstats["MAF"] = pd.to_numeric(insumstats[eaf], errors='coerce')
         sumstats.loc[sumstats["MAF"]>0.5,"MAF"] = 1 - sumstats.loc[sumstats["MAF"]>0.5,"MAF"]
-    
-    if len(highlight)>0:
+
+        
+    ## Highlight
+    if len(highlight)>0 and ("m" in mode):
         sumstats["MARKERNAME"] = insumstats[snpid]
         sumstats["HUE"] = sumstats["CHROM"]
         to_highlight = sumstats.loc[sumstats["MARKERNAME"].isin(highlight)]
+        #assign colors: 0 is hightlight color
         for i,row in to_highlight.iterrows():
             sumstats.loc[(sumstats["CHROM"]==row["CHROM"])
-                         &(sumstats["POS"]>row["POS"]-highlight_windowkb*1000)
-                         &(sumstats["POS"]<row["POS"]+highlight_windowkb*1000),"HUE"]="0"
-
-    
+                     &(sumstats["POS"]>row["POS"]-highlight_windowkb*1000)
+                     &(sumstats["POS"]<row["POS"]+highlight_windowkb*1000),"HUE"]="0"
             
-# P value conversion ###############################  
+#sanity check#################################################################################################################### 
+    if "m" in mode: 
+        pre_number=len(sumstats)
+        #sanity check : rop variants with na values in chr and pos
+        sumstats = sumstats.dropna(subset=["CHROM","POS"])
+        after_number=len(sumstats)
+        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...")
+    
+    if stratified is True: 
+        pre_number=len(sumstats)
+        sumstats = sumstats.dropna(subset=["MAF"])
+        after_number=len(sumstats)
+        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in EAF column ...")
+
+# P value conversion ############################################################################################################   
+    pre_number=len(sumstats)
+    sumstats = sumstats.dropna(subset=["P-value_association"])
+    after_number=len(sumstats)
+    if verbose:log.write("  -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...")
+    
     if scaled:
-        if verbose:print("  - P values are already converted to -log10(P)!")
+        if verbose:log.write(" -P values are already converted to -log10(P)!")
         sumstats["scaled_P"] = sumstats["P-value_association"]
     else:
-        if verbose:print("  - P values are being converted to -log10(P)...")
-        #sanity check
-        outside_01_p_value_number=len(sumstats.loc[(sumstats["P-value_association"]>1)|(sumstats["P-value_association"]<=0),:])
-        if verbose:print("  - Sanity check: "+ str(outside_01_p_value_number) +" variants with P value outside of (0,1] will be removed...")
+        if verbose:log.write(" -P values are being converted to -log10(P)...") 
+        bad_p_value=len(sumstats.loc[(sumstats["P-value_association"]>1)|(sumstats["P-value_association"]<=0),:])
+        if verbose:log.write(" -Sanity check after conversion: "+ str(bad_p_value) +" variants with P value outside of (0,1] will be removed...")
         sumstats = sumstats.loc[(sumstats["P-value_association"]<=1)&(sumstats["P-value_association"]>0),:]
         sumstats["scaled_P"] = -np.log10(sumstats["P-value_association"])
+        if verbose: log.write(" -Sanity check: "+str(len(sumstats[sumstats["scaled_P"].isin([np.nan, np.inf, -np.inf, float('inf'),-float('inf'), None,pd.NA,False])])) + " na/inf/-inf variants will be removed..." )
+        sumstats = sumstats[~sumstats["scaled_P"].isin([np.nan, np.inf, -np.inf, float('inf'),-float('inf'), None,pd.NA,False])]
 
-    if verbose: print("  - Sanity check: "+str(len(sumstats[sumstats["scaled_P"].isin([np.nan, np.inf, -np.inf, float('inf'), None])])) + " na/inf/-inf variants will be removed..." )
-    sumstats = sumstats[~sumstats["scaled_P"].isin([np.nan, np.inf, -np.inf, float('inf'), None])]
-
-    # shrink at a certain value #############################################
+    # shrink at a certain value #########################################################################################################
     maxy = sumstats["scaled_P"].max()
-    if verbose: print("  - Maximum -log10(P) values is "+str(maxy) +" .")
+    if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
     if cut:
-        if verbose: print("  - Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+        if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
         maxticker=int(np.round(sumstats["scaled_P"].max()))
         sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
         maxy = (maxticker-cut)/cutfactor + cut
@@ -125,7 +151,7 @@ def mqqplot(insumstats,
 # Manhattan plot #####################################################################################################
 ## Create index for plotting ###################################################
 
-    if verbose:print("Plotting "+str(len(sumstats))+" variants:")
+    if verbose:log.write("Plotting "+str(len(sumstats))+" variants:")
     #sort & add id
     if "m" in mode: 
         sumstats = sumstats.sort_values(["CHROM","POS"])
@@ -142,8 +168,6 @@ def mqqplot(insumstats,
         for i in range(0,26):
             if i in posdiccul: continue
             else: posdiccul[i]=0
-
-
 
         for i in range(2,sumstats["CHROM"].nunique()+1):
             posdiccul[i]=posdiccul[i-1]+posdiccul[i]
@@ -179,8 +203,8 @@ def mqqplot(insumstats,
                                sizes=(10,35),
                                linewidth=0,
                                zorder=2,ax=ax1)   
-            if verbose: print("  - Loci to highlight :",highlight)
-            if verbose: print("  - Highlight range +- :",highlight_windowkb , " kb")
+            if verbose: log.write(" -Loci to highlight :",highlight)
+            if verbose: log.write(" -Highlight range +- :",highlight_windowkb , " kb")
             sns.scatterplot(data=sumstats.loc[sumstats["HUE"]=="0"], x='i', y='scaled_P',
                    hue="HUE",
                    palette={"0":highlight_color},
@@ -240,7 +264,7 @@ def mqqplot(insumstats,
                                sig_level=sig_level)
         
         if to_annotate.empty is not True:
-            if verbose: print("  - Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
+            if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
 # Add Annotation to manhattan plot #######################################################
         if anno and (to_annotate.empty is not True):
             #initiate a list for text and a starting position
@@ -276,9 +300,9 @@ def mqqplot(insumstats,
                                             )
                            )
 
-            if verbose: print("  - Annotating using column "+annotation_col+"...")
+            if verbose: log.write(" -Annotating using column "+annotation_col+"...")
         else:
-            if verbose: print("  - Skip annotating")
+            if verbose: log.write(" -Skip annotating")
 
         plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize)
         plot.set_xlabel("Chromosomes",fontsize=fontsize)
@@ -286,7 +310,7 @@ def mqqplot(insumstats,
         plot.spines["right"].set_visible(False)
         plot.spines["left"].set_visible(True)
 
-        if verbose: print("  - Created Manhattan plot successfully!")
+        if verbose: log.write(" -Created Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(plot.transData.transform((0, 1.35*maxy))[1]-plot.transData.transform((0, maxy)))[1]
             plot.set_title(mtitle,pad=pad)
@@ -350,19 +374,19 @@ def mqqplot(insumstats,
         if qtitle:
             ax2.set_title(qtitle,fontsize=fontsize,pad=10)
 
-        if verbose: print("  - Created QQ plot successfully!")
+        if verbose: log.write(" -Created QQ plot successfully!")
 # Creating QQ plot Finished #############################################################################################
 
 
 # Saving plot ##########################################################################################################
     if save:
-        if verbose: print("Saving plot:")
+        if verbose: log.write("Saving plot:")
         if save==True:
             fig.savefig("./"+mode+"_plot.png",bbox_inches="tight",**saveargs)
-            print("  - Saved to "+ "./"+mode+"_plot.png" + " successfully!" )
+            log.write(" -Saved to "+ "./"+mode+"_plot.png" + " successfully!" )
         else:
             fig.savefig(save,bbox_inches="tight",**saveargs)
-            print("  - Saved to "+ save + " successfully!" )
+            log.write(" -Saved to "+ save + " successfully!" )
     
     # add title 
     if title and anno and len(to_annotate)>0:
@@ -372,4 +396,4 @@ def mqqplot(insumstats,
         fig.suptitle(title ,x=0.5,y=1)
 
 # Return matplotlib figure object #######################################################################################
-    return fig
+    return fig, log

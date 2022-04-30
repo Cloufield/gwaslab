@@ -2,10 +2,26 @@ from gwaslab.Sumstats import Sumstats
 from gwaslab.preformat_input import preformat
 ## Sumstats Object
 
+from gwaslab.Log import Log
+## Log object
+
+
 ## QC
+from gwaslab.fixdata import fixID
+from gwaslab.fixdata import rsidtochrpos
+from gwaslab.fixdata import removedup
 from gwaslab.fixdata import fixchr
+from gwaslab.fixdata import fixpos
 from gwaslab.fixdata import fixallele
 from gwaslab.fixdata import normalizeallele
+from gwaslab.fixdata import checkref
+from gwaslab.fixdata import sanitycheckstats
+from gwaslab.fixdata import parallelizeassignrsid
+from gwaslab.fixdata import parallelizeliftovervariant
+from gwaslab.fixdata import flipallelestats
+from gwaslab.fixdata import sortcoordinate
+from gwaslab.fixdata import inferstrand
+from gwaslab.fixdata import sortcolumn
 
 ## utility
 from gwaslab.mqqplot import mqqplot
@@ -15,9 +31,10 @@ from gwaslab.liftover_snv import liftover_variant
 from gwaslab.fill import filldata
 
 # to format
-from gwaslab.to_format import tobed
-from gwaslab.to_format import tofuma
-from gwaslab.get_hapmap3 import forldsc
+from gwaslab.to_formats import tobed
+from gwaslab.to_formats import tofuma
+from gwaslab.to_formats import toldsc
+from gwaslab.get_hapmap3 import gethapmap3
 
 # standalone function
 from gwaslab.compare_effect import compare_effect
@@ -25,3 +42,4 @@ from gwaslab.read_ldsc import read_ldsc
 from gwaslab.h2_conversion import h2_obs_to_liab
 from gwaslab.h2_conversion import getpersnph2
 
+from gwaslab.CommonData import get_chr_NC_dict

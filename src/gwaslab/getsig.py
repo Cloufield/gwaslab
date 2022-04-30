@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import scipy as sp
+import gwaslab as gl
 
 def getsig(insumstats,
            id,
@@ -9,11 +10,13 @@ def getsig(insumstats,
            p,
            windowsizekb=500,
            sig_level=5e-8,
+           log=gl.Log(),
            verbose=True):
     
-    if verbose: print("Start extracting lead variants...")
-    if verbose: print("  - Processing "+str(len(insumstats))+" variants...")
-    
+    if verbose: log.write("Start extracting lead variants...")
+    if verbose: log.write(" -Processing "+str(len(insumstats))+" variants...")
+    if verbose: log.write(" -Significance threshold :", sig_level)
+    if verbose: log.write(" -Sliding window size:", str(windowsizekb) ," kb")
     #load data
     sumstats=insumstats.loc[~insumstats[id].isna(),:]
     
@@ -27,13 +30,13 @@ def getsig(insumstats,
     
     #extract all significant variants
     sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:]
-    if verbose:print("  - Found "+str(len(sumstats_sig))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
+    if verbose:log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...")
     
     #sort the coordinates
     sumstats_sig = sumstats_sig.sort_values([chrom,pos])
     
     if sumstats_sig is None:
-        if verbose:print("  - No lead snps at given significance threshold!")
+        if verbose:log.write(" -No lead snps at given significance threshold!")
         return None
     
     sig_index_list=[]
@@ -81,7 +84,7 @@ def getsig(insumstats,
             sig_index_list.append(current_sig_index)
             continue
     
-    if verbose:print("  - Identified "+str(len(sig_index_list))+" lead variants successfully!")
+    if verbose:log.write(" -Identified "+str(len(sig_index_list))+" lead variants!")
     
     chromosome_conversion_dict = {str(i):str(i) for i in range(1,23)}
     chromosome_conversion_dict["23"] = "X"
@@ -89,5 +92,5 @@ def getsig(insumstats,
     chromosome_conversion_dict["25"] = "MT"
     sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].astype("string")
     sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom] .apply(lambda x:chromosome_conversion_dict[x])
-    output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:]
+    output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
     return output

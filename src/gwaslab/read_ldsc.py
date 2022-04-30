@@ -82,6 +82,6 @@ def read_ldsc(filelist=[],mode="h2"):
                     row_series = pd.Series(row, index = summary.columns)
                     summary = summary.append(row_series, ignore_index=True)
                     line = file.readline()
-            
-        summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']]  = summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']] .astype("float32")            
+        summary = summary.loc[summary["rg"]!="NA",:] 
+        summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']]  = summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']].astype("float32")            
     return summary   
