@@ -100,7 +100,7 @@ def mqqplot(insumstats,
     if len(highlight)>0 and ("m" in mode):
         sumstats["MARKERNAME"] = insumstats[snpid]
         sumstats["HUE"] = sumstats["CHROM"]
-        to_highlight = sumstats.loc[sumstats["MARKERNAME"].isin(highlight)]
+        to_highlight = sumstats.loc[sumstats["MARKERNAME"].isin(highlight),:]
         #assign colors: 0 is hightlight color
         for i,row in to_highlight.iterrows():
             sumstats.loc[(sumstats["CHROM"]==row["CHROM"])
@@ -110,8 +110,8 @@ def mqqplot(insumstats,
 #sanity check#################################################################################################################### 
     if "m" in mode: 
         pre_number=len(sumstats)
-        #sanity check : rop variants with na values in chr and pos
-        sumstats = sumstats.dropna(subset=["CHROM","POS"])
+        #sanity check : rop variants with na values in chr and pos df
+        sumstats = sumstats.replace([np.inf, -np.inf], np.nan).dropna(subset=["CHROM","POS"])
         after_number=len(sumstats)
         if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...")
     
@@ -136,8 +136,12 @@ def mqqplot(insumstats,
         if verbose:log.write(" -Sanity check after conversion: "+ str(bad_p_value) +" variants with P value outside of (0,1] will be removed...")
         sumstats = sumstats.loc[(sumstats["P-value_association"]<=1)&(sumstats["P-value_association"]>0),:]
         sumstats["scaled_P"] = -np.log10(sumstats["P-value_association"])
-        if verbose: log.write(" -Sanity check: "+str(len(sumstats[sumstats["scaled_P"].isin([np.nan, np.inf, -np.inf, float('inf'),-float('inf'), None,pd.NA,False])])) + " na/inf/-inf variants will be removed..." )
-        sumstats = sumstats[~sumstats["scaled_P"].isin([np.nan, np.inf, -np.inf, float('inf'),-float('inf'), None,pd.NA,False])]
+        is_inf = sumstats["scaled_P"].isin([np.inf, -np.inf, float('inf'),-float('inf')])
+        is_na = sumstats["scaled_P"].isna()
+        bad_p = sum(is_inf | is_na)
+        if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
+            
+        sumstats = sumstats.loc[~(is_inf | is_na),:]
 
     # shrink at a certain value #########################################################################################################
     maxy = sumstats["scaled_P"].max()
@@ -192,11 +196,11 @@ def mqqplot(insumstats,
         sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
         sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
         sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=4
-
+        sumstats["chr_hue"]=sumstats["CHROM"].astype("string")
 ## Manhatann plot ###################################################
         if len(highlight) >0:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
-                               hue='CHROM',
+                               hue='chr_hue',
                                palette=sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
                                legend=None,
                                size="s",
@@ -215,7 +219,7 @@ def mqqplot(insumstats,
                    zorder=3,ax=ax1)   
         else:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
-                   hue='CHROM',
+                   hue='chr_hue',
                    palette= sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
                    legend=None,
                    size="s",

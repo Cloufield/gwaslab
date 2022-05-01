@@ -28,6 +28,7 @@ class Sumstats():
              OR_se=None,
              OR_95L=None,
              OR_95U=None,
+             status=None,
              other=[],
              direction=None,
              verbose=True,
@@ -62,6 +63,7 @@ class Sumstats():
           OR_95U=OR_95U,
           direction=direction,
           build=build,
+          status=status,
           other=other,
           verbose=verbose,
           readargs=readargs,
@@ -151,6 +153,7 @@ class Sumstats():
               n_cores=1,
               rsid={},
               liftover={},
+              remove=False,
               **args):
         
         #Standard pipeline
@@ -164,9 +167,9 @@ class Sumstats():
         #    1.6 sorting genomic coordinates and column order 
         
         self.data = gl.fixID(self.data,**args)
-        self.data = gl.removedup(self.data,log=self.log,**args)
-        self.data = gl.fixchr(self.data,log=self.log,**args)
-        self.data = gl.fixpos(self.data,log=self.log,**args)
+        if remove: self.data = gl.removedup(self.data,log=self.log,**args)
+        self.data = gl.fixchr(self.data,remove=remove,log=self.log,**args)
+        self.data = gl.fixpos(self.data,remove=remove,log=self.log,**args)
         self.data = gl.fixallele(self.data,log=self.log,**args)
         self.data = gl.sanitycheckstats(self.data,log=self.log,**args)
         self.data = gl.sortcolumn(self.data,log=self.log,**args)
@@ -211,6 +214,7 @@ class Sumstats():
         
         
         ################################################
+        self.data = gl.fixchr(self.data, remove=True)
         self.data = gl.sortcoordinate(self.data,log=self.log,**args)
         self.data = gl.sortcolumn(self.data,log=self.log,**args).copy()
         return self
@@ -243,8 +247,8 @@ class Sumstats():
         self.data = gl.rsidtochrpos(self.data,log=self.log,**args)
     def liftover(self,**args):
         self.data = gl.parallelizeliftovervariant(self.data,log=self.log,**args)
-    def sort_coordinate(self,**args):
-        self.data = gl.sortcoordinate(self.data,log=self.log,**args)
+    def sort_coordinate(self,**sort_args):
+        self.data = gl.sortcoordinate(self.data,log=self.log,**sort_args)
     def sort_column(self,**args):
         self.data = gl.sortcolumn(self.data,log=self.log,**args)
     ############################################################################################################
@@ -365,15 +369,3 @@ class Sumstats():
             if verbose: self.log.write("Saving log file...")
             self.log.save(path + "."+ format +".log")
             
-    def lookup_status(self):
-        status_dic={
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":"",
-         "19xxx":"",
-         "19xxx":""
-        
-        }

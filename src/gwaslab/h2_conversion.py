@@ -3,6 +3,11 @@ from scipy.stats import norm
 
 def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
     '''
+    Adopted from ldsc
+    Reference:
+    Estimating Missing Heritability for Disease from Genome-wide Association Studies
+    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059431/
+    
     Converts heritability on the observed scale in an ascertained sample to heritability
     on the liability scale in the population.
     Parameters
@@ -16,10 +21,6 @@ def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
     se_obe:float
         se of h2_obs
     '''
-    ## adopted from ldsc
-    ## Reference:
-    ## Estimating Missing Heritability for Disease from Genome-wide Association Studies
-    ## https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059431/
     
     if np.isnan(P) and np.isnan(K):
         return h2_obs
@@ -42,7 +43,10 @@ def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
     if se_obs:
         return h2_obs * conversion_factor, se_lia
     return h2_obs * conversion_factor
-
+def h2_se_to_p(h2,se):
+    z = h2 / se
+    return norm.sf(abs(z))
+    
 
 def getpersnph2(sumstats,
            beta,

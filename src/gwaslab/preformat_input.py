@@ -24,6 +24,7 @@ def preformat(sumstats,
           OR_95L=None,
           OR_95U=None,
           direction=None,
+          status=None,
           build=None,
           other=[],
           verbose=False,
@@ -51,7 +52,8 @@ def preformat(sumstats,
         OR_se: "OR_SE",
         OR_95L: "OR_95L",
         OR_95U: "OR_95U",
-        direction:"DIRECTION"
+        direction:"DIRECTION",
+        status:"STATUS"
     }
     
     usecols = []
@@ -96,6 +98,8 @@ def preformat(sumstats,
         usecols.append(OR_95U)
     if direction:
         usecols.append(direction)
+    if status:
+        usecols.append(status)
     if other:
         usecols = usecols + other
         for i in other:
@@ -140,9 +144,11 @@ def preformat(sumstats,
         else:
             raise ValueError("Please input at least 1.rsID or 2.snpID or 3.CHR and POS")
     
-    if verbose: log.write(" -Initiating a status column ...")
-    sumstats["STATUS"] = build +"000"
-    sumstats["STATUS"] = sumstats["STATUS"].astype("string")
+    
+    if status is None:
+        if verbose: log.write(" -Initiating a status column ...")
+        sumstats["STATUS"] = build +"000"
+        sumstats["STATUS"] = sumstats["STATUS"].astype("string")
     
     ##reodering 
     order = [

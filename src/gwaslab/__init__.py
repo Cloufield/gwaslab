@@ -41,5 +41,7 @@ from gwaslab.compare_effect import compare_effect
 from gwaslab.read_ldsc import read_ldsc
 from gwaslab.h2_conversion import h2_obs_to_liab
 from gwaslab.h2_conversion import getpersnph2
+from gwaslab.h2_conversion import h2_se_to_p
 
 from gwaslab.CommonData import get_chr_NC_dict
+from gwaslab.CommonData import get_chr_list
