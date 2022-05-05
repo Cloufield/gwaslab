@@ -5,23 +5,24 @@ from gwaslab.preformat_input import preformat
 from gwaslab.Log import Log
 ## Log object
 
-
 ## QC
 from gwaslab.fixdata import fixID
-from gwaslab.fixdata import rsidtochrpos
 from gwaslab.fixdata import removedup
 from gwaslab.fixdata import fixchr
 from gwaslab.fixdata import fixpos
 from gwaslab.fixdata import fixallele
-from gwaslab.fixdata import normalizeallele
-from gwaslab.fixdata import checkref
+from gwaslab.fixdata import parallelnormalizeallele
 from gwaslab.fixdata import sanitycheckstats
-from gwaslab.fixdata import parallelizeassignrsid
 from gwaslab.fixdata import parallelizeliftovervariant
 from gwaslab.fixdata import flipallelestats
 from gwaslab.fixdata import sortcoordinate
-from gwaslab.fixdata import inferstrand
 from gwaslab.fixdata import sortcolumn
+
+from gwaslab.retrievedata import checkref
+from gwaslab.retrievedata import rsidtochrpos
+from gwaslab.retrievedata import parallelizeassignrsid
+from gwaslab.retrievedata import inferstrand
+from gwaslab.retrievedata import parallelrsidtochrpos
 
 ## utility
 from gwaslab.mqqplot import mqqplot

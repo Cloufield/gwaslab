@@ -130,7 +130,7 @@ class Sumstats():
         self.data = gl.fixpos(self.data,log=self.log,remove=remove,**args)
         self.data = gl.fixallele(self.data,log=self.log,**args)
         self.data = gl.sanitycheckstats(self.data,log=self.log,**args)
-        self.data = gl.normalizeallele(self.data,log=self.log,**args)
+        self.data = gl.parallelnormalizeallele(self.data,log=self.log,**args)
         ###############################################
         
     
@@ -166,14 +166,14 @@ class Sumstats():
         #    1.5 sanity check : BETA SE OR EAF N OR_95L OR_95H
         #    1.6 sorting genomic coordinates and column order 
         
-        self.data = gl.fixID(self.data,**args)
-        if remove: self.data = gl.removedup(self.data,log=self.log,**args)
-        self.data = gl.fixchr(self.data,remove=remove,log=self.log,**args)
-        self.data = gl.fixpos(self.data,remove=remove,log=self.log,**args)
-        self.data = gl.fixallele(self.data,log=self.log,**args)
-        self.data = gl.sanitycheckstats(self.data,log=self.log,**args)
-        self.data = gl.sortcolumn(self.data,log=self.log,**args)
-        self.data = gl.normalizeallele(self.data,log=self.log,**args)
+        self.data = gl.fixID(self.data,                                            **args)
+        if remove: self.data = gl.removedup(self.data,log=self.log,                         **args)
+        self.data = gl.fixchr(self.data,remove=remove,log=self.log,                         **args)
+        self.data = gl.fixpos(self.data,remove=remove,log=self.log,                         **args)
+        self.data = gl.fixallele(self.data,log=self.log,                                 **args)
+        self.data = gl.sanitycheckstats(self.data,log=self.log,                            **args)
+        self.data = gl.sortcolumn(self.data,log=self.log,                                 **args)
+        self.data = gl.parallelnormalizeallele(self.data,log=self.log,                        **args)
         
         #####################################################
         #part 2 : annotating and flipping
@@ -240,11 +240,13 @@ class Sumstats():
     def flip_allele_stats(self,**args):
         self.data = gl.flipallelestats(self.data,log=self.log,**args)
     def normalize_allele(self,**args):
-        self.data = gl.normalizeallele(self.data,log=self.log,**args)
+        self.data = gl.parallelnormalizeallele(self.data,log=self.log,**args)
     def assign_rsid(self,**args):
         self.data = gl.parallelizeassignrsid(self.data,log=self.log,**args)
     def rsid_to_chrpos(self,**args):
         self.data = gl.rsidtochrpos(self.data,log=self.log,**args)
+    def rsid_to_chrpos2(self,**args):
+        self.data = gl.parallelrsidtochrpos(self.data,log=self.log,**args)
     def liftover(self,**args):
         self.data = gl.parallelizeliftovervariant(self.data,log=self.log,**args)
     def sort_coordinate(self,**sort_args):

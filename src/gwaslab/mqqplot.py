@@ -32,12 +32,13 @@ def mqqplot(insumstats,
           title =None,
           mtitle=None,
           qtitle=None,
-          figsize =(15,5),
+          figargs= {"figsize":(15,5)},
           fontsize = 10,
           colors = ["#000042", "#7878BA"],
           use_rank=False,
           verbose=True,
           repel_force=0.03,
+          title_pad=1.08,
           gc=True,
           save=None,
           saveargs={"dpi":400,"facecolor":"white"},
@@ -59,13 +60,13 @@ def mqqplot(insumstats,
     # ax2 : qq plot 
     
     if  mode=="qqm":   
-        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},figsize=figsize)
+        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**figargs)
     elif mode=="mqq":
-        fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},figsize=figsize)
+        fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**figargs)
     elif mode=="m":
-        fig, ax1 = plt.subplots(1, 1,figsize=figsize)
+        fig, ax1 = plt.subplots(1, 1,**figargs)
     elif mode=="qq":
-        fig, ax2 = plt.subplots(1, 1,figsize=figsize) 
+        fig, ax2 = plt.subplots(1, 1,**figargs) 
     else:
         raise ValueError("Please select one from the 4 modes: mqq/qqm/m/qq/")
         
@@ -94,18 +95,10 @@ def mqqplot(insumstats,
     if stratified is True: 
         sumstats["MAF"] = pd.to_numeric(insumstats[eaf], errors='coerce')
         sumstats.loc[sumstats["MAF"]>0.5,"MAF"] = 1 - sumstats.loc[sumstats["MAF"]>0.5,"MAF"]
-
-        
-    ## Highlight
+    
     if len(highlight)>0 and ("m" in mode):
         sumstats["MARKERNAME"] = insumstats[snpid]
-        sumstats["HUE"] = sumstats["CHROM"]
-        to_highlight = sumstats.loc[sumstats["MARKERNAME"].isin(highlight),:]
-        #assign colors: 0 is hightlight color
-        for i,row in to_highlight.iterrows():
-            sumstats.loc[(sumstats["CHROM"]==row["CHROM"])
-                     &(sumstats["POS"]>row["POS"]-highlight_windowkb*1000)
-                     &(sumstats["POS"]<row["POS"]+highlight_windowkb*1000),"HUE"]="0"
+        sumstats["HUE"] = sumstats["CHROM"].astype("string")
             
 #sanity check#################################################################################################################### 
     if "m" in mode: 
@@ -120,6 +113,18 @@ def mqqplot(insumstats,
         sumstats = sumstats.dropna(subset=["MAF"])
         after_number=len(sumstats)
         if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in EAF column ...")
+            
+        ## Highlight
+    if len(highlight)>0 and ("m" in mode):
+        to_highlight = sumstats.loc[sumstats["MARKERNAME"].isin(highlight),:]
+        #assign colors: 0 is hightlight color
+        for i,row in to_highlight.iterrows():
+            target_chr = int(row["CHROM"])
+            target_pos = int(row["POS"])
+            right_chr=sumstats["CHROM"]==target_chr
+            up_pos=sumstats["POS"]>target_pos-highlight_windowkb*1000
+            low_pos=sumstats["POS"]<target_pos+highlight_windowkb*1000
+            sumstats.loc[right_chr&up_pos&low_pos,"HUE"]="0"
 
 # P value conversion ############################################################################################################   
     pre_number=len(sumstats)
@@ -173,7 +178,7 @@ def mqqplot(insumstats,
             if i in posdiccul: continue
             else: posdiccul[i]=0
 
-        for i in range(2,sumstats["CHROM"].nunique()+1):
+        for i in range(2,sumstats["CHROM"].max()+1):
             posdiccul[i]=posdiccul[i-1]+posdiccul[i]
 
         #convert base pair postion to x axis position
@@ -186,9 +191,7 @@ def mqqplot(insumstats,
 
         #for plot
         chrom_df=sumstats.groupby('CHROM')['i'].median()
-        chrom_df=chrom_df+((chrom_df.index.astype(int))-1)*len(sumstats)*0.02
-
-        sumstats["i"]=sumstats["i"]+((sumstats["CHROM"].astype(int))-1)*len(sumstats)*0.01
+        sumstats["i"]=sumstats["i"]+((sumstats["CHROM"].map(dict(chrom_df)).astype("int")))*0.02
 
 ## Assign marker size ##############################################
 
@@ -227,7 +230,7 @@ def mqqplot(insumstats,
                    linewidth=0,
                    zorder=2,ax=ax1)   
 
-        chrom_df = (sumstats.groupby('CHROM')['i'].max() + sumstats.groupby('CHROM')['i'].min())/2
+        chrom_df=sumstats.groupby('CHROM')['i'].median()  
         plot.set_xlabel('CHROM'); 
         plot.set_xticks(chrom_df);
         chromosome_conversion_dict = {i:str(i) for i in range(1,23)}
@@ -316,9 +319,9 @@ def mqqplot(insumstats,
 
         if verbose: log.write(" -Created Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
-            pad=(plot.transData.transform((0, 1.35*maxy))[1]-plot.transData.transform((0, maxy)))[1]
+            pad=(plot.transData.transform((0, title_pad*maxy))[1]-plot.transData.transform((0, maxy)))[1]
             plot.set_title(mtitle,pad=pad)
-        elif title:
+        elif mtitle:
             plot.set_title(mtitle,fontsize=fontsize)
 # Creating Manhatann plot Finished #####################################################################
 
@@ -395,7 +398,7 @@ def mqqplot(insumstats,
     # add title 
     if title and anno and len(to_annotate)>0:
         # increase height if annotation 
-        fig.suptitle(title ,x=0.5, y=1.2)
+        fig.suptitle(title ,x=0.5, y=1.05)
     else:
         fig.suptitle(title ,x=0.5,y=1)
 

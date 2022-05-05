@@ -1,20 +1,24 @@
 import pandas as pd
 import numpy as np
 import scipy.stats as ss
+from scipy import stats
+import gwaslab as gl
 
 def filldata( 
     sumstats,
     to_fill=[],
     overwirte=False,
-    verbose=True
+    verbose=True,
+    only_sig=True,
+    log = gl.Log()
     ):
     
 
     if verbose: print("Strat filling data using existing columns...")
-    if verbose: print("  - Raw input columns: ",list(sumstats.columns))
+    if verbose: print(" -Raw input columns: ",list(sumstats.columns))
 # check dupication ##############################################################################################
     skip_cols=[]
-    if verbose: print("  - Overwirte mode: ",overwirte)
+    if verbose: print(" -Overwirte mode: ",overwirte)
     if overwirte is False:
         for i in to_fill:
             if i in sumstats.columns:
@@ -62,7 +66,11 @@ def filldata(
             sumstats["P"] = ss.chisqprob(sumstats["Z"]**2,1)
         elif "CHISQ" in sumstats.columns:
             if verbose: print("  - Filling P value using CHISQ column...")
-            sumstats["P"] = ss.chisqprob(sumstats["CHISQ"],1)
+            stats.chisqprob = lambda chisq, df: stats.chi2.sf(chisq, df)
+            if only_sig==True and overwirte==True:
+                sumstats.loc[sumstats["P"]<5e-8,"P"] = stats.chisqprob(sumstats.loc[sumstats["P"]<5e-8,"CHISQ"],1)
+            else:
+                sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],1)
         elif "MLOG10P" in sumstats.columns:    
             if verbose: print("  - Filling P value using MLOG10P column...")
             sumstats["P"] = np.power(10,-sumstats["MLOG10P"])

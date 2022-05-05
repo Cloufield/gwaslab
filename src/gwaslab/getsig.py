@@ -25,8 +25,9 @@ def getsig(insumstats,
     sumstats.loc[sumstats[chrom]=="X",chrom] = "23"
     sumstats.loc[sumstats[chrom]=="Y",chrom] = "24"
     sumstats.loc[sumstats[chrom]=="MT",chrom] = "25"
-    sumstats[chrom] = sumstats[chrom].astype("int")
-    sumstats[pos] = sumstats[pos].astype("int")
+    sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
+    sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+    sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
     
     #extract all significant variants
     sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:]
