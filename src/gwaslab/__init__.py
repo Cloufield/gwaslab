@@ -46,3 +46,5 @@ from gwaslab.h2_conversion import h2_se_to_p
 
 from gwaslab.CommonData import get_chr_NC_dict
 from gwaslab.CommonData import get_chr_list
+from gwaslab.CommonData import get_number_to_chr
+from gwaslab.CommonData import get_chr_to_number

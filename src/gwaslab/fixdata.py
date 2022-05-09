@@ -1,3 +1,4 @@
+import re
 import gwaslab as gl
 import pandas as pd
 import numpy as np
@@ -5,7 +6,6 @@ from itertools import repeat
 from multiprocessing import  Pool
 from liftover import get_lifter
 from functools import partial
-import re
 
 
 #fixID

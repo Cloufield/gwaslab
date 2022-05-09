@@ -56,18 +56,46 @@ def get_chr_NC_dict(build):
     return dict
 
 def get_chr_list():
-    chrom_list=["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"]
+    chrom_list=["1","2","3","4","5","6","7","8","9","10",
+            "11","12","13","14","15","16","17","18",
+            "19","20","21","22","X","Y","MT"]
     return chrom_list
 
-    def lookup_status(self):
-        status_dic={
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":"",
-        "19xxx":""
-        
-        }
+def get_chr_to_number(out_chr=False):
+    if out_chr:
+        dic= {str(i):str(i) for i in range(1,23)}
+        dic["X"]="23"
+        dic["Y"]="24"
+        dic["MT"]="25"
+    
+    else:
+        dic= {str(i):i for i in range(1,23)}
+        dic["X"]=23
+        dic["Y"]=24
+        dic["MT"]=25
+    return dic
+
+def get_number_to_chr(in_chr=False):
+    if in_chr:
+        dic= {str(i):str(i) for i in range(1,23)}
+        dic["23"]="X"
+        dic["24"]="Y"
+        dic["25"]="MT"
+    else:
+        dic= {i:str(i) for i in range(1,23)}
+        dic[23]="X"
+        dic[24]="Y"
+        dic[25]="MT"
+    return dic
+
+def lookup_status():
+    status_dic={
+    "19xxx":"",
+    "19xxx":"",
+    "19xxx":"",
+    "19xxx":"",
+    "19xxx":"",
+    "19xxx":"",
+    "19xxx":"",
+    "19xxx":""
+    }

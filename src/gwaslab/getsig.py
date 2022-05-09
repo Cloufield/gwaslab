@@ -18,6 +18,7 @@ def getsig(insumstats,
     if verbose: log.write(" -Significance threshold :", sig_level)
     if verbose: log.write(" -Sliding window size:", str(windowsizekb) ," kb")
     #load data
+    
     sumstats=insumstats.loc[~insumstats[id].isna(),:]
     
     #convert chrom to int

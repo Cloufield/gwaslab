@@ -5,21 +5,24 @@ import seaborn as sns
 import numpy as np
 import scipy as sp
 import gwaslab as gl
-#20220310
+
+# 20220310 ######################################################################################################
+
 def mqqplot(insumstats,            
-          chrom,
-          pos,
-          p="P",
+          chrom=None,
+          pos=None,
+          p=None,
           snpid=None,
-          scaled=False,
           eaf=None,
+          scaled=False,
+          anno=None,
           cut=0,
+          skip=0,
           cutfactor=10,
           mode="mqq",
           mqqratio=3,
           cut_line_color="#ebebeb",
           windowsizekb=500,
-          anno=None,
           sig_level=5e-8,
           sig_line_color="grey",
           suggestive_sig_level=5e-6,
@@ -29,6 +32,8 @@ def mqqplot(insumstats,
           highlight = [],
           highlight_color ="#33FFA0",
           highlight_windowkb = 500,
+          pinpoint=[],
+          pinpoint_color ="red",
           title =None,
           mtitle=None,
           qtitle=None,
@@ -45,20 +50,23 @@ def mqqplot(insumstats,
           log=gl.Log()
           ):
     
-# log.writeing meta info ##################################################################
+# log.writeing meta info #######################################################################################
+    
     if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Plot layout mode is : "+mode)
     if len(highlight)>0 and ("m" in mode):
-        if verbose: log.write(" -Variants to highlight : "+",".join(highlight))    
+        if verbose: log.write(" -Loci to highlight : "+",".join(highlight))    
         if verbose: log.write(" -Highlight_window is set to: ", highlight_windowkb, " kb")  
-    if verbose: log.write("Start conversion and QC:")
+    if len(pinpoint)>0 :
+        if verbose: log.write(" -Variants to pinpoint : "+",".join(highlight))    
+    if verbose: log.write(" -Variants to highlight : "+",".join(highlight))    
+    
 
-# Plotting mode selection ##############################################################
+# Plotting mode selection ######################################################################################
     # ax1 : manhattanplot : 
     # ax2 : qq plot 
-    
     if  mode=="qqm":   
         fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**figargs)
     elif mode=="mqq":
@@ -70,41 +78,82 @@ def mqqplot(insumstats,
     else:
         raise ValueError("Please select one from the 4 modes: mqq/qqm/m/qq/")
         
-# Read sumstats ###############################
-    sumstats = pd.DataFrame()
-    ## P value
-    sumstats["P-value_association"] = pd.to_numeric(insumstats[p], errors='coerce')
-    ## CHR
-    if "m" in mode: 
-        sumstats["CHROM"] = insumstats[chrom].copy()
-        # CHR X,Y,MT conversion ############################
-        sumstats.loc[sumstats["CHROM"]=="X","CHROM"] = "23"
-        sumstats.loc[sumstats["CHROM"]=="Y","CHROM"] = "24"
-        sumstats.loc[sumstats["CHROM"]=="MT","CHROM"] = "25"
-        ## CHR
-        sumstats["CHROM"] = np.floor(pd.to_numeric(insumstats[chrom], errors='coerce')).astype('Int64')
-        ## POS
-        sumstats["POS"] = np.floor(pd.to_numeric(insumstats[pos], errors='coerce')).astype('Int64')
+# Read sumstats #################################################################################################
+    usecols=[]
+    if p in insumstats.columns:
+        # p value is necessary for all modes.
+            usecols.append(p)
+    else:
+        raise ValueError("Please make sure "+p+" column is in input sumstats.")
+    
+    if (chrom is not None) and (pos is not None) and ("m" in mode):
+        # when manhattan plot, chrom and pos is needed.
+        if chrom in insumstats.columns:
+            usecols.append(chrom)
+        else:
+            raise ValueError("Please make sure "+chrom+" column is in input sumstats.")
+        if pos in insumstats.columns:
+            usecols.append(pos)
+        else:
+            raise ValueError("Please make sure "+pos+" column is in input sumstats.")
+    
+    if len(highlight)>0 or len(pinpoint)>0 or (snpid is not None):
+        # read snpid when highlight/pinpoint is needed.
+        if snpid in insumstats.columns:
+            usecols.append(snpid)
+        else:
+            raise ValueError("Please make sure "+snpid+" column is in input sumstats.")
+    
+    if (stratified is True) and (eaf is not None):
+        # read eaf when stratified qq plot is needed.
+        if eaf in insumstats.columns:
+            usecols.append(eaf)
+        else:
+            raise ValueError("Please make sure "+eaf+" column is in input sumstats.")
+         
+    if (anno is not None) and (anno != True):
+        if (anno in insumstats.columns):
+            if (anno not in usecols):
+                usecols.append(anno)
+        else:
+            raise ValueError("Please make sure "+anno+" column is in input sumstats.")
 
-        
+    sumstats = insumstats.loc[:,usecols].copy()
+
+#####################################################################################################################   
+    #Standardize
     ## Annotation
-    if anno and (anno != True):
-        sumstats["Annotation"]=insumstats[anno].astype("string")
-        
+    if (anno is not None) and (anno != True):
+        sumstats["Annotation"]=sumstats.loc[:,anno].astype("string")   
+    
+    ## P value
+    sumstats["raw_P"] = pd.to_numeric(sumstats[p], errors='coerce')
+    
+    ## CHR & POS
+    if "m" in mode: 
+        # CHR X,Y,MT conversion ############################
+        sumstats[chrom] = sumstats[chrom].map(gl.get_chr_to_number(out_chr=True),na_action="ignore")
+        ## CHR
+        sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
+        ## POS
+        sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+
+      
     ## EAF
     if stratified is True: 
         sumstats["MAF"] = pd.to_numeric(insumstats[eaf], errors='coerce')
         sumstats.loc[sumstats["MAF"]>0.5,"MAF"] = 1 - sumstats.loc[sumstats["MAF"]>0.5,"MAF"]
     
     if len(highlight)>0 and ("m" in mode):
-        sumstats["MARKERNAME"] = insumstats[snpid]
-        sumstats["HUE"] = sumstats["CHROM"].astype("string")
+        sumstats[snpid] = sumstats[snpid]
+        sumstats["HUE"] = sumstats[chrom].astype("string")
             
-#sanity check#################################################################################################################### 
+#sanity check############################################################################################################
+    if verbose: log.write("Start conversion and QC:")
     if "m" in mode: 
         pre_number=len(sumstats)
         #sanity check : rop variants with na values in chr and pos df
-        sumstats = sumstats.replace([np.inf, -np.inf], np.nan).dropna(subset=["CHROM","POS"])
+        sumstats = sumstats.replace([np.inf, -np.inf], np.nan).dropna(subset=[chrom,pos])
         after_number=len(sumstats)
         if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...")
     
@@ -116,39 +165,44 @@ def mqqplot(insumstats,
             
         ## Highlight
     if len(highlight)>0 and ("m" in mode):
-        to_highlight = sumstats.loc[sumstats["MARKERNAME"].isin(highlight),:]
+        to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
         #assign colors: 0 is hightlight color
         for i,row in to_highlight.iterrows():
-            target_chr = int(row["CHROM"])
-            target_pos = int(row["POS"])
-            right_chr=sumstats["CHROM"]==target_chr
-            up_pos=sumstats["POS"]>target_pos-highlight_windowkb*1000
-            low_pos=sumstats["POS"]<target_pos+highlight_windowkb*1000
+            target_chr = int(row[chrom])
+            target_pos = int(row[pos])
+            right_chr=sumstats[chrom]==target_chr
+            up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
+            low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
             sumstats.loc[right_chr&up_pos&low_pos,"HUE"]="0"
 
-# P value conversion ############################################################################################################   
+# P value conversion #####################################################################################################  
     pre_number=len(sumstats)
-    sumstats = sumstats.dropna(subset=["P-value_association"])
+    sumstats = sumstats.dropna(subset=["raw_P"])
     after_number=len(sumstats)
-    if verbose:log.write("  -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...")
+    if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...")
     
     if scaled:
         if verbose:log.write(" -P values are already converted to -log10(P)!")
-        sumstats["scaled_P"] = sumstats["P-value_association"]
+        sumstats["scaled_P"] = sumstats["raw_P"]
     else:
         if verbose:log.write(" -P values are being converted to -log10(P)...") 
-        bad_p_value=len(sumstats.loc[(sumstats["P-value_association"]>1)|(sumstats["P-value_association"]<=0),:])
+        bad_p_value=len(sumstats.loc[(sumstats["raw_P"]>1)|(sumstats["raw_P"]<=0),:])
         if verbose:log.write(" -Sanity check after conversion: "+ str(bad_p_value) +" variants with P value outside of (0,1] will be removed...")
-        sumstats = sumstats.loc[(sumstats["P-value_association"]<=1)&(sumstats["P-value_association"]>0),:]
-        sumstats["scaled_P"] = -np.log10(sumstats["P-value_association"])
+        sumstats = sumstats.loc[(sumstats["raw_P"]<=1)&(sumstats["raw_P"]>0),:]
+        sumstats["scaled_P"] = -np.log10(sumstats["raw_P"])
         is_inf = sumstats["scaled_P"].isin([np.inf, -np.inf, float('inf'),-float('inf')])
         is_na = sumstats["scaled_P"].isna()
         bad_p = sum(is_inf | is_na)
         if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
             
         sumstats = sumstats.loc[~(is_inf | is_na),:]
-
-    # shrink at a certain value #########################################################################################################
+    
+        
+    p_toplot_raw = sumstats["scaled_P"].copy()
+    
+    sumstats = sumstats.loc[sumstats["scaled_P"]>skip,:]
+    
+    # shrink at a certain value #########################################################################################
     maxy = sumstats["scaled_P"].max()
     if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
     if cut:
@@ -157,61 +211,61 @@ def mqqplot(insumstats,
         sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
         maxy = (maxticker-cut)/cutfactor + cut
 
-# Manhattan plot #####################################################################################################
+# Manhattan plot ##########################################################################################################
 ## Create index for plotting ###################################################
 
     if verbose:log.write("Plotting "+str(len(sumstats))+" variants:")
     #sort & add id
     if "m" in mode: 
-        sumstats = sumstats.sort_values(["CHROM","POS"])
-        if use_rank is True: sumstats["POS_RANK"] = sumstats.groupby("CHROM")["POS"].rank("dense", ascending=True)
+        sumstats = sumstats.sort_values([chrom,pos])
+        if use_rank is True: sumstats["POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
         sumstats["id"]=range(len(sumstats))
         sumstats=sumstats.set_index("id")
 
         #create a position dictionary
         if use_rank is True: 
-            posdic = sumstats.groupby("CHROM")["POS_RANK"].max()
+            posdic = sumstats.groupby(chrom)["POS_RANK"].max()
         else:
-            posdic = sumstats.groupby("CHROM")["POS"].max()
+            posdic = sumstats.groupby(chrom)[pos].max()
         posdiccul = dict(posdic)
         for i in range(0,26):
             if i in posdiccul: continue
             else: posdiccul[i]=0
 
-        for i in range(2,sumstats["CHROM"].max()+1):
+        for i in range(2,sumstats[chrom].max()+1):
             posdiccul[i]=posdiccul[i-1]+posdiccul[i]
 
         #convert base pair postion to x axis position
-        sumstats["add"]=sumstats["CHROM"].apply(lambda x : posdiccul[int(x)-1])
+        sumstats["add"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
         if use_rank is True: 
             sumstats["i"]=sumstats["POS_RANK"]+sumstats["add"]
         else:
-            sumstats["i"]=sumstats["POS"]+sumstats["add"]
+            sumstats["i"]=sumstats[pos]+sumstats["add"]
         
 
         #for plot
-        chrom_df=sumstats.groupby('CHROM')['i'].median()
-        sumstats["i"]=sumstats["i"]+((sumstats["CHROM"].map(dict(chrom_df)).astype("int")))*0.02
+        chrom_df=sumstats.groupby(chrom)['i'].median()
+        sumstats["i"]=sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
 
 ## Assign marker size ##############################################
-
+        
         sumstats["s"]=1
         sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
         sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
         sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=4
-        sumstats["chr_hue"]=sumstats["CHROM"].astype("string")
+        sumstats["chr_hue"]=sumstats[chrom].astype("string")
+        
 ## Manhatann plot ###################################################
         if len(highlight) >0:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                                hue='chr_hue',
-                               palette=sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
+                               palette=sns.color_palette(colors,n_colors=sumstats[chrom].nunique()),
                                legend=None,
                                size="s",
                                sizes=(10,35),
                                linewidth=0,
                                zorder=2,ax=ax1)   
-            if verbose: log.write(" -Loci to highlight :",highlight)
-            if verbose: log.write(" -Highlight range +- :",highlight_windowkb , " kb")
+            if verbose: log.write(" -Highlighting target loci...")
             sns.scatterplot(data=sumstats.loc[sumstats["HUE"]=="0"], x='i', y='scaled_P',
                    hue="HUE",
                    palette={"0":highlight_color},
@@ -223,49 +277,55 @@ def mqqplot(insumstats,
         else:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                    hue='chr_hue',
-                   palette= sns.color_palette(colors,n_colors=sumstats["CHROM"].nunique()),
+                   palette= sns.color_palette(colors,n_colors=sumstats[chrom].nunique()),
                    legend=None,
                    size="s",
                    sizes=(10,40),
                    linewidth=0,
                    zorder=2,ax=ax1)   
-
-        chrom_df=sumstats.groupby('CHROM')['i'].median()  
-        plot.set_xlabel('CHROM'); 
+        
+        if (len(pinpoint)>0):
+            if sum(sumstats[snpid].isin(pinpoint))>0:
+                to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
+                if verbose: log.write(" -Pinpointing target vairants...")
+                ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color,zorder=3,s=45)
+            else:
+                if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
+ 
+                
+        chrom_df=sumstats.groupby(chrom)['i'].median()  
+        plot.set_xlabel(chrom); 
         plot.set_xticks(chrom_df);
-        chromosome_conversion_dict = {i:str(i) for i in range(1,23)}
-        chromosome_conversion_dict[23] = "X"
-        chromosome_conversion_dict[24] = "Y"
-        chromosome_conversion_dict[25] = "MT"
-        plot.set_xticklabels(chrom_df.index.map(chromosome_conversion_dict))
+
+        plot.set_xticklabels(chrom_df.index.map(gl.get_number_to_chr()))
 
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
-        if cut == 0: plot.set_ylim(0,maxy*1.2)
+        if cut == 0: plot.set_ylim(skip,maxy*1.2)
         if cut:
             cutline=plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
-                plot.set_yticks([x for x in range(0,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                plot.set_yticklabels([x for x in range(0,cut+1,2)]+[maxticker])
+                plot.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
+                plot.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker])
             else:
-                plot.set_yticks([x for x in range(0,cut+1,2)])
-                plot.set_yticklabels([x for x in range(0,cut+1,2)])
+                plot.set_yticks([x for x in range(skip,cut+1,2)])
+                plot.set_yticklabels([x for x in range(skip,cut+1,2)])
 
 # Get top variants for annotation #######################################################
         if anno and anno!=True:
             to_annotate=gl.getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
                                "Annotation",
-                               'CHROM',
-                               "POS",
-                               "P-value_association",
+                               chrom,
+                               pos,
+                               "raw_P",
                                sig_level=sig_level,
                                windowsizekb=windowsizekb,
                                verbose=False)
         else:
             to_annotate=gl.getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
                                "i",
-                               'CHROM',
-                               "POS",
-                               "P-value_association",
+                               chrom,
+                               pos,
+                               "raw_P",
                                windowsizekb=windowsizekb,
                                verbose=False,
                                sig_level=sig_level)
@@ -285,24 +345,23 @@ def mqqplot(insumstats,
                 else:
                     last_pos+=repel_force*sumstats["i"].max()
                 # data to pixels
-                armB_length_in_point=plot.transData.transform((0, 0.95*maxy))[1]-plot.transData.transform((0, row["scaled_P"]+1))[1]
+                armB_length_in_point=plot.transData.transform((skip, 0.95*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]
 
                 #  
-                armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((0, maxy+2))[1]-plot.transData.transform((0,  row["scaled_P"]+1))[1] 
+                armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
 
                 if anno==True:
-                    annotation_text="Chr"+ row["CHROM"] +":"+ str(int(row["POS"]))
+                    annotation_text="Chr"+ row[chrom] +":"+ str(int(row[pos]))
                     annotation_col="CHR:POS"
                 elif anno:
                     annotation_text=row["Annotation"]
                     annotation_col=anno
-
                 text.append(plot.annotate(annotation_text,
-                                             xy=(row["i"],row["scaled_P"]+1),
-                                             xytext=(last_pos,1.15*maxy),rotation=40,
-                                             ha="left",va="bottom",
-                                             fontsize=fontsize,
-                                             arrowprops=dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                 xy=(row["i"],row["scaled_P"]+0.2),
+                                 xytext=(last_pos,1.15*maxy),rotation=40,
+                                 ha="left",va="bottom",
+                                 fontsize=fontsize,
+                                 arrowprops=dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
                                             )
                            )
@@ -319,7 +378,7 @@ def mqqplot(insumstats,
 
         if verbose: log.write(" -Created Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
-            pad=(plot.transData.transform((0, title_pad*maxy))[1]-plot.transData.transform((0, maxy)))[1]
+            pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
             plot.set_title(mtitle,pad=pad)
         elif mtitle:
             plot.set_title(mtitle,fontsize=fontsize)
@@ -328,14 +387,14 @@ def mqqplot(insumstats,
 # QQ plot #########################################################################################################
     # ax2 qqplot
     if "qq" in mode:
-        
-            # select -log10 scaled p to plot
         p_toplot = sumstats["scaled_P"]
+            # select -log10 scaled p to plot
             # sort x,y for qq plot
         minit=1/len(p_toplot)
         if stratified is False:
             observed = p_toplot.sort_values(ascending=False)
             expected = -np.log10(np.linspace(minit,1,len(observed)))
+            p_toplot = sumstats["scaled_P"]
             ax2.scatter(expected,observed,s=8,color=colors[0])
         else:
             # stratified qq plot
@@ -347,7 +406,7 @@ def mqqplot(insumstats,
                 ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
                 ax2.legend(loc="center left",fontsize=10,markerscale=3)
         
-        ax2.plot([0,-np.log10(minit)],[0,-np.log10(minit)],linestyle="--",color=sig_line_color)
+        ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=sig_line_color)
 
         ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize)
         ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize)
@@ -357,9 +416,11 @@ def mqqplot(insumstats,
         
         # calculate genomic inflation factor and add annotation
         if gc:
-            observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot)) ,1)
+            
+            observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot_raw)) ,1)
             expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
             lambdagc=observedMedianChi2/expectedMedianChi2
+            if verbose: log.write(" -Calculating GC using P :",lambdagc)
             ax2.text(0.05, 0.95,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
                      horizontalalignment='left',
                      verticalalignment='top',
@@ -367,15 +428,15 @@ def mqqplot(insumstats,
                      fontsize=fontsize)
         
         #
-        if cut == 0: ax2.set_ylim(0,maxy*1.2)
+        if cut == 0: ax2.set_ylim(skip,maxy*1.2)
         if cut:
             qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
-                ax2.set_yticks([x for x in range(0,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                ax2.set_yticklabels([x for x in range(0,cut+1,2)]+[maxticker])
+                ax2.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
+                ax2.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker])
             else:
-                ax2.set_yticks([x for x in range(0,cut+1,2)])
-                ax2.set_yticklabels([x for x in range(0,cut+1,2)])
+                ax2.set_yticks([x for x in range(skip,cut+1,2)])
+                ax2.set_yticklabels([x for x in range(skip,cut+1,2)])
         
         #
         if qtitle:
