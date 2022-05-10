@@ -350,10 +350,13 @@ def parallelnormalizeallele(sumstats,pos="POS",ea="EA" ,nea="NEA",status="STATUS
     return sumstats
 
 def normalizeallele(sumstats,pos="POS",ea="EA" ,nea="NEA",status="STATUS"):
-       
-    normalized = sumstats.loc[:,[pos,nea,ea,status]].apply(lambda x: normalizevariant(x[0],x[1],x[2],x[3]),axis=1)
-    normalized_pd = pd.DataFrame(normalized.to_list(), columns=[pos,nea,ea,status],index=sumstats.index)
-    return normalized_pd
+    print("1")
+    variants_to_check = (sumstats[ea].str.len()>1) & (sumstats[nea].str.len()>1)
+    if sum(variants_to_check)>0:
+        normalized = sumstats.loc[variants_to_check,[pos,nea,ea,status]].apply(lambda x: normalizevariant(x[0],x[1],x[2],x[3]),axis=1)
+        sumstats.loc[variants_to_check,[pos,nea,ea,status]] = pd.DataFrame(normalized.to_list(), columns=[pos,nea,ea,status],index=sumstats.index)
+    return sumstats
+
 def normalizevariant(pos,a,b,status):
     # https://genome.sph.umich.edu/wiki/Variant_Normalization
     # a - ref - nea    starting -> pos

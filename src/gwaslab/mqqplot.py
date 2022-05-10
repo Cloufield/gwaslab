@@ -37,7 +37,7 @@ def mqqplot(insumstats,
           title =None,
           mtitle=None,
           qtitle=None,
-          figargs= {"figsize":(15,5)},
+          figargs= {"figsize":(15,5),"dpi":300},
           fontsize = 10,
           colors = ["#000042", "#7878BA"],
           use_rank=False,
@@ -61,7 +61,7 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Highlight_window is set to: ", highlight_windowkb, " kb")  
     if len(pinpoint)>0 :
         if verbose: log.write(" -Variants to pinpoint : "+",".join(highlight))    
-    if verbose: log.write(" -Variants to highlight : "+",".join(highlight))    
+     
     
 
 # Plotting mode selection ######################################################################################
@@ -143,7 +143,7 @@ def mqqplot(insumstats,
     if stratified is True: 
         sumstats["MAF"] = pd.to_numeric(insumstats[eaf], errors='coerce')
         sumstats.loc[sumstats["MAF"]>0.5,"MAF"] = 1 - sumstats.loc[sumstats["MAF"]>0.5,"MAF"]
-    
+        eaf_raw = sumstats["MAF"].copy()
     if len(highlight)>0 and ("m" in mode):
         sumstats[snpid] = sumstats[snpid]
         sumstats["HUE"] = sumstats[chrom].astype("string")
@@ -387,21 +387,23 @@ def mqqplot(insumstats,
 # QQ plot #########################################################################################################
     # ax2 qqplot
     if "qq" in mode:
+        
         p_toplot = sumstats["scaled_P"]
             # select -log10 scaled p to plot
             # sort x,y for qq plot
         minit=1/len(p_toplot)
         if stratified is False:
             observed = p_toplot.sort_values(ascending=False)
-            expected = -np.log10(np.linspace(minit,1,len(observed)))
-            p_toplot = sumstats["scaled_P"]
+            expected = -np.log10(np.linspace(minit,1,len(p_toplot_raw)))[:len(observed)]
+            #p_toplot = sumstats["scaled_P"]
             ax2.scatter(expected,observed,s=8,color=colors[0])
         else:
             # stratified qq plot
             for i,(lower, upper) in enumerate(maf_bins):
                 databin = sumstats.loc[(sumstats["MAF"]>lower) &( sumstats["MAF"]<=upper),["MAF","scaled_P"]]
+                databin_raw = eaf_raw[(eaf_raw>lower)&(eaf_raw<upper)]
                 observed = databin["scaled_P"].sort_values(ascending=False)
-                expected = -np.log10(np.linspace(minit,1,len(observed)))
+                expected = -np.log10(np.linspace(minit,1,len(databin_raw)))[:len(observed)]
                 label ="("+str(lower)+","+str(upper) +"]"
                 ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
                 ax2.legend(loc="center left",fontsize=10,markerscale=3)
