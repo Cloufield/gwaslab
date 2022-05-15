@@ -104,6 +104,7 @@ def preformat(sumstats,
         usecols = usecols + other
         for i in other:
             rename_dictionary[i] = i
+            
  #loading data ##################################################################################
     
     try:
@@ -120,7 +121,7 @@ def preformat(sumstats,
             if verbose: log.write("Initiating from pandas DataFrame ...")
             sumstats = sumstats.loc[:, usecols].astype("string")
     except ValueError:
-        raise ValueError("Please input a path or a pd.DataFrame.")
+        raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
 
     ## renaming columns
     converted_columns = list(map(lambda x: rename_dictionary[x], usecols))
@@ -136,18 +137,18 @@ def preformat(sumstats,
     ## if n was provided as int
     if type(n) is int:
         sumstats["N"] = n
+        
     ## if markername was not provided
-    if (not snpid) and (not rsid):
-        if ("CHR" in sumstats.columns) and ("POS" in sumstats.columns):
-            sumstats["SNPID"] = sumstats["CHR"].astype(
-                "string") + ":" + sumstats["POS"].astype("string")
-        else:
-            raise ValueError("Please input at least 1.rsID or 2.snpID or 3.CHR and POS")
-    
+    #if (not snpid) and (not rsid):
+    #    if ("CHR" in sumstats.columns) and ("POS" in sumstats.columns):
+    #        sumstats["SNPID"] = sumstats["CHR"].astype(
+    #            "string") + ":" + sumstats["POS"].astype("string")
+    #    else:
+    #        raise ValueError("Please input at least 1.rsID or 2.snpID or 3.CHR and POS")
     
     if status is None:
         if verbose: log.write(" -Initiating a status column ...")
-        sumstats["STATUS"] = build +"000"
+        sumstats["STATUS"] = build +"99999"
         sumstats["STATUS"] = sumstats["STATUS"].astype("string")
     
     ##reodering 

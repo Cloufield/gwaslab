@@ -32,7 +32,7 @@ class Sumstats():
              other=[],
              direction=None,
              verbose=True,
-             build="00",
+             build="99",
              **readargs):
         
         self.build = build
@@ -120,7 +120,7 @@ class Sumstats():
         
 # QC ######################################################################################
     #clean the sumstats with one line
-    def basic_check(self,remove=False,**args):
+    def basic_check(self,remove=False,n_cores=1,**args):
         ###############################################
         # try to fix data without dropping any information
         self.data = gl.fixID(self.data,**args)
@@ -130,7 +130,7 @@ class Sumstats():
         self.data = gl.fixpos(self.data,log=self.log,remove=remove,**args)
         self.data = gl.fixallele(self.data,log=self.log,**args)
         self.data = gl.sanitycheckstats(self.data,log=self.log,**args)
-        self.data = gl.parallelnormalizeallele(self.data,log=self.log,**args)
+        self.data = gl.parallelnormalizeallele(self.data,n_cores=n_cores,log=self.log,**args)
         ###############################################
         
     
@@ -237,6 +237,8 @@ class Sumstats():
         pass
     def check_ref(self,**args):
         self.data = gl.checkref(self.data,log=self.log,**args)
+    def infer_strand(self,**args):
+        self.data =gl.inferstrand(self.data,maf_threshold=0.43,log=self.log,**args)
     def flip_allele_stats(self,**args):
         self.data = gl.flipallelestats(self.data,log=self.log,**args)
     def normalize_allele(self,**args):

@@ -19,13 +19,15 @@ def getsig(insumstats,
     if verbose: log.write(" -Sliding window size:", str(windowsizekb) ," kb")
     #load data
     
-    sumstats=insumstats.loc[~insumstats[id].isna(),:]
+    sumstats=insumstats.loc[~insumstats[id].isna(),:].copy()
     
     #convert chrom to int
+    
     sumstats[chrom]=sumstats[chrom].astype("string")
     sumstats.loc[sumstats[chrom]=="X",chrom] = "23"
     sumstats.loc[sumstats[chrom]=="Y",chrom] = "24"
     sumstats.loc[sumstats[chrom]=="MT",chrom] = "25"
+    
     sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
     sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
     sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')

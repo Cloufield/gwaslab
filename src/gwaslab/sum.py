@@ -16,3 +16,6 @@ def summarize(sumstats):
     if "P" in sumstats.columns:
         output["Minimum P"] = sumstats["P"].min()
     return output
+
+def sum_status():
+    pass
