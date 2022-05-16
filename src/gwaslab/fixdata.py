@@ -28,7 +28,7 @@ from functools import partial
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",
-       fixchrpos=True,fixid=False,fixeanea=False,fixeanea_flip=False,overwrite=False,remove=True,verbose=True,log=gl.Log()):  
+       fixchrpos=True,fixid=False,fixeanea=False,fixeanea_flip=False,overwrite=False,verbose=True,log=gl.Log()):  
     
     '''
     1. fx SNPid
@@ -279,6 +279,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
 ###############################################################################################################
 #20220514
 def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",remove=False, verbose=True,log=gl.Log()):
+        
         if verbose: log.write("Start to fix chromosome notation...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         

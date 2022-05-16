@@ -253,18 +253,27 @@ def chrposref_rsid(chr,start,end,ref,alt,vcf_reader,chr_dict=None):
             return record.ID
     return pd.NA
 
-def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",overwrite=False,chr_dict=None):
+def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",overwrite="empty",chr_dict=None):
     vcf_reader = vcf.Reader(open(path, 'rb'))
-    no_rsID = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) &(sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False))
-    if overwrite is True: 
-        standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
-        no_rsID = (~sumstats[chr].isna())&(~sumstats[pos].isna()) & (~sumstats[ref].isna())&(~sumstats[alt].isna())& standardized_normalized
-    rsID = sumstats.loc[no_rsID,[chr,pos,ref,alt]].apply(lambda x:chrposref_rsid(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,chr_dict),axis=1)
-    sumstats.loc[no_rsID,rsid] = rsID.values
-    
+    standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
+    if overwrite=="all":
+        no_rsID = standardized_normalized
+    if overwrite=="invalid":
+        no_rsID = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) & standardized_normalized
+    if overwrite=="empty":
+        no_rsID = sumstats[rsid].isna()& standardized_normalized
+    if sum(no_rsID)>0:
+        rsID = sumstats.loc[no_rsID,[chr,pos,ref,alt]].apply(lambda x:chrposref_rsid(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,chr_dict),axis=1)
+        sumstats.loc[no_rsID,rsid] = rsID.values
     return sumstats
 
-def parallelizeassignrsid(sumstats, path ,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",n_cores=1,overwrite=False,verbose=True,log=gl.Log(),chr_dict=None):
+def parallelizeassignrsid(sumstats, path ,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",n_cores=1,overwrite="empty",verbose=True,log=gl.Log(),chr_dict=None):
+    '''
+    overwrite mode : 
+    all ,    overwrite rsid for all availalbe rsid 
+    invalid,  only assign rsid for variants with invalid rsid
+    empty    only assign rsid for variants with na rsid
+    '''  
     if verbose: log.write("Start to assign rsID ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -CPU Cores to use :",n_cores)
@@ -273,19 +282,24 @@ def parallelizeassignrsid(sumstats, path ,rsid="rsID",chr="CHR",pos="POS",ref="N
     
     if rsid not in sumstats.columns:
         sumstats["rsID"]=pd.Series(dtype="string")
+    
     total_number= len(sumstats)
     pre_number = sum(~sumstats["rsID"].isna())
     
-    if overwrite is False:
+    if overwrite == "empty":
         if sum(sumstats["rsID"].isna())<10000: n_cores=1
+    
+    ##########################        
     func=assign_rsid_single
     df_split = np.array_split(sumstats, n_cores)
     pool = Pool(n_cores)
     #df = pd.concat(pool.starmap(func, df_split))
-    if sum(sumstats["rsID"].isna())>0 or overwrite==True:
+    if sum(sumstats["rsID"].isna())>0 or overwrite!="empty":
         sumstats = pd.concat(pool.map(partial(func,rsid=rsid,chr=chr,pos=pos,ref=ref,overwrite=overwrite,status=status,alt=alt,path=path,chr_dict=chr_dict),df_split))
     pool.close()
     pool.join()
+    ###########################
+    
     after_number = sum(~sumstats["rsID"].isna())
     if verbose: log.write(" -rsID Annotation for "+str(total_number - after_number) +" need to be fixed!")
     if verbose: log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!")

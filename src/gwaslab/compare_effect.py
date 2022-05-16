@@ -293,7 +293,7 @@ def compare_effect(path1,
     if (len(eaf)>0) and (maf_level is not None):
         both_eaf_clear =  (sig_list_merged["EAF_1"]>maf_level)&(sig_list_merged["EAF_1"]<1-maf_level)&(sig_list_merged["EAF_2"]>maf_level)&(sig_list_merged["EAF_2"]<1-maf_level)
         if verbose: print(" -Exclude "+str(len(sig_list_merged) -sum(both_eaf_clear))+ " variants with maf <",maf_level)
-        sig_list_merged.loc[both_eaf_clear,:]
+        sig_list_merged = sig_list_merged.loc[both_eaf_clear,:]
     
     sum0 = sig_list_merged.loc[sig_list_merged["indicator"]==0,:].dropna(axis=0)
     sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:].dropna(axis=0)

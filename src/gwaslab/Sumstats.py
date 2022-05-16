@@ -138,7 +138,6 @@ class Sumstats():
               ref_seq=None,
               ref_var=None,
               ref_var_chr_dict=None,
-              ref_rs=None,
               ref_infer=None,
               ref_infer_chr_dict=None,
               ref_alt_freq=None,
@@ -148,7 +147,6 @@ class Sumstats():
               to_ref_infer=None,
               to_ref_var=None,
               to_ref_alt_freq=None,
-              to_ref_rs=None,
               maf_threshold=0.43,
               n_cores=1,
               rsid={},
@@ -166,14 +164,14 @@ class Sumstats():
         #    1.5 sanity check : BETA SE OR EAF N OR_95L OR_95H
         #    1.6 sorting genomic coordinates and column order 
         
-        self.data = gl.fixID(self.data,                                            **args)
-        if remove: self.data = gl.removedup(self.data,log=self.log,                         **args)
-        self.data = gl.fixchr(self.data,remove=remove,log=self.log,                         **args)
-        self.data = gl.fixpos(self.data,remove=remove,log=self.log,                         **args)
-        self.data = gl.fixallele(self.data,log=self.log,                                 **args)
-        self.data = gl.sanitycheckstats(self.data,log=self.log,                            **args)
-        self.data = gl.sortcolumn(self.data,log=self.log,                                 **args)
-        self.data = gl.parallelnormalizeallele(self.data,log=self.log,                        **args)
+        self.data = gl.fixID(self.data)
+        self.data = gl.fixchr(self.data,remove=remove,log=self.log)
+        self.data = gl.fixpos(self.data,remove=remove,log=self.log)
+        self.data = gl.fixallele(self.data,log=self.log)
+        self.data = gl.sanitycheckstats(self.data,log=self.log)
+        self.data = gl.parallelnormalizeallele(self.data,log=self.log)
+        self.data = gl.sortcolumn(self.data,log=self.log)
+        
         
         #####################################################
         #part 2 : annotating and flipping
@@ -190,8 +188,7 @@ class Sumstats():
         #####################################################
         if ref_seq is not None  :
             self.data = gl.checkref(self.data,ref_seq,log=self.log,**args)
-            
-        self.data = gl.flipallelestats(self.data,log=self.log,**args)
+            self.data = gl.flipallelestats(self.data,log=self.log,**args)
         
         if ref_var is not None  :
             self.data = gl.parallelizeassignrsid(self.data,ref_var,n_cores=n_cores,log=self.log,chr_dict=ref_var_chr_dict,**rsid)
@@ -200,7 +197,6 @@ class Sumstats():
             self.data= gl.inferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=0.43,chr_dict=ref_infer_chr_dict,log=self.log,**args)
             self.data =gl.flipallelestats(self.data,log=self.log,**args)
             
-        
         #if liftover           
         if to_build is not None :
             self.data = gl.parallelizeliftovervariant(self.data,n_cores=n_cores,from_build=from_build,to_build=to_build,log=self.log,**liftover)
@@ -212,9 +208,9 @@ class Sumstats():
                 if (to_ref_infer is not None) and (to_ref_alt_freq is not None): 
                     self.data= gl.inferstrand(self.data,ref_infer = to_ref_infer,ref_alt_freq=to_ref_alt_freq,maf_threshold=0.43,log=self.log,**args)
         
-        
+        self.data = gl.removedup(self.data,log=self.log,**args)
         ################################################
-        self.data = gl.fixchr(self.data, remove=True)
+        self.data = gl.fixchr(self.data, remove=True)   
         self.data = gl.sortcoordinate(self.data,log=self.log,**args)
         self.data = gl.sortcolumn(self.data,log=self.log,**args).copy()
         return self
