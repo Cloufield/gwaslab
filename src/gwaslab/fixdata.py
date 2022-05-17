@@ -28,7 +28,7 @@ from functools import partial
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",
-       fixchrpos=True,fixid=False,fixeanea=False,fixeanea_flip=False,overwrite=False,verbose=True,log=gl.Log()):  
+       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,overwrite=False,verbose=True,log=gl.Log()):  
     
     '''
     1. fx SNPid
@@ -45,7 +45,6 @@ def fixID(sumstats,
         if verbose: log.write(" -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)")
         is_chrposrefalt = sumstats[snpid].str.match(r'(chr)?([0-9XYMT]+)[:_-]([0-9]+)[:_-]([ATCG]+)[:_-]([ATCG]+)', case=False, flags=0, na=False)
         is_snpid_na = sumstats[snpid].isna()
-        
         sumstats.loc[ is_chrposrefalt,status] = vchange_status(sumstats.loc[ is_chrposrefalt,status],3 ,"975" ,"630")
         sumstats.loc[(~is_chrposrefalt)&(~is_snpid_na),status] = vchange_status(sumstats.loc[(~is_chrposrefalt)&(~is_snpid_na),status],3 ,"975" ,"842")
         
@@ -286,12 +285,17 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",remove=False, verb
         check_col(sumstats,chrom,status)
         
         is_chr_fixable = sumstats[chrom].str.match(r'(chr)?([012][0-9]|[0-9]|X|Y|MT)', case=False, flags=0, na=False)
-        is_chr_na    = sumstats[chrom].isna()
-        is_chr_invalid = (~is_chr_fixable)&(~is_chr_na)
+        if verbose: log.write(" -Vairants with fixable chromosome notations:",sum(is_chr_fixable))   
         
+        is_chr_na    = sumstats[chrom].isna()
+        if sum(is_chr_na)>0 and verbose: 
+            log.write(" -Vairants with NA chromosome notations:",sum(is_chr_na))  
+        
+        is_chr_invalid = (~is_chr_fixable)&(~is_chr_na)
+        if sum(is_chr_invalid)>0 and verbose: 
+            log.write(" -Vairants with invalid chromosome notations:",sum(is_chr_invalid))  
         if sum(~is_chr_fixable)>0 and verbose: 
             log.write(" -Unrecognized chromosome notations :",set(sumstats.loc[~is_chr_fixable,chrom].head()),"...") 
-        if verbose: log.write(" -Number of fixable chr notation :",sum(is_chr_fixable) )
 
         # convert to string datatype
         sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string") 
@@ -325,9 +329,11 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",remove=False, verb
             #sumstats = sumstats.loc[sumstats.index[sumstats[chrom].isin(chrom_list)],:]
             good_chr = sumstats[chrom].isin(chrom_list)
             sumstats = sumstats.loc[good_chr, :].copy()
+        
         if add_prefix:
             if verbose: log.write(" -Adding prefix : "+ add_prefix+"...")
             sumstats.loc[:,chrom] = add_prefix + sumstats[chrom]   
+        
         return sumstats
     
     
