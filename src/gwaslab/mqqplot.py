@@ -15,36 +15,40 @@ def mqqplot(insumstats,
           snpid=None,
           eaf=None,
           scaled=False,
+          mode="mqq",
+          mqqratio=3,
+          windowsizekb=500,
           anno=None,
+          anno_d={},
+          arm_offset=50,
+          arm_scale=1,
           cut=0,
           skip=0,
           cutfactor=10,
-          mode="mqq",
-          mqqratio=3,
-          cut_line_color="#ebebeb",
-          windowsizekb=500,
+          cut_line_color="#ebebeb",  
           sig_level=5e-8,
           sig_line_color="grey",
           suggestive_sig_level=5e-6,
-          stratified=False,
-          maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
-          maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
           highlight = [],
-          highlight_color ="#33FFA0",
+          highlight_color="#CB132D",
           highlight_windowkb = 500,
           pinpoint=[],
           pinpoint_color ="red",
+          stratified=False,
+          maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
+          maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
+          gc=True,
           title =None,
           mtitle=None,
           qtitle=None,
           figargs= {"figsize":(15,5),"dpi":300},
           fontsize = 10,
-          colors = ["#000042", "#7878BA"],
+          colors=["#597FBD","#74BAD3"],
+          marker_size=(5,25),
           use_rank=False,
           verbose=True,
           repel_force=0.03,
-          title_pad=1.08,
-          gc=True,
+          title_pad=1.08, 
           save=None,
           saveargs={"dpi":400,"facecolor":"white"},
           log=gl.Log()
@@ -145,7 +149,6 @@ def mqqplot(insumstats,
         sumstats.loc[sumstats["MAF"]>0.5,"MAF"] = 1 - sumstats.loc[sumstats["MAF"]>0.5,"MAF"]
         eaf_raw = sumstats["MAF"].copy()
     if len(highlight)>0 and ("m" in mode):
-        sumstats[snpid] = sumstats[snpid]
         sumstats["HUE"] = sumstats[chrom].astype("string")
             
 #sanity check############################################################################################################
@@ -246,7 +249,7 @@ def mqqplot(insumstats,
         #for plot
         chrom_df=sumstats.groupby(chrom)['i'].median()
         sumstats["i"]=sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
-
+        sumstats["i"] = sumstats["i"].astype("Int64")
 ## Assign marker size ##############################################
         
         sumstats["s"]=1
@@ -262,7 +265,7 @@ def mqqplot(insumstats,
                                palette=sns.color_palette(colors,n_colors=sumstats[chrom].nunique()),
                                legend=None,
                                size="s",
-                               sizes=(10,35),
+                               sizes=marker_size,
                                linewidth=0,
                                zorder=2,ax=ax1)   
             if verbose: log.write(" -Highlighting target loci...")
@@ -271,16 +274,18 @@ def mqqplot(insumstats,
                    palette={"0":highlight_color},
                    legend=None,
                    size="s",
-                   sizes=(45,45),
+                   sizes=(marker_size[0]+1,marker_size[1]+1),
                    linewidth=0,
-                   zorder=3,ax=ax1)   
+                   zorder=3,ax=ax1)  
+            highlight_i = sumstats.loc[sumstats[snpid].isin(highlight),"i"].values
+            
         else:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                    hue='chr_hue',
                    palette= sns.color_palette(colors,n_colors=sumstats[chrom].nunique()),
                    legend=None,
                    size="s",
-                   sizes=(10,40),
+                   sizes=marker_size,
                    linewidth=0,
                    zorder=2,ax=ax1)   
         
@@ -288,7 +293,7 @@ def mqqplot(insumstats,
             if sum(sumstats[snpid].isin(pinpoint))>0:
                 to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
                 if verbose: log.write(" -Pinpointing target vairants...")
-                ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color,zorder=3,s=45)
+                ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color,zorder=3,s=marker_size[1]+1)
             else:
                 if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
  
@@ -337,7 +342,7 @@ def mqqplot(insumstats,
             #initiate a list for text and a starting position
             text = []
             last_pos=0
-
+            anno_count=0
             for rowi,row in to_annotate.iterrows():
                 # avoid text overlapping
                 if row["i"]>last_pos+repel_force*sumstats["i"].max():
@@ -345,26 +350,51 @@ def mqqplot(insumstats,
                 else:
                     last_pos+=repel_force*sumstats["i"].max()
                 # data to pixels
-                armB_length_in_point=plot.transData.transform((skip, 0.95*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]
-
+                armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
                 #  
                 armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
-
+                
                 if anno==True:
                     annotation_text="Chr"+ row[chrom] +":"+ str(int(row[pos]))
                     annotation_col="CHR:POS"
                 elif anno:
                     annotation_text=row["Annotation"]
                     annotation_col=anno
-                text.append(plot.annotate(annotation_text,
-                                 xy=(row["i"],row["scaled_P"]+0.2),
-                                 xytext=(last_pos,1.15*maxy),rotation=40,
-                                 ha="left",va="bottom",
-                                 fontsize=fontsize,
-                                 arrowprops=dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                
+                if len(highlight) >0:
+                    if row["i"] in highlight_i:
+                        fontweight = "bold"
+                    else:
+                        fontweight = "normal"
+                
+                xy=(row["i"],row["scaled_P"]+0.2)
+                xytext=(last_pos,1.15*maxy)
+                if anno_count not in anno_d.keys():
+                    arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
+                else:
+                    if anno_d[anno_count]=="right": 
+                        armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                        armoffsetb = arm_offset 
+                        armoffseta = armoffsetall - armoffsetb
+                        
+                        arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                             connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
+                    else:
+                        arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                             connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
+                
+                text.append(plot.annotate(annotation_text,
+                                             style='italic',
+                                             xy=xy,
+                                             xytext=xytext,rotation=40,
+                                             ha="left",va="bottom",
+                                             fontsize=fontsize,
+                                             fontweight=fontweight,
+                                             arrowprops=arrowargs
                                             )
                            )
+                anno_count +=1
 
             if verbose: log.write(" -Annotating using column "+annotation_col+"...")
         else:
