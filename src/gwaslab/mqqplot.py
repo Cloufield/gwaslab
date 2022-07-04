@@ -360,12 +360,11 @@ def mqqplot(insumstats,
                 elif anno:
                     annotation_text=row["Annotation"]
                     annotation_col=anno
-                
+                    
+                fontweight = "normal"
                 if len(highlight) >0:
                     if row["i"] in highlight_i:
                         fontweight = "bold"
-                    else:
-                        fontweight = "normal"
                 
                 xy=(row["i"],row["scaled_P"]+0.2)
                 xytext=(last_pos,1.15*maxy)
