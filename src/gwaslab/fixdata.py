@@ -357,6 +357,8 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,log=gl.
         sumstats.loc[is_pos_fixed,status] = vchange_status(sumstats.loc[is_pos_fixed,status],4,"975","630")
         sumstats.loc[is_pos_invalid,status] = vchange_status(sumstats.loc[is_pos_invalid,status],4,"975","842")
         
+        # remove 300,000,000
+        
         #remove na
         if remove is True: 
             sumstats = sumstats.loc[~sumstats[pos].isna(),:]
@@ -500,7 +502,7 @@ def normalizevariant(pos,a,b,status):
 
 ###############################################################################################################
 #20220426
-def sanitycheckstats(sumstats,coltocheck=["P","BETA","SE","EAF","CHISQ","N","OR","OR_95L","OR_95U"],verbose=True,log=gl.Log()):
+def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ","N","OR","OR_95L","OR_95U"],verbose=True,log=gl.Log()):
     '''
     Sanity check:
         N:      Int64    , N>0 , 
@@ -556,7 +558,16 @@ def sanitycheckstats(sumstats,coltocheck=["P","BETA","SE","EAF","CHISQ","N","OR"
         sumstats.loc[sumstats["P"]<5e-300,"P"] = 5e-300
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad P.") 
-            
+    
+    pre_number=len(sumstats)
+    if "MLOG10P" in coltocheck and "MLOG10P" in sumstats.columns:
+        cols_to_check.append("MLOG10P")
+        if verbose: log.write(" -Checking if MLOG10P>=0 ...") 
+        sumstats.loc[:,"MLOG10P"] = pd.to_numeric(sumstats.loc[:,"MLOG10P"], errors='coerce')
+        sumstats = sumstats.loc[(sumstats["MLOG10P"]>=0),:]
+        after_number=len(sumstats)
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad MLOG10P.") 
+    
     pre_number=len(sumstats)    
     if "BETA" in coltocheck and "BETA" in sumstats.columns:
         cols_to_check.append("BETA")
@@ -622,9 +633,14 @@ def get_reverse_complementary_allele(a):
 def flip_direction(string):
     flipped_string=""
     for char in string:
-        if char=="?":flipped_string+="?"
-        elif char=="+":flipped_string+="-"
-        elif char=="-":flipped_string+="+"
+        if char=="?":
+            flipped_string+="?"
+        elif char=="+":
+            flipped_string+="-"
+        elif char=="-":
+            flipped_string+="+"
+        else: #sometime it is 0
+            flipped_string+=char
     return flipped_string
     
 def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
@@ -736,7 +752,6 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
         #change status    
         if verbose: log.write(" -Changed the status for flipped variants:  xxx[12]8: ->  xxx[12]3") 
         sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 7, "5","2")
-
 
     return sumstats
 ###############################################################################################################

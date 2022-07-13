@@ -4,9 +4,6 @@ import gwaslab as gl
 import time
 #20220309
 class Sumstats():
-    # Sumstats.data will store a pandas df
-
-    
     def __init__(self,
              sumstats,
              snpid=None,
@@ -68,13 +65,7 @@ class Sumstats():
           verbose=verbose,
           readargs=readargs,
           log=self.log)
-        
-    def __getattr__(self, name):
-        if name == 'gc':
-            return self.get_gc(verbose=False)
-        else:
-            raise AttributeError        
-            
+                   
 #### healper #################################################################################
     #value to arguement name 
     def get_columns(self, columns=[]):
@@ -106,10 +97,9 @@ class Sumstats():
                 other.append(key)
             else:
                 col_subset[dic[key]] = key
-                
-        if len(other)>0: col_subset["other"] = other  
-        
+        if len(other)>0: col_subset["other"] = other      
         return col_subset
+    
     def update_meta(self):
         self.meta["Number_of_variants"]=len(self.data)
         if "CHR" in self.data.columns:
@@ -120,24 +110,35 @@ class Sumstats():
         
 # QC ######################################################################################
     #clean the sumstats with one line
-    def basic_check(self,remove=False,n_cores=1,**args):
+    def basic_check(self,remove=False,
+                    n_cores=1,
+                    fixid_args={},
+                    removedup_args={},
+                    fixchr_agrs={},
+                    fixpos_args={},
+                    fixallele_args={},
+                    sanitycheckstats_args={},
+                    normalize=True,
+                    normalizeallele_args={}):
         ###############################################
         # try to fix data without dropping any information
-        self.data = gl.fixID(self.data,**args)
+        self.data = gl.fixID(self.data,**fixid_args)
         if remove is True:
-            self.data = gl.removedup(self.data,log=self.log,**args)
-        self.data = gl.fixchr(self.data,log=self.log,remove=remove,**args)
-        self.data = gl.fixpos(self.data,log=self.log,remove=remove,**args)
-        self.data = gl.fixallele(self.data,log=self.log,**args)
-        self.data = gl.sanitycheckstats(self.data,log=self.log,**args)
-        self.data = gl.parallelnormalizeallele(self.data,n_cores=n_cores,log=self.log,**args)
+            self.data = gl.removedup(self.data,log=self.log,**removedup_args)
+        self.data = gl.fixchr(self.data,log=self.log,remove=remove,**fixchr_agrs)
+        self.data = gl.fixpos(self.data,log=self.log,remove=remove,**fixpos_args)
+        self.data = gl.fixallele(self.data,log=self.log,**fixallele_args)
+        self.data = gl.sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
+        if normalize is True:
+            self.data = gl.parallelnormalizeallele(self.data,n_cores=n_cores,log=self.log,**normalizeallele_args)
         ###############################################
         
     
     def clean(self,
+              basic_check=True,
               ref_seq=None,
-              ref_var=None,
-              ref_var_chr_dict=None,
+              ref_rsid=None,
+              ref_rsid_chr_dict=None,
               ref_infer=None,
               ref_infer_chr_dict=None,
               ref_alt_freq=None,
@@ -145,14 +146,24 @@ class Sumstats():
               to_build=None,
               to_ref_seq=None,
               to_ref_infer=None,
-              to_ref_var=None,
+              to_ref_rsid=None,
               to_ref_alt_freq=None,
               maf_threshold=0.43,
               n_cores=1,
-              rsid={},
-              liftover={},
               remove=False,
-              **args):
+              checkref_args={},
+              removedup_args={},
+              assignrsid_args={},
+              inferstrand_args={},
+              flipallelestats_args={},
+              liftover_args={},
+              fixid_args={},
+              fixchr_agrs={},
+              fixpos_args={},
+              fixallele_args={},
+              sanitycheckstats_args={},
+              normalizeallele_args={}
+              ):
         
         #Standard pipeline
         ####################################################
@@ -163,14 +174,14 @@ class Sumstats():
         #    1.4 normalization : EA NEA
         #    1.5 sanity check : BETA SE OR EAF N OR_95L OR_95H
         #    1.6 sorting genomic coordinates and column order 
-        
-        self.data = gl.fixID(self.data)
-        self.data = gl.fixchr(self.data,remove=remove,log=self.log)
-        self.data = gl.fixpos(self.data,remove=remove,log=self.log)
-        self.data = gl.fixallele(self.data,log=self.log)
-        self.data = gl.sanitycheckstats(self.data,log=self.log)
-        self.data = gl.parallelnormalizeallele(self.data,log=self.log)
-        self.data = gl.sortcolumn(self.data,log=self.log)
+        if basic_check is True:
+            self.data = gl.fixID(self.data,**fixid_args)
+            self.data = gl.fixchr(self.data,remove=remove,log=self.log,**fixchr_agrs)
+            self.data = gl.fixpos(self.data,remove=remove,log=self.log,**fixpos_args)
+            self.data = gl.fixallele(self.data,log=self.log,**fixallele_args)
+            self.data = gl.sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
+            self.data = gl.parallelnormalizeallele(self.data,log=self.log,**normalizeallele_args)
+            self.data = gl.sortcolumn(self.data,log=self.log)
         
         
         #####################################################
@@ -186,33 +197,34 @@ class Sumstats():
         #   3.2  assign rsid (target build)
         #   3.2 infer strand for palindromic SNP (target build)
         #####################################################
-        if ref_seq is not None  :
-            self.data = gl.checkref(self.data,ref_seq,log=self.log,**args)
-            self.data = gl.flipallelestats(self.data,log=self.log,**args)
+        if ref_seq is not None:
+            self.data = gl.checkref(self.data,ref_seq,log=self.log,**checkref_args)
+            self.data = gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
         
-        if ref_var is not None  :
-            self.data = gl.parallelizeassignrsid(self.data,ref_var,n_cores=n_cores,log=self.log,chr_dict=ref_var_chr_dict,**rsid)
+        if ref_rsid is not None:
+            self.data = gl.parallelizeassignrsid(self.data,ref_rsid,n_cores=n_cores,log=self.log,chr_dict=ref_rsid_chr_dict,**assignrsid_args)
             
         if ref_infer is not None: 
-            self.data= gl.inferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=0.43,chr_dict=ref_infer_chr_dict,log=self.log,**args)
-            self.data =gl.flipallelestats(self.data,log=self.log,**args)
+            self.data= gl.inferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=0.43,chr_dict=ref_infer_chr_dict,log=self.log,**inferstrand_args)
+            self.data =gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
             
         #if liftover           
         if to_build is not None :
-            self.data = gl.parallelizeliftovervariant(self.data,n_cores=n_cores,from_build=from_build,to_build=to_build,log=self.log,**liftover)
+            self.data = gl.parallelizeliftovervariant(self.data,n_cores=n_cores,from_build=from_build,to_build=to_build,log=self.log,**liftover_args)
             if to_ref_seq is not None:
-                self.data = gl.checkref(self.data,to_ref_seq,log=self.log,**args)
-                self.data = gl.flipallelestats(self.data,log=self.log,**args)
-                if to_ref_var is not None  :
-                    self.data = gl.parallelizeassignrsid(self.data,to_ref_var,n_cores=n_cores,log=self.log,**rsid)
+                self.data = gl.checkref(self.data,to_ref_seq,log=self.log,**checkref_args)
+                self.data = gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
+                if to_ref_rsid is not None  :
+                    self.data = gl.parallelizeassignrsid(self.data,to_ref_rsid,n_cores=n_cores,log=self.log,**assignrsid_args)
                 if (to_ref_infer is not None) and (to_ref_alt_freq is not None): 
-                    self.data= gl.inferstrand(self.data,ref_infer = to_ref_infer,ref_alt_freq=to_ref_alt_freq,maf_threshold=0.43,log=self.log,**args)
-        
-        self.data = gl.removedup(self.data,log=self.log,**args)
-        ################################################
-        self.data = gl.fixchr(self.data, remove=True)   
-        self.data = gl.sortcoordinate(self.data,log=self.log,**args)
-        self.data = gl.sortcolumn(self.data,log=self.log,**args).copy()
+                    self.data = gl.inferstrand(self.data,ref_infer = to_ref_infer,ref_alt_freq=to_ref_alt_freq,maf_threshold=0.43,log=self.log,**inferstrand_args)
+                    self.data = gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
+        self.data = gl.fixchr(self.data, remove=remove)  
+        if remove is True:
+            self.data = gl.removedup(self.data,log=self.log,**removedup_args)
+        ################################################ 
+        self.data = gl.sortcoordinate(self.data,log=self.log)
+        self.data = gl.sortcolumn(self.data,log=self.log)
         return self
     
     ############################################################################################################

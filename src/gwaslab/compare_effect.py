@@ -47,6 +47,7 @@ def compare_effect(path1,
                    is_45_helper_line=True,
                    scatterargs={"s":20},
                    plt_args={"figsize":(8,8),"dpi":300},
+                   xylabel_prefix="Per-allele effect size in ",
                    helper_line_args={"color":'black', "linestyle":'-',"lw":1},
                    fontargs={'family':'sans','fontname':'Arial','fontsize':12},
                    errargs={"ecolor":"#cccccc","elinewidth":1},
@@ -285,6 +286,7 @@ def compare_effect(path1,
     if is_q is True:
         if verbose: print(" -Calculating Cochran's Q statistics and peform chisq test...")
         sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2")
+        
     ######################### save ###############################################################
     save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
     if verbose: print(" -Saving the merged data to:",save_path)
@@ -294,7 +296,10 @@ def compare_effect(path1,
         both_eaf_clear =  (sig_list_merged["EAF_1"]>maf_level)&(sig_list_merged["EAF_1"]<1-maf_level)&(sig_list_merged["EAF_2"]>maf_level)&(sig_list_merged["EAF_2"]<1-maf_level)
         if verbose: print(" -Exclude "+str(len(sig_list_merged) -sum(both_eaf_clear))+ " variants with maf <",maf_level)
         sig_list_merged = sig_list_merged.loc[both_eaf_clear,:]
-    
+    if is_q is True:
+        if verbose: print(" -Significant het:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:]))
+        if verbose: print(" -All sig:" ,len(sig_list_merged))
+        if verbose: print(" -Het rate:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:])/len(sig_list_merged))   
     sum0 = sig_list_merged.loc[sig_list_merged["indicator"]==0,:].dropna(axis=0)
     sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:].dropna(axis=0)
     sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:].dropna(axis=0)
@@ -431,6 +436,10 @@ def compare_effect(path1,
                 else:
                     ax.axline([min(xl,yl)+1,-min(xl,yl)+1], [max(xh, yh)+1,-max(xh, yh)+1],zorder=1,**helper_line_args)
             #add text
+            p12=str("{:.2e}".format(p)).split("e")[0]
+            pe =str(int("{:.2e}".format(p).split("e")[1]))
+            p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
+            p_latex= f'{p_text}'
             ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
         
         if mode=="beta" or mode=="BETA" or mode=="Beta":
@@ -440,8 +449,8 @@ def compare_effect(path1,
         
         ax.axline(xy1=(0,reg[1]),slope=reg[0],color="#cccccc",linestyle='--',zorder=1)
     
-    ax.set_xlabel("Per-allele effect size in "+label[0],**fontargs)
-    ax.set_ylabel("Per-allele effect size in "+label[1],**fontargs)
+    ax.set_xlabel(xylabel_prefix+label[0],**fontargs)
+    ax.set_ylabel(xylabel_prefix+label[1],**fontargs)
     
     L = ax.legend(title=legend_title,loc=legend_pos,framealpha=1,edgecolor="grey")
     

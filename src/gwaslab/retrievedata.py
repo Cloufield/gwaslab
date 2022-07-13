@@ -133,12 +133,12 @@ def check_status(row,record):
     #pos,ea,nea
     # status 
     #0 /  ----->  match
-    #1 /  ----->  fliped match
-    #2 /  ----->  reverse complementary match
+    #1 /  ----->  Flipped Fixed
+    #2 /  ----->  Reverse_complementary Fixed
     #3 /  ----->  flipped
     #4 /  ----->  reverse_complementary 
     #5 / ------>  reverse_complementary + flipped
-    #6 /   ----->  both allele on genome + unable to distinguish
+    #6 /  ----->  both allele on genome + unable to distinguish
     #7 /  ----> reverse_complementary + both allele on genome + unable to distinguish
     #8 / -----> not on ref genome
     #9 / ------> unchecked
@@ -173,7 +173,7 @@ def check_status(row,record):
                 if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq:
                     ## len(nea) >len(ea):
                     if len(row[2])!=len(row[1]):
-                        return status_pre+"7"+status_end 
+                        return status_pre+"8"+status_end  # indel reverse complementary
                 else:
                     return status_pre+"4"+status_end 
             else:
@@ -217,7 +217,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     status_4=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[4]\w", case=False, flags=0, na=False))
     status_5=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[5]\w", case=False, flags=0, na=False))
     status_6=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[6]\w", case=False, flags=0, na=False))
-    status_7=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[7]\w", case=False, flags=0, na=False))
+    #status_7=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[7]\w", case=False, flags=0, na=False))
     status_8=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w", case=False, flags=0, na=False))
     
     if verbose: log.write(" -Variants allele on given reference sequence : ",status_0)
@@ -232,7 +232,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     if verbose: log.write(" -Variants inferred reverse_complement : ",status_4)
     if verbose: log.write(" -Variants inferred reverse_complement_flipped : ",status_5)
     if verbose: log.write(" -Both allele on genome + unable to distinguish : ",status_6)
-    if verbose: log.write(" -Reverse_complementary + both allele on genome + unable to distinguish: ",status_7)
+    #if verbose: log.write(" -Reverse_complementary + both allele on genome + unable to distinguish: ",status_7)
     if verbose: log.write(" -Variants not on given reference sequence : ",status_8)
     
     if remove is True:
@@ -348,13 +348,13 @@ def check_unkonwn_indel(chr,start,end,ref,alt,vcf_reader,alt_freq,status,chr_dic
     return status_pre+"8"+status_end
 
                                                
-def get_reverse_complementary_allele(a):
-    dic = str.maketrans({
-       "A":"T",
-       "T":"A",
-       "C":"G",
-       "G":"C"})
-    return a[::-1].translate(dic)
+#def get_reverse_complementary_allele(a):
+#    dic = str.maketrans({
+#       "A":"T",
+#       "T":"A",
+#       "C":"G",
+#       "G":"C"})
+#    return a[::-1].translate(dic)
                                                  
 def is_palindromic(sumstats,a1="EA",a2="NEA"):
     gc= (sumstats[a1]=="G") & (sumstats[a2]=="C")
@@ -372,15 +372,15 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR
      
     vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
     
+    # check if the columns are complete
     if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
         raise ValueError("Not enough information: CHR, POS, NEA , EA, ALT, STATUS...")
     
+    # ref_alt_freq INFO in vcf was provided
     if ref_alt_freq is not None:
-        
-        
         if verbose: log.write(" -Alternative allele frequency in INFO:", ref_alt_freq)  
         
-        ## checking
+        ## checking \w\w\w\w[0]\w\w -> standardized and normalized snp
         palindromic = sumstats[status].str.match(r'\w\w\w\w[0]\w\w', case=False, flags=0, na=False) & is_palindromic(sumstats,a1="EA",a2="NEA")           
         
         not_palindromic_snp = sumstats[status].str.match(r'\w\w\w\w[0]\w\w', case=False, flags=0, na=False) & (~palindromic)
@@ -391,6 +391,7 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR
         sumstats.loc[not_palindromic_snp,status] = vchange_status(sumstats.loc[not_palindromic_snp,status], 7 ,"9","0")
         
         if verbose: log.write(" -Identified ", sum(palindromic)," palindromic SNPs...")
+        
         palindromic = palindromic&good_chrpos
         
         #palindromic but can not infer
@@ -405,6 +406,17 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR
                                         lambda x:check_strand_status(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,x[5],chr_dict),axis=1)
             sumstats.loc[(palindromic & maf_can_infer),status] = status_inferred.values
         
+        #0 Not palindromic SNPs
+        #1 Palindromic +strand  -> no need to flip
+        #2 palindromic -strand  -> need to flip -> fixed
+        #3 Indel no need flip
+        #4 Unknown Indel -> fixed
+        #5 Palindromic -strand -> need to flip
+        #6 Indel need flip
+        #7 indistinguishable
+        #8 Not matching or No information
+        #9 Unchecked
+        
         status0 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[0]', case=False, flags=0, na=False)  )
         status1 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[1]', case=False, flags=0, na=False)  )
         status5 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[5]', case=False, flags=0, na=False)  )
@@ -418,7 +430,7 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR
         if verbose: log.write("  -Palindromic SNPs with no macthes or no information : ",status8)   
     ### unknow_indel
     
-    unknow_indel = sumstats[status].str.match(r'\w\w\w\w\w[67][89]', case=False, flags=0, na=False)   
+    unknow_indel = sumstats[status].str.match(r'\w\w\w\w\w[6][89]', case=False, flags=0, na=False)   
     if sum(unknow_indel)>0:
         if verbose: log.write(" -Identified ", sum(unknow_indel)," indistinguishable Indels...")
         #if verbose: log.write(" -After filtering by MAF< ", maf_threshold ," , the strand of ", sum(unknow_indel & maf_can_infer ),"  SNPs not on reference genome will be inferred...")
@@ -428,7 +440,7 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR
         
         status3 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[3]', case=False, flags=0, na=False)  )
         status6 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[6]', case=False, flags=0, na=False)  )
-        status8 =  sum( sumstats[status].str.match(r'\w\w\w\w\w[67][8]', case=False, flags=0, na=False)  )
+        status8 =  sum( sumstats[status].str.match(r'\w\w\w\w\w[6][8]', case=False, flags=0, na=False)  )
         
         if verbose: log.write("  -Indels ea/nea match reference : ",status3)
         if verbose: log.write("  -Indels ea/nea need to be flipped : ",status6)
