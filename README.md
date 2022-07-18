@@ -65,7 +65,7 @@ For usage, please check GWASLab document at https://cloufield.github.io/gwaslab/
 
 
 
-## Requirements:
+## Requirements
 - Python >= 3
 - pyVCF >= 0.6.8
 - Biopython >= 1.79
@@ -77,18 +77,17 @@ For usage, please check GWASLab document at https://cloufield.github.io/gwaslab/
 - scipy >= 1.6.2
 - adjustText
 
-## Install:
+## Install
 ```
 pip install gwaslab
 ```
 Current version: 3.0.0
 
-# Usage:
+# Usage
 
 For usage, please check GWASLab document at https://cloufield.github.io/gwaslab/ .
 
---------------------------
-# Log
+# Update Log
 - 3.0.0 first complete version
 - 1.0.0 implemented Sumstats object
 
