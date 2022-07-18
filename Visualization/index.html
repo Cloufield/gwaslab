@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="author" content="HE Yunye">
+    
+    <link rel="shortcut icon" href="../img/favicon.ico">
+
+    
+    <title>Manhattan&QQ - GWASLab</title>
+    
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/v4-shims.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3.3.0/build/web/hack.min.css">
+    <link href='//rsms.me/inter/inter.css' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+    <link href="../css/base.min.css" rel="stylesheet">
+    <link href="../css/cinder.min.css" rel="stylesheet">
+
+    
+        
+        <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.0/build/styles/github.min.css">
+        
+    
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+            <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+        <![endif]-->
+
+    
+
+     
+</head>
+
+<body>
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+
+            
+              <a class="navbar-brand" href="..">GWASLab</a>
+            
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../Tutorial/">Tutorial</a>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sumstats manipulation <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../SumstatsObject/">SumstatsObject</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../StatusCode/">StatusCode</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Standardization/">Standardization&normalization</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../QC%26Filtering/">QC&Filtering</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Harmonization/">Harmonization</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Visualization <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li class="active">
+    <a href="./">Manhattan&QQ</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../EffectSize/">Scatter: effect size comparison</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../AlleleFrequency/">Scatter: allele frequency comparison</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../GeneticCorrelation/">Heatmap: genetic correlation</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Gallery/">Gallery</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Utilities <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../ExtractLead/">Extract Lead Variants</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Format/">Formatting</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../LoadLDSC/">Load LDSC log</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../HeritabilityConversion/">Heritability conversion</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../Reference/">References</a>
+                    </li>
+                
+                
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                            <i class="fas fa-search"></i> Search
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../Harmonization/">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="next" href="../EffectSize/">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/Cloufield/xmind/"><i class="fab fa-github"></i> GitHub</a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+        
+        
+        <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="first-level active"><a href="#visualization">Visualization</a></li>
+            <li class="second-level"><a href="#manhattan-plot-and-qq-plot">Manhattan plot and QQ plot</a></li>
+                
+                <li class="third-level"><a href="#_1"></a></li>
+                <li class="third-level"><a href="#manhattan-and-qq-plot-layout">Manhattan and QQ plot layout</a></li>
+                <li class="third-level"><a href="#skip-low-and-shrink-high">Skip "low" and shrink "high"</a></li>
+                <li class="third-level"><a href="#annotation-with-chrpos-or-a-given-column">Annotation with chr:pos or a given column</a></li>
+                <li class="third-level"><a href="#highlight-specified-loci">Highlight specified loci</a></li>
+                <li class="third-level"><a href="#pinpoint-specified-variants">Pinpoint specified variants</a></li>
+                <li class="third-level"><a href="#maf-stratified-qq-plot">Maf-stratified QQ plot</a></li>
+                <li class="third-level"><a href="#use-rank-or-pos">Use rank or POS</a></li>
+                <li class="third-level"><a href="#colors">Colors</a></li>
+            <li class="second-level"><a href="#quick-plot">Quick plot</a></li>
+                
+            <li class="second-level"><a href="#customized-plot">Customized plot</a></li>
+                
+    </ul>
+</div></div>
+        <div class="col-md-9" role="main">
+
+<h1 id="visualization">Visualization</h1>
+<ul>
+<li>
+<p>Manhattan and QQ plot (MQQ plot)</p>
+</li>
+<li>
+<p>Scatter plot: Effect size comparison</p>
+</li>
+<li>
+<p>Heatmap: Genetic correlation matrix</p>
+</li>
+<li>
+<p>Scatter &amp; Distribution plot : allele frequency comparison</p>
+</li>
+</ul>
+<h2 id="manhattan-plot-and-qq-plot">Manhattan plot and QQ plot</h2>
+<pre><code>import gwaslab as gl
+
+mydata = gl.Sumstats(....)
+
+mydata.plot_mqq(            
+          snpid=None,
+          scaled=False,
+          eaf=None,
+          cut=0,
+          cutfactor=10,
+          mode=&quot;mqq&quot;,
+          mqqratio=3,
+          cut_line_color=&quot;#ebebeb&quot;,
+          windowsizekb=500,
+          anno=None,
+          sig_level=5e-8,
+          sig_line_color=&quot;grey&quot;,
+          suggestive_sig_level=5e-6,
+          stratified=False,
+          maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
+          maf_bin_colors = [&quot;#f0ad4e&quot;,&quot;#5cb85c&quot;, &quot;#5bc0de&quot;,&quot;#000042&quot;],
+          highlight = [],
+          highlight_color =&quot;#33FFA0&quot;,
+          highlight_windowkb = 500,
+          pinpoint=[],
+          pinpoint_color =&quot;#f55142&quot;,
+          title =None,
+          mtitle=None,
+          qtitle=None,
+          figargs= {&quot;figsize&quot;:(15,5)},
+          fontsize = 10,
+          colors = [&quot;#000042&quot;, &quot;#7878BA&quot;],
+          use_rank=False,
+          verbose=True,
+          repel_force=0.03,
+          title_pad=1.08,
+          gc=True,
+          save=None,
+          saveargs={&quot;dpi&quot;:400,&quot;facecolor&quot;:&quot;white&quot;},
+          log=gl.Log()
+          )
+</code></pre>
+<h3 id="_1"></h3>
+<h3 id="manhattan-and-qq-plot-layout">Manhattan and QQ plot layout</h3>
+<p><code>mode</code> : determine the layout of manhattan plot and qq plot.</p>
+<p><code>"mqq"</code>or <code>"qqm"</code>: side-by-side manhattan and QQ plt. </p>
+<ul>
+<li>
+<p><code>mqq</code>: left manhatan, right QQ</p>
+</li>
+<li>
+<p><code>qqm</code>: left QQ , right manhatan</p>
+</li>
+<li>
+<p><code>"m"</code>: only manhattan plot</p>
+</li>
+<li>
+<p><code>"qq"</code>: only qq plot</p>
+</li>
+</ul>
+<p><code>mqqratio</code>: width ratio</p>
+<p><img alt="mqq_mode" src="images/mqq_mode.jpg" /></p>
+<h3 id="skip-low-and-shrink-high">Skip "low" and shrink "high"</h3>
+<p><code>skip</code> : sometimes it is not necessary to plot all variants, we can skip the insignicant variants . For example, we can exclude varints with -log10p lower than 3 from the plot by specifying <code>skip=3</code></p>
+<p><code>cut</code> : loci with extremly large -log10(P) value are very likely to dwarf other significant loci , so we want to scale down the extrame loci from a certain threshold. </p>
+<p><code>cutfactor</code>:  shrinkage factor, default is 10 </p>
+<p><code>cut_line_color</code>: the color of the line above which y axis is rescaled </p>
+<p><img alt="mqq_line" src="images/mqq_line.jpg" /></p>
+<h3 id="annotation-with-chrpos-or-a-given-column">Annotation with chr:pos or a given column</h3>
+<p><code>anno</code>: True or a list</p>
+<p>if anno == True: the variants to annotate will be selected atomatically using a sliding window with <code>windowsize=500</code> (kb). </p>
+<p>if anno="col_name":</p>
+<p>if a list is provided:</p>
+<p><code>repel_force</code> : when the annotation overlaps with other, try increasing the repel_force to increase the padding between annotations.</p>
+<p><code>anno_set</code>: if you want to annoatte only a few specific variants, you can simply provide a list of SNPIDs. </p>
+<h3 id="highlight-specified-loci">Highlight specified loci</h3>
+<p>Highlight specified loci. </p>
+<p><code>highlight</code> : specify the lead variants of loci for highlighting.</p>
+<p><code>highlight_color</code>: specify the color ussed for highlighting.</p>
+<p><code>highlight_windowkb</code> : specify the span of highlighted region ( in kp)</p>
+<h3 id="pinpoint-specified-variants">Pinpoint specified variants</h3>
+<p>Pinpoint certain variants in the manhattan plot.</p>
+<p><code>pinpint</code> : a list of SNPIDs</p>
+<p><code>pinpoint_color</code> : color for pinpoint</p>
+<h3 id="maf-stratified-qq-plot">Maf-stratified QQ plot</h3>
+<p><code>stratified</code>: If True, plot MAF straitified QQ plot.</p>
+<p><code>maf_bins</code>: maf bins for straitification.</p>
+<p><code>maf_bin_colors</code>: colors used for each bin.</p>
+<h3 id="use-rank-or-pos">Use rank or POS</h3>
+<p><code>use_rank</code>: if True, use the rank instead of real base pair position.</p>
+<p>use simply rank and basepair position to draw the x axis.</p>
+<h3 id="colors">Colors</h3>
+<h2 id="quick-plot">Quick plot</h2>
+<pre><code>
+</code></pre>
+<h2 id="customized-plot">Customized plot</h2>
+<pre><code>
+</code></pre></div>
+        
+        
+    </div>
+
+    
+      <footer class="col-md-12 text-center">
+          
+          
+            <hr>
+            <p>
+            <small>GWASLab is licensed under the MIT license</small><br>
+            
+            <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</small>
+            </p>
+          
+
+          
+          
+      </footer>
+    
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../js/bootstrap-3.0.3.min.js"></script>
+
+    
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.0/build/highlight.min.js"></script>
+        
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    <script>var base_url = ".."</script>
+    
+    <script src="../js/base.js"></script>
+    <script src="../search/main.js"></script>
+
+    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+    </body>
+
+</html>

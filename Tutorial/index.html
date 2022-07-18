@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="author" content="HE Yunye">
+    
+    <link rel="shortcut icon" href="../img/favicon.ico">
+
+    
+    <title>Tutorial - GWASLab</title>
+    
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/v4-shims.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3.3.0/build/web/hack.min.css">
+    <link href='//rsms.me/inter/inter.css' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+    <link href="../css/base.min.css" rel="stylesheet">
+    <link href="../css/cinder.min.css" rel="stylesheet">
+
+    
+        
+        <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.0/build/styles/github.min.css">
+        
+    
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+            <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+        <![endif]-->
+
+    
+
+     
+</head>
+
+<body>
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+
+            
+              <a class="navbar-brand" href="..">GWASLab</a>
+            
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                
+                
+                
+                    <li class="active">
+                        <a href="./">Tutorial</a>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sumstats manipulation <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../SumstatsObject/">SumstatsObject</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../StatusCode/">StatusCode</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Standardization/">Standardization&normalization</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../QC%26Filtering/">QC&Filtering</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Harmonization/">Harmonization</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Visualization <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../Visualization/">Manhattan&QQ</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../EffectSize/">Scatter: effect size comparison</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../AlleleFrequency/">Scatter: allele frequency comparison</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../GeneticCorrelation/">Heatmap: genetic correlation</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Gallery/">Gallery</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Utilities <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../ExtractLead/">Extract Lead Variants</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Format/">Formatting</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../LoadLDSC/">Load LDSC log</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../HeritabilityConversion/">Heritability conversion</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../Reference/">References</a>
+                    </li>
+                
+                
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                            <i class="fas fa-search"></i> Search
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="..">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="next" href="../SumstatsObject/">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/Cloufield/xmind/"><i class="fab fa-github"></i> GitHub</a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+        
+        
+        <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="first-level active"><a href="#quick-start">Quick Start</a></li>
+            <li class="second-level"><a href="#standardization-normalization-sanity-check">Standardization &amp; normalization &amp; sanity check</a></li>
+                
+            <li class="second-level"><a href="#_1"></a></li>
+                
+            <li class="second-level"><a href="#filtering">Filtering</a></li>
+                
+            <li class="second-level"><a href="#extract-lead-variants">Extract lead variants</a></li>
+                
+            <li class="second-level"><a href="#customized-manhattan-plot">Customized manhattan plot</a></li>
+                
+            <li class="second-level"><a href="#_2"></a></li>
+                
+            <li class="second-level"><a href="#harmonise-the-sumstats">Harmonise the sumstats</a></li>
+                
+                <li class="third-level"><a href="#all-in-one-function">All-in-one function</a></li>
+                <li class="third-level"><a href="#align-with-reference-genome">Align with reference genome</a></li>
+                <li class="third-level"><a href="#filp-allele-specific-statistics">Filp allele-specific statistics</a></li>
+                <li class="third-level"><a href="#annotate-rsid">Annotate rsID</a></li>
+                <li class="third-level"><a href="#infer-strand-for-palindromic-snps-and-check-ref-allele-for-indels">Infer strand for palindromic SNPs and check ref allele for indels</a></li>
+                <li class="third-level"><a href="#filp-allele-specific-statistics-again-for-palindromic-snps-and-indels">Filp allele-specific statistics again for palindromic SNPs and indels</a></li>
+            <li class="second-level"><a href="#check-difference-in-allele-frequency">Check difference in allele frequency</a></li>
+                
+                <li class="third-level"><a href="#plot-daf">Plot DAF</a></li>
+            <li class="second-level"><a href="#liftover">Liftover</a></li>
+                
+    </ul>
+</div></div>
+        <div class="col-md-9" role="main">
+
+<h1 id="quick-start">Quick Start</h1>
+<p>Using a jupyter notebook, we first import gwaslab package:</p>
+<pre><code class="language-python">import gwaslab as gl
+</code></pre>
+<p>The sample sumstats we use in this study: </p>
+<pre><code class="language-bash">!wget -O t2d_bbj.txt.gz http://jenger.riken.jp/14/
+</code></pre>
+<p>Let's import this raw sumstats into the gwaslab Sumstats Object by specifying the necessary columns, and all data are imported as strings.</p>
+<pre><code class="language-python">mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
+             snpid=&quot;SNP&quot;,
+             chrom=&quot;CHR&quot;,
+             pos=&quot;POS&quot;,
+             ea=&quot;ALT&quot;,
+             nea=&quot;REF&quot;,
+             eaf=&quot;Frq&quot;,
+             beta=&quot;BETA&quot;,
+             se=&quot;SE&quot;,
+             p=&quot;P&quot;,
+             direction=&quot;Dir&quot;,
+             n=&quot;N&quot;,
+             build=&quot;19&quot;)
+</code></pre>
+<p>See details in <a href="../SumstatsObject/">SumstatsObject</a>.</p>
+<p>Maybe the first thing you want to check is the manhattan plot, you can do this with one line of code, gwaslab will perform a minimum QC for just the plotting.</p>
+<pre><code class="language-python">mysumstats.plot_mqq()
+</code></pre>
+<p><img alt="tutorial_mqq" src="images/tutorial_mqq.jpg" /></p>
+<h2 id="standardization-normalization-sanity-check">Standardization &amp; normalization &amp; sanity check</h2>
+<p>Looks good, but we need to perform QC to make sure there are no unexpected errors:</p>
+<p>simply run:</p>
+<pre><code class="language-python">mysumstats.basic_check()
+</code></pre>
+<p><code>.basic_check()</code> is a wrapper of all the following basic functions, you can use these separately.</p>
+<pre><code class="language-python">mysumstats.fix_ID()
+mysumstats.fix_chr()
+mysumstats.fix_pos()
+mysumstats.fix_allele()
+mysumstats.check_sanity()
+mysumstats.normalize_allele()
+</code></pre>
+<p>See details in <a href="../Standardization/">Standardization</a>.</p>
+<h2 id="_1"></h2>
+<h2 id="filtering">Filtering</h2>
+<p>There are more than 10 million variants in the original sumstats and it will take long to process the entrie dataset. </p>
+<p>So, let's just filter-in (include) variants with P&lt;0.00005 and filter-out (exclude) variants on ChrX.  This could also be used for filtering other columns like INFO,N and so forth if you need. </p>
+<pre><code class="language-python">mysumstats.filter_in(lt={&quot;P&quot;:0.00005})
+mysumstats.filter_out(eq={&quot;CHR&quot;:&quot;X&quot;})
+</code></pre>
+<p>See details in <a href="../QC%26Filtering/">QC&amp;Filtering</a>.</p>
+<h2 id="extract-lead-variants">Extract lead variants</h2>
+<p>Let's extract the lead variants in each significant loci to check our data. </p>
+<p>The significant loci are detected based on a sliding window (default window size: 500kb)</p>
+<pre><code class="language-python">mysumstats.get_lead()
+</code></pre>
+<p>See details in <a href="../ExtractLead/">ExtractLead</a>.</p>
+<h2 id="customized-manhattan-plot">Customized manhattan plot</h2>
+<p>GWASlab can plot more complicated manhattan plot: (not finished yet)</p>
+<pre><code class="language-python">mysumstats.plot_mqq(cut=20, skip=2,
+                    anno=True,
+                    anno_set=[],
+                    highlight=[],
+                    pinpoint=[] 
+)
+</code></pre>
+<p>See details in <a href="../Visualization/">Visualization</a>.</p>
+<h2 id="_2"></h2>
+<h2 id="harmonise-the-sumstats">Harmonise the sumstats</h2>
+<h3 id="all-in-one-function">All-in-one function</h3>
+<p>After checking the basics of the sumstats, next we may need to harmonise the sumstats for downstream analysis. </p>
+<p>For harmonization, we need reference files fasta and vcf. </p>
+<pre><code class="language-python">sumstats.harmonise( basic_check=False,
+                    ref_seq=“./human_g1k_v37.fasta.gz”,
+                    ref_rsid=“./00-All.vcf.gz”,
+                    ref_infer=“./EAS.all.split_norm_af.vcf.gz”,
+                    ref_alt_freq=“AF”,
+    )
+</code></pre>
+<ul>
+<li><code>ref_seq</code> : reference genome sequence in fasta format for alignment</li>
+<li><code>ref_rsid</code> : reference vcf for rsID annotation</li>
+<li><code>ref_infer</code> : reference vcf for strand inferring (require allele frequency in INFO filed.)</li>
+<li><code>ref_alt_freq</code> : key word for alternative allele frequency in the reference vcf file.</li>
+</ul>
+<hr />
+<p>Some available and reliable reference files we can use:</p>
+<ol>
+<li>
+<p>reference genome sequence fasta file. (For example, in the tutorial, hg19 reference sequence <a href="http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz">human_g1k_v37.fasta.gz</a>  from http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/ will be used)</p>
+</li>
+<li>
+<p>reference vcf file for rsID annotation (For example: https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz )</p>
+</li>
+<li>
+<p>reference vcf for allele frequency (can be the same as 2, for example from 1KG <a href="http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/">Index of /vol1/ftp/release/20130502/</a> (manipulation of the vcf is needed) or gnomad).</p>
+</li>
+</ol>
+<p>See details in <a href="../Reference/">Reference</a>.</p>
+<p>.harmonise() is basically a wrapper of the following functions.</p>
+<pre><code>mysumstats.basic_check()
+mysumstats.check_ref()
+mysumstats.flip_allele_stats()
+mysumstats.infer_strand()
+</code></pre>
+<p>See details in <a href="../Harmonization/">Harmonization</a>.</p>
+<hr />
+<h3 id="align-with-reference-genome">Align with reference genome</h3>
+<p>let's then align the NEA (non-effect allele) with reference sequence from a fasta file.  </p>
+<pre><code class="language-python">mysumstats.check_ref(ref_path = &quot;./human_g1k_v37.fasta.gz&quot;)
+</code></pre>
+<p>In this case,  the hg19 reference genome was downloaded from 1KG.</p>
+<h3 id="filp-allele-specific-statistics">Filp allele-specific statistics</h3>
+<p>Gwaslab will check the status code and flip only those needed.</p>
+<pre><code class="language-python">mysumstats.flip_allele_stats()
+</code></pre>
+<h3 id="annotate-rsid">Annotate rsID</h3>
+<p>Gwaslab can annotate the vairant with rsID using a reference vcf. </p>
+<p>For this purpose, we use the vcf file provided by dbsnp. (In this tutorial, b151/hg19 version was used)</p>
+<pre><code class="language-python">mmysumstats.flip_allele_stats(path=&quot;./00-All.vcf.gz&quot;)
+</code></pre>
+<h3 id="infer-strand-for-palindromic-snps-and-check-ref-allele-for-indels">Infer strand for palindromic SNPs and check ref allele for indels</h3>
+<p>After the alignment with reference genome sequence, next we try to infer the strand of palindromic SNPs and also check the ref allele for indels.</p>
+<p>Note: GWASLab will only infer the strand for those that are already aligned with reference genome.</p>
+<pre><code class="language-python">mysumstats.infer_strand(ref_infer=&quot;./EAS.all.split_norm_af.vcf.gz&quot;,
+                        ref_alt_freq=&quot;AF&quot;)
+</code></pre>
+<p>See details in <a href="../Reference/">Reference</a> on how to process the 1000 genome raw vcf.</p>
+<h3 id="filp-allele-specific-statistics-again-for-palindromic-snps-and-indels">Filp allele-specific statistics again for palindromic SNPs and indels</h3>
+<p>Gwaslab will check the status code and flip only those needed.</p>
+<pre><code class="language-python">mysumstats.flip_allele_stats()
+</code></pre>
+<hr />
+<h2 id="check-difference-in-allele-frequency">Check difference in allele frequency</h2>
+<p>After aligment and correct strands for panlindromic SNPs, you may want to double check the differences in allele frequency between the EAF from sumstats and ALT allele frequency in a reference vcf  (For example ,1000 genome) </p>
+<p>See details in <a href="../Reference/">Reference</a> on how to process the 1000 genome raw vcf.</p>
+<p>You can simply use .check_daf() to check the difference in allele frequencies:</p>
+<pre><code class="language-python">mysumstats.check_daf()
+</code></pre>
+<p>After checking, use plot_daf() to visualize the results. It will generate two figures: 1. a scatter plot 2. a distribution plot.</p>
+<h3 id="plot-daf">Plot DAF</h3>
+<pre><code>mysumstats.plot_daf()
+</code></pre>
+<hr />
+<h2 id="liftover">Liftover</h2>
+<pre><code class="language-python">mysumstats.liftover(n_cores=1,from_build=&quot;19&quot;, to_build=&quot;38&quot;)
+</code></pre>
+<p>Gwaslab only liftover CHR and POS, and when lifted, the last two digits status code will be rolled back to 99. Since for difference reference genome, the reference allele or strand might be reverse, so it is need to align and check agin. </p>
+<p>See details in <a href="../Harmonization/">Harmonization</a>.</p></div>
+        
+        
+    </div>
+
+    
+      <footer class="col-md-12 text-center">
+          
+          
+            <hr>
+            <p>
+            <small>GWASLab is licensed under the MIT license</small><br>
+            
+            <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</small>
+            </p>
+          
+
+          
+          
+      </footer>
+    
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../js/bootstrap-3.0.3.min.js"></script>
+
+    
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.0/build/highlight.min.js"></script>
+        
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    <script>var base_url = ".."</script>
+    
+    <script src="../js/base.js"></script>
+    <script src="../search/main.js"></script>
+
+    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+    </body>
+
+</html>

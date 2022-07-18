@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="author" content="HE Yunye">
+    
+    <link rel="shortcut icon" href="../img/favicon.ico">
+
+    
+    <title>Standardization&normalization - GWASLab</title>
+    
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/v4-shims.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3.3.0/build/web/hack.min.css">
+    <link href='//rsms.me/inter/inter.css' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+    <link href="../css/base.min.css" rel="stylesheet">
+    <link href="../css/cinder.min.css" rel="stylesheet">
+
+    
+        
+        <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.0/build/styles/github.min.css">
+        
+    
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+            <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+        <![endif]-->
+
+    
+
+     
+</head>
+
+<body>
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+
+            
+              <a class="navbar-brand" href="..">GWASLab</a>
+            
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../Tutorial/">Tutorial</a>
+                    </li>
+                
+                
+                
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sumstats manipulation <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../SumstatsObject/">SumstatsObject</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../StatusCode/">StatusCode</a>
+</li>
+
+                        
+                            
+<li class="active">
+    <a href="./">Standardization&normalization</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../QC%26Filtering/">QC&Filtering</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Harmonization/">Harmonization</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Visualization <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../Visualization/">Manhattan&QQ</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../EffectSize/">Scatter: effect size comparison</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../AlleleFrequency/">Scatter: allele frequency comparison</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../GeneticCorrelation/">Heatmap: genetic correlation</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Gallery/">Gallery</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Utilities <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="../ExtractLead/">Extract Lead Variants</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../Format/">Formatting</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../LoadLDSC/">Load LDSC log</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../HeritabilityConversion/">Heritability conversion</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../Reference/">References</a>
+                    </li>
+                
+                
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                            <i class="fas fa-search"></i> Search
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../StatusCode/">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="next" href="../QC%26Filtering/">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/Cloufield/xmind/"><i class="fab fa-github"></i> GitHub</a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+        
+        
+        <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="first-level active"><a href="#standardization-and-normalization">Standardization and normalization</a></li>
+            <li class="second-level"><a href="#methods-summary">Methods Summary</a></li>
+                
+            <li class="second-level"><a href="#1-ids">1. IDs</a></li>
+                
+            <li class="second-level"><a href="#2-chr">2. CHR</a></li>
+                
+            <li class="second-level"><a href="#3-pos">3. POS</a></li>
+                
+            <li class="second-level"><a href="#4-allele">4. Allele</a></li>
+                
+                <li class="third-level"><a href="#41-standardization">4.1 Standardization</a></li>
+                <li class="third-level"><a href="#42-normalization">4.2 Normalization</a></li>
+            <li class="second-level"><a href="#5-coordinate-sorting">5. Coordinate sorting</a></li>
+                
+            <li class="second-level"><a href="#6-column-sorting">6. Column sorting</a></li>
+                
+    </ul>
+</div></div>
+        <div class="col-md-9" role="main">
+
+<h1 id="standardization-and-normalization">Standardization and normalization</h1>
+<pre><code class="language-python">import gwaslab as gl
+sumstats = gl.Sumstats(...)
+</code></pre>
+<p>After loading raw sumstats into gwaslab Sumstats Object, the first thing we probably want to do is to standardize the variant-related notations and check if there are any unexpected errors in the statistics. When checking is finished, the status code will be automatically changed.</p>
+<h2 id="methods-summary">Methods Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Sumstats Methods</th>
+<th>Options</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.fix_ID()</code></td>
+<td><code>fixchrpos=False</code>, <br/><code>fixid=False</code>,<br/><code>overwrite=False</code></td>
+<td>check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS</td>
+</tr>
+<tr>
+<td><code>.fix_CHR()</code></td>
+<td><code>remove=False</code></td>
+<td>standardize chromsome notation</td>
+</tr>
+<tr>
+<td><code>.fix_POS()</code></td>
+<td><code>remove=False</code></td>
+<td>standardize basepair posituion notation and filter out bad values</td>
+</tr>
+<tr>
+<td><code>.fix_allele()</code></td>
+<td><code>remove=False</code></td>
+<td>standardize base notation to ATCG</td>
+</tr>
+<tr>
+<td><code>.normalize_allele()</code></td>
+<td><code>n_cores=1</code></td>
+<td>normalize indels (only support ATA:AA -&gt; AT:A but not -:T)</td>
+</tr>
+<tr>
+<td><code>.sort_coordinate()</code></td>
+<td></td>
+<td>sort the variant coordinates</td>
+</tr>
+</tbody>
+</table>
+<h2 id="1-ids">1. IDs</h2>
+<p>Gwaslab requires at least one ID columns for sumstats, either in the form of SNPID or rsID, (or both). Gwaslab will automatically check if SNPID is mixed in rsID.</p>
+<p><code>SNPID</code> : it could be user provided IDs, or in <code>CHR:POS:REF:ALT</code> format, delimiter can be":","_" or "-"</p>
+<p><code>rsID</code>: dbSNP rsIDs</p>
+<p>gwaslab checks if the IDs you provided is valid SNPID or rsID.  It can also extract CHR and POS information from the CHR:POS:REF:ALT formatted IDs using <code>.fix_ID()</code> method.</p>
+<p>SNPID will be fixed by <code>CHR:POS:NEA:EA</code>  only when the variants is already aligned with reference genome. Otherwise, a temporary SNPID in the format of <code>CHR:POS</code> will be given.</p>
+<p><code>.fix_ID()</code> : check or fix SNPID and rsID.   </p>
+<pre><code class="language-python">sumstats.fixID(fixchrpos=False,
+               fixid=False,
+               overwrite=False)
+</code></pre>
+<h2 id="2-chr">2. CHR</h2>
+<p><code>.fix_CHR()</code></p>
+<p>CHR will be standardized to <code>1-22,X,Y,MT</code></p>
+<p>Leading "chr" and leading 0s will be stripped.</p>
+<pre><code class="language-python">sumstats.fix_CHR(remove=False)
+</code></pre>
+<h2 id="3-pos">3. POS</h2>
+<p><code>.fix_POS()</code></p>
+<p>Values in POS must be positive integer numbers.</p>
+<p>Basepair position will be force converted to integers.</p>
+<p>Invalid pos will be converted to NA. </p>
+<p>(not implemented yet) After conversion, gwaslab will also sanity check if POS is in the range of 1 to 300,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  </p>
+<pre><code class="language-python">sumstats.fix_POS(remove=False)
+</code></pre>
+<h2 id="4-allele">4. Allele</h2>
+<h3 id="41-standardization">4.1 Standardization</h3>
+<p><code>.fix_allele()</code></p>
+<p>Currently, gwaslab only support processing SNPs and INDELs.</p>
+<p>All alleles will be checked if containing letters other than <code>ATCG</code>.</p>
+<p>Copy number variant (CNV) like <code>&lt;CN0&gt;</code> won't be recognized.</p>
+<p>Lower cases will converted to UPPERCASES.</p>
+<pre><code class="language-python">sumstats.fix_allele(remove=False)
+</code></pre>
+<h3 id="42-normalization">4.2 Normalization</h3>
+<p><code>.normalize_allele()</code></p>
+<p>Alleles will be normalized accroding to left alignment and parsimony principal. (For details: add link here )</p>
+<p>For example, chr1:123456:ATG:AT will be normalized to chr1:123455:TG:T.</p>
+<p>Note: Currently, the normalizeation is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information need to be obtained from a reference genome. </p>
+<pre><code class="language-python">sumstats.normalize_allele(n_cores=1)
+</code></pre>
+<h2 id="5-coordinate-sorting">5. Coordinate sorting</h2>
+<p>Sort genomic coordinates， 1-22 X Y MT</p>
+<pre><code class="language-python">sumstats.sort_coordinate()
+</code></pre>
+<h2 id="6-column-sorting">6. Column sorting</h2>
+<p>The default column order is "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",  "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS" and other additional columns.</p>
+<pre><code>sumstats.sort_columns()
+</code></pre></div>
+        
+        
+    </div>
+
+    
+      <footer class="col-md-12 text-center">
+          
+          
+            <hr>
+            <p>
+            <small>GWASLab is licensed under the MIT license</small><br>
+            
+            <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</small>
+            </p>
+          
+
+          
+          
+      </footer>
+    
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="../js/bootstrap-3.0.3.min.js"></script>
+
+    
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.0/build/highlight.min.js"></script>
+        
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    <script>var base_url = ".."</script>
+    
+    <script src="../js/base.js"></script>
+    <script src="../search/main.js"></script>
+
+    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+    </body>
+
+</html>
