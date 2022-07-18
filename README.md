@@ -1,37 +1,87 @@
-# gwaslab
+![gwaslab_logo](https://cloufield.github.io/gwaslab/images/index_logo.jpg)
 A collection of handy python scripts for GWAS. 
+Just want to make life eaiser and save myself from repetitive work.
 
-Just want to make lif eaiser and save myself from repetitive work.
+For usage, please check GWASLab document at https://cloufield.github.io/gwaslab/ .
 
 ## What you can do with gwaslab:
-1. [Side-by-side Manhattan and QQ plot](#create-manhattan-plot-and-qq-plot-with-just-one-line)
-2. [Manhattan plot](#manhattan-plot)
-3. [QQ plot](#qq-plot)
-4. [Calculate lamda GC](#calculate-genomic-inflation-factor)
-5. [Select top SNPs based on a given window size.]
-6. Convert beta/se <-> OR/95%L_U/95%L_L
-7. Select hapmap3 SNPs from sumstats and convert to ldsc format
-8. [Convert Observed scale heritability to liability scale heritability](#converting-observed-scale-heritability-to-liability-scale-heritability)
-9. [read ldsc log and extract numeric results directly into a pandas dataframe.](#read-ldsc-results-in-to-pandas-dataframe)
-10. compare the effect size of select variants / or automatically detected lead variants from two sumstats.
+### Standardization, Normalization & Harmonization
 
-![屏幕截图 2022-03-28 235029](https://user-images.githubusercontent.com/40289485/160425251-63549fcd-73b8-4328-b00d-d7b83e26d4e9.jpg)
+- CHR and POS notation standardization
+
+- Variant POS and allele normalization
+
+- Genome build : Liftover
+
+- Reference allele alignment using a reference genome sequence
+
+- rsID assignment based on CHR, POS, REF and ALT
+
+- CHR POS assignment based on rsID using a reference VCF
+
+- Palindromic SNPs and indels strand inference using a reference VCF
+
+- Check allele frequency discrepancy using a reference VCF
+
+### Quality control, Value conversion & Filtering
+
+- Statistics sanity check
+
+- Equivalent statistics conversion
+  
+  - BETA/SE , OR/OR_95L/OR_95U
+  
+  - P, Z, CHISQ, MLOG10
+
+- Extract/exclude hapmap3 variants 
+
+- Extract/exclude MHC variants
+
+- Filtering values.
+
+### Visualization
+
+- Mqq plot : Manhattan plot and QQ plot side by side
+
+- Heatmap : ldsc-rg genetic correlation matrix
+
+- Scatter Plot : variant effect size comparison with sumstats
+
+- Scatter Plot : allele frequency comparison 
+
+### Other Utilities
+
+- Read ldsc h2 or rg outputs directly as DataFrames
+
+- Extract lead SNPs given a window size
+
+- Logging : keep a complete record of manipulations from raw data to munged data
+
+- Formating GWAS sumstats in certain formats
+  
+  - LDSC / MAGMA / METAL / MR-MEGA / FUMA
+...
+
+
 
 
 ## Requirements:
-1. Python>3  
-2. "scipy"  
-3. "numpy"  
-4. "pandas"  
-5. "matplotlib"  
-6. "seaborn" 
-7. "adjustText"
+- Python >= 3
+- pyVCF >= 0.6.8
+- Biopython >= 1.79
+- liftover >= 1.1.13
+- pandas >= 1.2.4
+- numpy >= 1.21.2
+- matplotlib>3.5
+- seaborn >= 0.11.1
+- scipy >= 1.6.2
+- adjustText
 
 ## Install:
 ```
 pip install gwaslab
 ```
-Current version: 1.0.4
+Current version: 3.0.0
 
 # Usage:
 
@@ -52,8 +102,7 @@ AF = gl.Sumstats("./AF_bbj.txt.gz",
                    n=12121,
                    p="PVALUE",
                    beta="EFFECT1",
-                   se="STDERR",
-                   other=["WALDCHISQ"])
+                   se="STDERR")
 
 ## creat qqplot and manhattan plot with just one line
 myplot = AF.plot_mqq(
