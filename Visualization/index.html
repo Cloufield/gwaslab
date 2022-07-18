@@ -325,13 +325,13 @@ mydata.plot_mqq(
 </li>
 </ul>
 <p><code>mqqratio</code>: width ratio</p>
-<p><img alt="mqq_mode" src="images/mqq_mode.jpg" /></p>
+<p><img alt="mqq_mode" src="../images/mqq_mode.jpg" /></p>
 <h3 id="skip-low-and-shrink-high">Skip "low" and shrink "high"</h3>
 <p><code>skip</code> : sometimes it is not necessary to plot all variants, we can skip the insignicant variants . For example, we can exclude varints with -log10p lower than 3 from the plot by specifying <code>skip=3</code></p>
 <p><code>cut</code> : loci with extremly large -log10(P) value are very likely to dwarf other significant loci , so we want to scale down the extrame loci from a certain threshold. </p>
 <p><code>cutfactor</code>:  shrinkage factor, default is 10 </p>
 <p><code>cut_line_color</code>: the color of the line above which y axis is rescaled </p>
-<p><img alt="mqq_line" src="images/mqq_line.jpg" /></p>
+<p><img alt="mqq_line" src="../images/mqq_line.jpg" /></p>
 <h3 id="annotation-with-chrpos-or-a-given-column">Annotation with chr:pos or a given column</h3>
 <p><code>anno</code>: True or a list</p>
 <p>if anno == True: the variants to annotate will be selected atomatically using a sliding window with <code>windowsize=500</code> (kb). </p>
