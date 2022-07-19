@@ -364,7 +364,7 @@ def is_palindromic(sumstats,a1="EA",a2="NEA"):
     palindromic = gc | cg | at | ta 
     return palindromic
 
-def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
+def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,remove_snp="",remove_indel="",chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
     
     if verbose: log.write("Start to infer strand for palindromic SNPs...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
@@ -417,17 +417,28 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR
         #8 Not matching or No information
         #9 Unchecked
         
-        status0 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[0]', case=False, flags=0, na=False)  )
-        status1 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[1]', case=False, flags=0, na=False)  )
-        status5 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[5]', case=False, flags=0, na=False)  )
-        status7 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[7]', case=False, flags=0, na=False)  )
-        status8 =  sum( sumstats[status].str.match(r'\w\w\w\w\w[123][8]', case=False, flags=0, na=False)  )
+        status0 = sumstats[status].str.match(r'\w\w\w\w\w\w[0]', case=False, flags=0, na=False)  
+        status1 = sumstats[status].str.match(r'\w\w\w\w\w\w[1]', case=False, flags=0, na=False)  
+        status5 = sumstats[status].str.match(r'\w\w\w\w\w\w[5]', case=False, flags=0, na=False)  
+        status7 = sumstats[status].str.match(r'\w\w\w\w\w\w[7]', case=False, flags=0, na=False)  
+        status8 = sumstats[status].str.match(r'\w\w\w\w\w[123][8]', case=False, flags=0, na=False)  
         
-        if verbose: log.write("  -Non-palindromic : ",status0)
-        if verbose: log.write("  -Palindromic SNPs on + strand: ",status1)
-        if verbose: log.write("  -Palindromic SNPs on - strand and need to be flipped:",status5)   
-        if verbose: log.write("  -Palindromic SNPs with maf not availble to infer : ",status7)  
-        if verbose: log.write("  -Palindromic SNPs with no macthes or no information : ",status8)   
+        if verbose: log.write("  -Non-palindromic : ",sum(status0))
+        if verbose: log.write("  -Palindromic SNPs on + strand: ",sum(status1))
+        if verbose: log.write("  -Palindromic SNPs on - strand and need to be flipped:",sum(status5))   
+        if verbose: log.write("  -Palindromic SNPs with maf not availble to infer : ",sum(status7))  
+        if verbose: log.write("  -Palindromic SNPs with no macthes or no information : ",sum(status8))  
+            
+        if ("7" in remove_snp) and ("8" in remove_snp) :
+            if verbose: log.write("  -Palindromic SNPs with maf not availble to infer and with no macthes or no information will will be removed") 
+            sumstats = sumstats.loc[~(status7 | status8),:]
+        elif "8" in remove_snp:
+            if verbose: log.write("  -Palindromic SNPs with no macthes or no information will be removed")
+            sumstats = sumstats.loc[~status8,:]
+        else:
+            if verbose: log.write("  -Palindromic SNPs with maf not availble to infer will be removed") 
+            sumstats = sumstats.loc[~status7,:]
+            
     ### unknow_indel
     
     unknow_indel = sumstats[status].str.match(r'\w\w\w\w\w[6][89]', case=False, flags=0, na=False)   
@@ -436,16 +447,18 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR
         #if verbose: log.write(" -After filtering by MAF< ", maf_threshold ," , the strand of ", sum(unknow_indel & maf_can_infer ),"  SNPs not on reference genome will be inferred...")
         if verbose: log.write(" -Indistinguishable Indels will be inferred from reference vcf ref and alt...")
         status_inderred = sumstats.loc[unknow_indel, [chr,pos,ref,alt,status]].apply(lambda x:check_unkonwn_indel(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,ref_alt_freq,x[4],chr_dict),axis=1)
-        sumstats.loc[unknow_indel,status] = status_inderred.values 
+        sumstats.loc[unknow_indel,status] = status_inderred.values.copy() 
         
-        status3 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[3]', case=False, flags=0, na=False)  )
-        status6 =  sum( sumstats[status].str.match(r'\w\w\w\w\w\w[6]', case=False, flags=0, na=False)  )
-        status8 =  sum( sumstats[status].str.match(r'\w\w\w\w\w[6][8]', case=False, flags=0, na=False)  )
+        status3 =  sumstats[status].str.match(r'\w\w\w\w\w\w[3]', case=False, flags=0, na=False)  
+        status6 =  sumstats[status].str.match(r'\w\w\w\w\w\w[6]', case=False, flags=0, na=False)  
+        status8 =  sumstats[status].str.match(r'\w\w\w\w\w[6][8]', case=False, flags=0, na=False)  
         
-        if verbose: log.write("  -Indels ea/nea match reference : ",status3)
-        if verbose: log.write("  -Indels ea/nea need to be flipped : ",status6)
-        if verbose: log.write("  -Indels with no macthes or no information : ",status8)
-                       
+        if verbose: log.write("  -Indels ea/nea match reference : ",sum(status3))
+        if verbose: log.write("  -Indels ea/nea need to be flipped : ",sum(status6))
+        if verbose: log.write("  -Indels with no macthes or no information : ",sum(status8))
+        if "8" in remove_indel:
+            if verbose: log.write("  -Indels with no macthes or no information will be removed")
+            sumstats = sumstats.loc[~status8,:]     
     return sumstats
 ################################################################################################################
 def checkaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
