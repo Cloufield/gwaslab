@@ -238,12 +238,19 @@ def fixID(sumstats,
     
 ###############################################################################################################
 #20220514 
-def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',verbose=True,log=gl.Log()):
+def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col=None,keep_ascend=True,verbose=True,log=gl.Log()):
     '''
     remove duplicate SNPs based on  1. SNPID, EA, and NEA
     remove duplicate SNPs based on  2. rsID for non-NA variants
     remove multiallelic SNPs based on  3. chr pos 
     '''
+    
+    if keep_col is not None : 
+        if keep_col in sumstats.columns:
+            if verbose: log.write("Start to sort the sumstats using" + keep_col +"...")
+            sumstats = sumstats.sort_values(by=keep_col,ascending=keep_ascend)
+        else:
+            raise ValueError("keep_col was not detected.")
     total_number = len(sumstats)  
     if (snpid in sumstats.columns) and (nea in sumstats.columns) and (ea in sumstats.columns) and "d" in mode:
         if verbose: log.write("Start to remove duplicated variants based on snpid,ea and nea...")
@@ -262,7 +269,6 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         sumstats = sumstats.loc[sumstats[rsid].isna() | (~sumstats.duplicated(subset=rsid, keep=keep)),:]
         after_number=len(sumstats)   
         if verbose:  log.write(" -Removed ",pre_number -after_number ," based on rsID...")
-
       
     if (chrom in sumstats.columns) and (pos in sumstats.columns) and "m" in mode:
         pre_number =len(sumstats) 
@@ -273,6 +279,9 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         if verbose:  log.write(" -Removed ",total_number -after_number," multiallelic variants in total.")   
     after_number=len(sumstats)   
     if verbose:  log.write(" -Removed ",total_number -after_number," duplicates in total.")
+    if keep_col is not None : 
+        if verbose: log.write(" -Sort the coordinates...")
+        sumstats = gl.sortcoordinate(sumstats)
     return sumstats
 
 ###############################################################################################################
