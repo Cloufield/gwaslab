@@ -517,7 +517,8 @@ def plotdaf(sumstats,
     
     sumstats.loc[:,"ID"] = sumstats.index
     to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele frequency')
-    sns.kdeplot(data=to_plot, x="Allele frequency", hue="Types", fill=True, ax=ax2)
+    sns.histplot(data=to_plot, x="Allele frequency", hue="Types", fill=True, ax=ax2)
     ax2.set_xlabel("Reference Alternative Allele Frequency",**fontargs)
+    plt.tight_layout()
     return fig
     
