@@ -449,8 +449,9 @@ def mqqplot(insumstats,
             # stratified qq plot
             for i,(lower, upper) in enumerate(maf_bins):
                 databin = sumstats.loc[(sumstats["MAF"]>lower) &( sumstats["MAF"]<=upper),["MAF","scaled_P"]]
+                databin_raw = eaf_raw[(eaf_raw>lower) & (eaf_raw<=upper)]
                 observed = databin["scaled_P"].sort_values(ascending=False)
-                expected = -np.log10(np.linspace(minit,1,len(databin)))[:len(observed)]
+                expected = -np.log10(np.linspace(minit,1,max(len(databin_raw),len(databin))))[:len(observed)]
                 label ="("+str(lower)+","+str(upper) +"]"
                 ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
                 ax2.legend(loc="best",fontsize=10,markerscale=3,frameon=False)
