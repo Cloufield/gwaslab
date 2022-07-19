@@ -482,10 +482,11 @@ def plotdaf(sumstats,
     
     
     if verbose: print("Start to plot Reference frequency vs Effect allele frequency plot...")
+    if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
+        raise ValueError("EAF and/or DAF columns were not detected.")
     
-    sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),:].copy()
+    sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[eaf,daf]].copy()
     if verbose: print(" -Plotting valriants:" + str(len(sumstats)))
-    
     
     sumstats.loc[:,"RAF"]=sumstats[eaf] - sumstats[daf]
     sns.set_style("ticks")
