@@ -11,6 +11,7 @@ def preformat(sumstats,
           ea=None,
           nea=None,
           eaf=None,
+          neaf=None,
           n=None,
           beta=None,
           se=None,
@@ -32,74 +33,75 @@ def preformat(sumstats,
           log=None):
 
     #renaming dictionary
-    rename_dictionary = {
-        snpid: "SNPID",
-        rsid: "rsID",
-        chrom: "CHR",
-        pos: "POS",
-        nea: "NEA",
-        ea: "EA",
-        eaf: "EAF",
-        n: "N",
-        beta: "BETA",
-        se: "SE",
-        z: "Z",
-        chisq: "CHISQ",
-        p: "P",
-        mlog10p: "MLOG10P",
-        info: "INFO",
-        OR: "OR",
-        OR_se: "OR_SE",
-        OR_95L: "OR_95L",
-        OR_95U: "OR_95U",
-        direction:"DIRECTION",
-        status:"STATUS"
-    }
-    
+    rename_dictionary = {}
     usecols = []
     
     if snpid:
         usecols.append(snpid)
+        rename_dictionary[snpid]= "SNPID"
     if rsid:
         usecols.append(rsid)
+        rename_dictionary[rsid]= "rsID"
     if chrom:
         usecols.append(chrom)
+        rename_dictionary[chrom]= "CHR"
     if pos:
         usecols.append(pos)
+        rename_dictionary[pos]= "POS"
     if ea:
         usecols.append(ea)
+        rename_dictionary[ea]= "EA"
     if nea:
         usecols.append(nea)
+        rename_dictionary[nea]= "NEA"
     if eaf:
         usecols.append(eaf)
+        rename_dictionary[eaf]= "EAF"
+    elif neaf:
+        usecols.append(neaf)
+        rename_dictionary[neaf ]= "EAF"
     if n and (type(n) is str):
         usecols.append(n)
+        rename_dictionary[n]= "N"
     if beta:
         usecols.append(beta)
+        rename_dictionary[beta]= "BETA"
     if se:
         usecols.append(se)
+        rename_dictionary[se]= "SE"
     if chisq:
         usecols.append(chisq)
+        rename_dictionary=[chisq]="CHISQ"
     if z:
         usecols.append(z)
+        rename_dictionary[z]= "Z"
     if p:
         usecols.append(p)
+        rename_dictionary[p]= "P"
     if mlog10p:
         usecols.append(mlog10p)
+        rename_dictionary[mlog10p]= "MLOG10P"
     if info:
         usecols.append(info)
+        rename_dictionary[info]= "INFO"
     if OR:
         usecols.append(OR)
+        rename_dictionary[OR]= "OR"
     if OR_se:
         usecols.append(OR_se)
+        rename_dictionary[OR_se]= "OR_SE"
     if OR_95L:
         usecols.append(OR_95L)
+        rename_dictionary[OR_95L]= "OR_95L"
     if OR_95U:
         usecols.append(OR_95U)
+        rename_dictionary[OR_95U]= "OR_95U"
     if direction:
         usecols.append(direction)
+        rename_dictionary[direction]="DIRECTION"
     if status:
         usecols.append(status)
+        rename_dictionary[status]="STATUS"
     if other:
         usecols = usecols + other
         for i in other:
@@ -163,6 +165,18 @@ def preformat(sumstats,
 
     if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns))
     sumstats = sumstats.loc[:, output_columns]
+    
+    if neaf is not None :
+        if verbose: log.write(" -NEAF is specified...") 
+        pre_number=len(sumstats)
+        if verbose: log.write(" -Checking if 0<= NEAF <=1 ...") 
+        sumstats.loc[:,"EAF"] = pd.to_numeric(sumstats.loc[:,"EAF"], errors='coerce')
+        sumstats = sumstats.loc[(sumstats["EAF"]>=0) & (sumstats["EAF"]<=1),:]
+        sumstats.loc[:,"EAF"] = 1- sumstats.loc[:,"EAF"].round(4)
+        if verbose: log.write(" -Converted NEAF to EAF.") 
+        after_number=len(sumstats)
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.")    
+    
     if verbose: log.write("Loading data finished successfully!")
     
 

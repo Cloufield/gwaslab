@@ -487,7 +487,7 @@ def plotdaf(sumstats,
     if verbose: print(" -Plotting valriants:" + str(len(sumstats)))
     
     
-    sumstats.loc[:,"RAF"]=sumstats[eaf] + sumstats[daf]
+    sumstats.loc[:,"RAF"]=sumstats[eaf] - sumstats[daf]
     sns.set_style("ticks")
     fig, (ax1, ax2) = plt.subplots(1, 2,**plt_args)
     ax1.scatter(sumstats["RAF"],sumstats[eaf],**scatter_args)
