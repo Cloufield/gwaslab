@@ -7,5 +7,7 @@ requires = [
     "matplotlib",
     "seaborn",
     "scipy",
+    "adjustText",
+    "psutil" 
 ]
 build-backend = "setuptools.build_meta"
