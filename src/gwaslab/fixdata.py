@@ -277,7 +277,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
 
 ###############################################################################################################
 #20220514
-def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",remove=False, verbose=True,log=gl.Log()):
+def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=23,y=24,mt=25,remove=False, verbose=True,log=gl.Log()):
         
         if verbose: log.write("Start to fix chromosome notation...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
@@ -311,6 +311,12 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",remove=False, verb
         # x,y,mt to X,Y,MT
         if verbose: log.write(" -Converting to string datatype and UPPERCASE...") 
         sumstats.loc[:,chrom] =sumstats.loc[:,chrom].str.upper()
+        
+        # 23,24,25 to X, Y, MT
+        convert_num_to_xymt={str(x):"X",str(y):"Y",str(mt):"MT"}
+        sex_chr = sumstats[chrom].isin([str(x),str(y),str(mt)])
+        sumstats.loc[sex_chr,chrom] =sumstats.loc[sex_chr,chrom].map(convert_num_to_xymt)
+        if verbose: log.write(" -Standardizing sex chromosome notations...") 
         
         chrom_list = gl.get_chr_list() #bottom 
         unrecognized_num = sum(~sumstats[chrom].isin(chrom_list))

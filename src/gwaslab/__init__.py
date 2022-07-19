@@ -18,6 +18,7 @@ from gwaslab.fixdata import flipallelestats
 from gwaslab.fixdata import sortcoordinate
 from gwaslab.fixdata import sortcolumn
 
+from gwaslab.retrievedata import checkaf
 from gwaslab.retrievedata import checkref
 from gwaslab.retrievedata import rsidtochrpos
 from gwaslab.retrievedata import parallelizeassignrsid
@@ -25,6 +26,8 @@ from gwaslab.retrievedata import inferstrand
 from gwaslab.retrievedata import parallelrsidtochrpos
 
 ## utility
+from gwaslab.filtervalue import filterout
+from gwaslab.filtervalue import filterin
 from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import gc
 from gwaslab.getsig import getsig
@@ -39,6 +42,7 @@ from gwaslab.get_hapmap3 import gethapmap3
 
 # standalone function
 from gwaslab.compare_effect import compare_effect
+from gwaslab.compare_effect import plotdaf
 from gwaslab.read_ldsc import read_ldsc
 from gwaslab.h2_conversion import h2_obs_to_liab
 from gwaslab.h2_conversion import getpersnph2

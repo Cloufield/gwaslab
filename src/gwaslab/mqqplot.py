@@ -19,6 +19,7 @@ def mqqplot(insumstats,
           mqqratio=3,
           windowsizekb=500,
           anno=None,
+          anno_set=[],
           anno_d={},
           arm_offset=50,
           arm_scale=1,
@@ -41,7 +42,7 @@ def mqqplot(insumstats,
           title =None,
           mtitle=None,
           qtitle=None,
-          figargs= {"figsize":(15,5),"dpi":300},
+          figargs= {"figsize":(15,5),"dpi":100},
           fontsize = 10,
           colors=["#597FBD","#74BAD3"],
           marker_size=(5,25),
@@ -60,6 +61,8 @@ def mqqplot(insumstats,
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Plot layout mode is : "+mode)
+    if len(anno_set)>0 and ("m" in mode):
+        if verbose: log.write(" -Variants to pinpoint : "+",".join(anno_set))    
     if len(highlight)>0 and ("m" in mode):
         if verbose: log.write(" -Loci to highlight : "+",".join(highlight))    
         if verbose: log.write(" -Highlight_window is set to: ", highlight_windowkb, " kb")  
@@ -121,12 +124,14 @@ def mqqplot(insumstats,
                 usecols.append(anno)
         else:
             raise ValueError("Please make sure "+anno+" column is in input sumstats.")
-
+    
     sumstats = insumstats.loc[:,usecols].copy()
 
 #####################################################################################################################   
     #Standardize
     ## Annotation
+    if len(anno_set)>0 and (anno is False):
+        anno=True
     if (anno is not None) and (anno != True):
         sumstats["Annotation"]=sumstats.loc[:,anno].astype("string")   
     
@@ -316,15 +321,22 @@ def mqqplot(insumstats,
                 plot.set_yticklabels([x for x in range(skip,cut+1,2)])
 
 # Get top variants for annotation #######################################################
-        if anno and anno!=True:
-            to_annotate=gl.getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
-                               "Annotation",
+        if (anno and anno!=True) or (len(anno_set)>0):
+            if len(anno_set)>0:
+                to_annotate=sumstats.loc[sumstats[snpid].isin(anno_set),:]
+                if to_annotate.empty is not True:
+                    if verbose: log.write(" -Found "+str(len(to_annotate))+" specified variants to annotate...")
+            else:
+                to_annotate=gl.getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
+                               snpid,
                                chrom,
                                pos,
                                "raw_P",
                                sig_level=sig_level,
                                windowsizekb=windowsizekb,
                                verbose=False)
+                if to_annotate.empty is not True:
+                    if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         else:
             to_annotate=gl.getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
                                "i",
@@ -334,15 +346,22 @@ def mqqplot(insumstats,
                                windowsizekb=windowsizekb,
                                verbose=False,
                                sig_level=sig_level)
+            if to_annotate.empty is not True:
+                if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         
-        if to_annotate.empty is not True:
-            if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
+        
 # Add Annotation to manhattan plot #######################################################
         if anno and (to_annotate.empty is not True):
             #initiate a list for text and a starting position
             text = []
             last_pos=0
             anno_count=0
+            if anno==True:
+                    annotation_col="CHR:POS"
+            elif anno:
+                    annotation_col=anno
+            if verbose: log.write(" -Annotating using column "+annotation_col+"...")
+                
             for rowi,row in to_annotate.iterrows():
                 # avoid text overlapping
                 if row["i"]>last_pos+repel_force*sumstats["i"].max():
@@ -355,7 +374,7 @@ def mqqplot(insumstats,
                 armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
                 
                 if anno==True:
-                    annotation_text="Chr"+ row[chrom] +":"+ str(int(row[pos]))
+                    annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
                     annotation_col="CHR:POS"
                 elif anno:
                     annotation_text=row["Annotation"]
@@ -395,7 +414,7 @@ def mqqplot(insumstats,
                            )
                 anno_count +=1
 
-            if verbose: log.write(" -Annotating using column "+annotation_col+"...")
+            
         else:
             if verbose: log.write(" -Skip annotating")
 
@@ -435,7 +454,7 @@ def mqqplot(insumstats,
                 expected = -np.log10(np.linspace(minit,1,len(databin_raw)))[:len(observed)]
                 label ="("+str(lower)+","+str(upper) +"]"
                 ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
-                ax2.legend(loc="center left",fontsize=10,markerscale=3)
+                ax2.legend(loc="best",fontsize=10,markerscale=3,frameon=False)
         
         ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=sig_line_color)
 
@@ -452,7 +471,7 @@ def mqqplot(insumstats,
             expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
             lambdagc=observedMedianChi2/expectedMedianChi2
             if verbose: log.write(" -Calculating GC using P :",lambdagc)
-            ax2.text(0.05, 0.95,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
+            ax2.text(0.10, 1.03,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
                      horizontalalignment='left',
                      verticalalignment='top',
                      transform=ax2.transAxes,

@@ -447,7 +447,45 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR
         if verbose: log.write("  -Indels with no macthes or no information : ",status8)
                        
     return sumstats
+################################################################################################################
+def checkaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
+        
+    if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
+    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    if verbose: log.write(" -Reference vcf file:", ref_infer)   
+    vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+    
+    # check if the columns are complete
+    if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
+        raise ValueError("Not enough information: CHR, POS, NEA , EA, ALT, STATUS...")
+    
+    # ref_alt_freq INFO in vcf was provided
+    if ref_alt_freq is not None:
+        if verbose: log.write(" -Alternative allele frequency in INFO:", ref_alt_freq)  
+        good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
+        if verbose: log.write(" -Checking variants:", sum(good_chrpos)) 
+        sumstats["DAF"]=np.nan
+        status_inferred = sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]].apply(lambda x:check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict),axis=1)
+        sumstats.loc[good_chrpos,"DAF"] = status_inferred.values
+        sumstats.loc[:,"DAF"]=sumstats.loc[:,"DAF"].astype("float")
+        if verbose: log.write(" -DAF min:", np.nanmax(sumstats.loc[:,"DAF"])) 
+        if verbose: log.write(" -DAF max:", np.nanmin(sumstats.loc[:,"DAF"])) 
+        if verbose: log.write(" -abs(DAF) min:", np.nanmax(np.abs(sumstats.loc[:,"DAF"]))) 
+        if verbose: log.write(" -abs(DAF) max:", np.nanmin(np.abs(sumstats.loc[:,"DAF"])))
+        if verbose: log.write(" -DAF sd:", np.nanstd(sumstats.loc[:,"DAF"])) 
+        if verbose: log.write(" -abs(DAF) sd:", np.nanstd(np.abs(sumstats.loc[:,"DAF"]))) 
+        
+    return sumstats
 
+def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
+    if chr_dict is not None: chr=chr_dict[chr]
+    chr_seq = vcf_reader.fetch(chr,start,end)
+    for record in chr_seq:
+        if alt_freq not in record.INFO.keys():
+            continue
+        if record.POS==end and record.REF==ref and (alt in record.ALT):
+            return eaf - record.INFO[alt_freq][0]
+    return np.nan
 ################################################################################################################
 def change_status(status_value,digit,to):
     if digit>1:

@@ -264,13 +264,28 @@ class Sumstats():
     def sort_column(self,**args):
         self.data = gl.sortcolumn(self.data,log=self.log,**args)
     ############################################################################################################
-
     def fill_data(self, **args):
         self.data = gl.filldata(self.data,**args)
 
 # utilities ############################################################################################################
-
-    
+    def filter_out(self, inplace=True, **args):
+        if inplace is False:
+            return gl.filterout(self.data,**args)
+        else:
+            self.data = gl.filterout(self.data,log=self.log,**args)
+            
+    def filter_in(self, inplace=True, **args):
+        if inplace is False:
+            return gl.filterin(self.data,**args)
+        else:
+            self.data = gl.filterin(self.data,log=self.log,**args)
+###########################################################################################################################            
+    def check_af(self,**args):
+        self.data = gl.checkaf(self.data,log=self.log,**args)
+      
+    def plot_daf(self, **args):
+        plot = gl.plotdaf(self.data, **args)
+        
     def plot_mqq(self, **args):
         plot = gl.mqqplot(self.data, chrom="CHR", pos="POS", p="P", **args)
         return plot
