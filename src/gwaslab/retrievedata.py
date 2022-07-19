@@ -431,13 +431,13 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,remove_s
             
         if ("7" in remove_snp) and ("8" in remove_snp) :
             if verbose: log.write("  -Palindromic SNPs with maf not availble to infer and with no macthes or no information will will be removed") 
-            sumstats = sumstats.loc[~(status7 | status8),:]
+            sumstats = sumstats.loc[~(status7 | status8),:].copy()
         elif "8" in remove_snp:
             if verbose: log.write("  -Palindromic SNPs with no macthes or no information will be removed")
-            sumstats = sumstats.loc[~status8,:]
+            sumstats = sumstats.loc[~status8,:].copy()
         else:
             if verbose: log.write("  -Palindromic SNPs with maf not availble to infer will be removed") 
-            sumstats = sumstats.loc[~status7,:]
+            sumstats = sumstats.loc[~status7,:].copy()
             
     ### unknow_indel
     
@@ -447,7 +447,7 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,remove_s
         #if verbose: log.write(" -After filtering by MAF< ", maf_threshold ," , the strand of ", sum(unknow_indel & maf_can_infer ),"  SNPs not on reference genome will be inferred...")
         if verbose: log.write(" -Indistinguishable Indels will be inferred from reference vcf ref and alt...")
         status_inderred = sumstats.loc[unknow_indel, [chr,pos,ref,alt,status]].apply(lambda x:check_unkonwn_indel(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,ref_alt_freq,x[4],chr_dict),axis=1)
-        sumstats.loc[unknow_indel,status] = status_inderred.values.copy() 
+        sumstats.loc[unknow_indel,status] = status_inderred.values 
         
         status3 =  sumstats[status].str.match(r'\w\w\w\w\w\w[3]', case=False, flags=0, na=False)  
         status6 =  sumstats[status].str.match(r'\w\w\w\w\w\w[6]', case=False, flags=0, na=False)  
@@ -458,7 +458,7 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,remove_s
         if verbose: log.write("  -Indels with no macthes or no information : ",sum(status8))
         if "8" in remove_indel:
             if verbose: log.write("  -Indels with no macthes or no information will be removed")
-            sumstats = sumstats.loc[~status8,:]     
+            sumstats = sumstats.loc[~status8,:].copy()     
     return sumstats
 ################################################################################################################
 def checkaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
