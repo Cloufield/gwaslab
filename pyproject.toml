@@ -1,11 +1,15 @@
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools>42",
     "wheel",
-    "pandas",
-    "numpy",
-    "matplotlib",
-    "seaborn",
-    "scipy",
+    "pandas>=1.2.4",
+    "numpy>=1.21.2",
+    "matplotlib>=3.5",
+    "seaborn>=0.11.1",
+    "scipy>=1.6.2",
+    "Biopython",
+    "adjustText",
+    "liftover",
+    "statsmodels"
 ]
 build-backend = "setuptools.build_meta"
