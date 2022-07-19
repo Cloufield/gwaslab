@@ -13,6 +13,7 @@ class Sumstats():
              ea=None,
              nea=None,
              eaf=None,
+             neaf=None,
              n=None,
              beta=None,
              se=None,
@@ -46,6 +47,7 @@ class Sumstats():
           ea=ea,
           nea=nea,
           eaf=eaf,
+          neaf=neaf,
           n=n,
           beta=beta,
           se=se,
@@ -134,7 +136,7 @@ class Sumstats():
         ###############################################
         
     
-    def clean(self,
+    def harmonize(self,
               basic_check=True,
               ref_seq=None,
               ref_rsid=None,
