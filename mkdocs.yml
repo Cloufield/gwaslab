@@ -1,0 +1,31 @@
+site_name: GWASLab
+site_author: HE Yunye
+repo_name: 'GitHub'
+repo_url: https://github.com/Cloufield/gwaslab/
+edit_uri: ""
+copyright: "GWASLab is licensed under the MIT license"
+theme:
+  name: null
+  custom_dir: 'cinder'
+  color_theme:  github
+nav:
+    - Home: index.md
+    - Tutorial: Tutorial.md
+    - Sumstats manipulation:
+       - SumstatsObject: SumstatsObject.md
+       - StatusCode: StatusCode.md
+       - Standardization&normalization: Standardization.md
+       - QC&Filtering: QC&Filtering.md
+       - Harmonization: Harmonization.md
+    - Visualization:
+       - Manhattan&QQ: Visualization.md
+       - "Scatter: effect size comparison": EffectSize.md
+       - "Scatter: allele frequency comparison": AlleleFrequency.md
+       - "Heatmap: genetic correlation": GeneticCorrelation.md
+       - Gallery : Gallery.md
+    - Utilities: 
+       - "Extract Lead Variants": ExtractLead.md
+       - Formatting: Format.md
+       - "Load LDSC log": LoadLDSC.md
+       - "Heritability conversion": HeritabilityConversion.md
+    - References: Reference.md
