@@ -254,7 +254,19 @@
 <p>Each process is modularized and can be customized to your needs.</p>
 <p>Most manipulations are designed as methods of python object, <code>gwaslab.Sumstats</code>.</p>
 <pre><code class="language-python">import gwaslab as gl
-mysumstats = gl.Sumstats(path)
+mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
+             snpid=&quot;SNP&quot;,
+             chrom=&quot;CHR&quot;,
+             pos=&quot;POS&quot;,
+             ea=&quot;ALT&quot;,
+             nea=&quot;REF&quot;,
+             neaf=&quot;Frq&quot;,
+             beta=&quot;BETA&quot;,
+             se=&quot;SE&quot;,
+             p=&quot;P&quot;,
+             direction=&quot;Dir&quot;,
+             n=&quot;N&quot;,
+             build=&quot;19&quot;)
 mysumstats.plot_mqq()
 ...
 </code></pre>
@@ -344,7 +356,10 @@ mysumstats.plot_mqq()
 </li>
 </ul>
 <h2 id="install">Install</h2>
-<pre><code>coming soon
+<pre><code>pip install gwaslab
+</code></pre>
+<p>Also need to install pyvcf</p>
+<pre><code>conda install -c conda-forge pyvcf 
 </code></pre>
 <h3 id="requirements">Requirements:</h3>
 <ul>
@@ -474,5 +489,5 @@ v2.0.0 added sumstats QC pipepline.</p></div>
 
 <!--
 MkDocs version : 1.3.0
-Build Date UTC : 2022-07-18 14:44:49.428374+00:00
+Build Date UTC : 2022-07-19 04:23:07.509823+00:00
 -->
