@@ -466,7 +466,7 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,n_c
     if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
-    
+    if verbose: log.write(" -CPU Cores to use :",n_cores)
     
     # check if the columns are complete
     if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
