@@ -94,7 +94,7 @@ def getsig(insumstats,
     chromosome_conversion_dict["23"] = "X"
     chromosome_conversion_dict["24"] = "Y"
     chromosome_conversion_dict["25"] = "MT"
-    sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].astype("string")
-    sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom] .apply(lambda x:chromosome_conversion_dict[x])
+    sumstats_sig.loc[:,chrom] = sumstats_sig[chrom].astype("string")
+    sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].apply(lambda x:chromosome_conversion_dict[x])
     output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
     return output

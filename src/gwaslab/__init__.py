@@ -18,7 +18,7 @@ from gwaslab.fixdata import flipallelestats
 from gwaslab.fixdata import sortcoordinate
 from gwaslab.fixdata import sortcolumn
 
-from gwaslab.retrievedata import checkaf
+from gwaslab.retrievedata import parallelecheckaf
 from gwaslab.retrievedata import checkref
 from gwaslab.retrievedata import rsidtochrpos
 from gwaslab.retrievedata import parallelizeassignrsid

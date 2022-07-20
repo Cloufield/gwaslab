@@ -435,7 +435,7 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,remove_s
         elif "8" in remove_snp:
             if verbose: log.write("  -Palindromic SNPs with no macthes or no information will be removed")
             sumstats = sumstats.loc[~status8,:].copy()
-        else:
+        elif "7" in remove_snp:
             if verbose: log.write("  -Palindromic SNPs with maf not availble to infer will be removed") 
             sumstats = sumstats.loc[~status7,:].copy()
             
@@ -461,12 +461,12 @@ def inferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,remove_s
             sumstats = sumstats.loc[~status8,:].copy()     
     return sumstats
 ################################################################################################################
-def checkaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
+def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
         
     if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
-    vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+    
     
     # check if the columns are complete
     if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
@@ -478,9 +478,23 @@ def checkaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR",po
         good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
         if verbose: log.write(" -Checking variants:", sum(good_chrpos)) 
         sumstats["DAF"]=np.nan
-        status_inferred = sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]].apply(lambda x:check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict),axis=1)
-        sumstats.loc[good_chrpos,"DAF"] = status_inferred.values
-        sumstats.loc[:,"DAF"]=sumstats.loc[:,"DAF"].astype("float")
+         
+      ########################  
+        if sum(sumstats[eaf].isna())<10000: 
+            n_cores=1       
+        
+        func=checkaf
+        df_split = np.array_split(sumstats.loc[good_chrpos,:], n_cores)
+        pool = Pool(n_cores)
+        if sum(~sumstats[eaf].isna())>0:
+            sumstats = pd.concat(pool.map(partial(func,chr=chr,pos=pos,ref=ref,alt=alt,maf_threshold=maf_threshold,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict),df_split))
+        pool.close()
+        pool.join()
+    ############################
+        #status_inferred = sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]].apply(lambda x:check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict),axis=1)
+        
+        #sumstats.loc[good_chrpos,"DAF"] = status_inferred.values
+        #sumstats.loc[:,"DAF"]=sumstats.loc[:,"DAF"].astype("float")     
         if verbose: log.write(" - DAF min:", np.nanmax(sumstats.loc[:,"DAF"])) 
         if verbose: log.write(" - DAF max:", np.nanmin(sumstats.loc[:,"DAF"])) 
         if verbose: log.write(" - abs(DAF) min:", np.nanmax(np.abs(sumstats.loc[:,"DAF"]))) 
@@ -490,7 +504,17 @@ def checkaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR",po
         
     return sumstats
 
+def checkaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None):
+    vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+    status_inferred = sumstats.loc[:,[chr,pos,ref,alt,eaf]].apply(lambda x:check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict),axis=1)
+    sumstats.loc[:,"DAF"] = status_inferred.values
+    sumstats.loc[:,"DAF"]=sumstats.loc[:,"DAF"].astype("float") 
+    return sumstats
+
+
+
 def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
+    
     if chr_dict is not None: chr=chr_dict[chr]
     chr_seq = vcf_reader.fetch(chr,start,end)
     for record in chr_seq:

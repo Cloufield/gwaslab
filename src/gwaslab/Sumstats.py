@@ -283,7 +283,7 @@ class Sumstats():
             self.data = gl.filterin(self.data,log=self.log,**args)
 ###########################################################################################################################            
     def check_af(self,**args):
-        self.data = gl.checkaf(self.data,log=self.log,**args)
+        self.data = gl.parallelecheckaf(self.data,log=self.log,**args)
       
     def plot_daf(self, **args):
         plot = gl.plotdaf(self.data, **args)
