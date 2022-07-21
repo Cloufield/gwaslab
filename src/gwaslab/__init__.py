@@ -22,7 +22,7 @@ from gwaslab.retrievedata import parallelecheckaf
 from gwaslab.retrievedata import checkref
 from gwaslab.retrievedata import rsidtochrpos
 from gwaslab.retrievedata import parallelizeassignrsid
-from gwaslab.retrievedata import inferstrand
+from gwaslab.retrievedata import parallelinferstrand
 from gwaslab.retrievedata import parallelrsidtochrpos
 
 ## utility

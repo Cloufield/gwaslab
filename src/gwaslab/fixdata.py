@@ -354,7 +354,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=23,y=24,mt=25,re
     
 ###############################################################################################################    
 #20220514
-def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,log=gl.Log()):
+def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=250000000, log=gl.Log()):
         if verbose: log.write("Start to fix basepair positions...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         
@@ -372,7 +372,13 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,log=gl.
         sumstats.loc[is_pos_fixed,status] = vchange_status(sumstats.loc[is_pos_fixed,status],4,"975","630")
         sumstats.loc[is_pos_invalid,status] = vchange_status(sumstats.loc[is_pos_invalid,status],4,"975","842")
         
-        # remove 300,000,000
+        
+        # remove outlier, limit:250,000,000
+        if verbose: log.write(" -Position upper_bound is:" + str(limit))
+        out_lier=sumstats[pos]>limit
+        if verbose: log.write(" -Remove outliers:",sum(out_lier))
+        sumstats = sumstats.loc[~out_lier,:]
+        
         
         #remove na
         if remove is True: 
@@ -429,9 +435,9 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         return sumstats
 
 ###############################################################################################################   
-#20220514
+#20220721
 
-def parallelnormalizeallele(sumstats,pos="POS",ea="EA" ,nea="NEA",status="STATUS",n_cores=1,verbose=True,log=gl.Log()):
+def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS",n_cores=1,verbose=True,log=gl.Log()):
     
     check_col(sumstats,pos,ea,nea,status)
     
@@ -441,41 +447,49 @@ def parallelnormalizeallele(sumstats,pos="POS",ea="EA" ,nea="NEA",status="STATUS
     if sum(variants_to_check)==0:
         log.write(" -No available variants to normalize..")
         return sumstats
-
     
-    df_split = np.array_split(sumstats.loc[:,[pos,nea,ea,status]], n_cores)
-    pool = Pool(n_cores)
-    #df = pd.concat(pool.starmap(func, df_split))
-    func=normalizeallele
-    normalized_pd = pd.concat(pool.map(partial(func,pos=pos,ea=ea,nea=nea,status=status),df_split))
-    pool.close()
-    pool.join()
+    to_normalize_pattern = r"\w\w\w\w[45]\w\w"
+    variants_to_check = sumstats[status].str.match(to_normalize_pattern)
+   
+    ###############################################################################################################
+    if sum(variants_to_check)>0:
+        if sum(variants_to_check)<10000: 
+            n_cores=1  
+        pool = Pool(n_cores)
+        map_func = partial(normalizeallele,pos=pos,nea=nea,ea=ea,status=status)
+        df_split = np.array_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
+        normalized_pd = pd.concat(pool.map(map_func,df_split))
+       
+        pool.close()
+        pool.join()
+    ###############################################################################################################
     
     if verbose:
-        changed_num = len(normalized_pd.loc[(sumstats[ea]!=normalized_pd[ea]) | (sumstats[nea]!=normalized_pd[nea]),:])
+        before_normalize = sumstats.loc[variants_to_check,[ea,nea]]
+        changed_num = len(normalized_pd.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea]),:])
         if changed_num>0:
             log.write(" -Not normalized allele:",end="")
-            for i in sumstats.loc[(sumstats[ea]!=normalized_pd[ea]) | (sumstats[nea]!=normalized_pd[nea]),[ea,nea]].head().values:
+            
+            for i in before_normalize.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea]),[ea,nea]].head().values:
                 log.write(i,end="",show_time=False)
             log.write("... \n",end="",show_time=False)     
             log.write(" -Modified "+str(changed_num) +" variants according to parsimony and left alignment principal.")
         else:
             log.write(" -All variants are already normalized..")
-    
-    sumstats.update(normalized_pd,overwrite=True)
+    ###################################################################################################################
+    sumstats.loc[variants_to_check,[pos,nea,ea,status]] = normalized_pd.values
     sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
     sumstats.loc[:,[nea,ea,status]] = sumstats.loc[:,[nea,ea,status]].astype("string")
     return sumstats
 
-def normalizeallele(sumstats,pos="POS",ea="EA" ,nea="NEA",status="STATUS"):
-    to_normalize = r"\w\w\w\w[45]\w\w"
-    variants_to_check = sumstats[status].str.match(to_normalize)
-    if sum(variants_to_check)>0:
-        normalized = sumstats.loc[variants_to_check,[pos,nea,ea,status]].apply(lambda x: normalizevariant(x[0],x[1],x[2],x[3]),axis=1)
-        sumstats.loc[variants_to_check,[pos,nea,ea,status]] = pd.DataFrame(normalized.to_list(), columns=[pos,nea,ea,status],index=sumstats.loc[variants_to_check,:].index)
+def normalizeallele(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
+    #single df
+    normalized = sumstats.apply(lambda x: normalizevariant(x[0],x[1],x[2],x[3]),axis=1)
+    sumstats = pd.DataFrame(normalized.to_list(), columns=[pos,nea,ea,status],index=sumstats.index)
     return sumstats
 
 def normalizevariant(pos,a,b,status):
+    # single record
     # https://genome.sph.umich.edu/wiki/Variant_Normalization
     # a - ref - nea    starting -> pos
     # b - alt - ea
@@ -659,8 +673,6 @@ def flip_direction(string):
     return flipped_string
     
 def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
-    #
-    
     
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))
     

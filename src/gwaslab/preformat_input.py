@@ -1,3 +1,4 @@
+#import modin.pandas as pd
 import pandas as pd
 import numpy as np
 import scipy.stats as ss

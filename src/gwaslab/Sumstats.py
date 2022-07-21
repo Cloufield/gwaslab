@@ -182,7 +182,7 @@ class Sumstats():
             self.data = gl.fixpos(self.data,remove=remove,log=self.log,**fixpos_args)
             self.data = gl.fixallele(self.data,log=self.log,**fixallele_args)
             self.data = gl.sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
-            self.data = gl.parallelnormalizeallele(self.data,log=self.log,**normalizeallele_args)
+            self.data = gl.parallelnormalizeallele(self.data,log=self.log,n_cores=n_cores,**normalizeallele_args)
             self.data = gl.sortcolumn(self.data,log=self.log)
         
         
@@ -207,7 +207,7 @@ class Sumstats():
             self.data = gl.parallelizeassignrsid(self.data,ref_rsid,n_cores=n_cores,log=self.log,chr_dict=ref_rsid_chr_dict,**assignrsid_args)
             
         if ref_infer is not None: 
-            self.data= gl.inferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=0.43,chr_dict=ref_infer_chr_dict,log=self.log,**inferstrand_args)
+            self.data= gl.parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=0.43,n_cores=n_cores,chr_dict=ref_infer_chr_dict,log=self.log,**inferstrand_args)
             self.data =gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
             
         #if liftover           
@@ -219,7 +219,7 @@ class Sumstats():
                 if to_ref_rsid is not None  :
                     self.data = gl.parallelizeassignrsid(self.data,to_ref_rsid,n_cores=n_cores,log=self.log,**assignrsid_args)
                 if (to_ref_infer is not None) and (to_ref_alt_freq is not None): 
-                    self.data = gl.inferstrand(self.data,ref_infer = to_ref_infer,ref_alt_freq=to_ref_alt_freq,maf_threshold=0.43,log=self.log,**inferstrand_args)
+                    self.data = gl.parallelinferstrand(self.data,ref_infer = to_ref_infer,ref_alt_freq=to_ref_alt_freq,maf_threshold=0.43,n_cores=n_cores,log=self.log,**inferstrand_args)
                     self.data = gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
         self.data = gl.fixchr(self.data, remove=remove)  
         if remove is True:
