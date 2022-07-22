@@ -211,6 +211,7 @@ class Sumstats():
             
             self.data= gl.parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=0.43,
                                               n_cores=n_cores,chr_dict=ref_infer_chr_dict,log=self.log,**inferstrand_args)
+            
             self.data =gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
         
         #####################################################

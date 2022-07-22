@@ -184,14 +184,6 @@ def check_status(row,record):
             # ea !=ref
             return status_pre+"8"+status_end
         
-    
-def get_reverse_complementary_allele(a1,a2):
-    dic = str.maketrans({
-       "A":"T",
-       "T":"A",
-       "C":"G",
-       "G":"C"})
-    return a1[::-1].translate(dic),a2[::-1].translate(dic)
 
 def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",remove=False,verbose=True,log=gl.Log()):
     if verbose: log.write("Start to check if NEA is aligned with reference sequence...")
@@ -385,7 +377,8 @@ def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,status,chr
     status_end=""
     for record in chr_seq:
         if record.POS==end and record.REF==ref and (alt in record.ALT):
-            if (record.INFO[alt_freq][0]<0.5) and (eaf<0.5):
+            
+            if  (record.INFO[alt_freq][0]<0.5) and (eaf<0.5):
                 return status_pre+"1"+status_end
             elif (record.INFO[alt_freq][0]>0.5) and (eaf>0.5):
                 return status_pre+"1"+status_end
@@ -412,13 +405,13 @@ def check_unkonwn_indel(chr,start,end,ref,alt,vcf_reader,alt_freq,status,chr_dic
     return status_pre+"8"+status_end
 
                                                
-#def get_reverse_complementary_allele(a):
-#    dic = str.maketrans({
-#       "A":"T",
-#       "T":"A",
-#       "C":"G",
-#       "G":"C"})
-#    return a[::-1].translate(dic)
+def get_reverse_complementary_allele(a):
+    dic = str.maketrans({
+       "A":"T",
+       "T":"A",
+       "C":"G",
+       "G":"C"})
+    return a[::-1].translate(dic)
                                                  
 def is_palindromic(sumstats,a1="EA",a2="NEA"):
     gc= (sumstats[a1]=="G") & (sumstats[a2]=="C")
@@ -567,7 +560,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,
 
 
 ################################################################################################################
-def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
+def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
         
     if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   

@@ -467,8 +467,8 @@ def compare_effect(path1,
 def plotdaf(sumstats,
              eaf="EAF",
              daf="DAF",
-             scatter_args={"s":4},
-             threshold=0.2,
+             scatter_args={"s":1},
+             threshold=0.16,
              is_reg=True,
              is_45_helper_line=True,
              is_threshold=True,
@@ -476,7 +476,7 @@ def plotdaf(sumstats,
              threshold_line_args={"color":'#cccccc', "linestyle":'dotted'},
              reg_line_args={"color":'#cccccc', "linestyle":'--'},
              plt_args={"figsize":(8,4),"dpi":300},
-            histplot_args={},
+            histplot_args={"log_scale":(False,True)},
             fontargs={'family':'sans','fontname':'Arial','fontsize':8},
             verbose=True
            ):
@@ -505,21 +505,23 @@ def plotdaf(sumstats,
         if verbose: print(" -Threshold : " + str(threshold))
         num = sum(sumstats[daf]>threshold)
         if verbose: print(" -Variants with relatively large DAF : ",num )
+        if verbose: print(" -Percentage for variants with relatively large DAF : ",num/len(sumstats) )
         ax1.axline(xy1=(0,threshold),slope=1,zorder=1,**threshold_line_args)
         ax1.axline(xy1=(threshold,0),slope=1,zorder=1,**threshold_line_args)
     xl,xh=ax1.get_xlim()
     yl,yh=ax1.get_ylim()
     if is_45_helper_line is True:
         ax1.axline([0,0], [1,1],zorder=1, **helper_line_args)
-    ax1.set_xlabel("Reference Alternative Allele Frequency",**fontargs)
-    ax1.set_ylabel("Effect Allele Frequency",**fontargs)
+    ax1.set_xlabel("Alternative Allele Frequency in Reference Population (RAF)",**fontargs)
+    ax1.set_ylabel("Effect Allele Frequency in Sumstats (EAF)",**fontargs)
     ax1.set_xlim([0,1])
     ax1.set_ylim([0,1])
     
     sumstats.loc[:,"ID"] = sumstats.index
-    to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele frequency')
-    sns.histplot(data=to_plot, x="Allele frequency", hue="Types", fill=True, ax=ax2,**histplot_args)
-    ax2.set_xlabel("Reference Alternative Allele Frequency",**fontargs)
+    to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele Frequency')
+    
+    sns.histplot(data=to_plot, x="Allele Frequency", hue="Types", fill=True, ax=ax2,**histplot_args)
+    ax2.set_xlabel("Allele Frequency",**fontargs)
     plt.tight_layout()
     return fig
     

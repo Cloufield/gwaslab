@@ -293,7 +293,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
 
 ###############################################################################################################
 #20220514
-def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=23,y=24,mt=25,remove=False, verbose=True,log=gl.Log()):
+def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT",remove=False, verbose=True,log=gl.Log()):
         
         if verbose: log.write("Start to fix chromosome notation...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
@@ -316,23 +316,20 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=23,y=24,mt=25,re
         # convert to string datatype
         sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string") 
         
-        # strip prefix
-        if verbose: log.write(" -Stripping chr prefix if exists...") 
-        sumstats.loc[:,chrom] = sumstats.loc[:,chrom].str.lstrip("chrCHR_-.")
-        
-        # strip leading zeros
-        if verbose: log.write(" -Removing leading zeroes if exists...") 
-        sumstats.loc[:,chrom] = sumstats.loc[:,chrom].str.lstrip("0")
-        
         # x,y,mt to X,Y,MT
         if verbose: log.write(" -Converting to string datatype and UPPERCASE...") 
         sumstats.loc[:,chrom] =sumstats.loc[:,chrom].str.upper()
         
-        # 23,24,25 to X, Y, MT
-        convert_num_to_xymt={str(x):"X",str(y):"Y",str(mt):"MT"}
-        sex_chr = sumstats[chrom].isin([str(x),str(y),str(mt)])
+        # strip prefix
+        if verbose: log.write(" -Stripping chr prefix if exists : CHR_-.0...") 
+        sumstats.loc[:,chrom] = sumstats.loc[:,chrom].str.lstrip("CHR_-.0")
+        
+        
+        # X, Y, MT to 23,24,25
+        convert_num_to_xymt={x:"23",y:"24",mt:"25"}
+        sex_chr = sumstats[chrom].isin([x,y,mt])
         sumstats.loc[sex_chr,chrom] =sumstats.loc[sex_chr,chrom].map(convert_num_to_xymt)
-        if verbose: log.write(" -Standardizing sex chromosome notations...") 
+        if verbose: log.write(" -Standardizing sex chromosome notations:" ,str(x),str(y),str(mt)," to 23,24,25...") 
         
         chrom_list = gl.get_chr_list() #bottom 
         unrecognized_num = sum(~sumstats[chrom].isin(chrom_list))
@@ -546,7 +543,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         P:      float64  , 0< P <5e-300, 
         BETA:   float64  , abs(BETA) <10
         SE:     float64  , SE >0
-        OR:     float64  , OR>0
+        OR:     float64  , -10<log(OR)<10
         OR_95L: float64  , OR_95L>0
         OR_95U: float64  , OR_95L>0
         INFO:   float64  , INFO>0
@@ -575,6 +572,16 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         sumstats.loc[:,"EAF"] = sumstats.loc[:,"EAF"].round(4)
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad EAF.") 
+
+    pre_number=len(sumstats)    
+    if "EAF" in coltocheck and "EAF" in sumstats.columns and "N" in coltocheck and "N" in sumstats.columns:
+        if verbose: log.write(" -Checking if MAC >=5 ...") 
+        mac5 = (sumstats.loc[:,"EAF"] * sumstats.loc[:,"N"] > 5) | ((1-sumstats.loc[:,"EAF"]) * sumstats.loc[:,"N"] > 5)
+        sumstats = sumstats.loc[mac5,:]
+        after_number=len(sumstats)
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad MAC.") 
+    
+    
     
     pre_number=len(sumstats)    
     if "CHISQ" in coltocheck and "CHISQ" in sumstats.columns:
@@ -627,9 +634,9 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
     pre_number=len(sumstats)    
     if "OR" in coltocheck and "OR" in sumstats.columns:
         cols_to_check.append("OR")
-        if verbose: log.write(" -Checking if 0<OR<10 ...") 
+        if verbose: log.write(" -Checking if -10<log(OR)<10 ...") 
         sumstats.loc[:,"OR"] = pd.to_numeric(sumstats.loc[:,"OR"], errors='coerce')
-        sumstats = sumstats.loc[(sumstats["OR"]>0) &(sumstats["OR"]<10),:]
+        sumstats = sumstats.loc[(np.log(sumstats["OR"])>-10) & (np.log(sumstats["OR"])<10),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad OR.") 
             
@@ -650,6 +657,9 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         sumstats = sumstats.loc[sumstats["OR_95U"]>0,:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad OR_95U.") 
+    
+    
+    
     
     sumstats = sumstats.dropna(subset=cols_to_check)
     after_number=len(sumstats)
@@ -691,8 +701,8 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
         if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
             if verbose: log.write(" -Converting to reverse complement : EA and NEA...") 
-            reverse_complement_ea = sumstats.loc[matched_index,'EA'].apply(lambda x :get_reverse_complementary_allele(x))  
             reverse_complement_nea = sumstats.loc[matched_index,'NEA'].apply(lambda x :get_reverse_complementary_allele(x)) 
+            reverse_complement_ea = sumstats.loc[matched_index,'EA'].apply(lambda x :get_reverse_complementary_allele(x))  
             sumstats.loc[matched_index,['NEA']] = reverse_complement_nea.astype("string")
             sumstats.loc[matched_index,['EA']] = reverse_complement_ea.astype("string")
             sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 6, "4","2")
@@ -730,7 +740,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
         sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 6, "35","12")
         
     ###################flip ref for undistingushable indels####################
-    pattern = r"\w\w\w\w[123][67][6]"  
+    pattern = r"\w\w\w\w[123][67]6"  
     matched_index = sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
         if verbose: log.write("Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: alt->ea , ref->nea ... ") 
@@ -761,7 +771,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
         sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 7, "6","4")
          # flip ref
     ###################flip statistics for reverse strand panlindromic variants####################
-    pattern = r"\w\w\w\w\w[012][5]"  
+    pattern = r"\w\w\w\w\w[012]5"  
     matched_index = sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
         if verbose: log.write("Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand ... ") 
@@ -801,7 +811,10 @@ def liftover_snv(row,converter,to_build):
     results = converter[chrom][pos_0_based]
     if converter[chrom][pos_0_based]:
         # return chrom, pos_1_based
-        return results[0][0].strip("chr"),results[0][1]+1,to_build+status_end
+        if results[0][0].strip("chr")!=chrom:
+            return pd.NA,pd.NA,"97"+status_end
+        else:
+            return results[0][0].strip("chr"),results[0][1]+1,to_build+status_end
     else:
         return pd.NA,pd.NA,"97"+status_end
 
@@ -828,7 +841,7 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     # valid chr and pos
     pattern = r"\w\w\w0\w\w\w"  
     to_lift = sumstats[status].str.match(pattern)
-    sumstats = sumstats.loc[to_lift,:]
+    sumstats = sumstats.loc[to_lift,:].copy()
     if verbose: log.write(" -Converting variants with status code xxx0xxx :"+str(len(sumstats))+"...")
     ###########################################################################
     if sum(to_lift)>0:
