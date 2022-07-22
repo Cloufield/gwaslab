@@ -278,11 +278,11 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
     '''  
     if ref_mode=="vcf":
         ###################################################################################################################
-        if verbose: log.write("Start to assign rsID ...")
+        if verbose: log.write("Start to assign rsID using vcf...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         if verbose: log.write(" -CPU Cores to use :",n_cores)
         if verbose: log.write(" -Reference VCF file:", path)
-        if verbose: log.write(" -Assigning rsID based on chr:pos:ref:alt...")
+        if verbose: log.write(" -Assigning rsID based on chr:pos and ref:alt/alt:ref...")
         ##############################################
         if rsid not in sumstats.columns:
             sumstats[rsid]=pd.Series(dtype="string")
@@ -321,7 +321,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
         if verbose: log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!")
     
     ##################################################################################################################
-    elif ref_mode=="text":
+    elif ref_mode=="tsv":
         '''
         assign rsID based on chr:pos
         '''
@@ -346,10 +346,9 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
         total_number= len(sumstats)
         pre_number = sum(~sumstats[rsid].isna())
         
-        if sum(to_assign)>0:
-            sumstats = sumstats.set_index(snpid)
-                    
-        dic_chuncks = pd.read_csv(path,"\t",usecols=[ref_snpid,ref_rsid],
+        if sum(to_assign)>0: 
+            sumstats = sumstats.set_index(snpid)      
+        dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_snpid,ref_rsid],
                           chunksize=chunksize,index_col=ref_snpid,
                           dtype={ref_snpid:"string",ref_rsid:"string"})
 
@@ -359,6 +358,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
             log.write(i," ",end=" ",show_time=False)  
             dic = dic.rename(index={ref_snpid:snpid})
             dic = dic.rename(columns={ref_rsid:rsid})  
+            dic = dic.loc[~dic.index.duplicated(keep=False),:]
             sumstats.update(dic,overwrite=True)
 
         if verbose:  log.write("\n",end="",show_time=False) 

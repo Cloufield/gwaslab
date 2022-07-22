@@ -139,17 +139,12 @@ class Sumstats():
     def harmonize(self,
               basic_check=True,
               ref_seq=None,
-              ref_rsid=None,
+              ref_rsid_tsv=None,
+              ref_rsid_vcf=None,
               ref_rsid_chr_dict=None,
               ref_infer=None,
               ref_infer_chr_dict=None,
               ref_alt_freq=None,
-              from_build=None,
-              to_build=None,
-              to_ref_seq=None,
-              to_ref_infer=None,
-              to_ref_rsid=None,
-              to_ref_alt_freq=None,
               maf_threshold=0.43,
               n_cores=1,
               remove=False,
@@ -177,12 +172,19 @@ class Sumstats():
         #    1.5 sanity check : BETA SE OR EAF N OR_95L OR_95H
         #    1.6 sorting genomic coordinates and column order 
         if basic_check is True:
+            
             self.data = gl.fixID(self.data,**fixid_args)
+            
             self.data = gl.fixchr(self.data,remove=remove,log=self.log,**fixchr_agrs)
+            
             self.data = gl.fixpos(self.data,remove=remove,log=self.log,**fixpos_args)
+            
             self.data = gl.fixallele(self.data,log=self.log,**fixallele_args)
+            
             self.data = gl.sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
+            
             self.data = gl.parallelnormalizeallele(self.data,log=self.log,n_cores=n_cores,**normalizeallele_args)
+            
             self.data = gl.sortcolumn(self.data,log=self.log)
         
         
@@ -200,38 +202,40 @@ class Sumstats():
         #   3.2 infer strand for palindromic SNP (target build)
         #####################################################
         if ref_seq is not None:
+            
             self.data = gl.checkref(self.data,ref_seq,log=self.log,**checkref_args)
+            
             self.data = gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
-        
-        if ref_rsid is not None:
-            self.data = gl.parallelizeassignrsid(self.data,ref_rsid,n_cores=n_cores,log=self.log,chr_dict=ref_rsid_chr_dict,**assignrsid_args)
             
         if ref_infer is not None: 
-            self.data= gl.parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=0.43,n_cores=n_cores,chr_dict=ref_infer_chr_dict,log=self.log,**inferstrand_args)
-            self.data =gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
             
-        #if liftover           
-        if to_build is not None :
-            self.data = gl.parallelizeliftovervariant(self.data,n_cores=n_cores,from_build=from_build,to_build=to_build,log=self.log,**liftover_args)
-            if to_ref_seq is not None:
-                self.data = gl.checkref(self.data,to_ref_seq,log=self.log,**checkref_args)
-                self.data = gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
-                if to_ref_rsid is not None  :
-                    self.data = gl.parallelizeassignrsid(self.data,to_ref_rsid,n_cores=n_cores,log=self.log,**assignrsid_args)
-                if (to_ref_infer is not None) and (to_ref_alt_freq is not None): 
-                    self.data = gl.parallelinferstrand(self.data,ref_infer = to_ref_infer,ref_alt_freq=to_ref_alt_freq,maf_threshold=0.43,n_cores=n_cores,log=self.log,**inferstrand_args)
-                    self.data = gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
-        self.data = gl.fixchr(self.data, remove=remove)  
+            self.data= gl.parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=0.43,
+                                              n_cores=n_cores,chr_dict=ref_infer_chr_dict,log=self.log,**inferstrand_args)
+            self.data =gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
+        
+        #####################################################
+        if ref_rsid_tsv is not None:
+            
+            self.data = gl.parallelizeassignrsid(self.data,ref_rsid,ref_mode="tsv",
+                                                 n_cores=n_cores,log=self.log,chr_dict=ref_rsid_chr_dict,**assignrsid_args)
+        if ref_rsid_vcf is not None:
+            
+            self.data = gl.parallelizeassignrsid(self.data,ref_rsid,ref_mode="vcf",
+                                                 n_cores=n_cores,log=self.log,chr_dict=ref_rsid_chr_dict,**assignrsid_args)     
+        ######################################################    
         if remove is True:
+            
             self.data = gl.removedup(self.data,log=self.log,**removedup_args)
         ################################################ 
+        
         self.data = gl.sortcoordinate(self.data,log=self.log)
+        
         self.data = gl.sortcolumn(self.data,log=self.log)
+        
         return self
-    
     ############################################################################################################
     #customizable API to build your own QC pipeline
-    def fix_ID(self,**args):
+    def fix_id(self,**args):
         self.data = gl.fixID(self.data,log=self.log,**args)
     def fix_chr(self,**args):
         self.data = gl.fixchr(self.data,log=self.log,**args)
@@ -243,7 +247,7 @@ class Sumstats():
         self.data = gl.removedup(self.data,log=self.log,**args)
     def check_sanity(self,**args):
         self.data = gl.sanitycheckstats(self.data,log=self.log,**args)
-    def check_ID(self,**args):
+    def check_id(self,**args):
         pass
     def check_ref(self,**args):
         self.data = gl.checkref(self.data,log=self.log,**args)
@@ -253,8 +257,15 @@ class Sumstats():
         self.data = gl.flipallelestats(self.data,log=self.log,**args)
     def normalize_allele(self,**args):
         self.data = gl.parallelnormalizeallele(self.data,log=self.log,**args)
-    def assign_rsid(self,**args):
-        self.data = gl.parallelizeassignrsid(self.data,log=self.log,**args)
+    def assign_rsid(self,
+                    ref_rsid_tsv=None,
+                    ref_rsid_vcf=None,
+                    **args):
+        if ref_rsid_tsv is not None:
+            self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**args)
+        if ref_rsid_vcf is not None:
+            self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**args)   
+        
     def rsid_to_chrpos(self,**args):
         self.data = gl.rsidtochrpos(self.data,log=self.log,**args)
     def rsid_to_chrpos2(self,**args):

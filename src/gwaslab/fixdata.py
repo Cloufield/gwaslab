@@ -190,6 +190,9 @@ def fixID(sumstats,
         if snpid not in sumstats.columns: 
         # initiate a SNPID column
             sumstats.loc[:,snpid]=pd.Series(dtype="string")
+        
+        if (rsid in sumstats.columns) and (sum(is_rs_chrpos)>0) :
+            sumstats.loc[:,snpid]= sumstats.loc[is_rs_chrpos,rsid]
             
         if (chrom in sumstats.columns) and (pos in sumstats.columns):
             #only fix when CHR and POS is available
@@ -219,7 +222,8 @@ def fixID(sumstats,
                     sumstats.loc[to_part_fix,snpid] = sumstats.loc[to_part_fix,chrom].astype("string") + ":"+sumstats.loc[to_part_fix,pos].astype("string")
                 if sum(to_full_fix)>0:
                     sumstats.loc[to_full_fix,snpid] = sumstats.loc[to_full_fix,chrom].astype("string") + ":"+sumstats.loc[to_full_fix,pos].astype("string") +":"+ sumstats.loc[to_full_fix,nea].astype("string") +":"+ sumstats.loc[to_full_fix,ea].astype("string")
-                if verbose: log.write(" -Filling "+str(sum(to_part_fix)) +" SNPID using CHR POS...")
+                if verbose: log.write(" -Filling "+str(sum(to_part_fix)-sum(to_full_fix)) +" SNPID using CHR:POS...")
+                if verbose: log.write(" -Filling "+str(sum(to_full_fix)) +" SNPID using CHR:POS:NEA:EA...")
                 sumstats.loc[(to_full_fix),status] = vchange_status(sumstats.loc[(to_full_fix),status],3,"975","630")   
                 sumstats.loc[(to_part_fix),status] = vchange_status(sumstats.loc[(to_part_fix),status],3,"975","842")   
                 
@@ -241,7 +245,7 @@ def fixID(sumstats,
     
 ###############################################################################################################
 #20220514 
-def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col=None,keep_ascend=True,verbose=True,log=gl.Log()):
+def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",keep_ascend=True,verbose=True,log=gl.Log()):
     '''
     remove duplicate SNPs based on  1. SNPID, EA, and NEA
     remove duplicate SNPs based on  2. rsID for non-NA variants
@@ -253,7 +257,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
             if verbose: log.write("Start to sort the sumstats using" + keep_col +"...")
             sumstats = sumstats.sort_values(by=keep_col,ascending=keep_ascend)
         else:
-            raise ValueError("keep_col was not detected.")
+            if verbose: log.write("Column" + keep_col +" was not detected... skipping... ")
     total_number = len(sumstats)  
     if (snpid in sumstats.columns) and (nea in sumstats.columns) and (ea in sumstats.columns) and "d" in mode:
         if verbose: log.write("Start to remove duplicated variants based on snpid,ea and nea...")
@@ -683,7 +687,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
     pattern = r"\w\w\w\w\w[45]\w"  
     matched_index = sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
-        if verbose: log.write("Start to convert alleles to reverse complement ... ") 
+        if verbose: log.write("Start to convert alleles to reverse complement for SNPs with status xxxxx[45]x... ") 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
         if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
             if verbose: log.write(" -Converting to reverse complement : EA and NEA...") 
@@ -692,12 +696,13 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
             sumstats.loc[matched_index,['NEA']] = reverse_complement_nea.astype("string")
             sumstats.loc[matched_index,['EA']] = reverse_complement_ea.astype("string")
             sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 6, "4","2")
+            if verbose: log.write(" -Changed the status for flipped variants : xxxxx4x -> xxxxx2x")
 
     ###################flip ref####################
     pattern = r"\w\w\w\w\w[35]\w"  
     matched_index = sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
-        if verbose: log.write("Start to flip allele-specific stats for SNPs with status: alt->ea , ref->nea ... ") 
+        if verbose: log.write("Start to flip allele-specific stats for SNPs with status xxxxx[35]x: alt->ea , ref->nea ... ") 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
         if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
             if verbose: log.write(" -Swapping column: NEA <=> EA...") 
@@ -721,14 +726,14 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
             if verbose: log.write(" -Flipping column: DIRECTION +-? <=> -+? ...") 
             sumstats.loc[matched_index,"DIRECTION"] =   sumstats.loc[matched_index,"DIRECTION"].apply(flip_direction)
         #change status    
-        if verbose: log.write(" -Changed the status for flipped variants") 
+        if verbose: log.write(" -Changed the status for flipped variants : xxxxx[35]x -> xxxxx[12]x") 
         sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 6, "35","12")
         
     ###################flip ref for undistingushable indels####################
     pattern = r"\w\w\w\w[123][67][6]"  
     matched_index = sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
-        if verbose: log.write("Start to flip allele-specific stats for SNPs with status xxx8x: alt->ea , ref->nea ... ") 
+        if verbose: log.write("Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: alt->ea , ref->nea ... ") 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
         if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
             if verbose: log.write(" -Swapping column: NEA <=> EA...") 
@@ -752,14 +757,14 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
             if verbose: log.write(" -Flipping column: DIRECTION +-? <=> -+? ...") 
             sumstats.loc[matched_index,"DIRECTION"] =   sumstats.loc[matched_index,"DIRECTION"].apply(flip_direction)
         #change status    
-        if verbose: log.write(" -Changed the status for flipped variants") 
+        if verbose: log.write(" -Changed the status for flipped variants xxxx[123][67]6 -> xxxx[123][67]4") 
         sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 7, "6","4")
          # flip ref
     ###################flip statistics for reverse strand panlindromic variants####################
-    pattern = r"\w\w\w[012][5]"  
+    pattern = r"\w\w\w\w\w[012][5]"  
     matched_index = sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
-        if verbose: log.write("Start to flip allele-specific stats for palindromic SNPs with status xxx[12]8: (-)strand <=> (+)strand ... ") 
+        if verbose: log.write("Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand ... ") 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
         if "BETA" in sumstats.columns:
             if verbose: log.write(" -Flipping column: BETA = - BETA...") 
@@ -780,7 +785,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
             if verbose: log.write(" -Flipping column: DIRECTION +-? <=> -+? ...") 
             sumstats.loc[matched_index,"DIRECTION"] =   sumstats.loc[matched_index,"DIRECTION"].apply(flip_direction)
         #change status    
-        if verbose: log.write(" -Changed the status for flipped variants:  xxx[12]8: ->  xxx[12]3") 
+        if verbose: log.write(" -Changed the status for flipped variants:  xxxxx[012]5: ->  xxxxx[012]2") 
         sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 7, "5","2")
 
     return sumstats
@@ -791,7 +796,6 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
 def liftover_snv(row,converter,to_build):
     status_pre=""
     status_end=row[2][2]+"9"+row[2][4]+"99"
-    
     chrom = row[0]  
     pos_0_based = int(row[1]) - 1
     results = converter[chrom][pos_0_based]
@@ -806,22 +810,14 @@ def liftover_variant(sumstats,
              pos="POS", 
              status="STATUS",
              from_build="19", 
-             to_build="38",
-             remove=True):
-#sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
+             to_build="38"):
+    
     converter = get_lifter("hg"+from_build,"hg"+to_build)
-    not_na = (~sumstats[pos].isna()) & (~sumstats[chrom].isna())
-    na = sumstats[pos].isna() | sumstats[chrom].isna()
-    sumstats.loc[na,status] = vchange_status(sumstats.loc[na, status],  1,"13","99")
-    sumstats.loc[na,status] = vchange_status(sumstats.loc[na, status],  2,"39","88")  
-    
-    lifted = sumstats.loc[not_na,[chrom,pos,status]].apply(lambda x: liftover_snv(x[[chrom,pos,status]],converter,to_build),axis=1)
-    
-    sumstats.loc[not_na,chrom] = lifted.apply(lambda x :pd.NA if x[0] is pd.NA else str(x[0])).astype("string")
-    sumstats.loc[not_na,pos] = np.floor(pd.to_numeric(lifted.apply(lambda x :pd.NA if x[0] is pd.NA else str(x[1])), errors='coerce')).astype('Int64')
-    sumstats.loc[not_na,status] = lifted.apply(lambda x :str(x[2])).astype("string")
-    
-    return sumstats.loc[:,:]
+    lifted = sumstats.apply(lambda x: liftover_snv(x[[chrom,pos,status]],converter,to_build),axis=1)
+    sumstats.loc[:,chrom]  = lifted.apply(lambda x :pd.NA if x[0] is pd.NA else str(x[0])).astype("string")
+    sumstats.loc[:,pos]    = lifted.apply(lambda x :pd.NA if x[0] is pd.NA else str(x[1]))
+    sumstats.loc[:,status] = lifted.apply(lambda x :str(x[2])).astype("string")  
+    return sumstats
 
 def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True, verbose=True,log=gl.Log()):
     if verbose: log.write("Start to perform liftover...")
@@ -829,22 +825,35 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     if verbose: log.write(" -CPU Cores to use :",n_cores)
     if verbose: log.write(" -Performing liftover ...")
     if verbose: log.write(" -Creating converter : hg" + from_build +" to hg"+ to_build)
-    if verbose: log.write(" -Converting variants : "+str(len(sumstats)))
-    func=liftover_variant
-    df_split = np.array_split(sumstats, n_cores)
-    pool = Pool(n_cores)
-    #df = pd.concat(pool.starmap(func, df_split))
-    sumstats = pd.concat(pool.map(partial(func,chrom=chrom,pos=pos,from_build=from_build,to_build=to_build,remove=remove,status=status),df_split))
-    pool.close()
-    pool.join()
+    # valid chr and pos
+    pattern = r"\w\w\w0\w\w\w"  
+    to_lift = sumstats[status].str.match(pattern)
+    sumstats = sumstats.loc[to_lift,:]
+    if verbose: log.write(" -Converting variants with status code xxx0xxx :"+str(len(sumstats))+"...")
+    ###########################################################################
+    if sum(to_lift)>0:
+        if sum(to_lift)<10000:
+            n_cores=1
     
-    map_num   = len(sumstats.loc[~sumstats["POS"].isna(),:])
-    unmap_num = len(sumstats.loc[sumstats["POS"].isna(),:])
-    if verbose:log.write(" -Converted variants: "+str(map_num))
-    if remove:
-        if verbose: log.write(" -Remove unmapped variants: "+str(unmap_num))
-        sumstats = sumstats.loc[~sumstats["POS"].isna(),:]
-    sumstats = fixchr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=verbose,log=log)
+        df_split = np.array_split(sumstats.loc[:,[chrom,pos,status]], n_cores)
+        pool = Pool(n_cores)
+        #df = pd.concat(pool.starmap(func, df_split))
+        func=liftover_variant
+        sumstats.loc[:,[chrom,pos,status]] = pd.concat(pool.map(partial(func,chrom=chrom,pos=pos,from_build=from_build,to_build=to_build,status=status),df_split))
+        pool.close()
+        pool.join()
+    ############################################################################
+   
+    unmap_num = len(sumstats.loc[sumstats[pos].isna(),:])    
+    
+    if remove is True:
+        if verbose: log.write(" -Removed unmapped variants: "+str(unmap_num))
+        sumstats = sumstats.loc[~sumstats[pos].isna(),:]
+    
+    # after liftover check chr and pos
+    sumstats = gl.fixchr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=False)
+    sumstats = gl.fixpos(sumstats,pos=pos,remove=remove, verbose=False)
+    
     if verbose: log.write(" -Liftover is performed successfully!")
     return sumstats
 
