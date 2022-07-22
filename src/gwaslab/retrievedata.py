@@ -18,17 +18,20 @@ import os
 ###~!!!!
 def rsidtochrpos(sumstats,
          path="",
-         rsid="rsID", chrom="CHR",pos="POS",ref_snp="SNP",ref_chr="CHR",ref_pos="POS", build="19",
+         rsid="rsID", chrom="CHR",pos="POS",ref_rsid="rsID",ref_chr="CHR",ref_pos="POS", build="19",
               overwrite=False,remove=False,chunksize=5000000,verbose=True,log=gl.Log()):
     '''
     assign chr:pos based on rsID
     '''
+    #########################################################################################################
     if verbose:  log.write("Start to update chromosome and position information based on rsID...")  
     if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose:  log.write(" -rsID dictionary file: "+ path)  
-    dic_chuncks = pd.read_csv(path,"\s+",usecols=[ref_snp,ref_chr,ref_pos],
-                      chunksize=chunksize,index_col=ref_snp,
-                      dtype={ref_snp:"string",ref_chr:"string",ref_pos:"Int64"})
+    
+    dic_chuncks = pd.read_csv(path,"\t",usecols=[ref_rsid,ref_chr,ref_pos],
+                      chunksize=chunksize,index_col = ref_rsid,
+                      dtype={ref_rsid:"string",ref_chr:"string",ref_pos:"Int64"})
+    
     sumstats = sumstats.set_index(rsid)
     
     #if chr or pos columns not in sumstats
@@ -39,19 +42,23 @@ def rsidtochrpos(sumstats,
     
     if verbose:  log.write(" -Setting block size: ",chunksize)
     if verbose:  log.write(" -Loading block: ",end="")     
-    for i,dic in enumerate(dic_chuncks):    
+    for i,dic in enumerate(dic_chuncks): 
+        dic = dic[dic.index.notnull()]
         log.write(i," ",end=" ",show_time=False)  
-        dic = dic.rename(index={ref_snp:rsid})
+        dic = dic.rename(index={ref_rsid:rsid})
         dic = dic.rename(columns={ref_chr:chrom,ref_pos:pos})  
-        sumstats.update(dic,overwrite=overwrite)
+        sumstats.update(dic,overwrite="True")
     
     if verbose:  log.write("\n",end="",show_time=False) 
     sumstats = sumstats.reset_index()
-    sumstats = sumstats.rename(columns = {'index':'rsID'})
+    sumstats = sumstats.rename(columns = {'index':rsid})
     if verbose:  log.write(" -Updating CHR and POS finished.Start to re-fixing CHR and POS... ")
-    sumstats = fixchr(sumstats,remove=remove,verbose=verbose)
-    sumstats = fixpos(sumstats,remove=remove,verbose=verbose)
+    sumstats = gl.fixchr(sumstats,verbose=verbose)
+    sumstats = gl.fixpos(sumstats,verbose=verbose)
     return sumstats
+    #################################################################################################### 
+
+
 ####################################################################################################################
     
 def merge_chrpos(sumstats_part,path,build,status):
@@ -260,54 +267,108 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
     #rsID = sumstats.apply(lambda x:chrposref_rsid(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,chr_dict),axis=1)
     return rsID
 
-def parallelizeassignrsid(sumstats, path ,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",n_cores=1,overwrite="empty",verbose=True,log=gl.Log(),chr_dict=None):
+def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",
+                          n_cores=1,chunksize=5000000,ref_snpid="SNPID",ref_rsid="rsID",
+                          overwrite="empty",verbose=True,log=gl.Log(),chr_dict=None):
     '''
     overwrite mode : 
     all ,    overwrite rsid for all availalbe rsid 
     invalid,  only assign rsid for variants with invalid rsid
     empty    only assign rsid for variants with na rsid
     '''  
-    if verbose: log.write("Start to assign rsID ...")
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
-    if verbose: log.write(" -CPU Cores to use :",n_cores)
-    if verbose: log.write(" -Reference VCF file:", path)
-    if verbose: log.write(" -Assigning rsID based on chr:pos:ref:alt...")
-    ##############################################
-    if rsid not in sumstats.columns:
-        sumstats[rsid]=pd.Series(dtype="string")
-    
-    ###############################################
-    total_number= len(sumstats)
-    pre_number = sum(~sumstats[rsid].isna())
+    if ref_mode=="vcf":
+        ###################################################################################################################
+        if verbose: log.write("Start to assign rsID ...")
+        if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+        if verbose: log.write(" -CPU Cores to use :",n_cores)
+        if verbose: log.write(" -Reference VCF file:", path)
+        if verbose: log.write(" -Assigning rsID based on chr:pos:ref:alt...")
+        ##############################################
+        if rsid not in sumstats.columns:
+            sumstats[rsid]=pd.Series(dtype="string")
+
+        ###############################################
+        total_number= len(sumstats)
+        pre_number = sum(~sumstats[rsid].isna())
+
+        ##################################################################################################################
+        standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
+        if overwrite == "empty":
+            to_assign = sumstats[rsid].isna()
+        if overwrite=="all":
+            to_assign = standardized_normalized
+        if overwrite=="invalid":
+            to_assign = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) & standardized_normalized
+        if overwrite=="empty":
+            to_assign = sumstats[rsid].isna()& standardized_normalized
+        ##################################################################################################################
+        # multicore arrangement
+
+        if sum(to_assign)>0:
+            if sum(to_assign)<10000: n_cores=1
+            df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], n_cores)
+            pool = Pool(n_cores)
+            map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,chr_dict=chr_dict) 
+            assigned_rsid = pd.concat(pool.map(map_func,df_split))
+            sumstats.loc[to_assign,rsid] = assigned_rsid.values 
+        pool.close()
+        pool.join()
+
+        ##################################################################################################################
+
+        after_number = sum(~sumstats[rsid].isna())
+        if verbose: log.write(" -rsID Annotation for "+str(total_number - after_number) +" need to be fixed!")
+        if verbose: log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!")
     
     ##################################################################################################################
-    standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
-    if overwrite == "empty":
-        to_assign = sumstats[rsid].isna()
-    if overwrite=="all":
-        to_assign = standardized_normalized
-    if overwrite=="invalid":
-        to_assign = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) & standardized_normalized
-    if overwrite=="empty":
-        to_assign = sumstats[rsid].isna()& standardized_normalized
-    ##################################################################################################################
-    # multicore arrangement
-    
-    if sum(to_assign)>0:
-        if sum(to_assign)<10000: n_cores=1
-        df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], n_cores)
-        pool = Pool(n_cores)
-        map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,chr_dict=chr_dict) 
-        assigned_rsid = pd.concat(pool.map(map_func,df_split))
-        sumstats.loc[to_assign,rsid] = assigned_rsid.values 
-    pool.close()
-    pool.join()
-    
-    ##################################################################################################################
-    
-    after_number = sum(~sumstats[rsid].isna())
-    if verbose: log.write(" -rsID Annotation for "+str(total_number - after_number) +" need to be fixed!")
-    if verbose: log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!")
+    elif ref_mode=="text":
+        '''
+        assign rsID based on chr:pos
+        '''
+        if verbose:  log.write("Start to annotate rsID based on chromosome and position information...")  
+        if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+        if verbose:  log.write(" -SNPID-rsID text file: "+ path)  
+        
+        standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234][0126][43210]", case=False, flags=0, na=False)
+        
+        if rsid not in sumstats.columns:
+            sumstats[rsid]=pd.Series(dtype="string")
+            
+        if overwrite == "empty":
+            to_assign = sumstats[rsid].isna()
+        if overwrite=="all":
+            to_assign = standardized_normalized
+        if overwrite=="invalid":
+            to_assign = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) & standardized_normalized
+        if overwrite=="empty":
+            to_assign = sumstats[rsid].isna()& standardized_normalized
+            
+        total_number= len(sumstats)
+        pre_number = sum(~sumstats[rsid].isna())
+        
+        if sum(to_assign)>0:
+            sumstats = sumstats.set_index(snpid)
+                    
+        dic_chuncks = pd.read_csv(path,"\t",usecols=[ref_snpid,ref_rsid],
+                          chunksize=chunksize,index_col=ref_snpid,
+                          dtype={ref_snpid:"string",ref_rsid:"string"})
+
+        if verbose:  log.write(" -Setting block size: ",chunksize)
+        if verbose:  log.write(" -Loading block: ",end="")     
+        for i,dic in enumerate(dic_chuncks):    
+            log.write(i," ",end=" ",show_time=False)  
+            dic = dic.rename(index={ref_snpid:snpid})
+            dic = dic.rename(columns={ref_rsid:rsid})  
+            sumstats.update(dic,overwrite=True)
+
+        if verbose:  log.write("\n",end="",show_time=False) 
+        sumstats = sumstats.reset_index()
+        sumstats = sumstats.rename(columns = {'index':snpid})
+        
+        after_number = sum(~sumstats[rsid].isna())
+        if verbose: log.write(" -rsID Annotation for "+str(total_number - after_number) +" need to be fixed!")
+        if verbose: log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!")
+        ################################################################################################################
     return sumstats
 #################################################################################################################################################
 #single record assignment
@@ -458,8 +519,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,
     ### unknow_indel
     if "i" in mode:
         unknow_indel = sumstats[status].str.match(r'\w\w\w\w\w[6][89]', case=False, flags=0, na=False)   
+        if verbose: log.write(" -Identified ", sum(unknow_indel)," indistinguishable Indels...")
         if sum(unknow_indel)>0:
-            if verbose: log.write(" -Identified ", sum(unknow_indel)," indistinguishable Indels...")
             if verbose: log.write(" -Indistinguishable Indels will be inferred from reference vcf ref and alt...")
             #########################################################################################               
             if sum(unknow_indel)>0:

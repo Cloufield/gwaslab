@@ -209,17 +209,20 @@ def fixID(sumstats,
                 matched_index = sumstats[status].str.match(pattern) 
                 to_part_fix = matched_index & to_fix 
                 
-                pattern = r"\w\w\w[0][01267][01234]\w"  
+                #pattern = r"\w\w\w[0][01267][01234]\w"  
+                pattern = r"\w\w\w\w[0123][01267][01234]"
                 matched_index = sumstats[status].str.match(pattern) 
                 to_full_fix = matched_index & to_fix 
                 
+                
+                if sum(to_part_fix)>0:
+                    sumstats.loc[to_part_fix,snpid] = sumstats.loc[to_part_fix,chrom].astype("string") + ":"+sumstats.loc[to_part_fix,pos].astype("string")
                 if sum(to_full_fix)>0:
                     sumstats.loc[to_full_fix,snpid] = sumstats.loc[to_full_fix,chrom].astype("string") + ":"+sumstats.loc[to_full_fix,pos].astype("string") +":"+ sumstats.loc[to_full_fix,nea].astype("string") +":"+ sumstats.loc[to_full_fix,ea].astype("string")
                 if verbose: log.write(" -Filling "+str(sum(to_part_fix)) +" SNPID using CHR POS...")
-                if sum(to_part_fix)>0:
-                    sumstats.loc[to_part_fix,snpid] = sumstats.loc[to_part_fix,chrom].astype("string") + ":"+sumstats.loc[to_part_fix,pos].astype("string")    
-                sumstats.loc[(to_full_fix),status] = vchange_status(sumstats.loc[(to_full_fix),status],3,"975","630")    
-                sumstats.loc[(to_part_fix),status] = vchange_status(sumstats.loc[(to_part_fix),status],3,"975","842")
+                sumstats.loc[(to_full_fix),status] = vchange_status(sumstats.loc[(to_full_fix),status],3,"975","630")   
+                sumstats.loc[(to_part_fix),status] = vchange_status(sumstats.loc[(to_part_fix),status],3,"975","842")   
+                
             else:
             #when these is no ea or ena, just fix to chr:pos
                 to_part_fix = to_fix & sumstats[chrom].notnull() & sumstats[pos].notnull()
