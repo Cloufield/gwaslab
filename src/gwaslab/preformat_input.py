@@ -72,7 +72,7 @@ def preformat(sumstats,
         rename_dictionary[se]= "SE"
     if chisq:
         usecols.append(chisq)
-        rename_dictionary=[chisq]="CHISQ"
+        rename_dictionary[chisq]="CHISQ"
     if z:
         usecols.append(z)
         rename_dictionary[z]= "Z"

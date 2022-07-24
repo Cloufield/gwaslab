@@ -145,7 +145,7 @@ class Sumstats():
               ref_infer=None,
               ref_infer_chr_dict=None,
               ref_alt_freq=None,
-              maf_threshold=0.43,
+              maf_threshold=0.40,
               n_cores=1,
               remove=False,
               checkref_args={},
@@ -293,6 +293,17 @@ class Sumstats():
             return gl.filterin(self.data,**args)
         else:
             self.data = gl.filterin(self.data,log=self.log,**args)
+    def filter_region_in(self, inplace=True, **args):
+        if inplace is False:
+            return gl.filterregionin(self.data,**args)
+        else:
+            self.data = gl.filterregionin(self.data,log=self.log,**args)
+    def filter_region_out(self, inplace=True, **args):
+        if inplace is False:
+            return gl.filterregionout(self.data,**args)
+        else:
+            self.data = gl.filterregionout(self.data,log=self.log,**args)        
+    
 ###########################################################################################################################            
     def check_af(self,**args):
         self.data = gl.parallelecheckaf(self.data,log=self.log,**args)

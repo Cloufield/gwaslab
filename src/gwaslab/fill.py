@@ -7,9 +7,10 @@ import gwaslab as gl
 def filldata( 
     sumstats,
     to_fill=[],
-    overwirte=False,
+    df=None,
+    overwrite=False,
     verbose=True,
-    only_sig=True,
+    only_sig=False,
     log = gl.Log()
     ):
     
@@ -18,8 +19,8 @@ def filldata(
     if verbose: print(" -Raw input columns: ",list(sumstats.columns))
 # check dupication ##############################################################################################
     skip_cols=[]
-    if verbose: print(" -Overwirte mode: ",overwirte)
-    if overwirte is False:
+    if verbose: print(" -Overwrite mode: ",overwrite)
+    if overwrite is False:
         for i in to_fill:
             if i in sumstats.columns:
                 to_fill.remove(i)
@@ -66,11 +67,19 @@ def filldata(
             sumstats["P"] = ss.chisqprob(sumstats["Z"]**2,1)
         elif "CHISQ" in sumstats.columns:
             if verbose: print("  - Filling P value using CHISQ column...")
-            stats.chisqprob = lambda chisq, df: stats.chi2.sf(chisq, df)
-            if only_sig==True and overwirte==True:
-                sumstats.loc[sumstats["P"]<5e-8,"P"] = stats.chisqprob(sumstats.loc[sumstats["P"]<5e-8,"CHISQ"],1)
+            stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
+            if df is None:
+                if only_sig==True and overwrite==True:
+                    sumstats.loc[sumstats["P"]<5e-8,"P"] = stats.chisqprob(sumstats.loc[sumstats["P"]<5e-8,"CHISQ"],1)
+                else:
+                    sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],1)
             else:
-                sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],1)
+                if only_sig==True and overwrite==True:
+                    if verbose: print("  - Filling P value using CHISQ column for variants:" , sum(sumstats["P"]<5e-8))
+                    sumstats.loc[sumstats["P"]<5e-8,"P"] = stats.chisqprob(sumstats.loc[sumstats["P"]<5e-8,"CHISQ"],sumstats.loc[sumstats["P"]<5e-8,df].astype("int"))
+                else:
+                    sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],sumstats[df].astype("int"))
+                
         elif "MLOG10P" in sumstats.columns:    
             if verbose: print("  - Filling P value using MLOG10P column...")
             sumstats["P"] = np.power(10,-sumstats["MLOG10P"])

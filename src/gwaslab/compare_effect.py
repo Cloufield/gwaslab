@@ -486,7 +486,12 @@ def plotdaf(sumstats,
     if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
         raise ValueError("EAF and/or DAF columns were not detected.")
     
+    
+    
+    
     sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[eaf,daf]].copy()
+    sumstats.loc[:,daf] = sumstats.loc[:,daf].astype("float")
+    sumstats.loc[:,eaf] = sumstats.loc[:,eaf].astype("float")
     if verbose: print(" -Plotting valriants:" + str(len(sumstats)))
     
     sumstats.loc[:,"RAF"]=sumstats[eaf] - sumstats[daf]
@@ -503,7 +508,7 @@ def plotdaf(sumstats,
         ax1.axline(xy1=(0,reg[1]),slope=reg[0],zorder=1,**reg_line_args)
     if is_threshold is True:
         if verbose: print(" -Threshold : " + str(threshold))
-        num = sum(sumstats[daf]>threshold)
+        num = sum(np.abs(sumstats[daf])>threshold )
         if verbose: print(" -Variants with relatively large DAF : ",num )
         if verbose: print(" -Percentage for variants with relatively large DAF : ",num/len(sumstats) )
         ax1.axline(xy1=(0,threshold),slope=1,zorder=1,**threshold_line_args)

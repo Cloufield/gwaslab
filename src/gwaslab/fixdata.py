@@ -281,7 +281,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         pre_number =len(sumstats) 
         if verbose: log.write("Start to remove multiallelic variants based on chr:pos...")    
         if verbose: log.write(" -Which variant to keep: ",  keep ) 
-        sumstats = sumstats.loc[(~sumstats.loc[:,[snpid,chrom,pos]].all(axis=1)) | (~sumstats.duplicated(subset=[chrom,pos], keep=keep)),:]
+        sumstats = sumstats.loc[(~sumstats.loc[:,[chrom,pos]].all(axis=1)) | (~sumstats.duplicated(subset=[chrom,pos], keep=keep)),:]
         after_number=len(sumstats)  
         if verbose:  log.write(" -Removed ",total_number -after_number," multiallelic variants in total.")   
     after_number=len(sumstats)   
@@ -379,7 +379,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         
         # remove outlier, limit:250,000,000
         if verbose: log.write(" -Position upper_bound is:" + str(limit))
-        out_lier=sumstats[pos]>limit
+        out_lier=(sumstats[pos]>limit) & (~sumstats[pos].isna())
         if verbose: log.write(" -Remove outliers:",sum(out_lier))
         sumstats = sumstats.loc[~out_lier,:]
         
@@ -587,7 +587,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
     if "CHISQ" in coltocheck and "CHISQ" in sumstats.columns:
         cols_to_check.append("CHISQ")
         if verbose: log.write(" -Checking if CHISQ>0 ...") 
-        sumstats.loc[:,"CHISQ"] = np.floor(pd.to_numeric(sumstats.loc[:,"CHISQ"], errors='coerce'))
+        sumstats.loc[:,"CHISQ"] = pd.to_numeric(sumstats.loc[:,"CHISQ"], errors='coerce')
         sumstats = sumstats.loc[(sumstats["CHISQ"]>=0),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad CHISQ.") 

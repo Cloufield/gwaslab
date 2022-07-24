@@ -285,8 +285,6 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
 
         ##################################################################################################################
         standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
-        if overwrite == "empty":
-            to_assign = sumstats[rsid].isna()
         if overwrite=="all":
             to_assign = standardized_normalized
         if overwrite=="invalid":
@@ -303,8 +301,8 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
             map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,chr_dict=chr_dict) 
             assigned_rsid = pd.concat(pool.map(map_func,df_split))
             sumstats.loc[to_assign,rsid] = assigned_rsid.values 
-        pool.close()
-        pool.join()
+            pool.close()
+            pool.join()
 
         ##################################################################################################################
 
@@ -321,7 +319,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
         if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         if verbose:  log.write(" -SNPID-rsID text file: "+ path)  
         
-        standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234][0126][43210]", case=False, flags=0, na=False)
+        standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234][0126]\w", case=False, flags=0, na=False)
         
         if rsid not in sumstats.columns:
             sumstats[rsid]=pd.Series(dtype="string")
@@ -332,34 +330,34 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
             to_assign = standardized_normalized
         if overwrite=="invalid":
             to_assign = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) & standardized_normalized
-        if overwrite=="empty":
-            to_assign = sumstats[rsid].isna()& standardized_normalized
-            
         total_number= len(sumstats)
         pre_number = sum(~sumstats[rsid].isna())
-        
+        if verbose: log.write(" -"+str(sum(to_assign)) +" rsID could be possibly fixed...")
         if sum(to_assign)>0: 
-            sumstats = sumstats.set_index(snpid)      
-        dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_snpid,ref_rsid],
-                          chunksize=chunksize,index_col=ref_snpid,
-                          dtype={ref_snpid:"string",ref_rsid:"string"})
+            sumstats = sumstats.set_index(snpid)  
+            dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_snpid,ref_rsid],
+                              chunksize=chunksize,index_col=ref_snpid,
+                              dtype={ref_snpid:"string",ref_rsid:"string"})
 
-        if verbose:  log.write(" -Setting block size: ",chunksize)
-        if verbose:  log.write(" -Loading block: ",end="")     
-        for i,dic in enumerate(dic_chuncks):    
-            log.write(i," ",end=" ",show_time=False)  
-            dic = dic.rename(index={ref_snpid:snpid})
-            dic = dic.rename(columns={ref_rsid:rsid})  
-            dic = dic.loc[~dic.index.duplicated(keep=False),:]
-            sumstats.update(dic,overwrite=True)
+            if verbose:  log.write(" -Setting block size: ",chunksize)
+            if verbose:  log.write(" -Loading block: ",end="")     
+            for i,dic in enumerate(dic_chuncks):    
+                log.write(i," ",end=" ",show_time=False)  
+                dic = dic.rename(index={ref_snpid:snpid})
+                dic = dic.rename(columns={ref_rsid:rsid})  
+                dic = dic.loc[~dic.index.duplicated(keep=False),:]
+                print(dic)
+                sumstats.update(dic,overwrite=True)
 
-        if verbose:  log.write("\n",end="",show_time=False) 
-        sumstats = sumstats.reset_index()
-        sumstats = sumstats.rename(columns = {'index':snpid})
-        
-        after_number = sum(~sumstats[rsid].isna())
-        if verbose: log.write(" -rsID Annotation for "+str(total_number - after_number) +" need to be fixed!")
-        if verbose: log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!")
+            if verbose:  log.write("\n",end="",show_time=False) 
+            sumstats = sumstats.reset_index()
+            sumstats = sumstats.rename(columns = {'index':snpid})
+
+            after_number = sum(~sumstats[rsid].isna())
+            if verbose: log.write(" -rsID Annotation for "+str(total_number - after_number) +" need to be fixed!")
+            if verbose: log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!")
+        else:
+            if verbose: log.write(" -No rsID could be fixed...skipping...")
         ################################################################################################################
     return sumstats
 #################################################################################################################################################

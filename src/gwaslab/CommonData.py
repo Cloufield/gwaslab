@@ -1,3 +1,6 @@
+import pandas as pd
+from os import path
+
 def get_chr_NC_dict(build):
     #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
     if build =="19":
@@ -99,3 +102,13 @@ def lookup_status():
     "19xxx":"",
     "19xxx":""
     }
+    
+    
+def get_high_ld(build="19"):
+    if build=="19":
+        data_path =  path.dirname(__file__) + '/data/high-ld/high-ld-hla-hg19.bed'
+    elif build=="38":
+        data_path =  path.dirname(__file__) + '/data/high-ld/high-ld-hla-hg38.bed'
+    return data_path
+
+    

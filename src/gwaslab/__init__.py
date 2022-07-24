@@ -28,6 +28,8 @@ from gwaslab.retrievedata import parallelrsidtochrpos
 ## utility
 from gwaslab.filtervalue import filterout
 from gwaslab.filtervalue import filterin
+from gwaslab.filtervalue import filterregionin
+from gwaslab.filtervalue import filterregionout
 from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import gc
 from gwaslab.getsig import getsig
@@ -52,3 +54,4 @@ from gwaslab.CommonData import get_chr_NC_dict
 from gwaslab.CommonData import get_chr_list
 from gwaslab.CommonData import get_number_to_chr
 from gwaslab.CommonData import get_chr_to_number
+from gwaslab.CommonData import get_high_ld
