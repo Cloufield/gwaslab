@@ -1,5 +1,6 @@
 import pandas as pd
 from os import path
+import json
 
 def get_chr_NC_dict(build,inverse=False):
     #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
@@ -115,103 +116,14 @@ def get_high_ld(build="19"):
     return data_path
 
 def get_format_dict(fmt,inverse=False):
-    if fmt.lower()=="plink":
-         #https://www.cog-genomics.org/plink/1.9/formats#assoc_linear
-         #INFO
-        dic={
-        "SNP":"SNPID",
-        "CHR":"CHR",
-        "BP":"POS",
-        "A1":"EA",
-        "A2":"NEA",
-        "NMISS":"N",
-        "FRQ":"EAF",
-        "BETA":"BETA",
-        "SE":"SE",
-        "P":"P",
-        "STAT":"Z",
-        "INFO":"INFO",
-        "OR":"OR",
-        "L95":"OR_95L",
-        "U95":"OR_95U"
-        }
-    if fmt.lower()=="plink2":
-        #https://www.cog-genomics.org/plink/2.0/formats#glm_logistic
-        #https://www.cog-genomics.org/plink/2.0/formats#glm_linear
-         dic={
-        "ID":"SNPID",
-        "CHROM":"CHR",
-        "POS":"POS",
-        "REF":"NEA",
-        "ALT":"EA",
-        "OBS_CT":"N",
-        "BETA":"BETA",
-        "SE":"SE",
-        "P":"P",
-        "[LOG(OR)_]SE":"OR_SE",
-        "Z_[OR_F_]STAT":"Z",
-        "MACH_R2":"INFO",
-        "OR":"OR",
-        "L95":"OR_95L",
-        "U95":"OR_95U"
-        }
-    if fmt.lower()=="ssf":
-        #https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full
-        dic={
-        "variant_id":"SNPID",
-        "rsid":"rsID",
-        "chromosome":"CHR",
-        "bas_pair_location":"POS",
-        "other_allele":"NEA",
-        "effect_allele":"EA",
-        "n":"N",
-        "beta":"BETA",
-        "standard_error":"SE",
-        "p_value":"P",
-        "info":"INFO",
-        "odds_ratio":"OR",
-        "ci_lower":"OR_95L",
-        "ci_upper":"OR_95U"
-        }
-    if fmt.lower()=="saige":
-        dic={}
-    if fmt.lower()=="regenie":
-        dic={}
-    if fmt.lower()=="fastgwa":
-        #https://yanglab.westlake.edu.cn/software/gcta/#fastGWA
-        # CHR     SNP     POS     A1      A2      N      AF1     BETA    SE      P
-        #https://yanglab.westlake.edu.cn/software/gcta/#fastGWA-GLMM
-        # CHR    SNP    POS    A1    A2    N    AF1    T    SE_T    P_noSPA    BETA    SE    P    CONVERGE
-        dic={
-        "SNP":"SNPID",
-        "CHR":"CHR",
-        "POS":"POS",
-        "A2":"NEA",
-        "A1":"EA",
-        "AF1":"EAF",
-        "BETA":"BETA",
-        "SE":"SE",
-        "P":"P"
-        }
-    if fmt.lower()=="gcta":
-        dic={}
-    if fmt.lower()=="metal":
-        dic={
-        "MarkerName":"SNPID",
-        "Allele1":"NEA",
-        "Allele2":"EA",
-        "Freq1":"EAF",
-        "Effect":"BETA",
-        "StdErr":"SE",
-        "P-value":"P",
-        "Direction":"DIRECTION"
-        }
-    if fmt.lower()=="mrmega":
-        dic={}
+    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    dicts = json.load(open(data_path))
+    dic_meta = dicts[fmt]["meta_data"]
+    dic_dict = dicts[fmt]["format_dict"]
     if inverse is True:
-        inv_dic = {v: k for k, v in dic.items()}
-        return inv_dic
-    return dic
+        inv_dic = {v: k for k, v in dic_dict.items()}
+        return dic_meta,inv_dic
+    return dic_meta, dic_dict
         
         
         

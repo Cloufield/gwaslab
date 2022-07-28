@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import gwaslab as gl
 import time
+
 #20220309
 class Sumstats():
     def __init__(self,
@@ -425,4 +426,6 @@ class Sumstats():
         if output_log is True:
             if verbose: self.log.write("Saving log file...")
             self.log.save(path + "."+ format +".log")
-            
+    def to_fmt(self,
+           **args ):
+        return gl.to_formats.tofmt(self.data,**args) 

@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import scipy.stats as ss
+from gwaslab.CommonData import get_format_dict
 
 #20220425
 def preformat(sumstats,
@@ -39,16 +40,24 @@ def preformat(sumstats,
     usecols = []
     
     if fmt is not None:
-        # pre-defined format
-        # ssf
-        # metal
-        # plink
-        # plink2
-        # regenie
-        # saige
-        # gcta
-        pass
-    
+        if verbose: log.write(" -"+fmt+" format will be loaded...")
+        meta_data,rename_dictionary = get_format_dict(fmt)
+        if verbose: log.write(" -"+fmt+" format meta info:",meta_data)   
+        if verbose: log.write(" -"+fmt+" format dictionary:",rename_dictionary)   
+    try:
+        if type(sumstats) is str:
+            ## loading data from path
+            inpath = sumstats
+            raw_cols = pd.read_table(inpath,dtype="string", nrows=1,**readargs).columns
+        elif type(sumstats) is pd.DataFrame:
+            ## loading data from dataframe
+            raw_cols = sumstats.columns
+        for i in rename_dictionary.keys():
+            if i in raw_cols:
+                usecols.append(i)
+    except ValueError:
+        raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
+
     if snpid:
         usecols.append(snpid)
         rename_dictionary[snpid]= "SNPID"
@@ -128,7 +137,7 @@ def preformat(sumstats,
             inpath = sumstats
             if verbose: log.write("Initiating from file :" + inpath)
             sumstats = pd.read_table(inpath,
-                             usecols=usecols,
+                             usecols=set(usecols),
                              dtype="string",
                              **readargs)
         elif type(sumstats) is pd.DataFrame:

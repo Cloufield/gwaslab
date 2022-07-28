@@ -122,8 +122,23 @@ def tossf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA"
 def tovcf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA", nea="NEA", beta="BETA", se="SE" ,p="P" ,n="N",verbose=True):
     pass
     
-    
-    
+###################################################################################################################################################
+def tofmt(sumstats,path=None,fmt=None,verbose=True):
+    if fmt is not None:
+        if verbose: print(" -"+fmt+" format will be loaded...")
+        meta_data,rename_dictionary = gl.CommonData.get_format_dict(fmt,inverse=True)
+        if verbose: print(" -"+fmt+" format meta info:",meta_data)   
+        if verbose: print(" -gwaslab to "+fmt+" format dictionary:",rename_dictionary)   
+        ouput_cols=[]
+        for i in sumstats.columns:
+            if i in rename_dictionary.keys():
+                ouput_cols,append(i)
+
+        if verbose: print("Start formatting to "+fmt+" input format...")
+        sumstats = sumstats.loc[:,list(rename_dictionary.keys())]
+        sumstats = sumstats.rename(columns=rename_dictionary)  
+        if path is not None: sumstats.to_csv(path,"\t",index=None)
+        return sumstats
     
     
     
