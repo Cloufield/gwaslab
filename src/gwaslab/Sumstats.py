@@ -6,6 +6,7 @@ import time
 class Sumstats():
     def __init__(self,
              sumstats,
+             fmt=None,
              snpid=None,
              rsid=None,
              chrom=None,
@@ -39,7 +40,9 @@ class Sumstats():
         self.log = gl.Log()
         
         #preformat the data
-        self.data  = gl.preformat(sumstats=sumstats,
+        self.data  = gl.preformat(
+          sumstats=sumstats,
+          fmt=fmt,
           snpid=snpid,
           rsid=rsid,
           chrom=chrom,
@@ -416,6 +419,8 @@ class Sumstats():
         if format=="metal":
             gl.toldsc(output, path=path+"."+format,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if format=="vcf":
+            gl.toldsc(output, path=path+"."+format,verbose=True,log=self.log,to_csvargs=to_csvargs)
+        if format=="ssf":
             gl.toldsc(output, path=path+"."+format,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if output_log is True:
             if verbose: self.log.write("Saving log file...")

@@ -40,6 +40,7 @@ from gwaslab.plotrg import plot_rg
 from gwaslab.to_formats import tobed
 from gwaslab.to_formats import tofuma
 from gwaslab.to_formats import toldsc
+from gwaslab.to_formats import tossf
 from gwaslab.get_hapmap3 import gethapmap3
 
 # standalone function
@@ -55,3 +56,4 @@ from gwaslab.CommonData import get_chr_list
 from gwaslab.CommonData import get_number_to_chr
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_high_ld
+from gwaslab.CommonData import get_format_dict

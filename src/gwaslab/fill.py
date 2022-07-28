@@ -69,15 +69,16 @@ def filldata(
             if verbose: print("  - Filling P value using CHISQ column...")
             stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
             if df is None:
-                if only_sig==True and overwrite==True:
+                if only_sig is True and overwrite is True:
                     sumstats.loc[sumstats["P"]<5e-8,"P"] = stats.chisqprob(sumstats.loc[sumstats["P"]<5e-8,"CHISQ"],1)
                 else:
                     sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],1)
             else:
-                if only_sig==True and overwrite==True:
+                if only_sig is True and overwrite is True:
                     if verbose: print("  - Filling P value using CHISQ column for variants:" , sum(sumstats["P"]<5e-8))
                     sumstats.loc[sumstats["P"]<5e-8,"P"] = stats.chisqprob(sumstats.loc[sumstats["P"]<5e-8,"CHISQ"],sumstats.loc[sumstats["P"]<5e-8,df].astype("int"))
                 else:
+                    if verbose: print("  - Filling P value using CHISQ column for all valid variants:")
                     sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],sumstats[df].astype("int"))
                 
         elif "MLOG10P" in sumstats.columns:    

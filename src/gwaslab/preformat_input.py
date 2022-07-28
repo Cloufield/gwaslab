@@ -5,6 +5,7 @@ import scipy.stats as ss
 
 #20220425
 def preformat(sumstats,
+          fmt=None,
           snpid=None,
           rsid=None,
           chrom=None,
@@ -36,6 +37,17 @@ def preformat(sumstats,
     #renaming dictionary
     rename_dictionary = {}
     usecols = []
+    
+    if fmt is not None:
+        # pre-defined format
+        # ssf
+        # metal
+        # plink
+        # plink2
+        # regenie
+        # saige
+        # gcta
+        pass
     
     if snpid:
         usecols.append(snpid)
