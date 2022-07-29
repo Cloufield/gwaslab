@@ -57,14 +57,15 @@ def compare_effect(path1,
     #[snpid,p,ea,nea]      ,[effect,se]
     #[snpid,p,ea,nea,chr,pos],[effect,se]
     #[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
+    
     if verbose: print("Start to process the raw sumstats for plotting...")
+    
     ######### 1 check the value used to plot
     if mode not in ["Beta","beta","BETA","OR","or"]:
         raise ValueError("Please input Beta or OR")
     
     ######### 2 extract snplist2
-    if verbose: print(" -Loading "+label[1]+" SNP list in memory...")
-        
+    if verbose: print(" -Loading "+label[1]+" SNP list in memory...")    
     sumstats=pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0]])
     common_snp_set=set(sumstats[cols_name_list_2[0]].values)
     
@@ -85,13 +86,15 @@ def compare_effect(path1,
     ######### 6 rename the sumstats
     rename_dict = { cols_name_list_1[0]:"SNPID",
                cols_name_list_1[1]:"P",
-    }
+               }
+    
     if snplist is None: 
         rename_dict[cols_name_list_1[4]]="CHR"
         rename_dict[cols_name_list_1[5]]="POS"
+    
     sumstats.rename(columns=rename_dict,inplace=True)
     
-    ######### 7 exctract only common variants from sumstats1 
+    ######### 7 exctract only available variants from sumstats1 
     sumstats=sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
     if verbose: print(" -Using only variants available for both datasets...")
     
@@ -104,8 +107,7 @@ def compare_effect(path1,
     else:
         ######### 8,2 otherwise use the sutomatically detected lead SNPs
         if verbose: print(" -Extract lead variants from "+label[0]+"...")
-        sig_list_1 = gl.getsig(sumstats,"SNPID","CHR","POS","P",
-                               verbose=verbose,sig_level=sig_level)
+        sig_list_1 = gl.getsig(sumstats,"SNPID","CHR","POS","P", verbose=verbose,sig_level=sig_level)
 
     ######### 9 extract snplist2
     if snplist is not None:
@@ -119,7 +121,7 @@ def compare_effect(path1,
     ######### 10 rename sumstats2
     rename_dict = { cols_name_list_2[0]:"SNPID",
                     cols_name_list_2[1]:"P",
-    }
+                }
     if snplist is None: 
         rename_dict[cols_name_list_2[4]]="CHR"
         rename_dict[cols_name_list_2[5]]="POS"
@@ -149,6 +151,9 @@ def compare_effect(path1,
     ########## 14 Merging sumstats1
     
     if mode=="beta" or mode=="BETA" or mode=="Beta":
+         #[snpid,p,ea,nea]      ,[effect,se]
+        #[snpid,p,ea,nea,chr,pos],[effect,se]
+        #[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1]]
     else:
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1], effect_cols_list_1[2]]
@@ -165,6 +170,7 @@ def compare_effect(path1,
     }
         
     else:
+        # if or
         rename_dict = { cols_name_list_1[0]:"SNPID",
                         cols_name_list_1[2]:"EA_1",
                         cols_name_list_1[3]:"NEA_1",
@@ -172,6 +178,7 @@ def compare_effect(path1,
                         effect_cols_list_1[1]:"OR_L_1",
                         effect_cols_list_1[2]:"OR_H_1"
     }
+    ## check if eaf column is provided.
     if len(eaf)>0: rename_dict[eaf[0]]="EAF_1"
     sumstats.rename(columns=rename_dict, inplace=True)
     
@@ -185,7 +192,9 @@ def compare_effect(path1,
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1]]
     else:
+        # if or
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1], effect_cols_list_2[2]]
+    ## check if eaf column is provided.
     if len(eaf)>0: cols_to_extract.append(eaf[1])
     if verbose: print(" -Extract statistics of selected variants from "+label[1]+" : ",",".join(cols_to_extract) )
     sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
@@ -242,9 +251,14 @@ def compare_effect(path1,
 #################################################################################
     ############## 18 init indicator
     if verbose: print(" -Assigning indicator  ...")
+    # 0-> 0
+    # 1 -> sumstats1
+    # 2 -> sumsatts2
+    # 3->  sumstats3
     sig_list_merged["indicator"] = 0
     sig_list_merged.loc[sig_list_merged["P_1"]<sig_level,"indicator"]=1+sig_list_merged.loc[sig_list_merged["P_1"]<sig_level,"indicator"]
     sig_list_merged.loc[sig_list_merged["P_2"]<sig_level,"indicator"]=2+sig_list_merged.loc[sig_list_merged["P_2"]<sig_level,"indicator"]
+    
     if snplist is None:
         sig_list_merged["CHR"]=np.max(sig_list_merged[["CHR_1","CHR_2"]], axis=1).astype(int)
         sig_list_merged["POS"]=np.max(sig_list_merged[["POS_1","POS_2"]], axis=1).astype(int)
@@ -257,11 +271,12 @@ def compare_effect(path1,
         sig_list_merged["NEA_2_aligned"]=sig_list_merged["NEA_2"]
         sig_list_merged["EFFECT_2_aligned"]=sig_list_merged["EFFECT_2"]
         
+        #filp ea/nea and beta for sumstats2
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EA_2_aligned"]= sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"NEA_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"NEA_2_aligned"]= sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EA_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EFFECT_2_aligned"]= -sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EFFECT_2"]
     else:
-        #or - +
+        #flip for OR or - +
         sig_list_merged["OR_L_1"]=np.abs(sig_list_merged["OR_L_1"]-sig_list_merged["OR_1"])
         sig_list_merged["OR_H_1"]=np.abs(sig_list_merged["OR_H_1"]-sig_list_merged["OR_1"])
         sig_list_merged["OR_L_2"]=np.abs(sig_list_merged["OR_L_2"]-sig_list_merged["OR_2"])
@@ -278,6 +293,8 @@ def compare_effect(path1,
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2"]
+    
+    # flip eaf
     if len(eaf)>0:
         sig_list_merged["EAF_2_aligned"]=sig_list_merged["EAF_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2_aligned"]= 1 -sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2"]
@@ -362,7 +379,7 @@ def compare_effect(path1,
                         linewidth=0,zorder=1,**errargs)
             ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label[2],zorder=2,color="#e6320e",marker="s",**scatterargs)
     
-    ## annotation
+    ## annotation #################################################################################################################
     if anno==True:
         from adjustText import adjust_text
         sig_list_toanno = sig_list_merged.dropna(axis=0)
@@ -381,6 +398,7 @@ def compare_effect(path1,
         for index, row in sig_list_toanno.iterrows():
             texts.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index], ha='right', va='top')) 
         adjust_text(texts,ha='right', va='top',arrowprops=dict(arrowstyle='->', color='grey'))
+    #################################################################################################################################
     
     # plot x=0,y=0, and a 45 degree line
     xl,xh=ax.get_xlim()
@@ -486,8 +504,6 @@ def plotdaf(sumstats,
     if verbose: print("Start to plot Reference frequency vs Effect allele frequency plot...")
     if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
         raise ValueError("EAF and/or DAF columns were not detected.")
-    
-    
     
     
     sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[eaf,daf]].copy()

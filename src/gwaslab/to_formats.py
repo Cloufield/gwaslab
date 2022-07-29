@@ -123,22 +123,40 @@ def tovcf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA"
     pass
     
 ###################################################################################################################################################
-def tofmt(sumstats,path=None,fmt=None,verbose=True):
+def tofmt(sumstats,path=None,fmt=None,cols=[],verbose=True,log=gl.Log()):
     if fmt is not None:
-        if verbose: print(" -"+fmt+" format will be loaded...")
+        if verbose: log.write("Start output sumstats in "+fmt+" format...")
+        if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = gl.CommonData.get_format_dict(fmt,inverse=True)
-        if verbose: print(" -"+fmt+" format meta info:",meta_data)   
-        if verbose: print(" -gwaslab to "+fmt+" format dictionary:",rename_dictionary)   
-        ouput_cols=[]
+        if verbose:             
+            log.write(" -"+fmt+" format meta info:")   
+            for key,value in meta_data.items():
+                log.write("  -",key," : ",value)
+        if verbose: 
+            log.write(" -gwaslab to "+fmt+" format dictionary:",)  
+            keys=[]
+            values=[]
+            for key,value in rename_dictionary.items():
+                keys.append(key)
+                values.append(value)
+            log.write("  - gwaslab keys:",keys) 
+            log.write("  - "+fmt+" values:",values) 
+            
+        
+        ouput_cols=cols
         for i in sumstats.columns:
             if i in rename_dictionary.keys():
-                ouput_cols,append(i)
-
-        if verbose: print("Start formatting to "+fmt+" input format...")
-        sumstats = sumstats.loc[:,list(rename_dictionary.keys())]
-        sumstats = sumstats.rename(columns=rename_dictionary)  
+                ouput_cols.append(i)  
+        
+        sumstats = sumstats.loc[:,ouput_cols]
+        sumstats = sumstats.rename(columns=rename_dictionary) 
+        path = path + "." +fmt + ".tsv"
+        if verbose: log.write(" -Output columns:",sumstats.columns)
+        if verbose: log.write(" -Output path:",path) 
         if path is not None: sumstats.to_csv(path,"\t",index=None)
         return sumstats
+    else:
+        if path is not None: sumstats.to_csv(path,"\t",index=None)
     
     
     

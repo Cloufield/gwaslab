@@ -32,7 +32,7 @@ def preformat(sumstats,
           build=None,
           other=[],
           verbose=False,
-          readargs={"sep": "\s+"},
+          readargs={"sep": "\t"},
           log=None):
 
     #renaming dictionary
@@ -40,10 +40,21 @@ def preformat(sumstats,
     usecols = []
     
     if fmt is not None:
-        if verbose: log.write(" -"+fmt+" format will be loaded...")
+        if verbose: log.write("Start to load format from formatbook....")
         meta_data,rename_dictionary = get_format_dict(fmt)
-        if verbose: log.write(" -"+fmt+" format meta info:",meta_data)   
-        if verbose: log.write(" -"+fmt+" format dictionary:",rename_dictionary)   
+        if verbose: 
+            log.write(" -"+fmt+" format meta info:")   
+            for key,value in meta_data.items():
+                log.write("  -",key," : ",value)  
+            keys=[]
+            values=[]
+            for key,value in rename_dictionary.items():
+                keys.append(key)
+                values.append(value)
+            if fmt!="gwaslab":
+                log.write(" - "+fmt+" format dictionary:")  
+                log.write("  - "+fmt+" keys:",keys) 
+                log.write("  - gwaslab values:",values)  
     try:
         if type(sumstats) is str:
             ## loading data from path
@@ -55,6 +66,7 @@ def preformat(sumstats,
         for i in rename_dictionary.keys():
             if i in raw_cols:
                 usecols.append(i)
+        
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
 
@@ -81,7 +93,7 @@ def preformat(sumstats,
         rename_dictionary[eaf]= "EAF"
     elif neaf:
         usecols.append(neaf)
-        rename_dictionary[neaf ]= "EAF"
+        rename_dictionary[neaf]= "EAF"
     if n and (type(n) is str):
         usecols.append(n)
         rename_dictionary[n]= "N"
@@ -128,7 +140,7 @@ def preformat(sumstats,
         usecols = usecols + other
         for i in other:
             rename_dictionary[i] = i
-            
+                    
  #loading data ##################################################################################
     
     try:
@@ -151,7 +163,7 @@ def preformat(sumstats,
     converted_columns = list(map(lambda x: rename_dictionary[x], usecols))
     
     ## renaming log
-    if verbose: log.write(" -Reading columns          :", ",".join(usecols))
+    if verbose: log.write(" -Reading columns          :", ",".join(set(usecols)))
     if verbose: log.write(" -Renaming columns to      :", ",".join(converted_columns))
     if verbose: log.write(" -Current dataframe shape  : Rows ", len(sumstats), " x ",len(sumstats.columns), " Columns")
     
