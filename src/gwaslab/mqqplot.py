@@ -14,6 +14,7 @@ def mqqplot(insumstats,
           p=None,
           snpid=None,
           eaf=None,
+          mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
           mqqratio=3,
@@ -90,6 +91,8 @@ def mqqplot(insumstats,
     if p in insumstats.columns:
         # p value is necessary for all modes.
             usecols.append(p)
+    elif scaled is True:
+            usecols.append(mlog10p)
     else:
         raise ValueError("Please make sure "+p+" column is in input sumstats.")
     
@@ -136,7 +139,10 @@ def mqqplot(insumstats,
         sumstats["Annotation"]=sumstats.loc[:,anno].astype("string")   
     
     ## P value
-    sumstats["raw_P"] = pd.to_numeric(sumstats[p], errors='coerce')
+    if scaled is True:
+        sumstats["raw_P"] = pd.to_numeric(sumstats[mlog10p], errors='coerce')
+    else:
+        sumstats["raw_P"] = pd.to_numeric(sumstats[p], errors='coerce')
     
     ## CHR & POS
     if "m" in mode: 
@@ -191,7 +197,8 @@ def mqqplot(insumstats,
     
     if scaled:
         if verbose:log.write(" -P values are already converted to -log10(P)!")
-        sumstats["scaled_P"] = sumstats["raw_P"]
+        sumstats["scaled_P"] = sumstats["raw_P"].copy()
+        sumstats["raw_P"] = np.power(10,-sumstats["scaled_P"])
     else:
         if verbose:log.write(" -P values are being converted to -log10(P)...") 
         bad_p_value=len(sumstats.loc[(sumstats["raw_P"]>1)|(sumstats["raw_P"]<=0),:])

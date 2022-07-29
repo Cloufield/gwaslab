@@ -51,6 +51,7 @@ def compare_effect(path1,
                    helper_line_args={"color":'black', "linestyle":'-',"lw":1},
                    fontargs={'family':'sans','fontname':'Arial','fontsize':12},
                    errargs={"ecolor":"#cccccc","elinewidth":1},
+                   sep=["\t","\t"],
                    verbose=False):
     
     #[snpid,p,ea,nea]      ,[effect,se]
@@ -64,7 +65,7 @@ def compare_effect(path1,
     ######### 2 extract snplist2
     if verbose: print(" -Loading "+label[1]+" SNP list in memory...")
         
-    sumstats=pd.read_table(path2,sep="\s+",usecols=[cols_name_list_2[0]])
+    sumstats=pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0]])
     common_snp_set=set(sumstats[cols_name_list_2[0]].values)
     
     ######### 3 extract snplist1
@@ -75,7 +76,7 @@ def compare_effect(path1,
  
     ######### 4 load sumstats1
     if verbose: print(" -Loading sumstats for "+label[0]+":",",".join(cols_to_extract))
-    sumstats = pd.read_table(path1,sep="\s+",usecols=cols_to_extract)
+    sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
     
     ######### 5 extract the common set
     common_snp_set = common_snp_set.intersection(sumstats[cols_name_list_1[0]].values)
@@ -113,7 +114,7 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1],cols_name_list_2[4],cols_name_list_2[5]]
     
     if verbose: print(" -Loading sumstats for "+label[1]+":",",".join(cols_to_extract))
-    sumstats = pd.read_table(path2,sep="\s+",usecols=cols_to_extract)
+    sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
     
     ######### 10 rename sumstats2
     rename_dict = { cols_name_list_2[0]:"SNPID",
@@ -153,7 +154,7 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1], effect_cols_list_1[2]]
     if len(eaf)>0: cols_to_extract.append(eaf[0])   
     if verbose: print(" -Extract statistics of selected variants from "+label[0]+" : ",",".join(cols_to_extract) )
-    sumstats = pd.read_table(path1,sep="\s+",usecols=cols_to_extract)
+    sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
     
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         rename_dict = { cols_name_list_1[0]:"SNPID",
@@ -187,7 +188,7 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1], effect_cols_list_2[2]]
     if len(eaf)>0: cols_to_extract.append(eaf[1])
     if verbose: print(" -Extract statistics of selected variants from "+label[1]+" : ",",".join(cols_to_extract) )
-    sumstats = pd.read_table(path2,sep="\s+",usecols=cols_to_extract)
+    sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
     
     if mode=="beta" or mode=="BETA" or mode=="Beta":
           rename_dict = { cols_name_list_2[0]:"SNPID",
@@ -217,7 +218,7 @@ def compare_effect(path1,
 
     ################ 16 update sumstats1
     if verbose: print(" -Updating missing information for "+label[0]+" ...")
-    sumstats = pd.read_table(path1,sep="\s+",usecols=[cols_name_list_1[0],cols_name_list_1[1]])
+    sumstats = pd.read_table(path1,sep=sep[0],usecols=[cols_name_list_1[0],cols_name_list_1[1]])
     sumstats.rename(columns={
                         cols_name_list_1[0]:"SNPID",
                         cols_name_list_1[1]:"P_1"
@@ -228,7 +229,7 @@ def compare_effect(path1,
     
     ################# 17 update sumstats2
     if verbose: print(" -Updating missing information for "+label[1]+" ...")
-    sumstats = pd.read_table(path2,sep="\s+",usecols=[cols_name_list_2[0],cols_name_list_2[1]])
+    sumstats = pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0],cols_name_list_2[1]])
     sumstats.rename(columns={
                         cols_name_list_2[0]:"SNPID",
                         cols_name_list_2[1]:"P_2"
