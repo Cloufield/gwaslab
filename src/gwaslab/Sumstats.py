@@ -394,6 +394,7 @@ class Sumstats():
         else:
             raise ValueError("Please select a format to output")
         
+        suffix=fmt
         #######################################################################################################
         # filter
         output = self.data.copy()
@@ -410,12 +411,13 @@ class Sumstats():
             output = output.loc[~is_hla,:]
             after = len(output)
             if verbose: self.log.write(" -Exclude "+ str(before - after) + " variants in HLA region.")
-        
+            suffix = "noMHC."+suffix
         
         if hapmap3 is True:
             output = gl.gethapmap3(output,build=build,verbose=True)
             after = len(output)
             if verbose: self.log.write(" -Extract "+ str(after) + " variants in Hapmap3 datasets for build "+build+".")
+            suffix = "hapmap3."+suffix
                 
         #######################################################################################################
         #formatting statistics
@@ -453,15 +455,15 @@ class Sumstats():
         ##########################################################################################################          
         # output, mapping column names
         if fmt=="ldsc":
-            gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            gl.toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         #if fmt=="fuma":
             #gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
         #if fmt=="bed":
             #gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if fmt=="vcf":
-            gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            gl.toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:
-            gl.to_formats.tofmt(output, path=path,fmt=fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            gl.to_formats.tofmt(output, path=path,fmt=fmt,suffix=suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if output_log is True:
             if verbose: self.log.write("Saving log file...")
-            self.log.save(path + "."+ fmt +".log")
+            self.log.save(path + "."+ suffix +".log")

@@ -38,6 +38,7 @@ def preformat(sumstats,
     #renaming dictionary
     rename_dictionary = {}
     usecols = []
+    dtype_dictionary = {}
     
     if fmt is not None:
         if verbose: log.write("Start to load format from formatbook....")
