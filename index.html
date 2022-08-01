@@ -349,17 +349,26 @@ mysumstats.plot_mqq()
 <p>Logging : keep a complete record of manipulations from raw data to munged data</p>
 </li>
 <li>
-<p>Formating GWAS sumstats in certain formats</p>
+<p>Formating GWAS sumstats in certain formats:</p>
 </li>
-<li>
-<p>LDSC / MAGMA / METAL / MR-MEGA / FUMA</p>
-</li>
+<li>Manually curated format coversion dictionary : https://github.com/Cloufield/formatbook</li>
+<li>Support (coming soon) LDSC / MAGMA / METAL / MR-MEGA / FUMA / PLINK / PLINK2 / GWAS-SSF / PGS-Catalog / GWAS-Catalog ...</li>
 </ul>
 <h2 id="install">Install</h2>
+<p>Stable version:</p>
 <pre><code>pip install gwaslab==3.0.1
 </code></pre>
 <p>Also need to install pyvcf</p>
 <pre><code>conda install -c conda-forge pyvcf 
+</code></pre>
+<p>Latest beta version:</p>
+<pre><code>git clone https://github.com/Cloufield/gwaslab.git
+</code></pre>
+<p>when using, just insert the path to your env path:</p>
+<pre><code>import sys
+gwaslab_path=&quot;xxx&quot;
+sys.path.insert(0,gwaslab_path)
+import gwaslab as gl
 </code></pre>
 <h3 id="requirements">Requirements:</h3>
 <ul>
@@ -490,5 +499,5 @@ mysumstats.plot_mqq()
 
 <!--
 MkDocs version : 1.3.0
-Build Date UTC : 2022-07-19 04:32:22.759962+00:00
+Build Date UTC : 2022-08-01 03:21:39.964837+00:00
 -->

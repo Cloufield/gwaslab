@@ -345,6 +345,9 @@
 <p>After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in .data :</p>
 <pre><code class="language-python">mysumstats.data
 </code></pre>
+<p>You can simply save the processed data using pandas saving functions, for example</p>
+<pre><code>mysumstats.data.to_csv(&quot;./mysumstats.csv&quot;)
+</code></pre>
 <p>All manipulation conducted to the sumstats will be logged for reproducibility and traceability. The log is stored in a gl.Log object . You can check it by<code>.log.show()</code>and save it using <code>.log.save()</code></p>
 <pre><code>mysumstats.log.show()
 

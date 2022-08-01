@@ -237,6 +237,8 @@
                 
             <li class="second-level"><a href="#filtering">FIltering</a></li>
                 
+            <li class="second-level"><a href="#filtering-region">Filtering region</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -272,6 +274,16 @@
 <td></td>
 <td></td>
 </tr>
+<tr>
+<td><code>.filter_region_in()</code></td>
+<td>path , inplace=True ,high_ld=False, build="19"</td>
+<td></td>
+</tr>
+<tr>
+<td><code>.filter_region_out()</code></td>
+<td>path , inplace=True ,high_ld=False, build="19"</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 <h2 id="statistics-sanity-check">Statistics Sanity Check</h2>
@@ -305,7 +317,11 @@
 <p><code>gt</code>: greater than</p>
 <p><code>lt</code>: less than</p>
 <p><code>eq</code>: equal to</p>
-<p><code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</p></div>
+<p><code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</p>
+<h2 id="filtering-region">Filtering region</h2>
+<pre><code>.filter_region_in(path=&quot;./abc.bed&quot;)
+.filter_region_out(high_ld=True)
+</code></pre></div>
         
         
     </div>

@@ -228,41 +228,34 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#visualization">Visualization</a></li>
-            <li class="second-level"><a href="#manhattan-plot-and-qq-plot">Manhattan plot and QQ plot</a></li>
+        <li class="first-level active"><a href="#manhattan-plot-and-qq-plot">Manhattan plot and QQ plot</a></li>
+            <li class="second-level"><a href="#_1"></a></li>
                 
-                <li class="third-level"><a href="#_1"></a></li>
-                <li class="third-level"><a href="#manhattan-and-qq-plot-layout">Manhattan and QQ plot layout</a></li>
-                <li class="third-level"><a href="#skip-low-and-shrink-high">Skip "low" and shrink "high"</a></li>
-                <li class="third-level"><a href="#annotation-with-chrpos-or-a-given-column">Annotation with chr:pos or a given column</a></li>
-                <li class="third-level"><a href="#highlight-specified-loci">Highlight specified loci</a></li>
-                <li class="third-level"><a href="#pinpoint-specified-variants">Pinpoint specified variants</a></li>
-                <li class="third-level"><a href="#maf-stratified-qq-plot">Maf-stratified QQ plot</a></li>
-                <li class="third-level"><a href="#use-rank-or-pos">Use rank or POS</a></li>
-                <li class="third-level"><a href="#colors">Colors</a></li>
-            <li class="second-level"><a href="#quick-plot">Quick plot</a></li>
+            <li class="second-level"><a href="#manhattan-and-qq-plot-layout">Manhattan and QQ plot layout</a></li>
                 
-            <li class="second-level"><a href="#customized-plot">Customized plot</a></li>
+        <li class="first-level "><a href="#_2"></a></li>
+            <li class="second-level"><a href="#skip-low-and-shrink-high">Skip "low" and shrink "high"</a></li>
                 
+            <li class="second-level"><a href="#annotation-with-chrpos-or-a-given-column">Annotation with chr:pos or a given column</a></li>
+                
+            <li class="second-level"><a href="#highlight-specified-loci">Highlight specified loci</a></li>
+                
+            <li class="second-level"><a href="#pinpoint-specified-variants">Pinpoint specified variants</a></li>
+                
+        <li class="first-level "><a href="#pinpoint_color-color-for-pinpoint">pinpoint_color : color for pinpoint</a></li>
+            <li class="second-level"><a href="#maf-stratified-qq-plot">Maf-stratified QQ plot</a></li>
+                
+        <li class="first-level "><a href="#maf_bin_colors-colors-used-for-each-bin">maf_bin_colors: colors used for each bin.</a></li>
+            <li class="second-level"><a href="#use-rank-or-pos">Use rank or POS</a></li>
+                
+            <li class="second-level"><a href="#colors-and-fonts">Colors and fonts</a></li>
+                
+        <li class="first-level "><a href="#quick-plot">Quick plot</a></li>
+        <li class="first-level "><a href="#customized-plot">Customized plot</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="visualization">Visualization</h1>
-<ul>
-<li>
-<p>Manhattan and QQ plot (MQQ plot)</p>
-</li>
-<li>
-<p>Scatter plot: Effect size comparison</p>
-</li>
-<li>
-<p>Heatmap: Genetic correlation matrix</p>
-</li>
-<li>
-<p>Scatter &amp; Distribution plot : allele frequency comparison</p>
-</li>
-</ul>
 <h2 id="manhattan-plot-and-qq-plot">Manhattan plot and QQ plot</h2>
 <pre><code>import gwaslab as gl
 
@@ -325,13 +318,14 @@ mydata.plot_mqq(
 </li>
 </ul>
 <p><code>mqqratio</code>: width ratio</p>
-<p><img alt="mqq_mode" src="../images/mqq_mode.jpg" /></p>
+<h2 id="_2"><img alt="mqq_mode" src="../images/mqq_mode.jpg" /></h2>
 <h3 id="skip-low-and-shrink-high">Skip "low" and shrink "high"</h3>
 <p><code>skip</code> : sometimes it is not necessary to plot all variants, we can skip the insignicant variants . For example, we can exclude varints with -log10p lower than 3 from the plot by specifying <code>skip=3</code></p>
 <p><code>cut</code> : loci with extremly large -log10(P) value are very likely to dwarf other significant loci , so we want to scale down the extrame loci from a certain threshold. </p>
 <p><code>cutfactor</code>:  shrinkage factor, default is 10 </p>
 <p><code>cut_line_color</code>: the color of the line above which y axis is rescaled </p>
 <p><img alt="mqq_line" src="../images/mqq_line.jpg" /></p>
+<hr />
 <h3 id="annotation-with-chrpos-or-a-given-column">Annotation with chr:pos or a given column</h3>
 <p><code>anno</code>: True or a list</p>
 <p>if anno == True: the variants to annotate will be selected atomatically using a sliding window with <code>windowsize=500</code> (kb). </p>
@@ -339,6 +333,7 @@ mydata.plot_mqq(
 <p>if a list is provided:</p>
 <p><code>repel_force</code> : when the annotation overlaps with other, try increasing the repel_force to increase the padding between annotations.</p>
 <p><code>anno_set</code>: if you want to annoatte only a few specific variants, you can simply provide a list of SNPIDs. </p>
+<hr />
 <h3 id="highlight-specified-loci">Highlight specified loci</h3>
 <p>Highlight specified loci. </p>
 <p><code>highlight</code> : specify the lead variants of loci for highlighting.</p>
@@ -347,20 +342,29 @@ mydata.plot_mqq(
 <h3 id="pinpoint-specified-variants">Pinpoint specified variants</h3>
 <p>Pinpoint certain variants in the manhattan plot.</p>
 <p><code>pinpint</code> : a list of SNPIDs</p>
-<p><code>pinpoint_color</code> : color for pinpoint</p>
+<h2 id="pinpoint_color-color-for-pinpoint"><code>pinpoint_color</code> : color for pinpoint</h2>
 <h3 id="maf-stratified-qq-plot">Maf-stratified QQ plot</h3>
 <p><code>stratified</code>: If True, plot MAF straitified QQ plot.</p>
 <p><code>maf_bins</code>: maf bins for straitification.</p>
-<p><code>maf_bin_colors</code>: colors used for each bin.</p>
+<h2 id="maf_bin_colors-colors-used-for-each-bin"><code>maf_bin_colors</code>: colors used for each bin.</h2>
 <h3 id="use-rank-or-pos">Use rank or POS</h3>
 <p><code>use_rank</code>: if True, use the rank instead of real base pair position.</p>
 <p>use simply rank and basepair position to draw the x axis.</p>
-<h3 id="colors">Colors</h3>
+<h3 id="colors-and-fonts">Colors and fonts</h3>
+<hr />
 <h2 id="quick-plot">Quick plot</h2>
-<pre><code>
+<pre><code>mysumstatsysumstats.plot_mqq()
 </code></pre>
 <h2 id="customized-plot">Customized plot</h2>
-<pre><code>
+<pre><code>mysumstats.plot_mqq(snpid=&quot;SNPID&quot;,mode=&quot;mqq&quot;,
+                  cut=20,skip=3, eaf=&quot;EAF&quot;,
+                  anno=True,anno_set=[&quot;9:22132729_A_G&quot;,&quot;6:20688121_T_A&quot;,&quot;9:22132729_A_G&quot;,&quot;15:62394264_G_C&quot;] ,
+                  pinpoint=[&quot;9:22132729_A_G&quot;,&quot;5:176513896_C_A&quot;], 
+                  highlight=[&quot;7:127253550_C_T&quot;,&quot;19:46166604_C_T&quot;],
+                  highlight_windowkb =1000,
+                  stratified=True,
+                  marker_size=(5,10),
+                  figargs={&quot;figsize&quot;:(15,5),&quot;dpi&quot;:300})
 </code></pre></div>
         
         

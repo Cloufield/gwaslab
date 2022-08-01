@@ -249,7 +249,7 @@
 <p>1000 genome:</p>
 <pre><code class="language-bash">#!/bin/bash
 
-for chr in {1..2}
+for chr in {1..22}
 do
     bcftools view -S EAS.sample ALL.chr&quot;${chr}&quot;.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz | \
         bcftools norm -m-any --check-ref w -f human_g1k_v37.fasta | \
