@@ -9,12 +9,12 @@ import gwaslab as gl
 #A P-value
 #A signed summary statistic (beta, OR, log odds, Z-score, etc)
 
-def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="hg19", verbose=True,log=gl.Log()):
+def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True,log=gl.Log()):
     if verbose:log.write(" -Processing "+str(len(sumstats))+" raw variants...")
 
-    if build=="hg19":
+    if build=="19":
         data_path =  path.dirname(__file__) + '/data/hapmap3_rs_chr_pos_a1_a2/hapmap3_db150_hg19.snplist.gz'
-    elif build=="hg19":
+    elif build=="38":
         data_path =  path.dirname(__file__) + '/data/hapmap3_rs_chr_pos_a1_a2/hapmap3_db151_hg38.snplist.gz'
     
     if verbose:log.write(" -Loading Hapmap3 variants data...")
@@ -24,10 +24,9 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
     #rs3094315       G       A       1       752566
     if rsid in sumstats.columns:
         output = sumstats.loc[sumstats[rsid].isin(hapmap3_ref["rsid"].values),:].copy()
-        if verbose: log.write(" -Raw input contains "+str(len(output))+" hapmaps variants based on rsid...")
         return output
     elif chrom in sumstats.columns and pos in sumstats.columns:
-        if verbose: log.write(" -Since rsID not in sumstats, chr:pos("+build+") will be used for matching...")
+        if verbose: log.write(" -Since rsID not in sumstats, chr:pos( build "+build+") will be used for matching...")
         sumstats   ["chr:pos"] = sumstats[chrom].astype("string")+":"+sumstats[pos].astype("string")
         hapmap3_ref["chr:pos"] = hapmap3_ref["#CHROM"]+":"+hapmap3_ref["POS"]
         hapmap3_ref = hapmap3_ref.rename(columns={"rsid":"rsID"})

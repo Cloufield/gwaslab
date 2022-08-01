@@ -378,7 +378,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         
         
         # remove outlier, limit:250,000,000
-        if verbose: log.write(" -Position upper_bound is:" + str(limit))
+        if verbose: log.write(" -Position upper_bound is: " + "{:,}".format(limit))
         out_lier=(sumstats[pos]>limit) & (~sumstats[pos].isna())
         if verbose: log.write(" -Remove outliers:",sum(out_lier))
         sumstats = sumstats.loc[~out_lier,:]
@@ -569,7 +569,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         if verbose: log.write(" -Checking if 0<= EAF <=1 ...") 
         sumstats.loc[:,"EAF"] = pd.to_numeric(sumstats.loc[:,"EAF"], errors='coerce')
         sumstats = sumstats.loc[(sumstats["EAF"]>=0) & (sumstats["EAF"]<=1),:]
-        sumstats.loc[:,"EAF"] = sumstats.loc[:,"EAF"].round(4)
+        sumstats.loc[:,"EAF"] = sumstats.loc[:,"EAF"]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad EAF.") 
 
@@ -580,8 +580,6 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         sumstats = sumstats.loc[mac5,:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad MAC.") 
-    
-    
     
     pre_number=len(sumstats)    
     if "CHISQ" in coltocheck and "CHISQ" in sumstats.columns:
@@ -617,7 +615,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         if verbose: log.write(" -Checking if abs(BETA)<10 ...") 
         sumstats.loc[:,"BETA"] = pd.to_numeric(sumstats.loc[:,"BETA"], errors='coerce')
         sumstats = sumstats.loc[np.abs(sumstats["BETA"])<10,:]
-        sumstats.loc[:,"BETA"] = sumstats.loc[:,"BETA"].round(4)
+        sumstats.loc[:,"BETA"] = sumstats.loc[:,"BETA"]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad BETA.") 
             
@@ -627,7 +625,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         if verbose: log.write(" -Checking if SE >0 ...") 
         sumstats.loc[:,"SE"] = pd.to_numeric(sumstats.loc[:,"SE"], errors='coerce')
         sumstats = sumstats.loc[sumstats["SE"]>0,:]
-        sumstats.loc[:,"SE"] = sumstats.loc[:,"SE"].round(4)
+        sumstats.loc[:,"SE"] = sumstats.loc[:,"SE"]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad SE.") 
             

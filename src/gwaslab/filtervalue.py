@@ -17,7 +17,7 @@ def filterout(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=gl.Log())
         num = len(sumstats.loc[sumstats[key]==threshold,:])
         if verbose:log.write(" -Removing "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...")
         sumstats = sumstats.loc[sumstats[key]!=threshold,:]
-    return sumstats
+    return sumstats.copy()
 
 def filterin(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=gl.Log()):
     if verbose: log.write("Start filtering values:")
@@ -33,28 +33,29 @@ def filterin(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=gl.Log()):
         num = len(sumstats.loc[sumstats[key]==threshold,:])
         if verbose:log.write(" -Keeping "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...")
         sumstats = sumstats.loc[sumstats[key]==threshold,:]
-    return sumstats
+    return sumstats.copy()
 
 def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, build="19", verbose=True,log=gl.Log()):
     if verbose: log.write("Start filtering in variants if in intervals defined in bed files:")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))
     
     if high_ld is True:
-        path = gl.get_high_ld()
+        path = gl.get_high_ld(build=build)
         if verbose: log.write(" -Loading bed format file for hg"+build)
 
     else:
         if verbose: log.write(" -Loading bed format file: " , path)
-    bed = pd.read_csv(path,"\s+",header=None,dtype={0:"string",1:"Int64",2:"Int64"})
+    bed = pd.read_csv(path,sep="\s+",header=None,dtype={0:"string",1:"Int64",2:"Int64"})
     
     bed["tuple"] = bed.apply(lambda x: (x[1],x[2]),axis=1)
     sumstats["bed_indicator"]=False
+    bed[0]=bed[0].str.strip("chr")
     
     if len(bed)<100:
         if verbose: log.write(" -Bed file < 100 lines: using pd IntervalIndex... ")
         for i in sumstats[chrom].unique():
-            if sum(bed[0]==("chr"+str(i)))>0:
-                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==("chr"+str(i)),"tuple"])
+            if sum(bed[0]==str(i))>0:
+                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==str(i),"tuple"])
                 sumstats.loc[sumstats[chrom]==i,"bed_indicator"] = sumstats.loc[sumstats[chrom]==i,pos].apply(lambda x: any(interval.contains(x)))
             else:
                 continue
@@ -99,19 +100,27 @@ def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, bui
     sumstats = sumstats.drop(columns="bed_indicator")
     return sumstats
     
-def filterregionout(sumstats, path, chrom="CHR",pos="POS", verbose=True,log=gl.Log()):
+def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, build="19", verbose=True,log=gl.Log()):
     if verbose: log.write("Start filtering out variants if in intervals defined in bed files:")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))
-    if verbose: log.write(" -Loading bed format file: " , path)
-    bed = pd.read_csv(path,"\s+",header=None,dtype={0:"string",1:"Int64",2:"Int64"})
+    if high_ld is True:
+        path = gl.get_high_ld(build=build)
+        if verbose: log.write(" -Loading bed format file for hg"+build)
+
+    else:
+        if verbose: log.write(" -Loading bed format file: " , path)
+            
+    bed = pd.read_csv(path,sep="\s+",header=None,dtype={0:"string",1:"Int64",2:"Int64"})
     bed["tuple"] = bed.apply(lambda x: (x[1],x[2]),axis=1)
     sumstats["bed_indicator"]=False
+    
+    bed[0]=bed[0].str.strip("chr")
     
     if len(bed)<100:
         if verbose: log.write(" -Bed file < 100 lines: using pd IntervalIndex... ")
         for i in sumstats[chrom].unique():
-            if sum(bed[0]==("chr"+str(i)))>0:
-                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==("chr"+str(i)),"tuple"])
+            if sum(bed[0]==str(i))>0:
+                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==str(i),"tuple"])
                 sumstats.loc[sumstats[chrom]==i,"bed_indicator"] = sumstats.loc[sumstats[chrom]==i,pos].apply(lambda x: any(interval.contains(x)))
             else:
                 continue

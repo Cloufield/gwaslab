@@ -377,18 +377,20 @@ class Sumstats():
 # to_format ###############################################################################################       
     def to_format(self,
               path="./sumstats",
-              format="ldsc",   
+              fmt="ldsc",   
               extract=None,
               exclude=None,
               id_use="rsID",
               hapmap3=False,
-              exclude_hla=False,        
+              exclude_hla=False,  
+              build="19", 
               verbose=True,
               output_log=True,
-              to_csvargs={}):
+              to_csvargs={},
+              float_formats={}):
         
-        if format in ["ldsc","fuma","metal","bed","vcf"]:
-            if verbose: self.log.write("Output sumstats to format:",format)
+        if fmt in ["ldsc","fuma","metal","bed","vcf","fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:
+            if verbose: self.log.write("Output sumstats to format:",fmt)
         else:
             raise ValueError("Please select a format to output")
         
@@ -403,29 +405,63 @@ class Sumstats():
 
         if exclude_hla is True:
             if verbose: self.log.write(" -Excluding variants in HLA region ...")
-            is_hla = (output["CHR"]== "6") & (output["POS"] >25000000) & (output["POS"] < 34000000)
+            before = len(output)
+            is_hla = (output["CHR"]== "6") & (output["POS"].astype("Int64") >25000000) & (output["POS"].astype("Int64") < 34000000)
             output = output.loc[~is_hla,:]
-
+            after = len(output)
+            if verbose: self.log.write(" -Exclude "+ str(before - after) + " variants in HLA region.")
+        
+        
         if hapmap3 is True:
-            output = gl.gethapmap3(output)
+            output = gl.gethapmap3(output,build=build,verbose=True)
+            after = len(output)
+            if verbose: self.log.write(" -Extract "+ str(after) + " variants in Hapmap3 datasets for build "+build+".")
+                
         #######################################################################################################
-
-        # output
-        if format=="ldsc":
-            gl.toldsc(output, path=path+"."+format,verbose=True,log=self.log,to_csvargs=to_csvargs)
-        if format=="fuma":
-            gl.toldsc(output, path=path+"."+format,verbose=True,log=self.log,to_csvargs=to_csvargs)
-        if format=="bed":
-            gl.toldsc(output, path=path+"."+format,verbose=True,log=self.log,to_csvargs=to_csvargs)
-        if format=="metal":
-            gl.toldsc(output, path=path+"."+format,verbose=True,log=self.log,to_csvargs=to_csvargs)
-        if format=="vcf":
-            gl.toldsc(output, path=path+"."+format,verbose=True,log=self.log,to_csvargs=to_csvargs)
-        if format=="ssf":
-            gl.toldsc(output, path=path+"."+format,verbose=True,log=self.log,to_csvargs=to_csvargs)
+        #formatting statistics
+        if verbose: self.log.write(" -Formatting statistics ...")
+        formats = {'EAF': '{:.4g}', 
+                   'BETA': '{:.4f}', 
+                   'Z': '{:.4f}',
+                   'CHISQ': '{:.4f}',
+                   'SE': '{:.4f}',
+                   'OR': '{:.4f}',
+                   'OR_95U': '{:.4f}',
+                   'OR_95L': '{:.4f}',
+                   'INFO': '{:.4f}',
+                   'P': '{:.4e}',
+                   'MLOG10P': '{:.4f}',
+                   'DAF': '{:.4f}'
+                  }
+        for col, f in float_formats.items():
+            if col in output.columns: 
+                formats[col]=f
+        for col, f in formats.items():
+            if col in output.columns: 
+                if output[col].dtype in ["float64","float32","float16","float"]:
+                    output[col] = output[col].map(f.format)
+        if verbose: 
+            self.log.write(" -Float statistics formats:")  
+            keys=[]
+            values=[]
+            for key,value in formats.items():
+                if key in output.columns: 
+                    keys.append(key)
+                    values.append(value)
+            self.log.write("  - Columns:",keys) 
+            self.log.write("  - Output formats:",values) 
+        ##########################################################################################################          
+        # output, mapping column names
+        if fmt=="ldsc":
+            gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
+        #if fmt=="fuma":
+            #gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
+        #if fmt=="bed":
+            #gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
+        if fmt=="vcf":
+            gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
+        if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:
+            gl.to_formats.tofmt(output, path=path,fmt=fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if output_log is True:
             if verbose: self.log.write("Saving log file...")
-            self.log.save(path + "."+ format +".log")
-    def to_fmt(self,
-           **args ):
-        return gl.to_formats.tofmt(self.data,**args) 
+            self.log.save(path + "."+ fmt +".log")

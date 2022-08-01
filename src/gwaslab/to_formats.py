@@ -123,9 +123,9 @@ def tovcf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA"
     pass
     
 ###################################################################################################################################################
-def tofmt(sumstats,path=None,fmt=None,cols=[],verbose=True,log=gl.Log()):
+def tofmt(sumstats,path=None,fmt=None,cols=[],verbose=True,log=gl.Log(),to_csvargs={}):
     if fmt is not None:
-        if verbose: log.write("Start output sumstats in "+fmt+" format...")
+        if verbose: log.write("Start outputting sumstats in "+fmt+" format...")
         if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = gl.CommonData.get_format_dict(fmt,inverse=True)
         if verbose:             
@@ -146,17 +146,17 @@ def tofmt(sumstats,path=None,fmt=None,cols=[],verbose=True,log=gl.Log()):
         ouput_cols=cols
         for i in sumstats.columns:
             if i in rename_dictionary.keys():
-                ouput_cols.append(i)  
+                ouput_cols.insert(0,i)  
         
         sumstats = sumstats.loc[:,ouput_cols]
         sumstats = sumstats.rename(columns=rename_dictionary) 
         path = path + "." +fmt + ".tsv"
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
-        if path is not None: sumstats.to_csv(path,"\t",index=None)
+        if path is not None: sumstats.to_csv(path,"\t",index=None,**to_csvargs)
         return sumstats
     else:
-        if path is not None: sumstats.to_csv(path,"\t",index=None)
+        if path is not None: sumstats.to_csv(path,"\t",index=None,**to_csvargs)
     
     
     
