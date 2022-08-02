@@ -38,7 +38,7 @@ def preformat(sumstats,
     #renaming dictionary
     rename_dictionary = {}
     usecols = []
-    dtype_dictionary = {}
+    dtype_dictionary ={}
     
     if fmt is not None:
         if verbose: log.write("Start to load format from formatbook....")
@@ -64,9 +64,14 @@ def preformat(sumstats,
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             raw_cols = sumstats.columns
-        for i in rename_dictionary.keys():
-            if i in raw_cols:
-                usecols.append(i)
+        for key,value in rename_dictionary.items():
+            if key in raw_cols:
+                usecols.append(key)
+                if value in ["EA","NEA"]:
+                    dtype_dictionary[value]="category"
+                if value in ["CHR","STATUS"]:
+                    dtype_dictionary[value]="string"
+                    
         
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
@@ -80,15 +85,18 @@ def preformat(sumstats,
     if chrom:
         usecols.append(chrom)
         rename_dictionary[chrom]= "CHR"
+        dtype_dictionary[chrom]="string"
     if pos:
         usecols.append(pos)
         rename_dictionary[pos]= "POS"
     if ea:
         usecols.append(ea)
         rename_dictionary[ea]= "EA"
+        dtype_dictionary[ea]="category"
     if nea:
         usecols.append(nea)
         rename_dictionary[nea]= "NEA"
+        dtype_dictionary[nea]="category"
     if eaf:
         usecols.append(eaf)
         rename_dictionary[eaf]= "EAF"
@@ -137,11 +145,13 @@ def preformat(sumstats,
     if status:
         usecols.append(status)
         rename_dictionary[status]="STATUS"
+        dtype_dictionary[status]="string"
     if other:
         usecols = usecols + other
         for i in other:
             rename_dictionary[i] = i
-                    
+    
+    
  #loading data ##################################################################################
     
     try:
@@ -151,12 +161,12 @@ def preformat(sumstats,
             if verbose: log.write("Initiating from file :" + inpath)
             sumstats = pd.read_table(inpath,
                              usecols=set(usecols),
-                             dtype="string",
+                             dtype=dtype_dictionary,
                              **readargs)
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             if verbose: log.write("Initiating from pandas DataFrame ...")
-            sumstats = sumstats.loc[:, usecols].astype("string")
+            sumstats = sumstats.loc[:, usecols]
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
 
@@ -186,7 +196,8 @@ def preformat(sumstats,
     if status is None:
         if verbose: log.write(" -Initiating a status column ...")
         sumstats["STATUS"] = build +"99999"
-        sumstats["STATUS"] = sumstats["STATUS"].astype("string")
+        categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+        sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
     
     ##reodering 
     order = [

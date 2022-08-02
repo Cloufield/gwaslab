@@ -95,19 +95,9 @@ def get_number_to_chr(in_chr=False):
         dic[25]="MT"
     return dic
 
-def lookup_status():
-    status_dic={
-    "19xxx":"",
-    "19xxx":"",
-    "19xxx":"",
-    "19xxx":"",
-    "19xxx":"",
-    "19xxx":"",
-    "19xxx":"",
-    "19xxx":""
-    }
+
     
-    
+###################################################################################################################    
 def get_high_ld(build="19"):
     if build=="19":
         data_path =  path.dirname(__file__) + '/data/high-ld/high-ld-hla-hg19.bed'
@@ -124,8 +114,17 @@ def get_format_dict(fmt,inverse=False):
         inv_dic = {v: k for k, v in dic_dict.items()}
         return dic_meta,inv_dic
     return dic_meta, dic_dict
-        
-        
+
+####################################################################################################################
+def lookup_status():
+    status_dic={
+    "1&2":"",
+    "3":"",
+    "4":"",
+    "5":"",
+    "6":"",
+    "7":""
+    }       
         
         
         
