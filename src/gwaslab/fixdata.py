@@ -733,9 +733,12 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
         if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
             if verbose: log.write(" -Converting to reverse complement : EA and NEA...") 
             reverse_complement_nea = sumstats.loc[matched_index,'NEA'].apply(lambda x :get_reverse_complementary_allele(x)) 
-            reverse_complement_ea = sumstats.loc[matched_index,'EA'].apply(lambda x :get_reverse_complementary_allele(x))  
-            sumstats.loc[matched_index,['NEA']] = reverse_complement_nea.astype("string")
-            sumstats.loc[matched_index,['EA']] = reverse_complement_ea.astype("string")
+            reverse_complement_ea = sumstats.loc[matched_index,'EA'].apply(lambda x :get_reverse_complementary_allele(x)) 
+            categories = set(sumstats.loc[:,'EA'])|set(sumstats.loc[:,'NEA']) |set(reverse_complement_ea) |set(reverse_complement_nea)
+            sumstats.loc[:,'EA']=pd.Categorical(sumstats.loc[:,'EA'],categories = categories) 
+            sumstats.loc[:,'NEA']=pd.Categorical(sumstats.loc[:,'NEA'],categories = categories ) 
+            sumstats.loc[matched_index,['NEA']] = reverse_complement_nea
+            sumstats.loc[matched_index,['EA']] = reverse_complement_ea
             sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 6, "4","2")
             if verbose: log.write(" -Changed the status for flipped variants : xxxxx4x -> xxxxx2x")
 

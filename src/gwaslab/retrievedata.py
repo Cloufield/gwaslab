@@ -346,7 +346,6 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
                 dic = dic.rename(index={ref_snpid:snpid})
                 dic = dic.rename(columns={ref_rsid:rsid})  
                 dic = dic.loc[~dic.index.duplicated(keep=False),:]
-                print(dic)
                 sumstats.update(dic,overwrite=True)
 
             if verbose:  log.write("\n",end="",show_time=False) 

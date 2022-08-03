@@ -224,11 +224,11 @@ class Sumstats():
         #####################################################
         if ref_rsid_tsv is not None:
             
-            self.data = gl.parallelizeassignrsid(self.data,ref_rsid,ref_mode="tsv",
+            self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
                                                  n_cores=n_cores,log=self.log,chr_dict=ref_rsid_chr_dict,**assignrsid_args)
         if ref_rsid_vcf is not None:
             
-            self.data = gl.parallelizeassignrsid(self.data,ref_rsid,ref_mode="vcf",
+            self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
                                                  n_cores=n_cores,log=self.log,chr_dict=ref_rsid_chr_dict,**assignrsid_args)     
         ######################################################    
         if remove is True:
