@@ -857,7 +857,7 @@ def liftover_variant(sumstats,
              to_build="38"):
     
     converter = get_lifter("hg"+from_build,"hg"+to_build)
-    dic= gl.get_number_to_chr(in_chr=True)
+    dic= gl.get_number_to_chr(in_chr=True,xymt=["X","Y","M"])
     lifted = sumstats.apply(lambda x: liftover_snv(x[[chrom,pos,status]],converter,to_build,dic),axis=1)
     sumstats.loc[:,chrom]    = lifted.str[0]
     sumstats.loc[:,pos]     =  lifted.str[1]

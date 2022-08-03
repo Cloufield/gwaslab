@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import gwaslab as gl
 import time
+from gwaslab.sum import summarize
 
 #20220309
 class Sumstats():
@@ -105,14 +106,16 @@ class Sumstats():
                 col_subset[dic[key]] = key
         if len(other)>0: col_subset["other"] = other      
         return col_subset
-    
+
+##########################################################################################
     def update_meta(self):
         self.meta["Number_of_variants"]=len(self.data)
         if "CHR" in self.data.columns:
             self.meta["Number_of_chromosomes"]=len(self.data["CHR"].unique())
         if "P" in self.data.columns:
             self.meta["Min_P"]=np.min(self.data["P"])
-        
+    def summary(self):
+        return summarize(self.data)
         
 # QC ######################################################################################
     #clean the sumstats with one line

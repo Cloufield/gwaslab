@@ -60,7 +60,10 @@ def preformat(sumstats,
         if type(sumstats) is str:
             ## loading data from path
             inpath = sumstats
-            raw_cols = pd.read_table(inpath,dtype="string", nrows=1,**readargs).columns
+            readargs_header = readargs.copy()
+            readargs_header["nrows"]=1
+            readargs_header["dtype"]="string"
+            raw_cols = pd.read_table(inpath,**readargs_header).columns
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             raw_cols = sumstats.columns
@@ -171,7 +174,7 @@ def preformat(sumstats,
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
 
     ## renaming columns
-    converted_columns = list(map(lambda x: rename_dictionary[x], usecols))
+    converted_columns = list(map(lambda x: rename_dictionary[x], set(usecols)))
     
     ## renaming log
     if verbose: log.write(" -Reading columns          :", ",".join(set(usecols)))
@@ -203,8 +206,7 @@ def preformat(sumstats,
     order = [
         "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
         "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
-           ] + other
-    
+           ] + other   
     output_columns = []
     for i in order:
         if i in sumstats.columns: output_columns.append(i)

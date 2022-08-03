@@ -73,26 +73,28 @@ def get_chr_to_number(out_chr=False):
         dic= {str(i):str(i) for i in range(1,23)}
         dic["X"]="23"
         dic["Y"]="24"
+        dic["M"]="25"
         dic["MT"]="25"
     
     else:
         dic= {str(i):i for i in range(1,23)}
         dic["X"]=23
         dic["Y"]=24
+        dic["M"]=25
         dic["MT"]=25
     return dic
 
-def get_number_to_chr(in_chr=False):
+def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"]):
     if in_chr:
         dic= {str(i):str(i) for i in range(1,23)}
-        dic["23"]="X"
-        dic["24"]="Y"
-        dic["25"]="MT"
+        dic["23"]=xymt[0]
+        dic["24"]=xymt[1]
+        dic["25"]=xymt[2]
     else:
         dic= {i:str(i) for i in range(1,23)}
-        dic[23]="X"
-        dic[24]="Y"
-        dic[25]="MT"
+        dic[23]=xymt[0]
+        dic[24]=xymt[1]
+        dic[25]=xymt[2]
     return dic
 
 

@@ -17,6 +17,7 @@ def filterout(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=gl.Log())
         num = len(sumstats.loc[sumstats[key]==threshold,:])
         if verbose:log.write(" -Removing "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...")
         sumstats = sumstats.loc[sumstats[key]!=threshold,:]
+    if verbose: log.write("Finished filtering values.")
     return sumstats.copy()
 
 def filterin(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=gl.Log()):
@@ -33,6 +34,7 @@ def filterin(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=gl.Log()):
         num = len(sumstats.loc[sumstats[key]==threshold,:])
         if verbose:log.write(" -Keeping "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...")
         sumstats = sumstats.loc[sumstats[key]==threshold,:]
+    if verbose: log.write("Finished filtering values.")
     return sumstats.copy()
 
 def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, build="19", verbose=True,log=gl.Log()):
