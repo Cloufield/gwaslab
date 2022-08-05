@@ -28,7 +28,7 @@ from functools import partial
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",
-       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,overwrite=False,verbose=True,log=gl.Log()):  
+       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,overwrite=False,verbose=True,log=gl.Log()):  
     
     '''
     1. fx SNPid
@@ -197,6 +197,11 @@ def fixID(sumstats,
     #        #sumstats.loc[to_fix,rsid].apply(lambda x:re.split(':|_|-',x)[1]).astype("Int64")
     
     ############################  fixing id ################################################### 
+    if fixsep is True:
+        if snpid in sumstats.columns: 
+            if verbose: log.write(' -Replacing [_-] in SNPID with ":" ...')
+            sumstats.loc[:,snpid] = sumstats.loc[:,snpid].str.replace(r"[_-]",":",regex=True)
+
     if fixid is True:
         if snpid not in sumstats.columns: 
         # initiate a SNPID column
@@ -371,9 +376,10 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
         #if add_prefix:
         #    if verbose: log.write(" -Adding prefix : "+ add_prefix+"...")
         #    sumstats.loc[:,chrom] = add_prefix + sumstats[chrom]   
-                
-        categories = [str(i) for i in range(26)]
-        sumstats.loc[:,chrom]= pd.Categorical(sumstats.loc[:,chrom],categories=categories,ordered=True)
+
+        sumstats.loc[:,chrom] = np.floor(pd.to_numeric(sumstats.loc[:,chrom], errors='coerce')).astype('Int64')
+        #categories = [str(i) for i in range(26)]+[pd.NA]
+        #sumstats.loc[:,chrom]= pd.Categorical(sumstats.loc[:,chrom],categories=categories,ordered=True)
         return sumstats
     
     
@@ -837,11 +843,10 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
 
 ###############################################################################################################
 #20220426
-def liftover_snv(row,converter,to_build,dic):
+def liftover_snv(row,chrom,converter,to_build):
     status_pre=""
-    status_end=row[2][2]+"9"+row[2][4]+"99"
-    chrom = dic[row[0]]   
-    pos_0_based = int(row[1]) - 1
+    status_end=row[1][2]+"9"+row[1][4]+"99"  
+    pos_0_based = int(row[0]) - 1
     results = converter[chrom][pos_0_based]
     if converter[chrom][pos_0_based]:
         # return chrom, pos_1_based
@@ -860,11 +865,15 @@ def liftover_variant(sumstats,
              to_build="38"):
     
     converter = get_lifter("hg"+from_build,"hg"+to_build)
-    dic= gl.get_number_to_chr(in_chr=True,xymt=["X","Y","M"])
-    lifted = sumstats.apply(lambda x: liftover_snv(x[[chrom,pos,status]],converter,to_build,dic),axis=1)
-    sumstats.loc[:,chrom]    = lifted.str[0]
-    sumstats.loc[:,pos]     =  lifted.str[1]
-    sumstats.loc[:,status]   =  lifted.str[2]
+    dic= gl.get_number_to_chr(in_chr=False,xymt=["X","Y","M"])
+    dic2= gl.get_chr_to_number(out_chr=False)
+    for i in sumstats[chrom].unique():
+        chrom_to_convert = dic[i]
+        variants_on_chrom_to_convert = sumstats[chrom]==i
+        lifted = sumstats.loc[variants_on_chrom_to_convert,[pos,status]].apply(lambda x: liftover_snv(x[[pos,status]],chrom_to_convert,converter,to_build),axis=1)
+        sumstats.loc[sumstats[chrom]==i,pos]     =  lifted.str[1]
+        sumstats.loc[sumstats[chrom]==i,status]   =  lifted.str[2]
+        sumstats.loc[sumstats[chrom]==i,chrom]    =  lifted.str[0].map(dic2)
     #sumstats.loc[:,chrom]  = #lifted.apply(lambda x :pd.NA if x[0] is pd.NA else str(x[0])).astype("string")
     #sumstats.loc[:,pos]    = #lifted.apply(lambda x :pd.NA if x[0] is pd.NA else str(x[1]))
     #sumstats.loc[:,status] = #lifted.apply(lambda x :str(x[2])).astype("string")  

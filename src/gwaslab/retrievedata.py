@@ -6,6 +6,7 @@ from Bio import SeqIO
 from itertools import repeat
 from multiprocessing import Pool
 from functools import partial
+from gwaslab.CommonData import get_number_to_chr
 import re
 import os
 #rsidtochrpos
@@ -30,13 +31,13 @@ def rsidtochrpos(sumstats,
     
     dic_chuncks = pd.read_csv(path,"\t",usecols=[ref_rsid,ref_chr,ref_pos],
                       chunksize=chunksize,index_col = ref_rsid,
-                      dtype={ref_rsid:"string",ref_chr:"string",ref_pos:"Int64"})
+                      dtype={ref_rsid:"string",ref_chr:"Int64",ref_pos:"Int64"})
     
     sumstats = sumstats.set_index(rsid)
     
     #if chr or pos columns not in sumstats
     if chrom not in sumstats.columns:
-        sumstats[chrom] =pd.Series(dtype="string")
+        sumstats[chrom] =pd.Series(dtype="Int64")
     if pos not in sumstats.columns:    
         sumstats[pos] =pd.Series(dtype="string")
     
@@ -192,14 +193,16 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     if verbose:  log.write(" -Checking records: ", end="")  
         
     records = SeqIO.parse(ref_path, "fasta")
-    for i in range(1,23):
+    for i in range(1,25):
         record = next(records)
-        chromlist = gl.get_chr_list()
-        record_chr = str(record.id).strip("chrCHR").upper()
-        if record_chr in chromlist:
-            if verbose:  log.write(record_chr," ", end="",show_time=False)  
-            to_check_ref = (sumstats[chrom]==str(i)) & (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())
-            sumstats.loc[to_check_ref,status] = sumstats.loc[to_check_ref,[pos,ea,nea,status]].apply(lambda x:check_status(x,record),axis=1)
+        if record is not None:
+            chromlist = gl.get_chr_list()
+            dic =  gl.get_number_to_chr()
+            record_chr = str(record.id).strip("chrCHR").upper()
+            if record_chr in chromlist:
+                if verbose:  log.write(record_chr," ", end="",show_time=False)  
+                to_check_ref = (sumstats[chrom]==i) & (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())
+                sumstats.loc[to_check_ref,status] = sumstats.loc[to_check_ref,[pos,ea,nea,status]].apply(lambda x:check_status(x,record),axis=1)
     
     if verbose:  log.write("\n",end="",show_time=False) 
         
@@ -236,11 +239,14 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
 #######################################################################################################################################
 
 #20220721
-def chrposref_rsid(chr,end,ref,alt,vcf_reader,chr_dict=None):
+def chrposref_rsid(chr,end,ref,alt,vcf_reader,chr_dict=get_number_to_chr()):
     ## single record assignment
     start=end-1
     if chr_dict is not None: chr=chr_dict[chr]
-    chr_seq = vcf_reader.fetch(chr,start,end)
+    try:
+        chr_seq = vcf_reader.fetch(chr,start,end)
+    except:
+        return pd.NA
     for record in chr_seq:
         if record.POS==end: 
             if record.REF==ref and (alt in record.ALT):
@@ -369,9 +375,14 @@ def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,status,chr
     ### 5 : palindromic -strand -> need to flip
     ### 8 : no ref data
     if chr_dict is not None: chr=chr_dict[chr]
-    chr_seq = vcf_reader.fetch(chr,start,end)
     status_pre=status[:6]
     status_end=""
+    try:
+        chr_seq = vcf_reader.fetch(chr,start,end)
+    except:
+        return status_pre+"8"+status_end
+        
+    
     for record in chr_seq:
         if record.POS==end and record.REF==ref and (alt in record.ALT):
             
@@ -391,9 +402,13 @@ def check_unkonwn_indel(chr,start,end,ref,alt,vcf_reader,alt_freq,status,chr_dic
     ### 6 flip
     ### 9 noinfo or not matching
     if chr_dict is not None: chr=chr_dict[chr]
-    chr_seq = vcf_reader.fetch(chr,start,end)
     status_pre=status[:6]
     status_end=""
+    try:
+        chr_seq = vcf_reader.fetch(chr,start,end)
+    except:
+        return status_pre+"8"+status_end
+
     for record in chr_seq:
         if record.POS==end and record.REF==ref and (alt in record.ALT):
             return status_pre+"3"+status_end

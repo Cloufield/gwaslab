@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import gwaslab as gl
 import time
-from gwaslab.sum import summarize
+from gwaslab.Sumstatssummary import summarize
 
 #20220309
 class Sumstats():
