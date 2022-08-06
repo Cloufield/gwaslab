@@ -1,31 +1,4 @@
 {
-    "metal": {
-        "meta_data": {
-            "format_name": "metal",
-            "format_source": "https://genome.sph.umich.edu/wiki/METAL_Documentation",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "MarkerName": "SNPID",
-            "Allele1": "EA",
-            "Allele2": "NEA",
-            "Freq1": "EAF",
-            "Effect": "BETA",
-            "StdErr": "SE",
-            "P-value": "P",
-            "Direction": "DIRECTION"
-        }
-    },
-    "template": {
-        "meta_data": {
-            "format_name": "",
-            "format_source": "",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "": "OR_95U"
-        }
-    },
     "fastgwa": {
         "meta_data": {
             "format_name": "fastgwa",
@@ -45,24 +18,46 @@
             "P": "P"
         }
     },
-    "mrmega": {
+    "gwascatalog": {
         "meta_data": {
-            "format_name": "",
-            "format_source": "",
+            "format_name": "gwascatalog",
+            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
             "format_version": "20220726"
         },
         "format_dict": {
-            "": "OR_95U"
+            "variant_id": "SNPID",
+            "chromosome": "CHR",
+            "base_pair_location": "POS",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "beta": "BETA",
+            "effect_allele_frequency": "EAF",
+            "standard_error": "SE",
+            "p-value": "P",
+            "odds_ratio": "OR",
+            "ci_lower": "OR_95L",
+            "ci_upper": "OR_95U"
         }
     },
-    "regenie": {
+    "gwascatalog_hm": {
         "meta_data": {
-            "format_name": "",
-            "format_source": "",
-            "format_version": "20220726"
+            "format_name": "gwascatalog_hm",
+            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
+            "format_version": 20220806
         },
         "format_dict": {
-            "": "OR_95U"
+            "hm_variant_id": "SNPID",
+            "chromosome": "CHR",
+            "base_pair_location": "POS",
+            "hm_other_allele": "NEA",
+            "hm_effect_allele": "EA",
+            "hm_beta": "BETA",
+            "hm_effect_allele_frequency": "EAF",
+            "standard_error": "SE",
+            "p-value": "P",
+            "hm_odds_ratio": "OR",
+            "hm_ci_lower": "OR_95L",
+            "hm_ci_upper": "OR_95U"
         }
     },
     "gwaslab": {
@@ -93,14 +88,77 @@
             "STATUS": "STATUS"
         }
     },
-    "saige": {
+    "metal": {
         "meta_data": {
-            "format_name": "",
-            "format_source": "",
+            "format_name": "metal",
+            "format_source": "https://genome.sph.umich.edu/wiki/METAL_Documentation",
             "format_version": "20220726"
         },
         "format_dict": {
-            "": "OR_95U"
+            "MarkerName": "SNPID",
+            "Allele1": "EA",
+            "Allele2": "NEA",
+            "Freq1": "EAF",
+            "Effect": "BETA",
+            "StdErr": "SE",
+            "P-value": "P",
+            "Direction": "DIRECTION"
+        }
+    },
+    "mrmega": {
+        "meta_data": {
+            "format_name": "mrmega",
+            "format_source": "https://genomics.ut.ee/en/tools",
+            "format_version": "ver0.2",
+            "last_check_date": 20220806
+        },
+        "format_dict": {
+            "MarkerName ": "SNPID",
+            "Chromosome": "CHR",
+            "Position": "POS",
+            "NEA": "NEA",
+            "EA": "EA",
+            "EAF": "EAF",
+            "Nsample": "N",
+            "Effects": "DIRECTION",
+            "chisq_association": "CHISQ",
+            "ndf_association": "ndf_association",
+            "P-value_association": "P"
+        }
+    },
+    "pgscatalog": {
+        "meta_data": {
+            "format_name": "pgscatalog",
+            "format_source": "https://www.pgscatalog.org/downloads/",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "rsID": "rsID",
+            "chr_name": "CHR",
+            "chr_position": "POS",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "allelefrequency_effect": "EAF",
+            "effect_weight": "BETA",
+            "OR": "OR"
+        }
+    },
+    "pgscatalog_hm": {
+        "meta_data": {
+            "format_name": "pgscatalog_hm Harmonized File",
+            "format_source": "https://www.pgscatalog.org/downloads/",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "hm_rsID": "rsID",
+            "hm_chr": "CHR",
+            "hm_pos": "POS",
+            "hm_inferOtherAllele": "NEA",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "allelefrequency_effect": "EAF",
+            "effect_weight": "BETA",
+            "OR": "OR"
         }
     },
     "plink": {
@@ -126,19 +184,78 @@
             "NMISS": "N"
         }
     },
-    "pgscatalog": {
+    "plink2": {
         "meta_data": {
-            "format_name": "",
-            "format_source": "",
-            "format_version": "20220726"
+            "format_name": "PLINK2 .glm.firth, .glm.logistic,.glm.linear",
+            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
+            "format_version": "Alpha 3.3 final (3 Jun)",
+            "last_check_date": 20220806
         },
         "format_dict": {
-            "": "OR_95U"
+            "ID": "SNPID",
+            "CHROM": "CHR",
+            "POS": "POS",
+            "REF": "NEA",
+            "ALT": "EA",
+            "OBS_CT": "N",
+            "A1_FREQ": "EAF",
+            "BETA": "BETA",
+            "[LOG(OR)_]SE": "SE",
+            "Z_[OR_F_]STAT": "Z",
+            "P": "P",
+            "MACH_R2": "INFO",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "U95": "OR_95U"
+        }
+    },
+    "regenie": {
+        "meta_data": {
+            "format_name": "regenie",
+            "format_source_1": "https://rgcgithub.github.io/regenie/",
+            "format_source_2": "https://github.com/rgcgithub/regenie/blob/master/example/test_bin_out_firth_Y1.regenie",
+            "format_version": "20220726",
+            "last_check_date": 20220806
+        },
+        "format_dict": {
+            "ID": "SNPID",
+            "CHROM": "CHR",
+            "GENPOS": "POS",
+            "ALLELE0": "NEA",
+            "ALLELE1": "EA",
+            "A1FREQ": "EAF",
+            "N": "N",
+            "BETA": "BETA",
+            "SE": "SE",
+            "CHISQ": "CHISQ",
+            "LOG10P": "MLOG10P"
+        }
+    },
+    "saige": {
+        "meta_data": {
+            "format_name": "saige",
+            "format_source": "https://saigegit.github.io//SAIGE-doc/docs/single_step2.html",
+            "format_version": "v1.1.3",
+            "last_check_date": 20220806
+        },
+        "format_dict": {
+            "SNPID": "SNPID",
+            "CHR": "CHR",
+            "POS": "POS",
+            "Allele1": "NEA",
+            "Allele2": "EA",
+            "AF_Allele2": "EAF",
+            "N": "N",
+            "BETA": "BETA",
+            "SE": "SE",
+            "p.value": "P",
+            "imputationInfo": "INFO"
         }
     },
     "ssf": {
         "meta_data": {
             "format_name": "ssf",
+            "format_source": "https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full",
             "format_version": 20220726
         },
         "format_dict": {
@@ -158,21 +275,11 @@
             "ci_upper": "OR_95U"
         }
     },
-    "gwascatalog": {
+    "template": {
         "meta_data": {
             "format_name": "",
             "format_source": "",
             "format_version": "20220726"
-        },
-        "format_dict": {
-            "": "OR_95U"
-        }
-    },
-    "plink2": {
-        "meta_data": {
-            "format_name": ".glm.firth, .glm.logistic,.glm.linear",
-            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
-            "format_version": "Alpha 3.3 final (3 Jun)"
         },
         "format_dict": {
             "": "OR_95U"

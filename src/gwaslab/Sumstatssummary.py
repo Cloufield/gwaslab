@@ -23,7 +23,7 @@ def summarize(sumstats,
     missing_dict={}
     missing =  sumstats.isna()
     if missing.any(axis=None) is True:
-        missing_dict["Missing_total"]=sum(missing.any(axis=0).any())
+        missing_dict["Missing_total"]=sum(missing.any(axis=1))
         for i in missing.columns:
             if sum(missing[i])>0:
                 missing_dict["Missing_"+i]=sum(missing[i])
