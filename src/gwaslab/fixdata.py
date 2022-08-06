@@ -261,7 +261,7 @@ def fixID(sumstats,
     
 ###############################################################################################################
 #20220514 
-def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",keep_ascend=True,verbose=True,log=gl.Log()):
+def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove=False,keep_ascend=True,verbose=True,log=gl.Log()):
     '''
     remove duplicate SNPs based on  1. SNPID, EA, and NEA
     remove duplicate SNPs based on  2. rsID for non-NA variants
@@ -305,6 +305,12 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
     if keep_col is not None : 
         if verbose: log.write(" -Sort the coordinates...")
         sumstats = gl.sortcoordinate(sumstats)
+    if remove is True:
+        if verbose: log.write(" -Removing NAs...")
+        pre_number =len(sumstats) 
+        sumstats = sumstats.loc[~sumstats.isna().any(axis=1),:]
+        after_number=len(sumstats) 
+        if verbose:  log.write(" -Removed ",pre_number -after_number," variants with NA values.")  
     return sumstats
 
 ###############################################################################################################

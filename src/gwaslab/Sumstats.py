@@ -3,6 +3,7 @@ import numpy as np
 import gwaslab as gl
 import time
 from gwaslab.Sumstatssummary import summarize
+from gwaslab.Sumstatssummary import lookupstatus
 
 #20220309
 class Sumstats():
@@ -116,6 +117,8 @@ class Sumstats():
             self.meta["Min_P"]=np.min(self.data["P"])
     def summary(self):
         return summarize(self.data)
+    def lookup_status(self,status="STATUS"):
+        return lookupstatus(self.data[status])
         
 # QC ######################################################################################
     #clean the sumstats with one line
@@ -410,7 +413,7 @@ class Sumstats():
         if exclude_hla is True:
             if verbose: self.log.write(" -Excluding variants in HLA region ...")
             before = len(output)
-            is_hla = (output["CHR"]== "6") & (output["POS"].astype("Int64") >25000000) & (output["POS"].astype("Int64") < 34000000)
+            is_hla = (output["CHR"]== 6) & (output["POS"].astype("Int64") >25000000) & (output["POS"].astype("Int64") < 34000000)
             output = output.loc[~is_hla,:]
             after = len(output)
             if verbose: self.log.write(" -Exclude "+ str(before - after) + " variants in HLA region.")

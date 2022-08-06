@@ -29,7 +29,7 @@ def rsidtochrpos(sumstats,
     if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose:  log.write(" -rsID dictionary file: "+ path)  
     
-    dic_chuncks = pd.read_csv(path,"\t",usecols=[ref_rsid,ref_chr,ref_pos],
+    dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_rsid,ref_chr,ref_pos],
                       chunksize=chunksize,index_col = ref_rsid,
                       dtype={ref_rsid:"string",ref_chr:"Int64",ref_pos:"Int64"})
     
@@ -39,7 +39,7 @@ def rsidtochrpos(sumstats,
     if chrom not in sumstats.columns:
         sumstats[chrom] =pd.Series(dtype="Int64")
     if pos not in sumstats.columns:    
-        sumstats[pos] =pd.Series(dtype="string")
+        sumstats[pos] =pd.Series(dtype="Int64")
     
     if verbose:  log.write(" -Setting block size: ",chunksize)
     if verbose:  log.write(" -Loading block: ",end="")     

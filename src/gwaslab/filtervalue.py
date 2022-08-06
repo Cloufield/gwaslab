@@ -51,20 +51,21 @@ def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, bui
     
     bed["tuple"] = bed.apply(lambda x: (x[1],x[2]),axis=1)
     sumstats["bed_indicator"]=False
-    bed[0]=bed[0].str.strip("chr")
+    dic=gl.get_chr_to_number(out_chr=True)
+    bed[0]=bed[0].str.strip("chr").map(dic).astype("Int64")
     
     if len(bed)<100:
         if verbose: log.write(" -Bed file < 100 lines: using pd IntervalIndex... ")
         for i in sumstats[chrom].unique():
-            if sum(bed[0]==str(i))>0:
-                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==str(i),"tuple"])
+            if sum(bed[0]==i)>0:
+                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==i,"tuple"])
                 sumstats.loc[sumstats[chrom]==i,"bed_indicator"] = sumstats.loc[sumstats[chrom]==i,pos].apply(lambda x: any(interval.contains(x)))
             else:
                 continue
     else:
         if verbose: log.write(" -Bed file > 100 lines: using two pointers, please make files are all sorted... ")
         bed_num  =0
-        bed_chr  =bed.iloc[bed_num,0].strip("chr")
+        bed_chr  =bed.iloc[bed_num,0]
         bed_left  =bed.iloc[bed_num,1]
         bed_right =bed.iloc[bed_num,2]
         
@@ -78,7 +79,7 @@ def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, bui
                 continue
             elif sumstats.iat[sum_num,sum_chr_col]>bed_chr:
                 bed_num+=1
-                bed_chr  =bed.iat[bed_num,0].str.strip("chr")
+                bed_chr  =bed.iat[bed_num,0]
                 bed_left  = bed.iat[bed_num,1]
                 bed_right  = bed.iat[bed_num,2]
                 continue
@@ -88,7 +89,7 @@ def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, bui
                     continue
                 elif sumstats.iat[sum_num,sum_pos_col]>bed_right:
                     bed_num+=1
-                    bed_chr  =bed.iat[bed_num,0].strip("chr")
+                    bed_chr  =bed.iat[bed_num,0]
                     bed_left  = bed.iat[bed_num,1]
                     bed_right  = bed.iat[bed_num,2]
                 else:
@@ -115,21 +116,21 @@ def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, b
     bed = pd.read_csv(path,sep="\s+",header=None,dtype={0:"string",1:"Int64",2:"Int64"})
     bed["tuple"] = bed.apply(lambda x: (x[1],x[2]),axis=1)
     sumstats["bed_indicator"]=False
-    
-    bed[0]=bed[0].str.strip("chr")
+    dic=gl.get_chr_to_number(out_chr=True)
+    bed[0]=bed[0].str.strip("chr").map(dic).astype("Int64")
     
     if len(bed)<100:
         if verbose: log.write(" -Bed file < 100 lines: using pd IntervalIndex... ")
         for i in sumstats[chrom].unique():
-            if sum(bed[0]==str(i))>0:
-                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==str(i),"tuple"])
+            if sum(bed[0]==i)>0:
+                interval = pd.IntervalIndex.from_tuples(bed.loc[bed[0]==i,"tuple"])
                 sumstats.loc[sumstats[chrom]==i,"bed_indicator"] = sumstats.loc[sumstats[chrom]==i,pos].apply(lambda x: any(interval.contains(x)))
             else:
                 continue
     else:
         if verbose: log.write(" -Bed file > 100 lines: using two pointers, please make files are all sorted... ")
         bed_num  =0
-        bed_chr  =bed.iloc[bed_num,0].strip("chr")
+        bed_chr  =bed.iloc[bed_num,0]
         bed_left  =bed.iloc[bed_num,1]
         bed_right =bed.iloc[bed_num,2]
         
@@ -143,7 +144,7 @@ def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, b
                 continue
             elif sumstats.iat[sum_num,sum_chr_col]>bed_chr:
                 bed_num+=1
-                bed_chr  =bed.iat[bed_num,0].str.strip("chr")
+                bed_chr  =bed.iat[bed_num,0]
                 bed_left  = bed.iat[bed_num,1]
                 bed_right  = bed.iat[bed_num,2]
                 continue
@@ -153,14 +154,14 @@ def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, b
                     continue
                 elif sumstats.iat[sum_num,sum_pos_col]>bed_right:
                     bed_num+=1
-                    bed_chr  =bed.iat[bed_num,0].strip("chr")
+                    bed_chr  =bed.iat[bed_num,0]
                     bed_left  = bed.iat[bed_num,1]
                     bed_right  = bed.iat[bed_num,2]
                 else:
                     sumstats.iat[sum_num,sum_ind_col]=True
                     sum_num+=1
                            
-    ## in
+    ## out
     
     sumstats = sumstats.loc[~sumstats["bed_indicator"],:]
     if verbose: log.write(" -After filtering, number of variants in the specified regions:",len(sumstats))
