@@ -100,9 +100,9 @@ def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"]):
 ###################################################################################################################    
 def get_high_ld(build="19"):
     if build=="19":
-        data_path =  path.dirname(__file__) + '/data/high-ld/high-ld-hla-hg19.bed'
+        data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg19.bed'
     elif build=="38":
-        data_path =  path.dirname(__file__) + '/data/high-ld/high-ld-hla-hg38.bed'
+        data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg38.bed'
     return data_path
 
 def get_format_dict(fmt,inverse=False):
