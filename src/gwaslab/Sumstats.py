@@ -151,9 +151,7 @@ class Sumstats():
               ref_seq=None,
               ref_rsid_tsv=None,
               ref_rsid_vcf=None,
-              ref_rsid_chr_dict=None,
               ref_infer=None,
-              ref_infer_chr_dict=None,
               ref_alt_freq=None,
               maf_threshold=0.40,
               n_cores=1,
@@ -219,8 +217,8 @@ class Sumstats():
             
         if ref_infer is not None: 
             
-            self.data= gl.parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=0.43,
-                                              n_cores=n_cores,chr_dict=ref_infer_chr_dict,log=self.log,**inferstrand_args)
+            self.data= gl.parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
+                                              n_cores=n_cores,log=self.log,**inferstrand_args)
             
             self.data =gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
         
@@ -228,11 +226,11 @@ class Sumstats():
         if ref_rsid_tsv is not None:
             
             self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
-                                                 n_cores=n_cores,log=self.log,chr_dict=ref_rsid_chr_dict,**assignrsid_args)
+                                                 n_cores=n_cores,log=self.log,**assignrsid_args)
         if ref_rsid_vcf is not None:
             
             self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
-                                                 n_cores=n_cores,log=self.log,chr_dict=ref_rsid_chr_dict,**assignrsid_args)     
+                                                 n_cores=n_cores,log=self.log,**assignrsid_args)     
         ######################################################    
         if remove is True:
             

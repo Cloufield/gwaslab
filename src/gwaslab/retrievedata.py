@@ -1,7 +1,7 @@
 import gwaslab as gl
 import pandas as pd
 import numpy as np
-import vcf
+from pysam import VariantFile
 from Bio import SeqIO
 from itertools import repeat
 from multiprocessing import Pool
@@ -248,16 +248,17 @@ def chrposref_rsid(chr,end,ref,alt,vcf_reader,chr_dict=get_number_to_chr()):
     except:
         return pd.NA
     for record in chr_seq:
-        if record.POS==end: 
-            if record.REF==ref and (alt in record.ALT):
-                return record.ID
-            elif (ref in record.ALT) and record.REF==alt:
-                return record.ID
+        if record.pos==end: 
+            if record.ref==ref and (alt in record.alts):
+                return record.id
+            elif (ref in record.alts) and record.ref==alt:
+                return record.id
     return pd.NA
 
-def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",chr_dict=None):
+def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",chr_dict=get_number_to_chr()):
     ## single df assignment
-    vcf_reader = vcf.Reader(open(path, 'rb'))
+    #vcf_reader = vcf.Reader(open(path, 'rb'))
+    vcf_reader = VariantFile(path)
     def rsid_helper(x,vcf_reader,chr_dict):
          return chrposref_rsid(x[0],x[1],x[2],x[3],vcf_reader,chr_dict)
     map_func=partial(rsid_helper,vcf_reader=vcf_reader,chr_dict=chr_dict)
@@ -267,7 +268,7 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
 
 def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",
                           n_cores=1,chunksize=5000000,ref_snpid="SNPID",ref_rsid="rsID",
-                          overwrite="empty",verbose=True,log=gl.Log(),chr_dict=None):
+                          overwrite="empty",verbose=True,log=gl.Log(),chr_dict=get_number_to_chr()):
     '''
     overwrite mode : 
     all ,    overwrite rsid for all availalbe rsid 
@@ -368,7 +369,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
 #################################################################################################################################################
 #single record assignment
 
-def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,status,chr_dict=None):
+def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,status,chr_dict=get_number_to_chr()):
     ### 0 : not palindromic
     ### 1 : palindromic +strand 
     ### 2 : palindromic -strand -> need to flip -> flipped
@@ -384,18 +385,18 @@ def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,status,chr
         
     
     for record in chr_seq:
-        if record.POS==end and record.REF==ref and (alt in record.ALT):
+        if record.pos==end and record.ref==ref and (alt in record.alts):
             
-            if  (record.INFO[alt_freq][0]<0.5) and (eaf<0.5):
+            if  (record.info[alt_freq][0]<0.5) and (eaf<0.5):
                 return status_pre+"1"+status_end
-            elif (record.INFO[alt_freq][0]>0.5) and (eaf>0.5):
+            elif (record.info[alt_freq][0]>0.5) and (eaf>0.5):
                 return status_pre+"1"+status_end
             else:
                 return status_pre+"5"+status_end
     return status_pre+"8"+status_end
 
 
-def check_unkonwn_indel(chr,start,end,ref,alt,vcf_reader,alt_freq,status,chr_dict=None):
+def check_unkonwn_indel(chr,start,end,ref,alt,vcf_reader,alt_freq,status,chr_dict=get_number_to_chr()):
     ### input : unknown indel, both on genome (xx1[45]x)
     ### 3 no flip
     ### 4 unknown indel,fixed   (6->5)
@@ -410,9 +411,9 @@ def check_unkonwn_indel(chr,start,end,ref,alt,vcf_reader,alt_freq,status,chr_dic
         return status_pre+"8"+status_end
 
     for record in chr_seq:
-        if record.POS==end and record.REF==ref and (alt in record.ALT):
+        if record.pos==end and record.ref==ref and (alt in record.alts):
             return status_pre+"3"+status_end
-        elif record.POS==end and record.REF==alt and (ref in record.ALT):
+        elif record.pos==end and record.ref==alt and (ref in record.alts):
             return status_pre+"6"+status_end
     return status_pre+"8"+status_end
 
@@ -435,20 +436,22 @@ def is_palindromic(sumstats,a1="EA",a2="NEA"):
 ##################################################################################################################################################
 #single df assignment
 
-def check_strand(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None,status="STATUS"):
-    vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+def check_strand(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS"):
+    #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+    vcf_reader = VariantFile(ref_infer)
     status_part = sumstats.apply(lambda x:check_strand_status(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,x[5],chr_dict),axis=1) 
     return status_part
 
-def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None,status="STATUS"):
-    vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS"):
+    #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+    vcf_reader = VariantFile(ref_infer)
     status_part = sumstats.apply(lambda x:check_unkonwn_indel(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,ref_alt_freq,x[4],chr_dict),axis=1)
     return status_part
 
 
 ##################################################################################################################################################
 
-def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,remove_snp="",mode="pi",n_cores=1,remove_indel="",chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
+def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,remove_snp="",mode="pi",n_cores=1,remove_indel="",chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),verbose=True,log=gl.Log()):
     if verbose: log.write("Start to infer strand for palindromic SNPs...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
@@ -462,8 +465,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,
             if verbose: log.write(" -Alternative allele frequency in INFO:", ref_alt_freq)  
 
             ## checking \w\w\w\w[0]\w\w -> standardized and normalized snp
-            good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False) 
-            palindromic = good_chrpos & is_palindromic(sumstats,a1="EA",a2="NEA")   
+            good_chrpos =  sumstats[status].str.match(r'\w\w\w[0][0]\w\w', case=False, flags=0, na=False) 
+            palindromic = good_chrpos & is_palindromic(sumstats[[ref,alt]],a1=ref,a2=alt)   
             not_palindromic_snp = good_chrpos & (~palindromic)
 
             ##not palindromic : change status
@@ -572,7 +575,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.43,
 
 
 ################################################################################################################
-def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,verbose=True,log=gl.Log()):
+def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),verbose=True,log=gl.Log()):
         
     if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
@@ -615,7 +618,8 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_co
     return sumstats
 
 def checkaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):
-    vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+    #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+    vcf_reader = VariantFile(ref_infer)
     def afapply(x,vcf,alt_freq,chr_dict):
             return check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict)
     map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
@@ -627,10 +631,11 @@ def checkaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",a
 def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
     if chr_dict is not None: chr=chr_dict[chr]
     chr_seq = vcf_reader.fetch(chr,start,end)
+    
     for record in chr_seq:
-        if record.POS==end:
-            if record.REF==ref and (alt in record.ALT):
-                return eaf - record.INFO[alt_freq][0]
+        if record.pos==end:
+            if record.ref==ref and (alt in record.alts):
+                return eaf - record.info[alt_freq][0]
     return np.nan
 ################################################################################################################
 def change_status(status_value,digit,to):

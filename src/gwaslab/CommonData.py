@@ -68,24 +68,22 @@ def get_chr_list():
             "19","20","21","22","23","24","25","X","Y","M","MT"]
     return chrom_list
 
-def get_chr_to_number(out_chr=False):
-    if out_chr:
+def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"]):
+    if out_chr is True:
         dic= {str(i):str(i) for i in range(1,23)}
-        dic["X"]="23"
-        dic["Y"]="24"
-        dic["M"]="25"
-        dic["MT"]="25"
+        dic[xymt[0]]="23"
+        dic[xymt[1]]="24"
+        dic[xymt[2]]="25"
     
     else:
         dic= {str(i):i for i in range(1,23)}
-        dic["X"]=23
-        dic["Y"]=24
-        dic["M"]=25
-        dic["MT"]=25
+        dic[xymt[0]]=23
+        dic[xymt[1]]=24
+        dic[xymt[2]]=25
     return dic
 
 def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"]):
-    if in_chr:
+    if in_chr is True:
         dic= {str(i):str(i) for i in range(1,23)}
         dic["23"]=xymt[0]
         dic["24"]=xymt[1]

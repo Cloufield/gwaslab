@@ -51,7 +51,7 @@ def fixID(sumstats,
         
     if rsid in sumstats.columns: 
         if verbose: log.write(" -Checking if rsID is rsxxxxxx or RSxxxxxxx...")
-        is_rsid = sumstats[rsid].str.startswith(r'rs')
+        is_rsid = sumstats[rsid].str.startswith(r'rs',na=False)
         
         sumstats.loc[ is_rsid,status] = vchange_status(sumstats.loc[ is_rsid,status], 3, "986","520")
         sumstats.loc[~is_rsid,status] = vchange_status(sumstats.loc[~is_rsid,status], 3, "986","743")
@@ -327,12 +327,13 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
         is_chr_fixed = sumstats[chrom].str.match(r'[12]?[0-9]', case=False, flags=0, na=False)
         
         if sum(is_chr_fixed)<len(sumstats):
-            is_chr_fixable = sumstats.loc[~is_chr_fixed,chrom].str.match(r'(chr)?([012][0-9]|[0-9]|X|Y|MT)', case=False, flags=0, na=False)
+            is_chr_fixable = sumstats.loc[~is_chr_fixed,chrom].str.match(r'(chr)?([012][0-9]|[0-9]|X|Y|M|MT)', case=False, flags=0, na=False)
+            
             if verbose: log.write(" -Vairants with fixable chromosome notations:",sum(is_chr_fixable))   
             is_chr_na    = sumstats.loc[~is_chr_fixed,chrom].isna()
             if sum(is_chr_na)>0 and verbose: 
                 log.write(" -Vairants with NA chromosome notations:",sum(is_chr_na))  
-
+            #not na and not fixable
             is_chr_invalid = (~is_chr_fixable)&(~is_chr_na)
             if sum(is_chr_invalid)>0 and verbose: 
                 log.write(" -Vairants with invalid chromosome notations:",sum(is_chr_invalid)) 
@@ -347,12 +348,13 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
                 #if sumstats.loc[:,chrom].dtype == "category":
                 #    sumstats.loc[:,chrom] = sumstats.loc[:,chrom].str.lstrip("CHR_-.0")
                 #else:
-                sumstats.loc[is_chr_fixable.index,chrom] = sumstats.loc[is_chr_fixable.index,chrom].str.lstrip("CHR_-.0")
+                sumstats.loc[is_chr_fixable.index.values,chrom] = sumstats.loc[is_chr_fixable.index.values,chrom].str.lstrip("CHR_-.0")
 
 
             # X, Y, MT to 23,24,25
             sex_chr = sumstats[chrom].isin([x,y,mt])
             if sum(sex_chr)>0:
+                if verbose: log.write(" -Identified ",str(sum(sex_chr))," variants on sex chromosomes...")
                 convert_num_to_xymt={x:"23",y:"24",mt:"25"}
                 sumstats.loc[sex_chr,chrom] =sumstats.loc[sex_chr,chrom].map(convert_num_to_xymt)
                 if verbose: log.write(" -Standardizing sex chromosome notations:" ,str(x),str(y),str(mt)," to 23,24,25...") 
@@ -468,7 +470,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         sumstats.loc[is_eanea_na,status]                 = vchange_status(sumstats.loc[is_eanea_na, status],              5,"9","7")
         sumstats.loc[is_eanea_fixed&is_not_normalized,status]   = vchange_status(sumstats.loc[is_eanea_fixed&is_not_normalized,status], 5,"9","5")
         sumstats.loc[is_eanea_fixed&is_snp, status]          = vchange_status(sumstats.loc[is_eanea_fixed&is_snp,status],        5,"9","0")
-        sumstats.loc[is_eanea_fixed&is_indel,status]         = vchange_status(sumstats.loc[is_eanea_fixed&is_indel, status],      5,"9","4")   
+        sumstats.loc[is_eanea_fixed&is_indel,status]         = vchange_status(sumstats.loc[is_eanea_fixed&is_indel, status],      5,"9","4")
         sumstats.loc[is_eanea_fixed&is_normalized,status]      = vchange_status(sumstats.loc[is_eanea_fixed&is_normalized, status],  5,"4","3")
         remain_var_num = len(sumstats)
               
@@ -520,8 +522,12 @@ def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS
     sumstats.loc[:,nea]=pd.Categorical(sumstats.loc[:,nea],categories = categories ) 
     sumstats.loc[variants_to_check,[pos,nea,ea,status]] = normalized_pd.values
     sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
-    sumstats.loc[:,[status]] = sumstats.loc[:,[status]]
     #sumstats.loc[:,[nea,ea,status]] = sumstats.loc[:,[nea,ea,status]].astype("string")
+    #if verbose:log.write(" -Updating allele status...")
+    #sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status], 5,"5","3")
+    #indel_to_snp = sumstats[status].str.match(r'\w\w\w\w[3]\w\w', case=False, flags=0, na=False) & (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
+    #if sum(indel_to_snp)>0:
+    #    sumstats.loc[indel_to_snp,status] = vchange_status(sumstats.loc[indel_to_snp,status], 5,"5","3")
     return sumstats
 
 def normalizeallele(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
@@ -537,11 +543,11 @@ def normalizevariant(pos,a,b,status):
     # b - alt - ea
     # status xx1xx /xx2xx /xx9xx
     
-    status_pre=status[:3]
-    status_end=status[4:]
+    status_pre=status[:4]
+    status_end=status[5:]
     
     if len(a)==1 or len(b)==1:
-        return pos,a,b,status_pre+"3"+status_end
+        return pos,a,b,status_pre+"0"+status_end
     
     pos_change=0
     pointer_a_l, pointer_a_r = 0, len(a)-1
@@ -555,6 +561,8 @@ def normalizevariant(pos,a,b,status):
         else:
             break
         if pointer_a_r-pointer_a_l==0 or pointer_b_r-pointer_b_l==0:
+            if len(a)==1 or len(b)==1:
+                return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"0"+status_end
             return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end
 
     # remove from left
@@ -568,6 +576,8 @@ def normalizevariant(pos,a,b,status):
             break
         if pointer_a_r-pointer_a_l==0 or pointer_b_r-pointer_b_l==0:
             break
+    if len(a)==1 or len(b)==1:
+        return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"0"+status_end
     return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end
 ###############################################################################################################
 

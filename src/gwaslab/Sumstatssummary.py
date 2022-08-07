@@ -85,6 +85,7 @@ def sum_status(id_to_use, sumstats):
 def lookupstatus(status):
     uniq_status = status.unique()
     status_dic_12={
+    "13":"CHM13",
     "19":"hg19",
     "38":"hg38",
     "97":"Unmapped",
@@ -92,71 +93,71 @@ def lookupstatus(status):
     "99":"Unchecked"
         }  
     status_dic_3={
-    "0":"",
-    "1":"",
-    "2":"",
-    "3":"",
-    "4":"",
-    "5":"",
-    "6":"",
-    "7":"",
-    "8":"",
-    "9":""
+    "0":"rsid valid & SNPID valid",
+    "1":"rsid valid & SNPID invalid",
+    "2":"rsid invalid & SNPID valid",
+    "3":"rsid invalid & SNPID invalid",
+    "4":"rsid valid & SNPID valid",
+    "5":"rsid valid & SNPID unknown",
+    "6":"rsid unknown & SNPID valid",
+    "7":"rsid invalid & SNPID unknown",
+    "8":"rsid unknown & SNPID invalid",
+    "9":"Unchecked"
         }  
     status_dic_4={
-    "0":"",
-    "1":"",
-    "2":"",
-    "3":"",
-    "4":"",
-    "5":"",
-    "6":"",
-    "7":"",
-    "8":"",
-    "9":""
+    "0":"CHR valid & POS valid",
+    "2":"CHR invalid & POS invalid",
+    "3":"CHR invalid & POS valid",
+    "4":"CHR valid & POS invalid",
+    "5":"CHR valid & POS unknown",
+    "6":"CHR unknown & POS valid",
+    "7":"CHR invalid & POS unknown",
+    "8":"CHR unknown & POS invalid",
+    "9":"Unchecked"
         }  
     status_dic_5={
-    "0":"",
-    "1":"",
-    "2":"",
-    "3":"",
-    "4":"",
-    "5":"",
-    "6":"",
-    "7":"",
-    "8":"",
-    "9":""
+    "0":"standardized SNP",
+    "1":"standardized & normalized insertion",
+    "2":"standardized & normalized deletion",
+    "3":"standardized & normalized indel",
+    "4":"standardized indel",
+    "5":"indistinguishable or not normalized allele",
+    "6":"invalid allele notation",
+    "7":"Unknown",
+    "9":"Unchecked"
         }  
     status_dic_6={
-    "0":"",
-    "1":"",
-    "2":"",
-    "3":"",
-    "4":"",
-    "5":"",
-    "6":"",
-    "7":"",
-    "8":"",
-    "9":""
+    "0":"Match: NEA=REF",
+    "1":"Flipped_fixed",
+    "2":"Reverse_complementary_fixed",
+    "3":"Flipped",
+    "4":"Reverse_complementary",
+    "5":"Reverse_complementary+Flipped",
+    "6":"Both_alleles_on_ref+indistinguishable",
+    "8":"Not_on_reference_genome",
+    "9":"Unchecked"
         }  
     status_dic_7={
-    "0":"",
-    "1":"",
-    "2":"",
-    "3":"",
-    "4":"",
-    "5":"",
-    "6":"",
-    "7":"",
-    "8":"",
-    "9":""
+    "0":"Not_palindromic_SNPs",
+    "1":"Palindromic+strand",
+    "2":"Palindromic-strand_fixed",
+    "3":"Indel_match",
+    "4":"Indel_flipped_fixed",
+    "5":"Palindromic-strand",
+    "6":"Indel_flipped",
+    "7":"Indistinguishable",
+    "8":"No_matching_or_no_info",
+    "9":"Unchecked"
         }   
     status_dic={}
     for i in uniq_status:
-        description = status_dic_12[i[:2]] + status_dic_3[i[2]] + status_dic_4[i[3]]+ status_dic_5[i[4]]+ status_dic_6[i[5]]+ status_dic_7[i[6]]
+        count = sum(status==i)
+        percentage =  np.around(count*100 / len(status),2)
+        description = [status_dic_12[i[:2]] , status_dic_3[i[2]] , status_dic_4[i[3]], status_dic_5[i[4]], status_dic_6[i[5]], status_dic_7[i[6]],count,percentage]
         status_dic[i] = description
     df = pd.DataFrame.from_dict({i: status_dic[i] 
                            for i in status_dic.keys()},
-                           orient='index',columns=["Description"],dtype="string")
+                           orient='index',columns=["Genome_Build","rsID&SNPID","CHR&POS","Stadardize&Normalize","Align","Panlidromic_SNP&Indel","Count","Percentage(%)"], dtype="string")
+    df = df.sort_index()
     return df
         
