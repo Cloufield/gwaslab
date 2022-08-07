@@ -142,7 +142,7 @@ def mqqplot(insumstats,
     if scaled is True:
         sumstats["raw_P"] = pd.to_numeric(sumstats[mlog10p], errors='coerce')
     else:
-        sumstats["raw_P"] = pd.to_numeric(sumstats[p], errors='coerce')
+        sumstats["raw_P"] = sumstats[p].astype("float64")
     
     ## CHR & POS
     if "m" in mode: 
@@ -166,8 +166,8 @@ def mqqplot(insumstats,
     if verbose: log.write("Start conversion and QC:")
     if "m" in mode: 
         pre_number=len(sumstats)
-        #sanity check : rop variants with na values in chr and pos df
-        sumstats = sumstats.replace([np.inf, -np.inf], np.nan).dropna(subset=[chrom,pos])
+        #sanity check : drop variants with na values in chr and pos df
+        sumstats = sumstats.dropna(subset=[chrom,pos])
         after_number=len(sumstats)
         if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...")
     
@@ -209,7 +209,7 @@ def mqqplot(insumstats,
         is_na = sumstats["scaled_P"].isna()
         bad_p = sum(is_inf | is_na)
         if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
-            
+          
         sumstats = sumstats.loc[~(is_inf | is_na),:]
     
         
@@ -222,7 +222,9 @@ def mqqplot(insumstats,
     if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
     if cut:
         if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
-        maxticker=int(np.round(sumstats["scaled_P"].max()))
+
+        maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
+        
         sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
         maxy = (maxticker-cut)/cutfactor + cut
 
