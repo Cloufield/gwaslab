@@ -147,7 +147,8 @@ def mqqplot(insumstats,
     ## CHR & POS
     if "m" in mode: 
         # CHR X,Y,MT conversion ############################
-        sumstats[chrom] = sumstats[chrom].map(gl.get_chr_to_number(out_chr=True),na_action="ignore")
+        if sumstats[chrom].dtype =="string":
+            sumstats[chrom] = sumstats[chrom].map(gl.get_chr_to_number(out_chr=True),na_action="ignore")
         ## CHR
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
         ## POS
