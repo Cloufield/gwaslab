@@ -1,7 +1,6 @@
 import pandas as pd
 from os import path
-import gwaslab as gl
-
+from gwaslab.Log import Log
 #A unique identifier (e.g., the rs number)
 #Allele 1 (effect allele)
 #Allele 2 (non-effect allele)
@@ -9,7 +8,7 @@ import gwaslab as gl
 #A P-value
 #A signed summary statistic (beta, OR, log odds, Z-score, etc)
 
-def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True,log=gl.Log()):
+def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True,log=Log()):
     if verbose:log.write(" -Processing "+str(len(sumstats))+" raw variants...")
 
     if build=="19":

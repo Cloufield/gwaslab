@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import scipy.stats as ss
 from scipy import stats
-import gwaslab as gl
+from gwaslab.Log import Log
 
 def filldata( 
     sumstats,
@@ -11,7 +11,7 @@ def filldata(
     overwrite=False,
     verbose=True,
     only_sig=False,
-    log = gl.Log()
+    log = Log()
     ):
     
 

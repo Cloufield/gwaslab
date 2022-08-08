@@ -1,5 +1,4 @@
 import sys
-import gwaslab as gl
 import os, psutil
 import numpy as np
 import pandas as pd
@@ -7,7 +6,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as ss
 import seaborn as sns
 import matplotlib.patches as mpatches
-
+from gwaslab.getsig import getsig
 def test_q(df,beta1,se1,beta2,se2):
     w1="Weight_1"
     w2="Weight_2"
@@ -107,7 +106,7 @@ def compare_effect(path1,
     else:
         ######### 8,2 otherwise use the sutomatically detected lead SNPs
         if verbose: print(" -Extract lead variants from "+label[0]+"...")
-        sig_list_1 = gl.getsig(sumstats,"SNPID","CHR","POS","P", verbose=verbose,sig_level=sig_level)
+        sig_list_1 = getsig(sumstats,"SNPID","CHR","POS","P", verbose=verbose,sig_level=sig_level)
 
     ######### 9 extract snplist2
     if snplist is not None:
@@ -138,7 +137,7 @@ def compare_effect(path1,
     else: 
         if verbose: print(" -Extract lead snps from "+label[1]+"...")
         ######### 12.2 otherwise use the sutomatically detected lead SNPs
-        sig_list_2 = gl.getsig(sumstats,"SNPID","CHR","POS","P",
+        sig_list_2 = getsig(sumstats,"SNPID","CHR","POS","P",
                                  verbose=verbose,sig_level=sig_level)
     
     ######### 13 Merge two list using SNPID

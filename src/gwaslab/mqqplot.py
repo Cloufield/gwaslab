@@ -5,7 +5,10 @@ import seaborn as sns
 import numpy as np
 import scipy as sp
 import gwaslab as gl
-
+from gwaslab.Log import Log
+from gwaslab.getsig import getsig
+from gwaslab.CommonData import get_chr_to_number
+from gwaslab.CommonData import get_number_to_chr
 # 20220310 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -53,7 +56,7 @@ def mqqplot(insumstats,
           title_pad=1.08, 
           save=None,
           saveargs={"dpi":400,"facecolor":"white"},
-          log=gl.Log()
+          log=Log()
           ):
     
 # log.writeing meta info #######################################################################################
@@ -148,7 +151,7 @@ def mqqplot(insumstats,
     if "m" in mode: 
         # CHR X,Y,MT conversion ############################
         if sumstats[chrom].dtype =="string":
-            sumstats[chrom] = sumstats[chrom].map(gl.get_chr_to_number(),na_action="ignore")
+            sumstats[chrom] = sumstats[chrom].map(get_chr_to_number(),na_action="ignore")
         ## CHR
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
         ## POS
@@ -316,7 +319,7 @@ def mqqplot(insumstats,
         
         #plot.set_xlabel(chrom); 
         plot.set_xticks(chrom_df)
-        plot.set_xticklabels(chrom_df.index.map(gl.get_number_to_chr()),fontsize=fontsize,family="sans-serif",name="Arial")
+        plot.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif",name="Arial")
         plot.set_xlim([-0.01*sumstats["i"].max(),1.01*sumstats["i"].max()])
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
         if cut == 0: plot.set_ylim(skip,maxy*1.2)
@@ -336,7 +339,7 @@ def mqqplot(insumstats,
                 if to_annotate.empty is not True:
                     if verbose: log.write(" -Found "+str(len(to_annotate))+" specified variants to annotate...")
             else:
-                to_annotate=gl.getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
+                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
                                snpid,
                                chrom,
                                pos,
@@ -347,7 +350,7 @@ def mqqplot(insumstats,
                 if to_annotate.empty is not True:
                     if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         else:
-            to_annotate=gl.getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
+            to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
                                "i",
                                chrom,
                                pos,

@@ -1,11 +1,11 @@
 import sys
-import gwaslab as gl
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.patches as patches
 import matplotlib
+from gwaslab.Log import Log
 from statsmodels.stats.multitest import fdrcorrection
 #################################################################################################
 def convert_p_to_width(p,sig_level):
@@ -30,7 +30,7 @@ def plot_rg(ldscrg,
         rganno=False,
         correction="",
         cmap = matplotlib.cm.get_cmap('RdBu'),
-        log=gl.Log(),
+        log=Log(),
         verbose=True,
         sort_key=None,
         square=False,

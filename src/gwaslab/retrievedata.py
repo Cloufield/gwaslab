@@ -1,4 +1,3 @@
-import gwaslab as gl
 import pandas as pd
 import numpy as np
 from pysam import VariantFile
@@ -6,7 +5,12 @@ from Bio import SeqIO
 from itertools import repeat
 from multiprocessing import Pool
 from functools import partial
+from gwaslab.Log import Log
+from gwaslab.fixdata import fixchr
+from gwaslab.fixdata import fixpos
 from gwaslab.CommonData import get_number_to_chr
+from gwaslab.CommonData import get_chr_list
+from gwaslab.CommonData import get_chr_to_number
 from gwaslab.vchangestatus import vchange_status
 import re
 import os
@@ -24,7 +28,7 @@ import os
 def rsidtochrpos(sumstats,
          path="",
          rsid="rsID", chrom="CHR",pos="POS",ref_rsid="rsID",ref_chr="CHR",ref_pos="POS", build="19",
-              overwrite=False,remove=False,chunksize=5000000,verbose=True,log=gl.Log()):
+              overwrite=False,remove=False,chunksize=5000000,verbose=True,log=Log()):
     '''
     assign chr:pos based on rsID
     '''
@@ -58,8 +62,8 @@ def rsidtochrpos(sumstats,
     sumstats = sumstats.reset_index()
     sumstats = sumstats.rename(columns = {'index':rsid})
     if verbose:  log.write(" -Updating CHR and POS finished.Start to re-fixing CHR and POS... ")
-    sumstats = gl.fixchr(sumstats,verbose=verbose)
-    sumstats = gl.fixpos(sumstats,verbose=verbose)
+    sumstats = fixchr(sumstats,verbose=verbose)
+    sumstats = fixpos(sumstats,verbose=verbose)
     return sumstats
     #################################################################################################### 
 
@@ -79,7 +83,7 @@ def merge_chrpos(sumstats_part,path,build,status):
 
 
 def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None,build="19",status="STATUS",
-                         n_cores=4,block_size=20000000,verbose=True,log=gl.Log()):
+                         n_cores=4,block_size=20000000,verbose=True,log=Log()):
     if verbose:  log.write(" -Start to assign CHR and POS using rsIDs... ")
     if path is None:
         raise ValueError("Please provide path to hdf5 file.")
@@ -127,8 +131,8 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     sumstats = pd.concat([sumstats_rs,sumstats_nonrs],ignore_index=True)
     del sumstats_rs
     del sumstats_nonrs
-    sumstats = gl.fixchr(sumstats,verbose=False)
-    sumstats = gl.fixpos(sumstats,verbose=False)
+    sumstats = fixchr(sumstats,verbose=False)
+    sumstats = fixpos(sumstats,verbose=False)
     pool.close()
 
     pool.join()
@@ -190,7 +194,7 @@ def check_status(row,record):
             return status_pre+"8"+status_end
         
 
-def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",remove=False,verbose=True,log=gl.Log()):
+def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
     if verbose: log.write("Start to check if NEA is aligned with reference sequence...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
     if verbose:  log.write(" -Reference genome fasta file: "+ ref_path)  
@@ -200,8 +204,8 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     for i in range(1,25):
         record = next(records)
         if record is not None:
-            chromlist = gl.get_chr_list()
-            dic =  gl.get_number_to_chr()
+            chromlist = get_chr_list()
+            dic =  get_number_to_chr()
             record_chr = str(record.id).strip("chrCHR").upper()
             if record_chr in chromlist:
                 if verbose:  log.write(record_chr," ", end="",show_time=False)  
@@ -272,7 +276,7 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
 
 def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",
                           n_cores=1,chunksize=5000000,ref_snpid="SNPID",ref_rsid="rsID",
-                          overwrite="empty",verbose=True,log=gl.Log(),chr_dict=get_number_to_chr()):
+                          overwrite="empty",verbose=True,log=Log(),chr_dict=get_number_to_chr()):
     '''
     overwrite mode : 
     all ,    overwrite rsid for all availalbe rsid 
@@ -455,7 +459,7 @@ def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NE
 
 ##################################################################################################################################################
 
-def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,remove_snp="",mode="pi",n_cores=1,remove_indel="",chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),verbose=True,log=gl.Log()):
+def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,remove_snp="",mode="pi",n_cores=1,remove_indel="",chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),verbose=True,log=Log()):
     if verbose: log.write("Start to infer strand for palindromic SNPs...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
@@ -579,7 +583,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
 
 ################################################################################################################
-def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),verbose=True,log=gl.Log()):
+def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),verbose=True,log=Log()):
         
     if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   

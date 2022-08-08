@@ -1,7 +1,8 @@
 import pandas as pd
-import gwaslab as gl
+from gwaslab.Log import Log
+from gwaslab.CommonData import get_format_dict
 
-def toldsc(sumstats, path, verbose=True,log=gl.Log(),to_csvargs={}):
+def toldsc(sumstats, path, verbose=True,log=Log(),to_csvargs={}):
     '''
     Source: https://github.com/bulik/ldsc/wiki/Heritability-and-Genetic-Correlation
     
@@ -123,11 +124,11 @@ def tovcf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA"
     pass
     
 ###################################################################################################################################################
-def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=gl.Log(),to_csvargs={}):
+def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log(),to_csvargs={}):
     if fmt is not None:
         if verbose: log.write("Start outputting sumstats in "+fmt+" format...")
         if verbose: log.write(" -"+fmt+" format will be loaded...")
-        meta_data,rename_dictionary = gl.CommonData.get_format_dict(fmt,inverse=True)
+        meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
         if verbose:             
             log.write(" -"+fmt+" format meta info:")   
             for key,value in meta_data.items():

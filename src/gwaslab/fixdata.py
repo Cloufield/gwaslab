@@ -1,5 +1,5 @@
 import re
-import gwaslab as gl
+#import gwaslab as gl
 import pandas as pd
 import numpy as np
 from itertools import repeat
@@ -7,6 +7,10 @@ from multiprocessing import  Pool
 from liftover import get_lifter
 from functools import partial
 from gwaslab.vchangestatus import vchange_status
+from gwaslab.Log import Log
+from gwaslab.CommonData import get_chr_to_number
+from gwaslab.CommonData import get_number_to_chr
+from gwaslab.CommonData import get_chr_list
 
 #fixID
 #rsidtochrpos
@@ -28,7 +32,7 @@ from gwaslab.vchangestatus import vchange_status
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",
-       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,overwrite=False,verbose=True,log=gl.Log()):  
+       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,overwrite=False,verbose=True,log=Log()):  
     
     '''
     1. fx SNPid
@@ -261,7 +265,7 @@ def fixID(sumstats,
     
 ###############################################################################################################
 #20220514 
-def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove=False,keep_ascend=True,verbose=True,log=gl.Log()):
+def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove=False,keep_ascend=True,verbose=True,log=Log()):
     '''
     remove duplicate SNPs based on  1. SNPID, EA, and NEA
     remove duplicate SNPs based on  2. rsID for non-NA variants
@@ -304,7 +308,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
     if verbose:  log.write(" -Removed ",total_number -after_number," duplicates in total.")
     if keep_col is not None : 
         if verbose: log.write(" -Sort the coordinates...")
-        sumstats = gl.sortcoordinate(sumstats)
+        sumstats = sortcoordinate(sumstats)
     if remove is True:
         if verbose: log.write(" -Removing NAs...")
         pre_number =len(sumstats) 
@@ -315,7 +319,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
 
 ###############################################################################################################
 #20220514
-def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT",remove=False, verbose=True,log=gl.Log()):
+def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT",remove=False, verbose=True,log=Log()):
         if check_col(sumstats,chrom,status) is not True:
             if verbose: log.write(".fix_chr: Specified not detected..skipping...")
             return sumstats
@@ -359,7 +363,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
                 sumstats.loc[sex_chr,chrom] =sumstats.loc[sex_chr,chrom].map(convert_num_to_xymt)
                 if verbose: log.write(" -Standardizing sex chromosome notations:" ,str(x),str(y),str(mt)," to 23,24,25...") 
 
-            chrom_list = gl.get_chr_list() #bottom 
+            chrom_list = get_chr_list() #bottom 
             unrecognized_num = sum(~sumstats[chrom].isin(chrom_list))
         
             sumstats.loc[is_chr_fixed,status] = vchange_status(sumstats.loc[is_chr_fixed,status],4,"986","520")
@@ -393,7 +397,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
     
 ###############################################################################################################    
 #20220514
-def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=250000000, log=gl.Log()):
+def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=250000000, log=Log()):
         if check_col(sumstats,pos,status) is not True:
             if verbose: log.write(".fix_pos: Specified not detected..skipping...")
             return sumstats
@@ -432,7 +436,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
     
 ###############################################################################################################    
 #20220514
-def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=gl.Log()):
+def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
         # remove variants with alleles other than actgACTG
         if check_col(sumstats,ea,nea,status) is not True:
             if verbose: log.write("EA and NEA not detected..skipping...")
@@ -481,7 +485,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
 ###############################################################################################################   
 #20220721
 
-def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS",n_cores=1,verbose=True,log=gl.Log()):
+def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS",n_cores=1,verbose=True,log=Log()):
     if check_col(sumstats,pos,ea,nea,status) is not True:
         if verbose: log.write(".normalize(): specified columns not detected..skipping...")
         return sumstats
@@ -583,7 +587,7 @@ def normalizevariant(pos,a,b,status):
 
 ###############################################################################################################
 #20220426
-def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ","N","OR","OR_95L","OR_95U","STATUS"],verbose=True,log=gl.Log()):
+def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ","N","OR","OR_95L","OR_95U","STATUS"],verbose=True,log=Log()):
     '''
     Sanity check:
         N:      Int32    , N>0 , 
@@ -742,7 +746,7 @@ def flip_direction(string):
             flipped_string+=char
     return flipped_string
     
-def flipallelestats(sumstats,status="STATUS",verbose=True,log=gl.Log()):
+def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))
     
@@ -881,8 +885,8 @@ def liftover_variant(sumstats,
              to_build="38"):
     
     converter = get_lifter("hg"+from_build,"hg"+to_build)
-    dic= gl.get_number_to_chr(in_chr=False,xymt=["X","Y","M"])
-    dic2= gl.get_chr_to_number(out_chr=False)
+    dic= get_number_to_chr(in_chr=False,xymt=["X","Y","M"])
+    dic2= get_chr_to_number(out_chr=False)
     for i in sumstats[chrom].unique():
         chrom_to_convert = dic[i]
         variants_on_chrom_to_convert = sumstats[chrom]==i
@@ -895,7 +899,7 @@ def liftover_variant(sumstats,
     #sumstats.loc[:,status] = #lifted.apply(lambda x :str(x[2])).astype("string")  
     return sumstats
 
-def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True, verbose=True,log=gl.Log()):
+def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True, verbose=True,log=Log()):
     if check_col(sumstats,chrom,pos,status) is not True:
         if verbose: log.write(".liftover(): specified columns not detected..skipping...")
         return sumstats
@@ -930,15 +934,15 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         sumstats = sumstats.loc[~sumstats[pos].isna(),:]
     
     # after liftover check chr and pos
-    sumstats = gl.fixchr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=False)
-    sumstats = gl.fixpos(sumstats,pos=pos,remove=remove, verbose=False)
+    sumstats = fixchr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=False)
+    sumstats = fixpos(sumstats,pos=pos,remove=remove, verbose=False)
     
     if verbose: log.write(" -Liftover is performed successfully!")
     return sumstats
 
 ###############################################################################################################
 #20220426
-def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=gl.Log()):
+def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()):
     if check_col(sumstats,chrom,pos) is not True:
         if verbose: log.write(".liftover(): specified columns not detected..skipping...")
         return sumstats
@@ -958,7 +962,7 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
     #        chromosome_string_to_number[i]=i
     #        chromosome_number_to_string[i]=i
 
-    #good_chrpos = sumstats[chrom].isin(gl.get_chr_list())&sumstats[pos].notnull()
+    #good_chrpos = sumstats[chrom].isin(get_chr_list())&sumstats[pos].notnull()
     #sumstats_good = sumstats.loc[good_chrpos,:]
     #sumstats_bad = sumstats.loc[~good_chrpos,:]
     
@@ -986,7 +990,7 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
     return sumstats
 ###############################################################################################################
 #20220426
-def sortcolumn(sumstats,verbose=True,log=gl.Log()):
+def sortcolumn(sumstats,verbose=True,log=Log()):
     if verbose: log.write("Start to reorder the columns...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     order = [

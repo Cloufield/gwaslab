@@ -1,10 +1,48 @@
 import pandas as pd
 import numpy as np
-import gwaslab as gl
 import time
 from gwaslab.Sumstatssummary import summarize
 from gwaslab.Sumstatssummary import lookupstatus
+from gwaslab.preformat_input import preformat
+from gwaslab.Log import Log
+from gwaslab.fixdata import fixID
+from gwaslab.fixdata import removedup
+from gwaslab.fixdata import fixchr
+from gwaslab.fixdata import fixpos
+from gwaslab.fixdata import fixallele
+from gwaslab.fixdata import parallelnormalizeallele
+from gwaslab.fixdata import sanitycheckstats
+from gwaslab.fixdata import parallelizeliftovervariant
+from gwaslab.fixdata import flipallelestats
+from gwaslab.fixdata import sortcoordinate
+from gwaslab.fixdata import sortcolumn
+from gwaslab.retrievedata import parallelecheckaf
+from gwaslab.retrievedata import checkref
+from gwaslab.retrievedata import rsidtochrpos
+from gwaslab.retrievedata import parallelizeassignrsid
+from gwaslab.retrievedata import parallelinferstrand
+from gwaslab.retrievedata import parallelrsidtochrpos
+from gwaslab.filtervalue import filterout
+from gwaslab.filtervalue import filterin
+from gwaslab.filtervalue import filterregionin
+from gwaslab.filtervalue import filterregionout
 from gwaslab.filtervalue import inferbuild
+from gwaslab.mqqplot import mqqplot
+from gwaslab.calculate_gc import gc
+from gwaslab.getsig import getsig
+from gwaslab.fill import filldata
+from gwaslab.to_formats import tobed
+from gwaslab.to_formats import tofuma
+from gwaslab.to_formats import toldsc
+from gwaslab.to_formats import tossf
+from gwaslab.get_hapmap3 import gethapmap3
+from gwaslab.compare_effect import plotdaf
+from gwaslab.CommonData import get_chr_NC_dict
+from gwaslab.CommonData import get_chr_list
+from gwaslab.CommonData import get_number_to_chr
+from gwaslab.CommonData import get_chr_to_number
+from gwaslab.CommonData import get_high_ld
+from gwaslab.CommonData import get_format_dict
 
 #20220309
 class Sumstats():
@@ -41,10 +79,10 @@ class Sumstats():
         self.build = build
         self.meta = {"Genome build":build}
         self.data = pd.DataFrame()
-        self.log = gl.Log()
+        self.log = Log()
         
         #preformat the data
-        self.data  = gl.preformat(
+        self.data  = preformat(
           sumstats=sumstats,
           fmt=fmt,
           snpid=snpid,
@@ -135,15 +173,15 @@ class Sumstats():
                     normalizeallele_args={}):
         ###############################################
         # try to fix data without dropping any information
-        self.data = gl.fixID(self.data,**fixid_args)
+        self.data = fixID(self.data,**fixid_args)
         if remove is True:
-            self.data = gl.removedup(self.data,log=self.log,**removedup_args)
-        self.data = gl.fixchr(self.data,log=self.log,remove=remove,**fixchr_agrs)
-        self.data = gl.fixpos(self.data,log=self.log,remove=remove,**fixpos_args)
-        self.data = gl.fixallele(self.data,log=self.log,**fixallele_args)
-        self.data = gl.sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
+            self.data = removedup(self.data,log=self.log,**removedup_args)
+        self.data = fixchr(self.data,log=self.log,remove=remove,**fixchr_agrs)
+        self.data = fixpos(self.data,log=self.log,remove=remove,**fixpos_args)
+        self.data = fixallele(self.data,log=self.log,**fixallele_args)
+        self.data = sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
         if normalize is True:
-            self.data = gl.parallelnormalizeallele(self.data,n_cores=n_cores,log=self.log,**normalizeallele_args)
+            self.data = parallelnormalizeallele(self.data,n_cores=n_cores,log=self.log,**normalizeallele_args)
         ###############################################
         
     
@@ -182,19 +220,19 @@ class Sumstats():
         #    1.6 sorting genomic coordinates and column order 
         if basic_check is True:
             
-            self.data = gl.fixID(self.data,**fixid_args)
+            self.data = fixID(self.data,**fixid_args)
             
-            self.data = gl.fixchr(self.data,remove=remove,log=self.log,**fixchr_agrs)
+            self.data = fixchr(self.data,remove=remove,log=self.log,**fixchr_agrs)
             
-            self.data = gl.fixpos(self.data,remove=remove,log=self.log,**fixpos_args)
+            self.data = fixpos(self.data,remove=remove,log=self.log,**fixpos_args)
             
-            self.data = gl.fixallele(self.data,log=self.log,**fixallele_args)
+            self.data = fixallele(self.data,log=self.log,**fixallele_args)
             
-            self.data = gl.sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
+            self.data = sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
             
-            self.data = gl.parallelnormalizeallele(self.data,log=self.log,n_cores=n_cores,**normalizeallele_args)
+            self.data = parallelnormalizeallele(self.data,log=self.log,n_cores=n_cores,**normalizeallele_args)
             
-            self.data = gl.sortcolumn(self.data,log=self.log)
+            self.data = sortcolumn(self.data,log=self.log)
         
         
         #####################################################
@@ -212,118 +250,118 @@ class Sumstats():
         #####################################################
         if ref_seq is not None:
             
-            self.data = gl.checkref(self.data,ref_seq,log=self.log,**checkref_args)
+            self.data = checkref(self.data,ref_seq,log=self.log,**checkref_args)
             
-            self.data = gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
+            self.data = flipallelestats(self.data,log=self.log,**flipallelestats_args)
             
         if ref_infer is not None: 
             
-            self.data= gl.parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
+            self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
                                               n_cores=n_cores,log=self.log,**inferstrand_args)
             
-            self.data =gl.flipallelestats(self.data,log=self.log,**flipallelestats_args)
+            self.data =flipallelestats(self.data,log=self.log,**flipallelestats_args)
         
         #####################################################
         if ref_rsid_tsv is not None:
             
-            self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
+            self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
                                                  n_cores=n_cores,log=self.log,**assignrsid_args)
         if ref_rsid_vcf is not None:
             
-            self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
+            self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
                                                  n_cores=n_cores,log=self.log,**assignrsid_args)     
         ######################################################    
         if remove is True:
             
-            self.data = gl.removedup(self.data,log=self.log,**removedup_args)
+            self.data = removedup(self.data,log=self.log,**removedup_args)
         ################################################ 
         
-        self.data = gl.sortcoordinate(self.data,log=self.log)
+        self.data = sortcoordinate(self.data,log=self.log)
         
-        self.data = gl.sortcolumn(self.data,log=self.log)
+        self.data = sortcolumn(self.data,log=self.log)
         
         return self
     ############################################################################################################
     #customizable API to build your own QC pipeline
     def fix_id(self,**args):
-        self.data = gl.fixID(self.data,log=self.log,**args)
+        self.data = fixID(self.data,log=self.log,**args)
     def fix_chr(self,**args):
-        self.data = gl.fixchr(self.data,log=self.log,**args)
+        self.data = fixchr(self.data,log=self.log,**args)
     def fix_pos(self,**args):
-        self.data = gl.fixpos(self.data,log=self.log,**args)
+        self.data = fixpos(self.data,log=self.log,**args)
     def fix_allele(self,**args):
-        self.data = gl.fixallele(self.data,log=self.log,**args)
+        self.data = fixallele(self.data,log=self.log,**args)
     def remove_dup(self,**args):
-        self.data = gl.removedup(self.data,log=self.log,**args)
+        self.data = removedup(self.data,log=self.log,**args)
     def check_sanity(self,**args):
-        self.data = gl.sanitycheckstats(self.data,log=self.log,**args)
+        self.data = sanitycheckstats(self.data,log=self.log,**args)
     def check_id(self,**args):
         pass
     def check_ref(self,**args):
-        self.data = gl.checkref(self.data,log=self.log,**args)
+        self.data = checkref(self.data,log=self.log,**args)
     def infer_strand(self,**args):
-        self.data =gl.inferstrand(self.data,maf_threshold=0.43,log=self.log,**args)
+        self.data =inferstrand(self.data,maf_threshold=0.43,log=self.log,**args)
     def flip_allele_stats(self,**args):
-        self.data = gl.flipallelestats(self.data,log=self.log,**args)
+        self.data = flipallelestats(self.data,log=self.log,**args)
     def normalize_allele(self,**args):
-        self.data = gl.parallelnormalizeallele(self.data,log=self.log,**args)
+        self.data = parallelnormalizeallele(self.data,log=self.log,**args)
     def assign_rsid(self,
                     ref_rsid_tsv=None,
                     ref_rsid_vcf=None,
                     **args):
         if ref_rsid_tsv is not None:
-            self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**args)
+            self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**args)
         if ref_rsid_vcf is not None:
-            self.data = gl.parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**args)   
+            self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**args)   
         
     def rsid_to_chrpos(self,**args):
-        self.data = gl.rsidtochrpos(self.data,log=self.log,**args)
+        self.data = rsidtochrpos(self.data,log=self.log,**args)
     def rsid_to_chrpos2(self,**args):
-        self.data = gl.parallelrsidtochrpos(self.data,log=self.log,**args)
+        self.data = parallelrsidtochrpos(self.data,log=self.log,**args)
     def liftover(self,**args):
-        self.data = gl.parallelizeliftovervariant(self.data,log=self.log,**args)
+        self.data = parallelizeliftovervariant(self.data,log=self.log,**args)
     def sort_coordinate(self,**sort_args):
-        self.data = gl.sortcoordinate(self.data,log=self.log,**sort_args)
+        self.data = sortcoordinate(self.data,log=self.log,**sort_args)
     def sort_column(self,**args):
-        self.data = gl.sortcolumn(self.data,log=self.log,**args)
+        self.data = sortcolumn(self.data,log=self.log,**args)
     ############################################################################################################
     def fill_data(self, **args):
-        self.data = gl.filldata(self.data,**args)
+        self.data = filldata(self.data,**args)
     def infer_build(self,**args):
         self.data = inferbuild(self.data,**args)
 
 # utilities ############################################################################################################
     def filter_out(self, inplace=True, **args):
         if inplace is False:
-            return gl.filterout(self.data,**args)
+            return filterout(self.data,**args)
         else:
-            self.data = gl.filterout(self.data,log=self.log,**args)
+            self.data = filterout(self.data,log=self.log,**args)
             
     def filter_in(self, inplace=True, **args):
         if inplace is False:
-            return gl.filterin(self.data,**args)
+            return filterin(self.data,**args)
         else:
-            self.data = gl.filterin(self.data,log=self.log,**args)
+            self.data = filterin(self.data,log=self.log,**args)
     def filter_region_in(self, inplace=True, **args):
         if inplace is False:
-            return gl.filterregionin(self.data,**args)
+            return filterregionin(self.data,**args)
         else:
-            self.data = gl.filterregionin(self.data,log=self.log,**args)
+            self.data = filterregionin(self.data,log=self.log,**args)
     def filter_region_out(self, inplace=True, **args):
         if inplace is False:
-            return gl.filterregionout(self.data,**args)
+            return filterregionout(self.data,**args)
         else:
-            self.data = gl.filterregionout(self.data,log=self.log,**args)        
+            self.data = filterregionout(self.data,log=self.log,**args)        
     
 ###########################################################################################################################            
     def check_af(self,**args):
-        self.data = gl.parallelecheckaf(self.data,log=self.log,**args)
+        self.data = parallelecheckaf(self.data,log=self.log,**args)
       
     def plot_daf(self, **args):
-        plot = gl.plotdaf(self.data, **args)
+        plot = plotdaf(self.data, **args)
         
     def plot_mqq(self, **args):
-        plot = gl.mqqplot(self.data, chrom="CHR", pos="POS", p="P", **args)
+        plot = mqqplot(self.data, chrom="CHR", pos="POS", p="P", **args)
         return plot
 
     def get_lead(self, **args):
@@ -331,7 +369,7 @@ class Sumstats():
             id_to_use = "SNPID"
         else:
             id_to_use = "rsID"
-        output = gl.getsig(self.data,
+        output = getsig(self.data,
                            id=id_to_use,
                            chrom="CHR",
                            pos="POS",
@@ -343,17 +381,17 @@ class Sumstats():
 
     
     def get_per_snp_h2(self,**args):
-        self.data = gl.getpersnph2(self.data,beta="BETA",af="EAF",**args)
+        self.data = getpersnph2(self.data,beta="BETA",af="EAF",**args)
         #add data inplace
 
     
     def get_gc(self, **args):
         if "P" in self.data.columns:
-            output = gl.gc(self.data["P"],mode="p",**args)
+            output = gc(self.data["P"],mode="p",**args)
         elif "Z" in self.data.columns:
-            output = gl.gc(self.data["Z"],mode="z",**args)
+            output = gc(self.data["Z"],mode="z",**args)
         elif "CHISQ" in self.data.columns:
-            output = gl.gc(self.data["CHISQ"],mode="chi2",**args)
+            output = gc(self.data["CHISQ"],mode="chi2",**args)
         #return scalar
         self.meta["Genomic inflation factor"] = output
         return output    
@@ -421,7 +459,7 @@ class Sumstats():
             suffix = "noMHC."+suffix
         
         if hapmap3 is True:
-            output = gl.gethapmap3(output,build=build,verbose=True)
+            output = gethapmap3(output,build=build,verbose=True)
             after = len(output)
             if verbose: self.log.write(" -Extract "+ str(after) + " variants in Hapmap3 datasets for build "+build+".")
             suffix = "hapmap3."+suffix
@@ -462,15 +500,15 @@ class Sumstats():
         ##########################################################################################################          
         # output, mapping column names
         if fmt=="ldsc":
-            gl.toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         #if fmt=="fuma":
-            #gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            #toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
         #if fmt=="bed":
-            #gl.toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            #toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if fmt=="vcf":
-            gl.toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:
-            gl.to_formats.tofmt(output, path=path,fmt=fmt,suffix=suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            to_formats.tofmt(output, path=path,fmt=fmt,suffix=suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if output_log is True:
             if verbose: self.log.write("Saving log file...")
             self.log.save(path + "."+ suffix +".log")
