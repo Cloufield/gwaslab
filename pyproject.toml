@@ -7,6 +7,7 @@ requires = [
     "matplotlib>=3.5",
     "seaborn>=0.11.1",
     "scipy>=1.6.2",
+    "pySAM",
     "Biopython",
     "adjustText",
     "liftover",

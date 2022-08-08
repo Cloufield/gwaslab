@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="gwaslab",
-    version="3.0.2",
+    version="3.1.2",
     author="Yunye",
     author_email="610935659@qq.com",
     description="A collection of handy tools for GWAS",
@@ -21,7 +21,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "src"},
-    package_data={"gwaslab":["data/hapmap3_rs_chr_pos_a1_a2/*"]},
+    package_data={'gwaslab':['data/formatbook.json','data/high_ld/high_ld_hla_hg*.bed.gz','data/hapmap3_rs_chr_pos_a1_a2/*']},
     packages=setuptools.find_packages(where="src"),
     python_requires=">=3.6",
 )
