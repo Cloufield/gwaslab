@@ -4,6 +4,7 @@ import gwaslab as gl
 import time
 from gwaslab.Sumstatssummary import summarize
 from gwaslab.Sumstatssummary import lookupstatus
+from gwaslab.filtervalue import inferbuild
 
 #20220309
 class Sumstats():
@@ -288,6 +289,8 @@ class Sumstats():
     ############################################################################################################
     def fill_data(self, **args):
         self.data = gl.filldata(self.data,**args)
+    def infer_build(self,**args):
+        self.data = inferbuild(self.data,**args)
 
 # utilities ############################################################################################################
     def filter_out(self, inplace=True, **args):

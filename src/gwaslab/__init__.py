@@ -33,7 +33,6 @@ from gwaslab.filtervalue import filterregionout
 from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import gc
 from gwaslab.getsig import getsig
-from gwaslab.liftover_snv import liftover_variant
 from gwaslab.fill import filldata
 from gwaslab.plotrg import plot_rg
 # to format

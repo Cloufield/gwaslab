@@ -1,7 +1,7 @@
 import pandas as pd
 import time
 import numpy as np
-def summarize(sumstats,
+def summarize(insumstats,
               snpid="SNPID",
               rsid="rsID",
               eaf="EAF",
@@ -10,6 +10,12 @@ def summarize(sumstats,
               status="STATUS",
              ):
     #print("Start summarizing the current sumstats...")
+    ###############################################################################
+    cols=[]
+    for i in [snpid,rsid,eaf,p,n,status]:
+        if i in insumstats.columns:
+            cols.append(i)
+    sumstats= insumstats.loc[:,cols].copy()
     ###############################################################################
     numeric_cols=[]
     output = {}

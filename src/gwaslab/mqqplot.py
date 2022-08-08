@@ -148,7 +148,7 @@ def mqqplot(insumstats,
     if "m" in mode: 
         # CHR X,Y,MT conversion ############################
         if sumstats[chrom].dtype =="string":
-            sumstats[chrom] = sumstats[chrom].map(gl.get_chr_to_number(out_chr=True),na_action="ignore")
+            sumstats[chrom] = sumstats[chrom].map(gl.get_chr_to_number(),na_action="ignore")
         ## CHR
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
         ## POS
@@ -157,7 +157,7 @@ def mqqplot(insumstats,
       
     ## EAF
     if stratified is True: 
-        sumstats["MAF"] = pd.to_numeric(insumstats[eaf], errors='coerce')
+        sumstats["MAF"] = pd.to_numeric(sumstats[eaf], errors='coerce')
         sumstats.loc[sumstats["MAF"]>0.5,"MAF"] = 1 - sumstats.loc[sumstats["MAF"]>0.5,"MAF"]
         eaf_raw = sumstats["MAF"].copy()
     if len(highlight)>0 and ("m" in mode):
@@ -251,7 +251,7 @@ def mqqplot(insumstats,
             else: posdiccul[i]=0
 
         for i in range(2,sumstats[chrom].max()+1):
-            posdiccul[i]=posdiccul[i-1]+posdiccul[i]
+            posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*0.05
 
         #convert base pair postion to x axis position
         sumstats["add"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
@@ -261,10 +261,11 @@ def mqqplot(insumstats,
             sumstats["i"]=sumstats[pos]+sumstats["add"]
         
 
-        #for plot
-        chrom_df=sumstats.groupby(chrom)['i'].median()
-        sumstats["i"]=sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
+        #for plot      
+        chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
+        #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
         sumstats["i"] = sumstats["i"].astype("Int64")
+        
 ## Assign marker size ##############################################
         
         sumstats["s"]=1
@@ -312,23 +313,21 @@ def mqqplot(insumstats,
             else:
                 if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
  
-                
-        chrom_df=sumstats.groupby(chrom)['i'].median()  
-        plot.set_xlabel(chrom); 
-        plot.set_xticks(chrom_df);
-
-        plot.set_xticklabels(chrom_df.index.map(gl.get_number_to_chr()))
-
+        
+        #plot.set_xlabel(chrom); 
+        plot.set_xticks(chrom_df)
+        plot.set_xticklabels(chrom_df.index.map(gl.get_number_to_chr()),fontsize=fontsize,family="sans-serif",name="Arial")
+        plot.set_xlim([-0.01*sumstats["i"].max(),1.01*sumstats["i"].max()])
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
         if cut == 0: plot.set_ylim(skip,maxy*1.2)
         if cut:
             cutline=plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
                 plot.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                plot.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker])
+                plot.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif",name="Arial")
             else:
                 plot.set_yticks([x for x in range(skip,cut+1,2)])
-                plot.set_yticklabels([x for x in range(skip,cut+1,2)])
+                plot.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif",name="Arial")
 
 # Get top variants for annotation #######################################################
         if (anno and anno!=True) or (len(anno_set)>0):
@@ -428,8 +427,8 @@ def mqqplot(insumstats,
         else:
             if verbose: log.write(" -Skip annotating")
 
-        plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize)
-        plot.set_xlabel("Chromosomes",fontsize=fontsize)
+        plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif",name="Arial")
+        plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif",name="Arial")
         plot.spines["top"].set_visible(False)
         plot.spines["right"].set_visible(False)
         plot.spines["left"].set_visible(True)
@@ -437,9 +436,9 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Created Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
-            plot.set_title(mtitle,pad=pad)
+            plot.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif",name="Arial")
         elif mtitle:
-            plot.set_title(mtitle,fontsize=fontsize)
+            plot.set_title(mtitle,fontsize=fontsize,family="sans-serif",name="Arial")
 # Creating Manhatann plot Finished #####################################################################
 
 # QQ plot #########################################################################################################
@@ -464,12 +463,13 @@ def mqqplot(insumstats,
                 expected = -np.log10(np.linspace(minit,1,max(len(databin_raw),len(databin))))[:len(observed)]
                 label ="("+str(lower)+","+str(upper) +"]"
                 ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
-                ax2.legend(loc="best",fontsize=10,markerscale=3,frameon=False)
+                ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=3,frameon=False)
+                plt.setp(ax2_legend.texts, family="sans-serif",name="Arial")
         
         ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=sig_line_color)
 
-        ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize)
-        ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize)
+        ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family="sans-serif",name="Arial")
+        ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family="sans-serif",name="Arial")
         ax2.spines["top"].set_visible(False)
         ax2.spines["right"].set_visible(False)
         ax2.spines["left"].set_visible(True)
@@ -485,7 +485,7 @@ def mqqplot(insumstats,
                      horizontalalignment='left',
                      verticalalignment='top',
                      transform=ax2.transAxes,
-                     fontsize=fontsize)
+                     fontsize=fontsize,family="sans-serif",name="Arial")
         
         #
         if cut == 0: ax2.set_ylim(skip,maxy*1.2)
@@ -493,14 +493,14 @@ def mqqplot(insumstats,
             qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
                 ax2.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                ax2.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker])
+                ax2.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif",name="Arial")
             else:
                 ax2.set_yticks([x for x in range(skip,cut+1,2)])
-                ax2.set_yticklabels([x for x in range(skip,cut+1,2)])
+                ax2.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif",name="Arial")
         
         #
         if qtitle:
-            ax2.set_title(qtitle,fontsize=fontsize,pad=10)
+            ax2.set_title(qtitle,fontsize=fontsize,pad=10,family="sans-serif",name="Arial")
 
         if verbose: log.write(" -Created QQ plot successfully!")
 # Creating QQ plot Finished #############################################################################################

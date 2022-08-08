@@ -70,13 +70,13 @@ def get_chr_list():
 
 def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"]):
     if out_chr is True:
-        dic= {str(i):str(i) for i in range(1,23)}
+        dic= {str(i):str(i) for i in range(1,26)}
         dic[xymt[0]]="23"
         dic[xymt[1]]="24"
         dic[xymt[2]]="25"
     
     else:
-        dic= {str(i):i for i in range(1,23)}
+        dic= {str(i):i for i in range(1,26)}
         dic[xymt[0]]=23
         dic[xymt[1]]=24
         dic[xymt[2]]=25
@@ -100,9 +100,9 @@ def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"]):
 ###################################################################################################################    
 def get_high_ld(build="19"):
     if build=="19":
-        data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg19.bed'
+        data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg19.bed.gz'
     elif build=="38":
-        data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg38.bed'
+        data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg38.bed.gz'
     return data_path
 
 def get_format_dict(fmt,inverse=False):

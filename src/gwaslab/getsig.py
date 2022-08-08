@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
 import scipy as sp
-import gwaslab as gl
+from gwaslab.Log import Log
+from gwaslab.CommonData import get_chr_to_number
+from gwaslab.CommonData import get_number_to_chr
 
 def getsig(insumstats,
            id,
@@ -10,7 +12,8 @@ def getsig(insumstats,
            p,
            windowsizekb=500,
            sig_level=5e-8,
-           log=gl.Log(),
+           log=Log(),
+           xymt=["X","Y","MT"],
            verbose=True):
     
     if verbose: log.write("Start extracting lead variants...")
@@ -22,11 +25,9 @@ def getsig(insumstats,
     sumstats=insumstats.loc[~insumstats[id].isna(),:].copy()
     
     #convert chrom to int
-    
-    sumstats[chrom]=sumstats[chrom].astype("string")
-    sumstats.loc[sumstats[chrom]=="X",chrom] = "23"
-    sumstats.loc[sumstats[chrom]=="Y",chrom] = "24"
-    sumstats.loc[sumstats[chrom]=="MT",chrom] = "25"
+    if sumstats[chrom].dtype=="string" or sumstats[chrom].dtype=="object":
+        chr_to_num = get_chr_to_number(out_chr=True,xymt=["X","Y","MT"])
+        sumstats[chrom]=sumstats[chrom].map(chr_to_num)
     
     sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
     sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
@@ -90,11 +91,8 @@ def getsig(insumstats,
     
     if verbose:log.write(" -Identified "+str(len(sig_index_list))+" lead variants!")
     
-    chromosome_conversion_dict = {str(i):str(i) for i in range(1,23)}
-    chromosome_conversion_dict["23"] = "X"
-    chromosome_conversion_dict["24"] = "Y"
-    chromosome_conversion_dict["25"] = "MT"
-    sumstats_sig.loc[:,chrom] = sumstats_sig[chrom].astype("string")
-    sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].apply(lambda x:chromosome_conversion_dict[x])
+    #num_to_chr = get_number_to_chr(in_chr=True,xymt=xymt)
+    #sumstats_sig.loc[:,chrom] = sumstats_sig[chrom].astype("string")
+    #sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].map(num_to_chr)
     output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
     return output

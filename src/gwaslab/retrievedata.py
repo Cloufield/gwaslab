@@ -7,13 +7,17 @@ from itertools import repeat
 from multiprocessing import Pool
 from functools import partial
 from gwaslab.CommonData import get_number_to_chr
+from gwaslab.vchangestatus import vchange_status
 import re
 import os
+
 #rsidtochrpos
 #checkref
 #parallelizeassignrsid
 #inferstrand
-#20220428 
+#parallelecheckaf
+
+#20220808
 #################################################################################################################
 
 ###~!!!!
@@ -474,7 +478,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             if verbose: log.write(" -Identified ", sum(palindromic)," palindromic SNPs...")
 
             #palindromic but can not infer
-            maf_can_infer   = (sumstats.loc[:,"EAF"] < maf_threshold) | (sumstats.loc[:,"EAF"] > 1 - maf_threshold) 
+            maf_can_infer   = (sumstats.loc[:,eaf] < maf_threshold) | (sumstats.loc[:,eaf] > 1 - maf_threshold) 
             sumstats.loc[palindromic&(~maf_can_infer),status] = vchange_status(sumstats.loc[palindromic&(~maf_can_infer),status],7,"9","7")
 
 
@@ -638,31 +642,4 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
                 return eaf - record.info[alt_freq][0]
     return np.nan
 ################################################################################################################
-def change_status(status_value,digit,to):
-    if digit>1:
-        status_pre=status_value[:digit-1]
-    else:
-        status_pre=""
-        
-    status_end=status_value[digit:]
-    return status_pre+str(to)+status_end
-
 ################################################################################################################
-def vchange_status(status,digit,before,after):
-    for i in range(len(before)):
-        if digit>1:
-            pattern= (digit-1) * r'\w' + before[i] + (7 - digit)* r'\w'
-        else:
-            pattern=before[i]+r'\w\w\w\w\w\w'        
-        
-        to_change = status.str.match(pattern, case=False, flags=0, na=False)  
-        if sum(to_change)>0:
-            if digit>1:
-                status_pre = status[to_change].str[:digit-1]
-            else:
-                status_pre = ""
-
-            status_end=status[to_change].str[digit:]
-
-            status[to_change] = status_pre+after[i]+status_end
-    return status

@@ -220,7 +220,7 @@ def preformat(sumstats,
         if verbose: log.write(" -Checking if 0<= NEAF <=1 ...") 
         sumstats.loc[:,"EAF"] = pd.to_numeric(sumstats.loc[:,"EAF"], errors='coerce')
         sumstats = sumstats.loc[(sumstats["EAF"]>=0) & (sumstats["EAF"]<=1),:]
-        sumstats.loc[:,"EAF"] = 1- sumstats.loc[:,"EAF"].round(4)
+        sumstats.loc[:,"EAF"] = 1- sumstats.loc[:,"EAF"]
         if verbose: log.write(" -Converted NEAF to EAF.") 
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.")    
