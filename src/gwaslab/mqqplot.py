@@ -9,6 +9,7 @@ from gwaslab.Log import Log
 from gwaslab.getsig import getsig
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
+from pyensembl import EnsemblRelease
 # 20220310 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -53,6 +54,7 @@ def mqqplot(insumstats,
           use_rank=False,
           verbose=True,
           repel_force=0.03,
+          build="19",
           title_pad=1.08, 
           save=None,
           saveargs={"dpi":400,"facecolor":"white"},
@@ -125,7 +127,9 @@ def mqqplot(insumstats,
             raise ValueError("Please make sure "+eaf+" column is in input sumstats.")
          
     if (anno is not None) and (anno != True):
-        if (anno in insumstats.columns):
+        if anno=="GENENAME":
+            pass
+        elif (anno in insumstats.columns):
             if (anno not in usecols):
                 usecols.append(anno)
         else:
@@ -138,8 +142,11 @@ def mqqplot(insumstats,
     ## Annotation
     if len(anno_set)>0 and (anno is False):
         anno=True
-    if (anno is not None) and (anno != True):
+    if (anno == "GENENAME"):
+        anno_sig=True
+    elif (anno is not None) and (anno != True):
         sumstats["Annotation"]=sumstats.loc[:,anno].astype("string")   
+    
     
     ## P value
     if scaled is True:
@@ -360,7 +367,15 @@ def mqqplot(insumstats,
                                sig_level=sig_level)
             if to_annotate.empty is not True:
                 if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
-        
+        if (to_annotate.empty is not True) and anno=="GENENAME":
+            if build=="19":
+                data = EnsemblRelease(75)
+                if verbose:log.write(" -Assigning Gene name using Ensembl Release",75)
+            elif build=="38":
+                data = EnsemblRelease(77)
+                if verbose:log.write(" -Assigning Gene name using Ensembl Release",77)
+            to_annotate = to_annotate.copy()
+            to_annotate.loc[:,["LOCATION","Annotation"]] = pd.DataFrame(to_annotate.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=to_annotate.index).values
         
 # Add Annotation to manhattan plot #######################################################
         if anno and (to_annotate.empty is not True):
@@ -528,3 +543,31 @@ def mqqplot(insumstats,
 
 # Return matplotlib figure object #######################################################################################
     return fig, log
+
+
+def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
+        gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
+        if len(gene)==0:
+            i=0
+            while i<maxiter:
+                distance = i*step
+                gene_u = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance)
+                gene_d = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance)
+                if len(gene_u)>0 and len(gene_d)>0:
+                    for j in range(0,step,1):
+                        distance = (i-1)*step
+                        gene_u = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance-j)
+                        gene_d = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance+j)
+                        if len(gene_u)>0:
+                            return -distance,",".join(gene_u)
+                        else:
+                            return distance,",".join(gene_d)
+                elif len(gene_u)>0:
+                    return -distance,",".join(gene_u)
+                elif len(gene_d)>0:
+                    return +distance,",".join(gene_d)
+                else:
+                    i+=1
+            return distance,"intergenic"
+        else:
+            return 0,",".join(gene)

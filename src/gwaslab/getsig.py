@@ -4,6 +4,7 @@ import scipy as sp
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
+from pyensembl import EnsemblRelease
 
 def getsig(insumstats,
            id,
@@ -14,6 +15,8 @@ def getsig(insumstats,
            sig_level=5e-8,
            log=Log(),
            xymt=["X","Y","MT"],
+           anno=False,
+           build="19",
            verbose=True):
     
     if verbose: log.write("Start extracting lead variants...")
@@ -95,4 +98,42 @@ def getsig(insumstats,
     #sumstats_sig.loc[:,chrom] = sumstats_sig[chrom].astype("string")
     #sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].map(num_to_chr)
     output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
-    return output
+    if anno is True:
+        if build=="19":
+            data = EnsemblRelease(75)
+            if verbose:log.write(" -Assigning Gene name using Ensembl Release",75)
+        elif build=="38":
+            data = EnsemblRelease(77)
+            if verbose:log.write(" -Assigning Gene name using Ensembl Release",77)
+        output.loc[:,["Location","Gene"]] = pd.DataFrame(output.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=output.index).values
+    return output.copy()
+
+
+def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
+        gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
+        if len(gene)==0:
+            i=0
+            while i<maxiter:
+                distance = i*step
+                gene_u = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance)
+                gene_d = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance)
+                if len(gene_u)>0 and len(gene_d)>0:
+                    for j in range(0,step,1):
+                        distance = (i-1)*step
+                        gene_u = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance-j)
+                        gene_d = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance+j)
+                        if len(gene_u)>0:
+                            distance+=j
+                            return -distance,",".join(gene_u)
+                        else:
+                            distance+=j
+                            return distance,",".join(gene_d)
+                elif len(gene_u)>0:
+                    return -distance,",".join(gene_u)
+                elif len(gene_d)>0:
+                    return +distance,",".join(gene_d)
+                else:
+                    i+=1
+            return distance,"intergenic"
+        else:
+            return 0,",".join(gene)
