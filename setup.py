@@ -7,7 +7,7 @@ setuptools.setup(
     name="gwaslab",
     version="3.1.2",
     author="Yunye",
-    author_email="610935659@qq.com",
+    author_email="yunye@gwaslab.com",
     description="A collection of handy tools for GWAS",
     long_description=long_description,
     long_description_content_type="text/markdown",
