@@ -28,7 +28,7 @@ def getsig(insumstats,
     sumstats=insumstats.loc[~insumstats[id].isna(),:].copy()
     
     #convert chrom to int
-    if sumstats[chrom].dtype=="string" or sumstats[chrom].dtype=="object":
+    if sumstats[chrom].dtype in ["object",str,pd.StringDtype]:
         chr_to_num = get_chr_to_number(out_chr=True,xymt=["X","Y","MT"])
         sumstats[chrom]=sumstats[chrom].map(chr_to_num)
     

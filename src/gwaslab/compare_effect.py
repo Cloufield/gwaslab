@@ -417,7 +417,8 @@ def compare_effect(path1,
     
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
-        
+    
+    if len(sig_list_merged)<3: is_reg=False
     if is_reg is True:
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             reg = ss.linregress(sig_list_merged["EFFECT_1"],sig_list_merged["EFFECT_2_aligned"])
