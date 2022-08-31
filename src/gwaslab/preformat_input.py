@@ -157,14 +157,14 @@ def preformat(sumstats,
         if type(sumstats) is str:
             ## loading data from path
             inpath = sumstats
-            if verbose: log.write("Initiating from file :" + inpath)
+            if verbose: log.write("Start to initiate from file :" + inpath)
             sumstats = pd.read_table(inpath,
                              usecols=set(usecols),
                              dtype=dtype_dictionary,
                              **readargs)
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
-            if verbose: log.write("Initiating from pandas DataFrame ...")
+            if verbose: log.write("Start to initiate from pandas DataFrame ...")
             sumstats = sumstats.loc[:, usecols]
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
@@ -201,7 +201,7 @@ def preformat(sumstats,
     ##reodering 
     order = [
         "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
-        "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
+        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
            ] + other   
     output_columns = []
     for i in order:
@@ -221,7 +221,7 @@ def preformat(sumstats,
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.")    
     
-    if verbose: log.write("Loading data finished successfully!")
+    if verbose: log.write("Finished loading data successfully!")
     
 
     return sumstats

@@ -88,7 +88,7 @@ def tossf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA"
     OR_95U:"ci_upper",
     status:"hm_code"
     }
-    if verbose: print("Start fornmatting to GWAS-SSF format...")
+    if verbose: print(" - Start fornmatting to GWAS-SSF format...")
     #check mandatory columns
     if beta in sumstats.columns: 
         mandatory=["chromosome","bas_pair_location","effect_allele","other_allele","beta","standard_error","effect_allele_frequency","p_value"]
@@ -126,7 +126,7 @@ def tovcf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA"
 ###################################################################################################################################################
 def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log(),to_csvargs={}):
     if fmt is not None:
-        if verbose: log.write("Start outputting sumstats in "+fmt+" format...")
+        if verbose: log.write(" - Start outputting sumstats in "+fmt+" format...")
         if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
         if verbose:             

@@ -433,7 +433,7 @@ class Sumstats():
               float_formats={}):
         
         if fmt in ["ldsc","fuma","metal","bed","vcf","fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:
-            if verbose: self.log.write("Output sumstats to format:",fmt)
+            if verbose: self.log.write("Start to format the output sumstats in: ",fmt, " format")
         else:
             raise ValueError("Please select a format to output")
         
@@ -486,7 +486,7 @@ class Sumstats():
                 if output[col].dtype in ["float64","float32","float16","float"]:
                     output[col] = output[col].map(f.format)
         if verbose: 
-            self.log.write(" -Float statistics formats:")  
+            self.log.write(" - Float statistics formats:")  
             keys=[]
             values=[]
             for key,value in formats.items():
@@ -508,5 +508,6 @@ class Sumstats():
         if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:
             tofmt(output, path=path,fmt=fmt,suffix=suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if output_log is True:
-            if verbose: self.log.write("Saving log file...")
+            if verbose: self.log.write(" - Saving log file...")
             self.log.save(path + "."+ suffix +".log")
+        if verbose: self.log.write("Finished outputting successfully!")

@@ -19,7 +19,7 @@ def getsig(insumstats,
            build="19",
            verbose=True):
     
-    if verbose: log.write("Start extracting lead variants...")
+    if verbose: log.write("Start to extract lead variants...")
     if verbose: log.write(" -Processing "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Significance threshold :", sig_level)
     if verbose: log.write(" -Sliding window size:", str(windowsizekb) ," kb")
@@ -106,6 +106,7 @@ def getsig(insumstats,
             data = EnsemblRelease(77)
             if verbose:log.write(" -Assigning Gene name using Ensembl Release",77)
         output.loc[:,["Location","Gene"]] = pd.DataFrame(output.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=output.index).values
+    if verbose: log.write("Finished extracting lead variants successfully!")
     return output.copy()
 
 

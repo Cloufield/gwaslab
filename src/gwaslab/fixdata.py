@@ -258,6 +258,7 @@ def fixID(sumstats,
             after_number=sum(sumstats[snpid].isna())
             if verbose: log.write(" -Fixed "+ str(pre_number - after_number) +" variants ID...")
         elif verbose: log.write(" -ID unfixable: no CHR and POS columns or no SNPID. ")
+    if verbose: log.write("Finished checking IDs successfully!")
     return sumstats
 
 ###############################################################################################################
@@ -315,6 +316,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         sumstats = sumstats.loc[~sumstats.isna().any(axis=1),:]
         after_number=len(sumstats) 
         if verbose:  log.write(" -Removed ",pre_number -after_number," variants with NA values.")  
+    if verbose: log.write("Finished removing successfully!")
     return sumstats
 
 ###############################################################################################################
@@ -392,6 +394,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
         sumstats.loc[:,chrom] = np.floor(pd.to_numeric(sumstats.loc[:,chrom], errors='coerce')).astype('Int64')
         #categories = [str(i) for i in range(26)]+[pd.NA]
         #sumstats.loc[:,chrom]= pd.Categorical(sumstats.loc[:,chrom],categories=categories,ordered=True)
+        if verbose: log.write("Finished fixing chromosome notation successfully!")
         return sumstats
     
     
@@ -431,7 +434,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
             if verbose: log.write(" -Removed "+str(all_var_num - remain_var_num)+" variants with bad positions.")        
         
         if verbose: log.write(" -Converted all position to datatype Int64.")
-        if verbose: log.write(" -Fixed basepair position successfully.")
+        if verbose: log.write("Finished fixing basepair position successfully!")
         return sumstats
     
 ###############################################################################################################    
@@ -478,8 +481,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         sumstats.loc[is_eanea_fixed&is_normalized,status]      = vchange_status(sumstats.loc[is_eanea_fixed&is_normalized, status],  5,"4","3")
         remain_var_num = len(sumstats)
               
-        
-        if verbose: log.write(" -Fixed allele successfully.")
+        if verbose: log.write("Finished fixing allele successfully!")
         return sumstats
 
 ###############################################################################################################   
@@ -532,6 +534,7 @@ def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS
     #indel_to_snp = sumstats[status].str.match(r'\w\w\w\w[3]\w\w', case=False, flags=0, na=False) & (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
     #if sum(indel_to_snp)>0:
     #    sumstats.loc[indel_to_snp,status] = vchange_status(sumstats.loc[indel_to_snp,status], 5,"5","3")
+    if verbose: log.write("Finished normalizing variants successfully!")
     return sumstats
 
 def normalizeallele(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
@@ -721,6 +724,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
     sumstats = sumstats.dropna(subset=cols_to_check)
     after_number=len(sumstats)
     if verbose: log.write(" -Removed "+str(oringinal_number - after_number)+" variants with bad statistics in total.") 
+    if verbose: log.write("Finished sanity check successfully!")
     return sumstats
 
 ###############################################################################################################
@@ -857,7 +861,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         #change status    
         if verbose: log.write(" -Changed the status for flipped variants:  xxxxx[012]5: ->  xxxxx[012]2") 
         sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 7, "5","2")
-
+    if verbose: log.write("Finished converting successfully!")
     return sumstats
 ###############################################################################################################
 
@@ -937,7 +941,7 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     sumstats = fixchr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=False)
     sumstats = fixpos(sumstats,pos=pos,remove=remove, verbose=False)
     
-    if verbose: log.write(" -Liftover is performed successfully!")
+    if verbose: log.write("Finished liftover successfully!")
     return sumstats
 
 ###############################################################################################################
@@ -986,7 +990,7 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
     
     #sumstats[chrom] = sumstats[chrom].map(chromosome_number_to_string)
     #sumstats[chrom] = sumstats[chrom].astype("string")
-    
+    if verbose: log.write("Finished sorting genome coordinates successfully!")
     return sumstats
 ###############################################################################################################
 #20220426
@@ -1005,6 +1009,7 @@ def sortcolumn(sumstats,verbose=True,log=Log()):
         if i not in order: output_columns.append(i)
     if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns))
     sumstats = sumstats.loc[:, output_columns]
+    if verbose: log.write("Finished sorting columns successfully!")
     return sumstats
 
 ################################################################################################################
