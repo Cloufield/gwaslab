@@ -7,6 +7,8 @@ import scipy.stats as ss
 import seaborn as sns
 import matplotlib.patches as mpatches
 from gwaslab.getsig import getsig
+from gwaslab.Log import Log
+
 def test_q(df,beta1,se1,beta2,se2):
     w1="Weight_1"
     w2="Weight_2"
@@ -51,20 +53,21 @@ def compare_effect(path1,
                    fontargs={'family':'sans','fontname':'Arial','fontsize':12},
                    errargs={"ecolor":"#cccccc","elinewidth":1},
                    sep=["\t","\t"],
+                   log = Log(),
                    verbose=False):
     
     #[snpid,p,ea,nea]      ,[effect,se]
     #[snpid,p,ea,nea,chr,pos],[effect,se]
     #[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
     
-    if verbose: print("Start to process the raw sumstats for plotting...")
+    if verbose: log.write("Start to process the raw sumstats for plotting...")
     
     ######### 1 check the value used to plot
     if mode not in ["Beta","beta","BETA","OR","or"]:
         raise ValueError("Please input Beta or OR")
     
     ######### 2 extract snplist2
-    if verbose: print(" -Loading "+label[1]+" SNP list in memory...")    
+    if verbose: log.write(" -Loading "+label[1]+" SNP list in memory...")    
     sumstats=pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0]])
     common_snp_set=set(sumstats[cols_name_list_2[0]].values)
     
@@ -75,12 +78,12 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[1],cols_name_list_1[4],cols_name_list_1[5]]
  
     ######### 4 load sumstats1
-    if verbose: print(" -Loading sumstats for "+label[0]+":",",".join(cols_to_extract))
+    if verbose: log.write(" -Loading sumstats for "+label[0]+":",",".join(cols_to_extract))
     sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
     
     ######### 5 extract the common set
     common_snp_set = common_snp_set.intersection(sumstats[cols_name_list_1[0]].values)
-    if verbose: print(" -Counting  variants available for both datasets:",len(common_snp_set)," variants...")
+    if verbose: log.write(" -Counting  variants available for both datasets:",len(common_snp_set)," variants...")
     
     ######### 6 rename the sumstats
     rename_dict = { cols_name_list_1[0]:"SNPID",
@@ -95,17 +98,17 @@ def compare_effect(path1,
     
     ######### 7 exctract only available variants from sumstats1 
     sumstats=sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
-    if verbose: print(" -Using only variants available for both datasets...")
+    if verbose: log.write(" -Using only variants available for both datasets...")
     
     ######### 8 extact SNPs for comparison 
     
     if snplist is not None: 
         ######### 8.1 if a snplist is provided, use the snp list
-        if verbose: print(" -Extract variants in the given list from "+label[0]+"...")
+        if verbose: log.write(" -Extract variants in the given list from "+label[0]+"...")
         sig_list_1 = sumstats.loc[sumstats["SNPID"].isin(snplist),:].copy()
     else:
         ######### 8,2 otherwise use the sutomatically detected lead SNPs
-        if verbose: print(" -Extract lead variants from "+label[0]+"...")
+        if verbose: log.write(" -Extract lead variants from "+label[0]+"...")
         sig_list_1 = getsig(sumstats,"SNPID","CHR","POS","P", verbose=verbose,sig_level=sig_level)
 
     ######### 9 extract snplist2
@@ -114,7 +117,7 @@ def compare_effect(path1,
     else:
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1],cols_name_list_2[4],cols_name_list_2[5]]
     
-    if verbose: print(" -Loading sumstats for "+label[1]+":",",".join(cols_to_extract))
+    if verbose: log.write(" -Loading sumstats for "+label[1]+":",",".join(cols_to_extract))
     sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
     
     ######### 10 rename sumstats2
@@ -132,17 +135,17 @@ def compare_effect(path1,
     ######## 12 extact SNPs for comparison 
     if snplist: 
         ######### 12.1 if a snplist is provided, use the snp list
-        if verbose: print(" -Extract snps in the given list from "+label[1]+"...")
+        if verbose: log.write(" -Extract snps in the given list from "+label[1]+"...")
         sig_list_2 = sumstats.loc[sumstats["SNPID"].isin(snplist),:].copy()
     else: 
-        if verbose: print(" -Extract lead snps from "+label[1]+"...")
+        if verbose: log.write(" -Extract lead snps from "+label[1]+"...")
         ######### 12.2 otherwise use the sutomatically detected lead SNPs
         sig_list_2 = getsig(sumstats,"SNPID","CHR","POS","P",
                                  verbose=verbose,sig_level=sig_level)
     
     ######### 13 Merge two list using SNPID
     ##############################################################################
-    if verbose: print("Merging snps from "+label[0]+" and "+label[1]+"...")
+    if verbose: log.write("Merging snps from "+label[0]+" and "+label[1]+"...")
     sig_list_merged = pd.merge(sig_list_1,sig_list_2,left_on="SNPID",right_on="SNPID",how="outer",suffixes=('_1', '_2'))
     
     ###############################################################################
@@ -157,7 +160,7 @@ def compare_effect(path1,
     else:
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1], effect_cols_list_1[2]]
     if len(eaf)>0: cols_to_extract.append(eaf[0])   
-    if verbose: print(" -Extract statistics of selected variants from "+label[0]+" : ",",".join(cols_to_extract) )
+    if verbose: log.write(" -Extract statistics of selected variants from "+label[0]+" : ",",".join(cols_to_extract) )
     sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
     
     if mode=="beta" or mode=="BETA" or mode=="Beta":
@@ -181,7 +184,7 @@ def compare_effect(path1,
     if len(eaf)>0: rename_dict[eaf[0]]="EAF_1"
     sumstats.rename(columns=rename_dict, inplace=True)
     
-    if verbose: print(" -Merging "+label[0]+" effect information...")
+    if verbose: log.write(" -Merging "+label[0]+" effect information...")
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
                                left_on="SNPID",right_on="SNPID",
                                how="left")
@@ -195,7 +198,7 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1], effect_cols_list_2[2]]
     ## check if eaf column is provided.
     if len(eaf)>0: cols_to_extract.append(eaf[1])
-    if verbose: print(" -Extract statistics of selected variants from "+label[1]+" : ",",".join(cols_to_extract) )
+    if verbose: log.write(" -Extract statistics of selected variants from "+label[1]+" : ",",".join(cols_to_extract) )
     sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
     
     if mode=="beta" or mode=="BETA" or mode=="Beta":
@@ -217,7 +220,7 @@ def compare_effect(path1,
     sumstats.rename(columns=rename_dict, inplace=True)         
     
     
-    if verbose: print(" -Merging "+label[1]+" effect information...")
+    if verbose: log.write(" -Merging "+label[1]+" effect information...")
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
                                left_on="SNPID",right_on="SNPID",
                                how="left")
@@ -225,7 +228,7 @@ def compare_effect(path1,
     sig_list_merged.set_index("SNPID",inplace=True)
 
     ################ 16 update sumstats1
-    if verbose: print(" -Updating missing information for "+label[0]+" ...")
+    if verbose: log.write(" -Updating missing information for "+label[0]+" ...")
     sumstats = pd.read_table(path1,sep=sep[0],usecols=[cols_name_list_1[0],cols_name_list_1[1]])
     sumstats.rename(columns={
                         cols_name_list_1[0]:"SNPID",
@@ -236,7 +239,7 @@ def compare_effect(path1,
     sig_list_merged.update(sumstats)
     
     ################# 17 update sumstats2
-    if verbose: print(" -Updating missing information for "+label[1]+" ...")
+    if verbose: log.write(" -Updating missing information for "+label[1]+" ...")
     sumstats = pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0],cols_name_list_2[1]])
     sumstats.rename(columns={
                         cols_name_list_2[0]:"SNPID",
@@ -249,7 +252,7 @@ def compare_effect(path1,
     ####
 #################################################################################
     ############## 18 init indicator
-    if verbose: print(" -Assigning indicator  ...")
+    if verbose: log.write(" -Assigning indicator  ...")
     # 0-> 0
     # 1 -> sumstats1
     # 2 -> sumsatts2
@@ -263,7 +266,7 @@ def compare_effect(path1,
         sig_list_merged["POS"]=np.max(sig_list_merged[["POS_1","POS_2"]], axis=1).astype(int)
         sig_list_merged.drop(labels=['CHR_1', 'CHR_2','POS_1', 'POS_2'], axis=1,inplace=True)
     
-    if verbose: print(" -Aligning "+label[1]+" EA with "+label[0]+" EA ...")
+    if verbose: log.write(" -Aligning "+label[1]+" EA with "+label[0]+" EA ...")
     ############### 19 align allele effect with sumstats 1
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         sig_list_merged["EA_2_aligned"]=sig_list_merged["EA_2"]
@@ -300,35 +303,35 @@ def compare_effect(path1,
     ####################################################################################################################################
 
     ########################## Het test############################################################
-    if is_q is True:
-        if verbose: print(" -Calculating Cochran's Q statistics and peform chisq test...")
+    if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
+        if verbose: log.write(" -Calculating Cochran's Q statistics and peform chisq test...")
         sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2")
         
     ######################### save ###############################################################
     save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
-    if verbose: print(" -Saving the merged data to:",save_path)
+    if verbose: log.write(" -Saving the merged data to:",save_path)
     sig_list_merged.to_csv(save_path,"\t")
     ########################## maf_threshold#############################################################
     if (len(eaf)>0) and (maf_level is not None):
         both_eaf_clear =  (sig_list_merged["EAF_1"]>maf_level)&(sig_list_merged["EAF_1"]<1-maf_level)&(sig_list_merged["EAF_2"]>maf_level)&(sig_list_merged["EAF_2"]<1-maf_level)
-        if verbose: print(" -Exclude "+str(len(sig_list_merged) -sum(both_eaf_clear))+ " variants with maf <",maf_level)
+        if verbose: log.write(" -Exclude "+str(len(sig_list_merged) -sum(both_eaf_clear))+ " variants with maf <",maf_level)
         sig_list_merged = sig_list_merged.loc[both_eaf_clear,:]
-    if is_q is True:
-        if verbose: print(" -Significant het:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:]))
-        if verbose: print(" -All sig:" ,len(sig_list_merged))
-        if verbose: print(" -Het rate:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:])/len(sig_list_merged))   
+    if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
+        if verbose: log.write(" -Significant het:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:]))
+        if verbose: log.write(" -All sig:" ,len(sig_list_merged))
+        if verbose: log.write(" -Het rate:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:])/len(sig_list_merged))   
     sum0 = sig_list_merged.loc[sig_list_merged["indicator"]==0,:].dropna(axis=0)
     sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:].dropna(axis=0)
     sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:].dropna(axis=0)
     both     = sig_list_merged.loc[sig_list_merged["indicator"]==3,:].dropna(axis=0)
     
-    if verbose: print(" -Identified "+str(len(sum0)) + " variants which are not significant in " + label[3]+".")
-    if verbose: print(" -Identified "+str(len(sum1only)) + " variants which are only significant in " + label[0]+".")
-    if verbose: print(" -Identified "+str(len(sum2only)) + " variants which are only significant in " + label[1]+".")
-    if verbose: print(" -Identified "+str(len(both)) + " variants which are significant in " + label[2] + ".")
+    if verbose: log.write(" -Identified "+str(len(sum0)) + " variants which are not significant in " + label[3]+".")
+    if verbose: log.write(" -Identified "+str(len(sum1only)) + " variants which are only significant in " + label[0]+".")
+    if verbose: log.write(" -Identified "+str(len(sum2only)) + " variants which are only significant in " + label[1]+".")
+    if verbose: log.write(" -Identified "+str(len(both)) + " variants which are significant in " + label[2] + ".")
     
     ##plot########################################################################################
-    if verbose: print("Creating the scatter plot for effect sizes comparison...")
+    if verbose: log.write("Creating the scatter plot for effect sizes comparison...")
     #plt.style.use("ggplot")
     sns.set_style("ticks")
     fig,ax = plt.subplots(**plt_args) 
@@ -360,21 +363,21 @@ def compare_effect(path1,
     else:
         ## if OR
         if len(sum0)>0:
-            ax.errorbar(sum0["OR_1"],sum0["OR_2_aligned"], xerr=sum0[["OR_L_1","OR_H_1"]],yerr=sum0[["OR_L_2_aligned","OR_H_2_aligned"]],
+            ax.errorbar(sum0["OR_1"],sum0["OR_2_aligned"], xerr=sum0[["OR_L_1","OR_H_1"]].T,yerr=sum0[["OR_L_2_aligned","OR_H_2_aligned"]].T,
                         linewidth=0,zorder=1,**errargs)
             ax.scatter(sum0["OR_1"],sum0["OR_2_aligned"],label=label[3],zorder=2,color="#cccccc",marker=".",**scatterargs)
         if len(sum1only)>0:
-            ax.errorbar(sum1only["OR_1"],sum1only["OR_2_aligned"], xerr=sum1only[["OR_L_1","OR_H_1"]],yerr=sum1only[["OR_L_2_aligned","OR_H_2_aligned"]],
+            ax.errorbar(sum1only["OR_1"],sum1only["OR_2_aligned"], xerr=sum1only[["OR_L_1","OR_H_1"]].T,yerr=sum1only[["OR_L_2_aligned","OR_H_2_aligned"]].T,
                         linewidth=0,zorder=1,**errargs)
             ax.scatter(sum1only["OR_1"],sum1only["OR_2_aligned"],label=label[0],zorder=2,color="#205be6",marker="^",**scatterargs)
 
         if len(sum2only)>0:
-            ax.errorbar(sum2only["OR_1"],sum2only["OR_2_aligned"], xerr=sum2only[["OR_L_1","OR_H_1"]],yerr=sum2only[["OR_L_2_aligned","OR_H_2_aligned"]],
+            ax.errorbar(sum2only["OR_1"],sum2only["OR_2_aligned"], xerr=sum2only[["OR_L_1","OR_H_1"]].T,yerr=sum2only[["OR_L_2_aligned","OR_H_2_aligned"]].T,
                         linewidth=0,zorder=1,**errargs)
             ax.scatter(sum2only["OR_1"],sum2only["OR_2_aligned"],label=label[1],zorder=2,color="#41e620",marker="o",**scatterargs)
 
         if len(both)>0:
-            ax.errorbar(both["OR_1"],both["OR_2_aligned"], xerr=both[["OR_L_1","OR_H_1"]].values.T,yerr=both[["OR_L_2_aligned","OR_H_2_aligned"]].values.T,
+            ax.errorbar(both["OR_1"],both["OR_2_aligned"], xerr=both[["OR_L_1","OR_H_1"]].T,yerr=both[["OR_L_2_aligned","OR_H_2_aligned"]].T,
                         linewidth=0,zorder=1,**errargs)
             ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label[2],zorder=2,color="#e6320e",marker="s",**scatterargs)
     
@@ -422,24 +425,20 @@ def compare_effect(path1,
             reg = ss.linregress(sig_list_merged["OR_1"],sig_list_merged["OR_2_aligned"])
         
         #### calculate p values based on selected value , default = 0 
-        if verbose:print(" -Calculating p values based on given null slope :",null_beta)
+        if verbose:log.write(" -Calculating p values based on given null slope :",null_beta)
         t_score = (reg[0]-null_beta) / reg[4]
         degree = len(sig_list_merged.dropna())-2
         p = ss.t.sf(abs(t_score), df=degree)*2
-        if verbose:print(" -Beta_se = ", reg[4])
-        if verbose:print(" -H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
-        if verbose:print(" -H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]))
+        if verbose:log.write(" -Beta_se = ", reg[4])
+        if verbose:log.write(" -H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
+        if verbose:log.write(" -H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]))
         
         
         if reg[0] > 0:
             #if regression coeeficient >0 : auxiliary line slope = 1
             if is_45_helper_line is True:
-                if mode=="beta" or mode=="BETA" or mode=="Beta": 
-                    #if beta: auxiliary line pass (0,0)
-                    ax.axline([min(xl,yl),min(xl,yl)], [max(xh, yh),max(xh, yh)],zorder=1,**helper_line_args)
-                else:
-                    #if OR: auxiliary line pass (1,1)
-                    ax.axline([min(xl,yl)+1,min(xl,yl)+1], [max(xh, yh)+1,max(xh, yh)+1],zorder=1, **helper_line_args)
+                ax.axline([min(xl,yl),min(xl,yl)], [max(xh, yh),max(xh, yh)],zorder=1,**helper_line_args)
+
             #add text
             p12=str("{:.2e}".format(p)).split("e")[0]
             pe =str(int("{:.2e}".format(p).split("e")[1]))
@@ -452,20 +451,24 @@ def compare_effect(path1,
                 if mode=="beta" or mode=="BETA" or mode=="Beta": 
                     ax.axline([min(xl,yl),-min(xl,yl)], [max(xh, yh),-max(xh, yh)],zorder=1,**helper_line_args)
                 else:
-                    ax.axline([min(xl,yl)+1,-min(xl,yl)+1], [max(xh, yh)+1,-max(xh, yh)+1],zorder=1,**helper_line_args)
+                    ax.axline([min(xl,yl),-min(xl,yl)], [max(xh, yh),-max(xh, yh)],zorder=1,**helper_line_args)
             #add text
             p12=str("{:.2e}".format(p)).split("e")[0]
             pe =str(int("{:.2e}".format(p).split("e")[1]))
             p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
             p_latex= f'{p_text}'
             ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
-        
+            
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             middle = sig_list_merged["EFFECT_1"].mean()
         else:
             middle = sig_list_merged["OR_1"].mean()
         
-        ax.axline(xy1=(0,reg[1]),slope=reg[0],color="#cccccc",linestyle='--',zorder=1)
+        if mode=="beta" or mode=="BETA" or mode=="Beta":
+            ax.axline(xy1=(0,reg[1]),slope=reg[0],color="#cccccc",linestyle='--',zorder=1)
+        else:
+            ax.axline(xy1=(1,reg[0]+reg[1]),slope=reg[0],color="#cccccc",linestyle='--',zorder=1)
+        
     
     ax.set_xlabel(xylabel_prefix+label[0],**fontargs)
     ax.set_ylabel(xylabel_prefix+label[1],**fontargs)
@@ -479,7 +482,7 @@ def compare_effect(path1,
     plt.setp(L.get_title(),**fontargs)
     ##plot finished########################################################################################
     
-    return [sig_list_merged, fig]
+    return [sig_list_merged, fig,log]
 
 ################################################################################################################################
 def plotdaf(sumstats,
@@ -500,7 +503,7 @@ def plotdaf(sumstats,
            ):
     
     
-    if verbose: print("Start to plot Reference frequency vs Effect allele frequency plot...")
+    if verbose: log.write("Start to plot Reference frequency vs Effect allele frequency plot...")
     if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
         raise ValueError("EAF and/or DAF columns were not detected.")
     
@@ -508,7 +511,7 @@ def plotdaf(sumstats,
     sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[eaf,daf]].copy()
     sumstats.loc[:,daf] = sumstats.loc[:,daf].astype("float")
     sumstats.loc[:,eaf] = sumstats.loc[:,eaf].astype("float")
-    if verbose: print(" -Plotting valriants:" + str(len(sumstats)))
+    if verbose: log.write(" -Plotting valriants:" + str(len(sumstats)))
     
     sumstats.loc[:,"RAF"]=sumstats[eaf] - sumstats[daf]
     sns.set_style("ticks")
@@ -516,17 +519,17 @@ def plotdaf(sumstats,
     ax1.scatter(sumstats["RAF"],sumstats[eaf],**scatter_args)
     
     if is_reg is True:
-        if verbose: print(" -Plotting regression line...")
+        if verbose: log.write(" -Plotting regression line...")
         reg = ss.linregress(sumstats["RAF"],sumstats[eaf])
-        if verbose:print(" -Beta = ", reg[0])
-        if verbose:print(" -Intercept = ", reg[1])
-        if verbose:print(" -R2 = ", reg[2])
+        if verbose:log.write(" -Beta = ", reg[0])
+        if verbose:log.write(" -Intercept = ", reg[1])
+        if verbose:log.write(" -R2 = ", reg[2])
         ax1.axline(xy1=(0,reg[1]),slope=reg[0],zorder=1,**reg_line_args)
     if is_threshold is True:
-        if verbose: print(" -Threshold : " + str(threshold))
+        if verbose: log.write(" -Threshold : " + str(threshold))
         num = sum(np.abs(sumstats[daf])>threshold )
-        if verbose: print(" -Variants with relatively large DAF : ",num )
-        if verbose: print(" -Percentage for variants with relatively large DAF : ",num/len(sumstats) )
+        if verbose: log.write(" -Variants with relatively large DAF : ",num )
+        if verbose: log.write(" -Percentage for variants with relatively large DAF : ",num/len(sumstats) )
         ax1.axline(xy1=(0,threshold),slope=1,zorder=1,**threshold_line_args)
         ax1.axline(xy1=(threshold,0),slope=1,zorder=1,**threshold_line_args)
     xl,xh=ax1.get_xlim()

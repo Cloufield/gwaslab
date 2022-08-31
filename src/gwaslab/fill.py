@@ -15,58 +15,58 @@ def filldata(
     ):
     
 
-    if verbose: print("Strat filling data using existing columns...")
-    if verbose: print(" -Raw input columns: ",list(sumstats.columns))
+    if verbose: log.write("Start filling data using existing columns...")
+    if verbose: log.write(" -Raw input columns: ",list(sumstats.columns))
 # check dupication ##############################################################################################
     skip_cols=[]
-    if verbose: print(" -Overwrite mode: ",overwrite)
+    if verbose: log.write(" -Overwrite mode: ",overwrite)
     if overwrite is False:
         for i in to_fill:
             if i in sumstats.columns:
                 to_fill.remove(i)
                 skip_cols.append(i)
-        if verbose: print("  - Skipping columns: ",skip_cols) 
-    if verbose: print("Filling columns: ",to_fill)
+        if verbose: log.write("  - Skipping columns: ",skip_cols) 
+    if verbose: log.write("Filling columns: ",to_fill)
         
 # beta to or ####################################################################################################     
     if "OR" in to_fill:
         
         #get or
         if "BETA" in sumstats.columns:
-            if verbose: print("  - Filling OR using BETA column...")
+            if verbose: log.write("  - Filling OR using BETA column...")
             sumstats["OR"]   = np.exp(sumstats["BETA"])
         
         # get confidence interval 95
         if ("BETA" in sumstats.columns) and ("SE" in sumstats.columns):
-            if verbose: print("  - Filling OR_95L/OR_95U using BETA/SE columns...")
+            if verbose: log.write("  - Filling OR_95L/OR_95U using BETA/SE columns...")
             sumstats["OR_95L"] = np.exp(sumstats["BETA"]-ss.norm.ppf(0.975)*sumstats["SE"])
             sumstats["OR_95U"] = np.exp(sumstats["BETA"]+ss.norm.ppf(0.975)*sumstats["SE"])
 # or to beta #################################################################################################### 
     if "BETA" in to_fill:
         #get beta
         if "OR" in sumstats.columns:
-            if verbose: print("  - Filling BETA value using OR column...")
+            if verbose: log.write("  - Filling BETA value using OR column...")
             sumstats["BETA"]  = np.log(sumstats["OR"])
         # get se
         if ("OR" in sumstats.columns) and "OR_SE" in sumstats.columns:
-            if verbose: print("  - Filling SE value using OR/OR_SE column...")
+            if verbose: log.write("  - Filling SE value using OR/OR_SE column...")
             sumstats["SE"] = np.log(sumstats["OR"]+sumstats["OR_SE"]) - np.log(sumstats["OR"])
         elif ("OR" in sumstats.columns) and ("OR_95U" in sumstats.columns): 
             tl,tu = ss.norm.interval(0.95,0)
-            if verbose: print("  - Filling SE value using OR/OR_95U column...")
+            if verbose: log.write("  - Filling SE value using OR/OR_95U column...")
             sumstats["SE"]=(sumstats["OR_95U"] - sumstats["OR"])/tu
         elif ("OR" in sumstats.columns) and ("OR_95L" in sumstats.columns):
             tl,tu = ss.norm.interval(0.95,0)
-            if verbose: print("  - Filling SE value using OR/OR_95L column...")
+            if verbose: log.write("  - Filling SE value using OR/OR_95L column...")
             sumstats["SE"]=(sumstats["OR_95L"] -  sumstats["OR"])/tl
 
 # z/chi2 to p ##################################################################################################
     if "P" in to_fill:
         if "Z" in sumstats.columns:
-            if verbose: print("  - Filling P value using Z column...")
+            if verbose: log.write("  - Filling P value using Z column...")
             sumstats["P"] = ss.chisqprob(sumstats["Z"]**2,1)
         elif "CHISQ" in sumstats.columns:
-            if verbose: print("  - Filling P value using CHISQ column...")
+            if verbose: log.write("  - Filling P value using CHISQ column...")
             stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
             if df is None:
                 if only_sig is True and overwrite is True:
@@ -75,34 +75,34 @@ def filldata(
                     sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],1)
             else:
                 if only_sig is True and overwrite is True:
-                    if verbose: print("  - Filling P value using CHISQ column for variants:" , sum(sumstats["P"]<5e-8))
+                    if verbose: log.write("  - Filling P value using CHISQ column for variants:" , sum(sumstats["P"]<5e-8))
                     sumstats.loc[sumstats["P"]<5e-8,"P"] = stats.chisqprob(sumstats.loc[sumstats["P"]<5e-8,"CHISQ"],sumstats.loc[sumstats["P"]<5e-8,df].astype("int"))
                 else:
-                    if verbose: print("  - Filling P value using CHISQ column for all valid variants:")
+                    if verbose: log.write("  - Filling P value using CHISQ column for all valid variants:")
                     sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],sumstats[df].astype("int"))
                 
         elif "MLOG10P" in sumstats.columns:    
-            if verbose: print("  - Filling P value using MLOG10P column...")
+            if verbose: log.write("  - Filling P value using MLOG10P column...")
             sumstats["P"] = np.power(10,-sumstats["MLOG10P"])
 
 # beta/se to z ##################################################################################################            
     if "Z" in to_fill:    
         if ("BETA" in sumstats.columns) and ("SE" in sumstats.columns):
-            if verbose: print("  - Filling Z using BETA/SE column...")
+            if verbose: log.write("  - Filling Z using BETA/SE column...")
             sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
 
 # z/p to chisq ##################################################################################################             
     if "CHISQ" in to_fill:
         if "Z" in sumstats.columns:
-            if verbose: print("  - Filling CHISQ using Z column...")
+            if verbose: log.write("  - Filling CHISQ using Z column...")
             sumstats["CHISQ"] = (sumstats["Z"])**2
         elif "P" in sumstats.columns:
-            if verbose: print("  - Filling CHISQ using P column...")
+            if verbose: log.write("  - Filling CHISQ using P column...")
             sumstats["CHISQ"] = ss.chi2.isf(sumstats["P"], 1)
             
 # p to -log10(P)  ###############################################################################################
     if "MLOG10P" in to_fill:
-        if verbose: print("  - Filling MLOG10P using P column...")
+        if verbose: log.write("  - Filling MLOG10P using P column...")
         sumstats["MLOG10P"] = -np.log10(sumstats["P"])
         
 # ###################################################################################
@@ -119,5 +119,6 @@ def filldata(
         if i in sumstats.columns:
             output_columns.append(i)
     sumstats = sumstats.loc[:,output_columns]
+    if verbose: log.write("Finished filling data using existing columns.")
     return sumstats
     

@@ -35,6 +35,7 @@ from gwaslab.to_formats import tobed
 from gwaslab.to_formats import tofuma
 from gwaslab.to_formats import toldsc
 from gwaslab.to_formats import tossf
+from gwaslab.to_formats import tofmt
 from gwaslab.get_hapmap3 import gethapmap3
 from gwaslab.compare_effect import plotdaf
 from gwaslab.CommonData import get_chr_NC_dict
@@ -508,7 +509,7 @@ class Sumstats():
         if fmt=="vcf":
             toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:
-            to_formats.tofmt(output, path=path,fmt=fmt,suffix=suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            tofmt(output, path=path,fmt=fmt,suffix=suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if output_log is True:
             if verbose: self.log.write("Saving log file...")
             self.log.save(path + "."+ suffix +".log")
