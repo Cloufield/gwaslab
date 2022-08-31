@@ -24,7 +24,6 @@ def preformat(sumstats,
           mlog10p=None,
           info=None,
           OR=None,
-          OR_se=None,
           OR_95L=None,
           OR_95U=None,
           direction=None,
@@ -133,9 +132,6 @@ def preformat(sumstats,
     if OR:
         usecols.append(OR)
         rename_dictionary[OR]= "OR"
-    if OR_se:
-        usecols.append(OR_se)
-        rename_dictionary[OR_se]= "OR_SE"
     if OR_95L:
         usecols.append(OR_95L)
         rename_dictionary[OR_95L]= "OR_95L"

@@ -67,7 +67,6 @@ class Sumstats():
              mlog10p=None,
              info=None,
              OR=None,
-             OR_se=None,
              OR_95L=None,
              OR_95U=None,
              status=None,
@@ -103,7 +102,6 @@ class Sumstats():
           mlog10p=mlog10p,
           info=info,
           OR=OR,
-          OR_se=OR_se,
           OR_95L=OR_95L,
           OR_95U=OR_95U,
           direction=direction,
@@ -134,7 +132,6 @@ class Sumstats():
             "MLOG10P": "mlog10p",
             "INFO": "info",
             "OR": "OR",
-            "OR_SE": "OR_se",
             "OR_95L": "OR_95L",
             "OR_95U": "OR_95U",
         }
