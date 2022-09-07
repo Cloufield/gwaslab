@@ -212,7 +212,7 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         # A/G
         # AT/CG
         sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"]-1 
-        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"]-1 + sumstats.loc[is_insert,"NEA"].str.slice(start=1)
+        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"]-1 + sumstats.loc[is_snp,"NEA"].str.slice(start=1)
         sumstats.loc[is_snp,"NEA/EA"] = sumstats.loc[is_snp,"NEA"].astype("string")+"/"+sumstats.loc[is_snp,"EA"].astype("string")
         
         # for insertion
@@ -268,7 +268,10 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         sumstats.loc[is_delete,"NEA/EA"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)+"/-"
            
         sumstats["STRAND"]="+"
-
+        
+        sumstats["START"] = sumstats["START"].astype("Int64")
+        sumstats["END"] = sumstats["END"].astype("Int64")
+        
         ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"]
         sumstats = sumstats.loc[:,ouput_cols]
         path = path + "."+suffix+".gz"
