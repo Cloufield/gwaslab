@@ -165,8 +165,8 @@ def tovcf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA"
     
 ###################################################################################################################################################
 def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log(),to_csvargs={}):
-    if fmt is not None:
-        if verbose: log.write(" - Start outputting sumstats in "+fmt+" format...")
+    if verbose: log.write(" - Start outputting sumstats in "+fmt+" format...")
+    if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:       
         if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
         if verbose:             
@@ -196,9 +196,85 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         if verbose: log.write(" -Output path:",path) 
         if path is not None: sumstats.to_csv(path,sep="\t",index=None,**to_csvargs)
         return sumstats
-    else:
-        if path is not None: sumstats.to_csv(path,sep="\t",index=None,**to_csvargs)
     
+    elif fmt=="bed":
+        # bed-like format, 0-based
+        is_snp = (sumstats["EA"].str.len() == sumstats["NEA"].str.len())
+        is_insert = (sumstats["EA"].str.len()>1) &(sumstats["NEA"].str.len()==1)
+        is_delete = (sumstats["EA"].str.len()==1) &(sumstats["NEA"].str.len()>1)
+        
+        if verbose: log.write(" -Number of SNPs :",sum(is_snp)) 
+        if verbose: log.write(" -Number of Insertions :",sum(is_insert)) 
+        if verbose: log.write(" -Number of Deletions :",sum(is_delete)) 
+        
+        # for snp  
+        # start = pos - 1 ; end = pos
+        # A/G
+        # AT/CG
+        sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"]-1 
+        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"]-1 + sumstats.loc[is_insert,"NEA"].str.slice(start=1)
+        sumstats.loc[is_snp,"NEA/EA"] = sumstats.loc[is_snp,"NEA"].astype("string")+"/"+sumstats.loc[is_snp,"EA"].astype("string")
+        
+        # for insertion
+        # start = pos : end = pos
+        # A/ATC -> -/TC
+        sumstats.loc[is_insert,"START"]  = sumstats.loc[is_insert,"POS"]
+        sumstats.loc[is_insert,"END"]    = sumstats.loc[is_insert,"POS"]
+        sumstats.loc[is_insert,"NEA/EA"] = "-/"+sumstats.loc[is_insert,"EA"].str.slice(start=1)
+        
+        # for deletion 
+        # start = pos - 1 +1; end = pos -1 +1+ len(Ref)
+        # ATC/A -> TC/-
+        sumstats.loc[is_delete,"START"]  = sumstats.loc[is_delete,"POS"] 
+        sumstats.loc[is_delete,"END"]    = sumstats.loc[is_delete,"POS"] + sumstats.loc[is_delete,"NEA"].str.len()
+        sumstats.loc[is_delete,"NEA/EA"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)+"/-"
+        
+        sumstats["STRAND"]="+"
+
+        ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"]
+        sumstats = sumstats.loc[:,ouput_cols]
+        path = path + "."+suffix+".gz"
+        if verbose: log.write(" -Output columns:",sumstats.columns)
+        if verbose: log.write(" -Output path:",path) 
+        sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
+        
+    elif fmt=="vep":
+        # bed-like format, 1-based
+        is_snp = (sumstats["EA"].str.len() == sumstats["NEA"].str.len())
+        is_insert = (sumstats["EA"].str.len()>1) &(sumstats["NEA"].str.len()==1)
+        is_delete = (sumstats["EA"].str.len()==1) &(sumstats["NEA"].str.len()>1)
+        
+        if verbose: log.write(" -Number of SNPs :",sum(is_snp)) 
+        if verbose: log.write(" -Number of Insertions :",sum(is_insert)) 
+        if verbose: log.write(" -Number of Deletions :",sum(is_delete)) 
+        # for snp  
+        # start = pos ; end = pos
+        sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"] + (sumstats.loc[is_snp,"NEA"].str.len() - 1 )
+        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"] + (sumstats.loc[is_snp,"NEA"].str.len() - 1 )
+        sumstats.loc[is_snp,"NEA/EA"] = sumstats.loc[is_snp,"NEA"].astype("string")+"/"+sumstats.loc[is_snp,"EA"].astype("string")
+        
+        # for insertion
+        # start = pos+1 ; end = pos
+        # A/ATC -> -/TC
+        sumstats.loc[is_insert,"START"]  = sumstats.loc[is_insert,"POS"] + 1
+        sumstats.loc[is_insert,"END"]    = sumstats.loc[is_insert,"POS"]
+        sumstats.loc[is_insert,"NEA/EA"] = "-/" + sumstats.loc[is_insert,"EA"].str.slice(start=1)
+        
+        # for deletion 
+        # start = pos ; end = pos + len(Ref) -1
+        # ATC/A -> TC/-
+        sumstats.loc[is_delete,"START"]  = sumstats.loc[is_delete,"POS"]
+        sumstats.loc[is_delete,"END"]    = sumstats.loc[is_delete,"POS"] - 1 + (sumstats.loc[is_delete,"NEA"].str.len() -1)
+        sumstats.loc[is_delete,"NEA/EA"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)+"/-"
+           
+        sumstats["STRAND"]="+"
+
+        ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"]
+        sumstats = sumstats.loc[:,ouput_cols]
+        path = path + "."+suffix+".gz"
+        if verbose: log.write(" -Output columns:",sumstats.columns)
+        if verbose: log.write(" -Output path:",path) 
+        sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
     
     
     
