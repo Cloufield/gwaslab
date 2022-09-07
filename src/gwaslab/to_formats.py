@@ -1,6 +1,7 @@
 import pandas as pd
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_format_dict
+from pysam import tabix_compression 
 
 def toldsc(sumstats, path, verbose=True,log=Log(),to_csvargs={}):
     '''
@@ -283,6 +284,10 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         path = path + "."+suffix+".gz"
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
+            #tabix_compress
+            #pysam.tabix_index("./test.bed.gz",preset="bed")
+            #tabix_index
+            #pysam.tabix_compress("./test.bed","./test.bed.gz")
         sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
     
     
