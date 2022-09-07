@@ -202,11 +202,11 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         is_insert = (sumstats["EA"].str.len()>1) &(sumstats["NEA"].str.len()==1)
         is_delete = (sumstats["EA"].str.len()==1) &(sumstats["NEA"].str.len()>1)
         
-        if verbose: log.write(" -Number of SNPs :",sum(is_snp)) 
+        if verbose: log.write(" -Number of SNPs :",sum(is_snp))
         if verbose: log.write(" -Number of Insertions :",sum(is_insert)) 
         if verbose: log.write(" -Number of Deletions :",sum(is_delete)) 
         
-        if verbose: log.write(" -formatting to 0-based bed file...")
+        if verbose: log.write(" -formatting to 0-based bed-like file...")
         # for snp  
         # start = pos - 1 ; end = pos
         # A/G
@@ -226,12 +226,16 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         # start = pos - 1 +1; end = pos -1 +1+ len(Ref)
         # ATC/A -> TC/-
         sumstats.loc[is_delete,"START"]  = sumstats.loc[is_delete,"POS"]
-        sumstats.loc[is_delete,"END"]    = sumstats.loc[is_delete,"POS"] + sumstats.loc[is_delete,"NEA"].str.len()
+        sumstats.loc[is_delete,"END"]    = sumstats.loc[is_delete,"POS"] + sumstats.loc[is_delete,"NEA"].str.len() - 1
         sumstats.loc[is_delete,"NEA/EA"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)+"/-"
         
         sumstats["STRAND"]="+"
 
         ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"]
+        
+        sumstats["START"] = sumstats["START"].astype("Int64")
+        sumstats["END"] = sumstats["END"].astype("Int64")
+        
         sumstats = sumstats.loc[:,ouput_cols]
         path = path + "."+suffix+".gz"
         if verbose: log.write(" -Output columns:",sumstats.columns)
@@ -248,7 +252,7 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         if verbose: log.write(" -Number of Insertions :",sum(is_insert)) 
         if verbose: log.write(" -Number of Deletions :",sum(is_delete)) 
             
-        if verbose: log.write(" -formatting to 1-based bed-like file...")
+        if verbose: log.write(" -formatting to 1-based bed-like file (vep default)...")
         # for snp  
         # start = pos ; end = pos
         sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"] + (sumstats.loc[is_snp,"NEA"].str.len() - 1 )
