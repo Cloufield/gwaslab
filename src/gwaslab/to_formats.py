@@ -183,7 +183,6 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
             log.write("  - gwaslab keys:",keys) 
             log.write("  - "+fmt+" values:",values) 
             
-        
         ouput_cols=[]
         for i in sumstats.columns:
             if i in rename_dictionary.keys():
@@ -207,12 +206,13 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         if verbose: log.write(" -Number of Insertions :",sum(is_insert)) 
         if verbose: log.write(" -Number of Deletions :",sum(is_delete)) 
         
+        if verbose: log.write(" -formatting to 0-based bed file...")
         # for snp  
         # start = pos - 1 ; end = pos
         # A/G
         # AT/CG
         sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"]-1 
-        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"]-1 + sumstats.loc[is_snp,"NEA"].str.slice(start=1)
+        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"]-1 + sumstats.loc[is_snp,"NEA"].str.len()
         sumstats.loc[is_snp,"NEA/EA"] = sumstats.loc[is_snp,"NEA"].astype("string")+"/"+sumstats.loc[is_snp,"EA"].astype("string")
         
         # for insertion
@@ -225,7 +225,7 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         # for deletion 
         # start = pos - 1 +1; end = pos -1 +1+ len(Ref)
         # ATC/A -> TC/-
-        sumstats.loc[is_delete,"START"]  = sumstats.loc[is_delete,"POS"] 
+        sumstats.loc[is_delete,"START"]  = sumstats.loc[is_delete,"POS"]
         sumstats.loc[is_delete,"END"]    = sumstats.loc[is_delete,"POS"] + sumstats.loc[is_delete,"NEA"].str.len()
         sumstats.loc[is_delete,"NEA/EA"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)+"/-"
         
@@ -247,6 +247,8 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         if verbose: log.write(" -Number of SNPs :",sum(is_snp)) 
         if verbose: log.write(" -Number of Insertions :",sum(is_insert)) 
         if verbose: log.write(" -Number of Deletions :",sum(is_delete)) 
+            
+        if verbose: log.write(" -formatting to 1-based bed-like file...")
         # for snp  
         # start = pos ; end = pos
         sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"] + (sumstats.loc[is_snp,"NEA"].str.len() - 1 )
@@ -263,8 +265,8 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         # for deletion 
         # start = pos ; end = pos + len(Ref) -1
         # ATC/A -> TC/-
-        sumstats.loc[is_delete,"START"]  = sumstats.loc[is_delete,"POS"]
-        sumstats.loc[is_delete,"END"]    = sumstats.loc[is_delete,"POS"] - 1 + (sumstats.loc[is_delete,"NEA"].str.len() -1)
+        sumstats.loc[is_delete,"START"]  = sumstats.loc[is_delete,"POS"] + 1
+        sumstats.loc[is_delete,"END"]    = sumstats.loc[is_delete,"POS"] + (sumstats.loc[is_delete,"NEA"].str.len() -1)
         sumstats.loc[is_delete,"NEA/EA"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)+"/-"
            
         sumstats["STRAND"]="+"
