@@ -496,7 +496,8 @@ def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     variants_to_check = sumstats[status].str.match(r'\w\w\w\w[45]\w\w', case=False, flags=0, na=False)
     if sum(variants_to_check)==0:
-        log.write(" -No available variants to normalize..")
+        if verbose: log.write(" -No available variants to normalize..")
+        if verbose: log.write("Finished normalizing variants successfully!")
         return sumstats
     ###############################################################################################################
     if sum(variants_to_check)>0:

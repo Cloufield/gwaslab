@@ -1,7 +1,9 @@
 import pandas as pd
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_format_dict
-from pysam import tabix_compression 
+from gwaslab.CommonData import get_number_to_chr
+from pysam import tabix_compress 
+from pysam import tabix_index
 
 def toldsc(sumstats, path, verbose=True,log=Log(),to_csvargs={}):
     '''
@@ -165,8 +167,25 @@ def tovcf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA"
     pass
     
 ###################################################################################################################################################
-def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log(),to_csvargs={}):
+def tofmt(sumstats,
+          path=None,
+          suffix=None,
+          fmt=None,
+          cols=[],
+          xymt_number=False,
+          xymt=["X","Y","MT"],
+          chr_prefix=None,
+          bgzip=False,
+          tabix=False,
+          verbose=True,
+          log=Log(),
+          to_csvargs={}):
+    
     if verbose: log.write(" - Start outputting sumstats in "+fmt+" format...")
+    if xymt_number is False:
+        sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt))
+    if chr_prefix is not None:
+        sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
     if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:       
         if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
@@ -198,7 +217,9 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         return sumstats
     
     elif fmt=="bed":
-        # bed-like format, 0-based
+        # bed-like format, 0-based, 
+        # first 3 columns : chromosome, start, end
+        # https://genome.ucsc.edu/FAQ/FAQformat.html#format1
         is_snp = (sumstats["EA"].str.len() == sumstats["NEA"].str.len())
         is_insert = (sumstats["EA"].str.len()>1) &(sumstats["NEA"].str.len()==1)
         is_delete = (sumstats["EA"].str.len()==1) &(sumstats["NEA"].str.len()>1)
@@ -238,13 +259,25 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         sumstats["END"] = sumstats["END"].astype("Int64")
         
         sumstats = sumstats.loc[:,ouput_cols]
-        path = path + "."+suffix+".gz"
+        path = path + "."+suffix
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
+        
         sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
+        #tabix_compress
+        #tabix_index
+        if bgzip is True:
+            if verbose: log.write(" -bgzip compressing ...") 
+            tabix_compress(path, path+".gz",force=True)
+        if tabix is True:
+            if verbose: log.write(" -tabix indexing...") 
+            tabix_index(path+".gz" ,preset="bed",force=True) 
         
     elif fmt=="vep":
         # bed-like format, 1-based
+        # first 6 columns : chromosome, start, end, allele, strand, identifier
+        # https://asia.ensembl.org/info/docs/tools/vep/vep_formats.html
+        
         is_snp = (sumstats["EA"].str.len() == sumstats["NEA"].str.len())
         is_insert = (sumstats["EA"].str.len()>1) &(sumstats["NEA"].str.len()==1)
         is_delete = (sumstats["EA"].str.len()==1) &(sumstats["NEA"].str.len()>1)
@@ -284,10 +317,7 @@ def tofmt(sumstats,path=None,suffix=None,fmt=None,cols=[],verbose=True,log=Log()
         path = path + "."+suffix+".gz"
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
-            #tabix_compress
-            #pysam.tabix_index("./test.bed.gz",preset="bed")
-            #tabix_index
-            #pysam.tabix_compress("./test.bed","./test.bed.gz")
+
         sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
     
     

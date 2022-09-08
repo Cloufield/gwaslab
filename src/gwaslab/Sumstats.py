@@ -430,7 +430,12 @@ class Sumstats():
               verbose=True,
               output_log=True,
               to_csvargs={},
-              float_formats={}):
+              float_formats={},
+              xymt_number=False,
+              xymt=["X","Y","MT"],
+              chr_prefix=None,
+              bgzip=False,
+              tabix=False):
         
         if fmt in ["ldsc","fuma","metal","bed","vep","vcf","fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:
             if verbose: self.log.write("Start to format the output sumstats in: ",fmt, " format")
@@ -506,8 +511,18 @@ class Sumstats():
         if fmt=="vcf":
             toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog","vep","bed"]:
-            tofmt(output, path=path,fmt=fmt,suffix=suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            tofmt(output,
+                  path=path,
+                  fmt=fmt,
+                  suffix=suffix,
+                  verbose=True,
+                  log=self.log,
+                  to_csvargs=to_csvargs,
+                  chr_prefix=chr_prefix,
+                  bgzip=bgzip,
+                  tabix=tabix,
+                  xymt_number=xymt_number,
+                  xymt=xymt)
         if output_log is True:
-            if verbose: self.log.write(" - Saving log file...")
-            self.log.save(path + "."+ suffix +".log")
+            if verbose: self.log.write(" -Saving log file:",path + "."+ suffix +".log")
         if verbose: self.log.write("Finished outputting successfully!")
