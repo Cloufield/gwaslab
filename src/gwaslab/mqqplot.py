@@ -10,6 +10,7 @@ from gwaslab.getsig import getsig
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
 from pyensembl import EnsemblRelease
+import allel
 # 20220310 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -18,9 +19,12 @@ def mqqplot(insumstats,
           p=None,
           snpid=None,
           eaf=None,
+          ref_path=None,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
+          region=None,
+          region_step=21,
           mqqratio=3,
           windowsizekb=500,
           anno=None,
@@ -163,8 +167,16 @@ def mqqplot(insumstats,
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
         ## POS
         sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
-
-      
+    if region is not None:
+        region_chr = region[0]
+        region_start = region[1]
+        region_end = region[2]
+        if verbose:log.write(" -Extract SNPs in region : chr"+str(region_chr)+":"+str(region[1])+"-"+str(region[2])+ "...")
+        
+        in_region_snp = (sumstats[chrom]==region_chr) &(sumstats[pos]<region_end) &(sumstats[pos]>region_start)
+        if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)))
+        sumstats = sumstats.loc[in_region_snp,:]
+        
     ## EAF
     if stratified is True: 
         sumstats["MAF"] = pd.to_numeric(sumstats[eaf], errors='coerce')
@@ -240,6 +252,66 @@ def mqqplot(insumstats,
         maxy = (maxticker-cut)/cutfactor + cut
 
 # Manhattan plot ##########################################################################################################
+## regional plot ->rsq
+     #calculate rsq]
+    if ref_path is not None:
+        if verbose: log.write(" -Loading reference genotype from : "+ ref_path)
+        ref_genotype = allel.read_vcf(ref_path,region=str(region[0])+":"+str(region[1])+"-"+str(region[2]),tabix=None)
+        
+        if verbose: log.write(" -Retrieving index...")
+        sumstats["REFINDEX"] = sumstats[pos].apply(lambda x: np.where(ref_genotype["variants/POS"] == x )[0][0] if np.any(ref_genotype["variants/POS"] == x) else None)
+        lead_id = sumstats["scaled_P"].idxmax()
+        lead_pos = sumstats.loc[lead_id,pos]
+        
+        
+        if lead_pos in ref_genotype["variants/POS"]:
+            lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
+            other_snps_ref_index = sumstats["REFINDEX"].values
+            lead_snp_genotype = allel.GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
+            other_snp_genotype = allel.GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
+            if verbose: log.write(" -Calculating Rsq...")
+            sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = allel.rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0]
+        else:
+            if verbose: log.write(" -Lead SNP not found in reference...")
+            sumstats["RSQ"]=None
+        sumstats["RSQ"] = sumstats["RSQ"].astype("float")
+        sumstats["LD"] = "0"
+        for index,ld_threshold in enumerate([0.2,0.4,0.6,0.8,1]):
+            if index==0:
+                to_change_color = sumstats["RSQ"]>-1
+                sumstats.loc[to_change_color,"LD"] = "1"
+            else:
+                to_change_color = sumstats["RSQ"]>ld_threshold
+                sumstats.loc[to_change_color,"LD"] = str(index+1)
+        sumstats.loc[lead_id,"LD"] = "6"
+
+
+
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
+
 ## Create index for plotting ###################################################
 
     if verbose:log.write("Plotting "+str(len(sumstats))+" variants:")
@@ -283,12 +355,24 @@ def mqqplot(insumstats,
         sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
         sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=4
         sumstats["chr_hue"]=sumstats[chrom].astype("string")
-        
+        if ref_path is not None:
+            sumstats["chr_hue"]=sumstats["LD"]
 ## Manhatann plot ###################################################
+        palette = sns.color_palette(colors,n_colors=sumstats[chrom].nunique())  
+        if ref_path is not None:
+            palette = {"0":"#E4E4E4",
+                       "1":"#020080",
+                       "2":"#86CEF9",
+                       "3":"#24FF02",
+                       "4":"#FDA400",
+                       "5":"#FC0100",
+                       "6":"#FF0000"
+                      }
+            marker_size=(25,45)
         if len(highlight) >0:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                                hue='chr_hue',
-                               palette=sns.color_palette(colors,n_colors=sumstats[chrom].nunique()),
+                               palette=palette,
                                legend=None,
                                size="s",
                                sizes=marker_size,
@@ -308,7 +392,7 @@ def mqqplot(insumstats,
         else:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                    hue='chr_hue',
-                   palette= sns.color_palette(colors,n_colors=sumstats[chrom].nunique()),
+                   palette= palette,
                    legend=None,
                    size="s",
                    sizes=marker_size,
@@ -322,12 +406,23 @@ def mqqplot(insumstats,
                 ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color,zorder=3,s=marker_size[1]+1)
             else:
                 if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
- 
+        
+        if ref_path is not None:
+            lead_id=sumstats["scaled_P"].idxmax()
+            ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],color="#FF0000",marker="D",zorder=3,s=marker_size[1]+1)
         
         #plot.set_xlabel(chrom); 
         plot.set_xticks(chrom_df)
         plot.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif",name="Arial")
-        plot.set_xlim([-0.01*sumstats["i"].max(),1.01*sumstats["i"].max()])
+        if region is not None:
+            region_ticks = list(map('{:.3f}'.format,np.linspace(region[1], region[2], num=region_step).astype("int")/1000000)) 
+            plot.set_xticks(np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step))
+            plot.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif",name="Arial")
+        #
+        max_min = sumstats["i"].max()-sumstats["i"].min()
+        plot.set_xlim([sumstats["i"].min()-0.01*max_min,sumstats["i"].max()+0.01*max_min])
+        
+        # genomewide significant line
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
         if cut == 0: plot.set_ylim(skip,maxy*1.2)
         if cut:
@@ -446,7 +541,10 @@ def mqqplot(insumstats,
             if verbose: log.write(" -Skip annotating")
 
         plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif",name="Arial")
-        plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif",name="Arial")
+        if region is not None:
+            plot.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif",name="Arial")
+        else:
+            plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif",name="Arial")
         plot.spines["top"].set_visible(False)
         plot.spines["right"].set_visible(False)
         plot.spines["left"].set_visible(True)
