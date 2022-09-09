@@ -1,4 +1,6 @@
 ![gwaslab_logo](https://cloufield.github.io/gwaslab/images/index_logo.jpg)
+![gwaslab_badge](https://img.shields.io/badge/release-v3.1.2-brightgreen) 
+
 A collection of handy python scripts for GWAS. 
 Just want to make life eaiser and save myself from repetitive work.
 
