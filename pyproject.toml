@@ -11,6 +11,8 @@ requires = [
     "Biopython",
     "adjustText",
     "liftover",
-    "statsmodels"
+    "statsmodels",
+    "scikit-allel",
+    "pyensembl"
 ]
 build-backend = "setuptools.build_meta"
