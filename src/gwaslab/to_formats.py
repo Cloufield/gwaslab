@@ -186,7 +186,7 @@ def tofmt(sumstats,
         sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt))
     if chr_prefix is not None:
         sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
-    if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:       
+    if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog","metal","mrmega"]:       
         if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
         if verbose:             

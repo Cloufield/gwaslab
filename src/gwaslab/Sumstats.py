@@ -437,7 +437,7 @@ class Sumstats():
               bgzip=False,
               tabix=False):
         
-        if fmt in ["ldsc","fuma","metal","bed","vep","vcf","fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog"]:
+        if fmt in ["ldsc","fuma","metal","bed","vep","vcf","fastgwa","ssf","plink","plink2","metal","saige","regenie","gwascatalog","pgscatalog"]:
             if verbose: self.log.write("Start to format the output sumstats in: ",fmt, " format")
         else:
             raise ValueError("Please select a format to output")
@@ -510,7 +510,7 @@ class Sumstats():
             #toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if fmt=="vcf":
             toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
-        if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog","vep","bed"]:
+        if fmt in ["fastgwa","ssf","plink","plink2","saige","metal","regenie","gwascatalog","pgscatalog","vep","bed"]:
             tofmt(output,
                   path=path,
                   fmt=fmt,

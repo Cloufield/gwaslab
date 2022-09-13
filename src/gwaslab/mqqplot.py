@@ -11,6 +11,7 @@ from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
 from pyensembl import EnsemblRelease
 import allel
+import matplotlib as mpl
 # 20220310 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -276,16 +277,18 @@ def mqqplot(insumstats,
             sumstats["RSQ"]=None
         sumstats["RSQ"] = sumstats["RSQ"].astype("float")
         sumstats["LD"] = "0"
-        for index,ld_threshold in enumerate([0.2,0.4,0.6,0.8,1]):
+        for index,ld_threshold in enumerate([0.2,0.4,0.6,0.8]):
             if index==0:
                 to_change_color = sumstats["RSQ"]>-1
                 sumstats.loc[to_change_color,"LD"] = "1"
             else:
                 to_change_color = sumstats["RSQ"]>ld_threshold
                 sumstats.loc[to_change_color,"LD"] = str(index+1)
-        sumstats.loc[lead_id,"LD"] = "6"
-
-
+        sumstats.loc[lead_id,"LD"] = "5"
+        
+        sumstats["LEAD"]="Other variants"
+        sumstats.loc[lead_id,"LEAD"] = "Lead variants"
+        
 
 
         
@@ -355,25 +358,30 @@ def mqqplot(insumstats,
         sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
         sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=4
         sumstats["chr_hue"]=sumstats[chrom].astype("string")
+
         if ref_path is not None:
             sumstats["chr_hue"]=sumstats["LD"]
 ## Manhatann plot ###################################################
         palette = sns.color_palette(colors,n_colors=sumstats[chrom].nunique())  
+        legend = None
+        style=None
         if ref_path is not None:
             palette = {"0":"#E4E4E4",
                        "1":"#020080",
                        "2":"#86CEF9",
                        "3":"#24FF02",
                        "4":"#FDA400",
-                       "5":"#FC0100",
-                       "6":"#FF0000"
+                       "5":"#FF0000"
                       }
             marker_size=(25,45)
+            legend=None
+            style=None
         if len(highlight) >0:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                                hue='chr_hue',
                                palette=palette,
-                               legend=None,
+                               legend=legend,
+                               style=style,
                                size="s",
                                sizes=marker_size,
                                linewidth=0,
@@ -382,7 +390,8 @@ def mqqplot(insumstats,
             sns.scatterplot(data=sumstats.loc[sumstats["HUE"]=="0"], x='i', y='scaled_P',
                    hue="HUE",
                    palette={"0":highlight_color},
-                   legend=None,
+                   legend=legend,
+                   style=style,
                    size="s",
                    sizes=(marker_size[0]+1,marker_size[1]+1),
                    linewidth=0,
@@ -393,7 +402,8 @@ def mqqplot(insumstats,
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                    hue='chr_hue',
                    palette= palette,
-                   legend=None,
+                   legend=legend,
+                   style=style,
                    size="s",
                    sizes=marker_size,
                    linewidth=0,
@@ -410,7 +420,11 @@ def mqqplot(insumstats,
         if ref_path is not None:
             lead_id=sumstats["scaled_P"].idxmax()
             ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],color="#FF0000",marker="D",zorder=3,s=marker_size[1]+1)
-        
+            cmp= mpl.colors.ListedColormap(["#020080","#86CEF9","#24FF02","#FDA400","#FF0000"])
+            norm= mpl.colors.BoundaryNorm([0,0.2,0.4,0.6,0.8,1],cmp.N)
+            cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),ax=ax1,fraction=0.15)
+            cbar.set_label('LD $R^{2}$')
+            
         #plot.set_xlabel(chrom); 
         plot.set_xticks(chrom_df)
         plot.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif",name="Arial")

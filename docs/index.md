@@ -1,6 +1,6 @@
 ![index_logo](./images/index_logo.jpg)
 
-# GWASLAB 
+# GWASLAB (beta)
 
 ![badge](https://img.shields.io/badge/release-v3.2.0-brightgreen)
 
@@ -93,17 +93,13 @@ mysumstats.plot_mqq()
 pip install gwaslab==3.0.1
 ```
 
-Also need to install pyvcf
-
-```
-conda install -c conda-forge pyvcf 
-```
 
 ### Requirements:
 
 - Python3
-- pyVCF 0.6.8
 - pySAM 
+- pyensembl
+- scikit-allel
 - Biopython 1.79
 - liftover 1.1.13
 - pandas  1.2.4
@@ -111,21 +107,10 @@ conda install -c conda-forge pyvcf
 - matplotlib>3.5
 - seaborn 0.11.1
 - scipy 1.6.2
-
-## Reference sources
-
-UCSC reference files: https://hgdownload.soe.ucsc.edu/downloads.html#human
-
-1000 Genome Phase3 vcf files: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/
-
-gnomAD vcf files:  https://gnomad.broadinstitute.org/downloads
-
-dbSNP vcf files: https://ftp.ncbi.nih.gov/snp/
-
-curated chr:pos:ref:alt-rsid comversion table for 1KG (~80million variants): [1kg_norm_unique.dbsnp151.auto.tsv.gz - Google Drive](https://drive.google.com/file/d/1w6ZYU217uBcZ9R2avs2dNRqvrtJft-N6/view?usp=sharing) 
+- statsmodels
+- adjustText
 
 ## Contacts
-
 https://github.com/Cloufield/gwaslab
 
 
