@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>UpdateLogs - GWASLab</title>
+    <title>v3.2.0 - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -198,8 +198,23 @@
                 
                 
                 
-                    <li class="active">
-                        <a href="./">UpdateLogs</a>
+                    <li class="dropdown active">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">UpdateLogs <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li class="active">
+    <a href="./">v3.2.0</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="../v3.1.0/">V3.1.0</a>
+</li>
+
+                        
+                        </ul>
                     </li>
                 
                 
@@ -216,8 +231,8 @@
                             <i class="fas fa-arrow-left"></i> Previous
                         </a>
                     </li>
-                    <li class="disabled">
-                        <a rel="next" >
+                    <li >
+                        <a rel="next" href="../v3.1.0/">
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
@@ -234,23 +249,40 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
+        <li class="first-level active"><a href="#v320">v3.2.0</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<p>v 3.2.0
-Incorporated pyensembl and scikit-allel.
-- Get_lead() : support automatic gene name annotation (using pyensembl)
-- to_format():
-    - support common sumstats formats 
-    - support 1-based bed-like formats for VEP
-    - support 0-based bed-like formats
-- Manhattan plot:
-    - optimized plotting logic
-    - annotate gene names
-    - added regional plot feature using a user-provided reference panel
-- Comparison effect plot: 
-    - fix using OR</p></div>
+<h1 id="v320">v3.2.0</h1>
+<p>Incorporated pyensembl and scikit-allel.</p>
+<ul>
+<li>
+<p>Get_lead() : support automatic gene name annotation (using pyensembl)</p>
+</li>
+<li>
+<p>to_format():</p>
+<ul>
+<li>support common sumstats formats </li>
+<li>support 1-based bed-like formats for VEP</li>
+<li>support 0-based bed-like formats</li>
+</ul>
+</li>
+<li>
+<p>Manhattan plot:</p>
+<ul>
+<li>optimized plotting logic</li>
+<li>annotate gene names</li>
+<li>added regional plot feature using a user-provided reference panel</li>
+</ul>
+</li>
+<li>
+<p>Comparison effect plot: </p>
+<ul>
+<li>fix using OR</li>
+</ul>
+</li>
+</ul></div>
         
         
     </div>
