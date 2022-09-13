@@ -197,6 +197,12 @@
                     </li>
                 
                 
+                
+                    <li >
+                        <a href="../v3.2/">UpdateLogs</a>
+                    </li>
+                
+                
                 </ul>
 
             <ul class="nav navbar-nav navbar-right">
@@ -210,8 +216,8 @@
                             <i class="fas fa-arrow-left"></i> Previous
                         </a>
                     </li>
-                    <li class="disabled">
-                        <a rel="next" >
+                    <li >
+                        <a rel="next" href="../v3.2/">
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
@@ -228,7 +234,8 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#process-reference-file">Process Reference file</a></li>
+        <li class="first-level active"><a href="#pyensembl-reference-file">pyensembl Reference file</a></li>
+        <li class="first-level "><a href="#process-reference-file">Process Reference file</a></li>
             <li class="second-level"><a href="#1000-genome">1000 Genome</a></li>
                 
         <li class="first-level "><a href="#dbsnp">dbsnp</a></li>
@@ -237,6 +244,21 @@
 </div></div>
         <div class="col-md-9" role="main">
 
+<h1 id="pyensembl-reference-file">pyensembl Reference file</h1>
+<p>https://github.com/openvax/pyensembl</p>
+<p>Install pyensembl and download reference:</p>
+<pre><code># install  pyensembl if not
+pip install pyensembl
+
+# syntax for download reference for pyensembl
+pyensembl install --release &lt;list of Ensembl release numbers&gt; --species &lt;species-name&gt;
+</code></pre>
+<p>For gwaslab, please run the following commands:</p>
+<p>ensembl release 75 : hg19</p>
+<p>ensembl release 76 : hg38 </p>
+<pre><code>pyensembl install --release 75 76 --species human
+</code></pre>
+<p>gwaslab could use ensembl reference data to annotate lead SNPs with the nearest gene name.</p>
 <h1 id="process-reference-file">Process Reference file</h1>
 <h2 id="1000-genome">1000 Genome</h2>
 <p>Download:</p>

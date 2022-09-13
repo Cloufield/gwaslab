@@ -197,6 +197,12 @@
                     </li>
                 
                 
+                
+                    <li >
+                        <a href="v3.2/">UpdateLogs</a>
+                    </li>
+                
+                
                 </ul>
 
             <ul class="nav navbar-nav navbar-right">
@@ -349,31 +355,23 @@ mysumstats.plot_mqq()
 <p>Logging : keep a complete record of manipulations from raw data to munged data</p>
 </li>
 <li>
-<p>Formating GWAS sumstats in certain formats:</p>
+<p>Formating GWAS sumstats in certain formats</p>
 </li>
-<li>Manually curated format coversion dictionary : https://github.com/Cloufield/formatbook</li>
-<li>Support (coming soon) LDSC / MAGMA / METAL / MR-MEGA / FUMA / PLINK / PLINK2 / GWAS-SSF / PGS-Catalog / GWAS-Catalog ...</li>
+<li>
+<p>LDSC / MAGMA / METAL / MR-MEGA / FUMA</p>
+</li>
 </ul>
 <h2 id="install">Install</h2>
-<p>Stable version:</p>
 <pre><code>pip install gwaslab==3.0.1
 </code></pre>
 <p>Also need to install pyvcf</p>
 <pre><code>conda install -c conda-forge pyvcf 
 </code></pre>
-<p>Latest beta version:</p>
-<pre><code>git clone https://github.com/Cloufield/gwaslab.git
-</code></pre>
-<p>when using, just insert the path to your env path:</p>
-<pre><code>import sys
-gwaslab_path=&quot;xxx&quot;
-sys.path.insert(0,gwaslab_path)
-import gwaslab as gl
-</code></pre>
 <h3 id="requirements">Requirements:</h3>
 <ul>
 <li>Python3</li>
 <li>pyVCF 0.6.8</li>
+<li>pySAM </li>
 <li>Biopython 1.79</li>
 <li>liftover 1.1.13</li>
 <li>pandas  1.2.4</li>
@@ -387,12 +385,37 @@ import gwaslab as gl
 <p>1000 Genome Phase3 vcf files: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/</p>
 <p>gnomAD vcf files:  https://gnomad.broadinstitute.org/downloads</p>
 <p>dbSNP vcf files: https://ftp.ncbi.nih.gov/snp/</p>
+<p>curated chr:pos:ref:alt-rsid comversion table for 1KG (~80million variants): <a href="https://drive.google.com/file/d/1w6ZYU217uBcZ9R2avs2dNRqvrtJft-N6/view?usp=sharing">1kg_norm_unique.dbsnp151.auto.tsv.gz - Google Drive</a> </p>
 <h2 id="contacts">Contacts</h2>
 <p>https://github.com/Cloufield/gwaslab</p>
 <h2 id="update-log">Update log</h2>
-<p>v3.0.1 added nea, renamed clean to harmonise</p>
-<p>v3.0.0 complete pipeline</p>
-<p>v2.0.0 added sumstats QC pipepline.</p></div>
+<p>v3.1.0 </p>
+<ol>
+<li>
+<p>implemented formatbook: easily import sumstats and output sumstats in certain formats (support for commonly used formats including ldsc, plink, plink2, gwas-ssf, saige, regenie, fastgwa, metal, mrmega, pgscatalog, pgscatalog_hm, gwascatalog, gwascatalog_hm and gwaslab)</p>
+</li>
+<li>
+<p>added <code>.filter_region_in/out</code> using bed files (or in-built regions like high-ld or hla)</p>
+</li>
+<li>
+<p>implemented <code>.summay()</code> methods.</p>
+</li>
+<li>
+<p>optimized rsID annotation pipeline. Support annotation using curated chr:pos:ref:alt - rsID tsv for quick annotation.</p>
+</li>
+<li>
+<p>changed some datatypes and optimized memory usage.</p>
+</li>
+<li>
+<p>replaced pyVCF with pySAM</p>
+</li>
+</ol>
+<p>v3.0.1 </p>
+<p>added nea, renamed clean to harmonise</p>
+<p>v3.0.0 </p>
+<p>complete pipeline</p>
+<p>v2.0.0 </p>
+<p>added sumstats QC pipepline.</p></div>
         
         
     </div>
@@ -499,5 +522,5 @@ import gwaslab as gl
 
 <!--
 MkDocs version : 1.3.0
-Build Date UTC : 2022-08-01 03:21:39.964837+00:00
+Build Date UTC : 2022-09-13 07:10:00.580885+00:00
 -->
