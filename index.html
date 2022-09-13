@@ -243,7 +243,7 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#gwaslab">GWASLAB</a></li>
+        <li class="first-level active"><a href="#gwaslab-beta">GWASLAB (beta)</a></li>
             <li class="second-level"><a href="#functions">Functions</a></li>
                 
                 <li class="third-level"><a href="#standardization-normalization-harmonization">Standardization, Normalization &amp; Harmonization</a></li>
@@ -253,8 +253,6 @@
             <li class="second-level"><a href="#install">Install</a></li>
                 
                 <li class="third-level"><a href="#requirements">Requirements:</a></li>
-            <li class="second-level"><a href="#reference-sources">Reference sources</a></li>
-                
             <li class="second-level"><a href="#contacts">Contacts</a></li>
                 
     </ul>
@@ -262,7 +260,7 @@
         <div class="col-md-9" role="main">
 
 <p><img alt="index_logo" src="images/index_logo.jpg" /></p>
-<h1 id="gwaslab">GWASLAB</h1>
+<h1 id="gwaslab-beta">GWASLAB (beta)</h1>
 <p><img alt="badge" src="https://img.shields.io/badge/release-v3.2.0-brightgreen" /></p>
 <p>Gwaslab : a simple python package for handling GWAS sumstats.</p>
 <p>Each process is modularized and can be customized to your needs.</p>
@@ -372,14 +370,12 @@ mysumstats.plot_mqq()
 <h2 id="install">Install</h2>
 <pre><code>pip install gwaslab==3.0.1
 </code></pre>
-<p>Also need to install pyvcf</p>
-<pre><code>conda install -c conda-forge pyvcf 
-</code></pre>
 <h3 id="requirements">Requirements:</h3>
 <ul>
 <li>Python3</li>
-<li>pyVCF 0.6.8</li>
 <li>pySAM </li>
+<li>pyensembl</li>
+<li>scikit-allel</li>
 <li>Biopython 1.79</li>
 <li>liftover 1.1.13</li>
 <li>pandas  1.2.4</li>
@@ -387,13 +383,9 @@ mysumstats.plot_mqq()
 <li>matplotlib&gt;3.5</li>
 <li>seaborn 0.11.1</li>
 <li>scipy 1.6.2</li>
+<li>statsmodels</li>
+<li>adjustText</li>
 </ul>
-<h2 id="reference-sources">Reference sources</h2>
-<p>UCSC reference files: https://hgdownload.soe.ucsc.edu/downloads.html#human</p>
-<p>1000 Genome Phase3 vcf files: http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/</p>
-<p>gnomAD vcf files:  https://gnomad.broadinstitute.org/downloads</p>
-<p>dbSNP vcf files: https://ftp.ncbi.nih.gov/snp/</p>
-<p>curated chr:pos:ref:alt-rsid comversion table for 1KG (~80million variants): <a href="https://drive.google.com/file/d/1w6ZYU217uBcZ9R2avs2dNRqvrtJft-N6/view?usp=sharing">1kg_norm_unique.dbsnp151.auto.tsv.gz - Google Drive</a> </p>
 <h2 id="contacts">Contacts</h2>
 <p>https://github.com/Cloufield/gwaslab</p></div>
         
@@ -502,5 +494,5 @@ mysumstats.plot_mqq()
 
 <!--
 MkDocs version : 1.3.0
-Build Date UTC : 2022-09-13 07:27:09.537749+00:00
+Build Date UTC : 2022-09-13 09:03:27.371064+00:00
 -->
