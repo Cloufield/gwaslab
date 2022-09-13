@@ -1,3 +1,31 @@
+# pyensembl Reference file
+
+https://github.com/openvax/pyensembl
+
+Install pyensembl and download reference:
+
+```
+# install  pyensembl if not
+pip install pyensembl
+
+# syntax for download reference for pyensembl
+pyensembl install --release <list of Ensembl release numbers> --species <species-name>
+```
+
+For gwaslab, please run the following commands:
+
+ensembl release 75 : hg19
+
+ensembl release 76 : hg38 
+
+```
+pyensembl install --release 75 76 --species human
+```
+
+gwaslab could use ensembl reference data to annotate lead SNPs with the nearest gene name.
+
+
+
 # Process Reference file
 
 ## 1000 Genome
@@ -46,3 +74,5 @@ latest release: [Index of /snp/latest_release/VCF](https://ftp.ncbi.nih.gov/snp/
 Allele frequency for major ancestries and rsID
 
 gnomAD v2 & gnomAD v2 liftover & gnomAD v3:   [gnomAD](https://gnomad.broadinstitute.org/downloads)    
+
+

@@ -1,7 +1,7 @@
 # Scatter plot : effect size comparison
 
 ```python
-gl.compare_effect(path1,
+gl.compare_effect( path1,
                    cols_name_list_1, effect_cols_list_1,
                    path2,
                    cols_name_list_2, effect_cols_list_2,
@@ -26,8 +26,22 @@ gl.compare_effect(path1,
                    helper_line_args={"color":'black', "linestyle":'-',"lw":1},
                    fontargs={'family':'sans','fontname':'Arial','fontsize':12},
                    errargs={"ecolor":"#cccccc","elinewidth":1},
-                   verbose=False):
+                   sep=["\t","\t"],
+                   log = Log(),
+                   verbose=False)
 ```
+
+`path1` and `path2` : the paths to the sumstats.
+`cols_name_list_1` and `cols_name_list_2` : list of column names for variants basic information, in the order of [snpid,p,ea,nea,chr,pos]
+`effect_cols_list_1` and `effect_cols_list_1` : list of column names for effect size-related columns, in the order of [effect,se] or [OR,OR_95L,OR_95H]
+`eaf` : optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is needed when you need to filter by maf using `maf_level`.
+`maf_level`: the maf filter for variants. Vairants with maf < maf_level will be removed from comparison.
+`label` : a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].
+`snplist` : optional, specify the variants you want to compare. If None, gwaslab will automatically extract lead variants from both sumstats.
+`anno` : if annotate the variants
+`is_q` : if apply the heterogeneity tests by Cochran's Q test.
+`q_level` : the significance threshold for Cochran's Q test.
+`sig_level`: the significance level for auto-extracting lead variants.
 
 Example:
 

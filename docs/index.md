@@ -1,6 +1,8 @@
 ![index_logo](./images/index_logo.jpg)
 
-# GWASLAB
+# GWASLAB 
+
+![badge](https://img.shields.io/badge/release-v3.2.0-brightgreen)
 
 Gwaslab : a simple python package for handling GWAS sumstats.
 
@@ -81,37 +83,27 @@ mysumstats.plot_mqq()
 
 - Logging : keep a complete record of manipulations from raw data to munged data
 
-- Formating GWAS sumstats in certain formats:
-  - Manually curated format coversion dictionary : https://github.com/Cloufield/formatbook
-  - Support (coming soon) LDSC / MAGMA / METAL / MR-MEGA / FUMA / PLINK / PLINK2 / GWAS-SSF / PGS-Catalog / GWAS-Catalog ...
+- Formating GWAS sumstats in certain formats
+  
+  - LDSC / MAGMA / METAL / MR-MEGA / FUMA
 
 ## Install
 
-Stable version:
 ```
 pip install gwaslab==3.0.1
 ```
+
 Also need to install pyvcf
+
 ```
 conda install -c conda-forge pyvcf 
-```
-
-Latest beta version:
-```
-git clone https://github.com/Cloufield/gwaslab.git
-```
-when using, just insert the path to your env path:
-```
-import sys
-gwaslab_path="xxx"
-sys.path.insert(0,gwaslab_path)
-import gwaslab as gl
 ```
 
 ### Requirements:
 
 - Python3
 - pyVCF 0.6.8
+- pySAM 
 - Biopython 1.79
 - liftover 1.1.13
 - pandas  1.2.4
@@ -130,14 +122,10 @@ gnomAD vcf files:  https://gnomad.broadinstitute.org/downloads
 
 dbSNP vcf files: https://ftp.ncbi.nih.gov/snp/
 
+curated chr:pos:ref:alt-rsid comversion table for 1KG (~80million variants): [1kg_norm_unique.dbsnp151.auto.tsv.gz - Google Drive](https://drive.google.com/file/d/1w6ZYU217uBcZ9R2avs2dNRqvrtJft-N6/view?usp=sharing) 
+
 ## Contacts
 
 https://github.com/Cloufield/gwaslab
 
-## Update log
 
-v3.0.1 added nea, renamed clean to harmonise
-
-v3.0.0 complete pipeline
-
-v2.0.0 added sumstats QC pipepline.
