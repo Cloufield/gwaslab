@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>v3.2.0 - GWASLab</title>
+    <title>Update Logs - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -70,7 +70,7 @@
                 
                 
                     <li >
-                        <a href="..">Home</a>
+                        <a href="../index.md - "Update Logs":UpdateLogs.md">Home</a>
                     </li>
                 
                 
@@ -197,43 +197,12 @@
                     </li>
                 
                 
-                
-                    <li class="dropdown active">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">UpdateLogs <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                        
-                            
-<li class="active">
-    <a href="./">v3.2.0</a>
-</li>
-
-                        
-                            
-<li >
-    <a href="../v3.1.0/">V3.1.0</a>
-</li>
-
-                        
-                        </ul>
-                    </li>
-                
-                
                 </ul>
 
             <ul class="nav navbar-nav navbar-right">
                     <li>
                         <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
                             <i class="fas fa-search"></i> Search
-                        </a>
-                    </li>
-                    <li >
-                        <a rel="prev" href="../Reference/">
-                            <i class="fas fa-arrow-left"></i> Previous
-                        </a>
-                    </li>
-                    <li >
-                        <a rel="next" href="../v3.1.0/">
-                            Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
                     <li>
@@ -249,12 +218,17 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#v320">v3.2.0</a></li>
+        <li class="first-level active"><a href="#update-logs">Update Logs</a></li>
+            <li class="second-level"><a href="#v320">v3.2.0</a></li>
+                
+            <li class="second-level"><a href="#v310">v3.1.0</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="v320">v3.2.0</h1>
+<h1 id="update-logs">Update Logs</h1>
+<h2 id="v320">v3.2.0</h2>
 <p>Incorporated pyensembl and scikit-allel.</p>
 <ul>
 <li>
@@ -282,7 +256,28 @@
 <li>fix using OR</li>
 </ul>
 </li>
-</ul></div>
+</ul>
+<h2 id="v310">v3.1.0</h2>
+<ol>
+<li>
+<p>implemented formatbook: easily import sumstats and output sumstats in certain formats (support for commonly used formats including ldsc, plink, plink2, gwas-ssf, saige, regenie, fastgwa, metal, mrmega, pgscatalog, pgscatalog_hm, gwascatalog, gwascatalog_hm and gwaslab)</p>
+</li>
+<li>
+<p>added <code>.filter_region_in/out</code> using bed files (or in-built regions like high-ld or hla)</p>
+</li>
+<li>
+<p>implemented <code>.summay()</code> methods.</p>
+</li>
+<li>
+<p>optimized rsID annotation pipeline. Support annotation using curated chr:pos:ref:alt - rsID tsv for quick annotation.</p>
+</li>
+<li>
+<p>changed some datatypes and optimized memory usage.</p>
+</li>
+<li>
+<p>replaced pyVCF with pySAM</p>
+</li>
+</ol></div>
         
         
     </div>
