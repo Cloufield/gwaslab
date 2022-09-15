@@ -44,6 +44,7 @@ from gwaslab.CommonData import get_number_to_chr
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_high_ld
 from gwaslab.CommonData import get_format_dict
+from gwaslab.CommonData import get_formats_list
 
 #20220309
 class Sumstats():
@@ -437,7 +438,7 @@ class Sumstats():
               bgzip=False,
               tabix=False):
         
-        if fmt in ["ldsc","fuma","metal","bed","vep","vcf","fastgwa","ssf","plink","plink2","metal","saige","regenie","gwascatalog","pgscatalog"]:
+        if fmt in get_formats_list() + ["vep","bed"]:
             if verbose: self.log.write("Start to format the output sumstats in: ",fmt, " format")
         else:
             raise ValueError("Please select a format to output")
@@ -507,8 +508,8 @@ class Sumstats():
             
         ##########################################################################################################          
         # output, mapping column names
-        if fmt=="ldsc":
-            toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
+        #if fmt=="ldsc":
+        #    toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
             
         #if fmt=="fuma":
             #toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
@@ -516,7 +517,8 @@ class Sumstats():
             #toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if fmt=="vcf":
             toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
-        if fmt in ["fastgwa","ssf","plink","plink2","saige","metal","regenie","gwascatalog","pgscatalog","vep","bed"]:
+        
+        if fmt in get_formats_list() + ["vep","bed"]:
             tofmt(output,
                   path=path,
                   fmt=fmt,

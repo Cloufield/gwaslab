@@ -4,6 +4,7 @@ from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_number_to_chr
 from pysam import tabix_compress 
 from pysam import tabix_index
+from gwaslab.CommonData import get_formats_list
 
 def toldsc(sumstats, path, verbose=True,log=Log(),to_csvargs={}):
     '''
@@ -186,7 +187,7 @@ def tofmt(sumstats,
         sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt))
     if chr_prefix is not None:
         sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
-    if fmt in ["fastgwa","ssf","plink","plink2","saige","regenie","gwascatalog","pgscatalog","metal","mrmega"]:       
+    if fmt in get_formats_list():       
         if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
         if verbose:             

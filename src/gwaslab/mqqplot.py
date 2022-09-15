@@ -92,17 +92,21 @@ def mqqplot(insumstats,
     # ax1 : manhattanplot : 
     # ax2 : qq plot 
     if  mode=="qqm":   
+        figargs["figsize"] = (15,5)
         fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**figargs)
     elif mode=="mqq":
+        figargs["figsize"] = (15,5)
         fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**figargs)
     elif mode=="m":
+        figargs["figsize"] = (15,5)
         fig, ax1 = plt.subplots(1, 1,**figargs)
     elif mode=="qq":
+        figargs["figsize"] = (15,5)
         fig, ax2 = plt.subplots(1, 1,**figargs) 
     elif mode=="r":
-        figargs.pop('figsize', None)
-        figsize = (15,10)
-        fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [mqqratio, 1]}, figsize=figsize, **figargs)
+        figargs["figsize"] = (15,10)
+        fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
+                                       gridspec_kw={'height_ratios': [mqqratio, 1]},**figargs)
         plt.subplots_adjust(hspace=0.02)
         #sharex=True,
     else:
@@ -314,28 +318,34 @@ def mqqplot(insumstats,
         sumstats["id"]=range(len(sumstats))
         sumstats=sumstats.set_index("id")
 
-        #create a position dictionary
+        #create a df , groupby by chromosomes , and get the maximum position
         if use_rank is True: 
             posdic = sumstats.groupby(chrom)["POS_RANK"].max()
         else:
             posdic = sumstats.groupby(chrom)[pos].max()
+        
+        # convert to dictionary
         posdiccul = dict(posdic)
+        
+        # fill empty chr with 0
         for i in range(0,26):
             if i in posdiccul: continue
             else: posdiccul[i]=0
-
+        
+        # cumulative sum dictionary
         for i in range(2,sumstats[chrom].max()+1):
             posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*0.05
 
-        #convert base pair postion to x axis position
+        # convert base pair postion to x axis position using the cumulative sum dictionary
         sumstats["add"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
+        
         if use_rank is True: 
             sumstats["i"]=sumstats["POS_RANK"]+sumstats["add"]
         else:
             sumstats["i"]=sumstats[pos]+sumstats["add"]
         
 
-        #for plot      
+        #for plot, get the chr text tick position      
         chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
         #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
         sumstats["i"] = sumstats["i"].astype("Int64")
@@ -427,7 +437,7 @@ def mqqplot(insumstats,
             cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),cax=axins1,fraction=1,orientation="vertical",ticklocation="left")
             #cbar.ax.yaxis.set_ticks_position('left')
             cbar.ax.set_yticks(ticks=[0.2,0.4,0.6,0.8],labels=["0.2","0.4","0.6","0.8"]) 
-            cbar.ax.set_title('LD $R^{2}$',loc="center",y=-0.2)
+            cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.15)
             #cbar.set_label('LD $R^{2}$',loc='center')
         
         ## regional plot : gene track
@@ -544,7 +554,7 @@ def mqqplot(insumstats,
         
         # genomewide significant line
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
-        if cut == 0: plot.set_ylim(skip,maxy*1.2)
+        if cut == 0: ax1.set_ylim(skip,maxy*1.2)
         if cut:
             cutline=plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
@@ -553,7 +563,7 @@ def mqqplot(insumstats,
             else:
                 plot.set_yticks([x for x in range(skip,cut+1,2)])
                 plot.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif",name="Arial")
-
+            ax1.set_ylim(bottom = skip)
 # 
 
 

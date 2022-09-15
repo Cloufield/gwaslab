@@ -115,6 +115,12 @@ def get_format_dict(fmt,inverse=False):
         return dic_meta,inv_dic
     return dic_meta, dic_dict
 
+def get_formats_list():
+    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    dicts = json.load(open(data_path))
+    format_list = list(dicts.keys())
+    return format_list
+
 ####################################################################################################################
     
         
