@@ -349,7 +349,7 @@ def mqqplot(insumstats,
         chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
         #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
         sumstats["i"] = sumstats["i"].astype("Int64")
-        
+        lead_snp_i = sumstats.loc[lead_id,"i"]
 ## Assign marker size ##############################################
         
         sumstats["s"]=1
@@ -511,8 +511,17 @@ def mqqplot(insumstats,
                 else:
                     gene_anno = "<-" + row["name"] 
                 
+                if lead_snp_i > gene_track_start_i+row[3] and sumstats.loc[lead_id,"i"] < gene_track_start_i+row[4] :
+                    gene_color="#FF0000"
+                    sig_gene_name = row["name"]
+                else:
+                    gene_color="#020080"
+                
+                # plot gene line
                 ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
-                         (row["stack"]*4,row["stack"]*4),color="#020080")
+                         (row["stack"]*4,row["stack"]*4),color=gene_color)
+                
+                # plot gene name
                 if (gene_track_start_i+row[3]+gene_track_start_i+row[4])/2 > gene_track_start_i+region[2]:
                     #right side
                     ax3.text(x=gene_track_start_i+row[3],
@@ -525,10 +534,14 @@ def mqqplot(insumstats,
                     ax3.text(x=(gene_track_start_i+row[3]+gene_track_start_i+row[4])/2,
                          y=row["stack"]*4+3,s=gene_anno,ha="center",va="top",color="black",style='italic')
        
-            
+            # plot exons
             for index,row in exons.iterrows():
+                if row["name"]==sig_gene_name:
+                    exon_color="#FF0000"
+                else:
+                    exon_color="#020080"
                 ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
-                         (row["stack"]*4,row["stack"]*4),linewidth=10,color="#020080")
+                         (row["stack"]*4,row["stack"]*4),linewidth=10,color=exon_color)
             
             ax3.set_ylim((-uniq_gene_region["stack"].nunique()*4,5))
             ax3.set_yticks([])
@@ -544,6 +557,12 @@ def mqqplot(insumstats,
             if gtf_path is not None:
                 ax3.set_xticks(np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step))
                 ax3.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif",name="Arial")
+                for i in np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step):
+                    ax1.axvline(x=i, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+                    ax3.axvline(x=i, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+              
+                ax1.axvline(x=lead_snp_i, linewidth = 2,linestyle="--",color="#ff5500",zorder=1,alpha=0.5)
+                ax3.axvline(x=lead_snp_i, linewidth = 2,linestyle="--",color="#ff5500",zorder=1,alpha=0.5)
             else:
                 plot.set_xticks(np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step))
                 plot.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif",name="Arial")
@@ -556,7 +575,7 @@ def mqqplot(insumstats,
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
         if cut == 0: ax1.set_ylim(skip,maxy*1.2)
         if cut:
-            cutline=plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+            cutline = plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
                 plot.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
                 plot.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif",name="Arial")
