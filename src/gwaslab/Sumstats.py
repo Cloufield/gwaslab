@@ -442,7 +442,7 @@ class Sumstats():
         else:
             raise ValueError("Please select a format to output")
         
-        suffix=fmt
+        
         #######################################################################################################
         # filter
         output = self.data.copy()
@@ -451,7 +451,9 @@ class Sumstats():
 
         if exclude is not None:
             output = output.loc[~output[id_use].isin(exclude),:]
-
+        
+        #hla and hapmap3 #######################################################################################
+        suffix=fmt
         if exclude_hla is True:
             if verbose: self.log.write(" -Excluding variants in HLA region ...")
             before = len(output)
@@ -470,6 +472,7 @@ class Sumstats():
         #######################################################################################################
         #formatting statistics
         if verbose: self.log.write(" -Formatting statistics ...")
+        
         formats = {'EAF': '{:.4g}', 
                    'BETA': '{:.4f}', 
                    'Z': '{:.4f}',
@@ -483,6 +486,7 @@ class Sumstats():
                    'MLOG10P': '{:.4f}',
                    'DAF': '{:.4f}'
                   }
+        
         for col, f in float_formats.items():
             if col in output.columns: 
                 formats[col]=f
@@ -500,10 +504,12 @@ class Sumstats():
                     values.append(value)
             self.log.write("  - Columns:",keys) 
             self.log.write("  - Output formats:",values) 
+            
         ##########################################################################################################          
         # output, mapping column names
         if fmt=="ldsc":
             toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
+            
         #if fmt=="fuma":
             #toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
         #if fmt=="bed":

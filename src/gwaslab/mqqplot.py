@@ -12,6 +12,8 @@ from gwaslab.CommonData import get_number_to_chr
 from pyensembl import EnsemblRelease
 import allel
 import matplotlib as mpl
+from scipy import stats
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 # 20220310 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -21,11 +23,13 @@ def mqqplot(insumstats,
           snpid=None,
           eaf=None,
           ref_path=None,
+          gtf_path=None,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
-          region=None,
-          region_step=21,
+          region = None,
+          region_step = 21,
+          flack_factor = 0.05,
           mqqratio=3,
           windowsizekb=500,
           anno=None,
@@ -78,7 +82,9 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Loci to highlight : "+",".join(highlight))    
         if verbose: log.write(" -Highlight_window is set to: ", highlight_windowkb, " kb")  
     if len(pinpoint)>0 :
-        if verbose: log.write(" -Variants to pinpoint : "+",".join(highlight))    
+        if verbose: log.write(" -Variants to pinpoint : "+",".join(highlight))  
+    if region is not None:
+        if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
      
     
 
@@ -93,8 +99,15 @@ def mqqplot(insumstats,
         fig, ax1 = plt.subplots(1, 1,**figargs)
     elif mode=="qq":
         fig, ax2 = plt.subplots(1, 1,**figargs) 
+    elif mode=="r":
+        figargs.pop('figsize', None)
+        figsize = (15,10)
+        fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [mqqratio, 1]}, figsize=figsize, **figargs)
+        plt.subplots_adjust(hspace=0.02)
+        #sharex=True,
     else:
-        raise ValueError("Please select one from the 4 modes: mqq/qqm/m/qq/")
+        raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r")
+        
         
 # Read sumstats #################################################################################################
     usecols=[]
@@ -106,7 +119,7 @@ def mqqplot(insumstats,
     else:
         raise ValueError("Please make sure "+p+" column is in input sumstats.")
     
-    if (chrom is not None) and (pos is not None) and ("m" in mode):
+    if (chrom is not None) and (pos is not None) and (("m" in mode) or ("r" in mode)):
         # when manhattan plot, chrom and pos is needed.
         if chrom in insumstats.columns:
             usecols.append(chrom)
@@ -291,35 +304,11 @@ def mqqplot(insumstats,
         
 
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-
-
 ## Create index for plotting ###################################################
 
     if verbose:log.write("Plotting "+str(len(sumstats))+" variants:")
     #sort & add id
-    if "m" in mode: 
+    if ("m" in mode) or ("r" in mode): 
         sumstats = sumstats.sort_values([chrom,pos])
         if use_rank is True: sumstats["POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
         sumstats["id"]=range(len(sumstats))
@@ -362,9 +351,12 @@ def mqqplot(insumstats,
         if ref_path is not None:
             sumstats["chr_hue"]=sumstats["LD"]
 ## Manhatann plot ###################################################
+        
+        ## default seetings
         palette = sns.color_palette(colors,n_colors=sumstats[chrom].nunique())  
         legend = None
         style=None
+        # if regional plot assign colors
         if ref_path is not None:
             palette = {"0":"#E4E4E4",
                        "1":"#020080",
@@ -376,6 +368,8 @@ def mqqplot(insumstats,
             marker_size=(25,45)
             legend=None
             style=None
+            
+        ## if highlight 
         if len(highlight) >0:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                                hue='chr_hue',
@@ -397,7 +391,8 @@ def mqqplot(insumstats,
                    linewidth=0,
                    zorder=3,ax=ax1)  
             highlight_i = sumstats.loc[sumstats[snpid].isin(highlight),"i"].values
-            
+        
+        ## if not highlight    
         else:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                    hue='chr_hue',
@@ -409,6 +404,7 @@ def mqqplot(insumstats,
                    linewidth=0,
                    zorder=2,ax=ax1)   
         
+        ## if pinpoint variants
         if (len(pinpoint)>0):
             if sum(sumstats[snpid].isin(pinpoint))>0:
                 to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
@@ -417,24 +413,134 @@ def mqqplot(insumstats,
             else:
                 if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
         
+        # if regional plot : add color bar ######################################################################
         if ref_path is not None:
             lead_id=sumstats["scaled_P"].idxmax()
             ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],color="#FF0000",marker="D",zorder=3,s=marker_size[1]+1)
+            axins1 = inset_axes(ax1,
+                    width="5%",  # width = 50% of parent_bbox width
+                    height="40%",  # height : 5%
+                    loc='upper right')
             cmp= mpl.colors.ListedColormap(["#020080","#86CEF9","#24FF02","#FDA400","#FF0000"])
             norm= mpl.colors.BoundaryNorm([0,0.2,0.4,0.6,0.8,1],cmp.N)
-            cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),ax=ax1,fraction=0.15)
-            cbar.set_label('LD $R^{2}$')
             
+            cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),cax=axins1,fraction=1,orientation="vertical",ticklocation="left")
+            #cbar.ax.yaxis.set_ticks_position('left')
+            cbar.ax.set_yticks(ticks=[0.2,0.4,0.6,0.8],labels=["0.2","0.4","0.6","0.8"]) 
+            cbar.ax.set_title('LD $R^{2}$',loc="center",y=-0.2)
+            #cbar.set_label('LD $R^{2}$',loc='center')
+        
+        ## regional plot : gene track
+        if gtf_path is not None:
+            if verbose: log.write(" -Loading gtf files from:" + gtf_path)
+            # calculate offset
+            most_left_snp = sumstats["i"].idxmin()
+            gene_track_offset = sumstats.loc[most_left_snp,"POS"]-region[1]
+            gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
+            
+            # load gtf
+            gtf = pd.read_csv(gtf_path,sep="\t",header=None)
+            
+            #filter in region
+            genes_1mb = gtf.loc[(gtf[0]=="chr"+str(region[0]))&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
+            genes_1mb.loc[:,"name"] = genes_1mb[8].str.split(";").str[-2].str.replace("gene_name ","").str.strip(' ').str.strip('"')
+            genes_1mb.loc[:,"transcript"] = genes_1mb[8].str.split(";").str[1]
+            exons = genes_1mb.loc[genes_1mb[2]=="exon",:].copy()
+            
+            # uniq genes
+            uniq_gene_region = genes_1mb.groupby("name").agg({3:"min",4:"max",6:stats.mode})
+            uniq_gene_region = uniq_gene_region.reset_index()
+            flank = flack_factor * (region[2] - region[1])
+            uniq_gene_region["left"]=uniq_gene_region[3]-flank
+            uniq_gene_region["right"]=uniq_gene_region[4]+flank
+            
+            ## arrange rows
+            stacks=[]
+            stack_dic={}
+            for index,row in uniq_gene_region.reset_index().sort_values([3]).iterrows():
+                if len(stacks)==0:
+                    stacks.append([(row["left"],row["right"])])
+                    stack_dic[row["name"]] = 0
+                else:
+                    for i in range(len(stacks)):
+                        for j in range(len(stacks[i])):
+                            # if overlap
+                            if (row["left"]>stacks[i][j][0] and row["left"]<stacks[i][j][1]) or (row["right"]>stacks[i][j][0] and row["right"]<stacks[i][j][1]):
+                                # if not last stack : break
+                                if i<len(stacks)-1:
+                                    break
+                                # if last stack : add a new stack
+                                else:
+                                    stacks.append([(row["left"],row["right"])])
+                                    stack_dic[row["name"]] = i+1
+                                    break
+                            # if no overlap       
+                            else:
+                                # not last in a stack
+                                if j<len(stacks[i])-1:
+                                    #if in the middle
+                                    if row["left"]>stacks[i][j][1] and row["right"]<stacks[i][j+1][0]:
+                                        stacks[i].insert(j+1,(row["left"],row["right"]))
+                                        stack_dic[row["name"]] = i
+                                        break
+                                #last one in a stack
+                                elif row["left"]>stacks[i][j][1]:
+                                    stacks[i].append((row["left"],row["right"]))
+                                    stack_dic[row["name"]] = i
+                                    break
+                        if row["name"] in stack_dic.keys():
+                            break         
+            uniq_gene_region["stack"] = -uniq_gene_region["name"].map(stack_dic)
+            exons.loc[:,"stack"] = -exons.loc[:,"name"].map(stack_dic)
+            
+           
+            if verbose: log.write(" -plotting gene track..")
+            for index,row in uniq_gene_region.reset_index().iterrows():
+                if row[6][0]=="+":
+                    gene_anno = row["name"] + "->"
+                else:
+                    gene_anno = "<-" + row["name"] 
+                
+                ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
+                         (row["stack"]*4,row["stack"]*4),color="#020080")
+                if (gene_track_start_i+row[3]+gene_track_start_i+row[4])/2 > gene_track_start_i+region[2]:
+                    #right side
+                    ax3.text(x=gene_track_start_i+row[3],
+                         y=row["stack"]*4+3,s=gene_anno,ha="left",va="top",color="black",style='italic')
+                elif (gene_track_start_i+row[3]+gene_track_start_i+row[4])/2 < gene_track_start_i+region[1] :
+                    #left side
+                    ax3.text(x=gene_track_start_i+row[4],
+                         y=row["stack"]*4+3,s=gene_anno,ha="right",va="top",color="black",style='italic')
+                else:
+                    ax3.text(x=(gene_track_start_i+row[3]+gene_track_start_i+row[4])/2,
+                         y=row["stack"]*4+3,s=gene_anno,ha="center",va="top",color="black",style='italic')
+       
+            
+            for index,row in exons.iterrows():
+                ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
+                         (row["stack"]*4,row["stack"]*4),linewidth=10,color="#020080")
+            
+            ax3.set_ylim((-uniq_gene_region["stack"].nunique()*4,5))
+            ax3.set_yticks([])
+            if verbose: log.write(" -Finished plotting gene track..")
+                                  
         #plot.set_xlabel(chrom); 
+        
         plot.set_xticks(chrom_df)
         plot.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif",name="Arial")
+        
         if region is not None:
             region_ticks = list(map('{:.3f}'.format,np.linspace(region[1], region[2], num=region_step).astype("int")/1000000)) 
-            plot.set_xticks(np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step))
-            plot.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif",name="Arial")
+            if gtf_path is not None:
+                ax3.set_xticks(np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step))
+                ax3.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif",name="Arial")
+            else:
+                plot.set_xticks(np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step))
+                plot.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif",name="Arial")
         #
+        
         max_min = sumstats["i"].max()-sumstats["i"].min()
-        plot.set_xlim([sumstats["i"].min()-0.01*max_min,sumstats["i"].max()+0.01*max_min])
+        plot.set_xlim([sumstats["i"].min(),sumstats["i"].max()])
         
         # genomewide significant line
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
@@ -448,6 +554,10 @@ def mqqplot(insumstats,
                 plot.set_yticks([x for x in range(skip,cut+1,2)])
                 plot.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif",name="Arial")
 
+# 
+
+
+    
 # Get top variants for annotation #######################################################
         if (anno and anno!=True) or (len(anno_set)>0):
             if len(anno_set)>0:
@@ -492,10 +602,12 @@ def mqqplot(insumstats,
             text = []
             last_pos=0
             anno_count=0
+            
             if anno==True:
                     annotation_col="CHR:POS"
             elif anno:
                     annotation_col=anno
+            
             if verbose: log.write(" -Annotating using column "+annotation_col+"...")
                 
             for rowi,row in to_annotate.iterrows():
@@ -538,12 +650,18 @@ def mqqplot(insumstats,
                         arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
                 
+                
+                bbox={}
+                if "r" in mode:
+                    bbox=dict(boxstyle="round", fc="w")
+                
                 text.append(plot.annotate(annotation_text,
                                              style='italic',
                                              xy=xy,
                                              xytext=xytext,rotation=40,
                                              ha="left",va="bottom",
                                              fontsize=fontsize,
+                                             bbox=bbox,
                                              fontweight=fontweight,
                                              arrowprops=arrowargs
                                             )
@@ -553,16 +671,25 @@ def mqqplot(insumstats,
             
         else:
             if verbose: log.write(" -Skip annotating")
-
+        
+        
+        ## final
         plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif",name="Arial")
         if region is not None:
-            plot.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif",name="Arial")
+            if gtf_path is not None:
+                ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif",name="Arial")
+            else:
+                plot.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif",name="Arial")
         else:
             plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif",name="Arial")
+        
+        
         plot.spines["top"].set_visible(False)
         plot.spines["right"].set_visible(False)
         plot.spines["left"].set_visible(True)
-
+        if mode=="r":
+            plot.spines["top"].set_visible(True)
+            plot.spines["right"].set_visible(True)
         if verbose: log.write(" -Created Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
