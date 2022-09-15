@@ -31,10 +31,6 @@ from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import gc
 from gwaslab.getsig import getsig
 from gwaslab.fill import filldata
-from gwaslab.to_formats import tobed
-from gwaslab.to_formats import tofuma
-from gwaslab.to_formats import toldsc
-from gwaslab.to_formats import tossf
 from gwaslab.to_formats import tofmt
 from gwaslab.get_hapmap3 import gethapmap3
 from gwaslab.compare_effect import plotdaf
@@ -428,6 +424,7 @@ class Sumstats():
               hapmap3=False,
               exclude_hla=False,  
               build="19", 
+              n=None,
               verbose=True,
               output_log=True,
               to_csvargs={},
@@ -455,6 +452,8 @@ class Sumstats():
         
         #hla and hapmap3 #######################################################################################
         suffix=fmt
+        
+        #exclude hla
         if exclude_hla is True:
             if verbose: self.log.write(" -Excluding variants in HLA region ...")
             before = len(output)
@@ -464,11 +463,16 @@ class Sumstats():
             if verbose: self.log.write(" -Exclude "+ str(before - after) + " variants in HLA region.")
             suffix = "noMHC."+suffix
         
+        #extract hapmap3 SNPs
         if hapmap3 is True:
             output = gethapmap3(output,build=build,verbose=True)
             after = len(output)
             if verbose: self.log.write(" -Extract "+ str(after) + " variants in Hapmap3 datasets for build "+build+".")
             suffix = "hapmap3."+suffix
+        
+        # add a n column
+        if n is not None:
+            output["N"] = n
                 
         #######################################################################################################
         #formatting statistics
@@ -508,13 +512,6 @@ class Sumstats():
             
         ##########################################################################################################          
         # output, mapping column names
-        #if fmt=="ldsc":
-        #    toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
-            
-        #if fmt=="fuma":
-            #toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
-        #if fmt=="bed":
-            #toldsc(output, path=path+"."+fmt,verbose=True,log=self.log,to_csvargs=to_csvargs)
         if fmt=="vcf":
             toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         
