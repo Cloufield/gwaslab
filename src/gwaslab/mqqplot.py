@@ -349,7 +349,6 @@ def mqqplot(insumstats,
         chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
         #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
         sumstats["i"] = sumstats["i"].astype("Int64")
-        lead_snp_i = sumstats.loc[lead_id,"i"]
 ## Assign marker size ##############################################
         
         sumstats["s"]=1
@@ -447,7 +446,8 @@ def mqqplot(insumstats,
             most_left_snp = sumstats["i"].idxmin()
             gene_track_offset = sumstats.loc[most_left_snp,"POS"]-region[1]
             gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
-            
+            lead_id=sumstats["scaled_P"].idxmax()
+            lead_snp_i=sumstats.loc[lead_id,"i"]
             # load gtf
             gtf = pd.read_csv(gtf_path,sep="\t",header=None)
             
@@ -505,13 +505,14 @@ def mqqplot(insumstats,
             
            
             if verbose: log.write(" -plotting gene track..")
+            
             for index,row in uniq_gene_region.reset_index().iterrows():
                 if row[6][0]=="+":
                     gene_anno = row["name"] + "->"
                 else:
                     gene_anno = "<-" + row["name"] 
                 
-                if lead_snp_i > gene_track_start_i+row[3] and sumstats.loc[lead_id,"i"] < gene_track_start_i+row[4] :
+                if lead_snp_i > gene_track_start_i+row[3] and lead_snp_i < gene_track_start_i+row[4] :
                     gene_color="#FF0000"
                     sig_gene_name = row["name"]
                 else:
@@ -560,7 +561,7 @@ def mqqplot(insumstats,
                 for i in np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step):
                     ax1.axvline(x=i, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
                     ax3.axvline(x=i, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
-              
+                
                 ax1.axvline(x=lead_snp_i, linewidth = 2,linestyle="--",color="#ff5500",zorder=1,alpha=0.5)
                 ax3.axvline(x=lead_snp_i, linewidth = 2,linestyle="--",color="#ff5500",zorder=1,alpha=0.5)
             else:
