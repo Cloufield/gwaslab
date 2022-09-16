@@ -9,6 +9,8 @@ from gwaslab.Log import Log
 from gwaslab.getsig import getsig
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
+from gwaslab.CommonData import get_recombination_rate
+from gwaslab.CommonData import get_gtf
 from pyensembl import EnsemblRelease
 from allel import GenotypeArray
 from allel import read_vcf
@@ -16,6 +18,7 @@ from allel import rogers_huff_r_between
 import matplotlib as mpl
 from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
 # 20220310 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -25,7 +28,7 @@ def mqqplot(insumstats,
           snpid=None,
           eaf=None,
           vcf_path=None,
-          gtf_path=None,
+          gtf_path="defualt",
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
@@ -432,11 +435,13 @@ def mqqplot(insumstats,
             cbar.ax.set_yticks(ticks=region_ld_threshold,labels=[str(i) for i in region_ld_threshold]) 
             cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.15)
         ## recombinnation rate
+        
         if region_recombination is True:
             ax4=ax1.twinx()
             most_left_snp = sumstats["i"].idxmin()
             rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,"POS"]
-            rc = pd.read_csv("/Users/he/work/gwaslab/src/gwaslab/data/recombination/genetic_map_GRCh37_chr"+str(region[0])+".txt",sep="\t")
+            #http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20110106_recombination_hotspots/
+            rc = get_recombination_rate(chrom=str(region[0]),build=build)
             rc = rc.loc[(rc["Position(bp)"]<region[2]) & (rc["Position(bp)"]>region[1]),:]
             ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
             ax4.set_ylabel("Recombination rate(cM/Mb)")
@@ -453,7 +458,7 @@ def mqqplot(insumstats,
             lead_snp_i=sumstats.loc[lead_id,"i"]
             
             # load gtf
-            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, flank_factor = flank_factor)
+            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, flank_factor = flank_factor,build=build)
             
            
             if verbose: log.write(" -plotting gene track..")
@@ -806,9 +811,12 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     return sumstats
 
 ##############################################################################################################################
-def process_gtf(gtf_path,region,flank_factor):
+def process_gtf(gtf_path,region,flank_factor,build):
     #loading
-    gtf = pd.read_csv(gtf_path,sep="\t",header=None)
+    if gtf_path =="defualt":
+        gtf = get_gtf(chrom=str(region[0]),build=build)
+    else:
+        gtf = pd.read_csv(gtf_path,sep="\t",header=None)
 
     #filter in region
     genes_1mb = gtf.loc[(gtf[0]=="chr"+str(region[0]))&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()

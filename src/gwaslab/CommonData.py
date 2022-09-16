@@ -2,6 +2,8 @@ import pandas as pd
 from os import path
 import json
 
+
+#hard-coded data
 def get_chr_NC_dict(build,inverse=False):
     #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
     if build =="19":
@@ -96,7 +98,7 @@ def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"]):
     return dic
 
 
-    
+# reading from files    
 ###################################################################################################################    
 def get_high_ld(build="19"):
     if build=="19":
@@ -121,6 +123,17 @@ def get_formats_list():
     format_list = list(dicts.keys())
     return format_list
 
+def get_recombination_rate(chrom, build="19"):
+    if build=="19":
+        data_path =  path.dirname(__file__) + '/data/recombination/hg19/genetic_map_GRCh37_chr'+str(chrom)+'.txt.gz'
+        recombination_rate = pd.read_csv(data_path,sep="\t")
+    return recombination_rate
+
+def get_gtf(chrom, build="19"):
+    if build=="19":
+        data_path =  path.dirname(__file__) + '/data/gtf/hg19/hg19.refGene.chr'+str(chrom)+'.gtf.gz'
+        gtf = pd.read_csv(data_path,sep="\t",header=None)
+    return gtf
 ####################################################################################################################
     
         
