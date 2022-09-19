@@ -306,7 +306,7 @@ def mqqplot(insumstats,
 
 ## Create index for plotting ###################################################
 
-    if verbose:log.write("Plotting "+str(len(sumstats))+" variants:")
+    
     #sort & add id
     if ("m" in mode) or ("r" in mode): 
         sumstats = sumstats.sort_values([chrom,pos])
@@ -357,7 +357,7 @@ def mqqplot(insumstats,
         if vcf_path is not None:
             sumstats["chr_hue"]=sumstats["LD"]
 ## Manhatann plot ###################################################
-        
+        if verbose:log.write("Start to create manhattan plot with "+str(len(sumstats))+" variants:")
         ## default seetings
         palette = sns.color_palette(colors,n_colors=sumstats[chrom].nunique())  
         legend = None
@@ -415,7 +415,7 @@ def mqqplot(insumstats,
                 if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
         
         # if regional plot : pinpoint lead , add color bar ##################################################
-        if vcf_path is not None:
+        if (region is not None) and (vcf_path is not None):
             # pinpoint lead
             lead_id = sumstats["scaled_P"].idxmax()
             ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],
@@ -686,7 +686,7 @@ def mqqplot(insumstats,
         if mode=="r":
             plot.spines["top"].set_visible(True)
             plot.spines["right"].set_visible(True)
-        if verbose: log.write(" -Created Manhattan plot successfully!")
+        if verbose: log.write("Finished creating Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
             plot.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif")
@@ -697,7 +697,7 @@ def mqqplot(insumstats,
 # QQ plot #########################################################################################################
     # ax2 qqplot
     if "qq" in mode:
-        
+        if verbose:log.write("Start to create QQ plot with "+str(len(sumstats))+" variants:")
         p_toplot = sumstats["scaled_P"]
             # select -log10 scaled p to plot
             # sort x,y for qq plot
@@ -755,7 +755,7 @@ def mqqplot(insumstats,
         if qtitle:
             ax2.set_title(qtitle,fontsize=fontsize,pad=10,family="sans-serif")
 
-        if verbose: log.write(" -Created QQ plot successfully!")
+        if verbose: log.write("Finished creating QQ plot successfully!")
 # Creating QQ plot Finished #############################################################################################
 
 
@@ -783,7 +783,8 @@ def mqqplot(insumstats,
 #Helpers
 ##############################################################################################################################
 def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_threshold):
-    if verbose: log.write(" -Loading reference genotype from : "+ vcf_path)
+    if verbose: log.write("Start to load reference genotype...")
+    if verbose: log.write(" -reference vcf path : "+ vcf_path)
     ref_genotype = read_vcf(vcf_path,region=str(region[0])+":"+str(region[1])+"-"+str(region[2]),tabix=None)
 
     if verbose: log.write(" -Retrieving index...")
@@ -816,6 +817,7 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     sumstats.loc[lead_id,"LD"] = len(region_ld_threshold)+2
     sumstats["LEAD"]="Other variants"
     sumstats.loc[lead_id,"LEAD"] = "Lead variants"
+    if verbose: log.write("Finished loading reference genotype successfully!")
     return sumstats
 
 ##############################################################################################################################
