@@ -12,9 +12,9 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
     if verbose:log.write(" -Processing "+str(len(sumstats))+" raw variants...")
 
     if build=="19":
-        data_path =  path.dirname(__file__) + '/data/hapmap3_rs_chr_pos_a1_a2/hapmap3_db150_hg19.snplist.gz'
+        data_path =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db150_hg19.snplist.gz'
     elif build=="38":
-        data_path =  path.dirname(__file__) + '/data/hapmap3_rs_chr_pos_a1_a2/hapmap3_db151_hg38.snplist.gz'
+        data_path =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db151_hg38.snplist.gz'
     
     if verbose:log.write(" -Loading Hapmap3 variants data...")
         

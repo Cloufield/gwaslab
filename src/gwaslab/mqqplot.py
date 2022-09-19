@@ -211,12 +211,12 @@ def mqqplot(insumstats,
         region_chr = region[0]
         region_start = region[1]
         region_end = region[2]
+        marker_size=(25,45)
         if verbose:log.write(" -Extract SNPs in region : chr"+str(region_chr)+":"+str(region[1])+"-"+str(region[2])+ "...")
         
         in_region_snp = (sumstats[chrom]==region_chr) &(sumstats[pos]<region_end) &(sumstats[pos]>region_start)
         if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)))
         sumstats = sumstats.loc[in_region_snp,:]
-        
     ## EAF
     if stratified is True: 
         sumstats["MAF"] = pd.to_numeric(sumstats[eaf], errors='coerce')
@@ -366,7 +366,6 @@ def mqqplot(insumstats,
         # if regional plot assign colors
         if vcf_path is not None:
             palette = { i:region_ld_colors[i] for i in range(len(region_ld_colors))}
-            marker_size=(25,45)
             legend=None
             style=None
             linewidth=1
@@ -432,15 +431,15 @@ def mqqplot(insumstats,
             norm= mpl.colors.BoundaryNorm([0]+region_ld_threshold+[1],cmp.N)            
             cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),
                                cax=axins1,fraction=1,orientation="vertical",ticklocation="left")
-            cbar.ax.set_yticks(ticks=region_ld_threshold,labels=[str(i) for i in region_ld_threshold]) 
+            cbar.set_ticks(ticks=region_ld_threshold) 
+            cbar.set_ticklabels([str(i) for i in region_ld_threshold]) 
             cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.15)
-        ## recombinnation rate
         
-        if region_recombination is True:
+        ## recombinnation rate ##################################################       
+        if (region is not None) and (region_recombination is True):
             ax4=ax1.twinx()
             most_left_snp = sumstats["i"].idxmin()
-            rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,"POS"]
-            #http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20110106_recombination_hotspots/
+            rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,pos]
             rc = get_recombination_rate(chrom=str(region[0]),build=build)
             rc = rc.loc[(rc["Position(bp)"]<region[2]) & (rc["Position(bp)"]>region[1]),:]
             ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
@@ -448,19 +447,24 @@ def mqqplot(insumstats,
             ax4.set_ylim(0,100)
         
         ## regional plot : gene track ######################################################################
-        if gtf_path is not None:
-            if verbose: log.write(" -Loading gtf files from:" + gtf_path)
-            # calculate offset
+                    # calculate offset
+        if (region is not None):
             most_left_snp = sumstats["i"].idxmin()
             gene_track_offset = sumstats.loc[most_left_snp,"POS"]-region[1]
             gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
             lead_id=sumstats["scaled_P"].idxmax()
             lead_snp_i=sumstats.loc[lead_id,"i"]
             
+        if (gtf_path is not None ) and ("r" in mode):
             # load gtf
+            if verbose: log.write(" -Loading gtf files from:" + gtf_path)
             uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, flank_factor = flank_factor,build=build)
+            ax3.set_ylim((-uniq_gene_region["stack"].nunique()*2,2))
+            ax3.set_yticks([])
             
-           
+            ponits_per_track = 100/(uniq_gene_region["stack"].nunique()*2)
+            size_in_points= 0.8 * ponits_per_track
+            
             if verbose: log.write(" -plotting gene track..")
             
             for index,row in uniq_gene_region.iterrows():
@@ -477,20 +481,22 @@ def mqqplot(insumstats,
                 
                 # plot gene line
                 ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
-                         (row["stack"]*4,row["stack"]*4),color=gene_color)
+                         (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=size_in_points/10)
                 
                 # plot gene name
-                if (gene_track_start_i+row[3]+gene_track_start_i+row[4])/2 > gene_track_start_i+region[2]:
+                if (gene_track_start_i+row[3]+gene_track_start_i+row[4])/2 >= gene_track_start_i+region[2]:
                     #right side
-                    ax3.text(x=gene_track_start_i+row[3],
-                         y=row["stack"]*4+3,s=gene_anno,ha="left",va="top",color="black",style='italic')
-                elif (gene_track_start_i+row[3]+gene_track_start_i+row[4])/2 < gene_track_start_i+region[1] :
+                    ax3.text(x=gene_track_start_i+region[2],
+                         y=row["stack"]*2+1.2,s=gene_anno,ha="right",va="top",color="black",style='italic', size=size_in_points)
+                    
+                elif (gene_track_start_i+row[3]+gene_track_start_i+row[4])/2 <= gene_track_start_i+region[1] :
                     #left side
-                    ax3.text(x=gene_track_start_i+row[4],
-                         y=row["stack"]*4+3,s=gene_anno,ha="right",va="top",color="black",style='italic')
+                    ax3.text(x=gene_track_start_i+region[1],
+                         y=row["stack"]*2+1.2,s=gene_anno,ha="left",va="top",color="black",style='italic', size=size_in_points)
+                    
                 else:
                     ax3.text(x=(gene_track_start_i+row[3]+gene_track_start_i+row[4])/2,
-                         y=row["stack"]*4+3,s=gene_anno,ha="center",va="top",color="black",style='italic')
+                         y=row["stack"]*2+1.2,s=gene_anno,ha="center",va="top",color="black",style='italic',size=size_in_points)
        
             # plot exons
             for index,row in exons.iterrows():
@@ -499,50 +505,52 @@ def mqqplot(insumstats,
                 else:
                     exon_color="#020080"
                 ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
-                         (row["stack"]*4,row["stack"]*4),linewidth=10,color=exon_color)
+                         (row["stack"]*2,row["stack"]*2),linewidth=size_in_points,color=exon_color)
             
-            ax3.set_ylim((-uniq_gene_region["stack"].nunique()*4,5))
-            ax3.set_yticks([])
+
             if verbose: log.write(" -Finished plotting gene track..")
                            
         #plot.set_xlabel(chrom); 
         
         plot.set_xticks(chrom_df)
-        plot.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif",name="Arial")
+        plot.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif")
         
+        # regional plot - set X tick
         if region is not None:
             region_ticks = list(map('{:.3f}'.format,np.linspace(region[1], region[2], num=region_step).astype("int")/1000000)) 
-            if gtf_path is not None:
-                ax3.set_xticks(np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step))
-                ax3.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif",name="Arial")
+            
+            # set x ticks for gene track
+            if (gtf_path is not None ) and ("r" in mode):
+                ax3.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
+                ax3.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
                 if region_grid is True:
-                    for i in np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step):
+                    for i in np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step):
                         ax1.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
                         ax3.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
                 if region_lead_grid is True:
                     ax1.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
                     ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
             else:
-                plot.set_xticks(np.linspace(sumstats["i"].min(), sumstats["i"].max(), num=region_step))
-                plot.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif",name="Arial")
-        #
+                # set x ticks m plot
+                plot.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
+                plot.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
         
-        max_min = sumstats["i"].max()-sumstats["i"].min()
-        plot.set_xlim([sumstats["i"].min(),sumstats["i"].max()])
+            plot.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
         
         # genomewide significant line
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
+        
+        # cut line
         if cut == 0: ax1.set_ylim(skip,maxy*1.2)
         if cut:
             cutline = plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
                 plot.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                plot.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif",name="Arial")
+                plot.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif")
             else:
                 plot.set_yticks([x for x in range(skip,cut+1,2)])
-                plot.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif",name="Arial")
+                plot.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
             ax1.set_ylim(bottom = skip)
-# 
 
 
     
@@ -662,14 +670,14 @@ def mqqplot(insumstats,
         
         
         ## final
-        plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif",name="Arial")
+        plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
         if region is not None:
-            if gtf_path is not None:
-                ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif",name="Arial")
+            if (gtf_path is not None ) and ("r" in mode):
+                ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
             else:
-                plot.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif",name="Arial")
+                plot.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
         else:
-            plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif",name="Arial")
+            plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif")
         
         
         plot.spines["top"].set_visible(False)
@@ -681,9 +689,9 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Created Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
-            plot.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif",name="Arial")
+            plot.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif")
         elif mtitle:
-            plot.set_title(mtitle,fontsize=fontsize,family="sans-serif",name="Arial")
+            plot.set_title(mtitle,fontsize=fontsize,family="sans-serif")
 # Creating Manhatann plot Finished #####################################################################
 
 # QQ plot #########################################################################################################
@@ -709,12 +717,12 @@ def mqqplot(insumstats,
                 label ="("+str(lower)+","+str(upper) +"]"
                 ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
                 ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=3,frameon=False)
-                plt.setp(ax2_legend.texts, family="sans-serif",name="Arial")
+                plt.setp(ax2_legend.texts, family="sans-serif")
         
         ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=sig_line_color)
 
-        ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family="sans-serif",name="Arial")
-        ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family="sans-serif",name="Arial")
+        ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+        ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
         ax2.spines["top"].set_visible(False)
         ax2.spines["right"].set_visible(False)
         ax2.spines["left"].set_visible(True)
@@ -730,7 +738,7 @@ def mqqplot(insumstats,
                      horizontalalignment='left',
                      verticalalignment='top',
                      transform=ax2.transAxes,
-                     fontsize=fontsize,family="sans-serif",name="Arial")
+                     fontsize=fontsize,family="sans-serif")
         
         #
         if cut == 0: ax2.set_ylim(skip,maxy*1.2)
@@ -738,14 +746,14 @@ def mqqplot(insumstats,
             qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
                 ax2.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                ax2.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif",name="Arial")
+                ax2.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif")
             else:
                 ax2.set_yticks([x for x in range(skip,cut+1,2)])
-                ax2.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif",name="Arial")
+                ax2.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
         
         #
         if qtitle:
-            ax2.set_title(qtitle,fontsize=fontsize,pad=10,family="sans-serif",name="Arial")
+            ax2.set_title(qtitle,fontsize=fontsize,pad=10,family="sans-serif")
 
         if verbose: log.write(" -Created QQ plot successfully!")
 # Creating QQ plot Finished #############################################################################################

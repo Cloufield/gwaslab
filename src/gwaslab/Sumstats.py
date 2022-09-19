@@ -356,7 +356,23 @@ class Sumstats():
         plot = plotdaf(self.data, **args)
         
     def plot_mqq(self, **args):
-        plot = mqqplot(self.data, chrom="CHR", pos="POS", p="P", **args)
+
+        chrom="CHR"
+        pos="POS"
+        p="P"
+        
+        if "SNPID" in self.data.columns:
+            snpid="SNPID"
+        elif "rsID" in self.data.columns:
+            snpid="rsID"
+        
+        if "EAF" in self.data.columns:
+            eaf="EAF"
+        else:
+            eaf=None
+        
+        plot = mqqplot(self.data,snpid=snpid, chrom=chrom, pos=pos, p=p, eaf=eaf,**args)
+        
         return plot
 
     def get_lead(self, **args):
