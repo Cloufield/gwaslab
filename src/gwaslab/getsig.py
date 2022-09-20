@@ -160,3 +160,25 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
             return distance,"intergenic"
         else:
             return 0,",".join(gene)
+        
+        
+def annogene(
+           insumstats,
+           id,
+           chrom,
+           pos,
+           p,
+           log=Log(),
+           xymt=["X","Y","MT"],
+           build="19",
+           verbose=True):
+    if build=="19":
+        data = EnsemblRelease(75)
+        if verbose:log.write(" -Assigning Gene name using Ensembl Release",75 , " (hg19)")
+    elif build=="38":
+        data = EnsemblRelease(77)
+        if verbose:log.write(" -Assigning Gene name using Ensembl Release",77 , " (hg38)")
+    output = insumstats.copy()
+    output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(output.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=output.index).values
+    if verbose: log.write("Finished extracting lead variants successfully!")
+    return output

@@ -30,6 +30,7 @@ from gwaslab.filtervalue import inferbuild
 from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import gc
 from gwaslab.getsig import getsig
+from gwaslab.getsig import annogene
 from gwaslab.fill import filldata
 from gwaslab.to_formats import tofmt
 from gwaslab.get_hapmap3 import gethapmap3
@@ -390,7 +391,20 @@ class Sumstats():
         # return sumstats object    
         return output
 
-    
+    def anno_gene(self, **args):
+        if "SNPID" in self.data.columns:
+            id_to_use = "SNPID"
+        else:
+            id_to_use = "rsID"
+        output = annogene(self.data,
+                           id=id_to_use,
+                           chrom="CHR",
+                           pos="POS",
+                           p="P",
+                           log=self.log,
+                           **args)
+        return output
+        
     def get_per_snp_h2(self,**args):
         self.data = getpersnph2(self.data,beta="BETA",af="EAF",**args)
         #add data inplace
