@@ -42,6 +42,7 @@ def mqqplot(insumstats,
           region_ld_threshold = [0.2,0.4,0.6,0.8],
           region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
           region_recombination = True,
+          region_protein_coding=True,
           flank_factor = 0.05,
           mqqratio=3,
           windowsizekb=500,
@@ -450,7 +451,7 @@ def mqqplot(insumstats,
                     # calculate offset
         if (region is not None):
             most_left_snp = sumstats["i"].idxmin()
-            gene_track_offset = sumstats.loc[most_left_snp,"POS"]-region[1]
+            gene_track_offset = sumstats.loc[most_left_snp,pos]-region[1]
             gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
             lead_id=sumstats["scaled_P"].idxmax()
             lead_snp_i=sumstats.loc[lead_id,"i"]
@@ -458,7 +459,7 @@ def mqqplot(insumstats,
         if (gtf_path is not None ) and ("r" in mode):
             # load gtf
             if verbose: log.write(" -Loading gtf files from:" + gtf_path)
-            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, flank_factor = flank_factor,build=build)
+            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, flank_factor = flank_factor,build=build,region_protein_coding=region_protein_coding)
             ax3.set_ylim((-uniq_gene_region["stack"].nunique()*2,2))
             ax3.set_yticks([])
             
@@ -484,16 +485,15 @@ def mqqplot(insumstats,
                          (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=size_in_points/10)
                 
                 # plot gene name
-                if (gene_track_start_i+row[3]+gene_track_start_i+row[4])/2 >= gene_track_start_i+region[2]:
+                if row[4] >= region[2]:
                     #right side
                     ax3.text(x=gene_track_start_i+region[2],
                          y=row["stack"]*2+1.2,s=gene_anno,ha="right",va="top",color="black",style='italic', size=size_in_points)
                     
-                elif (gene_track_start_i+row[3]+gene_track_start_i+row[4])/2 <= gene_track_start_i+region[1] :
+                elif row[3] <= region[1] :
                     #left side
                     ax3.text(x=gene_track_start_i+region[1],
                          y=row["stack"]*2+1.2,s=gene_anno,ha="left",va="top",color="black",style='italic', size=size_in_points)
-                    
                 else:
                     ax3.text(x=(gene_track_start_i+row[3]+gene_track_start_i+row[4])/2,
                          y=row["stack"]*2+1.2,s=gene_anno,ha="center",va="top",color="black",style='italic',size=size_in_points)
@@ -504,6 +504,8 @@ def mqqplot(insumstats,
                     exon_color = region_lead_grid_line["color"]  
                 else:
                     exon_color="#020080"
+                if row["gene_biotype"]!="protein_coding":
+                    exon_color="grey"
                 ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
                          (row["stack"]*2,row["stack"]*2),linewidth=size_in_points,color=exon_color)
             
@@ -536,7 +538,6 @@ def mqqplot(insumstats,
                 plot.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
         
             plot.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
-        
         # genomewide significant line
         sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
         
@@ -821,7 +822,7 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     return sumstats
 
 ##############################################################################################################################
-def process_gtf(gtf_path,region,flank_factor,build):
+def process_gtf(gtf_path,region,flank_factor,build,region_protein_coding):
     #loading
     if gtf_path =="defualt":
         gtf = get_gtf(chrom=str(region[0]),build=build)
@@ -829,22 +830,25 @@ def process_gtf(gtf_path,region,flank_factor,build):
         gtf = pd.read_csv(gtf_path,sep="\t",header=None)
 
     #filter in region
-    genes_1mb = gtf.loc[(gtf[0]=="chr"+str(region[0]))&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
-    genes_1mb.loc[:,"name"] = genes_1mb[8].str.split(";").str[-2].str.replace("gene_name ","").str.strip(' ').str.strip('"')
-    genes_1mb.loc[:,"transcript"] = genes_1mb[8].str.split(";").str[1]
+    genes_1mb = gtf.loc[(gtf[0]==str(region[0]))&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
+    genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
+    if region_protein_coding is True:
+        genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:].copy()
+    genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_name "([\w\.-]+)"')
+
+    genes_1mb.loc[:,"gene"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
     exons = genes_1mb.loc[genes_1mb[2]=="exon",:].copy()
 
     #uniq genes
-    uniq_gene_region = genes_1mb.groupby("name").agg({3:"min",4:"max",6:stats.mode})
-    uniq_gene_region = uniq_gene_region.reset_index()
+    uniq_gene_region = genes_1mb.loc[genes_1mb[2]=="gene",:].copy()
     flank = flank_factor * (region[2] - region[1])
-    uniq_gene_region["left"]=uniq_gene_region[3]-flank
-    uniq_gene_region["right"]=uniq_gene_region[4]+flank
+    uniq_gene_region["left"] = uniq_gene_region[3]-flank
+    uniq_gene_region["right"] = uniq_gene_region[4]+flank
 
     ## arrange rows
     stacks=[]
     stack_dic={}
-    for index,row in uniq_gene_region.reset_index().sort_values([3]).iterrows():
+    for index,row in uniq_gene_region.sort_values([3]).iterrows():
         if len(stacks)==0:
             stacks.append([(row["left"],row["right"])])
             stack_dic[row["name"]] = 0
@@ -879,7 +883,7 @@ def process_gtf(gtf_path,region,flank_factor,build):
                     break         
     uniq_gene_region["stack"] = -uniq_gene_region["name"].map(stack_dic)
     exons.loc[:,"stack"] = -exons.loc[:,"name"].map(stack_dic)
-    return uniq_gene_region.reset_index(), exons
+    return uniq_gene_region, exons
 
 
 ##############################################################################################################################

@@ -5,6 +5,7 @@ from gwaslab.Log import Log
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
 from pyensembl import EnsemblRelease
+from pyensembl import Genome
 
 def getsig(insumstats,
            id,
@@ -118,7 +119,7 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
         x[chrom] = get_number_to_chr()[x[chrom]]
          
         # query
-        gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
+        gene = data.gene_names_at_locus(contig= x[chrom], position=x[pos])
         if len(gene)==0:
             # if not in any gene
             i=0
@@ -167,18 +168,23 @@ def annogene(
            id,
            chrom,
            pos,
-           p,
            log=Log(),
            xymt=["X","Y","MT"],
            build="19",
            verbose=True):
+    output = insumstats.copy()
+    
     if build=="19":
-        data = EnsemblRelease(75)
+        #data = EnsemblRelease(75)
         if verbose:log.write(" -Assigning Gene name using Ensembl Release",75 , " (hg19)")
+        data = Genome(
+        reference_name='GRCh37',
+        annotation_name='genes',
+        gtf_path_or_url='/home/yunye/mydata/d_disk/gene/Homo_sapiens.GRCh37.75.protein_coding.chr.gtf.gz')
+        output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(output.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=output.index).values
     elif build=="38":
         data = EnsemblRelease(77)
         if verbose:log.write(" -Assigning Gene name using Ensembl Release",77 , " (hg38)")
-    output = insumstats.copy()
-    output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(output.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=output.index).values
+        output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(output.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=output.index).values
     if verbose: log.write("Finished extracting lead variants successfully!")
     return output
