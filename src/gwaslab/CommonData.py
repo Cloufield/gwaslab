@@ -124,6 +124,7 @@ def get_formats_list():
     return format_list
 
 def get_recombination_rate(chrom, build="19"):
+    #http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20110106_recombination_hotspots/
     if build=="19":
         data_path =  path.dirname(__file__) + '/data/recombination/hg19/genetic_map_GRCh37_chr'+str(chrom)+'.txt.gz'
         recombination_rate = pd.read_csv(data_path,sep="\t")
