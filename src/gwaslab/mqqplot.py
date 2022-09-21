@@ -800,7 +800,7 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
         lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
         other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
         if verbose: log.write(" -Calculating Rsq...")
-        sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0]
+        sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = np.abs(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0])
     else:
         if verbose: log.write(" -Lead SNP not found in reference...")
         sumstats["RSQ"]=None
