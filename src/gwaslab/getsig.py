@@ -4,8 +4,11 @@ import scipy as sp
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
+from gwaslab.CommonData import get_chr_NC_dict
+from gwaslab.CommonData import gtf_index
 from pyensembl import EnsemblRelease
 from pyensembl import Genome
+from os import path
 
 def getsig(insumstats,
            id,
@@ -18,6 +21,7 @@ def getsig(insumstats,
            xymt=["X","Y","MT"],
            anno=False,
            build="19",
+           source="ensembl",
            verbose=True):
     
     if verbose: log.write("Start to extract lead variants...")
@@ -100,26 +104,34 @@ def getsig(insumstats,
     #sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].map(num_to_chr)
     output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
     if anno is True:
-        if build=="19":
-            data = EnsemblRelease(75)
-            if verbose:log.write(" -Assigning Gene name using Ensembl Release",75 , " (hg19)")
-        elif build=="38":
-            data = EnsemblRelease(77)
-            if verbose:log.write(" -Assigning Gene name using Ensembl Release",77 , " (hg38)")
-        output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(output.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=output.index).values
+        output = annogene(
+               output,
+               id=id,
+               chrom=chrom,
+               pos=pos,
+               log=log,
+               xymt=xymt,
+               build=build,
+               source=source,
+               verbose=verbose)
     if verbose: log.write("Finished extracting lead variants successfully!")
     return output.copy()
 
 
-def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
+def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ensembl",build="19"):
         #
         # data
         # check snp position
         #convert 23,24,25 back to X,Y,MT for EnsemblRelease query
-        x[chrom] = get_number_to_chr()[x[chrom]]
-         
+        if source=="ensembl":
+            x[chrom] = get_number_to_chr()[x[chrom]]
+        elif source=="refseq":
+            x[chrom] = get_number_to_chr()[x[chrom]]
+            x[chrom] = get_chr_NC_dict(build=build)[x[chrom]]
+
         # query
-        gene = data.gene_names_at_locus(contig= x[chrom], position=x[pos])
+        gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
+        
         if len(gene)==0:
             # if not in any gene
             i=0
@@ -146,16 +158,18 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
                             return distance+j,",".join(gene_d)
                 elif len(gene_u)>0:                    
                     # if found gene uptream
+                    distance = (i-1)*step
                     for j in range(0,step,1):
-                        gene_u2 = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance+j)
-                        if len(gene_u2)==0:
-                            return -distance+j,",".join(gene_u)
+                        gene_u2 = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance-j)
+                        if len(gene_u2)>0:
+                            return -distance-j,",".join(gene_u)
                 elif len(gene_d)>0:
                     # if found gene downstream
+                    distance = (i-1)*step
                     for j in range(0,step,1):
-                        gene_d2 = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance-j)
-                        if len(gene_d2)==0:
-                            return distance-j,",".join(gene_d)
+                        gene_d2 = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance+j)
+                        if len(gene_d2)>0:
+                            return distance+j,",".join(gene_d)
                 i+=1
                 # increase i by 1
             return distance,"intergenic"
@@ -171,20 +185,67 @@ def annogene(
            log=Log(),
            xymt=["X","Y","MT"],
            build="19",
+           source="ensembl",
            verbose=True):
+    if verbose: log.write("Start to annotate variants with nearest gene name(s)...")
     output = insumstats.copy()
-    
-    if build=="19":
-        #data = EnsemblRelease(75)
-        if verbose:log.write(" -Assigning Gene name using Ensembl Release",75 , " (hg19)")
-        data = Genome(
-        reference_name='GRCh37',
-        annotation_name='genes',
-        gtf_path_or_url='/home/yunye/mydata/d_disk/gene/Homo_sapiens.GRCh37.75.protein_coding.chr.gtf.gz')
-        output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(output.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=output.index).values
-    elif build=="38":
-        data = EnsemblRelease(77)
-        if verbose:log.write(" -Assigning Gene name using Ensembl Release",77 , " (hg38)")
-        output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(output.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=output.index).values
-    if verbose: log.write("Finished extracting lead variants successfully!")
+    if source == "ensembl":
+        if build=="19":
+            #data = EnsemblRelease(75)
+            if verbose:log.write(" -Assigning Gene name using built-in Ensembl Release",75 , " (hg19)")
+            #zcat Homo_sapiens.GRCh37.75.gtf.gz| 
+            #grep -E 'processed_transcript|protein_coding|_gene' 
+            #| gzip >Homo_sapiens.GRCh37.75.processed.chr.gtf.gz     
+            gtf_path = path.dirname(__file__) + '/data/Ensembl/release75/Homo_sapiens.GRCh37.75.protein_coding.gtf.gz'
+            gtf_db_path = path.dirname(__file__) + '/data/Ensembl/release75/Homo_sapiens.GRCh37.75.protein_coding.gtf.db'
+            data = Genome(
+                reference_name='GRCh37',
+                annotation_name='hg19_gene',
+                gtf_path_or_url=gtf_path)
+            if path.isfile(gtf_db_path) is False:
+                data.index()
+            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+                output.apply(lambda x:closest_gene(x,data=data,source=source), axis=1).tolist(), 
+                index=output.index).values
+        elif build=="38":
+            if verbose:log.write(" -Assigning Gene name using built-in Ensembl Release",107 , " (hg38)")
+            gtf_path = path.dirname(__file__) + '/data/Ensembl/release107/Homo_sapiens.GRCh38.107.protein_coding.chr.gtf.gz'
+            gtf_db_path = path.dirname(__file__) + '/data/Ensembl/release107/Homo_sapiens.GRCh38.107.protein_coding.chr.gtf.db'
+            data = Genome(
+                reference_name='GRCh38',
+                annotation_name='hg38_gene',
+                gtf_path_or_url=gtf_path)
+            if path.isfile(gtf_db_path) is False:
+                data.index()
+            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+                output.apply(lambda x:closest_gene(x,data=data,source=source), axis=1).tolist(), 
+                index=output.index).values
+    if source == "refseq":
+        if build=="19":
+            if verbose:log.write(" -Assigning Gene name using built-in NCBI refseq latest GRCh37")
+            gtf_path = path.dirname(__file__) + '/data/RefSeq/GRCh37/GRCh37_latest_genomic.protein_coding.gtf.gz'
+            gtf_db_path = path.dirname(__file__) + '/data/RefSeq/GRCh37/GRCh37_latest_genomic.protein_coding.gtf.db'
+            data = Genome(
+                reference_name='GRCh37',
+                annotation_name='hg19_gene',
+                gtf_path_or_url=gtf_path)
+            if path.isfile(gtf_db_path) is False:
+                data.index()
+            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+                output.apply(lambda x:closest_gene(x,data=data,source=source,build=build), axis=1).tolist(), 
+                index=output.index).values
+        elif build=="38":
+            if verbose:log.write(" -Assigning Gene name using built-in NCBI refseq latest GRCh38")
+            gtf_path = path.dirname(__file__) + '/data/RefSeq/GRCh38/GRCh38_latest_genomic.protein_coding.gtf.gz'
+            gtf_db_path = path.dirname(__file__) + '/data/RefSeq/GRCh38/GRCh38_latest_genomic.protein_coding.gtf.gz'
+            data = Genome(
+                reference_name='GRCh38',
+                annotation_name='hg38_gene',
+                gtf_path_or_url=gtf_path)
+            if path.isfile(gtf_db_path) is False:
+                data.index()
+            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+                output.apply(lambda x:closest_gene(x,data=data,source=source,build=build), axis=1).tolist(), 
+                index=output.index).values
+    if verbose: log.write("Finished annotating variants with nearest gene name(s) successfully!")
     return output

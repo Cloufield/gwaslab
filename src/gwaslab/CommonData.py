@@ -1,7 +1,7 @@
 import pandas as pd
 from os import path
 import json
-
+from pyensembl import Genome
 
 #hard-coded data
 def get_chr_NC_dict(build,inverse=False):
@@ -32,7 +32,7 @@ def get_chr_NC_dict(build,inverse=False):
         "22":"NC_000022.10",
         "X":"NC_000023.10",
         "Y":"NC_000024.9"}
-    elif build=="39":
+    elif build=="38":
         dic={
         "1":"NC_000001.11",
         "2":"NC_000002.12",
@@ -130,16 +130,54 @@ def get_recombination_rate(chrom, build="19"):
         recombination_rate = pd.read_csv(data_path,sep="\t")
     return recombination_rate
 
-def get_gtf(chrom, build="19"):
+
+####################################################################################################################
+def get_gtf(chrom, build="19",source="ensembl"):
+    if source=="ensembl":
+        if build=="19":
+            data_path =  path.dirname(__file__) + '/data/Ensembl/release75/Homo_sapiens.GRCh37.75.gtf.gz'
+            gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#",dtype={0:"string"})
+            gtf = gtf.loc[gtf[0]==chrom,:]
+        if build=="38":
+            data_path =  path.dirname(__file__) + '/data/Ensembl/release107/Homo_sapiens.GRCh38.107.chr.gtf.gz'
+            gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#",dtype={0:"string"})
+            gtf = gtf.loc[gtf[0]==chrom,:]
+    if source=="refseq":
+        chrom_NC = get_chr_NC_dict(build=build)[str(chrom)]
+        if build=="19":
+            data_path =  path.dirname(__file__) + '/data/RefSeq/GRCh37/GRCh37_latest_genomic.gtf.gz'
+            gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
+            gtf = gtf.loc[gtf[0]==chrom_NC,:]
+        if build=="38":
+            data_path =  path.dirname(__file__) + '/data/RefSeq/GRCh38/GRCh38_latest_genomic.gtf.gz'
+            gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
+            gtf = gtf.loc[gtf[0]==chrom_NC,:]
+        gtf[0] = str(chrom)
+    return gtf
+
+#def get_gtf_chr(chrom, build="19"):
+#    if build=="19":
+#        data_path =  path.dirname(__file__) + '/data/Ensembl/release75/Homo_sapiens.GRCh37.75.chr'+str(chrom)+'.gtf.gz'
+#        gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
+#    if build=="38":
+#        data_path =  path.dirname(__file__) + '/data/Ensembl/release107/Homo_sapiens.GRCh38.107.chr'+str(chrom)+'.gtf.gz'
+#        gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
+#    return gtf
+
+def gtf_index():
     if build=="19":
         data_path =  path.dirname(__file__) + '/data/Ensembl/release75/Homo_sapiens.GRCh37.75.gtf.gz'
-        gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
-        gtf = gtf.loc[gtf[0]==chrom,:]
+        data = Genome(  reference_name='GRCh37',
+                        annotation_name='hg19_genes',
+                        gtf_path_or_url=data_path)
+        data.index()
     if build=="38":
         data_path =  path.dirname(__file__) + '/data/Ensembl/release107/Homo_sapiens.GRCh38.107.chr.gtf.gz'
-        gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
-        gtf = gtf.loc[gtf[0]==chrom,:]
-    return gtf
+        data = Genome(  reference_name='GRCh38',
+                        annotation_name='hg38_genes',
+                        gtf_path_or_url=data_path)
+        data.index()
+    
 ####################################################################################################################
     
         

@@ -416,25 +416,25 @@ def mqqplot(insumstats,
                 if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
         
         # if regional plot : pinpoint lead , add color bar ##################################################
-        if (region is not None) and (vcf_path is not None):
+        if (region is not None) :
             # pinpoint lead
             lead_id = sumstats["scaled_P"].idxmax()
             ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],
                         color=region_ld_colors[-1],marker="D",zorder=3,s=marker_size[1]+1,edgecolor="black")
-            
-            # add a in-axis axis for colorbar
-            axins1 = inset_axes(ax1,
-                    width="5%",  # width = 50% of parent_bbox width
-                    height="40%",  # height : 5%
-                    loc='upper right')
-            
-            cmp= mpl.colors.ListedColormap(region_ld_colors[1:])
-            norm= mpl.colors.BoundaryNorm([0]+region_ld_threshold+[1],cmp.N)            
-            cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),
-                               cax=axins1,fraction=1,orientation="vertical",ticklocation="left")
-            cbar.set_ticks(ticks=region_ld_threshold) 
-            cbar.set_ticklabels([str(i) for i in region_ld_threshold]) 
-            cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.15)
+            if (vcf_path is not None):
+                # add a in-axis axis for colorbar
+                axins1 = inset_axes(ax1,
+                        width="5%",  # width = 50% of parent_bbox width
+                        height="40%",  # height : 5%
+                        loc='upper right')
+
+                cmp= mpl.colors.ListedColormap(region_ld_colors[1:])
+                norm= mpl.colors.BoundaryNorm([0]+region_ld_threshold+[1],cmp.N)            
+                cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),
+                                   cax=axins1,fraction=1,orientation="vertical",ticklocation="left")
+                cbar.set_ticks(ticks=region_ld_threshold) 
+                cbar.set_ticklabels([str(i) for i in region_ld_threshold]) 
+                cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.15)
         
         ## recombinnation rate ##################################################       
         if (region is not None) and (region_recombination is True):
@@ -504,8 +504,8 @@ def mqqplot(insumstats,
                     exon_color = region_lead_grid_line["color"]  
                 else:
                     exon_color="#020080"
-                if row["gene_biotype"]!="protein_coding":
-                    exon_color="grey"
+                #if row["gene_biotype"]!="protein_coding":
+                #    exon_color="grey"
                 ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
                          (row["stack"]*2,row["stack"]*2),linewidth=size_in_points,color=exon_color)
             
@@ -824,20 +824,25 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
 ##############################################################################################################################
 def process_gtf(gtf_path,region,flank_factor,build,region_protein_coding):
     #loading
-    if gtf_path =="defualt":
-        gtf = get_gtf(chrom=str(region[0]),build=build)
+    if gtf_path =="defualt" or gtf_path =="ensembl":
+        gtf = get_gtf(chrom=str(region[0]),build=build,source="ensembl")
+    elif gtf_path =="refseq":
+        gtf = get_gtf(chrom=str(region[0]),build=build,source="refseq")
     else:
         gtf = pd.read_csv(gtf_path,sep="\t",header=None)
 
     #filter in region
     genes_1mb = gtf.loc[(gtf[0]==str(region[0]))&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
     genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
-    if region_protein_coding is True:
-        genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:].copy()
-    genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_name "([\w\.-]+)"')
 
+    if gtf_path=="refseq":
+        genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
+    else:
+        genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_name "([\w\.-]+)"')
     genes_1mb.loc[:,"gene"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
     exons = genes_1mb.loc[genes_1mb[2]=="exon",:].copy()
+    if region_protein_coding is True:
+        genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:].copy()
 
     #uniq genes
     uniq_gene_region = genes_1mb.loc[genes_1mb[2]=="gene",:].copy()
