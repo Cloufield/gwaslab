@@ -132,8 +132,13 @@ def get_recombination_rate(chrom, build="19"):
 
 def get_gtf(chrom, build="19"):
     if build=="19":
-        data_path =  path.dirname(__file__) + '/data/gtf/hg19/hg19.refGene.chr'+str(chrom)+'.gtf.gz'
-        gtf = pd.read_csv(data_path,sep="\t",header=None)
+        data_path =  path.dirname(__file__) + '/data/Ensembl/release75/Homo_sapiens.GRCh37.75.gtf.gz'
+        gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
+        gtf = gtf.loc[gtf[0]==chrom,:]
+    if build=="38":
+        data_path =  path.dirname(__file__) + '/data/Ensembl/release107/Homo_sapiens.GRCh38.107.chr.gtf.gz'
+        gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
+        gtf = gtf.loc[gtf[0]==chrom,:]
     return gtf
 ####################################################################################################################
     

@@ -400,7 +400,6 @@ class Sumstats():
                            id=id_to_use,
                            chrom="CHR",
                            pos="POS",
-                           p="P",
                            log=self.log,
                            **args)
         return output
