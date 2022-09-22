@@ -11,6 +11,7 @@ from gwaslab.CommonData import get_formats_list
     ## general : ldsc, plink, plink2, saige, regenie ...
     ## vep
     ## bed
+    ## annovar
 
 ###################################################################################################################################################
 def tovcf(sumstats,path=None,snpid="MARKERNAME", chrom="CHR", pos="POS", ea="EA", nea="NEA", beta="BETA", se="SE" ,p="P" ,n="N",verbose=True):
@@ -176,7 +177,7 @@ def tofmt(sumstats,
         if verbose: log.write(" -Number of Insertions :",sum(is_insert)) 
         if verbose: log.write(" -Number of Deletions :",sum(is_delete)) 
             
-        if verbose: log.write(" -formatting to 1-based bed-like file (vep default)...")
+        if verbose: log.write(" -formatting to 1-based bed-like file (for vep)...")
         # for snp  
         # start = pos ; end = pos
         sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"] + (sumstats.loc[is_snp,"NEA"].str.len() - 1 )
@@ -210,6 +211,63 @@ def tofmt(sumstats,
 
         sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
     
+    elif fmt=="annovar":
+        # bed-like format, 1-based, 
+        # first 3 columns : Chromosome ("chr" prefix is optional), Start, End, Reference Allelel, Alternative Allele
+        # https://annovar.openbioinformatics.org/en/latest/user-guide/input/
+        is_snp = (sumstats["EA"].str.len() == sumstats["NEA"].str.len())
+        is_insert = (sumstats["EA"].str.len()>1) &(sumstats["NEA"].str.len()==1)
+        is_delete = (sumstats["EA"].str.len()==1) &(sumstats["NEA"].str.len()>1)
+        
+        if verbose: log.write(" -Number of SNPs :",sum(is_snp))
+        if verbose: log.write(" -Number of Insertions :",sum(is_insert)) 
+        if verbose: log.write(" -Number of Deletions :",sum(is_delete)) 
+        
+        if verbose: log.write(" -formatting to 1-based bed-like file...")
+        # for snp  
+        # start = pos ; end = pos
+        # A/G
+        # AT/CG
+        sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"]
+        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"]-1 + sumstats.loc[is_snp,"NEA"].str.len()
+        sumstats.loc[is_snp,"NEA_out"] = sumstats.loc[is_snp,"NEA"].astype("string")
+        sumstats.loc[is_snp,"EA_out"] = sumstats.loc[is_snp,"EA"].astype("string")
+        
+        # for insertion
+        # start = pos : end = pos
+        # A/ATC -> -/TC
+        sumstats.loc[is_insert,"START"]  = sumstats.loc[is_insert,"POS"]+1
+        sumstats.loc[is_insert,"END"]   = sumstats.loc[is_insert,"POS"]+1
+        sumstats.loc[is_insert,"NEA_out"] = "-"
+        sumstats.loc[is_insert,"EA_out"] = sumstats.loc[is_insert,"EA"].str.slice(start=1)
+        
+        # for deletion 
+        # start = pos - 1 +1; end = pos -1 +1+ len(Ref)
+        # ATC/A -> TC/-
+        sumstats.loc[is_delete,"START"] = sumstats.loc[is_delete,"POS"]
+        sumstats.loc[is_delete,"END"]  = sumstats.loc[is_delete,"POS"]- 1 + sumstats.loc[is_delete,"NEA"].str.len() 
+        sumstats.loc[is_delete,"NEA_out"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)
+        sumstats.loc[is_delete,"EA_out"] = "-"
+        
+        ouput_cols=["CHR","START","END","NEA_out","EA_out","SNPID"]
+        
+        sumstats["START"] = sumstats["START"].astype("Int64")
+        sumstats["END"] = sumstats["END"].astype("Int64")
+        
+        sumstats = sumstats.loc[:,ouput_cols]
+        path = path + "."+suffix
+        if verbose: log.write(" -Output columns:",sumstats.columns)
+        if verbose: log.write(" -Output path:",path) 
+        
+        sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
+        #tabix_compress
+        #tabix_index
+        if bgzip is True:
+            if verbose: log.write(" -bgzip compressing ...") 
+            tabix_compress(path, path+".gz",force=True)
+        if tabix is True:
+            if verbose: log.write(" -tabix indexing...") 
+            tabix_index(path+".gz" ,preset="bed",force=True) 
     
     
     

@@ -464,7 +464,7 @@ class Sumstats():
               bgzip=False,
               tabix=False):
         
-        if fmt in get_formats_list() + ["vep","bed"]:
+        if fmt in get_formats_list() + ["vep","bed","annovar"]:
             if verbose: self.log.write("Start to format the output sumstats in: ",fmt, " format")
         else:
             raise ValueError("Please select a format to output")
@@ -544,7 +544,7 @@ class Sumstats():
         if fmt=="vcf":
             toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         
-        if fmt in get_formats_list() + ["vep","bed"]:
+        if fmt in get_formats_list() + ["vep","bed","annovar"]:
             tofmt(output,
                   path=path,
                   fmt=fmt,
