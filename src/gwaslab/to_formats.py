@@ -274,8 +274,6 @@ def tofmt(sumstats,
             for index,row in sumstats.iterrows():
                 file.write(str(row["#CHROM"])+"\t"+str(row["POS"])+"\t"+str(row["ID"])+"\t"+str(row["REF"])+"\t"+str(row["ALT"])+"\t.\tPASS\t"+":".join(output_format)+"\t"+":".join(row[output_format].astype("string"))+"\n")
         
-        sumstats = sumstats.loc[:,meta_data["format_fixed"]+[meta["Name"]]]
-        
         # out put data
 
         if verbose: log.write(" -Output path:",path) 
