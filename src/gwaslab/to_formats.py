@@ -267,7 +267,7 @@ def tofmt(sumstats,
             file.write(vcf_header+"\n")
         
         with open(path,"a") as file:
-            if verbose: log.write(" -Output columns:","\s".join(meta_data["format_fixed"]+[meta["Name"]])+"\n")
+            if verbose: log.write(" -Output columns:"," ".join(meta_data["format_fixed"]+[meta["Name"]]))
             file.write("\t".join(meta_data["format_fixed"]+[meta["Name"]])+"\n")
             if verbose: log.write(" -Outputing data...")
             for index,row in sumstats.iterrows():
