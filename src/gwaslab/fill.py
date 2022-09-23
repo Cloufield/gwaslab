@@ -14,6 +14,8 @@ def filldata(
     log = Log()
     ):
     
+    if type(to_fill) is str:
+        to_fill = [to_fill]
 
     if verbose: log.write("Start filling data using existing columns...")
     if verbose: log.write(" -Raw input columns: ",list(sumstats.columns))
