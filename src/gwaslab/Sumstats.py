@@ -75,7 +75,8 @@ class Sumstats():
              **readargs):
         
         self.build = build
-        self.meta = {"Genome build":build,"Name":"Sumstats_1"}
+        self.meta = {"Genome build":build,
+                 "Name":"Sumstats_1","StudyType":"Unknown"}
         self.data = pd.DataFrame()
         self.log = Log()
         

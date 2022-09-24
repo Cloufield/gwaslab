@@ -2,6 +2,7 @@ import pandas as pd
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_number_to_chr
+from gwaslab.CommonData import gwaslab_info
 from pysam import tabix_compress 
 from pysam import tabix_index
 from gwaslab.CommonData import get_formats_list
@@ -40,11 +41,7 @@ def tofmt(sumstats,
         sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
     
     ### calculate meta data
-    #StudyID=meta["Name"]
-    #otalVariants = len(sumstats)
-    #HarmonisedVariants = 
-    #VariantsNotHarmonised = 
-    #StudyType=
+
     if fmt=="bed":
         # bed-like format, 0-based, 
         # first 3 columns : chromosome, start, end
@@ -101,7 +98,7 @@ def tofmt(sumstats,
         if tabix is True:
             if verbose: log.write(" -tabix indexing...") 
             tabix_index(path+".gz" ,preset="bed",force=True) 
-        
+    ####################################################################################################################   
     elif fmt=="vep":
         # bed-like format, 1-based
         # first 6 columns : chromosome, start, end, allele, strand, identifier
@@ -148,7 +145,7 @@ def tofmt(sumstats,
         if verbose: log.write(" -Output path:",path) 
 
         sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
-    
+    ####################################################################################################################
     elif fmt=="annovar":
         # bed-like format, 1-based, 
         # first 3 columns : Chromosome ("chr" prefix is optional), Start, End, Reference Allelel, Alternative Allele
@@ -206,7 +203,7 @@ def tofmt(sumstats,
         if tabix is True:
             if verbose: log.write(" -tabix indexing...") 
             tabix_index(path+".gz" ,preset="bed",force=True) 
-            
+    ####################################################################################################################       
     elif fmt=="vcf":
         if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
@@ -219,6 +216,7 @@ def tofmt(sumstats,
             rename_dictionary["rsID"]="ID"
         else:
             rename_dictionary["SNPID"]="ID"
+        
         if verbose: 
             log.write(" -gwaslab to "+fmt+" format dictionary:",)  
             keys=[]
@@ -234,9 +232,13 @@ def tofmt(sumstats,
             if i in rename_dictionary.keys():
                 ouput_cols.append(i)  
         
-        ouput_cols = ouput_cols + cols
+        ouput_cols = ouput_cols +["STATUS"]+ cols
         sumstats = sumstats.loc[:,ouput_cols]
         sumstats = sumstats.rename(columns=rename_dictionary) 
+        
+        harmonised = sum(sumstats["STATUS"].str.match( r"\w\w\w[0][0123][012][01234]", case=False, flags=0, na=False ) )
+        switchedalleles = sum(sumstats["STATUS"].str.match( r"\w\w\w[0][0123][12][24]", case=False, flags=0, na=False ) )
+        sumstats["ID"] = sumstats["ID"].str.replace(":","_")
         
         if "AF" in sumstats.columns:
             sumstats["INFO"] = "AF="+sumstats["AF"].astype("string")
@@ -248,32 +250,44 @@ def tofmt(sumstats,
             if i in meta_data["format_format"]:
                 output_format.append(i)  
                 
-        #sumstats["FORMAT"] = ":".join(output_format)
-        #sumstats = sumstats.astype("string")
-        #sumstats[meta["Name"]]= sumstats.loc[:,output_format].apply(lambda x: ":".join(x),axis=1)
-        #sumstats["QUAL"]="."
-        #sumstats["FILTER"]="PASS"
         path = path + "."+suffix
         
         # Create vcf header
-        vcf_header= meta_data["format_fixed_header"] +"\n"+ meta_data["format_contig_"+str(build)]
+        vcf_header= meta_data["format_fixed_header"] +"\n"+ meta_data["format_contig_"+str(build)]+"\n"
         # Create sample header
+        vcf_header+="##SAMPLE=<ID={},TotalVariants={},VariantsNotRead=0,HarmonisedVariants={},VariantsNotHarmonised={},SwitchedAlleles={},StudyType={}>\n".format(meta["Name"],len(sumstats),harmonised,len(sumstats)-harmonised,switchedalleles,meta["StudyType"])
+        vcf_header+="##gwaslab_version="+gwaslab_info()["version"]+"\n"
         
         
+         #StudyID=meta["Name"]
+        #otalVariants = len(sumstats)
+        #HarmonisedVariants = 
+        #VariantsNotHarmonised = 
+        #StudyType=
         ##SAMPLE=<ID=IEU-b-1,TotalVariants=9851866,VariantsNotRead=0,HarmonisedVariants=9851866,VariantsNotHarmonised=0,SwitchedAlleles=9851866,StudyType=Continuous>
         
         # output header
         with open(path,"w") as file:
-            file.write(vcf_header+"\n")
+            file.write(vcf_header)
         
         with open(path,"a") as file:
             if verbose: log.write(" -Output columns:"," ".join(meta_data["format_fixed"]+[meta["Name"]]))
             file.write("\t".join(meta_data["format_fixed"]+[meta["Name"]])+"\n")
             if verbose: log.write(" -Outputing data...")
+            counter=0
+            QUAL="."
+            FILTER="PASS"
             for index,row in sumstats.iterrows():
-                file.write(str(row["#CHROM"])+"\t"+str(row["POS"])+"\t"+str(row["ID"])+"\t"+str(row["REF"])+"\t"+str(row["ALT"])+"\t.\tPASS\t"+":".join(output_format)+"\t"+":".join(row[output_format].astype("string"))+"\n")
-        
-        # out put data
+                CHROM=str(row["#CHROM"])
+                POS=str(row["POS"])
+                ID=str(row["ID"])
+                REF=str(row["REF"])
+                ALT=str(row["ALT"])
+                if "AF" in sumstats.columns:
+                    INFO="AF="+str(row["AF"])
+                FORMAT=":".join(output_format)
+                DATA=":".join(row[output_format].astype("string"))
+                file.write(CHROM+"\t"+POS+"\t"+ID+"\t"+REF+"\t"+ALT+"\t"+QUAL+"\t"+FILTER+"\t"+INFO+"\t"+FORMAT+"\t"+DATA+"\n")
 
         if verbose: log.write(" -Output path:",path) 
 #        if path is not None: sumstats.to_csv(path,sep="\t",index=None,mode='a',**to_csvargs)
@@ -283,6 +297,7 @@ def tofmt(sumstats,
         if tabix is True:
             if verbose: log.write(" -tabix indexing...") 
             tabix_index(path+".gz" ,preset="vcf",force=True) 
+    ####################################################################################################################
     elif fmt in get_formats_list():       
         if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
