@@ -218,7 +218,7 @@ def tofmt(sumstats,
             rename_dictionary["SNPID"]="ID"
         
         if verbose: 
-            log.write(" -gwaslab to "+fmt+" format dictionary:",)  
+            log.write(" -gwaslab to "+fmt+" format dictionary:")  
             keys=[]
             values=[]
             for key,value in rename_dictionary.items():
@@ -251,8 +251,9 @@ def tofmt(sumstats,
                 output_format.append(i)  
                 
         path = path + "."+suffix
-        
+        if verbose: log.write(" -vcf header contig build:"+str(build)) 
         # Create vcf header
+        
         vcf_header= meta_data["format_fixed_header"] +"\n"+ meta_data["format_contig_"+str(build)]+"\n"
         # Create sample header
         vcf_header+="##SAMPLE=<ID={},TotalVariants={},VariantsNotRead=0,HarmonisedVariants={},VariantsNotHarmonised={},SwitchedAlleles={},StudyType={}>\n".format(meta["Name"],len(sumstats),harmonised,len(sumstats)-harmonised,switchedalleles,meta["StudyType"])
@@ -283,8 +284,7 @@ def tofmt(sumstats,
                 ID=str(row["ID"])
                 REF=str(row["REF"])
                 ALT=str(row["ALT"])
-                if "AF" in sumstats.columns:
-                    INFO="AF="+str(row["AF"])
+                INFO=str(row["INFO"])
                 FORMAT=":".join(output_format)
                 DATA=":".join(row[output_format].astype("string"))
                 file.write(CHROM+"\t"+POS+"\t"+ID+"\t"+REF+"\t"+ALT+"\t"+QUAL+"\t"+FILTER+"\t"+INFO+"\t"+FORMAT+"\t"+DATA+"\n")
