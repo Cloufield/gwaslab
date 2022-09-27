@@ -75,7 +75,8 @@ class Sumstats():
              **readargs):
         
         self.build = build
-        self.meta = {"Genome build":build}
+        self.meta = {"Genome build":build,
+                 "Name":"Sumstats_1","StudyType":"Unknown"}
         self.data = pd.DataFrame()
         self.log = Log()
         
@@ -464,7 +465,7 @@ class Sumstats():
               bgzip=False,
               tabix=False):
         
-        if fmt in get_formats_list() + ["vep","bed"]:
+        if fmt in get_formats_list() + ["vep","bed","annovar","vcf"]:
             if verbose: self.log.write("Start to format the output sumstats in: ",fmt, " format")
         else:
             raise ValueError("Please select a format to output")
@@ -541,18 +542,18 @@ class Sumstats():
             
         ##########################################################################################################          
         # output, mapping column names
-        if fmt=="vcf":
-            toldsc(output, path=path+"."+suffix,verbose=True,log=self.log,to_csvargs=to_csvargs)
         
-        if fmt in get_formats_list() + ["vep","bed"]:
+        if fmt in get_formats_list() + ["vep","bed","annovar","vcf"]:
             tofmt(output,
                   path=path,
                   fmt=fmt,
                   suffix=suffix,
+                  build=build,
                   verbose=True,
                   log=self.log,
                   to_csvargs=to_csvargs,
                   chr_prefix=chr_prefix,
+                  meta = self.meta,
                   bgzip=bgzip,
                   tabix=tabix,
                   xymt_number=xymt_number,

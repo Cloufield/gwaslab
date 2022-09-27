@@ -177,13 +177,15 @@ def gtf_index():
                         annotation_name='hg38_genes',
                         gtf_path_or_url=data_path)
         data.index()
-    
+
+
 ####################################################################################################################
-    
-        
-        
-        
-        
+def gwaslab_info():
+    dic={
+   "version":"3.2.2",
+   "release_date":"20220924"
+    }
+    return dic
         
         
         
