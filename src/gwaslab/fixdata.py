@@ -152,8 +152,8 @@ def fixID(sumstats,
             
             if sum(to_fix)>0:    
                 if verbose: log.write(" -Filling CHR and POS columns using chr:pos:ref:alt format variants in rsID column...")
-                sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str.get(0)
-                sumstats.loc[to_fix,pos] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str.get(1)
+                sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[0]
+                sumstats.loc[to_fix,pos] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[1]
                 #sumstats.loc[to_fix,pos] = np.floor(pd.to_numeric(sumstats.loc[to_fix,rsid].str.split(':|_|-',x).get(1), errors='coerce')).astype('Int64')
                 #sumstats.loc[to_fix,status] = vchange_status(sumstats.loc[to_fix,status], 4, "98765432","00000000").astype("string")  
                 

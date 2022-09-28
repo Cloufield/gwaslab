@@ -648,7 +648,7 @@ def mqqplot(insumstats,
                                              connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
                 
                 
-                bbox={}
+                bbox=None
                 if "r" in mode:
                     bbox=dict(boxstyle="round", fc="w")
                 
