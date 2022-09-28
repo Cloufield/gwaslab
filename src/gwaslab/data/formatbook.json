@@ -1,4 +1,25 @@
 {
+    "pheweb": {
+        "meta_data": {
+            "format_name": "pheweb",
+            "format_source": "https://github.com/statgen/pheweb",
+            "format_version": "20220928"
+        },
+        "format_dict": {
+            "rsids": "rsID",
+            "chrom": "CHR",
+            "pos": "POS",
+            "ref": "NEA",
+            "alt": "EA",
+            "beta": "BETA",
+            "af": "EAF",
+            "sebeta": "SE",
+            "pval": "P",
+            "or": "OR",
+            "r2": "INFO",
+            "num_samples": "n"
+        }
+    },
     "gwascatalog": {
         "meta_data": {
             "format_name": "gwascatalog",
