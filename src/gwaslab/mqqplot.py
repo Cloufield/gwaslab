@@ -600,6 +600,12 @@ def mqqplot(insumstats,
             to_annotate.loc[:,["LOCATION","Annotation"]] = pd.DataFrame(to_annotate.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=to_annotate.index).values
         
 # Add Annotation to manhattan plot #######################################################
+        plot.spines["top"].set_visible(False)
+        plot.spines["right"].set_visible(False)
+        plot.spines["left"].set_visible(True)
+        if mode=="r":
+            plot.spines["top"].set_visible(True)
+            plot.spines["right"].set_visible(True)
         if anno and (to_annotate.empty is not True):
             #initiate a list for text and a starting position
             text = []
@@ -666,7 +672,8 @@ def mqqplot(insumstats,
                                              fontsize=fontsize,
                                              bbox=bbox,
                                              fontweight=fontweight,
-                                             arrowprops=arrowargs
+                                             arrowprops=arrowargs,
+                                             zorder=100
                                             )
                            )
                 anno_count +=1
@@ -687,12 +694,7 @@ def mqqplot(insumstats,
             plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif")
         
         
-        plot.spines["top"].set_visible(False)
-        plot.spines["right"].set_visible(False)
-        plot.spines["left"].set_visible(True)
-        if mode=="r":
-            plot.spines["top"].set_visible(True)
-            plot.spines["right"].set_visible(True)
+        
         if verbose: log.write("Finished creating Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
