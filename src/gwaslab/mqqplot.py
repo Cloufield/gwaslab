@@ -462,11 +462,16 @@ def mqqplot(insumstats,
             uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, flank_factor = flank_factor,build=build,region_protein_coding=region_protein_coding)
             ax3.set_ylim((-uniq_gene_region["stack"].nunique()*2,2))
             ax3.set_yticks([])
-            
-            ponits_per_track = 100/(uniq_gene_region["stack"].nunique()*2)
+            if uniq_gene_region["stack"].nunique()!=0:
+                ponits_per_track = 100/(uniq_gene_region["stack"].nunique()*2)
+            else:
+                ponits_per_track = 100
+                
             size_in_points= 0.8 * ponits_per_track
             
             if verbose: log.write(" -plotting gene track..")
+            
+            sig_gene_name = None
             
             for index,row in uniq_gene_region.iterrows():
                 if row[6][0]=="+":
