@@ -32,6 +32,7 @@ def mqqplot(insumstats,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
+          # region
           region = None,
           region_step = 21,
           region_grid = False,
@@ -43,11 +44,12 @@ def mqqplot(insumstats,
           region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
           region_recombination = True,
           region_protein_coding=True,
-          flank_factor = 0.05,
+          region_flank_factor = 0.05,
           mqqratio=3,
           windowsizekb=500,
           anno=None,
           anno_set=[],
+          anno_alias={},
           anno_d={},
           arm_offset=50,
           arm_scale=1,
@@ -172,6 +174,9 @@ def mqqplot(insumstats,
             raise ValueError("Please make sure "+eaf+" column is in input sumstats.")
     
     # ANNOTATion ##########################################################################
+    #
+    if len(anno_set)>0 or len(anno_alias)>0:
+        anno=True
     if (anno is not None) and (anno != True):
         if anno=="GENENAME":
             pass
@@ -186,8 +191,6 @@ def mqqplot(insumstats,
 #####################################################################################################################   
     #Standardize
     ## Annotation
-    if len(anno_set)>0 and (anno is False):
-        anno=True
     if (anno == "GENENAME"):
         anno_sig=True
     elif (anno is not None) and (anno != True):
@@ -457,12 +460,13 @@ def mqqplot(insumstats,
             gene_track_offset = sumstats.loc[most_left_snp,pos]-region[1]
             gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
             lead_id=sumstats["scaled_P"].idxmax()
-            lead_snp_i=sumstats.loc[lead_id,"i"]
+            lead_snp_y = sumstats["scaled_P"].max()
+            lead_snp_i = sumstats.loc[lead_id,"i"]
             
         if (gtf_path is not None ) and ("r" in mode):
             # load gtf
             if verbose: log.write(" -Loading gtf files from:" + gtf_path)
-            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, flank_factor = flank_factor,build=build,region_protein_coding=region_protein_coding)
+            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, region_flank_factor = region_flank_factor,build=build,region_protein_coding=region_protein_coding)
             ax3.set_ylim((-uniq_gene_region["stack"].nunique()*2,2))
             ax3.set_yticks([])
             if int(uniq_gene_region["stack"].nunique())==0:
@@ -539,7 +543,7 @@ def mqqplot(insumstats,
                         ax1.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
                         ax3.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
                 if region_lead_grid is True:
-                    ax1.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
+                    ax1.axvline(x=lead_snp_i,ymax=1/1.2, zorder=1,**region_lead_grid_line)
                     ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
             else:
                 # set x ticks m plot
@@ -636,38 +640,44 @@ def mqqplot(insumstats,
             last_pos=0
             anno_count=0
             
+            ## log : annotation column
             if anno==True:
                     annotation_col="CHR:POS"
             elif anno:
                     annotation_col=anno
-            
             if verbose: log.write(" -Annotating using column "+annotation_col+"...")
-                
+            
+            ##   
             for rowi,row in to_annotate.iterrows():
                 # avoid text overlapping
                 if row["i"]>last_pos+repel_force*sumstats["i"].max():
                     last_pos=row["i"]
                 else:
                     last_pos+=repel_force*sumstats["i"].max()
-                # data to pixels
+                
+                # vertical arm length in pixels
                 armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
                 #  
                 armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
                 
+                # 
                 if anno==True:
-                    annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
-                    annotation_col="CHR:POS"
+                    if row[snpid] in anno_alias.keys():
+                        annotation_text = anno_alias[row[snpid]]
+                    else:
+                        annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
                 elif anno:
                     annotation_text=row["Annotation"]
-                    annotation_col=anno
-                    
+                
+                #
                 fontweight = "normal"
                 if len(highlight) >0:
                     if row["i"] in highlight_i:
                         fontweight = "bold"
-                
+                #
                 xy=(row["i"],row["scaled_P"]+0.2)
                 xytext=(last_pos,1.15*maxy)
+                
                 if anno_count not in anno_d.keys():
                     arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
@@ -675,8 +685,7 @@ def mqqplot(insumstats,
                     if anno_d[anno_count]=="right": 
                         armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
                         armoffsetb = arm_offset 
-                        armoffseta = armoffsetall - armoffsetb
-                        
+                        armoffseta = armoffsetall - armoffsetb   
                         arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
                     else:
@@ -698,7 +707,7 @@ def mqqplot(insumstats,
                                  fontsize=fontsize,
                                  bbox=bbox_para,
                                  fontweight=fontweight,
-                                 arrowprops=arrowargs,zorder=3
+                                 arrowprops=arrowargs,zorder=100
                                             )
                  
                 anno_count +=1
@@ -737,7 +746,6 @@ def mqqplot(insumstats,
                 plt.setp(ax2_legend.texts, family="sans-serif")
         
         ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=sig_line_color)
-
         ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
         ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
         ax2.spines["top"].set_visible(False)
@@ -838,7 +846,7 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     return sumstats
 
 ##############################################################################################################################
-def process_gtf(gtf_path,region,flank_factor,build,region_protein_coding):
+def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding):
     #loading
     if gtf_path =="defualt" or gtf_path =="ensembl":
         gtf = get_gtf(chrom=str(region[0]),build=build,source="ensembl")
@@ -862,7 +870,7 @@ def process_gtf(gtf_path,region,flank_factor,build,region_protein_coding):
 
     #uniq genes
     uniq_gene_region = genes_1mb.loc[genes_1mb[2]=="gene",:].copy()
-    flank = flank_factor * (region[2] - region[1])
+    flank = region_flank_factor * (region[2] - region[1])
     uniq_gene_region["left"] = uniq_gene_region[3]-flank
     uniq_gene_region["right"] = uniq_gene_region[4]+flank
 
