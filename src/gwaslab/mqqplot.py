@@ -382,6 +382,7 @@ def mqqplot(insumstats,
                                sizes=marker_size,
                                linewidth=linewidth,
                                zorder=2,ax=ax1,edgecolor="black")   
+            
             if verbose: log.write(" -Highlighting target loci...")
             sns.scatterplot(data=sumstats.loc[sumstats["HUE"]=="0"], x='i', y='scaled_P',
                    hue="HUE",
@@ -446,6 +447,8 @@ def mqqplot(insumstats,
             ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
             ax4.set_ylabel("Recombination rate(cM/Mb)")
             ax4.set_ylim(0,100)
+            ax4.spines["top"].set_visible(False)
+            ax4.spines["top"].set(zorder=1)    
         
         ## regional plot : gene track ######################################################################
                     # calculate offset
@@ -600,12 +603,33 @@ def mqqplot(insumstats,
             to_annotate.loc[:,["LOCATION","Annotation"]] = pd.DataFrame(to_annotate.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=to_annotate.index).values
         
 # Add Annotation to manhattan plot #######################################################
-        plot.spines["top"].set_visible(False)
-        plot.spines["right"].set_visible(False)
-        plot.spines["left"].set_visible(True)
+           ## final
+        plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+        if region is not None:
+            if (gtf_path is not None ) and ("r" in mode):
+                ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
+            else:
+                plot.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
+        else:
+            plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif")
+        ##
+        ax1.spines["top"].set_visible(False)
+        ax1.spines["right"].set_visible(False)
+        ax1.spines["left"].set_visible(True)
         if mode=="r":
-            plot.spines["top"].set_visible(True)
-            plot.spines["right"].set_visible(True)
+            ax1.spines["top"].set_visible(True)
+            ax1.spines["top"].set_zorder(1)    
+            ax1.spines["right"].set_visible(True)
+        
+        
+        if verbose: log.write("Finished creating Manhattan plot successfully!")
+        if mtitle and anno and len(to_annotate)>0: 
+            pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
+            plot.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif")
+        elif mtitle:
+            plot.set_title(mtitle,fontsize=fontsize,family="sans-serif")
+            
+       
         if anno and (to_annotate.empty is not True):
             #initiate a list for text and a starting position
             text = []
@@ -660,47 +684,31 @@ def mqqplot(insumstats,
                                              connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
                 
                 
-                bbox=None
-                if "r" in mode:
-                    bbox=dict(boxstyle="round", fc="w")
                 
-                text.append(plot.annotate(annotation_text,
-                                             style='italic',
-                                             xy=xy,
-                                             xytext=xytext,rotation=40,
-                                             ha="left",va="bottom",
-                                             fontsize=fontsize,
-                                             bbox=bbox,
-                                             fontweight=fontweight,
-                                             arrowprops=arrowargs,
-                                             zorder=100
+                if "r" in mode:
+                    bbox_para=dict(boxstyle="round", fc="white",zorder=3)
+                else:
+                    bbox_para=None
+                
+                ax1.annotate(annotation_text,
+                                 style='italic',
+                                 xy=xy,
+                                 xytext=xytext,rotation=40,
+                                 ha="left",va="bottom",
+                                 fontsize=fontsize,
+                                 bbox=bbox_para,
+                                 fontweight=fontweight,
+                                 arrowprops=arrowargs,zorder=3
                                             )
-                           )
+                 
                 anno_count +=1
 
             
         else:
             if verbose: log.write(" -Skip annotating")
         
-        
-        ## final
-        plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
-        if region is not None:
-            if (gtf_path is not None ) and ("r" in mode):
-                ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
-            else:
-                plot.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
-        else:
-            plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif")
-        
-        
-        
-        if verbose: log.write("Finished creating Manhattan plot successfully!")
-        if mtitle and anno and len(to_annotate)>0: 
-            pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
-            plot.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif")
-        elif mtitle:
-            plot.set_title(mtitle,fontsize=fontsize,family="sans-serif")
+
+     
 # Creating Manhatann plot Finished #####################################################################
 
 # QQ plot #########################################################################################################
