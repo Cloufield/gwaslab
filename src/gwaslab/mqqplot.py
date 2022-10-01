@@ -650,10 +650,17 @@ def mqqplot(insumstats,
             ##   
             for rowi,row in to_annotate.iterrows():
                 # avoid text overlapping
-                if row["i"]>last_pos+repel_force*sumstats["i"].max():
+                ## calculate y span
+                if region is not None:
+                    y_span = region[2] - region[1]
+                else:
+                    y_span = sumstats["i"].max()-sumstats["i"].min()
+                
+                ## adjust x to avoid overlapping
+                if row["i"]>last_pos+repel_force*y_span:
                     last_pos=row["i"]
                 else:
-                    last_pos+=repel_force*sumstats["i"].max()
+                    last_pos+=repel_force*y_span
                 
                 # vertical arm length in pixels
                 armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
@@ -682,19 +689,21 @@ def mqqplot(insumstats,
                     arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
                 else:
-                    if anno_d[anno_count]=="right": 
+                    xy=(row["i"],row["scaled_P"])
+                    if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
                         armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
                         armoffsetb = arm_offset 
                         armoffseta = armoffsetall - armoffsetb   
                         arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
-                    else:
+                    elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
                         arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
                 
                 
                 
                 if "r" in mode:
+                    arrowargs["color"] = "black" 
                     bbox_para=dict(boxstyle="round", fc="white",zorder=3)
                 else:
                     bbox_para=None
