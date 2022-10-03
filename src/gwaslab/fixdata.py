@@ -789,7 +789,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
             sumstats.loc[matched_index,"EAF"] =   1 - sumstats.loc[matched_index,"EAF"].values
         if "OR" in sumstats.columns:
             if verbose: log.write(" -Flipping column: OR = 1 / OR...") 
-            sumstats.loc[matched_index,"OR"] =   1 / sumstats.loc[matched_index,"freq"].values
+            sumstats.loc[matched_index,"OR"] =   1 / sumstats.loc[matched_index,"OR"].values
         if "OR_95L" in sumstats.columns:
             if verbose: log.write(" -Flipping column: OR_95L = 1 / OR_95L...") 
             sumstats.loc[matched_index,"OR_95L"] =   1 / sumstats.loc[matched_index,"OR_95L"].values
