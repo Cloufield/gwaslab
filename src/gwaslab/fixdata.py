@@ -152,8 +152,8 @@ def fixID(sumstats,
             
             if sum(to_fix)>0:    
                 if verbose: log.write(" -Filling CHR and POS columns using chr:pos:ref:alt format variants in rsID column...")
-                sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str.get(0)
-                sumstats.loc[to_fix,pos] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str.get(1)
+                sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[0]
+                sumstats.loc[to_fix,pos] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[1]
                 #sumstats.loc[to_fix,pos] = np.floor(pd.to_numeric(sumstats.loc[to_fix,rsid].str.split(':|_|-',x).get(1), errors='coerce')).astype('Int64')
                 #sumstats.loc[to_fix,status] = vchange_status(sumstats.loc[to_fix,status], 4, "98765432","00000000").astype("string")  
                 
@@ -633,7 +633,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
     if "EAF" in coltocheck and "EAF" in sumstats.columns and "N" in coltocheck and "N" in sumstats.columns:
         if verbose: log.write(" -Checking if MAC >=5 ...") 
         mac5 = (sumstats.loc[:,"EAF"] * sumstats.loc[:,"N"] > 5) | ((1-sumstats.loc[:,"EAF"]) * sumstats.loc[:,"N"] > 5)
-        sumstats = sumstats.loc[mac5,:]
+        sumstats = sumstats.loc[mac5,:].copy()
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad MAC.") 
     
@@ -642,7 +642,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         cols_to_check.append("CHISQ")
         if verbose: log.write(" -Checking if CHISQ>0 ...") 
         sumstats.loc[:,"CHISQ"] = pd.to_numeric(sumstats.loc[:,"CHISQ"], errors='coerce').astype("float32")
-        sumstats = sumstats.loc[(sumstats["CHISQ"]>=0),:]
+        sumstats = sumstats.loc[(sumstats["CHISQ"]>=0),:].copy()
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad CHISQ.") 
             
@@ -651,7 +651,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         cols_to_check.append("P")
         if verbose: log.write(" -Checking if 0< P <5e-300 ...") 
         sumstats.loc[:,"P"] = pd.to_numeric(sumstats.loc[:,"P"], errors='coerce')
-        sumstats = sumstats.loc[sumstats["P"]>=0,:]
+        sumstats = sumstats.loc[sumstats["P"]>=0,:].copy()
         sumstats.loc[sumstats["P"]<5e-300,"P"] = 5e-300
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad P.") 
@@ -661,7 +661,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         cols_to_check.append("MLOG10P")
         if verbose: log.write(" -Checking if MLOG10P>=0 ...") 
         sumstats.loc[:,"MLOG10P"] = pd.to_numeric(sumstats.loc[:,"MLOG10P"], errors='coerce').astype("float32")
-        sumstats = sumstats.loc[(sumstats["MLOG10P"]>=0),:]
+        sumstats = sumstats.loc[(sumstats["MLOG10P"]>=0),:].copy()
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad MLOG10P.") 
     
@@ -670,7 +670,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         cols_to_check.append("BETA")
         if verbose: log.write(" -Checking if abs(BETA)<10 ...") 
         sumstats.loc[:,"BETA"] = pd.to_numeric(sumstats.loc[:,"BETA"], errors='coerce').astype("float32")
-        sumstats = sumstats.loc[np.abs(sumstats["BETA"])<10,:]
+        sumstats = sumstats.loc[np.abs(sumstats["BETA"])<10,:].copy()
         sumstats.loc[:,"BETA"] = sumstats.loc[:,"BETA"]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad BETA.") 
@@ -680,8 +680,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         cols_to_check.append("SE")
         if verbose: log.write(" -Checking if SE >0 ...") 
         sumstats.loc[:,"SE"] = pd.to_numeric(sumstats.loc[:,"SE"], errors='coerce').astype("float32")
-        sumstats = sumstats.loc[sumstats["SE"]>0,:]
-        sumstats.loc[:,"SE"] = sumstats.loc[:,"SE"]
+        sumstats = sumstats.loc[sumstats["SE"]>0,:].copy()
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad SE.") 
             
@@ -690,7 +689,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         cols_to_check.append("OR")
         if verbose: log.write(" -Checking if -10<log(OR)<10 ...") 
         sumstats.loc[:,"OR"] = pd.to_numeric(sumstats.loc[:,"OR"], errors='coerce').astype("float32")
-        sumstats = sumstats.loc[(np.log(sumstats["OR"])>-10) & (np.log(sumstats["OR"])<10),:]
+        sumstats = sumstats.loc[(np.log(sumstats["OR"])>-10) & (np.log(sumstats["OR"])<10),:].copy()
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad OR.") 
             
@@ -699,7 +698,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         cols_to_check.append("OR_95L")
         if verbose: log.write(" -Checking if OR_95L>0 ...") 
         sumstats.loc[:,"OR_95L"] = pd.to_numeric(sumstats.loc[:,"OR_95L"], errors='coerce').astype("float32")
-        sumstats = sumstats.loc[sumstats["OR_95L"]>0,:]
+        sumstats = sumstats.loc[sumstats["OR_95L"]>0,:].copy()
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad OR_95L.") 
             
@@ -708,7 +707,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         cols_to_check.append("OR_95U")
         if verbose: log.write(" -Checking if OR_95L>0 ...") 
         sumstats.loc[:,"OR_95U"] = pd.to_numeric(sumstats.loc[:,"OR_95U"], errors='coerce').astype("float32")
-        sumstats = sumstats.loc[sumstats["OR_95U"]>0,:]
+        sumstats = sumstats.loc[sumstats["OR_95U"]>0,:].copy()
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad OR_95U.") 
     
@@ -717,7 +716,7 @@ def sanitycheckstats(sumstats,coltocheck=["P","MLOG10P","BETA","SE","EAF","CHISQ
         cols_to_check.append("STATUS")
         if verbose: log.write(" -Checking STATUS...") 
         categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
-        sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
+        sumstats.loc[:,"STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
         if verbose: log.write(" -Coverting STAUTUS to category.") 
     
     
@@ -790,7 +789,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
             sumstats.loc[matched_index,"EAF"] =   1 - sumstats.loc[matched_index,"EAF"].values
         if "OR" in sumstats.columns:
             if verbose: log.write(" -Flipping column: OR = 1 / OR...") 
-            sumstats.loc[matched_index,"OR"] =   1 / sumstats.loc[matched_index,"freq"].values
+            sumstats.loc[matched_index,"OR"] =   1 / sumstats.loc[matched_index,"OR"].values
         if "OR_95L" in sumstats.columns:
             if verbose: log.write(" -Flipping column: OR_95L = 1 / OR_95L...") 
             sumstats.loc[matched_index,"OR_95L"] =   1 / sumstats.loc[matched_index,"OR_95L"].values

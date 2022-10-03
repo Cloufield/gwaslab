@@ -32,6 +32,7 @@ def mqqplot(insumstats,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
+          # region
           region = None,
           region_step = 21,
           region_grid = False,
@@ -43,11 +44,12 @@ def mqqplot(insumstats,
           region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
           region_recombination = True,
           region_protein_coding=True,
-          flank_factor = 0.05,
+          region_flank_factor = 0.05,
           mqqratio=3,
           windowsizekb=500,
           anno=None,
           anno_set=[],
+          anno_alias={},
           anno_d={},
           arm_offset=50,
           arm_scale=1,
@@ -172,6 +174,9 @@ def mqqplot(insumstats,
             raise ValueError("Please make sure "+eaf+" column is in input sumstats.")
     
     # ANNOTATion ##########################################################################
+    #
+    if len(anno_set)>0 or len(anno_alias)>0:
+        anno=True
     if (anno is not None) and (anno != True):
         if anno=="GENENAME":
             pass
@@ -186,8 +191,6 @@ def mqqplot(insumstats,
 #####################################################################################################################   
     #Standardize
     ## Annotation
-    if len(anno_set)>0 and (anno is False):
-        anno=True
     if (anno == "GENENAME"):
         anno_sig=True
     elif (anno is not None) and (anno != True):
@@ -202,7 +205,7 @@ def mqqplot(insumstats,
     ## CHR & POS
     if "m" in mode: 
         # CHR X,Y,MT conversion ############################
-        if sumstats[chrom].dtype =="string":
+        if sumstats[chrom].dtype =="str":
             sumstats[chrom] = sumstats[chrom].map(get_chr_to_number(),na_action="ignore")
         ## CHR
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
@@ -382,6 +385,7 @@ def mqqplot(insumstats,
                                sizes=marker_size,
                                linewidth=linewidth,
                                zorder=2,ax=ax1,edgecolor="black")   
+            
             if verbose: log.write(" -Highlighting target loci...")
             sns.scatterplot(data=sumstats.loc[sumstats["HUE"]=="0"], x='i', y='scaled_P',
                    hue="HUE",
@@ -446,6 +450,8 @@ def mqqplot(insumstats,
             ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
             ax4.set_ylabel("Recombination rate(cM/Mb)")
             ax4.set_ylim(0,100)
+            ax4.spines["top"].set_visible(False)
+            ax4.spines["top"].set(zorder=1)    
         
         ## regional plot : gene track ######################################################################
                     # calculate offset
@@ -454,19 +460,26 @@ def mqqplot(insumstats,
             gene_track_offset = sumstats.loc[most_left_snp,pos]-region[1]
             gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
             lead_id=sumstats["scaled_P"].idxmax()
-            lead_snp_i=sumstats.loc[lead_id,"i"]
+            lead_snp_y = sumstats["scaled_P"].max()
+            lead_snp_i = sumstats.loc[lead_id,"i"]
             
         if (gtf_path is not None ) and ("r" in mode):
             # load gtf
             if verbose: log.write(" -Loading gtf files from:" + gtf_path)
-            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, flank_factor = flank_factor,build=build,region_protein_coding=region_protein_coding)
+            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, region_flank_factor = region_flank_factor,build=build,region_protein_coding=region_protein_coding)
             ax3.set_ylim((-uniq_gene_region["stack"].nunique()*2,2))
             ax3.set_yticks([])
-            
-            ponits_per_track = 100/(uniq_gene_region["stack"].nunique()*2)
+            if int(uniq_gene_region["stack"].nunique())==0:
+                ponits_per_track = 100
+            else:
+                ponits_per_track = 100/(uniq_gene_region["stack"].nunique()*2)
+                
+                
             size_in_points= 0.8 * ponits_per_track
             
             if verbose: log.write(" -plotting gene track..")
+            
+            sig_gene_name = None
             
             for index,row in uniq_gene_region.iterrows():
                 if row[6][0]=="+":
@@ -530,7 +543,7 @@ def mqqplot(insumstats,
                         ax1.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
                         ax3.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
                 if region_lead_grid is True:
-                    ax1.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
+                    ax1.axvline(x=lead_snp_i,ymax=1/1.2, zorder=1,**region_lead_grid_line)
                     ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
             else:
                 # set x ticks m plot
@@ -594,83 +607,7 @@ def mqqplot(insumstats,
             to_annotate.loc[:,["LOCATION","Annotation"]] = pd.DataFrame(to_annotate.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=to_annotate.index).values
         
 # Add Annotation to manhattan plot #######################################################
-        if anno and (to_annotate.empty is not True):
-            #initiate a list for text and a starting position
-            text = []
-            last_pos=0
-            anno_count=0
-            
-            if anno==True:
-                    annotation_col="CHR:POS"
-            elif anno:
-                    annotation_col=anno
-            
-            if verbose: log.write(" -Annotating using column "+annotation_col+"...")
-                
-            for rowi,row in to_annotate.iterrows():
-                # avoid text overlapping
-                if row["i"]>last_pos+repel_force*sumstats["i"].max():
-                    last_pos=row["i"]
-                else:
-                    last_pos+=repel_force*sumstats["i"].max()
-                # data to pixels
-                armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
-                #  
-                armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
-                
-                if anno==True:
-                    annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
-                    annotation_col="CHR:POS"
-                elif anno:
-                    annotation_text=row["Annotation"]
-                    annotation_col=anno
-                    
-                fontweight = "normal"
-                if len(highlight) >0:
-                    if row["i"] in highlight_i:
-                        fontweight = "bold"
-                
-                xy=(row["i"],row["scaled_P"]+0.2)
-                xytext=(last_pos,1.15*maxy)
-                if anno_count not in anno_d.keys():
-                    arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                             connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
-                else:
-                    if anno_d[anno_count]=="right": 
-                        armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
-                        armoffsetb = arm_offset 
-                        armoffseta = armoffsetall - armoffsetb
-                        
-                        arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                             connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
-                    else:
-                        arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                             connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
-                
-                
-                bbox={}
-                if "r" in mode:
-                    bbox=dict(boxstyle="round", fc="w")
-                
-                text.append(plot.annotate(annotation_text,
-                                             style='italic',
-                                             xy=xy,
-                                             xytext=xytext,rotation=40,
-                                             ha="left",va="bottom",
-                                             fontsize=fontsize,
-                                             bbox=bbox,
-                                             fontweight=fontweight,
-                                             arrowprops=arrowargs
-                                            )
-                           )
-                anno_count +=1
-
-            
-        else:
-            if verbose: log.write(" -Skip annotating")
-        
-        
-        ## final
+           ## final
         plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
         if region is not None:
             if (gtf_path is not None ) and ("r" in mode):
@@ -679,20 +616,117 @@ def mqqplot(insumstats,
                 plot.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
         else:
             plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif")
-        
-        
-        plot.spines["top"].set_visible(False)
-        plot.spines["right"].set_visible(False)
-        plot.spines["left"].set_visible(True)
+        ##
+        ax1.spines["top"].set_visible(False)
+        ax1.spines["right"].set_visible(False)
+        ax1.spines["left"].set_visible(True)
         if mode=="r":
-            plot.spines["top"].set_visible(True)
-            plot.spines["right"].set_visible(True)
+            ax1.spines["top"].set_visible(True)
+            ax1.spines["top"].set_zorder(1)    
+            ax1.spines["right"].set_visible(True)
+        
+        
         if verbose: log.write("Finished creating Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
             plot.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif")
         elif mtitle:
             plot.set_title(mtitle,fontsize=fontsize,family="sans-serif")
+            
+       
+        if anno and (to_annotate.empty is not True):
+            #initiate a list for text and a starting position
+            text = []
+            last_pos=0
+            anno_count=0
+            
+            ## log : annotation column
+            if anno==True:
+                    annotation_col="CHR:POS"
+            elif anno:
+                    annotation_col=anno
+            if verbose: log.write(" -Annotating using column "+annotation_col+"...")
+            
+            ##   
+            for rowi,row in to_annotate.iterrows():
+                # avoid text overlapping
+                ## calculate y span
+                if region is not None:
+                    y_span = region[2] - region[1]
+                else:
+                    y_span = sumstats["i"].max()-sumstats["i"].min()
+                
+                ## adjust x to avoid overlapping
+                if row["i"]>last_pos+repel_force*y_span:
+                    last_pos=row["i"]
+                else:
+                    last_pos+=repel_force*y_span
+                
+                # vertical arm length in pixels
+                armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
+                #  
+                armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
+                
+                # 
+                if anno==True:
+                    if row[snpid] in anno_alias.keys():
+                        annotation_text = anno_alias[row[snpid]]
+                    else:
+                        annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
+                elif anno:
+                    annotation_text=row["Annotation"]
+                
+                #
+                fontweight = "normal"
+                if len(highlight) >0:
+                    if row["i"] in highlight_i:
+                        fontweight = "bold"
+                #
+                xy=(row["i"],row["scaled_P"]+0.2)
+                xytext=(last_pos,1.15*maxy)
+                
+                if anno_count not in anno_d.keys():
+                    arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                             connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
+                else:
+                    xy=(row["i"],row["scaled_P"])
+                    if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
+                        armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                        armoffsetb = arm_offset 
+                        armoffseta = armoffsetall - armoffsetb   
+                        arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                             connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
+                    elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
+                        arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                             connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
+                
+                
+                
+                if "r" in mode:
+                    arrowargs["color"] = "black" 
+                    bbox_para=dict(boxstyle="round", fc="white",zorder=3)
+                else:
+                    bbox_para=None
+                
+                ax1.annotate(annotation_text,
+                                 style='italic',
+                                 xy=xy,
+                                 xytext=xytext,rotation=40,
+                                 ha="left",va="bottom",
+                                 fontsize=fontsize,
+                                 bbox=bbox_para,
+                                 fontweight=fontweight,
+                                 arrowprops=arrowargs,zorder=100
+                                            )
+                 
+                anno_count +=1
+
+            
+        else:
+            if verbose: log.write(" -Skip annotating")
+        
+
+     
 # Creating Manhatann plot Finished #####################################################################
 
 # QQ plot #########################################################################################################
@@ -721,7 +755,6 @@ def mqqplot(insumstats,
                 plt.setp(ax2_legend.texts, family="sans-serif")
         
         ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=sig_line_color)
-
         ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
         ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
         ax2.spines["top"].set_visible(False)
@@ -822,7 +855,7 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     return sumstats
 
 ##############################################################################################################################
-def process_gtf(gtf_path,region,flank_factor,build,region_protein_coding):
+def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding):
     #loading
     if gtf_path =="defualt" or gtf_path =="ensembl":
         gtf = get_gtf(chrom=str(region[0]),build=build,source="ensembl")
@@ -846,7 +879,7 @@ def process_gtf(gtf_path,region,flank_factor,build,region_protein_coding):
 
     #uniq genes
     uniq_gene_region = genes_1mb.loc[genes_1mb[2]=="gene",:].copy()
-    flank = flank_factor * (region[2] - region[1])
+    flank = region_flank_factor * (region[2] - region[1])
     uniq_gene_region["left"] = uniq_gene_region[3]-flank
     uniq_gene_region["right"] = uniq_gene_region[4]+flank
 
