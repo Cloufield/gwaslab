@@ -249,3 +249,40 @@ def annogene(
                 index=output.index).values
     if verbose: log.write("Finished annotating variants with nearest gene name(s) successfully!")
     return output
+
+def getnovel(insumstats,
+           known,
+           id,
+           chrom,
+           pos,
+           p,
+           only_novel=True,
+           windowsizekb_for_novel=1000,
+           windowsizekb=500,
+           sig_level=5e-8,
+           log=Log(),
+           xymt=["X","Y","MT"],
+           anno=False,
+           build="19",
+           source="ensembl",
+           verbose=True):
+    
+    allsig = getsig(insumstats=insumstats,
+           id=id,chrom=chrom,pos=pos,p=p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
+           xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
+    allsig["TCHR+POS"]=allsig[chrom]*1000000000 + allsig[pos]
+    
+    if verbose: log.write("Start to check if lead variants are known...")
+    knownsig = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
+    knownsig["TCHR+POS"]=knownsig[chrom]*1000000000 + knownsig[pos]
+    if verbose: log.write(" -Lead variants in known loci:",len(knownsig))
+    if verbose: log.write(" -Checking the minimum distance between identified lead variants and provided known variants...")
+    allsig["DISTANCE_TO_KNOWN"] = allsig["TCHR+POS"].apply(lambda x:np.abs(knownsig["TCHR+POS"]-x).min())
+    allsig["NOVEL"] = allsig["DISTANCE_TO_KNOWN"] > windowsizekb_for_novel*1000
+    if verbose: log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...")
+    if verbose: log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...")
+    if verbose: log.write("Finished checking known or novel successfully!")
+    if only_novel is True:
+        return allsig.loc[allsig["NOVEL"],:]
+    else:
+        return allsig

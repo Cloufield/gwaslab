@@ -31,6 +31,7 @@ from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import gc
 from gwaslab.getsig import getsig
 from gwaslab.getsig import annogene
+from gwaslab.getsig import getnovel
 from gwaslab.fill import filldata
 from gwaslab.to_formats import tofmt
 from gwaslab.get_hapmap3 import gethapmap3
@@ -383,6 +384,20 @@ class Sumstats():
         else:
             id_to_use = "rsID"
         output = getsig(self.data,
+                           id=id_to_use,
+                           chrom="CHR",
+                           pos="POS",
+                           p="P",
+                           log=self.log,
+                           **args)
+        # return sumstats object    
+        return output
+    def get_novel(self, **args):
+        if "SNPID" in self.data.columns:
+            id_to_use = "SNPID"
+        else:
+            id_to_use = "rsID"
+        output = getnovel(self.data,
                            id=id_to_use,
                            chrom="CHR",
                            pos="POS",

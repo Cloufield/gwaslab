@@ -176,7 +176,8 @@ def mqqplot(insumstats,
     # ANNOTATion ##########################################################################
     #
     if len(anno_set)>0 or len(anno_alias)>0:
-        anno=True
+        if anno is None:
+            anno=True
     if (anno is not None) and (anno != True):
         if anno=="GENENAME":
             pass
