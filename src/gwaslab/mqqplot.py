@@ -349,8 +349,8 @@ def mqqplot(insumstats,
         #for plot, get the chr text tick position      
         chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
         #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
-        sumstats["i"] = sumstats["i"].astype("Int64")
-
+        #sumstats["i"] = sumstats["i"].astype("Int64")
+        sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
         ## Assign marker size ##############################################
         
         sumstats["s"]=1
