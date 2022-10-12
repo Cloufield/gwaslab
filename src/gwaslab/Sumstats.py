@@ -44,6 +44,7 @@ from gwaslab.CommonData import get_high_ld
 from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_formats_list
 
+
 #20220309
 class Sumstats():
     def __init__(self,
