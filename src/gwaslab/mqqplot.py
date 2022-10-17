@@ -178,7 +178,7 @@ def mqqplot(insumstats,
     if len(anno_set)>0 or len(anno_alias)>0:
         if anno is None:
             anno=True
-    if (anno is not None) and (anno != True):
+    if (anno is not None) and (anno is not True):
         if anno=="GENENAME":
             pass
         elif (anno in insumstats.columns):
@@ -194,7 +194,7 @@ def mqqplot(insumstats,
     ## Annotation
     if (anno == "GENENAME"):
         anno_sig=True
-    elif (anno is not None) and (anno != True):
+    elif (anno is not None) and (anno is not True):
         sumstats["Annotation"]=sumstats.loc[:,anno].astype("string")   
       
     ## P value
