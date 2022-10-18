@@ -269,7 +269,6 @@
              mlog10p=None,
              info=None,
              OR=None,
-             OR_se=None,
              OR_95L=None,
              OR_95U=None,
              status=None,
@@ -281,95 +280,48 @@
 )
 </code></pre>
 <p><code>sumstats</code>: either a file path or a pandas DataFrame</p>
-<p>Currently, gwaslab supports the following columns:</p>
-<p><code>snpid</code>: variant ID column, preferably in chr:pos:ea:nea format.</p>
-<p><code>rsid</code>: dbSNP rsID column</p>
-<p>The minimum required columns are just either <code>rsid</code>or <code>snpid</code>. </p>
-<p>All other columns are optional.</p>
-<ul>
-<li>
-<p><code>chrom</code>: chromosome column</p>
-</li>
-<li>
-<p><code>pos</code>: basepair position column </p>
-</li>
-<li>
-<p><code>ea</code>: effect allele column </p>
-</li>
-<li>
-<p><code>nea</code>: non-effect allele column</p>
-</li>
-<li>
-<p><code>eaf</code>: effect allele frequency</p>
-</li>
-<li>
-<p><code>n</code>: sample size column or just input a single  <code>integer</code> </p>
-</li>
-<li>
-<p><code>beta</code>: effect size beta</p>
-</li>
-<li>
-<p><code>se</code>: standard error</p>
-</li>
-<li>
-<p><code>chisq</code>: chi square</p>
-</li>
-<li>
-<p><code>z</code>: z score</p>
-</li>
-<li>
-<p><code>p</code>: p value</p>
-</li>
-<li>
-<p><code>mlog10p</code>: -log10(P)</p>
-</li>
-<li>
-<p><code>info</code>: imputation info or rsq</p>
-</li>
-<li>
-<p><code>OR</code>: odds ratio</p>
-</li>
-<li>
-<p><code>OR_SE</code>: odds ratio se</p>
-</li>
-<li>
-<p><code>OR_95L</code>:odds ratio lower 95% ci </p>
-</li>
-<li>
-<p><code>OR_95U</code>:odds ratio upper 95% ci </p>
-</li>
-<li>
-<p><code>direction</code>: direction column in METAL format (e.g. "++--+?+")</p>
-</li>
-<li>
-<p><code>other</code>: a list  of other column names you want to keep with the core columns, probably some annotations.</p>
-</li>
-<li>
-<p><code>status</code>: gwaslab 5-digit vairants status code. For details, please check status code page.</p>
-</li>
-<li>
-<p><code>verbose</code>: if true: output log </p>
-</li>
-<li>
-<p><code>build</code>:  <code>str</code>genome build ("19","38","00")</p>
-</li>
-<li>
-<p><code>**arg</code>: additional parameters for pl.read_table function. </p>
-</li>
-</ul>
+<p>Currently, gwaslab supports the following columns:
+- <code>snpid</code>: variant ID column name, preferably in chr:pos:ea:nea format.
+- <code>rsid</code>: dbSNP rsID column name</p>
+<p>The minimum required columns are just either <code>rsid</code>or <code>snpid</code>. 
+All other columns are optional.
+- <code>chrom</code>: chromosome column name
+- <code>pos</code>: basepair position column name
+- <code>ea</code>: effect allele column name 
+- <code>nea</code>: non-effect allele column name
+- <code>eaf</code>: effect allele frequency
+- <code>n</code>: sample size column name or just input a single  <code>integer</code> 
+- <code>beta</code>: effect size beta column name
+- <code>se</code>: standard error column name
+- <code>chisq</code>: chi square column name
+- <code>z</code>: z score column name
+- <code>p</code>: p value column name
+- <code>mlog10p</code>: -log10(P) column name
+- <code>info</code>: imputation info or rsq column name
+- <code>OR</code>: odds ratio column name
+- <code>OR_95L</code>:odds ratio lower 95% ci column name
+- <code>OR_95U</code>:odds ratio upper 95% ci column name
+- <code>direction</code>: direction column name in METAL format (e.g. "++--+?+")
+- <code>other</code>: a list  of other column names you want to keep with the core columns, probably some annotations.
+- <code>status</code>: gwaslab 5-digit vairants status code. For details, please check status code page.
+- <code>verbose</code>: if true: output log 
+- <code>build</code>:  <code>str</code>genome build ("19","38")
+- <code>**arg</code>: additional parameters for pl.read_table function. </p>
 <p>After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in .data :</p>
 <pre><code class="language-python">mysumstats.data
 </code></pre>
 <p>You can simply save the processed data using pandas saving functions, for example</p>
 <pre><code>mysumstats.data.to_csv(&quot;./mysumstats.csv&quot;)
 </code></pre>
+<p>or convert the sumstats to other sumstats:
+please check <a href="https://cloufield.github.io/gwaslab/Format/">https://cloufield.github.io/gwaslab/Format/</a></p>
 <p>All manipulation conducted to the sumstats will be logged for reproducibility and traceability. The log is stored in a gl.Log object . You can check it by<code>.log.show()</code>and save it using <code>.log.save()</code></p>
 <pre><code>mysumstats.log.show()
 
 mysumstats.log.save()
 </code></pre>
 <p>You can check the meta information of this sumstats by:</p>
-<pre><code class="language-python">(to be implemented) mysumstats.summary()
+<pre><code class="language-python">mysumstats.summary()
 </code></pre>
 <p>Other functions of gwaslab is implemented as the methods of Sumstats Object.</p>
 <pre><code class="language-python">mysumstats.basic_check()

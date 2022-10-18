@@ -243,73 +243,38 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#utilities">Utilities</a></li>
-            <li class="second-level"><a href="#extract-lead-variants">Extract lead variants</a></li>
-                
-            <li class="second-level"><a href="#batch-load-ldsc-log-file">Batch load LDSC log file</a></li>
-                
-            <li class="second-level"><a href="#heritabilty-conversion-observed-scale-liability-scale">Heritabilty conversion (Observed-scale -&gt; Liability-scale)</a></li>
+        <li class="first-level active"><a href="#extract-lead-variants">Extract lead variants</a></li>
+            <li class="second-level"><a href="#example">Example</a></li>
                 
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="utilities">Utilities</h1>
-<ul>
-<li>
-<p>Data conversion</p>
-</li>
-<li>
-<p>Extract lead variants</p>
-</li>
-<li>
-<p>Format sumstats for commonly used tools</p>
-</li>
-<li>
-<p>Load LDSC results into pd.DataFrame</p>
-</li>
-<li>
-<p>Observed-scale heritability to liability-scale heritablity conversion</p>
-</li>
-</ul>
-<h2 id="extract-lead-variants">Extract lead variants</h2>
-<pre><code class="language-python">sumstats.get_lead(windowsizekb=500, sig_level=5e-8)
+<h1 id="extract-lead-variants">Extract lead variants</h1>
+<pre><code class="language-python">mysumstats.get_lead(
+           windowsizekb=500,
+           sig_level=5e-8,
+           xymt=[&quot;X&quot;,&quot;Y&quot;,&quot;MT&quot;],
+           anno=False,
+           build=&quot;19&quot;,
+           source=&quot;ensembl&quot;,
+           verbose=True)
 </code></pre>
 <p>GWASLab will extract the lead variants from identified significant loci based on a sliding window (default window size: 500kb). (Details are described in )</p>
-<p><code>windowsizekb</code> :specify the sliding window size in kb (default: 500)</p>
-<p><code>sig_level</code> :specify the P value threshold (default: 5e-8)</p>
+<p>Options:
+- <code>windowsizekb</code> :specify the sliding window size in kb (default: 500)
+- <code>sig_level</code> :specify the P value threshold (default: 5e-8).
+- <code>xymt</code>: list of notation for chrX, chrY and chrMT.
+- <code>anno</code>: <code>boolean</code> if annotate the lead variants with nearest gene names.
+- <code>build</code> : <code>string</code> genome build version "19" or "38".</p>
 <p>Return a dataframe of the lead variants</p>
-<h2 id="batch-load-ldsc-log-file">Batch load LDSC log file</h2>
-<p>Simply batch load LDSc data into a pandas DataFrame for other manipulation.</p>
-<p>GWASLab uses regular expression to match the values and fill them into a dataframe.</p>
-<p><code>gl.read_ldsc()</code>
-gl.read_ldsc(filelist, mode="h2")</p>
-<pre><code>`filelist` : a list of paths to ldsc log files
-
-`mode` : h2 or rg 
-
-```python
-#mode=h2
-ldsc_file_list=[&quot;file1.&quot;]
-myldscrg = gl.read_ldsc(ldsc_file_list, mode=h2)
-
-
-#mode=rg
-ldsc_file_list=[&quot;file1.&quot;]
-myldscrg = gl.read_ldsc(mode=h2)
+<h2 id="example">Example</h2>
+<p>Sample sumstats: IS from pheweb.jp <a href="https://pheweb.jp/pheno/IS">https://pheweb.jp/pheno/IS</a></p>
+<p><img alt="image" src="https://user-images.githubusercontent.com/40289485/196447159-f9b41510-feb6-4ec8-adeb-a8f4c3683061.png" /></p>
+<pre><code>mysumstats = gl.Sumstats(&quot;./hum0197.v3.BBJ.IS.v1/GWASsummary_IS_Japanese_SakaueKanai2020.auto.txt.gz&quot;,  fmt=&quot;saige&quot;)
+mysumstats.get_lead()
 </code></pre>
-<p>For genetic correlation, after loading, you can use <code>gl.plot_rg()</code>  to plot a heat map to visualize the results. No extra manipulation needed.</p>
-<pre><code class="language-python">gl.plot_rg(myldscrg)
-</code></pre>
-<h2 id="heritabilty-conversion-observed-scale-liability-scale">Heritabilty conversion (Observed-scale -&gt; Liability-scale)</h2>
-<pre><code>gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)
-</code></pre>
-<p><code>h2_obs</code> : float. Heritability on the observed scale in an ascertained sample. 
-<code>P</code>: float in (0,1).  Prevalence of the phenotype in the sample. 
-<code>K</code>: float in (0,1) . Prevalence of the phenotype in the population. 
-<code>se_obs</code> : float. se of h2_obs.</p>
-<p>Adopted from LDSC.  </p>
-<p>Reference: Estimating Missing Heritability for Disease from Genome-wide Association Studies  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059431/ </p></div>
+<p><img alt="image" src="https://user-images.githubusercontent.com/40289485/196446293-c8f9c2d3-82c3-4122-bddd-184b43f2950f.png" /></p></div>
         
         
     </div>
