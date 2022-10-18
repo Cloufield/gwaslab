@@ -21,41 +21,23 @@ to_format(
           tabix=False
           )
 ```
-
-
-`path` : `string`, the path for the output, only prefix is needed.
-
-`fmt`="ldsc": output format for sumstats. Currently support `plink` ,`plink2`, `ldsc`, `saige`, `fastgwa`, `regenie` . For details , please check https://github.com/Cloufield/formatbook.
-
-`extract`:`list`, a list of variants to include.
-
-`exclude`:`list`, a list of variants to exclude.
-
-`id_use`:`string`, specify which ID to use when merging with Hapmap3 SNPs.
-
-`hapmap3`:`boolean` , if True, only output Hapmap3 SNPs.
-
-`exclude_hla`:`boolean` , if True, exclude variants in MHC region from output.
-
-`build` : `string`, reference genome build. 
-
-`xymt_number` : if True, output chrX/Y/MT as 23/24/25.
-
-`xymt` : `list`, descript how to convert chromosome 23,24,25.
-
-`chr_prefix` : `string`, add a prefix to chromosomes. 6 -> Chr6.
-
-`bgzip` : `boolean`, if True, bgzip the output file. Only works for bed format.
-
-`tabix` : `boolean`, if True, use tabix to index the bgzipped output file. Only works for bed format.
-
-`to_csvargs` : `dict` , extra parameters for pd.to_csv()
-
-`float_formats` : `dict`, a dictionary to specify the float format for each column.
-
-`verbose` : `boolean`, if True, print logs.
-
-`output_log` : `boolean`, if True, save log to a file.
+- `path` : `string`, the path for the output, only prefix is needed.
+- `fmt`="ldsc": output format for sumstats. Currently support `plink` ,`plink2`, `ldsc`, `saige`, `fastgwa`, `regenie` . For details , please check https://github.com/Cloufield/formatbook.
+- `extract`:`list`, a list of variants to include.
+- `exclude`:`list`, a list of variants to exclude.
+- `id_use`:`string`, specify which ID to use when merging with Hapmap3 SNPs.
+- `hapmap3`:`boolean` , if True, only output Hapmap3 SNPs.
+- `exclude_hla`:`boolean` , if True, exclude variants in MHC region from output.
+- `build` : `string`, reference genome build. 
+- `xymt_number` : if True, output chrX/Y/MT as 23/24/25.
+- `xymt` : `list`, descript how to convert chromosome 23,24,25.
+- `chr_prefix` : `string`, add a prefix to chromosomes when output chr. 6 -> Chr6.
+- `bgzip` : `boolean`, if True, bgzip the output file. Only works for bed format.
+- `tabix` : `boolean`, if True, use tabix to index the bgzipped output file. Only works for bed format.
+- `to_csvargs` : `dict` , extra parameters for pd.to_csv()
+- `float_formats` : `dict`, a dictionary to specify the float format for each column.
+- `verbose` : `boolean`, if True, print logs.
+- `output_log` : `boolean`, if True, save log to a file.
 
 ## Example 1:
 ```
@@ -120,3 +102,5 @@ mysumstats.to_format("./test",fmt="vcf",bgzip=True,tabix=True)
 # output  GWAS-ssf format
 mysumstats.to_format("./test",fmt="ssf")
 ```
+
+For sample codes, please check [https://github.com/Cloufield/gwaslab/blob/main/examples/IO_format.ipynb](https://github.com/Cloufield/gwaslab/blob/main/examples/IO_format.ipynb)
