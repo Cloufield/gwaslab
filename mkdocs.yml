@@ -18,7 +18,8 @@ nav:
        - QC&Filtering: QC&Filtering.md
        - Harmonization: Harmonization.md
     - Visualization:
-       - Manhattan&QQ: Visualization.md
+       - "Manhattan & QQ plot": Visualization.md
+       - "Regional Plot": RegionalPlot.md
        - "Scatter: effect size comparison": EffectSize.md
        - "Scatter: allele frequency comparison": AlleleFrequency.md
        - "Heatmap: genetic correlation": GeneticCorrelation.md
