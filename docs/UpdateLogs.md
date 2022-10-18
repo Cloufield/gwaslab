@@ -1,5 +1,8 @@
 # Update Logs
 
+## v3.4.0 (coming soon)
+- extract novel loci given a list of known lead variants
+
 ## v3.3.0 2022/10/18
 - added forest plot
 - fixed options for mqqplot
