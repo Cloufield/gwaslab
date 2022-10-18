@@ -57,23 +57,18 @@ to_format(
 
 `output_log` : `boolean`, if True, save log to a file.
 
-## Example:
-
+## Example 1:
 ```
-
 import gwaslab as gl
-
 # load your raw sumstats
 mysumstats = gl.Sumstats(...)
-
 # basic QC
 mysumstats.basic_check()
-
 # output metal format
 mysumstats.to_format("./test",fmt="metal")
 ```
 
-log
+log :
 ```
 Tue Sep 13 18:00:41 2022 Start to format the output sumstats in:  metal  format
 Tue Sep 13 18:00:41 2022  -Formatting statistics ...
@@ -97,10 +92,31 @@ Tue Sep 13 18:00:41 2022  -Saving log file: ./test.metal.log
 Tue Sep 13 18:00:41 2022 Finished outputting successfully!
 ```
 
+## Example 2: LDSC format, extract hapmap3 SNPs and exclude SNPs in HLA region
+```
+## format the sumstats to ldsc format
+## extract only hapmap3 SNPs
+## exclude SNPs in HLA region
+mysumstats.to_format("./test",fmt="ldsc", hapmap3=True, exclude_hla=False, build="19")
+```
+
+## Example 3: bed-like format
 ```
 # output 1-based bed-like files for vep
 mysumstats.to_format("./test",fmt="vep",xymt_number=True,chr_prefix="Chr")
 
 # output 0-based bed-like file, and then bgzip and index the file.
 mysumstats.to_format("./test",fmt="bed",bgzip=True,tabix=True)
+```
+
+## Example 4: vcf format
+```
+# output vcf file, and then bgzip and index the file.
+mysumstats.to_format("./test",fmt="vcf",bgzip=True,tabix=True)
+```
+
+## Example 5: GWAS-ssf
+```
+# output  GWAS-ssf format
+mysumstats.to_format("./test",fmt="ssf")
 ```
