@@ -11,7 +11,7 @@ requires = [
     "Biopython",
     "adjustText",
     "liftover",
-    "statsmodels",
+    "statsmodels>=0.13",
     "scikit-allel",
     "pyensembl"
 ]
