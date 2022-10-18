@@ -1,14 +1,13 @@
 ![index_logo](./images/index_logo.jpg)
 
-# GWASLAB (beta)
+# gwaslab (v3.3.0)
 
 ![badge](https://img.shields.io/badge/release-v3.3.0-brightgreen)
 
-Gwaslab : a simple python package for handling GWAS sumstats.
-
-Each process is modularized and can be customized to your needs.
-
-Most manipulations are designed as methods of python object, `gwaslab.Sumstats`.
+Gwaslab : 
+* A simple python package for handling GWAS sumstats.
+* Each process is modularized and can be customized to your needs.
+* Most manipulations are designed as methods of python object, `gwaslab.Sumstats`.
 
 ```python
 import gwaslab as gl
@@ -102,8 +101,8 @@ pip install gwaslab==3.3.0
 - adjustText
 
 ## Contacts
-https://github.com/Cloufield/gwaslab
-
-email: gwaslab@gmail.com
+Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
+Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
+Email: gwaslab@gmail.com
 
 
