@@ -246,12 +246,6 @@
         <li class="first-level active"><a href="#utilities">Utilities</a></li>
             <li class="second-level"><a href="#extract-lead-variants">Extract lead variants</a></li>
                 
-            <li class="second-level"><a href="#_1"></a></li>
-                
-            <li class="second-level"><a href="#formatting-sumstats">Formatting sumstats</a></li>
-                
-            <li class="second-level"><a href="#_2"></a></li>
-                
             <li class="second-level"><a href="#batch-load-ldsc-log-file">Batch load LDSC log file</a></li>
                 
             <li class="second-level"><a href="#heritabilty-conversion-observed-scale-liability-scale">Heritabilty conversion (Observed-scale -&gt; Liability-scale)</a></li>
@@ -285,19 +279,6 @@
 <p><code>windowsizekb</code> :specify the sliding window size in kb (default: 500)</p>
 <p><code>sig_level</code> :specify the P value threshold (default: 5e-8)</p>
 <p>Return a dataframe of the lead variants</p>
-<h2 id="_1"></h2>
-<h2 id="formatting-sumstats">Formatting sumstats</h2>
-<pre><code>sumstats.format()
-</code></pre>
-<p>Format the sumstats to the formats that were accepted by commonly used tools including LDSC,  MAGMA, FUMA , METAL, (bed ,vcf,...) </p>
-<p><code>path</code>: output file path</p>
-<p><code>format</code>: Currently, GWASlab support ldsc,   (fuma, metal,bed, vcf ...)  </p>
-<p><code>extract</code>: a list of SNPIDs. </p>
-<p><code>exclude</code>: a list of SNPIDs.</p>
-<p><code>exclude_hla</code>: True or False. If True, exclude HLA region when exporting sumstats.</p>
-<p><code>hapmap3</code> : True or False. If True,, only exporting Hapmap3 SNPs.</p>
-<p><code>to_csvargs</code>: arguments for <code>pandas.to_csv()</code>function</p>
-<h2 id="_2"></h2>
 <h2 id="batch-load-ldsc-log-file">Batch load LDSC log file</h2>
 <p>Simply batch load LDSc data into a pandas DataFrame for other manipulation.</p>
 <p>GWASLab uses regular expression to match the values and fill them into a dataframe.</p>
