@@ -22,7 +22,7 @@ to_format(
           )
 ```
 - `path` : `string`, the path for the output, only prefix is needed.
-- `fmt`="ldsc": output format for sumstats. Currently support `plink` ,`plink2`, `ldsc`, `saige`, `fastgwa`, `regenie` . For details , please check https://github.com/Cloufield/formatbook.
+- `fmt`="ldsc": output format for sumstats. Currently support `plink` ,`plink2`, `ldsc`, `saige`, `fastgwa`, `regenie` . For details , please check [ https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook).
 - `extract`:`list`, a list of variants to include.
 - `exclude`:`list`, a list of variants to exclude.
 - `id_use`:`string`, specify which ID to use when merging with Hapmap3 SNPs.
