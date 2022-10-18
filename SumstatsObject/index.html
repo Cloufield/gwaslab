@@ -297,34 +297,38 @@
 )
 </code></pre>
 <p><code>sumstats</code>: either a file path or a pandas DataFrame</p>
-<p>Currently, gwaslab supports the following columns:
-- <code>snpid</code>: variant ID column name, preferably in chr:pos:ea:nea format.
-- <code>rsid</code>: dbSNP rsID column name</p>
+<p>Currently, gwaslab supports the following columns:</p>
+<ul>
+<li><code>snpid</code>: variant ID column name, preferably in chr:pos:ea:nea format.</li>
+<li><code>rsid</code>: dbSNP rsID column name</li>
+</ul>
 <p>The minimum required columns are just either <code>rsid</code>or <code>snpid</code>. 
-All other columns are optional.
-- <code>fmt</code>: input sumstats format : For formats supported by gwaslab, please check <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a>
-- <code>chrom</code>: chromosome column name
-- <code>pos</code>: basepair position column name
-- <code>ea</code>: effect allele column name 
-- <code>nea</code>: non-effect allele column name
-- <code>eaf</code>: effect allele frequency
-- <code>n</code>: sample size column name or just input a single  <code>integer</code> 
-- <code>beta</code>: effect size beta column name
-- <code>se</code>: standard error column name
-- <code>chisq</code>: chi square column name
-- <code>z</code>: z score column name
-- <code>p</code>: p value column name
-- <code>mlog10p</code>: -log10(P) column name
-- <code>info</code>: imputation info or rsq column name
-- <code>OR</code>: odds ratio column name
-- <code>OR_95L</code>:odds ratio lower 95% ci column name
-- <code>OR_95U</code>:odds ratio upper 95% ci column name
-- <code>direction</code>: direction column name in METAL format (e.g. "++--+?+")
-- <code>other</code>: a list  of other column names you want to keep with the core columns, probably some annotations.
-- <code>status</code>: gwaslab 5-digit vairants status code. For details, please check status code page.
-- <code>verbose</code>: if true: output log 
-- <code>build</code>:  <code>str</code>genome build ("19","38")
-- <code>**arg</code>: additional parameters for pl.read_table function. </p>
+All other columns are optional.</p>
+<ul>
+<li><code>fmt</code>: input sumstats format : For formats supported by gwaslab, please check <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></li>
+<li><code>chrom</code>: chromosome column name</li>
+<li><code>pos</code>: basepair position column name</li>
+<li><code>ea</code>: effect allele column name </li>
+<li><code>nea</code>: non-effect allele column name</li>
+<li><code>eaf</code>: effect allele frequency</li>
+<li><code>n</code>: sample size column name or just input a single  <code>integer</code> </li>
+<li><code>beta</code>: effect size beta column name</li>
+<li><code>se</code>: standard error column name</li>
+<li><code>chisq</code>: chi square column name</li>
+<li><code>z</code>: z score column name</li>
+<li><code>p</code>: p value column name</li>
+<li><code>mlog10p</code>: -log10(P) column name</li>
+<li><code>info</code>: imputation info or rsq column name</li>
+<li><code>OR</code>: odds ratio column name</li>
+<li><code>OR_95L</code>:odds ratio lower 95% ci column name</li>
+<li><code>OR_95U</code>:odds ratio upper 95% ci column name</li>
+<li><code>direction</code>: direction column name in METAL format (e.g. "++--+?+")</li>
+<li><code>other</code>: a list  of other column names you want to keep with the core columns, probably some annotations.</li>
+<li><code>status</code>: gwaslab 5-digit vairants status code. For details, please check status code page.</li>
+<li><code>verbose</code>: if true: output log </li>
+<li><code>build</code>:  <code>str</code>genome build ("19","38")</li>
+<li><code>**arg</code>: additional parameters for pl.read_table function. </li>
+</ul>
 <h2 id="loading-sumstats">Loading sumstats</h2>
 <p>you can load the path by specifying the columns like:</p>
 <pre><code>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
