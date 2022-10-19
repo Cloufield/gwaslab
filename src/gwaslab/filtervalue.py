@@ -178,8 +178,8 @@ def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, b
 
 def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True,log=Log()):
     if verbose:log.write(" -Start to infer genome build version using hapmap3 SNPs...")    
-    data_path_19 =  path.dirname(__file__) + '/data/hapmap3_rs_chr_pos_a1_a2/hapmap3_db150_hg19.snplist.gz'    
-    data_path_38 =  path.dirname(__file__) + '/data/hapmap3_rs_chr_pos_a1_a2/hapmap3_db151_hg38.snplist.gz'    
+    data_path_19 =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db150_hg19.snplist.gz'    
+    data_path_38 =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db151_hg38.snplist.gz'    
     if verbose:log.write(" -Loading Hapmap3 variants data...")        
     hapmap3_ref_19 = pd.read_csv(data_path_19,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})
     hapmap3_ref_38 = pd.read_csv(data_path_38,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})

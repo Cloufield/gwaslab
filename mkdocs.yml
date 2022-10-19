@@ -31,6 +31,7 @@ nav:
        - "Format & Save": Format.md
        - "Load LDSC log": LoadLDSC.md
        - "Convert Heritability": HeritabilityConversion.md
+       - "Infer Genome Build": InferBuild.md
     - References: 
        - "Reference data" : Reference.md
        - "Update logs" : UpdateLogs.md
