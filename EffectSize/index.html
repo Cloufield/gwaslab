@@ -345,10 +345,10 @@
 <li><code>anno</code> : if annotate the variants</li>
 <li><code>sig_level</code>: the significance level for auto-extracting lead variants.</li>
 <li><code>legend_title</code>: r'$ P &lt; 5 x 10^{-8}$ in:',</li>
-<li><code>legend_pos</code>: 'upper left'</li>
-<li><code>xylabel_prefix</code>"Per-allele effect size in "</li>
-<li><code>is_reg</code></li>
-<li><code>is_45_helper_line</code></li>
+<li><code>legend_pos</code>: legend position, default: 'upper left'</li>
+<li><code>xylabel_prefix</code> : "Per-allele effect size in "</li>
+<li><code>is_reg</code> : draw regression line or not</li>
+<li><code>is_45_helper_line</code>: draw 45 degree line or not</li>
 </ul>
 <h3 id="heterogeneity-test">heterogeneity test</h3>
 <ul>
@@ -356,8 +356,25 @@
 <li><code>q_level</code> : the significance threshold for Cochran's Q test.</li>
 </ul>
 <h2 id="example">Example:</h2>
-<pre><code class="language-python">gl.compare()
-</code></pre></div>
+<pre><code># Smoking behaviors : Smoking initiation (autosome, male)
+!wget -O smoking_male.txt.gz http://jenger.riken.jp/16/
+
+# Smoking behaviors : Smoking initiation (autosome, female)
+!wget -O smoking_female.txt.gz http://jenger.riken.jp/18/
+</code></pre>
+<pre><code class="language-python"># SNP   CHR POS A1  A2  A1Frq   Rsq BETA    SE  P
+# gwaslab will automatically extract significant variants from both sumstats. 
+a = gl.compare_effect(&quot;smoking_female.txt.gz&quot;,
+                      [&quot;SNP&quot;,&quot;P&quot;,&quot;A1&quot;,&quot;A2&quot;,&quot;CHR&quot;,&quot;POS&quot;],[&quot;BETA&quot;,&quot;SE&quot;],
+                      &quot;smoking_male.txt.gz&quot;,
+                      [&quot;SNP&quot;,&quot;P&quot;,&quot;A1&quot;,&quot;A2&quot;,&quot;CHR&quot;,&quot;POS&quot;],[&quot;BETA&quot;,&quot;SE&quot;],
+                      label=[&quot;Female&quot;,&quot;Male&quot;,&quot;Both&quot;,&quot;None&quot;],
+                      xylabel_prefix=&quot;Per-allele effect size for &quot;,
+                      sig_level=5e-6,
+                      legend_title=r'$ P &lt; 5 x 10^{-6}$ in:',
+                      verbose=True)
+</code></pre>
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196621266-4a7d2a83-68b0-4187-9d86-0e43258e268b.png"></p></div>
         
         
     </div>
