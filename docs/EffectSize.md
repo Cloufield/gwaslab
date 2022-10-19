@@ -68,7 +68,25 @@ gl.compare_effect( path1,
 
 
 ## Example:
+```
+# Smoking behaviors : Smoking initiation (autosome, male)
+!wget -O smoking_male.txt.gz http://jenger.riken.jp/16/
+
+# Smoking behaviors : Smoking initiation (autosome, female)
+!wget -O smoking_female.txt.gz http://jenger.riken.jp/18/
+```
 
 ```python
-gl.compare()
+# SNP	CHR	POS	A1	A2	A1Frq	Rsq	BETA	SE	P
+# gwaslab will automatically extract significant variants from both sumstats. 
+a = gl.compare_effect("smoking_female.txt.gz",
+                      ["SNP","P","A1","A2","CHR","POS"],["BETA","SE"],
+                      "smoking_male.txt.gz",
+                      ["SNP","P","A1","A2","CHR","POS"],["BETA","SE"],
+                      label=["Female","Male","Both","None"],
+                      xylabel_prefix="Per-allele effect size for ",
+                      sig_level=5e-6,
+                      legend_title=r'$ P < 5 x 10^{-6}$ in:',
+                      verbose=True)
 ```
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196621266-4a7d2a83-68b0-4187-9d86-0e43258e268b.png">
