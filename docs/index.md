@@ -3,8 +3,8 @@
 # gwaslab (v3.3.0)
 
 ![badge](https://img.shields.io/badge/release-v3.3.0-brightgreen)
+![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 
-Gwaslab : 
 * A simple python package for handling GWAS sumstats.
 * Each process is modularized and can be customized to your needs.
 * Most manipulations are designed as methods of python object, `gwaslab.Sumstats`.
@@ -77,14 +77,14 @@ mysumstats.plot_mqq()
 - Formating GWAS sumstats in certain formats
   - LDSC / MAGMA / METAL / MR-MEGA / FUMA / VCF / BED... [check available formats](https://github.com/Cloufield/formatbook)
 
-## Install
+# Install
 
 ```
 pip install gwaslab==3.3.0
 ```
 
 
-### Requirements:
+## Requirements:
 
 - Python >= 3.6
 - pySAM 
@@ -100,9 +100,9 @@ pip install gwaslab==3.3.0
 - statsmodels > =0.13
 - adjustText
 
-## Contacts
-Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
-Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
-Email: gwaslab@gmail.com
+# Contacts
+* Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
+* Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
+* Email: gwaslab@gmail.com
 
 
