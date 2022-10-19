@@ -3,6 +3,7 @@
 # gwaslab (v3.3.0)
 
 ![badge](https://img.shields.io/badge/release-v3.3.0-brightgreen)
+![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 
 * A simple python package for handling GWAS sumstats.
 * Each process is modularized and can be customized to your needs.
