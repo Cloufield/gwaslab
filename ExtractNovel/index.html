@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>V3.1.0 - GWASLab</title>
+    <title>Extract Novel Variants - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -156,6 +156,12 @@
                         
                             
 <li >
+    <a href="../ForestPlot/">Forest Plot</a>
+</li>
+
+                        
+                            
+<li >
     <a href="../Gallery/">Gallery</a>
 </li>
 
@@ -165,7 +171,7 @@
                 
                 
                 
-                    <li class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Utilities <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
@@ -176,8 +182,14 @@
 
                         
                             
+<li class="active">
+    <a href="./">Extract Novel Variants</a>
+</li>
+
+                        
+                            
 <li >
-    <a href="../Format/">Formatting</a>
+    <a href="../Format/">Format & Save</a>
 </li>
 
                         
@@ -189,7 +201,7 @@
                         
                             
 <li >
-    <a href="../HeritabilityConversion/">Heritability conversion</a>
+    <a href="../HeritabilityConversion/">Convert Heritability</a>
 </li>
 
                         
@@ -226,6 +238,16 @@
                             <i class="fas fa-search"></i> Search
                         </a>
                     </li>
+                    <li >
+                        <a rel="prev" href="../ExtractLead/">
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="next" href="../Format/">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </li>
                     <li>
                         <a href="https://github.com/Cloufield/gwaslab/"><i class="fab fa-github"></i> GitHub</a>
                     </li>
@@ -239,33 +261,12 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#update-log">Update log</a></li>
+        <li class="first-level active"><a href="#coming-soon">Coming soon</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h2 id="update-log">Update log</h2>
-<p>v3.1.0 </p>
-<ol>
-<li>
-<p>implemented formatbook: easily import sumstats and output sumstats in certain formats (support for commonly used formats including ldsc, plink, plink2, gwas-ssf, saige, regenie, fastgwa, metal, mrmega, pgscatalog, pgscatalog_hm, gwascatalog, gwascatalog_hm and gwaslab)</p>
-</li>
-<li>
-<p>added <code>.filter_region_in/out</code> using bed files (or in-built regions like high-ld or hla)</p>
-</li>
-<li>
-<p>implemented <code>.summay()</code> methods.</p>
-</li>
-<li>
-<p>optimized rsID annotation pipeline. Support annotation using curated chr:pos:ref:alt - rsID tsv for quick annotation.</p>
-</li>
-<li>
-<p>changed some datatypes and optimized memory usage.</p>
-</li>
-<li>
-<p>replaced pyVCF with pySAM</p>
-</li>
-</ol></div>
+<h1 id="coming-soon">Coming soon</h1></div>
         
         
     </div>
