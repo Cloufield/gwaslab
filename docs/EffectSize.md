@@ -57,10 +57,10 @@ gl.compare_effect( path1,
 - `anno` : if annotate the variants
 - `sig_level`: the significance level for auto-extracting lead variants.
 - `legend_title`: r'$ P < 5 x 10^{-8}$ in:',
-- `legend_pos`: 'upper left'
-- `xylabel_prefix`"Per-allele effect size in "
-- `is_reg`
-- `is_45_helper_line`
+- `legend_pos`: legend position, default: 'upper left'
+- `xylabel_prefix` : "Per-allele effect size in "
+- `is_reg` : draw regression line or not
+- `is_45_helper_line`: draw 45 degree line or not
 
 ### heterogeneity test
 - `is_q` : if apply the heterogeneity tests by Cochran's Q test.
