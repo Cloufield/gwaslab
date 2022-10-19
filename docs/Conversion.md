@@ -28,15 +28,24 @@ mysumstats.fill_data(
 
 ## Example
 ```
+# raw data
+#SNPID	CHR	POS	EA	NEA	EAF	BETA	SE	P	STATUS
+#1:725932_G_A	1	725932	G	A	0.9960	-0.0737	0.1394	0.5970	9999999
+#1:725933_A_G	1	725933	G	A	0.0040	0.0737	0.1394	0.5973	9999999
+#1:737801_T_C	1	737801	C	T	0.0051	0.0490	0.1231	0.6908	9999999
+
+# let's fill "MLOG10P","Z","OR","OR_95L","OR_95U"
+# gwaslab will automatically search for equivalent statistics
+
 mysumstats.fill_data(to_fill=["MLOG10P","Z","OR","OR_95L","OR_95U"])
 
-Wed Oct 19 00:10:53 2022 Start filling data using existing columns...
-Wed Oct 19 00:10:53 2022  -Raw input columns:  ['CHR', 'POS', 'EA', 'NEA', 'EAF', 'N', 'BETA', 'SE', 'Z', 'P', 'MLOG10P', 'INFO', 'SNPID', 'STATUS']
-Wed Oct 19 00:10:53 2022  -Overwrite mode:  False
-Wed Oct 19 00:10:53 2022   - Skipping columns:  ['MLOG10P']
-Wed Oct 19 00:10:53 2022 Filling columns:  ['Z', 'OR', 'OR_95L', 'OR_95U']
-Wed Oct 19 00:10:53 2022   - Filling OR using BETA column...
-Wed Oct 19 00:10:53 2022   - Filling OR_95L/OR_95U using BETA/SE columns...
-Wed Oct 19 00:10:55 2022   - Filling Z using BETA/SE column...
-Wed Oct 19 00:10:58 2022 Finished filling data using existing columns.
+Wed Oct 19 10:13:30 2022 Start filling data using existing columns...
+Wed Oct 19 10:13:30 2022  -Raw input columns:  ['SNPID', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P', 'STATUS']
+Wed Oct 19 10:13:30 2022  -Overwrite mode:  False
+Wed Oct 19 10:13:30 2022   - Skipping columns:  []
+Wed Oct 19 10:13:30 2022 Filling columns:  ['MLOG10P', 'OR', 'OR_95L', 'OR_95U']
+Wed Oct 19 10:13:30 2022   - Filling OR using BETA column...
+Wed Oct 19 10:13:31 2022   - Filling OR_95L/OR_95U using BETA/SE columns...
+Wed Oct 19 10:13:32 2022   - Filling MLOG10P using P column...
+Wed Oct 19 10:13:38 2022 Finished filling data using existing columns.
 ```
