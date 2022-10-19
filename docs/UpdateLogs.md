@@ -3,6 +3,7 @@
 ## v3.3.1 (coming soon)
 - extract novel loci given a list of known lead variants
 - fixed bugs in fill_data()
+- fixed path for hapmap3 snps for infer_build()
 
 ## v3.3.0 2022/10/18
 - added forest plot
