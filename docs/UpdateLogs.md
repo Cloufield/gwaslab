@@ -1,7 +1,8 @@
 # Update Logs
 
-## v3.4.0 (coming soon)
+## v3.3.1 (coming soon)
 - extract novel loci given a list of known lead variants
+- fixed bugs in fill_data()
 
 ## v3.3.0 2022/10/18
 - added forest plot
