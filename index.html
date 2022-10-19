@@ -274,22 +274,23 @@
                 <li class="third-level"><a href="#quality-control-value-conversion-filtering">Quality control, Value conversion &amp; Filtering</a></li>
                 <li class="third-level"><a href="#visualization">Visualization</a></li>
                 <li class="third-level"><a href="#other-utilities">Other Utilities</a></li>
-            <li class="second-level"><a href="#install">Install</a></li>
+        <li class="first-level "><a href="#install">Install</a></li>
+            <li class="second-level"><a href="#requirements">Requirements:</a></li>
                 
-                <li class="third-level"><a href="#requirements">Requirements:</a></li>
-            <li class="second-level"><a href="#contacts">Contacts</a></li>
-                
+        <li class="first-level "><a href="#contacts">Contacts</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
 <p><img alt="index_logo" src="images/index_logo.jpg" /></p>
 <h1 id="gwaslab-v330">gwaslab (v3.3.0)</h1>
-<p><img alt="badge" src="https://img.shields.io/badge/release-v3.3.0-brightgreen" /></p>
-<p>Gwaslab : 
-* A simple python package for handling GWAS sumstats.
-* Each process is modularized and can be customized to your needs.
-* Most manipulations are designed as methods of python object, <code>gwaslab.Sumstats</code>.</p>
+<p><img alt="badge" src="https://img.shields.io/badge/release-v3.3.0-brightgreen" />
+<img alt="badge_pip" src="https://img.shields.io/pypi/dm/gwaslab" /></p>
+<ul>
+<li>A simple python package for handling GWAS sumstats.</li>
+<li>Each process is modularized and can be customized to your needs.</li>
+<li>Most manipulations are designed as methods of python object, <code>gwaslab.Sumstats</code>.</li>
+</ul>
 <pre><code class="language-python">import gwaslab as gl
 # load plink2 output
 mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
@@ -357,10 +358,10 @@ mysumstats.plot_mqq()
 <li>Formating GWAS sumstats in certain formats</li>
 <li>LDSC / MAGMA / METAL / MR-MEGA / FUMA / VCF / BED... <a href="https://github.com/Cloufield/formatbook">check available formats</a></li>
 </ul>
-<h2 id="install">Install</h2>
+<h1 id="install">Install</h1>
 <pre><code>pip install gwaslab==3.3.0
 </code></pre>
-<h3 id="requirements">Requirements:</h3>
+<h2 id="requirements">Requirements:</h2>
 <ul>
 <li>Python &gt;= 3.6</li>
 <li>pySAM </li>
@@ -376,10 +377,12 @@ mysumstats.plot_mqq()
 <li>statsmodels &gt; =0.13</li>
 <li>adjustText</li>
 </ul>
-<h2 id="contacts">Contacts</h2>
-<p>Github: <a href="https://github.com/Cloufield/gwaslab">https://github.com/Cloufield/gwaslab</a>
-Blog (in Chinese): <a href="https://gwaslab.com/">https://gwaslab.com/</a>
-Email: gwaslab@gmail.com</p></div>
+<h1 id="contacts">Contacts</h1>
+<ul>
+<li>Github: <a href="https://github.com/Cloufield/gwaslab">https://github.com/Cloufield/gwaslab</a></li>
+<li>Blog (in Chinese): <a href="https://gwaslab.com/">https://gwaslab.com/</a></li>
+<li>Email: gwaslab@gmail.com</li>
+</ul></div>
         
         
     </div>
@@ -486,5 +489,5 @@ Email: gwaslab@gmail.com</p></div>
 
 <!--
 MkDocs version : 1.3.0
-Build Date UTC : 2022-10-19 04:06:08.291962+00:00
+Build Date UTC : 2022-10-19 05:59:42.659867+00:00
 -->
