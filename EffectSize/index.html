@@ -268,11 +268,23 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="first-level active"><a href="#scatter-plot-effect-size-comparison">Scatter plot : effect size comparison</a></li>
+            <li class="second-level"><a href="#glcompare_effect">gl.compare_effect()</a></li>
+                
+            <li class="second-level"><a href="#options">Options</a></li>
+                
+                <li class="third-level"><a href="#path-and-column">path and column</a></li>
+                <li class="third-level"><a href="#snplist">snplist</a></li>
+                <li class="third-level"><a href="#filter-by-maf">filter by maf:</a></li>
+                <li class="third-level"><a href="#label-and-annotation">label and annotation</a></li>
+                <li class="third-level"><a href="#heterogeneity-test">heterogeneity test</a></li>
+            <li class="second-level"><a href="#example">Example:</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
 <h1 id="scatter-plot-effect-size-comparison">Scatter plot : effect size comparison</h1>
+<h2 id="glcompare_effect">gl.compare_effect()</h2>
 <pre><code class="language-python">gl.compare_effect( path1,
                    cols_name_list_1, effect_cols_list_1,
                    path2,
@@ -300,20 +312,50 @@
                    errargs={&quot;ecolor&quot;:&quot;#cccccc&quot;,&quot;elinewidth&quot;:1},
                    sep=[&quot;\t&quot;,&quot;\t&quot;],
                    log = Log(),
-                   verbose=False)
+                   verbose=False):
+
+
 </code></pre>
-<p><code>path1</code> and <code>path2</code> : the paths to the sumstats.
-<code>cols_name_list_1</code> and <code>cols_name_list_2</code> : list of column names for variants basic information, in the order of [snpid,p,ea,nea,chr,pos]
-<code>effect_cols_list_1</code> and <code>effect_cols_list_1</code> : list of column names for effect size-related columns, in the order of [effect,se] or [OR,OR_95L,OR_95H]
-<code>eaf</code> : optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is needed when you need to filter by maf using <code>maf_level</code>.
-<code>maf_level</code>: the maf filter for variants. Vairants with maf &lt; maf_level will be removed from comparison.
-<code>label</code> : a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].
-<code>snplist</code> : optional, specify the variants you want to compare. If None, gwaslab will automatically extract lead variants from both sumstats.
-<code>anno</code> : if annotate the variants
-<code>is_q</code> : if apply the heterogeneity tests by Cochran's Q test.
-<code>q_level</code> : the significance threshold for Cochran's Q test.
-<code>sig_level</code>: the significance level for auto-extracting lead variants.</p>
-<p>Example:</p>
+<h2 id="options">Options</h2>
+<h3 id="path-and-column">path and column</h3>
+<ul>
+<li><code>path1</code> and <code>path2</code> : the paths to the sumstats.</li>
+<li><code>cols_name_list_1</code> and <code>cols_name_list_2</code> : list of column names for variants basic information</li>
+<li><code>effect_cols_list_1</code> and <code>effect_cols_list_1</code> : list of column names for effect size-related columns</li>
+<li><code>mode</code> : use beta or OR </li>
+<li>examples:<ul>
+<li>[snpid,p,ea,nea]        ,[effect,se]</li>
+<li>[snpid,p,ea,nea,chr,pos],[effect,se]</li>
+<li>[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]</li>
+</ul>
+</li>
+</ul>
+<h3 id="snplist">snplist</h3>
+<ul>
+<li><code>snplist</code> : optional, specify the variants you want to compare. If None, gwaslab will automatically extract lead variants from both sumstats.</li>
+</ul>
+<h3 id="filter-by-maf">filter by maf:</h3>
+<ul>
+<li><code>eaf</code> : optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is needed when you need to filter by maf using <code>maf_level</code>.</li>
+<li><code>maf_level</code>: the maf filter for variants. Vairants with maf &lt; maf_level will be removed from comparison.</li>
+</ul>
+<h3 id="label-and-annotation">label and annotation</h3>
+<ul>
+<li><code>label</code> : a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].</li>
+<li><code>anno</code> : if annotate the variants</li>
+<li><code>sig_level</code>: the significance level for auto-extracting lead variants.</li>
+<li><code>legend_title</code>: r'$ P &lt; 5 x 10^{-8}$ in:',</li>
+<li><code>legend_pos</code>: 'upper left'</li>
+<li><code>xylabel_prefix</code>"Per-allele effect size in "</li>
+<li><code>is_reg</code></li>
+<li><code>is_45_helper_line</code></li>
+</ul>
+<h3 id="heterogeneity-test">heterogeneity test</h3>
+<ul>
+<li><code>is_q</code> : if apply the heterogeneity tests by Cochran's Q test.</li>
+<li><code>q_level</code> : the significance threshold for Cochran's Q test.</li>
+</ul>
+<h2 id="example">Example:</h2>
 <pre><code class="language-python">gl.compare()
 </code></pre></div>
         
