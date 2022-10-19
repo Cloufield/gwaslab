@@ -17,6 +17,7 @@ nav:
        - Standardization&normalization: Standardization.md
        - QC&Filtering: QC&Filtering.md
        - Harmonization: Harmonization.md
+       - Liftover: LiftOver.md
     - Visualization:
        - "Manhattan & QQ plot": Visualization.md
        - "Regional Plot": RegionalPlot.md
