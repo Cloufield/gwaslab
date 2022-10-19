@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>QC&Filtering - GWASLab</title>
+    <title>Infer Genome Build - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -81,7 +81,7 @@
                 
                 
                 
-                    <li class="dropdown active">
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sumstats manipulation <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
@@ -104,8 +104,8 @@
 
                         
                             
-<li class="active">
-    <a href="./">QC&Filtering</a>
+<li >
+    <a href="../QC%26Filtering/">QC&Filtering</a>
 </li>
 
                         
@@ -171,7 +171,7 @@
                 
                 
                 
-                    <li class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Utilities <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
@@ -206,8 +206,8 @@
 
                         
                             
-<li >
-    <a href="../InferBuild/">Infer Genome Build</a>
+<li class="active">
+    <a href="./">Infer Genome Build</a>
 </li>
 
                         
@@ -245,12 +245,12 @@
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../Standardization/">
+                        <a rel="prev" href="../HeritabilityConversion/">
                             <i class="fas fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="next" href="../Harmonization/">
+                        <a rel="next" href="../Reference/">
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
@@ -267,99 +267,23 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#qc-and-filtering">QC and filtering</a></li>
-            <li class="second-level"><a href="#methods-summary">Methods Summary</a></li>
-                
-            <li class="second-level"><a href="#statistics-sanity-check">Statistics Sanity Check</a></li>
-                
-            <li class="second-level"><a href="#remove-duplication-or-multiallelic-variants">Remove duplication or multiallelic variants</a></li>
-                
-            <li class="second-level"><a href="#filtering">FIltering</a></li>
-                
-            <li class="second-level"><a href="#filtering-region">Filtering region</a></li>
-                
+        <li class="first-level active"><a href="#infer-genome-build-version">Infer Genome Build Version</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="qc-and-filtering">QC and filtering</h1>
-<h2 id="methods-summary">Methods Summary</h2>
-<table>
-<thead>
-<tr>
-<th>Sumstats Methods</th>
-<th>Options</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>.check_sanity()</code></td>
-<td></td>
-<td>sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N...</td>
-</tr>
-<tr>
-<td><code>.remove_dup()</code></td>
-<td><code>mode="dm",keep='first'</code></td>
-<td>remove duplicate or multi-allelic variants</td>
-</tr>
-<tr>
-<td><code>.filter_in()</code></td>
-<td>lt, gt, eq, inplace</td>
-<td></td>
-</tr>
-<tr>
-<td><code>.filter_out()</code></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>.filter_region_in()</code></td>
-<td>path , inplace=True ,high_ld=False, build="19"</td>
-<td></td>
-</tr>
-<tr>
-<td><code>.filter_region_out()</code></td>
-<td>path , inplace=True ,high_ld=False, build="19"</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h2 id="statistics-sanity-check">Statistics Sanity Check</h2>
-<p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected range</code>.</p>
-<p><code>BETA/SE</code>: float, -10&lt;BETA&lt;10, -10&lt;log(OR)&lt;10</p>
-<p><code>OR/OR_95L/OR_95U</code>: float, 0&lt;OR&lt;10, OR_95L&gt;0, OR_95U&gt;0</p>
-<p><code>EAF</code>: 0&lt;= EAF &lt;=1, if EAF of &gt;95% of valid variants is less than 0.5, a warning will be sent.</p>
-<p><code>P</code> : float, 0&lt;P&lt;5e-300</p>
-<p><code>MLOG10</code> : float, MLOG10&gt;0</p>
-<p><code>Z</code> : float</p>
-<p><code>CHISQ</code> : float , CHISQ&gt;0</p>
-<p><code>N</code> : interger, N&gt;0</p>
-<p><code>Direction</code> : string, only contains "+","-" ,"0"or "?"</p>
-<pre><code class="language-python">sumstats.check_sanity()
-</code></pre>
-<h2 id="remove-duplication-or-multiallelic-variants">Remove duplication or multiallelic variants</h2>
-<p>after standardize the sumstats, you can also remove duplicated or multiallelic variants using :</p>
-<p><code>.remove_dup()</code></p>
-<p>mode:</p>
-<p><code>d</code> ,remove duplicate.</p>
-<p>If SNPID exists, remove duplicate .</p>
-<p>If rsID exists, remove deuplicate rsID.</p>
-<p><code>m</code>,removed multiallelic. remove based on SNPID, CHR and POS</p>
-<pre><code class="language-python"> sumstats.remove_dup(mode=&quot;dm&quot;,keep='first')
-</code></pre>
-<h2 id="filtering">FIltering</h2>
-<pre><code class="language-python">.filter_in(gt={},lt={},eq={},inplace=True)
+<h1 id="infer-genome-build-version">Infer Genome Build Version</h1>
+<p>gwaslab use hapmaps chromosome and basepair position information to infer the reference genome build for sumstats.</p>
+<p>Status codes (first two digits) will be changed based on the results</p>
+<p>Example:</p>
+<pre><code>mysumstats.infer_build()
 
-.filter_out(gt={},lt={},eq={},inplace=True)
-</code></pre>
-<p><code>gt</code>: greater than</p>
-<p><code>lt</code>: less than</p>
-<p><code>eq</code>: equal to</p>
-<p><code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</p>
-<h2 id="filtering-region">Filtering region</h2>
-<pre><code>.filter_region_in(path=&quot;./abc.bed&quot;)
-.filter_region_out(high_ld=True)
+Wed Oct 19 11:01:01 2022  -Start to infer genome build version using hapmap3 SNPs...
+Wed Oct 19 11:01:01 2022  -Loading Hapmap3 variants data...
+Wed Oct 19 11:01:04 2022  -chr:pos will be used for matching...
+Wed Oct 19 11:01:33 2022  -Matching variants for hg19: num_hg19= 1092441
+Wed Oct 19 11:01:33 2022  -Matching variants for hg38: num_hg38= 15997
+Wed Oct 19 11:01:33 2022  -Since num_hg19&gt;num_hg38, assigning genome build hg19...
 </code></pre></div>
         
         
