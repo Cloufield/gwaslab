@@ -23,12 +23,14 @@ nav:
        - "Scatter: effect size comparison": EffectSize.md
        - "Scatter: allele frequency comparison": AlleleFrequency.md
        - "Heatmap: genetic correlation": GeneticCorrelation.md
+       - "Forest Plot": ForestPlot.md
        - Gallery : Gallery.md
     - Utilities: 
        - "Extract Lead Variants": ExtractLead.md
-       - Formatting: Format.md
+       - "Extract Novel Variants": ExtractNovel.md
+       - "Format & Save": Format.md
        - "Load LDSC log": LoadLDSC.md
-       - "Heritability conversion": HeritabilityConversion.md
+       - "Convert Heritability": HeritabilityConversion.md
     - References: 
        - "Reference data" : Reference.md
        - "Update logs" : UpdateLogs.md
