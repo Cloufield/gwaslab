@@ -1,4 +1,4 @@
-# pyensembl Reference file
+# Reference file : pyensembl
 
 https://github.com/openvax/pyensembl
 
@@ -12,11 +12,10 @@ pip install pyensembl
 pyensembl install --release <list of Ensembl release numbers> --species <species-name>
 ```
 
-For gwaslab, please run the following commands:
+For gwaslab, please run the following commands to install:
 
-ensembl release 75 : hg19
-
-ensembl release 107 : hg38 
+- ensembl release 75 : hg19
+- ensembl release 107 : hg38 
 
 ```
 pyensembl install --release 75 107 --species human
@@ -26,7 +25,7 @@ gwaslab could use ensembl reference data to annotate lead SNPs with the nearest 
 
 
 
-# Process Reference file
+# Processed Reference file
 
 ## 1000 Genome
 
