@@ -16,10 +16,10 @@ For gwaslab, please run the following commands:
 
 ensembl release 75 : hg19
 
-ensembl release 76 : hg38 
+ensembl release 107 : hg38 
 
 ```
-pyensembl install --release 75 76 --species human
+pyensembl install --release 75 107 --species human
 ```
 
 gwaslab could use ensembl reference data to annotate lead SNPs with the nearest gene name.
