@@ -76,12 +76,12 @@ def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"]):
         dic[xymt[0]]="23"
         dic[xymt[1]]="24"
         dic[xymt[2]]="25"
-    
     else:
         dic= {str(i):i for i in range(1,26)}
         dic[xymt[0]]=23
         dic[xymt[1]]=24
         dic[xymt[2]]=25
+        dic["M"]=25
     return dic
 
 def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"]):

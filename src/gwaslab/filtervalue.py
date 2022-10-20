@@ -206,4 +206,10 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NE
         return sumstats
     else:
         raise ValueError("Not enough information to match SNPs. Please check your sumstats...")
+
+def sampling(sumstats,n,verbose=True,log=Log()):
+    if verbose:log.write(" -Start to romdomly select variants from the sumstats...") 
+    sumstats = sumstats.sample(n=n)
+    if verbose:log.write(" -Finished sampling...")
+    return sumstats
     

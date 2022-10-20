@@ -27,6 +27,7 @@ from gwaslab.filtervalue import filterin
 from gwaslab.filtervalue import filterregionin
 from gwaslab.filtervalue import filterregionout
 from gwaslab.filtervalue import inferbuild
+from gwaslab.filtervalue import sampling
 from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import gc
 from gwaslab.getsig import getsig
@@ -350,7 +351,9 @@ class Sumstats():
         if inplace is False:
             return filterregionout(self.data,**args)
         else:
-            self.data = filterregionout(self.data,log=self.log,**args)        
+            self.data = filterregionout(self.data,log=self.log,**args)
+    def random_variants(self,n=1,**args):
+        self.data = sampling(self.data,n=n,log=self.log,**args)
     
 ###########################################################################################################################            
     def check_af(self,**args):

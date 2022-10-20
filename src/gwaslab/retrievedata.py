@@ -157,9 +157,9 @@ def check_status(row,record):
     status_end=row[3][6:]
     
     ## nea == ref
-    if row[2] == record[row[0]-1: row[0]+len(row[2])-1].seq:
+    if row[2] == record[row[0]-1: row[0]+len(row[2])-1].seq.upper():
         ## ea == ref
-        if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq:
+        if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq.upper():
             ## len(nea) >len(ea):
             if len(row[2])!=len(row[1]):
                 # indels both on ref, unable to identify
@@ -170,7 +170,7 @@ def check_status(row,record):
     ## nea!=ref
     else:
         # ea == ref_seq -> need to flip
-        if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq:
+        if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq.upper():
             return status_pre+"3"+status_end 
         # ea !=ref
         else:
@@ -178,9 +178,9 @@ def check_status(row,record):
             row[1] = get_reverse_complementary_allele(row[1])
             row[2] = get_reverse_complementary_allele(row[2])
             ## nea == ref
-            if row[2] == record[row[0]-1: row[0]+len(row[2])-1].seq:
+            if row[2] == record[row[0]-1: row[0]+len(row[2])-1].seq.upper():
                 ## ea == ref
-                if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq:
+                if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq.upper():
                     ## len(nea) >len(ea):
                     if len(row[2])!=len(row[1]):
                         return status_pre+"8"+status_end  # indel reverse complementary
@@ -188,7 +188,7 @@ def check_status(row,record):
                     return status_pre+"4"+status_end 
             else:
                 # ea == ref_seq -> need to flip
-                if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq:
+                if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq.upper():
                     return status_pre+"5"+status_end 
             # ea !=ref
             return status_pre+"8"+status_end
@@ -199,16 +199,16 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
     if verbose:  log.write(" -Reference genome fasta file: "+ ref_path)  
     if verbose:  log.write(" -Checking records: ", end="")  
-        
+    chromlist = get_chr_list()
+    dic =  get_chr_to_number()
     records = SeqIO.parse(ref_path, "fasta")
-    for i in range(1,25):
-        record = next(records)
+    for record in records:
+        #record = next(records)
         if record is not None:
-            chromlist = get_chr_list()
-            dic =  get_number_to_chr()
             record_chr = str(record.id).strip("chrCHR").upper()
             if record_chr in chromlist:
-                if verbose:  log.write(record_chr," ", end="",show_time=False)  
+                i = dic[record_chr]
+                if verbose:  log.write(record_chr," ", end="",show_time=False) 
                 to_check_ref = (sumstats[chrom]==i) & (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())
                 sumstats.loc[to_check_ref,status] = sumstats.loc[to_check_ref,[pos,ea,nea,status]].apply(lambda x:check_status(x,record),axis=1)
     
