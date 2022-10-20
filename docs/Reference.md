@@ -24,8 +24,8 @@ For details about pyensembl, please check [https://github.com/openvax/pyensembl]
 
 ## Reference genome sequence for variant allele alignment
 
-- GRCh37 / hg19 : 
-- GRCh38 / hg38 :
+- GRCh37 / hg19 : [ucsc_hg19](http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/)
+- GRCh38 / hg38 : [ucsc_hg38](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/)
 
 For details about reference genome, please check [https://cloufield.github.io/CTGCatalog/Reference_data_Genome_README/](https://cloufield.github.io/CTGCatalog/Reference_data_Genome_README/)
 
