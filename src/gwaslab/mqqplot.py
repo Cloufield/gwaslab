@@ -29,6 +29,7 @@ def mqqplot(insumstats,
           snpid=None,
           eaf=None,
           vcf_path=None,
+          vcf_chr_dict=get_number_to_chr(),
           gtf_path="defualt",
           mlog10p="MLOG10P",
           scaled=False,
@@ -46,6 +47,8 @@ def mqqplot(insumstats,
           region_recombination = True,
           region_protein_coding=True,
           region_flank_factor = 0.05,
+          taf=[4,0,0.95,1,1],
+          # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
           mqqratio=3,
           windowsizekb=500,
           anno=None,
@@ -309,7 +312,7 @@ def mqqplot(insumstats,
      #calculate rsq]
     if vcf_path is not None:
         sumstats = process_vcf(sumstats=sumstats, vcf_path=vcf_path,region=region, 
-                               log=log ,pos=pos,region_ld_threshold=region_ld_threshold,verbose=verbose)
+                               log=log ,pos=pos,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict)
 
 ## Create index for plotting ###################################################
 
@@ -353,6 +356,8 @@ def mqqplot(insumstats,
         #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
         #sumstats["i"] = sumstats["i"].astype("Int64")
         sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
+        
+        
         ## Assign marker size ##############################################
         
         sumstats["s"]=1
@@ -470,16 +475,16 @@ def mqqplot(insumstats,
             # load gtf
             if verbose: log.write(" -Loading gtf files from:" + gtf_path)
             uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, region_flank_factor = region_flank_factor,build=build,region_protein_coding=region_protein_coding)
-            ax3.set_ylim((-uniq_gene_region["stack"].nunique()*2,2))
-            ax3.set_yticks([])
-            if int(uniq_gene_region["stack"].nunique())==0:
-                ponits_per_track = 100
-            else:
-                ponits_per_track = 100/(uniq_gene_region["stack"].nunique()*2)
-                
-                
-            size_in_points= 0.8 * ponits_per_track
             
+            n_uniq_stack = uniq_gene_region["stack"].nunique()
+            stack_num_to_plot = max(taf[0],n_uniq_stack)
+            ax3.set_ylim((-stack_num_to_plot*2-taf[1]*2,2+taf[1]*2))
+            ax3.set_yticks([])
+            pixels_per_point = 72/fig.dpi
+            pixels_per_track = np.abs(ax3.transData.transform([0,0])[1] - ax3.transData.transform([0,1])[1])                   
+            font_size_in_pixels= taf[2] * pixels_per_track
+            font_size_in_points =  font_size_in_pixels * pixels_per_point
+            linewidth_in_points=   pixels_per_track * pixels_per_point
             if verbose: log.write(" -plotting gene track..")
             
             sig_gene_name = None
@@ -498,21 +503,21 @@ def mqqplot(insumstats,
                 
                 # plot gene line
                 ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
-                         (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=size_in_points/10)
+                         (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=linewidth_in_points/10)
                 
                 # plot gene name
                 if row[4] >= region[2]:
                     #right side
                     ax3.text(x=gene_track_start_i+region[2],
-                         y=row["stack"]*2+1.2,s=gene_anno,ha="right",va="top",color="black",style='italic', size=size_in_points)
+                         y=row["stack"]*2+taf[4],s=gene_anno,ha="right",va="center",color="black",style='italic', size=font_size_in_points)
                     
                 elif row[3] <= region[1] :
                     #left side
                     ax3.text(x=gene_track_start_i+region[1],
-                         y=row["stack"]*2+1.2,s=gene_anno,ha="left",va="top",color="black",style='italic', size=size_in_points)
+                         y=row["stack"]*2+taf[4],s=gene_anno,ha="left",va="center",color="black",style='italic', size=font_size_in_points)
                 else:
                     ax3.text(x=(gene_track_start_i+row[3]+gene_track_start_i+row[4])/2,
-                         y=row["stack"]*2+1.2,s=gene_anno,ha="center",va="top",color="black",style='italic',size=size_in_points)
+                         y=row["stack"]*2+taf[4],s=gene_anno,ha="center",va="center",color="black",style='italic',size=font_size_in_points)
        
             # plot exons
             for index,row in exons.iterrows():
@@ -523,7 +528,7 @@ def mqqplot(insumstats,
                 #if row["gene_biotype"]!="protein_coding":
                 #    exon_color="grey"
                 ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
-                         (row["stack"]*2,row["stack"]*2),linewidth=size_in_points,color=exon_color)
+                         (row["stack"]*2,row["stack"]*2),linewidth=linewidth_in_points*taf[3],color=exon_color,solid_capstyle="butt")
             
 
             if verbose: log.write(" -Finished plotting gene track..")
@@ -827,11 +832,11 @@ def mqqplot(insumstats,
 
 #Helpers
 ##############################################################################################################################
-def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_threshold):
+def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_threshold, vcf_chr_dict):
     if verbose: log.write("Start to load reference genotype...")
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
     # load genotype data of the targeted region
-    ref_genotype = read_vcf(vcf_path,region=str(region[0])+":"+str(region[1])+"-"+str(region[2]),tabix=None)
+    ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=None)
     
     if verbose: log.write(" -Retrieving index...")
     # match sumstats pos and ref pos: 
