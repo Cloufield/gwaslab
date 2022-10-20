@@ -221,7 +221,7 @@ def get_gtf(chrom, build="19",source="ensembl"):
             gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#",dtype={0:"string"})
             gtf = gtf.loc[gtf[0]==chrom,:]
     if source=="refseq":
-        chrom_NC = get_chr_NC_dict(build=build)[str(chrom)]
+        chrom_NC = get_chr_to_NC(build=build)[str(chrom)]
         if build=="19":
             data_path =  path.dirname(__file__) + '/data/RefSeq/GRCh37/GRCh37_latest_genomic.gtf.gz'
             gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")

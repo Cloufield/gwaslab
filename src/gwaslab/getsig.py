@@ -240,7 +240,7 @@ def annogene(
         elif build=="38":
             if verbose:log.write(" -Assigning Gene name using built-in NCBI refseq latest GRCh38")
             gtf_path = path.dirname(__file__) + '/data/RefSeq/GRCh38/GRCh38_latest_genomic.protein_coding.gtf.gz'
-            gtf_db_path = path.dirname(__file__) + '/data/RefSeq/GRCh38/GRCh38_latest_genomic.protein_coding.gtf.gz'
+            gtf_db_path = path.dirname(__file__) + '/data/RefSeq/GRCh38/GRCh38_latest_genomic.protein_coding.gtf.db'
             data = Genome(
                 reference_name='GRCh38',
                 annotation_name='hg38_gene',

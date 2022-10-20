@@ -7,6 +7,7 @@ import scipy as sp
 import gwaslab as gl
 from gwaslab.Log import Log
 from gwaslab.getsig import getsig
+from gwaslab.getsig import annogene
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
 from gwaslab.CommonData import get_recombination_rate
@@ -51,6 +52,7 @@ def mqqplot(insumstats,
           anno_set=[],
           anno_alias={},
           anno_d={},
+          anno_source = "ensembl",
           arm_offset=50,
           arm_scale=1,
           cut=0,
@@ -598,14 +600,22 @@ def mqqplot(insumstats,
             if to_annotate.empty is not True:
                 if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         if (to_annotate.empty is not True) and anno=="GENENAME":
-            if build=="19":
-                data = EnsemblRelease(75)
-                if verbose:log.write(" -Assigning Gene name using Ensembl Release",75)
-            elif build=="38":
-                data = EnsemblRelease(77)
-                if verbose:log.write(" -Assigning Gene name using Ensembl Release",77)
-            to_annotate = to_annotate.copy()
-            to_annotate.loc[:,["LOCATION","Annotation"]] = pd.DataFrame(to_annotate.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=to_annotate.index).values
+            to_annotate = annogene(to_annotate,
+                                   id=snpid,
+                                   chrom=chrom,
+                                   pos=pos,
+                                   log=log,
+                                   build=build,
+                                   source=anno_source,
+                                   verbose=verbose).rename(columns={"GENE":"Annotation"})
+            #if build=="19":
+            #    data = EnsemblRelease(75)
+            #    if verbose:log.write(" -Assigning Gene name using Ensembl Release",75)
+            #elif build=="38":
+            #    data = EnsemblRelease(77)
+            #    if verbose:log.write(" -Assigning Gene name using Ensembl Release",77)
+            #to_annotate = to_annotate.copy()
+            #to_annotate.loc[:,["LOCATION","Annotation"]] = pd.DataFrame(to_annotate.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=to_annotate.index).values
         
 # Add Annotation to manhattan plot #######################################################
            ## final
@@ -820,21 +830,28 @@ def mqqplot(insumstats,
 def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_threshold):
     if verbose: log.write("Start to load reference genotype...")
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
+    # load genotype data of the targeted region
     ref_genotype = read_vcf(vcf_path,region=str(region[0])+":"+str(region[1])+"-"+str(region[2]),tabix=None)
-
+    
     if verbose: log.write(" -Retrieving index...")
+    # match sumstats pos and ref pos: 
+    # get ref index for its first appearance of sumstats pos
     sumstats["REFINDEX"] = sumstats[pos].apply(lambda x: np.where(ref_genotype["variants/POS"] == x )[0][0] if np.any(ref_genotype["variants/POS"] == x) else None)
     
+    # get lead variant id and pos
     lead_id = sumstats["scaled_P"].idxmax()
     lead_pos = sumstats.loc[lead_id,pos]
 
     if lead_pos in ref_genotype["variants/POS"]:
+        # if lead pos is available: 
+        # get ref index for lead snp
         lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
+        print(lead_snp_ref_index)
         other_snps_ref_index = sumstats["REFINDEX"].values
         lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
         other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
         if verbose: log.write(" -Calculating Rsq...")
-        sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = np.abs(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0])
+        sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0],2)
     else:
         if verbose: log.write(" -Lead SNP not found in reference...")
         sumstats["RSQ"]=None
