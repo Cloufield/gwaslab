@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>Reference data - GWASLab</title>
+    <title>Commonly used data in gwaslab - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -222,13 +222,13 @@
                 
                 
                 
-                    <li class="dropdown active">
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">References <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
                             
-<li class="active">
-    <a href="./">Reference data</a>
+<li >
+    <a href="../Reference/">Reference data</a>
 </li>
 
                         
@@ -250,16 +250,6 @@
                             <i class="fas fa-search"></i> Search
                         </a>
                     </li>
-                    <li >
-                        <a rel="prev" href="../InferBuild/">
-                            <i class="fas fa-arrow-left"></i> Previous
-                        </a>
-                    </li>
-                    <li >
-                        <a rel="next" href="../UpdateLogs/">
-                            Next <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </li>
                     <li>
                         <a href="https://github.com/Cloufield/gwaslab/"><i class="fab fa-github"></i> GitHub</a>
                     </li>
@@ -273,94 +263,52 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#reference-data-for-handling-sumstats">Reference data for handling Sumstats</a></li>
-            <li class="second-level"><a href="#reference-library-for-variants-annotation-pyensembl">Reference Library for variants annotation : pyensembl</a></li>
+        <li class="first-level active"><a href="#commonly-used-data-in-gwaslab">Commonly used data in gwaslab</a></li>
+            <li class="second-level"><a href="#chromosme-notation-conversion-dictionary">Chromosme notation conversion dictionary</a></li>
                 
-            <li class="second-level"><a href="#reference-genome-sequence-for-variant-allele-alignment">Reference genome sequence for variant allele alignment</a></li>
+            <li class="second-level"><a href="#high-ld-region-bed">High-ld region bed</a></li>
                 
-            <li class="second-level"><a href="#processed-reference-files-for-harmonization">Processed Reference files for harmonization</a></li>
+            <li class="second-level"><a href="#sumstats-format-list">Sumstats Format list</a></li>
                 
-                <li class="third-level"><a href="#1000-genome-projecthg19">1000 Genome Project(hg19)</a></li>
-                <li class="third-level"><a href="#sample-code">Sample code:</a></li>
-            <li class="second-level"><a href="#dbsnp-database-for-annoattion-of-rsid">dbsnp: database for annoattion of rsID</a></li>
+            <li class="second-level"><a href="#gene-gtf">Gene gtf</a></li>
                 
-            <li class="second-level"><a href="#gnomad">gnomad</a></li>
+            <li class="second-level"><a href="#gwaslab-information">gwaslab information</a></li>
                 
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="reference-data-for-handling-sumstats">Reference data for handling Sumstats</h1>
-<h2 id="reference-library-for-variants-annotation-pyensembl">Reference Library for variants annotation : pyensembl</h2>
-<p>Install pyensembl and download reference:</p>
-<pre><code># install  pyensembl if not
-pip install pyensembl
-
-# syntax for download reference for pyensembl
-pyensembl install --release &lt;list of Ensembl release numbers&gt; --species &lt;species-name&gt;
-</code></pre>
-<p>GWASlab uses:
-- ensembl release 75 : hg19
-- ensembl release 107 : hg38 
-- NCBI refseq GRCh37
-- NCBI refseq GRCh38</p>
-<p>Currently, gwaslab could use ensembl or refseq gtf reference data to annotate lead SNPs with the nearest gene name.
-For details about pyensembl, please check <a href="https://github.com/openvax/pyensembl">https://github.com/openvax/pyensembl</a></p>
-<h2 id="reference-genome-sequence-for-variant-allele-alignment">Reference genome sequence for variant allele alignment</h2>
+<h1 id="commonly-used-data-in-gwaslab">Commonly used data in gwaslab</h1>
+<h2 id="chromosme-notation-conversion-dictionary">Chromosme notation conversion dictionary</h2>
 <ul>
-<li>GRCh37 / hg19 : <a href="http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/">ucsc_hg19</a></li>
-<li>GRCh38 / hg38 : <a href="https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/">ucsc_hg38</a></li>
+<li><code>get_chr_list()</code> : get a full list of chromosomes</li>
+<li>chr/ number &lt;-&gt; NC dictionary<ul>
+<li><code>get_chr_to_NC(build)</code> : </li>
+<li><code>get_number_to_NC(build)</code></li>
+<li><code>get_NC_to_chr(build)</code></li>
+<li><code>get_NC_to_number(build)</code></li>
 </ul>
-<p>For details about reference genome, please check <a href="https://cloufield.github.io/CTGCatalog/Reference_data_Genome_README/">https://cloufield.github.io/CTGCatalog/Reference_data_Genome_README/</a></p>
-<h2 id="processed-reference-files-for-harmonization">Processed Reference files for harmonization</h2>
-<h3 id="1000-genome-projecthg19">1000 Genome Project(hg19)</h3>
-<p>Download:
-<a href="http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/">Index of /vol1/ftp/release/20130502/</a></p>
-<p>Process the 1000 genome vcf file for EAS sample:</p>
-<ul>
-<li>Extract EAS sample</li>
-<li>Split multiallelic variants</li>
-<li>Normalize variants</li>
-<li>Rename variants as CHR:POS:REF:ALT</li>
-<li>Remove duplicated variants</li>
-<li>Calculate Alternative allele frequency</li>
-<li>Tabix index</li>
+</li>
+<li>chr &lt;-&gt; number </li>
+<li><code>get_chr_to_number()</code></li>
+<li><code>get_number_to_chr()</code></li>
 </ul>
-<h3 id="sample-code">Sample code:</h3>
-<pre><code class="language-bash">
-
-
-
-#!/bin/bash
-# extract EAS sample ID
-awk '$3==&quot;EAS&quot;{print $1}' integrated_call_samples_v3.20130502.ALL.panel &gt;EAS.sample
-
-# process
-for chr in {1..22}
-do
-    bcftools view -S EAS.sample ALL.chr&quot;${chr}&quot;.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz | \
-        bcftools norm -m-any --check-ref w -f human_g1k_v37.fasta | \
-        bcftools annotate -x ID,INFO -I +'%CHROM:%POS:%REF:%ALT' | \
-        bcftools norm --rm-dup both | \
-        bcftools +fill-tags -Oz  -- -t AF  \
-          &gt; EAS.chr&quot;${chr}&quot;.split_norm_af.vcf.gz
-    tabix -p vcf EAS.chr&quot;${chr}&quot;.split_norm_af.vcf.gz
-    echo &quot;EAS.chr&quot;${chr}&quot;.split_norm_af.vcf.gz&quot; &gt;&gt;concat_list.txt 
-done
-
-# merge
-bcftools concat -a -d both -f concat_list.txt -Ob | bcftools sort -Oz  &gt; EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
-tabix -p vcf EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
-</code></pre>
-<h2 id="dbsnp-database-for-annoattion-of-rsid">dbsnp: database for annoattion of rsID</h2>
+<h2 id="high-ld-region-bed">High-ld region bed</h2>
 <ul>
-<li>dbsnp v151 (hg19): https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz</li>
-<li>latest release: <a href="https://ftp.ncbi.nih.gov/snp/latest_release/VCF/">Index of /snp/latest_release/VCF</a></li>
+<li><code>get_high_ld(build)</code></li>
 </ul>
-<h2 id="gnomad">gnomad</h2>
+<h2 id="sumstats-format-list">Sumstats Format list</h2>
 <ul>
-<li>Allele frequency for major ancestries and rsID</li>
-<li>gnomAD v2 &amp; gnomAD v2 liftover &amp; gnomAD v3:   <a href="https://gnomad.broadinstitute.org/downloads">gnomAD</a>    </li>
+<li><code>get_format_dict(fmt)</code></li>
+<li><code>get_formats_list()</code></li>
+</ul>
+<h2 id="gene-gtf">Gene gtf</h2>
+<ul>
+<li><code>get_gtf(chrom, build="19",source="ensembl")</code></li>
+</ul>
+<h2 id="gwaslab-information">gwaslab information</h2>
+<ul>
+<li><code>gwaslab_info()</code></li>
 </ul></div>
         
         
