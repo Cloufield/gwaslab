@@ -1,6 +1,5 @@
-# Reference file : pyensembl
-
-https://github.com/openvax/pyensembl
+# Reference data for handling Sumstats
+## Reference Library for variants annotation : pyensembl
 
 Install pyensembl and download reference:
 
@@ -20,31 +19,40 @@ For gwaslab, please run the following commands to install:
 ```
 pyensembl install --release 75 107 --species human
 ```
+Currently, gwaslab could use ensembl reference data to annotate lead SNPs with the nearest gene name.
+For details about pyensembl, please check [https://github.com/openvax/pyensembl](https://github.com/openvax/pyensembl)
 
-gwaslab could use ensembl reference data to annotate lead SNPs with the nearest gene name.
+## Reference genome sequence for variant allele alignment
 
+- GRCh37 / hg19 : [ucsc_hg19](http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/)
+- GRCh38 / hg38 : [ucsc_hg38](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/)
 
+For details about reference genome, please check [https://cloufield.github.io/CTGCatalog/Reference_data_Genome_README/](https://cloufield.github.io/CTGCatalog/Reference_data_Genome_README/)
 
-# Processed Reference file
-
-## 1000 Genome
-
+## Processed Reference files for harmonization
+### 1000 Genome Project(hg19)
 Download:
-
 [Index of /vol1/ftp/release/20130502/](http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/)
 
-After downloading the raw vcf, we need to normalize the variants, split multiallelic variants, rename the variant and remove duplicates. 
-
-Also, we need to extract out target  ancestry and recalculate the allele frequency. 
-
-Create a sample list for EAS samples
+- After downloading the raw vcf, we need to normalize the variants, split multiallelic variants, rename the variant and remove duplicates. 
+- Also, we need to extract out target  ancestry and recalculate the allele frequency. 
+- Create a sample list for EAS samples
 
 ```bash
  awk '$3=="EAS"{print $1}' integrated_call_samples_v3.20130502.ALL.panel >EAS.sample
 ```
 
-1000 genome:
+Process the 1000 genome vcf file for EAS sample:
 
+- Extract EAS sample
+- Split multiallelic variants
+- Normalize variants
+- Rename variants as CHR:POS:REF:ALT
+- Remove duplicated variants
+- Calculate Alternative allele frequency
+- Tabix index
+
+### Sample code:
 ```bash
 #!/bin/bash
 
@@ -60,18 +68,12 @@ do
 done
 ```
 
-# dbsnp
+## dbsnp: database for annoattion of rsID
 
-rsID database.
+- dbsnp v151 (hg19): https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz
+- latest release: [Index of /snp/latest_release/VCF](https://ftp.ncbi.nih.gov/snp/latest_release/VCF/)
 
-dbsnp v151 (hg19): https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz
+## gnomad
 
-latest release: [Index of /snp/latest_release/VCF](https://ftp.ncbi.nih.gov/snp/latest_release/VCF/)
-
-# gnomad
-
-Allele frequency for major ancestries and rsID
-
-gnomAD v2 & gnomAD v2 liftover & gnomAD v3:   [gnomAD](https://gnomad.broadinstitute.org/downloads)    
-
-
+- Allele frequency for major ancestries and rsID
+- gnomAD v2 & gnomAD v2 liftover & gnomAD v3:   [gnomAD](https://gnomad.broadinstitute.org/downloads)    
