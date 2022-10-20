@@ -32,7 +32,7 @@ from gwaslab.CommonData import get_chr_list
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",
-       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,overwrite=False,verbose=True,log=Log()):  
+       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,overwrite=False,verbose=True,forcefixid=False,log=Log()):  
     
     '''
     1. fx SNPid
@@ -234,7 +234,9 @@ def fixID(sumstats,
                 
                 #pattern = r"\w\w\w[0][01267][01234]\w"  
                 pattern = r"\w\w\w\w[0123][01267][01234]"
-                matched_index = sumstats[status].str.match(pattern) 
+                matched_index = sumstats[status].str.match(pattern)
+                if forcefixid is True:
+                    matched_index = to_fix
                 to_full_fix = matched_index & to_fix 
                 
                 
