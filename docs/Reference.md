@@ -10,16 +10,13 @@ pip install pyensembl
 # syntax for download reference for pyensembl
 pyensembl install --release <list of Ensembl release numbers> --species <species-name>
 ```
-
-For gwaslab, please run the following commands to install:
-
+GWASlab uses:
 - ensembl release 75 : hg19
 - ensembl release 107 : hg38 
+- NCBI refseq GRCh37
+- NCBI refseq GRCh38
 
-```
-pyensembl install --release 75 107 --species human
-```
-Currently, gwaslab could use ensembl reference data to annotate lead SNPs with the nearest gene name.
+Currently, gwaslab could use ensembl or refseq gtf reference data to annotate lead SNPs with the nearest gene name.
 For details about pyensembl, please check [https://github.com/openvax/pyensembl](https://github.com/openvax/pyensembl)
 
 ## Reference genome sequence for variant allele alignment
@@ -65,7 +62,11 @@ do
         bcftools +fill-tags -Oz  -- -t AF  \
           > EAS.chr"${chr}".split_norm_af.vcf.gz
     tabix -p vcf EAS.chr"${chr}".split_norm_af.vcf.gz
+    echo "EAS.chr"${chr}".split_norm_af.vcf.gz" >>concat_list.txt 
 done
+
+bcftools concat -a -d both -f concat_list.txt -Ob | bcftools sort -Oz  > EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
+tabix -p vcf EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
 ```
 
 ## dbsnp: database for annoattion of rsID
