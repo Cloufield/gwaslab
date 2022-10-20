@@ -194,20 +194,22 @@ def check_status(row,record):
             return status_pre+"8"+status_end
         
 
-def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
+def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
     if verbose: log.write("Start to check if NEA is aligned with reference sequence...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
     if verbose:  log.write(" -Reference genome fasta file: "+ ref_path)  
     if verbose:  log.write(" -Checking records: ", end="")  
-    chromlist = get_chr_list()
-    dic =  get_chr_to_number()
+    chromlist = get_chr_list(add_number=True)
     records = SeqIO.parse(ref_path, "fasta")
     for record in records:
         #record = next(records)
         if record is not None:
             record_chr = str(record.id).strip("chrCHR").upper()
-            if record_chr in chromlist:
-                i = dic[record_chr]
+            if record_chr in chr_dict.keys():
+                i = chr_dict[record_chr]
+            else:
+                i = record_chr
+            if i in chromlist:
                 if verbose:  log.write(record_chr," ", end="",show_time=False) 
                 to_check_ref = (sumstats[chrom]==i) & (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())
                 sumstats.loc[to_check_ref,status] = sumstats.loc[to_check_ref,[pos,ea,nea,status]].apply(lambda x:check_status(x,record),axis=1)

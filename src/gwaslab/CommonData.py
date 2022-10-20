@@ -4,7 +4,7 @@ import json
 from pyensembl import Genome
 
 #hard-coded data
-def get_chr_NC_dict(build,inverse=False):
+def get_chr_to_NC(build,inverse=False):
     #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
     if build =="19":
         dic={
@@ -31,7 +31,8 @@ def get_chr_NC_dict(build,inverse=False):
         "21":"NC_000021.8",
         "22":"NC_000022.10",
         "X":"NC_000023.10",
-        "Y":"NC_000024.9"}
+        "Y":"NC_000024.9",
+        "MT":"NC_012920.1"}
     elif build=="38":
         dic={
         "1":"NC_000001.11",
@@ -57,17 +58,94 @@ def get_chr_NC_dict(build,inverse=False):
         "21":"NC_000021.9",
         "22":"NC_000022.11",
         "X":"NC_000023.11",
-        "Y":"NC_000024.1"
+        "Y":"NC_000024.1",
+        "MT":"NC_012920.1"
         }
     if inverse is True:
         inv_dic = {v: k for k, v in dic.items()}
         return inv_dic
     return dic
 
-def get_chr_list():
+def get_NC_to_chr(build):
+    return get_chr_to_NC(build=build,inverse=True)
+
+
+def get_number_to_NC(build,inverse=False):
+    #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
+    if build =="19":
+        dic={
+        1:"NC_000001.10",
+        2:"NC_000002.11",
+        3:"NC_000003.11",
+        4:"NC_000004.11",
+        5:"NC_000005.9",
+        6:"NC_000006.11",
+        7:"NC_000007.13",
+        8:"NC_000008.10",
+        9:"NC_000009.11",
+        10:"NC_000010.10",
+        11:"NC_000011.9",
+        12:"NC_000012.11",
+        13:"NC_000013.10",
+        14:"NC_000014.8",
+        15:"NC_000015.9",
+        16:"NC_000016.9",
+        17:"NC_000017.10",
+        18:"NC_000018.9",
+        19:"NC_000019.9",
+        20:"NC_000020.10",
+        21:"NC_000021.8",
+        22:"NC_000022.10",
+        23:"NC_000023.10",
+        24:"NC_000024.9",
+        25:"NC_012920.1"}
+    elif build=="38":
+        dic={
+        1:"NC_000001.11",
+        2:"NC_000002.12",
+        3:"NC_000003.12",
+        4:"NC_000004.12",
+        5:"NC_000005.10",
+        6:"NC_000006.12",
+        7:"NC_000007.14",
+        8:"NC_000008.11",
+        9:"NC_000009.12",
+        10:"NC_000010.11",
+        11:"NC_000011.10",
+        12:"NC_000012.12",
+        13:"NC_000013.11",
+        14:"NC_000014.9",
+        15:"NC_000015.10",
+        16:"NC_000016.10",
+        17:"NC_000017.11",
+        18:"NC_000018.10",
+        19:"NC_000019.10",
+        20:"NC_000020.11",
+        21:"NC_000021.9",
+        22:"NC_000022.11",
+        23:"NC_000023.11",
+        24:"NC_000024.1",
+        25:"NC_012920.1"
+        }
+    if inverse is True:
+        inv_dic = {v: k for k, v in dic.items()}
+        return inv_dic
+    return dic
+
+
+def get_NC_to_number(build):
+    return get_number_to_NC(build=build,inverse=True)
+
+
+
+def get_chr_list(add_number=False):
     chrom_list=["1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18",
             "19","20","21","22","23","24","25","X","Y","M","MT"]
+    if add_number is True:
+        chrom_list = ["1","2","3","4","5","6","7","8","9","10",
+            "11","12","13","14","15","16","17","18",
+            "19","20","21","22","23","24","25","X","Y","M","MT"] +[i for i in range(1,26)]
     return chrom_list
 
 def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"]):
@@ -84,17 +162,17 @@ def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"]):
         dic["M"]=25
     return dic
 
-def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"]):
+def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"],prefix=""):
     if in_chr is True:
-        dic= {str(i):str(i) for i in range(1,23)}
-        dic["23"]=xymt[0]
-        dic["24"]=xymt[1]
-        dic["25"]=xymt[2]
+        dic= {str(i):prefix+str(i) for i in range(1,23)}
+        dic["23"]=prefix+xymt[0]
+        dic["24"]=prefix+xymt[1]
+        dic["25"]=prefix+xymt[2]
     else:
-        dic= {i:str(i) for i in range(1,23)}
-        dic[23]=xymt[0]
-        dic[24]=xymt[1]
-        dic[25]=xymt[2]
+        dic= {i:prefix+str(i) for i in range(1,23)}
+        dic[23]=prefix+xymt[0]
+        dic[24]=prefix+xymt[1]
+        dic[25]=prefix+xymt[2]
     return dic
 
 
@@ -182,8 +260,8 @@ def gtf_index():
 ####################################################################################################################
 def gwaslab_info():
     dic={
-   "version":"3.2.2",
-   "release_date":"20220924"
+   "version":"3.3.2",
+   "release_date":"20221024"
     }
     return dic
         

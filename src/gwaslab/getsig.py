@@ -4,7 +4,7 @@ import scipy as sp
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
-from gwaslab.CommonData import get_chr_NC_dict
+from gwaslab.CommonData import get_chr_to_NC
 from gwaslab.CommonData import gtf_index
 from pyensembl import EnsemblRelease
 from pyensembl import Genome
@@ -127,7 +127,7 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ense
             x[chrom] = get_number_to_chr()[x[chrom]]
         elif source=="refseq":
             x[chrom] = get_number_to_chr()[x[chrom]]
-            x[chrom] = get_chr_NC_dict(build=build)[x[chrom]]
+            x[chrom] = get_chr_to_NC(build=build)[x[chrom]]
 
         # query
         gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
@@ -187,8 +187,10 @@ def annogene(
            build="19",
            source="ensembl",
            verbose=True):
+    
     if verbose: log.write("Start to annotate variants with nearest gene name(s)...")
     output = insumstats.copy()
+    
     if source == "ensembl":
         if build=="19":
             #data = EnsemblRelease(75)
@@ -205,7 +207,7 @@ def annogene(
             if path.isfile(gtf_db_path) is False:
                 data.index()
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
-                output.apply(lambda x:closest_gene(x,data=data,source=source), axis=1).tolist(), 
+                list(output.apply(lambda x:closest_gene(x,data=data,source=source), axis=1)), 
                 index=output.index).values
         elif build=="38":
             if verbose:log.write(" -Assigning Gene name using built-in Ensembl Release",107 , " (hg38)")
@@ -218,8 +220,9 @@ def annogene(
             if path.isfile(gtf_db_path) is False:
                 data.index()
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
-                output.apply(lambda x:closest_gene(x,data=data,source=source), axis=1).tolist(), 
+                list(output.apply(lambda x:closest_gene(x,data=data,source=source), axis=1)), 
                 index=output.index).values
+    
     if source == "refseq":
         if build=="19":
             if verbose:log.write(" -Assigning Gene name using built-in NCBI refseq latest GRCh37")
@@ -232,7 +235,7 @@ def annogene(
             if path.isfile(gtf_db_path) is False:
                 data.index()
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
-                output.apply(lambda x:closest_gene(x,data=data,source=source,build=build), axis=1).tolist(), 
+                list(output.apply(lambda x:closest_gene(x,data=data,source=source,build=build), axis=1)), 
                 index=output.index).values
         elif build=="38":
             if verbose:log.write(" -Assigning Gene name using built-in NCBI refseq latest GRCh38")
@@ -245,7 +248,7 @@ def annogene(
             if path.isfile(gtf_db_path) is False:
                 data.index()
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
-                output.apply(lambda x:closest_gene(x,data=data,source=source,build=build), axis=1).tolist(), 
+                list(output.apply(lambda x:closest_gene(x,data=data,source=source,build=build), axis=1)), 
                 index=output.index).values
     if verbose: log.write("Finished annotating variants with nearest gene name(s) successfully!")
     return output
