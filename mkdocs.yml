@@ -18,6 +18,7 @@ nav:
        - QC&Filtering: QC&Filtering.md
        - Harmonization: Harmonization.md
        - Liftover: LiftOver.md
+       - "Data conversion": Conversion.md
     - Visualization:
        - "Manhattan & QQ plot": Visualization.md
        - "Regional Plot": RegionalPlot.md
@@ -35,4 +36,5 @@ nav:
        - "Infer Genome Build": InferBuild.md
     - References: 
        - "Reference data" : Reference.md
+       - "Common data": CommonData.md
        - "Update logs" : UpdateLogs.md
