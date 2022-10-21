@@ -285,7 +285,7 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#gwaslab-v330">gwaslab (v3.3.0)</a></li>
+        <li class="first-level active"><a href="#gwaslab">gwaslab</a></li>
             <li class="second-level"><a href="#functions">Functions</a></li>
                 
                 <li class="third-level"><a href="#standardization-normalization-harmonization">Standardization, Normalization &amp; Harmonization</a></li>
@@ -301,8 +301,8 @@
         <div class="col-md-9" role="main">
 
 <p><img alt="index_logo" src="images/index_logo.jpg" /></p>
-<h1 id="gwaslab-v330">gwaslab (v3.3.0)</h1>
-<p><img alt="badge" src="https://img.shields.io/badge/release-v3.3.0-brightgreen" />
+<h1 id="gwaslab">gwaslab</h1>
+<p><img alt="badge" src="https://img.shields.io/badge/release-v3.3.2-brightgreen" />
 <img alt="badge_pip" src="https://img.shields.io/pypi/dm/gwaslab" />
 <a href="https://hits.seeyoufarm.com"><img alt="Hits" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&amp;count_bg=%2379C83D&amp;title_bg=%23555555&amp;icon=&amp;icon_color=%23E7E7E7&amp;title=hits&amp;edge_flat=false" /></a></p>
 <p>Note:  Some part of the docs are outdated. I am currently updating the documents.</p>
@@ -311,6 +311,7 @@
 <li>Each process is modularized and can be customized to your needs.</li>
 <li>Most manipulations are designed as methods of python object, <code>gwaslab.Sumstats</code>.</li>
 </ul>
+<p>Please check GWASLab document at <a href="https://cloufield.github.io/gwaslab/">https://cloufield.github.io/gwaslab/</a></p>
 <pre><code class="language-python">import gwaslab as gl
 # load plink2 output
 mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
@@ -367,7 +368,9 @@ mysumstats.plot_mqq()
 <li>Scatter Plot : variant effect size comparison with sumstats</li>
 <li>Scatter Plot : allele frequency comparison </li>
 <li>Forest Plot : forest plots for meta-analysis of SNPs</li>
+<li>Examples</li>
 </ul>
+<p><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526882-dff70593-752d-4672-901e-0b3cea3d8cda.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526361-af2c736a-13ac-4849-9966-5139b9b1a148.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526481-df060ad5-dc61-4e35-ab37-3ea45ed00618.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526537-74547da8-85c1-4e47-859e-311a72fb8c73.png"></p>
 <h3 id="other-utilities">Other Utilities</h3>
 <ul>
 <li>Read ldsc h2 or rg outputs directly as DataFrames (auto-parsing).</li>
@@ -379,7 +382,7 @@ mysumstats.plot_mqq()
 <li>LDSC / MAGMA / METAL / MR-MEGA / FUMA / VCF / BED... <a href="https://github.com/Cloufield/formatbook">check available formats</a></li>
 </ul>
 <h1 id="install">Install</h1>
-<pre><code>pip install gwaslab==3.3.0
+<pre><code>pip install gwaslab==3.3.2
 </code></pre>
 <h2 id="requirements">Requirements:</h2>
 <ul>
@@ -509,5 +512,5 @@ mysumstats.plot_mqq()
 
 <!--
 MkDocs version : 1.3.0
-Build Date UTC : 2022-10-21 08:00:04.818769+00:00
+Build Date UTC : 2022-10-21 09:19:43.715935+00:00
 -->
