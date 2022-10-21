@@ -1,8 +1,8 @@
 ![index_logo](./images/index_logo.jpg)
 
-# gwaslab (v3.3.0)
+# gwaslab
 
-![badge](https://img.shields.io/badge/release-v3.3.0-brightgreen)
+![badge](https://img.shields.io/badge/release-v3.3.2-brightgreen)
 ![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
@@ -71,6 +71,9 @@ mysumstats.plot_mqq()
 - Scatter Plot : variant effect size comparison with sumstats
 - Scatter Plot : allele frequency comparison 
 - Forest Plot : forest plots for meta-analysis of SNPs
+- Examples
+
+<img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526882-dff70593-752d-4672-901e-0b3cea3d8cda.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526361-af2c736a-13ac-4849-9966-5139b9b1a148.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526481-df060ad5-dc61-4e35-ab37-3ea45ed00618.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526537-74547da8-85c1-4e47-859e-311a72fb8c73.png">
 
 ### Other Utilities
 
@@ -85,7 +88,7 @@ mysumstats.plot_mqq()
 # Install
 
 ```
-pip install gwaslab==3.3.0
+pip install gwaslab==3.3.2
 ```
 
 
