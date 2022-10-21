@@ -14,6 +14,7 @@ mysumstats.get_lead(
 GWASLab will extract the lead variants from identified significant loci based on a sliding window (default window size: 500kb). (Details are described in )
 
 Options:
+
 - `windowsizekb` :specify the sliding window size in kb (default: 500)
 - `sig_level` :specify the P value threshold (default: 5e-8).
 - `xymt`: list of notation for chrX, chrY and chrMT.
