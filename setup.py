@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="gwaslab",
-    version="3.3.0",
+    version="3.3.2",
     author="Yunye",
     author_email="yunye@gwaslab.com",
     description="A collection of handy tools for GWAS",
