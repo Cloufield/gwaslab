@@ -1,7 +1,11 @@
 # Update Logs
 
-## v3.3.2 (coming soon)
+## v3.3.3 coming soon
+- updated tutorials 
+
+## v3.3.2 - 20221021
 - added forcefixid for fix_id()
+- fixed bugs for plotting gene tracks
 
 ## v3.3.1 
 - extract novel loci given a list of known lead variants
