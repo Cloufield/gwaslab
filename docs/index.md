@@ -12,6 +12,8 @@ Note:  Some part of the docs are outdated. I am currently updating the documents
 * Each process is modularized and can be customized to your needs.
 * Most manipulations are designed as methods of python object, `gwaslab.Sumstats`.
 
+Please check GWASLab document at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
+
 ```python
 import gwaslab as gl
 # load plink2 output
