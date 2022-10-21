@@ -1,4 +1,4 @@
-![index_logo](./images/index_logo.jpg)
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197167760-5f761f5e-5856-4b27-a540-8b9cd90bdadb.png">
 
 # gwaslab
 
