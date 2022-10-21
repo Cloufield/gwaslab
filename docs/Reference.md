@@ -70,6 +70,12 @@ done
 bcftools concat -a -d both -f concat_list.txt -Ob | bcftools sort -Oz  > EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
 tabix -p vcf EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
 ```
+The processed dataset can then be used for:
+
+- infer palindromic SNPs / indels
+- check allele frequency difference 
+- regional plot
+
 
 ## dbsnp: database for annoattion of rsID
 
