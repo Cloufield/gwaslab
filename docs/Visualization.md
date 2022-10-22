@@ -62,7 +62,7 @@ mysumstatsysumstats.plot_mqq()
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196595098-23ff14eb-5579-4177-8d20-54816a410f48.png">
 
 
-## Customized plot
+## Customized plot example
 
 ```
 mysumstats.plot_mqq(
@@ -77,6 +77,7 @@ mysumstats.plot_mqq(
                   marker_size=(5,10),
                   figargs={"figsize":(15,5),"dpi":300})
 ```
+
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196594621-840217aa-117d-49ac-ab58-15a5fa6675b1.png">
 
 
@@ -93,8 +94,7 @@ mysumstats.plot_mqq(
 - `qqm`: left QQ , right manhatan
 - `"m"`: only manhattan plot
 - `"qq"`: only qq plot
-  
-`mqqratio`: width ratio
+- `mqqratio`: width ratio
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593277-0908d49e-40aa-4fe3-b214-d774ab4d0382.png">
 
@@ -116,13 +116,13 @@ mysumstats.plot_mqq(
 
 ### Annotation
 
-* `anno`: `boolean` or `string` or `"GENENAME"`   
-    * `boolean`: `anno = True`,  the variants to annotate will be selected automatically using a sliding window with `windowsize=500`kb. chr:pos
-    * `string`: the column name used for annotation
-    * `"GENENAME"` : automatically annotate nrearest gene names, using pyensembl. (remember to specify `build`, default is `build="19"`)
-* `repel_force` : when the annotation overlaps with other, try increasing the repel_force to increase the padding between annotations. (deault is 0.01)
-* `anno_set `: if you want to annotate only a few specific variants, you can simply provide a list of SNPIDs. 
-* `anno_alias` : snpid:text dictionary for customized annotation
+- `anno`: `boolean` or `string` or `"GENENAME"`   
+    - `boolean`: `anno = True`,  the variants to annotate will be selected automatically using a sliding window with `windowsize=500`kb. chr:pos
+    - `string`: the column name used for annotation
+    - `"GENENAME"` : automatically annotate nrearest gene names, using pyensembl. (remember to specify `build`, default is `build="19"`)
+- `repel_force` : when the annotation overlaps with other, try increasing the repel_force to increase the padding between annotations. (deault is 0.01)
+- `anno_set `: if you want to annotate only a few specific variants, you can simply provide a list of SNPIDs. 
+- `anno_alias` : snpid:text dictionary for customized annotation
 
 <img width="376" alt="image" src="https://user-images.githubusercontent.com/40289485/196592902-36c52102-09f2-4c58-894b-a7177e87bd09.png">
 
@@ -137,11 +137,15 @@ mysumstats.plot_mqq(
 
 `mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19")`
 
+
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591371-262d31d5-9640-474f-af0d-d6c511c77280.png">
+
 
 `mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"])`
 
+
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591966-c9618c45-456b-4eb8-991b-66420f847a97.png">
+
 
 `mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"], anno_alias={"rs12509595":"anything you want here"})`
 
@@ -203,6 +207,7 @@ mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19",
                    highlight=["rs12509595","rs7989823"],
                    pinpoint=["rs671","19:15040733:T:C"])
 ```
+
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png">
 
 ----------------------------------------------------------------
