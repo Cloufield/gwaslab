@@ -58,6 +58,7 @@ def mqqplot(insumstats,
           anno_source = "ensembl",
           arm_offset=50,
           arm_scale=1,
+          arm_scale_d=None,
           cut=0,
           skip=0,
           cutfactor=10,
@@ -683,6 +684,8 @@ def mqqplot(insumstats,
                 #  
                 armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
                 
+                armB_length_in_point = armB_length_in_point
+                
                 # 
                 if anno==True:
                     if row[snpid] in anno_alias.keys():
@@ -698,8 +701,14 @@ def mqqplot(insumstats,
                     if row["i"] in highlight_i:
                         fontweight = "bold"
                 #
+                if arm_scale_d is not None:
+                    if anno_count not in arm_scale_d.keys():
+                        arm_scale =1
+                    else:
+                        arm_scale = arm_scale_d[anno_count]
+                
                 xy=(row["i"],row["scaled_P"]+0.2)
-                xytext=(last_pos,1.15*maxy)
+                xytext=(last_pos,1.15*maxy*arm_scale)
                 
                 if anno_count not in anno_d.keys():
                     arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
