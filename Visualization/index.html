@@ -298,6 +298,12 @@
                 <li class="third-level"><a href="#skip-low-and-shrink-high">Skip "low" and shrink "high"</a></li>
                 <li class="third-level"><a href="#annotation">Annotation</a></li>
                 <li class="third-level"><a href="#adjust-arm-position">Adjust arm position</a></li>
+                <li class="third-level"><a href="#highlight-specified-loci">Highlight specified loci</a></li>
+                <li class="third-level"><a href="#pinpoint-specified-variants">Pinpoint specified variants</a></li>
+                <li class="third-level"><a href="#maf-stratified-qq-plot">Maf-stratified QQ plot</a></li>
+                <li class="third-level"><a href="#colors-and-fonts">Colors and Fonts</a></li>
+                <li class="third-level"><a href="#titles">Titles</a></li>
+                <li class="third-level"><a href="#save-plots">Save plots</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -429,87 +435,68 @@ mydata.plot_mqq(
 <pre><code>mysumstats.plot_mqq(skip=2,anno=True,          
                     anno_d={1:&quot;l&quot;,3:&quot;r&quot;},
                     arm_offset=50)
-````
-
-&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png&quot;&gt;
-
 </code></pre>
-<p>mysumstats.plot_mqq(skip=2,anno=True,arm_scale=1.5)</p>
-<pre><code>
-&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/197345571-6a6ccb4e-6837-475d-ae3b-3c59fb447c56.png&quot;&gt;
-
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png"></p>
+<pre><code>mysumstats.plot_mqq(skip=2,anno=True,arm_scale=1.5)
 </code></pre>
-<p>mysumstats.plot_mqq(skip=2,anno=True,arm_scale_d={1:1.5,2:1.2,3:1.1})</p>
-<pre><code>
-&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/197345530-08f4c9f6-d804-4e7e-865b-0b219179f6a9.png&quot;&gt;
-
-----------------------------------------------------------------
-
-### Highlight specified loci
-
-Highlight specified loci (color all variants in a region by specifying variants and the length of flanking regions). 
-
-- `highlight ` : `list` specify the variants of loci for highlighting.
-- `highlight_color`: `string` specify the color ussed for highlighting.
-- `highlight_windowkb` : `int` specify the span of highlighted region (deault: `highlight_windowkb = 500` kp)
-
-### Pinpoint specified variants
-
-Pinpoint certain variants in the manhattan plot.
-
-- `pinpoint` : a list of SNPIDs
-- `pinpoint_color` : color for pinpoint
-
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345571-6a6ccb4e-6837-475d-ae3b-3c59fb447c56.png"></p>
+<pre><code>mysumstats.plot_mqq(skip=2,anno=True,arm_scale_d={1:1.5,2:1.2,3:1.1})
 </code></pre>
-<p>mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19",
-                   highlight=["rs12509595","rs7989823"],
-                   pinpoint=["rs671","19:15040733:T:C"])</p>
-<pre><code>
-&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png&quot;&gt;
-
-----------------------------------------------------------------
-
-### Maf-stratified QQ plot
-- `stratified`: `boolean` if True, plot MAF straitified QQ plot. Require EAF in sumstats.
-- `maf_bins`: `list` maf bins for straitification. (default: `maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]`)
-- `maf_bin_colors`: `list` colors used for each bin. (default: `maf_bin_colors = [&quot;#f0ad4e&quot;,&quot;#5cb85c&quot;, &quot;#5bc0de&quot;,&quot;#000042&quot;]`)
-
-&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/196593456-93539e3e-e8c0-476f-ae4e-e5843f970ba6.png&quot;&gt;
-
-----------------------------------------------------------------
-
-### Colors and Fonts
-
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345530-08f4c9f6-d804-4e7e-865b-0b219179f6a9.png"></p>
+<hr />
+<h3 id="highlight-specified-loci">Highlight specified loci</h3>
+<p>Highlight specified loci (color all variants in a region by specifying variants and the length of flanking regions). </p>
+<ul>
+<li><code>highlight</code> : <code>list</code> specify the variants of loci for highlighting.</li>
+<li><code>highlight_color</code>: <code>string</code> specify the color ussed for highlighting.</li>
+<li><code>highlight_windowkb</code> : <code>int</code> specify the span of highlighted region (deault: <code>highlight_windowkb = 500</code> kp)</li>
+</ul>
+<h3 id="pinpoint-specified-variants">Pinpoint specified variants</h3>
+<p>Pinpoint certain variants in the manhattan plot.</p>
+<ul>
+<li><code>pinpoint</code> : a list of SNPIDs</li>
+<li><code>pinpoint_color</code> : color for pinpoint</li>
+</ul>
+<pre><code>mysumstats.plot_mqq(skip=3,anno=&quot;GENENAME&quot;,build=&quot;19&quot;,
+                   highlight=[&quot;rs12509595&quot;,&quot;rs7989823&quot;],
+                   pinpoint=[&quot;rs671&quot;,&quot;19:15040733:T:C&quot;])
 </code></pre>
-<p>mysumstats.plot_mqq(
-          colors=["#597FBD","#74BAD3"],
-          cut_line_color="#ebebeb",
-          sig_line_color="grey",
-          highlight_color="#CB132D",
-          pinpoint_color ="red",
-          maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
+<hr />
+<h3 id="maf-stratified-qq-plot">Maf-stratified QQ plot</h3>
+<ul>
+<li><code>stratified</code>: <code>boolean</code> if True, plot MAF straitified QQ plot. Require EAF in sumstats.</li>
+<li><code>maf_bins</code>: <code>list</code> maf bins for straitification. (default: <code>maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]</code>)</li>
+<li><code>maf_bin_colors</code>: <code>list</code> colors used for each bin. (default: <code>maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]</code>)</li>
+</ul>
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593456-93539e3e-e8c0-476f-ae4e-e5843f970ba6.png"></p>
+<hr />
+<h3 id="colors-and-fonts">Colors and Fonts</h3>
+<pre><code>mysumstats.plot_mqq(
+          colors=[&quot;#597FBD&quot;,&quot;#74BAD3&quot;],
+          cut_line_color=&quot;#ebebeb&quot;,
+          sig_line_color=&quot;grey&quot;,
+          highlight_color=&quot;#CB132D&quot;,
+          pinpoint_color =&quot;red&quot;,
+          maf_bin_colors = [&quot;#f0ad4e&quot;,&quot;#5cb85c&quot;, &quot;#5bc0de&quot;,&quot;#000042&quot;],
           fontsize = 10,
           marker_size=(5,25)
-)</p>
-<pre><code>
-### Titles
+)
 </code></pre>
-<p>mysumstats.plot_mqq(
+<h3 id="titles">Titles</h3>
+<pre><code>mysumstats.plot_mqq(
           title =None,
           mtitle=None,
           qtitle=None,
           title_pad=1.08
-        )</p>
-<pre><code>
-&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png&quot;&gt;
-
-----------------------------------------------------------------
-
-### Save plots
+        )
 
 </code></pre>
-<p>mysumstats.plot_mqq(save="mymqqplots.png",saveargs={"dpi":400,"facecolor":"white"})
-```</p>
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png"></p>
+<hr />
+<h3 id="save-plots">Save plots</h3>
+<pre><code>mysumstats.plot_mqq(save=&quot;mymqqplots.png&quot;,saveargs={&quot;dpi&quot;:400,&quot;facecolor&quot;:&quot;white&quot;})
+</code></pre>
 <ul>
 <li><code>save</code>:<code>string</code>,path for saved plot</li>
 <li><code>saveargs</code>: other parameters for matplotlib savefig function.</li>
