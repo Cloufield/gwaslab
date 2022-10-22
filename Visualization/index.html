@@ -290,7 +290,7 @@
                 
             <li class="second-level"><a href="#quick-plot">Quick plot</a></li>
                 
-            <li class="second-level"><a href="#customized-plot">Customized plot</a></li>
+            <li class="second-level"><a href="#customized-plot-example">Customized plot example</a></li>
                 
             <li class="second-level"><a href="#options">Options</a></li>
                 
@@ -357,7 +357,7 @@ mydata.plot_mqq(
 <pre><code>mysumstatsysumstats.plot_mqq()
 </code></pre>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196595098-23ff14eb-5579-4177-8d20-54816a410f48.png"></p>
-<h2 id="customized-plot">Customized plot</h2>
+<h2 id="customized-plot-example">Customized plot example</h2>
 <pre><code>mysumstats.plot_mqq(
                   mode=&quot;qqm&quot;,
                   cut=14,
@@ -380,8 +380,8 @@ mydata.plot_mqq(
 <li><code>qqm</code>: left QQ , right manhatan</li>
 <li><code>"m"</code>: only manhattan plot</li>
 <li><code>"qq"</code>: only qq plot</li>
+<li><code>mqqratio</code>: width ratio</li>
 </ul>
-<p><code>mqqratio</code>: width ratio</p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593277-0908d49e-40aa-4fe3-b214-d774ab4d0382.png"></p>
 <hr />
 <h3 id="skip-low-and-shrink-high">Skip "low" and shrink "high"</h3>
@@ -464,7 +464,8 @@ Pinpoint certain variants in the manhattan plot.
 <p>mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19",
                    highlight=["rs12509595","rs7989823"],
                    pinpoint=["rs671","19:15040733:T:C"])</p>
-<pre><code>&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png&quot;&gt;
+<pre><code>
+&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png&quot;&gt;
 
 ----------------------------------------------------------------
 
