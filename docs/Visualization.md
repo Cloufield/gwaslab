@@ -162,11 +162,11 @@ mysumstats.plot_mqq(skip=2,anno=True)
 
 ```
 mysumstats.plot_mqq(skip=2,anno=True,          
-                    anno_d={3:"r"},
+                    anno_d={1:"l",3:"r"},
                     arm_offset=50)
 ````
 
-<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197342735-190b6564-cf9e-415d-bb80-cf9562d7d490.png">
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png">
 
 ----------------------------------------------------------------
 
