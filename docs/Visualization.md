@@ -149,9 +149,10 @@ mysumstats.plot_mqq(
 
 ### Adjust arm position
 
-- `anno_d`:`dict`,key is the number of arm startinf form 0, value is the direction you want the arm to shift towards . For example, `anno_d = {4:"r"}` means shift the 4th arm to the right 
-- `arm_offset`: shift distance in points
-
+- `anno_d`:`dict`,key is the number of arm starting form 0, value is the direction you want the arm to shift towards . For example, `anno_d = {4:"r"}` means shift the 4th arm to the right 
+- `arm_offset`: `float` shift distance in points
+- `arm_scale`: `float` factors to adjust the height for all arms
+- `arm_scale_d`: `dict` factors to adjust the height for specific arms. key is the number of arm startinf form 0, value is the factor which will be multiplied to arm height.
 
 
 ```
@@ -167,6 +168,18 @@ mysumstats.plot_mqq(skip=2,anno=True,
 ````
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png">
+
+```
+mysumstats.plot_mqq(skip=2,anno=True,arm_scale=1.5)
+```
+
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345571-6a6ccb4e-6837-475d-ae3b-3c59fb447c56.png">
+
+```
+mysumstats.plot_mqq(skip=2,anno=True,arm_scale_d={1:1.5,2:1.2,3:1.1})
+```
+
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345530-08f4c9f6-d804-4e7e-865b-0b219179f6a9.png">
 
 ----------------------------------------------------------------
 
