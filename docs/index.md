@@ -47,9 +47,9 @@ mysumstats.plot_mqq()
 
 - CHR and POS notation standardization
 - Variant POS and allele normalization
-- Genome build : Liftover
+- Genome build : Infer and Liftover 
 - Reference allele alignment using a reference genome sequence
-- rsID assignment based on CHR, POS, REF and ALT
+- rsID assignment based on CHR, POS, and REF/ALT
 - CHR POS assignment based on rsID using a reference VCF
 - Palindromic SNPs and indels strand inference using a reference VCF
 - Check allele frequency discrepancy using a reference VCF
@@ -67,6 +67,7 @@ mysumstats.plot_mqq()
 ### Visualization
 
 - Mqq plot : Manhattan plot and QQ plot side by side (with a bunch of customizable features including auto-annotate nearest gene names)
+- Regional plot : GWAS regional plot
 - Heatmap : ldsc-rg genetic correlation matrix
 - Scatter Plot : variant effect size comparison with sumstats
 - Scatter Plot : allele frequency comparison 
