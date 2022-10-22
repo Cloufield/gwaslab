@@ -1,5 +1,8 @@
-## Manhattan plot and QQ plot : plot_mqq()
+# Manhattan plot and QQ plot : plot_mqq()
 
+<img width="800" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png">
+
+## Usage
 ```
 import gwaslab as gl
 
@@ -103,12 +106,16 @@ mysumstats.plot_mqq(
 - `cut` : loci with extremly large -log10(P) value are very likely to dwarf other significant loci , so we want to scale down the extrame loci from a certain threshold. 
 - `cutfactor`:  shrinkage factor, default is 10 
 - `cut_line_color`: the color of the line above which y axis is rescaled 
+- `sig_level=5e-8` : genome-wide significance threshold
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593118-b7358559-71ef-49ae-b8b0-15b34031c142.png">
+
+
 
 ----------------------------------------------------------------
 
 ### Annotation
+
 * `anno`: `boolean` or `string` or `"GENENAME"`   
     * `boolean`: `anno = True`,  the variants to annotate will be selected automatically using a sliding window with `windowsize=500`kb. chr:pos
     * `string`: the column name used for annotation
@@ -121,6 +128,7 @@ mysumstats.plot_mqq(
 
 
 #### example:
+
 `mysumstats.plot_mqq(skip=3,anno=True)`
 
 
@@ -144,14 +152,16 @@ mysumstats.plot_mqq(
 
 ### Highlight specified loci
 
-Highlight specified loci. 
-- `highlight ` : specify the lead variants of loci for highlighting.
-- `highlight_color`: specify the color ussed for highlighting.
-- `highlight_windowkb` : specify the span of highlighted region (deault: `highlight_windowkb = 500` kp)
+Highlight specified loci (color all variants in a region by specifying variants and the length of flanking regions). 
+
+- `highlight ` : `list` specify the variants of loci for highlighting.
+- `highlight_color`: `string` specify the color ussed for highlighting.
+- `highlight_windowkb` : `int` specify the span of highlighted region (deault: `highlight_windowkb = 500` kp)
 
 ### Pinpoint specified variants
 
 Pinpoint certain variants in the manhattan plot.
+
 - `pinpoint` : a list of SNPIDs
 - `pinpoint_color` : color for pinpoint
 
@@ -165,22 +175,49 @@ mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19",
 ----------------------------------------------------------------
 
 ### Maf-stratified QQ plot
-- `stratified`: if True, plot MAF straitified QQ plot. Require EAF in sumstats.
-- `maf_bins`: maf bins for straitification. (default: maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)])
-- `maf_bin_colors`: colors used for each bin. (default: maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"])
+- `stratified`: `boolean` if True, plot MAF straitified QQ plot. Require EAF in sumstats.
+- `maf_bins`: `list` maf bins for straitification. (default: `maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]`)
+- `maf_bin_colors`: `list` colors used for each bin. (default: `maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]`)
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593456-93539e3e-e8c0-476f-ae4e-e5843f970ba6.png">
 
 ----------------------------------------------------------------
 
-### Use rank or POS
+### Colors and Fonts
 
-`use_rank`: if True, use the rank instead of real base pair position.
+```
+mysumstats.plot_mqq(
+          colors=["#597FBD","#74BAD3"],
+          cut_line_color="#ebebeb",
+          sig_line_color="grey",
+          highlight_color="#CB132D",
+          pinpoint_color ="red",
+          maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
+          fontsize = 10,
+          marker_size=(5,25)
+)
+```
 
-use simply rank and basepair position to draw the x axis.
+### Titles
+```
+mysumstats.plot_mqq(
+          title =None,
+          mtitle=None,
+          qtitle=None,
+          title_pad=1.08
+        )
 
-### Colors and fonts
+```
+
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png">
 
 ----------------------------------------------------------------
 
+### Save plots
 
+```
+mysumstats.plot_mqq(save="mymqqplots.png",saveargs={"dpi":400,"facecolor":"white"})
+```
+
+- `save`:`string`,path for saved plot
+- `saveargs`: other parameters for matplotlib savefig function.
