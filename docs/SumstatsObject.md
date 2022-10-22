@@ -64,7 +64,7 @@ All other columns are optional.
 * `OR_95U`:odds ratio upper 95% ci column name
 * `direction`: direction column name in METAL format (e.g. "++--+?+")
 * `other`: a list  of other column names you want to keep with the core columns, probably some annotations.
-* `status`: gwaslab 5-digit vairants status code. For details, please check status code page.
+* `status`: gwaslab 7-digit vairants status code. For details, please check status code page.
 * `verbose`: if true: output log 
 * `build`:  `str `genome build ("19","38")
 * `**arg `: additional parameters for pd.read_table() function. 
