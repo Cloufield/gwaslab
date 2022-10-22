@@ -303,12 +303,14 @@
            verbose=True)
 </code></pre>
 <p>GWASLab will extract the lead variants from identified significant loci based on a sliding window (default window size: 500kb). (Details are described in )</p>
-<p>Options:
-- <code>windowsizekb</code> :specify the sliding window size in kb (default: 500)
-- <code>sig_level</code> :specify the P value threshold (default: 5e-8).
-- <code>xymt</code>: list of notation for chrX, chrY and chrMT.
-- <code>anno</code>: <code>boolean</code> if annotate the lead variants with nearest gene names.
-- <code>build</code> : <code>string</code> genome build version "19" or "38".</p>
+<p>Options:</p>
+<ul>
+<li><code>windowsizekb</code> :specify the sliding window size in kb (default: 500)</li>
+<li><code>sig_level</code> :specify the P value threshold (default: 5e-8).</li>
+<li><code>xymt</code>: list of notation for chrX, chrY and chrMT.</li>
+<li><code>anno</code>: <code>boolean</code> if annotate the lead variants with nearest gene names.</li>
+<li><code>build</code> : <code>string</code> genome build version "19" or "38".</li>
+</ul>
 <p>Return a dataframe of the lead variants</p>
 <h2 id="example">Example</h2>
 <p>Sample sumstats: IS from pheweb.jp <a href="https://pheweb.jp/pheno/IS">https://pheweb.jp/pheno/IS</a></p>
