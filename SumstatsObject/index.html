@@ -288,7 +288,7 @@
         <li class="first-level active"><a href="#sumstats-object-in-gwaslab">Sumstats Object in gwaslab</a></li>
             <li class="second-level"><a href="#loading-sumstats">Loading sumstats</a></li>
                 
-            <li class="second-level"><a href="#check-dataframe">Check DataFrame</a></li>
+            <li class="second-level"><a href="#check-and-save-sumstats">Check and save sumstats</a></li>
                 
             <li class="second-level"><a href="#logging">Logging</a></li>
                 
@@ -360,10 +360,10 @@ All other columns are optional.</p>
 <li><code>OR_95U</code>:odds ratio upper 95% ci column name</li>
 <li><code>direction</code>: direction column name in METAL format (e.g. "++--+?+")</li>
 <li><code>other</code>: a list  of other column names you want to keep with the core columns, probably some annotations.</li>
-<li><code>status</code>: gwaslab 5-digit vairants status code. For details, please check status code page.</li>
+<li><code>status</code>: gwaslab 7-digit vairants status code. For details, please check status code page.</li>
 <li><code>verbose</code>: if true: output log </li>
 <li><code>build</code>:  <code>str</code>genome build ("19","38")</li>
-<li><code>**arg</code>: additional parameters for pl.read_table function. </li>
+<li><code>**arg</code>: additional parameters for pd.read_table() function. </li>
 </ul>
 <h2 id="loading-sumstats">Loading sumstats</h2>
 <p>you can load the path by specifying the columns like:</p>
@@ -383,15 +383,34 @@ All other columns are optional.</p>
 <pre><code>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, format=&quot;saige&quot;)
 </code></pre>
 <p>gwaslab uses manully curated format conversion dictionary in <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></p>
-<h2 id="check-dataframe">Check DataFrame</h2>
+<p>Supported formats:</p>
+<ul>
+<li><code>ssf</code>: GWAS-SSF</li>
+<li><code>gwascatalog</code> : GWAS Catalog format</li>
+<li><code>pgscatalog</code> : PGS Catalog format</li>
+<li><code>plink</code>: PLINK output format</li>
+<li><code>plink2</code>: PLINK2 output format</li>
+<li><code>saige</code>: SAIGE output format</li>
+<li><code>regenie</code>: output format</li>
+<li><code>fastgwa</code>: output format</li>
+<li><code>metal</code>: output format</li>
+<li><code>mrmega</code>: output format</li>
+<li><code>fuma</code>: input format</li>
+<li><code>ldsc</code>: input format</li>
+<li><code>locuszoom</code>: input format</li>
+<li><code>vcf</code>: gwas-vcf format</li>
+</ul>
+<h2 id="check-and-save-sumstats">Check and save sumstats</h2>
 <p>After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in .data :</p>
 <pre><code class="language-python">mysumstats.data
 </code></pre>
 <p>You can simply save the processed data using pandas saving functions, for example</p>
 <pre><code>mysumstats.data.to_csv(&quot;./mysumstats.csv&quot;)
 </code></pre>
-<p>or convert the sumstats to other sumstats:
-please check <a href="https://cloufield.github.io/gwaslab/Format/">https://cloufield.github.io/gwaslab/Format/</a></p>
+<p>or convert the sumstats to other sumstats using gwaslab <code>to_format()</code> function:</p>
+<pre><code>mysumstats.to_format(&quot;./mysumstats&quot;, fmt=&quot;ldsc&quot;,hapmap3=True, exclude_hla=True, build=&quot;19&quot;)
+</code></pre>
+<p>Please check <a href="https://cloufield.github.io/gwaslab/Format/">https://cloufield.github.io/gwaslab/Format/</a></p>
 <h2 id="logging">Logging</h2>
 <p>All manipulation conducted to the sumstats will be logged for reproducibility and traceability. The log is stored in a gl.Log object . You can check it by<code>.log.show()</code>and save it using <code>.log.save()</code></p>
 <pre><code>mysumstats.log.show()
@@ -407,6 +426,8 @@ mysumstats.log.save()
 <pre><code class="language-python">mysumstats.basic_check()
 
 mysumstats.plot_mqq()
+
+...
 </code></pre></div>
         
         

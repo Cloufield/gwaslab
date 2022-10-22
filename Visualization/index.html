@@ -286,31 +286,25 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="first-level active"><a href="#manhattan-plot-and-qq-plot-plot_mqq">Manhattan plot and QQ plot : plot_mqq()</a></li>
-        <li class="first-level "><a href="#quick-plot">Quick plot</a></li>
-        <li class="first-level "><a href="#customized-plot">Customized plot</a></li>
-        <li class="first-level "><a href="#options">Options</a></li>
-            <li class="second-level"><a href="#manhattan-and-qq-plot-layout">Manhattan and QQ plot layout</a></li>
+            <li class="second-level"><a href="#usage">Usage</a></li>
                 
-            <li class="second-level"><a href="#skip-low-and-shrink-high">Skip "low" and shrink "high"</a></li>
+            <li class="second-level"><a href="#quick-plot">Quick plot</a></li>
                 
-            <li class="second-level"><a href="#annotation">Annotation</a></li>
+            <li class="second-level"><a href="#customized-plot">Customized plot</a></li>
                 
-                <li class="third-level"><a href="#example">example:</a></li>
-            <li class="second-level"><a href="#highlight-specified-loci">Highlight specified loci</a></li>
+            <li class="second-level"><a href="#options">Options</a></li>
                 
-            <li class="second-level"><a href="#pinpoint-specified-variants">Pinpoint specified variants</a></li>
-                
-            <li class="second-level"><a href="#maf-stratified-qq-plot">Maf-stratified QQ plot</a></li>
-                
-            <li class="second-level"><a href="#use-rank-or-pos">Use rank or POS</a></li>
-                
-            <li class="second-level"><a href="#colors-and-fonts">Colors and fonts</a></li>
-                
+                <li class="third-level"><a href="#manhattan-and-qq-plot-layout">Manhattan and QQ plot layout</a></li>
+                <li class="third-level"><a href="#skip-low-and-shrink-high">Skip "low" and shrink "high"</a></li>
+                <li class="third-level"><a href="#annotation">Annotation</a></li>
+                <li class="third-level"><a href="#adjust-arm-position">Adjust arm position</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h2 id="manhattan-plot-and-qq-plot-plot_mqq">Manhattan plot and QQ plot : plot_mqq()</h2>
+<h1 id="manhattan-plot-and-qq-plot-plot_mqq">Manhattan plot and QQ plot : plot_mqq()</h1>
+<p><img width="800" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
+<h2 id="usage">Usage</h2>
 <pre><code>import gwaslab as gl
 
 mydata = gl.Sumstats(....)
@@ -396,6 +390,7 @@ mydata.plot_mqq(
 <li><code>cut</code> : loci with extremly large -log10(P) value are very likely to dwarf other significant loci , so we want to scale down the extrame loci from a certain threshold. </li>
 <li><code>cutfactor</code>:  shrinkage factor, default is 10 </li>
 <li><code>cut_line_color</code>: the color of the line above which y axis is rescaled </li>
+<li><code>sig_level=5e-8</code> : genome-wide significance threshold</li>
 </ul>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593118-b7358559-71ef-49ae-b8b0-15b34031c142.png"></p>
 <hr />
@@ -421,35 +416,103 @@ mydata.plot_mqq(
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591966-c9618c45-456b-4eb8-991b-66420f847a97.png"></p>
 <p><code>mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"], anno_alias={"rs12509595":"anything you want here"})</code></p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196592136-f2cbc488-e02f-409b-b0ac-2ab16f7b1fd4.png"></p>
-<hr />
-<h3 id="highlight-specified-loci">Highlight specified loci</h3>
-<p>Highlight specified loci. 
-- <code>highlight</code> : specify the lead variants of loci for highlighting.
-- <code>highlight_color</code>: specify the color ussed for highlighting.
-- <code>highlight_windowkb</code> : specify the span of highlighted region (deault: <code>highlight_windowkb = 500</code> kp)</p>
-<h3 id="pinpoint-specified-variants">Pinpoint specified variants</h3>
-<p>Pinpoint certain variants in the manhattan plot.
-- <code>pinpoint</code> : a list of SNPIDs
-- <code>pinpoint_color</code> : color for pinpoint</p>
-<pre><code>mysumstats.plot_mqq(skip=3,anno=&quot;GENENAME&quot;,build=&quot;19&quot;,
-                   highlight=[&quot;rs12509595&quot;,&quot;rs7989823&quot;],
-                   pinpoint=[&quot;rs671&quot;,&quot;19:15040733:T:C&quot;])
-</code></pre>
-<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
-<hr />
-<h3 id="maf-stratified-qq-plot">Maf-stratified QQ plot</h3>
+<h3 id="adjust-arm-position">Adjust arm position</h3>
 <ul>
-<li><code>stratified</code>: if True, plot MAF straitified QQ plot. Require EAF in sumstats.</li>
-<li><code>maf_bins</code>: maf bins for straitification. (default: maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)])</li>
-<li><code>maf_bin_colors</code>: colors used for each bin. (default: maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"])</li>
+<li><code>anno_d</code>:<code>dict</code>,key is the number of arm starting form 0, value is the direction you want the arm to shift towards . For example, <code>anno_d = {4:"r"}</code> means shift the 4th arm to the right </li>
+<li><code>arm_offset</code>: <code>float</code> shift distance in points</li>
+<li><code>arm_scale</code>: <code>float</code> factors to adjust the height for all arms</li>
+<li><code>arm_scale_d</code>: <code>dict</code> factors to adjust the height for specific arms. key is the number of arm startinf form 0, value is the factor which will be multiplied to arm height.</li>
 </ul>
-<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593456-93539e3e-e8c0-476f-ae4e-e5843f970ba6.png"></p>
-<hr />
-<h3 id="use-rank-or-pos">Use rank or POS</h3>
-<p><code>use_rank</code>: if True, use the rank instead of real base pair position.</p>
-<p>use simply rank and basepair position to draw the x axis.</p>
-<h3 id="colors-and-fonts">Colors and fonts</h3>
-<hr /></div>
+<pre><code>mysumstats.plot_mqq(skip=2,anno=True)
+</code></pre>
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197342763-ffd4b3c1-d57a-4351-8f42-fb91ae282d32.png"></p>
+<pre><code>mysumstats.plot_mqq(skip=2,anno=True,          
+                    anno_d={1:&quot;l&quot;,3:&quot;r&quot;},
+                    arm_offset=50)
+````
+
+&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png&quot;&gt;
+
+</code></pre>
+<p>mysumstats.plot_mqq(skip=2,anno=True,arm_scale=1.5)</p>
+<pre><code>
+&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/197345571-6a6ccb4e-6837-475d-ae3b-3c59fb447c56.png&quot;&gt;
+
+</code></pre>
+<p>mysumstats.plot_mqq(skip=2,anno=True,arm_scale_d={1:1.5,2:1.2,3:1.1})</p>
+<pre><code>
+&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/197345530-08f4c9f6-d804-4e7e-865b-0b219179f6a9.png&quot;&gt;
+
+----------------------------------------------------------------
+
+### Highlight specified loci
+
+Highlight specified loci (color all variants in a region by specifying variants and the length of flanking regions). 
+
+- `highlight ` : `list` specify the variants of loci for highlighting.
+- `highlight_color`: `string` specify the color ussed for highlighting.
+- `highlight_windowkb` : `int` specify the span of highlighted region (deault: `highlight_windowkb = 500` kp)
+
+### Pinpoint specified variants
+
+Pinpoint certain variants in the manhattan plot.
+
+- `pinpoint` : a list of SNPIDs
+- `pinpoint_color` : color for pinpoint
+
+</code></pre>
+<p>mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19",
+                   highlight=["rs12509595","rs7989823"],
+                   pinpoint=["rs671","19:15040733:T:C"])</p>
+<pre><code>&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png&quot;&gt;
+
+----------------------------------------------------------------
+
+### Maf-stratified QQ plot
+- `stratified`: `boolean` if True, plot MAF straitified QQ plot. Require EAF in sumstats.
+- `maf_bins`: `list` maf bins for straitification. (default: `maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]`)
+- `maf_bin_colors`: `list` colors used for each bin. (default: `maf_bin_colors = [&quot;#f0ad4e&quot;,&quot;#5cb85c&quot;, &quot;#5bc0de&quot;,&quot;#000042&quot;]`)
+
+&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/196593456-93539e3e-e8c0-476f-ae4e-e5843f970ba6.png&quot;&gt;
+
+----------------------------------------------------------------
+
+### Colors and Fonts
+
+</code></pre>
+<p>mysumstats.plot_mqq(
+          colors=["#597FBD","#74BAD3"],
+          cut_line_color="#ebebeb",
+          sig_line_color="grey",
+          highlight_color="#CB132D",
+          pinpoint_color ="red",
+          maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
+          fontsize = 10,
+          marker_size=(5,25)
+)</p>
+<pre><code>
+### Titles
+</code></pre>
+<p>mysumstats.plot_mqq(
+          title =None,
+          mtitle=None,
+          qtitle=None,
+          title_pad=1.08
+        )</p>
+<pre><code>
+&lt;img width=&quot;600&quot; alt=&quot;image&quot; src=&quot;https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png&quot;&gt;
+
+----------------------------------------------------------------
+
+### Save plots
+
+</code></pre>
+<p>mysumstats.plot_mqq(save="mymqqplots.png",saveargs={"dpi":400,"facecolor":"white"})
+```</p>
+<ul>
+<li><code>save</code>:<code>string</code>,path for saved plot</li>
+<li><code>saveargs</code>: other parameters for matplotlib savefig function.</li>
+</ul></div>
         
         
     </div>
