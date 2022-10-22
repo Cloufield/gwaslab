@@ -147,6 +147,26 @@ mysumstats.plot_mqq(
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196592136-f2cbc488-e02f-409b-b0ac-2ab16f7b1fd4.png">
 
+### Adjust arm position
+
+- `anno_d`:`dict`,key is the number of arm startinf form 0, value is the direction you want the arm to shift towards . For example, `anno_d = {4:"r"}` means shift the 4th arm to the right 
+- `arm_offset`: shift distance in points
+
+
+
+```
+mysumstats.plot_mqq(skip=2,anno=True)
+```
+
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197342763-ffd4b3c1-d57a-4351-8f42-fb91ae282d32.png">
+
+```
+mysumstats.plot_mqq(skip=2,anno=True,          
+                    anno_d={3:"r"},
+                    arm_offset=50)
+````
+
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197342735-190b6564-cf9e-415d-bb80-cf9562d7d490.png">
 
 ----------------------------------------------------------------
 
