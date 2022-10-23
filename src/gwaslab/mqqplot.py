@@ -51,6 +51,8 @@ def mqqplot(insumstats,
           taf=[4,0,0.95,1,1],
           # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
           mqqratio=3,
+          bwindowsizekb = 100,
+          large_number = 10000000000,
           windowsizekb=500,
           anno=None,
           anno_set=[],
@@ -66,6 +68,7 @@ def mqqplot(insumstats,
           skip=0,
           cutfactor=10,
           cut_line_color="#ebebeb",  
+          sig_line=True,
           sig_level=5e-8,
           sig_line_color="grey",
           suggestive_sig_level=5e-6,
@@ -141,8 +144,16 @@ def mqqplot(insumstats,
         fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
                                        gridspec_kw={'height_ratios': [mqqratio, 1]},**figargs)
         plt.subplots_adjust(hspace=region_hspace)
+    elif mode =="b" :
+        figargs["figsize"] = (15,5)
+        fig, ax1 = plt.subplots(1, 1,**figargs)
+        sig_level=1,
+        sig_line=False,
+        windowsizekb = 100000000   
+        mode="mb"
+        scatter_kwargs={"marker":"s"}
     else:
-        raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r")
+        raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
         
         
 # Read sumstats #################################################################################################
@@ -151,10 +162,12 @@ def mqqplot(insumstats,
     #  P ###############################################################################
     if p in insumstats.columns:
         # p value is necessary for all modes.
-            usecols.append(p)
-    elif scaled is True:
-            usecols.append(mlog10p)
-    else:
+        usecols.append(p)
+    elif mlog10p in insumstats.columns and scaled is True:
+        usecols.append(mlog10p)
+    elif "b" in mode:
+        pass
+    else :
         raise ValueError("Please make sure "+p+" column is in input sumstats.")
     
     # CHR and POS ########################################################################
@@ -210,10 +223,11 @@ def mqqplot(insumstats,
         sumstats["Annotation"]=sumstats.loc[:,anno].astype("string")   
       
     ## P value
-    if scaled is True:
-        sumstats["raw_P"] = pd.to_numeric(sumstats[mlog10p], errors='coerce')
-    else:
-        sumstats["raw_P"] = sumstats[p].astype("float64")
+    if "m" in mode and "b" not in mode:   
+        if scaled is True:
+            sumstats["raw_P"] = pd.to_numeric(sumstats[mlog10p], errors='coerce')
+        else:
+            sumstats["raw_P"] = sumstats[p].astype("float64")
     
     ## CHR & POS
     if "m" in mode: 
@@ -272,16 +286,40 @@ def mqqplot(insumstats,
             low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
             sumstats.loc[right_chr&up_pos&low_pos,"HUE"]="0"
 
+# Density #####################################################################################################              
+    if "b" in mode:
+        if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
+        stack=[]
+        sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
+        sumstats = sumstats.sort_values(by="TCHR+POS")
+        for index,row in sumstats.iterrows():
+            stack.append([row["SNPID"],row["TCHR+POS"],0])  
+            for i in range(2,len(stack)+1):
+                if stack[-i][1]>= (row["TCHR+POS"]- 1000*bwindowsizekb):
+                    stack[-i][2]+=1
+                    stack[-1][2]+=1
+                else:
+                    break
+        df = pd.DataFrame(stack,columns=["SNPID","TCHR+POS","DENSITY"])
+        sumstats["DENSITY"] = df["DENSITY"].values
+        bmean=sumstats["DENSITY"].mean()
+        bmedian=sumstats["DENSITY"].median()
+     
+    #############################
 # P value conversion #####################################################################################################  
-    pre_number=len(sumstats)
-    sumstats = sumstats.dropna(subset=["raw_P"])
-    after_number=len(sumstats)
-    if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...")
+    if "b" not in mode:
+        pre_number=len(sumstats)
+        sumstats = sumstats.dropna(subset=["raw_P"])
+        after_number=len(sumstats)
+        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...")
     
-    if scaled:
+    if "b" in mode:
+        sumstats["scaled_P"] = sumstats["DENSITY"].copy()
+        sumstats["raw_P"] = -np.log10(sumstats["DENSITY"].copy()+2)
+    elif scaled is True:
         if verbose:log.write(" -P values are already converted to -log10(P)!")
         sumstats["scaled_P"] = sumstats["raw_P"].copy()
-        sumstats["raw_P"] = np.power(10,-sumstats["scaled_P"])
+        sumstats["raw_P"] = np.power(10,-sumstats["scaled_P"].astype("float64"))
     else:
         if verbose:log.write(" -P values are being converted to -log10(P)...") 
         bad_p_value=len(sumstats.loc[(sumstats["raw_P"]>1)|(sumstats["raw_P"]<=0),:])
@@ -294,16 +332,21 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
           
         sumstats = sumstats.loc[~(is_inf | is_na),:]
-    
+
     # raw p for calculate lambda
     p_toplot_raw = sumstats["scaled_P"].copy()
     
     # filter out variants with -log10p < skip
-    sumstats = sumstats.loc[sumstats["scaled_P"]>skip,:]
+    sumstats = sumstats.loc[sumstats["scaled_P"]>=skip,:]
+    
     
     # shrink variants above cut line #########################################################################################
     maxy = sumstats["scaled_P"].max()
-    if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
+    if "b" not in mode:
+        if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
+    elif "b" in mode:
+        if verbose: log.write(" -Maximum DENSITY values is "+str(maxy) +" .")
+            
     if cut:
         if cut is True:
             if verbose: log.write(" -Cut Auto mode is activated...")
@@ -314,7 +357,10 @@ def mqqplot(insumstats,
                 cut = 20
                 cutfactor = ( maxy - cut )/5
         if cut:
-            if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+            if "b" not in mode:
+                if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+            else:
+                if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
 
             maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
 
@@ -331,7 +377,7 @@ def mqqplot(insumstats,
                                log=log ,pos=pos,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict)
 
 ## Create index for plotting ###################################################
-
+        
     
     #sort & add id
     if ("m" in mode) or ("r" in mode): 
@@ -377,9 +423,10 @@ def mqqplot(insumstats,
         ## Assign marker size ##############################################
         
         sumstats["s"]=1
-        sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
-        sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
-        sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=4
+        if "b" not in mode:
+            sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
+            sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
+            sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=4
         sumstats["chr_hue"]=sumstats[chrom].astype("string")
 
         if vcf_path is not None:
@@ -408,7 +455,7 @@ def mqqplot(insumstats,
                                size="s",
                                sizes=marker_size,
                                linewidth=linewidth,
-                               zorder=2,ax=ax1,edgecolor="black")   
+                               zorder=2,ax=ax1,edgecolor="black", **scatter_kwargs)   
             
             if verbose: log.write(" -Highlighting target loci...")
             sns.scatterplot(data=sumstats.loc[sumstats["HUE"]=="0"], x='i', y='scaled_P',
@@ -419,7 +466,7 @@ def mqqplot(insumstats,
                    size="s",
                    sizes=(marker_size[0]+1,marker_size[1]+1),
                    linewidth=linewidth,
-                   zorder=3,ax=ax1,edgecolor="black")  
+                   zorder=3,ax=ax1,edgecolor="black",**scatter_kwargs)  
             highlight_i = sumstats.loc[sumstats[snpid].isin(highlight),"i"].values
         
         ## if not highlight    
@@ -432,7 +479,7 @@ def mqqplot(insumstats,
                    size="s",
                    sizes=marker_size,
                    linewidth=linewidth,
-                   zorder=2,ax=ax1,edgecolor="black")   
+                   zorder=2,ax=ax1,edgecolor="black",**scatter_kwargs)   
 
         
         ## if pinpoint variants
@@ -577,8 +624,11 @@ def mqqplot(insumstats,
         
             plot.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
         # genomewide significant line
-        sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
-        
+        if sig_line is True:
+            sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
+        if "b" in mode:
+            meanline = plot.axhline(y=bmean, linewidth = 2,linestyle="-",color=sig_line_color,zorder=1000)
+            medianline = plot.axhline(y=bmedian, linewidth = 2,linestyle="--",color=sig_line_color,zorder=1000)
         # cut line
         if cut == 0: ax1.set_ylim(skip,maxy*1.2)
         if cut:
@@ -600,7 +650,7 @@ def mqqplot(insumstats,
                 if to_annotate.empty is not True:
                     if verbose: log.write(" -Found "+str(len(to_annotate))+" specified variants to annotate...")
             else:
-                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
+                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level)),:],
                                snpid,
                                chrom,
                                pos,
@@ -611,7 +661,7 @@ def mqqplot(insumstats,
                 if to_annotate.empty is not True:
                     if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         else:
-            to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level)],
+            to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level)),:],
                                "i",
                                chrom,
                                pos,
@@ -641,7 +691,10 @@ def mqqplot(insumstats,
         
 # Add Annotation to manhattan plot #######################################################
            ## final
+        
         plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+        if "b" in mode:
+            plot.set_ylabel("Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb",ha="center",va="bottom",fontsize=fontsize,family="sans-serif")
         if region is not None:
             if (gtf_path is not None ) and ("r" in mode):
                 ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
