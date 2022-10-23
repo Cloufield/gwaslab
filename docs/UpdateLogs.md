@@ -1,6 +1,9 @@
 # Update Logs
+## v3.3.4 coming soon
 
-## v3.3.3 coming soon
+## v3.3.3
+- added Miami plot
+- added Brisbane plot
 - updated tutorials 
 - mqq plot annotation: new customization options
 
