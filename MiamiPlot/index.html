@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>Convert Heritability - GWASLab</title>
+    <title>Miami Plot - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -132,7 +132,7 @@
                 
                 
                 
-                    <li class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Visualization <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
@@ -155,8 +155,8 @@
 
                         
                             
-<li >
-    <a href="../MiamiPlot/">Miami Plot</a>
+<li class="active">
+    <a href="./">Miami Plot</a>
 </li>
 
                         
@@ -195,7 +195,7 @@
                 
                 
                 
-                    <li class="dropdown active">
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Utilities <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
@@ -224,8 +224,8 @@
 
                         
                             
-<li class="active">
-    <a href="./">Convert Heritability</a>
+<li >
+    <a href="../HeritabilityConversion/">Convert Heritability</a>
 </li>
 
                         
@@ -275,12 +275,12 @@
                         </a>
                     </li>
                     <li >
-                        <a rel="prev" href="../LoadLDSC/">
+                        <a rel="prev" href="../BrisbanePlot/">
                             <i class="fas fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="next" href="../InferBuild/">
+                        <a rel="next" href="../EffectSize/">
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
@@ -297,17 +297,27 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#heritabilty-conversion-observed-scale-liability-scale">Heritabilty conversion (Observed-scale -&gt; Liability-scale)</a></li>
+        <li class="first-level active"><a href="#miami-plot-not-finished">Miami plot (not finished)</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="heritabilty-conversion-observed-scale-liability-scale">Heritabilty conversion (Observed-scale -&gt; Liability-scale)</h1>
-<pre><code>gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)
+<h1 id="miami-plot-not-finished">Miami plot (not finished)</h1>
+<pre><code>gl.plot_miami( path1=&quot;./t2d_bbj.txt.gz&quot; ,
+              path2=&quot;./hum0197.v3.BBJ.IS.v1/GWASsummary_IS_Japanese_SakaueKanai2020.auto.txt.gz&quot; ,
+              cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+              cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;p.value&quot;],
+              sep=[&quot;\t&quot;,&quot;\s+&quot;],
+              skip=1,cut=True)
 </code></pre>
-<p><code>h2_obs</code> : float. Heritability on the observed scale in an ascertained sample. <code>P</code> : float in (0,1). Prevalence of the phenotype in the sample. <code>K</code> : float in (0,1) . Prevalence of the phenotype in the population. <code>se_obs</code> : float. se of h2_obs.</p>
-<p>Adopted from LDSC.</p>
-<p>Reference: Estimating Missing Heritability for Disease from Genome-wide Association Studies https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059431/</p></div>
+<ul>
+<li><code>path1</code> : <code>string</code> path to sumstats1</li>
+<li><code>path2</code> : <code>string</code> path to sumstats2</li>
+<li><code>cols1</code> : <code>list</code> CHR,POS,P names for sumstats1</li>
+<li><code>cols2</code> : <code>list</code> CHR,POS,P names for sumstats2</li>
+<li><code>sep</code>   : <code>list</code> separator for each sumstats</li>
+</ul>
+<p><img width=700 src="https://user-images.githubusercontent.com/40289485/197393700-901c5cec-92a4-4aa7-b299-a760b76c3108.png"></p></div>
         
         
     </div>
