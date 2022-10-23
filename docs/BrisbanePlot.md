@@ -19,4 +19,4 @@ mysumstats.plot_mqq(mode="b",anno="GENENAME",
 
 <img width=700 src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png">
 
-Citation: Mackey, A. P. (1993). Biomass of the mangrove Avicennia marina (Forsk.) Vierh. near Brisbane, south-eastern Queensland. Marine and Freshwater Research, 44(5), 721-725.
+Citation:Yengo, L., Vedantam, S., Marouli, E., Sidorenko, J., Bartell, E., Sakaue, S., ... & Lee, J. Y. (2022). A saturated map of common genetic variants associated with human height. Nature, 1-16.
