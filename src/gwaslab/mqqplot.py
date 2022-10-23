@@ -47,6 +47,7 @@ def mqqplot(insumstats,
           region_recombination = True,
           region_protein_coding=True,
           region_flank_factor = 0.05,
+          region_anno_bbox_args={},
           taf=[4,0,0.95,1,1],
           # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
           mqqratio=3,
@@ -55,6 +56,8 @@ def mqqplot(insumstats,
           anno_set=[],
           anno_alias={},
           anno_d={},
+          anno_args={},
+          anno_fixed_arm_length=None,
           anno_source = "ensembl",
           arm_offset=50,
           arm_scale=1,
@@ -87,6 +90,7 @@ def mqqplot(insumstats,
           repel_force=0.03,
           build="19",
           title_pad=1.08, 
+          dpi=100,
           save=None,
           saveargs={"dpi":400,"facecolor":"white"},
           log=Log()
@@ -107,7 +111,8 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Variants to pinpoint : "+",".join(highlight))  
     if region is not None:
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
-     
+    if dpi!=100:
+        figargs["dpi"] = dpi
     
 
 # Plotting mode selection : layout ####################################################################
@@ -299,12 +304,21 @@ def mqqplot(insumstats,
     maxy = sumstats["scaled_P"].max()
     if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
     if cut:
-        if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+        if cut is True:
+            if verbose: log.write(" -Cut Auto mode is activated...")
+            if maxy<20:
+                if verbose: log.write(" - maxy <20 , no need to cut.")
+                cut=0
+            else:
+                cut = 20
+                cutfactor = ( maxy - cut )/5
+        if cut:
+            if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
 
-        maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
-        
-        sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
-        maxy = (maxticker-cut)/cutfactor + cut
+            maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
+
+            sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
+            maxy = (maxticker-cut)/cutfactor + cut
     if verbose: log.write("Finished data conversion and sanity check.")
 
         
@@ -679,14 +693,22 @@ def mqqplot(insumstats,
                 else:
                     last_pos+=repel_force*y_span
                 
+                if arm_scale_d is not None:
+                    if anno_count not in arm_scale_d.keys():
+                        arm_scale =1
+                    else:
+                        arm_scale = arm_scale_d[anno_count]
+                
                 # vertical arm length in pixels
                 armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
-                #  
-                armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
+                #
+                armB_length_in_point = armB_length_in_point*arm_scale
+                if arm_scale>=1:
+                    armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
                 
-                armB_length_in_point = armB_length_in_point
-                
-                # 
+                if anno_fixed_arm_length is not None:
+                    anno_fixed_arm_length_factor = plot.transData.transform((skip,anno_fixed_arm_length))[1]-plot.transData.transform((skip,0))[1] 
+                    armB_length_in_point = anno_fixed_arm_length_factor
                 if anno==True:
                     if row[snpid] in anno_alias.keys():
                         annotation_text = anno_alias[row[snpid]]
@@ -701,48 +723,60 @@ def mqqplot(insumstats,
                     if row["i"] in highlight_i:
                         fontweight = "bold"
                 #
-                if arm_scale_d is not None:
-                    if anno_count not in arm_scale_d.keys():
-                        arm_scale =1
-                    else:
-                        arm_scale = arm_scale_d[anno_count]
+
                 
                 xy=(row["i"],row["scaled_P"]+0.2)
                 xytext=(last_pos,1.15*maxy*arm_scale)
-                
+                if anno_fixed_arm_length is not None:
+                    armB_length_in_point = anno_fixed_arm_length
+                    xytext=(row["i"],row["scaled_P"]+0.2+anno_fixed_arm_length)
                 if anno_count not in anno_d.keys():
                     arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
                 else:
                     xy=(row["i"],row["scaled_P"])
-                    if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
-                        armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
-                        armoffsetb = arm_offset 
-                        armoffseta = armoffsetall - armoffsetb   
-                        arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                             connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
-                    elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
-                        arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                             connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
-                
+                    if anno_d[anno_count] in ["right","left","l","r"]:
+                        if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
+                            armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                            armoffsetb = arm_offset 
+                            armoffseta = armoffsetall - armoffsetb   
+                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                                 connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
+                        elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
+                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                                 connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
+                    else:
+                        if anno_d[anno_count][0]=="right" or anno_d[anno_count][0]=="r": 
+                            armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                            armoffsetb = anno_d[anno_count][1] 
+                            armoffseta = armoffsetall - armoffsetb   
+                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                                 connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
+                        elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
+                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                                 connectionstyle="arc,angleA=-135,armA="+str( anno_d[anno_count][1])+",angleB=135,armB="+str( anno_d[anno_count][1])+",rad=0")
                 
                 
                 if "r" in mode:
                     arrowargs["color"] = "black" 
                     bbox_para=dict(boxstyle="round", fc="white",zorder=3)
+                    for key,value in region_anno_bbox_args.items():
+                        bbox_para[key]=value
                 else:
                     bbox_para=None
                 
+                anno_default = {"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":fontsize,"fontweight":fontweight}
+                for key,value in anno_args.items():
+                    anno_default[key]=value
+                   
                 ax1.annotate(annotation_text,
-                                 style='italic',
-                                 xy=xy,
-                                 xytext=xytext,rotation=40,
-                                 ha="left",va="bottom",
-                                 fontsize=fontsize,
-                                 bbox=bbox_para,
-                                 fontweight=fontweight,
-                                 arrowprops=arrowargs,zorder=100
-                                            )
+                         xy=xy,
+                         xytext=xytext,
+                         bbox=bbox_para,
+                         arrowprops=arrowargs,
+                         zorder=100,
+                         **anno_default
+                         )
                  
                 anno_count +=1
 
