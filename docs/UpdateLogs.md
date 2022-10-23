@@ -2,6 +2,7 @@
 
 ## v3.3.3 coming soon
 - updated tutorials 
+- mqq plot annotation: new customization options
 
 ## v3.3.2 - 20221021
 - added forcefixid for fix_id()
