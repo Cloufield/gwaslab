@@ -93,6 +93,7 @@ def mqqplot(insumstats,
           dpi=100,
           save=None,
           saveargs={"dpi":400,"facecolor":"white"},
+          _invert=False,
           log=Log()
           ):
     
@@ -432,6 +433,7 @@ def mqqplot(insumstats,
                    sizes=marker_size,
                    linewidth=linewidth,
                    zorder=2,ax=ax1,edgecolor="black")   
+
         
         ## if pinpoint variants
         if (len(pinpoint)>0):
