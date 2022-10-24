@@ -298,17 +298,20 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="first-level active"><a href="#miami-plot-not-finished">Miami plot (not finished)</a></li>
+        <li class="first-level "><a href="#example">Example</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
 <h1 id="miami-plot-not-finished">Miami plot (not finished)</h1>
-<pre><code>gl.plot_miami( path1=&quot;./t2d_bbj.txt.gz&quot; ,
-              path2=&quot;./hum0197.v3.BBJ.IS.v1/GWASsummary_IS_Japanese_SakaueKanai2020.auto.txt.gz&quot; ,
-              cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-              cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;p.value&quot;],
-              sep=[&quot;\t&quot;,&quot;\s+&quot;],
-              skip=1,cut=True)
+<pre><code>gl.plot_miami( 
+          path1,
+          path2,
+          cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+          cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+          sep=[&quot;\t&quot;,&quot;\t&quot;],
+          anno= None
+          )
 </code></pre>
 <ul>
 <li><code>path1</code> : <code>string</code> path to sumstats1</li>
@@ -317,7 +320,20 @@
 <li><code>cols2</code> : <code>list</code> CHR,POS,P names for sumstats2</li>
 <li><code>sep</code>   : <code>list</code> separator for each sumstats</li>
 </ul>
-<p><img width=700 src="https://user-images.githubusercontent.com/40289485/197393700-901c5cec-92a4-4aa7-b299-a760b76c3108.png"></p></div>
+<h1 id="example">Example</h1>
+<pre><code>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
+                           path2=&quot;bmi_female_bbj.txt.gz&quot;,
+                           cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+                           cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+                           titles=[&quot;male&quot;,&quot;female&quot;],
+                           titles_pad=[0.15,0.0],
+                           readcsv_args={&quot;nrows&quot;:100000},
+                           anno=&quot;GENENAME&quot;,
+                           highlight=[(5,124289158)],
+                           pinpoint=[(2,653874)]
+                           )
+</code></pre>
+<p><img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197463243-89352749-f882-418d-907d-27530fd4e922.png"></p></div>
         
         
     </div>
