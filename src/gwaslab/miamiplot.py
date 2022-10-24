@@ -334,7 +334,7 @@ def plot_miami( path1,
                    zorder=3,ax=ax1,edgecolor="black",**scatter_kwargs)  
             highlight_i = sumstats.loc[sumstats["TCHR+POS"].isin(highlight),"i"].values
             
-    if len(highlight1)>0 :
+    if len(highlight2)>0 :
         if len(to_highlight2)>0:
             if verbose: log.write(" -Highlighting target loci for sumstats2.")
             sns.scatterplot(data=sumstats.loc[sumstats["HUE2"]=="0"], x='i', y='scaled_P_2',
