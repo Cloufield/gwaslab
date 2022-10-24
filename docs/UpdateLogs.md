@@ -1,7 +1,15 @@
 # Update Logs
+## v3.3.4 coming soon
 
-## v3.3.2 (coming soon)
+## v3.3.3
+- added Miami plot
+- added Brisbane plot
+- updated tutorials 
+- mqq plot annotation: new customization options
+
+## v3.3.2 - 20221021
 - added forcefixid for fix_id()
+- fixed bugs for plotting gene tracks
 
 ## v3.3.1 
 - extract novel loci given a list of known lead variants

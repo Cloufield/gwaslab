@@ -64,10 +64,10 @@ All other columns are optional.
 * `OR_95U`:odds ratio upper 95% ci column name
 * `direction`: direction column name in METAL format (e.g. "++--+?+")
 * `other`: a list  of other column names you want to keep with the core columns, probably some annotations.
-* `status`: gwaslab 5-digit vairants status code. For details, please check status code page.
+* `status`: gwaslab 7-digit vairants status code. For details, please check status code page.
 * `verbose`: if true: output log 
 * `build`:  `str `genome build ("19","38")
-* `**arg `: additional parameters for pl.read_table function. 
+* `**arg `: additional parameters for pd.read_table() function. 
 
 ## Loading sumstats
 you can load the path by specifying the columns like:
@@ -86,14 +86,29 @@ mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
 ```
 or just specify the format:
 
-
-
 ```
 mysumstats = gl.Sumstats("t2d_bbj.txt.gz", format="saige")
 ```
 gwaslab uses manully curated format conversion dictionary in [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)
 
-## Check DataFrame
+Supported formats:
+
+* `ssf`: GWAS-SSF
+* `gwascatalog` : GWAS Catalog format
+* `pgscatalog` : PGS Catalog format
+* `plink`: PLINK output format
+* `plink2`: PLINK2 output format
+* `saige`: SAIGE output format
+* `regenie`: output format
+* `fastgwa`: output format
+* `metal`: output format
+* `mrmega`: output format
+* `fuma`: input format
+* `ldsc`: input format
+* `locuszoom`: input format
+* `vcf`: gwas-vcf format
+
+## Check and save sumstats
 After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in .data :
 ```python
 mysumstats.data
@@ -103,8 +118,12 @@ You can simply save the processed data using pandas saving functions, for exampl
 ```
 mysumstats.data.to_csv("./mysumstats.csv")
 ```  
-or convert the sumstats to other sumstats:
-please check [https://cloufield.github.io/gwaslab/Format/](https://cloufield.github.io/gwaslab/Format/)
+or convert the sumstats to other sumstats using gwaslab `to_format()` function:
+
+```
+mysumstats.to_format("./mysumstats", fmt="ldsc",hapmap3=True, exclude_hla=True, build="19")
+```
+Please check [https://cloufield.github.io/gwaslab/Format/](https://cloufield.github.io/gwaslab/Format/)
 
 
 ## Logging
@@ -130,4 +149,6 @@ Other functions of gwaslab is implemented as the methods of Sumstats Object.
 mysumstats.basic_check()
 
 mysumstats.plot_mqq()
+
+...
 ```

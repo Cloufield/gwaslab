@@ -2,7 +2,7 @@
 
 # gwaslab
 
-![badge](https://img.shields.io/badge/release-v3.3.2-brightgreen)
+![badge](https://img.shields.io/badge/release-v3.3.3-brightgreen)
 ![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
@@ -47,9 +47,9 @@ mysumstats.plot_mqq()
 
 - CHR and POS notation standardization
 - Variant POS and allele normalization
-- Genome build : Liftover
+- Genome build : Infer and Liftover 
 - Reference allele alignment using a reference genome sequence
-- rsID assignment based on CHR, POS, REF and ALT
+- rsID assignment based on CHR, POS, and REF/ALT
 - CHR POS assignment based on rsID using a reference VCF
 - Palindromic SNPs and indels strand inference using a reference VCF
 - Check allele frequency discrepancy using a reference VCF
@@ -67,13 +67,14 @@ mysumstats.plot_mqq()
 ### Visualization
 
 - Mqq plot : Manhattan plot and QQ plot side by side (with a bunch of customizable features including auto-annotate nearest gene names)
+- Regional plot : GWAS regional plot
 - Heatmap : ldsc-rg genetic correlation matrix
 - Scatter Plot : variant effect size comparison with sumstats
 - Scatter Plot : allele frequency comparison 
 - Forest Plot : forest plots for meta-analysis of SNPs
 - Examples
 
-<img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526882-dff70593-752d-4672-901e-0b3cea3d8cda.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526361-af2c736a-13ac-4849-9966-5139b9b1a148.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526481-df060ad5-dc61-4e35-ab37-3ea45ed00618.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526537-74547da8-85c1-4e47-859e-311a72fb8c73.png">
+<img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526882-dff70593-752d-4672-901e-0b3cea3d8cda.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/197393700-901c5cec-92a4-4aa7-b299-a760b76c3108.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526361-af2c736a-13ac-4849-9966-5139b9b1a148.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526481-df060ad5-dc61-4e35-ab37-3ea45ed00618.png"><img height="200" alt="image" src="https://user-images.githubusercontent.com/40289485/195526537-74547da8-85c1-4e47-859e-311a72fb8c73.png">
 
 ### Other Utilities
 
@@ -88,7 +89,7 @@ mysumstats.plot_mqq()
 # Install
 
 ```
-pip install gwaslab==3.3.2
+pip install gwaslab==3.3.3
 ```
 
 

@@ -22,6 +22,8 @@ nav:
     - Visualization:
        - "Manhattan & QQ plot": Visualization.md
        - "Regional Plot": RegionalPlot.md
+       - "Brisbane Plot": BrisbanePlot.md
+       - "Miami Plot": MiamiPlot.md
        - "Scatter: effect size comparison": EffectSize.md
        - "Scatter: allele frequency comparison": AlleleFrequency.md
        - "Heatmap: genetic correlation": GeneticCorrelation.md
