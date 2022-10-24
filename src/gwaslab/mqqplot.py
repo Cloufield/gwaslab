@@ -107,12 +107,12 @@ def mqqplot(insumstats,
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Plot layout mode is : "+mode)
     if len(anno_set)>0 and ("m" in mode):
-        if verbose: log.write(" -Variants to pinpoint : "+",".join(anno_set))    
+        if verbose: log.write(" -Variants to annotate : "+",".join(anno_set))    
     if len(highlight)>0 and ("m" in mode):
         if verbose: log.write(" -Loci to highlight : "+",".join(highlight))    
         if verbose: log.write(" -Highlight_window is set to: ", highlight_windowkb, " kb")  
     if len(pinpoint)>0 :
-        if verbose: log.write(" -Variants to pinpoint : "+",".join(highlight))  
+        if verbose: log.write(" -Variants to pinpoint : "+",".join(pinpoint))  
     if region is not None:
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
     if dpi!=100:
