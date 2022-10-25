@@ -34,6 +34,7 @@ def mqqplot(insumstats,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
+          scatter_kwargs={},
           # region
           region = None,
           region_step = 21,
@@ -152,6 +153,7 @@ def mqqplot(insumstats,
         windowsizekb = 100000000   
         mode="mb"
         scatter_kwargs={"marker":"s"}
+        marker_size= (marker_size[1],marker_size[1])
     else:
         raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
         
