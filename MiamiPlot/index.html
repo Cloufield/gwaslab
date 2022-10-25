@@ -297,13 +297,13 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#miami-plot-not-finished">Miami plot (not finished)</a></li>
+        <li class="first-level active"><a href="#miami-plot">Miami plot</a></li>
         <li class="first-level "><a href="#example">Example</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="miami-plot-not-finished">Miami plot (not finished)</h1>
+<h1 id="miami-plot">Miami plot</h1>
 <pre><code>gl.plot_miami( 
           path1,
           path2,
@@ -319,21 +319,41 @@
 <li><code>cols1</code> : <code>list</code> CHR,POS,P names for sumstats1</li>
 <li><code>cols2</code> : <code>list</code> CHR,POS,P names for sumstats2</li>
 <li><code>sep</code>   : <code>list</code> separator for each sumstats</li>
+<li><code>anno</code>  : <code>boolean</code> or <code>GENENAME</code></li>
+<li><code>region</code> : only plot a region. For example, <code>region=(2,2153874,21753874)</code> .</li>
+<li><code>highlight1</code>: <code>list</code> , list of loci to highlight for sumstats1. For example, <code>highlight1=[(5,124289158)]</code> .</li>
+<li><code>highlight2</code>: <code>list</code> , list of loci to highlight for sumstats2. </li>
+<li><code>pinpoint1</code>: <code>list</code> , list of variants to pinpolint for sumstats1.</li>
+<li><code>pinpoint2</code>: <code>list</code>,  list of variants to pinpolint for sumstats2.</li>
+<li><code>titles</code>:<code>list</code>, two titles. For example,<code>titles=["male","female"]</code></li>
 </ul>
 <h1 id="example">Example</h1>
 <pre><code>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
                            path2=&quot;bmi_female_bbj.txt.gz&quot;,
                            cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
                            cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-                           titles=[&quot;male&quot;,&quot;female&quot;],
+                           titles=[&quot;bmi male&quot;,&quot;bmi female&quot;],
                            titles_pad=[0.15,0.0],
-                           readcsv_args={&quot;nrows&quot;:100000},
                            anno=&quot;GENENAME&quot;,
-                           highlight=[(5,124289158)],
-                           pinpoint=[(2,653874)]
+                           region_grid=True,
+                           highlight1=[(5,124289158)],
+                           pinpoint2=[(2,653874)]
                            )
 </code></pre>
-<p><img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197463243-89352749-f882-418d-907d-27530fd4e922.png"></p></div>
+<p><img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197526569-7850041d-e247-4f69-8505-ef7750a6d4de.png"></p>
+<pre><code>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
+                           path2=&quot;bmi_female_bbj.txt.gz&quot;,
+                           cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+                           cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+                           titles=[&quot;male&quot;,&quot;female&quot;],
+                           region=(2,2153874,21753874),
+                           titles_pad=[0.1,-0.05],
+                           anno=&quot;GENENAME&quot;,
+                           region_grid=True
+                           )
+</code></pre>
+<p><img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197531327-8fdd51d0-e21f-4da2-9e2d-c4f8a8bd5285.png"></p>
+<p>Note: implemented in v3.3.4</p></div>
         
         
     </div>
