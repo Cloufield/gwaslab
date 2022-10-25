@@ -398,10 +398,13 @@ def plot_miami( path1,
             
      
     ### Spines ####################################################################################################################
+    
     if len(anno_set1)>0 or len(anno_set2)>0:
-        to_annotate1=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set1),:]
-        to_annotate2=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set2),:]
-    else:
+        if len(anno_set1)>0:
+            to_annotate1=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set1),:]
+        if len(anno_set2)>0:
+            to_annotate2=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set2),:]
+    elif anno is not None:
         to_annotate1 = getsig(sumstats.loc[sumstats["scaled_P_1"]> float(-np.log10(sig_level)),:],
                        "TCHR+POS",
                        "CHR",
@@ -625,8 +628,8 @@ def plot_miami( path1,
                 ax5.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
 
         if region_lead_grid is True:
-            ax1.vlines(x=lead_snp_i_1, ymin=0,  ymax=maxy1, zorder=1,**region_lead_grid_line)
-            ax5.vlines(x=lead_snp_i_2, ymin=0,  ymax=maxy5, zorder=1,**region_lead_grid_line)
+            ax1.vlines(x=lead_snp_i_1, ymin=0,  ymax=maxy1, zorder=1000,**region_lead_grid_line)
+            ax5.vlines(x=lead_snp_i_2, ymin=0,  ymax=maxy5, zorder=1000,**region_lead_grid_line)
             # set x ticks m plot
         ax1.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
         ax5.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))

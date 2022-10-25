@@ -32,6 +32,7 @@ def plot_rg(ldscrg,
         cmap = matplotlib.cm.get_cmap('RdBu'),
         log=Log(),
         verbose=True,
+        asize=10,
         sort_key=None,
         square=False,
         colorbarargs={"shrink":0.82},
@@ -50,14 +51,14 @@ def plot_rg(ldscrg,
     
     if correction=="fdr":
         dfp["fdr_p"]=fdrcorrection(dfp[p],alpha=1)[1]
-        print(dfp["fdr_p"])
+        
         dfp["fdr"]=fdrcorrection(dfp[p],alpha=sig_level)[0]
         if verbose: log.write("Significant correlations after FDR correction:",sum(dfp["fdr"]))
         dfp=dfp.set_index("p1p2").loc[:,"fdr_p"].to_dict()
-        print(dfp)
+        
     else:
         dfp=dfp.set_index("p1p2").loc[:,p].to_dict()
-        print(dfp)
+        
     #########ticks dict###########################################   
     dic_p1={}
     dic_p2={}
@@ -168,9 +169,9 @@ def plot_rg(ldscrg,
     
     for i in panno:
         if i[2]<sig_level/len(dfp):
-            ax.text(i[0],i[1],"**",color="white",weight="bold",ha="center", va="center",font="Arial")
+            ax.text(i[0],i[1],"**",size=asize, color="black",weight="bold",ha="center", va="center",font="Arial")
         else:
-            ax.text(i[0],i[1],"*",color="white",weight="bold",ha="center", va="center",font="Arial")
+            ax.text(i[0],i[1],"*", size=asize, color="black",weight="bold",ha="center", va="center",font="Arial")
 
             
     ## color bar ###############################################

@@ -124,13 +124,14 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ense
         # check snp position
         #convert 23,24,25 back to X,Y,MT for EnsemblRelease query
         if source=="ensembl":
-            x[chrom] = get_number_to_chr()[x[chrom]]
+            contig = get_number_to_chr()[x[chrom]]
         elif source=="refseq":
-            x[chrom] = get_number_to_chr()[x[chrom]]
-            x[chrom] = get_chr_to_NC(build=build)[x[chrom]]
-
+            contig = get_number_to_chr()[x[chrom]]
+            contig = get_chr_to_NC(build=build)[contig]
+        
+        position = int(x[pos])
         # query
-        gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
+        gene = data.gene_names_at_locus(contig=contig, position=position)
         
         if len(gene)==0:
             # if not in any gene
@@ -139,10 +140,10 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ense
                 # using distance to check upstram and downstream region
                 distance = i*step
                 # upstream
-                gene_u = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance)
+                gene_u = data.gene_names_at_locus(contig=contig, position=position-distance)
                 
                 # downstream
-                gene_d = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance)
+                gene_d = data.gene_names_at_locus(contig=contig, position=position+distance)
                 
                 if len(gene_u)>0 and len(gene_d)>0:
                     # if found gene uptream and downstream at the same time 
@@ -150,8 +151,8 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ense
                     distance = (i-1)*step
                     for j in range(0,step,1):
                         # use small step to finemap                        
-                        gene_u = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance-j)
-                        gene_d = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance+j)
+                        gene_u = data.gene_names_at_locus(contig=contig, position=position-distance-j)
+                        gene_d = data.gene_names_at_locus(contig=contig, position=position+distance+j)
                         if len(gene_u)>0:
                             return -distance-j,",".join(gene_u)
                         elif len(gene_d)>0:
@@ -160,14 +161,14 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ense
                     # if found gene uptream
                     distance = (i-1)*step
                     for j in range(0,step,1):
-                        gene_u2 = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance-j)
+                        gene_u2 = data.gene_names_at_locus(contig=contig, position=position-distance-j)
                         if len(gene_u2)>0:
                             return -distance-j,",".join(gene_u)
                 elif len(gene_d)>0:
                     # if found gene downstream
                     distance = (i-1)*step
                     for j in range(0,step,1):
-                        gene_d2 = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance+j)
+                        gene_d2 = data.gene_names_at_locus(contig=contig, position=position+distance+j)
                         if len(gene_d2)>0:
                             return distance+j,",".join(gene_d)
                 i+=1
