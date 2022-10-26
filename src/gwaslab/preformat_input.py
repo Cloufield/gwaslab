@@ -2,6 +2,8 @@
 import pandas as pd
 import numpy as np
 import scipy.stats as ss
+import os
+import gc
 from gwaslab.CommonData import get_format_dict
 
 #20220425
@@ -37,8 +39,9 @@ def preformat(sumstats,
     #renaming dictionary
     rename_dictionary = {}
     usecols = []
-    dtype_dictionary ={}
+    dtype_dictionary ={}    
     
+    ######################################################################################
     if fmt is not None:
         if verbose: log.write("Start to load format from formatbook....")
         meta_data,rename_dictionary = get_format_dict(fmt)
@@ -55,6 +58,8 @@ def preformat(sumstats,
                 log.write(" - "+fmt+" format dictionary:")  
                 log.write("  - "+fmt+" keys:",keys) 
                 log.write("  - gwaslab values:",values)  
+    ######################################################################################       
+                
     try:
         if type(sumstats) is str:
             ## loading data from path
@@ -62,7 +67,23 @@ def preformat(sumstats,
             readargs_header = readargs.copy()
             readargs_header["nrows"]=1
             readargs_header["dtype"]="string"
-            raw_cols = pd.read_table(inpath,**readargs_header).columns
+            ###
+            if "@" in inpath:
+                if verbose: log.write(" -Detected @ in path: load sumstats by each chromosome...")
+                inpath_chr_list=[]
+                inpath_chr_num_list=[]
+                for chromosome in list(range(1,26))+["x","y","X","Y","MT","mt","m","M"]:
+                    
+                    inpath_chr = inpath.replace("@",str(chromosome))
+                    
+                    if isfile_casesensitive(inpath_chr):
+                        inpath_chr_num_list.append(str(chromosome))
+                        inpath_chr_list.append(inpath_chr)
+                        
+                if verbose: log.write(" -Chromosomes detected:",",".join(inpath_chr_num_list))
+                raw_cols = pd.read_table(inpath_chr_list[0],**readargs_header).columns
+            else:
+                raw_cols = pd.read_table(inpath,**readargs_header).columns
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             raw_cols = sumstats.columns
@@ -72,12 +93,10 @@ def preformat(sumstats,
                 if value in ["EA","NEA"]:
                     dtype_dictionary[value]="category"
                 if value in ["CHR","STATUS"]:
-                    dtype_dictionary[value]="string"
-                    
-        
+                    dtype_dictionary[value]="string"     
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
-
+    ######################################################################################
     if snpid:
         usecols.append(snpid)
         rename_dictionary[snpid]= "SNPID"
@@ -148,8 +167,7 @@ def preformat(sumstats,
     if other:
         usecols = usecols + other
         for i in other:
-            rename_dictionary[i] = i
-    
+            rename_dictionary[i] = i    
     
  #loading data ##################################################################################
     
@@ -157,11 +175,28 @@ def preformat(sumstats,
         if type(sumstats) is str:
             ## loading data from path
             inpath = sumstats
-            if verbose: log.write("Start to initiate from file :" + inpath)
-            sumstats = pd.read_table(inpath,
-                             usecols=set(usecols),
-                             dtype=dtype_dictionary,
-                             **readargs)
+
+            if "@" in inpath:
+                if verbose: log.write("Start to initiate from files with pattern :" + inpath)
+                sumstats_chr_list=[]
+                for i in inpath_chr_list:
+                    if verbose: log.write(" Loading:" + i)
+                    sumstats_chr = pd.read_table(i,
+                                                 usecols=set(usecols),
+                                                 dtype=dtype_dictionary,
+                                                 **readargs)
+                    sumstats_chr_list.append(sumstats_chr)
+                if verbose: log.write(" Merging sumstats for chromosomes:",",".join(inpath_chr_num_list))
+                sumstats = pd.concat(sumstats_chr_list, axis=0, ignore_index=True) 
+                del(sumstats_chr_list)
+                gc.collect()
+            else:    
+                if verbose: log.write("Start to initiate from file :" + inpath)
+                sumstats = pd.read_table(inpath,
+                                 usecols=set(usecols),
+                                 dtype=dtype_dictionary,
+                                 **readargs)
+            
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             if verbose: log.write("Start to initiate from pandas DataFrame ...")
@@ -222,6 +257,15 @@ def preformat(sumstats,
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.")    
     
     if verbose: log.write("Finished loading data successfully!")
-    
-
     return sumstats
+
+
+
+
+
+#### helper #######################################################################
+def isfile_casesensitive(path):
+    if not os.path.isfile(path): 
+        return False   # exit early
+    directory, filename = os.path.split(path)
+    return filename in os.listdir(directory)
