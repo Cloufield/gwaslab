@@ -10,6 +10,11 @@ from pyensembl import EnsemblRelease
 from pyensembl import Genome
 from os import path
 
+#getsig
+#closest_gene
+#annogene
+#getnovel
+
 def getsig(insumstats,
            id,
            chrom,
@@ -284,7 +289,10 @@ def getnovel(insumstats,
     elif type(known) is str:
         knownsig = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
     
-    knownids=knownsig["SNPID"].values
+    if "SNPID" in knownsig.columns:
+        knownids=knownsig["SNPID"].values
+    if "PUBMEDID" in knownsig.columns:
+        knownpubmedids=knownsig["PUBMEDID"].values
     
     if verbose: log.write("Start to check if lead variants are known...")
     knownsig["TCHR+POS"]=knownsig[chrom]*1000000000 + knownsig[pos]
@@ -292,15 +300,17 @@ def getnovel(insumstats,
     if verbose: log.write(" -Lead variants in known loci:",len(knownsig))
     if verbose: log.write(" -Checking the minimum distance between identified lead variants and provided known variants...")
     
-    #allsig = allsig.sort_values(by="TCHR+POS",ignore_index=True)
-    #knownsig = knownsig.sort_values(by="TCHR+POS",ignore_index=True)
+    #sorting
+    allsig = allsig.sort_values(by="TCHR+POS",ignore_index=True)
+    knownsig = knownsig.sort_values(by="TCHR+POS",ignore_index=True)
 
     allsig["DISTANCE_TO_KNOWN"] = allsig["TCHR+POS"].apply(lambda x:np.min(np.abs(knownsig["TCHR+POS"]-x)))
     
-    allsig["KNOWN_ID"] = allsig["TCHR+POS"].apply(lambda x:knownids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
-    
+    if "SNPID" in knownsig.columns:
+        allsig["KNOWN_ID"] = allsig["TCHR+POS"].apply(lambda x:knownids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])    
+    if "PUBMEDID" in knownsig.columns:
+        allsig["KNOWN_PUBMED_ID"] = allsig["TCHR+POS"].apply(lambda x:knownpubmedids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
     allsig["NOVEL"] = allsig["DISTANCE_TO_KNOWN"] > windowsizekb_for_novel*1000
-
     
     if verbose: log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...")
     if verbose: log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...")

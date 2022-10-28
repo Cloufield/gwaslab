@@ -7,6 +7,7 @@ from gwaslab.read_ldsc import read_ldsc
 from gwaslab.metaanalysis import plot_forest
 from gwaslab.miamiplot import plot_miami
 from gwaslab.plotrg import plot_rg
+from gwaslab.gwascatalog import gwascatalog_trait
 
 from gwaslab.CommonData import get_NC_to_chr
 from gwaslab.CommonData import get_NC_to_number

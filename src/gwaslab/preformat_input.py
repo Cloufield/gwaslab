@@ -15,6 +15,8 @@ def preformat(sumstats,
           pos=None,
           ea=None,
           nea=None,
+          ref=None,
+          alt=None,
           eaf=None,
           neaf=None,
           n=None,
@@ -56,8 +58,8 @@ def preformat(sumstats,
                 values.append(value)
             if fmt!="gwaslab":
                 log.write(" - "+fmt+" format dictionary:")  
-                log.write("  - "+fmt+" keys:",keys) 
-                log.write("  - gwaslab values:",values)  
+                log.write("  - "+fmt+" keys:",",".join(keys)) 
+                log.write("  - gwaslab values:",",".join(values))  
     ######################################################################################       
                 
     try:
@@ -113,11 +115,19 @@ def preformat(sumstats,
     if ea:
         usecols.append(ea)
         rename_dictionary[ea]= "EA"
-        dtype_dictionary[ea]="category"
+        dtype_dictionary[ea]="string"
     if nea:
         usecols.append(nea)
         rename_dictionary[nea]= "NEA"
-        dtype_dictionary[nea]="category"
+        dtype_dictionary[nea]="string"
+    if ref:
+        usecols.append(ref)
+        rename_dictionary[nea]= "REF"
+        dtype_dictionary[nea]="string"
+    if alt:
+        usecols.append(alt)
+        rename_dictionary[nea]= "ALT"
+        dtype_dictionary[nea]="string"
     if eaf:
         usecols.append(eaf)
         rename_dictionary[eaf]= "EAF"
@@ -233,17 +243,18 @@ def preformat(sumstats,
         categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
         sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
     
-    ##reodering 
-    order = [
-        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
-        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
-           ] + other   
-    output_columns = []
-    for i in order:
-        if i in sumstats.columns: output_columns.append(i)
-
-    if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns))
-    sumstats = sumstats.loc[:, output_columns]
+    #################################################################################################################
+    if "EA" in sumstats.columns:
+        if "REF" in sumstats.columns and "ALT" in sumstats.columns:
+            if "NEA" not in sumstats.columns:
+                sumstats["NEA"]=sumstats["REF"]    
+            if verbose: log.write(" -EA,REF and ALT columns are available: assigning NEA...") 
+            sumstats.loc[sumstats["EA"]==sumstats["ALT"],"NEA"] = sumstats.loc[sumstats["EA"]==sumstats["ALT"],"REF"]
+            sumstats.loc[sumstats["EA"]!=sumstats["ALT"],"NEA"] = sumstats.loc[sumstats["EA"]!=sumstats["ALT"],"ALT"]
+            sumstats = sumstats.drop(labels=["REF","ALT"],axis=1)
+            sumstats["EA"]=sumstats["EA"].astype("category")     
+    if "NEA" in sumstats.columns:
+        sumstats["NEA"]=sumstats["NEA"].astype("category")  
     
     if neaf is not None :
         if verbose: log.write(" -NEAF is specified...") 
@@ -254,7 +265,21 @@ def preformat(sumstats,
         sumstats.loc[:,"EAF"] = 1- sumstats.loc[:,"EAF"]
         if verbose: log.write(" -Converted NEAF to EAF.") 
         after_number=len(sumstats)
-        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.")    
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.") 
+    #################################################################################################################
+    
+    ##reodering 
+    order = [
+        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
+        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS","REF","ALT"
+           ] + other   
+    output_columns = []
+    for i in order:
+        if i in sumstats.columns: output_columns.append(i)
+
+    if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns))
+    sumstats = sumstats.loc[:, output_columns].copy()  
+    gc.collect()
     
     if verbose: log.write("Finished loading data successfully!")
     return sumstats

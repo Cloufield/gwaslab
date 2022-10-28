@@ -62,10 +62,16 @@ def filldata(
 
 # z/chi2 to p ##################################################################################################
     if "P" in to_fill:
+        # MLOG10P -> P
+        if "MLOG10P" in sumstats.columns:    
+            if verbose: log.write("  - Filling P value using MLOG10P column...")
+            sumstats["P"] = np.power(10,-sumstats["MLOG10P"])
         # Z -> P
-        if "Z" in sumstats.columns:
+        elif "Z" in sumstats.columns:
             if verbose: log.write("  - Filling P value using Z column...")
+            stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
             sumstats["P"] = ss.chisqprob(sumstats["Z"]**2,1)
+            
         elif "CHISQ" in sumstats.columns:
         #CHISQ -> P
             if verbose: log.write("  - Filling P value using CHISQ column...")
@@ -82,10 +88,7 @@ def filldata(
                 else:
                     if verbose: log.write("  - Filling P value using CHISQ column for all valid variants:")
                     sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],sumstats[df].astype("int"))
-        # MLOG10P -> P
-        elif "MLOG10P" in sumstats.columns:    
-            if verbose: log.write("  - Filling P value using MLOG10P column...")
-            sumstats["P"] = np.power(10,-sumstats["MLOG10P"])
+
 
 # beta/se to z ##################################################################################################            
     if "Z" in to_fill:   

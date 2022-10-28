@@ -56,6 +56,8 @@ class Sumstats():
              pos=None,
              ea=None,
              nea=None,
+             ref=None,
+             alt=None,
              eaf=None,
              neaf=None,
              n=None,
@@ -92,6 +94,8 @@ class Sumstats():
           pos=pos,
           ea=ea,
           nea=nea,
+          ref=ref,
+          alt=alt,
           eaf=eaf,
           neaf=neaf,
           n=n,
@@ -351,8 +355,12 @@ class Sumstats():
             return filterregionout(self.data,**args)
         else:
             self.data = filterregionout(self.data,log=self.log,**args)
-    def random_variants(self,n=1,**args):
-        self.data = sampling(self.data,n=n,log=self.log,**args)
+    
+    def random_variants(self,in_place=False,n=1,**args):
+        if in_place is True:
+            self.data = sampling(self.data,n=n,log=self.log,**args)
+        else:
+            return sampling(self.data,n=n,log=self.log,**args)
     
 ###########################################################################################################################            
     def check_af(self,**args):
