@@ -9,6 +9,7 @@ from gwaslab.CommonData import gtf_index
 from pyensembl import EnsemblRelease
 from pyensembl import Genome
 from os import path
+from gwaslab.fill import fill_p
 
 #getsig
 #closest_gene
@@ -44,6 +45,9 @@ def getsig(insumstats,
     
     sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
     sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+    if p not in sumstats.columns:
+        if "MLOG10P" in sumstats.columns: 
+            fill_p(sumstats,log)
     sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
     
     #extract all significant variants
