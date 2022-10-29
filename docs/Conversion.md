@@ -29,11 +29,11 @@ mysumstats.fill_data(
 ## Priority
 
 - For P : using MLOG10P, Z, CHISQ 
-- For MLOG10P : using P,  
+- For MLOG10P : using P, MLOG10P, Z, CHISQ 
 - For BETA/SE : using OR/OR_95L/OR_95U
 - For OR/OR_95L/OR_95U : using BETA/SE
 - For Z : using BETA/SE
-- For CHISQ : using  Z, P, MLOG10P
+- For CHISQ : using  Z, P
 
 ## Example
 ```
