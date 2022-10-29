@@ -14,12 +14,18 @@ Note:  Some part of the docs are outdated. I am currently updating the documents
 
 Please check GWASLab document at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
 
+
+## Install
+
+```
+pip install gwaslab==3.3.3
+```
+
+
 ```python
 import gwaslab as gl
 # load plink2 output
-mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
-             fmt="plink2",
-             build="19")
+mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="plink2")
 
 # or you can specify the columns:
 mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
@@ -67,7 +73,7 @@ mysumstats.plot_mqq()
     - P, Z, CHISQ, MLOG10
 - Customized value filtering.
 
-##  Harmonization
+###  Harmonization
 
 - rsID assignment based on CHR, POS, and REF/ALT
 - CHR POS assignment based on rsID using a reference text file
@@ -100,12 +106,6 @@ mysumstats.plot_mqq()
 - Logging : keep a complete record of manipulations from raw data to munged data.
 - Sumstats summary function: know your data better. 
 
-
-# Install
-
-```
-pip install gwaslab==3.3.3
-```
 
 
 ## Requirements:
