@@ -26,6 +26,15 @@ mysumstats.fill_data(
 - `overwrite`: if overwrite when the specified column existed
 - `only_sig` : fill the data only for significant variants
 
+## Priority
+
+- For P : using MLOG10P, Z, CHISQ 
+- For MLOG10P : using P,  
+- For BETA/SE : using OR/OR_95L/OR_95U
+- For OR/OR_95L/OR_95U : using BETA/SE
+- For Z : using BETA/SE
+- For CHISQ : using  Z, P, MLOG10P
+
 ## Example
 ```
 # raw data
