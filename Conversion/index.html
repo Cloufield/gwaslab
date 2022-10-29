@@ -302,6 +302,8 @@
                 
             <li class="second-level"><a href="#options">Options</a></li>
                 
+            <li class="second-level"><a href="#priority">Priority</a></li>
+                
             <li class="second-level"><a href="#example">Example</a></li>
                 
     </ul>
@@ -334,7 +336,18 @@
 <li><code>overwrite</code>: if overwrite when the specified column existed</li>
 <li><code>only_sig</code> : fill the data only for significant variants</li>
 </ul>
+<h2 id="priority">Priority</h2>
+<ul>
+<li>For P : using MLOG10P, Z, CHISQ </li>
+<li>For MLOG10P : using P, MLOG10P, Z, CHISQ </li>
+<li>For BETA/SE : using OR/OR_95L/OR_95U</li>
+<li>For OR/OR_95L/OR_95U : using BETA/SE</li>
+<li>For Z : using BETA/SE</li>
+<li>For CHISQ : using  Z, P</li>
+</ul>
 <h2 id="example">Example</h2>
+<p>More examples:
+<a href="https://github.com/Cloufield/gwaslab/blob/main/examples/Utility_data_conversion.ipynb">Utility_data_conversion</a></p>
 <pre><code># raw data
 #SNPID  CHR POS EA  NEA EAF BETA    SE  P   STATUS
 #1:725932_G_A   1   725932  G   A   0.9960  -0.0737 0.1394  0.5970  9999999

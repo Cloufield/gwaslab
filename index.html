@@ -298,17 +298,17 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="first-level active"><a href="#gwaslab">gwaslab</a></li>
+            <li class="second-level"><a href="#install">Install</a></li>
+                
             <li class="second-level"><a href="#functions">Functions</a></li>
                 
                 <li class="third-level"><a href="#loading-and-formatting">Loading and Formatting</a></li>
                 <li class="third-level"><a href="#standardization-normalization">Standardization &amp; Normalization</a></li>
                 <li class="third-level"><a href="#quality-control-value-conversion-filtering">Quality control, Value conversion &amp; Filtering</a></li>
-            <li class="second-level"><a href="#harmonization">Harmonization</a></li>
-                
+                <li class="third-level"><a href="#harmonization">Harmonization</a></li>
                 <li class="third-level"><a href="#visualization">Visualization</a></li>
                 <li class="third-level"><a href="#visualization-examples">Visualization Examples</a></li>
                 <li class="third-level"><a href="#other-utilities">Other Utilities</a></li>
-        <li class="first-level "><a href="#install">Install</a></li>
             <li class="second-level"><a href="#requirements">Requirements:</a></li>
                 
         <li class="first-level "><a href="#contacts">Contacts</a></li>
@@ -328,11 +328,12 @@
 <li>Most manipulations are designed as methods of python object, <code>gwaslab.Sumstats</code>.</li>
 </ul>
 <p>Please check GWASLab document at <a href="https://cloufield.github.io/gwaslab/">https://cloufield.github.io/gwaslab/</a></p>
+<h2 id="install">Install</h2>
+<pre><code>pip install gwaslab==3.3.3
+</code></pre>
 <pre><code class="language-python">import gwaslab as gl
 # load plink2 output
-mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
-             fmt=&quot;plink2&quot;,
-             build=&quot;19&quot;)
+mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, fmt=&quot;plink2&quot;)
 
 # or you can specify the columns:
 mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
@@ -380,7 +381,7 @@ mysumstats.plot_mqq()
 </li>
 <li>Customized value filtering.</li>
 </ul>
-<h2 id="harmonization">Harmonization</h2>
+<h3 id="harmonization">Harmonization</h3>
 <ul>
 <li>rsID assignment based on CHR, POS, and REF/ALT</li>
 <li>CHR POS assignment based on rsID using a reference text file</li>
@@ -410,9 +411,6 @@ mysumstats.plot_mqq()
 <li>Logging : keep a complete record of manipulations from raw data to munged data.</li>
 <li>Sumstats summary function: know your data better. </li>
 </ul>
-<h1 id="install">Install</h1>
-<pre><code>pip install gwaslab==3.3.3
-</code></pre>
 <h2 id="requirements">Requirements:</h2>
 <ul>
 <li>Python &gt;= 3.6</li>
@@ -541,5 +539,5 @@ mysumstats.plot_mqq()
 
 <!--
 MkDocs version : 1.3.0
-Build Date UTC : 2022-10-25 09:03:36.468242+00:00
+Build Date UTC : 2022-10-29 05:49:34.535710+00:00
 -->
