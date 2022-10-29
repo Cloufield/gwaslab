@@ -36,6 +36,8 @@ mysumstats.fill_data(
 - For CHISQ : using  Z, P
 
 ## Example
+More examples:
+[Utility_data_conversion](https://github.com/Cloufield/gwaslab/blob/main/examples/Utility_data_conversion.ipynb)
 ```
 # raw data
 #SNPID	CHR	POS	EA	NEA	EAF	BETA	SE	P	STATUS
@@ -58,3 +60,5 @@ Wed Oct 19 10:13:31 2022   - Filling OR_95L/OR_95U using BETA/SE columns...
 Wed Oct 19 10:13:32 2022   - Filling MLOG10P using P column...
 Wed Oct 19 10:13:38 2022 Finished filling data using existing columns.
 ```
+
+
