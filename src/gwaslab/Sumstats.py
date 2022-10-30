@@ -43,7 +43,7 @@ from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_high_ld
 from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_formats_list
-
+import gc
 
 #20220309
 class Sumstats():
@@ -116,7 +116,7 @@ class Sumstats():
           verbose=verbose,
           readargs=readargs,
           log=self.log)
-                   
+        gc.collect()     
 #### healper #################################################################################
     #value to arguement name 
     def get_columns(self, columns=[]):
@@ -236,7 +236,8 @@ class Sumstats():
             self.data = parallelnormalizeallele(self.data,log=self.log,n_cores=n_cores,**normalizeallele_args)
             
             self.data = sortcolumn(self.data,log=self.log)
-        
+            
+            gc.collect()
         
         #####################################################
         #part 2 : annotating and flipping
@@ -257,22 +258,28 @@ class Sumstats():
             
             self.data = flipallelestats(self.data,log=self.log,**flipallelestats_args)
             
+            gc.collect()
+            
         if ref_infer is not None: 
             
             self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
                                               n_cores=n_cores,log=self.log,**inferstrand_args)
             
             self.data =flipallelestats(self.data,log=self.log,**flipallelestats_args)
+            
+            gc.collect()
         
         #####################################################
         if ref_rsid_tsv is not None:
             
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
                                                  n_cores=n_cores,log=self.log,**assignrsid_args)
+            gc.collect()
         if ref_rsid_vcf is not None:
             
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
-                                                 n_cores=n_cores,log=self.log,**assignrsid_args)     
+                                                 n_cores=n_cores,log=self.log,**assignrsid_args)   
+            gc.collect()
         ######################################################    
         if remove is True:
             
@@ -282,7 +289,7 @@ class Sumstats():
         self.data = sortcoordinate(self.data,log=self.log)
         
         self.data = sortcolumn(self.data,log=self.log)
-        
+        gc.collect()
         return self
     ############################################################################################################
     #customizable API to build your own QC pipeline
@@ -535,17 +542,17 @@ class Sumstats():
         if verbose: self.log.write(" -Formatting statistics ...")
         
         formats = {'EAF': '{:.4g}', 
-                   'BETA': '{:.4f}', 
-                   'Z': '{:.4f}',
-                   'CHISQ': '{:.4f}',
-                   'SE': '{:.4f}',
-                   'OR': '{:.4f}',
-                   'OR_95U': '{:.4f}',
-                   'OR_95L': '{:.4f}',
-                   'INFO': '{:.4f}',
-                   'P': '{:.4e}',
-                   'MLOG10P': '{:.4f}',
-                   'DAF': '{:.4f}'
+                'BETA': '{:.4f}', 
+                'Z': '{:.4f}',
+                'CHISQ': '{:.4f}',
+                'SE': '{:.4f}',
+                'OR': '{:.4f}',
+                'OR_95U': '{:.4f}',
+                'OR_95L': '{:.4f}',
+                'INFO': '{:.4f}',
+                'P': '{:.4e}',
+                'MLOG10P': '{:.4f}',
+                'DAF': '{:.4f}'
                   }
         
         for col, f in float_formats.items():

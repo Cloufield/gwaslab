@@ -1,12 +1,12 @@
-#import modin.pandas as pd
 import pandas as pd
 import numpy as np
 import scipy.stats as ss
 import os
 import gc
 from gwaslab.CommonData import get_format_dict
+import gzip
 
-#20220425
+#20221030
 def preformat(sumstats,
           fmt=None,
           snpid=None,
@@ -43,52 +43,81 @@ def preformat(sumstats,
     usecols = []
     dtype_dictionary ={}    
     
-    ######################################################################################
+ #######################################################################################################################################################
     if fmt is not None:
         if verbose: log.write("Start to load format from formatbook....")
+        
+        # load format data
         meta_data,rename_dictionary = get_format_dict(fmt)
+        
+        # print format information
         if verbose: 
             log.write(" -"+fmt+" format meta info:")   
             for key,value in meta_data.items():
-                log.write("  -",key," : ",value)  
+                if type(value) is str:
+                    if "\n" in value:
+                        value_first_line=value.split("\n")[0]
+                        log.write("  -",key," : "+value_first_line.strip()+"...")  
+                    else:
+                        log.write("  -",key," : "+value.strip())  
+                else:
+                    log.write("  -",key," : ",value)  
+            
+            
             keys=[]
             values=[]
             for key,value in rename_dictionary.items():
                 keys.append(key)
                 values.append(value)
             if fmt!="gwaslab":
-                log.write(" - "+fmt+" format dictionary:")  
+                log.write(" -"+fmt+" format dictionary:")  
                 log.write("  - "+fmt+" keys:",",".join(keys)) 
                 log.write("  - gwaslab values:",",".join(values))  
-    ######################################################################################       
                 
+#########################################################################################################################################################      
+    
+    # check chr-separated path / vcf / then proint header.            
     try:
         if type(sumstats) is str:
-            ## loading data from path
+            ## loading data from path #################################################
             inpath = sumstats
+            ## loading data from vcf #################################################
+            if inpath.endswith("vcf.gz"):
+                with gzip.open(inpath,'r') as file:      
+                    skip=0
+                    for line in file:        
+                        if line.decode('utf-8').startswith('##'):
+                            skip+=1
+                        else:
+                            readargs["skiprows"]=skip
+                            readargs["sep"]="\t"
+                            break
+            
             readargs_header = readargs.copy()
             readargs_header["nrows"]=1
             readargs_header["dtype"]="string"
-            ###
+            
+            ###load sumstats by each chromosome #################################################  
             if "@" in inpath:
                 if verbose: log.write(" -Detected @ in path: load sumstats by each chromosome...")
                 inpath_chr_list=[]
                 inpath_chr_num_list=[]
                 for chromosome in list(range(1,26))+["x","y","X","Y","MT","mt","m","M"]:
-                    
-                    inpath_chr = inpath.replace("@",str(chromosome))
-                    
+                    inpath_chr = inpath.replace("@",str(chromosome))  
                     if isfile_casesensitive(inpath_chr):
                         inpath_chr_num_list.append(str(chromosome))
-                        inpath_chr_list.append(inpath_chr)
-                        
+                        inpath_chr_list.append(inpath_chr)        
                 if verbose: log.write(" -Chromosomes detected:",",".join(inpath_chr_num_list))
                 raw_cols = pd.read_table(inpath_chr_list[0],**readargs_header).columns
             else:
+            ##### loading data from tabular file#################################################
                 raw_cols = pd.read_table(inpath,**readargs_header).columns
+            ###################################################################################### 
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             raw_cols = sumstats.columns
+        
+        ################################################
         for key,value in rename_dictionary.items():
             if key in raw_cols:
                 usecols.append(key)
@@ -98,7 +127,9 @@ def preformat(sumstats,
                     dtype_dictionary[value]="string"     
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
-    ######################################################################################
+        
+    ###################################################################################################################################################
+    ## check columns/datatype to use 
     if snpid:
         usecols.append(snpid)
         rename_dictionary[snpid]= "SNPID"
@@ -179,7 +210,7 @@ def preformat(sumstats,
         for i in other:
             rename_dictionary[i] = i    
     
- #loading data ##################################################################################
+ #loading data ##########################################################################################################
     
     try:
         if type(sumstats) is str:
@@ -192,9 +223,9 @@ def preformat(sumstats,
                 for i in inpath_chr_list:
                     if verbose: log.write(" Loading:" + i)
                     sumstats_chr = pd.read_table(i,
-                                                 usecols=set(usecols),
-                                                 dtype=dtype_dictionary,
-                                                 **readargs)
+                                        usecols=set(usecols),
+                                        dtype=dtype_dictionary,
+                                        **readargs)
                     sumstats_chr_list.append(sumstats_chr)
                 if verbose: log.write(" Merging sumstats for chromosomes:",",".join(inpath_chr_num_list))
                 sumstats = pd.concat(sumstats_chr_list, axis=0, ignore_index=True) 
@@ -214,7 +245,7 @@ def preformat(sumstats,
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contains the columns.")
 
-    ## renaming columns
+    ## renaming columns ###############################################################################################
     converted_columns = list(map(lambda x: rename_dictionary[x], set(usecols)))
     
     ## renaming log
@@ -222,28 +253,21 @@ def preformat(sumstats,
     if verbose: log.write(" -Renaming columns to      :", ",".join(converted_columns))
     if verbose: log.write(" -Current dataframe shape  : Rows ", len(sumstats), " x ",len(sumstats.columns), " Columns")
     
-    ## renaming
+    ## renaming 
     sumstats = sumstats.rename(columns=rename_dictionary)
 
-    ## if n was provided as int
+    ## if n was provided as int #####################################################################################
     if type(n) is int:
         sumstats["N"] = n
-        
-    ## if markername was not provided
-    #if (not snpid) and (not rsid):
-    #    if ("CHR" in sumstats.columns) and ("POS" in sumstats.columns):
-    #        sumstats["SNPID"] = sumstats["CHR"].astype(
-    #            "string") + ":" + sumstats["POS"].astype("string")
-    #    else:
-    #        raise ValueError("Please input at least 1.rsID or 2.snpID or 3.CHR and POS")
     
+    ### status ######################################################################################################
     if status is None:
         if verbose: log.write(" -Initiating a status column ...")
         sumstats["STATUS"] = build +"99999"
         categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
         sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
     
-    #################################################################################################################
+    ####ea/nea, ref/alt################################################################################################
     if "EA" in sumstats.columns:
         if "REF" in sumstats.columns and "ALT" in sumstats.columns:
             if "NEA" not in sumstats.columns:
@@ -255,7 +279,8 @@ def preformat(sumstats,
             sumstats["EA"]=sumstats["EA"].astype("category")     
     if "NEA" in sumstats.columns:
         sumstats["NEA"]=sumstats["NEA"].astype("category")  
-    
+        
+    ## NEAF ###########################################################################################################
     if neaf is not None :
         if verbose: log.write(" -NEAF is specified...") 
         pre_number=len(sumstats)
@@ -267,25 +292,11 @@ def preformat(sumstats,
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.") 
     #################################################################################################################
-    
-    ##reodering 
-    order = [
-        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
-        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS","REF","ALT"
-           ] + other   
-    output_columns = []
-    for i in order:
-        if i in sumstats.columns: output_columns.append(i)
-
-    if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns))
-    sumstats = sumstats.loc[:, output_columns].copy()  
+    ## reodering 
+    sumstats = order_columns(sumstats,other,log,verbose=verbose)    
     gc.collect()
-    
     if verbose: log.write("Finished loading data successfully!")
     return sumstats
-
-
-
 
 
 #### helper #######################################################################
@@ -294,3 +305,16 @@ def isfile_casesensitive(path):
         return False   # exit early
     directory, filename = os.path.split(path)
     return filename in os.listdir(directory)
+
+def order_columns(sumstats,other,log,verbose=True):
+    order = [
+        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
+        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS","REF","ALT"
+           ] + other   
+    output_columns = []
+    for i in order:
+        if i in sumstats.columns: output_columns.append(i)
+    if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns))
+    sumstats = sumstats.loc[:, output_columns].copy()  
+    return sumstats
+    
