@@ -63,7 +63,16 @@ for i in range(1,23):
                         ref_seq="./reference_genome/hg19/human_g1k_v37_decoy.fasta",
                         ref_rsid_vcf="./All_20180423.vcf.gz", 
                         n_cores=4)
-    sumstats.data.loc[:,["SNPID","rsID","CHR","POS","NEA","EA"]].to_csv("./EAS_1kg_af_dbsnp151."+str(i)+".txt.gz","\t",index=None)
+    sumstats.data.loc[:,["SNPID","rsID","CHR","POS","NEA","EA"]].to_csv("./1kg_af_dbsnp151."+str(i)+".txt.gz","\t",index=None)
+```
+
+In terminal, combine the files:
+```
+zcat EAS_1kg_af_dbsnp151.1.txt.gz > 1kg_af_dbsnp151_auto.txt
+for i in $(seq 2 22)
+do
+zcat EAS_1kg_af_dbsnp151.1.txt.gz | awk -v OFS="\t" 'NR>1{print $0}' >>1kg_af_dbsnp151_auto.txt
+done
 ```
 
 ## dbsnp: database for annoattion of rsID
