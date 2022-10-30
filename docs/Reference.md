@@ -68,16 +68,22 @@ for i in range(1,23):
 
 In terminal, combine the files:
 ```
-zcat EAS_1kg_af_dbsnp151.1.txt.gz > 1kg_af_dbsnp151_auto.txt
-for i in $(seq 2 22)
+# get header
+zcat 1kg_af_dbsnp151.1.txt.gz | head -1 > 1kg_af_dbsnp151_auto.txt
+
+for i in $(seq 1 22)
 do
-zcat EAS_1kg_af_dbsnp151.1.txt.gz | awk -v OFS="\t" 'NR>1{print $0}' >>1kg_af_dbsnp151_auto.txt
+# get complete SNPID-rsID pairs
+zcat 1kg_af_dbsnp151.${i}.txt.gz | awk -v FS="\t" -v OFS="\t" 'NR>1 && $2!="" {print $0}' >>1kg_af_dbsnp151_auto.txt
 done
 ```
 
-## dbsnp: database for annoattion of rsID
+## dbsnp: database for annotation of rsID
 
-- dbsnp v151 (hg19): https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz
+- dbsnp v151 (GRCh37): [https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz](https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz)
+- dbsnp v151 (GRCh37): [https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz.tbi](https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz.tbi)
+- dbsnp v151 (GRCh38): [https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF//00-All.vcf.gz](https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF//00-All.vcf.gz)
+- dbsnp v151 (GRCh38): [https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF//00-All.vcf.gz.tbi](https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF//00-All.vcf.gz.tbi)
 - latest release: [Index of /snp/latest_release/VCF](https://ftp.ncbi.nih.gov/snp/latest_release/VCF/)
 
 ## gnomad
