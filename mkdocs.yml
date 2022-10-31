@@ -8,6 +8,9 @@ theme:
   name: null
   custom_dir: 'cinder'
   color_theme:  github
+
+extra_css:
+  - "stylesheets/extra.css"
 nav:
     - Home: index.md
     - Tutorial: Tutorial.md
