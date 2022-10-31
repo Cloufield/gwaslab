@@ -300,16 +300,14 @@
         <li class="first-level active"><a href="#standardization-and-normalization">Standardization and normalization</a></li>
             <li class="second-level"><a href="#methods-summary">Methods Summary</a></li>
                 
-            <li class="second-level"><a href="#1-ids">1. IDs</a></li>
-                
             <li class="second-level"><a href="#2-chr">2. CHR</a></li>
                 
             <li class="second-level"><a href="#3-pos">3. POS</a></li>
                 
             <li class="second-level"><a href="#4-allele">4. Allele</a></li>
                 
-                <li class="third-level"><a href="#41-standardization">4.1 Standardization</a></li>
-                <li class="third-level"><a href="#42-normalization">4.2 Normalization</a></li>
+                <li class="third-level"><a href="#41-allele-notation-standardization">4.1 Allele notation Standardization</a></li>
+                <li class="third-level"><a href="#42-variant-normalization">4.2 Variant Normalization</a></li>
             <li class="second-level"><a href="#5-coordinate-sorting">5. Coordinate sorting</a></li>
                 
             <li class="second-level"><a href="#6-column-sorting">6. Column sorting</a></li>
@@ -335,7 +333,7 @@ sumstats = gl.Sumstats(...)
 <tbody>
 <tr>
 <td><code>.fix_ID()</code></td>
-<td><code>fixchrpos=False</code>, <br/><code>fixid=False</code>,<br/><code>overwrite=False</code></td>
+<td><code>fixchrpos=False</code>, <br/><code>fixid=False</code>, <br/><code>fixsep=False</code>,<br/><code>overwrite=False</code>,<br/><code>forcefixid=False</code></td>
 <td>check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS</td>
 </tr>
 <tr>
@@ -363,9 +361,18 @@ sumstats = gl.Sumstats(...)
 <td></td>
 <td>sort the variant coordinates</td>
 </tr>
+<tr>
+<td><code>.sort_column()</code></td>
+<td></td>
+<td>sort the column order to gwaslab default</td>
+</tr>
+<tr>
+<td>## 1. IDs</td>
+<td></td>
+<td></td>
+</tr>
 </tbody>
 </table>
-<h2 id="1-ids">1. IDs</h2>
 <p>Gwaslab requires at least one ID columns for sumstats, either in the form of SNPID or rsID, (or both). Gwaslab will automatically check if SNPID is mixed in rsID.</p>
 <p><code>SNPID</code> : it could be user provided IDs, or in <code>CHR:POS:REF:ALT</code> format, delimiter can be":","_" or "-"</p>
 <p><code>rsID</code>: dbSNP rsIDs</p>
@@ -374,45 +381,63 @@ sumstats = gl.Sumstats(...)
 <p><code>.fix_ID()</code> : check or fix SNPID and rsID.   </p>
 <pre><code class="language-python">sumstats.fixID(fixchrpos=False,
                fixid=False,
+               fixsep=False,
                overwrite=False)
 </code></pre>
+<p><code>.fix_ID()</code> options:</p>
+<ul>
+<li><code>fixchrpos</code> : <code>Boolean</code>, extract CHR and POS from SNPID (CHR:POS:NEA:EA) to fill CHR and POS columns (deaful:<code>False</code>)</li>
+<li><code>fixid</code> : <code>Boolean</code> ,  use CHR/POS/NEA/EA to reconstruct the SNPID. For variant that are not aligned with reference genome. Only CHR/POS will be used. (deaful:<code>False</code>)</li>
+<li><code>forcefixid</code>: <code>Boolean</code> ,  use CHR/POS/NEA/EA to reconstruct the SNPID without checking if the variant is aligned. (deaful:<code>False</code>)</li>
+<li><code>fixsep</code> : <code>Boolean</code>, fix SNPID delimiter (For example: 1:123_A_C to 1:123:A:C) (deaful:<code>False</code>)</li>
+<li><code>overwrite</code> : <code>Boolean</code>, whether overwrite existing data. (deaful:<code>False</code>)</li>
+</ul>
 <h2 id="2-chr">2. CHR</h2>
 <p><code>.fix_CHR()</code></p>
-<p>CHR will be standardized to <code>1-22,X,Y,MT</code></p>
-<p>Leading "chr" and leading 0s will be stripped.</p>
-<pre><code class="language-python">sumstats.fix_CHR(remove=False)
+<p>CHR will be standardized to integers <code>1-22,23,24,25</code>
+- autosomes: 1-22
+- <code>x="X"</code> : 23
+- <code>x="Y"</code> : 24
+- <code>x="MT"</code> : 25</p>
+<p>Leading "chr" or leading 0s will be stripped. Before conversion, CHR will be converted to uppercase.</p>
+<pre><code class="language-python">sumstats.fix_CHR(remove=False,x=&quot;X&quot;,y=&quot;Y&quot;,mt=&quot;MT&quot;)
 </code></pre>
 <h2 id="3-pos">3. POS</h2>
 <p><code>.fix_POS()</code></p>
 <p>Values in POS must be positive integer numbers.</p>
 <p>Basepair position will be force converted to integers.</p>
 <p>Invalid pos will be converted to NA. </p>
-<p>(not implemented yet) After conversion, gwaslab will also sanity check if POS is in the range of 1 to 300,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  </p>
-<pre><code class="language-python">sumstats.fix_POS(remove=False)
+<p><code>limit=250000000</code> : After conversion, gwaslab will also sanity check if POS is in the range of 1 to 250,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  </p>
+<pre><code class="language-python">sumstats.fix_POS(remove=False, limit=250000000)
 </code></pre>
 <h2 id="4-allele">4. Allele</h2>
-<h3 id="41-standardization">4.1 Standardization</h3>
+<h3 id="41-allele-notation-standardization">4.1 Allele notation Standardization</h3>
 <p><code>.fix_allele()</code></p>
 <p>Currently, gwaslab only support processing SNPs and INDELs.</p>
-<p>All alleles will be checked if containing letters other than <code>ATCG</code>.</p>
+<p>All alleles will be checked if containing letters other than <code>A</code>,<code>T</code>,<code>C</code>,<code>G</code>.</p>
 <p>Copy number variant (CNV) like <code>&lt;CN0&gt;</code> won't be recognized.</p>
 <p>Lower cases will converted to UPPERCASES.</p>
 <pre><code class="language-python">sumstats.fix_allele(remove=False)
 </code></pre>
-<h3 id="42-normalization">4.2 Normalization</h3>
+<h3 id="42-variant-normalization">4.2 Variant Normalization</h3>
 <p><code>.normalize_allele()</code></p>
-<p>Alleles will be normalized accroding to left alignment and parsimony principal. (For details: add link here )</p>
+<p>Alleles will be normalized accroding to left alignment and parsimony principal. (For details: <a href="https://genome.sph.umich.edu/wiki/Variant_Normalization">https://genome.sph.umich.edu/wiki/Variant_Normalization</a> )</p>
 <p>For example, chr1:123456:ATG:AT will be normalized to chr1:123455:TG:T.</p>
-<p>Note: Currently, the normalizeation is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information need to be obtained from a reference genome. </p>
+<p>Note: Currently, the normalizeation is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information need to be obtained from a reference genome. 
+<code>n_cores</code> : threads to use for normalization.</p>
 <pre><code class="language-python">sumstats.normalize_allele(n_cores=1)
 </code></pre>
 <h2 id="5-coordinate-sorting">5. Coordinate sorting</h2>
-<p>Sort genomic coordinates， 1-22 X Y MT</p>
+<p>Sort genomic coordinates， 1-25 (23:X, 24:Y ,25:MT)</p>
 <pre><code class="language-python">sumstats.sort_coordinate()
 </code></pre>
 <h2 id="6-column-sorting">6. Column sorting</h2>
-<p>The default column order is "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",  "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS" and other additional columns.</p>
-<pre><code>sumstats.sort_columns()
+<p>The default column order is "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",  "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS" and other additional columns.</p>
+<p><code>order</code>:<code>list</code> , column order.</p>
+<pre><code class="language-python">sumstats.sort_column(order = [
+        &quot;SNPID&quot;,&quot;rsID&quot;, &quot;CHR&quot;, &quot;POS&quot;, &quot;EA&quot;, &quot;NEA&quot;, &quot;EAF&quot;, &quot;BETA&quot;, &quot;SE&quot;, &quot;Z&quot;,
+        &quot;CHISQ&quot;, &quot;P&quot;, &quot;MLOG10P&quot;, &quot;OR&quot;, &quot;OR_SE&quot;, &quot;OR_95L&quot;, &quot;OR_95U&quot;, &quot;INFO&quot;, &quot;N&quot;,&quot;DIRECTION&quot;,&quot;STATUS&quot;
+           ])
 </code></pre></div>
         
         

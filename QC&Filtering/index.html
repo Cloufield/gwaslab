@@ -302,7 +302,7 @@
                 
             <li class="second-level"><a href="#statistics-sanity-check">Statistics Sanity Check</a></li>
                 
-            <li class="second-level"><a href="#remove-duplication-or-multiallelic-variants">Remove duplication or multiallelic variants</a></li>
+            <li class="second-level"><a href="#remove-duplicated-or-multiallelic-variants">Remove duplicated or multiallelic variants</a></li>
                 
             <li class="second-level"><a href="#filtering">FIltering</a></li>
                 
@@ -325,59 +325,76 @@
 <tbody>
 <tr>
 <td><code>.check_sanity()</code></td>
-<td></td>
+<td><code>n=(0,float("Inf"))</code>, <br/><code>eaf=(0,1)</code>, <br/><code>mac=(5,float("Inf"))</code>, <br/><code>chisq=(0,float("Inf"))</code>, <br/><code>p=(5e-300,1)</code>, <br/><code>mlog10p=(0,float("Inf"))</code>, <br/><code>beta=(-10,10)</code>, <br/><code>z=(-37.5,37.5)</code>, <br/><code>se=(0,float("Inf"))</code>, <br/><code>OR=(-10,10)</code> , <br/><code>OR_95L=(0,float("Inf"))</code>, <br/><code>OR_95U=(0,float("Inf"))</code>, <br/><code>info=(0,float("Inf"))</code></td>
 <td>sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N...</td>
 </tr>
 <tr>
 <td><code>.remove_dup()</code></td>
-<td><code>mode="dm",keep='first'</code></td>
-<td>remove duplicate or multi-allelic variants</td>
+<td><code>mode="md"</code>, <br/><code>keep='first'</code>, <br/><code>keep_col="P"</code>, <br/><code>remove=False</code></td>
+<td>remove duplicated, multiallelic or NA variants</td>
 </tr>
 <tr>
 <td><code>.filter_in()</code></td>
 <td>lt, gt, eq, inplace</td>
-<td></td>
+<td>filter in variants base on given threshold</td>
 </tr>
 <tr>
 <td><code>.filter_out()</code></td>
-<td></td>
-<td></td>
+<td>lt, gt, eq, inplace</td>
+<td>filter out variants base on given threshold</td>
 </tr>
 <tr>
 <td><code>.filter_region_in()</code></td>
-<td>path , inplace=True ,high_ld=False, build="19"</td>
-<td></td>
+<td><code>path</code> , <br/> <code>inplace=True</code> , <br/><code>high_ld=False</code>, <br/> <code>build="19"</code></td>
+<td>filter in variants in the specified region define by a bed file</td>
 </tr>
 <tr>
 <td><code>.filter_region_out()</code></td>
-<td>path , inplace=True ,high_ld=False, build="19"</td>
-<td></td>
+<td><code>path</code> , <br/> <code>inplace=True</code> , <br/><code>high_ld=False</code>, <br/> <code>build="19"</code></td>
+<td>filter out variants in the specified region define by a bed file</td>
 </tr>
 </tbody>
 </table>
 <h2 id="statistics-sanity-check">Statistics Sanity Check</h2>
 <p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected range</code>.</p>
-<p><code>BETA/SE</code>: float, -10&lt;BETA&lt;10, -10&lt;log(OR)&lt;10</p>
-<p><code>OR/OR_95L/OR_95U</code>: float, 0&lt;OR&lt;10, OR_95L&gt;0, OR_95U&gt;0</p>
-<p><code>EAF</code>: 0&lt;= EAF &lt;=1, if EAF of &gt;95% of valid variants is less than 0.5, a warning will be sent.</p>
-<p><code>P</code> : float, 0&lt;P&lt;5e-300</p>
-<p><code>MLOG10</code> : float, MLOG10&gt;0</p>
-<p><code>Z</code> : float</p>
-<p><code>CHISQ</code> : float , CHISQ&gt;0</p>
-<p><code>N</code> : interger, N&gt;0</p>
-<p><code>Direction</code> : string, only contains "+","-" ,"0"or "?"</p>
+<ul>
+<li><code>n=(0,float("Inf"))</code> : interger, N&gt;0</li>
+<li><code>eaf=(0,1)</code> : float ,0&lt;= EAF &lt;=1</li>
+<li><code>mac=(5,float("Inf"))</code> : mac&gt;=5</li>
+<li><code>chisq=(0,float("Inf"))</code> : float , CHISQ&gt;0</li>
+<li><code>p=(5e-300,1)</code> : float, 5e-300&lt;P&lt;=1</li>
+<li><code>mlog10p=(0,float("Inf"))</code> : float, MLOG10&gt;0</li>
+<li><code>beta=(-10,10)</code> : float, -10&lt;BETA&lt;10</li>
+<li><code>z=(-37.5,37.5)</code>: float, -37.5&lt;z&lt;37.5</li>
+<li><code>se=(0,float("Inf"))</code> : float, SE&gt;0</li>
+<li><code>OR=(-10,10)</code> : float, -10&lt;log(OR)&lt;10</li>
+<li><code>OR_95L=(0,float("Inf"))</code> :float, OR_95L&gt;0</li>
+<li><code>OR_95U=(0,float("Inf"))</code> :float, OR_95U&gt;0</li>
+<li><code>info=(0,float("Inf"))</code> : float, INFO&gt;0 </li>
+<li><code>Direction</code> : string, only contains "+","-" ,"0"or "?"</li>
+</ul>
 <pre><code class="language-python">sumstats.check_sanity()
 </code></pre>
-<h2 id="remove-duplication-or-multiallelic-variants">Remove duplication or multiallelic variants</h2>
+<h2 id="remove-duplicated-or-multiallelic-variants">Remove duplicated or multiallelic variants</h2>
 <p>after standardize the sumstats, you can also remove duplicated or multiallelic variants using :</p>
-<p><code>.remove_dup()</code></p>
-<p>mode:</p>
-<p><code>d</code> ,remove duplicate.</p>
-<p>If SNPID exists, remove duplicate .</p>
-<p>If rsID exists, remove deuplicate rsID.</p>
-<p><code>m</code>,removed multiallelic. remove based on SNPID, CHR and POS</p>
-<pre><code class="language-python"> sumstats.remove_dup(mode=&quot;dm&quot;,keep='first')
+<ul>
+<li><code>mode=d</code> ,remove duplicate.<ul>
+<li>remove duplicate SNPs based on  1. SNPID, </li>
+<li>remove duplicate SNPs based on  2. CHR, POS, EA, and NEA</li>
+<li>remove duplicate SNPs based on  3. rsID</li>
+</ul>
+</li>
+<li>'mode=m', remove multiallelic variants.<ul>
+<li>remove multiallelic SNPs based on  4. CHR, POS</li>
+</ul>
+</li>
+<li><code>remove=True</code> : remove NAs </li>
+<li><code>keep_col</code> : use which column to sort the values (keep_ascend=True: ascending order)</li>
+<li><code>keep</code>: keep 'first' or 'last'.</li>
+</ul>
+<pre><code class="language-python">sumstats.remove_dup(mode=&quot;md&quot;,keep='first',keep_col=&quot;P&quot;,remove=False)
 </code></pre>
+<p>-&gt; remove duplicated and multiallelic variants and keep the one with lowest P.</p>
 <h2 id="filtering">FIltering</h2>
 <pre><code class="language-python">.filter_in(gt={},lt={},eq={},inplace=True)
 
