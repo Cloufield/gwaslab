@@ -262,6 +262,21 @@
 </li>
 
                         
+                            
+  <li class="dropdown-submenu">
+    <a tabindex="-1" href="">Sample code</a>
+    <ul class="dropdown-menu">
+        
+            
+<li >
+    <a href="../standardization_workflow/">All in one function</a>
+</li>
+
+        
+    </ul>
+  </li>
+
+                        
                         </ul>
                     </li>
                 
@@ -269,18 +284,13 @@
                 </ul>
 
             <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
-                            <i class="fas fa-search"></i> Search
-                        </a>
-                    </li>
                     <li >
                         <a rel="prev" href="../CommonData/">
                             <i class="fas fa-arrow-left"></i> Previous
                         </a>
                     </li>
-                    <li class="disabled">
-                        <a rel="next" >
+                    <li >
+                        <a rel="next" href="../standardization_workflow/">
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
@@ -298,7 +308,9 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="first-level active"><a href="#update-logs">Update Logs</a></li>
-            <li class="second-level"><a href="#v334-coming-soon">v3.3.4 coming soon</a></li>
+            <li class="second-level"><a href="#v335-coming-soon">v3.3.5 coming soon</a></li>
+                
+            <li class="second-level"><a href="#v334-20221031">v3.3.4 -20221031</a></li>
                 
             <li class="second-level"><a href="#v333">v3.3.3</a></li>
                 
@@ -317,7 +329,17 @@
         <div class="col-md-9" role="main">
 
 <h1 id="update-logs">Update Logs</h1>
-<h2 id="v334-coming-soon">v3.3.4 coming soon</h2>
+<h2 id="v335-coming-soon">v3.3.5 coming soon</h2>
+<h2 id="v334-20221031">v3.3.4 -20221031</h2>
+<ul>
+<li>added gwascatalog_trait()</li>
+<li>optimized check_sanity()</li>
+<li>optimized the logic for removing duplicated and multiallelic variants </li>
+<li>added update_formatbook()</li>
+<li>added functions to read vcf.gz <code>gl.Sumstats("myvcf.vcf.gz",fmt="vcf")</code></li>
+<li>gwaslab is now able to read chromosome-separated files</li>
+<li>fixed bugs</li>
+</ul>
 <h2 id="v333">v3.3.3</h2>
 <ul>
 <li>added Miami plot</li>
@@ -404,35 +426,8 @@
     <script>var base_url = ".."</script>
     
     <script src="../js/base.js"></script>
-    <script src="../search/main.js"></script>
 
-    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true">&times;</span>
-                    <span class="sr-only">Close</span>
-                </button>
-                <h4 class="modal-title" id="searchModalLabel">Search</h4>
-            </div>
-            <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
-                <form>
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
-                    </div>
-                </form>
-                <div id="mkdocs-search-results"></div>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">

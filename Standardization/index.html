@@ -262,6 +262,21 @@
 </li>
 
                         
+                            
+  <li class="dropdown-submenu">
+    <a tabindex="-1" href="">Sample code</a>
+    <ul class="dropdown-menu">
+        
+            
+<li >
+    <a href="../standardization_workflow/">All in one function</a>
+</li>
+
+        
+    </ul>
+  </li>
+
+                        
                         </ul>
                     </li>
                 
@@ -269,11 +284,6 @@
                 </ul>
 
             <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
-                            <i class="fas fa-search"></i> Search
-                        </a>
-                    </li>
                     <li >
                         <a rel="prev" href="../StatusCode/">
                             <i class="fas fa-arrow-left"></i> Previous
@@ -300,6 +310,8 @@
         <li class="first-level active"><a href="#standardization-and-normalization">Standardization and normalization</a></li>
             <li class="second-level"><a href="#methods-summary">Methods Summary</a></li>
                 
+            <li class="second-level"><a href="#1-ids">1. IDs</a></li>
+                
             <li class="second-level"><a href="#2-chr">2. CHR</a></li>
                 
             <li class="second-level"><a href="#3-pos">3. POS</a></li>
@@ -311,6 +323,8 @@
             <li class="second-level"><a href="#5-coordinate-sorting">5. Coordinate sorting</a></li>
                 
             <li class="second-level"><a href="#6-column-sorting">6. Column sorting</a></li>
+                
+            <li class="second-level"><a href="#example">Example</a></li>
                 
     </ul>
 </div></div>
@@ -367,12 +381,13 @@ sumstats = gl.Sumstats(...)
 <td>sort the column order to gwaslab default</td>
 </tr>
 <tr>
-<td>## 1. IDs</td>
+<td><code>.basic_check()</code></td>
 <td></td>
-<td></td>
+<td>all in one function</td>
 </tr>
 </tbody>
 </table>
+<h2 id="1-ids">1. IDs</h2>
 <p>Gwaslab requires at least one ID columns for sumstats, either in the form of SNPID or rsID, (or both). Gwaslab will automatically check if SNPID is mixed in rsID.</p>
 <p><code>SNPID</code> : it could be user provided IDs, or in <code>CHR:POS:REF:ALT</code> format, delimiter can be":","_" or "-"</p>
 <p><code>rsID</code>: dbSNP rsIDs</p>
@@ -438,7 +453,9 @@ sumstats = gl.Sumstats(...)
         &quot;SNPID&quot;,&quot;rsID&quot;, &quot;CHR&quot;, &quot;POS&quot;, &quot;EA&quot;, &quot;NEA&quot;, &quot;EAF&quot;, &quot;BETA&quot;, &quot;SE&quot;, &quot;Z&quot;,
         &quot;CHISQ&quot;, &quot;P&quot;, &quot;MLOG10P&quot;, &quot;OR&quot;, &quot;OR_SE&quot;, &quot;OR_95L&quot;, &quot;OR_95U&quot;, &quot;INFO&quot;, &quot;N&quot;,&quot;DIRECTION&quot;,&quot;STATUS&quot;
            ])
-</code></pre></div>
+</code></pre>
+<h2 id="example">Example</h2>
+<p>Please check <a href="https://github.com/Cloufield/gwaslab/blob/main/examples/standardization_workflow.ipynb">https://github.com/Cloufield/gwaslab/blob/main/examples/standardization_workflow.ipynb</a></p></div>
         
         
     </div>
@@ -471,35 +488,8 @@ sumstats = gl.Sumstats(...)
     <script>var base_url = ".."</script>
     
     <script src="../js/base.js"></script>
-    <script src="../search/main.js"></script>
 
-    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true">&times;</span>
-                    <span class="sr-only">Close</span>
-                </button>
-                <h4 class="modal-title" id="searchModalLabel">Search</h4>
-            </div>
-            <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
-                <form>
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
-                    </div>
-                </form>
-                <div id="mkdocs-search-results"></div>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
