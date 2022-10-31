@@ -6,7 +6,8 @@ from gwaslab.CommonData import get_high_ld
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.Log import Log
 from gwaslab.vchangestatus import vchange_status
-
+from gwaslab.fixdata import sortcoordinate
+import gc
 def filterout(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=Log()):
     if verbose: log.write("Start filtering values:")
     for key,threshold in gt.items():
@@ -22,6 +23,7 @@ def filterout(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=Log()):
         if verbose:log.write(" -Removing "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...")
         sumstats = sumstats.loc[sumstats[key]!=threshold,:]
     if verbose: log.write("Finished filtering values.")
+    gc.collect()
     return sumstats.copy()
 
 def filterin(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=Log()):
@@ -39,9 +41,11 @@ def filterin(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=Log()):
         if verbose:log.write(" -Keeping "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...")
         sumstats = sumstats.loc[sumstats[key]==threshold,:]
     if verbose: log.write("Finished filtering values.")
+    gc.collect()
     return sumstats.copy()
 
 def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, build="19", verbose=True,log=Log()):
+    sumstats = sortcoordinate(sumstats,verbose=verbose)
     if verbose: log.write("Start to filter in variants if in intervals defined in bed files:")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))
     
@@ -56,7 +60,10 @@ def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, bui
     bed["tuple"] = bed.apply(lambda x: (x[1],x[2]),axis=1)
     sumstats["bed_indicator"]=False
     dic=get_chr_to_number(out_chr=True)
-    bed[0]=bed[0].str.strip("chr").map(dic).astype("Int64")
+    bed[0]=bed[0].str.strip("chr")
+    bed[0]=bed[0].map(dic).astype("string")
+    bed[0]=bed[0].astype("Int64")
+    sumstats = sumstats.sort_values(["CHR","POS"])
     
     if len(bed)<100:
         if verbose: log.write(" -Bed file < 100 lines: using pd IntervalIndex... ")
@@ -69,7 +76,7 @@ def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, bui
     else:
         if verbose: log.write(" -Bed file > 100 lines: using two pointers, please make files are all sorted... ")
         bed_num  =0
-        bed_chr  =bed.iloc[bed_num,0]
+        bed_chr   =bed.iloc[bed_num,0]
         bed_left  =bed.iloc[bed_num,1]
         bed_right =bed.iloc[bed_num,2]
         
@@ -78,26 +85,38 @@ def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, bui
         sum_pos_col = sumstats.columns.get_loc(pos)
         sum_ind_col = sumstats.columns.get_loc("bed_indicator")
         while bed_num<len(bed) and sum_num<len(sumstats):
+            #sumstats variant chr < bed chr
             if sumstats.iat[sum_num,sum_chr_col]<bed_chr:
+                # next variant
                 sum_num+=1
                 continue
+            #sumstats variant chr > bed chr
             elif sumstats.iat[sum_num,sum_chr_col]>bed_chr:
+                # next bed record
                 bed_num+=1
                 bed_chr  =bed.iat[bed_num,0]
                 bed_left  = bed.iat[bed_num,1]
                 bed_right  = bed.iat[bed_num,2]
                 continue
+            #sumstats variant chr == bed chr
             else:
+                #sumstats variant pos < bed left
                 if sumstats.iat[sum_num,sum_pos_col]<bed_left:
+                    # next variant
                     sum_num+=1
                     continue
+                #sumstats variant pos > bed right
                 elif sumstats.iat[sum_num,sum_pos_col]>bed_right:
+                    # next bed record
                     bed_num+=1
                     bed_chr  =bed.iat[bed_num,0]
                     bed_left  = bed.iat[bed_num,1]
                     bed_right  = bed.iat[bed_num,2]
+                # bed left  < sumstats variant  pos < bed right
                 else:
+                    # set to true
                     sumstats.iat[sum_num,sum_ind_col]=True
+                    # next variant
                     sum_num+=1
                            
     ## in
@@ -107,9 +126,11 @@ def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, bui
     if verbose: log.write(" -Number of variants removed:",sum(~sumstats["bed_indicator"]))
     sumstats = sumstats.drop(columns="bed_indicator")
     if verbose: log.write("Finished filtering in variants.")
+    gc.collect()
     return sumstats
     
 def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, build="19", verbose=True,log=Log()):
+    sumstats = sortcoordinate(sumstats,verbose=verbose)
     if verbose: log.write("Start to filter out variants if in intervals defined in bed files:")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))
     if high_ld is True:
@@ -122,8 +143,11 @@ def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, b
     bed = pd.read_csv(path,sep="\s+",header=None,dtype={0:"string",1:"Int64",2:"Int64"})
     bed["tuple"] = bed.apply(lambda x: (x[1],x[2]),axis=1)
     sumstats["bed_indicator"]=False
+    
     dic=get_chr_to_number(out_chr=True)
-    bed[0]=bed[0].str.strip("chr").map(dic).astype("Int64")
+    bed[0]=bed[0].str.strip("chr")
+    bed[0]=bed[0].map(dic).astype("string")
+    bed[0]=bed[0].astype("Int64")
     
     if len(bed)<100:
         if verbose: log.write(" -Bed file < 100 lines: using pd IntervalIndex... ")
@@ -174,6 +198,7 @@ def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, b
     if verbose: log.write(" -Number of variants left:",len(sumstats))
     sumstats = sumstats.drop(columns="bed_indicator")
     if verbose: log.write("Finished filtering out variants.")
+    gc.collect()
     return sumstats
 
 def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True,log=Log()):
@@ -211,8 +236,10 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NE
             sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],2,"9","8")
         else:
             if verbose:log.write(" -Since num_hg19 = num_hg38, unable to infer...") 
+        gc.collect()
         return sumstats
     else:
+        gc.collect()
         raise ValueError("Not enough information to match SNPs. Please check if CHR and POS columns are in your sumstats...")
 
 def sampling(sumstats,n,verbose=True,log=Log()):
@@ -220,5 +247,6 @@ def sampling(sumstats,n,verbose=True,log=Log()):
     if verbose:log.write(" -Number of variants selected from the sumstats:",n)
     sampled = sumstats.sample(n=n)
     if verbose:log.write("Finished sampling...")
+    gc.collect()
     return sampled
     

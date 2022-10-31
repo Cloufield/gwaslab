@@ -363,8 +363,8 @@ class Sumstats():
         else:
             self.data = filterregionout(self.data,log=self.log,**args)
     
-    def random_variants(self,in_place=False,n=1,**args):
-        if in_place is True:
+    def random_variants(self,inplace=False,n=1,**args):
+        if inplace is True:
             self.data = sampling(self.data,n=n,log=self.log,**args)
         else:
             return sampling(self.data,n=n,log=self.log,**args)
