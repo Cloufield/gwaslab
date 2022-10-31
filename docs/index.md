@@ -49,27 +49,27 @@ mysumstats.plot_mqq()
 
 ### Loading and Formatting
 
-- Loading sumstats by simple specifying the software name
-- Optional Filtering of Hapmap3 / High-LD region / HLA when output sumtats 
-- Converting GWAS sumstats to specific formats
+- Loading sumstats by simply specifying the software name or format name.
+- Converting GWAS sumstats to specific formats:
   - LDSC / MAGMA / METAL / MR-MEGA / FUMA / VCF / BED... 
   - [check available formats](https://github.com/Cloufield/formatbook)
-
+- Optional Filtering of variants in Hapmap3 SNPs / High-LD regions / HLA region 
+ 
 ### Standardization & Normalization
 
 - Variant ID standardization
 - CHR and POS notation standardization
 - Variant POS and allele normalization
-- Genome build : Infer and Liftover 
+- Genome build : Inference and Liftover 
 
 ### Quality control, Value conversion & Filtering
 
-- General statistics sanity check
+- Statistics sanity check
 - Extreme value removal
 - Equivalent statistics conversion
     - BETA/SE , OR/OR_95L/OR_95U
     - P, Z, CHISQ, MLOG10
-- Customized value filtering.
+- Customized value filtering
 
 ###  Harmonization
 
