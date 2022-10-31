@@ -1,5 +1,15 @@
 # Update Logs
-## v3.3.4 coming soon
+
+## v3.3.5 coming soon
+
+## v3.3.4 -20221031
+- added gwascatalog_trait()
+- optimized check_sanity()
+- optimized the logic for removing duplicated and multiallelic variants 
+- added update_formatbook()
+- added functions to read vcf.gz `gl.Sumstats("myvcf.vcf.gz",fmt="vcf")`
+- gwaslab is now able to read chromosome-separated files
+- fixed bugs
 
 ## v3.3.3
 - added Miami plot
