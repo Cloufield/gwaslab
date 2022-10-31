@@ -81,7 +81,7 @@ sumstats.fix_POS(remove=False, limit=250000000)
 
 ## 4. Allele
 
-### 4.1 Standardization
+### 4.1 Allele notation Standardization
 
 `.fix_allele()`
 
@@ -97,11 +97,11 @@ Lower cases will converted to UPPERCASES.
 sumstats.fix_allele(remove=False)
 ```
 
-### 4.2 Normalization
+### 4.2 Variant Normalization
 
 `.normalize_allele()`
 
-Alleles will be normalized accroding to left alignment and parsimony principal. (For details: add link here )
+Alleles will be normalized accroding to left alignment and parsimony principal. (For details: [https://genome.sph.umich.edu/wiki/Variant_Normalization](https://genome.sph.umich.edu/wiki/Variant_Normalization) )
 
 For example, chr1:123456:ATG:AT will be normalized to chr1:123455:TG:T.
 
