@@ -17,7 +17,7 @@ After loading raw sumstats into gwaslab Sumstats Object, the first thing we prob
 | `.fix_allele()`       | `remove=False`                                               | standardize base notation to ATCG                                              |
 | `.normalize_allele()` | `n_cores=1`                                                  | normalize indels (only support ATA:AA -> AT:A but not -:T)                     |
 | `.sort_coordinate()`  |                                                              | sort the variant coordinates                                                   |
-
+| `.sort_column()`  |                                                              | sort the column order to gwaslab default                                                   |
 ## 1. IDs
 
 Gwaslab requires at least one ID columns for sumstats, either in the form of SNPID or rsID, (or both). Gwaslab will automatically check if SNPID is mixed in rsID.
@@ -50,12 +50,16 @@ sumstats.fixID(fixchrpos=False,
 
 `.fix_CHR()`
 
-CHR will be standardized to `1-22,X,Y,MT`
+CHR will be standardized to integers `1-22,23,24,25`
+- autosomes: 1-22
+- `x="X"` : 23
+- `x="Y"` : 24
+- `x="MT"` : 25
 
-Leading "chr" and leading 0s will be stripped.
+Leading "chr" or leading 0s will be stripped. Before conversion, CHR will be converted to uppercase.
 
 ```python
-sumstats.fix_CHR(remove=False)
+sumstats.fix_CHR(remove=False,x="X",y="Y",mt="MT")
 ```
 
 ## 3. POS
@@ -68,21 +72,21 @@ Basepair position will be force converted to integers.
 
 Invalid pos will be converted to NA. 
 
-(not implemented yet) After conversion, gwaslab will also sanity check if POS is in the range of 1 to 300,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  
+`limit=250000000` : After conversion, gwaslab will also sanity check if POS is in the range of 1 to 250,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  
 
 ```python
-sumstats.fix_POS(remove=False)
+sumstats.fix_POS(remove=False, limit=250000000)
 ```
 
 ## 4. Allele
 
-### 4.1 Standardization
+### 4.1 Allele notation Standardization
 
 `.fix_allele()`
 
 Currently, gwaslab only support processing SNPs and INDELs.
 
-All alleles will be checked if containing letters other than `ATCG`.
+All alleles will be checked if containing letters other than `A`,`T`,`C`,`G`.
 
 Copy number variant (CNV) like `<CN0>` won't be recognized.
 
@@ -92,34 +96,24 @@ Lower cases will converted to UPPERCASES.
 sumstats.fix_allele(remove=False)
 ```
 
-### 4.2 Normalization
+### 4.2 Variant Normalization
 
 `.normalize_allele()`
 
-Alleles will be normalized accroding to left alignment and parsimony principal. (For details: add link here )
+Alleles will be normalized accroding to left alignment and parsimony principal. (For details: [https://genome.sph.umich.edu/wiki/Variant_Normalization](https://genome.sph.umich.edu/wiki/Variant_Normalization) )
 
 For example, chr1:123456:ATG:AT will be normalized to chr1:123455:TG:T.
 
 Note: Currently, the normalizeation is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information need to be obtained from a reference genome. 
+`n_cores` : threads to use for normalization.
 
 ```python
 sumstats.normalize_allele(n_cores=1)
 ```
 
-## 5. Remove duplicated or multiallelic variants
-
-- remove duplicate SNPs based on  1. SNPID, 
-- remove duplicate SNPs based on  2. CHR, POS, EA, and NEA
-- remove duplicate SNPs based on  3. rsID for non-NA variants
-- remove multiallelic SNPs based on  4. CHR, POS
-
-```
-sumstats.remove_dup()
-```
-
 ## 5. Coordinate sorting
 
-Sort genomic coordinates， 1-22 X Y MT
+Sort genomic coordinates， 1-25 (23:X, 24:Y ,25:MT)
 
 ```python
 sumstats.sort_coordinate()
@@ -127,8 +121,13 @@ sumstats.sort_coordinate()
 
 ## 6. Column sorting
 
-The default column order is "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",  "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS" and other additional columns.
+The default column order is "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",  "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS" and other additional columns.
 
-```
-sumstats.sort_columns()
+`order`:`list` , column order.
+
+```python
+sumstats.sort_column(order = [
+        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
+        "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
+           ])
 ```
