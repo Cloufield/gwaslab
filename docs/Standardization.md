@@ -18,6 +18,8 @@ After loading raw sumstats into gwaslab Sumstats Object, the first thing we prob
 | `.normalize_allele()` | `n_cores=1`                                                  | normalize indels (only support ATA:AA -> AT:A but not -:T)                     |
 | `.sort_coordinate()`  |                                                              | sort the variant coordinates                                                   |
 | `.sort_column()`  |                                                              | sort the column order to gwaslab default                                                   |
+| `.basic_check()`  |                                                              | all in one function                                              |
+
 ## 1. IDs
 
 Gwaslab requires at least one ID columns for sumstats, either in the form of SNPID or rsID, (or both). Gwaslab will automatically check if SNPID is mixed in rsID.
@@ -131,3 +133,6 @@ sumstats.sort_column(order = [
         "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
            ])
 ```
+
+## Example
+Please check [https://github.com/Cloufield/gwaslab/blob/main/examples/standardization_workflow.ipynb](https://github.com/Cloufield/gwaslab/blob/main/examples/standardization_workflow.ipynb)
