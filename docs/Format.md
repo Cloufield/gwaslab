@@ -103,4 +103,4 @@ mysumstats.to_format("./test",fmt="vcf",bgzip=True,tabix=True)
 mysumstats.to_format("./test",fmt="ssf")
 ```
 
-For sample codes, please check [https://github.com/Cloufield/gwaslab/blob/main/examples/IO_format.ipynb](https://github.com/Cloufield/gwaslab/blob/main/examples/IO_format.ipynb)
+For sample codes, please check [https://github.com/Cloufield/gwaslab/blob/main/examples/format_load_save.ipynb](https://github.com/Cloufield/gwaslab/blob/main/examples/format_load_save.ipynb)
