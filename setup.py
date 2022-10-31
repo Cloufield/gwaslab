@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="gwaslab",
-    version="3.3.2",
+    version="3.3.4",
     author="Yunye",
     author_email="yunye@gwaslab.com",
     description="A collection of handy tools for GWAS",
@@ -21,7 +21,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "src"},
-    package_data={'gwaslab':['data/formatbook.json','data/high_ld/high_ld_hla_hg*.bed.gz','data/hapmap3_rs_chr_pos_a1_a2/*','data/RefGene/hg19/hg19.refGene.gtf.gz','data/RefGene/hg19/GRCh37/GRCh37_latest_genomic.protein_coding.gtf.gz','data/RefSeq/GRCh38/protein_coding.gtf.gz','data/Ensembl/release107/Homo_sapiens.GRCh38.107.protein_coding.chr.gtf.gz','data/Ensembl/release75/Homo_sapiens.GRCh37.75.protein_coding.gtf.gz']},
+    package_data={'gwaslab':['data/formatbook.json','data/high_ld/high_ld_hla_hg*.bed.gz','data/hapmap3_SNPs/*','data/RefGene/hg19/hg19.refGene.gtf.gz','data/RefGene/hg19/GRCh37/GRCh37_latest_genomic.protein_coding.gtf.gz','data/RefSeq/GRCh38/protein_coding.gtf.gz','data/Ensembl/release107/Homo_sapiens.GRCh38.107.protein_coding.chr.gtf.gz','data/Ensembl/release75/Homo_sapiens.GRCh37.75.protein_coding.gtf.gz']},
     packages=setuptools.find_packages(where="src"),
     python_requires=">=3.6",
 )
