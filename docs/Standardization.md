@@ -15,7 +15,6 @@ After loading raw sumstats into gwaslab Sumstats Object, the first thing we prob
 | `.fix_CHR()`          | `remove=False`                                               | standardize chromsome notation                                                 |
 | `.fix_POS()`          | `remove=False`                                               | standardize basepair posituion notation and filter out bad values              |
 | `.fix_allele()`       | `remove=False`                                               | standardize base notation to ATCG                                              |
-| `.remove_dup()`  |  `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants |
 | `.normalize_allele()` | `n_cores=1`                                                  | normalize indels (only support ATA:AA -> AT:A but not -:T)                     |
 | `.sort_coordinate()`  |                                                              | sort the variant coordinates                                                   |
 | `.sort_column()`  |                                                              | sort the column order to gwaslab default                                                   |
@@ -110,18 +109,6 @@ Note: Currently, the normalizeation is implemented without checking reference, w
 
 ```python
 sumstats.normalize_allele(n_cores=1)
-```
-
-## 5. Remove duplicated or multiallelic variants
-
-- remove duplicate SNPs based on  1. SNPID, 
-- remove duplicate SNPs based on  2. CHR, POS, EA, and NEA
-- remove duplicate SNPs based on  3. rsID
-- remove multiallelic SNPs based on  4. CHR, POS
-- remove NAs if `remove=True`
-
-```python
-sumstats.remove_dup(mode="md",keep='first',keep_col="P",remove=False)
 ```
 
 ## 5. Coordinate sorting
