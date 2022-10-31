@@ -5,7 +5,7 @@
 | Sumstats Methods  | Options                  | Description                                                             |
 | ----------------- | ------------------------ | ----------------------------------------------------------------------- |
 | `.check_sanity()` |                          | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
-| `.remove_dup()`   | `mode="dm",keep='first'` | remove duplicate or multi-allelic variants                              |
+| `.remove_dup()`  |  `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants |
 | `.filter_in()`    | lt, gt, eq, inplace      |                                                                         |
 | `.filter_out()`   |                          |                                                                         |
 | `.filter_region_in()`   | path , inplace=True ,high_ld=False, build="19"                         |                                                                         |
@@ -38,25 +38,25 @@
 sumstats.check_sanity()
 ```
 
-## Remove duplication or multiallelic variants
+## Remove duplicated or multiallelic variants
 
 after standardize the sumstats, you can also remove duplicated or multiallelic variants using :
 
-`.remove_dup()`
-
-mode:
-
-`d` ,remove duplicate.
-
-If SNPID exists, remove duplicate .
-
-If rsID exists, remove deuplicate rsID.
-
-`m`,removed multiallelic. remove based on SNPID, CHR and POS
+- `mode=d` ,remove duplicate.
+    - remove duplicate SNPs based on  1. SNPID, 
+    - remove duplicate SNPs based on  2. CHR, POS, EA, and NEA
+    - remove duplicate SNPs based on  3. rsID
+- 'mode=m', remove multiallelic variants.
+     - remove multiallelic SNPs based on  4. CHR, POS
+- `remove=True` : remove NAs 
+- `keep_col` : use which column to sort the values (keep_ascend=True: ascending order)
+- `keep`: keep 'first' or 'last'.
 
 ```python
- sumstats.remove_dup(mode="dm",keep='first')
+sumstats.remove_dup(mode="md",keep='first',keep_col="P",remove=False)
 ```
+ -> remove duplicated and multiallelic variants and keep the one with lowest P.
+
 
 ## FIltering
 
