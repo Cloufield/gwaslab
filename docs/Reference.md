@@ -1,24 +1,4 @@
 # Reference data for handling Sumstats
-## Reference Library for variants annotation : pyensembl
-
-Install pyensembl and download reference:
-
-```
-# install  pyensembl if not
-pip install pyensembl
-
-# syntax for download reference for pyensembl
-pyensembl install --release <list of Ensembl release numbers> --species <species-name>
-```
-GWASlab uses:
-- ensembl release 75 : hg19
-- ensembl release 107 : hg38 
-- NCBI refseq GRCh37
-- NCBI refseq GRCh38
-
-Currently, gwaslab could use ensembl or refseq gtf reference data to annotate lead SNPs with the nearest gene name.
-For details about pyensembl, please check [https://github.com/openvax/pyensembl](https://github.com/openvax/pyensembl)
-
 ## Reference genome sequence for variant allele alignment
 
 - GRCh37 / hg19 : [ucsc_hg19](http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/)
@@ -45,10 +25,6 @@ Process the 1000 genome vcf file for EAS sample:
 
 ### Sample code:
 ```bash
-
-
-
-
 #!/bin/bash
 # extract EAS sample ID
 awk '$3=="EAS"{print $1}' integrated_call_samples_v3.20130502.ALL.panel >EAS.sample
@@ -76,13 +52,62 @@ The processed dataset can then be used for:
 - check allele frequency difference 
 - regional plot
 
+## rsID conversion table for quick annotation
+Since gwaslab will check chr:pos and ea/nea to match rsID, it would take a little bit longer if we only use vcf. 
 
-## dbsnp: database for annoattion of rsID
+But we can use a pre-annotated conversion table for common SNPs, and then annotate the rest of SNPs using large VCF file from dbSNP. 
+```python
+for i in range(1,23):
+    sumstats = gl.Sumstats("./EAS.chr"+str(i)+".split_norm_af.vcf.gz",snpid="ID",fmt="vcf")
+    sumstats.harmonize( basic_check=True,
+                        ref_seq="./reference_genome/hg19/human_g1k_v37_decoy.fasta",
+                        ref_rsid_vcf="./All_20180423.vcf.gz", 
+                        n_cores=4)
+    sumstats.data.loc[:,["SNPID","rsID","CHR","POS","NEA","EA"]].to_csv("./1kg_af_dbsnp151."+str(i)+".txt.gz","\t",index=None)
+```
 
-- dbsnp v151 (hg19): https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz
+In terminal, combine the files:
+```
+# get header
+zcat 1kg_af_dbsnp151.1.txt.gz | head -1 > 1kg_af_dbsnp151_auto.txt
+
+for i in $(seq 1 22)
+do
+# get complete SNPID-rsID pairs
+zcat 1kg_af_dbsnp151.${i}.txt.gz | awk -v FS="\t" -v OFS="\t" 'NR>1 && $2!="" {print $0}' >>1kg_af_dbsnp151_auto.txt
+done
+```
+
+## dbsnp: database for annotation of rsID
+
+- dbsnp v151 (GRCh37): [https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz](https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz)
+- dbsnp v151 (GRCh37): [https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz.tbi](https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz.tbi)
+- dbsnp v151 (GRCh38): [https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF//00-All.vcf.gz](https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF//00-All.vcf.gz)
+- dbsnp v151 (GRCh38): [https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF//00-All.vcf.gz.tbi](https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF//00-All.vcf.gz.tbi)
 - latest release: [Index of /snp/latest_release/VCF](https://ftp.ncbi.nih.gov/snp/latest_release/VCF/)
 
 ## gnomad
 
 - Allele frequency for major ancestries and rsID
 - gnomAD v2 & gnomAD v2 liftover & gnomAD v3:   [gnomAD](https://gnomad.broadinstitute.org/downloads)    
+
+
+## Reference Library for variants annotation : pyensembl
+
+Install pyensembl and download reference:
+
+```
+# install  pyensembl if not
+pip install pyensembl
+
+# syntax for download reference for pyensembl
+pyensembl install --release <list of Ensembl release numbers> --species <species-name>
+```
+GWASlab uses:
+- ensembl release 75 : hg19
+- ensembl release 107 : hg38 
+- NCBI refseq GRCh37
+- NCBI refseq GRCh38
+
+Currently, gwaslab could use ensembl or refseq gtf reference data to annotate lead SNPs with the nearest gene name.
+For details about pyensembl, please check [https://github.com/openvax/pyensembl](https://github.com/openvax/pyensembl)

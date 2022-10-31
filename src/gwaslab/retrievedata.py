@@ -14,6 +14,7 @@ from gwaslab.CommonData import get_chr_to_number
 from gwaslab.vchangestatus import vchange_status
 import re
 import os
+import gc
 
 #rsidtochrpos
 #checkref
@@ -134,11 +135,10 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     sumstats = fixchr(sumstats,verbose=False)
     sumstats = fixpos(sumstats,verbose=False)
     pool.close()
-
     pool.join()
     return sumstats
 ####################################################################################################################
-#20220426 check if mom-effect allele is aligned with reference genome 
+#20220426 check if non-effect allele is aligned with reference genome 
 def check_status(row,record):
     #pos,ea,nea
     # status 
@@ -197,8 +197,8 @@ def check_status(row,record):
 def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
     if verbose: log.write("Start to check if NEA is aligned with reference sequence...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
-    if verbose:  log.write(" -Reference genome fasta file: "+ ref_path)  
-    if verbose:  log.write(" -Checking records: ", end="")  
+    if verbose: log.write(" -Reference genome fasta file: "+ ref_path)  
+    if verbose: log.write(" -Checking records: ", end="")  
     chromlist = get_chr_list(add_number=True)
     records = SeqIO.parse(ref_path, "fasta")
     for record in records:
@@ -235,6 +235,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
         if verbose: log.write("  -!!!Warning, matching rate is low, please check if the right reference genome is used.")
     if flip_rate > 0.85 :
         if verbose: log.write("  -Flipping variants rate > 0.85, it is likely that the EA is aligned with REF in the original dataset.")
+    
     if verbose: log.write(" -Variants inferred reverse_complement : ",status_4)
     if verbose: log.write(" -Variants inferred reverse_complement_flipped : ",status_5)
     if verbose: log.write(" -Both allele on genome + unable to distinguish : ",status_6)
@@ -244,6 +245,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     if remove is True:
         sumstats = sumstats.loc[~sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w"),:]
         if verbose: log.write(" -Variants not on given reference sequence were removed.")
+    gc.collect()
     return sumstats
 
 #######################################################################################################################################
@@ -253,12 +255,16 @@ def chrposref_rsid(chr,end,ref,alt,vcf_reader,chr_dict=get_number_to_chr()):
     ## single record assignment
     start=end-1
     if chr_dict is not None: chr=chr_dict[chr]
+    
     try:
         chr_seq = vcf_reader.fetch(chr,start,end)
     except:
         return pd.NA
+    
     for record in chr_seq:
         if record.pos==end: 
+            if record.alts is None:
+                return pd.NA
             if record.ref==ref and (alt in record.alts):
                 return record.id
             elif (ref in record.alts) and record.ref==alt:
@@ -267,13 +273,11 @@ def chrposref_rsid(chr,end,ref,alt,vcf_reader,chr_dict=get_number_to_chr()):
 
 def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",chr_dict=get_number_to_chr()):
     ## single df assignment
-    #vcf_reader = vcf.Reader(open(path, 'rb'))
     vcf_reader = VariantFile(path)
     def rsid_helper(x,vcf_reader,chr_dict):
          return chrposref_rsid(x[0],x[1],x[2],x[3],vcf_reader,chr_dict)
     map_func=partial(rsid_helper,vcf_reader=vcf_reader,chr_dict=chr_dict)
     rsID = sumstats.apply(map_func,axis=1)
-    #rsID = sumstats.apply(lambda x:chrposref_rsid(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,chr_dict),axis=1)
     return rsID
 
 def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",
@@ -320,7 +324,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
             sumstats.loc[to_assign,rsid] = assigned_rsid.values 
             pool.close()
             pool.join()
-
+        gc.collect()
         ##################################################################################################################
 
         after_number = sum(~sumstats[rsid].isna())
@@ -358,7 +362,8 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
 
             if verbose:  log.write(" -Setting block size: ",chunksize)
             if verbose:  log.write(" -Loading block: ",end="")     
-            for i,dic in enumerate(dic_chuncks):    
+            for i,dic in enumerate(dic_chuncks):
+                gc.collect()
                 log.write(i," ",end=" ",show_time=False)  
                 dic = dic.rename(index={ref_snpid:snpid})
                 dic = dic.rename(columns={ref_rsid:rsid})  
@@ -375,6 +380,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
         else:
             if verbose: log.write(" -No rsID could be fixed...skipping...")
         ################################################################################################################
+    gc.collect()
     return sumstats
 #################################################################################################################################################
 #single record assignment
@@ -412,9 +418,11 @@ def check_unkonwn_indel(chr,start,end,ref,alt,vcf_reader,alt_freq,status,chr_dic
     ### 4 unknown indel,fixed   (6->5)
     ### 6 flip
     ### 9 noinfo or not matching
+    
     if chr_dict is not None: chr=chr_dict[chr]
     status_pre=status[:6]
     status_end=""
+    
     try:
         chr_seq = vcf_reader.fetch(chr,start,end)
     except:
@@ -447,21 +455,20 @@ def is_palindromic(sumstats,a1="EA",a2="NEA"):
 #single df assignment
 
 def check_strand(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS"):
-    #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
     vcf_reader = VariantFile(ref_infer)
     status_part = sumstats.apply(lambda x:check_strand_status(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,x[5],chr_dict),axis=1) 
     return status_part
 
 def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS"):
-    #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
     vcf_reader = VariantFile(ref_infer)
     status_part = sumstats.apply(lambda x:check_unkonwn_indel(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,ref_alt_freq,x[4],chr_dict),axis=1)
     return status_part
 
-
 ##################################################################################################################################################
 
-def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,remove_snp="",mode="pi",n_cores=1,remove_indel="",chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),verbose=True,log=Log()):
+def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,remove_snp="",mode="pi",n_cores=1,remove_indel="",
+                       chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
+                       chr_dict=get_number_to_chr(),verbose=True,log=Log()):
     if verbose: log.write("Start to infer strand for palindromic SNPs...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
@@ -563,6 +570,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             if "8" in remove_indel:
                 if verbose: log.write("  -Indels with no macthes or no information will be removed")
                 sumstats = sumstats.loc[~status8,:].copy()     
+    gc.collect()
     return sumstats
 
 

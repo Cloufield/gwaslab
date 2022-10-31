@@ -277,21 +277,21 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
     
     if keep_col is not None : 
         if keep_col in sumstats.columns:
-            if verbose: log.write("Start to sort the sumstats using" + keep_col +"...")
+            if verbose: log.write("Start to sort the sumstats using " + keep_col +"...")
             sumstats = sumstats.sort_values(by=keep_col,ascending=keep_ascend)
         else:
             if verbose: log.write("Column" + keep_col +" was not detected... skipping... ")
     total_number = len(sumstats)  
-    if (snpid in sumstats.columns) and (nea in sumstats.columns) and (ea in sumstats.columns) and "d" in mode:
-        if verbose: log.write("Start to remove duplicated variants based on snpid,ea and nea...")
+    
+    if (snpid in sumstats.columns) and "d" in mode:
+        if verbose: log.write("Start to remove duplicated variants based on snpid...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
         if verbose: log.write(" -Which variant to keep: ",  keep )   
         pre_number =len(sumstats)   
         if snpid in sumstats.columns:
-            sumstats = sumstats.loc[sumstats[snpid].isna() | (~sumstats.duplicated(subset=[snpid,ea,nea], keep=keep)),:]
+            sumstats = sumstats.loc[sumstats[snpid].isna() | (~sumstats.duplicated(subset=[snpid], keep=keep)),:]
             after_number=len(sumstats)   
-            if verbose:  log.write(" -Removed ",pre_number -after_number ," based on SNPID, EA, and NEA...")
-     
+            if verbose:  log.write(" -Removed ",pre_number -after_number ," based on SNPID...")
     
     if (rsid in sumstats.columns) and ("d" in mode):
         pre_number =len(sumstats)
@@ -299,7 +299,17 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         sumstats = sumstats.loc[sumstats[rsid].isna() | (~sumstats.duplicated(subset=rsid, keep=keep)),:]
         after_number=len(sumstats)   
         if verbose:  log.write(" -Removed ",pre_number -after_number ," based on rsID...")
-      
+    
+    if (chrom in sumstats.columns) and (pos in sumstats.columns) and (nea in sumstats.columns) and (ea in sumstats.columns) and "d" in mode:
+        if verbose: log.write("Start to remove duplicated variants based on CHR,POS,EA and NEA...")
+        if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
+        if verbose: log.write(" -Which variant to keep: ",  keep )   
+        pre_number =len(sumstats)   
+        if snpid in sumstats.columns:
+            sumstats = sumstats.loc[(~sumstats[[chrom,pos,ea,nea]].all(axis=1)) | (~sumstats.duplicated(subset=[chrom,pos,ea,nea], keep=keep)),:]
+            after_number=len(sumstats)   
+            if verbose:  log.write(" -Removed ",pre_number -after_number ," based on CHR,POS,EA and NEA...") 
+        
     if (chrom in sumstats.columns) and (pos in sumstats.columns) and "m" in mode:
         pre_number =len(sumstats) 
         if verbose: log.write("Start to remove multiallelic variants based on chr:pos...")    
@@ -308,10 +318,11 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         after_number=len(sumstats)  
         if verbose:  log.write(" -Removed ",total_number -after_number," multiallelic variants in total.")   
     after_number=len(sumstats)   
+    
     if verbose:  log.write(" -Removed ",total_number -after_number," duplicates in total.")
     if keep_col is not None : 
         if verbose: log.write(" -Sort the coordinates...")
-        sumstats = sortcoordinate(sumstats)
+        sumstats = sortcoordinate(sumstats,verbose=False)
     if remove is True:
         if verbose: log.write(" -Removing NAs...")
         pre_number =len(sumstats) 

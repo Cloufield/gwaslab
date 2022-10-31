@@ -9,6 +9,7 @@ from gwaslab.CommonData import gtf_index
 from pyensembl import EnsemblRelease
 from pyensembl import Genome
 from os import path
+from gwaslab.fill import fill_p
 
 #getsig
 #closest_gene
@@ -44,6 +45,9 @@ def getsig(insumstats,
     
     sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
     sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+    if p not in sumstats.columns:
+        if "MLOG10P" in sumstats.columns: 
+            fill_p(sumstats,log)
     sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
     
     #extract all significant variants
@@ -293,7 +297,9 @@ def getnovel(insumstats,
         knownids=knownsig["SNPID"].values
     if "PUBMEDID" in knownsig.columns:
         knownpubmedids=knownsig["PUBMEDID"].values
-    
+    if "AUTHOR" in knownsig.columns:
+        knownauthor=knownsig["AUTHOR"].values
+        
     if verbose: log.write("Start to check if lead variants are known...")
     knownsig["TCHR+POS"]=knownsig[chrom]*1000000000 + knownsig[pos]
     
@@ -310,6 +316,8 @@ def getnovel(insumstats,
         allsig["KNOWN_ID"] = allsig["TCHR+POS"].apply(lambda x:knownids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])    
     if "PUBMEDID" in knownsig.columns:
         allsig["KNOWN_PUBMED_ID"] = allsig["TCHR+POS"].apply(lambda x:knownpubmedids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
+    if "AUTHOR" in knownsig.columns:
+        allsig["KNOWN_AUTHOR"] = allsig["TCHR+POS"].apply(lambda x:knownauthor[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
     allsig["NOVEL"] = allsig["DISTANCE_TO_KNOWN"] > windowsizekb_for_novel*1000
     
     if verbose: log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...")

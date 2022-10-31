@@ -2,6 +2,8 @@ import pandas as pd
 from os import path
 import json
 from pyensembl import Genome
+import requests
+from gwaslab.Log import Log
 
 #hard-coded data
 def get_chr_to_NC(build,inverse=False):
@@ -258,19 +260,47 @@ def gtf_index():
 
 
 ####################################################################################################################
+
+      
+def update_formatbook(log=Log()):
+    url = 'https://raw.github.com/Cloufield/formatbook/main/formatbook.json'
+    log.write("Updating formatbook from:",url)
+    r = requests.get(url, allow_redirects=True)
+    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    with open(data_path, 'wb') as file:
+        file.write(r.content)
+    book=json.load(open("formatbook.json"))
+    available_formats = list(book.keys())
+    available_formats.sort()
+    log.write("Available formats:",",".join(available_formats))
+    log.write("Formatbook has been updated!")
+        
+         
+def list_formats(log=Log()):
+    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    book=json.load(open("formatbook.json"))
+    available_formats = list(book.keys())
+    available_formats.sort()
+    log.write("Available formats:",",".join(available_formats))    
+
+def check_format(fmt,log=Log()):
+    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    book=json.load(open("formatbook.json"))
+    log.write("Available formats:",end="")
+    for i in book[fmt].keys():
+        log.write(i,end="")
+    log.write("") 
+    for i in book[fmt].values():
+        log.write(i,end="")
+        
+####################################################################################################################       
+        
 def gwaslab_info():
     dic={
-   "version":"3.3.2",
-   "release_date":"20221024"
+   "version":"3.3.3",
+   "release_date":"20221029"
     }
-    return dic
-        
-        
-        
-        
-        
-        
-        
+    return dic       
         
         
         

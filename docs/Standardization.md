@@ -11,7 +11,7 @@ After loading raw sumstats into gwaslab Sumstats Object, the first thing we prob
 
 | Sumstats Methods      | Options                                                      | Description                                                                    |
 | --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `.fix_ID()`           | `fixchrpos=False`, <br/>`fixid=False`,<br/>`overwrite=False` | check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS |
+| `.fix_ID()`           | `fixchrpos=False`, <br/>`fixid=False`, <br/>`fixsep=False`,<br/>`overwrite=False`,<br/>`forcefixid=False` | check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS |
 | `.fix_CHR()`          | `remove=False`                                               | standardize chromsome notation                                                 |
 | `.fix_POS()`          | `remove=False`                                               | standardize basepair posituion notation and filter out bad values              |
 | `.fix_allele()`       | `remove=False`                                               | standardize base notation to ATCG                                              |
@@ -35,8 +35,16 @@ SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants is already align
 ```python
 sumstats.fixID(fixchrpos=False,
                fixid=False,
+               fixsep=False,
                overwrite=False)
 ```
+`.fix_ID()` options:
+
+- `fixchrpos` : `Boolean`, extract CHR and POS from SNPID (CHR:POS:NEA:EA) to fill CHR and POS columns (deaful:`False`)
+- `fixid` : `Boolean` ,  use CHR/POS/NEA/EA to reconstruct the SNPID. For variant that are not aligned with reference genome. Only CHR/POS will be used. (deaful:`False`)
+- `forcefixid`: `Boolean` ,  use CHR/POS/NEA/EA to reconstruct the SNPID without checking if the variant is aligned. (deaful:`False`)
+- `fixsep` : `Boolean`, fix SNPID delimiter (For example: 1:123_A_C to 1:123:A:C) (deaful:`False`)
+- `overwrite` : `Boolean`, whether overwrite existing data. (deaful:`False`)
 
 ## 2. CHR
 
@@ -96,6 +104,17 @@ Note: Currently, the normalizeation is implemented without checking reference, w
 
 ```python
 sumstats.normalize_allele(n_cores=1)
+```
+
+## 5. Remove duplicated or multiallelic variants
+
+- remove duplicate SNPs based on  1. SNPID, 
+- remove duplicate SNPs based on  2. CHR, POS, EA, and NEA
+- remove duplicate SNPs based on  3. rsID for non-NA variants
+- remove multiallelic SNPs based on  4. CHR, POS
+
+```
+sumstats.remove_dup()
 ```
 
 ## 5. Coordinate sorting

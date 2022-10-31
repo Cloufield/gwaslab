@@ -25,9 +25,7 @@ pip install gwaslab==3.3.3
 ```python
 import gwaslab as gl
 # load plink2 output
-mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
-             fmt="plink2",
-             build="19")
+mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="plink2")
 
 # or you can specify the columns:
 mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
