@@ -16,23 +16,20 @@
 
 `.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected range`.
 
-`BETA/SE`: float, -10<BETA<10, -10<log(OR)<10
-
-`OR/OR_95L/OR_95U`: float, 0<OR<10, OR_95L>0, OR_95U>0
-
-`EAF`: 0<= EAF <=1, if EAF of >95% of valid variants is less than 0.5, a warning will be sent.
-
-`P` : float, 0<P<5e-300
-
-`MLOG10` : float, MLOG10>0
-
-`Z` : float
-
-`CHISQ` : float , CHISQ>0
-
-`N` : interger, N>0
-
-`Direction` : string, only contains "+","-" ,"0"or "?"
+- `n=(0,float("Inf"))` : interger, N>0
+- `eaf=(0,1)` : float ,0<= EAF <=1,
+- `mac=(5,float("Inf"))` : mac>=5
+- `chisq=(0,float("Inf"))` : float , CHISQ>0
+- `p=(5e-300,1)` : float, 5e-300<P<=1
+- `mlog10p=(0,float("Inf"))` : float, MLOG10>0
+- `beta=(-10,10)` : float, -10<BETA<10, -10<log(OR)<10
+- `z=(-20,20)`: float, -20<z<20
+- `se=(0,float("Inf"))` : float, SE>0
+- `OR=(-10,10)` : float, 0<OR<10, , 
+- `OR_95L=(0,float("Inf"))` :float, OR_95L>0
+- `OR_95U=(0,float("Inf"))` :float, OR_95U>0
+- `info=(0,float("Inf"))` : float, INFO>0 
+- `Direction` : string, only contains "+","-" ,"0"or "?"
 
 ```python
 sumstats.check_sanity()
