@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>Import packages - GWASLab</title>
+    <title>Compare effect sizes - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -257,13 +257,13 @@
         
             
 <li >
-    <a href="../standardization_workflow/">Load sample data</a>
+    <a href="../standardization_workflow/">Workflow</a>
 </li>
 
         
             
 <li >
-    <a href="../quality_control_and_filtering/">QC and filtering</a>
+    <a href="../quality_control_and_filtering/">QC &amp; Filtering</a>
 </li>
 
         
@@ -278,7 +278,7 @@
         
             
 <li >
-    <a href="../harmonization_workflow/">Loading raw sumstats</a>
+    <a href="../harmonization_workflow/">Workflow</a>
 </li>
 
         
@@ -294,7 +294,7 @@
                         
                             
 <li >
-    <a href="../format_load_save/">Loading data</a>
+    <a href="../format_load_save/">Formatting and saving</a>
 </li>
 
                         
@@ -305,13 +305,13 @@
         
             
 <li >
-    <a href="../utility_data_conversion/">utility_data_conversion</a>
+    <a href="../utility_data_conversion/">Data conversion</a>
 </li>
 
         
             
 <li >
-    <a href="../utility_get_novel/">Checking novel</a>
+    <a href="../utility_get_novel/">Get novel variants</a>
 </li>
 
         
@@ -326,7 +326,7 @@
         
             
 <li >
-    <a href="../visualization_mqq/">Load gwaslab</a>
+    <a href="../visualization_mqq/">Manhattan and Q-Q plot</a>
 </li>
 
         
@@ -344,7 +344,7 @@
         
             
 <li >
-    <a href="../visualization_brisbane/">Download data</a>
+    <a href="../visualization_brisbane/">Brisbane plot</a>
 </li>
 
         
@@ -384,13 +384,21 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#import-packages">Import packages</a></li>
-        <li class="first-level "><a href="#download-sample-sumstats">Download sample sumstats</a></li>
-        <li class="first-level "><a href="#creating-comparison-plot-using-beta-and-se">Creating comparison plot using beta and se</a></li>
-        <li class="first-level "><a href="#specify-the-snps-you-want-to-check">Specify the snps you want to check</a></li>
-        <li class="first-level "><a href="#creating-comparison-plot-using-beta-and-se-of-specified-variants">Creating comparison plot using beta and se of specified variants</a></li>
-        <li class="first-level "><a href="#check-raw-data">Check raw data</a></li>
-        <li class="first-level "><a href="#creating-comparison-plot-using-or-or_95l-and-or_95u">Creating comparison plot using OR, OR_95L and OR_95U</a></li>
+        <li class="first-level active"><a href="#compare-effect-sizes">Compare effect sizes</a></li>
+            <li class="second-level"><a href="#import-packages">Import packages</a></li>
+                
+            <li class="second-level"><a href="#download-sample-sumstats">Download sample sumstats</a></li>
+                
+            <li class="second-level"><a href="#creating-comparison-plot-using-beta-and-se">Creating comparison plot using beta and se</a></li>
+                
+            <li class="second-level"><a href="#specify-the-snps-you-want-to-check">Specify the snps you want to check</a></li>
+                
+            <li class="second-level"><a href="#creating-comparison-plot-using-beta-and-se-of-specified-variants">Creating comparison plot using beta and se of specified variants</a></li>
+                
+            <li class="second-level"><a href="#check-raw-data">Check raw data</a></li>
+                
+            <li class="second-level"><a href="#creating-comparison-plot-using-or-or_95l-and-or_95u">Creating comparison plot using OR, OR_95L and OR_95U</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -1431,7 +1439,18 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="import-packages">Import packages<a class="anchor-link" href="#import-packages">&#182;</a></h1>
+<h1 id="compare-effect-sizes">Compare effect sizes<a class="anchor-link" href="#compare-effect-sizes">&#182;</a></h1>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="import-packages">Import packages<a class="anchor-link" href="#import-packages">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1474,7 +1493,7 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="download-sample-sumstats">Download sample sumstats<a class="anchor-link" href="#download-sample-sumstats">&#182;</a></h1>
+<h2 id="download-sample-sumstats">Download sample sumstats<a class="anchor-link" href="#download-sample-sumstats">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1569,7 +1588,7 @@ smoking_female.txt. 100%[===================&gt;] 154.53M  9.24MB/s    in 20s
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="creating-comparison-plot-using-beta-and-se">Creating comparison plot using beta and se<a class="anchor-link" href="#creating-comparison-plot-using-beta-and-se">&#182;</a></h1>
+<h2 id="creating-comparison-plot-using-beta-and-se">Creating comparison plot using beta and se<a class="anchor-link" href="#creating-comparison-plot-using-beta-and-se">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1717,7 +1736,7 @@ class="
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="specify-the-snps-you-want-to-check">Specify the snps you want to check<a class="anchor-link" href="#specify-the-snps-you-want-to-check">&#182;</a></h1>
+<h2 id="specify-the-snps-you-want-to-check">Specify the snps you want to check<a class="anchor-link" href="#specify-the-snps-you-want-to-check">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1848,7 +1867,7 @@ snps = [
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="creating-comparison-plot-using-beta-and-se-of-specified-variants">Creating comparison plot using beta and se of specified variants<a class="anchor-link" href="#creating-comparison-plot-using-beta-and-se-of-specified-variants">&#182;</a></h1>
+<h2 id="creating-comparison-plot-using-beta-and-se-of-specified-variants">Creating comparison plot using beta and se of specified variants<a class="anchor-link" href="#creating-comparison-plot-using-beta-and-se-of-specified-variants">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1985,7 +2004,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="check-raw-data">Check raw data<a class="anchor-link" href="#check-raw-data">&#182;</a></h1>
+<h2 id="check-raw-data">Check raw data<a class="anchor-link" href="#check-raw-data">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2736,7 +2755,7 @@ a[2]</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="creating-comparison-plot-using-or-or_95l-and-or_95u">Creating comparison plot using OR, OR_95L and OR_95U<a class="anchor-link" href="#creating-comparison-plot-using-or-or_95l-and-or_95u">&#182;</a></h1>
+<h2 id="creating-comparison-plot-using-or-or_95l-and-or_95u">Creating comparison plot using OR, OR_95L and OR_95U<a class="anchor-link" href="#creating-comparison-plot-using-or-or_95l-and-or_95u">&#182;</a></h2>
 </div>
 </div>
 </div>

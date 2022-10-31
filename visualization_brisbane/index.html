@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>Download data - GWASLab</title>
+    <title>Brisbane plot - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -257,13 +257,13 @@
         
             
 <li >
-    <a href="../standardization_workflow/">Load sample data</a>
+    <a href="../standardization_workflow/">Workflow</a>
 </li>
 
         
             
 <li >
-    <a href="../quality_control_and_filtering/">QC and filtering</a>
+    <a href="../quality_control_and_filtering/">QC &amp; Filtering</a>
 </li>
 
         
@@ -278,7 +278,7 @@
         
             
 <li >
-    <a href="../harmonization_workflow/">Loading raw sumstats</a>
+    <a href="../harmonization_workflow/">Workflow</a>
 </li>
 
         
@@ -294,7 +294,7 @@
                         
                             
 <li >
-    <a href="../format_load_save/">Loading data</a>
+    <a href="../format_load_save/">Formatting and saving</a>
 </li>
 
                         
@@ -305,13 +305,13 @@
         
             
 <li >
-    <a href="../utility_data_conversion/">utility_data_conversion</a>
+    <a href="../utility_data_conversion/">Data conversion</a>
 </li>
 
         
             
 <li >
-    <a href="../utility_get_novel/">Checking novel</a>
+    <a href="../utility_get_novel/">Get novel variants</a>
 </li>
 
         
@@ -326,7 +326,7 @@
         
             
 <li >
-    <a href="../visualization_mqq/">Load gwaslab</a>
+    <a href="../visualization_mqq/">Manhattan and Q-Q plot</a>
 </li>
 
         
@@ -344,7 +344,7 @@
         
             
 <li class="active">
-    <a href="./">Download data</a>
+    <a href="./">Brisbane plot</a>
 </li>
 
         
@@ -394,13 +394,21 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#download-data">Download data</a></li>
-        <li class="first-level "><a href="#loading-into-dataframe">Loading into dataframe</a></li>
-        <li class="first-level "><a href="#load-to-gwaslab-sumstats">Load to gwaslab Sumstats</a></li>
-        <li class="first-level "><a href="#first-try-with-normal-manhattan-plot">First try with normal manhattan plot</a></li>
-        <li class="first-level "><a href="#brisbane-plot-modeb">Brisbane plot : mode=b</a></li>
-        <li class="first-level "><a href="#some-customizations">Some customizations</a></li>
-        <li class="first-level "><a href="#annotate-with-gene-names">Annotate with gene names</a></li>
+        <li class="first-level active"><a href="#brisbane-plot">Brisbane plot</a></li>
+            <li class="second-level"><a href="#download-data">Download data</a></li>
+                
+            <li class="second-level"><a href="#loading-into-dataframe">Loading into dataframe</a></li>
+                
+            <li class="second-level"><a href="#load-to-gwaslab-sumstats">Load to gwaslab Sumstats</a></li>
+                
+            <li class="second-level"><a href="#first-try-with-normal-manhattan-plot">First try with normal manhattan plot</a></li>
+                
+            <li class="second-level"><a href="#brisbane-plot-modeb">Brisbane plot : mode=b</a></li>
+                
+            <li class="second-level"><a href="#some-customizations">Some customizations</a></li>
+                
+            <li class="second-level"><a href="#annotate-with-gene-names">Annotate with gene names</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -1434,7 +1442,18 @@ Licensed under the Apache License, Version 2.0.
     }
     init_mathjax();
     </script>
-    <!-- End of mathjax configuration --><div class="jupyter-wrapper"><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+    <!-- End of mathjax configuration --><div class="jupyter-wrapper">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="brisbane-plot">Brisbane plot<a class="anchor-link" href="#brisbane-plot">&#182;</a></h1>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -1479,7 +1498,7 @@ import pandas as pd</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="download-data">Download data<a class="anchor-link" href="#download-data">&#182;</a></h1>
+<h2 id="download-data">Download data<a class="anchor-link" href="#download-data">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1560,7 +1579,7 @@ wget: unable to resolve host address ‘static-content.springer.com’
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="loading-into-dataframe">Loading into dataframe<a class="anchor-link" href="#loading-into-dataframe">&#182;</a></h1>
+<h2 id="loading-into-dataframe">Loading into dataframe<a class="anchor-link" href="#loading-into-dataframe">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1951,7 +1970,7 @@ data</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="load-to-gwaslab-sumstats">Load to gwaslab Sumstats<a class="anchor-link" href="#load-to-gwaslab-sumstats">&#182;</a></h1>
+<h2 id="load-to-gwaslab-sumstats">Load to gwaslab Sumstats<a class="anchor-link" href="#load-to-gwaslab-sumstats">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2023,7 +2042,7 @@ Tue Oct 25 17:09:46 2022 Finished loading data successfully!
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="first-try-with-normal-manhattan-plot">First try with normal manhattan plot<a class="anchor-link" href="#first-try-with-normal-manhattan-plot">&#182;</a></h1>
+<h2 id="first-try-with-normal-manhattan-plot">First try with normal manhattan plot<a class="anchor-link" href="#first-try-with-normal-manhattan-plot">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2141,7 +2160,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="brisbane-plot-modeb">Brisbane plot : mode=b<a class="anchor-link" href="#brisbane-plot-modeb">&#182;</a></h1>
+<h2 id="brisbane-plot-modeb">Brisbane plot : mode=b<a class="anchor-link" href="#brisbane-plot-modeb">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2253,7 +2272,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="some-customizations">Some customizations<a class="anchor-link" href="#some-customizations">&#182;</a></h1>
+<h2 id="some-customizations">Some customizations<a class="anchor-link" href="#some-customizations">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2365,7 +2384,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="annotate-with-gene-names">Annotate with gene names<a class="anchor-link" href="#annotate-with-gene-names">&#182;</a></h1>
+<h2 id="annotate-with-gene-names">Annotate with gene names<a class="anchor-link" href="#annotate-with-gene-names">&#182;</a></h2>
 </div>
 </div>
 </div>

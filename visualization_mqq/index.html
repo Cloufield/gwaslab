@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>Load gwaslab - GWASLab</title>
+    <title>Manhattan and Q-Q plot - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -257,13 +257,13 @@
         
             
 <li >
-    <a href="../standardization_workflow/">Load sample data</a>
+    <a href="../standardization_workflow/">Workflow</a>
 </li>
 
         
             
 <li >
-    <a href="../quality_control_and_filtering/">QC and filtering</a>
+    <a href="../quality_control_and_filtering/">QC &amp; Filtering</a>
 </li>
 
         
@@ -278,7 +278,7 @@
         
             
 <li >
-    <a href="../harmonization_workflow/">Loading raw sumstats</a>
+    <a href="../harmonization_workflow/">Workflow</a>
 </li>
 
         
@@ -294,7 +294,7 @@
                         
                             
 <li >
-    <a href="../format_load_save/">Loading data</a>
+    <a href="../format_load_save/">Formatting and saving</a>
 </li>
 
                         
@@ -305,13 +305,13 @@
         
             
 <li >
-    <a href="../utility_data_conversion/">utility_data_conversion</a>
+    <a href="../utility_data_conversion/">Data conversion</a>
 </li>
 
         
             
 <li >
-    <a href="../utility_get_novel/">Checking novel</a>
+    <a href="../utility_get_novel/">Get novel variants</a>
 </li>
 
         
@@ -326,7 +326,7 @@
         
             
 <li class="active">
-    <a href="./">Load gwaslab</a>
+    <a href="./">Manhattan and Q-Q plot</a>
 </li>
 
         
@@ -344,7 +344,7 @@
         
             
 <li >
-    <a href="../visualization_brisbane/">Download data</a>
+    <a href="../visualization_brisbane/">Brisbane plot</a>
 </li>
 
         
@@ -394,32 +394,29 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#load-gwaslab">Load gwaslab</a></li>
-        <li class="first-level "><a href="#load-data-into-sumstats-object">Load data into Sumstats Object</a></li>
+        <li class="first-level active"><a href="#manhattan-and-q-q-plot">Manhattan and Q-Q plot</a></li>
+            <li class="second-level"><a href="#load-gwaslab">Load gwaslab</a></li>
+                
+            <li class="second-level"><a href="#load-data-into-sumstats-object">Load data into Sumstats Object</a></li>
+                
             <li class="second-level"><a href="#briefly-check-the-data">briefly check the data</a></li>
                 
             <li class="second-level"><a href="#lets-remove-chrx-first">let's remove chrX first</a></li>
                 
         <li class="first-level "><a href="#glplot_mqq-options">gl.plot_mqq() Options</a></li>
-        <li class="first-level "><a href="#1-skip-and-cut">1. skip and cut</a></li>
-        <li class="first-level "><a href="#2-mode">2. mode</a></li>
-            <li class="second-level"><a href="#4-patterns-of-layout-mqqqqmqqm">4 patterns of layout: mqq,qqm,qq,m</a></li>
+            <li class="second-level"><a href="#1-skip-and-cut">1. skip and cut</a></li>
                 
-        <li class="first-level "><a href="#3-annotation">3. Annotation</a></li>
-            <li class="second-level"><a href="#annotrue-annoatate-all-lead-variant-with-chrpos">anno=True : annoatate all lead variant with chr:pos</a></li>
+            <li class="second-level"><a href="#2-mode">2. mode</a></li>
                 
-            <li class="second-level"><a href="#since-there-are-a-large-number-of-novel-loci-if-we-annotate-all-loci-it-will-be-too-messy-lets-select-some-loci-to-annotate">since there are a large number of novel loci, if we annotate all loci, it will be too messy. Let's select some loci to annotate.</a></li>
+                <li class="third-level"><a href="#4-patterns-of-layout-mqqqqmqqm">4 patterns of layout: mqq,qqm,qq,m</a></li>
+            <li class="second-level"><a href="#3-annotation">3. Annotation</a></li>
                 
-            <li class="second-level"><a href="#let-annotate-1154309595_ta_t-and-227734972_g_a-with-its-nearest-gene-names">let annotate 1:154309595_TA_T and 2:27734972_G_A with its nearest gene names!</a></li>
+                <li class="third-level"><a href="#annotrue-annoatate-all-lead-variant-with-chrpos">anno=True : annoatate all lead variant with chr:pos</a></li>
+                <li class="third-level"><a href="#anno_alias-annotate-customized-text">anno_alias: annotate customized text</a></li>
+            <li class="second-level"><a href="#4-highlight-locipinpoint-variant">4. highlight loci&amp;pinpoint variant</a></li>
                 
-            <li class="second-level"><a href="#annogenename-automatically-annoatate-the-nearest-gene-name">anno="GENENAME" : automatically annoatate the nearest gene name</a></li>
+            <li class="second-level"><a href="#stratified-qq-plot">Stratified QQ plot</a></li>
                 
-            <li class="second-level"><a href="#anno_set-the-set-of-variants-you-want-to-annotate">anno_set= the set of variants you want to annotate</a></li>
-                
-            <li class="second-level"><a href="#anno_alias-annotate-customized-text">anno_alias: annotate customized text</a></li>
-                
-        <li class="first-level "><a href="#4-highlight-locipinpoint-variant">4. highlight loci&amp;pinpoint variant</a></li>
-        <li class="first-level "><a href="#stratified-qq-plot">Stratified QQ plot</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -1460,7 +1457,18 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="load-gwaslab">Load gwaslab<a class="anchor-link" href="#load-gwaslab">&#182;</a></h1>
+<h1 id="manhattan-and-q-q-plot">Manhattan and Q-Q plot<a class="anchor-link" href="#manhattan-and-q-q-plot">&#182;</a></h1>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="load-gwaslab">Load gwaslab<a class="anchor-link" href="#load-gwaslab">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1503,7 +1511,7 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="load-data-into-sumstats-object">Load data into Sumstats Object<a class="anchor-link" href="#load-data-into-sumstats-object">&#182;</a></h1>
+<h2 id="load-data-into-sumstats-object">Load data into Sumstats Object<a class="anchor-link" href="#load-data-into-sumstats-object">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1892,7 +1900,7 @@ Tue Oct 18 11:22:30 2022 Finished filtering values.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="1-skip-and-cut">1. skip and cut<a class="anchor-link" href="#1-skip-and-cut">&#182;</a></h1>
+<h2 id="1-skip-and-cut">1. skip and cut<a class="anchor-link" href="#1-skip-and-cut">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2119,7 +2127,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="2-mode">2. mode<a class="anchor-link" href="#2-mode">&#182;</a></h1>
+<h2 id="2-mode">2. mode<a class="anchor-link" href="#2-mode">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2130,7 +2138,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="4-patterns-of-layout-mqqqqmqqm">4 patterns of layout: mqq,qqm,qq,m<a class="anchor-link" href="#4-patterns-of-layout-mqqqqmqqm">&#182;</a></h2>
+<h3 id="4-patterns-of-layout-mqqqqmqqm">4 patterns of layout: mqq,qqm,qq,m<a class="anchor-link" href="#4-patterns-of-layout-mqqqqmqqm">&#182;</a></h3>
 </div>
 </div>
 </div>
@@ -2565,7 +2573,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="3-annotation">3. Annotation<a class="anchor-link" href="#3-annotation">&#182;</a></h1>
+<h2 id="3-annotation">3. Annotation<a class="anchor-link" href="#3-annotation">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2576,7 +2584,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="annotrue-annoatate-all-lead-variant-with-chrpos">anno=True : annoatate all lead variant with chr:pos<a class="anchor-link" href="#annotrue-annoatate-all-lead-variant-with-chrpos">&#182;</a></h2>
+<h3 id="annotrue-annoatate-all-lead-variant-with-chrpos">anno=True : annoatate all lead variant with chr:pos<a class="anchor-link" href="#annotrue-annoatate-all-lead-variant-with-chrpos">&#182;</a></h3>
 </div>
 </div>
 </div>
@@ -2695,7 +2703,8 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="since-there-are-a-large-number-of-novel-loci-if-we-annotate-all-loci-it-will-be-too-messy-lets-select-some-loci-to-annotate">since there are a large number of novel loci, if we annotate all loci, it will be too messy. Let's select some loci to annotate.<a class="anchor-link" href="#since-there-are-a-large-number-of-novel-loci-if-we-annotate-all-loci-it-will-be-too-messy-lets-select-some-loci-to-annotate">&#182;</a></h2>
+<p>since there are a large number of novel loci, if we annotate all loci, it will be too messy. Let's select some loci to annotate.</p>
+
 </div>
 </div>
 </div>
@@ -2935,7 +2944,8 @@ Tue Oct 18 11:24:39 2022 Finished extracting lead variants successfully!
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="let-annotate-1154309595_ta_t-and-227734972_g_a-with-its-nearest-gene-names">let annotate 1:154309595_TA_T and 2:27734972_G_A with its nearest gene names!<a class="anchor-link" href="#let-annotate-1154309595_ta_t-and-227734972_g_a-with-its-nearest-gene-names">&#182;</a></h2>
+<p>let's annotate 1:154309595_TA_T and 2:27734972_G_A with its nearest gene names!</p>
+
 </div>
 </div>
 </div>
@@ -2946,7 +2956,8 @@ Tue Oct 18 11:24:39 2022 Finished extracting lead variants successfully!
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="annogenename-automatically-annoatate-the-nearest-gene-name">anno="GENENAME" : automatically annoatate the nearest gene name<a class="anchor-link" href="#annogenename-automatically-annoatate-the-nearest-gene-name">&#182;</a></h2>
+<p>anno="GENENAME" : automatically annoatate the nearest gene name</p>
+
 </div>
 </div>
 </div>
@@ -2957,7 +2968,8 @@ Tue Oct 18 11:24:39 2022 Finished extracting lead variants successfully!
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="anno_set-the-set-of-variants-you-want-to-annotate">anno_set= the set of variants you want to annotate<a class="anchor-link" href="#anno_set-the-set-of-variants-you-want-to-annotate">&#182;</a></h2>
+<p>anno_set= the set of variants you want to annotate</p>
+
 </div>
 </div>
 </div>
@@ -3078,7 +3090,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="anno_alias-annotate-customized-text">anno_alias: annotate customized text<a class="anchor-link" href="#anno_alias-annotate-customized-text">&#182;</a></h2>
+<h3 id="anno_alias-annotate-customized-text">anno_alias: annotate customized text<a class="anchor-link" href="#anno_alias-annotate-customized-text">&#182;</a></h3>
 </div>
 </div>
 </div>
@@ -3202,7 +3214,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="4-highlight-locipinpoint-variant">4. highlight loci&amp;pinpoint variant<a class="anchor-link" href="#4-highlight-locipinpoint-variant">&#182;</a></h1>
+<h2 id="4-highlight-locipinpoint-variant">4. highlight loci&amp;pinpoint variant<a class="anchor-link" href="#4-highlight-locipinpoint-variant">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -3335,7 +3347,7 @@ jp-needs-light-background
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="stratified-qq-plot">Stratified QQ plot<a class="anchor-link" href="#stratified-qq-plot">&#182;</a></h1>
+<h2 id="stratified-qq-plot">Stratified QQ plot<a class="anchor-link" href="#stratified-qq-plot">&#182;</a></h2>
 </div>
 </div>
 </div>

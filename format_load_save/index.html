@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>Loading data - GWASLab</title>
+    <title>Formatting and saving - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -257,13 +257,13 @@
         
             
 <li >
-    <a href="../standardization_workflow/">Load sample data</a>
+    <a href="../standardization_workflow/">Workflow</a>
 </li>
 
         
             
 <li >
-    <a href="../quality_control_and_filtering/">QC and filtering</a>
+    <a href="../quality_control_and_filtering/">QC &amp; Filtering</a>
 </li>
 
         
@@ -278,7 +278,7 @@
         
             
 <li >
-    <a href="../harmonization_workflow/">Loading raw sumstats</a>
+    <a href="../harmonization_workflow/">Workflow</a>
 </li>
 
         
@@ -294,7 +294,7 @@
                         
                             
 <li class="active">
-    <a href="./">Loading data</a>
+    <a href="./">Formatting and saving</a>
 </li>
 
                         
@@ -305,13 +305,13 @@
         
             
 <li >
-    <a href="../utility_data_conversion/">utility_data_conversion</a>
+    <a href="../utility_data_conversion/">Data conversion</a>
 </li>
 
         
             
 <li >
-    <a href="../utility_get_novel/">Checking novel</a>
+    <a href="../utility_get_novel/">Get novel variants</a>
 </li>
 
         
@@ -326,7 +326,7 @@
         
             
 <li >
-    <a href="../visualization_mqq/">Load gwaslab</a>
+    <a href="../visualization_mqq/">Manhattan and Q-Q plot</a>
 </li>
 
         
@@ -344,7 +344,7 @@
         
             
 <li >
-    <a href="../visualization_brisbane/">Download data</a>
+    <a href="../visualization_brisbane/">Brisbane plot</a>
 </li>
 
         
@@ -394,10 +394,15 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#loading-data">Loading data</a></li>
-        <li class="first-level "><a href="#check-availble-formats">Check availble formats</a></li>
-        <li class="first-level "><a href="#filter-for-output">Filter for output</a></li>
-        <li class="first-level "><a href="#formatting-and-saving">Formatting and saving</a></li>
+        <li class="first-level active"><a href="#formatting-and-saving">Formatting and saving</a></li>
+            <li class="second-level"><a href="#loading-data">Loading data</a></li>
+                
+            <li class="second-level"><a href="#check-availble-formats">Check availble formats</a></li>
+                
+            <li class="second-level"><a href="#filter-for-output">Filter for output</a></li>
+                
+            <li class="second-level"><a href="#formatting-and-saving_1">Formatting and saving</a></li>
+                
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -1431,7 +1436,18 @@ Licensed under the Apache License, Version 2.0.
     }
     init_mathjax();
     </script>
-    <!-- End of mathjax configuration --><div class="jupyter-wrapper"><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+    <!-- End of mathjax configuration --><div class="jupyter-wrapper">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="formatting-and-saving">Formatting and saving<a class="anchor-link" href="#formatting-and-saving">&#182;</a></h1>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -1506,7 +1522,7 @@ import gwaslab as gl</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="loading-data">Loading data<a class="anchor-link" href="#loading-data">&#182;</a></h1>
+<h2 id="loading-data">Loading data<a class="anchor-link" href="#loading-data">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1604,7 +1620,7 @@ Thu Sep 22 23:34:36 2022 Finished loading data successfully!
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="check-availble-formats">Check availble formats<a class="anchor-link" href="#check-availble-formats">&#182;</a></h1>
+<h2 id="check-availble-formats">Check availble formats<a class="anchor-link" href="#check-availble-formats">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1725,7 +1741,7 @@ Sat Oct 29 22:55:40 2022 {&#39;format_name&#39;: &#39;saige&#39;, &#39;format_so
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="filter-for-output">Filter for output<a class="anchor-link" href="#filter-for-output">&#182;</a></h1>
+<h2 id="filter-for-output">Filter for output<a class="anchor-link" href="#filter-for-output">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -1835,7 +1851,7 @@ Thu Sep 22 23:34:47 2022 Finished normalizing variants successfully!
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="formatting-and-saving">Formatting and saving<a class="anchor-link" href="#formatting-and-saving">&#182;</a></h1>
+<h2 id="formatting-and-saving">Formatting and saving<a class="anchor-link" href="#formatting-and-saving">&#182;</a></h2>
 </div>
 </div>
 </div>
