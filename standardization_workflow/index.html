@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>All in one function - GWASLab</title>
+    <title>Load sample data - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -251,6 +251,108 @@
 
                         
                             
+  <li class="dropdown-submenu">
+    <a tabindex="-1" href="">Standardization and QC example</a>
+    <ul class="dropdown-menu">
+        
+            
+<li class="active">
+    <a href="./">Load sample data</a>
+</li>
+
+        
+            
+<li >
+    <a href="../quality_control_and_filtering/">QC and filtering</a>
+</li>
+
+        
+    </ul>
+  </li>
+
+                        
+                            
+  <li class="dropdown-submenu">
+    <a tabindex="-1" href="">Harmonization example</a>
+    <ul class="dropdown-menu">
+        
+            
+<li >
+    <a href="../harmonization_workflow/">Loading raw sumstats</a>
+</li>
+
+        
+            
+<li >
+    <a href="../harmonization_liftover/">Liftover</a>
+</li>
+
+        
+    </ul>
+  </li>
+
+                        
+                            
+<li >
+    <a href="../format_load_save/">Loading data</a>
+</li>
+
+                        
+                            
+  <li class="dropdown-submenu">
+    <a tabindex="-1" href="">Utility example</a>
+    <ul class="dropdown-menu">
+        
+            
+<li >
+    <a href="../utility_data_conversion/">utility_data_conversion</a>
+</li>
+
+        
+            
+<li >
+    <a href="../utility_get_novel/">Checking novel</a>
+</li>
+
+        
+    </ul>
+  </li>
+
+                        
+                            
+  <li class="dropdown-submenu">
+    <a tabindex="-1" href="">Visualization example</a>
+    <ul class="dropdown-menu">
+        
+            
+<li >
+    <a href="../visualization_mqq/">Load gwaslab</a>
+</li>
+
+        
+            
+<li >
+    <a href="../visualization_miami/">Miami plot</a>
+</li>
+
+        
+            
+<li >
+    <a href="../visualization_regional/">Regional plot</a>
+</li>
+
+        
+            
+<li >
+    <a href="../visualization_brisbane/">Download data</a>
+</li>
+
+        
+    </ul>
+  </li>
+
+                        
+                            
 <li >
     <a href="../CommonData/">Common data</a>
 </li>
@@ -262,21 +364,6 @@
 </li>
 
                         
-                            
-  <li class="dropdown-submenu">
-    <a tabindex="-1" href="">Sample code</a>
-    <ul class="dropdown-menu">
-        
-            
-<li class="active">
-    <a href="./">All in one function</a>
-</li>
-
-        
-    </ul>
-  </li>
-
-                        
                         </ul>
                     </li>
                 
@@ -285,12 +372,12 @@
 
             <ul class="nav navbar-nav navbar-right">
                     <li >
-                        <a rel="prev" href="../UpdateLogs/">
+                        <a rel="prev" href="../Reference/">
                             <i class="fas fa-arrow-left"></i> Previous
                         </a>
                     </li>
-                    <li class="disabled">
-                        <a rel="next" >
+                    <li >
+                        <a rel="next" href="../quality_control_and_filtering/">
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
@@ -307,7 +394,26 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#all-in-one-function">All in one function</a></li>
+        <li class="first-level active"><a href="#load-sample-data">Load sample data</a></li>
+            <li class="second-level"><a href="#fix-id">fix id</a></li>
+                
+            <li class="second-level"><a href="#fix-chromosome">fix chromosome</a></li>
+                
+            <li class="second-level"><a href="#fix-position">fix position</a></li>
+                
+            <li class="second-level"><a href="#fix-allele">fix allele</a></li>
+                
+            <li class="second-level"><a href="#sanity-check-for-statistics">sanity check for statistics</a></li>
+                
+            <li class="second-level"><a href="#normalize-variants">normalize variants</a></li>
+                
+            <li class="second-level"><a href="#remove-duplicated-multiallelic-variants">remove duplicated / multiallelic variants</a></li>
+                
+            <li class="second-level"><a href="#sort-genome-coordinate">sort genome coordinate</a></li>
+                
+            <li class="second-level"><a href="#sort-column">sort column</a></li>
+                
+        <li class="first-level "><a href="#all-in-one-function">All in one function</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -1363,11 +1469,11 @@ Licensed under the Apache License, Version 2.0.
             </clipboard-copy>
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;/home/yunye/gwaslab/gwaslab/src&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;/Users/he/work/gwaslab/src/&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">gwaslab</span> <span class="k">as</span> <span class="nn">gl</span>
 </pre></div>
 <div id="cell-1" class="clipboard-copy-txt">import sys
-sys.path.insert(0,"/home/yunye/gwaslab/gwaslab/src")
+sys.path.insert(0,"/Users/he/work/gwaslab/src/")
 import gwaslab as gl</div>
     
         </div>
@@ -1376,6 +1482,17 @@ import gwaslab as gl</div>
 </div>
 </div>
 
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="load-sample-data">Load sample data<a class="anchor-link" href="#load-sample-data">&#182;</a></h1>
+</div>
+</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -1444,17 +1561,17 @@ import gwaslab as gl</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:24:53 2022 Start to initiate from file :t2d_bbj.txt.gz
-Mon Oct 31 00:25:10 2022  -Reading columns          : N,REF,ALT,CHR,SNP,Dir,Frq,BETA,SE,P,POS
-Mon Oct 31 00:25:10 2022  -Renaming columns to      : N,NEA,EA,CHR,SNPID,DIRECTION,EAF,BETA,SE,P,POS
-Mon Oct 31 00:25:10 2022  -Current dataframe shape  : Rows  12557761  x  11  Columns
-Mon Oct 31 00:25:11 2022  -Initiating a status column ...
-Mon Oct 31 00:25:13 2022  -NEAF is specified...
-Mon Oct 31 00:25:13 2022  -Checking if 0&lt;= NEAF &lt;=1 ...
-Mon Oct 31 00:25:15 2022  -Converted NEAF to EAF.
-Mon Oct 31 00:25:15 2022  -Removed 0 variants with bad NEAF.
-Mon Oct 31 00:25:15 2022  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
-Mon Oct 31 00:25:17 2022 Finished loading data successfully!
+<pre>Mon Oct 31 12:35:23 2022 Start to initiate from file :t2d_bbj.txt.gz
+Mon Oct 31 12:35:53 2022  -Reading columns          : CHR,BETA,ALT,SE,Frq,POS,P,Dir,N,SNP,REF
+Mon Oct 31 12:35:53 2022  -Renaming columns to      : CHR,BETA,EA,SE,EAF,POS,P,DIRECTION,N,SNPID,NEA
+Mon Oct 31 12:35:53 2022  -Current dataframe shape  : Rows  12557761  x  11  Columns
+Mon Oct 31 12:36:01 2022  -Initiating a status column ...
+Mon Oct 31 12:36:04 2022  -NEAF is specified...
+Mon Oct 31 12:36:04 2022  -Checking if 0&lt;= NEAF &lt;=1 ...
+Mon Oct 31 12:36:08 2022  -Converted NEAF to EAF.
+Mon Oct 31 12:36:08 2022  -Removed 0 variants with bad NEAF.
+Mon Oct 31 12:36:08 2022  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
+Mon Oct 31 12:36:12 2022 Finished loading data successfully!
 </pre>
 </div>
 </div>
@@ -1463,6 +1580,17 @@ Mon Oct 31 00:25:17 2022 Finished loading data successfully!
 
 </div>
 
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="fix-id">fix id<a class="anchor-link" href="#fix-id">&#182;</a></h2>
+</div>
+</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -1509,11 +1637,11 @@ Mon Oct 31 00:25:17 2022 Finished loading data successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:25:17 2022 Start to check IDs...
-Mon Oct 31 00:25:17 2022  -Current Dataframe shape : 12557761  x  12
-Mon Oct 31 00:25:17 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
-Mon Oct 31 00:25:30 2022  -Replacing [_-] in SNPID with &#34;:&#34; ...
-Mon Oct 31 00:25:40 2022 Finished checking IDs successfully!
+<pre>Mon Oct 31 12:36:12 2022 Start to check IDs...
+Mon Oct 31 12:36:12 2022  -Current Dataframe shape : 12557761  x  12
+Mon Oct 31 12:36:12 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
+Mon Oct 31 12:36:33 2022  -Replacing [_-] in SNPID with &#34;:&#34; ...
+Mon Oct 31 12:36:50 2022 Finished checking IDs successfully!
 </pre>
 </div>
 </div>
@@ -1522,6 +1650,17 @@ Mon Oct 31 00:25:40 2022 Finished checking IDs successfully!
 
 </div>
 
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="fix-chromosome">fix chromosome<a class="anchor-link" href="#fix-chromosome">&#182;</a></h2>
+</div>
+</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -1568,15 +1707,15 @@ Mon Oct 31 00:25:40 2022 Finished checking IDs successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:25:40 2022 Start to fix chromosome notation...
-Mon Oct 31 00:25:40 2022  -Current Dataframe shape : 12557761  x  12
-Mon Oct 31 00:26:09 2022  -Vairants with fixable chromosome notations: 328791
-Mon Oct 31 00:26:10 2022  -Converting to string datatype and UPPERCASE...
-Mon Oct 31 00:26:11 2022  -Stripping chr prefix if exists : CHR_-.0...
-Mon Oct 31 00:26:12 2022  -Identified  328791  variants on sex chromosomes...
-Mon Oct 31 00:26:13 2022  -Standardizing sex chromosome notations: X Y MT  to 23,24,25...
-Mon Oct 31 00:26:27 2022  -No unrecognized chromosome notations...
-Mon Oct 31 00:26:33 2022 Finished fixing chromosome notation successfully!
+<pre>Mon Oct 31 12:36:50 2022 Start to fix chromosome notation...
+Mon Oct 31 12:36:50 2022  -Current Dataframe shape : 12557761  x  12
+Mon Oct 31 12:37:34 2022  -Vairants with fixable chromosome notations: 328791
+Mon Oct 31 12:37:36 2022  -Converting to string datatype and UPPERCASE...
+Mon Oct 31 12:37:37 2022  -Stripping chr prefix if exists : CHR_-.0...
+Mon Oct 31 12:37:41 2022  -Identified  328791  variants on sex chromosomes...
+Mon Oct 31 12:37:41 2022  -Standardizing sex chromosome notations: X Y MT  to 23,24,25...
+Mon Oct 31 12:38:11 2022  -No unrecognized chromosome notations...
+Mon Oct 31 12:38:17 2022 Finished fixing chromosome notation successfully!
 </pre>
 </div>
 </div>
@@ -1585,6 +1724,17 @@ Mon Oct 31 00:26:33 2022 Finished fixing chromosome notation successfully!
 
 </div>
 
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="fix-position">fix position<a class="anchor-link" href="#fix-position">&#182;</a></h2>
+</div>
+</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -1631,12 +1781,12 @@ Mon Oct 31 00:26:33 2022 Finished fixing chromosome notation successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:26:33 2022 Start to fix basepair positions...
-Mon Oct 31 00:26:33 2022  -Current Dataframe shape : 12557761  x  12
-Mon Oct 31 00:26:48 2022  -Position upper_bound is: 250,000,000
-Mon Oct 31 00:27:13 2022  -Remove outliers: 0
-Mon Oct 31 00:27:15 2022  -Converted all position to datatype Int64.
-Mon Oct 31 00:27:15 2022 Finished fixing basepair position successfully!
+<pre>Mon Oct 31 12:38:17 2022 Start to fix basepair positions...
+Mon Oct 31 12:38:17 2022  -Current Dataframe shape : 12557761  x  12
+Mon Oct 31 12:38:44 2022  -Position upper_bound is: 250,000,000
+Mon Oct 31 12:39:21 2022  -Remove outliers: 0
+Mon Oct 31 12:39:34 2022  -Converted all position to datatype Int64.
+Mon Oct 31 12:39:34 2022 Finished fixing basepair position successfully!
 </pre>
 </div>
 </div>
@@ -1645,6 +1795,17 @@ Mon Oct 31 00:27:15 2022 Finished fixing basepair position successfully!
 
 </div>
 
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="fix-allele">fix allele<a class="anchor-link" href="#fix-allele">&#182;</a></h2>
+</div>
+</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -1691,10 +1852,10 @@ Mon Oct 31 00:27:15 2022 Finished fixing basepair position successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:27:15 2022 Start to fix alleles...
-Mon Oct 31 00:27:15 2022  -Current Dataframe shape : 12557761  x  12
-Mon Oct 31 00:27:29 2022  -Converted all bases to string datatype and UPPERCASE.
-Mon Oct 31 00:27:47 2022 Finished fixing allele successfully!
+<pre>Mon Oct 31 12:39:34 2022 Start to fix alleles...
+Mon Oct 31 12:39:34 2022  -Current Dataframe shape : 12557761  x  12
+Mon Oct 31 12:39:53 2022  -Converted all bases to string datatype and UPPERCASE.
+Mon Oct 31 12:40:26 2022 Finished fixing allele successfully!
 </pre>
 </div>
 </div>
@@ -1703,6 +1864,17 @@ Mon Oct 31 00:27:47 2022 Finished fixing allele successfully!
 
 </div>
 
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="sanity-check-for-statistics">sanity check for statistics<a class="anchor-link" href="#sanity-check-for-statistics">&#182;</a></h2>
+</div>
+</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -1725,9 +1897,9 @@ Mon Oct 31 00:27:47 2022 Finished fixing allele successfully!
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">normalize_allele</span><span class="p">()</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">()</span>
 </pre></div>
-<div id="cell-7" class="clipboard-copy-txt">mysumstats.normalize_allele()</div>
+<div id="cell-7" class="clipboard-copy-txt">mysumstats.check_sanity()</div>
     
         </div>
     </div>
@@ -1749,11 +1921,24 @@ Mon Oct 31 00:27:47 2022 Finished fixing allele successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:27:47 2022 Start to normalize variants...
-Mon Oct 31 00:27:47 2022  -Current Dataframe shape : 12557761  x  12
-Mon Oct 31 00:27:54 2022  -Not normalized allele:[&#39;TT&#39; &#39;TC&#39;][&#39;CTTTT&#39; &#39;CTTT&#39;][&#39;ATTT&#39; &#39;ATT&#39;][&#39;ATTT&#39; &#39;ATT&#39;][&#39;GTT&#39; &#39;GT&#39;]... 
-Mon Oct 31 00:27:54 2022  -Modified 13 variants according to parsimony and left alignment principal.
-Mon Oct 31 00:27:56 2022 Finished normalizing variants successfully!
+<pre>Mon Oct 31 12:40:26 2022 Start sanity check for statistics ...
+Mon Oct 31 12:40:26 2022  -Current Dataframe shape : 12557761  x  12
+Mon Oct 31 12:40:35 2022  -Checking if  0 &lt;=N&lt;= inf  ...
+Mon Oct 31 12:40:44 2022  -Removed 0 variants with bad N.
+Mon Oct 31 12:40:44 2022  -Checking if  0 &lt;=EAF&lt;= 1  ...
+Mon Oct 31 12:40:48 2022  -Removed 0 variants with bad EAF.
+Mon Oct 31 12:40:48 2022  -Checking if  5 &lt;=MAC&lt;= inf  ...
+Mon Oct 31 12:40:55 2022  -Removed 0 variants with bad MAC.
+Mon Oct 31 12:40:55 2022  -Checking if  5e-300 &lt;= P &lt;= 1  ...
+Mon Oct 31 12:40:58 2022  -Removed 0 variants with bad P.
+Mon Oct 31 12:40:58 2022  -Checking if  -10 &lt;BETA)&lt; 10  ...
+Mon Oct 31 12:41:01 2022  -Removed 0 variants with bad BETA.
+Mon Oct 31 12:41:01 2022  -Checking if  0 &lt;SE&lt; inf  ...
+Mon Oct 31 12:41:04 2022  -Removed 0 variants with bad SE.
+Mon Oct 31 12:41:04 2022  -Checking STATUS...
+Mon Oct 31 12:41:06 2022  -Coverting STAUTUS to category.
+Mon Oct 31 12:41:08 2022  -Removed 0 variants with bad statistics in total.
+Mon Oct 31 12:41:08 2022 Finished sanity check successfully!
 </pre>
 </div>
 </div>
@@ -1762,6 +1947,17 @@ Mon Oct 31 00:27:56 2022 Finished normalizing variants successfully!
 
 </div>
 
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="normalize-variants">normalize variants<a class="anchor-link" href="#normalize-variants">&#182;</a></h2>
+</div>
+</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -1784,9 +1980,9 @@ Mon Oct 31 00:27:56 2022 Finished normalizing variants successfully!
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">remove_dup</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">normalize_allele</span><span class="p">()</span>
 </pre></div>
-<div id="cell-8" class="clipboard-copy-txt">mysumstats.remove_dup(mode="d")</div>
+<div id="cell-8" class="clipboard-copy-txt">mysumstats.normalize_allele()</div>
     
         </div>
     </div>
@@ -1808,23 +2004,11 @@ Mon Oct 31 00:27:56 2022 Finished normalizing variants successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:27:56 2022 Start to sort the sumstats using P...
-Mon Oct 31 00:28:04 2022 Start to remove duplicated variants based on snpid...
-Mon Oct 31 00:28:04 2022  -Current Dataframe shape : 12557761  x  12
-Mon Oct 31 00:28:04 2022  -Which variant to keep:  first
-Mon Oct 31 00:28:17 2022  -Removed  0  based on SNPID...
-Mon Oct 31 00:28:17 2022 Start to remove duplicated variants based on CHR,POS,EA and NEA...
-Mon Oct 31 00:28:17 2022  -Current Dataframe shape : 12557761  x  12
-Mon Oct 31 00:28:17 2022  -Which variant to keep:  first
-Mon Oct 31 00:28:30 2022  -Removed  2  based on CHR,POS,EA and NEA...
-Mon Oct 31 00:28:30 2022  -Removed  2  duplicates in total.
-Mon Oct 31 00:28:30 2022  -Sort the coordinates...
-Mon Oct 31 00:28:30 2022 Start to sort the genome coordinates...
-Mon Oct 31 00:28:30 2022  -Current Dataframe shape : 12557759  x  12
-Mon Oct 31 00:28:30 2022  -Force converting POS to integers...
-Mon Oct 31 00:28:31 2022  -Sorting genome coordinates...
-Mon Oct 31 00:28:53 2022 Finished sorting genome coordinates successfully!
-Mon Oct 31 00:28:54 2022 Finished removing successfully!
+<pre>Mon Oct 31 12:41:10 2022 Start to normalize variants...
+Mon Oct 31 12:41:10 2022  -Current Dataframe shape : 12557761  x  12
+Mon Oct 31 12:41:25 2022  -Not normalized allele:[&#39;TT&#39; &#39;TC&#39;][&#39;CTTTT&#39; &#39;CTTT&#39;][&#39;ATTT&#39; &#39;ATT&#39;][&#39;ATTT&#39; &#39;ATT&#39;][&#39;GTT&#39; &#39;GT&#39;]... 
+Mon Oct 31 12:41:25 2022  -Modified 13 variants according to parsimony and left alignment principal.
+Mon Oct 31 12:41:27 2022 Finished normalizing variants successfully!
 </pre>
 </div>
 </div>
@@ -1833,6 +2017,17 @@ Mon Oct 31 00:28:54 2022 Finished removing successfully!
 
 </div>
 
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="remove-duplicated-multiallelic-variants">remove duplicated / multiallelic variants<a class="anchor-link" href="#remove-duplicated-multiallelic-variants">&#182;</a></h2>
+</div>
+</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -1855,9 +2050,9 @@ Mon Oct 31 00:28:54 2022 Finished removing successfully!
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">sort_coordinate</span><span class="p">()</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">remove_dup</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-9" class="clipboard-copy-txt">mysumstats.sort_coordinate()</div>
+<div id="cell-9" class="clipboard-copy-txt">mysumstats.remove_dup(mode="d")</div>
     
         </div>
     </div>
@@ -1879,11 +2074,18 @@ Mon Oct 31 00:28:54 2022 Finished removing successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:28:54 2022 Start to sort the genome coordinates...
-Mon Oct 31 00:28:54 2022  -Current Dataframe shape : 12557759  x  12
-Mon Oct 31 00:28:54 2022  -Force converting POS to integers...
-Mon Oct 31 00:28:54 2022  -Sorting genome coordinates...
-Mon Oct 31 00:29:07 2022 Finished sorting genome coordinates successfully!
+<pre>Mon Oct 31 12:41:27 2022 Start to sort the sumstats using P...
+Mon Oct 31 12:41:33 2022 Start to remove duplicated variants based on snpid...
+Mon Oct 31 12:41:33 2022  -Current Dataframe shape : 12557761  x  12
+Mon Oct 31 12:41:33 2022  -Which variant to keep:  first
+Mon Oct 31 12:41:50 2022  -Removed  0  based on SNPID...
+Mon Oct 31 12:41:50 2022 Start to remove duplicated variants based on CHR,POS,EA and NEA...
+Mon Oct 31 12:41:50 2022  -Current Dataframe shape : 12557761  x  12
+Mon Oct 31 12:41:50 2022  -Which variant to keep:  first
+Mon Oct 31 12:42:05 2022  -Removed  2  based on CHR,POS,EA and NEA...
+Mon Oct 31 12:42:05 2022  -Removed  2  duplicates in total.
+Mon Oct 31 12:42:05 2022  -Sort the coordinates...
+Mon Oct 31 12:42:29 2022 Finished removing successfully!
 </pre>
 </div>
 </div>
@@ -1892,6 +2094,17 @@ Mon Oct 31 00:29:07 2022 Finished sorting genome coordinates successfully!
 
 </div>
 
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="sort-genome-coordinate">sort genome coordinate<a class="anchor-link" href="#sort-genome-coordinate">&#182;</a></h2>
+</div>
+</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -1914,9 +2127,9 @@ Mon Oct 31 00:29:07 2022 Finished sorting genome coordinates successfully!
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">sort_column</span><span class="p">()</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">sort_coordinate</span><span class="p">()</span>
 </pre></div>
-<div id="cell-10" class="clipboard-copy-txt">mysumstats.sort_column()</div>
+<div id="cell-10" class="clipboard-copy-txt">mysumstats.sort_coordinate()</div>
     
         </div>
     </div>
@@ -1938,10 +2151,80 @@ Mon Oct 31 00:29:07 2022 Finished sorting genome coordinates successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:29:08 2022 Start to reorder the columns...
-Mon Oct 31 00:29:08 2022  -Current Dataframe shape : 12557759  x  12
-Mon Oct 31 00:29:08 2022  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
-Mon Oct 31 00:29:08 2022 Finished sorting columns successfully!
+<pre>Mon Oct 31 12:42:30 2022 Start to sort the genome coordinates...
+Mon Oct 31 12:42:30 2022  -Current Dataframe shape : 12557759  x  12
+Mon Oct 31 12:42:30 2022  -Force converting POS to integers...
+Mon Oct 31 12:42:30 2022  -Sorting genome coordinates...
+Mon Oct 31 12:42:46 2022 Finished sorting genome coordinates successfully!
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="sort-column">sort column<a class="anchor-link" href="#sort-column">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-11">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">sort_column</span><span class="p">()</span>
+</pre></div>
+<div id="cell-11" class="clipboard-copy-txt">mysumstats.sort_column()</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Mon Oct 31 12:42:46 2022 Start to reorder the columns...
+Mon Oct 31 12:42:46 2022  -Current Dataframe shape : 12557759  x  12
+Mon Oct 31 12:42:46 2022  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
+Mon Oct 31 12:42:47 2022 Finished sorting columns successfully!
 </pre>
 </div>
 </div>
@@ -1968,12 +2251,12 @@ Mon Oct 31 00:29:08 2022 Finished sorting columns successfully!
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-11">
+            <clipboard-copy for="cell-12">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -1985,7 +2268,7 @@ Mon Oct 31 00:29:08 2022 Finished sorting columns successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">()</span>
 </pre></div>
-<div id="cell-11" class="clipboard-copy-txt">mysumstats.basic_check()</div>
+<div id="cell-12" class="clipboard-copy-txt">mysumstats.basic_check()</div>
     
         </div>
     </div>
@@ -2007,84 +2290,52 @@ Mon Oct 31 00:29:08 2022 Finished sorting columns successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Mon Oct 31 00:29:09 2022 Start to check IDs...
-Mon Oct 31 00:29:09 2022  -Current Dataframe shape : 12557759  x  12
-Mon Oct 31 00:29:09 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
-Mon Oct 31 00:29:28 2022 Finished checking IDs successfully!
-Mon Oct 31 00:29:28 2022 Start to fix chromosome notation...
-Mon Oct 31 00:29:28 2022  -Current Dataframe shape : 12557759  x  12
-Mon Oct 31 00:30:00 2022  -All CHR are already fixed...
-Mon Oct 31 00:30:20 2022 Finished fixing chromosome notation successfully!
-Mon Oct 31 00:30:20 2022 Start to fix basepair positions...
-Mon Oct 31 00:30:20 2022  -Current Dataframe shape : 12557759  x  12
-Mon Oct 31 00:30:35 2022  -Position upper_bound is: 250,000,000
-Mon Oct 31 00:30:59 2022  -Remove outliers: 0
-Mon Oct 31 00:31:01 2022  -Converted all position to datatype Int64.
-Mon Oct 31 00:31:01 2022 Finished fixing basepair position successfully!
-Mon Oct 31 00:31:01 2022 Start to fix alleles...
-Mon Oct 31 00:31:01 2022  -Current Dataframe shape : 12557759  x  12
-Mon Oct 31 00:31:09 2022  -Converted all bases to string datatype and UPPERCASE.
-Mon Oct 31 00:31:27 2022 Finished fixing allele successfully!
-Mon Oct 31 00:31:27 2022 Start sanity check for statistics ...
-Mon Oct 31 00:31:27 2022  -Current Dataframe shape : 12557759  x  12
-Mon Oct 31 00:31:27 2022  -Checking if N is Int64 and N&gt;0 ...
-Mon Oct 31 00:31:28 2022  -Removed 0 variants with bad N.
-Mon Oct 31 00:31:28 2022  -Checking if 0&lt;= EAF &lt;=1 ...
-Mon Oct 31 00:31:30 2022  -Removed 0 variants with bad EAF.
-Mon Oct 31 00:31:30 2022  -Checking if MAC &gt;=5 ...
-Mon Oct 31 00:31:32 2022  -Removed 0 variants with bad MAC.
-Mon Oct 31 00:31:32 2022  -Checking if 0&lt; P &lt;5e-300 ...
-Mon Oct 31 00:31:35 2022  -Removed 0 variants with bad P.
-Mon Oct 31 00:31:35 2022  -Checking if abs(BETA)&lt;10 ...
-Mon Oct 31 00:31:38 2022  -Removed 0 variants with bad BETA.
-Mon Oct 31 00:31:38 2022  -Checking if SE &gt;0 ...
-Mon Oct 31 00:31:41 2022  -Removed 0 variants with bad SE.
-Mon Oct 31 00:31:41 2022  -Checking STATUS...
-Mon Oct 31 00:31:42 2022  -Coverting STAUTUS to category.
-Mon Oct 31 00:31:43 2022  -Removed 0 variants with bad statistics in total.
-Mon Oct 31 00:31:43 2022 Finished sanity check successfully!
-Mon Oct 31 00:31:44 2022 Start to normalize variants...
-Mon Oct 31 00:31:44 2022  -Current Dataframe shape : 12557759  x  12
-Mon Oct 31 00:31:45 2022  -No available variants to normalize..
-Mon Oct 31 00:31:45 2022 Finished normalizing variants successfully!
+<pre>Mon Oct 31 12:42:47 2022 Start to check IDs...
+Mon Oct 31 12:42:47 2022  -Current Dataframe shape : 12557759  x  12
+Mon Oct 31 12:42:47 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
+Mon Oct 31 12:43:06 2022 Finished checking IDs successfully!
+Mon Oct 31 12:43:06 2022 Start to fix chromosome notation...
+Mon Oct 31 12:43:06 2022  -Current Dataframe shape : 12557759  x  12
+Mon Oct 31 12:43:58 2022  -All CHR are already fixed...
+Mon Oct 31 12:44:30 2022 Finished fixing chromosome notation successfully!
+Mon Oct 31 12:44:30 2022 Start to fix basepair positions...
+Mon Oct 31 12:44:30 2022  -Current Dataframe shape : 12557759  x  12
+Mon Oct 31 12:44:55 2022  -Position upper_bound is: 250,000,000
+Mon Oct 31 12:45:29 2022  -Remove outliers: 0
+Mon Oct 31 12:45:40 2022  -Converted all position to datatype Int64.
+Mon Oct 31 12:45:40 2022 Finished fixing basepair position successfully!
+Mon Oct 31 12:45:40 2022 Start to fix alleles...
+Mon Oct 31 12:45:40 2022  -Current Dataframe shape : 12557759  x  12
+Mon Oct 31 12:45:57 2022  -Converted all bases to string datatype and UPPERCASE.
+Mon Oct 31 12:46:25 2022 Finished fixing allele successfully!
+Mon Oct 31 12:46:25 2022 Start sanity check for statistics ...
+Mon Oct 31 12:46:25 2022  -Current Dataframe shape : 12557759  x  12
+Mon Oct 31 12:46:31 2022  -Checking if  0 &lt;=N&lt;= inf  ...
+Mon Oct 31 12:46:37 2022  -Removed 0 variants with bad N.
+Mon Oct 31 12:46:37 2022  -Checking if  0 &lt;=EAF&lt;= 1  ...
+Mon Oct 31 12:46:40 2022  -Removed 0 variants with bad EAF.
+Mon Oct 31 12:46:40 2022  -Checking if  5 &lt;=MAC&lt;= inf  ...
+Mon Oct 31 12:46:44 2022  -Removed 0 variants with bad MAC.
+Mon Oct 31 12:46:44 2022  -Checking if  5e-300 &lt;= P &lt;= 1  ...
+Mon Oct 31 12:46:46 2022  -Removed 0 variants with bad P.
+Mon Oct 31 12:46:46 2022  -Checking if  -10 &lt;BETA)&lt; 10  ...
+Mon Oct 31 12:46:47 2022  -Removed 0 variants with bad BETA.
+Mon Oct 31 12:46:47 2022  -Checking if  0 &lt;SE&lt; inf  ...
+Mon Oct 31 12:46:49 2022  -Removed 0 variants with bad SE.
+Mon Oct 31 12:46:49 2022  -Checking STATUS...
+Mon Oct 31 12:46:51 2022  -Coverting STAUTUS to category.
+Mon Oct 31 12:46:53 2022  -Removed 0 variants with bad statistics in total.
+Mon Oct 31 12:46:53 2022 Finished sanity check successfully!
+Mon Oct 31 12:46:55 2022 Start to normalize variants...
+Mon Oct 31 12:46:55 2022  -Current Dataframe shape : 12557759  x  12
+Mon Oct 31 12:46:56 2022  -No available variants to normalize..
+Mon Oct 31 12:46:56 2022 Finished normalizing variants successfully!
 </pre>
 </div>
 </div>
 
 </div>
 
-</div>
-
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-        <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-12">
-            <div>
-                <span class="notice" hidden>Copied!</span>
-                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
-                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
-                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
-                </svg>
-                </div>
-            </clipboard-copy>
-        </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span>
-</pre></div>
-<div id="cell-12" class="clipboard-copy-txt"></div>
-    
-        </div>
-    </div>
-
-</div>
 </div>
 
 </div>
