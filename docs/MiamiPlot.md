@@ -1,5 +1,11 @@
 # Miami plot
 
+As a standalone function, gwaslab can plot miami plot given a pair of sumstats files.
+
+See examples [here.](https://cloufield.github.io/gwaslab/visualization_miami/)
+
+## Usage
+
 ```
 gl.plot_miami( 
           path1,
@@ -24,7 +30,7 @@ gl.plot_miami(
 - `pinpoint2`: `list`,  list of variants to pinpolint for sumstats2.
 - `titles`:`list`, two titles. For example,`titles=["male","female"]`
 
-# Example
+## Example
 
 ```
 mysumstats = gl.plot_miami(path1="bmi_male_bbj.txt.gz" ,
@@ -41,20 +47,5 @@ mysumstats = gl.plot_miami(path1="bmi_male_bbj.txt.gz" ,
 ```
 
 <img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197526569-7850041d-e247-4f69-8505-ef7750a6d4de.png">
-
-```
-mysumstats = gl.plot_miami(path1="bmi_male_bbj.txt.gz" ,
-                           path2="bmi_female_bbj.txt.gz",
-                           cols1=["CHR","POS","P"],
-                           cols2=["CHR","POS","P"],
-                           titles=["male","female"],
-                           region=(2,2153874,21753874),
-                           titles_pad=[0.1,-0.05],
-                           anno="GENENAME",
-                           region_grid=True
-                           )
-```
-
-<img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197531327-8fdd51d0-e21f-4da2-9e2d-c4f8a8bd5285.png">
 
 Note: implemented in v3.3.4

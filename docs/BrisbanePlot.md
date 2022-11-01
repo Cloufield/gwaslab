@@ -1,5 +1,9 @@
 #  Brisbane plot
 
+gwaslab can create Brisbane plot (GWAS hits density plot).
+
+See examples [here.](https://cloufield.github.io/gwaslab/visualization_brisbane/)
+
 ```
 mysumstats = gl.Sumstats("height_lead.tsv",
              snpid="SNP",
@@ -14,7 +18,7 @@ mysumstats.plot_mqq(mode="b",anno="GENENAME",
 
 ```
 
-- `mode="b"` : plot Brisbane plot !
+- `mode="b"` : create Brisbane plot !
 - `bwindowsizekb = 100` : windowsize in kb.
 
 <img width=700 src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png">

@@ -1,5 +1,8 @@
 # Output sumstats in certain formats
 
+gwaslab provides a flexible formatting and saving function.
+See examples [here.](https://cloufield.github.io/gwaslab/format_load_save/)
+
 ```
 to_format(
           path="./sumstats",
