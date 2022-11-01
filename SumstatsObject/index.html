@@ -407,6 +407,7 @@
         <li class="first-level active"><a href="#sumstats-object-in-gwaslab">Sumstats Object in gwaslab</a></li>
             <li class="second-level"><a href="#loading-sumstats">Loading sumstats</a></li>
                 
+                <li class="third-level"><a href="#loading-sumstats-from-chromosome-separated-files">Loading sumstats from chromosome-separated files</a></li>
             <li class="second-level"><a href="#check-and-save-sumstats">Check and save sumstats</a></li>
                 
             <li class="second-level"><a href="#logging">Logging</a></li>
@@ -431,7 +432,10 @@
              pos=None,
              ea=None,
              nea=None,
+             ref=None,
+             alt=None,
              eaf=None,
+             neaf=None,
              n=None,
              beta=None,
              se=None,
@@ -451,7 +455,7 @@
              **args
 )
 </code></pre>
-<p><code>sumstats</code>: either a file path or a pandas DataFrame</p>
+<p><code>sumstats</code>: either a file path <code>string</code> or a pandas <code>DataFrame</code></p>
 <p>Currently, gwaslab supports the following columns:</p>
 <ul>
 <li><code>snpid</code>: variant ID column name, preferably in chr:pos:ea:nea format.</li>
@@ -463,9 +467,12 @@ All other columns are optional.</p>
 <li><code>fmt</code>: input sumstats format : For formats supported by gwaslab, please check <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></li>
 <li><code>chrom</code>: chromosome column name</li>
 <li><code>pos</code>: basepair position column name</li>
-<li><code>ea</code>: effect allele column name </li>
-<li><code>nea</code>: non-effect allele column name</li>
+<li><code>ea</code>: effect allele column name. </li>
+<li><code>nea</code>: non-effect allele column name.</li>
+<li><code>ref</code>: reference allele column name.</li>
+<li><code>alt</code>: alternative allele column name , when <code>ea</code>,<code>ref</code> and <code>alt</code> are specified, <code>nea</code> will be inferred.</li>
 <li><code>eaf</code>: effect allele frequency</li>
+<li><code>neaf</code>: non-effect allele frequency, neaf will be converted to eaf (eaf = 1 - neaf) while loading.</li>
 <li><code>n</code>: sample size column name or just input a single  <code>integer</code> </li>
 <li><code>beta</code>: effect size beta column name</li>
 <li><code>se</code>: standard error column name</li>
@@ -477,12 +484,12 @@ All other columns are optional.</p>
 <li><code>OR</code>: odds ratio column name</li>
 <li><code>OR_95L</code>:odds ratio lower 95% ci column name</li>
 <li><code>OR_95U</code>:odds ratio upper 95% ci column name</li>
-<li><code>direction</code>: direction column name in METAL format (e.g. "++--+?+")</li>
+<li><code>direction</code>: direction column name. gwaslab uses METAL format (e.g. "++--+?+")</li>
 <li><code>other</code>: a list  of other column names you want to keep with the core columns, probably some annotations.</li>
 <li><code>status</code>: gwaslab 7-digit vairants status code. For details, please check status code page.</li>
 <li><code>verbose</code>: if true: output log </li>
 <li><code>build</code>:  <code>str</code>genome build ("19","38")</li>
-<li><code>**arg</code>: additional parameters for pd.read_table() function. </li>
+<li><code>**arg</code>: additional parameters for <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_table.html">pd.read_table()</a> function. Some common options include : <code>sep</code>,<code>nrows</code>, <code>skiprows</code> and <code>na_values</code>.</li>
 </ul>
 <h2 id="loading-sumstats">Loading sumstats</h2>
 <p>you can load the path by specifying the columns like:</p>
@@ -519,14 +526,19 @@ All other columns are optional.</p>
 <li><code>locuszoom</code>: input format</li>
 <li><code>vcf</code>: gwas-vcf format</li>
 </ul>
+<h3 id="loading-sumstats-from-chromosome-separated-files">Loading sumstats from chromosome-separated files</h3>
+<p>gwaslab support loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace chromosome number. </p>
+<p>For example:</p>
+<pre><code>mysumstats = gl.Sumstats(&quot;t2d.chr@.txt.gz&quot;,fmt=&quot;metal&quot;)
+</code></pre>
 <h2 id="check-and-save-sumstats">Check and save sumstats</h2>
 <p>After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in .data :</p>
 <pre><code class="language-python">mysumstats.data
 </code></pre>
-<p>You can simply save the processed data using pandas saving functions, for example</p>
+<p>You can simply save the processed data using pandas saving functions, for example:</p>
 <pre><code>mysumstats.data.to_csv(&quot;./mysumstats.csv&quot;)
 </code></pre>
-<p>or convert the sumstats to other sumstats using gwaslab <code>to_format()</code> function:</p>
+<p>or convert the sumstats to other sumstats using gwaslab <code>to_format()</code> function (<strong>stringly recommended</strong>):</p>
 <pre><code>mysumstats.to_format(&quot;./mysumstats&quot;, fmt=&quot;ldsc&quot;,hapmap3=True, exclude_hla=True, build=&quot;19&quot;)
 </code></pre>
 <p>Please check <a href="https://cloufield.github.io/gwaslab/Format/">https://cloufield.github.io/gwaslab/Format/</a></p>
