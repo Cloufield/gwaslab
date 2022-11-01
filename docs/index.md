@@ -2,15 +2,13 @@
 
 # gwaslab
 
-![badge](https://img.shields.io/badge/release-v3.3.3-brightgreen)
+![badge](https://img.shields.io/badge/release-v3.3.4-brightgreen)
 ![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
-Note:  Some part of the docs are outdated. I am currently updating the documents.
-
-* A simple python package for handling GWAS sumstats.
+* A simple python toolkit for handling GWAS sumstats.
 * Each process is modularized and can be customized to your needs.
-* Most manipulations are designed as methods of python object, `gwaslab.Sumstats`.
+* Sumstats-specific manipulations are designed as methods of a python object, `gwaslab.Sumstats`.
 
 Please check GWASLab document at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
 
@@ -18,7 +16,7 @@ Please check GWASLab document at [https://cloufield.github.io/gwaslab/](https://
 ## Install
 
 ```
-pip install gwaslab==3.3.3
+pip install gwaslab==3.3.4
 ```
 
 
@@ -51,27 +49,27 @@ mysumstats.plot_mqq()
 
 ### Loading and Formatting
 
-- Loading sumstats by simple specifying the software name
-- Optional Filtering of Hapmap3 / High-LD region / HLA when output sumtats 
-- Converting GWAS sumstats to specific formats
+- Loading sumstats by simply specifying the software name or format name.
+- Converting GWAS sumstats to specific formats:
   - LDSC / MAGMA / METAL / MR-MEGA / FUMA / VCF / BED... 
   - [check available formats](https://github.com/Cloufield/formatbook)
-
+- Optional Filtering of variants in Hapmap3 SNPs / High-LD regions / HLA region 
+ 
 ### Standardization & Normalization
 
 - Variant ID standardization
 - CHR and POS notation standardization
 - Variant POS and allele normalization
-- Genome build : Infer and Liftover 
+- Genome build : Inference and Liftover 
 
 ### Quality control, Value conversion & Filtering
 
-- General statistics sanity check
+- Statistics sanity check
 - Extreme value removal
 - Equivalent statistics conversion
     - BETA/SE , OR/OR_95L/OR_95U
     - P, Z, CHISQ, MLOG10
-- Customized value filtering.
+- Customized value filtering
 
 ###  Harmonization
 
@@ -128,5 +126,5 @@ mysumstats.plot_mqq()
 * Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
 * Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
 * Email: gwaslab@gmail.com
-
+* Stats: [https://pypistats.org/packages/gwaslab](https://pypistats.org/packages/gwaslab)
 

@@ -8,6 +8,9 @@ theme:
   name: null
   custom_dir: 'cinder'
   color_theme:  github
+
+extra_css:
+  - "stylesheets/extra.css"
 nav:
     - Home: index.md
     - Tutorial: Tutorial.md
@@ -38,5 +41,23 @@ nav:
        - "Infer Genome Build": InferBuild.md
     - References: 
        - "Reference data" : Reference.md
+       - "Standardization and QC example":
+          - "Workflow": standardization_workflow.ipynb
+          - "QC and filtering" : quality_control_and_filtering.ipynb
+       - "Harmonization example": 
+          - "Workflow" : harmonization_workflow.ipynb
+          - "Liftover" : harmonization_liftover.ipynb
+       - "Formatting and saving example" : format_load_save.ipynb
+       - "Utility example":
+          - "Data conversion" : utility_data_conversion.ipynb
+          - "Checking novel" : utility_get_novel.ipynb
+       - "Visualization example" :
+          - "Manhatann and Q-Q plot" : visualization_mqq.ipynb
+          - "Miami plot": visualization_miami.ipynb
+          - "Regional plot": visualization_regional.ipynb
+          - "Brisbane plot": visualization_brisbane.ipynb
        - "Common data": CommonData.md
        - "Update logs" : UpdateLogs.md
+
+plugins:
+  - mkdocs-jupyter
