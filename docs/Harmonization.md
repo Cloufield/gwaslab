@@ -1,5 +1,9 @@
 # Harmonization
 
+gwaslab provides reference-dependent harmonization functions.
+
+See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/)
+
 ## Methods summary
 
 | Sumstats Methods       | Options                                               | Description                                                                |
