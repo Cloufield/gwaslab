@@ -38,7 +38,7 @@ mysumstats = gl.Sumstats(
 )
 ```
 
-`sumstats`: either a file path or a pandas DataFrame
+`sumstats`: either a file path `string` or a pandas `DataFrame`
 
 Currently, gwaslab supports the following columns:
 
@@ -114,17 +114,26 @@ Supported formats:
 * `locuszoom`: input format
 * `vcf`: gwas-vcf format
 
+### Loading sumstats from chromosome-separated files
+gwaslab support loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace chromosome number. 
+
+For example:
+```
+mysumstats = gl.Sumstats("t2d.chr@.txt.gz",fmt="metal")
+```
+
+
 ## Check and save sumstats
 After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in .data :
 ```python
 mysumstats.data
 ```
 
-You can simply save the processed data using pandas saving functions, for example
+You can simply save the processed data using pandas saving functions, for example:
 ```
 mysumstats.data.to_csv("./mysumstats.csv")
 ```  
-or convert the sumstats to other sumstats using gwaslab `to_format()` function:
+or convert the sumstats to other sumstats using gwaslab `to_format()` function (**stringly recommended**):
 
 ```
 mysumstats.to_format("./mysumstats", fmt="ldsc",hapmap3=True, exclude_hla=True, build="19")
