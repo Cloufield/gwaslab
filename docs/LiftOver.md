@@ -1,4 +1,9 @@
 # Liftover
+
+Gwaslab can directly liftover the positions of variants in sumstats.
+
+See examples [here.](https://cloufield.github.io/gwaslab/harmonization_liftover/)
+
 ```
 mysumstats.liftover(n_cores=3, 
                     from_build="19", 
