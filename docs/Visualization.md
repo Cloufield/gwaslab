@@ -2,6 +2,10 @@
 
 <img width="800" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png">
 
+gwaslab provided customizable plotting functions for Manhattan and Q-Q plots.
+
+See examples [here](https://cloufield.github.io/gwaslab/visualization_mqq/).
+
 ## Usage
 ```
 import gwaslab as gl
