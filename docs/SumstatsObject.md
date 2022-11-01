@@ -14,7 +14,10 @@ mysumstats = gl.Sumstats(
              pos=None,
              ea=None,
              nea=None,
+             ref=None,
+             alt=None,
              eaf=None,
+             neaf=None,
              n=None,
              beta=None,
              se=None,
@@ -35,7 +38,7 @@ mysumstats = gl.Sumstats(
 )
 ```
 
-`sumstats`: either a file path or a pandas DataFrame
+`sumstats`: either a file path `string` or a pandas `DataFrame`
 
 Currently, gwaslab supports the following columns:
 
@@ -48,9 +51,12 @@ All other columns are optional.
 * `fmt`: input sumstats format : For formats supported by gwaslab, please check [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)
 * `chrom `: chromosome column name
 * `pos`: basepair position column name
-* `ea`: effect allele column name 
-* `nea`: non-effect allele column name
+* `ea`: effect allele column name. 
+* `nea`: non-effect allele column name.
+* `ref`: reference allele column name.
+* `alt`: alternative allele column name , when `ea`,`ref` and `alt` are specified, `nea` will be inferred.
 * `eaf`: effect allele frequency
+* `neaf`: non-effect allele frequency, neaf will be converted to eaf (eaf = 1 - neaf) while loading.
 * `n`: sample size column name or just input a single  `integer` 
 * `beta`: effect size beta column name
 * `se`: standard error column name
@@ -62,12 +68,12 @@ All other columns are optional.
 * `OR`: odds ratio column name
 * `OR_95L`:odds ratio lower 95% ci column name
 * `OR_95U`:odds ratio upper 95% ci column name
-* `direction`: direction column name in METAL format (e.g. "++--+?+")
+* `direction`: direction column name. gwaslab uses METAL format (e.g. "++--+?+")
 * `other`: a list  of other column names you want to keep with the core columns, probably some annotations.
 * `status`: gwaslab 7-digit vairants status code. For details, please check status code page.
 * `verbose`: if true: output log 
 * `build`:  `str `genome build ("19","38")
-* `**arg `: additional parameters for pd.read_table() function. 
+* `**arg `: additional parameters for [pd.read_table()](https://pandas.pydata.org/docs/reference/api/pandas.read_table.html) function. Some common options include : `sep`,`nrows`, `skiprows` and `na_values`.
 
 ## Loading sumstats
 you can load the path by specifying the columns like:
@@ -108,17 +114,26 @@ Supported formats:
 * `locuszoom`: input format
 * `vcf`: gwas-vcf format
 
+### Loading sumstats from chromosome-separated files
+gwaslab support loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace chromosome number. 
+
+For example:
+```
+mysumstats = gl.Sumstats("t2d.chr@.txt.gz",fmt="metal")
+```
+
+
 ## Check and save sumstats
 After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in .data :
 ```python
 mysumstats.data
 ```
 
-You can simply save the processed data using pandas saving functions, for example
+You can simply save the processed data using pandas saving functions, for example:
 ```
 mysumstats.data.to_csv("./mysumstats.csv")
 ```  
-or convert the sumstats to other sumstats using gwaslab `to_format()` function:
+or convert the sumstats to other sumstats using gwaslab `to_format()` function (**stringly recommended**):
 
 ```
 mysumstats.to_format("./mysumstats", fmt="ldsc",hapmap3=True, exclude_hla=True, build="19")
