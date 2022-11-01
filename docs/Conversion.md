@@ -10,6 +10,9 @@ gwaslab can convert equvalent statistics, including:
 - BETA/SE => Z
 - P => CHISQ
 - Z => CHISQ
+- ...
+
+See examples [here.](https://cloufield.github.io/gwaslab/utility_data_conversion/)
 
 ## fill_data()
 ```
