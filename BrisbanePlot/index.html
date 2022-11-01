@@ -410,6 +410,8 @@
         <div class="col-md-9" role="main">
 
 <h1 id="brisbane-plot">Brisbane plot</h1>
+<p>gwaslab can create Brisbane plot (GWAS hits density plot).</p>
+<p>See examples <a href="https://cloufield.github.io/gwaslab/visualization_brisbane/">here.</a></p>
 <pre><code>mysumstats = gl.Sumstats(&quot;height_lead.tsv&quot;,
              snpid=&quot;SNP&quot;,
              chrom=&quot;Chr&quot;,
@@ -423,7 +425,7 @@ mysumstats.plot_mqq(mode=&quot;b&quot;,anno=&quot;GENENAME&quot;,
 
 </code></pre>
 <ul>
-<li><code>mode="b"</code> : plot Brisbane plot !</li>
+<li><code>mode="b"</code> : create Brisbane plot !</li>
 <li><code>bwindowsizekb = 100</code> : windowsize in kb.</li>
 </ul>
 <p><img width=700 src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png"></p>
