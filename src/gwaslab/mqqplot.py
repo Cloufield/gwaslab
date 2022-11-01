@@ -19,7 +19,7 @@ from allel import rogers_huff_r_between
 import matplotlib as mpl
 from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import gc
+import gc as garbage_collect
 
 # 20220310 ######################################################################################################
 
@@ -101,9 +101,9 @@ def mqqplot(insumstats,
           _invert=False,
           log=Log()
           ):
-    
+
 # log.writeing meta info #######################################################################################
-    
+
     if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
@@ -119,7 +119,7 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
     if dpi!=100:
         figargs["dpi"] = dpi
-    
+
 
 # Plotting mode selection : layout ####################################################################
     # ax1 : manhattanplot : 
@@ -157,10 +157,10 @@ def mqqplot(insumstats,
         marker_size= (marker_size[1],marker_size[1])
     else:
         raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
-        
-        
+
+
 # Read sumstats #################################################################################################
-    
+
     usecols=[]
     #  P ###############################################################################
     if p in insumstats.columns:
@@ -217,7 +217,7 @@ def mqqplot(insumstats,
     
     sumstats = insumstats.loc[:,usecols].copy()
 
-#####################################################################################################################   
+
     #Standardize
     ## Annotation
     if (anno == "GENENAME"):
@@ -260,8 +260,8 @@ def mqqplot(insumstats,
         sumstats["HUE"] = sumstats[chrom].astype("string")
     
     if verbose: log.write("Finished loading specified columns from the sumstats.")
-        
-        
+
+
 #sanity check############################################################################################################
     if verbose: log.write("Start conversion and sanity check:")
     if "m" in mode: 
@@ -341,7 +341,7 @@ def mqqplot(insumstats,
     
     # filter out variants with -log10p < skip
     sumstats = sumstats.loc[sumstats["scaled_P"]>=skip,:]
-    gc.collect()
+    garbage_collect.collect()
     
     # shrink variants above cut line #########################################################################################
     maxy = sumstats["scaled_P"].max()
@@ -371,7 +371,7 @@ def mqqplot(insumstats,
             maxy = (maxticker-cut)/cutfactor + cut
     if verbose: log.write("Finished data conversion and sanity check.")
 
-        
+
 # Manhattan plot ##########################################################################################################
 ## regional plot ->rsq
      #calculate rsq]
@@ -379,9 +379,9 @@ def mqqplot(insumstats,
         sumstats = process_vcf(sumstats=sumstats, vcf_path=vcf_path,region=region, 
                                log=log ,pos=pos,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict)
 
-## Create index for plotting ###################################################
-        
-    
+# # Create index for plotting ###################################################
+
+
     #sort & add id
     if ("m" in mode) or ("r" in mode): 
         sumstats = sumstats.sort_values([chrom,pos])
@@ -645,7 +645,7 @@ def mqqplot(insumstats,
             ax1.set_ylim(bottom = skip)
 
 
-    
+
 # Get top variants for annotation #######################################################
         if (anno and anno!=True) or (len(anno_set)>0):
             if len(anno_set)>0:
@@ -691,7 +691,7 @@ def mqqplot(insumstats,
             #    if verbose:log.write(" -Assigning Gene name using Ensembl Release",77)
             #to_annotate = to_annotate.copy()
             #to_annotate.loc[:,["LOCATION","Annotation"]] = pd.DataFrame(to_annotate.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=to_annotate.index).values
-        
+
 # Add Annotation to manhattan plot #######################################################
            ## final
         
@@ -841,9 +841,9 @@ def mqqplot(insumstats,
             
         else:
             if verbose: log.write(" -Skip annotating")
-        
 
-     
+
+
 # Creating Manhatann plot Finished #####################################################################
 
 # QQ plot #########################################################################################################
@@ -927,13 +927,13 @@ def mqqplot(insumstats,
     else:
         fig.suptitle(title ,x=0.5,y=1)
     
-    gc.collect()
+    garbage_collect.collect()
 # Return matplotlib figure object #######################################################################################
     return fig, log
 
 
 #Helpers
-##############################################################################################################################
+""
 def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_threshold, vcf_chr_dict):
     if verbose: log.write("Start to load reference genotype...")
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
@@ -979,7 +979,7 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     if verbose: log.write("Finished loading reference genotype successfully!")
     return sumstats
 
-##############################################################################################################################
+""
 def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding):
     #loading
     if gtf_path =="defualt" or gtf_path =="ensembl":
@@ -1049,7 +1049,7 @@ def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding)
     return uniq_gene_region, exons
 
 
-##############################################################################################################################
+""
 def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
         gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
         if len(gene)==0:
