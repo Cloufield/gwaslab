@@ -1,11 +1,7 @@
 # Standardization and normalization
-
-```python
-import gwaslab as gl
-sumstats = gl.Sumstats(...)
-```
-
 After loading raw sumstats into gwaslab Sumstats Object, the first thing we probably want to do is to standardize the variant-related notations and check if there are any unexpected errors in the statistics. When checking is finished, the status code will be automatically changed.
+
+See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow/).
 
 ## Methods Summary
 
