@@ -19,6 +19,7 @@ from allel import rogers_huff_r_between
 import matplotlib as mpl
 from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+import gc
 
 # 20220310 ######################################################################################################
 
@@ -340,7 +341,7 @@ def mqqplot(insumstats,
     
     # filter out variants with -log10p < skip
     sumstats = sumstats.loc[sumstats["scaled_P"]>=skip,:]
-    
+    gc.collect()
     
     # shrink variants above cut line #########################################################################################
     maxy = sumstats["scaled_P"].max()
@@ -925,7 +926,8 @@ def mqqplot(insumstats,
         fig.suptitle(title ,x=0.5, y=1.05)
     else:
         fig.suptitle(title ,x=0.5,y=1)
-
+    
+    gc.collect()
 # Return matplotlib figure object #######################################################################################
     return fig, log
 
