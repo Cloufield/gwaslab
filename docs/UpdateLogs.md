@@ -1,6 +1,11 @@
 # Update Logs
+## v3.3.6- coming soon
 
-## v3.3.5 coming soon
+## v3.3.5 -20221102 
+- added `filter_value`
+- integrate `gwascatalog` to `get_novel`
+- optimized `remove_dup`
+- fixed bugs
 
 ## v3.3.4 -20221031
 - added gwascatalog_trait()
