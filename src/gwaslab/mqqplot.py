@@ -86,7 +86,7 @@ def mqqplot(insumstats,
           title =None,
           mtitle=None,
           qtitle=None,
-          figargs= {"figsize":(15,5),"dpi":100},
+          figargs= {"figsize":(15,5)},
           fontsize = 10,
           colors=["#597FBD","#74BAD3"],
           marker_size=(5,25),
@@ -95,9 +95,9 @@ def mqqplot(insumstats,
           repel_force=0.03,
           build="19",
           title_pad=1.08, 
-          dpi=100,
+          dpi=200,
           save=None,
-          saveargs={"dpi":400,"facecolor":"white"},
+          saveargs={"dpi":300,"facecolor":"white"},
           _invert=False,
           log=Log()
           ):
@@ -117,7 +117,7 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Variants to pinpoint : "+",".join(pinpoint))  
     if region is not None:
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
-    if dpi!=100:
+    if "dpi" not in figargs.keys():
         figargs["dpi"] = dpi
 
 
@@ -174,6 +174,7 @@ def mqqplot(insumstats,
         raise ValueError("Please make sure "+p+" column is in input sumstats.")
     
     # CHR and POS ########################################################################
+    # chrom and pos exists && (m || r mode)
     if (chrom is not None) and (pos is not None) and (("m" in mode) or ("r" in mode)):
         # when manhattan plot, chrom and pos is needed.
         if chrom in insumstats.columns:
@@ -226,14 +227,16 @@ def mqqplot(insumstats,
         sumstats["Annotation"]=sumstats.loc[:,anno].astype("string")   
       
     ## P value
-    if "m" in mode and "b" not in mode:   
+    ## m, qq, r
+    if "b" not in mode:   
         if scaled is True:
             sumstats["raw_P"] = pd.to_numeric(sumstats[mlog10p], errors='coerce')
         else:
             sumstats["raw_P"] = sumstats[p].astype("float64")
     
     ## CHR & POS
-    if "m" in mode: 
+    ## m, qq, b
+    if "m" in mode or "r" in mode or "b" in mode: 
         # CHR X,Y,MT conversion ############################
         if sumstats[chrom].dtype =="str":
             sumstats[chrom] = sumstats[chrom].map(get_chr_to_number(),na_action="ignore")
@@ -241,6 +244,8 @@ def mqqplot(insumstats,
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
         ## POS
         sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+    
+    ## r
     if region is not None:
         region_chr = region[0]
         region_start = region[1]
@@ -251,6 +256,7 @@ def mqqplot(insumstats,
         in_region_snp = (sumstats[chrom]==region_chr) &(sumstats[pos]<region_end) &(sumstats[pos]>region_start)
         if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)))
         sumstats = sumstats.loc[in_region_snp,:]
+    
     ## EAF
     if stratified is True: 
         sumstats["MAF"] = pd.to_numeric(sumstats[eaf], errors='coerce')
@@ -264,7 +270,7 @@ def mqqplot(insumstats,
 
 #sanity check############################################################################################################
     if verbose: log.write("Start conversion and sanity check:")
-    if "m" in mode: 
+    if ("m" in mode or "r" in mode): 
         pre_number=len(sumstats)
         #sanity check : drop variants with na values in chr and pos df
         sumstats = sumstats.dropna(subset=[chrom,pos])
@@ -278,7 +284,7 @@ def mqqplot(insumstats,
         if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in EAF column ...")
             
         ## Highlight
-    if len(highlight)>0 and ("m" in mode):
+    if len(highlight)>0 and ("m" in mode or "r" in mode):
         to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
         #assign colors: 0 is hightlight color
         for i,row in to_highlight.iterrows():
@@ -310,12 +316,14 @@ def mqqplot(insumstats,
      
     #############################
 # P value conversion #####################################################################################################  
+    ## m,qq,r -> dropna
     if "b" not in mode:
         pre_number=len(sumstats)
         sumstats = sumstats.dropna(subset=["raw_P"])
         after_number=len(sumstats)
         if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...")
     
+    ## b: value to plot is density
     if "b" in mode:
         sumstats["scaled_P"] = sumstats["DENSITY"].copy()
         sumstats["raw_P"] = -np.log10(sumstats["DENSITY"].copy()+2)
