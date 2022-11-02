@@ -13,7 +13,7 @@ extra_css:
   - "stylesheets/extra.css"
 nav:
     - Home: index.md
-    - Tutorial: Tutorial.md
+    - Tutorial: tutorial_3.3.ipynb
     - Sumstats manipulation:
        - SumstatsObject: SumstatsObject.md
        - StatusCode: StatusCode.md
