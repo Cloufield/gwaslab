@@ -8,7 +8,17 @@ from gwaslab.Log import Log
 from gwaslab.vchangestatus import vchange_status
 from gwaslab.fixdata import sortcoordinate
 import gc
-def filterout(sumstats,lt={},gt={},eq={},remove=False,verbose=True,log=Log()):
+def filtervalues(sumstats,expr,remove=False,verbose=True,log=Log()):
+    if verbose: log.write("Start filtering values by condition:",expr)
+    prenum = len(sumstats)
+    sumstats = sumstats.query(expr).copy()
+    afternum = len(sumstats)
+    if verbose: log.write(" -Removing "+ str(prenum-afternum) +" variants not meeting the conditions:",expr)
+    if verbose: log.write("Finished filtering values.")
+    gc.collect()
+    return sumstats
+
+def filterout(sumstats,interval={},lt={},gt={},eq={},remove=False,verbose=True,log=Log()):
     if verbose: log.write("Start filtering values:")
     for key,threshold in gt.items():
         num = len(sumstats.loc[sumstats[key]>threshold,:])
@@ -128,7 +138,7 @@ def filterregionin(sumstats,path=None, chrom="CHR",pos="POS", high_ld=False, bui
     if verbose: log.write("Finished filtering in variants.")
     gc.collect()
     return sumstats
-    
+
 def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, build="19", verbose=True,log=Log()):
     sumstats = sortcoordinate(sumstats,verbose=verbose)
     if verbose: log.write("Start to filter out variants if in intervals defined in bed files:")
@@ -249,4 +259,4 @@ def sampling(sumstats,n,verbose=True,log=Log()):
     if verbose:log.write("Finished sampling...")
     gc.collect()
     return sampled
-    
+

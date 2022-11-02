@@ -22,6 +22,7 @@ from gwaslab.retrievedata import rsidtochrpos
 from gwaslab.retrievedata import parallelizeassignrsid
 from gwaslab.retrievedata import parallelinferstrand
 from gwaslab.retrievedata import parallelrsidtochrpos
+from gwaslab.filtervalue import filtervalues
 from gwaslab.filtervalue import filterout
 from gwaslab.filtervalue import filterin
 from gwaslab.filtervalue import filterregionin
@@ -150,7 +151,7 @@ class Sumstats():
         if len(other)>0: col_subset["other"] = other      
         return col_subset
 
-##########################################################################################
+
     def update_meta(self):
         self.meta["Number_of_variants"]=len(self.data)
         if "CHR" in self.data.columns:
@@ -341,23 +342,29 @@ class Sumstats():
         self.data = inferbuild(self.data,**args)
 
 # utilities ############################################################################################################
-    def filter_out(self, inplace=True, **args):
+    def filter_value(self, expr, inplace=False, **args):
+        if inplace is False:
+            return filtervalues(self.data, expr,**args)
+        else:
+            self.data = filtervalues(self.data, expr,log=self.log,**args)
+    
+    def filter_out(self, inplace=False, **args):
         if inplace is False:
             return filterout(self.data,**args)
         else:
             self.data = filterout(self.data,log=self.log,**args)
             
-    def filter_in(self, inplace=True, **args):
+    def filter_in(self, inplace=False, **args):
         if inplace is False:
             return filterin(self.data,**args)
         else:
             self.data = filterin(self.data,log=self.log,**args)
-    def filter_region_in(self, inplace=True, **args):
+    def filter_region_in(self, inplace=False, **args):
         if inplace is False:
             return filterregionin(self.data,**args)
         else:
             self.data = filterregionin(self.data,log=self.log,**args)
-    def filter_region_out(self, inplace=True, **args):
+    def filter_region_out(self, inplace=False, **args):
         if inplace is False:
             return filterregionout(self.data,**args)
         else:
@@ -368,8 +375,8 @@ class Sumstats():
             self.data = sampling(self.data,n=n,log=self.log,**args)
         else:
             return sampling(self.data,n=n,log=self.log,**args)
-    
-###########################################################################################################################            
+
+
     def check_af(self,**args):
         self.data = parallelecheckaf(self.data,log=self.log,**args)
       

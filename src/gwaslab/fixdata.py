@@ -28,7 +28,7 @@ from gwaslab.CommonData import get_chr_list
 #sortcolumn
 
 ###############################################################################################################
-#20220514 
+# 20220514 
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",
@@ -263,11 +263,11 @@ def fixID(sumstats,
     if verbose: log.write("Finished checking IDs successfully!")
     return sumstats
 
-###############################################################################################################
+""
 
-    
+
 ###############################################################################################################
-#20220514 
+# 20220514 
 def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove=False,keep_ascend=True,verbose=True,log=Log()):
     '''
     remove duplicate SNPs based on 1. SNPID,
@@ -334,7 +334,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
     return sumstats
 
 ###############################################################################################################
-#20220514
+# 20220514
 def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT",remove=False, verbose=True,log=Log()):
         if check_col(sumstats,chrom,status) is not True:
             if verbose: log.write(".fix_chr: Specified not detected..skipping...")
@@ -411,9 +411,9 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
         if verbose: log.write("Finished fixing chromosome notation successfully!")
         return sumstats
     
-    
+
 ###############################################################################################################    
-#20220514
+# 20220514
 def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=250000000, log=Log()):
         if check_col(sumstats,pos,status) is not True:
             if verbose: log.write(".fix_pos: Specified not detected..skipping...")
@@ -450,9 +450,9 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         if verbose: log.write(" -Converted all position to datatype Int64.")
         if verbose: log.write("Finished fixing basepair position successfully!")
         return sumstats
-    
+
 ###############################################################################################################    
-#20220514
+# 20220514
 def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
         # remove variants with alleles other than actgACTG
         if check_col(sumstats,ea,nea,status) is not True:
@@ -499,7 +499,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         return sumstats
 
 ###############################################################################################################   
-#20220721
+# 20220721
 
 def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS",n_cores=1,verbose=True,log=Log()):
     if check_col(sumstats,pos,ea,nea,status) is not True:
@@ -601,10 +601,11 @@ def normalizevariant(pos,a,b,status):
     if len(a)==1 or len(b)==1:
         return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"0"+status_end
     return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end
-###############################################################################################################
+""
+
 
 ###############################################################################################################
-#20220426
+# 20220426
 def sanitycheckstats(sumstats,
                      coltocheck=["P","MLOG10P","Z","BETA","SE","EAF","CHISQ","N","OR","OR_95L","OR_95U","STATUS"],
                      n=(0,float("Inf")),
@@ -769,7 +770,7 @@ def sanitycheckstats(sumstats,
     return sumstats
 
 ###############################################################################################################
-#20220426
+# 20220426
 def get_reverse_complementary_allele(a):
     dic = str.maketrans({
        "A":"T",
@@ -904,10 +905,11 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 7, "5","2")
     if verbose: log.write("Finished converting successfully!")
     return sumstats
-###############################################################################################################
+""
+
 
 ###############################################################################################################
-#20220426
+# 20220426
 def liftover_snv(row,chrom,converter,to_build):
     status_pre=""
     status_end=row[1][2]+"9"+row[1][4]+"99"  
@@ -986,7 +988,7 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     return sumstats
 
 ###############################################################################################################
-#20220426
+# 20220426
 def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()):
     if check_col(sumstats,chrom,pos) is not True:
         if verbose: log.write(".liftover(): specified columns not detected..skipping...")
@@ -1034,7 +1036,7 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
     if verbose: log.write("Finished sorting genome coordinates successfully!")
     return sumstats
 ###############################################################################################################
-#20220426
+# 20220426
 def sortcolumn(sumstats,verbose=True,log=Log(),order = [
         "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
         "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
@@ -1052,9 +1054,10 @@ def sortcolumn(sumstats,verbose=True,log=Log(),order = [
     if verbose: log.write("Finished sorting columns successfully!")
     return sumstats
 
-################################################################################################################
+""
 
-################################################################################################################
+""
+
 
 def check_col(df,*args):
     not_in_df=[]
