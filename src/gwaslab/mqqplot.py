@@ -5,6 +5,7 @@ import seaborn as sns
 import numpy as np
 import scipy as sp
 import gwaslab as gl
+from shutil import which
 from gwaslab.Log import Log
 from gwaslab.getsig import getsig
 from gwaslab.getsig import annogene
@@ -52,6 +53,7 @@ def mqqplot(insumstats,
           region_anno_bbox_args={},
           taf=[4,0,0.95,1,1],
           # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
+          tabix=None,
           mqqratio=3,
           bwindowsizekb = 100,
           large_number = 10000000000,
@@ -384,8 +386,10 @@ def mqqplot(insumstats,
 ## regional plot ->rsq
      #calculate rsq]
     if vcf_path is not None:
+        if tabix is None:
+            tabix = which("tabix")
         sumstats = process_vcf(sumstats=sumstats, vcf_path=vcf_path,region=region, 
-                               log=log ,pos=pos,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict)
+                               log=log ,pos=pos,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict,tabix=tabix)
 
 # # Create index for plotting ###################################################
 
@@ -940,13 +944,14 @@ def mqqplot(insumstats,
     return fig, log
 
 
+# +
 #Helpers
-""
-def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_threshold, vcf_chr_dict):
+
+def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_threshold, vcf_chr_dict,tabix):
     if verbose: log.write("Start to load reference genotype...")
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
     # load genotype data of the targeted region
-    ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=None)
+    ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
     
     if verbose: log.write(" -Retrieving index...")
     # match sumstats pos and ref pos: 
@@ -986,6 +991,9 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     sumstats.loc[lead_id,"LEAD"] = "Lead variants"
     if verbose: log.write("Finished loading reference genotype successfully!")
     return sumstats
+
+
+# -
 
 ""
 def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding):
