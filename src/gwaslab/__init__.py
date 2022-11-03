@@ -23,7 +23,11 @@ from gwaslab.CommonData import gwaslab_info
 from gwaslab.CommonData import update_formatbook
 from gwaslab.CommonData import list_formats
 from gwaslab.CommonData import check_format
-
+from gwaslab.download import check_available_ref
+from gwaslab.download import check_downloaded_ref
+from gwaslab.download import download_ref
+from gwaslab.download import check_available_ref
+from gwaslab.download import remove_file
 #from gwaslab.preformat_input import preformat
 ## Sumstats Object
 

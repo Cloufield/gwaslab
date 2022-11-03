@@ -460,7 +460,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
             return sumstats
         if verbose: log.write("Start to fix alleles...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
-        
+        sumstats.loc[:,[ea,nea]] = sumstats.loc[:,[ea,nea]].fillna(value="N")
         #if (ea not in sumstats.columns) or (nea not in sumstats.columns):
         sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])) 
         sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])) 
