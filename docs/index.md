@@ -11,7 +11,7 @@
 * Sumstats-specific manipulations are designed as methods of a python object, `gwaslab.Sumstats`.
 
 Please check GWASLab document at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
-
+Note: gwaslab is being updated very frequently for now. I will release the first stable version soon (within this year)! Please stay tuned.
 
 ## Install
 
