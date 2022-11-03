@@ -1,6 +1,6 @@
 # Update Logs
 ## v3.3.6- coming soon
-
+- fixed bugs for check_allele
 ## v3.3.5 -20221102 
 - added `filter_value`
 - integrate `gwascatalog` to `get_novel`
