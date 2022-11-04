@@ -1,27 +1,33 @@
+import gzip
+import os
 from os import path
 import json
 import requests
 import shutil
 from gwaslab.Log import Log
-import gzip
-import os
+
 
 def check_available_ref(log=Log()):
+    log.write("Start to check available reference files...")
     ref_path = path.dirname(__file__) + '/data/reference.json'
     dicts = json.load(open(ref_path))
     if dicts is not None:
         for key,value in dicts.items():
-            log.write(key," : ",value)
+            log.write(" -",key," : ",value)
         return dicts
     else:
-        log.write("No available reference files.")
+        log.write(" -No available reference files.")
+    log.write("Finished checking available reference files...")
 
 def check_downloaded_ref(log=Log()):
+    log.write("Start to check downloaded reference files...")
     config_path =  path.dirname(__file__) + '/data/config.json'
     if not path.exists(config_path):
+        log.write(" -Config file does not exist.")
         with open(config_path, 'w') as f:
-            f.write("")
-            log.write("Config file not exists...recreated.")
+                dict={}
+                log.write(" -Recreating configuration file.")
+                json.dump(dict,f,indent=4)       
     else:
         try:
             dicts = json.load(open(config_path))
@@ -36,10 +42,12 @@ def check_downloaded_ref(log=Log()):
             with open(config_path, 'w') as f:
                 json.dump(dicts,f,indent=4)
             return dicts
+            log.write("Finished checking downloaded reference files...")
         except:
-            log.write("No records in config file.")
+            log.write(" -No records in config file.")
+    log.write("Finished checking downloaded reference files...")
 
-def get_ref_path(name):
+def get_path(name,log=Log()):
     config_path =  path.dirname(__file__) + '/data/config.json'
     if not path.exists(config_path):
         log.write("Config file not exists...")
@@ -54,48 +62,63 @@ def get_ref_path(name):
             log.write("No records in config file. Please download first.")
 
 def download_ref(name,directory=None,local_filename=None,log=Log()):
+    
     from_dropbox=0
     ref_path =  path.dirname(__file__) + '/data/reference.json'
     dicts = json.load(open(ref_path))
+    
     if name in dicts.keys():
+        # get url for name
         url = dicts[name]
         log.write("Start to download ",name," ...")
+        # get file local path
         if directory is None:
             directory = path.dirname(__file__) + '/data/'
         if local_filename is None:
             local_filename = url.split('/')[-1]
         
-        full_path = directory + local_filename
-        log.write(" -Downloading to:",full_path)
         if local_filename.endswith("?dl=1"):
+            # set from_dropbox indicator to 1
             from_dropbox=1
+            # remove "?dl=1" suffix
             local_filename = local_filename[:-5]
-            if local_filename.endswith("vcf.gz"):
-                tbi_url = full_path[:-5] + ".tbi?dl=1"
-        full_path = download_file(url, directory=directory, local_filename=local_filename)
-        update_record(name,full_path)
-        if full_path.endswith("vcf.gz"):
+        
+        local_path = directory + local_filename
+        log.write(" -Downloading to:",local_path)
+        # download file
+        download_file(url,local_path)
+        # update record in config json
+        update_record(name,local_path)
+        
+        # if vcf.gz -> check tbi
+        if local_path.endswith("vcf.gz"):
                 if from_dropbox==0:
                     tbi_url = url+".tbi"
+                else:
+                    tbi_url = url[:-5] + ".tbi?dl=1"
                 try:
-                    download_file(tbi_url, directory=directory, local_filename=local_filename+".tbi")
-                    update_record(name+"_tbi",full_path+ ".tbi")
+                    download_file(tbi_url, local_path+".tbi")
+                    update_record(name+"_tbi",local_path+ ".tbi")
+                    log.write(" -Downloading to:",local_path+".tbi")
                 except:
                     pass
-        if full_path.endswith("fa.gz") or full_path.endswith("fasta.gz"):
-            log.write(" -Gunzipping :",full_path)
+        # if fasta.gz or fa.gz, decompress
+        if local_path.endswith("fa.gz") or local_path.endswith("fasta.gz"):
+            log.write(" -gunzip :",local_path)
             try:
-                with gzip.open(full_path, 'rb') as f_in:
-                    with open(full_path[:-3], 'wb') as f_out:
+                with gzip.open(local_path, 'rb') as f_in:
+                    with open(local_path[:-3], 'wb') as f_out:
                         shutil.copyfileobj(f_in, f_out)
-                        update_record(name,full_path[:-3])
+                        update_record(name,local_path[:-3])
             except:
                     pass
-        log.write(" -Downloaded ",name," successfully!")
+
+        log.write("Downloaded ",name," successfully!")
     else:
         log.write(name," is not available. Please use check_available_ref() to check available reference files.")
 
 def update_record(key,value,log=Log()):
+    log.write(" -Updating record in config file...")
     config_path =  path.dirname(__file__) + '/data/config.json'
     try:
         with open(config_path,'r') as f:
@@ -107,6 +130,7 @@ def update_record(key,value,log=Log()):
         json.dump(dict,f,indent=4)
 
 def remove_file(name,log=Log()):
+    log.write("Start to remove ",name," ...")
     config_path =  path.dirname(__file__) + '/data/config.json'
     if not path.exists(config_path):
         log.write("Config file not exists...")
@@ -122,14 +146,9 @@ def remove_file(name,log=Log()):
         except:
             log.write("No records in config file. Please download first.")
 
-def download_file(url, directory=None,local_filename=None,log=Log()):
-    if directory is None:
-        directory = path.dirname(__file__) + '/data/'
-    if local_filename is None:
-        local_filename = url.split('/')[-1]
-    full_path = directory + local_filename
-    # NOTE the stream=True parameter below
-    with requests.get(url, stream=True) as r:
-        with open(full_path, 'wb') as f:
-            shutil.copyfileobj(r.raw, f)     
-    return full_path
+def download_file(url, file_path=None):
+    if file_path is not None:
+        with requests.get(url, stream=True) as r:
+            with open(file_path, 'wb') as f:
+                shutil.copyfileobj(r.raw, f)     
+        return file_path

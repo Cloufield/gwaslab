@@ -297,8 +297,8 @@ def check_format(fmt,log=Log()):
         
 def gwaslab_info():
     dic={
-   "version":"3.3.3",
-   "release_date":"20221029"
+   "version":"3.3.5",
+   "release_date":"20221104"
     }
     return dic       
         

@@ -28,6 +28,7 @@ from gwaslab.download import check_downloaded_ref
 from gwaslab.download import download_ref
 from gwaslab.download import check_available_ref
 from gwaslab.download import remove_file
+from gwaslab.download import get_path
 #from gwaslab.preformat_input import preformat
 ## Sumstats Object
 
