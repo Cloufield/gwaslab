@@ -39,7 +39,8 @@ nav:
        - "Load LDSC log": LoadLDSC.md
        - "Convert Heritability": HeritabilityConversion.md
        - "Infer Genome Build": InferBuild.md
-    - References: 
+    - References:
+       - "Download": Download.md 
        - "Reference data" : Reference.md
        - "Common data": CommonData.md
        - "Update logs" : UpdateLogs.md
@@ -59,6 +60,8 @@ nav:
           - "Miami plot": visualization_miami.ipynb
           - "Regional plot": visualization_regional.ipynb
           - "Brisbane plot": visualization_brisbane.ipynb
+       - "Reference management" :
+          - "Download" : Download_reference.ipynb
 
 plugins:
   - mkdocs-jupyter
