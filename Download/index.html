@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="../img/favicon.ico">
 
     
-    <title>QC&Filtering - GWASLab</title>
+    <title>Download - GWASLab</title>
     
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -82,7 +82,7 @@
                 
                 
                 
-                    <li class="dropdown active">
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sumstats manipulation <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
@@ -105,8 +105,8 @@
 
                         
                             
-<li class="active">
-    <a href="./">QC&Filtering</a>
+<li >
+    <a href="../QC%26Filtering/">QC&Filtering</a>
 </li>
 
                         
@@ -241,13 +241,13 @@
                 
                 
                 
-                    <li class="dropdown">
+                    <li class="dropdown active">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">References <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                         
                             
-<li >
-    <a href="../Download/">Download</a>
+<li class="active">
+    <a href="./">Download</a>
 </li>
 
                         
@@ -403,12 +403,12 @@
 
             <ul class="nav navbar-nav navbar-right">
                     <li >
-                        <a rel="prev" href="../Standardization/">
+                        <a rel="prev" href="../InferBuild/">
                             <i class="fas fa-arrow-left"></i> Previous
                         </a>
                     </li>
                     <li >
-                        <a rel="next" href="../Harmonization/">
+                        <a rel="next" href="../Reference/">
                             Next <i class="fas fa-arrow-right"></i>
                         </a>
                     </li>
@@ -425,119 +425,48 @@
         
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="first-level active"><a href="#qc-and-filtering">QC and filtering</a></li>
-            <li class="second-level"><a href="#methods-summary">Methods Summary</a></li>
-                
-            <li class="second-level"><a href="#statistics-sanity-check">Statistics Sanity Check</a></li>
-                
-            <li class="second-level"><a href="#remove-duplicated-or-multiallelic-variants">Remove duplicated or multiallelic variants</a></li>
-                
-            <li class="second-level"><a href="#filtering">FIltering</a></li>
-                
-            <li class="second-level"><a href="#filtering-region">Filtering region</a></li>
-                
+        <li class="first-level active"><a href="#download-reference-data">Download reference data</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
-<h1 id="qc-and-filtering">QC and filtering</h1>
-<p>gwaslab provides all-in-one function and customizable functions for sumstats QC and filtering.</p>
-<p>See examples <a href="https://cloufield.github.io/gwaslab/quality_control_and_filtering/">here.</a></p>
-<h2 id="methods-summary">Methods Summary</h2>
+<h1 id="download-reference-data">Download reference data</h1>
 <table>
 <thead>
 <tr>
-<th>Sumstats Methods</th>
-<th>Options</th>
-<th>Description</th>
+<th>functions</th>
+<th>options</th>
+<th>description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>.check_sanity()</code></td>
-<td><code>n=(0,float("Inf"))</code>, <br/><code>eaf=(0,1)</code>, <br/><code>mac=(5,float("Inf"))</code>, <br/><code>chisq=(0,float("Inf"))</code>, <br/><code>p=(5e-300,1)</code>, <br/><code>mlog10p=(0,float("Inf"))</code>, <br/><code>beta=(-10,10)</code>, <br/><code>z=(-37.5,37.5)</code>, <br/><code>se=(0,float("Inf"))</code>, <br/><code>OR=(-10,10)</code> , <br/><code>OR_95L=(0,float("Inf"))</code>, <br/><code>OR_95U=(0,float("Inf"))</code>, <br/><code>info=(0,float("Inf"))</code></td>
-<td>sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N...</td>
+<td>gl.check_available_ref()</td>
+<td></td>
+<td>list current available reference data gwaslab can use</td>
 </tr>
 <tr>
-<td><code>.remove_dup()</code></td>
-<td><code>mode="md"</code>, <br/><code>keep='first'</code>, <br/><code>keep_col="P"</code>, <br/><code>remove=False</code></td>
-<td>remove duplicated, multiallelic or NA variants</td>
+<td>gl.check_downloaded_ref()</td>
+<td></td>
+<td>list downloaded reference data</td>
 </tr>
 <tr>
-<td><code>.filter_in()</code></td>
-<td>lt, gt, eq, inplace</td>
-<td>filter in variants base on given threshold</td>
+<td>gl.download_ref(name)</td>
+<td>name</td>
+<td>download the refernce data</td>
 </tr>
 <tr>
-<td><code>.filter_out()</code></td>
-<td>lt, gt, eq, inplace</td>
-<td>filter out variants base on given threshold</td>
+<td>gl.remove_file(name)</td>
+<td>name</td>
+<td>remove the downloaded data</td>
 </tr>
 <tr>
-<td><code>.filter_region_in()</code></td>
-<td><code>path</code> , <br/> <code>inplace=True</code> , <br/><code>high_ld=False</code>, <br/> <code>build="19"</code></td>
-<td>filter in variants in the specified region define by a bed file</td>
-</tr>
-<tr>
-<td><code>.filter_region_out()</code></td>
-<td><code>path</code> , <br/> <code>inplace=True</code> , <br/><code>high_ld=False</code>, <br/> <code>build="19"</code></td>
-<td>filter out variants in the specified region define by a bed file</td>
+<td>gl.get_path(name)</td>
+<td>name</td>
+<td>get the path to the refernce data</td>
 </tr>
 </tbody>
-</table>
-<h2 id="statistics-sanity-check">Statistics Sanity Check</h2>
-<p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected range</code>.</p>
-<ul>
-<li><code>n=(0,float("Inf"))</code> : interger, N&gt;0</li>
-<li><code>eaf=(0,1)</code> : float ,0&lt;= EAF &lt;=1</li>
-<li><code>mac=(5,float("Inf"))</code> : mac&gt;=5</li>
-<li><code>chisq=(0,float("Inf"))</code> : float , CHISQ&gt;0</li>
-<li><code>p=(5e-300,1)</code> : float, 5e-300&lt;P&lt;=1</li>
-<li><code>mlog10p=(0,float("Inf"))</code> : float, MLOG10&gt;0</li>
-<li><code>beta=(-10,10)</code> : float, -10&lt;BETA&lt;10</li>
-<li><code>z=(-37.5,37.5)</code>: float, -37.5&lt;z&lt;37.5</li>
-<li><code>se=(0,float("Inf"))</code> : float, SE&gt;0</li>
-<li><code>OR=(-10,10)</code> : float, -10&lt;log(OR)&lt;10</li>
-<li><code>OR_95L=(0,float("Inf"))</code> :float, OR_95L&gt;0</li>
-<li><code>OR_95U=(0,float("Inf"))</code> :float, OR_95U&gt;0</li>
-<li><code>info=(0,float("Inf"))</code> : float, INFO&gt;0 </li>
-<li><code>Direction</code> : string, only contains "+","-" ,"0"or "?"</li>
-</ul>
-<pre><code class="language-python">sumstats.check_sanity()
-</code></pre>
-<h2 id="remove-duplicated-or-multiallelic-variants">Remove duplicated or multiallelic variants</h2>
-<p>after standardize the sumstats, you can also remove duplicated or multiallelic variants using :</p>
-<ul>
-<li><code>mode=d</code> ,remove duplicate.<ul>
-<li>remove duplicate SNPs based on  1. SNPID, </li>
-<li>remove duplicate SNPs based on  2. CHR, POS, EA, and NEA</li>
-<li>remove duplicate SNPs based on  3. rsID</li>
-</ul>
-</li>
-<li>'mode=m', remove multiallelic variants.<ul>
-<li>remove multiallelic SNPs based on  4. CHR, POS</li>
-</ul>
-</li>
-<li><code>remove=True</code> : remove NAs </li>
-<li><code>keep_col</code> : use which column to sort the values (keep_ascend=True: ascending order)</li>
-<li><code>keep</code>: keep 'first' or 'last'.</li>
-</ul>
-<pre><code class="language-python">sumstats.remove_dup(mode=&quot;md&quot;,keep='first',keep_col=&quot;P&quot;,remove=False)
-</code></pre>
-<p>-&gt; remove duplicated and multiallelic variants and keep the one with lowest P.</p>
-<h2 id="filtering">FIltering</h2>
-<pre><code class="language-python">.filter_in(gt={},lt={},eq={},inplace=True)
-
-.filter_out(gt={},lt={},eq={},inplace=True)
-</code></pre>
-<p><code>gt</code>: greater than</p>
-<p><code>lt</code>: less than</p>
-<p><code>eq</code>: equal to</p>
-<p><code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</p>
-<h2 id="filtering-region">Filtering region</h2>
-<pre><code>.filter_region_in(path=&quot;./abc.bed&quot;)
-.filter_region_out(high_ld=True)
-</code></pre></div>
+</table></div>
         
         
     </div>
