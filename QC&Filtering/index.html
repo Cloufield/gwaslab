@@ -464,6 +464,11 @@
 <td>remove duplicated, multiallelic or NA variants</td>
 </tr>
 <tr>
+<td><code>.filter_value()</code></td>
+<td>expr</td>
+<td>filter in variants base on expr</td>
+</tr>
+<tr>
 <td><code>.filter_in()</code></td>
 <td>lt, gt, eq, inplace</td>
 <td>filter in variants base on given threshold</td>
@@ -526,18 +531,33 @@
 </code></pre>
 <p>-&gt; remove duplicated and multiallelic variants and keep the one with lowest P.</p>
 <h2 id="filtering">FIltering</h2>
-<pre><code class="language-python">.filter_in(gt={},lt={},eq={},inplace=True)
-
-.filter_out(gt={},lt={},eq={},inplace=True)
+<pre><code>.filter_value(expr,inplace=False)
 </code></pre>
-<p><code>gt</code>: greater than</p>
-<p><code>lt</code>: less than</p>
-<p><code>eq</code>: equal to</p>
-<p><code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</p>
+<ul>
+<li><code>filter_value</code>, is a wrapper of pd.DataFrame query. This can be used for value filtering.</li>
+<li><code>expr</code>: the conditions used fot filtering. (for example: '1&gt;BETA&gt;0 &amp; N&gt;10000')</li>
+<li><code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</li>
+</ul>
+<p>filter_in &amp; filter_out (might be deprecated)</p>
+<pre><code class="language-python">.filter_in(gt={},lt={},eq={},inplace=False)
+
+.filter_out(gt={},lt={},eq={},inplace=False)
+</code></pre>
+<ul>
+<li><code>gt</code>: greater than</li>
+<li><code>lt</code>: less than</li>
+<li><code>eq</code>: equal to</li>
+<li><code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</li>
+</ul>
 <h2 id="filtering-region">Filtering region</h2>
 <pre><code>.filter_region_in(path=&quot;./abc.bed&quot;)
 .filter_region_out(high_ld=True)
-</code></pre></div>
+</code></pre>
+<p>filter variants in certain regions defined in bed files.</p>
+<ul>
+<li><code>path</code> : path to the bed files</li>
+<li><code>high_ld</code> : high-ld region (built-in data, no additional bed needed)</li>
+</ul></div>
         
         
     </div>
