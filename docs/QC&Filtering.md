@@ -9,6 +9,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 | ----------------- | ------------------------ | ----------------------------------------------------------------------- |
 | `.check_sanity()` |  `n=(0,float("Inf"))`, <br/>`eaf=(0,1)`, <br/>`mac=(5,float("Inf"))`, <br/>`chisq=(0,float("Inf"))`, <br/>`p=(5e-300,1)`, <br/>`mlog10p=(0,float("Inf"))`, <br/>`beta=(-10,10)`, <br/>`z=(-37.5,37.5)`, <br/>`se=(0,float("Inf"))`, <br/>`OR=(-10,10)` , <br/>`OR_95L=(0,float("Inf"))`, <br/>`OR_95U=(0,float("Inf"))`, <br/>`info=(0,float("Inf"))`   | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
 | `.remove_dup()`   |  `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants |
+| `.filter_value()`    |  expr     |    filter in variants base on expr                                                                    |
 | `.filter_in()`    |  lt, gt, eq, inplace     |    filter in variants base on given threshold                                                                      |
 | `.filter_out()`   |  lt, gt, eq, inplace     |       filter out variants base on given threshold                                                                      |
 | `.filter_region_in()`   | `path` , <br/> `inplace=True` , <br/>`high_ld=False`, <br/> `build="19"`                         |      filter in variants in the specified region define by a bed file                                                                   |
@@ -60,19 +61,24 @@ sumstats.remove_dup(mode="md",keep='first',keep_col="P",remove=False)
 
 ## FIltering
 
-```python
-.filter_in(gt={},lt={},eq={},inplace=True)
-
-.filter_out(gt={},lt={},eq={},inplace=True)
+```
+.filter_value(expr,inplace=False)
 ```
 
-`gt`: greater than
+- `filter_value`, is a wrapper of pd.DataFrame query. This can be used for value filtering.
+- `expr`: the conditions used fot filtering. (for example: '1>BETA>0 & N>10000')
+- `inplace`: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.
 
-`lt`: less than
+filter_in & filter_out (might be deprecated)
+```python
+.filter_in(gt={},lt={},eq={},inplace=False)
 
-`eq`: equal to
-
-`inplace`: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.
+.filter_out(gt={},lt={},eq={},inplace=False)
+```
+- `gt`: greater than
+- `lt`: less than
+- `eq`: equal to
+- `inplace`: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.
 
 
 
@@ -81,4 +87,7 @@ sumstats.remove_dup(mode="md",keep='first',keep_col="P",remove=False)
 .filter_region_in(path="./abc.bed")
 .filter_region_out(high_ld=True)
 ```
+filter variants in certain regions defined in bed files.
 
+- `path` : path to the bed files
+- `high_ld` : high-ld region (built-in data, no additional bed needed)
