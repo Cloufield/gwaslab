@@ -80,7 +80,7 @@ class Sumstats():
              **readargs):
         
         self.build = build
-        self.meta = {"Genome build":build,
+        self.meta = {"GenomeBuild":build,
                  "Name":"Sumstats_1","StudyType":"Unknown"}
         self.data = pd.DataFrame()
         self.log = Log()
@@ -331,15 +331,19 @@ class Sumstats():
         self.data = parallelrsidtochrpos(self.data,log=self.log,**args)
     def liftover(self,**args):
         self.data = parallelizeliftovervariant(self.data,log=self.log,**args)
+    ############################################################################################################
+    
     def sort_coordinate(self,**sort_args):
         self.data = sortcoordinate(self.data,log=self.log,**sort_args)
     def sort_column(self,**args):
         self.data = sortcolumn(self.data,log=self.log,**args)
+    
     ############################################################################################################
     def fill_data(self, **args):
         self.data = filldata(self.data,**args)
+    
     def infer_build(self,**args):
-        self.data = inferbuild(self.data,**args)
+        self.data, self.meta["GenomeBuild"] = inferbuild(self.data,**args)
 
 # utilities ############################################################################################################
     def filter_value(self, expr, inplace=False, **args):

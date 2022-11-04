@@ -4,6 +4,7 @@ import scipy.stats as ss
 import os
 import gc
 from gwaslab.CommonData import get_format_dict
+from gwaslab.fixdata import sortcolumn
 import gzip
 
 #20221030
@@ -295,7 +296,7 @@ def preformat(sumstats,
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.") 
     #################################################################################################################
     ## reodering 
-    sumstats = order_columns(sumstats,other,log,verbose=verbose)    
+    sumstats = sortcolumn(sumstats,log=log,verbose=verbose)    
     gc.collect()
     if verbose: log.write("Finished loading data successfully!")
     return sumstats
@@ -307,16 +308,4 @@ def isfile_casesensitive(path):
         return False   # exit early
     directory, filename = os.path.split(path)
     return filename in os.listdir(directory)
-
-def order_columns(sumstats,other,log,verbose=True):
-    order = [
-        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
-        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS","REF","ALT"
-           ] + other   
-    output_columns = []
-    for i in order:
-        if i in sumstats.columns: output_columns.append(i)
-    if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns))
-    sumstats = sumstats.loc[:, output_columns].copy()  
-    return sumstats
     

@@ -1045,10 +1045,10 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
     if verbose: log.write("Finished sorting genome coordinates successfully!")
     return sumstats
 ###############################################################################################################
-# 20220426
+# 20221105
 def sortcolumn(sumstats,verbose=True,log=Log(),order = [
         "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",
-        "CHISQ", "P", "MLOG10P", "OR", "OR_SE", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
+        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
            ]):
     if verbose: log.write("Start to reorder the columns...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
@@ -1062,10 +1062,6 @@ def sortcolumn(sumstats,verbose=True,log=Log(),order = [
     sumstats = sumstats.loc[:, output_columns]
     if verbose: log.write("Finished sorting columns successfully!")
     return sumstats
-
-""
-
-""
 
 
 def check_col(df,*args):

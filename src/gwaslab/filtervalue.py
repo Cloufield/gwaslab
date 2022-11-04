@@ -212,10 +212,10 @@ def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, b
     return sumstats
 
 def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True,log=Log()):
+    inferred_build="Unknown"
     if verbose:log.write("Start to infer genome build version using hapmap3 SNPs...")    
     data_path_19 =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db150_hg19.snplist.gz'    
     data_path_38 =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db151_hg38.snplist.gz'    
-    
     if verbose:log.write(" -Loading Hapmap3 variants data...")        
     hapmap3_ref_19 = pd.read_csv(data_path_19,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})
     hapmap3_ref_38 = pd.read_csv(data_path_38,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})
@@ -240,14 +240,16 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NE
             if verbose:log.write(" -Since num_hg19 >> num_hg38, assigning genome build hg19...") 
             sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],1,"9","1")
             sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],2,"9","9")
+            inferred_build="19"
         elif match_count_for_19 < match_count_for_38:
             if verbose:log.write(" -Since num_hg19 << num_hg38, assigning genome build hg38...") 
             sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],1,"9","3")
             sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],2,"9","8")
+            inferred_build="38"
         else:
             if verbose:log.write(" -Since num_hg19 = num_hg38, unable to infer...") 
         gc.collect()
-        return sumstats
+        return sumstats, inferred_build
     else:
         gc.collect()
         raise ValueError("Not enough information to match SNPs. Please check if CHR and POS columns are in your sumstats...")

@@ -4,6 +4,7 @@ import scipy.stats as ss
 from scipy import stats
 from gwaslab.Log import Log
 import gc
+from gwaslab.fixdata import sortcolumn
 
 def filldata( 
     sumstats,
@@ -15,6 +16,7 @@ def filldata(
     log = Log()
     ):
     
+    # if a string is passed to to_fill, convert it to list
     if type(to_fill) is str:
         to_fill = [to_fill]
 
@@ -29,8 +31,8 @@ def filldata(
                 skip_cols.append(i)
         for i in skip_cols:
             to_fill.remove(i)
-        if verbose: log.write("  - Skipping columns: ",skip_cols) 
-    if verbose: log.write("Filling columns: ",to_fill)
+        if verbose: log.write("  -Skipping columns: ",skip_cols) 
+    if verbose: log.write(" -Filling columns: ",to_fill)
         
 # beta to or ####################################################################################################     
     if "OR" in to_fill:
@@ -44,7 +46,7 @@ def filldata(
         fill_se(sumstats,log,verbose=verbose)
 # z/chi2 to p ##################################################################################################
     if "P" in to_fill:
-        fill_p(sumstats,log,verbose=verbose)
+        fill_p(sumstats,log,only_sig=only_sig,df=df,verbose=verbose)
 
 # beta/se to z ##################################################################################################            
     if "Z" in to_fill:   
@@ -64,20 +66,7 @@ def filldata(
             fill_mlog10p(sumstats,log,verbose=verbose)
        
 # ###################################################################################
-    
-    core_col = ["SNPID","rsID","CHR","POS","EA","NEA","EAF","N","BETA","SE","Z","CHISQ","P","MLOG10P","INFO", "OR","OR_SE","OR_95L","OR_95U"]
-    other=[]
-    for i in sumstats.columns:
-        if i not in core_col:
-                other.append(i)
-    order = core_col + other
-    
-    output_columns=[]
-    for i in order:
-        if i in sumstats.columns:
-            output_columns.append(i)
-     
-    sumstats = sumstats.loc[:,output_columns]
+    sumstats = sortcolumn(sumstats, verbose=verbose, log=log)
     gc.collect()
     if verbose: log.write("Finished filling data using existing columns.")
     return sumstats
