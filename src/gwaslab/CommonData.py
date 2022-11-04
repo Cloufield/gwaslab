@@ -269,7 +269,7 @@ def update_formatbook(log=Log()):
     data_path =  path.dirname(__file__) + '/data/formatbook.json'
     with open(data_path, 'wb') as file:
         file.write(r.content)
-    book=json.load(open("formatbook.json"))
+    book=json.load(open(data_path))
     available_formats = list(book.keys())
     available_formats.sort()
     log.write("Available formats:",",".join(available_formats))
@@ -278,14 +278,14 @@ def update_formatbook(log=Log()):
          
 def list_formats(log=Log()):
     data_path =  path.dirname(__file__) + '/data/formatbook.json'
-    book=json.load(open("formatbook.json"))
+    book=json.load(open(data_path))
     available_formats = list(book.keys())
     available_formats.sort()
     log.write("Available formats:",",".join(available_formats))    
 
 def check_format(fmt,log=Log()):
     data_path =  path.dirname(__file__) + '/data/formatbook.json'
-    book=json.load(open("formatbook.json"))
+    book=json.load(open(data_path))
     log.write("Available formats:",end="")
     for i in book[fmt].keys():
         log.write(i,end="")

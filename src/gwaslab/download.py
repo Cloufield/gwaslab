@@ -92,10 +92,8 @@ def download_ref(name,directory=None,local_filename=None,log=Log()):
         
         # if vcf.gz -> check tbi
         if local_path.endswith("vcf.gz"):
-                if from_dropbox==0:
-                    tbi_url = url+".tbi"
-                else:
-                    tbi_url = url[:-5] + ".tbi?dl=1"
+                if name+"_tbi" in dicts.keys():
+                    tbi_url = dicts[name+"_tbi"]
                 try:
                     download_file(tbi_url, local_path+".tbi")
                     update_record(name+"_tbi",local_path+ ".tbi")
