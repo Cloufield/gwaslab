@@ -131,4 +131,4 @@ sumstats.sort_column(order = [
 ```
 
 ## Example
-Please check [https://github.com/Cloufield/gwaslab/blob/main/examples/standardization_workflow.ipynb](https://github.com/Cloufield/gwaslab/blob/main/examples/standardization_workflow.ipynb)
+Please check [https://cloufield.github.io/gwaslab/standardization_workflow/](https://cloufield.github.io/gwaslab/standardization_workflow/)

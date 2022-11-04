@@ -1,4 +1,5 @@
 import re
+import gc
 #import gwaslab as gl
 import pandas as pd
 import numpy as np
@@ -462,23 +463,31 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         
         #if (ea not in sumstats.columns) or (nea not in sumstats.columns):
-        sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])) 
-        sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])) 
-        
+        categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])|set("N")
+        sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = categories) 
+        sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = categories) 
         all_var_num = len(sumstats)
-        bad_ea = sumstats[ea].str.contains("[^actgACTG]")
-        bad_nea = sumstats[nea].str.contains("[^actgACTG]")
+        bad_ea = sumstats[ea].str.contains("[^actgACTG]",na=True)
+        bad_nea = sumstats[nea].str.contains("[^actgACTG]",na=True)
         good_ea  = ~bad_ea
         good_nea = ~bad_nea
         is_eanea_na = sumstats[ea].isna() |  sumstats[nea].isna()
         is_invalid = bad_ea | bad_nea | (sumstats[nea] == sumstats[ea])
-        exclude  = sum(bad_nea | bad_ea)
+        exclude  = bad_nea | bad_ea
+        if verbose: 
+            if len(set(sumstats.loc[bad_ea,ea].head())) >0:
+                log.write(" -A look at the non-ATCG EA:",set(sumstats.loc[bad_ea,ea].head()),"...") 
+            if len(set(sumstats.loc[bad_nea,nea].head())) >0:
+                log.write(" -A look at the non-ATCG NEA:",set(sumstats.loc[bad_nea,nea].head()),"...") 
         if remove is True:
-            sumstats = sumstats.loc[good_ea & good_nea,:].copy()
-            if verbose: log.write(" -Removed "+str(exclude)+" variants with alleles that contain bases other than A/C/T/G .")  
-        
-        sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])) 
-        sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])) 
+            sumstats = sumstats.loc[(good_ea & good_nea),:].copy()
+            if verbose: log.write(" -Removed "+str(sum(exclude))+" variants with alleles that contain bases other than A/C/T/G .")  
+        else:
+            sumstats.loc[:,[ea,nea]] = sumstats.loc[:,[ea,nea]].fillna("N")
+            if verbose: log.write(" -Detected "+str(sum(exclude))+" variants with alleles that contain bases other than A/C/T/G .") 
+        categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])|set("N")
+        sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = categories) 
+        sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = categories) 
         if verbose: log.write(" -Converted all bases to string datatype and UPPERCASE.")
         
         is_eanea_fixed = good_ea | good_nea
@@ -494,7 +503,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         sumstats.loc[is_eanea_fixed&is_indel,status]         = vchange_status(sumstats.loc[is_eanea_fixed&is_indel, status],      5,"9","4")
         sumstats.loc[is_eanea_fixed&is_normalized,status]      = vchange_status(sumstats.loc[is_eanea_fixed&is_normalized, status],  5,"4","3")
         remain_var_num = len(sumstats)
-              
+        gc.collect()
         if verbose: log.write("Finished fixing allele successfully!")
         return sumstats
 
