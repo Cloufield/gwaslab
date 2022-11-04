@@ -1501,11 +1501,11 @@ Licensed under the Apache License, Version 2.0.
             </clipboard-copy>
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;/home/yunye/gwaslab/gwaslab/src&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;/Users/he/work/gwaslab/src&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">gwaslab</span> <span class="k">as</span> <span class="nn">gl</span>
 </pre></div>
 <div id="cell-1" class="clipboard-copy-txt">import sys
-sys.path.insert(0,"/home/yunye/gwaslab/gwaslab/src")
+sys.path.insert(0,"/Users/he/work/gwaslab/src")
 import gwaslab as gl</div>
     
         </div>
@@ -1593,17 +1593,17 @@ import gwaslab as gl</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Thu Nov  3 13:08:28 2022 Start to initiate from file :t2d_bbj.txt.gz
-Thu Nov  3 13:08:46 2022  -Reading columns          : Dir,ALT,BETA,N,SE,REF,P,CHR,SNP,Frq,POS
-Thu Nov  3 13:08:46 2022  -Renaming columns to      : DIRECTION,EA,BETA,N,SE,NEA,P,CHR,SNPID,EAF,POS
-Thu Nov  3 13:08:46 2022  -Current dataframe shape  : Rows  12557761  x  11  Columns
-Thu Nov  3 13:08:47 2022  -Initiating a status column ...
-Thu Nov  3 13:08:49 2022  -NEAF is specified...
-Thu Nov  3 13:08:49 2022  -Checking if 0&lt;= NEAF &lt;=1 ...
-Thu Nov  3 13:08:52 2022  -Converted NEAF to EAF.
-Thu Nov  3 13:08:52 2022  -Removed 0 variants with bad NEAF.
-Thu Nov  3 13:08:52 2022  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
-Thu Nov  3 13:08:54 2022 Finished loading data successfully!
+<pre>Fri Nov  4 14:17:34 2022 Start to initiate from file :t2d_bbj.txt.gz
+Fri Nov  4 14:17:59 2022  -Reading columns          : Frq,Dir,N,P,ALT,POS,CHR,BETA,REF,SNP,SE
+Fri Nov  4 14:17:59 2022  -Renaming columns to      : EAF,DIRECTION,N,P,EA,POS,CHR,BETA,NEA,SNPID,SE
+Fri Nov  4 14:17:59 2022  -Current dataframe shape  : Rows  12557761  x  11  Columns
+Fri Nov  4 14:18:01 2022  -Initiating a status column ...
+Fri Nov  4 14:18:08 2022  -NEAF is specified...
+Fri Nov  4 14:18:08 2022  -Checking if 0&lt;= NEAF &lt;=1 ...
+Fri Nov  4 14:18:10 2022  -Converted NEAF to EAF.
+Fri Nov  4 14:18:10 2022  -Removed 0 variants with bad NEAF.
+Fri Nov  4 14:18:10 2022  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
+Fri Nov  4 14:18:14 2022 Finished loading data successfully!
 </pre>
 </div>
 </div>
@@ -1915,11 +1915,11 @@ Thu Nov  3 13:08:54 2022 Finished loading data successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Thu Nov  3 13:08:54 2022 Start to check IDs...
-Thu Nov  3 13:08:54 2022  -Current Dataframe shape : 12557761  x  12
-Thu Nov  3 13:08:54 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
-Thu Nov  3 13:09:06 2022  -Replacing [_-] in SNPID with &#34;:&#34; ...
-Thu Nov  3 13:09:17 2022 Finished checking IDs successfully!
+<pre>Fri Nov  4 14:18:14 2022 Start to check IDs...
+Fri Nov  4 14:18:14 2022  -Current Dataframe shape : 12557761  x  12
+Fri Nov  4 14:18:14 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
+Fri Nov  4 14:18:35 2022  -Replacing [_-] in SNPID with &#34;:&#34; ...
+Fri Nov  4 14:18:51 2022 Finished checking IDs successfully!
 </pre>
 </div>
 </div>
@@ -1950,9 +1950,9 @@ Thu Nov  3 13:09:17 2022 Finished checking IDs successfully!
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">()</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">random_variants</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
-<div id="cell-5" class="clipboard-copy-txt">mysumstats.basic_check()</div>
+<div id="cell-5" class="clipboard-copy-txt">mysumstats.random_variants(n=100000,inplace=True)</div>
     
         </div>
     </div>
@@ -1974,52 +1974,9 @@ Thu Nov  3 13:09:17 2022 Finished checking IDs successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Thu Nov  3 13:09:17 2022 Start to check IDs...
-Thu Nov  3 13:09:17 2022  -Current Dataframe shape : 12557761  x  12
-Thu Nov  3 13:09:17 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
-Thu Nov  3 13:09:37 2022 Finished checking IDs successfully!
-Thu Nov  3 13:09:37 2022 Start to fix chromosome notation...
-Thu Nov  3 13:09:37 2022  -Current Dataframe shape : 12557761  x  12
-Thu Nov  3 13:10:06 2022  -Vairants with fixable chromosome notations: 328791
-Thu Nov  3 13:10:07 2022  -Converting to string datatype and UPPERCASE...
-Thu Nov  3 13:10:08 2022  -Stripping chr prefix if exists : CHR_-.0...
-Thu Nov  3 13:10:10 2022  -Identified  328791  variants on sex chromosomes...
-Thu Nov  3 13:10:10 2022  -Standardizing sex chromosome notations: X Y MT  to 23,24,25...
-Thu Nov  3 13:10:24 2022  -No unrecognized chromosome notations...
-Thu Nov  3 13:10:30 2022 Finished fixing chromosome notation successfully!
-Thu Nov  3 13:10:30 2022 Start to fix basepair positions...
-Thu Nov  3 13:10:30 2022  -Current Dataframe shape : 12557761  x  12
-Thu Nov  3 13:10:46 2022  -Position upper_bound is: 250,000,000
-Thu Nov  3 13:11:10 2022  -Remove outliers: 0
-Thu Nov  3 13:11:12 2022  -Converted all position to datatype Int64.
-Thu Nov  3 13:11:12 2022 Finished fixing basepair position successfully!
-Thu Nov  3 13:11:12 2022 Start to fix alleles...
-Thu Nov  3 13:11:12 2022  -Current Dataframe shape : 12557761  x  12
-Thu Nov  3 13:11:27 2022  -Converted all bases to string datatype and UPPERCASE.
-Thu Nov  3 13:11:45 2022 Finished fixing allele successfully!
-Thu Nov  3 13:11:45 2022 Start sanity check for statistics ...
-Thu Nov  3 13:11:45 2022  -Current Dataframe shape : 12557761  x  12
-Thu Nov  3 13:11:46 2022  -Checking if  0 &lt;=N&lt;= inf  ...
-Thu Nov  3 13:11:48 2022  -Removed 0 variants with bad N.
-Thu Nov  3 13:11:48 2022  -Checking if  0 &lt;=EAF&lt;= 1  ...
-Thu Nov  3 13:11:50 2022  -Removed 0 variants with bad EAF.
-Thu Nov  3 13:11:50 2022  -Checking if  5 &lt;=MAC&lt;= inf  ...
-Thu Nov  3 13:11:54 2022  -Removed 0 variants with bad MAC.
-Thu Nov  3 13:11:54 2022  -Checking if  5e-300 &lt;= P &lt;= 1  ...
-Thu Nov  3 13:11:55 2022  -Removed 0 variants with bad P.
-Thu Nov  3 13:11:55 2022  -Checking if  -10 &lt;BETA)&lt; 10  ...
-Thu Nov  3 13:11:57 2022  -Removed 0 variants with bad BETA.
-Thu Nov  3 13:11:57 2022  -Checking if  0 &lt;SE&lt; inf  ...
-Thu Nov  3 13:11:59 2022  -Removed 0 variants with bad SE.
-Thu Nov  3 13:11:59 2022  -Checking STATUS...
-Thu Nov  3 13:12:01 2022  -Coverting STAUTUS to category.
-Thu Nov  3 13:12:02 2022  -Removed 0 variants with bad statistics in total.
-Thu Nov  3 13:12:02 2022 Finished sanity check successfully!
-Thu Nov  3 13:12:02 2022 Start to normalize variants...
-Thu Nov  3 13:12:02 2022  -Current Dataframe shape : 12557761  x  12
-Thu Nov  3 13:12:07 2022  -Not normalized allele:[&#39;TT&#39; &#39;TC&#39;][&#39;CTTTT&#39; &#39;CTTT&#39;][&#39;ATTT&#39; &#39;ATT&#39;][&#39;ATTT&#39; &#39;ATT&#39;][&#39;GTT&#39; &#39;GT&#39;]... 
-Thu Nov  3 13:12:07 2022  -Modified 13 variants according to parsimony and left alignment principal.
-Thu Nov  3 13:12:09 2022 Finished normalizing variants successfully!
+<pre>Fri Nov  4 14:18:51 2022 Start to randomly select variants from the sumstats...
+Fri Nov  4 14:18:51 2022  -Number of variants selected from the sumstats: 100000
+Fri Nov  4 14:18:56 2022 Finished sampling...
 </pre>
 </div>
 </div>
@@ -2050,9 +2007,9 @@ Thu Nov  3 13:12:09 2022 Finished normalizing variants successfully!
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_build</span><span class="p">()</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">()</span>
 </pre></div>
-<div id="cell-6" class="clipboard-copy-txt">mysumstats.infer_build()</div>
+<div id="cell-6" class="clipboard-copy-txt">mysumstats.basic_check()</div>
     
         </div>
     </div>
@@ -2074,12 +2031,113 @@ Thu Nov  3 13:12:09 2022 Finished normalizing variants successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Thu Nov  3 13:12:09 2022 Start to infer genome build version using hapmap3 SNPs...
-Thu Nov  3 13:12:09 2022  -Loading Hapmap3 variants data...
-Thu Nov  3 13:12:10 2022  -CHR:POS will be used for matching...
-Thu Nov  3 13:12:32 2022  -Matching variants for hg19: num_hg19 =  1092441
-Thu Nov  3 13:12:32 2022  -Matching variants for hg38: num_hg38 =  15997
-Thu Nov  3 13:12:32 2022  -Since num_hg19 &gt;&gt; num_hg38, assigning genome build hg19...
+<pre>Fri Nov  4 14:18:56 2022 Start to check IDs...
+Fri Nov  4 14:18:56 2022  -Current Dataframe shape : 100000  x  12
+Fri Nov  4 14:18:56 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
+Fri Nov  4 14:18:57 2022 Finished checking IDs successfully!
+Fri Nov  4 14:18:57 2022 Start to fix chromosome notation...
+Fri Nov  4 14:18:57 2022  -Current Dataframe shape : 100000  x  12
+Fri Nov  4 14:18:57 2022  -Vairants with fixable chromosome notations: 2506
+Fri Nov  4 14:18:57 2022  -Converting to string datatype and UPPERCASE...
+Fri Nov  4 14:18:57 2022  -Stripping chr prefix if exists : CHR_-.0...
+Fri Nov  4 14:18:57 2022  -Identified  2506  variants on sex chromosomes...
+Fri Nov  4 14:18:57 2022  -Standardizing sex chromosome notations: X Y MT  to 23,24,25...
+Fri Nov  4 14:18:57 2022  -No unrecognized chromosome notations...
+Fri Nov  4 14:18:57 2022 Finished fixing chromosome notation successfully!
+Fri Nov  4 14:18:57 2022 Start to fix basepair positions...
+Fri Nov  4 14:18:57 2022  -Current Dataframe shape : 100000  x  12
+Fri Nov  4 14:18:57 2022  -Position upper_bound is: 250,000,000
+Fri Nov  4 14:18:58 2022  -Remove outliers: 0
+Fri Nov  4 14:18:58 2022  -Converted all position to datatype Int64.
+Fri Nov  4 14:18:58 2022 Finished fixing basepair position successfully!
+Fri Nov  4 14:18:58 2022 Start to fix alleles...
+Fri Nov  4 14:18:58 2022  -Current Dataframe shape : 100000  x  12
+Fri Nov  4 14:18:58 2022  -Detected 0 variants with alleles that contain bases other than A/C/T/G .
+Fri Nov  4 14:18:58 2022  -Converted all bases to string datatype and UPPERCASE.
+Fri Nov  4 14:18:58 2022 Finished fixing allele successfully!
+Fri Nov  4 14:18:58 2022 Start sanity check for statistics ...
+Fri Nov  4 14:18:58 2022  -Current Dataframe shape : 100000  x  12
+Fri Nov  4 14:18:58 2022  -Checking if  0 &lt;=N&lt;= inf  ...
+Fri Nov  4 14:18:58 2022  -Removed 0 variants with bad N.
+Fri Nov  4 14:18:58 2022  -Checking if  0 &lt;=EAF&lt;= 1  ...
+Fri Nov  4 14:18:58 2022  -Removed 0 variants with bad EAF.
+Fri Nov  4 14:18:58 2022  -Checking if  5 &lt;=MAC&lt;= inf  ...
+Fri Nov  4 14:18:58 2022  -Removed 0 variants with bad MAC.
+Fri Nov  4 14:18:58 2022  -Checking if  5e-300 &lt;= P &lt;= 1  ...
+Fri Nov  4 14:18:58 2022  -Removed 0 variants with bad P.
+Fri Nov  4 14:18:58 2022  -Checking if  -10 &lt;BETA)&lt; 10  ...
+Fri Nov  4 14:18:58 2022  -Removed 0 variants with bad BETA.
+Fri Nov  4 14:18:58 2022  -Checking if  0 &lt;SE&lt; inf  ...
+Fri Nov  4 14:18:58 2022  -Removed 0 variants with bad SE.
+Fri Nov  4 14:18:58 2022  -Checking STATUS...
+Fri Nov  4 14:18:59 2022  -Coverting STAUTUS to category.
+Fri Nov  4 14:18:59 2022  -Removed 0 variants with bad statistics in total.
+Fri Nov  4 14:18:59 2022 Finished sanity check successfully!
+Fri Nov  4 14:18:59 2022 Start to normalize variants...
+Fri Nov  4 14:18:59 2022  -Current Dataframe shape : 100000  x  12
+Fri Nov  4 14:18:59 2022  -No available variants to normalize..
+Fri Nov  4 14:18:59 2022 Finished normalizing variants successfully!
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-7">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_build</span><span class="p">()</span>
+</pre></div>
+<div id="cell-7" class="clipboard-copy-txt">mysumstats.infer_build()</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Fri Nov  4 14:18:59 2022 Start to infer genome build version using hapmap3 SNPs...
+Fri Nov  4 14:18:59 2022  -Loading Hapmap3 variants data...
+Fri Nov  4 14:19:01 2022  -CHR:POS will be used for matching...
+Fri Nov  4 14:19:03 2022  -Matching variants for hg19: num_hg19 =  8797
+Fri Nov  4 14:19:03 2022  -Matching variants for hg38: num_hg38 =  115
+Fri Nov  4 14:19:03 2022  -Warning: please be cautious due to the limited number of variants.
+Fri Nov  4 14:19:03 2022  -Since num_hg19 &gt;&gt; num_hg38, assigning genome build hg19...
 </pre>
 </div>
 </div>
@@ -2106,12 +2164,12 @@ Thu Nov  3 13:12:32 2022  -Since num_hg19 &gt;&gt; num_hg38, assigning genome bu
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-7">
+            <clipboard-copy for="cell-8">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2127,7 +2185,7 @@ Thu Nov  3 13:12:32 2022  -Since num_hg19 &gt;&gt; num_hg38, assigning genome bu
 <span class="c1">#ref_infer : vcf file with allele frequency information for inferring strand and comparing allele frequency </span>
 <span class="c1">#ref_alt_freq : field in INFO of vcf file for alternative allele frequency</span>
 </pre></div>
-<div id="cell-7" class="clipboard-copy-txt">#ref_seq : reference genome fasta file for allele alignment
+<div id="cell-8" class="clipboard-copy-txt">#ref_seq : reference genome fasta file for allele alignment
 #ref_rsid_tsv : tsv file for annotation of common used variants
 #ref_rsid_vcf : vcf file for annotation of other variants
 #ref_infer : vcf file with allele frequency information for inferring strand and comparing allele frequency 
@@ -2151,7 +2209,639 @@ Thu Nov  3 13:12:32 2022  -Since num_hg19 &gt;&gt; num_hg38, assigning genome bu
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-8">
+            <clipboard-copy for="cell-9">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">check_available_ref</span><span class="p">()</span>
+</pre></div>
+<div id="cell-9" class="clipboard-copy-txt">gl.check_available_ref()</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Fri Nov  4 14:19:22 2022 Start to check available reference files...
+Fri Nov  4 14:19:22 2022  - 1kg_eas_hg19  :  https://www.dropbox.com/s/lztaxqhy2o6dpxw/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1
+Fri Nov  4 14:19:22 2022  - 1kg_eas_hg19_tbi  :  https://www.dropbox.com/s/k9klefl8m9fcfo1/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1
+Fri Nov  4 14:19:22 2022  - 1kg_eur_hg19  :  https://www.dropbox.com/s/1nbgqshknevseks/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1
+Fri Nov  4 14:19:22 2022  - 1kg_eur_hg19_tbi  :  https://www.dropbox.com/s/vscvkrflh6fc5a0/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1
+Fri Nov  4 14:19:22 2022  - 1kg_eas_hg38  :  https://www.dropbox.com/s/3dstbbb1el9r3au/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1
+Fri Nov  4 14:19:22 2022  - 1kg_eas_hg38_tbi  :  https://www.dropbox.com/s/vwnp5vd8dcqksn4/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1
+Fri Nov  4 14:19:22 2022  - 1kg_eur_hg38  :  https://www.dropbox.com/s/z0mkehg17lryapv/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1
+Fri Nov  4 14:19:22 2022  - 1kg_eur_hg38_tbi  :  https://www.dropbox.com/s/ze8g58x75x9qbf0/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1
+Fri Nov  4 14:19:22 2022  - dbsnp_v151_hg19  :  https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz
+Fri Nov  4 14:19:22 2022  - dbsnp_v151_hg38  :  https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/00-All.vcf.gz
+Fri Nov  4 14:19:22 2022  - ucsc_genome_hg19  :  http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/hg19.fa.gz
+Fri Nov  4 14:19:22 2022  - ucsc_genome_hg38  :  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz
+Fri Nov  4 14:19:22 2022  - 1kg_dbsnp151_hg19_auto  :  https://www.dropbox.com/s/37p2u1xwmux4gwo/1kg_dbsnp151_hg19_auto.txt.gz?dl=1
+Fri Nov  4 14:19:22 2022  - 1kg_dbsnp151_hg38_auto  :  https://www.dropbox.com/s/ouf60n7gdz6cm0g/1kg_dbsnp151_hg38_auto.txt.gz?dl=1
+Fri Nov  4 14:19:22 2022  - testlink  :  https://www.dropbox.com/s/8u7capwge0ihshu/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz?dl=1
+Fri Nov  4 14:19:22 2022  - testlink_tbi  :  https://www.dropbox.com/s/hdneg53t6u1j6ib/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi?dl=1
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>{&#39;1kg_eas_hg19&#39;: &#39;https://www.dropbox.com/s/lztaxqhy2o6dpxw/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1&#39;,
+ &#39;1kg_eas_hg19_tbi&#39;: &#39;https://www.dropbox.com/s/k9klefl8m9fcfo1/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1&#39;,
+ &#39;1kg_eur_hg19&#39;: &#39;https://www.dropbox.com/s/1nbgqshknevseks/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1&#39;,
+ &#39;1kg_eur_hg19_tbi&#39;: &#39;https://www.dropbox.com/s/vscvkrflh6fc5a0/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1&#39;,
+ &#39;1kg_eas_hg38&#39;: &#39;https://www.dropbox.com/s/3dstbbb1el9r3au/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1&#39;,
+ &#39;1kg_eas_hg38_tbi&#39;: &#39;https://www.dropbox.com/s/vwnp5vd8dcqksn4/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1&#39;,
+ &#39;1kg_eur_hg38&#39;: &#39;https://www.dropbox.com/s/z0mkehg17lryapv/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1&#39;,
+ &#39;1kg_eur_hg38_tbi&#39;: &#39;https://www.dropbox.com/s/ze8g58x75x9qbf0/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1&#39;,
+ &#39;dbsnp_v151_hg19&#39;: &#39;https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz&#39;,
+ &#39;dbsnp_v151_hg38&#39;: &#39;https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/00-All.vcf.gz&#39;,
+ &#39;ucsc_genome_hg19&#39;: &#39;http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/hg19.fa.gz&#39;,
+ &#39;ucsc_genome_hg38&#39;: &#39;https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz&#39;,
+ &#39;1kg_dbsnp151_hg19_auto&#39;: &#39;https://www.dropbox.com/s/37p2u1xwmux4gwo/1kg_dbsnp151_hg19_auto.txt.gz?dl=1&#39;,
+ &#39;1kg_dbsnp151_hg38_auto&#39;: &#39;https://www.dropbox.com/s/ouf60n7gdz6cm0g/1kg_dbsnp151_hg38_auto.txt.gz?dl=1&#39;,
+ &#39;testlink&#39;: &#39;https://www.dropbox.com/s/8u7capwge0ihshu/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz?dl=1&#39;,
+ &#39;testlink_tbi&#39;: &#39;https://www.dropbox.com/s/hdneg53t6u1j6ib/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi?dl=1&#39;}</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-10">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">download_ref</span><span class="p">(</span><span class="s2">&quot;ucsc_genome_hg19&quot;</span><span class="p">)</span>
+<span class="n">gl</span><span class="o">.</span><span class="n">download_ref</span><span class="p">(</span><span class="s2">&quot;1kg_dbsnp151_hg19_auto&quot;</span><span class="p">)</span>
+</pre></div>
+<div id="cell-10" class="clipboard-copy-txt">gl.download_ref("ucsc_genome_hg19")
+gl.download_ref("1kg_dbsnp151_hg19_auto")</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Fri Nov  4 14:19:54 2022 Start to download  ucsc_genome_hg19  ...
+Fri Nov  4 14:19:54 2022  -Downloading to: /Users/he/work/gwaslab/src/gwaslab/data/hg19.fa.gz
+Fri Nov  4 14:24:17 2022  -Updating record in config file...
+Fri Nov  4 14:24:17 2022  -gunzip : /Users/he/work/gwaslab/src/gwaslab/data/hg19.fa.gz
+Fri Nov  4 14:24:42 2022  -Updating record in config file...
+Fri Nov  4 14:24:42 2022 Downloaded  ucsc_genome_hg19  successfully!
+Fri Nov  4 14:24:42 2022 Start to download  1kg_dbsnp151_hg19_auto  ...
+Fri Nov  4 14:24:42 2022  -Downloading to: /Users/he/work/gwaslab/src/gwaslab/data/1kg_dbsnp151_hg19_auto.txt.gz
+Fri Nov  4 14:25:41 2022  -Updating record in config file...
+Fri Nov  4 14:25:41 2022 Downloaded  1kg_dbsnp151_hg19_auto  successfully!
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>get_path() can retrieve the path</p>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-11">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;1kg_dbsnp151_hg19_auto&quot;</span><span class="p">)</span>
+</pre></div>
+<div id="cell-11" class="clipboard-copy-txt">gl.get_path("1kg_dbsnp151_hg19_auto")</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>&#39;/Users/he/work/gwaslab/src/gwaslab/data/1kg_dbsnp151_hg19_auto.txt.gz&#39;</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>you can simply the file downloaded using gwaslab like:</p>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-12">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">harmonize</span><span class="p">(</span>   <span class="n">basic_check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">n_cores</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                        <span class="n">ref_seq</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;ucsc_genome_hg19&quot;</span><span class="p">),</span>
+                        <span class="n">ref_rsid_tsv</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;1kg_dbsnp151_hg19_auto&quot;</span><span class="p">))</span>
+</pre></div>
+<div id="cell-12" class="clipboard-copy-txt">mysumstats.harmonize(   basic_check=False,
+                        n_cores=3,
+                        ref_seq = gl.get_path("ucsc_genome_hg19"),
+                        ref_rsid_tsv = gl.get_path("1kg_dbsnp151_hg19_auto"))</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Fri Nov  4 14:27:45 2022 Start to check if NEA is aligned with reference sequence...
+Fri Nov  4 14:27:45 2022  -Current Dataframe shape : 100000  x  12
+Fri Nov  4 14:27:45 2022  -Reference genome fasta file: /Users/he/work/gwaslab/src/gwaslab/data/hg19.fa
+Fri Nov  4 14:27:45 2022  -Checking records: 1  2  3  4  5  6  7  X  8  9  10  11  12  13  14  15  16  17  18  20  Y  19  22  21  M  
+Fri Nov  4 14:28:37 2022  -Variants allele on given reference sequence :  91744
+Fri Nov  4 14:28:37 2022  -Variants flipped :  0
+Fri Nov  4 14:28:37 2022   -Raw Matching rate :  91.74%
+Fri Nov  4 14:28:37 2022  -Variants inferred reverse_complement :  0
+Fri Nov  4 14:28:37 2022  -Variants inferred reverse_complement_flipped :  0
+Fri Nov  4 14:28:37 2022  -Both allele on genome + unable to distinguish :  8256
+Fri Nov  4 14:28:37 2022  -Variants not on given reference sequence :  0
+Fri Nov  4 14:28:38 2022  -Current Dataframe shape : 100000  x  12
+Fri Nov  4 14:28:41 2022 Finished converting successfully!
+Fri Nov  4 14:28:42 2022 Start to annotate rsID based on chromosome and position information...
+Fri Nov  4 14:28:42 2022  -Current Dataframe shape : 100000  x  12
+Fri Nov  4 14:28:42 2022  -SNPID-rsID text file: /Users/he/work/gwaslab/src/gwaslab/data/1kg_dbsnp151_hg19_auto.txt.gz
+Fri Nov  4 14:28:42 2022  -100000 rsID could be possibly fixed...
+Fri Nov  4 14:28:42 2022  -Setting block size:  5000000
+Fri Nov  4 14:28:42 2022  -Loading block: 0   1   2   3   4   5   6   7   8   9   10   11   12   13   14   15   
+Fri Nov  4 14:35:53 2022  -rsID Annotation for 3086 need to be fixed!
+Fri Nov  4 14:35:53 2022  -Annotated 96914 rsID successfully!
+Fri Nov  4 14:35:53 2022 Start to sort the genome coordinates...
+Fri Nov  4 14:35:53 2022  -Current Dataframe shape : 100000  x  13
+Fri Nov  4 14:35:53 2022  -Force converting POS to integers...
+Fri Nov  4 14:35:53 2022  -Sorting genome coordinates...
+Fri Nov  4 14:35:53 2022 Finished sorting genome coordinates successfully!
+Fri Nov  4 14:35:53 2022 Start to reorder the columns...
+Fri Nov  4 14:35:53 2022  -Current Dataframe shape : 100000  x  13
+Fri Nov  4 14:35:53 2022  -Reordering columns to    : SNPID,rsID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
+Fri Nov  4 14:35:53 2022 Finished sorting columns successfully!
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[13]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>&lt;gwaslab.Sumstats.Sumstats at 0x7fe85d020130&gt;</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-13">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+<div id="cell-13" class="clipboard-copy-txt">mysumstats.data</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SNPID</th>
+      <th>rsID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>EA</th>
+      <th>NEA</th>
+      <th>EAF</th>
+      <th>BETA</th>
+      <th>SE</th>
+      <th>P</th>
+      <th>N</th>
+      <th>DIRECTION</th>
+      <th>STATUS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1:754182:A:G</td>
+      <td>rs3131969</td>
+      <td>1</td>
+      <td>754182</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.7495</td>
+      <td>0.0222</td>
+      <td>0.0166</td>
+      <td>0.1817</td>
+      <td>166718</td>
+      <td>-?++</td>
+      <td>1960000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1:766007:A:C</td>
+      <td>rs61768174</td>
+      <td>1</td>
+      <td>766007</td>
+      <td>C</td>
+      <td>A</td>
+      <td>0.0766</td>
+      <td>-0.0228</td>
+      <td>0.0302</td>
+      <td>0.4506</td>
+      <td>166718</td>
+      <td>+?--</td>
+      <td>1960000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1:867151:G:A</td>
+      <td>rs79837947</td>
+      <td>1</td>
+      <td>867151</td>
+      <td>A</td>
+      <td>G</td>
+      <td>0.0151</td>
+      <td>0.1293</td>
+      <td>0.0672</td>
+      <td>0.0544</td>
+      <td>166718</td>
+      <td>+?++</td>
+      <td>1960000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1:920648:T:C</td>
+      <td>rs6677020</td>
+      <td>1</td>
+      <td>920648</td>
+      <td>C</td>
+      <td>T</td>
+      <td>0.9881</td>
+      <td>-0.0104</td>
+      <td>0.0466</td>
+      <td>0.8236</td>
+      <td>191764</td>
+      <td>+--+</td>
+      <td>1960000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1:923977:A:G</td>
+      <td>rs202005511</td>
+      <td>1</td>
+      <td>923977</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.0058</td>
+      <td>0.0355</td>
+      <td>0.0864</td>
+      <td>0.6809</td>
+      <td>191764</td>
+      <td>-++-</td>
+      <td>1960000</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>99995</th>
+      <td>X:154412526:C:T</td>
+      <td>&lt;NA&gt;</td>
+      <td>23</td>
+      <td>154412526</td>
+      <td>T</td>
+      <td>C</td>
+      <td>0.1941</td>
+      <td>0.0078</td>
+      <td>0.0089</td>
+      <td>0.3827</td>
+      <td>191764</td>
+      <td>+-+-</td>
+      <td>1960000</td>
+    </tr>
+    <tr>
+      <th>99996</th>
+      <td>X:154560189:G:T</td>
+      <td>&lt;NA&gt;</td>
+      <td>23</td>
+      <td>154560189</td>
+      <td>T</td>
+      <td>G</td>
+      <td>0.0061</td>
+      <td>0.0142</td>
+      <td>0.0858</td>
+      <td>0.8685</td>
+      <td>166718</td>
+      <td>+?+-</td>
+      <td>1960000</td>
+    </tr>
+    <tr>
+      <th>99997</th>
+      <td>X:154640027:T:A</td>
+      <td>&lt;NA&gt;</td>
+      <td>23</td>
+      <td>154640027</td>
+      <td>A</td>
+      <td>T</td>
+      <td>0.7841</td>
+      <td>-0.0082</td>
+      <td>0.0084</td>
+      <td>0.3264</td>
+      <td>191764</td>
+      <td>-+-+</td>
+      <td>1960009</td>
+    </tr>
+    <tr>
+      <th>99998</th>
+      <td>X:154671432:T:A</td>
+      <td>&lt;NA&gt;</td>
+      <td>23</td>
+      <td>154671432</td>
+      <td>A</td>
+      <td>T</td>
+      <td>0.7850</td>
+      <td>-0.0081</td>
+      <td>0.0084</td>
+      <td>0.3330</td>
+      <td>191764</td>
+      <td>-+-+</td>
+      <td>1960009</td>
+    </tr>
+    <tr>
+      <th>99999</th>
+      <td>X:154858649:C:T</td>
+      <td>&lt;NA&gt;</td>
+      <td>23</td>
+      <td>154858649</td>
+      <td>T</td>
+      <td>C</td>
+      <td>0.7510</td>
+      <td>-0.0069</td>
+      <td>0.0113</td>
+      <td>0.5432</td>
+      <td>191764</td>
+      <td>-+-+</td>
+      <td>1960000</td>
+    </tr>
+  </tbody>
+</table>
+<p>100000 rows × 13 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>or you can use your own reference file</p>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-14">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2168,7 +2858,7 @@ Thu Nov  3 13:12:32 2022  -Since num_hg19 &gt;&gt; num_hg38, assigning genome bu
                         <span class="n">ref_rsid_vcf</span><span class="o">=</span><span class="s2">&quot;/home/yunye/mydata/d_disk/dbsnp/00-All.vcf.gz&quot;</span><span class="p">,</span>
                         <span class="n">ref_infer</span><span class="o">=</span><span class="s2">&quot;/home/yunye/mydata/d_disk/eas_1kg_af/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz&quot;</span><span class="p">,</span><span class="n">ref_alt_freq</span><span class="o">=</span><span class="s2">&quot;AF&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-8" class="clipboard-copy-txt">mysumstats.harmonize(   basic_check=False,
+<div id="cell-14" class="clipboard-copy-txt">mysumstats.harmonize(   basic_check=False,
                         n_cores=3,
                         ref_seq="/home/yunye/mydata/d_disk/human_g1k_v37.fasta",
                         ref_rsid_tsv="/home/yunye/mydata/d_disk/1kg_norm_unique.dbsnp151.auto.tsv.gz",
@@ -2304,7 +2994,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-9">
+            <clipboard-copy for="cell-15">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2316,7 +3006,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div id="cell-9" class="clipboard-copy-txt">mysumstats.data</div>
+<div id="cell-15" class="clipboard-copy-txt">mysumstats.data</div>
     
         </div>
     </div>
@@ -2573,7 +3263,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-10">
+            <clipboard-copy for="cell-16">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2585,7 +3275,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
 </pre></div>
-<div id="cell-10" class="clipboard-copy-txt">mysumstats.summary()</div>
+<div id="cell-16" class="clipboard-copy-txt">mysumstats.summary()</div>
     
         </div>
     </div>
@@ -2801,7 +3491,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-11">
+            <clipboard-copy for="cell-17">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2813,7 +3503,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">lookup_status</span><span class="p">()</span>
 </pre></div>
-<div id="cell-11" class="clipboard-copy-txt">mysumstats.lookup_status()</div>
+<div id="cell-17" class="clipboard-copy-txt">mysumstats.lookup_status()</div>
     
         </div>
     </div>
@@ -3064,7 +3754,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-12">
+            <clipboard-copy for="cell-18">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -3076,7 +3766,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;clean_sumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;ssf&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-12" class="clipboard-copy-txt">mysumstats.to_format("clean_sumstats",fmt="ssf")</div>
+<div id="cell-18" class="clipboard-copy-txt">mysumstats.to_format("clean_sumstats",fmt="ssf")</div>
     
         </div>
     </div>
@@ -3158,7 +3848,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-13">
+            <clipboard-copy for="cell-19">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -3170,7 +3860,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">get_number_to_NC</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-13" class="clipboard-copy-txt">gl.get_number_to_NC(build="19")</div>
+<div id="cell-19" class="clipboard-copy-txt">gl.get_number_to_NC(build="19")</div>
     
         </div>
     </div>
@@ -3251,7 +3941,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-14">
+            <clipboard-copy for="cell-20">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -3263,7 +3953,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">assign_rsid</span><span class="p">(</span><span class="n">ref_rsid_vcf</span><span class="o">=</span><span class="s2">&quot;/home/yunye/mydata/d_disk/dbsnp/00-All.vcf.gz&quot;</span><span class="p">,</span> <span class="n">chr_dict</span><span class="o">=</span><span class="n">gl</span><span class="o">.</span><span class="n">get_number_to_NC</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">))</span>
 </pre></div>
-<div id="cell-14" class="clipboard-copy-txt">mysumstats.assign_rsid(ref_rsid_vcf="/home/yunye/mydata/d_disk/dbsnp/00-All.vcf.gz", chr_dict=gl.get_number_to_NC(build="19"))</div>
+<div id="cell-20" class="clipboard-copy-txt">mysumstats.assign_rsid(ref_rsid_vcf="/home/yunye/mydata/d_disk/dbsnp/00-All.vcf.gz", chr_dict=gl.get_number_to_NC(build="19"))</div>
     
         </div>
     </div>
@@ -3295,7 +3985,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-15">
+            <clipboard-copy for="cell-21">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -3313,7 +4003,7 @@ Sun Oct 30 12:56:33 2022 Finished sorting columns successfully!
                         <span class="n">assignrsid_args</span><span class="o">=</span> <span class="p">{</span><span class="s2">&quot;chr_dict&quot;</span> <span class="p">:</span> <span class="n">gl</span><span class="o">.</span><span class="n">get_number_to_NC</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)}</span>
 <span class="p">)</span>
 </pre></div>
-<div id="cell-15" class="clipboard-copy-txt">mysumstats.harmonize(   basic_check=False,
+<div id="cell-21" class="clipboard-copy-txt">mysumstats.harmonize(   basic_check=False,
                         n_cores=3,
                         ref_seq="/home/yunye/mydata/d_disk/human_g1k_v37.fasta",
                         ref_rsid_tsv="/home/yunye/mydata/d_disk/1kg_norm_unique.dbsnp151.auto.tsv.gz",
