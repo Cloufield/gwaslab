@@ -243,7 +243,7 @@ def preformat(sumstats,
     ## renaming log
     if verbose: log.write(" -Reading columns          :", ",".join(set(usecols)))
     if verbose: log.write(" -Renaming columns to      :", ",".join(converted_columns))
-    if verbose: log.write(" -Current dataframe shape  : Rows ", len(sumstats), " x ",len(sumstats.columns), " Columns")
+    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
     
     ## renaming  #####################################################################################
     sumstats = sumstats.rename(columns=rename_dictionary)
@@ -293,6 +293,7 @@ def get_readargs_header(inpath,readargs):
     readargs_header["nrows"]=1
     readargs_header["dtype"]="string"
     return readargs_header
+
 def get_skip_rows(inpath):
     with gzip.open(inpath,'r') as file:      
         skip=0
@@ -361,7 +362,7 @@ def process_allele(sumstats,log,verbose):
     return sumstats
 
 def process_status(sumstats,build,log,verbose):
-    if verbose: log.write(" -Initiating a status column ...")
+    if verbose: log.write(" -Initiating a status column: STATUS ...")
     sumstats["STATUS"] = build +"99999"
     categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
     sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)

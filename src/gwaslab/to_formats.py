@@ -6,6 +6,7 @@ from gwaslab.CommonData import gwaslab_info
 from pysam import tabix_compress 
 from pysam import tabix_index
 from gwaslab.CommonData import get_formats_list
+import hashlib
 
 # to vcf
 # to fmt
@@ -28,6 +29,7 @@ def tofmt(sumstats,
           xymt=["X","Y","MT"],
           build="19",
           chr_prefix=None,
+          md5sum=False,
           bgzip=False,
           tabix=False,
           verbose=True,
@@ -145,6 +147,7 @@ def tofmt(sumstats,
         if verbose: log.write(" -Output path:",path) 
 
         sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
+        if md5sum is True: md5sum_file(path,log,verbose)
     ####################################################################################################################
     elif fmt=="annovar":
         # bed-like format, 1-based, 
@@ -200,6 +203,7 @@ def tofmt(sumstats,
         if bgzip is True:
             if verbose: log.write(" -bgzip compressing ...") 
             tabix_compress(path, path+".gz",force=True)
+            if md5sum is True: md5sum_file(path+".gz",log,verbose)
         if tabix is True:
             if verbose: log.write(" -tabix indexing...") 
             tabix_index(path+".gz" ,preset="bed",force=True) 
@@ -288,12 +292,12 @@ def tofmt(sumstats,
                 FORMAT=":".join(output_format)
                 DATA=":".join(row[output_format].astype("string"))
                 file.write(CHROM+"\t"+POS+"\t"+ID+"\t"+REF+"\t"+ALT+"\t"+QUAL+"\t"+FILTER+"\t"+INFO+"\t"+FORMAT+"\t"+DATA+"\n")
-
         if verbose: log.write(" -Output path:",path) 
 #        if path is not None: sumstats.to_csv(path,sep="\t",index=None,mode='a',**to_csvargs)
         if bgzip is True:
             if verbose: log.write(" -bgzip compressing ...") 
             tabix_compress(path, path+".gz",force=True)
+            if md5sum is True: md5sum_file(path+".gz",log,verbose)
         if tabix is True:
             if verbose: log.write(" -tabix indexing...") 
             tabix_index(path+".gz" ,preset="vcf",force=True) 
@@ -325,15 +329,22 @@ def tofmt(sumstats,
         path = path + "."+suffix+".tsv.gz"
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
-        if path is not None: sumstats.to_csv(path,sep="\t",index=None,**to_csvargs)
+        if path is not None: 
+            sumstats.to_csv(path,sep="\t",index=None,**to_csvargs)
+        if md5sum is True: md5sum_file(path,log,verbose)
         return sumstats  
     
-    
-    
-    
-    
-    
-    
-    
+def md5sum_file(filename,log,verbose):
+    if verbose: log.write(" -md5sum hashing:",filename) 
+    md5_hash = hashlib.md5()
+    with open(filename,"rb") as f:
+        # Read and update hash in chunks
+        for byte_block in iter(lambda: f.read(4096*1000),b""):
+            md5_hash.update(byte_block)
+    with open(filename+".md5sum","w") as f:
+        out = str(md5_hash.hexdigest())
+        f.write(out+"\n")
+        if verbose: log.write(" -md5sum path:",filename+".md5sum") 
+
     
     

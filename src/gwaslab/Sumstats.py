@@ -76,13 +76,16 @@ class Sumstats():
              other=[],
              direction=None,
              verbose=True,
+             study=None,
              build="99",
              **readargs):
-        
+
+        self.data = pd.DataFrame()
         self.build = build
         self.meta = {"GenomeBuild":build,
-                 "Name":"Sumstats_1","StudyType":"Unknown"}
-        self.data = pd.DataFrame()
+                     "Name":"Sumstats_1",
+                     "StudyType":"Unknown"}
+        self.meta["Study"]=study
         self.log = Log()
         
         #preformat the data
@@ -111,6 +114,7 @@ class Sumstats():
           OR_95L=OR_95L,
           OR_95U=OR_95U,
           direction=direction,
+          study=study,
           build=build,
           status=status,
           other=other,
@@ -129,7 +133,7 @@ class Sumstats():
             self.meta["Min_P"]=np.min(self.data["P"])
     def summary(self):
         return summarize(self.data)
-        
+
     def lookup_status(self,status="STATUS"):
         return lookupstatus(self.data[status])
         
@@ -454,6 +458,7 @@ class Sumstats():
               xymt_number=False,
               xymt=["X","Y","MT"],
               chr_prefix=None,
+              md5sum=False,
               bgzip=False,
               tabix=False):
         
@@ -548,6 +553,7 @@ class Sumstats():
                   meta = self.meta,
                   bgzip=bgzip,
                   tabix=tabix,
+                  md5sum=md5sum,
                   xymt_number=xymt_number,
                   xymt=xymt)
         if output_log is True:
