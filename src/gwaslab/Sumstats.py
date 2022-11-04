@@ -117,40 +117,9 @@ class Sumstats():
           verbose=verbose,
           readargs=readargs,
           log=self.log)
-        gc.collect()     
-#### healper #################################################################################
-    #value to arguement name 
-    def get_columns(self, columns=[]):
-        dic = {
-            "SNPID": "snpid",
-            "rsID": "rsid",
-            "CHR": "chrom",
-            "POS": "pos",
-            "NEA": "nea",
-            "EA": "ea",
-            "EAF": "eaf",
-            "N": "n",
-            "BETA": "beta",
-            "SE": "se",
-            "Z": "z",
-            "CHISQ": "chisq",
-            "P": "p",
-            "MLOG10P": "mlog10p",
-            "INFO": "info",
-            "OR": "OR",
-            "OR_95L": "OR_95L",
-            "OR_95U": "OR_95U",
-        }
-        other=[]
-        col_subset={}
-        for key in columns:
-            if key not in dic.keys():
-                other.append(key)
-            else:
-                col_subset[dic[key]] = key
-        if len(other)>0: col_subset["other"] = other      
-        return col_subset
+        gc.collect()   
 
+#### healper #################################################################################
 
     def update_meta(self):
         self.meta["Number_of_variants"]=len(self.data)
@@ -160,12 +129,14 @@ class Sumstats():
             self.meta["Min_P"]=np.min(self.data["P"])
     def summary(self):
         return summarize(self.data)
+        
     def lookup_status(self,status="STATUS"):
         return lookupstatus(self.data[status])
         
 # QC ######################################################################################
     #clean the sumstats with one line
-    def basic_check(self,remove=False,
+    def basic_check(self,
+                    remove=False,
                     n_cores=1,
                     fixid_args={},
                     removedup_args={},
@@ -464,29 +435,6 @@ class Sumstats():
         #return scalar
         self.meta["Genomic inflation factor"] = output
         return output    
-    
-    def exclude_hla(self, **args):
-        is_hla = (self.data["CHR"] == "6") & (self.data["POS"] > 25000000) & (
-            self.data["POS"] < 34000000)
-        output = self.data.loc[~is_hla]  #not in hla
-        # return sumstats object    
-        return Sumstats(output, **self.get_columns(), verbose=False)
-
-    def extract_hla(self, **args):
-        is_hla = (self.data["CHR"] == "6") & (self.data["POS"] > 25000000) & (
-            self.data["POS"] < 34000000)
-        output = self.data.loc[is_hla]  #in hla
-        # return sumstats object    
-        return Sumstats(output, **self.get_columns(self.data.columns), verbose=False)
-    
-    def extract_chr(self,chrom="1", **args):
-        is_chr = (self.data["CHR"] == str(chrom))
-        output = self.data.loc[is_chr]  #in hla
-        # return sumstats object    
-        return Sumstats(output, **self.get_columns(self.data.columns), verbose=False)
-    
-    
-
         
 # to_format ###############################################################################################       
     def to_format(self,
