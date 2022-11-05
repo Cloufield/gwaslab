@@ -1,6 +1,24 @@
 # Update Logs
-## v3.3.6- coming soon
+## v3.3.9 coming soon
+
+## v3.3.8
+- included recombination data
+## v3.3.7 
+- updated packaging methods. Now when installing gwaslab, pip will install all dependencies as well.
+## v3.3.6 -20221105
+- added download function: 
+    - now you can download reference files from predefined list via gwaslab
+    - `gl.check_available_ref()` : list available reference files
+    - `gl.check_downloaded_ref()` : list downloaded reference files
+    - `gl.download_ref(name)` : download reference files
+    - `gl.remove_file(name)` : remove the local reference files
+    - `gl.get_path(name)` : get the local path for the reference data name
+- implemented parsing gwas-vcf (`fmt="vcf"`)
+- implemented `Sumstats.filter_value(expr)`
 - fixed bugs for check_allele
+- optimized functions for sorting columns
+- removed outdated codes in Sumstats
+
 ## v3.3.5 -20221102 
 - added `filter_value`
 - integrate `gwascatalog` to `get_novel`
