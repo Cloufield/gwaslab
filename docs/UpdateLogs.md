@@ -3,6 +3,7 @@
 
 ## v3.3.8
 - included recombination data
+- updated download system
 ## v3.3.7 
 - updated packaging methods. Now when installing gwaslab, pip will install all dependencies as well.
 ## v3.3.6 -20221105
