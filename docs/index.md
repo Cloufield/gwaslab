@@ -125,4 +125,5 @@ mysumstats.plot_mqq()
 * Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
 * Email: gwaslab@gmail.com
 * Stats: [https://pypistats.org/packages/gwaslab](https://pypistats.org/packages/gwaslab)
+* [https://pepy.tech/project/gwaslab](https://pepy.tech/project/gwaslab)
 
