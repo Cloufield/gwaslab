@@ -1,9 +1,12 @@
 import pandas as pd
 from os import path
+import os
 import json
 from pyensembl import Genome
 import requests
 from gwaslab.Log import Log
+import tarfile
+from gwaslab.download import download_ref
 
 #hard-coded data
 def get_chr_to_NC(build,inverse=False):
@@ -207,7 +210,16 @@ def get_recombination_rate(chrom, build="19"):
     #http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20110106_recombination_hotspots/
     if build=="19":
         data_path =  path.dirname(__file__) + '/data/recombination/hg19/genetic_map_GRCh37_chr'+str(chrom)+'.txt.gz'
-        recombination_rate = pd.read_csv(data_path,sep="\t")
+        if path.exists(data_path):
+            recombination_rate = pd.read_csv(data_path,sep="\t")
+        else:
+            if not path.exists(path.dirname(__file__) + '/data/recombination/hg19/'):
+                os.makedirs(path.dirname(__file__) + '/data/recombination/hg19/')
+            download_ref("recombination_hg19",directory = path.dirname(__file__)+'/data/recombination/hg19/')
+            file = tarfile.open(path.dirname(__file__)+'/data/recombination/hg19/recombination_hg19.tar.gz')
+            file.extractall(path.dirname(__file__)+'/data/recombination/hg19/')
+            file.close()
+            recombination_rate = pd.read_csv(data_path,sep="\t")
     return recombination_rate
 
 
