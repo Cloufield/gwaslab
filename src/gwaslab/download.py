@@ -37,10 +37,10 @@ def check_downloaded_ref(log=Log()):
     log.write("Start to check downloaded reference files...")
     config_path =  path.dirname(__file__) + '/data/config.json'
     if not path.exists(config_path):
-        initiate_config(config_path)      
+        initiate_config(config_path=config_path)      
     else:
         try:
-            dicts = update_config(config_path)
+            dicts = update_config(config_path=config_path)
             return dicts
             log.write("Finished checking downloaded reference files...")
         except:
@@ -102,6 +102,7 @@ def download_ref(name,
                     log.write(" -Downloading to:",local_path+".tbi")
                 except:
                     pass
+        
         # if fasta.gz or fa.gz, decompress
         if local_path.endswith("fa.gz") or local_path.endswith("fasta.gz"):
             log.write(" -gunzip :",local_path)
@@ -205,11 +206,17 @@ def update_config(config_path=path.dirname(__file__) + '/data/config.json',log=L
     return dicts["downloaded"]
 
 def set_default_directory(default_directory_path,config_path=path.dirname(__file__) + '/data/config.json'):
-    dicts = json.load(open(config_path))
-    dicts["default_directory"] = default_directory_path
-    with open(config_path, 'w') as f:
-        json.dump(dicts,f,indent=4)
-
+    try:
+        dicts = json.load(open(config_path))
+        dicts["default_directory"] = default_directory_path
+        with open(config_path, 'w') as f:
+            json.dump(dicts,f,indent=4)
+    except:
+        initiate_config()
+        dicts = json.load(open(config_path))
+        dicts["default_directory"] = default_directory_path
+        with open(config_path, 'w') as f:
+            json.dump(dicts,f,indent=4)
 def get_default_directory(config_path=path.dirname(__file__) + '/data/config.json'):
     try:
         dicts = json.load(open(config_path))
