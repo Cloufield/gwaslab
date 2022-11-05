@@ -126,7 +126,7 @@ def remove_file(name,log=Log()):
         log.write("Config file not exists...")
     else:
         try:
-            dicts = json.load(open(config_path))
+            dicts = json.load(open(config_path))["downloaded"]
             if path.exists(dicts[name]):
                 os.remove(dicts[name])
                 log.write("Removed :" , dicts[name])
@@ -150,6 +150,7 @@ def update_record(  key,value,
         json.dump(dict,f,indent=4)
 
 def download_file(url, file_path=None):
+    # download file from url to file_path
     if file_path is not None:
         with requests.get(url, stream=True) as r:
             with open(file_path, 'wb') as f:
@@ -158,9 +159,11 @@ def download_file(url, file_path=None):
 
 def url_to_local_file_name(local_filename, url, from_dropbox):
     if local_filename is None:
+        # if local name not provided, grab it from url
         local_filename = url.split('/')[-1]
         
     if local_filename.endswith("?dl=1"):
+        # if file are downloaded form dropbox
         # set from_dropbox indicator to 1
         from_dropbox=1
         # remove "?dl=1" suffix
@@ -184,15 +187,31 @@ def check_and_download(name):
     return data_path
 
 #### config ##############################################################################################
+# config.json
+# {
+#  "default_directory":"",
+#  "downloaded":{}
+#}
+#####################
+
 def initiate_config(config_path=path.dirname(__file__) + '/data/config.json',log=Log()):
-    log.write(" -Config file does not exist.")
+    log.write(" -Creating an empty config file... ")
     with open(config_path, 'w') as f:
         dict={'default_directory':path.dirname(__file__) + '/data/','downloaded':{}}
-        log.write(" -Recreating configuration file.")
-        json.dump(dict,f,indent=4)      
+        json.dump(dict,f,indent=4) 
+        log.write(" -Config file path:",path.dirname(__file__) + '/data/')
+          
 
 def update_config(config_path=path.dirname(__file__) + '/data/config.json',log=Log()):
-    dicts = json.load(open(config_path))
+    log.write(" -Updating config.json...")
+    try:
+        # if config exists
+        dicts = json.load(open(config_path))
+    except:
+        # if config not exists
+        initiate_config()
+        dicts = json.load(open(config_path))
+    # check if the ref file existm. If not, remove it from dicts.
     for key,value in dicts["downloaded"].items():
         to_remove=[]
         if not path.exists(value):
@@ -201,27 +220,33 @@ def update_config(config_path=path.dirname(__file__) + '/data/config.json',log=L
             log.write(key," : ",value)
     for i in to_remove:
         dicts["downloaded"].pop(i, None)
+    # write the dicts
     with open(config_path, 'w') as f:
         json.dump(dicts,f,indent=4)
     return dicts["downloaded"]
 
 def set_default_directory(default_directory_path,config_path=path.dirname(__file__) + '/data/config.json'):
     try:
+        # set default directory
         dicts = json.load(open(config_path))
         dicts["default_directory"] = default_directory_path
         with open(config_path, 'w') as f:
             json.dump(dicts,f,indent=4)
     except:
+        # if no config file: create one and set default directory
         initiate_config()
         dicts = json.load(open(config_path))
         dicts["default_directory"] = default_directory_path
         with open(config_path, 'w') as f:
             json.dump(dicts,f,indent=4)
+
 def get_default_directory(config_path=path.dirname(__file__) + '/data/config.json'):
     try:
+        # get default directory
         dicts = json.load(open(config_path))
         return dicts["default_directory"]
     except:
+        # if no config file: create one and get default directory
         initiate_config()
         dicts = json.load(open(config_path))
         return dicts["default_directory"]
