@@ -10,18 +10,21 @@ from gwaslab.Log import Log
 def check_available_ref(log=Log(),verbose=True):
     if verbose : log.write("Start to check available reference files...")
     ref_path = path.dirname(__file__) + '/data/reference.json'
-    dicts = json.load(open(ref_path))
-    if dicts is not None:
-        for key,value in dicts.items():
-            if verbose :log.write(" -",key," : ",value)
-        return dicts
-    else:
-        if verbose :log.write(" -No available reference files.")
-    if verbose :log.write("Finished checking available reference files...")
+    try:
+        dicts = json.load(open(ref_path))
+        if dicts is not None:
+            for key,value in dicts.items():
+                if verbose :log.write(" -",key," : ",value)
+            return dicts
+        else:
+            if verbose :log.write(" -No available reference files.")
+        if verbose :log.write("Finished checking available reference files...")
+    except:
+        pass
     return {}
 
 def update_available_ref(log=Log()):
-    url = 'https://raw.github.com/Cloufield/gwaslab/blob/main/src/gwaslab/data/reference.json'
+    url = 'https://raw.github.com/Cloufield/gwaslab/main/src/gwaslab/data/reference.json'
     log.write("Updating available_ref list from:",url)
     r = requests.get(url, allow_redirects=True)
     data_path =  path.dirname(__file__) + '/data/reference.json'
@@ -166,9 +169,9 @@ def check_and_download(name):
 def initiate_config(config_path=path.dirname(__file__) + '/data/config.json',log=Log()):
     log.write(" -Config file does not exist.")
     with open(config_path, 'w') as f:
-            dict={'default_directory':path.dirname(__file__) + '/data/','downloaded':{}}
-            log.write(" -Recreating configuration file.")
-            json.dump(dict,f,indent=4)      
+        dict={'default_directory':path.dirname(__file__) + '/data/','downloaded':{}}
+        log.write(" -Recreating configuration file.")
+        json.dump(dict,f,indent=4)      
 
 def update_config(config_path=path.dirname(__file__) + '/data/config.json',log=Log()):
     dicts = json.load(open(config_path))

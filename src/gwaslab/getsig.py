@@ -5,7 +5,6 @@ from gwaslab.Log import Log
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
 from gwaslab.CommonData import get_chr_to_NC
-from gwaslab.CommonData import gtf_index
 from gwaslab.download import check_and_download
 from gwaslab.gwascatalog import gwascatalog_trait
 from pyensembl import EnsemblRelease

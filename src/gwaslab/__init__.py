@@ -23,6 +23,7 @@ from gwaslab.download import update_formatbook
 from gwaslab.download import list_formats
 from gwaslab.download import check_format
 from gwaslab.download import check_available_ref
+from gwaslab.download import update_available_ref
 from gwaslab.download import check_downloaded_ref
 from gwaslab.download import download_ref
 from gwaslab.download import check_available_ref
