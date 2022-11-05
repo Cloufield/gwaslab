@@ -354,10 +354,8 @@ def process_allele(sumstats,log,verbose):
             sumstats.loc[sumstats["EA"]==sumstats["ALT"],"NEA"] = sumstats.loc[sumstats["EA"]==sumstats["ALT"],"REF"]
             sumstats.loc[sumstats["EA"]!=sumstats["ALT"],"NEA"] = sumstats.loc[sumstats["EA"]!=sumstats["ALT"],"ALT"]
             sumstats = sumstats.drop(labels=["REF","ALT"],axis=1)
-        sumstats["EA"]=sumstats["EA"].fillna("N")
         sumstats["EA"]=sumstats["EA"].astype("category")     
     if "NEA" in sumstats.columns:
-        sumstats["NEA"]=sumstats["NEA"].fillna("N")
         sumstats["NEA"]=sumstats["NEA"].astype("category")  
     return sumstats
 
