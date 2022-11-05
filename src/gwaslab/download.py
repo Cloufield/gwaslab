@@ -67,7 +67,10 @@ def get_path(name,log=Log(),verbose=True):
     return False
 
 ##################################################################################
-def download_ref(name,directory=None,local_filename=None,log=Log()):
+def download_ref(name,
+                directory=None,
+                local_filename=None,
+                log=Log()):
     
     from_dropbox=0
     dicts = check_available_ref(log,verbose=False)
@@ -113,17 +116,7 @@ def download_ref(name,directory=None,local_filename=None,log=Log()):
     else:
         log.write(name," is not available. Please use check_available_ref() to check available reference files.")
 
-def update_record(key,value,log=Log()):
-    log.write(" -Updating record in config file...")
-    config_path =  path.dirname(__file__) + '/data/config.json'
-    try:
-        with open(config_path,'r') as f:
-            dict=json.load(f)
-    except:
-        dict={'default_directory':path.dirname(__file__) + '/data/','downloaded':{}}
-    dict["downloaded"][key] = value
-    with open(config_path, 'w') as f:
-        json.dump(dict,f,indent=4)
+#### helper #############################################################################################
 
 def remove_file(name,log=Log()):
     log.write("Start to remove ",name," ...")
@@ -142,12 +135,36 @@ def remove_file(name,log=Log()):
         except:
             log.write("No records in config file. Please download first.")
 
+#### helper #############################################################################################
+def update_record(  key,value,
+                    log=Log(), config_path =  path.dirname(__file__) + '/data/config.json'):
+    log.write(" -Updating record in config file...")
+    try:
+        with open(config_path,'r') as f:
+            dict=json.load(f)
+    except:
+        dict={'default_directory':path.dirname(__file__) + '/data/','downloaded':{}}
+    dict["downloaded"][key] = value
+    with open(config_path, 'w') as f:
+        json.dump(dict,f,indent=4)
+
 def download_file(url, file_path=None):
     if file_path is not None:
         with requests.get(url, stream=True) as r:
             with open(file_path, 'wb') as f:
                 shutil.copyfileobj(r.raw, f)     
         return file_path
+
+def url_to_local_file_name(local_filename, url, from_dropbox):
+    if local_filename is None:
+        local_filename = url.split('/')[-1]
+        
+    if local_filename.endswith("?dl=1"):
+        # set from_dropbox indicator to 1
+        from_dropbox=1
+        # remove "?dl=1" suffix
+        local_filename = local_filename[:-5]
+    return local_filename, from_dropbox
 
 ##########################################################################################################
 def check_and_download(name):
@@ -165,7 +182,7 @@ def check_and_download(name):
     data_path = get_path(name)
     return data_path
 
-##########################################################################################################
+#### config ##############################################################################################
 def initiate_config(config_path=path.dirname(__file__) + '/data/config.json',log=Log()):
     log.write(" -Config file does not exist.")
     with open(config_path, 'w') as f:
@@ -194,19 +211,13 @@ def set_default_directory(default_directory_path,config_path=path.dirname(__file
         json.dump(dicts,f,indent=4)
 
 def get_default_directory(config_path=path.dirname(__file__) + '/data/config.json'):
-    dicts = json.load(open(config_path))
-    return dicts["default_directory"]
-
-def url_to_local_file_name(local_filename, url, from_dropbox):
-    if local_filename is None:
-        local_filename = url.split('/')[-1]
-        
-    if local_filename.endswith("?dl=1"):
-        # set from_dropbox indicator to 1
-        from_dropbox=1
-        # remove "?dl=1" suffix
-        local_filename = local_filename[:-5]
-    return local_filename, from_dropbox
+    try:
+        dicts = json.load(open(config_path))
+        return dicts["default_directory"]
+    except:
+        initiate_config()
+        dicts = json.load(open(config_path))
+        return dicts["default_directory"]
 
 ##### format book ###################################################################################################
 def update_formatbook(log=Log()):
@@ -221,7 +232,6 @@ def update_formatbook(log=Log()):
     available_formats.sort()
     log.write("Available formats:",",".join(available_formats))
     log.write("Formatbook has been updated!")
-        
          
 def list_formats(log=Log()):
     data_path =  path.dirname(__file__) + '/data/formatbook.json'
@@ -239,3 +249,5 @@ def check_format(fmt,log=Log()):
     log.write("") 
     for i in book[fmt].values():
         log.write(i,end="")
+
+########################################################################################################

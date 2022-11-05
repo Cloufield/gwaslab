@@ -1,14 +1,14 @@
-import pandas as pd
-from os import path
 import os
 import json
-from pyensembl import Genome
-import requests
-from gwaslab.Log import Log
 import tarfile
+import requests
+import pandas as pd
+from os import path
+from pyensembl import Genome
+from gwaslab.Log import Log
 from gwaslab.download import download_ref
 from gwaslab.download import check_and_download
-from gwaslab.download import get_path
+
 #hard-coded data
 def get_chr_to_NC(build,inverse=False):
     #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
@@ -252,36 +252,7 @@ def get_gtf(chrom, build="19",source="ensembl"):
 ####################################################################################################################
 
       
-def update_formatbook(log=Log()):
-    url = 'https://raw.github.com/Cloufield/formatbook/main/formatbook.json'
-    log.write("Updating formatbook from:",url)
-    r = requests.get(url, allow_redirects=True)
-    data_path =  path.dirname(__file__) + '/data/formatbook.json'
-    with open(data_path, 'wb') as file:
-        file.write(r.content)
-    book=json.load(open(data_path))
-    available_formats = list(book.keys())
-    available_formats.sort()
-    log.write("Available formats:",",".join(available_formats))
-    log.write("Formatbook has been updated!")
-        
-         
-def list_formats(log=Log()):
-    data_path =  path.dirname(__file__) + '/data/formatbook.json'
-    book=json.load(open(data_path))
-    available_formats = list(book.keys())
-    available_formats.sort()
-    log.write("Available formats:",",".join(available_formats))    
 
-def check_format(fmt,log=Log()):
-    data_path =  path.dirname(__file__) + '/data/formatbook.json'
-    book=json.load(open(data_path))
-    log.write("Available formats:",end="")
-    for i in book[fmt].keys():
-        log.write(i,end="")
-    log.write("") 
-    for i in book[fmt].values():
-        log.write(i,end="")
         
 ####################################################################################################################   
         
