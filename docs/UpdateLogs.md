@@ -1,6 +1,6 @@
 # Update Logs
 ## v3.3.7 coming soon
-
+- updated packaging methods.
 ## v3.3.6 -20221105
 - added download function: 
     - now you can download reference files from predefined list via gwaslab
