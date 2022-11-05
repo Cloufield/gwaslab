@@ -6,83 +6,79 @@ import requests
 import shutil
 from gwaslab.Log import Log
 
-
-def check_available_ref(log=Log()):
-    log.write("Start to check available reference files...")
+##################################################################################
+def check_available_ref(log=Log(),verbose=True):
+    if verbose : log.write("Start to check available reference files...")
     ref_path = path.dirname(__file__) + '/data/reference.json'
     dicts = json.load(open(ref_path))
     if dicts is not None:
         for key,value in dicts.items():
-            log.write(" -",key," : ",value)
+            if verbose :log.write(" -",key," : ",value)
         return dicts
     else:
-        log.write(" -No available reference files.")
-    log.write("Finished checking available reference files...")
+        if verbose :log.write(" -No available reference files.")
+    if verbose :log.write("Finished checking available reference files...")
+    return {}
+
+def update_available_ref(log=Log()):
+    url = 'https://raw.github.com/Cloufield/gwaslab/blob/main/src/gwaslab/data/reference.json'
+    log.write("Updating available_ref list from:",url)
+    r = requests.get(url, allow_redirects=True)
+    data_path =  path.dirname(__file__) + '/data/reference.json'
+    with open(data_path, 'wb') as file:
+        file.write(r.content)
+    log.write("Available_ref list has been updated!")
+##################################################################################
 
 def check_downloaded_ref(log=Log()):
     log.write("Start to check downloaded reference files...")
     config_path =  path.dirname(__file__) + '/data/config.json'
     if not path.exists(config_path):
-        log.write(" -Config file does not exist.")
-        with open(config_path, 'w') as f:
-                dict={}
-                log.write(" -Recreating configuration file.")
-                json.dump(dict,f,indent=4)       
+        initiate_config(config_path)      
     else:
         try:
-            dicts = json.load(open(config_path))
-            for key,value in dicts.items():
-                to_remove=[]
-                if not path.exists(value):
-                    to_remove.append(key)
-                else:
-                    log.write(key," : ",value)
-            for i in to_remove:
-                dicts.pop(i, None)
-            with open(config_path, 'w') as f:
-                json.dump(dicts,f,indent=4)
+            dicts = update_config(config_path)
             return dicts
             log.write("Finished checking downloaded reference files...")
         except:
             log.write(" -No records in config file.")
     log.write("Finished checking downloaded reference files...")
 
-def get_path(name,log=Log()):
+##################################################################################
+
+def get_path(name,log=Log(),verbose=True):
     config_path =  path.dirname(__file__) + '/data/config.json'
     if not path.exists(config_path):
-        log.write("Config file not exists...")
+        if verbose : log.write("Config file not exists...")
+        if verbose : log.write("Created new config file...")
+        initiate_config(config_path)      
     else:
         try:
-            dicts = json.load(open(config_path))
+            dicts = json.load(open(config_path))["downloaded"]
             if path.exists(dicts[name]):
                 return dicts[name]
             else:
-                log.write("File not exist.")
+                if verbose : log.write("File not exist.")
         except:
-            log.write("No records in config file. Please download first.")
+            if verbose : log.write("No records in config file. Please download first.")
+    return False
 
+##################################################################################
 def download_ref(name,directory=None,local_filename=None,log=Log()):
     
     from_dropbox=0
-    ref_path =  path.dirname(__file__) + '/data/reference.json'
-    dicts = json.load(open(ref_path))
-    
+    dicts = check_available_ref(log,verbose=False)
     if name in dicts.keys():
         # get url for name
         url = dicts[name]
         log.write("Start to download ",name," ...")
+
         # get file local path
         if directory is None:
             directory = path.dirname(__file__) + '/data/'
-        if local_filename is None:
-            local_filename = url.split('/')[-1]
         
-        if local_filename.endswith("?dl=1"):
-            # set from_dropbox indicator to 1
-            from_dropbox=1
-            # remove "?dl=1" suffix
-            local_filename = local_filename[:-5]
-        
+        local_filename, from_dropbox = url_to_local_file_name(local_filename, url, from_dropbox)
+
         local_path = directory + local_filename
         log.write(" -Downloading to:",local_path)
         # download file
@@ -110,7 +106,6 @@ def download_ref(name,directory=None,local_filename=None,log=Log()):
                         update_record(name,local_path[:-3])
             except:
                     pass
-
         log.write("Downloaded ",name," successfully!")
     else:
         log.write(name," is not available. Please use check_available_ref() to check available reference files.")
@@ -122,8 +117,8 @@ def update_record(key,value,log=Log()):
         with open(config_path,'r') as f:
             dict=json.load(f)
     except:
-        dict={}
-    dict[key] = value
+        dict={'default_directory':path.dirname(__file__) + '/data/','downloaded':{}}
+    dict["downloaded"][key] = value
     with open(config_path, 'w') as f:
         json.dump(dict,f,indent=4)
 
@@ -150,3 +145,94 @@ def download_file(url, file_path=None):
             with open(file_path, 'wb') as f:
                 shutil.copyfileobj(r.raw, f)     
         return file_path
+
+##########################################################################################################
+def check_and_download(name):
+    # if file exsits , return file path
+    if get_path(name) is not False:
+        data_path = get_path(name)
+        if path.exists(data_path):
+            return data_path    
+    
+    # if file not exsits, download and return new path
+    dir_path = get_default_directory()
+    if not path.exists(dir_path):
+        os.makedirs(dir_path)
+    download_ref(name,directory = dir_path)
+    data_path = get_path(name)
+    return data_path
+
+##########################################################################################################
+def initiate_config(config_path=path.dirname(__file__) + '/data/config.json',log=Log()):
+    log.write(" -Config file does not exist.")
+    with open(config_path, 'w') as f:
+            dict={'default_directory':path.dirname(__file__) + '/data/','downloaded':{}}
+            log.write(" -Recreating configuration file.")
+            json.dump(dict,f,indent=4)      
+
+def update_config(config_path=path.dirname(__file__) + '/data/config.json',log=Log()):
+    dicts = json.load(open(config_path))
+    for key,value in dicts["downloaded"].items():
+        to_remove=[]
+        if not path.exists(value):
+            to_remove.append(key)
+        else:
+            log.write(key," : ",value)
+    for i in to_remove:
+        dicts["downloaded"].pop(i, None)
+    with open(config_path, 'w') as f:
+        json.dump(dicts,f,indent=4)
+    return dicts["downloaded"]
+
+def set_default_directory(default_directory_path,config_path=path.dirname(__file__) + '/data/config.json'):
+    dicts = json.load(open(config_path))
+    dicts["default_directory"] = default_directory_path
+    with open(config_path, 'w') as f:
+        json.dump(dicts,f,indent=4)
+
+def get_default_directory(config_path=path.dirname(__file__) + '/data/config.json'):
+    dicts = json.load(open(config_path))
+    return dicts["default_directory"]
+
+def url_to_local_file_name(local_filename, url, from_dropbox):
+    if local_filename is None:
+        local_filename = url.split('/')[-1]
+        
+    if local_filename.endswith("?dl=1"):
+        # set from_dropbox indicator to 1
+        from_dropbox=1
+        # remove "?dl=1" suffix
+        local_filename = local_filename[:-5]
+    return local_filename, from_dropbox
+
+##### format book ###################################################################################################
+def update_formatbook(log=Log()):
+    url = 'https://raw.github.com/Cloufield/formatbook/main/formatbook.json'
+    log.write("Updating formatbook from:",url)
+    r = requests.get(url, allow_redirects=True)
+    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    with open(data_path, 'wb') as file:
+        file.write(r.content)
+    book=json.load(open(data_path))
+    available_formats = list(book.keys())
+    available_formats.sort()
+    log.write("Available formats:",",".join(available_formats))
+    log.write("Formatbook has been updated!")
+        
+         
+def list_formats(log=Log()):
+    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    book=json.load(open(data_path))
+    available_formats = list(book.keys())
+    available_formats.sort()
+    log.write("Available formats:",",".join(available_formats))    
+
+def check_format(fmt,log=Log()):
+    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    book=json.load(open(data_path))
+    log.write("Available formats:",end="")
+    for i in book[fmt].keys():
+        log.write(i,end="")
+    log.write("") 
+    for i in book[fmt].values():
+        log.write(i,end="")

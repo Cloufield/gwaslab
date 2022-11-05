@@ -12,6 +12,15 @@
     "ucsc_genome_hg38": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz",
     "1kg_dbsnp151_hg19_auto":"https://www.dropbox.com/s/37p2u1xwmux4gwo/1kg_dbsnp151_hg19_auto.txt.gz?dl=1",
     "1kg_dbsnp151_hg38_auto":"https://www.dropbox.com/s/ouf60n7gdz6cm0g/1kg_dbsnp151_hg38_auto.txt.gz?dl=1",
+    "recombination_hg19":"https://www.dropbox.com/s/4b39o8m58m5yvqx/recombination_hg19.tar.gz?dl=1",
+    "ensembl_hg19_gtf":"https://ftp.ensembl.org/pub/grch37/current/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.chr.gtf.gz",
+    "ensembl_hg19_gtf_protein_coding":"https://www.dropbox.com/s/ovsqf4kyeniakxf/Homo_sapiens.GRCh37.75.protein_coding.gtf.gz?dl=1",
+    "ensembl_hg38_gtf":"https://ftp.ensembl.org/pub/current_gtf/homo_sapiens/Homo_sapiens.GRCh38.108.chr.gtf.gz",
+    "ensembl_hg38_gtf_protein_coding":"https://www.dropbox.com/s/37kicx0l6uifa1e/Homo_sapiens.GRCh38.107.protein_coding.chr.gtf.gz?dl=1",
+    "refseq_hg19_gtf":"https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh37_latest/refseq_identifiers/GRCh37_latest_genomic.gtf.gz",
+    "refseq_hg19_gtf_protein_coding":"https://www.dropbox.com/s/gpzflnid7zo3kca/GRCh37_latest_genomic.protein_coding.gtf.gz?dl=1",
+    "refseq_hg38_gtf":"https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gff.gz",
+    "refseq_hg38_gtf_protein_coding":"https://www.dropbox.com/s/reojrsjmbwsu0pp/GRCh38_latest_genomic.protein_coding.gtf.gz?dl=1",
     "testlink":"https://www.dropbox.com/s/8u7capwge0ihshu/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz?dl=1",
     "testlink_tbi":"https://www.dropbox.com/s/hdneg53t6u1j6ib/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi?dl=1"
 }
