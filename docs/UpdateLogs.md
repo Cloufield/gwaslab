@@ -1,6 +1,8 @@
 # Update Logs
-## v3.3.9 coming soon
+## 3.3.10 coming soon
 
+## v3.3.9 
+- updated download system
 ## v3.3.8
 - included recombination data
 ## v3.3.7 
