@@ -2,7 +2,7 @@
 
 # gwaslab
 
-![badge](https://img.shields.io/badge/release-v3.3.5-brightgreen)
+![badge](https://img.shields.io/badge/release-v3.3.7-brightgreen)
 ![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
@@ -16,7 +16,7 @@ Note: gwaslab is being updated very frequently for now. I will release the first
 ## Install
 
 ```
-pip install gwaslab==3.3.5
+pip install gwaslab==3.3.7
 ```
 
 
@@ -105,9 +105,7 @@ mysumstats.plot_mqq()
 - Sumstats summary function: know your data better. 
 
 
-
 ## Requirements:
-
 - Python >= 3.6
 - pySAM 
 - pyensembl
