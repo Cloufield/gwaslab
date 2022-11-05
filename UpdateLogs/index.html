@@ -426,7 +426,15 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="first-level active"><a href="#update-logs">Update Logs</a></li>
-            <li class="second-level"><a href="#v336-coming-soon">v3.3.6- coming soon</a></li>
+            <li class="second-level"><a href="#3310-coming-soon">3.3.10 coming soon</a></li>
+                
+            <li class="second-level"><a href="#v339">v3.3.9</a></li>
+                
+            <li class="second-level"><a href="#v338">v3.3.8</a></li>
+                
+            <li class="second-level"><a href="#v337">v3.3.7</a></li>
+                
+            <li class="second-level"><a href="#v336-20221105">v3.3.6 -20221105</a></li>
                 
             <li class="second-level"><a href="#v335-20221102">v3.3.5 -20221102</a></li>
                 
@@ -449,9 +457,35 @@
         <div class="col-md-9" role="main">
 
 <h1 id="update-logs">Update Logs</h1>
-<h2 id="v336-coming-soon">v3.3.6- coming soon</h2>
+<h2 id="3310-coming-soon">3.3.10 coming soon</h2>
+<h2 id="v339">v3.3.9</h2>
 <ul>
+<li>updated download system</li>
+</ul>
+<h2 id="v338">v3.3.8</h2>
+<ul>
+<li>included recombination data</li>
+</ul>
+<h2 id="v337">v3.3.7</h2>
+<ul>
+<li>updated packaging methods. Now when installing gwaslab, pip will install all dependencies as well.</li>
+</ul>
+<h2 id="v336-20221105">v3.3.6 -20221105</h2>
+<ul>
+<li>added download function: <ul>
+<li>now you can download reference files from predefined list via gwaslab</li>
+<li><code>gl.check_available_ref()</code> : list available reference files</li>
+<li><code>gl.check_downloaded_ref()</code> : list downloaded reference files</li>
+<li><code>gl.download_ref(name)</code> : download reference files</li>
+<li><code>gl.remove_file(name)</code> : remove the local reference files</li>
+<li><code>gl.get_path(name)</code> : get the local path for the reference data name</li>
+</ul>
+</li>
+<li>implemented parsing gwas-vcf (<code>fmt="vcf"</code>)</li>
+<li>implemented <code>Sumstats.filter_value(expr)</code></li>
 <li>fixed bugs for check_allele</li>
+<li>optimized functions for sorting columns</li>
+<li>removed outdated codes in Sumstats</li>
 </ul>
 <h2 id="v335-20221102">v3.3.5 -20221102</h2>
 <ul>
