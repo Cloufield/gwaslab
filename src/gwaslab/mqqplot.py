@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import matplotlib.patches as patches
 import seaborn as sns
 import numpy as np
 import scipy as sp
@@ -20,7 +21,9 @@ from allel import rogers_huff_r_between
 import matplotlib as mpl
 from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 import gc as garbage_collect
+from adjustText import adjust_text
 
 # 20220310 ######################################################################################################
 
@@ -517,16 +520,27 @@ def mqqplot(insumstats,
                 axins1 = inset_axes(ax1,
                         width="5%",  # width = 50% of parent_bbox width
                         height="40%",  # height : 5%
-                        loc='upper right')
+                        loc='upper right',axes_kwargs={"frameon":True,"facecolor":"white","zorder":999999})
 
                 cmp= mpl.colors.ListedColormap(region_ld_colors[1:])
-                norm= mpl.colors.BoundaryNorm([0]+region_ld_threshold+[1],cmp.N)            
+                norm= mpl.colors.BoundaryNorm([0]+region_ld_threshold+[1],cmp.N)     
                 cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),
-                                   cax=axins1,fraction=1,orientation="vertical",ticklocation="left")
+                                   cax=axins1,
+                                   fraction=1,
+                                   orientation="vertical",
+                                   ticklocation="left")
                 cbar.set_ticks(ticks=region_ld_threshold) 
                 cbar.set_ticklabels([str(i) for i in region_ld_threshold]) 
-                cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.15)
-        
+                cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.2)
+                rect = patches.Rectangle((0.91,0.50),
+                                        height=0.5,
+                                        width=0.09, 
+                                        transform=ax1.transAxes,
+                                        linewidth=1, 
+                                        edgecolor='black', 
+                                        facecolor='white',
+                                        zorder=999998)
+                ax1.add_patch(rect)
         ## recombinnation rate ##################################################       
         if (region is not None) and (region_recombination is True):
             ax4=ax1.twinx()
@@ -567,7 +581,9 @@ def mqqplot(insumstats,
             if verbose: log.write(" -plotting gene track..")
             
             sig_gene_name = None
-            
+            texts_to_adjust_left = []
+            texts_to_adjust_middle = []
+            texts_to_adjust_right = []
             for index,row in uniq_gene_region.iterrows():
                 if row[6][0]=="+":
                     gene_anno = row["name"] + "->"
@@ -587,17 +603,17 @@ def mqqplot(insumstats,
                 # plot gene name
                 if row[4] >= region[2]:
                     #right side
-                    ax3.text(x=gene_track_start_i+region[2],
-                         y=row["stack"]*2+taf[4],s=gene_anno,ha="right",va="center",color="black",style='italic', size=font_size_in_points)
+                    texts_to_adjust_right.append(ax3.text(x=gene_track_start_i+region[2],
+                         y=row["stack"]*2+taf[4],s=gene_anno,ha="right",va="center",color="black",style='italic', size=font_size_in_points))
                     
                 elif row[3] <= region[1] :
                     #left side
-                    ax3.text(x=gene_track_start_i+region[1],
-                         y=row["stack"]*2+taf[4],s=gene_anno,ha="left",va="center",color="black",style='italic', size=font_size_in_points)
+                    texts_to_adjust_left.append(ax3.text(x=gene_track_start_i+region[1],
+                         y=row["stack"]*2+taf[4],s=gene_anno,ha="left",va="center",color="black",style='italic', size=font_size_in_points))
                 else:
-                    ax3.text(x=(gene_track_start_i+row[3]+gene_track_start_i+row[4])/2,
-                         y=row["stack"]*2+taf[4],s=gene_anno,ha="center",va="center",color="black",style='italic',size=font_size_in_points)
-       
+                    texts_to_adjust_middle.append(ax3.text(x=(gene_track_start_i+row[3]+gene_track_start_i+row[4])/2,
+                         y=row["stack"]*2+taf[4],s=gene_anno,ha="center",va="center",color="black",style='italic',size=font_size_in_points))
+            
             # plot exons
             for index,row in exons.iterrows():
                 if (region_lead_grid is True) and row["name"]==sig_gene_name:
@@ -608,7 +624,6 @@ def mqqplot(insumstats,
                 #    exon_color="grey"
                 ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
                          (row["stack"]*2,row["stack"]*2),linewidth=linewidth_in_points*taf[3],color=exon_color,solid_capstyle="butt")
-            
 
             if verbose: log.write(" -Finished plotting gene track..")
                            
@@ -853,9 +868,23 @@ def mqqplot(insumstats,
             
         else:
             if verbose: log.write(" -Skip annotating")
+        if (gtf_path is not None ) and ("r" in mode):
+            if len(texts_to_adjust_middle)>0:
+                adjust_text(texts_to_adjust_middle,
+                        autoalign=False, 
+                        only_move={'points':'x', 'text':'x', 'objects':'x'},
+                        ax=ax3,
+                        precision=0,
+                        force_text=(0.1,0),
+                        expand_text=(1, 1),
+                        expand_objects=(1,1),
+                        expand_points=(1,1),
+                        va="center",
+                        ha='center',
+                        avoid_points=False,
+                        lim =1000)
 
-
-
+            
 # Creating Manhatann plot Finished #####################################################################
 
 # QQ plot #########################################################################################################
@@ -920,7 +949,7 @@ def mqqplot(insumstats,
 
         if verbose: log.write("Finished creating QQ plot successfully!")
 # Creating QQ plot Finished #############################################################################################
-
+        
 
 # Saving plot ##########################################################################################################
     if save:
