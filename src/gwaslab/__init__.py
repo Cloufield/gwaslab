@@ -19,12 +19,14 @@ from gwaslab.CommonData import get_high_ld
 from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_formats_list
 from gwaslab.CommonData import gwaslab_info
-from gwaslab.CommonData import update_formatbook
-from gwaslab.CommonData import list_formats
-from gwaslab.CommonData import check_format
+from gwaslab.download import update_formatbook
+from gwaslab.download import list_formats
+from gwaslab.download import check_format
 from gwaslab.download import check_available_ref
+from gwaslab.download import update_available_ref
 from gwaslab.download import check_downloaded_ref
 from gwaslab.download import download_ref
 from gwaslab.download import check_available_ref
 from gwaslab.download import remove_file
 from gwaslab.download import get_path
+from gwaslab.download import update_record
