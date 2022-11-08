@@ -6,7 +6,7 @@
 ![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
-* A simple python toolkit for handling GWAS sumstats.
+* A handy python toolkit for handling GWAS sumstats.
 * Each process is modularized and can be customized to your needs.
 * Sumstats-specific manipulations are designed as methods of a python object, `gwaslab.Sumstats`.
 
@@ -51,9 +51,9 @@ mysumstats.plot_mqq()
 
 - Loading sumstats by simply specifying the software name or format name.
 - Converting GWAS sumstats to specific formats:
-  - LDSC / MAGMA / METAL / MR-MEGA / FUMA / VCF / BED... 
+  - LDSC / MAGMA / METAL / PLINK / SAIGE / REGENIE / MR-MEGA / GWAS-SSF / FUMA / GWAS-VCF / BED... 
   - [check available formats](https://github.com/Cloufield/formatbook)
-- Optional Filtering of variants in Hapmap3 SNPs / High-LD regions / HLA region 
+- Optional filtering of variants in commonly used genomic regions: Hapmap3 SNPs / High-LD regions / MHC region 
  
 ### Standardization & Normalization
 
@@ -68,7 +68,7 @@ mysumstats.plot_mqq()
 - Extreme value removal
 - Equivalent statistics conversion
     - BETA/SE , OR/OR_95L/OR_95U
-    - P, Z, CHISQ, MLOG10
+    - P, Z, CHISQ, MLOG10P
 - Customized value filtering
 
 ###  Harmonization

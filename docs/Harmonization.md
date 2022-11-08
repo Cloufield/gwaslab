@@ -5,7 +5,7 @@ gwaslab provides reference-dependent harmonization functions.
 See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/)
 
 ## Methods summary
-
+Outdated!!!
 | Sumstats Methods       | Options                                               | Description                                                                |
 | ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
 | `.check_ref()`         | ref_path                                              | check alignment with a reference sequence                                  |
