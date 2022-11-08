@@ -114,7 +114,7 @@ def getsig(insumstats,
     #sumstats_sig.loc[:,chrom] = sumstats_sig[chrom].astype("string")
     #sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].map(num_to_chr)
     output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
-    if anno is True:
+    if anno is True and len(output)>0:
         output = annogene(
                output,
                id=id,

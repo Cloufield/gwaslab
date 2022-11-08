@@ -346,7 +346,6 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
         sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string") 
         
         is_chr_fixed = sumstats[chrom].str.match(r'[12]?[0-9]', case=False, flags=0, na=False)
-        
         if sum(is_chr_fixed)<len(sumstats):
             is_chr_fixable = sumstats.loc[~is_chr_fixed,chrom].str.match(r'(chr)?([012][0-9]|[0-9]|X|Y|M|MT)', case=False, flags=0, na=False)
             
@@ -369,7 +368,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
                 #if sumstats.loc[:,chrom].dtype == "category":
                 #    sumstats.loc[:,chrom] = sumstats.loc[:,chrom].str.lstrip("CHR_-.0")
                 #else:
-                sumstats.loc[is_chr_fixable.index.values,chrom] = sumstats.loc[is_chr_fixable.index.values,chrom].str.lstrip("CHR_-.0")
+                sumstats.loc[is_chr_fixable.index,chrom] = sumstats.loc[is_chr_fixable.index,chrom].str.lstrip("CHR_-.0")
 
 
             # X, Y, MT to 23,24,25
@@ -405,8 +404,10 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
         #if add_prefix:
         #    if verbose: log.write(" -Adding prefix : "+ add_prefix+"...")
         #    sumstats.loc[:,chrom] = add_prefix + sumstats[chrom]   
-
-        sumstats.loc[:,chrom] = np.floor(pd.to_numeric(sumstats.loc[:,chrom], errors='coerce')).astype('Int64')
+        try:
+            sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype('Int64')
+        except:
+            sumstats.loc[:,chrom] = np.floor(pd.to_numeric(sumstats.loc[:,chrom], errors='coerce')).astype('Int64')
         #categories = [str(i) for i in range(26)]+[pd.NA]
         #sumstats.loc[:,chrom]= pd.Categorical(sumstats.loc[:,chrom],categories=categories,ordered=True)
         if verbose: log.write("Finished fixing chromosome notation successfully!")
@@ -426,21 +427,22 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         #convert to numeric
         is_pos_na = sumstats.loc[:,pos].isna()
         
-        sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
+        try:
+            sumstats.loc[:,pos] = sumstats.loc[:,pos].astype('Int64')
+        except:
+            sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
         
         is_pos_fixed = ~sumstats.loc[:,pos].isna()
         is_pos_invalid = (~is_pos_na)&(~is_pos_fixed)
         
-        sumstats.loc[is_pos_fixed,status] = vchange_status(sumstats.loc[is_pos_fixed,status],4,"975","630")
+        sumstats.loc[is_pos_fixed,status]   = vchange_status(sumstats.loc[is_pos_fixed,status]  ,4,"975","630")
         sumstats.loc[is_pos_invalid,status] = vchange_status(sumstats.loc[is_pos_invalid,status],4,"975","842")
-        
         
         # remove outlier, limit:250,000,000
         if verbose: log.write(" -Position upper_bound is: " + "{:,}".format(limit))
         out_lier=(sumstats[pos]>limit) & (~is_pos_na)
         if verbose: log.write(" -Remove outliers:",sum(out_lier))
         sumstats = sumstats.loc[~out_lier,:]
-        
         
         #remove na
         if remove is True: 
@@ -1085,6 +1087,3 @@ def check_col(df,*args):
         return False
         print(" -Specified columns names was not detected. Please check:"+",".join(not_in_df))
     return True
-            
-    
-    
