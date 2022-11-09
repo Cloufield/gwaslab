@@ -1,13 +1,9 @@
 import pandas as pd
 
 def vchange_status(status,digit,before,after):
-    #dic={str(i):str(i) for i in range(10)}
     dic={}
     for i in range(len(before)):
         dic[before[i]]=after[i]
-    #pattern= (digit-1) * r'\w' + before[i] + (7 - digit)* r'\w'     
-    #to_change = status.str.match(pattern, case=False, flags=0, na=False)  
-    #if sum(to_change)>0:
     if digit>1:
         status_pre = status.str[:digit-1]
     else:
@@ -15,3 +11,36 @@ def vchange_status(status,digit,before,after):
     status_end=status.str[digit:]
     status_new = status_pre+status.str[digit-1].replace(dic)+status_end
     return status_new
+
+def change_status(status,digit,after):
+    prefix= status // 10**(7-digit+1)
+    #middle= (status // 10**(7-digit) ) % 10
+    suffix= status % 10**(7-digit)
+    status = prefix*10**(7-digit+1) + after*10**(7-digit) + suffix
+    return status
+
+def schange_status(status,digit,after):
+    prefix= status.floordiv(10**(7-digit+1))
+    suffix= status.mod(10**(7-digit))
+    #prefix= pd.eval("status // 10**(7-digit+1)")
+    #suffix= pd.eval("status % 10**(7-digit)")
+    #status = prefix*10**(7-digit+1) + after*10**(7-digit) + suffix
+    status = pd.eval("prefix*10**(7-digit+1) + after*10**(7-digit) + suffix")
+    return status
+
+def status_match(status,digit,to_match):   
+    #middle = status.floordiv(10**(7-digit)).mod(10)
+    middle = pd.eval('(status // 10**(7-digit) ) % 10')
+    if len(to_match)==1:
+        is_match = middle==to_match[0]
+    else:
+        is_match = middle.isin(set(to_match))
+    return is_match
+'''
+def vchange_status(status,digit,before,after):
+    for i in range(len(before)):
+        matched = status_match(status,digit,[int(before[i])])
+        if sum(matched)>0:
+            status[matched] = schange_status(status[matched],digit,int(after[i]))
+    return status
+'''

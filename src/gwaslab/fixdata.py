@@ -1,6 +1,5 @@
 import re
 import gc
-#import gwaslab as gl
 import pandas as pd
 import numpy as np
 from itertools import repeat
@@ -8,6 +7,8 @@ from multiprocessing import  Pool
 from liftover import get_lifter
 from functools import partial
 from gwaslab.vchangestatus import vchange_status
+from gwaslab.vchangestatus import status_match
+from gwaslab.vchangestatus import change_status
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
@@ -33,7 +34,8 @@ from gwaslab.CommonData import get_chr_list
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",
-       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,overwrite=False,verbose=True,forcefixid=False,log=Log()):  
+       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,
+       overwrite=False,verbose=True,forcefixid=False,log=Log()):  
     
     '''
     1. fx SNPid
@@ -221,21 +223,26 @@ def fixID(sumstats,
             
             if overwrite is False:
                 #fix empty 
-                to_fix = sumstats[snpid].isna() & sumstats[status].str.match( r"\w\w\w[0]\w\w\w", case=False, flags=0, na=False ) 
+                to_fix = sumstats[snpid].isna() & status_match(sumstats[status],4,0)
+                #sumstats[status].str.match( r"\w\w\w[0]\w\w\w", case=False, flags=0, na=False ) 
             else:
                 #fix all
-                to_fix = sumstats[status].str.match( r"\w\w\w[0]\w\w\w", case=False, flags=0, na=False ) 
+                to_fix = status_match(sumstats[status],4,0)
+                #sumstats[status].str.match( r"\w\w\w[0]\w\w\w", case=False, flags=0, na=False ) 
             
             if (ea in sumstats.columns) and (nea in sumstats.columns):
             # when ea and nea is available  -> check status -> fix to chr:pos:nea:ea 
                 
                 pattern = r"\w\w\w[0]\w\w\w"  
-                matched_index = sumstats[status].str.match(pattern) 
+                matched_index = sumstats[status].str.match(pattern)
+                #matched_index = status_match(sumstats[status],4,0) #
                 to_part_fix = matched_index & to_fix 
                 
                 #pattern = r"\w\w\w[0][01267][01234]\w"  
                 pattern = r"\w\w\w\w[0123][01267][01234]"
                 matched_index = sumstats[status].str.match(pattern)
+                #status_match(sumstats[status],5,[0,1,2,3]) | status_match(sumstats[status],6,[0,1,2,6,7])| status_match(sumstats[status],7,[0,1,2,3,4])
+                #
                 if forcefixid is True:
                     matched_index = to_fix
                 to_full_fix = matched_index & to_fix 
@@ -512,13 +519,14 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
 ###############################################################################################################   
 # 20220721
 
-def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS",n_cores=1,verbose=True,log=Log()):
+def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",n_cores=1,verbose=True,log=Log()):
     if check_col(sumstats,pos,ea,nea,status) is not True:
         if verbose: log.write(".normalize(): specified columns not detected..skipping...")
         return sumstats
     
     if verbose: log.write("Start to normalize variants...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    #variants_to_check = status_match(sumstats[status],5,[4,5]) #
     variants_to_check = sumstats[status].str.match(r'\w\w\w\w[45]\w\w', case=False, flags=0, na=False)
     if sum(variants_to_check)==0:
         if verbose: log.write(" -No available variants to normalize..")
@@ -540,8 +548,17 @@ def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS
         before_normalize = sumstats.loc[variants_to_check,[ea,nea]]
         changed_num = len(normalized_pd.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea]),:])
         if changed_num>0:
-            log.write(" -Not normalized allele:",end="")
+            if snpid in sumstats.columns:
+                before_normalize_id = sumstats.loc[variants_to_check,snpid]
+            elif rsid in sumstats.columns:
+                before_normalize_id = sumstats.loc[variants_to_check,rsid]
             
+            log.write(" -Not normalized allele IDs:",end="")
+            for i in before_normalize_id.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea])].head().values:
+                log.write(i,end=" ",show_time=False)
+            log.write("... \n",end="",show_time=False) 
+
+            log.write(" -Not normalized allele:",end="")
             for i in before_normalize.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea]),[ea,nea]].head().values:
                 log.write(i,end="",show_time=False)
             log.write("... \n",end="",show_time=False)     
@@ -550,16 +567,14 @@ def parallelnormalizeallele(sumstats,pos="POS",nea="NEA",ea="EA" ,status="STATUS
             log.write(" -All variants are already normalized..")
     ###################################################################################################################
     categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea]) |set(normalized_pd.loc[:,ea]) |set(normalized_pd.loc[:,nea])
-    sumstats.loc[:,ea]=pd.Categorical(sumstats.loc[:,ea],categories = categories) 
-    sumstats.loc[:,nea]=pd.Categorical(sumstats.loc[:,nea],categories = categories ) 
+    sumstats.loc[:,ea]  = pd.Categorical(sumstats.loc[:,ea],categories = categories) 
+    sumstats.loc[:,nea] = pd.Categorical(sumstats.loc[:,nea],categories = categories ) 
     sumstats.loc[variants_to_check,[pos,nea,ea,status]] = normalized_pd.values
-    sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
-    #sumstats.loc[:,[nea,ea,status]] = sumstats.loc[:,[nea,ea,status]].astype("string")
-    #if verbose:log.write(" -Updating allele status...")
-    #sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status], 5,"5","3")
-    #indel_to_snp = sumstats[status].str.match(r'\w\w\w\w[3]\w\w', case=False, flags=0, na=False) & (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
-    #if sum(indel_to_snp)>0:
-    #    sumstats.loc[indel_to_snp,status] = vchange_status(sumstats.loc[indel_to_snp,status], 5,"5","3")
+    try:
+        sumstats.loc[:,pos] = sumstats.loc[:,pos].astype('Int64')
+    except:
+        sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
+  
     if verbose: log.write("Finished normalizing variants successfully!")
     return sumstats
 
@@ -580,8 +595,8 @@ def normalizevariant(pos,a,b,status):
     status_end=status[5:]
     
     if len(a)==1 or len(b)==1:
+        #return pos,a,b,change_status(status,5,0) #status_pre+"0"+status_end
         return pos,a,b,status_pre+"0"+status_end
-    
     pos_change=0
     pointer_a_l, pointer_a_r = 0, len(a)-1
     pointer_b_l, pointer_b_r = 0, len(b)-1
@@ -595,8 +610,8 @@ def normalizevariant(pos,a,b,status):
             break
         if pointer_a_r-pointer_a_l==0 or pointer_b_r-pointer_b_l==0:
             if len(a)==1 or len(b)==1:
-                return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"0"+status_end
-            return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end
+                return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"0"+status_end #change_status(status,5,0) #
+            return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end #change_status(status,5,3) #
 
     # remove from left
     for i in range(max(len(a),len(b))):
@@ -610,8 +625,8 @@ def normalizevariant(pos,a,b,status):
         if pointer_a_r-pointer_a_l==0 or pointer_b_r-pointer_b_l==0:
             break
     if len(a)==1 or len(b)==1:
-        return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"0"+status_end
-    return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end
+        return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"0"+status_end #change_status(status,5,0) #
+    return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end # change_status(status,5,3) #
 ""
 
 
@@ -768,11 +783,10 @@ def sanitycheckstats(sumstats,
     if "STATUS" in coltocheck and "STATUS" in sumstats.columns:
         cols_to_check.append("STATUS")
         if verbose: log.write(" -Checking STATUS...") 
+        #sumstats["STATUS"] = sumstats["STATUS"].astype("Int64")
         categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
         sumstats.loc[:,"STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
-        if verbose: log.write(" -Coverting STAUTUS to category.") 
-    
-    
+        if verbose: log.write(" -Coverting STAUTUS to interger.") 
     
     sumstats = sumstats.dropna(subset=cols_to_check)
     after_number=len(sumstats)
@@ -809,7 +823,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     
     ###################get reverse complementary####################
     pattern = r"\w\w\w\w\w[45]\w"  
-    matched_index = sumstats[status].str.match(pattern)
+    matched_index = status_match(sumstats[status],6,[4,5]) #sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
         if verbose: log.write("Start to convert alleles to reverse complement for SNPs with status xxxxx[45]x... ") 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
@@ -827,6 +841,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
 
     ###################flip ref####################
     pattern = r"\w\w\w\w\w[35]\w"  
+    #matched_index = status_match(sumstats[status],6,[3,5]) #sumstats[status].str.match(pattern)
     matched_index = sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
         if verbose: log.write("Start to flip allele-specific stats for SNPs with status xxxxx[35]x: alt->ea , ref->nea ... ") 
@@ -858,6 +873,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         
     ###################flip ref for undistingushable indels####################
     pattern = r"\w\w\w\w[123][67]6"  
+    #matched_index = status_match(sumstats[status],6,[1,2,3])|status_match(sumstats[status],6,[6,7])|status_match(sumstats[status],7,6) #sumstats[status].str.match(pattern)
     matched_index = sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
         if verbose: log.write("Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: alt->ea , ref->nea ... ") 
@@ -889,6 +905,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
          # flip ref
     ###################flip statistics for reverse strand panlindromic variants####################
     pattern = r"\w\w\w\w\w[012]5"  
+    #matched_index = status_match(sumstats[status],6,[0,1,2]) | status_match(sumstats[status],7,[5])#sumstats[status].str.match(pattern)
     matched_index = sumstats[status].str.match(pattern)
     if sum(matched_index)>0:
         if verbose: log.write("Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand ... ") 
@@ -941,7 +958,6 @@ def liftover_variant(sumstats,
              status="STATUS",
              from_build="19", 
              to_build="38"):
-    
     converter = get_lifter("hg"+from_build,"hg"+to_build)
     dic= get_number_to_chr(in_chr=False,xymt=["X","Y","M"])
     dic2= get_chr_to_number(out_chr=False)
@@ -949,12 +965,9 @@ def liftover_variant(sumstats,
         chrom_to_convert = dic[i]
         variants_on_chrom_to_convert = sumstats[chrom]==i
         lifted = sumstats.loc[variants_on_chrom_to_convert,[pos,status]].apply(lambda x: liftover_snv(x[[pos,status]],chrom_to_convert,converter,to_build),axis=1)
-        sumstats.loc[sumstats[chrom]==i,pos]     =  lifted.str[1]
+        sumstats.loc[sumstats[chrom]==i,pos]     =   lifted.str[1]
         sumstats.loc[sumstats[chrom]==i,status]   =  lifted.str[2]
         sumstats.loc[sumstats[chrom]==i,chrom]    =  lifted.str[0].map(dic2)
-    #sumstats.loc[:,chrom]  = #lifted.apply(lambda x :pd.NA if x[0] is pd.NA else str(x[0])).astype("string")
-    #sumstats.loc[:,pos]    = #lifted.apply(lambda x :pd.NA if x[0] is pd.NA else str(x[1]))
-    #sumstats.loc[:,status] = #lifted.apply(lambda x :str(x[2])).astype("string")  
     return sumstats
 
 def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True, verbose=True,log=Log()):
@@ -1005,46 +1018,22 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
         if verbose: log.write(".liftover(): specified columns not detected..skipping...")
         return sumstats
     
-    #chromosome_number_to_string = {i:str(i) for i in range(1,23)}
-    #chromosome_number_to_string[23] = "X"
-    #chromosome_number_to_string[24] = "Y"
-    #chromosome_number_to_string[25] = "MT"
-    
-    #chromosome_string_to_number = {str(i):i for i in range(1,23)}
-    #chromosome_string_to_number["X"] = 23
-    #chromosome_string_to_number["Y"] = 24
-    #chromosome_string_to_number["MT"] = 25
-    
-    #for i in sumstats[chrom]:
-    #    if i not in chromosome_string_to_number.keys():
-    #        chromosome_string_to_number[i]=i
-    #        chromosome_number_to_string[i]=i
-
-    #good_chrpos = sumstats[chrom].isin(get_chr_list())&sumstats[pos].notnull()
-    #sumstats_good = sumstats.loc[good_chrpos,:]
-    #sumstats_bad = sumstats.loc[~good_chrpos,:]
-    
-    #sumstats = sumstats.sort_values(by=[chrom,pos],ascending=True,ignore_index=True)
-    #####################????????????)
-    
-    
     if verbose: log.write("Start to sort the genome coordinates...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     
-    #if verbose: log.write(" -Mapping chr1-22,X,Y,MT to numbers 1-25, other chromosome notations will be sorted as strings...")
-    
-    #sumstats[chrom] = sumstats[chrom].map(chromosome_string_to_number)
-    if verbose: log.write(" -Force converting POS to integers...")
-    #sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
-    sumstats[pos]  = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+    try:
+        if sumstats[pos].dtype == "Int64":
+            pass
+        else:
+            if verbose: log.write(" -Force converting POS to Int64...")
+            sumstats[pos]  = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+    except:
+        pass
+
     if verbose: log.write(" -Sorting genome coordinates...")
     sumstats = sumstats.sort_values(by=[chrom,pos],ascending=True,ignore_index=True)
-    
-    #if verbose: log.write(" -Converting chromosome column back to string type...")
-    
-    #sumstats[chrom] = sumstats[chrom].map(chromosome_number_to_string)
-    #sumstats[chrom] = sumstats[chrom].astype("string")
     if verbose: log.write("Finished sorting genome coordinates successfully!")
+    gc.collect()
     return sumstats
 ###############################################################################################################
 # 20221105
@@ -1064,7 +1053,6 @@ def sortcolumn(sumstats,verbose=True,log=Log(),order = [
     sumstats = sumstats.loc[:, output_columns]
     if verbose: log.write("Finished sorting columns successfully!")
     return sumstats
-
 
 def check_col(df,*args):
     not_in_df=[]

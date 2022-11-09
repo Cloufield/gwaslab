@@ -361,6 +361,7 @@ def process_allele(sumstats,log,verbose):
 
 def process_status(sumstats,build,log,verbose):
     if verbose: log.write(" -Initiating a status column: STATUS ...")
+    #sumstats["STATUS"] = int(build)*(10**5) +99999
     sumstats["STATUS"] = build +"99999"
     categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
     sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
