@@ -5,13 +5,10 @@ def vchange_status(status,digit,before,after):
     for i in range(len(before)):
         dic[before[i]]=after[i]
     if digit>1:
-        status_pre = status.str[:digit-1]
+        return status.str[:digit-1]+status.str[digit-1].replace(dic)+status.str[digit:]
     else:
-        status_pre = ""
-    status_end=status.str[digit:]
-    status_new = status_pre+status.str[digit-1].replace(dic)+status_end
-    return status_new
-
+        return status.str[digit-1].replace(dic)+status.str[digit:]
+    
 def change_status(status,digit,after):
     prefix= status // 10**(7-digit+1)
     #middle= (status // 10**(7-digit) ) % 10

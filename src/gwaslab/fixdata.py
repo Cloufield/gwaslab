@@ -36,7 +36,6 @@ def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",
        fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,
        overwrite=False,verbose=True,forcefixid=False,log=Log()):  
-    
     '''
     1. fx SNPid
     2. fix chr and pos using snpid
@@ -51,7 +50,7 @@ def fixID(sumstats,
     if snpid in sumstats.columns:  
         if verbose: log.write(" -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)")
         #is_chrposrefalt = sumstats[snpid].str.match(r'(chr)?([0-9XYMT]+)[:_-]([0-9]+)[:_-]([ATCG]+)[:_-]([ATCG]+)', case=False, flags=0, na=False)
-        is_chrposrefalt = sumstats[snpid].str.match(r'\w+[:_-]\w+[:_-]\w+[:_-]\w+', case=False, flags=0, na=False)
+        is_chrposrefalt = sumstats[snpid].str.match(r'^\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+$', case=False, flags=0, na=False)
         is_snpid_na = sumstats[snpid].isna()
         sumstats.loc[ is_chrposrefalt,status] = vchange_status(sumstats.loc[ is_chrposrefalt,status],3 ,"975" ,"630")
         sumstats.loc[(~is_chrposrefalt)&(~is_snpid_na),status] = vchange_status(sumstats.loc[(~is_chrposrefalt)&(~is_snpid_na),status],3 ,"975" ,"842")
@@ -64,7 +63,7 @@ def fixID(sumstats,
         sumstats.loc[~is_rsid,status] = vchange_status(sumstats.loc[~is_rsid,status], 3, "986","743")
         
         if verbose: log.write(" -Checking if chr:pos:ref:alt is mixed in rsID column ...")
-        is_rs_chrpos = sumstats[rsid].str.match(r'\w+[:_-]\w+[:_-]\w+[:_-]\w+', case=False, flags=0, na=False)
+        is_rs_chrpos = sumstats[rsid].str.match(r'^\w+[:_-]\w+[:_-]\w+[:_-]\w+$', case=False, flags=0, na=False)
         #is_rs_chrpos = sumstats[rsid].str.match(r'(chr)?([0-9XYMT]+)[:_-]([0-9]+)[:_-]([ATCG]+)[:_-]([ATCG]+)', case=False, flags=0, na=False)
         
         if verbose: log.write(" -Number of chr:pos:ref:alt mixed in rsID column :",sum(is_rs_chrpos))
@@ -223,12 +222,14 @@ def fixID(sumstats,
             
             if overwrite is False:
                 #fix empty 
-                to_fix = sumstats[snpid].isna() & status_match(sumstats[status],4,0)
-                #sumstats[status].str.match( r"\w\w\w[0]\w\w\w", case=False, flags=0, na=False ) 
+                to_fix = sumstats[snpid].isna() & sumstats[status].str.match( r"\w\w\w[0]\w\w\w", case=False, flags=0, na=False ) 
+                #status_match(sumstats[status],4,0)
+                #
             else:
                 #fix all
-                to_fix = status_match(sumstats[status],4,0)
-                #sumstats[status].str.match( r"\w\w\w[0]\w\w\w", case=False, flags=0, na=False ) 
+                to_fix = sumstats[status].str.match( r"\w\w\w[0]\w\w\w", case=False, flags=0, na=False ) 
+                # status_match(sumstats[status],4,0)
+                #
             
             if (ea in sumstats.columns) and (nea in sumstats.columns):
             # when ea and nea is available  -> check status -> fix to chr:pos:nea:ea 
@@ -349,15 +350,17 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
             return sumstats
         if verbose: log.write("Start to fix chromosome notation...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))          
-        # convert to string datatype
-        sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string") 
-        
-        is_chr_fixed = sumstats[chrom].str.match(r'[12]?[0-9]', case=False, flags=0, na=False)
+        # convert to string datatype        
+        if sumstats.loc[:,chrom].dtype != "string":
+            sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string") 
+        is_chr_fixed = sumstats[chrom].str.match(r'^[12]?[0-9]$', case=False, flags=0, na=False)
+        #is_chr_fixed = sumstats[chrom].str.isnumeric()
+        if verbose: log.write(" -Vairants with standardized chromosome notation:",sum(is_chr_fixed))  
         if sum(is_chr_fixed)<len(sumstats):
-            is_chr_fixable = sumstats.loc[~is_chr_fixed,chrom].str.match(r'(chr)?([012][0-9]|[0-9]|X|Y|M|MT)', case=False, flags=0, na=False)
+            is_chr_fixable = sumstats.loc[~is_chr_fixed,chrom].str.match(r'^(chr)?([012][0-9]|[0-9]|X|Y|M|MT)$', case=False, flags=0, na=False)
             
             if verbose: log.write(" -Vairants with fixable chromosome notations:",sum(is_chr_fixable))   
-            is_chr_na    = sumstats.loc[~is_chr_fixed,chrom].isna()
+            is_chr_na  = sumstats.loc[~is_chr_fixed,chrom].isna()
             if sum(is_chr_na)>0 and verbose: 
                 log.write(" -Vairants with NA chromosome notations:",sum(is_chr_na))  
             #not na and not fixable
@@ -407,16 +410,10 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
         else:
             if verbose: log.write(" -All CHR are already fixed...") 
             sumstats.loc[is_chr_fixed,status] = vchange_status(sumstats.loc[is_chr_fixed,status],4,"986","520")
-            
-        #if add_prefix:
-        #    if verbose: log.write(" -Adding prefix : "+ add_prefix+"...")
-        #    sumstats.loc[:,chrom] = add_prefix + sumstats[chrom]   
         try:
             sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype('Int64')
         except:
             sumstats.loc[:,chrom] = np.floor(pd.to_numeric(sumstats.loc[:,chrom], errors='coerce')).astype('Int64')
-        #categories = [str(i) for i in range(26)]+[pd.NA]
-        #sumstats.loc[:,chrom]= pd.Categorical(sumstats.loc[:,chrom],categories=categories,ordered=True)
         if verbose: log.write("Finished fixing chromosome notation successfully!")
         return sumstats
     
@@ -481,7 +478,8 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         good_ea  = ~bad_ea
         good_nea = ~bad_nea
         is_eanea_na = sumstats[ea].isna() |  sumstats[nea].isna()
-        is_invalid = bad_ea | bad_nea | (sumstats[nea] == sumstats[ea])
+        not_variant = sumstats[nea] == sumstats[ea]
+        is_invalid = bad_ea | bad_nea | not_variant
         exclude  = bad_nea | bad_ea
         if verbose: 
             if len(set(sumstats.loc[bad_ea,ea].head())) >0:
@@ -505,13 +503,18 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         is_not_normalized = (sumstats[ea].str.len()>1) &(sumstats[nea].str.len()>1)
         is_normalized = is_indel &( (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()>1) | (sumstats[ea].str.len()>1) &(sumstats[nea].str.len()==1) )
         
-        sumstats.loc[is_invalid, status]                 = vchange_status(sumstats.loc[is_invalid,status],                5,"9","6") 
-        sumstats.loc[is_eanea_na,status]                 = vchange_status(sumstats.loc[is_eanea_na, status],              5,"9","7")
-        sumstats.loc[is_eanea_fixed&is_not_normalized,status]   = vchange_status(sumstats.loc[is_eanea_fixed&is_not_normalized,status], 5,"9","5")
-        sumstats.loc[is_eanea_fixed&is_snp, status]          = vchange_status(sumstats.loc[is_eanea_fixed&is_snp,status],        5,"9","0")
-        sumstats.loc[is_eanea_fixed&is_indel,status]         = vchange_status(sumstats.loc[is_eanea_fixed&is_indel, status],      5,"9","4")
-        sumstats.loc[is_eanea_fixed&is_normalized,status]      = vchange_status(sumstats.loc[is_eanea_fixed&is_normalized, status],  5,"4","3")
-        remain_var_num = len(sumstats)
+        if sum(is_invalid)>0:
+            sumstats.loc[is_invalid, status]                      = vchange_status(sumstats.loc[is_invalid,status],                5,"9","6") 
+        if sum(is_eanea_na)>0:
+            sumstats.loc[is_eanea_na,status]                      = vchange_status(sumstats.loc[is_eanea_na, status],              5,"9","7")
+        if sum(is_eanea_fixed&is_not_normalized)>0:
+            sumstats.loc[is_eanea_fixed&is_not_normalized,status] = vchange_status(sumstats.loc[is_eanea_fixed&is_not_normalized,status], 5,"9","5")
+        if sum(is_eanea_fixed&is_snp)>0:
+            sumstats.loc[is_eanea_fixed&is_snp, status]           = vchange_status(sumstats.loc[is_eanea_fixed&is_snp,status],        5,"9","0")
+        if sum(is_eanea_fixed&is_indel)>0:
+            sumstats.loc[is_eanea_fixed&is_indel,status]          = vchange_status(sumstats.loc[is_eanea_fixed&is_indel, status],      5,"9","4")
+        if sum(is_eanea_fixed&is_normalized)>0:
+            sumstats.loc[is_eanea_fixed&is_normalized,status]     = vchange_status(sumstats.loc[is_eanea_fixed&is_normalized, status],  5,"4","3")
         gc.collect()
         if verbose: log.write("Finished fixing allele successfully!")
         return sumstats
@@ -527,7 +530,8 @@ def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NE
     if verbose: log.write("Start to normalize variants...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     #variants_to_check = status_match(sumstats[status],5,[4,5]) #
-    variants_to_check = sumstats[status].str.match(r'\w\w\w\w[45]\w\w', case=False, flags=0, na=False)
+    #r'\w\w\w\w[45]\w\w'
+    variants_to_check = sumstats[status].str[4].str.match(r'4|5', case=False, flags=0, na=False)
     if sum(variants_to_check)==0:
         if verbose: log.write(" -No available variants to normalize..")
         if verbose: log.write("Finished normalizing variants successfully!")
@@ -823,7 +827,8 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     
     ###################get reverse complementary####################
     pattern = r"\w\w\w\w\w[45]\w"  
-    matched_index = status_match(sumstats[status],6,[4,5]) #sumstats[status].str.match(pattern)
+    #matched_index = status_match(sumstats[status],6,[4,5]) #
+    matched_index = sumstats[status].str[5].str.match(r"4|5")
     if sum(matched_index)>0:
         if verbose: log.write("Start to convert alleles to reverse complement for SNPs with status xxxxx[45]x... ") 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
@@ -842,7 +847,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     ###################flip ref####################
     pattern = r"\w\w\w\w\w[35]\w"  
     #matched_index = status_match(sumstats[status],6,[3,5]) #sumstats[status].str.match(pattern)
-    matched_index = sumstats[status].str.match(pattern)
+    matched_index = sumstats[status].str[5].str.match(r"3|5")
     if sum(matched_index)>0:
         if verbose: log.write("Start to flip allele-specific stats for SNPs with status xxxxx[35]x: alt->ea , ref->nea ... ") 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
@@ -874,7 +879,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     ###################flip ref for undistingushable indels####################
     pattern = r"\w\w\w\w[123][67]6"  
     #matched_index = status_match(sumstats[status],6,[1,2,3])|status_match(sumstats[status],6,[6,7])|status_match(sumstats[status],7,6) #sumstats[status].str.match(pattern)
-    matched_index = sumstats[status].str.match(pattern)
+    matched_index = sumstats[status].str[4:].str.match(r"[123][67]6")
     if sum(matched_index)>0:
         if verbose: log.write("Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: alt->ea , ref->nea ... ") 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
@@ -906,7 +911,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     ###################flip statistics for reverse strand panlindromic variants####################
     pattern = r"\w\w\w\w\w[012]5"  
     #matched_index = status_match(sumstats[status],6,[0,1,2]) | status_match(sumstats[status],7,[5])#sumstats[status].str.match(pattern)
-    matched_index = sumstats[status].str.match(pattern)
+    matched_index = sumstats[status].str[5:].str.match(r"05|15|25")
     if sum(matched_index)>0:
         if verbose: log.write("Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand ... ") 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
