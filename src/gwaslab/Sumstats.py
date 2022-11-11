@@ -446,6 +446,7 @@ class Sumstats():
               fmt="ldsc",   
               extract=None,
               exclude=None,
+              cols=[],
               id_use="rsID",
               hapmap3=False,
               exclude_hla=False,  
@@ -484,7 +485,7 @@ class Sumstats():
         if exclude_hla is True:
             if verbose: self.log.write(" -Excluding variants in HLA region ...")
             before = len(output)
-            is_hla = (output["CHR"]== 6) & (output["POS"].astype("Int64") >25000000) & (output["POS"].astype("Int64") < 34000000)
+            is_hla = (output["CHR"].astype("string")=="6") & (output["POS"].astype("Int64") >25000000) & (output["POS"].astype("Int64") < 34000000)
             output = output.loc[~is_hla,:]
             after = len(output)
             if verbose: self.log.write(" -Exclude "+ str(before - after) + " variants in HLA region.")
@@ -502,7 +503,7 @@ class Sumstats():
             output["N"] = n
                 
         #######################################################################################################
-        #formatting statistics
+        #formatting float statistics
         if verbose: self.log.write(" -Formatting statistics ...")
         
         formats = {'EAF': '{:.4g}', 
@@ -544,6 +545,7 @@ class Sumstats():
             tofmt(output,
                   path=path,
                   fmt=fmt,
+                  cols=cols,
                   suffix=suffix,
                   build=build,
                   verbose=True,
