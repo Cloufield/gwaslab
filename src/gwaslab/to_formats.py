@@ -37,7 +37,7 @@ def tofmt(sumstats,
           to_csvargs={}):
     
     if verbose: log.write(" - Start outputting sumstats in "+fmt+" format...")
-    if xymt_number is False:
+    if xymt_number is False and sumstats["CHR"].dtype in ["Int64","int"]:
         sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt,prefix=chr_prefix))
     elif chr_prefix is not None:
         sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")

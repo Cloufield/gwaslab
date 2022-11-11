@@ -458,7 +458,7 @@ class Sumstats():
               float_formats={},
               xymt_number=False,
               xymt=["X","Y","MT"],
-              chr_prefix=None,
+              chr_prefix="",
               md5sum=False,
               bgzip=False,
               tabix=False):
