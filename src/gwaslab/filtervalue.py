@@ -1,5 +1,6 @@
 import re
-import pandas as pd
+import modin.pandas as pd
+#import pandas as pd
 import numpy as np
 from os import path
 from gwaslab.CommonData import get_high_ld
@@ -7,6 +8,7 @@ from gwaslab.CommonData import get_chr_to_number
 from gwaslab.Log import Log
 from gwaslab.vchangestatus import vchange_status
 from gwaslab.fixdata import sortcoordinate
+
 import gc
 def filtervalues(sumstats,expr,remove=False,verbose=True,log=Log()):
     if verbose: log.write("Start filtering values by condition:",expr)
