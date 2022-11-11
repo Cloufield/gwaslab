@@ -109,6 +109,8 @@
             "A2": "NEA",
             "A1": "EA",
             "N": "N",
+            "CHR":"CHR",
+            "POS":"POS",
             "Beta": "BETA",
             "P": "P",
             "INFO": "INFO",
