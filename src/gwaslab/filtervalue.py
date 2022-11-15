@@ -1,6 +1,6 @@
 import re
-import modin.pandas as pd
-#import pandas as pd
+#import modin.pandas as pd
+import pandas as pd
 import numpy as np
 from os import path
 from gwaslab.CommonData import get_high_ld

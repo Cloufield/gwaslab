@@ -28,7 +28,7 @@ def tofmt(sumstats,
           xymt_number=False,
           xymt=["X","Y","MT"],
           build="19",
-          chr_prefix=None,
+          chr_prefix="",
           md5sum=False,
           bgzip=False,
           tabix=False,
@@ -37,9 +37,9 @@ def tofmt(sumstats,
           to_csvargs={}):
     
     if verbose: log.write(" - Start outputting sumstats in "+fmt+" format...")
-    if xymt_number is False:
-        sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt))
-    if chr_prefix is not None:
+    if xymt_number is False and sumstats["CHR"].dtype in ["Int64","int"]:
+        sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt,prefix=chr_prefix))
+    elif chr_prefix is not None:
         sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
     
     ### calculate meta data
@@ -86,7 +86,7 @@ def tofmt(sumstats,
         sumstats["START"] = sumstats["START"].astype("Int64")
         sumstats["END"] = sumstats["END"].astype("Int64")
         
-        sumstats = sumstats.loc[:,ouput_cols]
+        sumstats = sumstats.loc[:,ouput_cols]+ cols
         path = path + "."+suffix
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
@@ -140,7 +140,7 @@ def tofmt(sumstats,
         sumstats["START"] = sumstats["START"].astype("Int64")
         sumstats["END"] = sumstats["END"].astype("Int64")
         
-        ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"]
+        ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"]+ cols
         sumstats = sumstats.loc[:,ouput_cols]
         path = path + "."+suffix+".gz"
         if verbose: log.write(" -Output columns:",sumstats.columns)
@@ -187,7 +187,7 @@ def tofmt(sumstats,
         sumstats.loc[is_delete,"NEA_out"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)
         sumstats.loc[is_delete,"EA_out"] = "-"
         
-        ouput_cols=["CHR","START","END","NEA_out","EA_out","SNPID"]
+        ouput_cols=["CHR","START","END","NEA_out","EA_out","SNPID"]+ cols
         
         sumstats["START"] = sumstats["START"].astype("Int64")
         sumstats["END"] = sumstats["END"].astype("Int64")
@@ -318,12 +318,15 @@ def tofmt(sumstats,
                 values.append(value)
             log.write("  - gwaslab keys:",keys) 
             log.write("  - "+fmt+" values:",values) 
-            
+        
+        # grab format cols that exist in sumstats
         ouput_cols=[]
         for i in sumstats.columns:
             if i in rename_dictionary.keys():
                 ouput_cols.append(i)  
+        # + additional cols
         ouput_cols = ouput_cols + cols
+        
         sumstats = sumstats.loc[:,ouput_cols]
         sumstats = sumstats.rename(columns=rename_dictionary) 
         path = path + "."+suffix+".tsv.gz"
