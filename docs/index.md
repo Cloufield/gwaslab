@@ -120,10 +120,14 @@ mysumstats.plot_mqq()
 - statsmodels > =0.13
 - adjustText
 
+# Citation
+A manuscript is in preparation and will be released soon.
+
 # Contacts
 * Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
 * Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
 * Email: gwaslab@gmail.com
 * Stats: [https://pypistats.org/packages/gwaslab](https://pypistats.org/packages/gwaslab)
 * [https://pepy.tech/project/gwaslab](https://pepy.tech/project/gwaslab)
+
 
