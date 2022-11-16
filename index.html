@@ -439,6 +439,7 @@
                 <li class="third-level"><a href="#other-utilities">Other Utilities</a></li>
             <li class="second-level"><a href="#requirements">Requirements:</a></li>
                 
+        <li class="first-level "><a href="#citation">Citation</a></li>
         <li class="first-level "><a href="#contacts">Contacts</a></li>
     </ul>
 </div></div>
@@ -450,7 +451,7 @@
 <img alt="badge_pip" src="https://img.shields.io/pypi/dm/gwaslab" />
 <a href="https://hits.seeyoufarm.com"><img alt="Hits" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&amp;count_bg=%2379C83D&amp;title_bg=%23555555&amp;icon=&amp;icon_color=%23E7E7E7&amp;title=hits&amp;edge_flat=false" /></a></p>
 <ul>
-<li>A simple python toolkit for handling GWAS sumstats.</li>
+<li>A handy python toolkit for handling GWAS sumstats.</li>
 <li>Each process is modularized and can be customized to your needs.</li>
 <li>Sumstats-specific manipulations are designed as methods of a python object, <code>gwaslab.Sumstats</code>.</li>
 </ul>
@@ -487,9 +488,9 @@ mysumstats.plot_mqq()
 <ul>
 <li>Loading sumstats by simply specifying the software name or format name.</li>
 <li>Converting GWAS sumstats to specific formats:</li>
-<li>LDSC / MAGMA / METAL / MR-MEGA / FUMA / VCF / BED... </li>
+<li>LDSC / MAGMA / METAL / PLINK / SAIGE / REGENIE / MR-MEGA / GWAS-SSF / FUMA / GWAS-VCF / BED... </li>
 <li><a href="https://github.com/Cloufield/formatbook">check available formats</a></li>
-<li>Optional Filtering of variants in Hapmap3 SNPs / High-LD regions / HLA region </li>
+<li>Optional filtering of variants in commonly used genomic regions: Hapmap3 SNPs / High-LD regions / MHC region </li>
 </ul>
 <h3 id="standardization-normalization">Standardization &amp; Normalization</h3>
 <ul>
@@ -504,7 +505,7 @@ mysumstats.plot_mqq()
 <li>Extreme value removal</li>
 <li>Equivalent statistics conversion<ul>
 <li>BETA/SE , OR/OR_95L/OR_95U</li>
-<li>P, Z, CHISQ, MLOG10</li>
+<li>P, Z, CHISQ, MLOG10P</li>
 </ul>
 </li>
 <li>Customized value filtering</li>
@@ -555,6 +556,8 @@ mysumstats.plot_mqq()
 <li>statsmodels &gt; =0.13</li>
 <li>adjustText</li>
 </ul>
+<h1 id="citation">Citation</h1>
+<p>A manuscript is in preparation and will be released soon.</p>
 <h1 id="contacts">Contacts</h1>
 <ul>
 <li>Github: <a href="https://github.com/Cloufield/gwaslab">https://github.com/Cloufield/gwaslab</a></li>
@@ -642,5 +645,5 @@ mysumstats.plot_mqq()
 
 <!--
 MkDocs version : 1.3.0
-Build Date UTC : 2022-11-05 13:06:42.109174+00:00
+Build Date UTC : 2022-11-16 09:13:47.371198+00:00
 -->

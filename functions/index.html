@@ -416,30 +416,169 @@
         <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="first-level active"><a href="#gwaslabsumstats-methods">gwaslab.Sumstats methods</a></li>
+            <li class="second-level"><a href="#glsumstats">gl.Sumstats</a></li>
+                
+            <li class="second-level"><a href="#standardization">Standardization</a></li>
+                
+            <li class="second-level"><a href="#qc-and-filtering">QC and filtering</a></li>
+                
+            <li class="second-level"><a href="#harmonization">Harmonization</a></li>
+                
         <li class="first-level "><a href="#standalone-functions">Standalone functions</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
 
 <h1 id="gwaslabsumstats-methods">gwaslab.Sumstats methods</h1>
+<h2 id="glsumstats">gl.Sumstats</h2>
+<h2 id="standardization">Standardization</h2>
 <table>
 <thead>
 <tr>
-<th>function</th>
-<th>catagory</th>
-<th>description</th>
+<th>Sumstats Methods</th>
+<th>Options</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td></td>
-<td></td>
-<td></td>
+<td><code>.fix_ID()</code></td>
+<td><code>fixchrpos=False</code>, <br/><code>fixid=False</code>, <br/><code>fixsep=False</code>,<br/><code>overwrite=False</code>,<br/><code>forcefixid=False</code></td>
+<td>check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS</td>
 </tr>
 <tr>
+<td><code>.fix_CHR()</code></td>
+<td><code>remove=False</code></td>
+<td>standardize chromsome notation</td>
+</tr>
+<tr>
+<td><code>.fix_POS()</code></td>
+<td><code>remove=False</code></td>
+<td>standardize basepair posituion notation and filter out bad values</td>
+</tr>
+<tr>
+<td><code>.fix_allele()</code></td>
+<td><code>remove=False</code></td>
+<td>standardize base notation to ATCG</td>
+</tr>
+<tr>
+<td><code>.normalize_allele()</code></td>
+<td><code>n_cores=1</code></td>
+<td>normalize indels (only support ATA:AA -&gt; AT:A but not -:T)</td>
+</tr>
+<tr>
+<td><code>.sort_coordinate()</code></td>
 <td></td>
+<td>sort the variant coordinates</td>
+</tr>
+<tr>
+<td><code>.sort_column()</code></td>
 <td></td>
+<td>sort the column order to gwaslab default</td>
+</tr>
+<tr>
+<td><code>.basic_check()</code></td>
 <td></td>
+<td>all in one function</td>
+</tr>
+</tbody>
+</table>
+<h2 id="qc-and-filtering">QC and filtering</h2>
+<table>
+<thead>
+<tr>
+<th>Sumstats Methods</th>
+<th>Options</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.check_sanity()</code></td>
+<td><code>n=(0,float("Inf"))</code>, <br/><code>eaf=(0,1)</code>, <br/><code>mac=(5,float("Inf"))</code>, <br/><code>chisq=(0,float("Inf"))</code>, <br/><code>p=(5e-300,1)</code>, <br/><code>mlog10p=(0,float("Inf"))</code>, <br/><code>beta=(-10,10)</code>, <br/><code>z=(-37.5,37.5)</code>, <br/><code>se=(0,float("Inf"))</code>, <br/><code>OR=(-10,10)</code> , <br/><code>OR_95L=(0,float("Inf"))</code>, <br/><code>OR_95U=(0,float("Inf"))</code>, <br/><code>info=(0,float("Inf"))</code></td>
+<td>sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N...</td>
+</tr>
+<tr>
+<td><code>.remove_dup()</code></td>
+<td><code>mode="md"</code>, <br/><code>keep='first'</code>, <br/><code>keep_col="P"</code>, <br/><code>remove=False</code></td>
+<td>remove duplicated, multiallelic or NA variants</td>
+</tr>
+<tr>
+<td><code>.filter_value()</code></td>
+<td>expr</td>
+<td>filter in variants base on expr</td>
+</tr>
+<tr>
+<td><code>.filter_in()</code></td>
+<td>lt, gt, eq, inplace</td>
+<td>filter in variants base on given threshold</td>
+</tr>
+<tr>
+<td><code>.filter_out()</code></td>
+<td>lt, gt, eq, inplace</td>
+<td>filter out variants base on given threshold</td>
+</tr>
+<tr>
+<td><code>.filter_region_in()</code></td>
+<td><code>path</code> , <br/> <code>inplace=True</code> , <br/><code>high_ld=False</code>, <br/> <code>build="19"</code></td>
+<td>filter in variants in the specified region define by a bed file</td>
+</tr>
+<tr>
+<td><code>.filter_region_out()</code></td>
+<td><code>path</code> , <br/> <code>inplace=True</code> , <br/><code>high_ld=False</code>, <br/> <code>build="19"</code></td>
+<td>filter out variants in the specified region define by a bed file</td>
+</tr>
+</tbody>
+</table>
+<h2 id="harmonization">Harmonization</h2>
+<table>
+<thead>
+<tr>
+<th>Sumstats Methods</th>
+<th>Options</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.check_ref()</code></td>
+<td>ref_path</td>
+<td>check alignment with a reference sequence</td>
+</tr>
+<tr>
+<td><code>.rsid_to_chrpos()</code></td>
+<td>path, n_cores</td>
+<td>use rsid to fill CHR and POS</td>
+</tr>
+<tr>
+<td><code>.rsid_to_chrpos2()</code></td>
+<td>path</td>
+<td>use rsid to fill CHR and POS (muilti-thread, need hd5 file)</td>
+</tr>
+<tr>
+<td><code>.assign_rsid()</code></td>
+<td>path</td>
+<td>annotate rsid using a reference vcf file</td>
+</tr>
+<tr>
+<td><code>.infer_strand()</code></td>
+<td>ref_infer="" , ref_alt_freq=None,  maf_threshold=0.43</td>
+<td>infer the strand of a variant using reference vcf file with EAF in INFO</td>
+</tr>
+<tr>
+<td><code>.check_daf()</code></td>
+<td>ref_infer="" , ref_alt_freq=None,</td>
+<td>calculate difference in allele frequencies</td>
+</tr>
+<tr>
+<td><code>.flip_allele_stats()</code></td>
+<td></td>
+<td>After alignment and inferring, flip the alleles to harmonise the variants.</td>
+</tr>
+<tr>
+<td><code>.liftover()</code></td>
+<td>n_cores=1,from_build="19", to_build="38"</td>
+<td>perform liftover</td>
 </tr>
 </tbody>
 </table>

@@ -1,10 +1,7 @@
 /*
   Cinder Theme for MkDocs | Copyright 2015 Christopher Simpkins | MIT License
 */
-img {
-    max-width: 700px;
-    height: auto;
-}
+
 body {
     font-family:"Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 16px;
