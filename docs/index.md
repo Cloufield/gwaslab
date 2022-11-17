@@ -49,7 +49,7 @@ mysumstats.plot_mqq()
 
 ### Loading and Formatting
 
-- Loading sumstats by simply specifying the software name or format name.
+- Loading sumstats by simply specifying the software name or format name, or specifying each column name.
 - Converting GWAS sumstats to specific formats:
   - LDSC / MAGMA / METAL / PLINK / SAIGE / REGENIE / MR-MEGA / GWAS-SSF / FUMA / GWAS-VCF / BED... 
   - [check available formats](https://github.com/Cloufield/formatbook)
@@ -100,9 +100,9 @@ mysumstats.plot_mqq()
 
 - Read ldsc h2 or rg outputs directly as DataFrames (auto-parsing).
 - Extract lead variants given a sliding window size.
-- Extract novel loci given a list of known lead variants.
-- Logging : keep a complete record of manipulations from raw data to munged data.
-- Sumstats summary function: know your data better. 
+- Extract novel loci given a list of known lead variants / or known loci obtained form GWAS Catalog.
+- Logging : keep a complete record of manipulations applied to the sumstats.
+- Sumstats summary: give you a quick overview of the sumstats. 
 
 
 ## Requirements:
@@ -128,6 +128,5 @@ A manuscript is in preparation and will be released soon.
 * Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
 * Email: gwaslab@gmail.com
 * Stats: [https://pypistats.org/packages/gwaslab](https://pypistats.org/packages/gwaslab)
-* [https://pepy.tech/project/gwaslab](https://pepy.tech/project/gwaslab)
 
 
