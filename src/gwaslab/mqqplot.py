@@ -134,19 +134,15 @@ def mqqplot(insumstats,
     # "qq": QQ plot
     # "r" : regional plot
     
-    if  mode=="qqm":   
-        figargs["figsize"] = (15,5)
+    if  mode=="qqm": 
         fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**figargs)
     elif mode=="mqq":
-        figargs["figsize"] = (15,5)
         fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**figargs)
     elif mode=="m":
-        figargs["figsize"] = (15,5)
         fig, ax1 = plt.subplots(1, 1,**figargs)
-    elif mode=="qq":
-        figargs["figsize"] = (15,5)
+    elif mode=="qq": 
         fig, ax2 = plt.subplots(1, 1,**figargs) 
-    elif mode=="r":
+    elif mode=="r": 
         figargs["figsize"] = (15,10)
         fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
                                        gridspec_kw={'height_ratios': [mqqratio, 1]},**figargs)
