@@ -500,7 +500,8 @@ def plotdaf(sumstats,
              plt_args={"figsize":(8,4),"dpi":300},
             histplot_args={"log_scale":(False,True)},
             fontargs={'family':'sans','fontname':'Arial','fontsize':8},
-            verbose=True
+            verbose=True,
+            log=Log()
            ):
     
     

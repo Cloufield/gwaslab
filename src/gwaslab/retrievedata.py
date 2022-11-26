@@ -593,7 +593,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
 
 ################################################################################################################
-def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),verbose=True,log=Log()):
+def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),force=False, verbose=True,log=Log()):
         
     if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
@@ -607,7 +607,8 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_co
     # ref_alt_freq INFO in vcf was provided
     if ref_alt_freq is not None:
         if verbose: log.write(" -Alternative allele frequency in INFO:", ref_alt_freq)  
-        good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
+        if not force:
+            good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
         if verbose: log.write(" -Checking variants:", sum(good_chrpos)) 
         sumstats["DAF"]=np.nan
     

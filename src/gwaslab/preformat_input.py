@@ -279,7 +279,7 @@ def isfile_casesensitive(path):
     return filename in os.listdir(directory)
 
 def get_readargs_header(inpath,readargs):
-    if inpath.endswith("vcf.gz"):
+    if "vcf.gz" in inpath:
         with gzip.open(inpath,'r') as file:      
             skip=0
             for line in file:        
@@ -295,13 +295,16 @@ def get_readargs_header(inpath,readargs):
     return readargs_header
 
 def get_skip_rows(inpath):
-    with gzip.open(inpath,'r') as file:      
-        skip=0
-        for line in file:        
-            if line.decode('utf-8').startswith('##'):
-                skip+=1
-            else:
-                return skip
+    if "vcf.gz" in inpath:
+        with gzip.open(inpath,'r') as file:      
+            skip=0
+            for line in file:        
+                if line.decode('utf-8').startswith('##'):
+                    skip+=1
+                else:
+                    return skip
+    else:
+        return 0
 
 def parse_vcf_study(sumstats,format_cols,study,vcf_usecols,log,verbose=True):
     if verbose: log.write(" -Parsing based on FORMAT: ", format_cols)
