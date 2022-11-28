@@ -434,6 +434,13 @@
                 
             <li class="second-level"><a href="#formatting-and-saving_1">Formatting and saving</a></li>
                 
+                <li class="third-level"><a href="#get-ready-for-submission-to-gwas-catalog">get ready for submission to gwas catalog</a></li>
+                <li class="third-level"><a href="#calculate-md5sum-for-checking-the-integrity-when-sharing">calculate md5sum for checking the integrity when sharing</a></li>
+                <li class="third-level"><a href="#convert-the-variant-info-in-annovar-default-input-format">convert the variant info in annovar default input format</a></li>
+                <li class="third-level"><a href="#gwas-ssf-format">GWAS-ssf format</a></li>
+                <li class="third-level"><a href="#ldsc-default-format">ldsc default format</a></li>
+                <li class="third-level"><a href="#convert-to-bed-format">convert to bed format</a></li>
+                <li class="third-level"><a href="#convert-to-vep-default-format">convert to vep default format</a></li>
     </ul>
 </div></div>
         <div class="col-md-9" role="main">
@@ -1533,11 +1540,11 @@ Licensed under the Apache License, Version 2.0.
             </clipboard-copy>
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;/home/yunye/gwaslab/gwaslab/src&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;/Users/he/work/gwaslab/src&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">gwaslab</span> <span class="k">as</span> <span class="nn">gl</span>
 </pre></div>
 <div id="cell-2" class="clipboard-copy-txt">import sys
-sys.path.insert(0,"/home/yunye/gwaslab/gwaslab/src")
+sys.path.insert(0,"/Users/he/work/gwaslab/src")
 import gwaslab as gl</div>
     
         </div>
@@ -1625,17 +1632,20 @@ import gwaslab as gl</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Thu Sep 22 23:34:14 2022 Start to initiate from file :t2d_bbj.txt.gz
-Thu Sep 22 23:34:31 2022  -Reading columns          : Frq,SE,REF,Dir,BETA,SNP,P,POS,CHR,ALT,N
-Thu Sep 22 23:34:31 2022  -Renaming columns to      : EAF,SE,NEA,DIRECTION,BETA,SNPID,P,POS,CHR,EA,N
-Thu Sep 22 23:34:31 2022  -Current dataframe shape  : Rows  12557761  x  11  Columns
-Thu Sep 22 23:34:32 2022  -Initiating a status column ...
-Thu Sep 22 23:34:33 2022  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
-Thu Sep 22 23:34:34 2022  -NEAF is specified...
-Thu Sep 22 23:34:34 2022  -Checking if 0&lt;= NEAF &lt;=1 ...
-Thu Sep 22 23:34:36 2022  -Converted NEAF to EAF.
-Thu Sep 22 23:34:36 2022  -Removed 0 variants with bad NEAF.
-Thu Sep 22 23:34:36 2022 Finished loading data successfully!
+<pre>Mon Nov 28 13:41:21 2022 Start to initiate from file :t2d_bbj.txt.gz
+Mon Nov 28 13:41:49 2022  -Reading columns          : REF,ALT,BETA,POS,P,Dir,N,SE,Frq,CHR,SNP
+Mon Nov 28 13:41:49 2022  -Renaming columns to      : NEA,EA,BETA,POS,P,DIRECTION,N,SE,EAF,CHR,SNPID
+Mon Nov 28 13:41:49 2022  -Current Dataframe shape : 12557761  x  11
+Mon Nov 28 13:41:52 2022  -Initiating a status column: STATUS ...
+Mon Nov 28 13:41:57 2022  -NEAF is specified...
+Mon Nov 28 13:41:57 2022  -Checking if 0&lt;= NEAF &lt;=1 ...
+Mon Nov 28 13:41:59 2022  -Converted NEAF to EAF.
+Mon Nov 28 13:41:59 2022  -Removed 0 variants with bad NEAF.
+Mon Nov 28 13:42:00 2022 Start to reorder the columns...
+Mon Nov 28 13:42:00 2022  -Current Dataframe shape : 12557761  x  12
+Mon Nov 28 13:42:00 2022  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
+Mon Nov 28 13:42:00 2022 Finished sorting columns successfully!
+Mon Nov 28 13:42:01 2022 Finished loading data successfully!
 </pre>
 </div>
 </div>
@@ -1662,7 +1672,7 @@ Thu Sep 22 23:34:36 2022 Finished loading data successfully!
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
@@ -1701,7 +1711,7 @@ Thu Sep 22 23:34:36 2022 Finished loading data successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Sat Oct 29 22:55:39 2022 Available formats: fastgwa,gwascatalog,gwascatalog_hm,gwaslab,ldsc,metal,mrmega,pgscatalog,pgscatalog_hm,pheweb,plink,plink2,regenie,saige,ssf,template,vcf
+<pre>Mon Nov 28 13:42:01 2022 Available formats: fastgwa,gwascatalog,gwascatalog_hm,gwaslab,ldsc,metal,mrmega,pgscatalog,pgscatalog_hm,pheweb,plink,plink2,regenie,saige,ssf,template,vcf
 </pre>
 </div>
 </div>
@@ -1717,7 +1727,7 @@ Thu Sep 22 23:34:36 2022 Finished loading data successfully!
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
@@ -1756,8 +1766,8 @@ Thu Sep 22 23:34:36 2022 Finished loading data successfully!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Sat Oct 29 22:55:40 2022 Available formats:Sat Oct 29 22:55:40 2022 meta_dataSat Oct 29 22:55:40 2022 format_dictSat Oct 29 22:55:40 2022 
-Sat Oct 29 22:55:40 2022 {&#39;format_name&#39;: &#39;saige&#39;, &#39;format_source&#39;: &#39;https://saigegit.github.io//SAIGE-doc/docs/single_step2.html&#39;, &#39;format_version&#39;: &#39;v1.1.3&#39;, &#39;last_check_date&#39;: 20220806}Sat Oct 29 22:55:40 2022 {&#39;SNPID&#39;: &#39;SNPID&#39;, &#39;CHR&#39;: &#39;CHR&#39;, &#39;POS&#39;: &#39;POS&#39;, &#39;Allele1&#39;: &#39;NEA&#39;, &#39;Allele2&#39;: &#39;EA&#39;, &#39;AF_Allele2&#39;: &#39;EAF&#39;, &#39;N&#39;: &#39;N&#39;, &#39;BETA&#39;: &#39;BETA&#39;, &#39;SE&#39;: &#39;SE&#39;, &#39;p.value&#39;: &#39;P&#39;, &#39;imputationInfo&#39;: &#39;INFO&#39;}</pre>
+<pre>Mon Nov 28 13:42:01 2022 Available formats:Mon Nov 28 13:42:01 2022 meta_dataMon Nov 28 13:42:01 2022 format_dictMon Nov 28 13:42:01 2022 
+Mon Nov 28 13:42:01 2022 {&#39;format_name&#39;: &#39;saige&#39;, &#39;format_source&#39;: &#39;https://saigegit.github.io//SAIGE-doc/docs/single_step2.html&#39;, &#39;format_version&#39;: &#39;v1.1.3&#39;, &#39;last_check_date&#39;: 20220806}Mon Nov 28 13:42:01 2022 {&#39;SNPID&#39;: &#39;SNPID&#39;, &#39;CHR&#39;: &#39;CHR&#39;, &#39;POS&#39;: &#39;POS&#39;, &#39;Allele1&#39;: &#39;NEA&#39;, &#39;Allele2&#39;: &#39;EA&#39;, &#39;AF_Allele2&#39;: &#39;EAF&#39;, &#39;N&#39;: &#39;N&#39;, &#39;BETA&#39;: &#39;BETA&#39;, &#39;SE&#39;: &#39;SE&#39;, &#39;p.value&#39;: &#39;P&#39;, &#39;imputationInfo&#39;: &#39;INFO&#39;}</pre>
 </div>
 </div>
 
@@ -1783,7 +1793,7 @@ Sat Oct 29 22:55:40 2022 {&#39;format_name&#39;: &#39;saige&#39;, &#39;format_so
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
@@ -1798,10 +1808,10 @@ Sat Oct 29 22:55:40 2022 {&#39;format_name&#39;: &#39;saige&#39;, &#39;format_so
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">filter_in</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;CHR&quot;</span><span class="p">:</span><span class="s2">&quot;6&quot;</span><span class="p">})</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">filter_value</span><span class="p">(</span><span class="s1">&#39;CHR == &quot;6&quot;&#39;</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">()</span>
 </pre></div>
-<div id="cell-6" class="clipboard-copy-txt">mysumstats.filter_in(eq={"CHR":"6"})
+<div id="cell-6" class="clipboard-copy-txt">mysumstats.filter_value('CHR == "6"',inplace=True)
 mysumstats.basic_check()</div>
     
         </div>
@@ -1824,49 +1834,180 @@ mysumstats.basic_check()</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Thu Sep 22 23:34:36 2022 Start filtering values:
-Thu Sep 22 23:34:37 2022  -Keeping 833422 variants with CHR = 6 ...
-Thu Sep 22 23:34:37 2022 Finished filtering values.
-Thu Sep 22 23:34:38 2022 Start to check IDs...
-Thu Sep 22 23:34:38 2022  -Current Dataframe shape : 833422  x  12
-Thu Sep 22 23:34:38 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
-Thu Sep 22 23:34:39 2022 Finished checking IDs successfully!
-Thu Sep 22 23:34:39 2022 Start to fix chromosome notation...
-Thu Sep 22 23:34:39 2022  -Current Dataframe shape : 833422  x  12
-Thu Sep 22 23:34:41 2022  -All CHR are already fixed...
-Thu Sep 22 23:34:42 2022 Finished fixing chromosome notation successfully!
-Thu Sep 22 23:34:42 2022 Start to fix basepair positions...
-Thu Sep 22 23:34:42 2022  -Current Dataframe shape : 833422  x  12
-Thu Sep 22 23:34:43 2022  -Position upper_bound is: 250,000,000
-Thu Sep 22 23:34:44 2022  -Remove outliers: 0
-Thu Sep 22 23:34:44 2022  -Converted all position to datatype Int64.
-Thu Sep 22 23:34:44 2022 Finished fixing basepair position successfully!
-Thu Sep 22 23:34:44 2022 Start to fix alleles...
-Thu Sep 22 23:34:44 2022  -Current Dataframe shape : 833422  x  12
-Thu Sep 22 23:34:45 2022  -Converted all bases to string datatype and UPPERCASE.
-Thu Sep 22 23:34:45 2022 Finished fixing allele successfully!
-Thu Sep 22 23:34:45 2022 Start sanity check for statistics ...
-Thu Sep 22 23:34:45 2022  -Current Dataframe shape : 833422  x  12
-Thu Sep 22 23:34:45 2022  -Checking if N is Int64 and N&gt;0 ...
-Thu Sep 22 23:34:45 2022  -Removed 0 variants with bad N.
-Thu Sep 22 23:34:45 2022  -Checking if 0&lt;= EAF &lt;=1 ...
-Thu Sep 22 23:34:46 2022  -Removed 0 variants with bad EAF.
-Thu Sep 22 23:34:46 2022  -Checking if MAC &gt;=5 ...
-Thu Sep 22 23:34:46 2022  -Removed 0 variants with bad MAC.
-Thu Sep 22 23:34:46 2022  -Checking if 0&lt; P &lt;5e-300 ...
-Thu Sep 22 23:34:46 2022  -Removed 0 variants with bad P.
-Thu Sep 22 23:34:46 2022  -Checking if abs(BETA)&lt;10 ...
-Thu Sep 22 23:34:46 2022  -Removed 0 variants with bad BETA.
-Thu Sep 22 23:34:46 2022  -Checking if SE &gt;0 ...
-Thu Sep 22 23:34:46 2022  -Removed 0 variants with bad SE.
-Thu Sep 22 23:34:46 2022  -Checking STATUS...
-Thu Sep 22 23:34:46 2022  -Coverting STAUTUS to category.
-Thu Sep 22 23:34:46 2022  -Removed 0 variants with bad statistics in total.
-Thu Sep 22 23:34:46 2022 Finished sanity check successfully!
-Thu Sep 22 23:34:46 2022 Start to normalize variants...
-Thu Sep 22 23:34:46 2022  -Current Dataframe shape : 833422  x  12
-Thu Sep 22 23:34:47 2022  -No available variants to normalize..
-Thu Sep 22 23:34:47 2022 Finished normalizing variants successfully!
+<pre>Mon Nov 28 13:42:01 2022 Start filtering values by condition: CHR == &#34;6&#34;
+Mon Nov 28 13:42:02 2022  -Removing 11724339 variants not meeting the conditions: CHR == &#34;6&#34;
+Mon Nov 28 13:42:02 2022 Finished filtering values.
+Mon Nov 28 13:42:02 2022 Start to check IDs...
+Mon Nov 28 13:42:02 2022  -Current Dataframe shape : 833422  x  12
+Mon Nov 28 13:42:02 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
+Mon Nov 28 13:42:04 2022 Finished checking IDs successfully!
+Mon Nov 28 13:42:04 2022 Start to fix chromosome notation...
+Mon Nov 28 13:42:04 2022  -Current Dataframe shape : 833422  x  12
+Mon Nov 28 13:42:08 2022  -Vairants with standardized chromosome notation: 833422
+Mon Nov 28 13:42:10 2022  -All CHR are already fixed...
+Mon Nov 28 13:42:11 2022 Finished fixing chromosome notation successfully!
+Mon Nov 28 13:42:11 2022 Start to fix basepair positions...
+Mon Nov 28 13:42:11 2022  -Current Dataframe shape : 833422  x  12
+Mon Nov 28 13:42:11 2022  -Converting to Int64 data type ...
+Mon Nov 28 13:42:13 2022  -Position upper_bound is: 250,000,000
+Mon Nov 28 13:42:15 2022  -Remove outliers: 0
+Mon Nov 28 13:42:15 2022  -Converted all position to datatype Int64.
+Mon Nov 28 13:42:15 2022 Finished fixing basepair position successfully!
+Mon Nov 28 13:42:15 2022 Start to fix alleles...
+Mon Nov 28 13:42:15 2022  -Current Dataframe shape : 833422  x  12
+Mon Nov 28 13:42:16 2022  -Detected 0 variants with alleles that contain bases other than A/C/T/G .
+Mon Nov 28 13:42:16 2022  -Converted all bases to string datatype and UPPERCASE.
+Mon Nov 28 13:42:18 2022 Finished fixing allele successfully!
+Mon Nov 28 13:42:18 2022 Start sanity check for statistics ...
+Mon Nov 28 13:42:18 2022  -Current Dataframe shape : 833422  x  12
+Mon Nov 28 13:42:18 2022  -Checking if  0 &lt;=N&lt;= inf  ...
+Mon Nov 28 13:42:18 2022  -Removed 0 variants with bad N.
+Mon Nov 28 13:42:18 2022  -Checking if  0 &lt;=EAF&lt;= 1  ...
+Mon Nov 28 13:42:18 2022  -Removed 0 variants with bad EAF.
+Mon Nov 28 13:42:18 2022  -Checking if  5 &lt;=MAC&lt;= inf  ...
+Mon Nov 28 13:42:18 2022  -Removed 0 variants with bad MAC.
+Mon Nov 28 13:42:18 2022  -Checking if  5e-300 &lt;= P &lt;= 1  ...
+Mon Nov 28 13:42:18 2022  -Removed 0 variants with bad P.
+Mon Nov 28 13:42:18 2022  -Checking if  -10 &lt;BETA)&lt; 10  ...
+Mon Nov 28 13:42:18 2022  -Removed 0 variants with bad BETA.
+Mon Nov 28 13:42:18 2022  -Checking if  0 &lt;SE&lt; inf  ...
+Mon Nov 28 13:42:19 2022  -Removed 0 variants with bad SE.
+Mon Nov 28 13:42:19 2022  -Checking STATUS...
+Mon Nov 28 13:42:19 2022  -Coverting STAUTUS to interger.
+Mon Nov 28 13:42:19 2022  -Removed 0 variants with bad statistics in total.
+Mon Nov 28 13:42:19 2022 Finished sanity check successfully!
+Mon Nov 28 13:42:19 2022 Start to normalize variants...
+Mon Nov 28 13:42:19 2022  -Current Dataframe shape : 833422  x  12
+Mon Nov 28 13:42:20 2022  -No available variants to normalize..
+Mon Nov 28 13:42:20 2022 Finished normalizing variants successfully!
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-7">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span>
+</pre></div>
+<div id="cell-7" class="clipboard-copy-txt"></div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="formatting-and-saving">Formatting and saving<a class="anchor-link" href="#formatting-and-saving">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="get-ready-for-submission-to-gwas-catalog">get ready for submission to gwas catalog<a class="anchor-link" href="#get-ready-for-submission-to-gwas-catalog">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-8">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./t2d&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;gwascatalog&quot;</span><span class="p">,</span><span class="n">md5sum</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div id="cell-8" class="clipboard-copy-txt">mysumstats.to_format("./t2d",fmt="gwascatalog",md5sum=True)</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Mon Nov 28 13:44:17 2022 Start to format the output sumstats in:  gwascatalog  format
+Mon Nov 28 13:44:17 2022  -Formatting statistics ...
+Mon Nov 28 13:44:18 2022  - Float statistics formats:
+Mon Nov 28 13:44:18 2022   - Columns: [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+Mon Nov 28 13:44:18 2022   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+Mon Nov 28 13:44:18 2022  - Start outputting sumstats in gwascatalog format...
+Mon Nov 28 13:44:18 2022  -gwascatalog format will be loaded...
+Mon Nov 28 13:44:18 2022  -gwascatalog format meta info:
+Mon Nov 28 13:44:18 2022   - format_name  :  gwascatalog
+Mon Nov 28 13:44:18 2022   - format_source  :  https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics
+Mon Nov 28 13:44:18 2022   - format_version  :  20220726
+Mon Nov 28 13:44:18 2022  -gwaslab to gwascatalog format dictionary:
+Mon Nov 28 13:44:18 2022   - gwaslab keys: SNPID,CHR,POS,NEA,EA,BETA,EAF,SE,P,OR,OR_95L,OR_95U
+Mon Nov 28 13:44:18 2022   - gwascatalog values: variant_id,chromosome,base_pair_location,other_allele,effect_allele,beta,effect_allele_frequency,standard_error,p-value,odds_ratio,ci_lower,ci_upper
+Mon Nov 28 13:44:18 2022  -Output columns: variant_id,chromosome,base_pair_location,effect_allele,other_allele,effect_allele_frequency,beta,standard_error,p-value
+Mon Nov 28 13:44:18 2022  -Output path: ./t2d.gwascatalog.tsv.gz
+Mon Nov 28 13:44:28 2022  -md5sum hashing for the file: ./t2d.gwascatalog.tsv.gz
+Mon Nov 28 13:44:28 2022  -md5sum path: ./t2d.gwascatalog.tsv.gz.md5sum
+Mon Nov 28 13:44:28 2022  -Saving log file: ./t2d.gwascatalog.log
+Mon Nov 28 13:44:28 2022 Finished outputting successfully!
 </pre>
 </div>
 </div>
@@ -1883,7 +2024,73 @@ Thu Sep 22 23:34:47 2022 Finished normalizing variants successfully!
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="formatting-and-saving">Formatting and saving<a class="anchor-link" href="#formatting-and-saving">&#182;</a></h2>
+<h3 id="calculate-md5sum-for-checking-the-integrity-when-sharing">calculate md5sum for checking the integrity when sharing<a class="anchor-link" href="#calculate-md5sum-for-checking-the-integrity-when-sharing">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-9">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span><span class="n">head</span> <span class="n">t2d</span><span class="o">.</span><span class="n">gwascatalog</span><span class="o">.</span><span class="n">tsv</span><span class="o">.</span><span class="n">gz</span><span class="o">.</span><span class="n">md5sum</span>
+</pre></div>
+<div id="cell-9" class="clipboard-copy-txt">!head t2d.gwascatalog.tsv.gz.md5sum</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>d6d5b9ab6596b93fdafc2cc5aba0bcba
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="convert-the-variant-info-in-annovar-default-input-format">convert the variant info in annovar default input format<a class="anchor-link" href="#convert-the-variant-info-in-annovar-default-input-format">&#182;</a></h3>
 </div>
 </div>
 </div>
@@ -1898,7 +2105,7 @@ Thu Sep 22 23:34:47 2022 Finished normalizing variants successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-7">
+            <clipboard-copy for="cell-10">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -1910,7 +2117,7 @@ Thu Sep 22 23:34:47 2022 Finished normalizing variants successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;annovar&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-7" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="annovar")</div>
+<div id="cell-10" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="annovar")</div>
     
         </div>
     </div>
@@ -1955,6 +2162,17 @@ Thu Sep 22 23:34:50 2022 Finished outputting successfully!
 </div>
 
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="gwas-ssf-format">GWAS-ssf format<a class="anchor-link" href="#gwas-ssf-format">&#182;</a></h3>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
@@ -1966,7 +2184,7 @@ Thu Sep 22 23:34:50 2022 Finished outputting successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-8">
+            <clipboard-copy for="cell-11">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -1978,7 +2196,7 @@ Thu Sep 22 23:34:50 2022 Finished outputting successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;ssf&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-8" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="ssf")</div>
+<div id="cell-11" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="ssf")</div>
     
         </div>
     </div>
@@ -2029,6 +2247,17 @@ Thu Sep 22 23:34:58 2022 Finished outputting successfully!
 </div>
 
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="ldsc-default-format">ldsc default format<a class="anchor-link" href="#ldsc-default-format">&#182;</a></h3>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
@@ -2040,7 +2269,7 @@ Thu Sep 22 23:34:58 2022 Finished outputting successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-9">
+            <clipboard-copy for="cell-12">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2052,7 +2281,7 @@ Thu Sep 22 23:34:58 2022 Finished outputting successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;ldsc&quot;</span><span class="p">,</span><span class="n">hapmap3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">exclude_hla</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
-<div id="cell-9" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True)</div>
+<div id="cell-12" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True)</div>
     
         </div>
     </div>
@@ -2120,7 +2349,7 @@ Thu Sep 22 23:35:02 2022 Finished outputting successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-10">
+            <clipboard-copy for="cell-13">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2132,7 +2361,7 @@ Thu Sep 22 23:35:02 2022 Finished outputting successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;ldsc&quot;</span><span class="p">,</span><span class="n">hapmap3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">exclude_hla</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
-<div id="cell-10" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True)</div>
+<div id="cell-13" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True)</div>
     
         </div>
     </div>
@@ -2189,6 +2418,17 @@ Thu Sep 22 23:35:06 2022 Finished outputting successfully!
 </div>
 
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="convert-to-bed-format">convert to bed format<a class="anchor-link" href="#convert-to-bed-format">&#182;</a></h3>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
@@ -2200,7 +2440,7 @@ Thu Sep 22 23:35:06 2022 Finished outputting successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-11">
+            <clipboard-copy for="cell-14">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2212,7 +2452,7 @@ Thu Sep 22 23:35:06 2022 Finished outputting successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;bed&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-11" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="bed")</div>
+<div id="cell-14" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="bed")</div>
     
         </div>
     </div>
@@ -2257,6 +2497,17 @@ Thu Sep 22 23:55:18 2022 Finished outputting successfully!
 </div>
 
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="convert-to-vep-default-format">convert to vep default format<a class="anchor-link" href="#convert-to-vep-default-format">&#182;</a></h3>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
@@ -2268,7 +2519,7 @@ Thu Sep 22 23:55:18 2022 Finished outputting successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-12">
+            <clipboard-copy for="cell-15">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2280,7 +2531,7 @@ Thu Sep 22 23:55:18 2022 Finished outputting successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;vep&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-12" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="vep")</div>
+<div id="cell-15" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="vep")</div>
     
         </div>
     </div>
@@ -2336,7 +2587,7 @@ Thu Sep 22 23:55:26 2022 Finished outputting successfully!
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-13">
+            <clipboard-copy for="cell-16">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -2348,7 +2599,7 @@ Thu Sep 22 23:55:26 2022 Finished outputting successfully!
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span>
 </pre></div>
-<div id="cell-13" class="clipboard-copy-txt"></div>
+<div id="cell-16" class="clipboard-copy-txt"></div>
     
         </div>
     </div>
