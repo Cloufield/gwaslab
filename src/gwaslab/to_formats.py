@@ -340,7 +340,7 @@ def tofmt(sumstats,
         sumstats = sumstats.loc[:,ouput_cols]
         sumstats = sumstats.rename(columns=rename_dictionary) 
         path = path + "."+suffix+".tsv.gz"
-        if verbose: log.write(" -Output columns:",','.join(list(sumstats.columns)))
+        if verbose: log.write(" -Output columns:",','.join(sumstats.columns))
         if verbose: log.write(" -Output path:",path) 
         if path is not None: 
             sumstats.to_csv(path,sep="\t",index=None,**to_csvargs)

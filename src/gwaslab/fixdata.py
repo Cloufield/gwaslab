@@ -420,9 +420,15 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         #convert to numeric
         is_pos_na = sumstats.loc[:,pos].isna()
         
+        if sumstats[pos].dtype == "string" or sumstats[pos].dtype == "object":
+            if verbose: log.write(' -Removing thousands separator "," or underbar "_" ...')
+            sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].str.replace(",|_", "")
+
         try:
+            if verbose: log.write(' -Converting to Int64 data type ...')
             sumstats.loc[:,pos] = sumstats.loc[:,pos].astype('Int64')
         except:
+            if verbose: log.write(' -Force converting to Int64 data type ...')
             sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
         
         is_pos_fixed = ~sumstats.loc[:,pos].isna()
