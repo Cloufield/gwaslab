@@ -21,7 +21,7 @@ dependencies = [
     "matplotlib>=3.5",
     "seaborn>=0.11.1",
     "scipy>=1.6.2",
-    "pySAM>=0.18.0",
+    "pySAM==0.19.1",
     "Biopython>=1.79",
     "adjustText>=0.7.3",
     "liftover>=1.1.13",
