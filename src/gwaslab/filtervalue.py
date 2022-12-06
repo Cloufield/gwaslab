@@ -13,7 +13,7 @@ import gc
 def filtervalues(sumstats,expr,remove=False,verbose=True,log=Log()):
     if verbose: log.write("Start filtering values by condition:",expr)
     prenum = len(sumstats)
-    sumstats = sumstats.query(expr).copy()
+    sumstats = sumstats.query(expr,engine='python').copy()
     afternum = len(sumstats)
     if verbose: log.write(" -Removing "+ str(prenum-afternum) +" variants not meeting the conditions:",expr)
     if verbose: log.write("Finished filtering values.")
