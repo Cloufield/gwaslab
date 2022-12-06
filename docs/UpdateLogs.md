@@ -1,6 +1,15 @@
 # Update Logs
-## 3.3.10 coming soon
-
+## 3.3.12
+- fixed bugs for matplotlib v3.6.x
+- added method chain for filter_xxx functions
+- updated requirements for dependencies 
+    - pySAM>=0.18.1,<0.20
+    - matplotlib>=3.5
+    - pyensembl>=2.2.3
+## 3.3.11
+- updated requirements for dependencies
+## 3.3.10 
+- updated bugs for mqqplot
 ## v3.3.9 
 - updated download system
 ## v3.3.8
