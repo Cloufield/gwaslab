@@ -93,7 +93,7 @@ mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
 or just specify the format:
 
 ```
-mysumstats = gl.Sumstats("t2d_bbj.txt.gz", format="saige")
+mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="saige")
 ```
 gwaslab uses manully curated format conversion dictionary in [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)
 
