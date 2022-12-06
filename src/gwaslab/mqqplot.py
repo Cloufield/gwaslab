@@ -624,9 +624,8 @@ def mqqplot(insumstats,
             if verbose: log.write(" -Finished plotting gene track..")
                            
         #plot.set_xlabel(chrom); 
-        
-        plot.set_xticks(chrom_df)
-        plot.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif")
+        ax1.set_xticks(chrom_df.astype("float64"))
+        ax1.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif")
         
         # regional plot - set X tick
         if region is not None:
@@ -645,26 +644,26 @@ def mqqplot(insumstats,
                     ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
             else:
                 # set x ticks m plot
-                plot.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
-                plot.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
+                ax1.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
+                ax1.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
         
-            plot.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
+            ax1.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
         # genomewide significant line
         if sig_line is True:
-            sigline = plot.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
+            sigline = ax1.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
         if "b" in mode:
-            meanline = plot.axhline(y=bmean, linewidth = 2,linestyle="-",color=sig_line_color,zorder=1000)
-            medianline = plot.axhline(y=bmedian, linewidth = 2,linestyle="--",color=sig_line_color,zorder=1000)
+            meanline = ax1.axhline(y=bmean, linewidth = 2,linestyle="-",color=sig_line_color,zorder=1000)
+            medianline = ax1.axhline(y=bmedian, linewidth = 2,linestyle="--",color=sig_line_color,zorder=1000)
         # cut line
         if cut == 0: ax1.set_ylim(skip,maxy*1.2)
         if cut:
-            cutline = plot.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+            cutline = ax1.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
-                plot.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                plot.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif")
+                ax1.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
+                ax1.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif")
             else:
-                plot.set_yticks([x for x in range(skip,cut+1,2)])
-                plot.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
+                ax1.set_yticks([x for x in range(skip,cut+1,2)])
+                ax1.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
             ax1.set_ylim(bottom = skip)
 
 
@@ -718,16 +717,16 @@ def mqqplot(insumstats,
 # Add Annotation to manhattan plot #######################################################
            ## final
         
-        plot.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+        ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
         if "b" in mode:
-            plot.set_ylabel("Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb",ha="center",va="bottom",fontsize=fontsize,family="sans-serif")
+            ax1.set_ylabel("Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb",ha="center",va="bottom",fontsize=fontsize,family="sans-serif")
         if region is not None:
             if (gtf_path is not None ) and ("r" in mode):
                 ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
             else:
-                plot.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
+                ax1.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
         else:
-            plot.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif")
+            ax1.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif")
         ##
         ax1.spines["top"].set_visible(False)
         ax1.spines["right"].set_visible(False)
@@ -740,10 +739,10 @@ def mqqplot(insumstats,
         
         if verbose: log.write("Finished creating Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
-            pad=(plot.transData.transform((skip, title_pad*maxy))[1]-plot.transData.transform((skip, maxy)))[1]
-            plot.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif")
+            pad=(ax1.transData.transform((skip, title_pad*maxy))[1]-ax1.transData.transform((skip, maxy)))[1]
+            ax1.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif")
         elif mtitle:
-            plot.set_title(mtitle,fontsize=fontsize,family="sans-serif")
+            ax1.set_title(mtitle,fontsize=fontsize,family="sans-serif")
             
        
         if anno and (to_annotate.empty is not True):
@@ -781,14 +780,14 @@ def mqqplot(insumstats,
                         arm_scale = arm_scale_d[anno_count]
                 
                 # vertical arm length in pixels
-                armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
+                armB_length_in_point = ax1.transData.transform((skip,1.15*maxy))[1]-ax1.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
                 #
                 armB_length_in_point = armB_length_in_point*arm_scale
                 if arm_scale>=1:
-                    armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
+                    armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else ax1.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
                 
                 if anno_fixed_arm_length is not None:
-                    anno_fixed_arm_length_factor = plot.transData.transform((skip,anno_fixed_arm_length))[1]-plot.transData.transform((skip,0))[1] 
+                    anno_fixed_arm_length_factor = ax1.transData.transform((skip,anno_fixed_arm_length))[1]-ax1.transData.transform((skip,0))[1] 
                     armB_length_in_point = anno_fixed_arm_length_factor
                 if anno==True:
                     if row[snpid] in anno_alias.keys():
@@ -818,7 +817,7 @@ def mqqplot(insumstats,
                     xy=(row["i"],row["scaled_P"])
                     if anno_d[anno_count] in ["right","left","l","r"]:
                         if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
-                            armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                            armoffsetall = (ax1.transData.transform(xytext)[0]-ax1.transData.transform(xy)[0])*np.sqrt(2)
                             armoffsetb = arm_offset 
                             armoffseta = armoffsetall - armoffsetb   
                             arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
@@ -828,7 +827,7 @@ def mqqplot(insumstats,
                                                  connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
                     else:
                         if anno_d[anno_count][0]=="right" or anno_d[anno_count][0]=="r": 
-                            armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                            armoffsetall = (ax1.transData.transform(xytext)[0]-ax1.transData.transform(xy)[0])*np.sqrt(2)
                             armoffsetb = anno_d[anno_count][1] 
                             armoffseta = armoffsetall - armoffsetb   
                             arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
@@ -991,7 +990,7 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
         # if lead pos is available: 
         # get ref index for lead snp
         lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
-        print(lead_snp_ref_index)
+        #print(lead_snp_ref_index)
         other_snps_ref_index = sumstats["REFINDEX"].values
         lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
         other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()

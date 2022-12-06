@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import time
+import copy
 from gwaslab.Sumstatssummary import summarize
 from gwaslab.Sumstatssummary import lookupstatus
 from gwaslab.preformat_input import preformat
@@ -281,6 +282,7 @@ class Sumstats():
         self.data = removedup(self.data,log=self.log,**args)
     def check_sanity(self,**args):
         self.data = sanitycheckstats(self.data,log=self.log,**args)
+    # 
     def check_id(self,**args):
         pass
     def check_ref(self,**args):
@@ -321,31 +323,42 @@ class Sumstats():
         self.data, self.meta["GenomeBuild"] = inferbuild(self.data,**args)
 
 # utilities ############################################################################################################
+    # filter series ######################################################################
     def filter_value(self, expr, inplace=False, **args):
         if inplace is False:
-            return filtervalues(self.data, expr,**args)
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = filtervalues(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **args)
+            return new_Sumstats_object
         else:
             self.data = filtervalues(self.data, expr,log=self.log,**args)
     
     def filter_out(self, inplace=False, **args):
         if inplace is False:
-            return filterout(self.data,**args)
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = filterout(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            return new_Sumstats_object
         else:
             self.data = filterout(self.data,log=self.log,**args)
             
     def filter_in(self, inplace=False, **args):
         if inplace is False:
-            return filterin(self.data,**args)
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = filterin(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            return new_Sumstats_object
         else:
             self.data = filterin(self.data,log=self.log,**args)
     def filter_region_in(self, inplace=False, **args):
         if inplace is False:
-            return filterregionin(self.data,**args)
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = filterregionin(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            return new_Sumstats_object
         else:
             self.data = filterregionin(self.data,log=self.log,**args)
     def filter_region_out(self, inplace=False, **args):
         if inplace is False:
-            return filterregionout(self.data,**args)
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = filterregionout(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            return new_Sumstats_object
         else:
             self.data = filterregionout(self.data,log=self.log,**args)
     
@@ -353,9 +366,11 @@ class Sumstats():
         if inplace is True:
             self.data = sampling(self.data,n=n,log=self.log,**args)
         else:
-            return sampling(self.data,n=n,log=self.log,**args)
-
-
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,log=new_Sumstats_object.log,**args)
+            return new_Sumstats_object
+    ######################################################################
+    
     def check_af(self,**args):
         self.data = parallelecheckaf(self.data,log=self.log,**args)
       
