@@ -55,7 +55,9 @@ def filldata(
 # z/p to chisq ##################################################################################################             
     if "CHISQ" in to_fill:
         fill_chisq(sumstats,log,verbose=verbose)
-            
+# EAF to MAF ##################################################################################################   
+    if "MAF" in to_fill:
+        fill_maf(sumstats,log,verbose=verbose)
 # p to -log10(P)  ###############################################################################################
     if "MLOG10P" in to_fill:
         if "P" not in sumstats.columns:
@@ -161,3 +163,9 @@ def fill_mlog10p(sumstats,log,verbose=True):
         # P -> MLOG10P
         if verbose: log.write("  - Filling MLOG10P using P column...")
         sumstats["MLOG10P"] = -np.log10(sumstats["P"])
+
+def fill_maf(sumstats,log,verbose=True):
+    if "EAF" in sumstats.columns:
+        # EAF -> MAF
+        if verbose: log.write("  - Filling MAF using EAF column...")
+        sumstats["MAF"] =  sumstats["EAF"].apply(lambda x: min(x,1-x) if pd.notnull(x) else np.nan)
