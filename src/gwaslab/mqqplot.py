@@ -5,9 +5,9 @@ import matplotlib.patches as patches
 import seaborn as sns
 import numpy as np
 import scipy as sp
-import gwaslab as gl
 from shutil import which
 from gwaslab.Log import Log
+from gwaslab.calculate_gc import lambdaGC
 from gwaslab.getsig import getsig
 from gwaslab.getsig import annogene
 from gwaslab.CommonData import get_chr_to_number
@@ -88,6 +88,7 @@ def mqqplot(insumstats,
           maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
           maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
           gc=True,
+          include_chrXYMT = True,
           title =None,
           mtitle=None,
           qtitle=None,
@@ -239,7 +240,8 @@ def mqqplot(insumstats,
     ## m, qq, b
     if "m" in mode or "r" in mode or "b" in mode: 
         # CHR X,Y,MT conversion ############################
-        if sumstats[chrom].dtype =="str":
+        if pd.api.types.is_string_dtype(sumstats[chrom]):
+        #if sumstats[chrom].dtype =="str":
             sumstats[chrom] = sumstats[chrom].map(get_chr_to_number(),na_action="ignore")
         ## CHR
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
@@ -346,7 +348,7 @@ def mqqplot(insumstats,
         sumstats = sumstats.loc[~(is_inf | is_na),:]
 
     # raw p for calculate lambda
-    p_toplot_raw = sumstats["scaled_P"].copy()
+    p_toplot_raw = sumstats[["CHR","scaled_P"]].copy()
     
     # filter out variants with -log10p < skip
     sumstats = sumstats.loc[sumstats["scaled_P"]>=skip,:]
@@ -926,10 +928,13 @@ def mqqplot(insumstats,
         # calculate genomic inflation factor and add annotation
         if gc:
             #gc was calculated using raw data (before cut and skip)
-            observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot_raw)) ,1)
-            expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
-            lambdagc=observedMedianChi2/expectedMedianChi2
-            if verbose: log.write(" -Calculating GC using P :",lambdagc)
+            p_toplot_raw = p_toplot_raw.rename(columns={"scaled_P":"MLOG10P"})
+            if verbose and not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.")
+            lambdagc = lambdaGC(p_toplot_raw, mode="MLOG10P", include_chrXYMT=include_chrXYMT,log=log,verbose=False)
+            #observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot_raw)) ,1)
+            #expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
+            #lambdagc=observedMedianChi2/expectedMedianChi2
+            if verbose: log.write(" -Calculating lambda GC:",lambdagc)
             ax2.text(0.10, 1.03,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
                      horizontalalignment='left',
                      verticalalignment='top',
