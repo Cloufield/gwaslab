@@ -106,13 +106,13 @@ mysumstats.plot_mqq()
 
 
 ## Requirements:
-- Python >= 3.6
-- pySAM 
-- pyensembl
+- Python >= 3.8
+- pySAM >0.18,<0.20
+- pyensembl >=2.2.3
 - scikit-allel
 - Biopython >= 1.79
 - liftover >= 1.1.13
-- pandas >= 1.2.4
+- pandas >= 1.3,<1.5
 - numpy >= 1.21.2
 - matplotlib >=3.5
 - seaborn >=0.11.1
