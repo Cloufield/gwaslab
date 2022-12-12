@@ -31,7 +31,7 @@ from gwaslab.filtervalue import filterregionout
 from gwaslab.filtervalue import inferbuild
 from gwaslab.filtervalue import sampling
 from gwaslab.mqqplot import mqqplot
-from gwaslab.calculate_gc import gc
+from gwaslab.calculate_gc import lambdaGC
 from gwaslab.getsig import getsig
 from gwaslab.getsig import annogene
 from gwaslab.getsig import getnovel
@@ -444,17 +444,25 @@ class Sumstats():
         #add data inplace
 
     
-    def get_gc(self, **args):
-        if "P" in self.data.columns:
-            output = gc(self.data["P"],mode="p",**args)
-        elif "Z" in self.data.columns:
-            output = gc(self.data["Z"],mode="z",**args)
-        elif "CHISQ" in self.data.columns:
-            output = gc(self.data["CHISQ"],mode="chi2",**args)
-        #return scalar
-        self.meta["Genomic inflation factor"] = output
-        return output    
-        
+    def get_gc(self, mode=None, **args):
+        if mode is None:
+            if "P" in self.data.columns:
+                output = lambdaGC(self.data[["CHR","P"]],mode="P",**args)
+            elif "Z" in self.data.columns:
+                output = lambdaGC(self.data[["CHR","Z"]],mode="Z",**args)
+            elif "CHISQ" in self.data.columns:
+                output = lambdaGC(self.data[["CHR","CHISQ"]],mode="CHISQ",**args)
+            elif "MLOG10P" in self.data.columns:
+                output = lambdaGC(self.data[["CHR","MLOG10P"]],mode="MLOG10P",**args)
+            
+            #return scalar
+            self.meta["Genomic inflation factor"] = output
+            return output    
+        else:
+            output = lambdaGC(self.data[["CHR",mode]],mode=mode,**args)
+            self.meta["Genomic inflation factor"] = output
+            return output 
+
 # to_format ###############################################################################################       
     def to_format(self,
               path="./sumstats",

@@ -886,21 +886,30 @@ def mqqplot(insumstats,
     # ax2 qqplot
     if "qq" in mode:
         if verbose:log.write("Start to create QQ plot with "+str(len(sumstats))+" variants:")
+        # plotting qq plots using processed data after cut and skip
+        # select -log10 scaled p to plot
         p_toplot = sumstats["scaled_P"]
-            # select -log10 scaled p to plot
-            # sort x,y for qq plot
+        # min p value for uniform distribution 
         minit=1/len(p_toplot)
         if stratified is False:
+            # sort x,y for qq plot
+            # high to low
             observed = p_toplot.sort_values(ascending=False)
+            # uniform distribution using raw number -> -log10 -> observed number (omit variants with low -log10p)
             expected = -np.log10(np.linspace(minit,1,len(p_toplot_raw)))[:len(observed)]
             #p_toplot = sumstats["scaled_P"]
             ax2.scatter(expected,observed,s=8,color=colors[0])
         else:
             # stratified qq plot
             for i,(lower, upper) in enumerate(maf_bins):
+                # extract data for a maf_bin
                 databin = sumstats.loc[(sumstats["MAF"]>lower) &( sumstats["MAF"]<=upper),["MAF","scaled_P"]]
+                # raw data : varaints with maf(eaf_raw) in maf_bin
                 databin_raw = eaf_raw[(eaf_raw>lower) & (eaf_raw<=upper)]
+                # sort x,y for qq plot
+                # high to low
                 observed = databin["scaled_P"].sort_values(ascending=False)
+                # uniform distribution using raw number -> -log10 -> observed number (omit variants with low -log10p)
                 expected = -np.log10(np.linspace(minit,1,max(len(databin_raw),len(databin))))[:len(observed)]
                 label ="("+str(lower)+","+str(upper) +"]"
                 ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
@@ -916,7 +925,7 @@ def mqqplot(insumstats,
         
         # calculate genomic inflation factor and add annotation
         if gc:
-            
+            #gc was calculated using raw data (before cut and skip)
             observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot_raw)) ,1)
             expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
             lambdagc=observedMedianChi2/expectedMedianChi2
