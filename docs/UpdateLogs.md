@@ -1,8 +1,12 @@
 # Update Logs
-## 3.3.14 (coming soon)
+## 3.3.14
 - updated requirements for dependencies 
-    - pandas>=1.3,<1.5 (requireed by pyensembl)
+    - pandas>=1.3,<1.5
     - pyensembl==2.2.3
+- support customized gtf/vcf/recombination_rate files
+- fixed bugs for regional plot
+- calculate_gc()
+- fill MAF : `.fill_data(to_fill=["MAF"])`
 ## 3.3.13
 - specified python engine for query 
 ## 3.3.12
