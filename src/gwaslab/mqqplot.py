@@ -38,6 +38,7 @@ def mqqplot(insumstats,
           vcf_chr_dict = get_number_to_chr(),
           gtf_path="default",
           gtf_chr_dict = get_number_to_chr(),
+          gtf_gene_name=None,
           rr_path="default",
           rr_header_dict=None,
           mlog10p="MLOG10P",
@@ -575,7 +576,13 @@ def mqqplot(insumstats,
         if (gtf_path is not None ) and ("r" in mode):
             # load gtf
             if verbose: log.write(" -Loading gtf files from:" + gtf_path)
-            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, region_flank_factor = region_flank_factor,build=build,region_protein_coding=region_protein_coding,gtf_chr_dict=gtf_chr_dict)
+            uniq_gene_region,exons = process_gtf(gtf_path = gtf_path ,
+                                                    region = region, 
+                                                    region_flank_factor = region_flank_factor,
+                                                    build=build,
+                                                    region_protein_coding=region_protein_coding,
+                                                    gtf_chr_dict=gtf_chr_dict,
+                                                    gtf_gene_name=gtf_gene_name)
             
             n_uniq_stack = uniq_gene_region["stack"].nunique()
             stack_num_to_plot = max(taf[0],n_uniq_stack)
@@ -1051,7 +1058,7 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
 
 # -
 
-def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,gtf_chr_dict):
+def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,gtf_chr_dict,gtf_gene_name):
     #loading
     if gtf_path =="default" or gtf_path =="ensembl":
         gtf = get_gtf(chrom=str(region[0]),build=build,source="ensembl")
@@ -1064,13 +1071,16 @@ def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,
     #gtf_chr_dict
     genes_1mb = gtf.loc[(gtf[0]==str(region[0]))&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
     genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
-
-    if gtf_path=="refseq":
-        genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
-    elif gtf_path =="default" or gtf_path =="ensembl":
-        genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_name "([\w\.-]+)"')
+    if gtf_gene_name is None:
+        if gtf_path=="refseq":
+            genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"').astype("string")
+        elif gtf_path =="default" or gtf_path =="ensembl":
+            genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_name "([\w\.-]+)"').astype("string")
+        else:
+            genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"').astype("string")
     else:
-        genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
+        pattern = r'{} "([\w\.-]+)"'.format(gtf_gene_name)
+        genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(pattern).astype("string")
 
     genes_1mb.loc[:,"gene"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
 
