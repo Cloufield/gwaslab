@@ -33,9 +33,13 @@ def mqqplot(insumstats,
           p=None,
           snpid=None,
           eaf=None,
+          chr_dict = get_chr_to_number(),
           vcf_path=None,
-          vcf_chr_dict=get_number_to_chr(),
-          gtf_path="defualt",
+          vcf_chr_dict = get_number_to_chr(),
+          gtf_path="default",
+          gtf_chr_dict = get_number_to_chr(),
+          rr_path="default",
+          rr_header_dict=None,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
@@ -239,10 +243,11 @@ def mqqplot(insumstats,
     ## CHR & POS
     ## m, qq, b
     if "m" in mode or "r" in mode or "b" in mode: 
-        # CHR X,Y,MT conversion ############################
-        if pd.api.types.is_string_dtype(sumstats[chrom]):
-        #if sumstats[chrom].dtype =="str":
-            sumstats[chrom] = sumstats[chrom].map(get_chr_to_number(),na_action="ignore")
+        # convert CHR to int
+        ## CHR X,Y,MT conversion ############################
+        if pd.api.types.is_string_dtype(sumstats[chrom]) == True:
+        ## if chr is string dtype: convert using chr_dict
+            sumstats[chrom] = sumstats[chrom].map(chr_dict,na_action="ignore")
         ## CHR
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
         ## POS
@@ -544,7 +549,12 @@ def mqqplot(insumstats,
             ax4=ax1.twinx()
             most_left_snp = sumstats["i"].idxmin()
             rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,pos]
-            rc = get_recombination_rate(chrom=str(region[0]),build=build)
+            if rr_path=="default":
+                rc = get_recombination_rate(chrom=str(region[0]),build=build)
+            else:
+                rc = pd.read_csv(rr_path,sep="\t")
+                rc = rc.rename(columns=rr_header_dict)
+
             rc = rc.loc[(rc["Position(bp)"]<region[2]) & (rc["Position(bp)"]>region[1]),:]
             ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
             ax4.set_ylabel("Recombination rate(cM/Mb)")
@@ -565,7 +575,7 @@ def mqqplot(insumstats,
         if (gtf_path is not None ) and ("r" in mode):
             # load gtf
             if verbose: log.write(" -Loading gtf files from:" + gtf_path)
-            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, region_flank_factor = region_flank_factor,build=build,region_protein_coding=region_protein_coding)
+            uniq_gene_region,exons = process_gtf (gtf_path = gtf_path ,region = region, region_flank_factor = region_flank_factor,build=build,region_protein_coding=region_protein_coding,gtf_chr_dict=gtf_chr_dict)
             
             n_uniq_stack = uniq_gene_region["stack"].nunique()
             stack_num_to_plot = max(taf[0],n_uniq_stack)
@@ -629,7 +639,7 @@ def mqqplot(insumstats,
         ax1.set_xticks(chrom_df.astype("float64"))
         ax1.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif")
         
-        # regional plot - set X tick
+        ## regional plot - set X tick
         if region is not None:
             region_ticks = list(map('{:.3f}'.format,np.linspace(region[1], region[2], num=region_step).astype("int")/1000000)) 
             
@@ -667,7 +677,6 @@ def mqqplot(insumstats,
                 ax1.set_yticks([x for x in range(skip,cut+1,2)])
                 ax1.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
             ax1.set_ylim(bottom = skip)
-
 
 
 # Get top variants for annotation #######################################################
@@ -992,24 +1001,33 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
     
     if verbose: log.write(" -Retrieving index...")
+    if verbose: log.write(" -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])))
     # match sumstats pos and ref pos: 
     # get ref index for its first appearance of sumstats pos
     sumstats["REFINDEX"] = sumstats[pos].apply(lambda x: np.where(ref_genotype["variants/POS"] == x )[0][0] if np.any(ref_genotype["variants/POS"] == x) else None)
-    
     # get lead variant id and pos
     lead_id = sumstats["scaled_P"].idxmax()
     lead_pos = sumstats.loc[lead_id,pos]
-
+    
+    # if lead pos is available: 
     if lead_pos in ref_genotype["variants/POS"]:
-        # if lead pos is available: 
+        
         # get ref index for lead snp
         lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
-        #print(lead_snp_ref_index)
-        other_snps_ref_index = sumstats["REFINDEX"].values
+
+        # non-na other snp index
+        other_snps_ref_index = sumstats["REFINDEX"].dropna().astype("int").values
+        # get genotype 
         lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
         other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
+        
         if verbose: log.write(" -Calculating Rsq...")
-        sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0],2)
+        
+        if len(other_snp_genotype)>1:
+            valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0],2)
+        else:
+            valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype),2)
+        sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = valid_r2
     else:
         if verbose: log.write(" -Lead SNP not found in reference...")
         sumstats["RSQ"]=None
@@ -1033,29 +1051,33 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
 
 # -
 
-""
-def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding):
+def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,gtf_chr_dict):
     #loading
-    if gtf_path =="defualt" or gtf_path =="ensembl":
+    if gtf_path =="default" or gtf_path =="ensembl":
         gtf = get_gtf(chrom=str(region[0]),build=build,source="ensembl")
     elif gtf_path =="refseq":
         gtf = get_gtf(chrom=str(region[0]),build=build,source="refseq")
     else:
-        gtf = pd.read_csv(gtf_path,sep="\t",header=None)
-
+        gtf = pd.read_csv(gtf_path,sep="\t",header=None, comment="#",low_memory=False,dtype={0:"string"})
+        gtf = gtf.loc[gtf[0]==gtf_chr_dict[region[0]],:]
     #filter in region
+    #gtf_chr_dict
     genes_1mb = gtf.loc[(gtf[0]==str(region[0]))&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
     genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
 
     if gtf_path=="refseq":
         genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
-    else:
+    elif gtf_path =="default" or gtf_path =="ensembl":
         genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_name "([\w\.-]+)"')
+    else:
+        genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
+
     genes_1mb.loc[:,"gene"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
+
     exons = genes_1mb.loc[genes_1mb[2]=="exon",:].copy()
+    
     if region_protein_coding is True:
         genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:].copy()
-
     #uniq genes
     uniq_gene_region = genes_1mb.loc[genes_1mb[2]=="gene",:].copy()
     flank = region_flank_factor * (region[2] - region[1])
@@ -1103,7 +1125,6 @@ def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding)
     return uniq_gene_region, exons
 
 
-""
 def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
         gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
         if len(gene)==0:
