@@ -1061,15 +1061,16 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
 def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,gtf_chr_dict,gtf_gene_name):
     #loading
     if gtf_path =="default" or gtf_path =="ensembl":
-        gtf = get_gtf(chrom=str(region[0]),build=build,source="ensembl")
+        to_query_chrom = gtf_chr_dict[region[0]]
+        gtf = get_gtf(chrom=to_query_chrom,build=build,source="ensembl")
     elif gtf_path =="refseq":
-        gtf = get_gtf(chrom=str(region[0]),build=build,source="refseq")
+        gtf = get_gtf(chrom=to_query_chrom,build=build,source="refseq")
     else:
         gtf = pd.read_csv(gtf_path,sep="\t",header=None, comment="#",low_memory=False,dtype={0:"string"})
         gtf = gtf.loc[gtf[0]==gtf_chr_dict[region[0]],:]
     #filter in region
     #gtf_chr_dict
-    genes_1mb = gtf.loc[(gtf[0]==str(region[0]))&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
+    genes_1mb = gtf.loc[(gtf[0]==to_query_chrom)&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
     genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
     if gtf_gene_name is None:
         if gtf_path=="refseq":
