@@ -41,6 +41,7 @@ def mqqplot(insumstats,
           gtf_gene_name=None,
           rr_path="default",
           rr_header_dict=None,
+          rr_chr_dict = get_number_to_chr(),
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
@@ -551,10 +552,15 @@ def mqqplot(insumstats,
             most_left_snp = sumstats["i"].idxmin()
             rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,pos]
             if rr_path=="default":
-                rc = get_recombination_rate(chrom=str(region[0]),build=build)
+                if rr_chr_dict is not None:
+                    rr_chr = rr_chr_dict[region[0]]
+                else:
+                    rr_chr = str(region[0])
+                rc = get_recombination_rate(chrom=rr_chr,build=build)
             else:
                 rc = pd.read_csv(rr_path,sep="\t")
-                rc = rc.rename(columns=rr_header_dict)
+                if rr_header_dict is not None:
+                    rc = rc.rename(columns=rr_header_dict)
 
             rc = rc.loc[(rc["Position(bp)"]<region[2]) & (rc["Position(bp)"]>region[1]),:]
             ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
