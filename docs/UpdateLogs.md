@@ -1,4 +1,6 @@
 # Update Logs
+## 3.3.15
+- fixed bugs for reading gtf files
 ## 3.3.14
 - updated requirements for dependencies 
     - pandas>=1.3,<1.5

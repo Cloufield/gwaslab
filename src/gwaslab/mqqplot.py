@@ -41,6 +41,7 @@ def mqqplot(insumstats,
           gtf_gene_name=None,
           rr_path="default",
           rr_header_dict=None,
+          rr_chr_dict = get_number_to_chr(),
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
@@ -551,10 +552,15 @@ def mqqplot(insumstats,
             most_left_snp = sumstats["i"].idxmin()
             rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,pos]
             if rr_path=="default":
-                rc = get_recombination_rate(chrom=str(region[0]),build=build)
+                if rr_chr_dict is not None:
+                    rr_chr = rr_chr_dict[region[0]]
+                else:
+                    rr_chr = str(region[0])
+                rc = get_recombination_rate(chrom=rr_chr,build=build)
             else:
                 rc = pd.read_csv(rr_path,sep="\t")
-                rc = rc.rename(columns=rr_header_dict)
+                if rr_header_dict is not None:
+                    rc = rc.rename(columns=rr_header_dict)
 
             rc = rc.loc[(rc["Position(bp)"]<region[2]) & (rc["Position(bp)"]>region[1]),:]
             ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
@@ -1061,15 +1067,16 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
 def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,gtf_chr_dict,gtf_gene_name):
     #loading
     if gtf_path =="default" or gtf_path =="ensembl":
-        gtf = get_gtf(chrom=str(region[0]),build=build,source="ensembl")
+        to_query_chrom = gtf_chr_dict[region[0]]
+        gtf = get_gtf(chrom=to_query_chrom,build=build,source="ensembl")
     elif gtf_path =="refseq":
-        gtf = get_gtf(chrom=str(region[0]),build=build,source="refseq")
+        gtf = get_gtf(chrom=to_query_chrom,build=build,source="refseq")
     else:
         gtf = pd.read_csv(gtf_path,sep="\t",header=None, comment="#",low_memory=False,dtype={0:"string"})
         gtf = gtf.loc[gtf[0]==gtf_chr_dict[region[0]],:]
     #filter in region
     #gtf_chr_dict
-    genes_1mb = gtf.loc[(gtf[0]==str(region[0]))&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
+    genes_1mb = gtf.loc[(gtf[0]==to_query_chrom)&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
     genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
     if gtf_gene_name is None:
         if gtf_path=="refseq":
