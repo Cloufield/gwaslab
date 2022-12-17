@@ -2,7 +2,7 @@
 
 # gwaslab
 
-![badge](https://img.shields.io/badge/pip-v3.3.11-blue)
+![badge](https://img.shields.io/badge/pip-v3.3.15-blue)
 ![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
@@ -16,7 +16,7 @@ Note: gwaslab is being updated very frequently for now. I will release the first
 ## Install
 
 ```
-pip install gwaslab==3.3.11
+pip install gwaslab==3.3.15
 ```
 
 
@@ -106,13 +106,13 @@ mysumstats.plot_mqq()
 
 
 ## Requirements:
-- Python >= 3.6
-- pySAM 
-- pyensembl
+- Python >= 3.8
+- pySAM >0.18,<0.20
+- pyensembl >=2.2.3
 - scikit-allel
 - Biopython >= 1.79
 - liftover >= 1.1.13
-- pandas >= 1.2.4
+- pandas >= 1.3,<1.5
 - numpy >= 1.21.2
 - matplotlib >=3.5
 - seaborn >=0.11.1
