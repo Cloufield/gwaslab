@@ -221,6 +221,18 @@ def get_recombination_rate(chrom, build="19"):
             file.extractall(path.dirname(__file__)+'/data/recombination/hg19/')
             file.close()
             recombination_rate = pd.read_csv(data_path,sep="\t")
+    elif build=="38":
+        data_path =  path.dirname(__file__) + '/data/recombination/hg38/genetic_map_GRCh38_chr'+str(chrom)+'.txt.gz'
+        if path.exists(data_path):
+            recombination_rate = pd.read_csv(data_path,sep="\t")
+        else:
+            if not path.exists(path.dirname(__file__) + '/data/recombination/hg38/'):
+                os.makedirs(path.dirname(__file__) + '/data/recombination/hg38/')
+            download_ref("recombination_hg38",directory = path.dirname(__file__)+'/data/recombination/hg38/')
+            file = tarfile.open(path.dirname(__file__)+'/data/recombination/hg38/recombination_hg38.tar.gz')
+            file.extractall(path.dirname(__file__)+'/data/recombination/hg38/')
+            file.close()
+            recombination_rate = pd.read_csv(data_path,sep="\t")
     return recombination_rate
 
 

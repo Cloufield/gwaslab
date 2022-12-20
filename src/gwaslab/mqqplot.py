@@ -589,7 +589,6 @@ def mqqplot(insumstats,
                                                     region_protein_coding=region_protein_coding,
                                                     gtf_chr_dict=gtf_chr_dict,
                                                     gtf_gene_name=gtf_gene_name)
-            
             n_uniq_stack = uniq_gene_region["stack"].nunique()
             stack_num_to_plot = max(taf[0],n_uniq_stack)
             ax3.set_ylim((-stack_num_to_plot*2-taf[1]*2,2+taf[1]*2))
@@ -601,7 +600,7 @@ def mqqplot(insumstats,
             linewidth_in_points=   pixels_per_track * pixels_per_point
             if verbose: log.write(" -plotting gene track..")
             
-            sig_gene_name = None
+            sig_gene_name = "Undefined"
             texts_to_adjust_left = []
             texts_to_adjust_middle = []
             texts_to_adjust_right = []
@@ -614,6 +613,8 @@ def mqqplot(insumstats,
                 if region_lead_grid is True and lead_snp_i > gene_track_start_i+row[3] and lead_snp_i < gene_track_start_i+row[4] :
                         gene_color="#FF0000"
                         sig_gene_name = row["name"]
+                        sig_gene_left = gene_track_start_i+row[3]
+                        sig_gene_right= gene_track_start_i+row[4]
                 else:
                     gene_color="#020080"
                 
@@ -637,7 +638,12 @@ def mqqplot(insumstats,
             
             # plot exons
             for index,row in exons.iterrows():
-                if (region_lead_grid is True) and row["name"]==sig_gene_name:
+                if not pd.isnull(row["name"]):
+                    if (region_lead_grid is True) and row["name"]==sig_gene_name:
+                        exon_color = region_lead_grid_line["color"]  
+                    else:
+                        exon_color="#020080" 
+                elif gene_track_start_i+row[3] > sig_gene_left and gene_track_start_i+row[4] < sig_gene_right:
                     exon_color = region_lead_grid_line["color"]  
                 else:
                     exon_color="#020080"
@@ -1092,7 +1098,6 @@ def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,
     genes_1mb.loc[:,"gene"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
 
     exons = genes_1mb.loc[genes_1mb[2]=="exon",:].copy()
-    
     if region_protein_coding is True:
         genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:].copy()
     #uniq genes

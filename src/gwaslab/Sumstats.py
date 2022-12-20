@@ -486,7 +486,8 @@ class Sumstats():
               bgzip=False,
               tabix=False):
         
-        if fmt in get_formats_list() + ["vep","bed","annovar","vcf"]:
+        formatlist= get_formats_list() + ["vep","bed","annovar","vcf"]
+        if fmt in formatlist:
             if verbose: self.log.write("Start to format the output sumstats in: ",fmt, " format")
         else:
             raise ValueError("Please select a format to output")
