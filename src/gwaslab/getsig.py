@@ -285,6 +285,7 @@ def getnovel(insumstats,
            build="19",
            source="ensembl",
            gwascatalog_source="NCBI",
+           output_known=False,
            verbose=True):
     if verbose: log.write("Start to check if lead variants are known...")
     allsig = getsig(insumstats=insumstats,
@@ -347,6 +348,12 @@ def getnovel(insumstats,
     if verbose: log.write("Finished checking known or novel successfully!")
     gc.collect()
     if only_novel is True:
-        return allsig.loc[allsig["NOVEL"],:], knownsig
+        if output_known is True:
+            return allsig.loc[allsig["NOVEL"],:], knownsig
+        else:
+            return allsig.loc[allsig["NOVEL"],:]
     else:
-        return allsig, knownsig
+        if output_known is True:
+            return allsig, knownsig
+        else:
+            return allsig
