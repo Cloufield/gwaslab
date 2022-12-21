@@ -273,8 +273,8 @@ def getnovel(insumstats,
            chrom,
            pos,
            p,
-           known=None,
-           efo=None,
+           known=False,
+           efo=False,
            only_novel=False,
            windowsizekb_for_novel=1000,
            windowsizekb=500,
@@ -286,35 +286,36 @@ def getnovel(insumstats,
            source="ensembl",
            gwascatalog_source="NCBI",
            verbose=True):
-    
+    if verbose: log.write("Start to check if lead variants are known...")
     allsig = getsig(insumstats=insumstats,
            id=id,chrom=chrom,pos=pos,p=p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
            xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
     
     allsig["TCHR+POS"]=allsig[chrom]*1000000000 + allsig[pos]
     
-    if known is None and efo is not None:
-        known = gwascatalog_trait(efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
-        knownsig = known.data.copy()
+    knownsig = pd.DataFrame()
+    if efo != False:
+        known_Sumstats = gwascatalog_trait(efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
+        knownsig = known_Sumstats.data.copy()
         knownsig["CHR"] = knownsig["CHR"].astype("Int64")
         knownsig["POS"] = knownsig["POS"].astype("Int64")
-    elif type(known) is pd.DataFrame:
-        knownsig = known.copy()
+        if verbose: log.write(" -Retrieved {} associations from GWAS catalog.".format(len(knownsig)))
+    if type(known) is pd.DataFrame:
+        knownsig_2 = known.copy()
+        knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
         knownsig["CHR"] = knownsig["CHR"].astype("Int64")
         knownsig["POS"] = knownsig["POS"].astype("Int64")
     elif type(known) is str:
-        knownsig = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
-    else:
-        raise ValueError("Please input a dataframe of known loci or efo code")
+        knownsig_2 = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
+        knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
+        knownsig["CHR"] = knownsig["CHR"].astype("Int64")
+        knownsig["POS"] = knownsig["POS"].astype("Int64")
+    if len(knownsig)<1:
+        raise ValueError("Please input a dataframe of known loci or valid efo code")
     
-    if "SNPID" in knownsig.columns:
-        knownids=knownsig["SNPID"].values
-    if "PUBMEDID" in knownsig.columns:
-        knownpubmedids=knownsig["PUBMEDID"].values
-    if "AUTHOR" in knownsig.columns:
-        knownauthor=knownsig["AUTHOR"].values
+
         
-    if verbose: log.write("Start to check if lead variants are known...")
+    
     knownsig["TCHR+POS"]=knownsig[chrom]*1000000000 + knownsig[pos]
     
     if verbose: log.write(" -Lead variants in known loci:",len(knownsig))
@@ -323,7 +324,14 @@ def getnovel(insumstats,
     #sorting
     allsig = allsig.sort_values(by="TCHR+POS",ignore_index=True)
     knownsig = knownsig.sort_values(by="TCHR+POS",ignore_index=True)
-
+    
+    if "SNPID" in knownsig.columns:
+        knownids=knownsig["SNPID"].values
+    if "PUBMEDID" in knownsig.columns:
+        knownpubmedids=knownsig["PUBMEDID"].values
+    if "AUTHOR" in knownsig.columns:
+        knownauthor=knownsig["AUTHOR"].values
+    
     allsig["DISTANCE_TO_KNOWN"] = allsig["TCHR+POS"].apply(lambda x:np.min(np.abs(knownsig["TCHR+POS"]-x)))
     
     if "SNPID" in knownsig.columns:
@@ -339,6 +347,6 @@ def getnovel(insumstats,
     if verbose: log.write("Finished checking known or novel successfully!")
     gc.collect()
     if only_novel is True:
-        return allsig.loc[allsig["NOVEL"],:]
+        return allsig.loc[allsig["NOVEL"],:], knownsig
     else:
-        return allsig
+        return allsig, knownsig

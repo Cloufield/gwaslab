@@ -422,7 +422,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         
         if sumstats[pos].dtype == "string" or sumstats[pos].dtype == "object":
             if verbose: log.write(' -Removing thousands separator "," or underbar "_" ...')
-            sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].str.replace(",|_", "")
+            sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].str.replace(",|_", "",regex=True)
 
         try:
             if verbose: log.write(' -Converting to Int64 data type ...')
