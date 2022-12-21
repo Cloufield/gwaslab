@@ -1,4 +1,7 @@
 # Update Logs
+## 3.3.16
+- added hg38 recombination rate file
+- fixed bugs in get_novel
 ## 3.3.15
 - fixed bugs for reading gtf files
 ## 3.3.14
