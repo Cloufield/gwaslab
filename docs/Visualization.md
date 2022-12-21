@@ -114,7 +114,7 @@ mysumstats.plot_mqq(
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593118-b7358559-71ef-49ae-b8b0-15b34031c142.png">
 
-
+**Note: lambda GC calculation for QQ plot will not be affected by skip and cut. The calculation is conducted using all variants in the original dataset.**
 
 ----------------------------------------------------------------
 
