@@ -82,12 +82,11 @@ def tofmt(sumstats,
         
         sumstats["STRAND"]="+"
 
-        ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"]
-        
         sumstats["START"] = sumstats["START"].astype("Int64")
         sumstats["END"] = sumstats["END"].astype("Int64")
-        
-        sumstats = sumstats.loc[:,ouput_cols]+ cols
+        ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"] + cols
+
+        sumstats = sumstats.loc[:,ouput_cols ]
         path = path + "."+suffix
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
@@ -188,11 +187,10 @@ def tofmt(sumstats,
         sumstats.loc[is_delete,"NEA_out"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)
         sumstats.loc[is_delete,"EA_out"] = "-"
         
-        ouput_cols=["CHR","START","END","NEA_out","EA_out","SNPID"]+ cols
-        
         sumstats["START"] = sumstats["START"].astype("Int64")
         sumstats["END"] = sumstats["END"].astype("Int64")
-        
+
+        ouput_cols=["CHR","START","END","NEA_out","EA_out","SNPID"]+ cols
         sumstats = sumstats.loc[:,ouput_cols]
         path = path + "."+suffix
         if verbose: log.write(" -Output columns:",sumstats.columns)
