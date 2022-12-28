@@ -21,7 +21,8 @@ from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import gc
 
-def plot_miami( path1,
+def plot_miami( 
+          path1,
           path2,
           cols1=["CHR","POS","P"],
           cols2=["CHR","POS","P"],
@@ -290,8 +291,8 @@ def plot_miami( path1,
             sumstats.loc[sumstats["scaled_P_1"]>cut,"scaled_P_1"] = (sumstats.loc[sumstats["scaled_P_1"]>cut,"scaled_P_1"]-cut)/cutfactor +  cut
             sumstats.loc[sumstats["scaled_P_2"]>cut,"scaled_P_2"] = (sumstats.loc[sumstats["scaled_P_2"]>cut,"scaled_P_2"]-cut)/cutfactor +  cut
             maxy = (maxticker-cut)/cutfactor + cut
-            maxy1= ( int(max(np.round(sumstats["scaled_P_1"].max(skipna=True)))) -cut)/cutfactor + cut
-            maxy5= ( int(max(np.round(sumstats["scaled_P_2"].max(skipna=True)))) -cut)/cutfactor + cut
+            maxy1=( int(np.round(sumstats["scaled_P_1"].max(skipna=True))) -cut)/cutfactor + cut
+            maxy5=( int(np.round(sumstats["scaled_P_2"].max(skipna=True))) -cut)/cutfactor + cut
     ##########################################################################################################################
     legend = None
     style=None
@@ -452,152 +453,152 @@ def plot_miami( path1,
 
 # Add Annotation to manhattan plot #######################################################
            ## final
-    for index,ax,to_annotate,anno_d, anno_alias in [(0,ax1,to_annotate1,anno_d1,anno_alias1),(1,ax5,to_annotate5,anno_d2,anno_alias2)]:
-        ###################### annotate() args
-        fontweight = "normal"
+    if anno==True:
+        for index,ax,to_annotate,anno_d, anno_alias in [(0,ax1,to_annotate1,anno_d1,anno_alias1),(1,ax5,to_annotate5,anno_d2,anno_alias2)]:
+            ###################### annotate() args
+            fontweight = "normal"
 
-        
-        anno_default = {"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":fontsize,"fontweight":fontweight}
-        ########################
-        
-        if index==0:
-            to_annotate["scaled_P"] = to_annotate1["scaled_P_1"]
-            maxy = maxy1
-        else:
-            to_annotate["scaled_P"] = to_annotate5["scaled_P_2"]
-            anno_default["rotation"] = -40
-            anno_default["ha"]="left"
-            anno_default["va"]="top"
-            maxy = maxy5
-        
-        snpid = "TCHR+POS"
+            
+            anno_default = {"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":fontsize,"fontweight":fontweight}
+            ########################
+            
+            if index==0:
+                to_annotate["scaled_P"] = to_annotate1["scaled_P_1"]
+                maxy = maxy1
+            else:
+                to_annotate["scaled_P"] = to_annotate5["scaled_P_2"]
+                anno_default["rotation"] = -40
+                anno_default["ha"]="left"
+                anno_default["va"]="top"
+                maxy = maxy5
+            
+            snpid = "TCHR+POS"
 
-        if anno and (to_annotate.empty is not True):
-            #initiate a list for text and a starting position
-            text = []
-            last_pos=0
-            anno_count=0
+            if anno and (to_annotate.empty is not True):
+                #initiate a list for text and a starting position
+                text = []
+                last_pos=0
+                anno_count=0
 
-            ## log : annotation column
-            if anno==True:
-                    annotation_col="CHR:POS"
-            elif anno:
-                    annotation_col=anno
-            if verbose: log.write(" -Annotating using column "+annotation_col+"...")
-
-            ##   
-            for rowi,row in to_annotate.iterrows():
-                # avoid text overlapping
-                ## calculate y span
-                
-                if region is not None:
-                    y_span = region[2] - region[1]
-                else:
-                    y_span = sumstats["i"].max()-sumstats["i"].min()
-
-                ## adjust x to avoid overlapping
-                if row["i"]>last_pos+repel_force*y_span:
-                    last_pos=row["i"]
-                else:
-                    last_pos+=repel_force*y_span
-
-                if arm_scale_d is not None:
-                    if anno_count not in arm_scale_d.keys():
-                        arm_scale =1
-                    else:
-                        arm_scale = arm_scale_d[anno_count]
-
-                # vertical arm length in pixels
-                armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
-                #
-                armB_length_in_point = armB_length_in_point*arm_scale
-                
-                if arm_scale>=1:
-                    armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
-
-                if anno_fixed_arm_length is not None:
-                    anno_fixed_arm_length_factor = plot.transData.transform((skip,anno_fixed_arm_length))[1]-plot.transData.transform((skip,0))[1] 
-                    armB_length_in_point = anno_fixed_arm_length_factor
-                
+                ## log : annotation column
                 if anno==True:
-                    if row[snpid] in anno_alias.keys():
-                        annotation_text = anno_alias[row[snpid]]
-                    else:
-                        annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
+                        annotation_col="CHR:POS"
                 elif anno:
-                    annotation_text=row["Annotation"]
+                        annotation_col=anno
+                if verbose: log.write(" -Annotating using column "+annotation_col+"...")
 
-                # annoatte position
-                xy=(row["i"],row["scaled_P"]+0.2)  
-                
-                xytext=(last_pos,1.15*maxy*arm_scale)
-                
-                if anno_fixed_arm_length is not None:
-                    armB_length_in_point = anno_fixed_arm_length
-                    xytext=(row["i"],row["scaled_P"]+0.2+anno_fixed_arm_length)
-                
-                if anno_count not in anno_d.keys():
-                    if index==0:
-                        arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                             connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
+                ##   
+                for rowi,row in to_annotate.iterrows():
+                    # avoid text overlapping
+                    ## calculate y span
+                    
+                    if region is not None:
+                        y_span = region[2] - region[1]
                     else:
-                        arrowargs = dict(arrowstyle="-|>",relpos=(0,1),color="#ebebeb",
-                                             connectionstyle="arc,angleA=0,armA=0,angleB=-90,armB="+str(armB_length_in_point)+",rad=0")
-                
-                else:
-                    xy=(row["i"],row["scaled_P"])
-                    if anno_d[anno_count] in ["right","left","l","r"]:
-                        if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
-                            armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
-                            armoffsetb = arm_offset 
-                            armoffseta = armoffsetall - armoffsetb   
-                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                                 connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
-                        elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
-                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                                 connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
+                        y_span = sumstats["i"].max()-sumstats["i"].min()
+
+                    ## adjust x to avoid overlapping
+                    if row["i"]>last_pos+repel_force*y_span:
+                        last_pos=row["i"]
                     else:
-                        if anno_d[anno_count][0]=="right" or anno_d[anno_count][0]=="r": 
-                            armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
-                            armoffsetb = anno_d[anno_count][1] 
-                            armoffseta = armoffsetall - armoffsetb   
+                        last_pos+=repel_force*y_span
+
+                    if arm_scale_d is not None:
+                        if anno_count not in arm_scale_d.keys():
+                            arm_scale =1
+                        else:
+                            arm_scale = arm_scale_d[anno_count]
+
+                    # vertical arm length in pixels
+                    armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
+                    #
+                    armB_length_in_point = armB_length_in_point*arm_scale
+                    
+                    if arm_scale>=1:
+                        armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
+
+                    if anno_fixed_arm_length is not None:
+                        anno_fixed_arm_length_factor = plot.transData.transform((skip,anno_fixed_arm_length))[1]-plot.transData.transform((skip,0))[1] 
+                        armB_length_in_point = anno_fixed_arm_length_factor
+                    
+                    if anno==True:
+                        if row[snpid] in anno_alias.keys():
+                            annotation_text = anno_alias[row[snpid]]
+                        else:
+                            annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
+                    elif anno:
+                        annotation_text=row["Annotation"]
+
+                    # annoatte position
+                    xy=(row["i"],row["scaled_P"]+0.2)  
+                    
+                    xytext=(last_pos,1.15*maxy*arm_scale)
+                    
+                    if anno_fixed_arm_length is not None:
+                        armB_length_in_point = anno_fixed_arm_length
+                        xytext=(row["i"],row["scaled_P"]+0.2+anno_fixed_arm_length)
+                    
+                    if anno_count not in anno_d.keys():
+                        if index==0:
                             arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                                 connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
-                        elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
-                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                                 connectionstyle="arc,angleA=-135,armA="+str( anno_d[anno_count][1])+",angleB=135,armB="+str( anno_d[anno_count][1])+",rad=0")
-
-
-
-                bbox_para=None            
-                
-                if len(highlight) >0:
-                    if row["i"] in highlight_i:
-                        anno_default["fontweight"] = "bold"
+                                                connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
+                        else:
+                            arrowargs = dict(arrowstyle="-|>",relpos=(0,1),color="#ebebeb",
+                                                connectionstyle="arc,angleA=0,armA=0,angleB=-90,armB="+str(armB_length_in_point)+",rad=0")
+                    
                     else:
-                        anno_default["fontweight"] = "normal"
-                
-                for key,value in anno_args.items():
-                    anno_default[key]=value
+                        xy=(row["i"],row["scaled_P"])
+                        if anno_d[anno_count] in ["right","left","l","r"]:
+                            if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
+                                armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                                armoffsetb = arm_offset 
+                                armoffseta = armoffsetall - armoffsetb   
+                                arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                                    connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
+                            elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
+                                arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                                    connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
+                        else:
+                            if anno_d[anno_count][0]=="right" or anno_d[anno_count][0]=="r": 
+                                armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                                armoffsetb = anno_d[anno_count][1] 
+                                armoffseta = armoffsetall - armoffsetb   
+                                arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                                    connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
+                            elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
+                                arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                                                    connectionstyle="arc,angleA=-135,armA="+str( anno_d[anno_count][1])+",angleB=135,armB="+str( anno_d[anno_count][1])+",rad=0")
 
-                ax.annotate(annotation_text,
-                         xy=xy,
-                         xytext=xytext,
-                         bbox=bbox_para,
-                         arrowprops=arrowargs,
-                         zorder=100,
-                         **anno_default
-                         )
+                    bbox_para=None            
+                    
+                    if len(highlight) >0:
+                        if row["i"] in highlight_i:
+                            anno_default["fontweight"] = "bold"
+                        else:
+                            anno_default["fontweight"] = "normal"
+                    
+                    for key,value in anno_args.items():
+                        anno_default[key]=value
 
-                anno_count +=1
+                    ax.annotate(annotation_text,
+                            xy=xy,
+                            xytext=xytext,
+                            bbox=bbox_para,
+                            arrowprops=arrowargs,
+                            zorder=100,
+                            **anno_default
+                            )
+
+                    anno_count +=1
 
 
-        else:
-            if verbose: log.write(" -Skip annotating")
+            else:
+                if verbose: log.write(" -Skip annotating")
+    else:
+        if verbose: log.write(" -Skip annotating")
 
 ####################################################################################################################    
-       
-    
+           
     ax1.spines["top"].set_visible(False)
     ax1.spines["right"].set_visible(False)
     ax1.spines["left"].set_visible(True)
@@ -638,12 +639,12 @@ def plot_miami( path1,
         ax1.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
         ax5.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
 
-
 ####################################################################################################################
-    ax1.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif")
-    ax1.xaxis.set_label_coords(-0.05, -0.025)
-    ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+    # set labels
+    ax1.set_xlabel("CHR",fontsize=fontsize,family="sans-serif")
+    ax1.xaxis.set_label_coords(-0.02, -0.02)
     
+    ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
     ax5.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
     
     ax1.set_title(titles[0],y=1+titles_pad[0])
