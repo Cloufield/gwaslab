@@ -657,7 +657,8 @@ def mqqplot(insumstats,
                            
         #plot.set_xlabel(chrom); 
         ax1.set_xticks(chrom_df.astype("float64"))
-        ax1.set_xticklabels(chrom_df.index.map(xtick_chr_dict),fontsize=fontsize,family="sans-serif")
+
+        ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family="sans-serif")
         
         ## regional plot - set X tick
         if region is not None:
