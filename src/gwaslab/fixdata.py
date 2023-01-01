@@ -360,7 +360,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
         if verbose: log.write(" -Vairants with standardized chromosome notation:",sum(is_chr_fixed))  
         if sum(is_chr_fixed)<len(sumstats):
             #is_chr_fixable = sumstats.loc[~is_chr_fixed,chrom].str.match(r'^(chr)?([012][0-9]|[0-9]|X|Y|M|MT)$', case=False, flags=0, na=False)
-            chr_extracted = sumstats.loc[~is_chr_fixed,chrom].str.extract(r'(chr)?([012]?[0-9]|[XYM]|[MT])$',flags=re.IGNORECASE|re.ASCII)[1]
+            chr_extracted = sumstats.loc[~is_chr_fixed,chrom].str.extract(r'(chr)?([0-9]?[0-9]|[XYM]|[MT])$',flags=re.IGNORECASE|re.ASCII)[1]
             is_chr_fixable = ~chr_extracted.isna()
             if verbose: log.write(" -Vairants with fixable chromosome notations:",sum(is_chr_fixable))   
             is_chr_na  = sumstats.loc[~is_chr_fixed,chrom].isna()
