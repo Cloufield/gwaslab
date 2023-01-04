@@ -142,43 +142,39 @@ def get_number_to_NC(build,inverse=False):
 def get_NC_to_number(build):
     return get_number_to_NC(build=build,inverse=True)
 
-
-
-def get_chr_list(add_number=False):
-    chrom_list=["1","2","3","4","5","6","7","8","9","10",
-            "11","12","13","14","15","16","17","18",
-            "19","20","21","22","23","24","25","X","Y","M","MT"]
+def get_chr_list(add_number=False,n=25):
+    chrom_list=[str(i) for i in range(1,n+1)]+["X","Y","M","MT"]
+    
     if add_number is True:
-        chrom_list = ["1","2","3","4","5","6","7","8","9","10",
-            "11","12","13","14","15","16","17","18",
-            "19","20","21","22","23","24","25","X","Y","M","MT"] +[i for i in range(1,26)]
+        chrom_list = [str(i) for i in range(1,n+1)] + ["X","Y","M","MT"] + [i for i in range(1,n+1)]
+
     return chrom_list
 
-def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"]):
+def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"],xymt_num=[23,24,25]):
     if out_chr is True:
-        dic= {str(i):str(i) for i in range(1,26)}
-        dic[xymt[0]]="23"
-        dic[xymt[1]]="24"
-        dic[xymt[2]]="25"
+        dic= {str(i):str(i) for i in range(1,200)}
+        dic[xymt[0]]=str(xymt_num[0])
+        dic[xymt[1]]=str(xymt_num[1])
+        dic[xymt[2]]=str(xymt_num[2])
     else:
-        dic= {str(i):i for i in range(1,26)}
-        dic[xymt[0]]=23
-        dic[xymt[1]]=24
-        dic[xymt[2]]=25
-        dic["M"]=25
+        dic= {str(i):i for i in range(1,200)}
+        dic[xymt[0]]= xymt_num[0]
+        dic[xymt[1]]= xymt_num[1]
+        dic[xymt[2]]= xymt_num[2]
+        dic["M"] = xymt_num[2]
     return dic
 
-def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"],prefix=""):
+def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"],xymt_num=[23,24,25],prefix=""):
     if in_chr is True:
-        dic= {str(i):prefix+str(i) for i in range(1,23)}
-        dic["23"]=prefix+xymt[0]
-        dic["24"]=prefix+xymt[1]
-        dic["25"]=prefix+xymt[2]
+        dic= {str(i):prefix+str(i) for i in range(1,200)}
+        dic[str(xymt_num[0])]=prefix+xymt[0]
+        dic[str(xymt_num[1])]=prefix+xymt[1]
+        dic[str(xymt_num[2])]=prefix+xymt[2]
     else:
-        dic= {i:prefix+str(i) for i in range(1,23)}
-        dic[23]=prefix+xymt[0]
-        dic[24]=prefix+xymt[1]
-        dic[25]=prefix+xymt[2]
+        dic= {i:prefix+str(i) for i in range(1,200)}
+        dic[xymt_num[0]]=prefix+xymt[0]
+        dic[xymt_num[1]]=prefix+xymt[1]
+        dic[xymt_num[2]]=prefix+xymt[2]
     return dic
 
 

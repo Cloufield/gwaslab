@@ -34,6 +34,7 @@ def mqqplot(insumstats,
           snpid=None,
           eaf=None,
           chr_dict = get_chr_to_number(),
+          xtick_chr_dict = get_number_to_chr(),
           vcf_path=None,
           vcf_chr_dict = get_number_to_chr(),
           gtf_path="default",
@@ -656,7 +657,8 @@ def mqqplot(insumstats,
                            
         #plot.set_xlabel(chrom); 
         ax1.set_xticks(chrom_df.astype("float64"))
-        ax1.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif")
+
+        ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family="sans-serif")
         
         ## regional plot - set X tick
         if region is not None:
