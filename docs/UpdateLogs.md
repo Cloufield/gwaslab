@@ -1,4 +1,11 @@
 # Update Logs
+## 3.3.18
+- updated config and downloading system
+
+## 3.3.17
+- added xtcik_chr_dict
+- fixed bugs in miami plot
+
 ## 3.3.16
 - added hg38 recombination rate file
 - fixed bugs in get_novel
