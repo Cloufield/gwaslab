@@ -8,6 +8,8 @@ from pyensembl import Genome
 from gwaslab.Log import Log
 from gwaslab.download import download_ref
 from gwaslab.download import check_and_download
+from gwaslab.download import update_formatbook
+from gwaslab.config import options
 
 #hard-coded data
 def get_chr_to_NC(build,inverse=False):
@@ -188,7 +190,10 @@ def get_high_ld(build="19"):
     return data_path
 
 def get_format_dict(fmt,inverse=False):
-    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    #data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    data_path = options.paths["formatbook"]
+    if not path.exists(data_path):
+        update_formatbook()
     dicts = json.load(open(data_path))
     dic_meta = dicts[fmt]["meta_data"]
     dic_dict = dicts[fmt]["format_dict"]
@@ -198,7 +203,8 @@ def get_format_dict(fmt,inverse=False):
     return dic_meta, dic_dict
 
 def get_formats_list():
-    data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    #data_path =  path.dirname(__file__) + '/data/formatbook.json'
+    data_path = options.paths["formatbook"]
     dicts = json.load(open(data_path))
     format_list = list(dicts.keys())
     return format_list
@@ -206,31 +212,30 @@ def get_formats_list():
 def get_recombination_rate(chrom, build="19"):
     #http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20110106_recombination_hotspots/
     if build=="19":
-        data_path =  path.dirname(__file__) + '/data/recombination/hg19/genetic_map_GRCh37_chr'+str(chrom)+'.txt.gz'
+        data_path =  options.paths["data_directory"] + 'recombination/hg19/genetic_map_GRCh37_chr'+str(chrom)+'.txt.gz'
         if path.exists(data_path):
             recombination_rate = pd.read_csv(data_path,sep="\t")
         else:
-            if not path.exists(path.dirname(__file__) + '/data/recombination/hg19/'):
-                os.makedirs(path.dirname(__file__) + '/data/recombination/hg19/')
-            download_ref("recombination_hg19",directory = path.dirname(__file__)+'/data/recombination/hg19/')
-            file = tarfile.open(path.dirname(__file__)+'/data/recombination/hg19/recombination_hg19.tar.gz')
-            file.extractall(path.dirname(__file__)+'/data/recombination/hg19/')
+            if not path.exists(options.paths["data_directory"] + 'recombination/hg19/'):
+                os.makedirs(options.paths["data_directory"] + 'recombination/hg19/')
+            download_ref("recombination_hg19",directory = options.paths["data_directory"] + 'recombination/hg19/')
+            file = tarfile.open(options.paths["data_directory"]+'recombination/hg19/recombination_hg19.tar.gz')
+            file.extractall(options.paths["data_directory"]+'recombination/hg19/')
             file.close()
             recombination_rate = pd.read_csv(data_path,sep="\t")
     elif build=="38":
-        data_path =  path.dirname(__file__) + '/data/recombination/hg38/genetic_map_GRCh38_chr'+str(chrom)+'.txt.gz'
+        data_path =  options.paths["data_directory"] + 'recombination/hg38/genetic_map_GRCh38_chr'+str(chrom)+'.txt.gz'
         if path.exists(data_path):
             recombination_rate = pd.read_csv(data_path,sep="\t")
         else:
-            if not path.exists(path.dirname(__file__) + '/data/recombination/hg38/'):
-                os.makedirs(path.dirname(__file__) + '/data/recombination/hg38/')
-            download_ref("recombination_hg38",directory = path.dirname(__file__)+'/data/recombination/hg38/')
-            file = tarfile.open(path.dirname(__file__)+'/data/recombination/hg38/recombination_hg38.tar.gz')
-            file.extractall(path.dirname(__file__)+'/data/recombination/hg38/')
+            if not path.exists( options.paths["data_directory"] + 'recombination/hg38/'):
+                os.makedirs( options.paths["data_directory"] + 'recombination/hg38/')
+            download_ref("recombination_hg38",directory = options.paths["data_directory"]+'recombination/hg38/')
+            file = tarfile.open(options.paths["data_directory"]+'recombination/hg38/recombination_hg38.tar.gz')
+            file.extractall(options.paths["data_directory"]+'recombination/hg38/')
             file.close()
             recombination_rate = pd.read_csv(data_path,sep="\t")
     return recombination_rate
-
 
 ####################################################################################################################
 def get_gtf(chrom, build="19",source="ensembl"):
@@ -266,8 +271,8 @@ def get_gtf(chrom, build="19",source="ensembl"):
         
 def gwaslab_info():
     dic={
-   "version":"3.3.5",
-   "release_date":"20221104"
+   "version":"3.3.18",
+   "release_date":"20230108"
     }
     return dic       
         

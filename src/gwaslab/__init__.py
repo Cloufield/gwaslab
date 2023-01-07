@@ -30,3 +30,4 @@ from gwaslab.download import check_available_ref
 from gwaslab.download import remove_file
 from gwaslab.download import get_path
 from gwaslab.download import update_record
+from gwaslab.config import options
