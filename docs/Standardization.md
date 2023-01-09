@@ -31,7 +31,7 @@ SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants is already align
 `.fix_id()` : check or fix SNPID and rsID.   
 
 ```python
-sumstats.fixID(fixchrpos=False,
+sumstats.fix_id(fixchrpos=False,
                fixid=False,
                fixsep=False,
                overwrite=False)
