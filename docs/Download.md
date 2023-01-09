@@ -34,5 +34,38 @@ Currently, you can download the following files using gwaslab:
 - 'refseq_hg38_gtf'
 - 'refseq_hg38_gtf_protein_coding'
 
-More verified reference files will be coming soon.
+# Configurations
+
+gwaslab uses 3 files and a default path for reference management:
+
+- `config` : a dictionary of `keyword` : `local path` for local file management. 
+- `reference` : a dictionary of `keyword` : `url` for automatically downloading reference files.
+- `formatbook` : a dictionary used for format header conversions. 
+- `data_directory`: the path for downloaded reference file. default: (`~/.gwaslab`)
+
+You can use `gl.options.paths` to check the paths of the three files.
+
+```
+gl.options.paths
+{'config': '/Users/he/work/gwaslab/src/gwaslab/data/config.json',
+ 'reference': '/Users/he/work/gwaslab/src/gwaslab/data/reference.json',
+ 'formatbook': '/Users/he/work/gwaslab/src/gwaslab/data/formatbook.json',
+ 'data_directory': '/Users/he/.gwaslab/'}
+```
+
+
+Sometimes you might need to use your own files, which can be done using `gl.options.set_option(key, newpath)` (simply run this after loadnig the gwaslab package):
+
+```
+# change the path for formatbook
+
+gl.options.set_option("formatbook","/newpath/formatbook.json")
+gl.options.paths
+{'config': '/Users/he/work/gwaslab/src/gwaslab/data/config.json',
+ 'reference': '/Users/he/work/gwaslab/src/gwaslab/data/reference.json',
+ 'formatbook': '/newpath/formatbook.json',
+ 'data_directory': '/Users/he/.gwaslab/'}
+```
  
+
+
