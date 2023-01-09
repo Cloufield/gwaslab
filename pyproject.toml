@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gwaslab"
-version = "3.3.16"
+version = "3.3.18"
 authors = [
   { name="Yunye", email="yunye@gwaslab.com" },
 ]
