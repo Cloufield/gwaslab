@@ -7,7 +7,7 @@ See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow
 
 | Sumstats Methods      | Options                                                      | Description                                                                    |
 | --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `.fix_ID()`           | `fixchrpos=False`, <br/>`fixid=False`, <br/>`fixsep=False`,<br/>`overwrite=False`,<br/>`forcefixid=False` | check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS |
+| `.fix_id()`           | `fixchrpos=False`, <br/>`fixid=False`, <br/>`fixsep=False`,<br/>`overwrite=False`,<br/>`forcefixid=False` | check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS |
 | `.fix_CHR()`          | `remove=False`                                               | standardize chromsome notation                                                 |
 | `.fix_POS()`          | `remove=False`                                               | standardize basepair posituion notation and filter out bad values              |
 | `.fix_allele()`       | `remove=False`                                               | standardize base notation to ATCG                                              |
@@ -24,11 +24,11 @@ Gwaslab requires at least one ID columns for sumstats, either in the form of SNP
 
  `rsID`: dbSNP rsIDs
 
-gwaslab checks if the IDs you provided is valid SNPID or rsID.  It can also extract CHR and POS information from the CHR:POS:REF:ALT formatted IDs using `.fix_ID()` method.
+gwaslab checks if the IDs you provided is valid SNPID or rsID.  It can also extract CHR and POS information from the CHR:POS:REF:ALT formatted IDs using `.fix_id()` method.
 
 SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants is already aligned with reference genome. Otherwise, a temporary SNPID in the format of `CHR:POS` will be given.
 
-`.fix_ID()` : check or fix SNPID and rsID.   
+`.fix_id()` : check or fix SNPID and rsID.   
 
 ```python
 sumstats.fixID(fixchrpos=False,
@@ -36,7 +36,7 @@ sumstats.fixID(fixchrpos=False,
                fixsep=False,
                overwrite=False)
 ```
-`.fix_ID()` options:
+`.fix_id()` options:
 
 - `fixchrpos` : `Boolean`, extract CHR and POS from SNPID (CHR:POS:NEA:EA) to fill CHR and POS columns (deaful:`False`)
 - `fixid` : `Boolean` ,  use CHR/POS/NEA/EA to reconstruct the SNPID. For variant that are not aligned with reference genome. Only CHR/POS will be used. (deaful:`False`)
