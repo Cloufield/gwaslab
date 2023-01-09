@@ -462,7 +462,7 @@
 </thead>
 <tbody>
 <tr>
-<td><code>.fix_ID()</code></td>
+<td><code>.fix_id()</code></td>
 <td><code>fixchrpos=False</code>, <br/><code>fixid=False</code>, <br/><code>fixsep=False</code>,<br/><code>overwrite=False</code>,<br/><code>forcefixid=False</code></td>
 <td>check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS</td>
 </tr>
@@ -507,15 +507,15 @@
 <p>Gwaslab requires at least one ID columns for sumstats, either in the form of SNPID or rsID, (or both). Gwaslab will automatically check if SNPID is mixed in rsID.</p>
 <p><code>SNPID</code> : it could be user provided IDs, or in <code>CHR:POS:REF:ALT</code> format, delimiter can be":","_" or "-"</p>
 <p><code>rsID</code>: dbSNP rsIDs</p>
-<p>gwaslab checks if the IDs you provided is valid SNPID or rsID.  It can also extract CHR and POS information from the CHR:POS:REF:ALT formatted IDs using <code>.fix_ID()</code> method.</p>
+<p>gwaslab checks if the IDs you provided is valid SNPID or rsID.  It can also extract CHR and POS information from the CHR:POS:REF:ALT formatted IDs using <code>.fix_id()</code> method.</p>
 <p>SNPID will be fixed by <code>CHR:POS:NEA:EA</code>  only when the variants is already aligned with reference genome. Otherwise, a temporary SNPID in the format of <code>CHR:POS</code> will be given.</p>
-<p><code>.fix_ID()</code> : check or fix SNPID and rsID.   </p>
+<p><code>.fix_id()</code> : check or fix SNPID and rsID.   </p>
 <pre><code class="language-python">sumstats.fixID(fixchrpos=False,
                fixid=False,
                fixsep=False,
                overwrite=False)
 </code></pre>
-<p><code>.fix_ID()</code> options:</p>
+<p><code>.fix_id()</code> options:</p>
 <ul>
 <li><code>fixchrpos</code> : <code>Boolean</code>, extract CHR and POS from SNPID (CHR:POS:NEA:EA) to fill CHR and POS columns (deaful:<code>False</code>)</li>
 <li><code>fixid</code> : <code>Boolean</code> ,  use CHR/POS/NEA/EA to reconstruct the SNPID. For variant that are not aligned with reference genome. Only CHR/POS will be used. (deaful:<code>False</code>)</li>
