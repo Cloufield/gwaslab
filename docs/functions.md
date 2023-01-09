@@ -8,7 +8,7 @@
 
 | Sumstats Methods      | Options                                                      | Description                                                         |
 | --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `.fix_ID()`           | `fixchrpos=False`, <br/>`fixid=False`, <br/>`fixsep=False`,<br/>`overwrite=False`,<br/>`forcefixid=False` | check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS |
+| `.fix_id()`           | `fixchrpos=False`, <br/>`fixid=False`, <br/>`fixsep=False`,<br/>`overwrite=False`,<br/>`forcefixid=False` | check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS |
 | `.fix_CHR()`          | `remove=False`                                               | standardize chromsome notation                                                 |
 | `.fix_POS()`          | `remove=False`                                               | standardize basepair posituion notation and filter out bad values              |
 | `.fix_allele()`       | `remove=False`                                               | standardize base notation to ATCG                                              |
