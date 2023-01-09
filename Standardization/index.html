@@ -510,7 +510,7 @@
 <p>gwaslab checks if the IDs you provided is valid SNPID or rsID.  It can also extract CHR and POS information from the CHR:POS:REF:ALT formatted IDs using <code>.fix_id()</code> method.</p>
 <p>SNPID will be fixed by <code>CHR:POS:NEA:EA</code>  only when the variants is already aligned with reference genome. Otherwise, a temporary SNPID in the format of <code>CHR:POS</code> will be given.</p>
 <p><code>.fix_id()</code> : check or fix SNPID and rsID.   </p>
-<pre><code class="language-python">sumstats.fixID(fixchrpos=False,
+<pre><code class="language-python">sumstats.fix_id(fixchrpos=False,
                fixid=False,
                fixsep=False,
                overwrite=False)
