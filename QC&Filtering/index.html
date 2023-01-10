@@ -457,15 +457,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering" class="md-nav__link">
-    FIltering
+  <a href="#filtering-by-condition" class="md-nav__link">
+    Filtering by condition
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering-region" class="md-nav__link">
-    Filtering region
+  <a href="#filtering-regions" class="md-nav__link">
+    Filtering regions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter_in-filter_out-deprecated" class="md-nav__link">
+    filter_in &amp; filter_out (deprecated)
   </a>
   
 </li>
@@ -1310,15 +1317,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering" class="md-nav__link">
-    FIltering
+  <a href="#filtering-by-condition" class="md-nav__link">
+    Filtering by condition
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering-region" class="md-nav__link">
-    Filtering region
+  <a href="#filtering-regions" class="md-nav__link">
+    Filtering regions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter_in-filter_out-deprecated" class="md-nav__link">
+    filter_in &amp; filter_out (deprecated)
   </a>
   
 </li>
@@ -1368,12 +1382,12 @@
 </tr>
 <tr>
 <td><code>.filter_in()</code></td>
-<td>lt, gt, eq, inplace</td>
+<td><code>lt</code>, <code>gt</code>, <code>eq</code>, <code>inplace</code></td>
 <td>filter in variants base on given threshold</td>
 </tr>
 <tr>
 <td><code>.filter_out()</code></td>
-<td>lt, gt, eq, inplace</td>
+<td><code>lt</code>, <code>gt</code>, <code>eq</code>, <code>inplace</code></td>
 <td>filter out variants base on given threshold</td>
 </tr>
 <tr>
@@ -1406,10 +1420,62 @@
 <li><code>info=(0,float("Inf"))</code> : float, INFO&gt;0 </li>
 <li><code>Direction</code> : string, only contains "+","-" ,"0"or "?"</li>
 </ul>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">()</span>
+
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">16</span> <span class="mi">2022</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">check</span> <span class="n">IDs</span><span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">16</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Current</span> <span class="n">Dataframe</span> <span class="n">shape</span> <span class="p">:</span> <span class="mi">12557761</span>  <span class="n">x</span>  <span class="mi">12</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">16</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Checking</span> <span class="k">if</span> <span class="n">SNPID</span> <span class="ow">is</span> <span class="nb">chr</span><span class="p">:</span><span class="n">pos</span><span class="p">:</span><span class="n">ref</span><span class="p">:</span><span class="n">alt</span><span class="o">...</span><span class="p">(</span><span class="n">separator</span><span class="p">:</span> <span class="o">-</span> <span class="p">,:</span> <span class="p">,</span> <span class="n">_</span><span class="p">)</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">33</span> <span class="mi">2022</span> <span class="n">Finished</span> <span class="n">checking</span> <span class="n">IDs</span> <span class="n">successfully</span><span class="err">!</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">33</span> <span class="mi">2022</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">fix</span> <span class="n">chromosome</span> <span class="n">notation</span><span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">33</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Current</span> <span class="n">Dataframe</span> <span class="n">shape</span> <span class="p">:</span> <span class="mi">12557761</span>  <span class="n">x</span>  <span class="mi">12</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">06</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Vairants</span> <span class="k">with</span> <span class="n">standardized</span> <span class="n">chromosome</span> <span class="n">notation</span><span class="p">:</span> <span class="mi">12228970</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">37</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Vairants</span> <span class="k">with</span> <span class="n">fixable</span> <span class="n">chromosome</span> <span class="n">notations</span><span class="p">:</span> <span class="mi">328791</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">37</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">No</span> <span class="n">unrecognized</span> <span class="n">chromosome</span> <span class="n">notations</span><span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">41</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Identified</span>  <span class="mi">328791</span>  <span class="n">variants</span> <span class="n">on</span> <span class="n">sex</span> <span class="n">chromosomes</span><span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">42</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Standardizing</span> <span class="n">sex</span> <span class="n">chromosome</span> <span class="n">notations</span><span class="p">:</span> <span class="n">X</span> <span class="n">Y</span> <span class="n">MT</span>  <span class="n">to</span> <span class="mi">23</span><span class="p">,</span><span class="mi">24</span><span class="p">,</span><span class="mf">25.</span><span class="o">..</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">07</span> <span class="mi">2022</span> <span class="n">Finished</span> <span class="n">fixing</span> <span class="n">chromosome</span> <span class="n">notation</span> <span class="n">successfully</span><span class="err">!</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">07</span> <span class="mi">2022</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">fix</span> <span class="n">basepair</span> <span class="n">positions</span><span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">07</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Current</span> <span class="n">Dataframe</span> <span class="n">shape</span> <span class="p">:</span> <span class="mi">12557761</span>  <span class="n">x</span>  <span class="mi">12</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">07</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Converting</span> <span class="n">to</span> <span class="n">Int64</span> <span class="n">data</span> <span class="nb">type</span> <span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">29</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Position</span> <span class="n">upper_bound</span> <span class="ow">is</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span><span class="mi">000</span><span class="p">,</span><span class="mi">000</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">06</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Remove</span> <span class="n">outliers</span><span class="p">:</span> <span class="mi">0</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">24</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Converted</span> <span class="nb">all</span> <span class="n">position</span> <span class="n">to</span> <span class="n">datatype</span> <span class="n">Int64</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">24</span> <span class="mi">2022</span> <span class="n">Finished</span> <span class="n">fixing</span> <span class="n">basepair</span> <span class="n">position</span> <span class="n">successfully</span><span class="err">!</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">25</span> <span class="mi">2022</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">fix</span> <span class="n">alleles</span><span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">25</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Current</span> <span class="n">Dataframe</span> <span class="n">shape</span> <span class="p">:</span> <span class="mi">12557761</span>  <span class="n">x</span>  <span class="mi">12</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">30</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Detected</span> <span class="mi">0</span> <span class="n">variants</span> <span class="k">with</span> <span class="n">alleles</span> <span class="n">that</span> <span class="n">contain</span> <span class="n">bases</span> <span class="n">other</span> <span class="n">than</span> <span class="n">A</span><span class="o">/</span><span class="n">C</span><span class="o">/</span><span class="n">T</span><span class="o">/</span><span class="n">G</span> <span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">33</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Converted</span> <span class="nb">all</span> <span class="n">bases</span> <span class="n">to</span> <span class="n">string</span> <span class="n">datatype</span> <span class="ow">and</span> <span class="n">UPPERCASE</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">10</span> <span class="mi">2022</span> <span class="n">Finished</span> <span class="n">fixing</span> <span class="n">allele</span> <span class="n">successfully</span><span class="err">!</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">10</span> <span class="mi">2022</span> <span class="n">Start</span> <span class="n">sanity</span> <span class="n">check</span> <span class="k">for</span> <span class="n">statistics</span> <span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">10</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Current</span> <span class="n">Dataframe</span> <span class="n">shape</span> <span class="p">:</span> <span class="mi">12557761</span>  <span class="n">x</span>  <span class="mi">12</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">18</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Checking</span> <span class="k">if</span>  <span class="mi">0</span> <span class="o">&lt;=</span><span class="n">N</span><span class="o">&lt;=</span> <span class="n">inf</span>  <span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">26</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Removed</span> <span class="mi">0</span> <span class="n">variants</span> <span class="k">with</span> <span class="n">bad</span> <span class="n">N</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">26</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Checking</span> <span class="k">if</span>  <span class="mi">0</span> <span class="o">&lt;=</span><span class="n">EAF</span><span class="o">&lt;=</span> <span class="mi">1</span>  <span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">30</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Removed</span> <span class="mi">0</span> <span class="n">variants</span> <span class="k">with</span> <span class="n">bad</span> <span class="n">EAF</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">30</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Checking</span> <span class="k">if</span>  <span class="mi">5</span> <span class="o">&lt;=</span><span class="n">MAC</span><span class="o">&lt;=</span> <span class="n">inf</span>  <span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">33</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Removed</span> <span class="mi">0</span> <span class="n">variants</span> <span class="k">with</span> <span class="n">bad</span> <span class="n">MAC</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">33</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Checking</span> <span class="k">if</span>  <span class="mf">5e-300</span> <span class="o">&lt;=</span> <span class="n">P</span> <span class="o">&lt;=</span> <span class="mi">1</span>  <span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">35</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Removed</span> <span class="mi">0</span> <span class="n">variants</span> <span class="k">with</span> <span class="n">bad</span> <span class="n">P</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">35</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Checking</span> <span class="k">if</span>  <span class="o">-</span><span class="mi">10</span> <span class="o">&lt;</span><span class="n">BETA</span><span class="p">)</span><span class="o">&lt;</span> <span class="mi">10</span>  <span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">36</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Removed</span> <span class="mi">0</span> <span class="n">variants</span> <span class="k">with</span> <span class="n">bad</span> <span class="n">BETA</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">36</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Checking</span> <span class="k">if</span>  <span class="mi">0</span> <span class="o">&lt;</span><span class="n">SE</span><span class="o">&lt;</span> <span class="n">inf</span>  <span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">38</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Removed</span> <span class="mi">0</span> <span class="n">variants</span> <span class="k">with</span> <span class="n">bad</span> <span class="n">SE</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">38</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Checking</span> <span class="n">STATUS</span><span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">40</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Coverting</span> <span class="n">STAUTUS</span> <span class="n">to</span> <span class="n">interger</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">42</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Removed</span> <span class="mi">0</span> <span class="n">variants</span> <span class="k">with</span> <span class="n">bad</span> <span class="n">statistics</span> <span class="ow">in</span> <span class="n">total</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">42</span> <span class="mi">2022</span> <span class="n">Finished</span> <span class="n">sanity</span> <span class="n">check</span> <span class="n">successfully</span><span class="err">!</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">43</span> <span class="mi">2022</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">normalize</span> <span class="n">variants</span><span class="o">...</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">:</span><span class="mi">43</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Current</span> <span class="n">Dataframe</span> <span class="n">shape</span> <span class="p">:</span> <span class="mi">12557761</span>  <span class="n">x</span>  <span class="mi">12</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">01</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Not</span> <span class="n">normalized</span> <span class="n">allele</span> <span class="n">IDs</span><span class="p">:</span><span class="n">X</span><span class="p">:</span><span class="mi">7151130</span><span class="n">_TT_TC</span> <span class="n">X</span><span class="p">:</span><span class="mi">9093382</span><span class="n">_CTTTT_CTTT</span> <span class="n">X</span><span class="p">:</span><span class="mi">12292253</span><span class="n">_ATTT_ATT</span> <span class="n">X</span><span class="p">:</span><span class="mi">16001576</span><span class="n">_ATT_ATTT</span> <span class="n">X</span><span class="p">:</span><span class="mi">33822416</span><span class="n">_GT_GTT</span> <span class="o">...</span> 
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">01</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Not</span> <span class="n">normalized</span> <span class="n">allele</span><span class="p">:[</span><span class="s1">&#39;TT&#39;</span> <span class="s1">&#39;TC&#39;</span><span class="p">][</span><span class="s1">&#39;CTTTT&#39;</span> <span class="s1">&#39;CTTT&#39;</span><span class="p">][</span><span class="s1">&#39;ATTT&#39;</span> <span class="s1">&#39;ATT&#39;</span><span class="p">][</span><span class="s1">&#39;ATTT&#39;</span> <span class="s1">&#39;ATT&#39;</span><span class="p">][</span><span class="s1">&#39;GTT&#39;</span> <span class="s1">&#39;GT&#39;</span><span class="p">]</span><span class="o">...</span> 
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">01</span> <span class="mi">2022</span>  <span class="o">-</span><span class="n">Modified</span> <span class="mi">13</span> <span class="n">variants</span> <span class="n">according</span> <span class="n">to</span> <span class="n">parsimony</span> <span class="ow">and</span> <span class="n">left</span> <span class="n">alignment</span> <span class="n">principal</span><span class="o">.</span>
+<span class="n">Wed</span> <span class="n">Dec</span>  <span class="mi">7</span> <span class="mi">01</span><span class="p">:</span><span class="mi">32</span><span class="p">:</span><span class="mi">03</span> <span class="mi">2022</span> <span class="n">Finished</span> <span class="n">normalizing</span> <span class="n">variants</span> <span class="n">successfully</span><span class="err">!</span>
 </code></pre></div>
+</div>
 <h2 id="remove-duplicated-or-multiallelic-variants">Remove duplicated or multiallelic variants</h2>
-<p>after standardize the sumstats, you can also remove duplicated or multiallelic variants using :</p>
+<p>After standardizing the sumstats, you can also remove duplicated or multiallelic variants using:</p>
 <ul>
 <li><code>mode=d</code> ,remove duplicate.<ul>
 <li>remove duplicate SNPs based on  1. SNPID, </li>
@@ -1417,35 +1483,59 @@
 <li>remove duplicate SNPs based on  3. rsID</li>
 </ul>
 </li>
-<li>'mode=m', remove multiallelic variants.<ul>
+<li><code>mode=m</code>, remove multiallelic variants.<ul>
 <li>remove multiallelic SNPs based on  4. CHR, POS</li>
 </ul>
 </li>
 <li><code>remove=True</code> : remove NAs </li>
-<li><code>keep_col</code> : use which column to sort the values (keep_ascend=True: ascending order)</li>
+<li><code>keep_col</code> : use which column to sort the values (<code>keep_ascend=True</code>: ascending order)</li>
 <li><code>keep</code>: keep 'first' or 'last'.</li>
 </ul>
-<p><div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">remove_dup</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;md&quot;</span><span class="p">,</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">,</span><span class="n">keep_col</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">remove_dup</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;md&quot;</span><span class="p">,</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">,</span><span class="n">keep_col</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
- -&gt; remove duplicated and multiallelic variants and keep the one with lowest P.</p>
-<h2 id="filtering">FIltering</h2>
+</div>
+<p>-&gt; remove duplicated and multiallelic variants and keep the one with lowest P.</p>
+<h2 id="filtering-by-condition">Filtering by condition</h2>
+<p>Filtering sumstats by <code>expr</code> (a wrapper of <code>pd.query</code>), return a new Sumstats Object by default. </p>
 <div class="highlight"><pre><span></span><code>.filter_value(expr,inplace=False)
 </code></pre></div>
 <ul>
 <li><code>filter_value</code>, is a wrapper of pd.DataFrame query. This can be used for value filtering.</li>
 <li><code>expr</code>: the conditions used fot filtering. (for example: '1&gt;BETA&gt;0 &amp; N&gt;10000')</li>
-<li><code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</li>
+<li><code>inplace</code>: True or False. If False, return a new  Sumstats Object (so chain calling is possible). If true, the current Sumstats Object will be filtered in place.</li>
 </ul>
-<p>filter_in &amp; filter_out (might be deprecated)
-<div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">filter_in</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-<span class="o">.</span><span class="n">filter_out</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p><div class="highlight"><pre><span></span><code>mysumstats.filter_value(&#39;BETA&lt;0 &amp; CHR==1&#39;).plot_mqq()
+Wed Dec  7 01:32:06 2022 Start filtering values by condition: BETA&lt;0 &amp; CHR==1
+Wed Dec  7 01:32:06 2022  -Removing 12075769 variants not meeting the conditions: BETA&lt;0 &amp; CHR==1
+Wed Dec  7 01:32:06 2022 Finished filtering values.
+Wed Dec  7 01:32:06 2022 Start to plot manhattan/qq plot with the following basic settings:
+Wed Dec  7 01:32:06 2022  -Genome-wide significance level is set to 5e-08 ...
+Wed Dec  7 01:32:06 2022  -Raw input contains 481992 variants...
+Wed Dec  7 01:32:06 2022  -Plot layout mode is : mqq
+Wed Dec  7 01:32:06 2022 Finished loading specified columns from the sumstats.
+Wed Dec  7 01:32:06 2022 Start conversion and sanity check:
+Wed Dec  7 01:32:06 2022  -Removed 0 variants with nan in CHR or POS column ...
+Wed Dec  7 01:32:06 2022  -Removed 0 variants with nan in P column ...
+Wed Dec  7 01:32:06 2022  -P values are being converted to -log10(P)...
+Wed Dec  7 01:32:06 2022  -Sanity check after conversion: 0 variants with P value outside of (0,1] will be removed...
+Wed Dec  7 01:32:06 2022  -Sanity check: 0 na/inf/-inf variants will be removed...
+Wed Dec  7 01:32:07 2022  -Maximum -log10(P) values is 10.598771832501887 .
+Wed Dec  7 01:32:07 2022 Finished data conversion and sanity check.
+Wed Dec  7 01:32:07 2022 Start to create manhattan plot with 481992 variants:
+Wed Dec  7 01:32:09 2022  -Found 2 significant variants with a sliding window size of 500 kb...
+Wed Dec  7 01:32:09 2022 Finished creating Manhattan plot successfully!
+Wed Dec  7 01:32:09 2022  -Skip annotating
+Wed Dec  7 01:32:09 2022 Start to create QQ plot with 481992 variants:
+Wed Dec  7 01:32:09 2022  -Calculating GC using P : 1.2372836632762023
+Wed Dec  7 01:32:09 2022 Finished creating QQ plot successfully!
 </code></pre></div>
-- <code>gt</code>: greater than
-- <code>lt</code>: less than
-- <code>eq</code>: equal to
-- <code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</p>
-<h2 id="filtering-region">Filtering region</h2>
+<img alt="image" src="https://user-images.githubusercontent.com/40289485/211584317-6c1583b5-53e4-4aae-9141-af5781e2439b.png" /></p>
+</div>
+<h2 id="filtering-regions">Filtering regions</h2>
 <p><div class="highlight"><pre><span></span><code>.filter_region_in(path=&quot;./abc.bed&quot;)
 .filter_region_out(high_ld=True)
 </code></pre></div>
@@ -1454,6 +1544,21 @@ filter variants in certain regions defined in bed files.</p>
 <li><code>path</code> : path to the bed files</li>
 <li><code>high_ld</code> : high-ld region (built-in data, no additional bed needed)</li>
 </ul>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code>mysumstats.filter_region_in(high_ld=True,inplace=False).data
+mysumstats.filter_region_out(high_ld=True,inplace=False).data
+</code></pre></div>
+</div>
+<h2 id="filter_in-filter_out-deprecated">filter_in &amp; filter_out (deprecated)</h2>
+<p><div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">filter_in</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="o">.</span><span class="n">filter_out</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+- <code>gt</code>: greater than
+- <code>lt</code>: less than
+- <code>eq</code>: equal to
+- <code>inplace</code>: True or False. If False, return a dataframe. If true, the Sumstats object will be filtered.</p>
 
 
 
