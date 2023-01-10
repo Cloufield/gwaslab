@@ -1386,18 +1386,63 @@
 <p>gwaslab provides reference-dependent harmonization functions.</p>
 <p>See examples <a href="https://cloufield.github.io/gwaslab/harmonization_workflow/">here.</a></p>
 <h2 id="methods-summary">Methods summary</h2>
-<p>Outdated!!!
-| Sumstats Methods       | Options                                               | Description                                                                |
-| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
-| <code>.check_ref()</code>         | ref_path                                              | check alignment with a reference sequence                                  |
-| <code>.rsid_to_chrpos()</code>    | path, n_cores                                         | use rsid to fill CHR and POS                                               |
-| <code>.rsid_to_chrpos2()</code>   | path                                                  | use rsid to fill CHR and POS (muilti-thread, need hd5 file)                |
-| <code>.assign_rsid()</code>       | path                                                  | annotate rsid using a reference vcf file                                   |
-| <code>.infer_strand()</code>      | ref_infer="" , ref_alt_freq=None,  maf_threshold=0.43 | infer the strand of a variant using reference vcf file with EAF in INFO    |
-| <code>.check_daf()</code>         | ref_infer="" , ref_alt_freq=None,                     | calculate difference in allele frequencies                                 |
-| <code>.flip_allele_stats()</code> |                                                       | After alignment and inferring, flip the alleles to harmonise the variants. |
-| <code>.liftover()</code>          | n_cores=1,from_build="19", to_build="38"              | perform liftover                                                           |
-|                        |                                                       |                                                                            |</p>
+<p>Outdated!!! (will be updated soon)</p>
+<table>
+<thead>
+<tr>
+<th>Sumstats Methods</th>
+<th>Options</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.check_ref()</code></td>
+<td>ref_path</td>
+<td>check alignment with a reference sequence</td>
+</tr>
+<tr>
+<td><code>.rsid_to_chrpos()</code></td>
+<td>path, n_cores</td>
+<td>use rsid to fill CHR and POS</td>
+</tr>
+<tr>
+<td><code>.rsid_to_chrpos2()</code></td>
+<td>path</td>
+<td>use rsid to fill CHR and POS (muilti-thread, need hd5 file)</td>
+</tr>
+<tr>
+<td><code>.assign_rsid()</code></td>
+<td>path</td>
+<td>annotate rsid using a reference vcf file</td>
+</tr>
+<tr>
+<td><code>.infer_strand()</code></td>
+<td>ref_infer="" , ref_alt_freq=None,  maf_threshold=0.43</td>
+<td>infer the strand of a variant using reference vcf file with EAF in INFO</td>
+</tr>
+<tr>
+<td><code>.check_daf()</code></td>
+<td>ref_infer="" , ref_alt_freq=None,</td>
+<td>calculate difference in allele frequencies</td>
+</tr>
+<tr>
+<td><code>.flip_allele_stats()</code></td>
+<td></td>
+<td>After alignment and inferring, flip the alleles to harmonise the variants.</td>
+</tr>
+<tr>
+<td><code>.liftover()</code></td>
+<td>n_cores=1,from_build="19", to_build="38"</td>
+<td>perform liftover</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <h2 id="align-nea-with-ref-in-reference-genome">Align NEA with REF in reference genome</h2>
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="n">ref_path</span><span class="o">=</span><span class="s2">&quot;ref_genome.fa&quot;</span><span class="p">)</span>
 </code></pre></div>
@@ -1443,6 +1488,10 @@
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">liftover</span><span class="p">(</span><span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">from_build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span> <span class="n">to_build</span><span class="o">=</span><span class="s2">&quot;38&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Perform liftover for POS (based on liftover <a href="https://github.com/jeremymcrae/liftover">GitHub - jeremymcrae/liftover: liftover for python, made fast with cython</a>)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>gwaslab will only liftover basepair positions. </p>
+</div>
 
 
 
