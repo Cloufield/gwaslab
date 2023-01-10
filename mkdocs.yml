@@ -5,12 +5,16 @@ repo_url: https://github.com/Cloufield/gwaslab/
 edit_uri: ""
 copyright: "GWASLab is licensed under the MIT license"
 theme:
-  name: null
-  custom_dir: 'cinder'
-  color_theme:  github
+  name: material
+  features:
+    - navigation.tabs
+  font:
+    code: Roboto Mono
+    text: Roboto
+  palette:
+    primary: blue
+    accent: blue
 
-extra_css:
-  - "stylesheets/extra.css"
 nav:
     - Home: index.md
     - Tutorial: tutorial_3.3.ipynb
@@ -63,5 +67,23 @@ nav:
        - "Reference management" :
           - "Download" : Download_reference.ipynb
 
+markdown_extensions:
+  - toc:
+      toc_depth: 3
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - stylesheets/extra.css
+
 plugins:
   - mkdocs-jupyter
+
