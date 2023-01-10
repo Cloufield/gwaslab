@@ -14,7 +14,9 @@ theme:
   palette:
     primary: blue
     accent: blue
-
+  logo: assets/gwaslab.png
+  favicon: assets/gwaslab.png
+    
 nav:
     - Home: index.md
     - Tutorial: tutorial_3.3.ipynb
