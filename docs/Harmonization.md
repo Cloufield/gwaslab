@@ -5,7 +5,8 @@ gwaslab provides reference-dependent harmonization functions.
 See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/)
 
 ## Methods summary
-Outdated!!!
+Outdated!!! (will be updated soon)
+
 | Sumstats Methods       | Options                                               | Description                                                                |
 | ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
 | `.check_ref()`         | ref_path                                              | check alignment with a reference sequence                                  |
@@ -90,3 +91,6 @@ mysumstats.liftover(n_cores=1,from_build="19", to_build="38")
 ```
 
 Perform liftover for POS (based on liftover [GitHub - jeremymcrae/liftover: liftover for python, made fast with cython](https://github.com/jeremymcrae/liftover))
+
+!!! note
+    gwaslab will only liftover basepair positions. 
