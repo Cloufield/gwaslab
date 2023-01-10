@@ -2,3 +2,11 @@ img{
 max-width:700px;
 height: auto;
 }
+
+.md-typeset__table {
+   min-width: 100%;
+}
+
+.md-typeset table:not([class]) {
+    display: table;
+}
