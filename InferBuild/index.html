@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#infer-genome-build-version" class="md-skip">
+        <a href="#infer-genome-build" class="md-skip">
           Skip to content
         </a>
       
@@ -1236,10 +1236,12 @@
                   
 
 
-<h1 id="infer-genome-build-version">Infer Genome Build Version</h1>
-<p>gwaslab use hapmaps chromosome and basepair position information to infer the reference genome build for sumstats.</p>
-<p>Status codes (first two digits) will be changed based on the results</p>
-<p>Example:
+<h1 id="infer-genome-build">Infer Genome Build</h1>
+<p>Gwaslab use the chromosome and basepair position information for Hapmap3 SNPs to infer the reference genome build for sumstats.</p>
+<p>Reference genome build will be simply assigned based on the matching count. (Note: the results are more reliable if you have more than 10,000 variants)</p>
+<p>Status codes (first two digits) will be changed based on the matching results.</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code>mysumstats.infer_build()
 
 Wed Oct 19 11:01:01 2022  -Start to infer genome build version using hapmap3 SNPs...
@@ -1248,7 +1250,8 @@ Wed Oct 19 11:01:04 2022  -chr:pos will be used for matching...
 Wed Oct 19 11:01:33 2022  -Matching variants for hg19: num_hg19= 1092441
 Wed Oct 19 11:01:33 2022  -Matching variants for hg38: num_hg38= 15997
 Wed Oct 19 11:01:33 2022  -Since num_hg19&gt;num_hg38, assigning genome build hg19...
-</code></pre></div></p>
+</code></pre></div>
+</div>
 
 
 

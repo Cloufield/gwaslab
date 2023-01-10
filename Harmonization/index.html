@@ -464,13 +464,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#assign-chr-and-pos-according-to-rsid-and-reference-data" class="md-nav__link">
-    Assign CHR and POS according to rsID and reference data
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#assign-rsid-according-to-chr-pos-refalt" class="md-nav__link">
     Assign rsID according to CHR, POS, REF/ALT
   </a>
@@ -501,6 +494,13 @@
         <li class="md-nav__item">
   <a href="#liftover" class="md-nav__link">
     Liftover
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assign-chr-and-pos-according-to-rsid-and-reference-data" class="md-nav__link">
+    Assign CHR and POS according to rsID and reference data
   </a>
   
 </li>
@@ -1324,13 +1324,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#assign-chr-and-pos-according-to-rsid-and-reference-data" class="md-nav__link">
-    Assign CHR and POS according to rsID and reference data
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#assign-rsid-according-to-chr-pos-refalt" class="md-nav__link">
     Assign rsID according to CHR, POS, REF/ALT
   </a>
@@ -1365,6 +1358,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#assign-chr-and-pos-according-to-rsid-and-reference-data" class="md-nav__link">
+    Assign CHR and POS according to rsID and reference data
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1384,7 +1384,6 @@
 <p>gwaslab provides reference-dependent harmonization functions.</p>
 <p>See examples <a href="https://cloufield.github.io/gwaslab/harmonization_workflow/">here.</a></p>
 <h2 id="methods-summary">Methods summary</h2>
-<p>Outdated!!! (will be updated soon)</p>
 <table>
 <thead>
 <tr>
@@ -1396,33 +1395,23 @@
 <tbody>
 <tr>
 <td><code>.check_ref()</code></td>
-<td>ref_path</td>
-<td>check alignment with a reference sequence</td>
-</tr>
-<tr>
-<td><code>.rsid_to_chrpos()</code></td>
-<td>path, n_cores</td>
-<td>use rsid to fill CHR and POS</td>
-</tr>
-<tr>
-<td><code>.rsid_to_chrpos2()</code></td>
-<td>path</td>
-<td>use rsid to fill CHR and POS (muilti-thread, need hd5 file)</td>
+<td><code>ref_path</code>, <code>chr_dict=get_chr_to_number()</code></td>
+<td>Check alignment with a reference sequence</td>
 </tr>
 <tr>
 <td><code>.assign_rsid()</code></td>
-<td>path</td>
-<td>annotate rsid using a reference vcf file</td>
+<td><code>ref_rsid_tsv</code>, <code>ref_rsid_vcf</code>, <code>n_cores=1</code>, <code>chunksize=5000000</code>, <code>chr_dict=get_number_to_chr()</code>, <code>overwrite="empty"</code></td>
+<td>Annotate rsid using a reference vcf file</td>
 </tr>
 <tr>
 <td><code>.infer_strand()</code></td>
-<td>ref_infer="" , ref_alt_freq=None,  maf_threshold=0.43</td>
-<td>infer the strand of a variant using reference vcf file with EAF in INFO</td>
+<td><code>ref_infer</code>,<code>ref_alt_freq=None</code>,<code>maf_threshold=0.40</code>,<code>remove_snp=""</code>,<code>mode="pi"</code>,<code>n_cores=1</code>,<code>remove_indel=""</code></td>
+<td>Infer the strand of a variant using reference vcf file with EAF in INFO</td>
 </tr>
 <tr>
 <td><code>.check_daf()</code></td>
-<td>ref_infer="" , ref_alt_freq=None,</td>
-<td>calculate difference in allele frequencies</td>
+<td><code>ref_infer</code>,<code>ref_alt_freq=None</code>,<code>maf_threshold=0.40</code>,<code>n_cores=1</code></td>
+<td>Calculate difference in allele frequencies</td>
 </tr>
 <tr>
 <td><code>.flip_allele_stats()</code></td>
@@ -1431,65 +1420,89 @@
 </tr>
 <tr>
 <td><code>.liftover()</code></td>
-<td>n_cores=1,from_build="19", to_build="38"</td>
-<td>perform liftover</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
+<td><code>n_cores=1</code>,<code>from_build="19"</code>, <code>to_build="38"</code></td>
+<td>Perform liftover for POS</td>
 </tr>
 </tbody>
 </table>
 <h2 id="align-nea-with-ref-in-reference-genome">Align NEA with REF in reference genome</h2>
+<p><code>.check_ref()</code>
+Check if NEA is aligned with the reference sequence. After checking, the tracking status code will be changed accordingly. </p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="n">ref_path</span><span class="o">=</span><span class="s2">&quot;ref_genome.fa&quot;</span><span class="p">)</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
 </code></pre></div>
-<p>(! Only changing the status code) </p>
-<p>Check if NEA is aligned with the reference sequence. After checking, the tracking status code will be changed accordingly.   </p>
-<h2 id="assign-chr-and-pos-according-to-rsid-and-reference-data">Assign CHR and POS according to rsID and reference data</h2>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos</span><span class="p">()</span>     <span class="c1">#single thread</span>
-<span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos2</span><span class="p">()</span>    <span class="c1">#multithread</span>
-</code></pre></div>
-<p>(to be tested)</p>
-<h2 id="assign-rsid-according-to-chr-pos-refalt">Assign rsID according to CHR, POS, REF/ALT</h2>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">assign_rsid</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;reference.vcf.gz&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p>Annotated variants with rsID using a reference vcf file (tabix indexd).</p>
-<p>Gwaslab will first extract all variants in reference file with matching CHR and POS. And then comapre EA/NEA in sumstats with REF/ALT in reference vcf. When matching, it will annotate the vairant in sumstats with the matching rsID in reference vcf.  </p>
-<h2 id="check-panlidromic-snps-or-undistingushable-indels">Check panlidromic SNPs or undistingushable Indels</h2>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_strand</span><span class="p">()</span>
-</code></pre></div>
-<p>(! Only changing the status code)</p>
-<ol>
-<li>
-<p>Infer the strand for palindromic SNPs (AT, or CG), the default threshlod is 0.43. </p>
-</li>
-<li>
-<p>make sure specify the right allele frequency for you target ancestry in INFO field.</p>
-</li>
-<li>
-<p>Checking the alignment status of  indels with the REF allele in reference vcf file.</p>
-</li>
-</ol>
-<h2 id="check-difference-in-allele-frequency">Check difference in allele frequency</h2>
-<div class="highlight"><pre><span></span><code>mysumstats.check_daf()
-</code></pre></div>
-<p>You may want to check the allele frequency discrepancy with a reference vcf. Just specify the path and the right allele frequency for you target ancestry in INFO field.</p>
-<p>GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in DAF column. DAF can then be used to plot or filter variants.</p>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_daf</span><span class="p">()</span>
-</code></pre></div>
-<h2 id="flipping-based-on-status-code">Flipping based on status code</h2>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
-</code></pre></div>
-<p>Flip allele-specific statistics to harmonise the variants based on the tracking status code</p>
-<h2 id="liftover">Liftover</h2>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">liftover</span><span class="p">(</span><span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">from_build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span> <span class="n">to_build</span><span class="o">=</span><span class="s2">&quot;38&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p>Perform liftover for POS (based on liftover <a href="https://github.com/jeremymcrae/liftover">GitHub - jeremymcrae/liftover: liftover for python, made fast with cython</a>)</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>gwaslab will only liftover basepair positions. </p>
+<p><code>check_ref()</code> only change the status code. Use <a href="#flipping-based-on-status-code">filp function</a> <code>.flip_allele_stats()</code> to filp the allele-specific stats.</p>
 </div>
+<h2 id="assign-rsid-according-to-chr-pos-refalt">Assign rsID according to CHR, POS, REF/ALT</h2>
+<p><code>.assign_rsid()</code></p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">assign_rsid</span><span class="p">(</span><span class="n">ref_rsid_tsv</span><span class="p">,</span> <span class="n">ref_rsid_vcf</span><span class="p">,</span> <span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<p>Annotated variants with rsID using a reference tsv file (1KG variants) and reference vcf file (tabix indexd, entire dbSNP).</p>
+<ul>
+<li>For tsv file, variants will be matched using SNPID (CHR:POS:NEA:EA) for quick assigning.</li>
+<li>For VCF file, Gwaslab will first extract all variants in reference file with matching CHR and POS. And then comapre EA/NEA in sumstats with REF/ALT in reference vcf. When matching, it will annotate the vairant in sumstats with the matching rsID in reference vcf.  </li>
+</ul>
+<h2 id="check-panlidromic-snps-or-undistingushable-indels">Check panlidromic SNPs or undistingushable Indels</h2>
+<ul>
+<li>Infer the strand for palindromic SNPs (AT, or CG), the default threshlod is 0.40. </li>
+<li>Checking the alignment status of indels with the REF allele in a reference vcf file.</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_strand</span><span class="p">()</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
+</code></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>infer_strand()</code> only change the status code. Use <a href="#flipping-based-on-status-code">filp function</a> <code>.flip_allele_stats()</code> to filp the allele-specific stats.</p>
+</div>
+<h2 id="check-difference-in-allele-frequency">Check difference in allele frequency</h2>
+<p><code>.check_daf()</code></p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code>mysumstats.check_daf()
+</code></pre></div>
+</div>
+<p>You may want to check the allele frequency discrepancy with a reference vcf. Just specify the path and the right allele frequency for you target ancestry in INFO field.</p>
+<p>GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in DAF column. DAF can then be used for plotting (<code>.plot_daf()</code>) or filter variants.</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_daf</span><span class="p">()</span>
+</code></pre></div>
+</div>
+<h2 id="flipping-based-on-status-code">Flipping based on status code</h2>
+<p><code>.flip_allele_stats()</code></p>
+<p>Flip allele-specific statistics to harmonise the variants based on the tracking status code</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
+</code></pre></div>
+</div>
+<h2 id="liftover">Liftover</h2>
+<p>Perform liftover for POS (based on liftover <a href="https://github.com/jeremymcrae/liftover">GitHub - jeremymcrae/liftover: liftover for python, made fast with cython</a>)</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">liftover</span><span class="p">(</span><span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">from_build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span> <span class="n">to_build</span><span class="o">=</span><span class="s2">&quot;38&quot;</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>gwaslab will only liftover basepair positions.  </p>
+</div>
+<h2 id="assign-chr-and-pos-according-to-rsid-and-reference-data">Assign CHR and POS according to rsID and reference data</h2>
+<p><div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos</span><span class="p">()</span>     <span class="c1">#single thread</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos2</span><span class="p">()</span>    <span class="c1">#multithread</span>
+</code></pre></div>
+(to be tested)</p>
 
 
 
