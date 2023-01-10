@@ -1,5 +1,7 @@
 # Download reference data
 
+## Downloading and file management system
+
 |functions|options|description|
 |-|-|-|
 |gl.check_available_ref()|| list current available reference data gwaslab can use |
@@ -34,7 +36,7 @@ Currently, you can download the following files using gwaslab:
 - 'refseq_hg38_gtf'
 - 'refseq_hg38_gtf_protein_coding'
 
-# Configurations
+## Configurations
 
 gwaslab uses 3 files and a default path for reference management:
 
