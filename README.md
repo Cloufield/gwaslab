@@ -105,27 +105,30 @@ mysumstats.plot_mqq()
 - Sumstats summary: give you a quick overview of the sumstats. 
 
 
-## Requirements:
-- Python >= 3.8
-- pySAM >0.18,<0.20
-- pyensembl >=2.2.3
-- scikit-allel
-- Biopython >= 1.79
-- liftover >= 1.1.13
-- pandas >= 1.3,<1.5
-- numpy >= 1.21.2
-- matplotlib >=3.5
-- seaborn >=0.11.1
-- scipy >=1.6.2
-- statsmodels > =0.13
-- adjustText
+## Requirements
 
-# Citation
+```
+Python >= 3.8
+pySAM >0.18,<0.20
+pyensembl >=2.2.3
+scikit-allel
+Biopython >= 1.79
+liftover >= 1.1.13
+pandas >= 1.3,<1.5
+numpy >= 1.21.2
+matplotlib >=3.5
+seaborn >=0.11.1
+scipy >=1.6.2
+statsmodels > =0.13
+adjustText
+```
+
+## Citation
 A manuscript is in preparation and will be released soon.
 Sample GWAS data used in gwaslab is obtained from: http://jenger.riken.jp/
 Sample GWAS data citation : Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.
 
-# Contacts
+## Contacts
 * Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
 * Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
 * Email: gwaslab@gmail.com
