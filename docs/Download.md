@@ -4,13 +4,13 @@
 
 |functions|options|description|
 |-|-|-|
-|gl.check_available_ref()|| list current available reference data gwaslab can use |
-|gl.check_downloaded_ref()||list downloaded reference data |
-|gl.download_ref(name)|name|download the refernce data|
-|gl.remove_file(name)|name|remove the downloaded data|
-|gl.get_path(name)|name|get the path to the refernce data|
+|`gl.check_available_ref()`|| list current available reference data gwaslab can use |
+|`gl.check_downloaded_ref()`||list downloaded reference data |
+|`gl.download_ref(keyword)`|keyword|download the refernce data|
+|`gl.remove_file(keyword)`|keyword|remove the downloaded data|
+|`gl.get_path(keyword)`|keyword|get the path to the refernce data|
 
-Currently, you can download the following files using gwaslab:
+Currently, you can download the following files using gwaslab with the keywords:
 
 - '1kg_eas_hg19'
 - '1kg_eas_hg19_tbi'
