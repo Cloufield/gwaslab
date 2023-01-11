@@ -8,9 +8,9 @@ See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow
 | Sumstats Methods      | Options                                                      | Description                                                                    |
 | --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
 | `.fix_id()`           | `fixchrpos=False`, <br/>`fixid=False`, <br/>`fixsep=False`,<br/>`overwrite=False`,<br/>`forcefixid=False` | check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS |
-| `.fix_CHR()`          | `remove=False`                                               | standardize chromsome notation                                                 |
+| `.fix_CHR()`          | `remove=False`, `x="X"`, `y="Y"`, `mt="MT"` | standardize chromsome notation                                                 |
 | `.fix_POS()`          | `remove=False` , `limit=250000000`          | standardize basepair posituion notation and filter out bad values              |
-| `.fix_allele()`       | `remove=False`, `x="X"`, `y="Y"`, `mt="MT"`         | standardize base notation to ATCG                                              |
+| `.fix_allele()`       | `remove=False`        | standardize base notation to ATCG                                              |
 | `.normalize_allele()` | `n_cores=1`                                                  | normalize indels (only support ATA:AA -> AT:A but not -:T)                     |
 | `.sort_coordinate()`  |                                                              | sort the variant coordinates                                                   |
 | `.sort_column()`  |                                                              | sort the column order to gwaslab default                                                   |
