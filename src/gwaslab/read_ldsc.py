@@ -10,6 +10,7 @@ def read_ldsc(filelist=[],mode="h2"):
         
         for index, ldscfile in enumerate(filelist):
             print("Loading file "+str(index+1)+" :" + ldscfile +" ...")
+            
             row={}
             
             with open(ldscfile,"r") as file:
@@ -51,7 +52,9 @@ def read_ldsc(filelist=[],mode="h2"):
                     objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+').findall(lastline)
                     row["Ratio"]=objects[1]
                     row["Ratio_se"]=objects[2]
-            summary = summary.append(row,ignore_index=True)
+            #summary = summary.append(row,ignore_index=True)
+            row = pd.DataFrame([row], columns = summary.columns)
+            summary = pd.concat([summary, row], ignore_index=True)
 ###############################################################################
     if mode=="rg":
         summary = pd.DataFrame(columns = ['p1',
@@ -79,9 +82,10 @@ def read_ldsc(filelist=[],mode="h2"):
                 ## first line h2 se
                 while line.strip():
                     row = line.split()
-                    row_series = pd.Series(row, index = summary.columns)
-                    summary = summary.append(row_series, ignore_index=True)
+                    row_series = pd.DataFrame([row], columns = summary.columns)
+                    #summary = summary.append(row_series, ignore_index=True)
+                    summary = pd.concat([summary, row_series], ignore_index=True)
                     line = file.readline()
-        summary = summary.loc[summary["rg"]!="NA",:] 
+        summary = summary.loc[summary["rg"]!="NA",:].copy() 
         summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']]  = summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']].astype("float32")            
     return summary   
