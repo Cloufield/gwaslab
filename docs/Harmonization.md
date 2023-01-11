@@ -8,11 +8,12 @@ See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/
 
 | Sumstats Methods| Options| Description |
 |-|-|-|
-| `.check_ref()` | `ref_path`, `chr_dict=get_chr_to_number()`     | Check alignment with a reference sequence                                  |
-| `.assign_rsid()` | `ref_rsid_tsv`, `ref_rsid_vcf`, `n_cores=1`, `chunksize=5000000`, `chr_dict=get_number_to_chr()`, `overwrite="empty"` | Annotate rsid using a reference vcf file                                   |
-| `.infer_strand()`      | `ref_infer`,`ref_alt_freq=None`,`maf_threshold=0.40`,`remove_snp=""`,`mode="pi"`,`n_cores=1`,`remove_indel=""` | Infer the strand of a variant using reference vcf file with EAF in INFO    |
-| `.check_daf()`         | `ref_infer`,`ref_alt_freq=None`,`maf_threshold=0.40`,`n_cores=1`                   | Calculate difference in allele frequencies                                 |
+| `.check_ref()` | `ref_path`,<br /> `chr_dict=get_chr_to_number()`     | Check alignment with a reference sequence                                  |
+| `.assign_rsid()` | `ref_rsid_tsv`,<br /> `ref_rsid_vcf`,<br /> `n_cores=1`, <br />`chunksize=5000000`, <br />`chr_dict=get_number_to_chr()`, <br />`overwrite="empty"` | Annotate rsid using a reference vcf file                                   |
+| `.infer_strand()`      | `ref_infer`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`remove_snp=""`,<br />`mode="pi"`,<br />`n_cores=1`,<br />`remove_indel=""` | Infer the strand of a variant using reference vcf file with EAF in INFO    |
+| `.check_daf()`         | `ref_infer`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`n_cores=1`                   | Calculate difference in allele frequencies                                 |
 | `.flip_allele_stats()` |                                                       | After alignment and inferring, flip the alleles to harmonise the variants. |
+|`.harmonize()`|`basic_check=True`, <br /> `ref_seq=None`,<br />`ref_rsid_tsv=None`,<br />`ref_rsid_vcf=None`,<br />`ref_infer=None`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`n_cores=1`,<br />`remove=False`,<br />`checkref_args={}`,<br />`removedup_args={}`,<br />`assignrsid_args={}`,<br />`inferstrand_args={}`,<br />`flipallelestats_args={}`,<br />`fixid_args={}`,<br />`fixchr_agrs={}`,<br />`fixpos_args={}`,<br />`fixallele_args={}`,<br />`sanitycheckstats_args={}`,<br />`normalizeallele_args={}` |all-in-one function for harmonization|
 
 ## Align NEA with REF in reference genome
 
