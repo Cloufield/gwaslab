@@ -86,10 +86,6 @@ GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in D
     mysumstats.flip_allele_stats()
     ```
 
-## Liftover
-
-Perform liftover for POS (based on liftover [GitHub - jeremymcrae/liftover: liftover for python, made fast with cython](https://github.com/jeremymcrae/liftover))
-
 
 ## Assign CHR and POS according to rsID and reference data
 
