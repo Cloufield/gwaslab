@@ -135,7 +135,7 @@ GWASLab support loading sumstats from chromosome-separated files (file names nee
 
 
 ## Check and save sumstats
-After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in .data :
+After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in `.data` :
 
 !!! example
     ```python
@@ -143,6 +143,7 @@ After loading, the raw data columns will be renamed to new columns without ambig
     ```
 
 You can simply save the processed data using pandas saving functions, for example:
+
 !!! example
     ```
     mysumstats.data.to_csv("./mysumstats.csv")
@@ -158,7 +159,10 @@ Please check [https://cloufield.github.io/gwaslab/Format/](https://cloufield.git
 
 
 ## Logging
-All manipulation conducted to the sumstats will be logged for reproducibility and traceability. The log is stored in a gl.Log object . You can check it by` .log.show() `and save it using `.log.save()`
+
+All manipulation conducted to the sumstats will be logged for reproducibility and traceability. 
+
+The log is stored in a `gl.Log()` object . You can check it by `.log.show() `and save it using `.log.save()`
 
 !!! example 
     ```
