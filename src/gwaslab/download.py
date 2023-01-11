@@ -197,6 +197,8 @@ def download_ref(name,
         if directory is None:
             #directory = path.dirname(__file__) + '/data/'
             directory = options.paths["data_directory"]
+            if not path.exists(directory):
+                os.makedirs(directory)
         
         local_filename, from_dropbox = url_to_local_file_name(local_filename, url, from_dropbox)
 

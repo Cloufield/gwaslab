@@ -28,6 +28,7 @@ nav:
        - "Standardization and Normalization": Standardization.md
        - "QC and Filtering": QC&Filtering.md
        - Harmonization: Harmonization.md
+       - rsID : AssignrsID.md
        - Liftover: LiftOver.md
        - "Data conversion": Conversion.md
     - Visualization:
