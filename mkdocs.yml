@@ -45,6 +45,7 @@ nav:
        - "Extract Lead Variants": ExtractLead.md
        - "Extract Novel Variants": ExtractNovel.md
        - "Format and Save": Format.md
+       - "Save Sumstats Object": Pickle.md 
        - "Load LDSC log": LoadLDSC.md
        - "Convert Heritability": HeritabilityConversion.md
        - "Infer Genome Build": InferBuild.md
