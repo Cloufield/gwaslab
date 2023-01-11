@@ -15,7 +15,7 @@
     
     
       
-        <title>Infer Genome Build - GWASLab</title>
+        <title>Save Sumstats Object - GWASLab</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#infer-genome-build" class="md-skip">
+        <a href="#save-the-sumstats-object" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Infer Genome Build
+              Save Sumstats Object
             
           </span>
         </div>
@@ -757,11 +757,66 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../Pickle/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Save Sumstats Object
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Save Sumstats Object
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    Options
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -799,21 +854,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../InferBuild/" class="md-nav__link">
         Infer Genome Build
       </a>
-      
     </li>
   
 
@@ -1288,6 +1333,35 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    Options
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1301,22 +1375,30 @@
                   
 
 
-<h1 id="infer-genome-build">Infer Genome Build</h1>
-<p>Gwaslab use the chromosome and basepair position information for Hapmap3 SNPs to infer the reference genome build for sumstats.</p>
-<p>Reference genome build will be simply assigned based on the matching count. (Note: the results are more reliable if you have more than 10,000 variants)</p>
-<p>Status codes (first two digits) will be changed based on the matching results.</p>
+<h1 id="save-the-sumstats-object">Save the Sumstats Object</h1>
+<p>GWASLab provides functions to save and load unfinished <code>gl.Sumstats</code> Objects.</p>
+<h2 id="usage">Usage</h2>
+<div class="highlight"><pre><span></span><code>gl.dump_pickle(SumstatsObject, path, overwrite=False)
+
+gl.load_pickle(path)
+</code></pre></div>
+<h2 id="options">Options</h2>
+<ul>
+<li><code>SumstatsObject</code> : <code>gl.Sumstats()</code>. GWASLab Sumstats Object.</li>
+<li><code>path</code> : <code>string</code>. dumped pickle file path.</li>
+<li><code>overwrite</code> : <code>boolean</code>. If True, overwrite the file if it already exists.</li>
+</ul>
+<h2 id="example">Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code>mysumstats.infer_build()
-
-Wed Oct 19 11:01:01 2022  -Start to infer genome build version using hapmap3 SNPs...
-Wed Oct 19 11:01:01 2022  -Loading Hapmap3 variants data...
-Wed Oct 19 11:01:04 2022  -chr:pos will be used for matching...
-Wed Oct 19 11:01:33 2022  -Matching variants for hg19: num_hg19= 1092441
-Wed Oct 19 11:01:33 2022  -Matching variants for hg38: num_hg38= 15997
-Wed Oct 19 11:01:33 2022  -Since num_hg19&gt;num_hg38, assigning genome build hg19...
-</code></pre></div>
 </div>
+<div class="highlight"><pre><span></span><code>gl.dump_pickle(mysumstats,&quot;./first.pickle&quot;,overwrite=True)
+Wed Jan 11 23:29:47 2023 Start to dump the Sumstats Object.
+Wed Jan 11 23:29:47 2023  -Dump the Sumstats Object to :  ./first.pickle
+
+my2sumstats = gl.load_pickle(&quot;./first.pickle&quot;)
+Wed Jan 11 23:45:59 2023 Loaded dumped Sumstats object from :  ./first.pickle
+</code></pre></div>
 
 
 
@@ -1337,7 +1419,7 @@ Wed Oct 19 11:01:33 2022  -Since num_hg19&gt;num_hg38, assigning genome build hg
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../HeritabilityConversion/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Convert Heritability" rel="prev">
+        <a href="../Format/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Format and Save" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -1346,20 +1428,20 @@ Wed Oct 19 11:01:33 2022  -Since num_hg19&gt;num_hg38, assigning genome build hg
               <span class="md-footer__direction">
                 Previous
               </span>
-              Convert Heritability
+              Format and Save
             </div>
           </div>
         </a>
       
       
         
-        <a href="../Download/" class="md-footer__link md-footer__link--next" aria-label="Next: Download" rel="next">
+        <a href="../LoadLDSC/" class="md-footer__link md-footer__link--next" aria-label="Next: Load LDSC log" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Download
+              Load LDSC log
             </div>
           </div>
           <div class="md-footer__button md-icon">
