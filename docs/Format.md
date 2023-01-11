@@ -1,7 +1,8 @@
 # Output sumstats in certain formats
 
-gwaslab provides a flexible formatting and saving function.
-See examples [here.](https://cloufield.github.io/gwaslab/format_load_save/)
+GWASLab provides a flexible formatting and saving function.
+
+## Usage
 
 ```
 to_format(
@@ -24,6 +25,7 @@ to_format(
           tabix=False
           )
 ```
+
 - `path` : `string`, the path for the output, only prefix is needed.
 - `fmt`="ldsc": output format for sumstats. Currently support `plink` ,`plink2`, `ldsc`, `saige`, `fastgwa`, `regenie` . For details , please check [ https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook).
 - `extract`:`list`, a list of variants to include.
@@ -42,68 +44,92 @@ to_format(
 - `verbose` : `boolean`, if True, print logs.
 - `output_log` : `boolean`, if True, save log to a file.
 
-## Example 1:
-```
-import gwaslab as gl
-# load your raw sumstats
-mysumstats = gl.Sumstats(...)
-# basic QC
-mysumstats.basic_check()
-# output metal format
-mysumstats.to_format("./test",fmt="metal")
-```
+## Example 1: common tabular format
 
-log :
-```
-Tue Sep 13 18:00:41 2022 Start to format the output sumstats in:  metal  format
-Tue Sep 13 18:00:41 2022  -Formatting statistics ...
-Tue Sep 13 18:00:41 2022  - Float statistics formats:
-Tue Sep 13 18:00:41 2022   - Columns: ['EAF', 'BETA', 'SE', 'P']
-Tue Sep 13 18:00:41 2022   - Output formats: ['{:.4g}', '{:.4f}', '{:.4f}', '{:.4e}']
-Tue Sep 13 18:00:41 2022  - Start outputting sumstats in metal format...
-Tue Sep 13 18:00:41 2022  -metal format will be loaded...
-Tue Sep 13 18:00:41 2022  -metal format meta info:
-Tue Sep 13 18:00:41 2022   - format_name  :  metal
-Tue Sep 13 18:00:41 2022   - format_source  :  https://genome.sph.umich.edu/wiki/METAL_Documentation
-Tue Sep 13 18:00:41 2022   - format_version  :  20220726
-Tue Sep 13 18:00:41 2022  -gwaslab to metal format dictionary:
-Tue Sep 13 18:00:41 2022   - gwaslab keys: ['SNPID', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P', 'DIRECTION']
-Tue Sep 13 18:00:41 2022   - metal values: ['MarkerName', 'Allele1', 'Allele2', 'Freq1', 'Effect', 'StdErr', 'P-value', 'Direction']
-Tue Sep 13 18:00:41 2022  -Output columns: Index(['MarkerName', 'Allele1', 'Allele2', 'Freq1', 'Effect', 'StdErr',
-       'P-value'],
-      dtype='object')
-Tue Sep 13 18:00:41 2022  -Output path: ./test.metal.tsv.gz
-Tue Sep 13 18:00:41 2022  -Saving log file: ./test.metal.log
-Tue Sep 13 18:00:41 2022 Finished outputting successfully!
-```
+gwaslab support commonly used tabular format, which are listed in a companion repository `formatbook`.
 
-## Example 2: LDSC format, extract hapmap3 SNPs and exclude SNPs in HLA region
-```
-## format the sumstats to ldsc format
-## extract only hapmap3 SNPs
-## exclude SNPs in HLA region
-mysumstats.to_format("./test",fmt="ldsc", hapmap3=True, exclude_hla=False, build="19")
-```
+!!! quote "formatbook"
+    for more details, please check [formatbook](https://github.com/Cloufield/formatbook)
+    ssf: GWAS-SSF format
+    gwascatalog : GWAS Catalog format
+    pgscatalog : PGS Catalog format
+    plink: PLINK output format
+    plink2: PLINK2 output format
+    saige: SAIGE output format
+    regenie: output format
+    fastgwa: output format
+    metal: output format
+    mrmega: output format
+    fuma: input format
+    ldsc: input format
+    locuszoom: input format
+    vcf: gwas-vcf format
+    bolt_lmm : output format
 
-## Example 3: bed-like format
-```
-# output 1-based bed-like files for vep
-mysumstats.to_format("./test",fmt="vep",xymt_number=True,chr_prefix="Chr")
 
-# output 0-based bed-like file, and then bgzip and index the file.
-mysumstats.to_format("./test",fmt="bed",bgzip=True,tabix=True)
-```
+!!! example "output metal format"
+    ```
+    import gwaslab as gl
+    # load your raw sumstats
+    mysumstats = gl.Sumstats(...)
+    # basic QC
+    mysumstats.basic_check()
+    # output metal format
+    mysumstats.to_format("./test",fmt="metal")
+    
+    Tue Sep 13 18:00:41 2022 Start to format the output sumstats in:  metal  format
+    Tue Sep 13 18:00:41 2022  -Formatting statistics ...
+    Tue Sep 13 18:00:41 2022  - Float statistics formats:
+    Tue Sep 13 18:00:41 2022   - Columns: ['EAF', 'BETA', 'SE', 'P']
+    Tue Sep 13 18:00:41 2022   - Output formats: ['{:.4g}', '{:.4f}', '{:.4f}', '{:.4e}']
+    Tue Sep 13 18:00:41 2022  - Start outputting sumstats in metal format...
+    Tue Sep 13 18:00:41 2022  -metal format will be loaded...
+    Tue Sep 13 18:00:41 2022  -metal format meta info:
+    Tue Sep 13 18:00:41 2022   - format_name  :  metal
+    Tue Sep 13 18:00:41 2022   - format_source  :  https://genome.sph.umich.edu/wiki/METAL_Documentation
+    Tue Sep 13 18:00:41 2022   - format_version  :  20220726
+    Tue Sep 13 18:00:41 2022  -gwaslab to metal format dictionary:
+    Tue Sep 13 18:00:41 2022   - gwaslab keys: ['SNPID', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P', 'DIRECTION']
+    Tue Sep 13 18:00:41 2022   - metal values: ['MarkerName', 'Allele1', 'Allele2', 'Freq1', 'Effect', 'StdErr', 'P-value', 'Direction']
+    Tue Sep 13 18:00:41 2022  -Output columns: Index(['MarkerName', 'Allele1', 'Allele2', 'Freq1', 'Effect', 'StdErr',
+           'P-value'],
+          dtype='object')
+    Tue Sep 13 18:00:41 2022  -Output path: ./test.metal.tsv.gz
+    Tue Sep 13 18:00:41 2022  -Saving log file: ./test.metal.log
+    Tue Sep 13 18:00:41 2022 Finished outputting successfully!
+    ```
 
-## Example 4: vcf format
-```
-# output vcf file, and then bgzip and index the file.
-mysumstats.to_format("./test",fmt="vcf",bgzip=True,tabix=True)
-```
+## Example 2 : LDSC
+!!! example "LDSC format, extract hapmap3 SNPs and exclude SNPs in HLA region"
+    ```
+    ## format the sumstats to ldsc format
+    ## extract only hapmap3 SNPs
+    ## exclude SNPs in HLA region
+    mysumstats.to_format("./test",fmt="ldsc", hapmap3=True, exclude_hla=False, build="19")
+    ```
+
+## Example 3 : BED
+!!! example bed-like format
+    ```
+    # output 1-based bed-like files for vep
+    mysumstats.to_format("./test",fmt="vep",xymt_number=True,chr_prefix="Chr")
+    
+    # output 0-based bed-like file, and then bgzip and index the file.
+    mysumstats.to_format("./test",fmt="bed",bgzip=True,tabix=True)
+    ```
+
+## Example 4: VCF 
+!!! example vcf format
+    ```
+    # output vcf file, and then bgzip and index the file.
+    mysumstats.to_format("./test",fmt="vcf",bgzip=True,tabix=True)
+    ```
 
 ## Example 5: GWAS-ssf
-```
-# output  GWAS-ssf format
-mysumstats.to_format("./test",fmt="ssf")
-```
+!!! example GWAS-ssf format
+    ```
+    # output  GWAS-ssf format
+    mysumstats.to_format("./test",fmt="ssf")
+    ```
 
-For sample codes, please check [https://github.com/Cloufield/gwaslab/blob/main/examples/format_load_save.ipynb](https://github.com/Cloufield/gwaslab/blob/main/examples/format_load_save.ipynb)
+For sample codes, please check [here.](https://cloufield.github.io/gwaslab/format_load_save/)
