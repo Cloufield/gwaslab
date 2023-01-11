@@ -1334,13 +1334,14 @@
 
 
 <h1 id="liftover">Liftover</h1>
-<p>Gwaslab can directly liftover the positions of variants in sumstats.</p>
+<p>GWASLab can directly liftover the positions of variants in sumstats.</p>
 <p>See examples <a href="https://cloufield.github.io/gwaslab/harmonization_liftover/">here.</a></p>
 <div class="highlight"><pre><span></span><code>mysumstats.liftover(n_cores=3, 
                     from_build=&quot;19&quot;, 
                     to_build=&quot;38&quot;,
                     remove=True)
 </code></pre></div>
+<p>Perform liftover for POS.</p>
 <h2 id="options">Options</h2>
 <ul>
 <li><code>n_cores</code> : number of threads to use for liftover</li>
@@ -1348,8 +1349,13 @@
 <li><code>to_build</code> : to which genome build</li>
 <li><code>remove</code> : remove unmapped variants</li>
 </ul>
-<p>Perform liftover for POS (based on <a href="https://github.com/jeremymcrae/liftover">liftover</a> GitHub - jeremymcrae/liftover: liftover for python, made fast with cython)</p>
+<div class="admonition quote">
+<p class="admonition-title">Quote</p>
+<p>This method is based on <a href="https://github.com/jeremymcrae/liftover">GitHub - jeremymcrae/liftover: liftover for python, made fast with cython</a></p>
+</div>
 <h2 id="example">example</h2>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
              snpid=&quot;SNP&quot;,
              chrom=&quot;CHR&quot;,
@@ -1359,12 +1365,15 @@
              neaf=&quot;Frq&quot;,
              beta=&quot;BETA&quot;,
              se=&quot;SE&quot;,
-             p=&quot;P&quot;,nrows=500000)
-
+             p=&quot;P&quot;)
 mysumstats.basic_check()
-
 mysumstats.liftover(n_cores=3, from_build=&quot;19&quot;, to_build=&quot;38&quot;)
 </code></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>GWASLab will only liftover basepair positions. If needed, please perform harmonization using the reference file of the target build.  </p>
+</div>
 
 
 
