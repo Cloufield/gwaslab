@@ -20,9 +20,9 @@ def summarize(insumstats,
     numeric_cols=[]
     output = {}
     meta_dic={}
-    meta_dic["Row_num"] = str(sumstats.shape[0])
-    meta_dic["Column_num"] = str(sumstats.shape[1])
-    meta_dic["Column_names"] = ",".join(list(sumstats.columns.values))
+    meta_dic["Row_num"] = str(insumstats.shape[0])
+    meta_dic["Column_num"] = str(insumstats.shape[1])
+    meta_dic["Column_names"] = ",".join(list(insumstats.columns.values))
     meta_dic["Last_checked_time"]=str(time.ctime(time.time()))
     output["META"]=meta_dic
     ###############################################################################
