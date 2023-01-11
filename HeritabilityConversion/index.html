@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#heritabilty-conversion-observed-scale-liability-scale" class="md-skip">
+        <a href="#heritabilty-conversion" class="md-skip">
           Skip to content
         </a>
       
@@ -768,9 +768,47 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Convert Heritability
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Convert Heritability
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1260,6 +1298,28 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1273,12 +1333,37 @@
                   
 
 
-<h1 id="heritabilty-conversion-observed-scale-liability-scale">Heritabilty conversion (Observed-scale -&gt; Liability-scale)</h1>
+<h1 id="heritabilty-conversion">Heritabilty conversion</h1>
+<p>gwaslab can convert Observed-scale heritability to Liability-scale heritability. </p>
+<div class="admonition quote">
+<p class="admonition-title">Quote</p>
+<p>Conversion formula (Equation 23 from Lee. 2011):
+$$
+h^2_{liability-scale} = h^2_{observed-scale} * {{K(1-K)}\over{Z^2}} *  {{K(1-K)}\over{P(1-P)}}
+$$</p>
+<ul>
+<li><span class="arithmatex">\(K\)</span> : Population disease prevalence.</li>
+<li><span class="arithmatex">\(P\)</span> : Sample disease prevalence.</li>
+<li><span class="arithmatex">\(Z\)</span> : The height of the standard normal probability density function at threshold T. <code>scipy.stats.norm.pdf(T, loc=0, scale=1)</code>.</li>
+<li><span class="arithmatex">\(T\)</span> : The threshold. <code>scipy.stats.norm.ppf(1 - K, loc=0, scale=1)</code> or <code>scipy.stats.norm.isf(K)</code>.</li>
+</ul>
+<p>Reference: Estimating Missing Heritability for Disease from Genome-wide Association Studies https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059431/</p>
+</div>
+<h2 id="usage">Usage</h2>
 <div class="highlight"><pre><span></span><code>gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)
 </code></pre></div>
-<p><code>h2_obs</code> : float. Heritability on the observed scale in an ascertained sample. <code>P</code> : float in (0,1). Prevalence of the phenotype in the sample. <code>K</code> : float in (0,1) . Prevalence of the phenotype in the population. <code>se_obs</code> : float. se of h2_obs.</p>
-<p>Adopted from LDSC.</p>
-<p>Reference: Estimating Missing Heritability for Disease from Genome-wide Association Studies https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059431/</p>
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li><code>h2_obs</code> : float. Heritability on the observed scale in an ascertained sample. </li>
+<li><code>P</code> : float in (0,1). Prevalence of the phenotype in the sample. </li>
+<li><code>K</code> : float in (0,1) . Prevalence of the phenotype in the population. </li>
+<li><code>se_obs</code> : float. se of h2_obs.</li>
+</ul>
+<div class="admonition quote">
+<p class="admonition-title">Quote</p>
+<p>Codes were adopted from <a href="https://github.com/bulik/ldsc/blob/aa33296abac9569a6422ee6ba7eb4b902422cc74/ldscore/regressions.py">LDSC</a>. </p>
+<p>Reference : Bulik-Sullivan, B. K., Loh, P. R., Finucane, H. K., Ripke, S., Yang, J., Patterson, N., ... &amp; Neale, B. M. (2015). LD Score regression distinguishes confounding from polygenicity in genome-wide association studies. Nature genetics, 47(3), 291-295.</p>
+</div>
 
 
 
