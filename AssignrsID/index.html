@@ -524,7 +524,7 @@
         
           <li class="md-nav__item">
   <a href="#snpid-rsid-table" class="md-nav__link">
-    SNPID-rsID table:
+    SNPID-rsID table
   </a>
   
 </li>
@@ -1362,7 +1362,7 @@
         
           <li class="md-nav__item">
   <a href="#snpid-rsid-table" class="md-nav__link">
-    SNPID-rsID table:
+    SNPID-rsID table
   </a>
   
 </li>
@@ -1416,44 +1416,29 @@
 
 
 <h1 id="assigning-rsid">Assigning rsID</h1>
-<p>GWASLab uses a optional two stage assigning strategy.</p>
+<p>GWASLab uses a two-step strategy (both steps are optional).</p>
 <ul>
-<li>Iterate over a SNPID-rsID table and assign rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats.</li>
-<li>Querying a large reference VCF file (dbSNP for example) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EN/NEA matches.</li>
+<li>For quick annotation, GWASLab iterates over a SNPID-rsID table and assign rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats. GWASLab provides a curated table  (1KG autosome variants). </li>
+<li>For full annotation, GWASLab will query a large reference VCF file (dbSNP for example, &gt;20GB ) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EN/NEA matches.</li>
 </ul>
 <h2 id="reference-data">Reference data</h2>
-<h3 id="snpid-rsid-table">SNPID-rsID table:</h3>
+<h3 id="snpid-rsid-table">SNPID-rsID table</h3>
+<p>GWASLab provides a download function <code>gl.download_ref()</code> and two curated tables which contains ~80M 1KG variants:</p>
 <ul>
 <li><code>hg19</code> : <code>gl.download_ref("1kg_dbsnp151_hg19_auto")</code></li>
-<li><code>hg38</code> : `gl.download_ref("1kg_dbsnp151_hg38_auto")``</li>
+<li><code>hg38</code> : <code>gl.download_ref("1kg_dbsnp151_hg38_auto")</code></li>
 </ul>
 <h3 id="vcf-file">VCF file</h3>
 <p>You can download this from dbSNP:</p>
 <p><code>hg19</code></p>
 <ul>
-<li>vcf:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz</li>
-<li>tbi:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz.tbi</li>
+<li><code>vcf</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz</li>
+<li><code>tbi</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz.tbi</li>
 </ul>
 <p><code>hg38</code></p>
 <ul>
-<li>vcf:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz</li>
-<li>tbi:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz.tbi</li>
-</ul>
-<h2 id="usage">Usage</h2>
-<div class="highlight"><pre><span></span><code>mysumstats.basic_check()
-mysumstats.assign_rsid( 
-                        ref_rsid_tsv = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;),
-                        ref_rsid_vcf = &quot;/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz&quot;,
-                        chr_dict = gl.get_number_to_NC(build=&quot;19&quot;),
-                        n_cores = 2)
-</code></pre></div>
-<p>Please always run <code>.basic_check()</code> first. This will convert the data to right data type, standardize and normalize the sumstats.</p>
-<h2 id="options">Options</h2>
-<ul>
-<li><code>ref_rsid_tsv</code> : tsv file for annotation of common used variants. Using SNPID (like 1:725932:G:A)</li>
-<li><code>ref_rsid_vcf</code> : vcf file for annotation of other variants.</li>
-<li><code>chr_dict</code>: a dictionary for to convert 1-25 to CHR in vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). gwaslab provides built-in conversion dictionaries.   <code>gl.get_number_to_NC(build="19")</code> and <code>gl.get_number_to_NC(build="19")</code></li>
-<li><code>n_cores</code>: number of cores to use.</li>
+<li><code>vcf</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.39.gz</li>
+<li><code>tbi</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.39.gz.tbi</li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">1kg_dbsnp151_hg19_auto</p>
@@ -1472,7 +1457,6 @@ SNPID   rsID    CHR     POS     NEA     EA
 </div>
 <div class="admonition note">
 <p class="admonition-title">VCF file form dbSNP</p>
-</div>
 <div class="highlight"><pre><span></span><code> zcat GCF_000001405.25.vcf.gz | head -100 | tail -10
 NC_000001.10    10059   rs1570391745    C       G       .       .       RS=1570391745;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9997,0.0003425|dbGaP_PopFreq:1,0
 NC_000001.10    10060   rs1639544146    C       CT      .       .       RS=1639544146;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
@@ -1485,6 +1469,26 @@ NC_000001.10    10068   rs1639545079    A       T       .       .       RS=16395
 NC_000001.10    10069   rs1570391755    A       C,G     .       .       RS=1570391755;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9966,.,0.003425|dbGaP_PopFreq:1,0,0
 NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=1639545200;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
 </code></pre></div>
+</div>
+<h2 id="usage">Usage</h2>
+<div class="highlight"><pre><span></span><code>mysumstats.basic_check()
+mysumstats.assign_rsid( 
+                        ref_rsid_tsv = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;),
+                        ref_rsid_vcf = &quot;/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz&quot;,
+                        chr_dict = gl.get_number_to_NC(build=&quot;19&quot;),
+                        n_cores = 2)
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please always run <code>.basic_check()</code> first. This will convert the data to right data type, standardize and normalize the sumstats.</p>
+</div>
+<h2 id="options">Options</h2>
+<ul>
+<li><code>ref_rsid_tsv</code> : tsv file for annotation of common used variants. Using SNPID (like 1:725932:G:A)</li>
+<li><code>ref_rsid_vcf</code> : vcf file for annotation of other variants.</li>
+<li><code>chr_dict</code>: a dictionary for to convert 1-25 to CHR in vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). gwaslab provides built-in conversion dictionaries.   <code>gl.get_number_to_NC(build="19")</code> and <code>gl.get_number_to_NC(build="19")</code></li>
+<li><code>n_cores</code>: number of cores to use.</li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Conversion for RefSeq sequence</p>
 <div class="highlight"><pre><span></span><code>gl.get_number_to_NC(build=&quot;19&quot;)
@@ -1561,14 +1565,19 @@ mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
              se=&quot;SE&quot;,
              p=&quot;P&quot;,
              direction=&quot;Dir&quot;,
-             n=&quot;N&quot;,nrows=10000)
+             n=&quot;N&quot;,
+             nrows=10000)
 
+# run basic_check first
 mysumstats.basic_check() 
-
-# if you SNPID is like 1:725932_G_A , you can use fix_id to fix the separator.
+</code></pre></div>
+<p><img alt="image" src="https://user-images.githubusercontent.com/40289485/211799713-032b3571-ae01-4307-909b-973cdf043e17.png" /></p>
+<div class="highlight"><pre><span></span><code># if you SNPID is like 1:725932_G_A , you can use fix_id to fix the separator.
 mysumstats.fix_id(fixsep=True)
 </code></pre></div>
-<div class="highlight"><pre><span></span><code>mysumstats.assign_rsid( n_cores = 2,
+<p><img alt="image" src="https://user-images.githubusercontent.com/40289485/211799561-dddf7649-09fc-4eb5-b8e3-d7301a8944d1.png" /></p>
+<div class="highlight"><pre><span></span><code># rsID annotation
+mysumstats.assign_rsid( n_cores = 2,
                         ref_rsid_tsv = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;),
                         ref_rsid_vcf =&quot;/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz&quot;,
                         chr_dict = gl.get_number_to_NC(build=&quot;19&quot;))
@@ -1589,6 +1598,8 @@ Wed Jan 11 20:10:16 2023  -Assigning rsID based on chr:pos and ref:alt/alt:ref..
 Wed Jan 11 20:10:17 2023  -rsID Annotation for 1 need to be fixed!
 Wed Jan 11 20:10:17 2023  -Annotated 57 rsID successfully!
 </code></pre></div>
+<p>As you can see, SNPID-rsID (<code>1kg_dbsnp151_hg19_auto</code>) annotated 9942 rsID and the large reference VCF file (from dbSNP) annotated additonal 57 rare rsID.</p>
+<p><img alt="image" src="https://user-images.githubusercontent.com/40289485/211800319-68f33eaa-4c48-4ba4-aa52-afb9ac145dee.png" /></p>
 </div>
 
 
