@@ -515,6 +515,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#options" class="md-nav__link">
     Options
   </a>
@@ -1305,6 +1312,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#options" class="md-nav__link">
     Options
   </a>
@@ -1336,18 +1350,22 @@
 <h1 id="liftover">Liftover</h1>
 <p>GWASLab can directly liftover the positions of variants in sumstats.</p>
 <p>See examples <a href="https://cloufield.github.io/gwaslab/harmonization_liftover/">here.</a></p>
+<h2 id="usage">Usage</h2>
 <div class="highlight"><pre><span></span><code>mysumstats.liftover(n_cores=3, 
                     from_build=&quot;19&quot;, 
                     to_build=&quot;38&quot;,
                     remove=True)
 </code></pre></div>
-<p>Perform liftover for POS.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>GWASLab will only liftover basepair positions. If needed, please perform harmonization using the reference file of the target build.  </p>
+</div>
 <h2 id="options">Options</h2>
 <ul>
-<li><code>n_cores</code> : number of threads to use for liftover</li>
-<li><code>from_build</code> :  from which genome build</li>
-<li><code>to_build</code> : to which genome build</li>
-<li><code>remove</code> : remove unmapped variants</li>
+<li><code>n_cores</code> : <code>Interger</code>. Number of threads to use for liftover.</li>
+<li><code>from_build</code> : <code>"19"</code> or <code>"38"</code>. Original genome build.</li>
+<li><code>to_build</code> : <code>"19"</code> or <code>"38"</code>. Target genome build.</li>
+<li><code>remove</code> : <code>Boolean</code>. If True, remove unmapped variants</li>
 </ul>
 <div class="admonition quote">
 <p class="admonition-title">Quote</p>
@@ -1369,10 +1387,6 @@
 mysumstats.basic_check()
 mysumstats.liftover(n_cores=3, from_build=&quot;19&quot;, to_build=&quot;38&quot;)
 </code></pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>GWASLab will only liftover basepair positions. If needed, please perform harmonization using the reference file of the target build.  </p>
 </div>
 
 

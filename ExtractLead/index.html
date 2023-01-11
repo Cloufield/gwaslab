@@ -712,40 +712,9 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Extract Lead Variants
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="./" class="md-nav__link md-nav__link--active">
         Extract Lead Variants
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -1291,21 +1260,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1320,6 +1274,14 @@
 
 
 <h1 id="extract-lead-variants">Extract lead variants</h1>
+<p>GWASLab will extract the lead variants from identified significant loci based on a sliding window.</p>
+<div class="admonition quote">
+<p class="admonition-title">Quote</p>
+<p>GWASLab adopted the definitionfor novel loci from Global Biobank Meta-analysis Initiative flagship paper. </p>
+<p><strong>"We defined genome-wide significant loci by iteratively spanning the ±500 kb region around the most significant variant and merging overlapping regions until no genome-wide significant variants were detected within ±1 Mb."</strong> </p>
+<p>(Details are described in Zhou, W., Kanai, M., Wu, K. H. H., Rasheed, H., Tsuo, K., Hirbo, J. B., ... &amp; Study, C. O. H. (2022). Global Biobank Meta-analysis Initiative: Powering genetic discovery across human disease. Cell Genomics, 2(10), 100192. )</p>
+</div>
+<h1 id="usage">Usage</h1>
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span>
            <span class="n">windowsizekb</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
            <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>
@@ -1329,23 +1291,25 @@
            <span class="n">source</span><span class="o">=</span><span class="s2">&quot;ensembl&quot;</span><span class="p">,</span>
            <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
-<p>GWASLab will extract the lead variants from identified significant loci based on a sliding window (default window size: 500kb). (Details are described in )</p>
-<p>Options:</p>
+<h2 id="options">Options</h2>
 <ul>
-<li><code>windowsizekb</code> :specify the sliding window size in kb (default: 500)</li>
-<li><code>sig_level</code> :specify the P value threshold (default: 5e-8).</li>
-<li><code>xymt</code>: list of notation for chrX, chrY and chrMT.</li>
-<li><code>anno</code>: <code>boolean</code> if annotate the lead variants with nearest gene names.</li>
-<li><code>build</code> : <code>string</code> genome build version "19" or "38".</li>
+<li><code>windowsizekb</code> : <code>int</code>. Specify the sliding window size in <strong>kb</strong> (default: 500)</li>
+<li><code>sig_level</code> : <code>float</code>.Specify the P value threshold (default: 5e-8).</li>
+<li><code>xymt</code>: <code>list</code>. A list of notation for chrX, chrY and chrMT.</li>
+<li><code>anno</code>: <code>boolean</code>. if annotate the lead variants with nearest gene names.</li>
+<li><code>build</code> : <code>string</code>. genome build version "19" or "38".</li>
 </ul>
 <p>Return a dataframe of the lead variants</p>
 <h2 id="example">Example</h2>
-<p>Sample sumstats: IS from pheweb.jp <a href="https://pheweb.jp/pheno/IS">https://pheweb.jp/pheno/IS</a></p>
-<p><img alt="image" src="https://user-images.githubusercontent.com/40289485/196447159-f9b41510-feb6-4ec8-adeb-a8f4c3683061.png" /></p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>Sample sumstats: IS from pheweb.jp <a href="https://pheweb.jp/pheno/IS">https://pheweb.jp/pheno/IS</a>
+<img alt="image" src="https://user-images.githubusercontent.com/40289485/196447159-f9b41510-feb6-4ec8-adeb-a8f4c3683061.png" />
 <div class="highlight"><pre><span></span><code>mysumstats = gl.Sumstats(&quot;./hum0197.v3.BBJ.IS.v1/GWASsummary_IS_Japanese_SakaueKanai2020.auto.txt.gz&quot;,  fmt=&quot;saige&quot;)
 mysumstats.get_lead()
 </code></pre></div>
-<p><img alt="image" src="https://user-images.githubusercontent.com/40289485/196446293-c8f9c2d3-82c3-4122-bddd-184b43f2950f.png" /></p>
+<img alt="image" src="https://user-images.githubusercontent.com/40289485/196446293-c8f9c2d3-82c3-4122-bddd-184b43f2950f.png" /></p>
+</div>
 
 
 

@@ -1418,28 +1418,33 @@
 <tbody>
 <tr>
 <td><code>.check_ref()</code></td>
-<td><code>ref_path</code>, <code>chr_dict=get_chr_to_number()</code></td>
+<td><code>ref_path</code>,<br /> <code>chr_dict=get_chr_to_number()</code></td>
 <td>Check alignment with a reference sequence</td>
 </tr>
 <tr>
 <td><code>.assign_rsid()</code></td>
-<td><code>ref_rsid_tsv</code>, <code>ref_rsid_vcf</code>, <code>n_cores=1</code>, <code>chunksize=5000000</code>, <code>chr_dict=get_number_to_chr()</code>, <code>overwrite="empty"</code></td>
+<td><code>ref_rsid_tsv</code>,<br /> <code>ref_rsid_vcf</code>,<br /> <code>n_cores=1</code>, <br /><code>chunksize=5000000</code>, <br /><code>chr_dict=get_number_to_chr()</code>, <br /><code>overwrite="empty"</code></td>
 <td>Annotate rsid using a reference vcf file</td>
 </tr>
 <tr>
 <td><code>.infer_strand()</code></td>
-<td><code>ref_infer</code>,<code>ref_alt_freq=None</code>,<code>maf_threshold=0.40</code>,<code>remove_snp=""</code>,<code>mode="pi"</code>,<code>n_cores=1</code>,<code>remove_indel=""</code></td>
+<td><code>ref_infer</code>,<br /><code>ref_alt_freq=None</code>,<br /><code>maf_threshold=0.40</code>,<br /><code>remove_snp=""</code>,<br /><code>mode="pi"</code>,<br /><code>n_cores=1</code>,<br /><code>remove_indel=""</code></td>
 <td>Infer the strand of a variant using reference vcf file with EAF in INFO</td>
 </tr>
 <tr>
 <td><code>.check_daf()</code></td>
-<td><code>ref_infer</code>,<code>ref_alt_freq=None</code>,<code>maf_threshold=0.40</code>,<code>n_cores=1</code></td>
+<td><code>ref_infer</code>,<br /><code>ref_alt_freq=None</code>,<br /><code>maf_threshold=0.40</code>,<br /><code>n_cores=1</code></td>
 <td>Calculate difference in allele frequencies</td>
 </tr>
 <tr>
 <td><code>.flip_allele_stats()</code></td>
 <td></td>
 <td>After alignment and inferring, flip the alleles to harmonise the variants.</td>
+</tr>
+<tr>
+<td><code>.harmonize()</code></td>
+<td><code>basic_check=True</code>, <br /> <code>ref_seq=None</code>,<br /><code>ref_rsid_tsv=None</code>,<br /><code>ref_rsid_vcf=None</code>,<br /><code>ref_infer=None</code>,<br /><code>ref_alt_freq=None</code>,<br /><code>maf_threshold=0.40</code>,<br /><code>n_cores=1</code>,<br /><code>remove=False</code>,<br /><code>checkref_args={}</code>,<br /><code>removedup_args={}</code>,<br /><code>assignrsid_args={}</code>,<br /><code>inferstrand_args={}</code>,<br /><code>flipallelestats_args={}</code>,<br /><code>fixid_args={}</code>,<br /><code>fixchr_agrs={}</code>,<br /><code>fixpos_args={}</code>,<br /><code>fixallele_args={}</code>,<br /><code>sanitycheckstats_args={}</code>,<br /><code>normalizeallele_args={}</code></td>
+<td>all-in-one function for harmonization</td>
 </tr>
 </tbody>
 </table>
