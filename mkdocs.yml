@@ -51,7 +51,6 @@ nav:
        - "Download": Download.md 
        - "Reference data" : Reference.md
        - "Common data": CommonData.md
-       - "Update logs" : UpdateLogs.md
     - Examples:
        - "Standardization and QC example":
           - "Workflow": standardization_workflow.ipynb
