@@ -1,16 +1,18 @@
 # Assigning rsID
 
-GWASLab uses a optional two stage assigning strategy.
+GWASLab uses a two-step strategy (both steps are optional).
 
-- Iterate over a SNPID-rsID table and assign rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats.
-- Querying a large reference VCF file (dbSNP for example) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EN/NEA matches.
+- For quick annotation, GWASLab iterates over a SNPID-rsID table and assign rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats. GWASLab provides a curated table  (1KG autosome variants). 
+- For full annotation, GWASLab will query a large reference VCF file (dbSNP for example, >20GB ) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EN/NEA matches.
 
 ## Reference data
 
-### SNPID-rsID table:
+### SNPID-rsID table
+
+GWASLab provides a download function `gl.download_ref()` and two curated tables which contains ~80M 1KG variants:
 
 - `hg19` : `gl.download_ref("1kg_dbsnp151_hg19_auto")`
-- `hg38` : `gl.download_ref("1kg_dbsnp151_hg38_auto")``
+- `hg38` : `gl.download_ref("1kg_dbsnp151_hg38_auto")`
 
 ### VCF file
 
@@ -18,34 +20,14 @@ You can download this from dbSNP:
 
 `hg19`
 
-- vcf:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz
-- tbi:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz.tbi
+- `vcf`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz
+- `tbi`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz.tbi
 
 `hg38`
 
-- vcf:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz
-- tbi:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz.tbi
+- `vcf`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.39.gz
+- `tbi`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.39.gz.tbi
 
-
-## Usage
-
-```
-mysumstats.basic_check()
-mysumstats.assign_rsid( 
-                        ref_rsid_tsv = gl.get_path("1kg_dbsnp151_hg19_auto"),
-                        ref_rsid_vcf = "/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
-                        chr_dict = gl.get_number_to_NC(build="19"),
-                        n_cores = 2)
-```
-
-Please always run `.basic_check()` first. This will convert the data to right data type, standardize and normalize the sumstats.
-
-## Options
-
-- `ref_rsid_tsv` : tsv file for annotation of common used variants. Using SNPID (like 1:725932:G:A)
-- `ref_rsid_vcf` : vcf file for annotation of other variants.
-- `chr_dict`: a dictionary for to convert 1-25 to CHR in vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). gwaslab provides built-in conversion dictionaries.   `gl.get_number_to_NC(build="19")` and `gl.get_number_to_NC(build="19")`
-- `n_cores`: number of cores to use.
 
 !!! note "1kg_dbsnp151_hg19_auto"
     ```
@@ -63,19 +45,39 @@ Please always run `.basic_check()` first. This will convert the data to right da
     ```
 
 !!! note "VCF file form dbSNP"
+    ```
+     zcat GCF_000001405.25.vcf.gz | head -100 | tail -10
+    NC_000001.10    10059   rs1570391745    C       G       .       .       RS=1570391745;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9997,0.0003425|dbGaP_PopFreq:1,0
+    NC_000001.10    10060   rs1639544146    C       CT      .       .       RS=1639544146;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+    NC_000001.10    10060   rs1639544159    CT      C       .       .       RS=1639544159;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=DEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+    NC_000001.10    10063   rs1010989343    A       C,G     .       .       RS=1010989343;dbSNPBuildID=150;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9928,0.004112,0.003084|Siberian:0.5,0.5,.|dbGaP_PopFreq:1,.,0
+    NC_000001.10    10067   rs1489251879    T       TAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCC      .       .       RS=1489251879;dbSNPBuildID=151;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=GnomAD:1,1.789e-05
+    NC_000001.10    10067   rs1639545042    T       C       .       .       RS=1639545042;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+    NC_000001.10    10067   rs1639545104    TA      T       .       .       RS=1639545104;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+    NC_000001.10    10068   rs1639545079    A       T       .       .       RS=1639545079;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+    NC_000001.10    10069   rs1570391755    A       C,G     .       .       RS=1570391755;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9966,.,0.003425|dbGaP_PopFreq:1,0,0
+    NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=1639545200;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+    ```
+
+## Usage
+
 ```
- zcat GCF_000001405.25.vcf.gz | head -100 | tail -10
-NC_000001.10    10059   rs1570391745    C       G       .       .       RS=1570391745;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9997,0.0003425|dbGaP_PopFreq:1,0
-NC_000001.10    10060   rs1639544146    C       CT      .       .       RS=1639544146;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10060   rs1639544159    CT      C       .       .       RS=1639544159;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=DEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10063   rs1010989343    A       C,G     .       .       RS=1010989343;dbSNPBuildID=150;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9928,0.004112,0.003084|Siberian:0.5,0.5,.|dbGaP_PopFreq:1,.,0
-NC_000001.10    10067   rs1489251879    T       TAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCC      .       .       RS=1489251879;dbSNPBuildID=151;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=GnomAD:1,1.789e-05
-NC_000001.10    10067   rs1639545042    T       C       .       .       RS=1639545042;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10067   rs1639545104    TA      T       .       .       RS=1639545104;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10068   rs1639545079    A       T       .       .       RS=1639545079;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10069   rs1570391755    A       C,G     .       .       RS=1570391755;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9966,.,0.003425|dbGaP_PopFreq:1,0,0
-NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=1639545200;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+mysumstats.basic_check()
+mysumstats.assign_rsid( 
+                        ref_rsid_tsv = gl.get_path("1kg_dbsnp151_hg19_auto"),
+                        ref_rsid_vcf = "/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
+                        chr_dict = gl.get_number_to_NC(build="19"),
+                        n_cores = 2)
 ```
+!!! note
+    Please always run `.basic_check()` first. This will convert the data to right data type, standardize and normalize the sumstats.
+
+## Options
+
+- `ref_rsid_tsv` : tsv file for annotation of common used variants. Using SNPID (like 1:725932:G:A)
+- `ref_rsid_vcf` : vcf file for annotation of other variants.
+- `chr_dict`: a dictionary for to convert 1-25 to CHR in vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). gwaslab provides built-in conversion dictionaries.   `gl.get_number_to_NC(build="19")` and `gl.get_number_to_NC(build="19")`
+- `n_cores`: number of cores to use.
 
 
 !!! note "Conversion for RefSeq sequence"
@@ -155,16 +157,24 @@ NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=16395
                  se="SE",
                  p="P",
                  direction="Dir",
-                 n="N",nrows=10000)
+                 n="N",
+                 nrows=10000)
     
+    # run basic_check first
     mysumstats.basic_check() 
+    ```
     
+    ![image](https://user-images.githubusercontent.com/40289485/211799713-032b3571-ae01-4307-909b-973cdf043e17.png)
+    
+    ```
     # if you SNPID is like 1:725932_G_A	, you can use fix_id to fix the separator.
     mysumstats.fix_id(fixsep=True)
     ```
     
+    ![image](https://user-images.githubusercontent.com/40289485/211799561-dddf7649-09fc-4eb5-b8e3-d7301a8944d1.png)
     
     ```
+    # rsID annotation
     mysumstats.assign_rsid( n_cores = 2,
                             ref_rsid_tsv = gl.get_path("1kg_dbsnp151_hg19_auto"),
                             ref_rsid_vcf ="/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
@@ -188,3 +198,9 @@ NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=16395
     Wed Jan 11 20:10:17 2023  -rsID Annotation for 1 need to be fixed!
     Wed Jan 11 20:10:17 2023  -Annotated 57 rsID successfully!
     ```
+    
+    As you can see, SNPID-rsID (`1kg_dbsnp151_hg19_auto`) annotated 9942 rsID and the large reference VCF file (from dbSNP) annotated additonal 57 rare rsID.
+    
+    ![image](https://user-images.githubusercontent.com/40289485/211800319-68f33eaa-4c48-4ba4-aa52-afb9ac145dee.png)
+
+    
