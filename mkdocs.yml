@@ -18,30 +18,32 @@ theme:
   favicon: assets/gwaslab.png
     
 nav:
-    - Home: index.md
+    - Home:
+       - Home : index.md
+       - "Update logs" : UpdateLogs.md
     - Tutorial: tutorial_3.3.ipynb
     - Sumstats manipulation:
-       - SumstatsObject: SumstatsObject.md
-       - StatusCode: StatusCode.md
-       - Standardization&normalization: Standardization.md
-       - QC&Filtering: QC&Filtering.md
+       - "Sumstats Object": SumstatsObject.md
+       - "Status Code": StatusCode.md
+       - "Standardization and Normalization": Standardization.md
+       - "QC and Filtering": QC&Filtering.md
        - Harmonization: Harmonization.md
        - Liftover: LiftOver.md
        - "Data conversion": Conversion.md
     - Visualization:
-       - "Manhattan & QQ plot": Visualization.md
+       - "Manhattan and QQ plot": Visualization.md
        - "Regional Plot": RegionalPlot.md
        - "Brisbane Plot": BrisbanePlot.md
        - "Miami Plot": MiamiPlot.md
-       - "Scatter: effect size comparison": EffectSize.md
-       - "Scatter: allele frequency comparison": AlleleFrequency.md
-       - "Heatmap: genetic correlation": GeneticCorrelation.md
+       - "Scatter Plot: Effect Size Comparison": EffectSize.md
+       - "Scatter Plot: Allele Frequency Comparison": AlleleFrequency.md
+       - "Heatmap: Genetic Correlation": GeneticCorrelation.md
        - "Forest Plot": ForestPlot.md
        - Gallery : Gallery.md
     - Utilities: 
        - "Extract Lead Variants": ExtractLead.md
        - "Extract Novel Variants": ExtractNovel.md
-       - "Format & Save": Format.md
+       - "Format and Save": Format.md
        - "Load LDSC log": LoadLDSC.md
        - "Convert Heritability": HeritabilityConversion.md
        - "Infer Genome Build": InferBuild.md
