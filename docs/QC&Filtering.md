@@ -7,7 +7,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 
 | Sumstats Methods  | Options                  | Description                                                             |
 | ----------------- | ------------------------ | ----------------------------------------------------------------------- |
-| `.check_sanity()` |  `n=(0,float("Inf"))`, <br/>`eaf=(0,1)`, <br/>`mac=(5,float("Inf"))`, <br/>`chisq=(0,float("Inf"))`, <br/>`p=(5e-300,1)`, <br/>`mlog10p=(0,float("Inf"))`, <br/>`beta=(-10,10)`, <br/>`z=(-37.5,37.5)`, <br/>`se=(0,float("Inf"))`, <br/>`OR=(-10,10)` , <br/>`OR_95L=(0,float("Inf"))`, <br/>`OR_95U=(0,float("Inf"))`, <br/>`info=(0,float("Inf"))`   | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
+| `.check_sanity()` |  `n=(0,2**31 -1)`, <br/>`eaf=(0,1)`, <br/>`mac=(0,float("Inf"))`, <br/>`chisq=(0,float("Inf"))`, <br/>`p=(5e-300,1)`, <br/>`mlog10p=(0,float("Inf"))`, <br/>`beta=(-10,10)`, <br/>`z=(-37.5,37.5)`, <br/>`se=(0,float("Inf"))`, <br/>`OR=(-10,10)` , <br/>`OR_95L=(0,float("Inf"))`, <br/>`OR_95U=(0,float("Inf"))`, <br/>`info=(0,float("Inf"))`   | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
 | `.remove_dup()`   |  `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants |
 | `.filter_value()`    |  expr     |    filter in variants base on expr                                                                    |
 | `.filter_in()`    |  `lt`, `gt`, `eq`, `inplace`     |    filter in variants base on given threshold                                                                      |
@@ -19,9 +19,10 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 ## Statistics Sanity Check
 
 `.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected range`.
+
 |Parameters|Type|Range|
 |-|-|-|
-|`n=(0,2**31-1))` | `interger`| 0<N<2**31-1|
+|`n=(0,2**31-1))` | `interger`| 0<N< $2^{31}-1$ |
 |`eaf=(0,1)` | `float` | 0<=EAF<=1|
 |`mac=(0,float("Inf"))`| `float`| mac>0|
 |`chisq=(0,float("Inf"))` | `float` | CHISQ>0|
