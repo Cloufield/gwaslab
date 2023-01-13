@@ -131,13 +131,19 @@ Alleles will be normalized according to the left alignment and parsimony princip
     For details on variant normalization, please check: [https://genome.sph.umich.edu/wiki/Variant_Normalization](https://genome.sph.umich.edu/wiki/Variant_Normalization) )
 
 !!! example
+
     ```python
     sumstats.normalize_allele(n_cores=1)
     ```
+    
     Before:
+    
+    <img width="345" alt="image" src="https://user-images.githubusercontent.com/40289485/212257048-1a5517a4-dd4d-4210-9e19-1dcf7747b7f5.png">
 
     After:
-
+    
+    <img width="345" alt="image" src="https://user-images.githubusercontent.com/40289485/212256576-7808a1ec-5cf2-42ec-819e-a6f1c9c200bb.png">
+    
 
 ## 5. Coordinate sorting
 
