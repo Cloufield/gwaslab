@@ -1446,16 +1446,6 @@
 <td>filter in variants base on expr</td>
 </tr>
 <tr>
-<td><code>.filter_in()</code></td>
-<td><code>lt</code>, <code>gt</code>, <code>eq</code>, <code>inplace</code></td>
-<td>filter in variants base on given threshold</td>
-</tr>
-<tr>
-<td><code>.filter_out()</code></td>
-<td><code>lt</code>, <code>gt</code>, <code>eq</code>, <code>inplace</code></td>
-<td>filter out variants base on given threshold</td>
-</tr>
-<tr>
 <td><code>.filter_region_in()</code></td>
 <td><code>path</code> , <br/> <code>inplace=True</code> , <br/><code>high_ld=False</code>, <br/> <code>build="19"</code></td>
 <td>filter in variants in the specified region define by a bed file</td>
@@ -1468,7 +1458,7 @@
 </tbody>
 </table>
 <h2 id="statistics-sanity-check">Statistics Sanity Check</h2>
-<p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected range</code>.</p>
+<p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected ranges</code>.</p>
 <table>
 <thead>
 <tr>
@@ -1491,7 +1481,7 @@
 <tr>
 <td><code>mac=(0,float("Inf"))</code></td>
 <td><code>float</code></td>
-<td>mac&gt;0</td>
+<td>MAC&gt;0</td>
 </tr>
 <tr>
 <td><code>chisq=(0,float("Inf"))</code></td>
@@ -1546,7 +1536,7 @@
 <tr>
 <td><code>direction</code></td>
 <td><code>string</code></td>
-<td>only contains "+","-" ,"0"or "?"</td>
+<td>only contains <code>"+"</code>,<code>"-"</code> ,<code>"0"</code>or <code>"?"</code></td>
 </tr>
 </tbody>
 </table>
@@ -1575,7 +1565,9 @@
 </code></pre></div>
 </div>
 <h2 id="remove-duplicated-or-multiallelic-variants">Remove duplicated or multiallelic variants</h2>
-<p>After standardizing the sumstats, you can also remove duplicated or multiallelic variants using:</p>
+<p>After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using</p>
+<div class="highlight"><pre><span></span><code>.remove_dup(mode=&quot;md&quot;)
+</code></pre></div>
 <ul>
 <li><code>mode=d</code> ,remove duplicate.<ul>
 <li>remove duplicate SNPs based on  1. SNPID, </li>
@@ -1593,19 +1585,20 @@
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">remove_dup</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;md&quot;</span><span class="p">,</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">,</span><span class="n">keep_col</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<p><div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">remove_dup</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;md&quot;</span><span class="p">,</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">,</span><span class="n">keep_col</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
+This will remove duplicated and multiallelic variants and keep the one with the lowest P.</p>
 </div>
-<p>-&gt; remove duplicated and multiallelic variants and keep the one with lowest P.</p>
 <h2 id="filtering-by-condition">Filtering by condition</h2>
-<p>Filtering sumstats by <code>expr</code> (a wrapper of <code>pd.query</code>), return a new Sumstats Object by default. </p>
+<p>Filter the sumstats by <code>expr</code> (a wrapper of <code>pandas.DataFrame.query</code>), and return a new Sumstats Object by default. This allows method chaining. For example, you can filter certain variants first and then create a Mahanttan plot like <code>mysumstats.filter_value('BETA&lt;0 &amp; CHR==1').plot_mqq()</code>.</p>
 <div class="highlight"><pre><span></span><code>.filter_value(expr,inplace=False)
 </code></pre></div>
 <ul>
-<li><code>filter_value</code>, is a wrapper of pd.DataFrame query. This can be used for value filtering.</li>
-<li><code>expr</code>: the conditions used fot filtering. (for example: '1&gt;BETA&gt;0 &amp; N&gt;10000')</li>
-<li><code>inplace</code>: True or False. If False, return a new  Sumstats Object (so chain calling is possible). If true, the current Sumstats Object will be filtered in place.</li>
+<li><code>expr</code>: <code>string</code>. the query string used fot filtering. (for example: '1&gt;BETA&gt;0 &amp; N&gt;10000')</li>
+<li><code>inplace</code>: <code>boolean</code>. If False, return a new  Sumstats Object (so chain calling is possible). If true, the current Sumstats Object will be filtered in place.</li>
 </ul>
+<p>!!! quote pd.DataFrame.query()
+    Please check https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <p><div class="highlight"><pre><span></span><code>mysumstats.filter_value(&#39;BETA&lt;0 &amp; CHR==1&#39;).plot_mqq()
@@ -1647,6 +1640,7 @@ filter variants in certain regions defined in bed files.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code>mysumstats.filter_region_in(high_ld=True,inplace=False).data
+
 mysumstats.filter_region_out(high_ld=True,inplace=False).data
 </code></pre></div>
 </div>
