@@ -663,9 +663,9 @@ def normalizevariant(pos,a,b,status):
 # 20220426
 def sanitycheckstats(sumstats,
                      coltocheck=["P","MLOG10P","Z","BETA","SE","EAF","CHISQ","N","OR","OR_95L","OR_95U","STATUS"],
-                     n=(0,float("Inf")),
+                     n=(0,2**31-1),
                      eaf=(0,1),
-                     mac=(5,float("Inf")),
+                     mac=(0,float("Inf")),
                      chisq=(0,float("Inf")),
                      z=(-37.5,37.5),
                      p=(5e-300,1),

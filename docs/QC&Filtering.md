@@ -21,9 +21,9 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 `.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected range`.
 |Parameters|Type|Range|
 |-|-|-|
-|`n=(0,2**64-1))` | `interger`| 0<N<2**64-1|
+|`n=(0,2**31-1))` | `interger`| 0<N<2**31-1|
 |`eaf=(0,1)` | `float` | 0<=EAF<=1|
-|`mac=(5,float("Inf"))`| `float`| mac>=5|
+|`mac=(0,float("Inf"))`| `float`| mac>0|
 |`chisq=(0,float("Inf"))` | `float` | CHISQ>0|
 |`p=(5e-300,1)` | `float`| 5e-300<P<=1|
 |`mlog10p=(0,float("Inf"))` | `float`| MLOG10>0|
@@ -40,24 +40,24 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
     ```python
     sumstats.check_sanity()
     
-    Wed Dec  7 01:31:10 2022 Start sanity check for statistics ...
-    Wed Dec  7 01:31:10 2022  -Current Dataframe shape : 12557761  x  12
-    Wed Dec  7 01:31:18 2022  -Checking if  0 <=N<= inf  ...
-    Wed Dec  7 01:31:26 2022  -Removed 0 variants with bad N.
-    Wed Dec  7 01:31:26 2022  -Checking if  0 <=EAF<= 1  ...
-    Wed Dec  7 01:31:30 2022  -Removed 0 variants with bad EAF.
-    Wed Dec  7 01:31:30 2022  -Checking if  5 <=MAC<= inf  ...
-    Wed Dec  7 01:31:33 2022  -Removed 0 variants with bad MAC.
-    Wed Dec  7 01:31:33 2022  -Checking if  5e-300 <= P <= 1  ...
-    Wed Dec  7 01:31:35 2022  -Removed 0 variants with bad P.
-    Wed Dec  7 01:31:35 2022  -Checking if  -10 <BETA)< 10  ...
-    Wed Dec  7 01:31:36 2022  -Removed 0 variants with bad BETA.
-    Wed Dec  7 01:31:36 2022  -Checking if  0 <SE< inf  ...
-    Wed Dec  7 01:31:38 2022  -Removed 0 variants with bad SE.
-    Wed Dec  7 01:31:38 2022  -Checking STATUS...
-    Wed Dec  7 01:31:40 2022  -Coverting STAUTUS to interger.
-    Wed Dec  7 01:31:42 2022  -Removed 0 variants with bad statistics in total.
-    Wed Dec  7 01:31:42 2022 Finished sanity check successfully!
+    Fri Jan 13 16:31:50 2023 Start sanity check for statistics ...
+    Fri Jan 13 16:31:50 2023  -Current Dataframe shape : 12557761  x  12
+    Fri Jan 13 16:31:51 2023  -Checking if  0 <=N<= 2147483647  ...
+    Fri Jan 13 16:31:57 2023  -Removed 0 variants with bad N.
+    Fri Jan 13 16:31:57 2023  -Checking if  0 <=EAF<= 1  ...
+    Fri Jan 13 16:32:01 2023  -Removed 0 variants with bad EAF.
+    Fri Jan 13 16:32:01 2023  -Checking if  0 <=MAC<= inf  ...
+    Fri Jan 13 16:32:07 2023  -Removed 0 variants with bad MAC.
+    Fri Jan 13 16:32:07 2023  -Checking if  5e-300 <= P <= 1  ...
+    Fri Jan 13 16:32:09 2023  -Removed 0 variants with bad P.
+    Fri Jan 13 16:32:09 2023  -Checking if  -10 <BETA)< 10  ...
+    Fri Jan 13 16:32:11 2023  -Removed 0 variants with bad BETA.
+    Fri Jan 13 16:32:11 2023  -Checking if  0 <SE< inf  ...
+    Fri Jan 13 16:32:15 2023  -Removed 0 variants with bad SE.
+    Fri Jan 13 16:32:15 2023  -Checking STATUS...
+    Fri Jan 13 16:32:16 2023  -Coverting STAUTUS to interger.
+    Fri Jan 13 16:32:20 2023  -Removed 0 variants with bad statistics in total.
+    Fri Jan 13 16:32:20 2023 Finished sanity check successfully!
     ```
 
 ## Remove duplicated or multiallelic variants
