@@ -53,7 +53,7 @@ nav:
        - "Download": Download.md 
        - "Reference data" : Reference.md
        - "Common data": CommonData.md
-    - Examples:
+    - "Examples(outdated)":
        - "Standardization and QC example":
           - "Workflow": standardization_workflow.ipynb
           - "QC and filtering" : quality_control_and_filtering.ipynb
