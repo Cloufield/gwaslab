@@ -8,8 +8,8 @@ See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow
 | Sumstats Methods      | Options                                                      | Description                                                                    |
 | --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
 | `.fix_id()`           | `fixchrpos=False`, <br/>`fixid=False`, <br/>`fixsep=False`,<br/>`overwrite=False`,<br/>`forcefixid=False` | check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS |
-| `.fix_CHR()`          | `remove=False`, `x="X"`, `y="Y"`, `mt="MT"` | standardize chromsome notation                                                 |
-| `.fix_POS()`          | `remove=False` , `limit=250000000`          | standardize basepair posituion notation and filter out bad values              |
+| `.fix_chr()`          | `remove=False`, `x=("X",23)`, `y=("Y",24)`, `mt=("MT",25)`, `chrom_list = gl.get_chr_list()` | standardize chromsome notation                                                 |
+| `.fix_pos()`          | `remove=False` , `limit=250000000`          | standardize basepair posituion notation and filter out bad values              |
 | `.fix_allele()`       | `remove=False`        | standardize base notation to ATCG                                              |
 | `.normalize_allele()` | `n_cores=1`                                                  | normalize indels (only support ATA:AA -> AT:A but not -:T)                     |
 | `.sort_coordinate()`  |                                                              | sort the variant coordinates                                                   |
@@ -48,25 +48,48 @@ SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants are already alig
 
 ## 2. CHR
 
-`.fix_CHR()`
+```
+.fix_chr(
+    x=("X",23), 
+    y=("Y",24), 
+    mt=("MT",25),
+    chrom_list=gl.get_chr_list()
+)
+```
 
-CHR will be standardized to integers. For human chromosomes, CHR will be converted to `1-22` for autosomes, `23` for `X`, `24` for `Y`, and `25` for `MT`. 
+CHR will be standardized to integers. 
 
--  autosomes: 1-22
-- `x="X"` : 23
-- `y="Y"` : 24
-- `mt="MT"` : 25
+- `"x","y","mt"`: `tuple` , how to convert sex chromosomes. For examplem `x = ("X",23)`
+- `chrom_list` : `list` , vaild chromosome notations for filtering. Datatype should be `string` or `object`.
 
-Leading "chr" or leading 0s will be stripped. Before conversion, CHR will be converted to uppercase.
+(by default) For human chromosomes, CHR will be converted to integers for autosomes, `23` for `X`, `24` for `Y`, and `25` for `MT`. 
+
+- `x=("X",23)` 
+- `y=("Y",24)`  
+- `mt=("MT",25)`
+
+For other species, you can change it like:
+
+- `x=("X",26)` 
+- `y=("Y",27)`  
+- `mt=("MT",28)`
+- `chrom_list=gl.get_chr_list(n=28)`
 
 !!! example
     ```python
-    sumstats.fix_CHR(remove=False,x="X",y="Y",mt="MT")
+    sumstats.fix_chr(x=("X",23))
+    ```
+
+!!! tip gl.get_chr_list()
+    Get a chromosome list for n autosomes and 'X', 'Y', 'M', 'MT. ("string" data type)
+    ```
+    gl.get_chr_list(n=10)
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'X', 'Y', 'M', 'MT']
     ```
 
 ## 3. POS
 
-`.fix_POS()`
+`.fix_pos()`
 
 Values in POS must be positive integer numbers. Basepair position will be force converted to integers. Invalid pos will be converted to NA. 
 
@@ -74,7 +97,7 @@ Values in POS must be positive integer numbers. Basepair position will be force 
 
 !!! example
     ```python
-    sumstats.fix_POS(remove=False, limit=250000000)
+    sumstats.fix_pos(remove=False, limit=250000000)
     ```
 
 ## 4. Allele
@@ -111,10 +134,14 @@ Alleles will be normalized according to the left alignment and parsimony princip
     ```python
     sumstats.normalize_allele(n_cores=1)
     ```
+    Before:
+
+    After:
+
 
 ## 5. Coordinate sorting
 
-Sort genomic coordinates， 1-25 (23:X, 24:Y ,25:MT)
+Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.
 
 !!! example
     ```python
