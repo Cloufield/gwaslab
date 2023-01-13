@@ -19,49 +19,27 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 ## Statistics Sanity Check
 
 `.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected range`.
+|Parameters|Type|Range|
+|-|-|-|
+|`n=(0,2**64-1))` | `interger`| 0<N<2**64-1|
+|`eaf=(0,1)` | `float` | 0<=EAF<=1|
+|`mac=(5,float("Inf"))`| `float`| mac>=5|
+|`chisq=(0,float("Inf"))` | `float` | CHISQ>0|
+|`p=(5e-300,1)` | `float`| 5e-300<P<=1|
+|`mlog10p=(0,float("Inf"))` | `float`| MLOG10>0|
+|`beta=(-10,10)` | `float`| -10<BETA<10|
+|`z=(-37.5,37.5)`| `float`| -37.5<z<37.5|
+|`se=(0,float("Inf"))` | `float`| SE>0|
+|`OR=(-10,10)` | `float`| -10<log(OR)<10|
+|`OR_95L=(0,float("Inf"))` |`float`| OR_95L>0|
+|`OR_95U=(0,float("Inf"))` |`float`| OR_95U>0|
+|`info=(0,float("Inf"))` | `float`| INFO>0 |
+|`direction` | `string`| only contains "+","-" ,"0"or "?"|
 
-- `n=(0,float("Inf"))` : interger, N>0
-- `eaf=(0,1)` : float ,0<= EAF <=1
-- `mac=(5,float("Inf"))` : mac>=5
-- `chisq=(0,float("Inf"))` : float , CHISQ>0
-- `p=(5e-300,1)` : float, 5e-300<P<=1
-- `mlog10p=(0,float("Inf"))` : float, MLOG10>0
-- `beta=(-10,10)` : float, -10<BETA<10
-- `z=(-37.5,37.5)`: float, -37.5<z<37.5
-- `se=(0,float("Inf"))` : float, SE>0
-- `OR=(-10,10)` : float, -10<log(OR)<10
-- `OR_95L=(0,float("Inf"))` :float, OR_95L>0
-- `OR_95U=(0,float("Inf"))` :float, OR_95U>0
-- `info=(0,float("Inf"))` : float, INFO>0 
-- `Direction` : string, only contains "+","-" ,"0"or "?"
 !!! example
     ```python
     sumstats.check_sanity()
     
-    Wed Dec  7 01:27:16 2022 Start to check IDs...
-    Wed Dec  7 01:27:16 2022  -Current Dataframe shape : 12557761  x  12
-    Wed Dec  7 01:27:16 2022  -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)
-    Wed Dec  7 01:27:33 2022 Finished checking IDs successfully!
-    Wed Dec  7 01:27:33 2022 Start to fix chromosome notation...
-    Wed Dec  7 01:27:33 2022  -Current Dataframe shape : 12557761  x  12
-    Wed Dec  7 01:28:06 2022  -Vairants with standardized chromosome notation: 12228970
-    Wed Dec  7 01:28:37 2022  -Vairants with fixable chromosome notations: 328791
-    Wed Dec  7 01:28:37 2022  -No unrecognized chromosome notations...
-    Wed Dec  7 01:28:41 2022  -Identified  328791  variants on sex chromosomes...
-    Wed Dec  7 01:28:42 2022  -Standardizing sex chromosome notations: X Y MT  to 23,24,25...
-    Wed Dec  7 01:29:07 2022 Finished fixing chromosome notation successfully!
-    Wed Dec  7 01:29:07 2022 Start to fix basepair positions...
-    Wed Dec  7 01:29:07 2022  -Current Dataframe shape : 12557761  x  12
-    Wed Dec  7 01:29:07 2022  -Converting to Int64 data type ...
-    Wed Dec  7 01:29:29 2022  -Position upper_bound is: 250,000,000
-    Wed Dec  7 01:30:06 2022  -Remove outliers: 0
-    Wed Dec  7 01:30:24 2022  -Converted all position to datatype Int64.
-    Wed Dec  7 01:30:24 2022 Finished fixing basepair position successfully!
-    Wed Dec  7 01:30:25 2022 Start to fix alleles...
-    Wed Dec  7 01:30:25 2022  -Current Dataframe shape : 12557761  x  12
-    Wed Dec  7 01:30:30 2022  -Detected 0 variants with alleles that contain bases other than A/C/T/G .
-    Wed Dec  7 01:30:33 2022  -Converted all bases to string datatype and UPPERCASE.
-    Wed Dec  7 01:31:10 2022 Finished fixing allele successfully!
     Wed Dec  7 01:31:10 2022 Start sanity check for statistics ...
     Wed Dec  7 01:31:10 2022  -Current Dataframe shape : 12557761  x  12
     Wed Dec  7 01:31:18 2022  -Checking if  0 <=N<= inf  ...
@@ -80,13 +58,6 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
     Wed Dec  7 01:31:40 2022  -Coverting STAUTUS to interger.
     Wed Dec  7 01:31:42 2022  -Removed 0 variants with bad statistics in total.
     Wed Dec  7 01:31:42 2022 Finished sanity check successfully!
-    Wed Dec  7 01:31:43 2022 Start to normalize variants...
-    Wed Dec  7 01:31:43 2022  -Current Dataframe shape : 12557761  x  12
-    Wed Dec  7 01:32:01 2022  -Not normalized allele IDs:X:7151130_TT_TC X:9093382_CTTTT_CTTT X:12292253_ATTT_ATT X:16001576_ATT_ATTT X:33822416_GT_GTT ... 
-    Wed Dec  7 01:32:01 2022  -Not normalized allele:['TT' 'TC']['CTTTT' 'CTTT']['ATTT' 'ATT']['ATTT' 'ATT']['GTT' 'GT']... 
-    Wed Dec  7 01:32:01 2022  -Modified 13 variants according to parsimony and left alignment principal.
-    Wed Dec  7 01:32:03 2022 Finished normalizing variants successfully!
-    
     ```
 
 ## Remove duplicated or multiallelic variants
