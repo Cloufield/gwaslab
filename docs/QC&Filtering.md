@@ -80,8 +80,35 @@ After standardizing and normalizing the sumstats, you can also remove duplicated
 !!! example
     ```python
     sumstats.remove_dup(mode="md",keep='first',keep_col="P",remove=False)
+        
+    Fri Jan 13 17:34:38 2023 Start to sort the sumstats using P...
+    Fri Jan 13 17:34:38 2023 Start to remove duplicated variants based on snpid...
+    Fri Jan 13 17:34:38 2023  -Current Dataframe shape : 9  x  11
+    Fri Jan 13 17:34:38 2023  -Which variant to keep:  first
+    Fri Jan 13 17:34:38 2023  -Removed  1  based on SNPID...
+    Fri Jan 13 17:34:38 2023 Start to remove duplicated variants based on rsID...
+    Fri Jan 13 17:34:38 2023  -Removed  1  based on rsID...
+    Fri Jan 13 17:34:38 2023 Start to remove duplicated variants based on CHR,POS,EA and NEA...
+    Fri Jan 13 17:34:38 2023  -Current Dataframe shape : 7  x  11
+    Fri Jan 13 17:34:38 2023  -Which variant to keep:  first
+    Fri Jan 13 17:34:38 2023  -Removed  1  based on CHR,POS,EA and NEA...
+    Fri Jan 13 17:34:38 2023 Start to remove multiallelic variants based on chr:pos...
+    Fri Jan 13 17:34:38 2023  -Which variant to keep:  first
+    Fri Jan 13 17:34:38 2023  -Removed  0  multiallelic variants in total.
+    Fri Jan 13 17:34:38 2023  -Removed  3  duplicates in total.
+    Fri Jan 13 17:34:38 2023  -Sort the coordinates...
+    Fri Jan 13 17:34:38 2023 Finished removing successfully!
     ```
+    
     This will remove duplicated and multiallelic variants and keep the one with the lowest P.
+    
+    Before:
+    
+    <img width="525" alt="image" src="https://user-images.githubusercontent.com/40289485/212273929-330531bc-ed85-4e65-8eeb-0263b9250204.png">
+    
+    After
+    
+    <img width="525" alt="image" src="https://user-images.githubusercontent.com/40289485/212274043-fe37a99e-1fed-4340-944a-e731126e51f3.png">
 
 
 ## Filtering by condition
