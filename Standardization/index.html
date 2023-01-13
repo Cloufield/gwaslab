@@ -1504,12 +1504,12 @@
 <td>check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS</td>
 </tr>
 <tr>
-<td><code>.fix_CHR()</code></td>
-<td><code>remove=False</code>, <code>x="X"</code>, <code>y="Y"</code>, <code>mt="MT"</code></td>
+<td><code>.fix_chr()</code></td>
+<td><code>remove=False</code>, <code>x=("X",23)</code>, <code>y=("Y",24)</code>, <code>mt=("MT",25)</code>, <code>chrom_list = gl.get_chr_list()</code></td>
 <td>standardize chromsome notation</td>
 </tr>
 <tr>
-<td><code>.fix_POS()</code></td>
+<td><code>.fix_pos()</code></td>
 <td><code>remove=False</code> , <code>limit=250000000</code></td>
 <td>standardize basepair posituion notation and filter out bad values</td>
 </tr>
@@ -1595,27 +1595,48 @@
 </code></pre></div>
 </div>
 <h2 id="2-chr">2. CHR</h2>
-<p><code>.fix_CHR()</code></p>
-<p>CHR will be standardized to integers. For human chromosomes, CHR will be converted to <code>1-22</code> for autosomes, <code>23</code> for <code>X</code>, <code>24</code> for <code>Y</code>, and <code>25</code> for <code>MT</code>. </p>
+<div class="highlight"><pre><span></span><code>.fix_chr(
+    x=(&quot;X&quot;,23), 
+    y=(&quot;Y&quot;,24), 
+    mt=(&quot;MT&quot;,25),
+    chrom_list=gl.get_chr_list()
+)
+</code></pre></div>
+<p>CHR will be standardized to integers. </p>
 <ul>
-<li>autosomes: 1-22</li>
-<li><code>x="X"</code> : 23</li>
-<li><code>y="Y"</code> : 24</li>
-<li><code>mt="MT"</code> : 25</li>
+<li><code>"x","y","mt"</code>: <code>tuple</code> , how to convert sex chromosomes. For examplem <code>x = ("X",23)</code></li>
+<li><code>chrom_list</code> : <code>list</code> , vaild chromosome notations for filtering. Datatype should be <code>string</code> or <code>object</code>.</li>
 </ul>
-<p>Leading "chr" or leading 0s will be stripped. Before conversion, CHR will be converted to uppercase.</p>
+<p>(by default) For human chromosomes, CHR will be converted to integers for autosomes, <code>23</code> for <code>X</code>, <code>24</code> for <code>Y</code>, and <code>25</code> for <code>MT</code>. </p>
+<ul>
+<li><code>x=("X",23)</code> </li>
+<li><code>y=("Y",24)</code>  </li>
+<li><code>mt=("MT",25)</code></li>
+</ul>
+<p>For other species, you can change it like:</p>
+<ul>
+<li><code>x=("X",26)</code> </li>
+<li><code>y=("Y",27)</code>  </li>
+<li><code>mt=("MT",28)</code></li>
+<li><code>chrom_list=gl.get_chr_list(n=28)</code></li>
+</ul>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_CHR</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;X&quot;</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span><span class="n">mt</span><span class="o">=</span><span class="s2">&quot;MT&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_chr</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span><span class="mi">23</span><span class="p">))</span>
 </code></pre></div>
 </div>
+<p>!!! tip gl.get_chr_list()
+    Get a chromosome list for n autosomes and 'X', 'Y', 'M', 'MT. ("string" data type)
+    <div class="highlight"><pre><span></span><code>gl.get_chr_list(n=10)
+[&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;, &#39;5&#39;, &#39;6&#39;, &#39;7&#39;, &#39;8&#39;, &#39;9&#39;, &#39;10&#39;, &#39;X&#39;, &#39;Y&#39;, &#39;M&#39;, &#39;MT&#39;]
+</code></pre></div></p>
 <h2 id="3-pos">3. POS</h2>
-<p><code>.fix_POS()</code></p>
+<p><code>.fix_pos()</code></p>
 <p>Values in POS must be positive integer numbers. Basepair position will be force converted to integers. Invalid pos will be converted to NA. </p>
 <p><code>limit=250000000</code> : After conversion, GWASLab will also sanity check if POS is in the range of 1 to 250,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  </p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_POS</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">250000000</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_pos</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">250000000</span><span class="p">)</span>
 </code></pre></div>
 </div>
 <h2 id="4-allele">4. Allele</h2>
@@ -1648,9 +1669,13 @@
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">normalize_allele</span><span class="p">(</span><span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </code></pre></div>
+<p>Before:</p>
+<p><img width="345" alt="image" src="https://user-images.githubusercontent.com/40289485/212257048-1a5517a4-dd4d-4210-9e19-1dcf7747b7f5.png"></p>
+<p>After:</p>
+<p><img width="345" alt="image" src="https://user-images.githubusercontent.com/40289485/212256576-7808a1ec-5cf2-42ec-819e-a6f1c9c200bb.png"></p>
 </div>
 <h2 id="5-coordinate-sorting">5. Coordinate sorting</h2>
-<p>Sort genomic coordinates， 1-25 (23:X, 24:Y ,25:MT)</p>
+<p>Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">sort_coordinate</span><span class="p">()</span>
