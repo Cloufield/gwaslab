@@ -1432,7 +1432,7 @@
 <tbody>
 <tr>
 <td><code>.check_sanity()</code></td>
-<td><code>n=(0,float("Inf"))</code>, <br/><code>eaf=(0,1)</code>, <br/><code>mac=(5,float("Inf"))</code>, <br/><code>chisq=(0,float("Inf"))</code>, <br/><code>p=(5e-300,1)</code>, <br/><code>mlog10p=(0,float("Inf"))</code>, <br/><code>beta=(-10,10)</code>, <br/><code>z=(-37.5,37.5)</code>, <br/><code>se=(0,float("Inf"))</code>, <br/><code>OR=(-10,10)</code> , <br/><code>OR_95L=(0,float("Inf"))</code>, <br/><code>OR_95U=(0,float("Inf"))</code>, <br/><code>info=(0,float("Inf"))</code></td>
+<td><code>n=(0,2**31 -1)</code>, <br/><code>eaf=(0,1)</code>, <br/><code>mac=(0,float("Inf"))</code>, <br/><code>chisq=(0,float("Inf"))</code>, <br/><code>p=(5e-300,1)</code>, <br/><code>mlog10p=(0,float("Inf"))</code>, <br/><code>beta=(-10,10)</code>, <br/><code>z=(-37.5,37.5)</code>, <br/><code>se=(0,float("Inf"))</code>, <br/><code>OR=(-10,10)</code> , <br/><code>OR_95L=(0,float("Inf"))</code>, <br/><code>OR_95U=(0,float("Inf"))</code>, <br/><code>info=(0,float("Inf"))</code></td>
 <td>sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N...</td>
 </tr>
 <tr>
@@ -1468,23 +1468,88 @@
 </tbody>
 </table>
 <h2 id="statistics-sanity-check">Statistics Sanity Check</h2>
-<p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected range</code>.
-|Parameters|Type|Range|
-|-|-|-|
-|<code>n=(0,2**31-1))</code> | <code>interger</code>| 0&lt;N&lt;2**31-1|
-|<code>eaf=(0,1)</code> | <code>float</code> | 0&lt;=EAF&lt;=1|
-|<code>mac=(0,float("Inf"))</code>| <code>float</code>| mac&gt;0|
-|<code>chisq=(0,float("Inf"))</code> | <code>float</code> | CHISQ&gt;0|
-|<code>p=(5e-300,1)</code> | <code>float</code>| 5e-300&lt;P&lt;=1|
-|<code>mlog10p=(0,float("Inf"))</code> | <code>float</code>| MLOG10&gt;0|
-|<code>beta=(-10,10)</code> | <code>float</code>| -10&lt;BETA&lt;10|
-|<code>z=(-37.5,37.5)</code>| <code>float</code>| -37.5&lt;z&lt;37.5|
-|<code>se=(0,float("Inf"))</code> | <code>float</code>| SE&gt;0|
-|<code>OR=(-10,10)</code> | <code>float</code>| -10&lt;log(OR)&lt;10|
-|<code>OR_95L=(0,float("Inf"))</code> |<code>float</code>| OR_95L&gt;0|
-|<code>OR_95U=(0,float("Inf"))</code> |<code>float</code>| OR_95U&gt;0|
-|<code>info=(0,float("Inf"))</code> | <code>float</code>| INFO&gt;0 |
-|<code>direction</code> | <code>string</code>| only contains "+","-" ,"0"or "?"|</p>
+<p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected range</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameters</th>
+<th>Type</th>
+<th>Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n=(0,2**31-1))</code></td>
+<td><code>interger</code></td>
+<td>0&lt;N&lt; <span class="arithmatex">\(2^{31}-1\)</span></td>
+</tr>
+<tr>
+<td><code>eaf=(0,1)</code></td>
+<td><code>float</code></td>
+<td>0&lt;=EAF&lt;=1</td>
+</tr>
+<tr>
+<td><code>mac=(0,float("Inf"))</code></td>
+<td><code>float</code></td>
+<td>mac&gt;0</td>
+</tr>
+<tr>
+<td><code>chisq=(0,float("Inf"))</code></td>
+<td><code>float</code></td>
+<td>CHISQ&gt;0</td>
+</tr>
+<tr>
+<td><code>p=(5e-300,1)</code></td>
+<td><code>float</code></td>
+<td>5e-300&lt;P&lt;=1</td>
+</tr>
+<tr>
+<td><code>mlog10p=(0,float("Inf"))</code></td>
+<td><code>float</code></td>
+<td>MLOG10&gt;0</td>
+</tr>
+<tr>
+<td><code>beta=(-10,10)</code></td>
+<td><code>float</code></td>
+<td>-10&lt;BETA&lt;10</td>
+</tr>
+<tr>
+<td><code>z=(-37.5,37.5)</code></td>
+<td><code>float</code></td>
+<td>-37.5&lt;z&lt;37.5</td>
+</tr>
+<tr>
+<td><code>se=(0,float("Inf"))</code></td>
+<td><code>float</code></td>
+<td>SE&gt;0</td>
+</tr>
+<tr>
+<td><code>OR=(-10,10)</code></td>
+<td><code>float</code></td>
+<td>-10&lt;log(OR)&lt;10</td>
+</tr>
+<tr>
+<td><code>OR_95L=(0,float("Inf"))</code></td>
+<td><code>float</code></td>
+<td>OR_95L&gt;0</td>
+</tr>
+<tr>
+<td><code>OR_95U=(0,float("Inf"))</code></td>
+<td><code>float</code></td>
+<td>OR_95U&gt;0</td>
+</tr>
+<tr>
+<td><code>info=(0,float("Inf"))</code></td>
+<td><code>float</code></td>
+<td>INFO&gt;0</td>
+</tr>
+<tr>
+<td><code>direction</code></td>
+<td><code>string</code></td>
+<td>only contains "+","-" ,"0"or "?"</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">()</span>
