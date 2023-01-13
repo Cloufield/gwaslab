@@ -10,21 +10,19 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 | `.check_sanity()` |  `n=(0,2**31 -1)`, <br/>`eaf=(0,1)`, <br/>`mac=(0,float("Inf"))`, <br/>`chisq=(0,float("Inf"))`, <br/>`p=(5e-300,1)`, <br/>`mlog10p=(0,float("Inf"))`, <br/>`beta=(-10,10)`, <br/>`z=(-37.5,37.5)`, <br/>`se=(0,float("Inf"))`, <br/>`OR=(-10,10)` , <br/>`OR_95L=(0,float("Inf"))`, <br/>`OR_95U=(0,float("Inf"))`, <br/>`info=(0,float("Inf"))`   | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
 | `.remove_dup()`   |  `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants |
 | `.filter_value()`    |  expr     |    filter in variants base on expr                                                                    |
-| `.filter_in()`    |  `lt`, `gt`, `eq`, `inplace`     |    filter in variants base on given threshold                                                                      |
-| `.filter_out()`   |  `lt`, `gt`, `eq`, `inplace`     |       filter out variants base on given threshold                                                                      |
 | `.filter_region_in()`   | `path` , <br/> `inplace=True` , <br/>`high_ld=False`, <br/> `build="19"`                         |      filter in variants in the specified region define by a bed file                                                                   |
 | `.filter_region_out()`   | `path` , <br/> `inplace=True` , <br/>`high_ld=False`, <br/> `build="19"`                        |      filter out variants in the specified region define by a bed file                                                                  |
 
 
 ## Statistics Sanity Check
 
-`.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected range`.
+`.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected ranges`.
 
 |Parameters|Type|Range|
 |-|-|-|
 |`n=(0,2**31-1))` | `interger`| 0<N< $2^{31}-1$ |
 |`eaf=(0,1)` | `float` | 0<=EAF<=1|
-|`mac=(0,float("Inf"))`| `float`| mac>0|
+|`mac=(0,float("Inf"))`| `float`| MAC>0|
 |`chisq=(0,float("Inf"))` | `float` | CHISQ>0|
 |`p=(5e-300,1)` | `float`| 5e-300<P<=1|
 |`mlog10p=(0,float("Inf"))` | `float`| MLOG10>0|
@@ -35,7 +33,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 |`OR_95L=(0,float("Inf"))` |`float`| OR_95L>0|
 |`OR_95U=(0,float("Inf"))` |`float`| OR_95U>0|
 |`info=(0,float("Inf"))` | `float`| INFO>0 |
-|`direction` | `string`| only contains "+","-" ,"0"or "?"|
+|`direction` | `string`| only contains `"+"`,`"-"` ,`"0"`or `"?"`|
 
 !!! example
     ```python
@@ -63,7 +61,11 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 
 ## Remove duplicated or multiallelic variants
 
-After standardizing the sumstats, you can also remove duplicated or multiallelic variants using:
+After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using
+
+```
+.remove_dup(mode="md")
+```
 
 - `mode=d` ,remove duplicate.
     - remove duplicate SNPs based on  1. SNPID, 
@@ -79,21 +81,22 @@ After standardizing the sumstats, you can also remove duplicated or multiallelic
     ```python
     sumstats.remove_dup(mode="md",keep='first',keep_col="P",remove=False)
     ```
-
--> remove duplicated and multiallelic variants and keep the one with lowest P.
+    This will remove duplicated and multiallelic variants and keep the one with the lowest P.
 
 
 ## Filtering by condition
 
-Filtering sumstats by `expr` (a wrapper of `pd.query`), return a new Sumstats Object by default. 
+Filter the sumstats by `expr` (a wrapper of `pandas.DataFrame.query`), and return a new Sumstats Object by default. This allows method chaining. For example, you can filter certain variants first and then create a Mahanttan plot like `mysumstats.filter_value('BETA<0 & CHR==1').plot_mqq()`.
 
 ```
 .filter_value(expr,inplace=False)
 ```
 
-- `filter_value`, is a wrapper of pd.DataFrame query. This can be used for value filtering.
-- `expr`: the conditions used fot filtering. (for example: '1>BETA>0 & N>10000')
-- `inplace`: True or False. If False, return a new  Sumstats Object (so chain calling is possible). If true, the current Sumstats Object will be filtered in place.
+- `expr`: `string`. the query string used fot filtering. (for example: '1>BETA>0 & N>10000')
+- `inplace`: `boolean`. If False, return a new  Sumstats Object (so chain calling is possible). If true, the current Sumstats Object will be filtered in place.
+
+!!! quote pd.DataFrame.query()
+    Please check https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html
 
 !!! example
     ```
@@ -126,6 +129,7 @@ Filtering sumstats by `expr` (a wrapper of `pd.query`), return a new Sumstats Ob
  
 
 ## Filtering regions
+
 ```
 .filter_region_in(path="./abc.bed")
 .filter_region_out(high_ld=True)
@@ -138,6 +142,7 @@ filter variants in certain regions defined in bed files.
 !!! example
     ```
     mysumstats.filter_region_in(high_ld=True,inplace=False).data
+
     mysumstats.filter_region_out(high_ld=True,inplace=False).data
     ```
    
