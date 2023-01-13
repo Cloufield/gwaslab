@@ -1459,7 +1459,7 @@
 
 <h1 id="sumstats-object-in-gwaslab">Sumstats Object in gwaslab</h1>
 <p>In GWASLab, sumstats were stored in a <code>Sumstats Object</code>，which is built on <code>pandas Dataframe</code>. All other function are designed as methods of this Sumstats Object. </p>
-<p>To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statsitics from a pandas dataframe or specifying file path. All raw data will be loaded as "string" datatype. </p>
+<p>To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statsitics from a pandas dataframe or specifying file path. All raw data will be loaded as <code>"string"</code> datatype. </p>
 <h2 id="usage">Usage</h2>
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span>
              <span class="n">sumstats</span><span class="p">,</span>
@@ -1503,31 +1503,31 @@
 <p>The minimum required columns are just either <code>rsid</code>or <code>snpid</code>. 
 All other columns and options are optional.</p>
 <ul>
-<li><code>fmt</code>: input sumstats format : For formats supported by GWASLab, please check <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></li>
-<li><code>chrom</code>: chromosome column name</li>
-<li><code>pos</code>: basepair position column name</li>
-<li><code>ea</code>: effect allele column name. </li>
-<li><code>nea</code>: non-effect allele column name.</li>
-<li><code>ref</code>: reference allele column name.</li>
-<li><code>alt</code>: alternative allele column name , when <code>ea</code>,<code>ref</code> and <code>alt</code> are specified, <code>nea</code> will be inferred.</li>
-<li><code>eaf</code>: effect allele frequency</li>
-<li><code>neaf</code>: non-effect allele frequency, neaf will be converted to eaf (eaf = 1 - neaf) while loading.</li>
-<li><code>n</code>: sample size column name or just input a single  <code>integer</code> </li>
-<li><code>beta</code>: effect size beta column name</li>
-<li><code>se</code>: standard error column name</li>
-<li><code>chisq</code>: chi square column name</li>
-<li><code>z</code>: z score column name</li>
-<li><code>p</code>: p value column name</li>
-<li><code>mlog10p</code>: -log10(P) column name</li>
-<li><code>info</code>: imputation info or rsq column name</li>
-<li><code>OR</code>: odds ratio column name</li>
-<li><code>OR_95L</code>:odds ratio lower 95% ci column name</li>
-<li><code>OR_95U</code>:odds ratio upper 95% ci column name</li>
-<li><code>direction</code>: direction column name. gwaslab uses METAL format (e.g. "++--+?+")</li>
-<li><code>other</code>: a list  of other column names you want to keep with the core columns, probably some annotations.</li>
-<li><code>status</code>: gwaslab 7-digit vairants status code. For details, please check status code page.</li>
-<li><code>verbose</code>: if true: output log </li>
-<li><code>build</code>:  <code>str</code>genome build ("19","38")</li>
+<li><code>fmt</code>: <code>string</code>, input sumstats format. For formats supported by GWASLab, please check <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></li>
+<li><code>chrom</code>: <code>string</code>, chromosome column name</li>
+<li><code>pos</code>: <code>string</code>, basepair position column name</li>
+<li><code>ea</code>: <code>string</code>, effect allele column name. </li>
+<li><code>nea</code>: <code>string</code>, non-effect allele column name.</li>
+<li><code>ref</code>: <code>string</code>, reference allele column name.</li>
+<li><code>alt</code>: <code>string</code>, alternative allele column name , when <code>ea</code>,<code>ref</code> and <code>alt</code> are specified, <code>nea</code> will be inferred.</li>
+<li><code>eaf</code>: <code>string</code>, effect allele frequency</li>
+<li><code>neaf</code>: <code>string</code>, non-effect allele frequency. NEAF will be converted to EAF (EAF = 1 - NEAF) while loading.</li>
+<li><code>n</code> <code>string</code> or <code>integer</code>, sample size column name or just input a single <code>integer</code> as sample size for all variants.</li>
+<li><code>beta</code>: <code>string</code>, effect size beta column name</li>
+<li><code>se</code>: <code>string</code>, standard error column name</li>
+<li><code>chisq</code>: <code>string</code>, chi square column name</li>
+<li><code>z</code>: <code>string</code>, z score column name</li>
+<li><code>p</code>: <code>string</code>, p value column name</li>
+<li><code>mlog10p</code>: <code>string</code>, -log10(P) column name</li>
+<li><code>info</code>: <code>string</code>, imputation info or rsq column name</li>
+<li><code>OR</code>: <code>string</code>, odds ratio column name</li>
+<li><code>OR_95L</code>: <code>string</code>, odds ratio lower 95% ci column name</li>
+<li><code>OR_95U</code>:<code>string</code>, odds ratio upper 95% ci column name</li>
+<li><code>direction</code>: <code>string</code>, direction column name. gwaslab uses METAL format (e.g. "++--+?+")</li>
+<li><code>other</code>: <code>list</code>, a list  of other column names you want to keep with the core columns (probably some annotations).</li>
+<li><code>status</code>: <code>string</code>, status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.</li>
+<li><code>verbose</code>: <code>boolean</code>, if True, print log. </li>
+<li><code>build</code>:  <code>string</code>, genome build. "19" for "hg19", "38" for "hg38" and "99" for "unknown".</li>
 <li><code>**arg</code>: additional parameters for <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_table.html">pd.read_table()</a> function. Some common options include : <code>sep</code>,<code>nrows</code>, <code>skiprows</code> and <code>na_values</code>.</li>
 </ul>
 <h2 id="loading-sumstats">Loading sumstats</h2>
@@ -1572,6 +1572,7 @@ All other columns and options are optional.</p>
 <li><code>ldsc</code>: input format</li>
 <li><code>locuszoom</code>: input format</li>
 <li><code>vcf</code>: gwas-vcf format</li>
+<li><code>bolt-lmm</code>: output format</li>
 </ul>
 </div>
 <h3 id="loading-sumstats-from-chromosome-separated-files">Loading sumstats from chromosome-separated files</h3>

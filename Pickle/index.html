@@ -1386,12 +1386,11 @@ gl.load_pickle(path)
 <ul>
 <li><code>SumstatsObject</code> : <code>gl.Sumstats()</code>. GWASLab Sumstats Object.</li>
 <li><code>path</code> : <code>string</code>. dumped pickle file path.</li>
-<li><code>overwrite</code> : <code>boolean</code>. If True, overwrite the file if it already exists.</li>
+<li><code>overwrite</code> : <code>boolean</code>. If <code>True</code>, overwrite the file if it already exists.</li>
 </ul>
 <h2 id="example">Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-</div>
 <div class="highlight"><pre><span></span><code>gl.dump_pickle(mysumstats,&quot;./first.pickle&quot;,overwrite=True)
 Wed Jan 11 23:29:47 2023 Start to dump the Sumstats Object.
 Wed Jan 11 23:29:47 2023  -Dump the Sumstats Object to :  ./first.pickle
@@ -1399,6 +1398,7 @@ Wed Jan 11 23:29:47 2023  -Dump the Sumstats Object to :  ./first.pickle
 my2sumstats = gl.load_pickle(&quot;./first.pickle&quot;)
 Wed Jan 11 23:45:59 2023 Loaded dumped Sumstats object from :  ./first.pickle
 </code></pre></div>
+</div>
 
 
 

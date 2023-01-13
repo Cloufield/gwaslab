@@ -1486,7 +1486,7 @@
 
 
 <h1 id="standardization-and-normalization">Standardization and Normalization</h1>
-<p>After loading raw sumstats into gwaslab Sumstats Object, the first thing we probably want to do is to standardize the variant-related notations, normalize the indels and check if there are any unexpected errors in the statistics. When checking is finished, the status code will be automatically changed.</p>
+<p>After loading raw sumstats into gwaslab.Sumstats Object, the first thing we probably want to do is to standardize the variant-related notations, normalize the indels and check if there are any unexpected errors in the statistics. When checking is finished, the status code will be automatically changed.</p>
 <p>See examples <a href="https://cloufield.github.io/gwaslab/standardization_workflow/">here</a>.</p>
 <h2 id="methods-summary">Methods Summary</h2>
 <table>
@@ -1541,14 +1541,14 @@
 </tbody>
 </table>
 <h2 id="1-ids">1. IDs</h2>
-<p>Gwaslab requires at least one ID columns for sumstats, either in the form of SNPID or rsID, (or both). Gwaslab will automatically check if SNPID is mixed in rsID.</p>
+<p>GWASLab requires at least one ID column for sumstats, either in the form of SNPID or rsID, (or both). GWASLab will automatically check if SNPID is mixed in rsID.</p>
 <ul>
-<li><code>SNPID</code> : it could be user provided IDs, or in <code>CHR:POS:REF:ALT</code> format, delimiter can be":","_" or "-"</li>
+<li><code>SNPID</code> : it could be user-provided IDs, or in <code>CHR:POS:REF:ALT</code> format, delimiters can be <code>":"</code>,<code>"_"</code> or <code>"-"</code>.</li>
 <li><code>rsID</code>: dbSNP rsIDs</li>
 </ul>
-<p>Gwaslab will check if the IDs is valid SNPID orrsID.  It can also extract CHR and POS information from the CHR:POS:REF:ALT formatted IDs using <code>.fix_id()</code> method.</p>
-<p>SNPID will be fixed by <code>CHR:POS:NEA:EA</code>  only when the variants is already aligned with reference genome. Otherwise, a temporary SNPID in the format of <code>CHR:POS</code> will be given.</p>
-<p><code>.fix_id()</code> : check or fix SNPID and rsID.   </p>
+<p>GWASLab will check if the IDs is valid SNPID or rsID.  It can also extract CHR and POS information from the <code>CHR:POS:REF:ALT</code> formatted IDs using <code>.fix_id()</code> method.</p>
+<p>SNPID will be fixed by <code>CHR:POS:NEA:EA</code>  only when the variants are already aligned with the reference genome. Otherwise, a temporary SNPID in the format of <code>CHR:POS</code> will be assigned.</p>
+<p><code>.fix_id()</code>: check or fix SNPID and rsID.   </p>
 <table>
 <thead>
 <tr>
@@ -1596,7 +1596,7 @@
 </div>
 <h2 id="2-chr">2. CHR</h2>
 <p><code>.fix_CHR()</code></p>
-<p>CHR will be standardized to integers. For human chromosomes, CHR will be converted to <code>1-22</code> for autosomes, <code>23</code> for <code>X</code>, <code>24</code> for <code>Y</code>,and <code>25</code> for <code>MT</code>.</p>
+<p>CHR will be standardized to integers. For human chromosomes, CHR will be converted to <code>1-22</code> for autosomes, <code>23</code> for <code>X</code>, <code>24</code> for <code>Y</code>, and <code>25</code> for <code>MT</code>. </p>
 <ul>
 <li>autosomes: 1-22</li>
 <li><code>x="X"</code> : 23</li>
@@ -1612,7 +1612,7 @@
 <h2 id="3-pos">3. POS</h2>
 <p><code>.fix_POS()</code></p>
 <p>Values in POS must be positive integer numbers. Basepair position will be force converted to integers. Invalid pos will be converted to NA. </p>
-<p><code>limit=250000000</code> : After conversion, gwaslab will also sanity check if POS is in the range of 1 to 250,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  </p>
+<p><code>limit=250000000</code> : After conversion, GWASLab will also sanity check if POS is in the range of 1 to 250,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  </p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_POS</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">250000000</span><span class="p">)</span>
@@ -1622,10 +1622,10 @@
 <h3 id="41-allele-notation-standardization">4.1 Allele notation Standardization</h3>
 <p><code>.fix_allele()</code></p>
 <ul>
-<li>Currently, gwaslab only support processing SNPs and INDELs. </li>
+<li>Currently, GWASLab only supports processing SNPs and INDELs. </li>
 <li>All alleles will be checked if containing letters other than <code>A</code>,<code>T</code>,<code>C</code>,<code>G</code>.</li>
 <li>Copy number variant (CNV) like <code>&lt;CN0&gt;</code> won't be recognized.</li>
-<li>Lower cases will converted to UPPERCASES.</li>
+<li>Lower cases will be converted to UPPERCASES.</li>
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
@@ -1634,11 +1634,11 @@
 </div>
 <h3 id="42-variant-normalization">4.2 Variant Normalization</h3>
 <p><code>.normalize_allele()</code></p>
-<p>Alleles will be normalized accroding to left alignment and parsimony principal. For example, chr1:123456:ATG:AT will be normalized to chr1:123455:TG:T.</p>
-<p><code>n_cores</code> : threads to use for normalization.</p>
+<p>Alleles will be normalized according to the left alignment and parsimony principle. For example, chr1:123456:ATG:AT will be normalized to chr1:123457:TG:T.</p>
+<p><code>n_cores</code>: threads to use for normalization.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently, the normalizeation is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information need to be obtained from a reference genome.  </p>
+<p>Currently, the normalization is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information needs to be obtained from a reference genome.  </p>
 </div>
 <div class="admonition quote">
 <p class="admonition-title">Quote</p>
