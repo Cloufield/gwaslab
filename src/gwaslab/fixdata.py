@@ -326,10 +326,10 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         if verbose: log.write(" -Which variant to keep: ",  keep ) 
         sumstats = sumstats.loc[(~sumstats.loc[:,[chrom,pos]].all(axis=1)) | (~sumstats.duplicated(subset=[chrom,pos], keep=keep)),:]
         after_number=len(sumstats)  
-        if verbose:  log.write(" -Removed ",pre_number -after_number," multiallelic variants in total.")   
+        if verbose:  log.write(" -Removed ",pre_number -after_number," multiallelic variants...")   
     after_number=len(sumstats)   
     
-    if verbose:  log.write(" -Removed ",total_number -after_number," duplicates in total.")
+    if verbose:  log.write(" -Removed ",total_number -after_number," variants in total.")
     if keep_col is not None : 
         if verbose: log.write(" -Sort the coordinates...")
         sumstats = sortcoordinate(sumstats,verbose=False)
