@@ -165,5 +165,20 @@ The default column order is `"SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "
     sumstats.sort_column()
     ```
 
+## All-in-one `.basic_check()`
+
+```
+.basic_check()
+```
+Fix data without dropping any variant.
+
+!!! note "`basic_check()` pipeline"
+    
+    - fix_id()
+    - fix_chr()
+    - fix_pos()
+    - fix_allele()
+    - normalize_allele()
+
 ## Example
 Please check [https://cloufield.github.io/gwaslab/standardization_workflow/](https://cloufield.github.io/gwaslab/standardization_workflow/)
