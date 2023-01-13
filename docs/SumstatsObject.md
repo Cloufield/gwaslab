@@ -2,7 +2,7 @@
 
 In GWASLab, sumstats were stored in a `Sumstats Object`，which is built on `pandas Dataframe`. All other function are designed as methods of this Sumstats Object. 
 
-To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statsitics from a pandas dataframe or specifying file path. All raw data will be loaded as "string" datatype. 
+To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statsitics from a pandas dataframe or specifying file path. All raw data will be loaded as `"string"` datatype. 
 
 ## Usage
 
@@ -52,31 +52,31 @@ Currently, GWASLab supports the following columns:
 The minimum required columns are just either `rsid `or `snpid`. 
 All other columns and options are optional.
 
-* `fmt`: input sumstats format : For formats supported by GWASLab, please check [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)
-* `chrom `: chromosome column name
-* `pos`: basepair position column name
-* `ea`: effect allele column name. 
-* `nea`: non-effect allele column name.
-* `ref`: reference allele column name.
-* `alt`: alternative allele column name , when `ea`,`ref` and `alt` are specified, `nea` will be inferred.
-* `eaf`: effect allele frequency
-* `neaf`: non-effect allele frequency, neaf will be converted to eaf (eaf = 1 - neaf) while loading.
-* `n`: sample size column name or just input a single  `integer` 
-* `beta`: effect size beta column name
-* `se`: standard error column name
-* `chisq`: chi square column name
-* `z`: z score column name
-* `p`: p value column name
-* `mlog10p`: -log10(P) column name
-* `info`: imputation info or rsq column name
-* `OR`: odds ratio column name
-* `OR_95L`:odds ratio lower 95% ci column name
-* `OR_95U`:odds ratio upper 95% ci column name
-* `direction`: direction column name. gwaslab uses METAL format (e.g. "++--+?+")
-* `other`: a list  of other column names you want to keep with the core columns, probably some annotations.
-* `status`: gwaslab 7-digit vairants status code. For details, please check status code page.
-* `verbose`: if true: output log 
-* `build`:  `str `genome build ("19","38")
+* `fmt`: `string`, input sumstats format. For formats supported by GWASLab, please check [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)
+* `chrom `: `string`, chromosome column name
+* `pos`: `string`, basepair position column name
+* `ea`: `string`, effect allele column name. 
+* `nea`: `string`, non-effect allele column name.
+* `ref`: `string`, reference allele column name.
+* `alt`: `string`, alternative allele column name , when `ea`,`ref` and `alt` are specified, `nea` will be inferred.
+* `eaf`: `string`, effect allele frequency
+* `neaf`: `string`, non-effect allele frequency. NEAF will be converted to EAF (EAF = 1 - NEAF) while loading.
+* `n` `string` or `integer`, sample size column name or just input a single `integer` as sample size for all variants.
+* `beta`: `string`, effect size beta column name
+* `se`: `string`, standard error column name
+* `chisq`: `string`, chi square column name
+* `z`: `string`, z score column name
+* `p`: `string`, p value column name
+* `mlog10p`: `string`, -log10(P) column name
+* `info`: `string`, imputation info or rsq column name
+* `OR`: `string`, odds ratio column name
+* `OR_95L`: `string`, odds ratio lower 95% ci column name
+* `OR_95U`:`string`, odds ratio upper 95% ci column name
+* `direction`: `string`, direction column name. gwaslab uses METAL format (e.g. "++--+?+")
+* `other`: `list`, a list  of other column names you want to keep with the core columns (probably some annotations).
+* `status`: `string`, status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.
+* `verbose`: `boolean`, if True, print log. 
+* `build`:  `string `, genome build. "19" for "hg19", "38" for "hg38" and "99" for "unknown".
 * `**arg `: additional parameters for [pd.read_table()](https://pandas.pydata.org/docs/reference/api/pandas.read_table.html) function. Some common options include : `sep`,`nrows`, `skiprows` and `na_values`.
 
 ## Loading sumstats
@@ -124,6 +124,7 @@ or just specify the sumstats format:
     * `ldsc`: input format
     * `locuszoom`: input format
     * `vcf`: gwas-vcf format
+    * `bolt-lmm`: output format
     
 ### Loading sumstats from chromosome-separated files
 GWASLab support loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace chromosome number. 

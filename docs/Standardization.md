@@ -1,5 +1,5 @@
 # Standardization and Normalization
-After loading raw sumstats into gwaslab Sumstats Object, the first thing we probably want to do is to standardize the variant-related notations, normalize the indels and check if there are any unexpected errors in the statistics. When checking is finished, the status code will be automatically changed.
+After loading raw sumstats into gwaslab.Sumstats Object, the first thing we probably want to do is to standardize the variant-related notations, normalize the indels and check if there are any unexpected errors in the statistics. When checking is finished, the status code will be automatically changed.
 
 See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow/).
 
@@ -18,16 +18,16 @@ See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow
 
 ## 1. IDs
 
-Gwaslab requires at least one ID columns for sumstats, either in the form of SNPID or rsID, (or both). Gwaslab will automatically check if SNPID is mixed in rsID.
+GWASLab requires at least one ID column for sumstats, either in the form of SNPID or rsID, (or both). GWASLab will automatically check if SNPID is mixed in rsID.
 
-- `SNPID` : it could be user provided IDs, or in `CHR:POS:REF:ALT` format, delimiter can be":","_" or "-"
+- `SNPID` : it could be user-provided IDs, or in `CHR:POS:REF:ALT` format, delimiters can be `":"`,`"_"` or `"-"`.
 - `rsID`: dbSNP rsIDs
 
-Gwaslab will check if the IDs is valid SNPID orrsID.  It can also extract CHR and POS information from the CHR:POS:REF:ALT formatted IDs using `.fix_id()` method.
+GWASLab will check if the IDs is valid SNPID or rsID.  It can also extract CHR and POS information from the `CHR:POS:REF:ALT` formatted IDs using `.fix_id()` method.
 
-SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants is already aligned with reference genome. Otherwise, a temporary SNPID in the format of `CHR:POS` will be given.
+SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants are already aligned with the reference genome. Otherwise, a temporary SNPID in the format of `CHR:POS` will be assigned.
 
-`.fix_id()` : check or fix SNPID and rsID.   
+`.fix_id()`: check or fix SNPID and rsID.   
 
 |`.fix_id()` options|Type|Description|
 |-|-|-|
@@ -50,7 +50,7 @@ SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants is already align
 
 `.fix_CHR()`
 
-CHR will be standardized to integers. For human chromosomes, CHR will be converted to `1-22` for autosomes, `23` for `X`, `24` for `Y`,and `25` for `MT`.
+CHR will be standardized to integers. For human chromosomes, CHR will be converted to `1-22` for autosomes, `23` for `X`, `24` for `Y`, and `25` for `MT`. 
 
 -  autosomes: 1-22
 - `x="X"` : 23
@@ -70,7 +70,7 @@ Leading "chr" or leading 0s will be stripped. Before conversion, CHR will be con
 
 Values in POS must be positive integer numbers. Basepair position will be force converted to integers. Invalid pos will be converted to NA. 
 
-`limit=250000000` : After conversion, gwaslab will also sanity check if POS is in the range of 1 to 250,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  
+`limit=250000000` : After conversion, GWASLab will also sanity check if POS is in the range of 1 to 250,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  
 
 !!! example
     ```python
@@ -83,10 +83,10 @@ Values in POS must be positive integer numbers. Basepair position will be force 
 
 `.fix_allele()`
 
-- Currently, gwaslab only support processing SNPs and INDELs. 
+- Currently, GWASLab only supports processing SNPs and INDELs. 
 - All alleles will be checked if containing letters other than `A`,`T`,`C`,`G`.
 - Copy number variant (CNV) like `<CN0>` won't be recognized.
-- Lower cases will converted to UPPERCASES.
+- Lower cases will be converted to UPPERCASES.
 
 !!! example
     ```python
@@ -97,12 +97,12 @@ Values in POS must be positive integer numbers. Basepair position will be force 
 
 `.normalize_allele()`
 
-Alleles will be normalized accroding to left alignment and parsimony principal. For example, chr1:123456:ATG:AT will be normalized to chr1:123455:TG:T.
+Alleles will be normalized according to the left alignment and parsimony principle. For example, chr1:123456:ATG:AT will be normalized to chr1:123457:TG:T.
 
-`n_cores` : threads to use for normalization.
+`n_cores`: threads to use for normalization.
 
 !!! note
-    Currently, the normalizeation is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information need to be obtained from a reference genome.  
+    Currently, the normalization is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information needs to be obtained from a reference genome.  
     
 !!! quote
     For details on variant normalization, please check: [https://genome.sph.umich.edu/wiki/Variant_Normalization](https://genome.sph.umich.edu/wiki/Variant_Normalization) )
