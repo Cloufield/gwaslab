@@ -179,6 +179,8 @@ Fix data without dropping any variant.
     - fix_pos()
     - fix_allele()
     - normalize_allele()
+    - sort_coordinate()
+    - sort_column()
 
 ## Example
 Please check [https://cloufield.github.io/gwaslab/standardization_workflow/](https://cloufield.github.io/gwaslab/standardization_workflow/)
