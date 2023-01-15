@@ -984,6 +984,7 @@ def mqqplot(insumstats,
                 ax2.set_yticks([x for x in range(skip,cut+1,2)])
                 ax2.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
         
+        ax2.tick_params(axis='both', which='both', labelsize=fontsize)
         #
         if qtitle:
             ax2.set_title(qtitle,fontsize=title_fontsize,pad=10,family="sans-serif")
