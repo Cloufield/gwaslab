@@ -99,15 +99,17 @@ def mqqplot(insumstats,
           title =None,
           mtitle=None,
           qtitle=None,
-          figargs= {"figsize":(15,5)},
+          title_pad=1.08, 
+          title_fontsize=13,
           fontsize = 10,
+          anno_fontsize = 10,
+          figargs= {"figsize":(15,5)},
           colors=["#597FBD","#74BAD3"],
           marker_size=(5,25),
           use_rank=False,
           verbose=True,
           repel_force=0.03,
           build="19",
-          title_pad=1.08, 
           dpi=200,
           save=None,
           saveargs={"dpi":300,"facecolor":"white"},
@@ -772,9 +774,9 @@ def mqqplot(insumstats,
         if verbose: log.write("Finished creating Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(ax1.transData.transform((skip, title_pad*maxy))[1]-ax1.transData.transform((skip, maxy)))[1]
-            ax1.set_title(mtitle,pad=pad,fontsize=fontsize,family="sans-serif")
+            ax1.set_title(mtitle,pad=pad,fontsize=title_fontsize,family="sans-serif")
         elif mtitle:
-            ax1.set_title(mtitle,fontsize=fontsize,family="sans-serif")
+            ax1.set_title(mtitle,fontsize=title_fontsize,family="sans-serif")
             
        
         if anno and (to_annotate.empty is not True):
@@ -877,7 +879,7 @@ def mqqplot(insumstats,
                 else:
                     bbox_para=None
                 
-                anno_default = {"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":fontsize,"fontweight":fontweight}
+                anno_default = {"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":fontweight}
                 for key,value in anno_args.items():
                     anno_default[key]=value
                    
@@ -984,7 +986,7 @@ def mqqplot(insumstats,
         
         #
         if qtitle:
-            ax2.set_title(qtitle,fontsize=fontsize,pad=10,family="sans-serif")
+            ax2.set_title(qtitle,fontsize=title_fontsize,pad=10,family="sans-serif")
 
         if verbose: log.write("Finished creating QQ plot successfully!")
 # Creating QQ plot Finished #############################################################################################
@@ -1003,9 +1005,9 @@ def mqqplot(insumstats,
     # add title 
     if title and anno and len(to_annotate)>0:
         # increase height if annotation 
-        fig.suptitle(title ,x=0.5, y=1.05)
+        fig.suptitle(title , fontsize = title_fontsize ,x=0.5, y=1.05)
     else:
-        fig.suptitle(title ,x=0.5,y=1)
+        fig.suptitle(title , fontsize = title_fontsize, x=0.5,y=1)
     
     garbage_collect.collect()
 # Return matplotlib figure object #######################################################################################
