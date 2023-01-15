@@ -162,6 +162,8 @@ class Sumstats():
         self.data = sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
         if normalize is True:
             self.data = parallelnormalizeallele(self.data,n_cores=n_cores,log=self.log,**normalizeallele_args)
+        self.data = sortcoordinate(self.data,log=self.log)
+        self.data = sortcolumn(self.data,log=self.log)
         ###############################################
         
     

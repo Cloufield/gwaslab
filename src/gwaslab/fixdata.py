@@ -326,10 +326,10 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         if verbose: log.write(" -Which variant to keep: ",  keep ) 
         sumstats = sumstats.loc[(~sumstats.loc[:,[chrom,pos]].all(axis=1)) | (~sumstats.duplicated(subset=[chrom,pos], keep=keep)),:]
         after_number=len(sumstats)  
-        if verbose:  log.write(" -Removed ",total_number -after_number," multiallelic variants in total.")   
+        if verbose:  log.write(" -Removed ",pre_number -after_number," multiallelic variants...")   
     after_number=len(sumstats)   
     
-    if verbose:  log.write(" -Removed ",total_number -after_number," duplicates in total.")
+    if verbose:  log.write(" -Removed ",total_number -after_number," variants in total.")
     if keep_col is not None : 
         if verbose: log.write(" -Sort the coordinates...")
         sumstats = sortcoordinate(sumstats,verbose=False)
@@ -344,28 +344,36 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
 
 ###############################################################################################################
 # 20220514
-def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT",remove=False, verbose=True,log=Log()):
-        chrom_list = get_chr_list() #bottom 
+def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = get_chr_list(), log=Log()):
+        #chrom_list = get_chr_list() #bottom 
 
         if check_col(sumstats,chrom,status) is not True:
             if verbose: log.write(".fix_chr: Specified not detected..skipping...")
             return sumstats
         if verbose: log.write("Start to fix chromosome notation...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))          
+        
         # convert to string datatype        
         if sumstats.loc[:,chrom].dtype != "string":
             sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string") 
-        #is_chr_fixed = sumstats[chrom].str.match(r'^[12]?[0-9]$', case=False, flags=0, na=False)
+        # check if CHR is numerice
         is_chr_fixed = sumstats[chrom].str.isnumeric()
         if verbose: log.write(" -Vairants with standardized chromosome notation:",sum(is_chr_fixed))  
+        
+        # if there are variants whose CHR need to be fixed
         if sum(is_chr_fixed)<len(sumstats):
-            #is_chr_fixable = sumstats.loc[~is_chr_fixed,chrom].str.match(r'^(chr)?([012][0-9]|[0-9]|X|Y|M|MT)$', case=False, flags=0, na=False)
-            chr_extracted = sumstats.loc[~is_chr_fixed,chrom].str.extract(r'(chr)?([0-9]?[0-9]|[XYM]|[MT])$',flags=re.IGNORECASE|re.ASCII)[1]
+            #extract the CHR number or X Y M MT
+            chr_extracted = sumstats.loc[~is_chr_fixed,chrom].str.extract(r'(chr)?([0-9]{1,2,3}|[XYM]|[MT])$',flags=re.IGNORECASE|re.ASCII)[1]
+            
             is_chr_fixable = ~chr_extracted.isna()
-            if verbose: log.write(" -Vairants with fixable chromosome notations:",sum(is_chr_fixable))   
+            
+            if verbose: log.write(" -Vairants with fixable chromosome notations:",sum(is_chr_fixable))  
+
             is_chr_na  = sumstats.loc[~is_chr_fixed,chrom].isna()
+            
             if sum(is_chr_na)>0 and verbose: 
                 log.write(" -Vairants with NA chromosome notations:",sum(is_chr_na))  
+            
             #not na and not fixable
             is_chr_invalid = (~is_chr_fixable)&(~is_chr_na)
             if sum(is_chr_invalid)>0 and verbose: 
@@ -377,13 +385,32 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
             sumstats.loc[is_chr_fixable.index,chrom] = chr_extracted[is_chr_fixable.index]
 
             # X, Y, MT to 23,24,25
-            sex_chr = sumstats[chrom].isin([x.lower(),y.lower(),mt.lower(),x.upper(),y.upper(),mt.upper()])
+            xymt_list = [x[0].lower(),y[0].lower(),mt[0].lower(),x[0].upper(),y[0].upper(),mt[0].upper()]
+            sex_chr = sumstats[chrom].isin(xymt_list)
             if sum(sex_chr)>0:
+                if verbose: log.write(" -Identifying non-autosomal chromosomes : {}, {}, and {} ...".format(x[0],y[0],mt[0]))
                 if verbose: log.write(" -Identified ",str(sum(sex_chr))," variants on sex chromosomes...")
-                convert_num_to_xymt={x.lower():"23",y.lower():"24",mt.lower():"25",x.upper():"23",y.upper():"24",mt.upper():"25"}
+                
+                convert_num_to_xymt={}
+                if x[0].lower() in sumstats[chrom].values or x[0].upper() in sumstats[chrom].values:
+                    convert_num_to_xymt[x[0].lower()] = str(x[1])
+                    convert_num_to_xymt[x[0].upper()] = str(x[1])
+                    if verbose: log.write(" -Standardizing sex chromosome notations: {} to {}...".format(x[0], x[1]))
+                if y[0].lower() in sumstats[chrom].values or y[0].upper() in sumstats[chrom].values:
+                    convert_num_to_xymt[y[0].lower()] = str(y[1])
+                    convert_num_to_xymt[y[0].upper()] = str(y[1])
+                    if verbose: log.write(" -Standardizing sex chromosome notations: {} to {}...".format(y[0], y[1]))
+                if mt[0].lower() in sumstats[chrom].values or mt[0].upper() in sumstats[chrom].values:
+                    convert_num_to_xymt[mt[0].lower()] = str(mt[1])
+                    convert_num_to_xymt[mt[0].upper()] = str(mt[1])
+                    if verbose: log.write(" -Standardizing sex chromosome notations: {} to {}...".format(mt[0], mt[1]))
                 sumstats.loc[sex_chr,chrom] =sumstats.loc[sex_chr,chrom].map(convert_num_to_xymt)
-                if verbose: log.write(" -Standardizing sex chromosome notations:" ,str(x),str(y),str(mt)," to 23,24,25...") 
-        
+                #convert_num_to_xymt={x[0].lower():str(x[1]),y[0].lower():str(y[1]),mt[0].lower():str(mt[1]),
+                #                     x[0].upper():str(x[1]),y[0].upper():str(y[1]),mt[0].upper():str(mt[1])}
+                
+                #if verbose: log.write(" -Standardizing sex chromosome notations: {},{},{} to {},{},{}...".format(x[0],y[0],mt[0], x[1],y[1],mt[1])) 
+            
+            # change status code
             sumstats.loc[is_chr_fixed,status] = vchange_status(sumstats.loc[is_chr_fixed,status],4,"986","520")
             if len(is_chr_fixable.index)>0:
                 sumstats.loc[is_chr_fixable.index,status] = vchange_status(sumstats.loc[is_chr_fixable.index,status],4,"986","520")
@@ -400,10 +427,13 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x="X",y="Y",mt="MT
         else:
             if verbose: log.write(" -All CHR are already fixed...") 
             sumstats.loc[is_chr_fixed,status] = vchange_status(sumstats.loc[is_chr_fixed,status],4,"986","520")
+        
+        # convert string to int
         try:
             sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype('Int64')
         except:
             sumstats.loc[:,chrom] = np.floor(pd.to_numeric(sumstats.loc[:,chrom], errors='coerce')).astype('Int64')
+        
         if verbose: log.write("Finished fixing chromosome notation successfully!")
         return sumstats
 
@@ -633,9 +663,9 @@ def normalizevariant(pos,a,b,status):
 # 20220426
 def sanitycheckstats(sumstats,
                      coltocheck=["P","MLOG10P","Z","BETA","SE","EAF","CHISQ","N","OR","OR_95L","OR_95U","STATUS"],
-                     n=(0,float("Inf")),
+                     n=(0,2**31-1),
                      eaf=(0,1),
-                     mac=(5,float("Inf")),
+                     mac=(0,float("Inf")),
                      chisq=(0,float("Inf")),
                      z=(-37.5,37.5),
                      p=(5e-300,1),
