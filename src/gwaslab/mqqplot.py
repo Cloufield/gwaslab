@@ -67,6 +67,12 @@ def mqqplot(insumstats,
           mqqratio=3,
           bwindowsizekb = 100,
           large_number = 10000000000,
+          density_color=False,
+          density_range=(0,15),
+          density_trange=(0,10),
+          density_threshold=5,
+          density_tpalette="Blues",
+          density_palette="Reds",
           windowsizekb=500,
           anno=None,
           anno_set=[],
@@ -226,7 +232,9 @@ def mqqplot(insumstats,
                 usecols.append(anno)
         else:
             raise ValueError("Please make sure "+anno+" column is in input sumstats.")
-    
+    if density_color==True:
+        usecols.append("DENSITY")
+
     sumstats = insumstats.loc[:,usecols].copy()
 
 
@@ -460,7 +468,10 @@ def mqqplot(insumstats,
 ## Manhatann plot ###################################################
         if verbose:log.write("Start to create manhattan plot with "+str(len(sumstats))+" variants:")
         ## default seetings
+        
         palette = sns.color_palette(colors,n_colors=sumstats[chrom].nunique())  
+        
+
         legend = None
         style=None
         linewidth=0
@@ -497,15 +508,46 @@ def mqqplot(insumstats,
         
         ## if not highlight    
         else:
-            plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
-                   hue='chr_hue',
-                   palette= palette,
+            if density_color == True:
+                hue = "DENSITY"
+                s = "DENSITY"
+                to_plot = sumstats.sort_values("DENSITY")
+
+                plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]<=density_threshold], x='i', y='scaled_P',
+                       hue=hue,
+                       palette= density_tpalette,
+                       legend=legend,
+                       style=style,
+                       size=s,
+                       sizes=(marker_size[0]+1,marker_size[0]+1),
+                       linewidth=linewidth,
+                       hue_norm=density_trange,
+                       zorder=2,ax=ax1,edgecolor="black",**scatter_kwargs) 
+                plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]>density_threshold], x='i', y='scaled_P',
+                   hue=hue,
+                   palette= density_palette,
                    legend=legend,
                    style=style,
-                   size="s",
+                   size=s,
                    sizes=marker_size,
+                   hue_norm=density_range,
                    linewidth=linewidth,
                    zorder=2,ax=ax1,edgecolor="black",**scatter_kwargs)   
+            else:
+                s = "s"
+                hue = 'chr_hue'
+                hue_norm="None"
+                to_plot = sumstats
+                plot = sns.scatterplot(data=to_plot, x='i', y='scaled_P',
+                       hue=hue,
+                       palette= palette,
+                       legend=legend,
+                       style=style,
+                       size=s,
+                       sizes=marker_size,
+                       hue_norm=hue_norm,
+                       linewidth=linewidth,
+                       zorder=2,ax=ax1,edgecolor="black",**scatter_kwargs)   
 
         
         ## if pinpoint variants
