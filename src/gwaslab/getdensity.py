@@ -1,36 +1,62 @@
 
 import pandas as pd
+import numpy as np
 from gwaslab.Log import Log
 import gc
 
 def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizekb=100, large_number=10000000000,log=Log(),verbose=True):    
+    if verbose:log.write("Start to calculate signal DENSITY...")
     sumstats = insumstats.loc[:,[id,chrom,pos]].copy()
     if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
-    stack=[]
+    #stack=[]
     sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
     sumstats = sumstats.sort_values(by=["TCHR+POS"])
-    
-    for index,row in sumstats.iterrows():
-        stack.append([row[id],row["TCHR+POS"],0])  
-        for i in range(2,len(stack)+1):
-        # closest signals in range	
-            if stack[-i][1]>= (row["TCHR+POS"]- 1000*bwindowsizekb):
-                #add 1 to both point
-                stack[-i][2]+=1
-                stack[-1][2]+=1
-            else:
-            	# closest signals still out out range
-                break
-    df = pd.DataFrame(stack,columns=["SNPID","TCHR+POS","DENSITY"])
-    sumstats["DENSITY"] = df["DENSITY"].values
+    positions = sumstats["TCHR+POS"].values
+    #sumstats = sumstats.reset_index()
+    density = np.zeros(len(sumstats))
 
+    last_left_pos = 0
+    for current_pos, position in enumerate(positions):
+        for current_left_pos in range(last_left_pos,current_pos):
+            if  positions[current_left_pos] >= position-1000 * bwindowsizekb:
+                
+                # from p_left to p_current -1, plus 1 density (update the rightside numbers)
+                density[current_left_pos:current_pos]+=1
+                
+                # for p_current, plus p_current - p_left (update the leftside numbers)
+                density[current_pos]+= current_pos - current_left_pos
+                
+                # update left pointer
+                last_left_pos = current_left_pos
+                break
+        
+        #stack.append([row[id],row["TCHR+POS"],0])  
+        #for i in range(2,len(stack)+1):
+        ## closest signals in range	
+        #    if stack[-i][1]>= (row["TCHR+POS"]- 1000*bwindowsizekb):
+        #        #add 1 to both point
+        #        stack[-i][2]+=1
+        #        stack[-1][2]+=1
+        #    else:
+        #    	# closest signals still out out range
+        #        break
+    
+    sumstats["DENSITY"] = density
+    sumstats["DENSITY"]  = sumstats["DENSITY"].astype("Int32")
     # mean and median
-    bmean=sumstats["DENSITY"].mean()
-    bmedian=sumstats["DENSITY"].median()
+    bmean = sumstats["DENSITY"].mean()
+    bmedian = sumstats["DENSITY"].median()
+    bsd = sumstats["DENSITY"].std()
+    bmax = sumstats["DENSITY"].max()
+    bmaxid = sumstats["DENSITY"].idxmax()
+
     if verbose:log.write(" -Mean : {} signals per {} kb".format(bmean,bwindowsizekb))
+    if verbose:log.write(" -SD : {}".format(bsd))
     if verbose:log.write(" -Median : {} signals per {} kb".format(bmedian,bwindowsizekb))
+    if verbose:log.write(" -Max : {} signals per {} kb at variant(s) {}".format(bmax,bwindowsizekb,sumstats.loc[bmaxid,id]))
     
     sumstats = sumstats.drop("TCHR+POS",axis=1)
+    if verbose:log.write("Finished calculating signal DENSITY successfully!")
     return sumstats["DENSITY"]
 
 def assigndensity(insumstats,

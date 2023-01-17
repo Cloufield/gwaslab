@@ -152,20 +152,21 @@ class Sumstats():
                     fixallele_args={},
                     sanitycheckstats_args={},
                     normalize=True,
-                    normalizeallele_args={}):
+                    normalizeallele_args={},
+                    verbose=True):
         ###############################################
         # try to fix data without dropping any information
-        self.data = fixID(self.data,**fixid_args)
+        self.data = fixID(self.data,verbose=verbose, **fixid_args)
         if remove is True:
-            self.data = removedup(self.data,log=self.log,**removedup_args)
-        self.data = fixchr(self.data,log=self.log,remove=remove,**fixchr_agrs)
-        self.data = fixpos(self.data,log=self.log,remove=remove,**fixpos_args)
-        self.data = fixallele(self.data,log=self.log,**fixallele_args)
-        self.data = sanitycheckstats(self.data,log=self.log,**sanitycheckstats_args)
+            self.data = removedup(self.data,log=self.log,verbose=verbose,**removedup_args)
+        self.data = fixchr(self.data,log=self.log,remove=remove,verbose=verbose,**fixchr_agrs)
+        self.data = fixpos(self.data,log=self.log,remove=remove,verbose=verbose,**fixpos_args)
+        self.data = fixallele(self.data,log=self.log,verbose=verbose,**fixallele_args)
+        self.data = sanitycheckstats(self.data,log=self.log,verbose=verbose,**sanitycheckstats_args)
         if normalize is True:
-            self.data = parallelnormalizeallele(self.data,n_cores=n_cores,log=self.log,**normalizeallele_args)
-        self.data = sortcoordinate(self.data,log=self.log)
-        self.data = sortcolumn(self.data,log=self.log)
+            self.data = parallelnormalizeallele(self.data,n_cores=n_cores,verbose=verbose,log=self.log,**normalizeallele_args)
+        self.data = sortcoordinate(self.data,verbose=verbose,log=self.log)
+        self.data = sortcolumn(self.data,verbose=verbose,log=self.log)
         ###############################################
         
     

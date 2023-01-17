@@ -317,7 +317,7 @@ def mqqplot(insumstats,
             sumstats.loc[right_chr&up_pos&low_pos,"HUE"]="0"
 
 # Density #####################################################################################################              
-    if "b" in mode:
+    if "b" in mode and "DENSITY" not in sumstats.columns:
         if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
         stack=[]
         sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
@@ -334,6 +334,8 @@ def mqqplot(insumstats,
         sumstats["DENSITY"] = df["DENSITY"].values
         bmean=sumstats["DENSITY"].mean()
         bmedian=sumstats["DENSITY"].median()
+    elif "b" in mode and "DENSITY" in sumstats.columns:
+        if verbose:log.write(" -DENSITY column exists. Skipping calculation...")
      
     #############################
 # P value conversion #####################################################################################################  
@@ -536,7 +538,7 @@ def mqqplot(insumstats,
             else:
                 s = "s"
                 hue = 'chr_hue'
-                hue_norm="None"
+                hue_norm=None
                 to_plot = sumstats
                 plot = sns.scatterplot(data=to_plot, x='i', y='scaled_P',
                        hue=hue,
@@ -759,7 +761,7 @@ def mqqplot(insumstats,
                                sig_level=sig_level,
                                windowsizekb=windowsizekb,
                                verbose=False)
-                if to_annotate.empty is not True:
+                if to_annotate.empty is not True and mode!="b":
                     if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         else:
             to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level)),:],
@@ -770,7 +772,7 @@ def mqqplot(insumstats,
                                windowsizekb=windowsizekb,
                                verbose=False,
                                sig_level=sig_level)
-            if to_annotate.empty is not True:
+            if to_annotate.empty is not True and mode!="b":
                 if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         if (to_annotate.empty is not True) and anno=="GENENAME":
             to_annotate = annogene(to_annotate,
