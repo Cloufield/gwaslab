@@ -232,7 +232,8 @@ def mqqplot(insumstats,
                 usecols.append(anno)
         else:
             raise ValueError("Please make sure "+anno+" column is in input sumstats.")
-    if density_color==True:
+    
+    if (density_color==True) or ("b" in mode and "DENSITY" in insumstats.columns):
         usecols.append("DENSITY")
 
     sumstats = insumstats.loc[:,usecols].copy()
@@ -335,6 +336,8 @@ def mqqplot(insumstats,
         bmean=sumstats["DENSITY"].mean()
         bmedian=sumstats["DENSITY"].median()
     elif "b" in mode and "DENSITY" in sumstats.columns:
+        bmean=sumstats["DENSITY"].mean()
+        bmedian=sumstats["DENSITY"].median()
         if verbose:log.write(" -DENSITY column exists. Skipping calculation...")
      
     #############################
@@ -761,7 +764,7 @@ def mqqplot(insumstats,
                                sig_level=sig_level,
                                windowsizekb=windowsizekb,
                                verbose=False)
-                if to_annotate.empty is not True and mode!="b":
+                if (to_annotate.empty is not True) and ("b" not in mode):
                     if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         else:
             to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level)),:],
@@ -772,7 +775,7 @@ def mqqplot(insumstats,
                                windowsizekb=windowsizekb,
                                verbose=False,
                                sig_level=sig_level)
-            if to_annotate.empty is not True and mode!="b":
+            if (to_annotate.empty is not True) and ("b" not in mode):
                 if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         if (to_annotate.empty is not True) and anno=="GENENAME":
             to_annotate = annogene(to_annotate,
