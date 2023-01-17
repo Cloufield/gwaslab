@@ -549,7 +549,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
 
 def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",n_cores=1,verbose=True,log=Log()):
     if check_col(sumstats,pos,ea,nea,status) is not True:
-        if verbose: log.write(".normalize(): specified columns not detected..skipping...")
+        if verbose: log.write("WARNING:.normalize(): specified columns not detected..skipping...")
         return sumstats
     
     if verbose: log.write("Start to normalize variants...")
@@ -1002,7 +1002,7 @@ def liftover_variant(sumstats,
 
 def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True, verbose=True,log=Log()):
     if check_col(sumstats,chrom,pos,status) is not True:
-        if verbose: log.write(".liftover(): specified columns not detected..skipping...")
+        if verbose: log.write("WARNING:.liftover(): specified columns not detected..skipping...")
         return sumstats
     if verbose: log.write("Start to perform liftover...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   

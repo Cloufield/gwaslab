@@ -33,6 +33,8 @@ from gwaslab.filtervalue import sampling
 from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import lambdaGC
 from gwaslab.getsig import getsig
+from gwaslab.getdensity import getsignaldensity
+from gwaslab.getdensity import assigndensity
 from gwaslab.getsig import annogene
 from gwaslab.getsig import getnovel
 from gwaslab.fill import filldata
@@ -413,6 +415,34 @@ class Sumstats():
                            **args)
         # return sumstats object    
         return output
+
+    def get_density(self, sig_list=None, windowsizekb=100,
+                    large_number=10000000000,**args):
+        
+        if "SNPID" in self.data.columns:
+            id_to_use = "SNPID"
+        else:
+            id_to_use = "rsID"
+        
+        if sig_list is None:
+            self.data["DENSITY"] = getsignaldensity(self.data,
+                                                    id=id_to_use,
+                                                    chrom="CHR",
+                                                    pos="POS",
+                                                    bwindowsizekb=windowsizekb,
+                                                    large_number=large_number,
+                                                    log=self.log)
+        else:
+            if isinstance(sig_list, pd.DataFrame):
+                self.data["DENSITY"] = assigndensity(self.data,
+                                                    sig_list,
+                                                    id=id_to_use, 
+                                                    chrom="CHR", 
+                                                    pos="POS", 
+                                                    bwindowsizekb=windowsizekb,
+                                                    log=self.log)
+
+        
     def get_novel(self, **args):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
