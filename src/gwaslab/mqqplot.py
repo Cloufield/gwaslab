@@ -1124,18 +1124,31 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
 
 def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,gtf_chr_dict,gtf_gene_name):
     #loading
+    
+    # chr to string datatype using gtf_chr_dict
+    to_query_chrom = gtf_chr_dict[region[0]]
+
+    # loading gtf data
     if gtf_path =="default" or gtf_path =="ensembl":
-        to_query_chrom = gtf_chr_dict[region[0]]
-        gtf = get_gtf(chrom=to_query_chrom,build=build,source="ensembl")
+        
+        gtf = get_gtf(chrom=to_query_chrom, build=build, source="ensembl")
+    
     elif gtf_path =="refseq":
-        gtf = get_gtf(chrom=to_query_chrom,build=build,source="refseq")
+
+        gtf = get_gtf(chrom=to_query_chrom, build=build, source="refseq")
+    
     else:
-        gtf = pd.read_csv(gtf_path,sep="\t",header=None, comment="#",low_memory=False,dtype={0:"string"})
+        # if user-provided gtf
+        gtf = pd.read_csv(gtf_path,sep="\t",header=None, comment="#", low_memory=False,dtype={0:"string"})
         gtf = gtf.loc[gtf[0]==gtf_chr_dict[region[0]],:]
-    #filter in region
-    #gtf_chr_dict
+
+    # filter in region
     genes_1mb = gtf.loc[(gtf[0]==to_query_chrom)&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
+    
+    # extract biotype
     genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
+    
+    # extract gene name
     if gtf_gene_name is None:
         if gtf_path=="refseq":
             genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"').astype("string")
@@ -1147,22 +1160,46 @@ def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,
         pattern = r'{} "([\w\.-]+)"'.format(gtf_gene_name)
         genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(pattern).astype("string")
 
+    # extract gene
     genes_1mb.loc[:,"gene"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
-
+    
+    # extract exon
     exons = genes_1mb.loc[genes_1mb[2]=="exon",:].copy()
+
+    # extract protein coding gene
     if region_protein_coding is True:
         genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:].copy()
+    
     #uniq genes
+    ## get all record with 2nd column == gene
     uniq_gene_region = genes_1mb.loc[genes_1mb[2]=="gene",:].copy()
+    
+    ## extract region + flank
     flank = region_flank_factor * (region[2] - region[1])
+    
+    ## get left and right boundary
     uniq_gene_region["left"] = uniq_gene_region[3]-flank
     uniq_gene_region["right"] = uniq_gene_region[4]+flank
 
-    ## arrange rows
-    stacks=[]
-    stack_dic={}
-    for index,row in uniq_gene_region.sort_values([3]).iterrows():
+    # arrange gene track
+    stack_dic = assign_stack(uniq_gene_region.sort_values([3]).loc[:,["name","left","right"]])  
+
+    # map gene to stack and add stack column : minus stack
+    uniq_gene_region["stack"] = -uniq_gene_region["name"].map(stack_dic)
+    exons.loc[:,"stack"] = -exons.loc[:,"name"].map(stack_dic)
+
+    # return uniq_gene_region (gene records with left and right boundary)
+    # return exon records with stack number
+    return uniq_gene_region, exons
+
+def assign_stack(uniq_gene_region):
+
+    stacks=[] ## stack : gene track
+    stack_dic={} # mapping gene name to stack
+    
+    for index,row in uniq_gene_region.iterrows():
         if len(stacks)==0:
+            # add first entry 
             stacks.append([(row["left"],row["right"])])
             stack_dic[row["name"]] = 0
         else:
@@ -1194,10 +1231,7 @@ def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,
                             break
                 if row["name"] in stack_dic.keys():
                     break         
-    uniq_gene_region["stack"] = -uniq_gene_region["name"].map(stack_dic)
-    exons.loc[:,"stack"] = -exons.loc[:,"name"].map(stack_dic)
-    return uniq_gene_region, exons
-
+    return stack_dic
 
 def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
         gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
