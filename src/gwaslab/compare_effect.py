@@ -8,23 +8,7 @@ import seaborn as sns
 import matplotlib.patches as mpatches
 from gwaslab.getsig import getsig
 from gwaslab.Log import Log
-
-def test_q(df,beta1,se1,beta2,se2):
-    w1="Weight_1"
-    w2="Weight_2"
-    beta="BETA_FE"
-    q="Q"
-    pq="HetP"
-    df[w1]=1/(df[se1])**2
-    df[w2]=1/(df[se2])**2
-    df[beta] =(df[w1]*df[beta1] + df[w2]*df[beta2])/(df[w1]+df[w2])
-    df[q] = df[w1]*(df[beta1]-df[beta])**2 + df[w2]*(df[beta2]-df[beta])**2
-    df[pq] = ss.chi2.sf(df[q], 1)
-    df["Edge_color"]="white"
-    df.loc[df[pq]<0.05,"Edge_color"]="black"
-    df.drop(columns=["Weight_1","Weight_2","BETA_FE"],inplace=True)
-    return df
-
+from gwaslab.winnerscurse import wc_correct
 
 #20220422
 def compare_effect(path1,
@@ -37,20 +21,25 @@ def compare_effect(path1,
                    snplist=None,
                    mode="beta",
                    anno=False,
+                   wc_correction=False, 
                    null_beta=0,
                    is_q=True,
                    q_level=0.05,
                    sig_level=5e-8,
-                   legend_title=r'$ P < 5 x 10^{-8}$ in:',
-                   legend_pos='upper left',
+                   wc_sig_level=5e-8,
+                   # reg
                    reg_box=dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey"),
                    is_reg=True,
+                   r2_se=True,
                    is_45_helper_line=True,
+                   legend_title=r'$ P < 5 x 10^{-8}$ in:',
+                   legend_pos='upper left',
                    scatterargs={"s":20},
                    plt_args={"figsize":(8,8),"dpi":300},
                    xylabel_prefix="Per-allele effect size in ",
                    helper_line_args={"color":'black', "linestyle":'-',"lw":1},
-                   fontargs={'family':'sans','fontname':'Arial','fontsize':12},
+                   fontargs={'fontsize':12},
+                   # 'family':'sans','fontname':'Arial',
                    errargs={"ecolor":"#cccccc","elinewidth":1},
                    sep=["\t","\t"],
                    log = Log(),
@@ -301,7 +290,13 @@ def compare_effect(path1,
         sig_list_merged["EAF_2_aligned"]=sig_list_merged["EAF_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2_aligned"]= 1 -sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2"]
     ####################################################################################################################################
-
+    ## winner's curse correction
+    if wc_correction == True:
+        if verbose: log.write(" -Correcting BETA for winner's curse with threshold at {}...".format(sig_level))
+        sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
+        sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
+        sig_list_merged["EFFECT_1"] = sig_list_merged[["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
+        sig_list_merged["EFFECT_2_aligned"] = sig_list_merged[["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
     ########################## Het test############################################################
     if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
         if verbose: log.write(" -Calculating Cochran's Q statistics and peform chisq test...")
@@ -418,13 +413,22 @@ def compare_effect(path1,
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
     
+
+    ###regression line##############################################################################################################################
     if len(sig_list_merged)<3: is_reg=False
     if is_reg is True:
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             reg = ss.linregress(sig_list_merged["EFFECT_1"],sig_list_merged["EFFECT_2_aligned"])
+            
+            # estimate se for r2
+            if r2_se==True:
+                if verbose:log.write(" -Estimating SE for Rsq using Jackknife method.")
+                r2_se_jackknife = jackknife_r2(sig_list_merged)
+                r2_se_jackknife_string = "({:.2f})".format(r2_se_jackknife)
+            else:
+                r2_se_jackknife_string= ""
         else:
             reg = ss.linregress(sig_list_merged["OR_1"],sig_list_merged["OR_2_aligned"])
-        
         #### calculate p values based on selected value , default = 0 
         if verbose:log.write(" -Calculating p values based on given null slope :",null_beta)
         t_score = (reg[0]-null_beta) / reg[4]
@@ -433,8 +437,8 @@ def compare_effect(path1,
         if verbose:log.write(" -Beta_se = ", reg[4])
         if verbose:log.write(" -H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
         if verbose:log.write(" -H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]))
-        
-        
+        if verbose:log.write(" -R2 se (jackknife) = {:.2e}".format(r2_se_jackknife))
+
         if reg[0] > 0:
             #if regression coeeficient >0 : auxiliary line slope = 1
             if is_45_helper_line is True:
@@ -445,7 +449,7 @@ def compare_effect(path1,
             pe =str(int("{:.2e}".format(p).split("e")[1]))
             p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
             p_latex= f'{p_text}'
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2]), va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **fontargs)
+            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2])+r2_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **fontargs)
         else:
             #if regression coeeficient <0 : auxiliary line slope = -1
             if is_45_helper_line is True:
@@ -458,7 +462,7 @@ def compare_effect(path1,
             pe =str(int("{:.2e}".format(p).split("e")[1]))
             p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
             p_latex= f'{p_text}'
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2]),va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
+            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2])+r2_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
             
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             middle = sig_list_merged["EFFECT_1"].mean()
@@ -484,6 +488,8 @@ def compare_effect(path1,
     ##plot finished########################################################################################
     
     return [sig_list_merged, fig,log]
+
+
 
 ################################################################################################################################
 def plotdaf(sumstats,
@@ -551,3 +557,59 @@ def plotdaf(sumstats,
     plt.tight_layout()
     return fig
     
+def test_q(df,beta1,se1,beta2,se2):
+    w1="Weight_1"
+    w2="Weight_2"
+    beta="BETA_FE"
+    q="Q"
+    pq="HetP"
+    i2="I2"
+    df[w1]=1/(df[se1])**2
+    df[w2]=1/(df[se2])**2
+    df[beta] =(df[w1]*df[beta1] + df[w2]*df[beta2])/(df[w1]+df[w2])
+    
+    # Cochran(1954)
+    df[q] = df[w1]*(df[beta1]-df[beta])**2 + df[w2]*(df[beta2]-df[beta])**2
+    df[pq] = ss.chi2.sf(df[q], 1)
+    df["Edge_color"]="white"
+    df.loc[df[pq]<0.05,"Edge_color"]="black"
+    df.drop(columns=["Weight_1","Weight_2","BETA_FE"],inplace=True)
+    # Huedo-Medina, T. B., Sánchez-Meca, J., Marín-Martínez, F., & Botella, J. (2006). Assessing heterogeneity in meta-analysis: Q statistic or I² index?. Psychological methods, 11(2), 193.
+    
+    # calculate I2
+    df[i2] = (df[q] - 1)/df[q]
+    df.loc[df[i2]<0,i2] = 0 
+    
+    return df
+
+def jackknife_r2(df,x="EFFECT_1",y="EFFECT_2_aligned"):
+    """Jackknife estimation of se for rsq
+
+    """
+
+    # dropna
+    df_nona = df.loc[:,[x,y]].dropna()
+    
+    # non-empty entries
+    n=len(df)
+    
+    # assign row number
+    df_nona["nrow"] = range(n)
+    
+    # a list to store r2
+    r2_list=[]
+    
+    # estimate r2
+    for i in range(n):
+        # exclude 1 record
+        records_to_use = df_nona["nrow"]!=i
+        # estimate r2
+        reg_jackknife = ss.linregress(df_nona.loc[records_to_use, x],df_nona.loc[records_to_use,y])
+        # add r2_i to list
+        r2_list.append(reg_jackknife[2])
+
+    # convert list to array
+    r2s = np.array(r2_list)
+    # https://en.wikipedia.org/wiki/Jackknife_resampling
+    r2_se = np.sqrt( (n-1)/n * np.sum((r2s - np.mean(r2s))**2) )
+    return r2_se
