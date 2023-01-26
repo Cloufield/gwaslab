@@ -1,4 +1,14 @@
 # Update Logs
+
+## 3.3.20
+- updated get_density() to calculate the signal density for sumstats
+- implemented winner's curse correction for effect size comparison
+
+## 3.3.19
+- updated fontsize options for plot_mqq(). Added anno_fontsize, title_fontsize.
+- updated default values and optimized methods for remove_dup(), fix_chr(), basic_check(),check_sanity().
+- added dump_pickle() load_pickle() to save half-finished sumstats object.
+
 ## 3.3.18
 - updated config and downloading system
 

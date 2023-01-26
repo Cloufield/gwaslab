@@ -355,9 +355,10 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         
         # convert to string datatype        
         if sumstats.loc[:,chrom].dtype != "string":
-            sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string") 
+            sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string")
         # check if CHR is numerice
         is_chr_fixed = sumstats[chrom].str.isnumeric()
+        is_chr_fixed = is_chr_fixed.fillna(False)
         if verbose: log.write(" -Vairants with standardized chromosome notation:",sum(is_chr_fixed))  
         
         # if there are variants whose CHR need to be fixed
@@ -369,7 +370,8 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
             
             if verbose: log.write(" -Vairants with fixable chromosome notations:",sum(is_chr_fixable))  
 
-            is_chr_na  = sumstats.loc[~is_chr_fixed,chrom].isna()
+            # update na
+            is_chr_na  = sumstats.loc[~is_chr_fixed, chrom].isna()
             
             if sum(is_chr_na)>0 and verbose: 
                 log.write(" -Vairants with NA chromosome notations:",sum(is_chr_na))  
@@ -450,7 +452,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         #convert to numeric
         is_pos_na = sumstats.loc[:,pos].isna()
         
-        if sumstats[pos].dtype == "string" or sumstats[pos].dtype == "object":
+        if sumstats.loc[:,pos].dtype == "string":
             if verbose: log.write(' -Removing thousands separator "," or underbar "_" ...')
             sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].str.replace(",|_", "",regex=True)
 
