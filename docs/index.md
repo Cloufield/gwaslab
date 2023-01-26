@@ -16,7 +16,7 @@ Note: gwaslab is being updated very frequently for now. I will release the first
 ## Install
 
 ```
-pip install gwaslab==3.3.18
+pip install gwaslab==3.3.20
 ```
 
 
