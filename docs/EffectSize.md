@@ -83,6 +83,8 @@ gl.compare_effect (path1,
 
 - `r2_se`: `boolean` If True, wc se for r2 will be estimated by the jackknife method.
 
+$$ s.e.(\hat{r^2}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r^2_i} -\bar{r^2}_{jack} )^2 } $$
+
 ## Example:
 
 !!! example "Male-specific and female-specific BMI Sumstats from JENGER"
