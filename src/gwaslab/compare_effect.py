@@ -31,6 +31,7 @@ def compare_effect(path1,
                    # reg
                    reg_box=dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey"),
                    is_reg=True,
+                   allele_match=False,
                    r2_se=False,
                    is_45_helper_line=True,
                    legend_title=r'$ P < 5 x 10^{-8}$ in:',
@@ -145,7 +146,7 @@ def compare_effect(path1,
     #     SNPID       P_1       P_2
     #0   rs117986209  0.142569  0.394455
     #1     rs6704312  0.652104  0.143750
-    
+
     ###############################################################################
 
     ########## 14 Merging sumstats1
@@ -319,6 +320,17 @@ def compare_effect(path1,
         # flip eaf
         sig_list_merged["EAF_2_aligned"]=sig_list_merged["EAF_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2_aligned"]= 1 -sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2"]
+    
+    # checking effect allele matching
+    nonmatch = np.nansum(sig_list_merged["EA_1"] != sig_list_merged["EA_2_aligned"])
+    if verbose: log.write(" -Aligned all EAs in {} with EAs in {} ...".format(label[1],label[0]))
+    if nonmatch>0:
+        if verbose: log.write(" -Warning: Alleles for {} variants do not match...".format(nonmatch))
+    if allele_match==True:
+        if nonmatch>0:
+            sig_list_merged = sig_list_merged.loc[sig_list_merged["EA_1"] == sig_list_merged["EA_2_aligned"]]
+        else:
+            if verbose: log.write(" -No variants with EA not matching...")
     ####################################################################################################################################
     ## winner's curse correction using aligned beta
     if wc_correction == True:
