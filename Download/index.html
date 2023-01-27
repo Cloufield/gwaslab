@@ -1371,37 +1371,33 @@
 </tr>
 </tbody>
 </table>
-<p>Currently, you can download the following files using gwaslab with the keywords:</p>
-<ul>
-<li>'1kg_eas_hg19'</li>
-<li>'1kg_eas_hg19_tbi'</li>
-<li>'1kg_eur_hg19'</li>
-<li>'1kg_eur_hg19_tbi'</li>
-<li>'1kg_eas_hg38'</li>
-<li>'1kg_eas_hg38_tbi'</li>
-<li>'1kg_eur_hg38'</li>
-<li>'1kg_eur_hg38_tbi'</li>
-<li>'dbsnp_v151_hg19'</li>
-<li>'dbsnp_v151_hg38'</li>
-<li>'ucsc_genome_hg19'</li>
-<li>'ucsc_genome_hg38'</li>
-<li>'1kg_dbsnp151_hg19_auto'</li>
-<li>'1kg_dbsnp151_hg38_auto'</li>
-<li>'recombination_hg19'</li>
-<li>'ensembl_hg19_gtf'</li>
-<li>'ensembl_hg19_gtf_protein_coding'</li>
-<li>'ensembl_hg38_gtf'</li>
-<li>'ensembl_hg38_gtf_protein_coding'</li>
-<li>'refseq_hg19_gtf'</li>
-<li>'refseq_hg19_gtf_protein_coding'</li>
-<li>'refseq_hg38_gtf'</li>
-<li>'refseq_hg38_gtf_protein_coding'</li>
-</ul>
+<p>Currently, you can download the following files using GWASLab with the keywords:</p>
+<p>|Keyword|Description|
+|'1kg_eas_hg19','1kg_eas_hg19_tbi'|1KGp3v5 low-coverage EAS VCF and index (hg19)|
+|'1kg_eur_hg19','1kg_eur_hg19_tbi'|1KGp3v5 low-coverage EUR VCF and index (hg19)|
+|'1kg_eas_hg38','1kg_eas_hg38_tbi'|1KGp3v5 30x EAS VCF and index (hg38)|
+|'1kg_eur_hg38','1kg_eur_hg38_tbi'|1KGp3v5 30x EUR VCF and index (hg38)|
+|'dbsnp_v151_hg19'|dbSNP151 (hg19, !!very large)|
+|'dbsnp_v151_hg38'|dbSNP151 (hg38, !!very large)|
+|'ucsc_genome_hg19'|UCSC human reference genome (hg19)|
+|'ucsc_genome_hg38'|UCSC human reference genome (hg38)|
+|'1kg_dbsnp151_hg19_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg19)|
+|'1kg_dbsnp151_hg38_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg38)|
+|'recombination_hg19'|Recombination rate reference files from Hapmap Project (hg19)|
+|'recombination_hg38'|Recombination rate reference files from Hapmap Project (hg38)|
+|'ensembl_hg19_gtf'|GTF file for genes from Ensembl (hg19)|
+|'ensembl_hg19_gtf_protein_coding'|GTF file for genes from Ensembl (only protein_coding; hg19)|
+|'ensembl_hg38_gtf'|GTF file for genes from Ensembl (hg38)|
+|'ensembl_hg38_gtf_protein_coding'|GTF file for genes from Ensembl (only protein_coding; hg38)|
+|'refseq_hg19_gtf'|GTF file for genes from Refseq (hg19)|
+|'refseq_hg19_gtf_protein_coding'|GTF file for genes from Refseq (only protein_coding; hg19)|
+|'refseq_hg38_gtf'|GTF file for genes from Refseq (hg19)|
+|'refseq_hg38_gtf_protein_coding'|GTF file for genes from Refseq (only protein_coding; hg38)|</p>
 <h2 id="configurations">Configurations</h2>
-<p>gwaslab uses 3 files and a default path for reference management:</p>
+<p>GWASLab uses 3 files and a default path for reference management:</p>
 <ul>
-<li><code>config</code> : a dictionary of <code>keyword</code> : <code>local path</code> for local file management. </li>
-<li><code>reference</code> : a dictionary of <code>keyword</code> : <code>url</code> for automatically downloading reference files.</li>
+<li><code>config</code> : a dictionary of <code>keyword</code>:<code>local path</code> for local file management.</li>
+<li><code>reference</code> : a dictionary of <code>keyword</code>:<code>url</code> for automatically downloading reference files.</li>
 <li><code>formatbook</code> : a dictionary used for format header conversions. </li>
 <li><code>data_directory</code>: the path for downloaded reference file. default: (<code>~/.gwaslab</code>)</li>
 </ul>
