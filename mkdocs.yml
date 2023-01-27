@@ -28,7 +28,8 @@ nav:
        - "Standardization and Normalization": Standardization.md
        - "QC and Filtering": QC&Filtering.md
        - Harmonization: Harmonization.md
-       - rsID : AssignrsID.md
+       - "Assigning rsID" : AssignrsID.md
+       - "Assign CHR/POS using rsID" : AssignCHRPOS.md
        - Liftover: LiftOver.md
        - "Data conversion": Conversion.md
     - Visualization:
@@ -38,9 +39,6 @@ nav:
        - "Miami Plot": MiamiPlot.md
        - "Scatter Plot: Effect Size Comparison": EffectSize.md
        - "Scatter Plot: Allele Frequency Comparison": AlleleFrequency.md
-       - "Heatmap: Genetic Correlation": GeneticCorrelation.md
-       - "Forest Plot": ForestPlot.md
-       - Gallery : Gallery.md
     - Utilities: 
        - "Extract Lead Variants": ExtractLead.md
        - "Extract Novel Variants": ExtractNovel.md
