@@ -1,4 +1,6 @@
 # Update Logs
+## 3.3.22 - 2023/01/27
+- added checks for duplicates and NAs in compare_effect()
 
 ## 3.3.21 - 2023/01/27
 
@@ -82,7 +84,7 @@
 
 - updated packaging methods. Now when installing gwaslab, pip will install all dependencies as well.
 
-## v3.3.6 -20221105
+## v3.3.6 - 2022/11/05
 
 - added download function: 
     - now you can download reference files from predefined list via gwaslab
@@ -97,7 +99,7 @@
 - optimized functions for sorting columns
 - removed outdated codes in Sumstats
 
-## v3.3.5 -20221102 
+## v3.3.5 - 2022/11/02 
 
 - added `filter_value`
 - integrate `gwascatalog` to `get_novel`
