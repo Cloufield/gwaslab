@@ -3,6 +3,7 @@
 # gwaslab
 
 ![badge](https://img.shields.io/pypi/v/gwaslab)
+[![Downloads](https://static.pepy.tech/badge/gwaslab)](https://pepy.tech/project/gwaslab)
 ![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 ![badge_commit_m](https://img.shields.io/github/commit-activity/m/Cloufield/gwaslab)
