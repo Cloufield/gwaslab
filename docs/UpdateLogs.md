@@ -1,31 +1,46 @@
 # Update Logs
 
 ## 3.3.21 - 2023/01/27
+
 - implement package info gl.show_version()
 - fixed rsid_to_chrpos()
 
+
 ## 3.3.20 
+
 - updated get_density() to calculate the signal density for sumstats
 - implemented winner's curse correction for effect size comparison
 
+
 ## 3.3.19
+
 - updated fontsize options for plot_mqq(). Added anno_fontsize, title_fontsize.
 - updated default values and optimized methods for remove_dup(), fix_chr(), basic_check(),check_sanity().
 - added dump_pickle() load_pickle() to save half-finished sumstats object.
 
+
 ## 3.3.18
+
 - updated config and downloading system
 
+
 ## 3.3.17
+
 - added xtcik_chr_dict
 - fixed bugs in miami plot
 
+
 ## 3.3.16
+
 - added hg38 recombination rate file
 - fixed bugs in get_novel
+
 ## 3.3.15
+
 - fixed bugs for reading gtf files
+
 ## 3.3.14
+
 - updated requirements for dependencies 
     - pandas>=1.3,<1.5
     - pyensembl==2.2.3
@@ -33,26 +48,42 @@
 - fixed bugs for regional plot
 - calculate_gc()
 - fill MAF : `.fill_data(to_fill=["MAF"])`
+
 ## 3.3.13
+
 - specified python engine for query 
+
 ## 3.3.12
+
 - fixed bugs for matplotlib v3.6.x
 - added method chain for filter_xxx functions
 - updated requirements for dependencies 
     - pySAM>=0.18.1,<0.20
     - matplotlib>=3.5
     - pyensembl>=2.2.3
+
 ## 3.3.11
+
 - updated requirements for dependencies
+
 ## 3.3.10 
+
 - updated bugs for mqqplot
+
 ## v3.3.9 
+
 - updated download system
+
 ## v3.3.8
+
 - included recombination data
+
 ## v3.3.7 
+
 - updated packaging methods. Now when installing gwaslab, pip will install all dependencies as well.
+
 ## v3.3.6 -20221105
+
 - added download function: 
     - now you can download reference files from predefined list via gwaslab
     - `gl.check_available_ref()` : list available reference files
@@ -67,12 +98,14 @@
 - removed outdated codes in Sumstats
 
 ## v3.3.5 -20221102 
+
 - added `filter_value`
 - integrate `gwascatalog` to `get_novel`
 - optimized `remove_dup`
 - fixed bugs
 
-## v3.3.4 -20221031
+## v3.3.4 - 2022/10/31
+
 - added gwascatalog_trait()
 - optimized check_sanity()
 - optimized the logic for removing duplicated and multiallelic variants 
@@ -82,26 +115,31 @@
 - fixed bugs
 
 ## v3.3.3
+
 - added Miami plot
 - added Brisbane plot
 - updated tutorials 
 - mqq plot annotation: new customization options
 
-## v3.3.2 - 20221021
+## v3.3.2 - 2022/10/21
+
 - added forcefixid for fix_id()
 - fixed bugs for plotting gene tracks
 
 ## v3.3.1 
+
 - extract novel loci given a list of known lead variants
 - fixed bugs in fill_data()
 - fixed path for hapmap3 snps for infer_build()
 
-## v3.3.0 2022/10/18
+## v3.3.0 - 2022/10/18
+
 - added forest plot
 - fixed options for mqqplot
 - supported vcf
 
 ## v3.2.0
+
 - incorporated pyensembl and scikit-allel.
 - get_lead() : support automatic gene name annotation (using pyensembl)
 - to_format():
@@ -117,6 +155,7 @@
 
 
 ## v3.1.0 
+
 - implemented formatbook: easily import sumstats and output sumstats in certain formats (support for commonly used formats including ldsc, plink, plink2, gwas-ssf, saige, regenie, fastgwa, metal, mrmega, pgscatalog, pgscatalog_hm, gwascatalog, gwascatalog_hm and gwaslab)
 - added `.filter_region_in/out` using bed files (or in-built regions like high-ld or hla)
 - implemented `.summay()` methods.
