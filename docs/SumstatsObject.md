@@ -76,7 +76,7 @@ All other columns and options are optional.
 * `other`: `list`, a list  of other column names you want to keep with the core columns (probably some annotations).
 * `status`: `string`, status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.
 * `verbose`: `boolean`, if True, print log. 
-* `build`:  `string `, genome build. "19" for "hg19", "38" for "hg38" and "99" for "unknown".
+* `build`:  `string `, genome build. `19` for hg19, `38` for hg38 and `99` for unknown.
 * `**arg `: additional parameters for [pd.read_table()](https://pandas.pydata.org/docs/reference/api/pandas.read_table.html) function. Some common options include : `sep`,`nrows`, `skiprows` and `na_values`.
 
 ## Loading sumstats
@@ -156,8 +156,14 @@ or convert the sumstats to other sumstats using gwaslab `to_format()` function (
     ```
     mysumstats.to_format("./mysumstats", fmt="ldsc",hapmap3=True, exclude_hla=True, build="19")
     ```
-Please check [https://cloufield.github.io/gwaslab/Format/](https://cloufield.github.io/gwaslab/Format/)
+    
+Please check [GWASLab - Format](https://cloufield.github.io/gwaslab/Format/) for more details.
 
+## Saving half-finished Sumstats Object
+
+If the pipeline is very long, and you need to temporarily save the Sumstats Object, you can use the `.dump_pickle()` method to temporarily save the Sumstats Object.
+
+Please check [GWASLab - Pickle](https://cloufield.github.io/gwaslab/Pickle/) for more details.
 
 ## Logging
 
