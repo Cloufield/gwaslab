@@ -10,38 +10,36 @@
 |`gl.remove_file(keyword)`|keyword|remove the downloaded data|
 |`gl.get_path(keyword)`|keyword|get the path to the refernce data|
 
-Currently, you can download the following files using gwaslab with the keywords:
+Currently, you can download the following files using GWASLab with the keywords:
 
-- '1kg_eas_hg19'
-- '1kg_eas_hg19_tbi'
-- '1kg_eur_hg19'
-- '1kg_eur_hg19_tbi'
-- '1kg_eas_hg38'
-- '1kg_eas_hg38_tbi'
-- '1kg_eur_hg38'
-- '1kg_eur_hg38_tbi'
-- 'dbsnp_v151_hg19'
-- 'dbsnp_v151_hg38'
-- 'ucsc_genome_hg19'
-- 'ucsc_genome_hg38'
-- '1kg_dbsnp151_hg19_auto'
-- '1kg_dbsnp151_hg38_auto'
-- 'recombination_hg19'
-- 'ensembl_hg19_gtf'
-- 'ensembl_hg19_gtf_protein_coding'
-- 'ensembl_hg38_gtf'
-- 'ensembl_hg38_gtf_protein_coding'
-- 'refseq_hg19_gtf'
-- 'refseq_hg19_gtf_protein_coding'
-- 'refseq_hg38_gtf'
-- 'refseq_hg38_gtf_protein_coding'
+|Keyword|Description|
+|'1kg_eas_hg19','1kg_eas_hg19_tbi'|1KGp3v5 low-coverage EAS VCF and index (hg19)|
+|'1kg_eur_hg19','1kg_eur_hg19_tbi'|1KGp3v5 low-coverage EUR VCF and index (hg19)|
+|'1kg_eas_hg38','1kg_eas_hg38_tbi'|1KGp3v5 30x EAS VCF and index (hg38)|
+|'1kg_eur_hg38','1kg_eur_hg38_tbi'|1KGp3v5 30x EUR VCF and index (hg38)|
+|'dbsnp_v151_hg19'|dbSNP151 (hg19, !!very large)|
+|'dbsnp_v151_hg38'|dbSNP151 (hg38, !!very large)|
+|'ucsc_genome_hg19'|UCSC human reference genome (hg19)|
+|'ucsc_genome_hg38'|UCSC human reference genome (hg38)|
+|'1kg_dbsnp151_hg19_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg19)|
+|'1kg_dbsnp151_hg38_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg38)|
+|'recombination_hg19'|Recombination rate reference files from Hapmap Project (hg19)|
+|'recombination_hg38'|Recombination rate reference files from Hapmap Project (hg38)|
+|'ensembl_hg19_gtf'|GTF file for genes from Ensembl (hg19)|
+|'ensembl_hg19_gtf_protein_coding'|GTF file for genes from Ensembl (only protein_coding; hg19)|
+|'ensembl_hg38_gtf'|GTF file for genes from Ensembl (hg38)|
+|'ensembl_hg38_gtf_protein_coding'|GTF file for genes from Ensembl (only protein_coding; hg38)|
+|'refseq_hg19_gtf'|GTF file for genes from Refseq (hg19)|
+|'refseq_hg19_gtf_protein_coding'|GTF file for genes from Refseq (only protein_coding; hg19)|
+|'refseq_hg38_gtf'|GTF file for genes from Refseq (hg19)|
+|'refseq_hg38_gtf_protein_coding'|GTF file for genes from Refseq (only protein_coding; hg38)|
 
 ## Configurations
 
-gwaslab uses 3 files and a default path for reference management:
+GWASLab uses 3 files and a default path for reference management:
 
-- `config` : a dictionary of `keyword` : `local path` for local file management. 
-- `reference` : a dictionary of `keyword` : `url` for automatically downloading reference files.
+- `config` : a dictionary of `keyword`:`local path` for local file management.
+- `reference` : a dictionary of `keyword`:`url` for automatically downloading reference files.
 - `formatbook` : a dictionary used for format header conversions. 
 - `data_directory`: the path for downloaded reference file. default: (`~/.gwaslab`)
 
@@ -54,7 +52,6 @@ gl.options.paths
  'formatbook': '/Users/he/work/gwaslab/src/gwaslab/data/formatbook.json',
  'data_directory': '/Users/he/.gwaslab/'}
 ```
-
 
 Sometimes you might need to use your own files, which can be done using `gl.options.set_option(key, newpath)` (simply run this after loadnig the gwaslab package):
 
