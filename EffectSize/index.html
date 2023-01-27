@@ -1552,7 +1552,7 @@
 
 Headers of the files : # SNP    CHR POS REF ALT Frq Rsq BETA    SE  P
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="c1"># gwaslab will automatically extract significant variants from both sumstats. </span>
+<p><div class="highlight"><pre><span></span><code><span class="c1"># gwaslab will automatically extract significant variants from both sumstats. </span>
 <span class="n">a</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">compare_effect</span><span class="p">(</span><span class="s2">&quot;bbj_bmi_female.txt.gz&quot;</span><span class="p">,</span>
                       <span class="p">[</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span><span class="s2">&quot;POS&quot;</span><span class="p">],[</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span><span class="s2">&quot;SE&quot;</span><span class="p">],</span>
                       <span class="s2">&quot;bbj_bmi_male.txt.gz&quot;</span><span class="p">,</span>
@@ -1563,7 +1563,8 @@ Headers of the files : # SNP    CHR POS REF ALT Frq Rsq BETA    SE  P
                       <span class="n">legend_title</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$ P &lt; 5 x 10^{-6}$ in:&#39;</span><span class="p">,</span>
                       <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="c1"># wc_correction=True : perform winner&#39;s curse correction</span>
+<img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021843-4572636d-b1a8-43f5-8f6e-070b09e5270f.png"></p>
+<p><div class="highlight"><pre><span></span><code><span class="c1"># wc_correction=True : perform winner&#39;s curse correction</span>
 <span class="c1"># r2_se=True : estimate the se for R2 using jackknife method</span>
 
 <span class="n">a</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">compare_effect</span><span class="p">(</span><span class="s2">&quot;bbj_bmi_female.txt.gz&quot;</span><span class="p">,</span>
@@ -1579,6 +1580,7 @@ Headers of the files : # SNP    CHR POS REF ALT Frq Rsq BETA    SE  P
                       <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </code></pre></div>
+<img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021886-6ee4beb4-bf9f-42d1-a93b-2dca72841022.png"></p>
 </div>
 
 
