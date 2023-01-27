@@ -1,6 +1,10 @@
 # Update Logs
 
-## 3.3.20
+## 3.3.21 - 2023/01/27
+- implement package info gl.show_version()
+- fixed rsid_to_chrpos()
+
+## 3.3.20 
 - updated get_density() to calculate the signal density for sumstats
 - implemented winner's curse correction for effect size comparison
 

@@ -2,9 +2,10 @@
 
 # gwaslab
 
-![badge](https://img.shields.io/badge/pip-v3.3.18-blue)
+![badge](https://img.shields.io/badge/pip-v3.3.21-blue)
 ![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+![badge_commit_m](https://img.shields.io/github/commit-activity/m/Cloufield/gwaslab)
 
 * A handy python toolkit for handling GWAS sumstats.
 * Each process is modularized and can be customized to your needs.
@@ -16,7 +17,7 @@ Note: gwaslab is being updated very frequently for now. I will release the first
 ## Install
 
 ```
-pip install gwaslab==3.3.20
+pip install gwaslab==3.3.21
 ```
 
 
@@ -69,7 +70,7 @@ mysumstats.plot_mqq()
 - Equivalent statistics conversion
     - BETA/SE , OR/OR_95L/OR_95U
     - P, Z, CHISQ, MLOG10P
-- Customized value filtering
+- Customizable value filtering
 
 ###  Harmonization
 
@@ -103,7 +104,7 @@ mysumstats.plot_mqq()
 - Extract novel loci given a list of known lead variants / or known loci obtained form GWAS Catalog.
 - Logging : keep a complete record of manipulations applied to the sumstats.
 - Sumstats summary: give you a quick overview of the sumstats. 
-
+- ...
 
 ## Requirements
 

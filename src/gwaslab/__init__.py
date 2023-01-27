@@ -18,7 +18,6 @@ from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_high_ld
 from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_formats_list
-from gwaslab.CommonData import gwaslab_info
 from gwaslab.download import update_formatbook
 from gwaslab.download import list_formats
 from gwaslab.download import check_format
@@ -33,3 +32,4 @@ from gwaslab.download import update_record
 from gwaslab.to_pickle import dump_pickle
 from gwaslab.to_pickle import load_pickle
 from gwaslab.config import options
+from gwaslab.version import _show_version as show_version

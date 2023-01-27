@@ -47,6 +47,7 @@ from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_high_ld
 from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_formats_list
+from gwaslab.version import _show_version
 import gc
 
 #20220309
@@ -91,6 +92,8 @@ class Sumstats():
         self.meta["Study"]=study
         self.log = Log()
         
+        _show_version(self.log)
+
         #preformat the data
         self.data  = preformat(
           sumstats=sumstats,

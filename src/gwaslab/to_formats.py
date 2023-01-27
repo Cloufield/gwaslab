@@ -3,7 +3,7 @@ import hashlib
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_number_to_chr
-from gwaslab.CommonData import gwaslab_info
+from gwaslab.version import gwaslab_info
 from pysam import tabix_compress 
 from pysam import tabix_index
 from gwaslab.CommonData import get_formats_list
