@@ -100,6 +100,8 @@ def compare_effect(path1,
         ######### 8,2 otherwise use the sutomatically detected lead SNPs
         if verbose: log.write(" -Extract lead variants from "+label[0]+"...")
         sig_list_1 = getsig(sumstats,"SNPID","CHR","POS","P", verbose=verbose,sig_level=sig_level)
+    
+    sig_list_1 = drop_duplicate_and_na(sig_list_1, sort_by="P", log=log ,verbose=verbose)
 
     ######### 9 extract snplist2
     if snplist is not None:
@@ -132,7 +134,9 @@ def compare_effect(path1,
         ######### 12.2 otherwise use the sutomatically detected lead SNPs
         sig_list_2 = getsig(sumstats,"SNPID","CHR","POS","P",
                                  verbose=verbose,sig_level=sig_level)
-    
+
+    sig_list_2 = drop_duplicate_and_na(sig_list_2, sort_by="P", log=log ,verbose=verbose)
+
     ######### 13 Merge two list using SNPID
     ##############################################################################
     if verbose: log.write("Merging snps from "+label[0]+" and "+label[1]+"...")
@@ -141,15 +145,7 @@ def compare_effect(path1,
     #     SNPID       P_1       P_2
     #0   rs117986209  0.142569  0.394455
     #1     rs6704312  0.652104  0.143750
-    #
-    # drop na and duplicate
-    sig_list_merged = drop_duplicate_and_na(sig_list_merged, log=log ,verbose=verbose)
-    #length_before = len(sig_list_merged)
-    #sig_list_merged.drop_duplicates(subset=["SNPID"], inplace=True)
-    #sig_list_merged.dropna(axis="index",subset=["SNPID"], inplace=True) 
-    #length_after= len(sig_list_merged)
-    #if length_before !=  length_after:
-    #    if verbose: log.write(" -Dropped {} duplicates or NAs...".format(length_before - length_after))
+    
     ###############################################################################
 
     ########## 14 Merging sumstats1
@@ -158,9 +154,9 @@ def compare_effect(path1,
          #[snpid,p,ea,nea]      ,[effect,se]
         #[snpid,p,ea,nea,chr,pos],[effect,se]
         #[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
-        cols_to_extract = [cols_name_list_1[0],cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1]]
+        cols_to_extract = [cols_name_list_1[0],cols_name_list_1[1], cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1]]
     else:
-        cols_to_extract = [cols_name_list_1[0],cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1], effect_cols_list_1[2]]
+        cols_to_extract = [cols_name_list_1[0],cols_name_list_1[1], cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1], effect_cols_list_1[2]]
     
     if len(eaf)>0: cols_to_extract.append(eaf[0])   
     if verbose: log.write(" -Extract statistics of selected variants from "+label[0]+" : ",",".join(cols_to_extract) )
@@ -169,6 +165,7 @@ def compare_effect(path1,
 
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         rename_dict = { cols_name_list_1[0]:"SNPID",
+                        cols_name_list_1[1]:"P_1",
                         cols_name_list_1[2]:"EA_1",
                         cols_name_list_1[3]:"NEA_1",
                         effect_cols_list_1[0]:"EFFECT_1",
@@ -178,6 +175,7 @@ def compare_effect(path1,
     else:
         # if or
         rename_dict = { cols_name_list_1[0]:"SNPID",
+                        cols_name_list_1[1]:"P_1",
                         cols_name_list_1[2]:"EA_1",
                         cols_name_list_1[3]:"NEA_1",
                         effect_cols_list_1[0]:"OR_1",
@@ -189,8 +187,9 @@ def compare_effect(path1,
     sumstats.rename(columns=rename_dict, inplace=True)
     
     # drop na and duplicate
-    sumstats = drop_duplicate_and_na(sumstats, log=log , verbose=verbose)
-    
+    sumstats = drop_duplicate_and_na(sumstats,  sort_by="P_1", log=log , verbose=verbose)
+    sumstats.drop("P_1",axis=1,inplace=True)
+
     if verbose: log.write(" -Merging "+label[0]+" effect information...")
     
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
@@ -200,18 +199,19 @@ def compare_effect(path1,
     ############ 15 merging sumstats2
     
     if mode=="beta" or mode=="BETA" or mode=="Beta":
-        cols_to_extract = [cols_name_list_2[0],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1]]
+        cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1]]
     else:
         # if or
-        cols_to_extract = [cols_name_list_2[0],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1], effect_cols_list_2[2]]
+        cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1], effect_cols_list_2[2]]
     ## check if eaf column is provided.
     if len(eaf)>0: cols_to_extract.append(eaf[1])
     
     if verbose: log.write(" -Extract statistics of selected variants from "+label[1]+" : ",",".join(cols_to_extract) )
     sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
-    
+    gc.collect()
     if mode=="beta" or mode=="BETA" or mode=="Beta":
           rename_dict = { cols_name_list_2[0]:"SNPID",
+                        cols_name_list_2[1]:"P_2",
                         cols_name_list_2[2]:"EA_2",
                         cols_name_list_2[3]:"NEA_2",
                         effect_cols_list_2[0]:"EFFECT_2",
@@ -219,6 +219,7 @@ def compare_effect(path1,
     }
     else:
                     rename_dict = { cols_name_list_2[0]:"SNPID",
+                        cols_name_list_2[1]:"P_2",
                         cols_name_list_2[2]:"EA_2",
                         cols_name_list_2[3]:"NEA_2",
                         effect_cols_list_2[0]:"OR_2",
@@ -228,8 +229,9 @@ def compare_effect(path1,
     if len(eaf)>0: rename_dict[eaf[1]]="EAF_2"
     sumstats.rename(columns=rename_dict, inplace=True)         
     # drop na and duplicate
-    sumstats = drop_duplicate_and_na(sumstats, log=log, verbose=verbose)
-    
+    sumstats = drop_duplicate_and_na(sumstats, sort_by="P_2", log=log, verbose=verbose)
+    sumstats.drop("P_2",axis=1,inplace=True)
+
     if verbose: log.write(" -Merging "+label[1]+" effect information...")
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
                                left_on="SNPID",right_on="SNPID",
@@ -246,7 +248,7 @@ def compare_effect(path1,
                               },
                      inplace=True)
     # drop na and duplicate
-    sumstats = drop_duplicate_and_na(sumstats, log=log, verbose=verbose)
+    sumstats = drop_duplicate_and_na(sumstats, sort_by="P_1", log=log, verbose=verbose)
     
     sumstats.set_index("SNPID",inplace=True)
     sig_list_merged.update(sumstats)
@@ -260,7 +262,7 @@ def compare_effect(path1,
                               },
                      inplace=True)
     # drop na and duplicate
-    sumstats = drop_duplicate_and_na(sumstats, log=log, verbose=verbose)              
+    sumstats = drop_duplicate_and_na(sumstats, sort_by="P_2", log=log, verbose=verbose)              
     
     sumstats.set_index("SNPID",inplace=True)
     sig_list_merged.update(sumstats)
@@ -521,7 +523,7 @@ def compare_effect(path1,
     plt.setp(L.texts,**fontargs)
     plt.setp(L.get_title(),**fontargs)
     ##plot finished########################################################################################
-    
+    gc.collect()
     return [sig_list_merged, fig,log]
 
 
@@ -649,10 +651,12 @@ def jackknife_r2(df,x="EFFECT_1",y="EFFECT_2_aligned"):
     r2_se = np.sqrt( (n-1)/n * np.sum((r2s - np.mean(r2s))**2) )
     return r2_se
 
-def drop_duplicate_and_na(df,snpid="SNPID",log=Log(),verbose=True):
+def drop_duplicate_and_na(df,snpid="SNPID",sort_by=False,log=Log(),verbose=True):
     length_before = len(df)
-    df.drop_duplicates(subset=[snpid], inplace=True)
-    df.dropna(axis="index",subset=[snpid], inplace=True) 
+    if sort_by!=False:
+        df.sort_values(by = sort_by, inplace=True)
+    df.dropna(axis="index",subset=[snpid],inplace=True)
+    df.drop_duplicates(subset=[snpid], keep='first', inplace=True) 
     length_after= len(df)
     if length_before !=  length_after:
         if verbose: log.write(" -Dropped {} duplicates or NAs...".format(length_before - length_after))
