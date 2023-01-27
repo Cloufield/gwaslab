@@ -9,6 +9,7 @@ import matplotlib.patches as mpatches
 from gwaslab.getsig import getsig
 from gwaslab.Log import Log
 from gwaslab.winnerscurse import wc_correct
+import gc
 
 #20220422
 def compare_effect(path1,
@@ -30,7 +31,7 @@ def compare_effect(path1,
                    # reg
                    reg_box=dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey"),
                    is_reg=True,
-                   r2_se=True,
+                   r2_se=False,
                    is_45_helper_line=True,
                    legend_title=r'$ P < 5 x 10^{-8}$ in:',
                    legend_pos='upper left',
@@ -86,9 +87,9 @@ def compare_effect(path1,
     sumstats.rename(columns=rename_dict,inplace=True)
     
     ######### 7 exctract only available variants from sumstats1 
-    sumstats=sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
-    if verbose: log.write(" -Using only variants available for both datasets...")
+    sumstats = sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
     
+    if verbose: log.write(" -Using only variants available for both datasets...")
     ######### 8 extact SNPs for comparison 
     
     if snplist is not None: 
@@ -118,8 +119,8 @@ def compare_effect(path1,
         rename_dict[cols_name_list_2[5]]="POS"
     sumstats.rename(columns=rename_dict,inplace=True)
     
-    ######### 11 exctract only common variants from sumstats2
-    sumstats=sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
+    ######### 11 exctract only overlapping variants from sumstats2
+    sumstats = sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
     
     ######## 12 extact SNPs for comparison 
     if snplist: 
@@ -135,8 +136,20 @@ def compare_effect(path1,
     ######### 13 Merge two list using SNPID
     ##############################################################################
     if verbose: log.write("Merging snps from "+label[0]+" and "+label[1]+"...")
-    sig_list_merged = pd.merge(sig_list_1,sig_list_2,left_on="SNPID",right_on="SNPID",how="outer",suffixes=('_1', '_2'))
     
+    sig_list_merged = pd.merge(sig_list_1,sig_list_2,left_on="SNPID",right_on="SNPID",how="outer",suffixes=('_1', '_2'))
+    #     SNPID       P_1       P_2
+    #0   rs117986209  0.142569  0.394455
+    #1     rs6704312  0.652104  0.143750
+    #
+    # drop na and duplicate
+    sig_list_merged = drop_duplicate_and_na(sig_list_merged, log=log ,verbose=verbose)
+    #length_before = len(sig_list_merged)
+    #sig_list_merged.drop_duplicates(subset=["SNPID"], inplace=True)
+    #sig_list_merged.dropna(axis="index",subset=["SNPID"], inplace=True) 
+    #length_after= len(sig_list_merged)
+    #if length_before !=  length_after:
+    #    if verbose: log.write(" -Dropped {} duplicates or NAs...".format(length_before - length_after))
     ###############################################################################
 
     ########## 14 Merging sumstats1
@@ -148,10 +161,12 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1]]
     else:
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1], effect_cols_list_1[2]]
+    
     if len(eaf)>0: cols_to_extract.append(eaf[0])   
     if verbose: log.write(" -Extract statistics of selected variants from "+label[0]+" : ",",".join(cols_to_extract) )
     sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
-    
+
+
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         rename_dict = { cols_name_list_1[0]:"SNPID",
                         cols_name_list_1[2]:"EA_1",
@@ -173,7 +188,11 @@ def compare_effect(path1,
     if len(eaf)>0: rename_dict[eaf[0]]="EAF_1"
     sumstats.rename(columns=rename_dict, inplace=True)
     
+    # drop na and duplicate
+    sumstats = drop_duplicate_and_na(sumstats, log=log , verbose=verbose)
+    
     if verbose: log.write(" -Merging "+label[0]+" effect information...")
+    
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
                                left_on="SNPID",right_on="SNPID",
                                how="left")
@@ -187,6 +206,7 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[2],cols_name_list_2[3], effect_cols_list_2[0], effect_cols_list_2[1], effect_cols_list_2[2]]
     ## check if eaf column is provided.
     if len(eaf)>0: cols_to_extract.append(eaf[1])
+    
     if verbose: log.write(" -Extract statistics of selected variants from "+label[1]+" : ",",".join(cols_to_extract) )
     sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
     
@@ -207,7 +227,8 @@ def compare_effect(path1,
     }
     if len(eaf)>0: rename_dict[eaf[1]]="EAF_2"
     sumstats.rename(columns=rename_dict, inplace=True)         
-    
+    # drop na and duplicate
+    sumstats = drop_duplicate_and_na(sumstats, log=log, verbose=verbose)
     
     if verbose: log.write(" -Merging "+label[1]+" effect information...")
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
@@ -224,6 +245,9 @@ def compare_effect(path1,
                         cols_name_list_1[1]:"P_1"
                               },
                      inplace=True)
+    # drop na and duplicate
+    sumstats = drop_duplicate_and_na(sumstats, log=log, verbose=verbose)
+    
     sumstats.set_index("SNPID",inplace=True)
     sig_list_merged.update(sumstats)
     
@@ -235,6 +259,9 @@ def compare_effect(path1,
                         cols_name_list_2[1]:"P_2"
                               },
                      inplace=True)
+    # drop na and duplicate
+    sumstats = drop_duplicate_and_na(sumstats, log=log, verbose=verbose)              
+    
     sumstats.set_index("SNPID",inplace=True)
     sig_list_merged.update(sumstats)
 
@@ -243,9 +270,9 @@ def compare_effect(path1,
     ############## 18 init indicator
     if verbose: log.write(" -Assigning indicator  ...")
     # 0-> 0
-    # 1 -> sumstats1
-    # 2 -> sumsatts2
-    # 3->  sumstats3
+    # 1 -> sig in sumstats1
+    # 2 -> sig in sumsatts2
+    # 3->  sig in both sumstats1 + sumstats2
     sig_list_merged["indicator"] = 0
     sig_list_merged.loc[sig_list_merged["P_1"]<sig_level,"indicator"]=1+sig_list_merged.loc[sig_list_merged["P_1"]<sig_level,"indicator"]
     sig_list_merged.loc[sig_list_merged["P_2"]<sig_level,"indicator"]=2+sig_list_merged.loc[sig_list_merged["P_2"]<sig_level,"indicator"]
@@ -258,6 +285,7 @@ def compare_effect(path1,
     if verbose: log.write(" -Aligning "+label[1]+" EA with "+label[0]+" EA ...")
     ############### 19 align allele effect with sumstats 1
     if mode=="beta" or mode=="BETA" or mode=="Beta":
+        # copy raw
         sig_list_merged["EA_2_aligned"]=sig_list_merged["EA_2"]
         sig_list_merged["NEA_2_aligned"]=sig_list_merged["NEA_2"]
         sig_list_merged["EFFECT_2_aligned"]=sig_list_merged["EFFECT_2"]
@@ -285,12 +313,12 @@ def compare_effect(path1,
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2"]
     
-    # flip eaf
     if len(eaf)>0:
+        # flip eaf
         sig_list_merged["EAF_2_aligned"]=sig_list_merged["EAF_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2_aligned"]= 1 -sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2"]
     ####################################################################################################################################
-    ## winner's curse correction
+    ## winner's curse correction using aligned beta
     if wc_correction == True:
         if verbose: log.write(" -Correcting BETA for winner's curse with threshold at {}...".format(sig_level))
         sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
@@ -298,23 +326,29 @@ def compare_effect(path1,
         sig_list_merged["EFFECT_1"] = sig_list_merged[["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
         sig_list_merged["EFFECT_2_aligned"] = sig_list_merged[["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
     ########################## Het test############################################################
+    ## heterogeneity test
     if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
         if verbose: log.write(" -Calculating Cochran's Q statistics and peform chisq test...")
         sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2")
         
     ######################### save ###############################################################
+    ## save the merged data
     save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
     if verbose: log.write(" -Saving the merged data to:",save_path)
     sig_list_merged.to_csv(save_path,"\t")
+    
     ########################## maf_threshold#############################################################
     if (len(eaf)>0) and (maf_level is not None):
         both_eaf_clear =  (sig_list_merged["EAF_1"]>maf_level)&(sig_list_merged["EAF_1"]<1-maf_level)&(sig_list_merged["EAF_2"]>maf_level)&(sig_list_merged["EAF_2"]<1-maf_level)
         if verbose: log.write(" -Exclude "+str(len(sig_list_merged) -sum(both_eaf_clear))+ " variants with maf <",maf_level)
         sig_list_merged = sig_list_merged.loc[both_eaf_clear,:]
+    # heterogeneity summary
     if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
         if verbose: log.write(" -Significant het:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:]))
         if verbose: log.write(" -All sig:" ,len(sig_list_merged))
         if verbose: log.write(" -Het rate:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:])/len(sig_list_merged))   
+    
+    # extract group
     sum0 = sig_list_merged.loc[sig_list_merged["indicator"]==0,:].dropna(axis=0)
     sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:].dropna(axis=0)
     sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:].dropna(axis=0)
@@ -424,7 +458,7 @@ def compare_effect(path1,
             if r2_se==True:
                 if verbose:log.write(" -Estimating SE for Rsq using Jackknife method.")
                 r2_se_jackknife = jackknife_r2(sig_list_merged)
-                r2_se_jackknife_string = "({:.2f})".format(r2_se_jackknife)
+                r2_se_jackknife_string = " ({:.2f})".format(r2_se_jackknife)
             else:
                 r2_se_jackknife_string= ""
         else:
@@ -437,7 +471,8 @@ def compare_effect(path1,
         if verbose:log.write(" -Beta_se = ", reg[4])
         if verbose:log.write(" -H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
         if verbose:log.write(" -H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]))
-        if verbose:log.write(" -R2 se (jackknife) = {:.2e}".format(r2_se_jackknife))
+        if r2_se==True:
+            if verbose:log.write(" -R2 se (jackknife) = {:.2e}".format(r2_se_jackknife))
 
         if reg[0] > 0:
             #if regression coeeficient >0 : auxiliary line slope = 1
@@ -613,3 +648,12 @@ def jackknife_r2(df,x="EFFECT_1",y="EFFECT_2_aligned"):
     # https://en.wikipedia.org/wiki/Jackknife_resampling
     r2_se = np.sqrt( (n-1)/n * np.sum((r2s - np.mean(r2s))**2) )
     return r2_se
+
+def drop_duplicate_and_na(df,snpid="SNPID",log=Log(),verbose=True):
+    length_before = len(df)
+    df.drop_duplicates(subset=[snpid], inplace=True)
+    df.dropna(axis="index",subset=[snpid], inplace=True) 
+    length_after= len(df)
+    if length_before !=  length_after:
+        if verbose: log.write(" -Dropped {} duplicates or NAs...".format(length_before - length_after))
+    return df
