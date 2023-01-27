@@ -107,6 +107,7 @@ gl.compare_effect (path1,
                           legend_title=r'$ P < 5 x 10^{-6}$ in:',
                           verbose=True)
     ```
+    <img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021843-4572636d-b1a8-43f5-8f6e-070b09e5270f.png">
     
     ```python
     # wc_correction=True : perform winner's curse correction
@@ -125,3 +126,4 @@ gl.compare_effect (path1,
                           verbose=True
     )
     ```
+    <img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021886-6ee4beb4-bf9f-42d1-a93b-2dca72841022.png">
