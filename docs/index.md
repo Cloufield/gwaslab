@@ -11,12 +11,12 @@
 * Sumstats-specific manipulations are designed as methods of a python object, `gwaslab.Sumstats`.
 
 Please check GWASLab document at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
-Note: gwaslab is being updated very frequently for now. I will release the first stable version soon (within this year)! Please stay tuned.
+Note: gwaslab is being updated very frequently for now. I will release the first stable version soon! Please stay tuned.
 
 ## Install
 
 ```
-pip install gwaslab==3.3.18
+pip install gwaslab==3.3.20
 ```
 
 
@@ -124,9 +124,9 @@ adjustText
 ```
 
 ## Citation
-A manuscript is in preparation and will be released soon.
-Sample GWAS data used in gwaslab is obtained from: http://jenger.riken.jp/
-Sample GWAS data citation : Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.
+
+- GWASLab manuscript is in preparation and will be released soon.
+- Sample GWAS data used in gwaslab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
 
 ## Contacts
 * Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)

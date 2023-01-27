@@ -27,7 +27,7 @@ import gc
 
 ###~!!!!
 def rsidtochrpos(sumstats,
-         path="",
+         path="", snpid="SNPID",
          rsid="rsID", chrom="CHR",pos="POS",ref_rsid="rsID",ref_chr="CHR",ref_pos="POS", build="19",
               overwrite=False,remove=False,chunksize=5000000,verbose=True,log=Log()):
     '''
@@ -38,6 +38,14 @@ def rsidtochrpos(sumstats,
     if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose:  log.write(" -rsID dictionary file: "+ path)  
     
+    if snpid in sumstats.columns and sum(sumstats[rsid].isna())>0:
+        if verbose:  log.write(" -Filling na in rsID columns with SNPID...")  
+        sumstats.loc[sumstats[rsid].isna(),rsid] = sumstats.loc[sumstats[rsid].isna(),snpid]
+    
+    if sum(sumstats[rsid].isna())>0:
+        if verbose:  log.write(" -Filling na in rsID columns with NA_xxx for {} variants...".format(sum(sumstats[rsid].isna())))  
+        sumstats.loc[sumstats[rsid].isna(),rsid] = ["NA_" + str(x+1) for x in range(len(sumstats.loc[sumstats[rsid].isna(),rsid]))]
+
     dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_rsid,ref_chr,ref_pos],
                       chunksize=chunksize,index_col = ref_rsid,
                       dtype={ref_rsid:"string",ref_chr:"Int64",ref_pos:"Int64"})

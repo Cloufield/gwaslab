@@ -352,11 +352,20 @@ def process_allele(sumstats,log,verbose):
     if "EA" in sumstats.columns:
         if "REF" in sumstats.columns and "ALT" in sumstats.columns:
             if "NEA" not in sumstats.columns:
+                if verbose: log.write(" NEA not available: assigning REF to NEA...") 
                 sumstats["NEA"]=sumstats["REF"]    
             if verbose: log.write(" -EA,REF and ALT columns are available: assigning NEA...") 
-            sumstats.loc[sumstats["EA"]==sumstats["ALT"],"NEA"] = sumstats.loc[sumstats["EA"]==sumstats["ALT"],"REF"]
-            sumstats.loc[sumstats["EA"]!=sumstats["ALT"],"NEA"] = sumstats.loc[sumstats["EA"]!=sumstats["ALT"],"ALT"]
-            sumstats = sumstats.drop(labels=["REF","ALT"],axis=1)
+            ea_alt = sumstats["EA"]==sumstats["ALT"]
+            if verbose: log.write(" -For variants with EA == ALT : assigning REF to NEA ...") 
+            sumstats.loc[ea_alt,"NEA"] = sumstats.loc[ea_alt,"REF"]
+            
+            ea_not_alt = sumstats["EA"]!=sumstats["ALT"]
+            if verbose: log.write(" -For variants with EA != ALT : assigning ALT to NEA ...") 
+            sumstats.loc[ea_not_alt,"NEA"] = sumstats.loc[ea_not_alt,"ALT"]
+
+            #sumstats = sumstats.drop(labels=["REF","ALT"],axis=1)
+            sumstats["REF"]=sumstats["REF"].astype("category") 
+            sumstats["ALT"]=sumstats["ALT"].astype("category") 
         sumstats["EA"]=sumstats["EA"].astype("category")     
     if "NEA" in sumstats.columns:
         sumstats["NEA"]=sumstats["NEA"].astype("category")  
