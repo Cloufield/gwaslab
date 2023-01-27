@@ -486,6 +486,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#saving-half-finished-sumstats-object" class="md-nav__link">
+    Saving half-finished Sumstats Object
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#logging" class="md-nav__link">
     Logging
   </a>
@@ -578,7 +585,21 @@
   
     <li class="md-nav__item">
       <a href="../AssignrsID/" class="md-nav__link">
-        rsID
+        Assigning rsID
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AssignCHRPOS/" class="md-nav__link">
+        Assign CHR/POS using rsID
       </a>
     </li>
   
@@ -725,48 +746,6 @@
     <li class="md-nav__item">
       <a href="../AlleleFrequency/" class="md-nav__link">
         Scatter Plot: Allele Frequency Comparison
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../GeneticCorrelation/" class="md-nav__link">
-        Heatmap: Genetic Correlation
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../ForestPlot/" class="md-nav__link">
-        Forest Plot
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Gallery/" class="md-nav__link">
-        Gallery
       </a>
     </li>
   
@@ -1422,6 +1401,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#saving-half-finished-sumstats-object" class="md-nav__link">
+    Saving half-finished Sumstats Object
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#logging" class="md-nav__link">
     Logging
   </a>
@@ -1527,7 +1513,7 @@ All other columns and options are optional.</p>
 <li><code>other</code>: <code>list</code>, a list  of other column names you want to keep with the core columns (probably some annotations).</li>
 <li><code>status</code>: <code>string</code>, status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.</li>
 <li><code>verbose</code>: <code>boolean</code>, if True, print log. </li>
-<li><code>build</code>:  <code>string</code>, genome build. "19" for "hg19", "38" for "hg38" and "99" for "unknown".</li>
+<li><code>build</code>:  <code>string</code>, genome build. <code>19</code> for hg19, <code>38</code> for hg38 and <code>99</code> for unknown.</li>
 <li><code>**arg</code>: additional parameters for <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_table.html">pd.read_table()</a> function. Some common options include : <code>sep</code>,<code>nrows</code>, <code>skiprows</code> and <code>na_values</code>.</li>
 </ul>
 <h2 id="loading-sumstats">Loading sumstats</h2>
@@ -1601,7 +1587,10 @@ All other columns and options are optional.</p>
 <div class="highlight"><pre><span></span><code>mysumstats.to_format(&quot;./mysumstats&quot;, fmt=&quot;ldsc&quot;,hapmap3=True, exclude_hla=True, build=&quot;19&quot;)
 </code></pre></div>
 </div>
-<p>Please check <a href="https://cloufield.github.io/gwaslab/Format/">https://cloufield.github.io/gwaslab/Format/</a></p>
+<p>Please check <a href="https://cloufield.github.io/gwaslab/Format/">GWASLab - Format</a> for more details.</p>
+<h2 id="saving-half-finished-sumstats-object">Saving half-finished Sumstats Object</h2>
+<p>If the pipeline is very long, and you need to temporarily save the Sumstats Object, you can use the <code>.dump_pickle()</code> method to temporarily save the Sumstats Object.</p>
+<p>Please check <a href="https://cloufield.github.io/gwaslab/Pickle/">GWASLab - Pickle</a> for more details.</p>
 <h2 id="logging">Logging</h2>
 <p>All manipulation conducted to the sumstats will be logged for reproducibility and traceability. </p>
 <p>The log is stored in a <code>gl.Log()</code> object . You can check it by <code>.log.show()</code>and save it using <code>.log.save()</code></p>
