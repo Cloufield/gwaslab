@@ -81,7 +81,7 @@ gl.compare_effect (path1,
 
 ### R2 SE
 
-- `r2_se`: `boolean` If True, wc se for r2 will be estimated by the jackknife method.
+- `r2_se`: `boolean` If True, SE for r2 will be estimated using the jackknife method.
 
 $$ s.e.(\hat{r^2}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r^2_i} -\bar{r^2}_{jack} )^2 } $$
 
@@ -129,3 +129,5 @@ $$ s.e.(\hat{r^2}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r^2_i} -\ba
     )
     ```
     <img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021886-6ee4beb4-bf9f-42d1-a93b-2dca72841022.png">
+    
+    Reference: Akiyama, M., Okada, Y., Kanai, M., Takahashi, A., Momozawa, Y., Ikeda, M., ... & Kamatani, Y. (2017). Genome-wide association study identifies 112 new loci for body mass index in the Japanese population. Nature genetics, 49(10), 1458-1467.
