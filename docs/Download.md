@@ -13,6 +13,7 @@
 Currently, you can download the following files using GWASLab with the keywords:
 
 |Keyword|Description|
+|-|-|
 |'1kg_eas_hg19','1kg_eas_hg19_tbi'|1KGp3v5 low-coverage EAS VCF and index (hg19)|
 |'1kg_eur_hg19','1kg_eur_hg19_tbi'|1KGp3v5 low-coverage EUR VCF and index (hg19)|
 |'1kg_eas_hg38','1kg_eas_hg38_tbi'|1KGp3v5 30x EAS VCF and index (hg38)|
