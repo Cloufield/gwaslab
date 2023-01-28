@@ -66,7 +66,6 @@ def mqqplot(insumstats,
           tabix=None,
           mqqratio=3,
           bwindowsizekb = 100,
-          large_number = 10000000000,
           density_color=False,
           density_range=(0,15),
           density_trange=(0,10),
@@ -320,6 +319,14 @@ def mqqplot(insumstats,
 # Density #####################################################################################################              
     if "b" in mode and "DENSITY" not in sumstats.columns:
         if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
+        
+        large_number = 1000000000
+        for i in range(7):
+            if sumstats[pos].max()*10 >  large_number:
+                large_number = int(large_number * 10)
+            else:
+                break
+        
         stack=[]
         sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
         sumstats = sumstats.sort_values(by="TCHR+POS")

@@ -292,7 +292,15 @@ def getnovel(insumstats,
            id=id,chrom=chrom,pos=pos,p=p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
            xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
     
-    allsig["TCHR+POS"]=allsig[chrom]*1000000000 + allsig[pos]
+    big_number = 1000000000
+    for i in range(7):
+        if insumstats["POS"].max()*10 >  big_number:
+            big_number = int(big_number * 10)
+        else:
+            break
+
+    # create helper column TCHR+POS for allsig
+    allsig["TCHR+POS"]=allsig[chrom]*big_number + allsig[pos]
     
     knownsig = pd.DataFrame()
     if efo != False:
@@ -306,18 +314,20 @@ def getnovel(insumstats,
         knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
         knownsig["CHR"] = knownsig["CHR"].astype("Int64")
         knownsig["POS"] = knownsig["POS"].astype("Int64")
+        if "SNPID" not in knownsig.columns:
+            knownsig["SNPID"] =knownsig["CHR"].astype("string") + ":" + knownsig["POS"].astype("string")
     elif type(known) is str:
         knownsig_2 = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
         knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
         knownsig["CHR"] = knownsig["CHR"].astype("Int64")
         knownsig["POS"] = knownsig["POS"].astype("Int64")
+        if "SNPID" not in knownsig.columns:
+            knownsig["SNPID"] =knownsig["CHR"].astype("string") + ":" + knownsig["POS"].astype("string")
     if len(knownsig)<1:
         raise ValueError("Please input a dataframe of known loci or valid efo code")
-    
 
-        
-    
-    knownsig["TCHR+POS"]=knownsig[chrom]*1000000000 + knownsig[pos]
+    # create helper column TCHR+POS for knownsig
+    knownsig["TCHR+POS"]=knownsig[chrom]*big_number + knownsig[pos]
     
     if verbose: log.write(" -Lead variants in known loci:",len(knownsig))
     if verbose: log.write(" -Checking the minimum distance between identified lead variants and provided known variants...")
@@ -333,20 +343,48 @@ def getnovel(insumstats,
     if "AUTHOR" in knownsig.columns:
         knownauthor=knownsig["AUTHOR"].values
     
-    allsig["DISTANCE_TO_KNOWN"] = allsig["TCHR+POS"].apply(lambda x:np.min(np.abs(knownsig["TCHR+POS"]-x)))
+    # get distance
+    lambda x:np.min(np.abs(knownsig["TCHR+POS"]-x))
+    allsig["DISTANCE_TO_KNOWN"] = allsig["TCHR+POS"].apply(lambda x:min(knownsig["TCHR+POS"]-x, key=abs))
     
+    # get other info 
     if "SNPID" in knownsig.columns:
         allsig["KNOWN_ID"] = allsig["TCHR+POS"].apply(lambda x:knownids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])    
     if "PUBMEDID" in knownsig.columns:
         allsig["KNOWN_PUBMED_ID"] = allsig["TCHR+POS"].apply(lambda x:knownpubmedids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
     if "AUTHOR" in knownsig.columns:
         allsig["KNOWN_AUTHOR"] = allsig["TCHR+POS"].apply(lambda x:knownauthor[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
-    allsig["NOVEL"] = allsig["DISTANCE_TO_KNOWN"] > windowsizekb_for_novel*1000
     
+    # determine if novel
+    allsig["NOVEL"] = allsig["DISTANCE_TO_KNOWN"].abs() > windowsizekb_for_novel*1000
+    
+    # determine location
+    allsig["LOCATION_OF_KNOWN"]="Unknown"
+    allsig.loc[ allsig["DISTANCE_TO_KNOWN"]== 0,"LOCATION_OF_KNOWN"] = "Same"
+    allsig.loc[ allsig["DISTANCE_TO_KNOWN"] > 0 ,"LOCATION_OF_KNOWN"] = "Upstream"
+    allsig.loc[ allsig["DISTANCE_TO_KNOWN"] < 0 ,"LOCATION_OF_KNOWN"] = "Downstream"
+
+    # if not on same chromosome, distance set to pd.NA
+    if sum(allsig["DISTANCE_TO_KNOWN"].abs() > insumstats["POS"].max())>0:
+        not_on_same_chromosome = allsig["DISTANCE_TO_KNOWN"].abs() > insumstats["POS"].max()
+        allsig.loc[ not_on_same_chromosome ,"DISTANCE_TO_KNOWN"] = pd.NA
+        allsig.loc[ not_on_same_chromosome ,"LOCATION_OF_KNOWN"] = "NoneOnThisChr"
+        if "SNPID" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_ID"] = pd.NA
+        if "PUBMEDID" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_PUBMED_ID"] = pd.NA
+        if "AUTHOR" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_AUTHOR"] = pd.NA
+
+    # drop helper column TCHR+POS
+    allsig = allsig.drop(["TCHR+POS"], axis=1)
+
     if verbose: log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...")
     if verbose: log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...")
     if verbose: log.write("Finished checking known or novel successfully!")
     gc.collect()
+    
+    # how to return
     if only_novel is True:
         if output_known is True:
             return allsig.loc[allsig["NOVEL"],:], knownsig
