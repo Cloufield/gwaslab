@@ -832,7 +832,7 @@ def mqqplot(insumstats,
         elif mtitle:
             ax1.set_title(mtitle,fontsize=title_fontsize,family="sans-serif")
             
-       
+        # add annotation arrows and texts
         if anno and (to_annotate.empty is not True):
             #initiate a list for text and a starting position
             text = []
@@ -846,8 +846,9 @@ def mqqplot(insumstats,
                     annotation_col=anno
             if verbose: log.write(" -Annotating using column "+annotation_col+"...")
             
-            ##   
+            ##  iterate through variants to be annotated
             for rowi,row in to_annotate.iterrows():
+                
                 # avoid text overlapping
                 ## calculate y span
                 if region is not None:
@@ -869,14 +870,17 @@ def mqqplot(insumstats,
                 
                 # vertical arm length in pixels
                 armB_length_in_point = ax1.transData.transform((skip,1.15*maxy))[1]-ax1.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
-                #
+                # scale if needed
                 armB_length_in_point = armB_length_in_point*arm_scale
+                
                 if arm_scale>=1:
                     armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else ax1.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
                 
                 if anno_fixed_arm_length is not None:
                     anno_fixed_arm_length_factor = ax1.transData.transform((skip,anno_fixed_arm_length))[1]-ax1.transData.transform((skip,0))[1] 
                     armB_length_in_point = anno_fixed_arm_length_factor
+                
+                # annotation alias
                 if anno==True:
                     if row[snpid] in anno_alias.keys():
                         annotation_text = anno_alias[row[snpid]]
@@ -902,6 +906,7 @@ def mqqplot(insumstats,
                     arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
                 else:
+                    # adjuest direction
                     xy=(row["i"],row["scaled_P"])
                     if anno_d[anno_count] in ["right","left","l","r"]:
                         if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
@@ -1266,3 +1271,4 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
             return distance,"intergenic"
         else:
             return 0,",".join(gene)
+
