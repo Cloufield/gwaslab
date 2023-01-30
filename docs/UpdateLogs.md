@@ -2,6 +2,9 @@
 ## 3.3.23 - coming soon
 - update annotation arrow style `anno_style` for `.plot_mqq`
 - fixed effect size comparison bugs (added sorting)
+- added allele check for effect size comparison
+- update large number selection algorithm
+- fixed dtype errors in `fix_chr` and `fix_pos`
 
 ## 3.3.22 - 2023/01/27
 - added checks for duplicates and NAs in compare_effect()
