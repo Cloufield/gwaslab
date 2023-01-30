@@ -655,6 +655,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#annotation-style" class="md-nav__link">
+    Annotation style
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#adjust-arm-position" class="md-nav__link">
     Adjust arm position
   </a>
@@ -1445,6 +1452,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#annotation-style" class="md-nav__link">
+    Annotation style
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#adjust-arm-position" class="md-nav__link">
     Adjust arm position
   </a>
@@ -1532,6 +1546,8 @@ mydata.plot_mqq(
           anno_set=[],
           anno_alias={},
           anno_d={},
+          anno_style=&quot;right&quot;,
+          anno_fixed_arm_length=None,
           arm_offset=50,
           arm_scale=1,
           cut=0,
@@ -1554,7 +1570,9 @@ mydata.plot_mqq(
           mtitle=None,
           qtitle=None,
           figargs= {&quot;figsize&quot;:(15,5),&quot;dpi&quot;:100},
+          title_fontsize=13,
           fontsize = 10,
+          anno_fontsize = 10,
           colors=[&quot;#597FBD&quot;,&quot;#74BAD3&quot;],
           marker_size=(5,25),
           use_rank=False,
@@ -1633,6 +1651,12 @@ mydata.plot_mqq(
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591966-c9618c45-456b-4eb8-991b-66420f847a97.png"></p>
 <p><code>mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"], anno_alias={"rs12509595":"anything you want here"})</code></p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196592136-f2cbc488-e02f-409b-b0ac-2ab16f7b1fd4.png"></p>
+<h3 id="annotation-style">Annotation style</h3>
+<p>Added since 3.3.23</p>
+<p><code>anno_style="expand", anno_args={"rotation":90}</code></p>
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389210-f8b76b07-0b41-4932-9ba2-15f4a5508855.png"></p>
+<p><code>anno_style="right", anno_args={"rotation":45}</code></p>
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389238-735c15f0-ea46-442a-b624-4e903c123b55.png"></p>
 <h3 id="adjust-arm-position">Adjust arm position</h3>
 <ul>
 <li><code>anno_d</code>:<code>dict</code>,key is the number of arm starting form 0, value is the direction you want the arm to shift towards . For example, <code>anno_d = {4:"r"}</code> means shift the 4th arm to the right </li>
