@@ -164,13 +164,23 @@ mysumstats.plot_mqq(
 
 Added since 3.3.23
 
-```anno_style="expand", anno_args={"rotation":90}```
+```
+anno_style="expand"
+```
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389210-f8b76b07-0b41-4932-9ba2-15f4a5508855.png">
 
-```anno_style="right", anno_args={"rotation":45}```
+```
+anno_style="right"
+```
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389238-735c15f0-ea46-442a-b624-4e903c123b55.png">
+
+```
+anno_style="tight"
+```
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215481722-22c8fdcc-b016-4277-ab5f-eb2924f61e01.png">
+
 
 ### Adjust arm position
 
