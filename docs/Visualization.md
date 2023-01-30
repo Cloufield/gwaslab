@@ -156,6 +156,18 @@ mysumstats.plot_mqq(
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196592136-f2cbc488-e02f-409b-b0ac-2ab16f7b1fd4.png">
 
+### Annotation style
+
+Added since 3.3.23
+
+`anno_style="expand", anno_args={"rotation":90}`
+
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389210-f8b76b07-0b41-4932-9ba2-15f4a5508855.png">
+
+`anno_style="right", anno_args={"rotation":45}`
+
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389238-735c15f0-ea46-442a-b624-4e903c123b55.png">
+
 ### Adjust arm position
 
 - `anno_d`:`dict`,key is the number of arm starting form 0, value is the direction you want the arm to shift towards . For example, `anno_d = {4:"r"}` means shift the 4th arm to the right 
