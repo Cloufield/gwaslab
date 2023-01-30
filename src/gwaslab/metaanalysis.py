@@ -10,27 +10,39 @@ from matplotlib.collections import PatchCollection
 
 def plot_forest(data, 
                 study_col, 
-                group_col,
+                group_col=False,
                 compact_factor=1,
                 width_ratios = [2,6,2],
                 sharex="col",
+                meta=False,
                 combine_effects_args={}):
-    
-    meta_df_all = pd.read_csv(data,sep="\s+")
+    if data is pd.DataFrame():
+        meta_df_all = data
+    else:
+        meta_df_all = pd.read_csv(data,sep="\s+")
+    if group_col == False:
+        group_col = "_GROUP"
+        meta_df_all[group_col] = "Group1"
+
     df_array = []
     df_array_name = []
     df_array_het=[]
     
+    # rename 
+
+
     for i in meta_df_all[group_col].unique():
-        meta_df = meta_df_all.loc[meta_df_all[group_col]==i,:]  
+        meta_df = meta_df_all.loc[meta_df_all[group_col]==i,:]
         combined_results = combine_effects(meta_df["beta"], 
                                            meta_df["se"]**2, 
                                            row_names=meta_df[study_col],
                                            **combine_effects_args)
-        Q=combined_results.test_homogeneity().statistic
-        Qdf=combined_results.test_homogeneity().df
-        Qp=combined_results.test_homogeneity().pvalue
-        I2 = (Q-Qdf)/Q *100
+        if meta==True:
+            Q=combined_results.test_homogeneity().statistic
+            Qdf=combined_results.test_homogeneity().df
+            Qp=combined_results.test_homogeneity().pvalue
+            I2 = (Q-Qdf)/Q *100
+       
         df_to_plot = combined_results.summary_frame().iloc[:-3,:]
         df_to_plot["YORDER"]=range(len(df_to_plot),0,-1)
         df_to_plot["OR"]= np.exp(df_to_plot["eff"])
@@ -41,7 +53,10 @@ def plot_forest(data,
         df_to_plot["MARKERSIZE"] = 1 / (df_to_plot["sd_eff"]**2)
         df_array.append(df_to_plot)
         df_array_name.append(i)
-        df_array_het.append((Q,Qdf,Qp,I2))
+        if meta==True:
+            df_array_het.append((Q,Qdf,Qp,I2))
+        else:
+            df_array_het.append(list())
 
     nrows=len(df_array)
     fig, axes = plt.subplots(nrows=nrows,ncols=3, sharex=sharex,gridspec_kw={'width_ratios': width_ratios},figsize=(15,len(df_to_plot)*nrows/compact_factor),dpi=300)
@@ -50,20 +65,22 @@ def plot_forest(data,
                  df_to_plot = df_array[0], 
                  title=0,
                  group_name=df_array_name[0],
-                 het_q_qdf_qp_i=df_array_het[0])
+                 het_q_qdf_qp_i=df_array_het[0],
+                 meta=meta)
     else:
         for i in range(nrows):
             plot_row(axes[i],
                      df_to_plot = df_array[i], 
                      title=i, 
                      group_name=df_array_name[i],
-                     het_q_qdf_qp_i=df_array_het[i])
+                     het_q_qdf_qp_i=df_array_het[i],
+                     meta=meta)
     fig.tight_layout()
 
 
 
 
-def plot_row(axes,group_name,df_to_plot,het_q_qdf_qp_i,title=0):
+def plot_row(axes,group_name,df_to_plot,meta,het_q_qdf_qp_i=None,title=0):
     studies = df_to_plot.loc[df_to_plot.index!="fixed effect",:].copy()
     studies["MARKERSIZE_N"] = studies["MARKERSIZE"]/np.nanmax(studies["MARKERSIZE"]) * 0.8
     pixels = axes[1].transData.transform((0,len(df_to_plot)+0.5))[1] - axes[1].transData.transform((0,0))[1]
@@ -130,9 +147,10 @@ def plot_row(axes,group_name,df_to_plot,het_q_qdf_qp_i,title=0):
         axes[1].set_title("Studies",size=15,loc="left",horizontalalignment="right",fontweight ="bold")
         #axes[1].set_ylabel("Studies",size=15,loc="top")
         axes[2].set_title("Odds Ratio, [95% CI]",size=15,loc="right",fontweight ="bold")
-    het_string1 = r'$Q={:.2f},Qdf={}$'.format(het_q_qdf_qp_i[0],het_q_qdf_qp_i[1])
-    het_string2 = r'$p={:.1e},I^2={:.1f}%$'.format(het_q_qdf_qp_i[2],het_q_qdf_qp_i[3])
-    axes[0].text(0,0,s=het_string1+"\n"+het_string2,size=15) 
+    if meta==True:
+        het_string1 = r'$Q={:.2f},Qdf={}$'.format(het_q_qdf_qp_i[0],het_q_qdf_qp_i[1])
+        het_string2 = r'$p={:.1e},I^2={:.1f}%$'.format(het_q_qdf_qp_i[2],het_q_qdf_qp_i[3])
+        axes[0].text(0,0,s=het_string1+"\n"+het_string2,size=15) 
     
     axes[1].set_yticks(df_to_plot["YORDER"])
     axes[1].set_yticklabels(df_to_plot.index,size=15)
