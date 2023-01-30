@@ -24,6 +24,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 import gc as garbage_collect
 from adjustText import adjust_text
+from gwaslab.textreposition import adjust_text_position
 
 # 20220310 ######################################################################################################
 
@@ -78,12 +79,14 @@ def mqqplot(insumstats,
           anno_alias={},
           anno_d={},
           anno_args={},
+          anno_new_style=True,
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
+          anno_max_iter=100,
           arm_offset=50,
           arm_scale=1,
           arm_scale_d=None,
-          cut=0,
+          cut=0,s
           skip=0,
           cutfactor=10,
           cut_line_color="#ebebeb",  
@@ -838,30 +841,36 @@ def mqqplot(insumstats,
             text = []
             last_pos=0
             anno_count=0
-            
+            to_annotate = to_annotate.sort_values(by=[chrom,pos])
             ## log : annotation column
             if anno==True:
                     annotation_col="CHR:POS"
             elif anno:
                     annotation_col=anno
             if verbose: log.write(" -Annotating using column "+annotation_col+"...")
+                            ## calculate y span
+            if region is not None:
+                y_span = region[2] - region[1]
+            else:
+                y_span = sumstats["i"].max()-sumstats["i"].min()
             
+            if verbose: log.write(" -Adjusting text positions with repel_force={}...".format(repel_force))
+            to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force,max_iter=anno_max_iter,log=log,verbose=verbose)
             ##  iterate through variants to be annotated
             for rowi,row in to_annotate.iterrows():
                 
                 # avoid text overlapping
-                ## calculate y span
-                if region is not None:
-                    y_span = region[2] - region[1]
-                else:
-                    y_span = sumstats["i"].max()-sumstats["i"].min()
-                
                 ## adjust x to avoid overlapping
-                if row["i"]>last_pos+repel_force*y_span:
-                    last_pos=row["i"]
+                if anno_new_style != True:
+                    #old style
+                    if row["i"]>last_pos+repel_force*y_span:
+                        last_pos=row["i"]
+                    else:
+                        last_pos+=repel_force*y_span
                 else:
-                    last_pos+=repel_force*y_span
-                
+                    #new style
+                    last_pos = row["ADJUSTED_i"]
+
                 if arm_scale_d is not None:
                     if anno_count not in arm_scale_d.keys():
                         arm_scale =1
@@ -899,10 +908,14 @@ def mqqplot(insumstats,
                 
                 xy=(row["i"],row["scaled_P"]+0.2)
                 xytext=(last_pos,1.15*maxy*arm_scale)
+                
                 if anno_fixed_arm_length is not None:
                     armB_length_in_point = anno_fixed_arm_length
                     xytext=(row["i"],row["scaled_P"]+0.2+anno_fixed_arm_length)
+                
                 if anno_count not in anno_d.keys():
+                    #arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                    #                         connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
                     arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                              connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
                 else:
