@@ -514,7 +514,8 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         
         #if (ea not in sumstats.columns) or (nea not in sumstats.columns):
-        categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])|set("N")
+        if verbose: log.write(" -Converted all bases to string datatype and UPPERCASE.")
+        categories = set(sumstats.loc[:,ea].str.upper())|set(sumstats.loc[:,nea].str.upper())|set("N")
         sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = categories) 
         sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = categories) 
         all_var_num = len(sumstats)
@@ -537,10 +538,9 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         else:
             sumstats.loc[:,[ea,nea]] = sumstats.loc[:,[ea,nea]].fillna("N")
             if verbose: log.write(" -Detected "+str(sum(exclude))+" variants with alleles that contain bases other than A/C/T/G .") 
-        categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea])|set("N")
+        categories = set(sumstats.loc[:,ea].str.upper())|set(sumstats.loc[:,nea].str.upper())|set("N")
         sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = categories) 
         sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = categories) 
-        if verbose: log.write(" -Converted all bases to string datatype and UPPERCASE.")
         
         is_eanea_fixed = good_ea | good_nea
         is_snp = (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
