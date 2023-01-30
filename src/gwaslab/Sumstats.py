@@ -420,8 +420,7 @@ class Sumstats():
         # return sumstats object    
         return output
 
-    def get_density(self, sig_list=None, windowsizekb=100,
-                    large_number=10000000000,**args):
+    def get_density(self, sig_list=None, windowsizekb=100,**args):
         
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
@@ -434,7 +433,6 @@ class Sumstats():
                                                     chrom="CHR",
                                                     pos="POS",
                                                     bwindowsizekb=windowsizekb,
-                                                    large_number=large_number,
                                                     log=self.log)
         else:
             if isinstance(sig_list, pd.DataFrame):

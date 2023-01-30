@@ -4,11 +4,19 @@ import numpy as np
 from gwaslab.Log import Log
 import gc
 
-def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizekb=100, large_number=10000000000,log=Log(),verbose=True):    
+def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizekb=100,log=Log(),verbose=True):    
     if verbose:log.write("Start to calculate signal DENSITY...")
     sumstats = insumstats.loc[:,[id,chrom,pos]].copy()
     if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
     #stack=[]
+
+    large_number = 1000000000
+    for i in range(7):
+        if insumstats[pos].max()*10 >  large_number:
+            large_number = int(large_number * 10)
+        else:
+            break
+
     sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
     sumstats = sumstats.sort_values(by=["TCHR+POS"])
     positions = sumstats["TCHR+POS"].values
@@ -65,20 +73,26 @@ def assigndensity(insumstats,
 				chrom="CHR", 
 				pos="POS", 
 				bwindowsizekb=100,
-				large_number=10000000000,
 				log=Log(),verbose=True):
-	sumstats = insumstats.loc[:,[id,chrom,pos]].copy()
-	sumstats["DENSITY"] = 0
-	sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
-	sig_sumstats["TCHR+POS"] = sig_sumstats[chrom]*large_number +  sig_sumstats[pos]
-	counter = 0
+
+    large_number = 1000000000
+    for i in range(7):
+        if insumstats[pos].max()*10 >  large_number:
+            large_number = int(large_number * 10)
+        else:
+            break
+    sumstats = insumstats.loc[:,[id,chrom,pos]].copy()
+    sumstats["DENSITY"] = 0
+    sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
+    sig_sumstats["TCHR+POS"] = sig_sumstats[chrom]*large_number +  sig_sumstats[pos]
+    counter = 0
+
+    for index,row in sig_sumstats.iterrows():
+        counter+=1
+        to_add =(sumstats["TCHR+POS"]>=(row["TCHR+POS"]- 1000*bwindowsizekb)) & (sumstats["TCHR+POS"]<=(row["TCHR+POS"]+ 1000*bwindowsizekb))
+        sumstats.loc[to_add,"DENSITY"] += 1
+        if counter%1000==0:
+            if verbose:log.write(" -Processed {} signals".format(counter//1000))
+            gc.collect()
 	
-	for index,row in sig_sumstats.iterrows():
-		counter+=1
-		to_add =(sumstats["TCHR+POS"]>=(row["TCHR+POS"]- 1000*bwindowsizekb)) & (sumstats["TCHR+POS"]<=(row["TCHR+POS"]+ 1000*bwindowsizekb))
-		sumstats.loc[to_add,"DENSITY"] += 1
-		if counter%1000==0:
-			if verbose:log.write(" -Processed {} signals".format(counter//1000))
-			gc.collect()
-	
-	return sumstats["DENSITY"]
+    return sumstats["DENSITY"]
