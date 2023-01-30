@@ -1,4 +1,8 @@
 # Update Logs
+## 3.3.23 - coming soon
+- update annotation arrow style
+- fixed effect size comparison bugs (added sorting)
+
 ## 3.3.22 - 2023/01/27
 - added checks for duplicates and NAs in compare_effect()
 
