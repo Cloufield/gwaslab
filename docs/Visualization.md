@@ -22,6 +22,8 @@ mydata.plot_mqq(
           anno_set=[],
           anno_alias={},
           anno_d={},
+          anno_style="right",
+          anno_fixed_arm_length=None,
           arm_offset=50,
           arm_scale=1,
           cut=0,
@@ -44,7 +46,9 @@ mydata.plot_mqq(
           mtitle=None,
           qtitle=None,
           figargs= {"figsize":(15,5),"dpi":100},
+          title_fontsize=13,
           fontsize = 10,
+          anno_fontsize = 10,
           colors=["#597FBD","#74BAD3"],
           marker_size=(5,25),
           use_rank=False,
@@ -160,11 +164,11 @@ mysumstats.plot_mqq(
 
 Added since 3.3.23
 
-`anno_style="expand", anno_args={"rotation":90}`
+```anno_style="expand", anno_args={"rotation":90}```
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389210-f8b76b07-0b41-4932-9ba2-15f4a5508855.png">
 
-`anno_style="right", anno_args={"rotation":45}`
+```anno_style="right", anno_args={"rotation":45}```
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389238-735c15f0-ea46-442a-b624-4e903c123b55.png">
 

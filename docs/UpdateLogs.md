@@ -1,6 +1,6 @@
 # Update Logs
 ## 3.3.23 - coming soon
-- update annotation arrow style
+- update annotation arrow style `anno_style` for `.plot_mqq`
 - fixed effect size comparison bugs (added sorting)
 
 ## 3.3.22 - 2023/01/27

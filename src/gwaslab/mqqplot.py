@@ -79,14 +79,14 @@ def mqqplot(insumstats,
           anno_alias={},
           anno_d={},
           anno_args={},
-          anno_new_style=True,
+          anno_style="right",
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
           anno_max_iter=100,
           arm_offset=50,
           arm_scale=1,
           arm_scale_d=None,
-          cut=0,s
+          cut=0,
           skip=0,
           cutfactor=10,
           cut_line_color="#ebebeb",  
@@ -861,14 +861,14 @@ def mqqplot(insumstats,
                 
                 # avoid text overlapping
                 ## adjust x to avoid overlapping
-                if anno_new_style != True:
-                    #old style
+                if anno_style == "right" :
+                    #right style
                     if row["i"]>last_pos+repel_force*y_span:
                         last_pos=row["i"]
                     else:
                         last_pos+=repel_force*y_span
-                else:
-                    #new style
+                elif anno_style == "expand" :
+                    #expand style
                     last_pos = row["ADJUSTED_i"]
 
                 if arm_scale_d is not None:
