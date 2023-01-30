@@ -82,6 +82,7 @@ def mqqplot(insumstats,
           anno_style="right",
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
+          anno_adjust=False,
           anno_max_iter=100,
           arm_offset=50,
           arm_scale=1,
@@ -855,12 +856,14 @@ def mqqplot(insumstats,
                 y_span = sumstats["i"].max()-sumstats["i"].min()
             
             if verbose: log.write(" -Adjusting text positions with repel_force={}...".format(repel_force))
-            to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force,max_iter=anno_max_iter,log=log,verbose=verbose)
+            if anno_style == "expand" :
+                to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force,max_iter=anno_max_iter,log=log,verbose=verbose)
             ##  iterate through variants to be annotated
+            anno_to_adjust_list = list()
             for rowi,row in to_annotate.iterrows():
                 
                 # avoid text overlapping
-                ## adjust x to avoid overlapping
+                ## adjust x to avoid overlapping################################################################
                 if anno_style == "right" :
                     #right style
                     if row["i"]>last_pos+repel_force*y_span:
@@ -870,25 +873,35 @@ def mqqplot(insumstats,
                 elif anno_style == "expand" :
                     #expand style
                     last_pos = row["ADJUSTED_i"]
-
+                    anno_args["rotation"] = 90
+                elif anno_style == "tight" :
+                    #tight style
+                    anno_fixed_arm_length = 1
+                    anno_adjust = True
+                    anno_args["rotation"] = 90
+                else:
+                    pass
+                ################################################################
+                #shrink or increase the arm
                 if arm_scale_d is not None:
                     if anno_count not in arm_scale_d.keys():
                         arm_scale =1
                     else:
                         arm_scale = arm_scale_d[anno_count]
-                
+                ################################################################
+
                 # vertical arm length in pixels
                 armB_length_in_point = ax1.transData.transform((skip,1.15*maxy))[1]-ax1.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
                 # scale if needed
                 armB_length_in_point = armB_length_in_point*arm_scale
-                
+                ################################################################
                 if arm_scale>=1:
                     armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else ax1.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
-                
+                ###if anno_fixed_arm_length #############################################################
                 if anno_fixed_arm_length is not None:
                     anno_fixed_arm_length_factor = ax1.transData.transform((skip,anno_fixed_arm_length))[1]-ax1.transData.transform((skip,0))[1] 
                     armB_length_in_point = anno_fixed_arm_length_factor
-                
+                ################################################################################################################################
                 # annotation alias
                 if anno==True:
                     if row[snpid] in anno_alias.keys():
@@ -954,8 +967,10 @@ def mqqplot(insumstats,
                 anno_default = {"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":fontweight}
                 for key,value in anno_args.items():
                     anno_default[key]=value
-                   
-                ax1.annotate(annotation_text,
+
+                if anno_adjust==True:
+                    arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(0,0.5))
+                anno_to_adjust = ax1.annotate(annotation_text,
                          xy=xy,
                          xytext=xytext,
                          bbox=bbox_para,
@@ -963,12 +978,31 @@ def mqqplot(insumstats,
                          zorder=100,
                          **anno_default
                          )
-                 
+                anno_to_adjust_list.append(anno_to_adjust) 
                 anno_count +=1
-
+            #anno_adjust_keyargs = {"arrowprops":dict(arrowstyle='->', color='grey', linewidth=0.1,relpos=(0.5,0.5))}
+            if anno_adjust==True:
+                if verbose: log.write(" -Auto-adjusting text positions...")
+                adjust_text(texts = anno_to_adjust_list,
+                            autoalign=False, 
+                            only_move={'points':'x', 'text':'x', 'objects':'x'},
+                            ax=ax1,
+                            precision=0.02,
+                            force_text=(repel_force,repel_force),
+                            expand_text=(1,1),
+                            expand_objects=(0,0),
+                            expand_points=(0,0),
+                            va="bottom",
+                            ha='left',
+                            avoid_points=False,
+                            lim =100
+                            #kwargs = anno_adjust_keyargs
+                            )
             
         else:
             if verbose: log.write(" -Skip annotating")
+        
+        # gene track (ax3) text adjustment
         if (gtf_path is not None ) and ("r" in mode):
             if len(texts_to_adjust_middle)>0:
                 adjust_text(texts_to_adjust_middle,
