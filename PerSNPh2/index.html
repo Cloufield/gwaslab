@@ -1296,10 +1296,11 @@ If <code>N</code> is available, it will also calculate the F-statistics.</p>
 <div class="admonition info">
 <p class="admonition-title">For SNP <code>i</code></p>
 <div class="arithmatex">\[ h^2_{i} = 2 \times \beta_i^2 \times EAF \times (1 - EAF) \]</div>
-<div class="arithmatex">\[ F = h^2_{i} * (n -2) / (1 - h^2_{i}) \]</div>
+<div class="arithmatex">\[ F = h^2_{i} \times (n -2) / (1 - h^2_{i}) \]</div>
 </div>
-<p>$$ example
-    <div class="highlight"><pre><span></span><code>SNPID   EAF BETA    N   STATUS
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code>SNPID   EAF BETA    N   STATUS
 0   1:725932_G_A    0.9960  -0.0737 166718  9999999
 1   1:725933_A_G    0.0040  0.0737  166718  9999999
 2   1:737801_T_C    0.0051  0.0490  166718  9999999
@@ -1319,7 +1320,8 @@ SNPID   EAF BETA    N   STATUS  SNPH2   F
 2   1:737801_T_C    0.0051  0.0490  166718  9999999 0.000024    4.062184
 3   1:749963_T_TAA  0.8374  0.0213  166718  9999999 0.000124    20.600305
 4   1:751343_T_A    0.8593  0.0172  166718  9999999 0.000072    11.927080
-</code></pre></div></p>
+</code></pre></div>
+</div>
 
 
 
