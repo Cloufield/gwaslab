@@ -19,7 +19,7 @@ from allel import rogers_huff_r_between
 import matplotlib as mpl
 from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import gc
+import gc as garbage_collect
 
 def plot_miami( 
           path1,
@@ -79,6 +79,8 @@ def plot_miami(
           verbose=True,
           large_number=10000000000,
           repel_force=0.03,
+          save=None,
+          saveargs={"dpi":100,"facecolor":"white"},
           log=Log()
           ):
     ## load sumstats1 ###########################################################################################################
@@ -158,7 +160,7 @@ def plot_miami(
     
     del(sumstats1)
     del(sumstats2)
-    gc.collect()
+    garbage_collect.collect()
     
     chrom = "CHR"
     pos="POS"
@@ -430,7 +432,7 @@ def plot_miami(
                        sig_level=sig_level)
 
         #######################################################################################
-        if (to_annotate1.empty is not True) and anno=="GENENAME":
+        if (to_annotate1.empty is False) and anno=="GENENAME":
                 to_annotate1 = annogene(to_annotate1,
                                        id="TCHR+POS",
                                        chrom="CHR",
@@ -438,8 +440,8 @@ def plot_miami(
                                        log=log,
                                        build=build,
                                        source=anno_source,
-                                       verbose=verbose).rename(columns={"GENE":"Annotation"})
-        if (to_annotate5.empty is not True) and anno=="GENENAME":
+                                       verbose=verbose).rename(columns={"GENE":"GENENAME"})
+        if (to_annotate5.empty is False) and anno=="GENENAME":
                 to_annotate5 = annogene(to_annotate5,
                                        id="TCHR+POS",
                                        chrom="CHR",
@@ -447,13 +449,13 @@ def plot_miami(
                                        log=log,
                                        build=build,
                                        source=anno_source,
-                                       verbose=verbose).rename(columns={"GENE":"Annotation"})
+                                       verbose=verbose).rename(columns={"GENE":"GENENAME"})
             
 ####################################################################################################################
 
 # Add Annotation to manhattan plot #######################################################
            ## final
-    if anno==True:
+    if anno is not None:
         for index,ax,to_annotate,anno_d, anno_alias in [(0,ax1,to_annotate1,anno_d1,anno_alias1),(1,ax5,to_annotate5,anno_d2,anno_alias2)]:
             ###################### annotate() args
             fontweight = "normal"
@@ -474,7 +476,7 @@ def plot_miami(
             
             snpid = "TCHR+POS"
 
-            if anno and (to_annotate.empty is not True):
+            if (anno is not None) and (to_annotate.empty!=True):
                 #initiate a list for text and a starting position
                 text = []
                 last_pos=0
@@ -483,8 +485,8 @@ def plot_miami(
                 ## log : annotation column
                 if anno==True:
                         annotation_col="CHR:POS"
-                elif anno:
-                        annotation_col=anno
+                elif anno is not None:
+                        annotation_col = anno
                 if verbose: log.write(" -Annotating using column "+annotation_col+"...")
 
                 ##   
@@ -526,8 +528,8 @@ def plot_miami(
                             annotation_text = anno_alias[row[snpid]]
                         else:
                             annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
-                    elif anno:
-                        annotation_text=row["Annotation"]
+                    elif anno == "GENENAME":
+                        annotation_text=row["GENENAME"]
 
                     # annoatte position
                     xy=(row["i"],row["scaled_P"]+0.2)  
@@ -650,8 +652,21 @@ def plot_miami(
     ax1.set_title(titles[0],y=1+titles_pad[0])
     ax5.set_title(titles[1],y=-titles_pad[1])
     ax5.invert_yaxis() 
-    #return fig
     
+    #return fig
+    if save is not None:
+        if verbose: log.write("Saving plot:")
+        if save==True:
+            fig.savefig("./miami_plot.png",bbox_inches="tight",**saveargs)
+            log.write(" -Saved to "+ "./miami_plot.png" + " successfully!" )
+        else:
+            fig.savefig(save,bbox_inches="tight",**saveargs)
+            log.write(" -Saved to "+ save + " successfully!" )
+    
+    garbage_collect.collect()
+    if verbose: log.write("Finished creating miami plot successfully")
+# Return matplotlib figure object #######################################################################################
+    return fig, log
     
     
         
