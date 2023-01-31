@@ -14,9 +14,9 @@ If `N` is available, it will also calculate the F-statistics.
 
     $$ h^2_{i} = 2 \times \beta_i^2 \times EAF \times (1 - EAF) $$
 
-    $$ F = h^2_{i} * (n -2) / (1 - h^2_{i}) $$
+    $$ F = h^2_{i} \times (n -2) / (1 - h^2_{i}) $$
 
-$$ example
+!!! example
     ```
     SNPID	EAF	BETA	N	STATUS
     0	1:725932_G_A	0.9960	-0.0737	166718	9999999
