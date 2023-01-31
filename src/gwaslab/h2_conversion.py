@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import norm
+from gwaslab.Log import Log
 
 def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
     '''
@@ -43,16 +44,27 @@ def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
     if se_obs:
         return h2_obs * conversion_factor, se_lia
     return h2_obs * conversion_factor
+
 def h2_se_to_p(h2,se):
     z = h2 / se
     return norm.sf(abs(z))
     
 
-def getpersnph2(sumstats,
-           beta,
-           af,
+def _get_per_snp_r2(sumstats,
+           beta="BETA",
+           af="EAF",
+           n = "N",
+           log=Log(),
            verbose=True):
-    if verbose: print("Calculating per-SNP heritibility by 2 * BETA * AF * (1-AF)...")
-    sumstats["PerSNPh2"] = 2*sumstats[beta]**2*sumstats[af]*(1-sumstats[af])
-    sumstats["PerSNPh2"]= sumstats["PerSNPh2"].round(5)
+    if verbose: log.write("Start to calculate per-SNP heritibility...")
+    if beta in sumstats.columns and af in sumstats.columns:
+        if verbose: log.write(" -Calculating per-SNP heritibility by 2 * (BETA**2) * AF * (1-AF)...")
+        sumstats["SNPH2"] = 2*(sumstats[beta]**2)*sumstats[af]*(1-sumstats[af])
+        sumstats["SNPH2"] = sumstats["SNPH2"]
+        if n in sumstats.columns:
+            if verbose: log.write(" -Calculating F-statistic...")
+            sumstats["F"] = sumstats["SNPH2"]*(sumstats[n]-2)/(1-sumstats["SNPH2"])
+    else:
+        if verbose: log.write(" -Warning: Not enough informationfor calculation.")
+    if verbose: log.write("Finished calculating per-SNP heritibility!")
     return sumstats
