@@ -1,10 +1,15 @@
 # Update Logs
-## 3.3.23 - coming soon
+## 3.3.24 - coming soon
+
+## 3.3.23 - 2023/01/31
 - update annotation arrow style `anno_style` for `.plot_mqq`
 - fixed effect size comparison bugs (added sorting)
 - added allele check for effect size comparison
 - update large number selection algorithm
 - fixed dtype errors in `fix_chr` and `fix_pos`
+- added perSNPh2 `.get_per_snp_r2()` and F statistics
+- implemented save in Miami plots
+- fixed annotation error in Miami plots
 
 ## 3.3.22 - 2023/01/27
 - added checks for duplicates and NAs in compare_effect()
@@ -13,7 +18,6 @@
 
 - implement package info gl.show_version()
 - fixed rsid_to_chrpos()
-
 
 ## 3.3.20 
 
