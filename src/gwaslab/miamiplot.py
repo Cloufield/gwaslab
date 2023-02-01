@@ -272,9 +272,9 @@ def plot_miami(
     
 
     ##########################################################################################################################
-    maxy = max(sumstats["scaled_P_1"].max(), sumstats["scaled_P_2"].max())
-    maxy1 = sumstats["scaled_P_1"].max()
-    maxy5 = sumstats["scaled_P_2"].max()
+    maxy = max(sumstats["scaled_P_1"].max(skipna=True), sumstats["scaled_P_2"].max(skipna=True))
+    maxy1 = sumstats["scaled_P_1"].max(skipna=True)
+    maxy5 = sumstats["scaled_P_2"].max(skipna=True)
     
     if cut:
         if cut is True:
@@ -292,9 +292,10 @@ def plot_miami(
             
             sumstats.loc[sumstats["scaled_P_1"]>cut,"scaled_P_1"] = (sumstats.loc[sumstats["scaled_P_1"]>cut,"scaled_P_1"]-cut)/cutfactor +  cut
             sumstats.loc[sumstats["scaled_P_2"]>cut,"scaled_P_2"] = (sumstats.loc[sumstats["scaled_P_2"]>cut,"scaled_P_2"]-cut)/cutfactor +  cut
+            
             maxy = (maxticker-cut)/cutfactor + cut
-            maxy1=( int(np.round(sumstats["scaled_P_1"].max(skipna=True))) -cut)/cutfactor + cut
-            maxy5=( int(np.round(sumstats["scaled_P_2"].max(skipna=True))) -cut)/cutfactor + cut
+            maxy1=( (sumstats["scaled_P_1"].max(skipna=True)) -cut)/cutfactor + cut
+            maxy5=( (sumstats["scaled_P_2"].max(skipna=True)) -cut)/cutfactor + cut
     ##########################################################################################################################
     legend = None
     style=None
@@ -302,7 +303,7 @@ def plot_miami(
     
     
     palette = sns.color_palette(colors1,n_colors=sumstats[chrom].nunique())  
-    plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P_1',
+    plot1 = sns.scatterplot(data=sumstats, x='i', y='scaled_P_1',
         hue='chr_hue',
         palette= palette,
         legend=legend,
@@ -312,7 +313,7 @@ def plot_miami(
         linewidth=linewidth,
         zorder=2,ax=ax1,edgecolor="black")     
     palette = sns.color_palette(colors2,n_colors=sumstats[chrom].nunique())  
-    plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P_2',
+    plot2 = sns.scatterplot(data=sumstats, x='i', y='scaled_P_2',
         hue='chr_hue',
         palette= palette,
         legend=legend,
@@ -389,7 +390,7 @@ def plot_miami(
     for ax in [ax1,ax5]:
         if cut == 0: 
             ax.set_ylim(skip,maxy*1.2)
-        if cut:
+        if cut!= 0:
             cutline = ax.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
                 ax.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
@@ -406,7 +407,7 @@ def plot_miami(
         if len(anno_set1)>0:
             to_annotate1=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set1),:]
         if len(anno_set2)>0:
-            to_annotate2=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set2),:]
+            to_annotate5=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set2),:]
     elif anno is not None:
         to_annotate1 = getsig(sumstats.loc[sumstats["scaled_P_1"]> float(-np.log10(sig_level)),:],
                        "TCHR+POS",
@@ -460,19 +461,18 @@ def plot_miami(
             ###################### annotate() args
             fontweight = "normal"
 
-            
-            anno_default = {"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":fontsize,"fontweight":fontweight}
+            anno_default =dict({"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":fontsize,"fontweight":fontweight})
             ########################
             
-            if index==0:
-                to_annotate["scaled_P"] = to_annotate1["scaled_P_1"]
-                maxy = maxy1
+            if index == 0:
+                to_annotate["scaled_P"] = to_annotate1["scaled_P_1"].copy()
+                maxy_anno = maxy1
             else:
-                to_annotate["scaled_P"] = to_annotate5["scaled_P_2"]
+                to_annotate["scaled_P"] = to_annotate5["scaled_P_2"].copy()
                 anno_default["rotation"] = -40
                 anno_default["ha"]="left"
                 anno_default["va"]="top"
-                maxy = maxy5
+                maxy_anno = maxy5
             
             snpid = "TCHR+POS"
 
@@ -512,15 +512,14 @@ def plot_miami(
                             arm_scale = arm_scale_d[anno_count]
 
                     # vertical arm length in pixels
-                    armB_length_in_point = plot.transData.transform((skip,1.15*maxy))[1]-plot.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
-                    #
+                    armB_length_in_point = ax.transData.transform((skip,1.15*maxy_anno))[1]-ax.transData.transform((skip, row["scaled_P"]+1))[1]
+                    # times arm_scale to increase or reduce the length
                     armB_length_in_point = armB_length_in_point*arm_scale
                     
                     if arm_scale>=1:
-                        armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else plot.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
-
+                        armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else 0 #ax.transData.transform((skip, maxy_anno+2))[1]-ax.transData.transform((skip,  row["scaled_P"]+1))[1] 
                     if anno_fixed_arm_length is not None:
-                        anno_fixed_arm_length_factor = plot.transData.transform((skip,anno_fixed_arm_length))[1]-plot.transData.transform((skip,0))[1] 
+                        anno_fixed_arm_length_factor = ax.transData.transform((skip,anno_fixed_arm_length))[1]-ax.transData.transform((skip,0))[1] 
                         armB_length_in_point = anno_fixed_arm_length_factor
                     
                     if anno==True:
@@ -534,7 +533,7 @@ def plot_miami(
                     # annoatte position
                     xy=(row["i"],row["scaled_P"]+0.2)  
                     
-                    xytext=(last_pos,1.15*maxy*arm_scale)
+                    xytext=(last_pos,1.15*maxy_anno*arm_scale)
                     
                     if anno_fixed_arm_length is not None:
                         armB_length_in_point = anno_fixed_arm_length
@@ -542,17 +541,25 @@ def plot_miami(
                     
                     if anno_count not in anno_d.keys():
                         if index==0:
-                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                            #upper panel
+                            if armB_length_in_point <5:
+                                arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",connectionstyle="arc,armA=0,armB=0,rad=0.")
+                            else:  
+                                arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                                 connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
                         else:
-                            arrowargs = dict(arrowstyle="-|>",relpos=(0,1),color="#ebebeb",
-                                                connectionstyle="arc,angleA=0,armA=0,angleB=-90,armB="+str(armB_length_in_point)+",rad=0")
+                            #lower panel
+                            if armB_length_in_point <5:
+                                arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",connectionstyle="arc,armA=0,armB=0,rad=0.")
+                            else:
+                                arrowargs = dict(arrowstyle="-|>",relpos=(0,1),color="#ebebeb",
+                                                    connectionstyle="arc,angleA=0,armA=0,angleB=-90,armB="+str(armB_length_in_point)+",rad=0")
                     
                     else:
                         xy=(row["i"],row["scaled_P"])
                         if anno_d[anno_count] in ["right","left","l","r"]:
                             if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
-                                armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                                armoffsetall = (ax.transData.transform(xytext)[0]-ax.transData.transform(xy)[0])*np.sqrt(2)
                                 armoffsetb = arm_offset 
                                 armoffseta = armoffsetall - armoffsetb   
                                 arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
@@ -562,7 +569,7 @@ def plot_miami(
                                                     connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
                         else:
                             if anno_d[anno_count][0]=="right" or anno_d[anno_count][0]=="r": 
-                                armoffsetall = (plot.transData.transform(xytext)[0]-plot.transData.transform(xy)[0])*np.sqrt(2)
+                                armoffsetall = (ax.transData.transform(xytext)[0]-ax.transData.transform(xy)[0])*np.sqrt(2)
                                 armoffsetb = anno_d[anno_count][1] 
                                 armoffseta = armoffsetall - armoffsetb   
                                 arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
