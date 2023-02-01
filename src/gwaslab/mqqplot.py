@@ -378,7 +378,6 @@ def mqqplot(insumstats,
         is_na = sumstats["scaled_P"].isna()
         bad_p = sum(is_inf | is_na)
         if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
-          
         sumstats = sumstats.loc[~(is_inf | is_na),:]
 
     # raw p for calculate lambda
@@ -860,6 +859,7 @@ def mqqplot(insumstats,
                 to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force,max_iter=anno_max_iter,log=log,verbose=verbose)
             ##  iterate through variants to be annotated
             anno_to_adjust_list = list()
+            
             for rowi,row in to_annotate.iterrows():
                 
                 # avoid text overlapping
