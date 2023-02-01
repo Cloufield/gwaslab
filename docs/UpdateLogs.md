@@ -1,5 +1,6 @@
 # Update Logs
-## 3.3.24 - coming soon
+## 3.3.24 - 2023/02/01
+- update bugs in __init__.py
 
 ## 3.3.23 - 2023/01/31
 - update annotation arrow style `anno_style` for `.plot_mqq`
