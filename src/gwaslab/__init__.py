@@ -1,6 +1,6 @@
 from gwaslab.Sumstats import Sumstats
 from gwaslab.h2_conversion import h2_obs_to_liab
-from gwaslab.h2_conversion import getpersnph2
+from gwaslab.h2_conversion import _get_per_snp_r2
 from gwaslab.h2_conversion import h2_se_to_p
 from gwaslab.compare_effect import compare_effect
 from gwaslab.read_ldsc import read_ldsc

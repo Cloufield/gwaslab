@@ -32,6 +32,7 @@ from gwaslab.filtervalue import inferbuild
 from gwaslab.filtervalue import sampling
 from gwaslab.mqqplot import mqqplot
 from gwaslab.calculate_gc import lambdaGC
+from gwaslab.h2_conversion import _get_per_snp_r2
 from gwaslab.getsig import getsig
 from gwaslab.getdensity import getsignaldensity
 from gwaslab.getdensity import assigndensity
@@ -473,8 +474,8 @@ class Sumstats():
                            **args)
         return output
         
-    def get_per_snp_h2(self,**args):
-        self.data = getpersnph2(self.data,beta="BETA",af="EAF",**args)
+    def get_per_snp_r2(self,**args):
+        self.data = _get_per_snp_r2(self.data, beta="BETA", af="EAF", n="N", log=self.log, **args)
         #add data inplace
 
     
