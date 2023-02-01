@@ -35,14 +35,14 @@ def plot_miami(
           region_lead_grid = True,
           region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"},
           anno = None,
-          anno_set=[],
-          anno_set1=[],
-          anno_set2=[],
-          anno_alias1={},
-          anno_alias2={},
-          anno_d1={},
-          anno_d2={},
-          anno_args={},
+          anno_set=list(),
+          anno_set1=list(),
+          anno_set2=list(),
+          anno_alias1=dict(),
+          anno_alias2=dict(),
+          anno_d1=dict(),
+          anno_d2=dict(),
+          anno_args=dict(),
           anno_style="right",
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
@@ -51,14 +51,14 @@ def plot_miami(
           arm_offset=50,
           arm_scale=1,
           arm_scale_d=None,
-          highlight  = [],
-          highlight1 = [],
-          highlight2 = [],
+          highlight  = list(),
+          highlight1 = list(),
+          highlight2 = list(),
           highlight_color="#CB132D",
           highlight_windowkb = 500,
-          pinpoint=[],
-          pinpoint1=[],
-          pinpoint2=[],
+          pinpoint=list(),
+          pinpoint1=list(),
+          pinpoint2=list(),
           pinpoint_color ="red",
           titles=["",""],
           titles_pad=[0.2,0.2], 
@@ -141,7 +141,7 @@ def plot_miami(
     
     if verbose:log.write(" -Sumstats1 P values are being converted to -log10(P)...") 
     bad_p_value=(sumstats1["P"]>1)|(sumstats1["P"]<=0)
-    if verbose:log.write(" -Sanity check after conversion: "+ str(len(bad_p_value)) +" variants with P value outside of (0,1] will be removed...")
+    if verbose:log.write(" -Sanity check after conversion: "+ str(sum(bad_p_value)) +" variants with P value outside of (0,1] will be removed...")
     sumstats1 = sumstats1.loc[~bad_p_value,:]
     sumstats1["scaled_P"] = -np.log10(sumstats1["P"])
     is_inf = sumstats1["scaled_P"].isin([np.inf, -np.inf, float('inf'),-float('inf')])
@@ -160,7 +160,7 @@ def plot_miami(
     
     if verbose:log.write(" -Sumstats2 P values are being converted to -log10(P)...") 
     bad_p_value=(sumstats2["P"]>1)|(sumstats2["P"]<=0)
-    if verbose:log.write(" -Sanity check after conversion: "+ str(len(bad_p_value)) +" variants with P value outside of (0,1] will be removed...")
+    if verbose:log.write(" -Sanity check after conversion: "+ str(sum(bad_p_value)) +" variants with P value outside of (0,1] will be removed...")
     sumstats2 = sumstats2.loc[~bad_p_value,:]
     sumstats2["scaled_P"] = -np.log10(sumstats2["P"])
     is_inf = sumstats2["scaled_P"].isin([np.inf, -np.inf, float('inf'),-float('inf')])
