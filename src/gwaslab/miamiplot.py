@@ -20,7 +20,8 @@ import matplotlib as mpl
 from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import gc as garbage_collect
-
+from gwaslab.textreposition import adjust_text_position
+from adjustText import adjust_text
 def plot_miami( 
           path1,
           path2,
@@ -33,7 +34,7 @@ def plot_miami(
           region_grid_line = {"linewidth": 2,"linestyle":"--"},
           region_lead_grid = True,
           region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"},
-          anno=None,
+          anno = None,
           anno_set=[],
           anno_set1=[],
           anno_set2=[],
@@ -42,8 +43,11 @@ def plot_miami(
           anno_d1={},
           anno_d2={},
           anno_args={},
+          anno_style="right",
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
+          anno_max_iter=100,
+          anno_adjust=False,
           arm_offset=50,
           arm_scale=1,
           arm_scale_d=None,
@@ -135,6 +139,17 @@ def plot_miami(
     sumstats1["CHR"] = np.floor(pd.to_numeric(sumstats1["CHR"].map(get_chr_to_number(),na_action="ignore"), errors='coerce')).astype('Int64')
     sumstats1["POS"] = np.floor(pd.to_numeric(sumstats1["POS"], errors='coerce')).astype('Int64')   
     
+    if verbose:log.write(" -Sumstats1 P values are being converted to -log10(P)...") 
+    bad_p_value=(sumstats1["P"]>1)|(sumstats1["P"]<=0)
+    if verbose:log.write(" -Sanity check after conversion: "+ str(len(bad_p_value)) +" variants with P value outside of (0,1] will be removed...")
+    sumstats1 = sumstats1.loc[~bad_p_value,:]
+    sumstats1["scaled_P"] = -np.log10(sumstats1["P"])
+    is_inf = sumstats1["scaled_P"].isin([np.inf, -np.inf, float('inf'),-float('inf')])
+    is_na = sumstats1["scaled_P"].isna()
+    bad_p = sum(is_inf | is_na)
+    if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
+    sumstats1 = sumstats1.loc[~(is_inf | is_na),:]
+    
     ## load sumstats2 ###########################################################################################################
     if verbose: log.write(" -Loading sumstats2:" + path2)
     if verbose: log.write(" -Sumstats2 CHR,POS,P information will be obtained from:",cols2)
@@ -143,6 +158,18 @@ def plot_miami(
     sumstats2["CHR"] = np.floor(pd.to_numeric(sumstats2["CHR"].map(get_chr_to_number(),na_action="ignore"), errors='coerce')).astype('Int64')
     sumstats2["POS"] = np.floor(pd.to_numeric(sumstats2["POS"], errors='coerce')).astype('Int64')
     
+    if verbose:log.write(" -Sumstats2 P values are being converted to -log10(P)...") 
+    bad_p_value=(sumstats2["P"]>1)|(sumstats2["P"]<=0)
+    if verbose:log.write(" -Sanity check after conversion: "+ str(len(bad_p_value)) +" variants with P value outside of (0,1] will be removed...")
+    sumstats2 = sumstats2.loc[~bad_p_value,:]
+    sumstats2["scaled_P"] = -np.log10(sumstats2["P"])
+    is_inf = sumstats2["scaled_P"].isin([np.inf, -np.inf, float('inf'),-float('inf')])
+    is_na = sumstats2["scaled_P"].isna()
+    bad_p = sum(is_inf | is_na)
+    if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
+    sumstats2 = sumstats2.loc[~(is_inf | is_na),:]
+
+
     ## create merge index
     sumstats1["TCHR+POS"]=sumstats1["CHR"]*large_number + sumstats1["POS"]
     sumstats2["TCHR+POS"]=sumstats2["CHR"]*large_number + sumstats2["POS"]
@@ -165,8 +192,8 @@ def plot_miami(
     chrom = "CHR"
     pos="POS"
     
-    merged_sumstats["scaled_P_1"] = -np.log10(merged_sumstats["P_1"])
-    merged_sumstats["scaled_P_2"] = -np.log10(merged_sumstats["P_2"])
+    #merged_sumstats["scaled_P_1"] = -np.log10(merged_sumstats["P_1"])
+    #merged_sumstats["scaled_P_2"] = -np.log10(merged_sumstats["P_2"])
     
     if skip >0:
         sumstats = merged_sumstats.loc[(merged_sumstats["scaled_P_1"]>skip) | ( merged_sumstats["scaled_P_2"]>skip),:]  
@@ -457,13 +484,14 @@ def plot_miami(
 # Add Annotation to manhattan plot #######################################################
            ## final
     if anno is not None:
-        for index,ax,to_annotate,anno_d, anno_alias in [(0,ax1,to_annotate1,anno_d1,anno_alias1),(1,ax5,to_annotate5,anno_d2,anno_alias2)]:
+        for index,ax,to_annotate_df,anno_d, anno_alias in [(0,ax1,to_annotate1,anno_d1,anno_alias1),(1,ax5,to_annotate5,anno_d2,anno_alias2)]:
             ###################### annotate() args
             fontweight = "normal"
 
             anno_default =dict({"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":fontsize,"fontweight":fontweight})
             ########################
-            
+            to_annotate = to_annotate_df.copy()
+
             if index == 0:
                 to_annotate["scaled_P"] = to_annotate1["scaled_P_1"].copy()
                 maxy_anno = maxy1
@@ -488,22 +516,37 @@ def plot_miami(
                 elif anno is not None:
                         annotation_col = anno
                 if verbose: log.write(" -Annotating using column "+annotation_col+"...")
-
+                
+                ## calculate y span
+                if region is not None:
+                    y_span = region[2] - region[1]
+                else:
+                    y_span = sumstats["i"].max()-sumstats["i"].min()
                 ##   
+                if anno_style == "expand" :
+                    to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force, max_iter=anno_max_iter,log=log,verbose=verbose)
+                
+                anno_to_adjust_list = list()
                 for rowi,row in to_annotate.iterrows():
-                    # avoid text overlapping
-                    ## calculate y span
                     
-                    if region is not None:
-                        y_span = region[2] - region[1]
+                    # avoid text overlapping
+                    if anno_style == "right" :
+                    #right style
+                        if row["i"]>last_pos+repel_force*y_span:
+                            last_pos=row["i"]
+                        else:
+                            last_pos+=repel_force*y_span
+                    elif anno_style == "expand" :
+                        #expand style
+                        last_pos = row["ADJUSTED_i"]
+                        anno_args["rotation"] = 90
+                    elif anno_style == "tight" :
+                        #tight style
+                        anno_fixed_arm_length = 1
+                        anno_adjust = True
+                        anno_args["rotation"] = 90
                     else:
-                        y_span = sumstats["i"].max()-sumstats["i"].min()
-
-                    ## adjust x to avoid overlapping
-                    if row["i"]>last_pos+repel_force*y_span:
-                        last_pos=row["i"]
-                    else:
-                        last_pos+=repel_force*y_span
+                        pass
 
                     if arm_scale_d is not None:
                         if anno_count not in arm_scale_d.keys():
@@ -589,7 +632,13 @@ def plot_miami(
                     for key,value in anno_args.items():
                         anno_default[key]=value
 
-                    ax.annotate(annotation_text,
+                    if anno_adjust==True:
+                        if index==0:
+                            arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(0,0.5))
+                        else:
+                            arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(1,0.5))
+                    
+                    anno_to_adjust = ax.annotate(annotation_text,
                             xy=xy,
                             xytext=xytext,
                             bbox=bbox_para,
@@ -597,10 +646,32 @@ def plot_miami(
                             zorder=100,
                             **anno_default
                             )
-
+                    anno_to_adjust_list.append(anno_to_adjust) 
                     anno_count +=1
-
-
+            
+            if anno_adjust==True:
+                if verbose: log.write(" -Auto-adjusting text positions for plot {}...".format(index))
+                if index==0:
+                    va="bottom"
+                    ha='left'
+                else:
+                    va="top"
+                    ha='left'
+                
+                adjust_text(texts = anno_to_adjust_list,
+                            autoalign=False, 
+                            only_move={'points':'x', 'text':'x', 'objects':'x'},
+                            ax=ax,
+                            precision=0.02,
+                            force_text=(repel_force,repel_force),
+                            expand_text=(1,1),
+                            expand_objects=(0,0),
+                            expand_points=(0,0),
+                            va=va,
+                            ha=ha,
+                            avoid_points=False,
+                            lim =anno_max_iter
+                            )
             else:
                 if verbose: log.write(" -Skip annotating")
     else:
