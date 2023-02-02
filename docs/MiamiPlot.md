@@ -1,8 +1,8 @@
 # Miami plot
 
-As a standalone function, gwaslab can plot miami plot given a pair of sumstats files.
+!!! info "Implemented since v3.3.4"
 
-See examples [here.](https://cloufield.github.io/gwaslab/visualization_miami/)
+As a standalone function, gwaslab can plot miami plot given a pair of sumstats files.
 
 ## Usage
 
@@ -30,22 +30,43 @@ gl.plot_miami(
 - `pinpoint2`: `list`,  list of variants to pinpolint for sumstats2.
 - `titles`:`list`, two titles. For example,`titles=["male","female"]`
 
+
 ## Example
 
-```
-mysumstats = gl.plot_miami(path1="bmi_male_bbj.txt.gz" ,
-                           path2="bmi_female_bbj.txt.gz",
-                           cols1=["CHR","POS","P"],
-                           cols2=["CHR","POS","P"],
-                           titles=["bmi male","bmi female"],
-                           titles_pad=[0.15,0.0],
-                           anno="GENENAME",
-                           region_grid=True,
-                           highlight1=[(5,124289158)],
-                           pinpoint2=[(2,653874)]
-                           )
-```
-
-<img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197526569-7850041d-e247-4f69-8505-ef7750a6d4de.png">
-
-Note: implemented in v3.3.4
+!!! example "Miami plot for male- amd female-specific GWAS on BMI"
+    
+    Sample datasets are obtained from JENGER:
+    
+    ```
+    !wget -O bmi_male_bbj.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
+    !wget -O bmi_female_bbj.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
+    ```
+    
+    ```
+    mysumstats = gl.plot_miami(path1="bmi_male_bbj.txt.gz" ,
+                               path2="bmi_female_bbj.txt.gz",
+                               cols1=["CHR","POS","P"],
+                               cols2=["CHR","POS","P"],
+                               titles=["bmi male","bmi female"],
+                               titles_pad=[0.15,0.0],
+                               anno="GENENAME",
+                               region_grid=True,
+                               highlight1=[(5,124289158)],
+                               pinpoint2=[(2,653874)]
+                               )
+    ```
+    
+    <img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197526569-7850041d-e247-4f69-8505-ef7750a6d4de.png">
+    
+    ```
+    mysumstats = gl.plot_miami(path1="bmi_male_bbj.txt.gz" ,
+                               path2="bmi_female_bbj.txt.gz",
+                               cols1=["CHR","POS","P"],
+                               cols2=["CHR","POS","P"],
+                               titles=["male","female"],
+                               region=(2,2153874,21753874),
+                               titles_pad=[0.1,-0.05],
+                               anno="GENENAME",
+                               region_grid=True
+                               )
+    ```
