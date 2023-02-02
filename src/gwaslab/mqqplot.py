@@ -27,8 +27,25 @@ from matplotlib.ticker import MaxNLocator
 import gc as garbage_collect
 from adjustText import adjust_text
 from gwaslab.textreposition import adjust_text_position
+from gwaslab.annotateplot import annotate_single
+from gwaslab.qqplot import _plot_qq
+from gwaslab.regionalplot import _plot_regional
+from gwaslab.regionalplot import process_vcf
+from gwaslab.quickfix import _get_largenumber
+from gwaslab.quickfix import _quick_fix_p_value
+from gwaslab.quickfix import _quick_fix_pos
+from gwaslab.quickfix import _quick_fix_chr
+from gwaslab.quickfix import _quick_fix_mlog10p
+from gwaslab.quickfix import _quick_add_tchrpos
+from gwaslab.quickfix import _quick_merge_sumstats
+from gwaslab.quickfix import _quick_assign_i
+from gwaslab.quickfix import _quick_assign_i_with_rank
+from gwaslab.quickfix import _quick_extract_snp_in_region
+from gwaslab.quickfix import _quick_assign_highlight_hue_pair
+from gwaslab.quickfix import _quick_assign_marker_relative_size
+from gwaslab.quickfix import _quick_fix_eaf
 
-# 20220310 ######################################################################################################
+# 20230202 ######################################################################################################
 
 def mqqplot(insumstats,            
           chrom=None,
@@ -114,7 +131,7 @@ def mqqplot(insumstats,
           title_fontsize=13,
           fontsize = 10,
           anno_fontsize = 10,
-          figargs= {"figsize":(15,5)},
+          figargs= dict(figsize=(15,5)),
           colors=["#597FBD","#74BAD3"],
           marker_size=(5,25),
           use_rank=False,
@@ -148,9 +165,12 @@ def mqqplot(insumstats,
 
 
 # Plotting mode selection : layout ####################################################################
-    # ax1 : manhattanplot : 
+    # ax1 : manhattanplot / brisbane plot
     # ax2 : qq plot 
     # ax3 : gene track
+    # ax4 : recombination rate
+    # ax5 : miami plot lower panel
+
     # "m" : Manhattan plot
     # "qq": QQ plot
     # "r" : regional plot
@@ -241,6 +261,7 @@ def mqqplot(insumstats,
     if (density_color==True) or ("b" in mode and "DENSITY" in insumstats.columns):
         usecols.append("DENSITY")
 
+    #################################################################################################
     sumstats = insumstats.loc[:,usecols].copy()
 
 
@@ -264,14 +285,8 @@ def mqqplot(insumstats,
     if "m" in mode or "r" in mode or "b" in mode: 
         # convert CHR to int
         ## CHR X,Y,MT conversion ############################
-        if pd.api.types.is_string_dtype(sumstats[chrom]) == True:
-        ## if chr is string dtype: convert using chr_dict
-            sumstats[chrom] = sumstats[chrom].map(chr_dict,na_action="ignore")
-        ## CHR
-        sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
-        ## POS
-        sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
-    
+        sumstats[pos] = _quick_fix_pos(sumstats[pos])
+        sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict)
     ## r
     if region is not None:
         region_chr = region[0]
@@ -285,10 +300,12 @@ def mqqplot(insumstats,
         sumstats = sumstats.loc[in_region_snp,:]
     
     ## EAF
+    eaf_raw = pd.Series()
     if stratified is True: 
-        sumstats["MAF"] = pd.to_numeric(sumstats[eaf], errors='coerce')
-        sumstats.loc[sumstats["MAF"]>0.5,"MAF"] = 1 - sumstats.loc[sumstats["MAF"]>0.5,"MAF"]
+        sumstats["MAF"] = _quick_fix_eaf(sumstats[eaf])
+        # for stratified qq plot
         eaf_raw = sumstats["MAF"].copy()
+        
     if len(highlight)>0 and ("m" in mode):
         sumstats["HUE"] = sumstats[chrom].astype("string")
     
@@ -325,14 +342,8 @@ def mqqplot(insumstats,
 # Density #####################################################################################################              
     if "b" in mode and "DENSITY" not in sumstats.columns:
         if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
-        
-        large_number = 1000000000
-        for i in range(7):
-            if sumstats[pos].max()*10 >  large_number:
-                large_number = int(large_number * 10)
-            else:
-                break
-        
+        large_number = _get_largenumber(sumstats[pos].max(),log=log)
+
         stack=[]
         sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
         sumstats = sumstats.sort_values(by="TCHR+POS")
@@ -371,16 +382,12 @@ def mqqplot(insumstats,
         sumstats["scaled_P"] = sumstats["raw_P"].copy()
         sumstats["raw_P"] = np.power(10,-sumstats["scaled_P"].astype("float64"))
     else:
-        if verbose:log.write(" -P values are being converted to -log10(P)...") 
-        bad_p_value=len(sumstats.loc[(sumstats["raw_P"]>1)|(sumstats["raw_P"]<=0),:])
-        if verbose:log.write(" -Sanity check after conversion: "+ str(bad_p_value) +" variants with P value outside of (0,1] will be removed...")
-        sumstats = sumstats.loc[(sumstats["raw_P"]<=1)&(sumstats["raw_P"]>0),:]
-        sumstats["scaled_P"] = -np.log10(sumstats["raw_P"])
-        is_inf = sumstats["scaled_P"].isin([np.inf, -np.inf, float('inf'),-float('inf')])
-        is_na = sumstats["scaled_P"].isna()
-        bad_p = sum(is_inf | is_na)
-        if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
-        sumstats = sumstats.loc[~(is_inf | is_na),:]
+        if not scaled:
+            # quick fix p
+            sumstats = _quick_fix_p_value(sumstats, verbose=verbose, log=log)
+
+        # quick fix mlog10p
+        sumstats = _quick_fix_mlog10p(sumstats, scaled=scaled, verbose=verbose, log=log)
 
     # raw p for calculate lambda
     p_toplot_raw = sumstats[["CHR","scaled_P"]].copy()
@@ -395,7 +402,8 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
     elif "b" in mode:
         if verbose: log.write(" -Maximum DENSITY values is "+str(maxy) +" .")
-            
+
+    maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
     if cut:
         if cut is True:
             if verbose: log.write(" -Cut Auto mode is activated...")
@@ -418,61 +426,22 @@ def mqqplot(insumstats,
     if verbose: log.write("Finished data conversion and sanity check.")
 
 
-# Manhattan plot ##########################################################################################################
-## regional plot ->rsq
-     #calculate rsq]
+    # Manhattan plot ##########################################################################################################
+    ## regional plot ->rsq
+        #calculate rsq]
     if vcf_path is not None:
         if tabix is None:
             tabix = which("tabix")
         sumstats = process_vcf(sumstats=sumstats, vcf_path=vcf_path,region=region, 
                                log=log ,pos=pos,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict,tabix=tabix)
 
-# # Create index for plotting ###################################################
-
-
     #sort & add id
+    ## Manhatann plot ###################################################
     if ("m" in mode) or ("r" in mode): 
-        sumstats = sumstats.sort_values([chrom,pos])
-        if use_rank is True: sumstats["POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
-        sumstats["id"]=range(len(sumstats))
-        sumstats=sumstats.set_index("id")
-
-        #create a df , groupby by chromosomes , and get the maximum position
-        if use_rank is True: 
-            posdic = sumstats.groupby(chrom)["POS_RANK"].max()
-        else:
-            posdic = sumstats.groupby(chrom)[pos].max()
-        
-        # convert to dictionary
-        posdiccul = dict(posdic)
-        
-        # fill empty chr with 0
-        for i in range(0,26):
-            if i in posdiccul: continue
-            else: posdiccul[i]=0
-        
-        # cumulative sum dictionary
-        for i in range(2,sumstats[chrom].max()+1):
-            posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*0.05
-
-        # convert base pair postion to x axis position using the cumulative sum dictionary
-        sumstats["add"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
-        
-        if use_rank is True: 
-            sumstats["i"]=sumstats["POS_RANK"]+sumstats["add"]
-        else:
-            sumstats["i"]=sumstats[pos]+sumstats["add"]
-        
-
-        #for plot, get the chr text tick position      
-        chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
-        #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
-        #sumstats["i"] = sumstats["i"].astype("Int64")
-        sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
-        
+        # assign index i and tick position
+        sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, use_rank=False, chrom="CHR",pos="POS")
         
         ## Assign marker size ##############################################
-        
         sumstats["s"]=1
         if "b" not in mode:
             sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
@@ -482,7 +451,7 @@ def mqqplot(insumstats,
 
         if vcf_path is not None:
             sumstats["chr_hue"]=sumstats["LD"]
-## Manhatann plot ###################################################
+
         if verbose:log.write("Start to create manhattan plot with "+str(len(sumstats))+" variants:")
         ## default seetings
         
@@ -500,6 +469,7 @@ def mqqplot(insumstats,
             linewidth=1
             
         ## if highlight 
+        highlight_i = pd.DataFrame()
         if len(highlight) >0:
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                                hue='chr_hue',
@@ -576,181 +546,69 @@ def mqqplot(insumstats,
             else:
                 if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
         
+        #ax1.set_xticks(chrom_df.astype("float64"))
+        #ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family="sans-serif")
+        
         # if regional plot : pinpoint lead , add color bar ##################################################
-        if (region is not None) :
-            # pinpoint lead
-            lead_id = sumstats["scaled_P"].idxmax()
-            ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],
-                        color=region_ld_colors[-1],marker="D",zorder=3,s=marker_size[1]+1,edgecolor="black")
-            if (vcf_path is not None):
-                # add a in-axis axis for colorbar
-                axins1 = inset_axes(ax1,
-                        width="5%",  # width = 50% of parent_bbox width
-                        height="40%",  # height : 5%
-                        loc='upper right',axes_kwargs={"frameon":True,"facecolor":"white","zorder":999999})
+        if (region is not None) and ("r" in mode):
+            ax1, ax3 =_plot_regional(
+                                sumstats=sumstats,
+                                fig=fig,
+                                ax1=ax1,
+                                ax3=ax3,
+                                region=region,
+                                vcf_path=vcf_path,
+                                marker_size=marker_size,
+                                fontsize=fontsize,
+                                build=build,
+                                chrom_df=chrom_df,
+                                xtick_chr_dict=xtick_chr_dict,
+                                cut_line_color=cut_line_color,
+                                vcf_chr_dict =vcf_chr_dict,
+                                gtf_path=gtf_path,
+                                gtf_chr_dict = gtf_chr_dict,
+                                gtf_gene_name=gtf_gene_name,
+                                rr_path=rr_path,
+                                rr_header_dict=rr_header_dict,
+                                rr_chr_dict = rr_chr_dict,
+                                mode=mode,
+                                region_step = region_step,
+                                region_grid = region_grid,
+                                region_grid_line = region_grid_line,
+                                region_lead_grid = region_lead_grid,
+                                region_lead_grid_line = region_lead_grid_line,
+                                region_hspace=region_hspace,
+                                region_ld_threshold = region_ld_threshold,
+                                region_ld_colors = region_ld_colors,
+                                region_recombination = region_recombination,
+                                region_protein_coding=region_protein_coding,
+                                region_flank_factor =region_flank_factor,
+                                taf=taf,
+                                tabix=tabix,
+                                chrom=chrom,
+                                pos=pos,
+                                verbose=verbose,
+                                log=log
+                            )
 
-                cmp= mpl.colors.ListedColormap(region_ld_colors[1:])
-                norm= mpl.colors.BoundaryNorm([0]+region_ld_threshold+[1],cmp.N)     
-                cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),
-                                   cax=axins1,
-                                   fraction=1,
-                                   orientation="vertical",
-                                   ticklocation="left")
-                cbar.set_ticks(ticks=region_ld_threshold) 
-                cbar.set_ticklabels([str(i) for i in region_ld_threshold]) 
-                cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.2)
-                rect = patches.Rectangle((0.91,0.50),
-                                        height=0.5,
-                                        width=0.09, 
-                                        transform=ax1.transAxes,
-                                        linewidth=1, 
-                                        edgecolor='black', 
-                                        facecolor='white',
-                                        zorder=999998)
-                ax1.add_patch(rect)
-        ## recombinnation rate ##################################################       
-        if (region is not None) and (region_recombination is True):
-            ax4=ax1.twinx()
-            most_left_snp = sumstats["i"].idxmin()
-            rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,pos]
-            if rr_path=="default":
-                if rr_chr_dict is not None:
-                    rr_chr = rr_chr_dict[region[0]]
-                else:
-                    rr_chr = str(region[0])
-                rc = get_recombination_rate(chrom=rr_chr,build=build)
-            else:
-                rc = pd.read_csv(rr_path,sep="\t")
-                if rr_header_dict is not None:
-                    rc = rc.rename(columns=rr_header_dict)
-
-            rc = rc.loc[(rc["Position(bp)"]<region[2]) & (rc["Position(bp)"]>region[1]),:]
-            ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
-            ax4.set_ylabel("Recombination rate(cM/Mb)")
-            ax4.set_ylim(0,100)
-            ax4.spines["top"].set_visible(False)
-            ax4.spines["top"].set(zorder=1)    
+        if region is None:
+            #plot.set_xlabel(chrom)
+            ax1.set_xticks(chrom_df.astype("float64"))
+            ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family="sans-serif")
         
-        ## regional plot : gene track ######################################################################
-                    # calculate offset
-        if (region is not None):
-            most_left_snp = sumstats["i"].idxmin()
-            gene_track_offset = sumstats.loc[most_left_snp,pos]-region[1]
-            gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
-            lead_id=sumstats["scaled_P"].idxmax()
-            lead_snp_y = sumstats["scaled_P"].max()
-            lead_snp_i = sumstats.loc[lead_id,"i"]
-            
-        if (gtf_path is not None ) and ("r" in mode):
-            # load gtf
-            if verbose: log.write(" -Loading gtf files from:" + gtf_path)
-            uniq_gene_region,exons = process_gtf(gtf_path = gtf_path ,
-                                                    region = region, 
-                                                    region_flank_factor = region_flank_factor,
-                                                    build=build,
-                                                    region_protein_coding=region_protein_coding,
-                                                    gtf_chr_dict=gtf_chr_dict,
-                                                    gtf_gene_name=gtf_gene_name)
-            n_uniq_stack = uniq_gene_region["stack"].nunique()
-            stack_num_to_plot = max(taf[0],n_uniq_stack)
-            ax3.set_ylim((-stack_num_to_plot*2-taf[1]*2,2+taf[1]*2))
-            ax3.set_yticks([])
-            pixels_per_point = 72/fig.dpi
-            pixels_per_track = np.abs(ax3.transData.transform([0,0])[1] - ax3.transData.transform([0,1])[1])                   
-            font_size_in_pixels= taf[2] * pixels_per_track
-            font_size_in_points =  font_size_in_pixels * pixels_per_point
-            linewidth_in_points=   pixels_per_track * pixels_per_point
-            if verbose: log.write(" -plotting gene track..")
-            
-            sig_gene_name = "Undefined"
-            texts_to_adjust_left = []
-            texts_to_adjust_middle = []
-            texts_to_adjust_right = []
-            for index,row in uniq_gene_region.iterrows():
-                if row[6][0]=="+":
-                    gene_anno = row["name"] + "->"
-                else:
-                    gene_anno = "<-" + row["name"] 
-                
-                if region_lead_grid is True and lead_snp_i > gene_track_start_i+row[3] and lead_snp_i < gene_track_start_i+row[4] :
-                        gene_color="#FF0000"
-                        sig_gene_name = row["name"]
-                        sig_gene_left = gene_track_start_i+row[3]
-                        sig_gene_right= gene_track_start_i+row[4]
-                else:
-                    gene_color="#020080"
-                
-                # plot gene line
-                ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
-                         (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=linewidth_in_points/10)
-                
-                # plot gene name
-                if row[4] >= region[2]:
-                    #right side
-                    texts_to_adjust_right.append(ax3.text(x=gene_track_start_i+region[2],
-                         y=row["stack"]*2+taf[4],s=gene_anno,ha="right",va="center",color="black",style='italic', size=font_size_in_points))
-                    
-                elif row[3] <= region[1] :
-                    #left side
-                    texts_to_adjust_left.append(ax3.text(x=gene_track_start_i+region[1],
-                         y=row["stack"]*2+taf[4],s=gene_anno,ha="left",va="center",color="black",style='italic', size=font_size_in_points))
-                else:
-                    texts_to_adjust_middle.append(ax3.text(x=(gene_track_start_i+row[3]+gene_track_start_i+row[4])/2,
-                         y=row["stack"]*2+taf[4],s=gene_anno,ha="center",va="center",color="black",style='italic',size=font_size_in_points))
-            
-            # plot exons
-            for index,row in exons.iterrows():
-                if not pd.isnull(row["name"]):
-                    if (region_lead_grid is True) and row["name"]==sig_gene_name:
-                        exon_color = region_lead_grid_line["color"]  
-                    else:
-                        exon_color="#020080" 
-                elif gene_track_start_i+row[3] > sig_gene_left and gene_track_start_i+row[4] < sig_gene_right:
-                    exon_color = region_lead_grid_line["color"]  
-                else:
-                    exon_color="#020080"
-                #if row["gene_biotype"]!="protein_coding":
-                #    exon_color="grey"
-                ax3.plot((gene_track_start_i+row[3],gene_track_start_i+row[4]),
-                         (row["stack"]*2,row["stack"]*2),linewidth=linewidth_in_points*taf[3],color=exon_color,solid_capstyle="butt")
-
-            if verbose: log.write(" -Finished plotting gene track..")
-                           
-        #plot.set_xlabel(chrom); 
-        ax1.set_xticks(chrom_df.astype("float64"))
-
-        ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family="sans-serif")
-        
-        ## regional plot - set X tick
-        if region is not None:
-            region_ticks = list(map('{:.3f}'.format,np.linspace(region[1], region[2], num=region_step).astype("int")/1000000)) 
-            
-            # set x ticks for gene track
-            if (gtf_path is not None ) and ("r" in mode):
-                ax3.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
-                ax3.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
-                if region_grid is True:
-                    for i in np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step):
-                        ax1.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
-                        ax3.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
-                if region_lead_grid is True:
-                    ax1.axvline(x=lead_snp_i,ymax=1/1.2, zorder=1,**region_lead_grid_line)
-                    ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
-            else:
-                # set x ticks m plot
-                ax1.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
-                ax1.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
-        
-            ax1.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
         # genomewide significant line
         if sig_line is True:
             sigline = ax1.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
-        if "b" in mode:
+        
+        # for brisbane plot, add median and mean line
+        if "b" in mode:    
             meanline = ax1.axhline(y=bmean, linewidth = 2,linestyle="-",color=sig_line_color,zorder=1000)
             medianline = ax1.axhline(y=bmedian, linewidth = 2,linestyle="--",color=sig_line_color,zorder=1000)
+        
         # cut line
         if cut == 0: 
             ax1.set_ylim(skip, ceil(maxy*1.2) )
+        
         if cut:
             cutline = ax1.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
@@ -762,7 +620,7 @@ def mqqplot(insumstats,
             ax1.set_ylim(bottom = skip)
 
 
-# Get top variants for annotation #######################################################
+        # Get top variants for annotation #######################################################
         if (anno and anno!=True) or (len(anno_set)>0):
             if len(anno_set)>0:
                 to_annotate=sumstats.loc[sumstats[snpid].isin(anno_set),:]
@@ -799,22 +657,14 @@ def mqqplot(insumstats,
                                    build=build,
                                    source=anno_source,
                                    verbose=verbose).rename(columns={"GENE":"Annotation"})
-            #if build=="19":
-            #    data = EnsemblRelease(75)
-            #    if verbose:log.write(" -Assigning Gene name using Ensembl Release",75)
-            #elif build=="38":
-            #    data = EnsemblRelease(77)
-            #    if verbose:log.write(" -Assigning Gene name using Ensembl Release",77)
-            #to_annotate = to_annotate.copy()
-            #to_annotate.loc[:,["LOCATION","Annotation"]] = pd.DataFrame(to_annotate.apply(lambda x:closest_gene(x,data=data), axis=1).tolist(), index=to_annotate.index).values
 
-# Add Annotation to manhattan plot #######################################################
-           ## final
-        
-        ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+        # Add Annotation to manhattan plot #######################################################
         
         if "b" in mode:
             ax1.set_ylabel("Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb",ha="center",va="bottom",fontsize=fontsize,family="sans-serif")
+        else:
+            ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+
         if region is not None:
             if (gtf_path is not None ) and ("r" in mode):
                 ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
@@ -831,7 +681,6 @@ def mqqplot(insumstats,
             ax1.spines["top"].set_zorder(1)    
             ax1.spines["right"].set_visible(True)
         
-        
         if verbose: log.write("Finished creating Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(ax1.transData.transform((skip, title_pad*maxy))[1]-ax1.transData.transform((skip, maxy)))[1]
@@ -840,270 +689,66 @@ def mqqplot(insumstats,
             ax1.set_title(mtitle,fontsize=title_fontsize,family="sans-serif")
             
         # add annotation arrows and texts
-        if anno and (to_annotate.empty is not True):
-            #initiate a list for text and a starting position
-            text = []
-            last_pos=0
-            anno_count=0
-            to_annotate = to_annotate.sort_values(by=[chrom,pos])
-            ## log : annotation column
-            if anno==True:
-                    annotation_col="CHR:POS"
-            elif anno:
-                    annotation_col=anno
-            if verbose: log.write(" -Annotating using column "+annotation_col+"...")
-                            ## calculate y span
-            if region is not None:
-                y_span = region[2] - region[1]
-            else:
-                y_span = sumstats["i"].max()-sumstats["i"].min()
-            
-            if verbose: log.write(" -Adjusting text positions with repel_force={}...".format(repel_force))
-            if anno_style == "expand" :
-                to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force,max_iter=anno_max_iter,log=log,verbose=verbose)
-            ##  iterate through variants to be annotated
-            anno_to_adjust_list = list()
-            
-            for rowi,row in to_annotate.iterrows():
-                
-                # avoid text overlapping
-                ## adjust x to avoid overlapping################################################################
-                if anno_style == "right" :
-                    #right style
-                    if row["i"]>last_pos+repel_force*y_span:
-                        last_pos=row["i"]
-                    else:
-                        last_pos+=repel_force*y_span
-                elif anno_style == "expand" :
-                    #expand style
-                    last_pos = row["ADJUSTED_i"]
-                    anno_args["rotation"] = 90
-                elif anno_style == "tight" :
-                    #tight style
-                    anno_fixed_arm_length = 1
-                    anno_adjust = True
-                    anno_args["rotation"] = 90
-                else:
-                    pass
-                ################################################################
-                #shrink or increase the arm
-                if arm_scale_d is not None:
-                    if anno_count not in arm_scale_d.keys():
-                        arm_scale =1
-                    else:
-                        arm_scale = arm_scale_d[anno_count]
-                ################################################################
+        ax1 = annotate_single(
+                                sumstats=sumstats,
+                                anno=anno,
+                                mode=mode,
+                                ax1=ax1,
+                                highlight_i=highlight_i,
+                                to_annotate=to_annotate,
+                                anno_d=anno_d,
+                                anno_alias=anno_alias,
+                                anno_style=anno_style,
+                                anno_args=anno_args,
+                                arm_scale=arm_scale,
+                                anno_max_iter=anno_max_iter,
+                                arm_scale_d=arm_scale_d,
+                                arm_offset=arm_offset,
+                                anno_adjust=anno_adjust,
+                                anno_fixed_arm_length=anno_fixed_arm_length,
+                                maxy=maxy,
+                                anno_fontsize= anno_fontsize,
+                                region=region,
+                                region_anno_bbox_args=region_anno_bbox_args,
+                                skip=skip,
+                                snpid=snpid,
+                                chrom=chrom,
+                                pos=pos,
+                                repel_force=repel_force,
+                                verbose=verbose,
+                                log=log
+                            )  
+    # Creating Manhatann plot Finished #####################################################################
 
-                # vertical arm length in pixels
-                armB_length_in_point = ax1.transData.transform((skip,1.15*maxy))[1]-ax1.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
-                # scale if needed
-                armB_length_in_point = armB_length_in_point*arm_scale
-                ################################################################
-                if arm_scale>=1:
-                    armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else ax1.transData.transform((skip, maxy+2))[1]-plot.transData.transform((skip,  row["scaled_P"]+1))[1] 
-                ###if anno_fixed_arm_length #############################################################
-                if anno_fixed_arm_length is not None:
-                    anno_fixed_arm_length_factor = ax1.transData.transform((skip,anno_fixed_arm_length))[1]-ax1.transData.transform((skip,0))[1] 
-                    armB_length_in_point = anno_fixed_arm_length_factor
-                ################################################################################################################################
-                # annotation alias
-                if anno==True:
-                    if row[snpid] in anno_alias.keys():
-                        annotation_text = anno_alias[row[snpid]]
-                    else:
-                        annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
-                elif anno:
-                    annotation_text=row["Annotation"]
-                
-                #
-                fontweight = "normal"
-                if len(highlight) >0:
-                    if row["i"] in highlight_i:
-                        fontweight = "bold"
-                #
-
-                
-                xy=(row["i"],row["scaled_P"]+0.2)
-                xytext=(last_pos,1.15*maxy*arm_scale)
-                
-                if anno_fixed_arm_length is not None:
-                    armB_length_in_point = anno_fixed_arm_length
-                    xytext=(row["i"],row["scaled_P"]+0.2+anno_fixed_arm_length)
-                
-                if anno_count not in anno_d.keys():
-                    #arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                    #                         connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
-                    arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                             connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
-                else:
-                    # adjuest direction
-                    xy=(row["i"],row["scaled_P"])
-                    if anno_d[anno_count] in ["right","left","l","r"]:
-                        if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
-                            armoffsetall = (ax1.transData.transform(xytext)[0]-ax1.transData.transform(xy)[0])*np.sqrt(2)
-                            armoffsetb = arm_offset 
-                            armoffseta = armoffsetall - armoffsetb   
-                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                                 connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
-                        elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
-                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                                 connectionstyle="arc,angleA=-135,armA="+str(arm_offset)+",angleB=135,armB="+str(arm_offset)+",rad=0")
-                    else:
-                        if anno_d[anno_count][0]=="right" or anno_d[anno_count][0]=="r": 
-                            armoffsetall = (ax1.transData.transform(xytext)[0]-ax1.transData.transform(xy)[0])*np.sqrt(2)
-                            armoffsetb = anno_d[anno_count][1] 
-                            armoffseta = armoffsetall - armoffsetb   
-                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                                 connectionstyle="arc,angleA=-135,armA="+str(armoffseta)+",angleB=45,armB="+str(armoffsetb)+",rad=0")
-                        elif anno_d[anno_count]=="left" or anno_d[anno_count]=="l":
-                            arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
-                                                 connectionstyle="arc,angleA=-135,armA="+str( anno_d[anno_count][1])+",angleB=135,armB="+str( anno_d[anno_count][1])+",rad=0")
-                
-                
-                if "r" in mode:
-                    arrowargs["color"] = "black" 
-                    bbox_para=dict(boxstyle="round", fc="white",zorder=3)
-                    for key,value in region_anno_bbox_args.items():
-                        bbox_para[key]=value
-                else:
-                    bbox_para=None
-                
-                anno_default = {"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":fontweight}
-                for key,value in anno_args.items():
-                    anno_default[key]=value
-
-                if anno_adjust==True:
-                    arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(0,0.5))
-                anno_to_adjust = ax1.annotate(annotation_text,
-                         xy=xy,
-                         xytext=xytext,
-                         bbox=bbox_para,
-                         arrowprops=arrowargs,
-                         zorder=100,
-                         **anno_default
-                         )
-                anno_to_adjust_list.append(anno_to_adjust) 
-                anno_count +=1
-            #anno_adjust_keyargs = {"arrowprops":dict(arrowstyle='->', color='grey', linewidth=0.1,relpos=(0.5,0.5))}
-            if anno_adjust==True:
-                if verbose: log.write(" -Auto-adjusting text positions...")
-                adjust_text(texts = anno_to_adjust_list,
-                            autoalign=False, 
-                            only_move={'points':'x', 'text':'x', 'objects':'x'},
-                            ax=ax1,
-                            precision=0.02,
-                            force_text=(repel_force,repel_force),
-                            expand_text=(1,1),
-                            expand_objects=(0,0),
-                            expand_points=(0,0),
-                            va="bottom",
-                            ha='left',
-                            avoid_points=False,
-                            lim =100
-                            #kwargs = anno_adjust_keyargs
-                            )
-            
-        else:
-            if verbose: log.write(" -Skip annotating")
-        
-        # gene track (ax3) text adjustment
-        if (gtf_path is not None ) and ("r" in mode):
-            if len(texts_to_adjust_middle)>0:
-                adjust_text(texts_to_adjust_middle,
-                        autoalign=False, 
-                        only_move={'points':'x', 'text':'x', 'objects':'x'},
-                        ax=ax3,
-                        precision=0,
-                        force_text=(0.1,0),
-                        expand_text=(1, 1),
-                        expand_objects=(1,1),
-                        expand_points=(1,1),
-                        va="center",
-                        ha='center',
-                        avoid_points=False,
-                        lim =1000)
-
-            
-# Creating Manhatann plot Finished #####################################################################
-
-# QQ plot #########################################################################################################
-    # ax2 qqplot
+    # QQ plot #########################################################################################################
     if "qq" in mode:
-        if verbose:log.write("Start to create QQ plot with "+str(len(sumstats))+" variants:")
-        # plotting qq plots using processed data after cut and skip
-        # select -log10 scaled p to plot
-        p_toplot = sumstats["scaled_P"]
-        # min p value for uniform distribution 
-        minit=1/len(p_toplot)
-        if stratified is False:
-            # sort x,y for qq plot
-            # high to low
-            observed = p_toplot.sort_values(ascending=False)
-            # uniform distribution using raw number -> -log10 -> observed number (omit variants with low -log10p)
-            expected = -np.log10(np.linspace(minit,1,len(p_toplot_raw)))[:len(observed)]
-            #p_toplot = sumstats["scaled_P"]
-            ax2.scatter(expected,observed,s=8,color=colors[0])
-        else:
-            # stratified qq plot
-            for i,(lower, upper) in enumerate(maf_bins):
-                # extract data for a maf_bin
-                databin = sumstats.loc[(sumstats["MAF"]>lower) &( sumstats["MAF"]<=upper),["MAF","scaled_P"]]
-                # raw data : varaints with maf(eaf_raw) in maf_bin
-                databin_raw = eaf_raw[(eaf_raw>lower) & (eaf_raw<=upper)]
-                # sort x,y for qq plot
-                # high to low
-                observed = databin["scaled_P"].sort_values(ascending=False)
-                # uniform distribution using raw number -> -log10 -> observed number (omit variants with low -log10p)
-                expected = -np.log10(np.linspace(minit,1,max(len(databin_raw),len(databin))))[:len(observed)]
-                label ="("+str(lower)+","+str(upper) +"]"
-                ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
-                ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=3,frameon=False)
-                plt.setp(ax2_legend.texts, family="sans-serif")
-        
-        ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=sig_line_color)
-        ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
-        ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
-        ax2.spines["top"].set_visible(False)
-        ax2.spines["right"].set_visible(False)
-        ax2.spines["left"].set_visible(True)
-        
-        # calculate genomic inflation factor and add annotation
-        if gc:
-            #gc was calculated using raw data (before cut and skip)
-            p_toplot_raw = p_toplot_raw.rename(columns={"scaled_P":"MLOG10P"})
-            if verbose and not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.")
-            lambdagc = lambdaGC(p_toplot_raw, mode="MLOG10P", include_chrXYMT=include_chrXYMT,log=log,verbose=False)
-            #observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot_raw)) ,1)
-            #expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
-            #lambdagc=observedMedianChi2/expectedMedianChi2
-            if verbose: log.write(" -Calculating lambda GC:",lambdagc)
-            ax2.text(0.10, 1.03,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
-                     horizontalalignment='left',
-                     verticalalignment='top',
-                     transform=ax2.transAxes,
-                     fontsize=fontsize,family="sans-serif")
-        
-        #
-        if cut == 0: ax2.set_ylim(skip,maxy*1.2)
-        if cut:
-            qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
-            if ((maxticker-cut)/cutfactor + cut) > cut:
-                ax2.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                ax2.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif")
-            else:
-                ax2.set_yticks([x for x in range(skip,cut+1,2)])
-                ax2.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
-        
-        ax2.tick_params(axis='both', which='both', labelsize=fontsize)
-        #
-        if qtitle:
-            ax2.set_title(qtitle,fontsize=title_fontsize,pad=10,family="sans-serif")
+        # ax2 qqplot
+        ax2 =_plot_qq(
+                    sumstats=sumstats,
+                    p_toplot_raw=p_toplot_raw,
+                    ax2=ax2,
+                    maxticker=maxticker,
+                    gc=gc,
+                    cut=cut,
+                    cutfactor=cutfactor,
+                    skip=skip,
+                    maxy=maxy,
+                    colors=colors,
+                    sig_line_color=sig_line_color,
+                    stratified=stratified,
+                    eaf_raw=eaf_raw,
+                    maf_bins=maf_bins,
+                    maf_bin_colors=maf_bin_colors,
+                    fontsize=fontsize,
+                    qtitle=qtitle,
+                    title_fontsize=title_fontsize,
+                    include_chrXYMT=include_chrXYMT,
+                    cut_line_color=cut_line_color,
+                    verbose=verbose,
+                    log=log
+                )
 
-        if verbose: log.write("Finished creating QQ plot successfully!")
-# Creating QQ plot Finished #############################################################################################
-        
-
-# Saving plot ##########################################################################################################
+    # Saving plot ##########################################################################################################
     if save:
         if verbose: log.write("Saving plot:")
         if save==True:
@@ -1121,205 +766,6 @@ def mqqplot(insumstats,
         fig.suptitle(title , fontsize = title_fontsize, x=0.5,y=1)
     
     garbage_collect.collect()
-# Return matplotlib figure object #######################################################################################
+    
+    # Return matplotlib figure object #######################################################################################
     return fig, log
-
-
-# +
-#Helpers
-
-def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_threshold, vcf_chr_dict,tabix):
-    if verbose: log.write("Start to load reference genotype...")
-    if verbose: log.write(" -reference vcf path : "+ vcf_path)
-    # load genotype data of the targeted region
-    ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
-    
-    if verbose: log.write(" -Retrieving index...")
-    if verbose: log.write(" -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])))
-    # match sumstats pos and ref pos: 
-    # get ref index for its first appearance of sumstats pos
-    sumstats["REFINDEX"] = sumstats[pos].apply(lambda x: np.where(ref_genotype["variants/POS"] == x )[0][0] if np.any(ref_genotype["variants/POS"] == x) else None)
-    # get lead variant id and pos
-    lead_id = sumstats["scaled_P"].idxmax()
-    lead_pos = sumstats.loc[lead_id,pos]
-    
-    # if lead pos is available: 
-    if lead_pos in ref_genotype["variants/POS"]:
-        
-        # get ref index for lead snp
-        lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
-
-        # non-na other snp index
-        other_snps_ref_index = sumstats["REFINDEX"].dropna().astype("int").values
-        # get genotype 
-        lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
-        other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
-        
-        if verbose: log.write(" -Calculating Rsq...")
-        
-        if len(other_snp_genotype)>1:
-            valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0],2)
-        else:
-            valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype),2)
-        sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = valid_r2
-    else:
-        if verbose: log.write(" -Lead SNP not found in reference...")
-        sumstats["RSQ"]=None
-        
-    sumstats["RSQ"] = sumstats["RSQ"].astype("float")
-    sumstats["LD"] = 0
-    for index,ld_threshold in enumerate(region_ld_threshold):
-        if index==0:
-            to_change_color = sumstats["RSQ"]>-1
-            sumstats.loc[to_change_color,"LD"] = 1
-        else:
-            to_change_color = sumstats["RSQ"]>ld_threshold
-            sumstats.loc[to_change_color,"LD"] = index+1
-    
-    sumstats.loc[lead_id,"LD"] = len(region_ld_threshold)+2
-    sumstats["LEAD"]="Other variants"
-    sumstats.loc[lead_id,"LEAD"] = "Lead variants"
-    if verbose: log.write("Finished loading reference genotype successfully!")
-    return sumstats
-
-
-# -
-
-def process_gtf(gtf_path,region,region_flank_factor,build,region_protein_coding,gtf_chr_dict,gtf_gene_name):
-    #loading
-    
-    # chr to string datatype using gtf_chr_dict
-    to_query_chrom = gtf_chr_dict[region[0]]
-
-    # loading gtf data
-    if gtf_path =="default" or gtf_path =="ensembl":
-        
-        gtf = get_gtf(chrom=to_query_chrom, build=build, source="ensembl")
-    
-    elif gtf_path =="refseq":
-
-        gtf = get_gtf(chrom=to_query_chrom, build=build, source="refseq")
-    
-    else:
-        # if user-provided gtf
-        gtf = pd.read_csv(gtf_path,sep="\t",header=None, comment="#", low_memory=False,dtype={0:"string"})
-        gtf = gtf.loc[gtf[0]==gtf_chr_dict[region[0]],:]
-
-    # filter in region
-    genes_1mb = gtf.loc[(gtf[0]==to_query_chrom)&(gtf[3]<region[2])&(gtf[4]>region[1]),:].copy()
-    
-    # extract biotype
-    genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
-    
-    # extract gene name
-    if gtf_gene_name is None:
-        if gtf_path=="refseq":
-            genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"').astype("string")
-        elif gtf_path =="default" or gtf_path =="ensembl":
-            genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_name "([\w\.-]+)"').astype("string")
-        else:
-            genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"').astype("string")
-    else:
-        pattern = r'{} "([\w\.-]+)"'.format(gtf_gene_name)
-        genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(pattern).astype("string")
-
-    # extract gene
-    genes_1mb.loc[:,"gene"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
-    
-    # extract exon
-    exons = genes_1mb.loc[genes_1mb[2]=="exon",:].copy()
-
-    # extract protein coding gene
-    if region_protein_coding is True:
-        genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:].copy()
-    
-    #uniq genes
-    ## get all record with 2nd column == gene
-    uniq_gene_region = genes_1mb.loc[genes_1mb[2]=="gene",:].copy()
-    
-    ## extract region + flank
-    flank = region_flank_factor * (region[2] - region[1])
-    
-    ## get left and right boundary
-    uniq_gene_region["left"] = uniq_gene_region[3]-flank
-    uniq_gene_region["right"] = uniq_gene_region[4]+flank
-
-    # arrange gene track
-    stack_dic = assign_stack(uniq_gene_region.sort_values([3]).loc[:,["name","left","right"]])  
-
-    # map gene to stack and add stack column : minus stack
-    uniq_gene_region["stack"] = -uniq_gene_region["name"].map(stack_dic)
-    exons.loc[:,"stack"] = -exons.loc[:,"name"].map(stack_dic)
-
-    # return uniq_gene_region (gene records with left and right boundary)
-    # return exon records with stack number
-    return uniq_gene_region, exons
-
-def assign_stack(uniq_gene_region):
-
-    stacks=[] ## stack : gene track
-    stack_dic={} # mapping gene name to stack
-    
-    for index,row in uniq_gene_region.iterrows():
-        if len(stacks)==0:
-            # add first entry 
-            stacks.append([(row["left"],row["right"])])
-            stack_dic[row["name"]] = 0
-        else:
-            for i in range(len(stacks)):
-                for j in range(len(stacks[i])):
-                    # if overlap
-                    if (row["left"]>stacks[i][j][0] and row["left"]<stacks[i][j][1]) or (row["right"]>stacks[i][j][0] and row["right"]<stacks[i][j][1]):
-                        # if not last stack : break
-                        if i<len(stacks)-1:
-                            break
-                        # if last stack : add a new stack
-                        else:
-                            stacks.append([(row["left"],row["right"])])
-                            stack_dic[row["name"]] = i+1
-                            break
-                    # if no overlap       
-                    else:
-                        # not last in a stack
-                        if j<len(stacks[i])-1:
-                            #if in the middle
-                            if row["left"]>stacks[i][j][1] and row["right"]<stacks[i][j+1][0]:
-                                stacks[i].insert(j+1,(row["left"],row["right"]))
-                                stack_dic[row["name"]] = i
-                                break
-                        #last one in a stack
-                        elif row["left"]>stacks[i][j][1]:
-                            stacks[i].append((row["left"],row["right"]))
-                            stack_dic[row["name"]] = i
-                            break
-                if row["name"] in stack_dic.keys():
-                    break         
-    return stack_dic
-
-def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50):
-        gene = data.gene_names_at_locus(contig=x[chrom], position=x[pos])
-        if len(gene)==0:
-            i=0
-            while i<maxiter:
-                distance = i*step
-                gene_u = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance)
-                gene_d = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance)
-                if len(gene_u)>0 and len(gene_d)>0:
-                    for j in range(0,step,1):
-                        distance = (i-1)*step
-                        gene_u = data.gene_names_at_locus(contig=x[chrom], position=x[pos]-distance-j)
-                        gene_d = data.gene_names_at_locus(contig=x[chrom], position=x[pos]+distance+j)
-                        if len(gene_u)>0:
-                            return -distance,",".join(gene_u)
-                        else:
-                            return distance,",".join(gene_d)
-                elif len(gene_u)>0:
-                    return -distance,",".join(gene_u)
-                elif len(gene_d)>0:
-                    return +distance,",".join(gene_d)
-                else:
-                    i+=1
-            return distance,"intergenic"
-        else:
-            return 0,",".join(gene)
-
