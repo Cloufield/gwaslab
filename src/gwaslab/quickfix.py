@@ -29,6 +29,9 @@ def _quick_fix(sumstats, chr_dict=get_chr_to_number(), scaled=False, chrom="CHR"
 
 
 def _quick_fix_p_value(sumstats, verbose=True, log=Log()):
+    '''
+    drop variants with bad P values
+    '''
     if verbose:
         log.write(" -sumstats P values are being converted to -log10(P)...")
     # bad p : na and outside (0,1]
@@ -42,11 +45,13 @@ def _quick_fix_p_value(sumstats, verbose=True, log=Log()):
 
 
 def _quick_fix_mlog10p(sumstats, scaled=False, verbose=True, log=Log()):
+    '''
+    drop variants with bad -log10(P) values
+    '''
     if scaled != True:
         sumstats["scaled_P"] = -np.log10(sumstats["P"])
     with pd.option_context('mode.use_inf_as_na', True):
         is_na = sumstats["scaled_P"].isna()
-    # is_inf = sumstats["scaled_P"].isin([np.inf, -np.inf, float('inf'), -float('inf')])
     if verbose:
         log.write(" -Sanity check: "+str(sum(is_na)) +
                   " na/inf/-inf variants will be removed...")
@@ -55,6 +60,9 @@ def _quick_fix_mlog10p(sumstats, scaled=False, verbose=True, log=Log()):
 
 
 def _quick_fix_eaf(seires, verbose=True, log=Log()):
+    '''
+    conversion of eaf to maf
+    '''
     seires = pd.to_numeric(seires, errors='coerce')
     flipped = seires > 0.5
     seires[flipped] = 1 - seires[flipped]
@@ -62,6 +70,9 @@ def _quick_fix_eaf(seires, verbose=True, log=Log()):
 
 
 def _quick_fix_chr(seires, chr_dict, verbose=True, log=Log()):
+    '''
+    conversion and check for chr
+    '''
     if pd.api.types.is_string_dtype(seires) == True:
         # if chr is string dtype: convert using chr_dict
         seires = seires.map(chr_dict, na_action="ignore")
@@ -70,11 +81,17 @@ def _quick_fix_chr(seires, chr_dict, verbose=True, log=Log()):
 
 
 def _quick_fix_pos(seires, verbose=True, log=Log()):
+    '''
+    force conversion for pos
+    '''
     seires = np.floor(pd.to_numeric(seires, errors='coerce')).astype('Int64')
     return seires
 
 
 def _get_largenumber(*args, log=Log()):
+    '''
+    get a helper large number, >> max(pos)
+    '''
     large_number = 1000000000
     max_number = np.nanmax(args)
     for i in range(7):

@@ -6,6 +6,7 @@ import scipy as sp
 from gwaslab.Log import Log
 from gwaslab.calculate_gc import lambdaGC
 
+# qq plot module for mqqplot
 def _plot_qq(
     sumstats,
     p_toplot_raw,
@@ -31,22 +32,26 @@ def _plot_qq(
     log=Log()
 ):
 
-
-# QQ plot #########################################################################################################
+    # QQ plot #########################################################################################################
     # ax2 qqplot
-    
     if verbose:log.write("Start to create QQ plot with "+str(len(sumstats))+" variants:")
+    
     # plotting qq plots using processed data after cut and skip
+    
     # select -log10 scaled p to plot
     p_toplot = sumstats["scaled_P"]
+    
     # min p value for uniform distribution 
     minit=1/len(p_toplot)
+    
     if stratified is False:
         # sort x,y for qq plot
         # high to low
         observed = p_toplot.sort_values(ascending=False)
+        
         # uniform distribution using raw number -> -log10 -> observed number (omit variants with low -log10p)
         expected = -np.log10(np.linspace(minit,1,len(p_toplot_raw)))[:len(observed)]
+        
         #p_toplot = sumstats["scaled_P"]
         ax2.scatter(expected,observed,s=8,color=colors[0])
     else:
@@ -74,22 +79,21 @@ def _plot_qq(
     ax2.spines["left"].set_visible(True)
     
     # calculate genomic inflation factor and add annotation
-    if gc:
-        #gc was calculated using raw data (before cut and skip)
+    if gc == True:
+        # gc was calculated using raw data (before cut and skip)
         p_toplot_raw = p_toplot_raw.rename(columns={"scaled_P":"MLOG10P"})
         if verbose and not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.")
         lambdagc = lambdaGC(p_toplot_raw, mode="MLOG10P", include_chrXYMT=include_chrXYMT,log=log,verbose=False)
-        #observedMedianChi2 = sp.stats.chi2.isf( np.median(np.power(10,-p_toplot_raw)) ,1)
-        #expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
-        #lambdagc=observedMedianChi2/expectedMedianChi2
         if verbose: log.write(" -Calculating lambda GC:",lambdagc)
+        
+        # annotate lambda gc to qq plot
         ax2.text(0.10, 1.03,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
                     horizontalalignment='left',
                     verticalalignment='top',
                     transform=ax2.transAxes,
                     fontsize=fontsize,family="sans-serif")
     
-    #
+    # set set_yticks and set_yticklabels 
     if cut == 0: 
         ax2.set_ylim(skip,maxy*1.2)
     if cut:
@@ -107,5 +111,6 @@ def _plot_qq(
         ax2.set_title(qtitle,fontsize=title_fontsize,pad=10,family="sans-serif")
 
     if verbose: log.write("Finished creating QQ plot successfully!")
-        # Creating QQ plot Finished #############################################################################################
+    
+    # Creating QQ plot Finished #############################################################################################
     return ax2
