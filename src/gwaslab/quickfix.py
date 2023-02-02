@@ -239,3 +239,35 @@ def _quick_extract_snp_in_region(sumstats, region, chrom="CHR",pos="POS",verbose
     if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(is_in_region_snp)))
     sumstats = sumstats.loc[is_in_region_snp,:]
     return sumstats
+
+def _cut(series, mode,cutfactor,cut, verbose, log):
+    maxy = series.max()
+    if "b" not in mode:
+        if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
+    elif "b" in mode:
+        if verbose: log.write(" -Maximum DENSITY values is "+str(maxy) +" .")
+    maxticker=int(np.round(series.max(skipna=True)))
+    if cut:
+        if cut is True:
+            if verbose: log.write(" -Cut Auto mode is activated...")
+            if maxy<30:
+                if verbose: log.write(" - maxy <20 , no need to cut.")
+                cut=0
+            else:
+                cut = 20
+                cutfactor = ( maxy - cut )/8
+        if cut:
+            if "b" not in mode:
+                if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+            else:
+                if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+
+            maxticker=int(np.round(series.max(skipna=True)))
+            series[series>cut] = (series[series>cut]-cut)/cutfactor +  cut
+            #sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
+            maxy = (maxticker-cut)/cutfactor + cut
+    if verbose: log.write("Finished data conversion and sanity check.")
+    return series, maxy, maxticker, cut, cutfactor
+
+def _set_yticklabels():
+    pass

@@ -35,6 +35,7 @@ from gwaslab.quickfix import _get_largenumber
 from gwaslab.quickfix import _quick_fix_p_value
 from gwaslab.quickfix import _quick_fix_pos
 from gwaslab.quickfix import _quick_fix_chr
+from gwaslab.quickfix import _quick_fix_eaf
 from gwaslab.quickfix import _quick_fix_mlog10p
 from gwaslab.quickfix import _quick_add_tchrpos
 from gwaslab.quickfix import _quick_merge_sumstats
@@ -43,8 +44,7 @@ from gwaslab.quickfix import _quick_assign_i_with_rank
 from gwaslab.quickfix import _quick_extract_snp_in_region
 from gwaslab.quickfix import _quick_assign_highlight_hue_pair
 from gwaslab.quickfix import _quick_assign_marker_relative_size
-from gwaslab.quickfix import _quick_fix_eaf
-
+from gwaslab.quickfix import _cut
 # 20230202 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -397,33 +397,40 @@ def mqqplot(insumstats,
     garbage_collect.collect()
     
     # shrink variants above cut line #########################################################################################
-    maxy = sumstats["scaled_P"].max()
-    if "b" not in mode:
-        if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
-    elif "b" in mode:
-        if verbose: log.write(" -Maximum DENSITY values is "+str(maxy) +" .")
-
-    maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
-    if cut:
-        if cut is True:
-            if verbose: log.write(" -Cut Auto mode is activated...")
-            if maxy<20:
-                if verbose: log.write(" - maxy <20 , no need to cut.")
-                cut=0
-            else:
-                cut = 20
-                cutfactor = ( maxy - cut )/5
-        if cut:
-            if "b" not in mode:
-                if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
-            else:
-                if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
-
-            maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
-
-            sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
-            maxy = (maxticker-cut)/cutfactor + cut
-    if verbose: log.write("Finished data conversion and sanity check.")
+    sumstats["scaled_P"], maxy, maxticker, cut, cutfactor = _cut(series = sumstats["scaled_P"], 
+                                                                    mode =mode, 
+                                                                    cut=cut,
+                                                                    cutfactor = cutfactor,
+                                                                    verbose =verbose, 
+                                                                    log = log)
+    
+    #maxy = sumstats["scaled_P"].max()
+    #if "b" not in mode:
+    #    if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
+    #elif "b" in mode:
+    #    if verbose: log.write(" -Maximum DENSITY values is "+str(maxy) +" .")
+#
+    #maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
+    #if cut:
+    #    if cut is True:
+    #        if verbose: log.write(" -Cut Auto mode is activated...")
+    #        if maxy<20:
+    #            if verbose: log.write(" - maxy <20 , no need to cut.")
+    #            cut=0
+    #        else:
+    #            cut = 20
+    #            cutfactor = ( maxy - cut )/5
+    #    if cut:
+    #        if "b" not in mode:
+    #            if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+    #        else:
+    #            if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+#
+    #        maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
+#
+    #        sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
+    #        maxy = (maxticker-cut)/cutfactor + cut
+    #if verbose: log.write("Finished data conversion and sanity check.")
 
 
     # Manhattan plot ##########################################################################################################
