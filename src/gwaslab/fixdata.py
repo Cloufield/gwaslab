@@ -468,10 +468,10 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         is_pos_na = sumstats.loc[:,pos].isna()
         
         # check if POS is string
-        if pd.api.types.is_string_dtype(sumstats.loc[:,pos]):
+        if pd.api.types.is_string_dtype(sumstats[pos]):
             # if so, remove thousands separator
             if verbose: log.write(' -Removing thousands separator "," or underbar "_" ...')
-            sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].str.replace(",|_", "",regex=True)
+            sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].astype("string").str.replace(",|_", "",regex=True)
 
         # convert POS to integer
         try:

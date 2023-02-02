@@ -5,13 +5,6 @@ import seaborn as sns
 import numpy as np
 import scipy as sp
 import gwaslab as gl
-from gwaslab.Log import Log
-from gwaslab.getsig import getsig
-from gwaslab.getsig import annogene
-from gwaslab.CommonData import get_chr_to_number
-from gwaslab.CommonData import get_number_to_chr
-from gwaslab.CommonData import get_recombination_rate
-from gwaslab.CommonData import get_gtf
 from pyensembl import EnsemblRelease
 from allel import GenotypeArray
 from allel import read_vcf
@@ -20,14 +13,41 @@ import matplotlib as mpl
 from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import gc as garbage_collect
-from gwaslab.textreposition import adjust_text_position
 from adjustText import adjust_text
+from gwaslab.Log import Log
+from gwaslab.getsig import getsig
+from gwaslab.getsig import annogene
+from gwaslab.CommonData import get_chr_to_number
+from gwaslab.CommonData import get_number_to_chr
+from gwaslab.CommonData import get_recombination_rate
+from gwaslab.CommonData import get_gtf
+from gwaslab.textreposition import adjust_text_position
+from gwaslab.quickfix import _quick_fix
+#from gwaslab.quickfix import _quick_fix_p
+#from gwaslab.quickfix import _quick_fix_mlog10p
+#from gwaslab.quickfix import _quick_fix_chr
+#from gwaslab.quickfix import _quick_fix_pos
+#from gwaslab.quickfix import _quick_fix_eaf
+from gwaslab.quickfix import _get_largenumber
+from gwaslab.quickfix import _quick_add_tchrpos
+from gwaslab.quickfix import _quick_merge_sumstats
+from gwaslab.quickfix import _quick_assign_i
+from gwaslab.quickfix import _quick_extract_snp_in_region
+from gwaslab.quickfix import _quick_assign_highlight_hue_pair
+from gwaslab.quickfix import _quick_assign_marker_relative_size
+
 def plot_miami( 
           path1,
           path2,
           cols1=["CHR","POS","P"],
           cols2=["CHR","POS","P"],
           sep=["\t","\t"],
+          chr_dict  = get_chr_to_number(),
+          chr_dict1 = False,
+          chr_dict2 = False,
+          scaled=False,
+          scaled1=False,
+          scaled2=False,
           region=None,
           region_step = 21,
           region_grid = False,
@@ -81,13 +101,12 @@ def plot_miami(
           scatter_kwargs={},
           marker_size=(5,25),
           verbose=True,
-          large_number=10000000000,
           repel_force=0.03,
           save=None,
           saveargs={"dpi":100,"facecolor":"white"},
           log=Log()
           ):
-    ## load sumstats1 ###########################################################################################################
+    ## figuring arguments ###########################################################################################################
     if verbose: log.write("Start to plot miami plot with the following basic settings:")
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
     if len(anno_set)>0 :
@@ -101,7 +120,46 @@ def plot_miami(
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
     if dpi!=100:
         figargs["dpi"] = dpi
-        
+    
+    if chr_dict1==False:
+        chr_dict1 = chr_dict
+    if chr_dict2==False:
+        chr_dict2 = chr_dict
+    if scaled == True:
+        scaled1 = True
+        scaled2 = True
+    chrom = "CHR"
+    pos="POS"
+    
+    ## load sumstats1 ###########################################################################################################
+    if verbose: log.write(" -Loading sumstats1:" + path1)
+    if verbose: log.write(" -Sumstats1 CHR,POS,P information will be obtained from:",cols1)
+    sumstats1 = pd.read_csv(path1,sep=sep[0],usecols=cols1,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
+    sumstats1 = sumstats1.rename(columns={cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"})
+    sumstats1 = _quick_fix(sumstats1,chr_dict=chr_dict1, scaled=scaled1, verbose=verbose, log=log)
+
+    ## load sumstats2 ###########################################################################################################
+    if verbose: log.write(" -Loading sumstats2:" + path2)
+    if verbose: log.write(" -Sumstats2 CHR,POS,P information will be obtained from:",cols2)
+    sumstats2 = pd.read_csv(path2,sep=sep[1],usecols=cols2,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
+    sumstats2 = sumstats2.rename(columns={cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"P"})
+    sumstats2 = _quick_fix(sumstats2,chr_dict=chr_dict2, scaled=scaled2, verbose=verbose, log=log)
+
+    # get a large number
+    large_number = _get_largenumber(sumstats1["POS"].max(), sumstats2["POS"].max(),log=log)
+    
+    ## create merge index and then merge
+    sumstats1 = _quick_add_tchrpos(sumstats1,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
+    sumstats2 = _quick_add_tchrpos(sumstats2,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
+    if verbose: log.write(" - Merging sumstats using chr and pos...")
+    merged_sumstats = _quick_merge_sumstats(sumstats1=sumstats1,sumstats2=sumstats2)
+    
+    del(sumstats1)
+    del(sumstats2)
+    garbage_collect.collect()
+    
+    ######################################################################################################################
+    #process highlight and pinpoint id
     for i in range(len(highlight)):
         highlight1.append(highlight[i])
         highlight2.append(highlight[i])
@@ -129,151 +187,27 @@ def plot_miami(
     for i in range(len(anno_set2)):
         anno_set2[i] = anno_set2[i][0] * large_number + anno_set2[i][1]
 
-        
-        
-        
-    if verbose: log.write(" -Loading sumstats1:" + path1)
-    if verbose: log.write(" -Sumstats1 CHR,POS,P information will be obtained from:",cols1)
-    sumstats1 = pd.read_csv(path1,sep=sep[0],usecols=cols1,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
-    sumstats1 = sumstats1.rename(columns={cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"})
-    sumstats1["CHR"] = np.floor(pd.to_numeric(sumstats1["CHR"].map(get_chr_to_number(),na_action="ignore"), errors='coerce')).astype('Int64')
-    sumstats1["POS"] = np.floor(pd.to_numeric(sumstats1["POS"], errors='coerce')).astype('Int64')   
-    
-    if verbose:log.write(" -Sumstats1 P values are being converted to -log10(P)...") 
-    bad_p_value=(sumstats1["P"]>1)|(sumstats1["P"]<=0)
-    if verbose:log.write(" -Sanity check after conversion: "+ str(sum(bad_p_value)) +" variants with P value outside of (0,1] will be removed...")
-    sumstats1 = sumstats1.loc[~bad_p_value,:]
-    sumstats1["scaled_P"] = -np.log10(sumstats1["P"])
-    is_inf = sumstats1["scaled_P"].isin([np.inf, -np.inf, float('inf'),-float('inf')])
-    is_na = sumstats1["scaled_P"].isna()
-    bad_p = sum(is_inf | is_na)
-    if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
-    sumstats1 = sumstats1.loc[~(is_inf | is_na),:]
-    
-    ## load sumstats2 ###########################################################################################################
-    if verbose: log.write(" -Loading sumstats2:" + path2)
-    if verbose: log.write(" -Sumstats2 CHR,POS,P information will be obtained from:",cols2)
-    sumstats2 = pd.read_csv(path2,sep=sep[1],usecols=cols2,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
-    sumstats2 = sumstats2.rename(columns={cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"P"})
-    sumstats2["CHR"] = np.floor(pd.to_numeric(sumstats2["CHR"].map(get_chr_to_number(),na_action="ignore"), errors='coerce')).astype('Int64')
-    sumstats2["POS"] = np.floor(pd.to_numeric(sumstats2["POS"], errors='coerce')).astype('Int64')
-    
-    if verbose:log.write(" -Sumstats2 P values are being converted to -log10(P)...") 
-    bad_p_value=(sumstats2["P"]>1)|(sumstats2["P"]<=0)
-    if verbose:log.write(" -Sanity check after conversion: "+ str(sum(bad_p_value)) +" variants with P value outside of (0,1] will be removed...")
-    sumstats2 = sumstats2.loc[~bad_p_value,:]
-    sumstats2["scaled_P"] = -np.log10(sumstats2["P"])
-    is_inf = sumstats2["scaled_P"].isin([np.inf, -np.inf, float('inf'),-float('inf')])
-    is_na = sumstats2["scaled_P"].isna()
-    bad_p = sum(is_inf | is_na)
-    if verbose: log.write(" -Sanity check: "+str(bad_p) + " na/inf/-inf variants will be removed..." )
-    sumstats2 = sumstats2.loc[~(is_inf | is_na),:]
-
-
-    ## create merge index
-    sumstats1["TCHR+POS"]=sumstats1["CHR"]*large_number + sumstats1["POS"]
-    sumstats2["TCHR+POS"]=sumstats2["CHR"]*large_number + sumstats2["POS"]
-    sumstats1["TCHR+POS"] = sumstats1["TCHR+POS"].astype('Int64')
-    sumstats2["TCHR+POS"] = sumstats2["TCHR+POS"].astype('Int64')
-    sumstats1.drop(labels=["CHR","POS"],axis=1,inplace=True)
-    sumstats2.drop(labels=["CHR","POS"],axis=1,inplace=True)
-    sumstats1.dropna(inplace=True)
-    sumstats2.dropna(inplace=True)
     ## merging ###########################################################################################################
-    if verbose: log.write(" - Merging sumstats using chr and pos...")
-    merged_sumstats = pd.merge(sumstats1,sumstats2,on="TCHR+POS",how="outer",suffixes=('_1', '_2'))
-    merged_sumstats["CHR"] = np.divmod(merged_sumstats["TCHR+POS"],large_number)[0]
-    merged_sumstats["POS"] = np.divmod(merged_sumstats["TCHR+POS"],large_number*merged_sumstats["CHR"])[1]
-    
-    del(sumstats1)
-    del(sumstats2)
-    garbage_collect.collect()
-    
-    chrom = "CHR"
-    pos="POS"
-    
-    #merged_sumstats["scaled_P_1"] = -np.log10(merged_sumstats["P_1"])
-    #merged_sumstats["scaled_P_2"] = -np.log10(merged_sumstats["P_2"])
     
     if skip >0:
         sumstats = merged_sumstats.loc[(merged_sumstats["scaled_P_1"]>skip) | ( merged_sumstats["scaled_P_2"]>skip),:]  
     else:
         sumstats = merged_sumstats
     
-    
-    
-    
-    
     if region is not None:
-        region_chr = region[0]
-        region_start = region[1]
-        region_end = region[2]
         marker_size=(25,45)
-        if verbose:log.write(" -Extract SNPs in region : chr"+str(region_chr)+":"+str(region[1])+"-"+str(region[2])+ "...")
-        in_region_snp = (sumstats[chrom]==region_chr) &(sumstats[pos]<region_end) &(sumstats[pos]>region_start)
-        if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)))
-        sumstats = sumstats.loc[in_region_snp,:]
+        sumstats = _quick_extract_snp_in_region(sumstats,region, verbose=verbose, log=log)
 
+    # assign i and get tick dictionary
+    sumstats, chrom_df = _quick_assign_i(sumstats)
     
-    
-    
-    
-    
-    
-    
-    sumstats = sumstats.sort_values([chrom,pos])
-    sumstats["id"]=range(len(sumstats))
-    sumstats=sumstats.set_index("id")
-
-    #create a df , groupby by chromosomes , and get the maximum position
-    posdic = sumstats.groupby(chrom)[pos].max()
-    # convert to dictionary
-    posdiccul = dict(posdic)
-
-    # fill empty chr with 0
-    for i in range(0,26):
-        if i in posdiccul: continue
-        else: posdiccul[i]=0
-
-    # cumulative sum dictionary
-    for i in range(2,sumstats[chrom].max()+1):
-        posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*0.05
-
-    # convert base pair postion to x axis position using the cumulative sum dictionary
-    sumstats["add"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
-    sumstats["i"]=sumstats[pos]+sumstats["add"]
-
-    #for plot, get the chr text tick position      
-    chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
-    sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
-    
-    
-    
-    ## highlight
-    if len(highlight1)>0 :
-        to_highlight1 = sumstats.loc[sumstats["TCHR+POS"].isin(highlight1),:]
-        #assign colors: 0 is hightlight color
-        if len(to_highlight1)>0:
-            for i,row in to_highlight1.iterrows():
-                target_chr = int(row[chrom])
-                target_pos = int(row[pos])
-                right_chr = sumstats["CHR"]==target_chr  
-                up_pos = sumstats["POS"]>target_pos-highlight_windowkb*1000
-                low_pos = sumstats["POS"]<target_pos+highlight_windowkb*1000
-                sumstats.loc[right_chr&up_pos&low_pos,"HUE1"]="0"
-    
-    if len(highlight2)>0:
-        to_highlight2 = sumstats.loc[sumstats["TCHR+POS"].isin(highlight2),:]
-        if len(to_highlight2)>0:
-            for i,row in to_highlight2.iterrows():
-                target_chr = int(row[chrom])
-                target_pos = int(row[pos])
-                right_chr = sumstats["CHR"]==target_chr  
-                up_pos = sumstats["POS"]>target_pos-highlight_windowkb*1000
-                low_pos = sumstats["POS"]<target_pos+highlight_windowkb*1000
-                sumstats.loc[right_chr&up_pos&low_pos,"HUE2"]="0"
-    
-    
+    ## assign highlight indicator
+    if len(highlight1)>0 or len(highlight2)>0:
+        sumstats, to_highlight1, to_highlight2 = _quick_assign_highlight_hue_pair(sumstats = sumstats, 
+                                                    highlight1 = highlight1, 
+                                                    highlight2 = highlight2, 
+                                                    highlight_windowkb = highlight_windowkb,
+                                                    verbose=verbose, log=log)
     
     if verbose: log.write("Plotting...")
     ## figure ###########################################################################################################
@@ -284,16 +218,8 @@ def plot_miami(
     plt.subplots_adjust(hspace=region_hspace)
     
     ###########################################################################################################
-    
-    sumstats["s1"]=1
-    sumstats["s2"]=1
-    sumstats.loc[sumstats["scaled_P_1"]>-np.log10(5e-4),"s1"]=2
-    sumstats.loc[sumstats["scaled_P_1"]>-np.log10(suggestive_sig_level),"s1"]=3
-    sumstats.loc[sumstats["scaled_P_1"]>-np.log10(sig_level),"s1"]=4
-    sumstats.loc[sumstats["scaled_P_2"]>-np.log10(5e-4),"s2"]=2
-    sumstats.loc[sumstats["scaled_P_2"]>-np.log10(suggestive_sig_level),"s2"]=3
-    sumstats.loc[sumstats["scaled_P_2"]>-np.log10(sig_level),"s2"]=4
-    
+    sumstats["s1"] = _quick_assign_marker_relative_size(sumstats["scaled_P_1"])
+    sumstats["s2"] = _quick_assign_marker_relative_size(sumstats["scaled_P_2"])
     
     sumstats["chr_hue"]=sumstats[chrom].astype("category")
     
@@ -672,13 +598,10 @@ def plot_miami(
                             avoid_points=False,
                             lim =anno_max_iter
                             )
-            else:
-                if verbose: log.write(" -Skip annotating")
     else:
         if verbose: log.write(" -Skip annotating")
 
 ####################################################################################################################    
-           
     ax1.spines["top"].set_visible(False)
     ax1.spines["right"].set_visible(False)
     ax1.spines["left"].set_visible(True)
@@ -714,7 +637,8 @@ def plot_miami(
             # set x ticks m plot
         ax1.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
         ax5.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
-        ax1.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
+        ax1.set_xticklabels(region_ticks,rotation=30,fontsize=fontsize,family="sans-serif")
+        fig.tight_layout()
 
         ax1.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
         ax5.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])

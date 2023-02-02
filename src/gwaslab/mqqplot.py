@@ -5,6 +5,7 @@ import matplotlib.patches as patches
 import seaborn as sns
 import numpy as np
 import scipy as sp
+from math import ceil
 from shutil import which
 from gwaslab.Log import Log
 from gwaslab.calculate_gc import lambdaGC
@@ -22,6 +23,7 @@ import matplotlib as mpl
 from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from matplotlib.ticker import MaxNLocator
 import gc as garbage_collect
 from adjustText import adjust_text
 from gwaslab.textreposition import adjust_text_position
@@ -563,7 +565,7 @@ def mqqplot(insumstats,
                        hue_norm=hue_norm,
                        linewidth=linewidth,
                        zorder=2,ax=ax1,edgecolor="black",**scatter_kwargs)   
-
+        
         
         ## if pinpoint variants
         if (len(pinpoint)>0):
@@ -747,7 +749,8 @@ def mqqplot(insumstats,
             meanline = ax1.axhline(y=bmean, linewidth = 2,linestyle="-",color=sig_line_color,zorder=1000)
             medianline = ax1.axhline(y=bmedian, linewidth = 2,linestyle="--",color=sig_line_color,zorder=1000)
         # cut line
-        if cut == 0: ax1.set_ylim(skip,maxy*1.2)
+        if cut == 0: 
+            ax1.set_ylim(skip, ceil(maxy*1.2) )
         if cut:
             cutline = ax1.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
@@ -809,6 +812,7 @@ def mqqplot(insumstats,
            ## final
         
         ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+        
         if "b" in mode:
             ax1.set_ylabel("Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb",ha="center",va="bottom",fontsize=fontsize,family="sans-serif")
         if region is not None:

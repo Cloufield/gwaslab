@@ -226,10 +226,13 @@ def preformat(sumstats,
                                  usecols=set(usecols),
                                  dtype=dtype_dictionary,
                                  **readargs)
+
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             if verbose: log.write("Start to initiate from pandas DataFrame ...")
             sumstats = sumstats.loc[:, usecols]
+            sumstats = sumstats.astype(dtype=dtype_dictionary)
+
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contain the columns.")
 
