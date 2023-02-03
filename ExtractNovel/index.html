@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#coming-soon" class="md-skip">
+        <a href="#checking-if-lead-variants-are-novel-or-not" class="md-skip">
           Skip to content
         </a>
       
@@ -712,9 +712,54 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Extract Novel Variants
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Extract Novel Variants
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#get_novel" class="md-nav__link">
+    get_novel()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-with-gwascatalog-api" class="md-nav__link">
+    Checking with GWAScatalog API
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-with-local-files" class="md-nav__link">
+    Checking with local files
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1274,6 +1319,35 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#get_novel" class="md-nav__link">
+    get_novel()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-with-gwascatalog-api" class="md-nav__link">
+    Checking with GWAScatalog API
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-with-local-files" class="md-nav__link">
+    Checking with local files
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1287,7 +1361,148 @@
                   
 
 
-<h1 id="coming-soon">Coming soon</h1>
+<h1 id="checking-if-lead-variants-are-novel-or-not">Checking if lead variants are novel or not</h1>
+<p>GWASLab can check if the lead variants of your summary statistics overlap with reported variants or not based on the physical distance.</p>
+<h2 id="get_novel">get_novel()</h2>
+<div class="highlight"><pre><span></span><code>sumstats.getnovel(
+                    known,
+                    efo,
+                    only_novel=False,
+                    windowsizekb_for_novel=1000,
+                    windowsizekb=500,
+                    sig_level=5e-8,
+                    output_known=False)
+</code></pre></div>
+<p>Required (either):</p>
+<ul>
+<li><code>known</code> : <code>string</code>, path to local file of reported variants</li>
+<li><code>efo</code> : <code>string</code>, efo id for the target trait, which is used for querying the GWASCatalog.</li>
+</ul>
+<p>Options:</p>
+<ul>
+<li><code>sig_level=5e-8</code> : significance threshold for extracting lead variants</li>
+<li><code>windowsizekb=500</code> : windowsize for extracting lead variants</li>
+<li><code>windowsizekb_for_novel=1000</code> : windowsize for determining if lead variants overlap with reported variants in GWASCatalog</li>
+<li><code>only_novel</code>: output only novel variants</li>
+<li><code>output_known</code>: additionally output the reported variants</li>
+</ul>
+<h2 id="checking-with-gwascatalog-api">Checking with GWAScatalog API</h2>
+<div class="admonition warning">
+<p class="admonition-title">Only works when your sumstats are based on GRCh38</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Querying the GWAS Catalog</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># sample data</span>
+<span class="n">Reference</span> <span class="p">:</span> <span class="n">Suzuki</span><span class="p">,</span> <span class="n">K</span><span class="o">.</span><span class="p">,</span> <span class="n">Akiyama</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="p">,</span> <span class="n">Ishigaki</span><span class="p">,</span> <span class="n">K</span><span class="o">.</span><span class="p">,</span> <span class="n">Kanai</span><span class="p">,</span> <span class="n">M</span><span class="o">.</span><span class="p">,</span> <span class="n">Hosoe</span><span class="p">,</span> <span class="n">J</span><span class="o">.</span><span class="p">,</span> <span class="n">Shojima</span><span class="p">,</span> <span class="n">N</span><span class="o">.</span><span class="p">,</span> <span class="o">...</span> <span class="o">&amp;</span> <span class="n">Kadowaki</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span> <span class="p">(</span><span class="mi">2019</span><span class="p">)</span><span class="o">.</span> <span class="n">Identification</span> <span class="n">of</span> <span class="mi">28</span> <span class="n">new</span>     <span class="n">susceptibility</span> <span class="n">loci</span> <span class="k">for</span> <span class="nb">type</span> <span class="mi">2</span> <span class="n">diabetes</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">Japanese</span> <span class="n">population</span><span class="o">.</span> <span class="n">Nature</span> <span class="n">genetics</span><span class="p">,</span> <span class="mi">51</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="mi">379</span><span class="o">-</span><span class="mf">386.</span>
+<span class="err">!</span><span class="n">wget</span> <span class="o">-</span><span class="n">O</span> <span class="n">t2d_bbj</span><span class="o">.</span><span class="n">txt</span><span class="o">.</span><span class="n">gz</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">jenger</span><span class="o">.</span><span class="n">riken</span><span class="o">.</span><span class="n">jp</span><span class="o">/</span><span class="mi">14</span><span class="o">/</span>
+
+<span class="c1"># load data and run a basic check</span>
+<span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;t2d_bbj.txt.gz&quot;</span><span class="p">,</span>
+             <span class="n">snpid</span><span class="o">=</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span>
+             <span class="n">chrom</span><span class="o">=</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span>
+             <span class="n">pos</span><span class="o">=</span><span class="s2">&quot;POS&quot;</span><span class="p">,</span>
+             <span class="n">se</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+             <span class="n">p</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">()</span>
+
+<span class="c1"># liftover to grch38 (original sumstats are based on grch37)</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">liftover</span><span class="p">(</span><span class="n">from_build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span><span class="n">to_build</span><span class="o">=</span><span class="s2">&quot;38&quot;</span><span class="p">)</span>
+
+<span class="c1"># run get_novel with efo id for type 2 diabetes mellitus</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">get_novel</span><span class="p">(</span><span class="n">efo</span><span class="o">=</span><span class="s2">&quot;MONDO_0005148&quot;</span><span class="p">)</span>
+
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">44</span> <span class="mi">2023</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">check</span> <span class="k">if</span> <span class="n">lead</span> <span class="n">variants</span> <span class="n">are</span> <span class="n">known</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">44</span> <span class="mi">2023</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">extract</span> <span class="n">lead</span> <span class="n">variants</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">44</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Processing</span> <span class="mi">1035234</span> <span class="n">variants</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">44</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Significance</span> <span class="n">threshold</span> <span class="p">:</span> <span class="mf">5e-08</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">44</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Sliding</span> <span class="n">window</span> <span class="n">size</span><span class="p">:</span> <span class="mi">500</span>  <span class="n">kb</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">44</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Found</span> <span class="mi">9458</span> <span class="n">significant</span> <span class="n">variants</span> <span class="ow">in</span> <span class="n">total</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">45</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Identified</span> <span class="mi">89</span> <span class="n">lead</span> <span class="n">variants</span><span class="err">!</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">45</span> <span class="mi">2023</span> <span class="n">Finished</span> <span class="n">extracting</span> <span class="n">lead</span> <span class="n">variants</span> <span class="n">successfully</span><span class="err">!</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">45</span> <span class="mi">2023</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">retrieve</span> <span class="n">data</span> <span class="kn">from</span> <span class="nn">GWASCatalog...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">45</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Requesting</span> <span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="n">trait</span> <span class="n">information</span> <span class="n">through</span> <span class="n">the</span> <span class="n">GWASCatalog</span> <span class="n">API</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">45</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">EFO</span> <span class="n">trait</span> <span class="n">api</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">ebi</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">uk</span><span class="o">/</span><span class="n">gwas</span><span class="o">/</span><span class="n">rest</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">efoTraits</span><span class="o">/</span><span class="n">MONDO_0005148</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">46</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Trait</span> <span class="n">Name</span><span class="p">:</span> <span class="nb">type</span> <span class="mi">2</span> <span class="n">diabetes</span> <span class="n">mellitus</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">46</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Trait</span> <span class="n">URL</span><span class="p">:</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">purl</span><span class="o">.</span><span class="n">obolibrary</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">obo</span><span class="o">/</span><span class="n">MONDO_0005148</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">46</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Requesting</span> <span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="n">GWAS</span> <span class="n">associations</span> <span class="n">through</span> <span class="n">the</span> <span class="n">GWASCatalog</span> <span class="n">API</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">46</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">associationsByTraitSummary</span> <span class="n">API</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">ebi</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">uk</span><span class="o">/</span><span class="n">gwas</span><span class="o">/</span><span class="n">rest</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">efoTraits</span><span class="o">/</span><span class="n">MONDO_0005148</span><span class="o">/</span><span class="n">associations</span><span class="err">?</span>    <span class="n">projection</span><span class="o">=</span><span class="n">associationByEfoTrait</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">11</span><span class="p">:</span><span class="mi">46</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Note</span><span class="p">:</span> <span class="n">this</span> <span class="n">step</span> <span class="n">might</span> <span class="n">take</span> <span class="n">a</span> <span class="k">while</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">55</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Status</span> <span class="n">code</span> <span class="mi">200</span> <span class="n">OK</span><span class="p">:</span> <span class="n">Retrieved</span> <span class="n">data</span> <span class="kn">from</span> <span class="nn">GWASCatalog</span> <span class="n">successffully</span> <span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">55</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Loading</span> <span class="n">json</span> <span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">58</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Parsing</span> <span class="n">json</span> <span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">58</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Number</span> <span class="n">of</span> <span class="n">reported</span> <span class="n">associations</span> <span class="k">for</span> <span class="n">MONDO_0005148</span> <span class="ow">in</span> <span class="n">GWASCatalog</span><span class="p">:</span> <span class="mi">5345</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">58</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Loading</span> <span class="n">retrieved</span> <span class="n">data</span> <span class="n">into</span> <span class="n">gwaslab</span> <span class="n">Sumstats</span> <span class="nb">object</span> <span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">58</span> <span class="mi">2023</span> <span class="n">GWASLab</span> <span class="n">version</span> <span class="mf">3.3.24</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">cloufield</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">gwaslab</span><span class="o">/</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">58</span> <span class="mi">2023</span> <span class="p">(</span><span class="n">C</span><span class="p">)</span> <span class="mi">2022</span><span class="o">-</span><span class="mi">2023</span><span class="p">,</span> <span class="n">Yunye</span> <span class="n">He</span><span class="p">,</span> <span class="n">Kamatani</span> <span class="n">Lab</span><span class="p">,</span> <span class="n">MIT</span> <span class="n">License</span><span class="p">,</span> <span class="n">gwaslab</span><span class="nd">@gmail</span><span class="o">.</span><span class="n">com</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">58</span> <span class="mi">2023</span>   <span class="o">-</span> <span class="n">format_name</span>  <span class="p">:</span> <span class="n">gwaslab</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">58</span> <span class="mi">2023</span>   <span class="o">-</span> <span class="n">format_source</span>  <span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">cloufield</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">gwaslab</span><span class="o">/</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">58</span> <span class="mi">2023</span>   <span class="o">-</span> <span class="n">format_version</span>  <span class="p">:</span> <span class="mi">20220729</span><span class="n">_v3</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">00</span> <span class="mi">2023</span> <span class="n">Finished</span> <span class="n">retrieving</span> <span class="n">data</span> <span class="kn">from</span> <span class="nn">GWASCatalog...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">00</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Retrieved</span> <span class="mi">4036</span> <span class="n">associations</span> <span class="kn">from</span> <span class="nn">GWAS</span> <span class="n">catalog</span><span class="o">.</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">00</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Lead</span> <span class="n">variants</span> <span class="ow">in</span> <span class="n">known</span> <span class="n">loci</span><span class="p">:</span> <span class="mi">4036</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">00</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Checking</span> <span class="n">the</span> <span class="n">minimum</span> <span class="n">distance</span> <span class="n">between</span> <span class="n">identified</span> <span class="n">lead</span> <span class="n">variants</span> <span class="ow">and</span> <span class="n">provided</span> <span class="n">known</span> <span class="n">variants</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">00</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Identified</span>  <span class="mi">89</span>  <span class="n">known</span> <span class="n">vairants</span> <span class="ow">in</span> <span class="n">current</span> <span class="n">sumstats</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">00</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Identified</span>  <span class="mi">0</span>  <span class="n">novel</span> <span class="n">vairants</span> <span class="ow">in</span> <span class="n">current</span> <span class="n">sumstats</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">12</span><span class="p">:</span><span class="mi">19</span><span class="p">:</span><span class="mi">00</span> <span class="mi">2023</span> <span class="n">Finished</span> <span class="n">checking</span> <span class="n">known</span> <span class="ow">or</span> <span class="n">novel</span> <span class="n">successfully</span><span class="err">!</span>
+
+<span class="n">SNPID</span>   <span class="n">CHR</span> <span class="n">POS</span> <span class="n">SE</span>  <span class="n">P</span>   <span class="n">MLOG10P</span> <span class="n">STATUS</span>  <span class="n">DISTANCE_TO_KNOWN</span>   <span class="n">KNOWN_ID</span>    <span class="n">KNOWN_PUBMED_ID</span> <span class="n">KNOWN_AUTHOR</span>    <span class="n">NOVEL</span>   <span class="n">LOCATION_OF_KNOWN</span>
+<span class="mi">0</span>   <span class="mi">1</span><span class="p">:</span><span class="mi">22068326</span><span class="n">_A_G</span>  <span class="mi">1</span>   <span class="mi">21741833</span>    <span class="mf">0.0103</span>  <span class="mf">1.629000e-09</span>    <span class="mf">8.788079</span>    <span class="mi">3860999</span> <span class="mi">0</span>   <span class="n">rs1825307</span>   <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>   <span class="n">Same</span>
+<span class="mi">1</span>   <span class="mi">1</span><span class="p">:</span><span class="mi">51103268</span><span class="n">_T_C</span>  <span class="mi">1</span>   <span class="mi">50637596</span>    <span class="mf">0.0120</span>  <span class="mf">2.519000e-11</span>    <span class="mf">10.598772</span>   <span class="mi">3860999</span> <span class="mi">0</span>   <span class="n">rs12031188</span>  <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>   <span class="n">Same</span>
+<span class="mi">2</span>   <span class="mi">1</span><span class="p">:</span><span class="mi">154309595</span><span class="n">_TA_T</span>    <span class="mi">1</span>   <span class="mi">154337119</span>   <span class="mf">0.0166</span>  <span class="mf">3.289000e-08</span>    <span class="mf">7.482936</span>    <span class="mi">3860999</span> <span class="mi">1</span>   <span class="n">rs68062313</span>  <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>       <span class="n">Upstream</span>
+<span class="mi">3</span>   <span class="mi">2</span><span class="p">:</span><span class="mi">640986</span><span class="n">_CACAT_C</span>    <span class="mi">2</span>   <span class="mi">640986</span>  <span class="mf">0.0150</span>  <span class="mf">2.665000e-10</span>    <span class="mf">9.574303</span>    <span class="mi">3860999</span> <span class="mi">1</span>   <span class="n">rs72156956</span>  <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>   <span class="n">Upstream</span>
+<span class="mi">4</span>   <span class="mi">2</span><span class="p">:</span><span class="mi">27734972</span><span class="n">_G_A</span>  <span class="mi">2</span>   <span class="mi">27512105</span>    <span class="mf">0.0088</span>  <span class="mf">3.897000e-15</span>    <span class="mf">14.409270</span>   <span class="mi">3860999</span> <span class="mi">0</span>   <span class="n">rs6547692</span>   <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>   <span class="n">Same</span>
+<span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span>
+<span class="mi">84</span>  <span class="n">X</span><span class="p">:</span><span class="mi">21569920</span><span class="n">_A_G</span>  <span class="mi">23</span>  <span class="mi">21551802</span>    <span class="mf">0.0076</span>  <span class="mf">2.616000e-08</span>    <span class="mf">7.582362</span>    <span class="mi">3860999</span> <span class="mi">0</span>   <span class="n">rs6633421</span>   <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>   <span class="n">Same</span>
+<span class="mi">85</span>  <span class="n">X</span><span class="p">:</span><span class="mi">48724648</span><span class="n">_CAA_C</span>    <span class="mi">23</span>  <span class="mi">48866248</span>    <span class="mf">0.0103</span>  <span class="mf">4.576000e-09</span>    <span class="mf">8.339514</span>    <span class="mi">3860999</span> <span class="mi">1</span>   <span class="n">rs782100977</span> <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>       <span class="n">Upstream</span>
+<span class="mi">86</span>  <span class="n">X</span><span class="p">:</span><span class="mi">57170781</span><span class="n">_A_AT</span> <span class="mi">23</span>  <span class="mi">57144348</span>    <span class="mf">0.0076</span>  <span class="mf">4.583000e-09</span>    <span class="mf">8.338850</span>    <span class="mi">3860999</span> <span class="mi">1</span>   <span class="n">rs144226500</span> <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>   <span class="n">Upstream</span>
+<span class="mi">87</span>  <span class="n">X</span><span class="p">:</span><span class="mi">117915163</span><span class="n">_T_TA</span>    <span class="mi">23</span>  <span class="mi">118781200</span>   <span class="mf">0.0071</span>  <span class="mf">9.818000e-15</span>    <span class="mf">14.007977</span>   <span class="mi">3860999</span> <span class="mi">1</span>   <span class="n">rs11390176</span>  <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>       <span class="n">Upstream</span>
+<span class="mi">88</span>  <span class="n">X</span><span class="p">:</span><span class="mi">152908887</span><span class="n">_G_A</span> <span class="mi">23</span>  <span class="mi">153643433</span>   <span class="mf">0.0077</span>  <span class="mf">9.197000e-58</span>    <span class="mf">57.036354</span>   <span class="mi">3860999</span> <span class="mi">0</span>   <span class="n">rs1894299</span>   <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>   <span class="n">Same</span>
+</code></pre></div>
+<p>All of the lead variants are reported which is expected of course.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>GWAS Catalog API is unstable sometimes.</p>
+</div>
+<h2 id="checking-with-local-files">Checking with local files</h2>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>Suppose we have a list of reported variants like:</p>
+<div class="highlight"><pre><span></span><code>cat ./toy_data/known_loci.txt
+CHR POS
+<span class="m">1</span> <span class="m">154309595</span>
+<span class="m">1</span> <span class="m">51103268</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_novel</span><span class="p">(</span><span class="n">known</span><span class="o">=</span><span class="s2">&quot;./toy_data/known_loci.txt&quot;</span><span class="p">)</span>
+
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">12</span> <span class="mi">2023</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">check</span> <span class="k">if</span> <span class="n">lead</span> <span class="n">variants</span> <span class="n">are</span> <span class="n">known</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">12</span> <span class="mi">2023</span> <span class="n">Start</span> <span class="n">to</span> <span class="n">extract</span> <span class="n">lead</span> <span class="n">variants</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">12</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Processing</span> <span class="mi">1035804</span> <span class="n">variants</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">12</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Significance</span> <span class="n">threshold</span> <span class="p">:</span> <span class="mf">5e-08</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">12</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Sliding</span> <span class="n">window</span> <span class="n">size</span><span class="p">:</span> <span class="mi">500</span>  <span class="n">kb</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">12</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Found</span> <span class="mi">9461</span> <span class="n">significant</span> <span class="n">variants</span> <span class="ow">in</span> <span class="n">total</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">13</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Identified</span> <span class="mi">89</span> <span class="n">lead</span> <span class="n">variants</span><span class="err">!</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">13</span> <span class="mi">2023</span> <span class="n">Finished</span> <span class="n">extracting</span> <span class="n">lead</span> <span class="n">variants</span> <span class="n">successfully</span><span class="err">!</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">13</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Lead</span> <span class="n">variants</span> <span class="ow">in</span> <span class="n">known</span> <span class="n">loci</span><span class="p">:</span> <span class="mi">2</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">13</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Checking</span> <span class="n">the</span> <span class="n">minimum</span> <span class="n">distance</span> <span class="n">between</span> <span class="n">identified</span> <span class="n">lead</span> <span class="n">variants</span> <span class="ow">and</span> <span class="n">provided</span> <span class="n">known</span> <span class="n">variants</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">13</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Identified</span>  <span class="mi">2</span>  <span class="n">known</span> <span class="n">vairants</span> <span class="ow">in</span> <span class="n">current</span> <span class="n">sumstats</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">13</span> <span class="mi">2023</span>  <span class="o">-</span><span class="n">Identified</span>  <span class="mi">87</span>  <span class="n">novel</span> <span class="n">vairants</span> <span class="ow">in</span> <span class="n">current</span> <span class="n">sumstats</span><span class="o">...</span>
+<span class="n">Fri</span> <span class="n">Feb</span>  <span class="mi">3</span> <span class="mi">11</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">13</span> <span class="mi">2023</span> <span class="n">Finished</span> <span class="n">checking</span> <span class="n">known</span> <span class="ow">or</span> <span class="n">novel</span> <span class="n">successfully</span><span class="err">!</span>
+
+<span class="n">SNPID</span>   <span class="n">CHR</span> <span class="n">POS</span> <span class="n">SE</span>  <span class="n">P</span>   <span class="n">MLOG10P</span> <span class="n">STATUS</span>  <span class="n">DISTANCE_TO_KNOWN</span>   <span class="n">KNOWN_ID</span>    <span class="n">NOVEL</span>   <span class="n">LOCATION_OF_KNOWN</span>
+<span class="mi">0</span>   <span class="mi">1</span><span class="p">:</span><span class="mi">22068326</span><span class="n">_A_G</span>  <span class="mi">1</span>   <span class="mi">22068326</span>    <span class="mf">0.0103</span>  <span class="mf">1.629000e-09</span>    <span class="mf">8.788079</span>    <span class="mi">9960999</span> <span class="mi">29034942</span>    <span class="mi">1</span><span class="p">:</span><span class="mi">51103268</span>  <span class="kc">True</span>    <span class="n">Upstream</span>
+<span class="mi">1</span>   <span class="mi">1</span><span class="p">:</span><span class="mi">51103268</span><span class="n">_T_C</span>  <span class="mi">1</span>   <span class="mi">51103268</span>    <span class="mf">0.0120</span>  <span class="mf">2.519000e-11</span>    <span class="mf">10.598772</span>   <span class="mi">9960999</span> <span class="mi">0</span>   <span class="mi">1</span><span class="p">:</span><span class="mi">51103268</span>  <span class="kc">False</span>   <span class="n">Same</span>
+<span class="mi">2</span>   <span class="mi">1</span><span class="p">:</span><span class="mi">154309595</span><span class="n">_TA_T</span>    <span class="mi">1</span>   <span class="mi">154309595</span>   <span class="mf">0.0166</span>  <span class="mf">3.289000e-08</span>    <span class="mf">7.482936</span>    <span class="mi">9960999</span> <span class="mi">0</span>   <span class="mi">1</span><span class="p">:</span><span class="mi">154309595</span> <span class="kc">False</span>   <span class="n">Same</span>
+<span class="mi">3</span>   <span class="mi">2</span><span class="p">:</span><span class="mi">640986</span><span class="n">_CACAT_C</span>    <span class="mi">2</span>   <span class="mi">640986</span>  <span class="mf">0.0150</span>  <span class="mf">2.665000e-10</span>    <span class="mf">9.574303</span>    <span class="mi">9960999</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="kc">True</span>    <span class="n">NoneOnThisChr</span>
+<span class="mi">4</span>   <span class="mi">2</span><span class="p">:</span><span class="mi">27734972</span><span class="n">_G_A</span>  <span class="mi">2</span>   <span class="mi">27734972</span>    <span class="mf">0.0088</span>  <span class="mf">3.897000e-15</span>    <span class="mf">14.409270</span>   <span class="mi">9960999</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="kc">True</span>    <span class="n">NoneOnThisChr</span>
+<span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span> <span class="o">...</span>
+<span class="mi">84</span>  <span class="n">X</span><span class="p">:</span><span class="mi">21569920</span><span class="n">_A_G</span>  <span class="mi">23</span>  <span class="mi">21569920</span>    <span class="mf">0.0076</span>  <span class="mf">2.616000e-08</span>    <span class="mf">7.582362</span>    <span class="mi">9960999</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="kc">True</span>    <span class="n">NoneOnThisChr</span>
+<span class="mi">85</span>  <span class="n">X</span><span class="p">:</span><span class="mi">48724648</span><span class="n">_CAA_C</span>    <span class="mi">23</span>  <span class="mi">48724648</span>    <span class="mf">0.0103</span>  <span class="mf">4.576000e-09</span>    <span class="mf">8.339514</span>    <span class="mi">9960999</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="kc">True</span>    <span class="n">NoneOnThisChr</span>
+<span class="mi">86</span>  <span class="n">X</span><span class="p">:</span><span class="mi">57170781</span><span class="n">_A_AT</span> <span class="mi">23</span>  <span class="mi">57170781</span>    <span class="mf">0.0076</span>  <span class="mf">4.583000e-09</span>    <span class="mf">8.338850</span>    <span class="mi">9960999</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="kc">True</span>    <span class="n">NoneOnThisChr</span>
+<span class="mi">87</span>  <span class="n">X</span><span class="p">:</span><span class="mi">117915163</span><span class="n">_T_TA</span>    <span class="mi">23</span>  <span class="mi">117915163</span>   <span class="mf">0.0071</span>  <span class="mf">9.818000e-15</span>    <span class="mf">14.007977</span>   <span class="mi">9960999</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="kc">True</span>    <span class="n">NoneOnThisChr</span>
+<span class="mi">88</span>  <span class="n">X</span><span class="p">:</span><span class="mi">152908887</span><span class="n">_G_A</span> <span class="mi">23</span>  <span class="mi">152908887</span>   <span class="mf">0.0077</span>  <span class="mf">9.197000e-58</span>    <span class="mf">57.036354</span>   <span class="mi">9960999</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="kc">True</span>    <span class="n">NoneOnThisChr</span>
+</code></pre></div>
+</div>
 
 
 
