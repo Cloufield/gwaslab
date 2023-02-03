@@ -757,6 +757,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#reference" class="md-nav__link">
+    Reference
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1346,6 +1353,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#reference" class="md-nav__link">
+    Reference
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1374,6 +1388,7 @@
                     output_known=False)
 </code></pre></div>
 <p>Required (either):</p>
+<p>GWASLab can check with a local files of variants or query GWASCatalog.</p>
 <ul>
 <li><code>known</code> : <code>string</code>, path to local file of reported variants</li>
 <li><code>efo</code> : <code>string</code>, efo id for the target trait, which is used for querying the GWASCatalog.</li>
@@ -1386,6 +1401,11 @@
 <li><code>only_novel</code>: output only novel variants</li>
 <li><code>output_known</code>: additionally output the reported variants</li>
 </ul>
+<div class="admonition info">
+<p class="admonition-title">EFO ID</p>
+<p>You can find the efo id by simply searching in GWASCatalog. For example, the EFO ID for T2D can be obtained like:</p>
+<p><img width="700" alt="Screenshot 2023-02-03 at 13 36 16" src="https://user-images.githubusercontent.com/40289485/216513724-27f4e742-a03c-4346-a6bc-6b1002e22847.png"></p>
+</div>
 <h2 id="checking-with-gwascatalog-api">Checking with GWAScatalog API</h2>
 <div class="admonition warning">
 <p class="admonition-title">Only works when your sumstats are based on GRCh38</p>
@@ -1458,7 +1478,8 @@
 <span class="mi">87</span>  <span class="n">X</span><span class="p">:</span><span class="mi">117915163</span><span class="n">_T_TA</span>    <span class="mi">23</span>  <span class="mi">118781200</span>   <span class="mf">0.0071</span>  <span class="mf">9.818000e-15</span>    <span class="mf">14.007977</span>   <span class="mi">3860999</span> <span class="mi">1</span>   <span class="n">rs11390176</span>  <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>       <span class="n">Upstream</span>
 <span class="mi">88</span>  <span class="n">X</span><span class="p">:</span><span class="mi">152908887</span><span class="n">_G_A</span> <span class="mi">23</span>  <span class="mi">153643433</span>   <span class="mf">0.0077</span>  <span class="mf">9.197000e-58</span>    <span class="mf">57.036354</span>   <span class="mi">3860999</span> <span class="mi">0</span>   <span class="n">rs1894299</span>   <span class="mi">30718926</span>    <span class="n">Suzuki</span> <span class="n">K</span>    <span class="kc">False</span>   <span class="n">Same</span>
 </code></pre></div>
-<p>All of the lead variants are reported which is expected of course.</p>
+<p>All of the lead variants are reported which is expected of course. </p>
+<p>Currently, there is a one-basepair difference in positions for indels. Please pay attention to the positions. ( It will be fixed later)</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -1503,6 +1524,10 @@ CHR POS
 <span class="mi">88</span>  <span class="n">X</span><span class="p">:</span><span class="mi">152908887</span><span class="n">_G_A</span> <span class="mi">23</span>  <span class="mi">152908887</span>   <span class="mf">0.0077</span>  <span class="mf">9.197000e-58</span>    <span class="mf">57.036354</span>   <span class="mi">9960999</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>    <span class="kc">True</span>    <span class="n">NoneOnThisChr</span>
 </code></pre></div>
 </div>
+<h2 id="reference">Reference</h2>
+<ul>
+<li>Buniello, A., MacArthur, J. A. L., Cerezo, M., Harris, L. W., Hayhurst, J., Malangone, C., ... &amp; Parkinson, H. (2019). The NHGRI-EBI GWAS Catalog of published genome-wide association studies, targeted arrays and summary statistics 2019. Nucleic acids research, 47(D1), D1005-D1012.</li>
+</ul>
 
 
 
