@@ -711,13 +711,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#winners-curse-correction" class="md-nav__link">
-    Winner's Curse correction
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#r2-se" class="md-nav__link">
     R2 SE
   </a>
@@ -1431,13 +1424,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#winners-curse-correction" class="md-nav__link">
-    Winner's Curse correction
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#r2-se" class="md-nav__link">
     R2 SE
   </a>
@@ -1546,14 +1532,6 @@
 <li><code>is_q</code> : if apply the heterogeneity tests by Cochran's Q test.</li>
 <li><code>q_level</code> : the significance threshold for Cochran's Q test.</li>
 </ul>
-<h3 id="winners-curse-correction">Winner's Curse correction</h3>
-<ul>
-<li><code>wc_correction</code>: <code>boolean</code> If True, wc correction will be performed before plotting. </li>
-</ul>
-<div class="admonition info">
-<p class="admonition-title">Winner's Curse correction</p>
-<p>Reference: Zhong, H., &amp; Prentice, R. L. (2008). Bias-reduced estimators and confidence intervals for odds ratios in genome-wide association studies. Biostatistics, 9(4), 621-634.</p>
-</div>
 <h3 id="r2-se">R2 SE</h3>
 <ul>
 <li><code>r2_se</code>: <code>boolean</code> If True, SE for r2 will be estimated using the jackknife method.</li>
@@ -1579,23 +1557,6 @@ Headers of the files : # SNP    CHR POS REF ALT Frq Rsq BETA    SE  P
                       <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021843-4572636d-b1a8-43f5-8f6e-070b09e5270f.png"></p>
-<p><div class="highlight"><pre><span></span><code><span class="c1"># wc_correction=True : perform winner&#39;s curse correction</span>
-<span class="c1"># r2_se=True : estimate the se for R2 using jackknife method</span>
-
-<span class="n">a</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">compare_effect</span><span class="p">(</span><span class="s2">&quot;bbj_bmi_female.txt.gz&quot;</span><span class="p">,</span>
-                      <span class="p">[</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span><span class="s2">&quot;POS&quot;</span><span class="p">],[</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span><span class="s2">&quot;SE&quot;</span><span class="p">],</span>
-                      <span class="s2">&quot;bbj_bmi_male.txt.gz&quot;</span><span class="p">,</span>
-                      <span class="p">[</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span><span class="s2">&quot;POS&quot;</span><span class="p">],[</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span><span class="s2">&quot;SE&quot;</span><span class="p">],</span>
-                      <span class="n">label</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Female&quot;</span><span class="p">,</span><span class="s2">&quot;Male&quot;</span><span class="p">,</span><span class="s2">&quot;Both&quot;</span><span class="p">,</span><span class="s2">&quot;None&quot;</span><span class="p">],</span>
-                      <span class="n">xylabel_prefix</span><span class="o">=</span><span class="s2">&quot;Per-allele effect size for &quot;</span><span class="p">,</span>
-                      <span class="n">wc_correction</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                      <span class="n">r2_se</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                      <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-6</span><span class="p">,</span>
-                      <span class="n">legend_title</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$ P &lt; 5 x 10^{-6}$ in:&#39;</span><span class="p">,</span>
-                      <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
-<span class="p">)</span>
-</code></pre></div>
-<img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021886-6ee4beb4-bf9f-42d1-a93b-2dca72841022.png"></p>
 <p>Reference: Akiyama, M., Okada, Y., Kanai, M., Takahashi, A., Momozawa, Y., Ikeda, M., ... &amp; Kamatani, Y. (2017). Genome-wide association study identifies 112 new loci for body mass index in the Japanese population. Nature genetics, 49(10), 1458-1467.</p>
 </div>
 
