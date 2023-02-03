@@ -341,14 +341,23 @@ def compare_effect(path1,
         sig_list_merged["EFFECT_1"] = sig_list_merged[["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
         sig_list_merged["EFFECT_2_aligned"] = sig_list_merged[["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
     
-    elif wc_correction == "test" :
-        if verbose: log.write(" - Wrong Correcting BETA for winner's curse with threshold at {}...".format(sig_level))
+    elif wc_correction == "sig" :
+        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants...".format(sig_level))
         sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
         sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
         sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, "EFFECT_1"]         = sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, ["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
         sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, "EFFECT_2_aligned"] = sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
-        
     
+    elif wc_correction == "sumstats1" :
+        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants...".format(sig_level))
+        sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
+        sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, "EFFECT_1"]         = sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, ["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+        
+    elif wc_correction == "sumstats2" :
+        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants...".format(sig_level))
+        sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
+        sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, "EFFECT_2_aligned"] = sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+
     ########################## Het test############################################################
     ## heterogeneity test
     if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
