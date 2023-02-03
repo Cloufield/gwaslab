@@ -6,7 +6,7 @@ GWASLab can check if the lead variants of your summary statistics overlap with r
 ## get_novel()
 
 ```
-sumstats.getnovel(
+sumstats.get_novel(
                     known,
                     efo,
                     only_novel=False,
@@ -17,6 +17,8 @@ sumstats.getnovel(
 ```
 
 Required (either):
+
+GWASLab can check with a local files of variants or query GWASCatalog.
 
 - `known` : `string`, path to local file of reported variants
 - `efo` : `string`, efo id for the target trait, which is used for querying the GWASCatalog.
@@ -29,7 +31,8 @@ Options:
 - `only_novel`: output only novel variants
 - `output_known`: additionally output the reported variants
 
-
+!!! info "EFO ID"
+    You can find the efo id by simply searching in GWASCatalog :
 
 ## Checking with GWAScatalog API 
 
@@ -105,7 +108,9 @@ Options:
     88	X:152908887_G_A	23	153643433	0.0077	9.197000e-58	57.036354	3860999	0	rs1894299	30718926	Suzuki K	False	Same
     ```
     
-    All of the lead variants are reported which is expected of course.
+    All of the lead variants are reported which is expected of course. 
+
+    Currently, there is a one-basepair difference in positions for indels. Please pay attention to the positions. ( It will be fixed later)
 
 !!! warning 
     GWAS Catalog API is unstable sometimes.
@@ -153,3 +158,7 @@ Options:
     87	X:117915163_T_TA	23	117915163	0.0071	9.818000e-15	14.007977	9960999	<NA>	<NA>	True	NoneOnThisChr
     88	X:152908887_G_A	23	152908887	0.0077	9.197000e-58	57.036354	9960999	<NA>	<NA>	True	NoneOnThisChr
     ```
+
+## Reference
+
+- Buniello, A., MacArthur, J. A. L., Cerezo, M., Harris, L. W., Hayhurst, J., Malangone, C., ... & Parkinson, H. (2019). The NHGRI-EBI GWAS Catalog of published genome-wide association studies, targeted arrays and summary statistics 2019. Nucleic acids research, 47(D1), D1005-D1012.
