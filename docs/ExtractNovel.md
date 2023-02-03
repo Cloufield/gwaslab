@@ -32,7 +32,9 @@ Options:
 - `output_known`: additionally output the reported variants
 
 !!! info "EFO ID"
-    You can find the efo id by simply searching in GWASCatalog :
+    You can find the efo id by simply searching in GWASCatalog. For example, the EFO ID for T2D can be obtained like:
+    
+    <img width="700" alt="Screenshot 2023-02-03 at 13 36 16" src="https://user-images.githubusercontent.com/40289485/216513724-27f4e742-a03c-4346-a6bc-6b1002e22847.png">
 
 ## Checking with GWAScatalog API 
 
