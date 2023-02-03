@@ -66,7 +66,7 @@ def mqqplot(insumstats,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
-          scatter_kwargs={},
+          scatter_kwargs=dict(),
           # region
           region = None,
           region_step = 21,
@@ -80,7 +80,7 @@ def mqqplot(insumstats,
           region_recombination = True,
           region_protein_coding=True,
           region_flank_factor = 0.05,
-          region_anno_bbox_args={},
+          region_anno_bbox_args=dict(),
           taf=[4,0,0.95,1,1],
           # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
           tabix=None,
@@ -94,10 +94,10 @@ def mqqplot(insumstats,
           density_palette="Reds",
           windowsizekb=500,
           anno=None,
-          anno_set=[],
-          anno_alias={},
-          anno_d={},
-          anno_args={},
+          anno_set=list(),
+          anno_alias=dict(),
+          anno_d=dict(),
+          anno_args=dict(),
           anno_style="right",
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
@@ -114,10 +114,10 @@ def mqqplot(insumstats,
           sig_level=5e-8,
           sig_line_color="grey",
           suggestive_sig_level=5e-6,
-          highlight = [],
+          highlight = list(),
           highlight_color="#CB132D",
           highlight_windowkb = 500,
-          pinpoint=[],
+          pinpoint=list(),
           pinpoint_color ="red",
           stratified=False,
           maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
@@ -155,14 +155,13 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Variants to annotate : "+",".join(anno_set))    
     if len(highlight)>0 and ("m" in mode):
         if verbose: log.write(" -Loci to highlight : "+",".join(highlight))    
-        if verbose: log.write(" -Highlight_window is set to: ", highlight_windowkb, " kb")  
+        if verbose: log.write("  -Highlight_window is set to: ", highlight_windowkb, " kb")  
     if len(pinpoint)>0 :
         if verbose: log.write(" -Variants to pinpoint : "+",".join(pinpoint))  
     if region is not None:
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
     if "dpi" not in figargs.keys():
         figargs["dpi"] = dpi
-
 
 # Plotting mode selection : layout ####################################################################
     # ax1 : manhattanplot / brisbane plot
@@ -446,7 +445,7 @@ def mqqplot(insumstats,
     ## Manhatann plot ###################################################
     if ("m" in mode) or ("r" in mode): 
         # assign index i and tick position
-        sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, use_rank=False, chrom="CHR",pos="POS")
+        sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, use_rank=use_rank, chrom="CHR",pos="POS")
         
         ## Assign marker size ##############################################
         sumstats["s"]=1
