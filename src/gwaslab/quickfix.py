@@ -29,6 +29,9 @@ def _quick_fix(sumstats, chr_dict=get_chr_to_number(), scaled=False, chrom="CHR"
 
 
 def _quick_fix_p_value(sumstats, verbose=True, log=Log()):
+    '''
+    drop variants with bad P values
+    '''
     if verbose:
         log.write(" -sumstats P values are being converted to -log10(P)...")
     # bad p : na and outside (0,1]
@@ -42,11 +45,13 @@ def _quick_fix_p_value(sumstats, verbose=True, log=Log()):
 
 
 def _quick_fix_mlog10p(sumstats, scaled=False, verbose=True, log=Log()):
+    '''
+    drop variants with bad -log10(P) values
+    '''
     if scaled != True:
         sumstats["scaled_P"] = -np.log10(sumstats["P"])
     with pd.option_context('mode.use_inf_as_na', True):
         is_na = sumstats["scaled_P"].isna()
-    # is_inf = sumstats["scaled_P"].isin([np.inf, -np.inf, float('inf'), -float('inf')])
     if verbose:
         log.write(" -Sanity check: "+str(sum(is_na)) +
                   " na/inf/-inf variants will be removed...")
@@ -55,6 +60,9 @@ def _quick_fix_mlog10p(sumstats, scaled=False, verbose=True, log=Log()):
 
 
 def _quick_fix_eaf(seires, verbose=True, log=Log()):
+    '''
+    conversion of eaf to maf
+    '''
     seires = pd.to_numeric(seires, errors='coerce')
     flipped = seires > 0.5
     seires[flipped] = 1 - seires[flipped]
@@ -62,6 +70,9 @@ def _quick_fix_eaf(seires, verbose=True, log=Log()):
 
 
 def _quick_fix_chr(seires, chr_dict, verbose=True, log=Log()):
+    '''
+    conversion and check for chr
+    '''
     if pd.api.types.is_string_dtype(seires) == True:
         # if chr is string dtype: convert using chr_dict
         seires = seires.map(chr_dict, na_action="ignore")
@@ -70,11 +81,17 @@ def _quick_fix_chr(seires, chr_dict, verbose=True, log=Log()):
 
 
 def _quick_fix_pos(seires, verbose=True, log=Log()):
+    '''
+    force conversion for pos
+    '''
     seires = np.floor(pd.to_numeric(seires, errors='coerce')).astype('Int64')
     return seires
 
 
 def _get_largenumber(*args, log=Log()):
+    '''
+    get a helper large number, >> max(pos)
+    '''
     large_number = 1000000000
     max_number = np.nanmax(args)
     for i in range(7):
@@ -136,6 +153,46 @@ def _quick_assign_i(sumstats, chrom="CHR",pos="POS"):
     # fix dtype for i
     sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
     return sumstats, chrom_df
+
+def _quick_assign_i_with_rank(sumstats, use_rank=False, chrom="CHR",pos="POS"):
+        sumstats = sumstats.sort_values([chrom,pos])
+        if use_rank is True: sumstats["POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
+        sumstats["id"]=range(len(sumstats))
+        sumstats=sumstats.set_index("id")
+
+        #create a df , groupby by chromosomes , and get the maximum position
+        if use_rank is True: 
+            posdic = sumstats.groupby(chrom)["POS_RANK"].max()
+        else:
+            posdic = sumstats.groupby(chrom)[pos].max()
+        
+        # convert to dictionary
+        posdiccul = dict(posdic)
+        
+        # fill empty chr with 0
+        for i in range(0,26):
+            if i in posdiccul: continue
+            else: posdiccul[i]=0
+        
+        # cumulative sum dictionary
+        for i in range(2,sumstats[chrom].max()+1):
+            posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*0.05
+
+        # convert base pair postion to x axis position using the cumulative sum dictionary
+        sumstats["add"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
+        
+        if use_rank is True: 
+            sumstats["i"]=sumstats["POS_RANK"]+sumstats["add"]
+        else:
+            sumstats["i"]=sumstats[pos]+sumstats["add"]
+        
+
+        #for plot, get the chr text tick position      
+        chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
+        #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
+        #sumstats["i"] = sumstats["i"].astype("Int64")
+        sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
+        return sumstats, chrom_df
 
 def _quick_assign_marker_relative_size(series, sig_level = 5e-8, suggestive_sig_level=5e-6, lower_level=5e-4):
     size_series = series.copy()
@@ -199,3 +256,35 @@ def _quick_extract_snp_in_region(sumstats, region, chrom="CHR",pos="POS",verbose
     if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(is_in_region_snp)))
     sumstats = sumstats.loc[is_in_region_snp,:]
     return sumstats
+
+def _cut(series, mode,cutfactor,cut, verbose, log):
+    maxy = series.max()
+    if "b" not in mode:
+        if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
+    elif "b" in mode:
+        if verbose: log.write(" -Maximum DENSITY values is "+str(maxy) +" .")
+    maxticker=int(np.round(series.max(skipna=True)))
+    if cut:
+        if cut is True:
+            if verbose: log.write(" -Cut Auto mode is activated...")
+            if maxy<30:
+                if verbose: log.write(" - maxy <20 , no need to cut.")
+                cut=0
+            else:
+                cut = 20
+                cutfactor = ( maxy - cut )/8
+        if cut:
+            if "b" not in mode:
+                if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+            else:
+                if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+
+            maxticker=int(np.round(series.max(skipna=True)))
+            series[series>cut] = (series[series>cut]-cut)/cutfactor +  cut
+            #sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
+            maxy = (maxticker-cut)/cutfactor + cut
+    if verbose: log.write("Finished data conversion and sanity check.")
+    return series, maxy, maxticker, cut, cutfactor
+
+def _set_yticklabels():
+    pass
