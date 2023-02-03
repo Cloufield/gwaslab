@@ -1291,9 +1291,10 @@
 <p>GWASLab will extract the lead variants from identified significant loci based on a sliding window.</p>
 <div class="admonition quote">
 <p class="admonition-title">Quote</p>
-<p>GWASLab adopted the definitionfor novel loci from Global Biobank Meta-analysis Initiative flagship paper. </p>
+<p>GWASLab basically adopted the definition for novel loci from Global Biobank Meta-analysis Initiative flagship paper. </p>
 <p><strong>"We defined genome-wide significant loci by iteratively spanning the ±500 kb region around the most significant variant and merging overlapping regions until no genome-wide significant variants were detected within ±1 Mb."</strong> </p>
 <p>(Details are described in Zhou, W., Kanai, M., Wu, K. H. H., Rasheed, H., Tsuo, K., Hirbo, J. B., ... &amp; Study, C. O. H. (2022). Global Biobank Meta-analysis Initiative: Powering genetic discovery across human disease. Cell Genomics, 2(10), 100192. )</p>
+<p>GWASlab currently iteratively extends ± <code>windowsizekb</code> kb region around the most significant variant and merges overlapping regions until no genome-wide significant variants were detected within ± <code>windowsizekb</code>. (slightly different from the GBMI paper. When <code>windowsizekb=1000</code>, it is equvalent to GBMI's definition.)</p>
 </div>
 <h1 id="usage">Usage</h1>
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span>

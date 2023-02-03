@@ -1348,8 +1348,10 @@
 
 
 <h1 id="miami-plot">Miami plot</h1>
+<div class="admonition info">
+<p class="admonition-title">Implemented since v3.3.4</p>
+</div>
 <p>As a standalone function, gwaslab can plot miami plot given a pair of sumstats files.</p>
-<p>See examples <a href="https://cloufield.github.io/gwaslab/visualization_miami/">here.</a></p>
 <h2 id="usage">Usage</h2>
 <div class="highlight"><pre><span></span><code>gl.plot_miami( 
           path1,
@@ -1375,6 +1377,12 @@
 <li><code>titles</code>:<code>list</code>, two titles. For example,<code>titles=["male","female"]</code></li>
 </ul>
 <h2 id="example">Example</h2>
+<div class="admonition example">
+<p class="admonition-title">Miami plot for male- amd female-specific GWAS on BMI</p>
+<p>Sample datasets are obtained from JENGER:</p>
+<div class="highlight"><pre><span></span><code>!wget -O bmi_male_bbj.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
+!wget -O bmi_female_bbj.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
+</code></pre></div>
 <div class="highlight"><pre><span></span><code>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
                            path2=&quot;bmi_female_bbj.txt.gz&quot;,
                            cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
@@ -1388,7 +1396,18 @@
                            )
 </code></pre></div>
 <p><img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197526569-7850041d-e247-4f69-8505-ef7750a6d4de.png"></p>
-<p>Note: implemented in v3.3.4</p>
+<div class="highlight"><pre><span></span><code>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
+                           path2=&quot;bmi_female_bbj.txt.gz&quot;,
+                           cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+                           cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+                           titles=[&quot;male&quot;,&quot;female&quot;],
+                           region=(2,2153874,21753874),
+                           titles_pad=[0.1,-0.05],
+                           anno=&quot;GENENAME&quot;,
+                           region_grid=True
+                           )
+</code></pre></div>
+</div>
 
 
 
