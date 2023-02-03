@@ -9,6 +9,7 @@ import matplotlib.patches as mpatches
 from gwaslab.getsig import getsig
 from gwaslab.Log import Log
 from gwaslab.winnerscurse import wc_correct
+from gwaslab.winnerscurse import wc_correct_test
 import gc
 
 #20220422
@@ -333,12 +334,21 @@ def compare_effect(path1,
             if verbose: log.write(" -No variants with EA not matching...")
     ####################################################################################################################################
     ## winner's curse correction using aligned beta
-    if wc_correction == True:
+    if wc_correction is True:
         if verbose: log.write(" -Correcting BETA for winner's curse with threshold at {}...".format(sig_level))
         sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
         sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
         sig_list_merged["EFFECT_1"] = sig_list_merged[["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
         sig_list_merged["EFFECT_2_aligned"] = sig_list_merged[["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
+    
+    elif wc_correction == "test" :
+        if verbose: log.write(" - Wrong Correcting BETA for winner's curse with threshold at {}...".format(sig_level))
+        sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
+        sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
+        sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, "EFFECT_1"]         = sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, ["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+        sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, "EFFECT_2_aligned"] = sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+        
+    
     ########################## Het test############################################################
     ## heterogeneity test
     if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
@@ -494,8 +504,12 @@ def compare_effect(path1,
                 ax.axline([min(xl,yl),min(xl,yl)], [max(xh, yh),max(xh, yh)],zorder=1,**helper_line_args)
 
             #add text
-            p12=str("{:.2e}".format(p)).split("e")[0]
-            pe =str(int("{:.2e}".format(p).split("e")[1]))
+            try:
+                p12=str("{:.2e}".format(p)).split("e")[0]
+                pe =str(int("{:.2e}".format(p).split("e")[1]))
+            except:
+                p12="0"
+                pe="0"
             p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
             p_latex= f'{p_text}'
             ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2])+r2_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **fontargs)
@@ -507,8 +521,12 @@ def compare_effect(path1,
                 else:
                     ax.axline([min(xl,yl),-min(xl,yl)], [max(xh, yh),-max(xh, yh)],zorder=1,**helper_line_args)
             #add text
-            p12=str("{:.2e}".format(p)).split("e")[0]
-            pe =str(int("{:.2e}".format(p).split("e")[1]))
+            try:
+                p12=str("{:.2e}".format(p)).split("e")[0]
+                pe =str(int("{:.2e}".format(p).split("e")[1]))
+            except:
+                p12="0"
+                pe="0"
             p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
             p_latex= f'{p_text}'
             ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2])+r2_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
