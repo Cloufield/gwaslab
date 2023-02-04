@@ -72,13 +72,6 @@ gl.compare_effect (path1,
 - `is_q` : if apply the heterogeneity tests by Cochran's Q test.
 - `q_level` : the significance threshold for Cochran's Q test.
 
-### Winner's Curse correction
-
-- `wc_correction`: `boolean` If True, wc correction will be performed before plotting. 
-
-!!! info "Winner's Curse correction" 
-    Reference: Zhong, H., & Prentice, R. L. (2008). Bias-reduced estimators and confidence intervals for odds ratios in genome-wide association studies. Biostatistics, 9(4), 621-634.
-
 ### R2 SE
 
 - `r2_se`: `boolean` If True, SE for r2 will be estimated using the jackknife method.
@@ -110,24 +103,5 @@ $$ s.e.(\hat{r^2}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r^2_i} -\ba
                           verbose=True)
     ```
     <img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021843-4572636d-b1a8-43f5-8f6e-070b09e5270f.png">
-    
-    ```python
-    # wc_correction=True : perform winner's curse correction
-    # r2_se=True : estimate the se for R2 using jackknife method
-    
-    a = gl.compare_effect("bbj_bmi_female.txt.gz",
-                          ["SNP","P","REF","ALT","CHR","POS"],["BETA","SE"],
-                          "bbj_bmi_male.txt.gz",
-                          ["SNP","P","REF","ALT","CHR","POS"],["BETA","SE"],
-                          label=["Female","Male","Both","None"],
-                          xylabel_prefix="Per-allele effect size for ",
-                          wc_correction=True,
-                          r2_se=True,
-                          sig_level=5e-6,
-                          legend_title=r'$ P < 5 x 10^{-6}$ in:',
-                          verbose=True
-    )
-    ```
-    <img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021886-6ee4beb4-bf9f-42d1-a93b-2dca72841022.png">
     
     Reference: Akiyama, M., Okada, Y., Kanai, M., Takahashi, A., Momozawa, Y., Ikeda, M., ... & Kamatani, Y. (2017). Genome-wide association study identifies 112 new loci for body mass index in the Japanese population. Nature genetics, 49(10), 1458-1467.
