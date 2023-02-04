@@ -26,6 +26,7 @@ def compare_effect(path1,
                    wc_correction=False, 
                    null_beta=0,
                    is_q=True,
+                   include_all=True,
                    q_level=0.05,
                    sig_level=5e-8,
                    wc_sig_level=5e-8,
@@ -382,7 +383,11 @@ def compare_effect(path1,
         if verbose: log.write(" -Het rate:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:])/len(sig_list_merged))   
     
     # extract group
-    sum0 = sig_list_merged.loc[sig_list_merged["indicator"]==0,:].dropna(axis=0)
+    if include_all==True:
+        sum0 = sig_list_merged.loc[sig_list_merged["indicator"]==0,:].dropna(axis=0)
+    else:
+        sum0 = pd.DataFrame()
+
     sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:].dropna(axis=0)
     sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:].dropna(axis=0)
     both     = sig_list_merged.loc[sig_list_merged["indicator"]==3,:].dropna(axis=0)
