@@ -483,8 +483,8 @@ def compare_effect(path1,
                     texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],index,ha="left",va="top"))
             else:
                 texts.append(plt.text(row["OR_1"], row["OR_2_aligned"],index, ha='center', va='center')) 
-        adjust_text(texts_l,autoalign =False,ha="right",va="bottom", expand_text=(1.5,1.5) , expand_objects=(1.5,1.5), expand_points=(1.2,1.2) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
-        adjust_text(texts_r,autoalign =False, ha="left",va="top", expand_text=(1.5,1.5) , expand_objects=(1.5,1.5), expand_points=(1.2,1.2) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
+        adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
+        adjust_text(texts_r,autoalign =False,precision =0.001,lim=1000, ha="left",va="top", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects =(0.8,0.8),arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
     
     elif type(anno) is dict:
         # if input is a dict
