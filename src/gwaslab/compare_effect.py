@@ -28,6 +28,9 @@ def compare_effect(path1,
                    anno_min1=0,
                    anno_min2=0,
                    anno_diff=0,
+                   scaled=False,
+                   scaled1=False,
+                   scaled2=False,
                    wc_correction=False, 
                    null_beta=0,
                    is_q=True,
@@ -57,6 +60,9 @@ def compare_effect(path1,
     #[snpid,p,ea,nea]      ,[effect,se]
     #[snpid,p,ea,nea,chr,pos],[effect,se]
     #[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
+    if scaled == True:
+        scaled1 = True
+        scaled2 = True
     
     if verbose: log.write("Start to process the raw sumstats for plotting...")
     
@@ -78,7 +84,8 @@ def compare_effect(path1,
     ######### 4 load sumstats1
     if verbose: log.write(" -Loading sumstats for "+label[0]+":",",".join(cols_to_extract))
     sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
-    
+    if scaled1==True:
+        sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
     ######### 5 extract the common set
     common_snp_set = common_snp_set.intersection(sumstats[cols_name_list_1[0]].values)
     if verbose: log.write(" -Counting  variants available for both datasets:",len(common_snp_set)," variants...")
@@ -119,7 +126,8 @@ def compare_effect(path1,
     
     if verbose: log.write(" -Loading sumstats for "+label[1]+":",",".join(cols_to_extract))
     sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
-    
+    if scaled2==True:
+        sumstats[cols_name_list_2[1]] = np.power(10,-sumstats[cols_name_list_2[1]])
     ######### 10 rename sumstats2
     rename_dict = { cols_name_list_2[0]:"SNPID",
                     cols_name_list_2[1]:"P",
@@ -169,7 +177,8 @@ def compare_effect(path1,
     if len(eaf)>0: cols_to_extract.append(eaf[0])   
     if verbose: log.write(" -Extract statistics of selected variants from "+label[0]+" : ",",".join(cols_to_extract) )
     sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
-
+    if scaled1==True:
+        sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
 
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         rename_dict = { cols_name_list_1[0]:"SNPID",
@@ -216,6 +225,8 @@ def compare_effect(path1,
     
     if verbose: log.write(" -Extract statistics of selected variants from "+label[1]+" : ",",".join(cols_to_extract) )
     sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
+    if scaled2==True:
+        sumstats[cols_name_list_2[1]] = np.power(10,-sumstats[cols_name_list_2[1]])
     gc.collect()
     if mode=="beta" or mode=="BETA" or mode=="Beta":
           rename_dict = { cols_name_list_2[0]:"SNPID",
@@ -250,6 +261,8 @@ def compare_effect(path1,
     ################ 16 update sumstats1
     if verbose: log.write(" -Updating missing information for "+label[0]+" ...")
     sumstats = pd.read_table(path1,sep=sep[0],usecols=[cols_name_list_1[0],cols_name_list_1[1]])
+    if scaled1==True:
+        sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
     sumstats.rename(columns={
                         cols_name_list_1[0]:"SNPID",
                         cols_name_list_1[1]:"P_1"
@@ -264,6 +277,8 @@ def compare_effect(path1,
     ################# 17 update sumstats2
     if verbose: log.write(" -Updating missing information for "+label[1]+" ...")
     sumstats = pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0],cols_name_list_2[1]])
+    if scaled2==True:
+        sumstats[cols_name_list_2[1]] = np.power(10,-sumstats[cols_name_list_2[1]])
     sumstats.rename(columns={
                         cols_name_list_2[0]:"SNPID",
                         cols_name_list_2[1]:"P_2"
@@ -275,6 +290,12 @@ def compare_effect(path1,
     sumstats.set_index("SNPID",inplace=True)
     sig_list_merged.update(sumstats)
 
+    if scaled1 ==True :
+        if verbose:log.write(" -Sumstats -log10(P) values are being converted to P...")
+        sig_list_merged["P_1"] = np.power(10,-sig_list_merged["P_1"])
+    if scaled2 ==True :
+        if verbose:log.write(" -Sumstats -log10(P) values are being converted to P...")
+        sig_list_merged["P_2"] = np.power(10,-sig_list_merged["P_2"])
     ####
 #################################################################################
     ############## 18 init indicator
