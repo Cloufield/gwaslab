@@ -11,7 +11,7 @@ from gwaslab.Log import Log
 from gwaslab.winnerscurse import wc_correct
 from gwaslab.winnerscurse import wc_correct_test
 import gc
-
+from adjustText import adjust_text
 #20220422
 def compare_effect(path1,
                    cols_name_list_1, effect_cols_list_1,
@@ -23,6 +23,11 @@ def compare_effect(path1,
                    snplist=None,
                    mode="beta",
                    anno=False,
+                   anno_het=False,
+                   anno_min=0,
+                   anno_min1=0,
+                   anno_min2=0,
+                   anno_diff=0,
                    wc_correction=False, 
                    null_beta=0,
                    is_q=True,
@@ -335,28 +340,36 @@ def compare_effect(path1,
             if verbose: log.write(" -No variants with EA not matching...")
     ####################################################################################################################################
     ## winner's curse correction using aligned beta
-    if wc_correction is True:
-        if verbose: log.write(" -Correcting BETA for winner's curse with threshold at {}...".format(sig_level))
+    if wc_correction == "all":
+        if verbose: log.write(" -Correcting BETA for winner's curse with threshold at {} for all variants...".format(sig_level))
         sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
         sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
+        
+        if verbose: log.write("  -Correcting BETA for {} variants in sumstats1...".format(sum(~sig_list_merged["EFFECT_1"].isna())))
         sig_list_merged["EFFECT_1"] = sig_list_merged[["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
+
+        if verbose: log.write("  -Correcting BETA for {} variants in sumstats2...".format(sum(~sig_list_merged["EFFECT_2_aligned"].isna())))
         sig_list_merged["EFFECT_2_aligned"] = sig_list_merged[["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
     
     elif wc_correction == "sig" :
         if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants...".format(sig_level))
         sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
         sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
+        if verbose: log.write("  -Correcting BETA for {} variants in sumstats1...".format(sum(sig_list_merged["P_1"]<sig_level)))
         sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, "EFFECT_1"]         = sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, ["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+        if verbose: log.write("  -Correcting BETA for {} variants in sumstats2...".format(sum(sig_list_merged["P_2"]<sig_level)))
         sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, "EFFECT_2_aligned"] = sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
     
     elif wc_correction == "sumstats1" :
-        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants...".format(sig_level))
+        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants in sumstats1...".format(sig_level))
         sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
+        if verbose: log.write("  -Correcting BETA for {} variants in sumstats1...".format(sum(sig_list_merged["P_1"]<sig_level)))
         sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, "EFFECT_1"]         = sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, ["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
         
     elif wc_correction == "sumstats2" :
-        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants...".format(sig_level))
+        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants in sumstats2...".format(sig_level))
         sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
+        if verbose: log.write("  -Correcting BETA for {} variants in sumstats2...".format(sum(sig_list_merged["P_2"]<sig_level)))
         sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, "EFFECT_2_aligned"] = sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
 
     ########################## Het test############################################################
@@ -450,23 +463,42 @@ def compare_effect(path1,
     
     ## annotation #################################################################################################################
     if anno==True:
-        from adjustText import adjust_text
         sig_list_toanno = sig_list_merged.dropna(axis=0)
-        texts=[]
+        if anno_het == True:
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["Edge_color"]=="black",:]
+        
+
+        sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
+        sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
+        sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["EFFECT_1"].abs() >=anno_min) & (sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min) ,:]
+        sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["EFFECT_1"] - sig_list_toanno["EFFECT_2_aligned"]) >=anno_diff,:]
+
+        texts_l=[]
+        texts_r=[]
         for index, row in sig_list_toanno.iterrows():
             if mode=="beta" or mode=="BETA" or mode=="Beta":
-                texts.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],index, ha='center', va='center')) 
+                if row["EFFECT_1"] <  row["EFFECT_2_aligned"]:
+                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],index,ha="right",va="bottom"))
+                else:
+                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],index,ha="left",va="top"))
             else:
                 texts.append(plt.text(row["OR_1"], row["OR_2_aligned"],index, ha='center', va='center')) 
-        adjust_text(texts, arrowprops=dict(arrowstyle='->', color='grey'))
+        adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
+        adjust_text(texts_r,autoalign =False,precision =0.001,lim=1000, ha="left",va="top", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects =(0.8,0.8),arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
     
     elif type(anno) is dict:
         # if input is a dict
         sig_list_toanno = sig_list_toanno.loc[sig_list_toanno.index.isin(list(anno.keys())),:]
+        if anno_het == True:
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["Edge_color"]=="black",:]
+        sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
+        sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
+        sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["EFFECT_1"].abs() >=anno_min) & (sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min) ,:]
+        
         texts=[]
         for index, row in sig_list_toanno.iterrows():
             texts.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index], ha='right', va='top')) 
-        adjust_text(texts,ha='right', va='top',arrowprops=dict(arrowstyle='->', color='grey'))
+        adjust_text(texts, expand_text=(1.2,1.2) , expand_objects=(1.2,1.2), expand_points=(1.2,1.2) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
     #################################################################################################################################
     
     # plot x=0,y=0, and a 45 degree line
