@@ -11,18 +11,16 @@ def _quick_fix(sumstats, chr_dict=get_chr_to_number(), scaled=False, chrom="CHR"
     '''
 
     # quick fix chr
-    sumstats[chrom] = _quick_fix_chr(
-        sumstats[chrom], chr_dict=chr_dict, verbose=verbose, log=log)
+    sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict, verbose=verbose, log=log)
 
     # quick fix pos
     sumstats[pos] = _quick_fix_pos(sumstats[pos], verbose=verbose, log=log)
 
     # quick fix p
-    sumstats = _quick_fix_p_value(sumstats,scaled=scaled, verbose=verbose, log=log)
+    sumstats = _quick_fix_p_value(sumstats, scaled=scaled, verbose=verbose, log=log)
 
     # quick fix mlog10p
-    sumstats = _quick_fix_mlog10p(
-        sumstats, scaled=scaled, verbose=verbose, log=log)
+    sumstats = _quick_fix_mlog10p(sumstats, scaled=scaled, verbose=verbose, log=log)
 
     return sumstats
 
@@ -32,6 +30,7 @@ def _quick_fix_p_value(sumstats, scaled=False,verbose=True, log=Log()):
     drop variants with bad P values
     '''
     if scaled==True:
+        # if scaled, add scaled P and P col 
         if verbose:log.write(" -P values are already scaled...")
         if verbose:log.write(" -Sumstats -log10(P) values are being converted to P...")
         sumstats["scaled_P"] = sumstats["P"].copy()
