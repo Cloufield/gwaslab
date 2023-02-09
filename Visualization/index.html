@@ -605,15 +605,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#quick-plot" class="md-nav__link">
+    Quick plot
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-plot" class="md-nav__link">
-    Quick plot
+  <a href="#usage" class="md-nav__link">
+    Usage
   </a>
   
 </li>
@@ -684,14 +684,14 @@
         
           <li class="md-nav__item">
   <a href="#maf-stratified-qq-plot" class="md-nav__link">
-    Maf-stratified QQ plot
+    MAF-stratified QQ plot
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#colors-and-fonts" class="md-nav__link">
-    Colors and Fonts
+  <a href="#colors-and-fontsizes" class="md-nav__link">
+    Colors and Fontsizes
   </a>
   
 </li>
@@ -1416,15 +1416,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#quick-plot" class="md-nav__link">
+    Quick plot
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-plot" class="md-nav__link">
-    Quick plot
+  <a href="#usage" class="md-nav__link">
+    Usage
   </a>
   
 </li>
@@ -1495,14 +1495,14 @@
         
           <li class="md-nav__item">
   <a href="#maf-stratified-qq-plot" class="md-nav__link">
-    Maf-stratified QQ plot
+    MAF-stratified QQ plot
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#colors-and-fonts" class="md-nav__link">
-    Colors and Fonts
+  <a href="#colors-and-fontsizes" class="md-nav__link">
+    Colors and Fontsizes
   </a>
   
 </li>
@@ -1545,12 +1545,17 @@
 <p><img width="800" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
 <p>gwaslab provided customizable plotting functions for Manhattan and Q-Q plots.</p>
 <p>See examples <a href="https://cloufield.github.io/gwaslab/visualization_mqq/">here</a>.</p>
+<h2 id="quick-plot">Quick plot</h2>
+<div class="admonition example">
+<p class="admonition-title">Quick Manhattan and Q-Q plot</p>
+<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq()
+</code></pre></div>
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196595098-23ff14eb-5579-4177-8d20-54816a410f48.png"></p>
+</div>
 <h2 id="usage">Usage</h2>
-<div class="highlight"><pre><span></span><code>import gwaslab as gl
-
-mydata = gl.Sumstats(....)
-
-mydata.plot_mqq(
+<div class="admonition info">
+<p class="admonition-title">All options for <code>plot_mqq</code></p>
+<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(
           mlog10p=&quot;MLOG10P&quot;,
           scaled=False,
           mode=&quot;mqq&quot;,
@@ -1598,11 +1603,11 @@ mydata.plot_mqq(
           saveargs={&quot;dpi&quot;:400,&quot;facecolor&quot;:&quot;white&quot;},
           ):
 </code></pre></div>
-<h2 id="quick-plot">Quick plot</h2>
-<div class="highlight"><pre><span></span><code>mysumstatsysumstats.plot_mqq()
-</code></pre></div>
-<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196595098-23ff14eb-5579-4177-8d20-54816a410f48.png"></p>
+</div>
 <h2 id="customized-plot-example">Customized plot example</h2>
+<p>By setting the options, you can create highly customized Manhattan plots and Q-Q plots.</p>
+<div class="admonition example">
+<p class="admonition-title">A customized Manhattan and QQ plot</p>
 <div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(
                   mode=&quot;qqm&quot;,
                   cut=14,
@@ -1616,18 +1621,23 @@ mydata.plot_mqq(
                   figargs={&quot;figsize&quot;:(15,5),&quot;dpi&quot;:300})
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196594621-840217aa-117d-49ac-ab58-15a5fa6675b1.png"></p>
+</div>
 <h2 id="options">Options</h2>
 <h3 id="manhattan-and-qq-plot-layout">Manhattan and QQ plot layout</h3>
-<p><code>mode</code> : determine the layout of manhattan plot and qq plot.</p>
-<p><code>"mqq"</code>or <code>"qqm"</code>: side-by-side manhattan and QQ plt. </p>
 <ul>
+<li><code>mode</code> : determine the layout of manhattan plot and qq plot.<ul>
 <li><code>mqq</code>: left manhatan, right QQ</li>
 <li><code>qqm</code>: left QQ , right manhatan</li>
 <li><code>"m"</code>: only manhattan plot</li>
 <li><code>"qq"</code>: only qq plot</li>
 <li><code>mqqratio</code>: width ratio</li>
 </ul>
+</li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">Layout</p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593277-0908d49e-40aa-4fe3-b214-d774ab4d0382.png"></p>
+</div>
 <hr />
 <h3 id="skip-low-and-shrink-high">Skip "low" and shrink "high"</h3>
 <ul>
@@ -1637,7 +1647,10 @@ mydata.plot_mqq(
 <li><code>cut_line_color</code>: the color of the line above which y axis is rescaled </li>
 <li><code>sig_level=5e-8</code> : genome-wide significance threshold</li>
 </ul>
+<div class="admonition info">
+<p class="admonition-title">Auxiliary lines</p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593118-b7358559-71ef-49ae-b8b0-15b34031c142.png"></p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>lambda GC calculation for QQ plot will not be affected by skip and cut. The calculation is conducted using all variants in the original dataset.</p>
@@ -1655,27 +1668,56 @@ mydata.plot_mqq(
 <li><code>anno_set</code>: if you want to annotate only a few specific variants, you can simply provide a list of SNPIDs. </li>
 <li><code>anno_alias</code> : snpid:text dictionary for customized annotation</li>
 </ul>
-<p><img width="376" alt="image" src="https://user-images.githubusercontent.com/40289485/196592902-36c52102-09f2-4c58-894b-a7177e87bd09.png"></p>
-<h4 id="example">example:</h4>
+<div class="admonition info">
+<p class="admonition-title">Repel force</p>
+</div>
+<p><img width="300" alt="image" src="https://user-images.githubusercontent.com/40289485/196592902-36c52102-09f2-4c58-894b-a7177e87bd09.png"></p>
+<div class="admonition example">
+<p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the lead variants with chr:pos</p>
 <p><code>mysumstats.plot_mqq(skip=3,anno=True)</code></p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591270-592ce820-c541-4b84-a766-0b58bc6423ee.png"></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the lead variants with GENENAME</p>
 <p><code>mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19")</code></p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591371-262d31d5-9640-474f-af0d-d6c511c77280.png"></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the variants in <code>anno_set</code></p>
 <p><code>mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"])</code></p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591966-c9618c45-456b-4eb8-991b-66420f847a97.png"></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the variants in <code>anno_set</code> with alias in <code>anno_alias</code></p>
 <p><code>mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"], anno_alias={"rs12509595":"anything you want here"})</code></p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196592136-f2cbc488-e02f-409b-b0ac-2ab16f7b1fd4.png"></p>
+</div>
 <h3 id="annotation-style">Annotation style</h3>
 <p>Added since 3.3.23</p>
+<p>GWASLab now support 3 types of annotation styles:</p>
+<ul>
+<li><code>expand</code></li>
+<li><code>right</code></li>
+<li><code>tight</code></li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">expand</p>
 <div class="highlight"><pre><span></span><code>`anno_style=&quot;expand&quot;`
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389210-f8b76b07-0b41-4932-9ba2-15f4a5508855.png"></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">right</p>
 <div class="highlight"><pre><span></span><code>`anno_style=&quot;right&quot;`
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389238-735c15f0-ea46-442a-b624-4e903c123b55.png"></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">tight</p>
 <p><div class="highlight"><pre><span></span><code>`anno_style=&quot;tight&quot;`
 </code></pre></div>
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215481722-22c8fdcc-b016-4277-ab5f-eb2924f61e01.png"></p>
+</div>
 <h3 id="adjust-arm-position">Adjust arm position</h3>
 <ul>
 <li><code>anno_d</code>:<code>dict</code>,key is the number of arm starting form 0, value is the direction you want the arm to shift towards . For example, <code>anno_d = {4:"r"}</code> means shift the 4th arm to the right </li>
@@ -1683,6 +1725,8 @@ mydata.plot_mqq(
 <li><code>arm_scale</code>: <code>float</code> factors to adjust the height for all arms</li>
 <li><code>arm_scale_d</code>: <code>dict</code> factors to adjust the height for specific arms. key is the number of arm startinf form 0, value is the factor which will be multiplied to arm height.</li>
 </ul>
+<div class="admonition example">
+<p class="admonition-title">Adjust the direction the first to left and the thrd to right</p>
 <div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=2,anno=True)
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197342763-ffd4b3c1-d57a-4351-8f42-fb91ae282d32.png"></p>
@@ -1691,12 +1735,19 @@ mydata.plot_mqq(
                     arm_offset=50)
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png"></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Adjust the length of arm</p>
 <div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=2,anno=True,arm_scale=1.5)
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345571-6a6ccb4e-6837-475d-ae3b-3c59fb447c56.png"></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Adjust the length of arm for each variant</p>
 <div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=2,anno=True,arm_scale_d={1:1.5,2:1.2,3:1.1})
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345530-08f4c9f6-d804-4e7e-865b-0b219179f6a9.png"></p>
+</div>
 <hr />
 <h3 id="highlight-specified-loci">Highlight specified loci</h3>
 <p>Highlight specified loci (color all variants in a region by specifying variants and the length of flanking regions). </p>
@@ -1711,21 +1762,27 @@ mydata.plot_mqq(
 <li><code>pinpoint</code> : a list of SNPIDs</li>
 <li><code>pinpoint_color</code> : color for pinpoint</li>
 </ul>
+<div class="admonition example">
+<p class="admonition-title">Highlight loci and pinpoint variants</p>
 <div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=3,anno=&quot;GENENAME&quot;,build=&quot;19&quot;,
                    highlight=[&quot;rs12509595&quot;,&quot;rs7989823&quot;],
                    pinpoint=[&quot;rs671&quot;,&quot;19:15040733:T:C&quot;])
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
+</div>
 <hr />
-<h3 id="maf-stratified-qq-plot">Maf-stratified QQ plot</h3>
+<h3 id="maf-stratified-qq-plot">MAF-stratified QQ plot</h3>
 <ul>
 <li><code>stratified</code>: <code>boolean</code> if True, plot MAF straitified QQ plot. Require EAF in sumstats.</li>
 <li><code>maf_bins</code>: <code>list</code> maf bins for straitification. (default: <code>maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]</code>)</li>
 <li><code>maf_bin_colors</code>: <code>list</code> colors used for each bin. (default: <code>maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]</code>)</li>
 </ul>
+<div class="admonition example">
+<p class="admonition-title">MAF-stratified Q-Q plot</p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593456-93539e3e-e8c0-476f-ae4e-e5843f970ba6.png"></p>
+</div>
 <hr />
-<h3 id="colors-and-fonts">Colors and Fonts</h3>
+<h3 id="colors-and-fontsizes">Colors and Fontsizes</h3>
 <div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(
           colors=[&quot;#597FBD&quot;,&quot;#74BAD3&quot;],
           cut_line_color=&quot;#ebebeb&quot;,
