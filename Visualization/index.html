@@ -1548,77 +1548,77 @@
 <h2 id="quick-plot">Quick plot</h2>
 <div class="admonition example">
 <p class="admonition-title">Quick Manhattan and Q-Q plot</p>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq()
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">()</span>
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196595098-23ff14eb-5579-4177-8d20-54816a410f48.png"></p>
 </div>
 <h2 id="usage">Usage</h2>
 <div class="admonition info">
 <p class="admonition-title">All options for <code>plot_mqq</code></p>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(
-          mlog10p=&quot;MLOG10P&quot;,
-          scaled=False,
-          mode=&quot;mqq&quot;,
-          mqqratio=3,
-          windowsizekb=500,
-          anno=None,
-          anno_set=[],
-          anno_alias={},
-          anno_d={},
-          anno_style=&quot;right&quot;,
-          anno_fixed_arm_length=None,
-          arm_offset=50,
-          arm_scale=1,
-          cut=0,
-          skip=0,
-          cutfactor=10,
-          cut_line_color=&quot;#ebebeb&quot;,  
-          sig_level=5e-8,
-          sig_line_color=&quot;grey&quot;,
-          suggestive_sig_level=5e-6,
-          highlight = [],
-          highlight_color=&quot;#CB132D&quot;,
-          highlight_windowkb = 500,
-          pinpoint=[],
-          pinpoint_color =&quot;red&quot;,
-          stratified=False,
-          maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
-          maf_bin_colors = [&quot;#f0ad4e&quot;,&quot;#5cb85c&quot;, &quot;#5bc0de&quot;,&quot;#000042&quot;],
-          gc=True,
-          title =None,
-          mtitle=None,
-          qtitle=None,
-          figargs= {&quot;figsize&quot;:(15,5),&quot;dpi&quot;:100},
-          title_fontsize=13,
-          fontsize = 10,
-          anno_fontsize = 10,
-          colors=[&quot;#597FBD&quot;,&quot;#74BAD3&quot;],
-          marker_size=(5,25),
-          use_rank=False,
-          verbose=True,
-          repel_force=0.03,
-          build=&quot;19&quot;,
-          title_pad=1.08, 
-          save=None,
-          saveargs={&quot;dpi&quot;:400,&quot;facecolor&quot;:&quot;white&quot;},
-          ):
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
+          <span class="n">mlog10p</span><span class="o">=</span><span class="s2">&quot;MLOG10P&quot;</span><span class="p">,</span>
+          <span class="n">scaled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+          <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;mqq&quot;</span><span class="p">,</span>
+          <span class="n">mqqratio</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+          <span class="n">windowsizekb</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+          <span class="n">anno</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">anno_set</span><span class="o">=</span><span class="p">[],</span>
+          <span class="n">anno_alias</span><span class="o">=</span><span class="p">{},</span>
+          <span class="n">anno_d</span><span class="o">=</span><span class="p">{},</span>
+          <span class="n">anno_style</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span>
+          <span class="n">anno_fixed_arm_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">arm_offset</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+          <span class="n">arm_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+          <span class="n">cut</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+          <span class="n">skip</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+          <span class="n">cutfactor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+          <span class="n">cut_line_color</span><span class="o">=</span><span class="s2">&quot;#ebebeb&quot;</span><span class="p">,</span>  
+          <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>
+          <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+          <span class="n">suggestive_sig_level</span><span class="o">=</span><span class="mf">5e-6</span><span class="p">,</span>
+          <span class="n">highlight</span> <span class="o">=</span> <span class="p">[],</span>
+          <span class="n">highlight_color</span><span class="o">=</span><span class="s2">&quot;#CB132D&quot;</span><span class="p">,</span>
+          <span class="n">highlight_windowkb</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+          <span class="n">pinpoint</span><span class="o">=</span><span class="p">[],</span>
+          <span class="n">pinpoint_color</span> <span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+          <span class="n">stratified</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+          <span class="n">maf_bins</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">),(</span><span class="mf">0.25</span><span class="p">,</span><span class="mf">0.5</span><span class="p">)],</span>
+          <span class="n">maf_bin_colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#f0ad4e&quot;</span><span class="p">,</span><span class="s2">&quot;#5cb85c&quot;</span><span class="p">,</span> <span class="s2">&quot;#5bc0de&quot;</span><span class="p">,</span><span class="s2">&quot;#000042&quot;</span><span class="p">],</span>
+          <span class="n">gc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+          <span class="n">title</span> <span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">mtitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">qtitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">figargs</span><span class="o">=</span> <span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">},</span>
+          <span class="n">title_fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
+          <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+          <span class="n">anno_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+          <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;#597FBD&quot;</span><span class="p">,</span><span class="s2">&quot;#74BAD3&quot;</span><span class="p">],</span>
+          <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">25</span><span class="p">),</span>
+          <span class="n">use_rank</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+          <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+          <span class="n">repel_force</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+          <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
+          <span class="n">title_pad</span><span class="o">=</span><span class="mf">1.08</span><span class="p">,</span> 
+          <span class="n">save</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">saveargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">},</span>
+          <span class="p">):</span>
 </code></pre></div>
 </div>
 <h2 id="customized-plot-example">Customized plot example</h2>
 <p>By setting the options, you can create highly customized Manhattan plots and Q-Q plots.</p>
 <div class="admonition example">
 <p class="admonition-title">A customized Manhattan and QQ plot</p>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(
-                  mode=&quot;qqm&quot;,
-                  cut=14,
-                  skip=3, 
-                  anno_set=[&quot;rs12509595&quot;,&quot;rs7989823&quot;] ,
-                  pinpoint=[&quot;rs7989823&quot;], 
-                  highlight=[&quot;rs12509595&quot;,&quot;19:15040733:T:C&quot;],
-                  highlight_windowkb =1000,
-                  stratified=True,
-                  marker_size=(5,10),
-                  figargs={&quot;figsize&quot;:(15,5),&quot;dpi&quot;:300})
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
+                  <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;qqm&quot;</span><span class="p">,</span>
+                  <span class="n">cut</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
+                  <span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+                  <span class="n">anno_set</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;rs7989823&quot;</span><span class="p">]</span> <span class="p">,</span>
+                  <span class="n">pinpoint</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs7989823&quot;</span><span class="p">],</span> 
+                  <span class="n">highlight</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">],</span>
+                  <span class="n">highlight_windowkb</span> <span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                  <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span>
+                  <span class="n">figargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">300</span><span class="p">})</span>
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196594621-840217aa-117d-49ac-ab58-15a5fa6675b1.png"></p>
 </div>
@@ -1674,22 +1674,26 @@
 <p><img width="300" alt="image" src="https://user-images.githubusercontent.com/40289485/196592902-36c52102-09f2-4c58-894b-a7177e87bd09.png"></p>
 <div class="admonition example">
 <p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the lead variants with chr:pos</p>
-<p><code>mysumstats.plot_mqq(skip=3,anno=True)</code></p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591270-592ce820-c541-4b84-a766-0b58bc6423ee.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the lead variants with GENENAME</p>
-<p><code>mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19")</code></p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)</span>
+</code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591371-262d31d5-9640-474f-af0d-d6c511c77280.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the variants in <code>anno_set</code></p>
-<p><code>mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"])</code></p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">anno_set</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">])</span>
+</code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591966-c9618c45-456b-4eb8-991b-66420f847a97.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the variants in <code>anno_set</code> with alias in <code>anno_alias</code></p>
-<p><code>mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"], anno_alias={"rs12509595":"anything you want here"})</code></p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">anno_set</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">],</span> <span class="n">anno_alias</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">:</span><span class="s2">&quot;anything you want here&quot;</span><span class="p">})</span>
+</code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196592136-f2cbc488-e02f-409b-b0ac-2ab16f7b1fd4.png"></p>
 </div>
 <h3 id="annotation-style">Annotation style</h3>
@@ -1701,22 +1705,16 @@
 <li><code>tight</code></li>
 </ul>
 <div class="admonition example">
-<p class="admonition-title">expand</p>
-<div class="highlight"><pre><span></span><code>`anno_style=&quot;expand&quot;`
-</code></pre></div>
+<p class="admonition-title"><code>anno_style="expand"</code></p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389210-f8b76b07-0b41-4932-9ba2-15f4a5508855.png"></p>
 </div>
 <div class="admonition example">
-<p class="admonition-title">right</p>
-<div class="highlight"><pre><span></span><code>`anno_style=&quot;right&quot;`
-</code></pre></div>
+<p class="admonition-title"><code>anno_style="right"</code></p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389238-735c15f0-ea46-442a-b624-4e903c123b55.png"></p>
 </div>
 <div class="admonition example">
-<p class="admonition-title">tight</p>
-<p><div class="highlight"><pre><span></span><code>`anno_style=&quot;tight&quot;`
-</code></pre></div>
-<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215481722-22c8fdcc-b016-4277-ab5f-eb2924f61e01.png"></p>
+<p class="admonition-title"><code>anno_style="tight"</code></p>
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215481722-22c8fdcc-b016-4277-ab5f-eb2924f61e01.png"></p>
 </div>
 <h3 id="adjust-arm-position">Adjust arm position</h3>
 <ul>
@@ -1727,24 +1725,24 @@
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Adjust the direction the first to left and the thrd to right</p>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=2,anno=True)
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197342763-ffd4b3c1-d57a-4351-8f42-fb91ae282d32.png"></p>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=2,anno=True,          
-                    anno_d={1:&quot;l&quot;,3:&quot;r&quot;},
-                    arm_offset=50)
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>          
+                    <span class="n">anno_d</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="s2">&quot;l&quot;</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="s2">&quot;r&quot;</span><span class="p">},</span>
+                    <span class="n">arm_offset</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Adjust the length of arm</p>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=2,anno=True,arm_scale=1.5)
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">arm_scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345571-6a6ccb4e-6837-475d-ae3b-3c59fb447c56.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Adjust the length of arm for each variant</p>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=2,anno=True,arm_scale_d={1:1.5,2:1.2,3:1.1})
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">arm_scale_d</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="mf">1.2</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="mf">1.1</span><span class="p">})</span>
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345530-08f4c9f6-d804-4e7e-865b-0b219179f6a9.png"></p>
 </div>
@@ -1764,9 +1762,9 @@
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Highlight loci and pinpoint variants</p>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=3,anno=&quot;GENENAME&quot;,build=&quot;19&quot;,
-                   highlight=[&quot;rs12509595&quot;,&quot;rs7989823&quot;],
-                   pinpoint=[&quot;rs671&quot;,&quot;19:15040733:T:C&quot;])
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
+                   <span class="n">highlight</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;rs7989823&quot;</span><span class="p">],</span>
+                   <span class="n">pinpoint</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs671&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">])</span>
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
 </div>
@@ -1783,18 +1781,18 @@
 </div>
 <hr />
 <h3 id="colors-and-fontsizes">Colors and Fontsizes</h3>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(
-          colors=[&quot;#597FBD&quot;,&quot;#74BAD3&quot;],
-          cut_line_color=&quot;#ebebeb&quot;,
-          sig_line_color=&quot;grey&quot;,
-          highlight_color=&quot;#CB132D&quot;,
-          pinpoint_color =&quot;red&quot;,
-          maf_bin_colors = [&quot;#f0ad4e&quot;,&quot;#5cb85c&quot;, &quot;#5bc0de&quot;,&quot;#000042&quot;],
-          fontsize = 10,
-          anno_fontsize = 10,
-          title_fontsize = 13,
-          marker_size=(5,25)
-)
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
+          <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;#597FBD&quot;</span><span class="p">,</span><span class="s2">&quot;#74BAD3&quot;</span><span class="p">],</span>
+          <span class="n">cut_line_color</span><span class="o">=</span><span class="s2">&quot;#ebebeb&quot;</span><span class="p">,</span>
+          <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+          <span class="n">highlight_color</span><span class="o">=</span><span class="s2">&quot;#CB132D&quot;</span><span class="p">,</span>
+          <span class="n">pinpoint_color</span> <span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+          <span class="n">maf_bin_colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#f0ad4e&quot;</span><span class="p">,</span><span class="s2">&quot;#5cb85c&quot;</span><span class="p">,</span> <span class="s2">&quot;#5bc0de&quot;</span><span class="p">,</span><span class="s2">&quot;#000042&quot;</span><span class="p">],</span>
+          <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+          <span class="n">anno_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+          <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">13</span><span class="p">,</span>
+          <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">25</span><span class="p">)</span>
+<span class="p">)</span>
 </code></pre></div>
 <ul>
 <li><code>colors</code> : <code>list</code>, a list of color for Manhattan plot. (default: <code>["#597FBD","#74BAD3"]</code>)</li>
@@ -1809,21 +1807,21 @@
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p><div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=2,
-                    cut=20,
-                    colors=sns.color_palette(&quot;Set3&quot;),
-                    sig_line_color=&quot;red&quot;,
-                    fontsize = 8)
+<p><div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">cut</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                    <span class="n">colors</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s2">&quot;Set3&quot;</span><span class="p">),</span>
+                    <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                    <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span>
 </code></pre></div>
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/217693629-98261192-c521-4466-a9eb-6e9a4d4bd2cb.png"></p>
 </div>
 <h3 id="titles">Titles</h3>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(
-          title =None,
-          mtitle=None,
-          qtitle=None,
-          title_pad=1.08
-        )
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
+          <span class="n">title</span> <span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">mtitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">qtitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+          <span class="n">title_pad</span><span class="o">=</span><span class="mf">1.08</span>
+        <span class="p">)</span>
 </code></pre></div>
 <ul>
 <li>title : <code>string</code> , title for the whole plot</li>
@@ -1834,7 +1832,7 @@
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png"></p>
 <hr />
 <h3 id="save-plots">Save plots</h3>
-<p><div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(save=&quot;mymqqplots.png&quot;,saveargs={&quot;dpi&quot;:400,&quot;facecolor&quot;:&quot;white&quot;})
+<p><div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="s2">&quot;mymqqplots.png&quot;</span><span class="p">,</span><span class="n">saveargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">})</span>
 </code></pre></div>
 Two options for saving plots in <code>.plot_mqq</code></p>
 <ul>
