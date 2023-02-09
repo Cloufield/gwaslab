@@ -134,7 +134,8 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 - `anno_alias` : snpid:text dictionary for customized annotation
 
 !!! info "Repel force"
-   <img width="300" alt="image" src="https://user-images.githubusercontent.com/40289485/196592902-36c52102-09f2-4c58-894b-a7177e87bd09.png">
+    
+    <img width="300" alt="image" src="https://user-images.githubusercontent.com/40289485/196592902-36c52102-09f2-4c58-894b-a7177e87bd09.png">
 
 
 !!! example "Skip variants with -log10P<3 and annotate the lead variants with chr:pos"
