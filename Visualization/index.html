@@ -1667,13 +1667,13 @@ mydata.plot_mqq(
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196592136-f2cbc488-e02f-409b-b0ac-2ab16f7b1fd4.png"></p>
 <h3 id="annotation-style">Annotation style</h3>
 <p>Added since 3.3.23</p>
-<div class="highlight"><pre><span></span><code>anno_style=&quot;expand&quot;
+<div class="highlight"><pre><span></span><code>`anno_style=&quot;expand&quot;`
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389210-f8b76b07-0b41-4932-9ba2-15f4a5508855.png"></p>
-<div class="highlight"><pre><span></span><code>anno_style=&quot;right&quot;
+<div class="highlight"><pre><span></span><code>`anno_style=&quot;right&quot;`
 </code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389238-735c15f0-ea46-442a-b624-4e903c123b55.png"></p>
-<p><div class="highlight"><pre><span></span><code>anno_style=&quot;tight&quot;
+<p><div class="highlight"><pre><span></span><code>`anno_style=&quot;tight&quot;`
 </code></pre></div>
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215481722-22c8fdcc-b016-4277-ab5f-eb2924f61e01.png"></p>
 <h3 id="adjust-arm-position">Adjust arm position</h3>
@@ -1734,9 +1734,31 @@ mydata.plot_mqq(
           pinpoint_color =&quot;red&quot;,
           maf_bin_colors = [&quot;#f0ad4e&quot;,&quot;#5cb85c&quot;, &quot;#5bc0de&quot;,&quot;#000042&quot;],
           fontsize = 10,
+          anno_fontsize = 10,
+          title_fontsize = 13,
           marker_size=(5,25)
 )
 </code></pre></div>
+<ul>
+<li><code>colors</code> : <code>list</code>, a list of color for Manhattan plot. (default: <code>["#597FBD","#74BAD3"]</code>)</li>
+<li><code>cut_line_color</code> : <code>string</code>, color for cut line.  (default: <code>"#ebebeb"</code>)</li>
+<li><code>sig_line_color</code> : <code>string</code>, color for significance threshold line. (default: <code>"grey"</code>)</li>
+<li><code>highlight_color</code> : <code>string</code>, color for highlighting. (default: <code>"#CB132D"</code>)</li>
+<li><code>pinpoint_color</code> : <code>string</code>, color for pinpointing. (default: <code>"red"</code>)</li>
+<li><code>maf_bin_colors</code> : <code>list</code>, a list of color formaf stratified Q-Q plot. (default: <code>"["#f0ad4e","#5cb85c", "#5bc0de","#000042"]"</code>)</li>
+<li><code>fontsize = 10</code>: fontsize for ticklabels.</li>
+<li><code>title_fontsize = 13</code>, fontsize for title.</li>
+<li><code>anno_fontsize = 10</code>, fontsize for annotation.</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(skip=2,
+                    cut=20,
+                    colors=sns.color_palette(&quot;Set3&quot;),
+                    sig_line_color=&quot;red&quot;,
+                    fontsize = 8)
+</code></pre></div>
+</div>
 <h3 id="titles">Titles</h3>
 <div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(
           title =None,
@@ -1745,15 +1767,29 @@ mydata.plot_mqq(
           title_pad=1.08
         )
 </code></pre></div>
+<ul>
+<li>title : <code>string</code> , title for the whole plot</li>
+<li>mtitle : <code>string</code> , title for the Manhattan plot</li>
+<li>qtitle : <code>string</code> , title for the Q-Q plot</li>
+<li>title_pad : <code>float</code> , padding for title</li>
+</ul>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png"></p>
 <hr />
 <h3 id="save-plots">Save plots</h3>
-<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(save=&quot;mymqqplots.png&quot;,saveargs={&quot;dpi&quot;:400,&quot;facecolor&quot;:&quot;white&quot;})
+<p><div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(save=&quot;mymqqplots.png&quot;,saveargs={&quot;dpi&quot;:400,&quot;facecolor&quot;:&quot;white&quot;})
 </code></pre></div>
+Two options for saving plots in <code>.plot_mqq</code></p>
 <ul>
 <li><code>save</code>:<code>string</code>,path for saved plot</li>
-<li><code>saveargs</code>: other parameters for matplotlib savefig function.</li>
+<li><code>saveargs</code>: <code>dict</code>, other parameters passed to matplotlib <code>savefig</code> function.</li>
 </ul>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<ul>
+<li>save as png: <code>mysumstats.plot_mqq(save="mymqqplots.png",saveargs={"dpi":300})</code></li>
+<li>save as PDF: <code>mysumstats.plot_mqq(save="mymqqplots.pdf",saveargs={"dpi":300})</code></li>
+</ul>
+</div>
 
 
 
