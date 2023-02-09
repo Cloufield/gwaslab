@@ -165,19 +165,21 @@ mysumstats.plot_mqq(
 Added since 3.3.23
 
 ```
-anno_style="expand"
+`anno_style="expand"`
 ```
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389210-f8b76b07-0b41-4932-9ba2-15f4a5508855.png">
 
 ```
-anno_style="right"
+
+`anno_style="right"`
+
 ```
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215389238-735c15f0-ea46-442a-b624-4e903c123b55.png">
 
 ```
-anno_style="tight"
+`anno_style="tight"`
 ```
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215481722-22c8fdcc-b016-4277-ab5f-eb2924f61e01.png">
 
@@ -263,11 +265,33 @@ mysumstats.plot_mqq(
           pinpoint_color ="red",
           maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
           fontsize = 10,
+          anno_fontsize = 10,
+          title_fontsize = 13,
           marker_size=(5,25)
 )
 ```
 
+- `colors` : `list`, a list of color for Manhattan plot. (default: `["#597FBD","#74BAD3"]`)
+- `cut_line_color` : `string`, color for cut line.  (default: `"#ebebeb"`)
+- `sig_line_color` : `string`, color for significance threshold line. (default: `"grey"`)
+- `highlight_color` : `string`, color for highlighting. (default: `"#CB132D"`)
+- `pinpoint_color` : `string`, color for pinpointing. (default: `"red"`)
+- `maf_bin_colors` : `list`, a list of color formaf stratified Q-Q plot. (default: `"["#f0ad4e","#5cb85c", "#5bc0de","#000042"]"`)
+- `fontsize = 10`: fontsize for ticklabels.
+- `title_fontsize = 13`, fontsize for title.
+- `anno_fontsize = 10`, fontsize for annotation.
+
+!!! example
+    ```
+    mysumstats.plot_mqq(skip=2,
+                        cut=20,
+                        colors=sns.color_palette("Set3"),
+                        sig_line_color="red",
+                        fontsize = 8)
+    ```
+
 ### Titles
+
 ```
 mysumstats.plot_mqq(
           title =None,
@@ -275,8 +299,12 @@ mysumstats.plot_mqq(
           qtitle=None,
           title_pad=1.08
         )
-
 ```
+
+- title : `string` , title for the whole plot
+- mtitle : `string` , title for the Manhattan plot
+- qtitle : `string` , title for the Q-Q plot
+- title_pad : `float` , padding for title
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png">
 
@@ -287,6 +315,12 @@ mysumstats.plot_mqq(
 ```
 mysumstats.plot_mqq(save="mymqqplots.png",saveargs={"dpi":400,"facecolor":"white"})
 ```
+Two options for saving plots in `.plot_mqq`
 
 - `save`:`string`,path for saved plot
-- `saveargs`: other parameters for matplotlib savefig function.
+- `saveargs`: `dict`, other parameters passed to matplotlib `savefig` function.
+
+!!! example
+
+    - save as png: `mysumstats.plot_mqq(save="mymqqplots.png",saveargs={"dpi":300})`
+    - save as PDF: `mysumstats.plot_mqq(save="mymqqplots.pdf",saveargs={"dpi":300})`
