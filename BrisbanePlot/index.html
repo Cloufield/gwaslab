@@ -683,21 +683,7 @@
   
     <li class="md-nav__item">
       <a href="../EffectSize/" class="md-nav__link">
-        Scatter Plot: Effect Size Comparison
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../AlleleFrequency/" class="md-nav__link">
-        Scatter Plot: Allele Frequency Comparison
+        Effect Size Comparison
       </a>
     </li>
   
@@ -1364,32 +1350,37 @@
 <h1 id="brisbane-plot">Brisbane plot</h1>
 <h2 id="gwas-signal-density-plot">GWAS signal density plot</h2>
 <p>GWASLab can create the Brisbane plot (GWAS signal density plot; See the citation). Brisbane plot is a scatter plot that shows the signal density, very useful for presenting large-scale GWAS data.  </p>
-<p>See examples <a href="https://cloufield.github.io/gwaslab/visualization_brisbane/">here.</a></p>
-<div class="highlight"><pre><span></span><code>mysumstats = gl.Sumstats(&quot;height_lead.tsv&quot;,
-             snpid=&quot;SNP&quot;,
-             chrom=&quot;Chr&quot;,
-             pos=&quot;BP_HG19&quot;,
-             p=&quot;P-value&quot;)
-
-mysumstats.plot_mqq(mode=&quot;b&quot;,anno=&quot;GENENAME&quot;,
-                  build=&quot;19&quot;,anno_fixed_arm_length=2,
-                  anno_args={&quot;rotation&quot;:90},
-                  marker_size=(30,30),sig_line_color=&quot;red&quot;)
+<div class="highlight"><pre><span></span><code>mysumstats.plot_mqq(mode=&quot;b&quot;)
 </code></pre></div>
 <ul>
 <li><code>mode="b"</code> : create Brisbane plot !</li>
 <li><code>bwindowsizekb = 100</code> : windowsize in kb.</li>
 </ul>
-<p><img width=700 src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png"></p>
+<p>See examples <a href="https://cloufield.github.io/gwaslab/visualization_brisbane/">here.</a></p>
+<div class="admonition example">
+<p class="admonition-title">Brisbane plot</p>
+<p>Data was obtained from : Yengo, L., Vedantam, S., Marouli, E., Sidorenko, J., Bartell, E., Sakaue, S., ... &amp; Lee, J. Y. (2022). A saturated map of common genetic variants associated with human height. Nature, 1-16.</p>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;height_lead.tsv&quot;</span><span class="p">,</span>
+             <span class="n">snpid</span><span class="o">=</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span>
+             <span class="n">chrom</span><span class="o">=</span><span class="s2">&quot;Chr&quot;</span><span class="p">,</span>
+             <span class="n">pos</span><span class="o">=</span><span class="s2">&quot;BP_HG19&quot;</span><span class="p">,</span>
+             <span class="n">p</span><span class="o">=</span><span class="s2">&quot;P-value&quot;</span><span class="p">)</span>
+
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span>
+                  <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span><span class="n">anno_fixed_arm_length</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                  <span class="n">anno_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;rotation&quot;</span><span class="p">:</span><span class="mi">90</span><span class="p">},</span>
+                  <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span><span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><img width=600 src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png"></p>
+</div>
 <h2 id="calculate-the-density-for-sumstats">Calculate the density for sumstats</h2>
 <div class="highlight"><pre><span></span><code>mysumstats.get_density(windowsizekb=100)
 </code></pre></div>
 <ul>
 <li><code>windowsizekb</code>: window size for calculation of signal density.</li>
-<li><code>large_number</code>: a very large number &gt;&gt; max length of chromosomes (default:10000000000). In most cases, no need to change this. It is used for implementing the algorithm.</li>
 </ul>
 <div class="admonition example">
-<p class="admonition-title">Example</p>
+<p class="admonition-title">Calculate signal density</p>
 <div class="highlight"><pre><span></span><code>mysumstats.get_density(windowsizekb=100)
 
 mysumstats.data
@@ -1408,8 +1399,8 @@ mysumstats.data
 </code></pre></div>
 </div>
 <h2 id="reference">Reference</h2>
-<div class="admonition note">
-<p class="admonition-title">Citation</p>
+<div class="admonition quote">
+<p class="admonition-title">Citation for Brisbane plot</p>
 <p>Yengo, L., Vedantam, S., Marouli, E., Sidorenko, J., Bartell, E., Sakaue, S., ... &amp; Lee, J. Y. (2022). A saturated map of common genetic variants associated with human height. Nature, 1-16.</p>
 </div>
 
