@@ -37,8 +37,7 @@ nav:
        - "Regional Plot": RegionalPlot.md
        - "Brisbane Plot": BrisbanePlot.md
        - "Miami Plot": MiamiPlot.md
-       - "Scatter Plot: Effect Size Comparison": EffectSize.md
-       - "Scatter Plot: Allele Frequency Comparison": AlleleFrequency.md
+       - "Effect Size Comparison": EffectSize.md
     - Utilities: 
        - "Extract Lead Variants": ExtractLead.md
        - "Extract Novel Variants": ExtractNovel.md
