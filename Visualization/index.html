@@ -704,6 +704,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#figure-settings" class="md-nav__link">
+    Figure settings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#save-plots" class="md-nav__link">
     Save plots
   </a>
@@ -1515,6 +1522,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#figure-settings" class="md-nav__link">
+    Figure settings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#save-plots" class="md-nav__link">
     Save plots
   </a>
@@ -1542,8 +1556,8 @@
 
 
 <h1 id="manhattan-plot-and-qq-plot-plot_mqq">Manhattan plot and QQ plot : plot_mqq()</h1>
-<p><img width="800" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
-<p>gwaslab provided customizable plotting functions for Manhattan and Q-Q plots.</p>
+<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
+<p>GWASLab provides customizable plotting functions for Manhattan and Q-Q plots.</p>
 <p>See examples <a href="https://cloufield.github.io/gwaslab/visualization_mqq/">here</a>.</p>
 <h2 id="quick-plot">Quick plot</h2>
 <div class="admonition example">
@@ -1831,6 +1845,16 @@
 </ul>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png"></p>
 <hr />
+<h3 id="figure-settings">Figure settings</h3>
+<div class="highlight"><pre><span></span><code>figargs= {&quot;figsize&quot;:(15,5),&quot;dpi&quot;:100}
+</code></pre></div>
+<ul>
+<li><code>figargs</code> : <code>dict</code>, key-values pairs that are passed to matplotlib <code>plt.subplots()</code><ul>
+<li><code>figsize</code> : figure size</li>
+<li><code>dpi</code> : dots per inch. For pulications, dpi&gt;=300 is on of the common criteria.</li>
+</ul>
+</li>
+</ul>
 <h3 id="save-plots">Save plots</h3>
 <p><div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="s2">&quot;mymqqplots.png&quot;</span><span class="p">,</span><span class="n">saveargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">})</span>
 </code></pre></div>
