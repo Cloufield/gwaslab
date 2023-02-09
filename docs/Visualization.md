@@ -289,6 +289,8 @@ mysumstats.plot_mqq(
                         sig_line_color="red",
                         fontsize = 8)
     ```
+    <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/217693629-98261192-c521-4466-a9eb-6e9a4d4bd2cb.png">
+
 
 ### Titles
 
