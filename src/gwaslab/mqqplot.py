@@ -502,11 +502,11 @@ def mqqplot(insumstats,
         ## if not highlight    
         else:
             if density_color == True:
-                hue = "DENSITY"
+                hue = "DENSITY_hue"
                 s = "DENSITY"
                 to_plot = sumstats.sort_values("DENSITY")
-
-                plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]<=density_threshold], x='i', y='scaled_P',
+                to_plot["DENSITY_hue"] = to_plot["DENSITY"].astype("float")
+                plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]<=density_threshold,:], x='i', y='scaled_P',
                        hue=hue,
                        palette= density_tpalette,
                        legend=legend,
@@ -516,7 +516,8 @@ def mqqplot(insumstats,
                        linewidth=linewidth,
                        hue_norm=density_trange,
                        zorder=2,ax=ax1,edgecolor="black",**scatter_kwargs) 
-                plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]>density_threshold], x='i', y='scaled_P',
+
+                plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]>density_threshold,:], x='i', y='scaled_P',
                    hue=hue,
                    palette= density_palette,
                    legend=legend,

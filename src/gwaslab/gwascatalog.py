@@ -10,6 +10,7 @@ def gwascatalog_trait(efo,source="NCBI",sig_level=5e-8,verbose=True,log=Log()):
     
     base_url = "https://www.ebi.ac.uk/gwas/rest/api/efoTraits/"+efo
     if verbose: log.write("Start to retrieve data from GWASCatalog...")
+    if verbose: log.write(" -Please make sure your sumstats is based on GRCh38...")
     if verbose: log.write(" -Requesting (GET) trait information through the GWASCatalog API...")
     if verbose: log.write(" -EFO trait api: "+ base_url)
     api_response = json.loads(requests.get(base_url).text)
