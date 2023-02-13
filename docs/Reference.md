@@ -92,22 +92,14 @@ done
 - gnomAD v2 & gnomAD v2 liftover & gnomAD v3:   [gnomAD](https://gnomad.broadinstitute.org/downloads)    
 
 
-## Reference Library for variants annotation : pyensembl
+## Reference Library for variants annotation 
 
-Install pyensembl and download reference:
-
-```
-# install  pyensembl if not
-pip install pyensembl
-
-# syntax for download reference for pyensembl
-pyensembl install --release <list of Ensembl release numbers> --species <species-name>
-```
 GWASlab uses:
-- ensembl release 75 : hg19
-- ensembl release 107 : hg38 
+- ensembl release 75 (hg19): current default dataset
+- ensembl release 87 (hg19, will update soon): https://ftp.ensembl.org/pub/grch37/release-109/gtf/homo_sapiens/
+- ensembl release 107 (hg38):  https://ftp.ensembl.org/pub/release-107/gtf/homo_sapiens/
+- ensembl release 109 (hg38, will update soon):  https://ftp.ensembl.org/pub/release-109/gtf/homo_sapiens/
 - NCBI refseq GRCh37
 - NCBI refseq GRCh38
 
 Currently, gwaslab could use ensembl or refseq gtf reference data to annotate lead SNPs with the nearest gene name.
-For details about pyensembl, please check [https://github.com/openvax/pyensembl](https://github.com/openvax/pyensembl)
