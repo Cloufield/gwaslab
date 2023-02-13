@@ -274,7 +274,7 @@ def gtf_to_protein_coding(gtfpath,log=Log(),verbose=True):
     # if not existing, extract protein coding records and output to a new file
     if not path.isfile(protein_coding_path):
         # get gene list
-        if verbose: log.write(" - Extracting protein_coding genes from {}".format(gtfpath)))
+        if verbose: log.write(" - Extracting protein_coding genes from {}".format(gtfpath))
         gtf = read_gtf(gtfpath,usecols=["feature","gene_biotype","gene_id","gene_name"])
         gene_list = gtf.loc[(gtf["feature"]=="gene") & (gtf["gene_biotype"]=="protein_coding"),"gene_id"].values
         if verbose: log.write(" - Loaded {} protein_coding genes.".format(len(gene_list)))
