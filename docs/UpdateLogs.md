@@ -3,6 +3,9 @@
 ## 3.4.0
 - restructured plot functions
 - added dtype conversion for input pd.DataFrame
+- reimplement gtfparse
+- update reference datasets
+- fixed bugs when no variants were selected for mqqplot
 
 ## 3.3.24 - 2023/02/01
 - update bugs in __init__.py
