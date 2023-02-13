@@ -12,28 +12,30 @@
 
 Currently, you can download the following files using GWASLab with the keywords:
 
-|Keyword|Description|
-|-|-|
-|'1kg_eas_hg19','1kg_eas_hg19_tbi'|1KGp3v5 low-coverage EAS VCF and index (hg19)|
-|'1kg_eur_hg19','1kg_eur_hg19_tbi'|1KGp3v5 low-coverage EUR VCF and index (hg19)|
-|'1kg_eas_hg38','1kg_eas_hg38_tbi'|1KGp3v5 30x EAS VCF and index (hg38)|
-|'1kg_eur_hg38','1kg_eur_hg38_tbi'|1KGp3v5 30x EUR VCF and index (hg38)|
-|'dbsnp_v151_hg19'|dbSNP151 (hg19, !!very large)|
-|'dbsnp_v151_hg38'|dbSNP151 (hg38, !!very large)|
-|'ucsc_genome_hg19'|UCSC human reference genome (hg19)|
-|'ucsc_genome_hg38'|UCSC human reference genome (hg38)|
-|'1kg_dbsnp151_hg19_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg19)|
-|'1kg_dbsnp151_hg38_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg38)|
-|'recombination_hg19'|Recombination rate reference files from Hapmap Project (hg19)|
-|'recombination_hg38'|Recombination rate reference files from Hapmap Project (hg38)|
-|'ensembl_hg19_gtf'|GTF file for genes from Ensembl (hg19)|
-|'ensembl_hg19_gtf_protein_coding'|GTF file for genes from Ensembl (only protein_coding; hg19)|
-|'ensembl_hg38_gtf'|GTF file for genes from Ensembl (hg38)|
-|'ensembl_hg38_gtf_protein_coding'|GTF file for genes from Ensembl (only protein_coding; hg38)|
-|'refseq_hg19_gtf'|GTF file for genes from Refseq (hg19)|
-|'refseq_hg19_gtf_protein_coding'|GTF file for genes from Refseq (only protein_coding; hg19)|
-|'refseq_hg38_gtf'|GTF file for genes from Refseq (hg19)|
-|'refseq_hg38_gtf_protein_coding'|GTF file for genes from Refseq (only protein_coding; hg38)|
+!!! error "Datasets are currently hosted on Dropbox which may not be accessible for users in certain regions."
+
+|Keyword|Description|Note|
+|-|-|-|
+|'1kg_eas_hg19','1kg_eas_hg19_tbi'|1KGp3v5 low-coverage EAS VCF and index (hg19)|Processed, Dropbox|
+|'1kg_eur_hg19','1kg_eur_hg19_tbi'|1KGp3v5 low-coverage EUR VCF and index (hg19)|Processed, Dropbox|
+|'1kg_eas_hg38','1kg_eas_hg38_tbi'|1KGp3v5 30x EAS VCF and index (hg38)|Processed, Dropbox|
+|'1kg_eur_hg38','1kg_eur_hg38_tbi'|1KGp3v5 30x EUR VCF and index (hg38)|Processed, Dropbox|
+|'dbsnp_v151_hg19'|dbSNP151 (hg19, !!very large)|Original source|
+|'dbsnp_v151_hg38'|dbSNP151 (hg38, !!very large)|Original source|
+|'ucsc_genome_hg19'|UCSC human reference genome (hg19)|Original source|
+|'ucsc_genome_hg38'|UCSC human reference genome (hg38)|Original source|
+|'1kg_dbsnp151_hg19_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg19)|Processed, Dropbox|
+|'1kg_dbsnp151_hg38_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg38)|Processed, Dropbox|
+|'recombination_hg19'|Recombination rate reference files from Hapmap Project (hg19)|Processed, Dropbox|
+|'recombination_hg38'|Recombination rate reference files from Hapmap Project (hg38)|Processed, Dropbox|
+|'ensembl_hg19_gtf'|GTF file for genes from Ensembl (hg19)|Processed, Dropbox|
+|'ensembl_hg19_gtf_protein_coding'|GTF file for genes from Ensembl (only protein_coding; hg19)|Processed, Dropbox|
+|'ensembl_hg38_gtf'|GTF file for genes from Ensembl (hg38)|Processed, Dropbox|
+|'ensembl_hg38_gtf_protein_coding'|GTF file for genes from Ensembl (only protein_coding; hg38)|Processed, Dropbox|
+|'refseq_hg19_gtf'|GTF file for genes from Refseq (hg19)|Processed, Dropbox|
+|'refseq_hg19_gtf_protein_coding'|GTF file for genes from Refseq (only protein_coding; hg19)|Processed, Dropbox|
+|'refseq_hg38_gtf'|GTF file for genes from Refseq (hg19)|Processed, Dropbox|
+|'refseq_hg38_gtf_protein_coding'|GTF file for genes from Refseq (only protein_coding; hg38)|Processed, Dropbox|
 
 ## Configurations
 
