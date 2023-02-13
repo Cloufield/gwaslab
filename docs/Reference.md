@@ -95,11 +95,43 @@ done
 ## Reference Library for variants annotation 
 
 GWASlab uses:
-- ensembl release 75 (hg19): current default dataset
+- ensembl release 75 (hg19): current default dataset http://ftp.ensembl.org/pub/release-75/gtf/homo_sapiens/
 - ensembl release 87 (hg19, will update soon): https://ftp.ensembl.org/pub/grch37/release-109/gtf/homo_sapiens/
 - ensembl release 107 (hg38):  https://ftp.ensembl.org/pub/release-107/gtf/homo_sapiens/
 - ensembl release 109 (hg38, will update soon):  https://ftp.ensembl.org/pub/release-109/gtf/homo_sapiens/
 - NCBI refseq GRCh37
 - NCBI refseq GRCh38
+
+```
+#!/bin/bash
+gzcat Homo_sapiens.GRCh37.75.gtf.gz|\
+grep -E 'processed_transcript|protein_coding|_gene' |\
+gzip >Homo_sapiens.GRCh37.75.protein_coding.gtf.gz 
+```
+
+```
+#!/bin/bash
+gzcat Homo_sapiens.GRCh38.107.chr.gtf.gz|\
+grep -E 'processed_transcript|protein_coding|_gene' |\
+gzip >Homo_sapiens.GRCh38.107.protein_coding.chr.gtf.gz 
+```
+
+```
+#!/bin/bash
+wget https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh37_latest/refseq_identifiers/GRCh37_latest_genomic.gtf.gz
+gzcat GRCh37_latest_genomic.gtf.gz |\
+grep 'gene_biotype "protein_coding"' |\
+sed 's/; gene "/; gene_name "/g' |\
+gzip >GRCh37_latest_genomic.protein_coding.gtf.gz
+```
+
+```
+#!/bin/bash
+wget https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
+gzcat GRCh38_latest_genomic.gtf.gz |\
+grep 'gene_biotype "protein_coding"' |\
+sed 's/; gene "/; gene_name "/g' |\
+gzip >GRCh38_latest_genomic.protein_coding.gtf.gz
+```
 
 Currently, gwaslab could use ensembl or refseq gtf reference data to annotate lead SNPs with the nearest gene name.
