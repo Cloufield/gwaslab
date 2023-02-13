@@ -108,6 +108,7 @@ def mqqplot(insumstats,
           arm_scale_d=None,
           cut=0,
           skip=0,
+          ystep=0,
           cutfactor=10,
           cut_line_color="#ebebeb",  
           sig_line=True,
@@ -618,12 +619,29 @@ def mqqplot(insumstats,
         
         if cut:
             cutline = ax1.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+            step=2
             if ((maxticker-cut)/cutfactor + cut) > cut:
-                ax1.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                ax1.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif")
+                if ystep == 0:
+                    if (cut - skip ) // step > 10:
+                        step = (cut - skip ) // 10
+                else:
+                    step = ystep
+
+                ax1.set_yticks([x for x in range(skip,cut-step,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
+                ax1.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut]+[maxticker],fontsize=fontsize,family="sans-serif")
+                #ax1.set_yticks([x for x in range(skip,cut+1,step)]+[(maxticker-cut)/cutfactor + cut])
+                #ax1.set_yticklabels([x for x in range(skip,cut+1,step)]+[maxticker],fontsize=fontsize,family="sans-serif")
             else:
-                ax1.set_yticks([x for x in range(skip,cut+1,2)])
-                ax1.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
+                if ystep == 0:
+                    if (cut - skip ) // step > 10:
+                        step = (cut - skip ) // 10
+                else:
+                    step = ystep
+                    
+                ax1.set_yticks([x for x in range(skip,cut-step,step)]+[cut])
+                ax1.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut],fontsize=fontsize,family="sans-serif")
+                #ax1.set_yticks([x for x in range(skip,cut+1,step)])
+                #ax1.set_yticklabels([x for x in range(skip,cut+1,step)],fontsize=fontsize,family="sans-serif")
             ax1.set_ylim(bottom = skip)
 
 
