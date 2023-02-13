@@ -10,6 +10,8 @@ from gwaslab.download import download_ref
 from gwaslab.download import check_and_download
 from gwaslab.download import update_formatbook
 from gwaslab.config import options
+from gtfparse import read_gtf
+# read_gtf -> v1.3.0
 
 #hard-coded data
 def get_chr_to_NC(build,inverse=False):
@@ -242,27 +244,50 @@ def get_gtf(chrom, build="19",source="ensembl"):
     if source=="ensembl":
         if build=="19": 
             data_path = check_and_download("ensembl_hg19_gtf")
-            gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#",dtype={0:"string"})
-            gtf = gtf.loc[gtf[0]==chrom,:]
+            #gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#",dtype={0:"string"})
+            gtf = read_gtf(data_path,usecols=["seqname","start","end","strand","feature","gene_biotype","gene_id","gene_name"])
+            gtf = gtf.loc[gtf["seqname"]==chrom,:]
         if build=="38":
             data_path = check_and_download("ensembl_hg38_gtf")
-            gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#",dtype={0:"string"})
-            gtf = gtf.loc[gtf[0]==chrom,:]
+            #gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#",dtype={0:"string"})
+            gtf = read_gtf(data_path,usecols=["seqname","start","end","strand","feature","gene_biotype","gene_id","gene_name"])
+            gtf = gtf.loc[gtf["seqname"]==chrom,:]
     if source=="refseq":
         chrom_NC = get_chr_to_NC(build=build)[str(chrom)]
         if build=="19":
             data_path = check_and_download("refseq_hg19_gtf")
-            gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
-            gtf = gtf.loc[gtf[0]==chrom_NC,:]
+            #gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
+            gtf = read_gtf(data_path,usecols=["seqname","start","end","strand","feature","gene_biotype","gene_id","gene_name"])
+            gtf = gtf.loc[gtf["seqname"]==chrom_NC,:]
         if build=="38":
             data_path = check_and_download("refseq_hg38_gtf")
-            gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
-            gtf = gtf.loc[gtf[0]==chrom_NC,:]
-        gtf[0] = str(chrom)
+            #gtf = pd.read_csv(data_path,sep="\t",header=None,comment="#")
+            gtf = read_gtf(data_path,usecols=["seqname","start","end","strand","feature","gene_biotype","gene_id","gene_name"])
+            gtf = gtf.loc[gtf["seqname"]==chrom_NC,:]
+        gtf["seqname"] = str(chrom)
     return gtf
 
 
 ####################################################################################################################
+def gtf_to_protein_coding(gtfpath,log=Log(),verbose=True):
+    protein_coding_path = gtfpath[:-6]+"protein_coding.gtf.gz"
+    # if not existing, extract protein coding records and output to a new file
+    if not path.isfile(protein_coding_path):
+        # get gene list
+        if verbose: log.write(" - Extracting protein_coding genes from {}".format(gtfpath)))
+        gtf = read_gtf(gtfpath,usecols=["feature","gene_biotype","gene_id","gene_name"])
+        gene_list = gtf.loc[(gtf["feature"]=="gene") & (gtf["gene_biotype"]=="protein_coding"),"gene_id"].values
+        if verbose: log.write(" - Loaded {} protein_coding genes.".format(len(gene_list)))
+        # extract entry using csv
+        gtf_raw = pd.read_csv(gtfpath,sep="\t",header=None,comment="#",dtype="string")
+        gtf_raw["_gene_id"] = gtf_raw[8].str.extract(r'gene_id "([\w\.-]+)"')
+        gtf_raw = gtf_raw.loc[ gtf_raw["_gene_id"].isin(gene_list) ,:]
+        gtf_raw = gtf_raw.drop("_gene_id",axis=1)
+        if verbose: log.write(" - Extracted records are saved to : {} ".format(protein_coding_path))
+        gtf_raw.to_csv(protein_coding_path, header=None, index=None, sep="\t")
+
+    return protein_coding_path
+
 
       
 

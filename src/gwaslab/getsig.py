@@ -5,6 +5,7 @@ from gwaslab.Log import Log
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
 from gwaslab.CommonData import get_chr_to_NC
+from gwaslab.CommonData import gtf_to_protein_coding
 from gwaslab.download import check_and_download
 from gwaslab.gwascatalog import gwascatalog_trait
 from pyensembl import EnsemblRelease
@@ -23,6 +24,7 @@ def getsig(insumstats,
            chrom,
            pos,
            p,
+           scaled=False,
            windowsizekb=500,
            sig_level=5e-8,
            log=Log(),
@@ -140,11 +142,11 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ense
         elif source=="refseq":
             contig = get_number_to_chr()[x[chrom]]
             contig = get_chr_to_NC(build=build)[contig]
-        
+            # for refseq , gene names are stored as gene_id, using gene_ids_at_locus instead
+            data.gene_names_at_locus = data.gene_ids_at_locus
         position = int(x[pos])
         # query
         gene = data.gene_names_at_locus(contig=contig, position=position)
-        
         if len(gene)==0:
             # if not in any gene
             i=0
@@ -212,12 +214,14 @@ def annogene(
             #grep -E 'processed_transcript|protein_coding|_gene' 
             #| gzip >Homo_sapiens.GRCh37.75.processed.chr.gtf.gz     
             
-            gtf_path = check_and_download("ensembl_hg19_gtf_protein_coding")
+            #gtf_path = check_and_download("ensembl_hg19_gtf_protein_coding")
+            gtf_path = check_and_download("ensembl_hg19_gtf")
+            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
             gtf_db_path = gtf_path[:-2]+"db"
             
             data = Genome(
                 reference_name='GRCh37',
-                annotation_name='hg19_gene',
+                annotation_name='Ensembl',
                 gtf_path_or_url=gtf_path)
             if path.isfile(gtf_db_path) is False:
                 data.index()
@@ -226,11 +230,13 @@ def annogene(
                 index=output.index).values
         elif build=="38":
             if verbose:log.write(" -Assigning Gene name using built-in Ensembl Release hg38")
-            gtf_path = check_and_download("ensembl_hg38_gtf_protein_coding")
+            #gtf_path = check_and_download("ensembl_hg38_gtf_protein_coding")
+            gtf_path = check_and_download("ensembl_hg38_gtf")
+            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
             gtf_db_path = gtf_path[:-2]+"db"
             data = Genome(
                 reference_name='GRCh38',
-                annotation_name='hg38_gene',
+                annotation_name='Ensembl',
                 gtf_path_or_url=gtf_path)
             if path.isfile(gtf_db_path) is False:
                 data.index()
@@ -241,11 +247,13 @@ def annogene(
     if source == "refseq":
         if build=="19":
             if verbose:log.write(" -Assigning Gene name using NCBI refseq latest GRCh37")
-            gtf_path = check_and_download("refseq_hg19_gtf_protein_coding")
+            #gtf_path = check_and_download("refseq_hg19_gtf_protein_coding")
+            gtf_path = check_and_download("refseq_hg19_gtf")
+            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
             gtf_db_path = gtf_path[:-2]+"db"
             data = Genome(
                 reference_name='GRCh37',
-                annotation_name='hg19_gene',
+                annotation_name='Refseq',
                 gtf_path_or_url=gtf_path)
             if path.isfile(gtf_db_path) is False:
                 data.index()
@@ -254,11 +262,13 @@ def annogene(
                 index=output.index).values
         elif build=="38":
             if verbose:log.write(" -Assigning Gene name using built-in NCBI refseq latest GRCh38")
-            gtf_path = check_and_download("refseq_hg38_gtf_protein_coding")
+            #gtf_path = check_and_download("refseq_hg38_gtf_protein_coding")
+            gtf_path = check_and_download("refseq_hg38_gtf")
+            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
             gtf_db_path = gtf_path[:-2]+"db"
             data = Genome(
                 reference_name='GRCh38',
-                annotation_name='hg38_gene',
+                annotation_name='Refseq',
                 gtf_path_or_url=gtf_path)
             if path.isfile(gtf_db_path) is False:
                 data.index()

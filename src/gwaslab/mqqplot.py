@@ -298,6 +298,9 @@ def mqqplot(insumstats,
         in_region_snp = (sumstats[chrom]==region_chr) &(sumstats[pos]<region_end) &(sumstats[pos]>region_start)
         if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)))
         sumstats = sumstats.loc[in_region_snp,:]
+        if len(sumstats)==0:
+            log.write(" -Warning : No valid data! Please check the input.")
+            return None
     
     ## EAF
     eaf_raw = pd.Series()
@@ -397,12 +400,16 @@ def mqqplot(insumstats,
     garbage_collect.collect()
     
     # shrink variants above cut line #########################################################################################
-    sumstats["scaled_P"], maxy, maxticker, cut, cutfactor = _cut(series = sumstats["scaled_P"], 
-                                                                    mode =mode, 
-                                                                    cut=cut,
-                                                                    cutfactor = cutfactor,
-                                                                    verbose =verbose, 
-                                                                    log = log)
+    try:
+        sumstats["scaled_P"], maxy, maxticker, cut, cutfactor = _cut(series = sumstats["scaled_P"], 
+                                                                        mode =mode, 
+                                                                        cut=cut,
+                                                                        cutfactor = cutfactor,
+                                                                        verbose =verbose, 
+                                                                        log = log)
+    except:
+        log.write(" -Warning : No valid data! Please check the input.")
+        return None
     
     #maxy = sumstats["scaled_P"].max()
     #if "b" not in mode:
@@ -637,7 +644,7 @@ def mqqplot(insumstats,
                         step = (cut - skip ) // 10
                 else:
                     step = ystep
-                    
+
                 ax1.set_yticks([x for x in range(skip,cut-step,step)]+[cut])
                 ax1.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut],fontsize=fontsize,family="sans-serif")
                 #ax1.set_yticks([x for x in range(skip,cut+1,step)])
