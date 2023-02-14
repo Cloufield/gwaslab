@@ -168,28 +168,28 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ense
                         gene_u = data.gene_names_at_locus(contig=contig, position=position-distance-j)
                         gene_d = data.gene_names_at_locus(contig=contig, position=position+distance+j)
                         if len(gene_u)>0:
-                            return -distance-j,",".join(gene_u)
+                            return -distance-j,",".join(gene_u).strip(",")
                         elif len(gene_d)>0:
-                            return distance+j,",".join(gene_d)
+                            return distance+j,",".join(gene_d).strip(",")
                 elif len(gene_u)>0:                    
                     # if found gene uptream
                     distance = (i-1)*step
                     for j in range(0,step,1):
                         gene_u2 = data.gene_names_at_locus(contig=contig, position=position-distance-j)
                         if len(gene_u2)>0:
-                            return -distance-j,",".join(gene_u)
+                            return -distance-j,",".join(gene_u).strip(",")
                 elif len(gene_d)>0:
                     # if found gene downstream
                     distance = (i-1)*step
                     for j in range(0,step,1):
                         gene_d2 = data.gene_names_at_locus(contig=contig, position=position+distance+j)
                         if len(gene_d2)>0:
-                            return distance+j,",".join(gene_d)
+                            return distance+j,",".join(gene_d).strip(",")
                 i+=1
                 # increase i by 1
             return distance,"intergenic"
         else:
-            return 0,",".join(gene)
+            return 0,",".join(gene).strip(",")
 
 
 def annogene(
@@ -209,7 +209,7 @@ def annogene(
     if source == "ensembl":
         if build=="19":
             #data = EnsemblRelease(75)
-            if verbose:log.write(" -Assigning Gene name using Ensembl Release hg19")
+            if verbose:log.write(" -Assigning Gene name using ensembl_hg19_gtf for protein coding genes")
             #zcat Homo_sapiens.GRCh37.75.gtf.gz| 
             #grep -E 'processed_transcript|protein_coding|_gene' 
             #| gzip >Homo_sapiens.GRCh37.75.processed.chr.gtf.gz     
@@ -229,7 +229,7 @@ def annogene(
                 list(output.apply(lambda x:closest_gene(x,data=data,source=source), axis=1)), 
                 index=output.index).values
         elif build=="38":
-            if verbose:log.write(" -Assigning Gene name using built-in Ensembl Release hg38")
+            if verbose:log.write(" -Assigning Gene name using ensembl_hg38_gtf for protein coding genes")
             #gtf_path = check_and_download("ensembl_hg38_gtf_protein_coding")
             gtf_path = check_and_download("ensembl_hg38_gtf")
             gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
@@ -246,7 +246,7 @@ def annogene(
     
     if source == "refseq":
         if build=="19":
-            if verbose:log.write(" -Assigning Gene name using NCBI refseq latest GRCh37")
+            if verbose:log.write(" -Assigning Gene name using NCBI refseq latest GRCh37 for protein coding genes")
             #gtf_path = check_and_download("refseq_hg19_gtf_protein_coding")
             gtf_path = check_and_download("refseq_hg19_gtf")
             gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
@@ -261,7 +261,7 @@ def annogene(
                 list(output.apply(lambda x:closest_gene(x,data=data,source=source,build=build), axis=1)), 
                 index=output.index).values
         elif build=="38":
-            if verbose:log.write(" -Assigning Gene name using built-in NCBI refseq latest GRCh38")
+            if verbose:log.write(" -Assigning Gene name using NCBI refseq latest GRCh38 for protein coding genes")
             #gtf_path = check_and_download("refseq_hg38_gtf_protein_coding")
             gtf_path = check_and_download("refseq_hg38_gtf")
             gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)

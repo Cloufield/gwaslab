@@ -43,12 +43,14 @@ def update_config(log=Log()):
             dicts = json.load(open(config_path))
     
     # check if the ref file exists. If not, remove it from dicts.
+    to_remove=[]
     for key,value in dicts["downloaded"].items():
-        to_remove=[]
         if not path.exists(value):
             to_remove.append(key)
         else:
-            log.write(key," : ",value)
+            log.write("  -",key," : ",value)
+
+    # remove from dict
     for i in to_remove:
         dicts["downloaded"].pop(i, None)
     
@@ -141,13 +143,15 @@ def check_downloaded_ref(log=Log()):
     log.write("Start to check downloaded reference files...")
     #config_path =  path.dirname(__file__) + '/data/config.json'
     config_path = options.paths["config"]
+    log.write(" -Checking the config file:{}".format(config_path))
     if not path.exists(config_path):
+        log.write(" -Config file is missing.")
         initiate_config()      
     else:
+        log.write(" -Config file exists.")
         try:
-            dicts = update_config(config_path=config_path)
+            dicts = update_config()
             return dicts
-            log.write("Finished checking downloaded reference files...")
         except:
             log.write(" -No records in config file.")
     log.write("Finished checking downloaded reference files...")
