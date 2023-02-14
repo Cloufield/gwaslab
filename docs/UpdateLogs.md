@@ -3,9 +3,10 @@
 ## 3.4.0
 - restructured plot functions
 - added dtype conversion for input pd.DataFrame
-- reimplement gtfparse
+- reimplemented gtfparse and revised requirements
 - update reference datasets
 - fixed bugs when no variants were selected for mqqplot
+- fixed bugs in `gl.check_downloaded_ref()`
 
 ## 3.3.24 - 2023/02/01
 - update bugs in __init__.py

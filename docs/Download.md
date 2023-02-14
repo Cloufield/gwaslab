@@ -12,7 +12,7 @@
 
 Currently, you can download the following files using GWASLab with the keywords:
 
-!!! error "Datasets are currently hosted on Dropbox which may not be accessible for users in certain regions."
+!!! error "Processed datasets are currently hosted on Dropbox which may not be accessible for users in certain regions."
 
 |Keyword|Description|Note|
 |-|-|-|
