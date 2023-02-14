@@ -1472,7 +1472,7 @@
 <li>For VCF file, Gwaslab will first extract all variants in reference file with matching CHR and POS. And then comapre EA/NEA in sumstats with REF/ALT in reference vcf. When matching, it will annotate the vairant in sumstats with the matching rsID in reference vcf.  </li>
 </ul>
 <h2 id="check-panlidromic-snps-or-undistingushable-indels">Check panlidromic SNPs or undistingushable Indels</h2>
-<p><code>i.nfer_strand()</code>:</p>
+<p><code>.infer_strand()</code>:</p>
 <ul>
 <li>Infer the strand for palindromic SNPs (AT, or CG), the default threshlod is 0.40. </li>
 <li>Checking the alignment status of indels with the REF allele in a reference vcf file.</li>
@@ -1513,10 +1513,8 @@
 </code></pre></div>
 </div>
 <h2 id="assign-chr-and-pos-according-to-rsid-and-reference-data">Assign CHR and POS according to rsID and reference data</h2>
-<p><div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos</span><span class="p">()</span>     <span class="c1">#single thread</span>
-<span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos2</span><span class="p">()</span>    <span class="c1">#multithread</span>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos</span><span class="p">()</span>  
 </code></pre></div>
-(to be tested)</p>
 
 
 
