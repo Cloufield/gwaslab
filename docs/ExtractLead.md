@@ -1,6 +1,18 @@
 # Extract lead variants
 
-GWASLab will extract the lead variants from identified significant loci based on a sliding window.
+GWASLab can extract the lead variants from identified significant loci using a sliding window.
+
+# Usage
+
+```python
+mysumstats.get_lead(
+           windowsizekb=500,
+           sig_level=5e-8,
+           anno=False,
+           build="19",
+           source="ensembl",
+           verbose=True)
+```
 
 !!! quote
     GWASLab basically adopted the definition for novel loci from Global Biobank Meta-analysis Initiative flagship paper. 
@@ -11,28 +23,15 @@ GWASLab will extract the lead variants from identified significant loci based on
 
     GWASlab currently iteratively extends ± `windowsizekb` kb region around the most significant variant and merges overlapping regions until no genome-wide significant variants were detected within ± `windowsizekb`. (slightly different from the GBMI paper. When `windowsizekb=1000`, it is equvalent to GBMI's definition.)
 
-# Usage
-
-```python
-mysumstats.get_lead(
-           windowsizekb=500,
-           sig_level=5e-8,
-           xymt=["X","Y","MT"],
-           anno=False,
-           build="19",
-           source="ensembl",
-           verbose=True)
-```
-
 ## Options
 
-- `windowsizekb` : `int`. Specify the sliding window size in **kb** (default: 500)
-- `sig_level` : `float`.Specify the P value threshold (default: 5e-8).
-- `xymt`: `list`. A list of notation for chrX, chrY and chrMT.
-- `anno`: `boolean`. if annotate the lead variants with nearest gene names.
+- `windowsizekb` : `int`. Specify the sliding window size in **kb** (default: `500`)
+- `sig_level` : `float`.Specify the P value threshold (default: `5e-8`).
+- `anno`: `boolean`. If annotate the lead variants with nearest gene names.
+- `source`: `ensembl` or `refseq`. When anno is True, annotate variants using gtf file from `ensembl` or `refseq` (default: `ensembl`). 
 - `build` : `string`. genome build version "19" or "38".
 
-Return a dataframe of the lead variants
+Return a dataframe of the lead variants.
 
 ## Example
 
