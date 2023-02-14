@@ -41,7 +41,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/
 
 ## Check panlidromic SNPs or undistingushable Indels
 
-`i.nfer_strand()`:
+`.infer_strand()`:
 
 - Infer the strand for palindromic SNPs (AT, or CG), the default threshlod is 0.40. 
 - Checking the alignment status of indels with the REF allele in a reference vcf file.
@@ -91,7 +91,6 @@ GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in D
 ## Assign CHR and POS according to rsID and reference data
 
 ```python
-mysumstats.rsid_to_chrpos()     #single thread
-mysumstats.rsid_to_chrpos2()    #multithread
+mysumstats.rsid_to_chrpos()  
 ```
-(to be tested)
+
