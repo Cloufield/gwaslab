@@ -365,9 +365,15 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         if verbose: log.write("Start to fix chromosome notation...")
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))          
         
-        # convert to string datatype        
-        if sumstats.loc[:,chrom].dtype != "string":
+        # convert to string datatype
+        try:
+            if sumstats.loc[:,chrom].dtype == "string":
+                pass
+            else:
+                sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string")
+        except:
             sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string")
+        
         # check if CHR is numeric
         is_chr_fixed = sumstats[chrom].str.isnumeric()
         # fill NAs with False
