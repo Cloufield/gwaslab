@@ -367,11 +367,13 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         
         # convert to string datatype
         try:
+            if verbose: log.write(" -Checking CHR data type...")
             if sumstats.loc[:,chrom].dtype == "string":
                 pass
             else:
                 sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string")
         except:
+            if verbose: log.write(" -Force converting to pd string data type...")
             sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string")
         
         # check if CHR is numeric
