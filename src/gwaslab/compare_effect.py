@@ -42,7 +42,7 @@ def compare_effect(path1,
                    reg_box=dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey"),
                    is_reg=True,
                    allele_match=False,
-                   r2_se=False,
+                   r_se=False,
                    is_45_helper_line=True,
                    legend_title=r'$ P < 5 x 10^{-8}$ in:',
                    legend_pos='upper left',
@@ -546,24 +546,25 @@ def compare_effect(path1,
             reg = ss.linregress(sig_list_merged["EFFECT_1"],sig_list_merged["EFFECT_2_aligned"])
             
             # estimate se for r2
-            if r2_se==True:
-                if verbose:log.write(" -Estimating SE for Rsq using Jackknife method.")
-                r2_se_jackknife = jackknife_r2(sig_list_merged)
-                r2_se_jackknife_string = " ({:.2f})".format(r2_se_jackknife)
-            else:
-                r2_se_jackknife_string= ""
+            #if r_se==True:
+            #    if verbose:log.write(" -Estimating SE for Rsq using Jackknife method.")
+            #    r_se_jackknife = jackknife_r2(sig_list_merged)
+            #    r_se_jackknife_string = " ({:.2f})".format(r_se_jackknife)
+            #else:
+            r_se_jackknife_string= ""
         else:
             reg = ss.linregress(sig_list_merged["OR_1"],sig_list_merged["OR_2_aligned"])
         #### calculate p values based on selected value , default = 0 
         if verbose:log.write(" -Calculating p values based on given null slope :",null_beta)
         t_score = (reg[0]-null_beta) / reg[4]
         degree = len(sig_list_merged.dropna())-2
-        p = ss.t.sf(abs(t_score), df=degree)*2
+        p =  reg[3]
+        #ss.t.sf(abs(t_score), df=degree)*2
         if verbose:log.write(" -Beta_se = ", reg[4])
-        if verbose:log.write(" -H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
+        #if verbose:log.write(" -H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
         if verbose:log.write(" -H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]))
-        if r2_se==True:
-            if verbose:log.write(" -R2 se (jackknife) = {:.2e}".format(r2_se_jackknife))
+        #if r_se==True:
+        #    if verbose:log.write(" -R se (jackknife) = {:.2e}".format(r_se_jackknife))
 
         if reg[0] > 0:
             #if regression coeeficient >0 : auxiliary line slope = 1
@@ -579,7 +580,7 @@ def compare_effect(path1,
                 pe="0"
             p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
             p_latex= f'{p_text}'
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2])+r2_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **fontargs)
+            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, "+ p_latex + ", $r =$" +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **fontargs)
         else:
             #if regression coeeficient <0 : auxiliary line slope = -1
             if is_45_helper_line is True:
@@ -596,7 +597,7 @@ def compare_effect(path1,
                 pe="0"
             p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
             p_latex= f'{p_text}'
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r^{2} =$" +"{:.2f}".format(reg[2])+r2_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
+            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r =$" +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
             
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             middle = sig_list_merged["EFFECT_1"].mean()
@@ -716,7 +717,7 @@ def test_q(df,beta1,se1,beta2,se2):
     
     return df
 
-def jackknife_r2(df,x="EFFECT_1",y="EFFECT_2_aligned"):
+def jackknife_r(df,x="EFFECT_1",y="EFFECT_2_aligned"):
     """Jackknife estimation of se for rsq
 
     """
@@ -731,22 +732,22 @@ def jackknife_r2(df,x="EFFECT_1",y="EFFECT_2_aligned"):
     df_nona["nrow"] = range(n)
     
     # a list to store r2
-    r2_list=[]
+    r_list=[]
     
     # estimate r2
     for i in range(n):
         # exclude 1 record
         records_to_use = df_nona["nrow"]!=i
-        # estimate r2
+        # estimate r
         reg_jackknife = ss.linregress(df_nona.loc[records_to_use, x],df_nona.loc[records_to_use,y])
-        # add r2_i to list
-        r2_list.append(reg_jackknife[2])
+        # add r_i to list
+        r_list.append(reg_jackknife[2])
 
     # convert list to array
-    r2s = np.array(r2_list)
+    rs = np.array(r_list)
     # https://en.wikipedia.org/wiki/Jackknife_resampling
-    r2_se = np.sqrt( (n-1)/n * np.sum((r2s - np.mean(r2s))**2) )
-    return r2_se
+    r_se = np.sqrt( (n-1)/n * np.sum((rs - np.mean(rs))**2) )
+    return r_se
 
 def drop_duplicate_and_na(df,snpid="SNPID",sort_by=False,log=Log(),verbose=True):
     length_before = len(df)
