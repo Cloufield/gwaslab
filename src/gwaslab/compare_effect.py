@@ -11,6 +11,8 @@ from gwaslab.Log import Log
 from gwaslab.winnerscurse import wc_correct
 from gwaslab.winnerscurse import wc_correct_test
 import gc
+from statsmodels.stats.multitest import fdrcorrection
+
 from adjustText import adjust_text
 #20220422
 def compare_effect(path1,
@@ -37,10 +39,12 @@ def compare_effect(path1,
                    include_all=True,
                    q_level=0.05,
                    sig_level=5e-8,
+                   drop=False,
                    wc_sig_level=5e-8,
                    # reg
                    reg_box=dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey"),
                    is_reg=True,
+                   fdr=False,
                    allele_match=False,
                    r_se=False,
                    is_45_helper_line=True,
@@ -116,7 +120,8 @@ def compare_effect(path1,
         if verbose: log.write(" -Extract lead variants from "+label[0]+"...")
         sig_list_1 = getsig(sumstats,"SNPID","CHR","POS","P", verbose=verbose,sig_level=sig_level)
     
-    sig_list_1 = drop_duplicate_and_na(sig_list_1, sort_by="P", log=log ,verbose=verbose)
+    if drop==True:
+        sig_list_1 = drop_duplicate_and_na(sig_list_1, sort_by="P", log=log ,verbose=verbose)
 
     ######### 9 extract snplist2
     if snplist is not None:
@@ -150,8 +155,8 @@ def compare_effect(path1,
         ######### 12.2 otherwise use the sutomatically detected lead SNPs
         sig_list_2 = getsig(sumstats,"SNPID","CHR","POS","P",
                                  verbose=verbose,sig_level=sig_level)
-
-    sig_list_2 = drop_duplicate_and_na(sig_list_2, sort_by="P", log=log ,verbose=verbose)
+    if drop==True:
+        sig_list_2 = drop_duplicate_and_na(sig_list_2, sort_by="P", log=log ,verbose=verbose)
 
     ######### 13 Merge two list using SNPID
     ##############################################################################
@@ -204,7 +209,8 @@ def compare_effect(path1,
     sumstats.rename(columns=rename_dict, inplace=True)
     
     # drop na and duplicate
-    sumstats = drop_duplicate_and_na(sumstats,  sort_by="P_1", log=log , verbose=verbose)
+    if drop==True:
+        sumstats = drop_duplicate_and_na(sumstats,  sort_by="P_1", log=log , verbose=verbose)
     sumstats.drop("P_1",axis=1,inplace=True)
 
     if verbose: log.write(" -Merging "+label[0]+" effect information...")
@@ -248,7 +254,8 @@ def compare_effect(path1,
     if len(eaf)>0: rename_dict[eaf[1]]="EAF_2"
     sumstats.rename(columns=rename_dict, inplace=True)         
     # drop na and duplicate
-    sumstats = drop_duplicate_and_na(sumstats, sort_by="P_2", log=log, verbose=verbose)
+    if drop==True:
+        sumstats = drop_duplicate_and_na(sumstats, sort_by="P_2", log=log, verbose=verbose)
     sumstats.drop("P_2",axis=1,inplace=True)
 
     if verbose: log.write(" -Merging "+label[1]+" effect information...")
@@ -269,7 +276,8 @@ def compare_effect(path1,
                               },
                      inplace=True)
     # drop na and duplicate
-    sumstats = drop_duplicate_and_na(sumstats, sort_by="P_1", log=log, verbose=verbose)
+    if drop==True:
+        sumstats = drop_duplicate_and_na(sumstats, sort_by="P_1", log=log, verbose=verbose)
     
     sumstats.set_index("SNPID",inplace=True)
     sig_list_merged.update(sumstats)
@@ -285,7 +293,8 @@ def compare_effect(path1,
                               },
                      inplace=True)
     # drop na and duplicate
-    sumstats = drop_duplicate_and_na(sumstats, sort_by="P_2", log=log, verbose=verbose)              
+    if drop==True:
+        sumstats = drop_duplicate_and_na(sumstats, sort_by="P_2", log=log, verbose=verbose)              
     
     sumstats.set_index("SNPID",inplace=True)
     sig_list_merged.update(sumstats)
@@ -359,6 +368,11 @@ def compare_effect(path1,
             sig_list_merged = sig_list_merged.loc[sig_list_merged["EA_1"] == sig_list_merged["EA_2_aligned"]]
         else:
             if verbose: log.write(" -No variants with EA not matching...")
+    if fdr==True:
+        if verbose: log.write(" -Using FDR...")
+        sig_list_merged["P_1"] = fdrcorrection(sig_list_merged["P_1"])[1]
+        sig_list_merged["P_2"] = fdrcorrection(sig_list_merged["P_2"])[1]
+
     ####################################################################################################################################
     ## winner's curse correction using aligned beta
     if wc_correction == "all":
