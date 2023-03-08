@@ -205,11 +205,11 @@ def mqqplot(insumstats,
 
     usecols=[]
     #  P ###############################################################################
-    if p in insumstats.columns:
-        # p value is necessary for all modes.
-        usecols.append(p)
-    elif mlog10p in insumstats.columns and scaled is True:
+    if mlog10p in insumstats.columns and scaled is True:
         usecols.append(mlog10p)
+    elif p in insumstats.columns:
+        # p value is necessary for all modes.
+        usecols.append(p)  
     elif "b" in mode:
         pass
     else :
