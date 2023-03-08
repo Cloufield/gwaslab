@@ -627,7 +627,7 @@ def compare_effect(path1,
     ax.set_xlabel(xylabel_prefix+label[0],**fontargs)
     ax.set_ylabel(xylabel_prefix+label[1],**fontargs)
     
-    L = ax.legend(title=legend_title,loc=legend_pos,framealpha=1,edgecolor="grey")
+    L = ax.legend(title=legend_title,loc=legend_pos,framealpha=1,edgecolor="grey",alignment="left")
     
     for i, handle in enumerate(L.legendHandles):
         handle.set_edgecolor("white")
