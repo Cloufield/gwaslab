@@ -386,7 +386,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         if sum(is_chr_fixed)<len(sumstats):
             
             #extract the CHR number or X Y M MT
-            chr_extracted = sumstats.loc[~is_chr_fixed,chrom].str.extract(r'(chr)?([0-9]{1,2,3}|[XYM]|[MT])$',flags=re.IGNORECASE|re.ASCII)[1]
+            chr_extracted = sumstats.loc[~is_chr_fixed,chrom].str.extract(r'(chr)?([0-9]{1,3}|[XYM]|MT)$',flags=re.IGNORECASE|re.ASCII)[1]
             is_chr_fixable = ~chr_extracted.isna()
             if verbose: log.write(" -Vairants with fixable chromosome notations:",sum(is_chr_fixable))  
 
