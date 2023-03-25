@@ -114,7 +114,9 @@ def mqqplot(insumstats,
           sig_line=True,
           sig_level=5e-8,
           sig_line_color="grey",
+          suggestive_sig_line=False,
           suggestive_sig_level=5e-6,
+          suggestive_sig_line_color="grey",
           highlight = list(),
           highlight_color="#CB132D",
           highlight_windowkb = 500,
@@ -125,6 +127,7 @@ def mqqplot(insumstats,
           maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
           gc=True,
           include_chrXYMT = True,
+          ylim=None,
           title =None,
           mtitle=None,
           qtitle=None,
@@ -614,6 +617,8 @@ def mqqplot(insumstats,
         # genomewide significant line
         if sig_line is True:
             sigline = ax1.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
+        if suggestive_sig_line is True:
+            suggestive_sig_line = ax1.axhline(y=-np.log10(suggestive_sig_level), linewidth = 2,linestyle="--",color=suggestive_sig_line_color,zorder=1)
         
         # for brisbane plot, add median and mean line
         if "b" in mode:    
@@ -779,7 +784,10 @@ def mqqplot(insumstats,
                     verbose=verbose,
                     log=log
                 )
-
+    
+    if ylim is not None:
+        ax1.set_ylim(ylim)
+            
     # Saving plot ##########################################################################################################
     if save:
         if verbose: log.write("Saving plot:")
