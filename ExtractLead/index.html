@@ -1274,7 +1274,16 @@
 
 
 <h1 id="extract-lead-variants">Extract lead variants</h1>
-<p>GWASLab will extract the lead variants from identified significant loci based on a sliding window.</p>
+<p>GWASLab can extract the lead variants from identified significant loci using a sliding window.</p>
+<h1 id="usage">Usage</h1>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span>
+           <span class="n">windowsizekb</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+           <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>
+           <span class="n">anno</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
+           <span class="n">source</span><span class="o">=</span><span class="s2">&quot;ensembl&quot;</span><span class="p">,</span>
+           <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
 <div class="admonition quote">
 <p class="admonition-title">Quote</p>
 <p>GWASLab basically adopted the definition for novel loci from Global Biobank Meta-analysis Initiative flagship paper. </p>
@@ -1282,25 +1291,15 @@
 <p>(Details are described in Zhou, W., Kanai, M., Wu, K. H. H., Rasheed, H., Tsuo, K., Hirbo, J. B., ... &amp; Study, C. O. H. (2022). Global Biobank Meta-analysis Initiative: Powering genetic discovery across human disease. Cell Genomics, 2(10), 100192. )</p>
 <p>GWASlab currently iteratively extends ± <code>windowsizekb</code> kb region around the most significant variant and merges overlapping regions until no genome-wide significant variants were detected within ± <code>windowsizekb</code>. (slightly different from the GBMI paper. When <code>windowsizekb=1000</code>, it is equvalent to GBMI's definition.)</p>
 </div>
-<h1 id="usage">Usage</h1>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span>
-           <span class="n">windowsizekb</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-           <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>
-           <span class="n">xymt</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span><span class="s2">&quot;MT&quot;</span><span class="p">],</span>
-           <span class="n">anno</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-           <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
-           <span class="n">source</span><span class="o">=</span><span class="s2">&quot;ensembl&quot;</span><span class="p">,</span>
-           <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</code></pre></div>
 <h2 id="options">Options</h2>
 <ul>
-<li><code>windowsizekb</code> : <code>int</code>. Specify the sliding window size in <strong>kb</strong> (default: 500)</li>
-<li><code>sig_level</code> : <code>float</code>.Specify the P value threshold (default: 5e-8).</li>
-<li><code>xymt</code>: <code>list</code>. A list of notation for chrX, chrY and chrMT.</li>
-<li><code>anno</code>: <code>boolean</code>. if annotate the lead variants with nearest gene names.</li>
+<li><code>windowsizekb</code> : <code>int</code>. Specify the sliding window size in <strong>kb</strong> (default: <code>500</code>)</li>
+<li><code>sig_level</code> : <code>float</code>.Specify the P value threshold (default: <code>5e-8</code>).</li>
+<li><code>anno</code>: <code>boolean</code>. If annotate the lead variants with nearest gene names.</li>
+<li><code>source</code>: <code>ensembl</code> or <code>refseq</code>. When anno is True, annotate variants using gtf file from <code>ensembl</code> or <code>refseq</code> (default: <code>ensembl</code>). </li>
 <li><code>build</code> : <code>string</code>. genome build version "19" or "38".</li>
 </ul>
-<p>Return a dataframe of the lead variants</p>
+<p>Return a dataframe of the lead variants.</p>
 <h2 id="example">Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
