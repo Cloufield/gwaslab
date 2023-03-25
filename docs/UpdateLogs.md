@@ -7,6 +7,8 @@
 - update reference datasets
 - fixed bugs when no variants were selected for mqqplot
 - fixed bugs in `gl.check_downloaded_ref()`
+- added suggestive significance line
+
 
 ## 3.3.24 - 2023/02/01
 - update bugs in __init__.py
