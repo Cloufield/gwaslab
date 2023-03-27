@@ -787,6 +787,8 @@ def mqqplot(insumstats,
     
     if ylim is not None:
         ax1.set_ylim(ylim)
+        if "qq" in mode:
+            ax2.set_ylim(ylim)
             
     # Saving plot ##########################################################################################################
     if save:
