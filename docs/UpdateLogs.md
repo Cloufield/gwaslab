@@ -1,5 +1,10 @@
 # Update Logs
 
+## 3.4.1 - 2023/03/28
+- added sc_linewidth
+- fixed use_rank
+- fixed ystep
+
 ## 3.4.0
 - restructured plot functions
 - added dtype conversion for input pd.DataFrame

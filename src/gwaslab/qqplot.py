@@ -5,7 +5,7 @@ import numpy as np
 import scipy as sp
 from gwaslab.Log import Log
 from gwaslab.calculate_gc import lambdaGC
-
+from math import ceil
 # qq plot module for mqqplot
 def _plot_qq(
     sumstats,
@@ -17,6 +17,7 @@ def _plot_qq(
     cutfactor,
     skip,
     maxy,
+    ystep,
     colors,
     sig_line_color,
     stratified,
@@ -28,6 +29,7 @@ def _plot_qq(
     title_fontsize,
     include_chrXYMT,
     cut_line_color,
+    linewidth,
     verbose=True,
     log=Log()
 ):
@@ -92,19 +94,33 @@ def _plot_qq(
                     verticalalignment='top',
                     transform=ax2.transAxes,
                     fontsize=fontsize,family="sans-serif")
-    
-    # set set_yticks and set_yticklabels 
+
     if cut == 0: 
-        ax2.set_ylim(skip,maxy*1.2)
+        ax2.set_ylim(skip, ceil(maxy*1.2) )
+        
     if cut:
-        qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+        qcutline = ax2.axhline(y=cut, linewidth = linewidth, linestyle="--",color=cut_line_color,zorder=1)
+        step=2
         if ((maxticker-cut)/cutfactor + cut) > cut:
-            ax2.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-            ax2.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif")
+            if ystep == 0:
+                if (cut - skip ) // step > 10:
+                    step = (cut - skip ) // 10
+            else:
+                step = ystep
+
+            ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
+            ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut]+[maxticker],fontsize=fontsize,family="sans-serif")
         else:
-            ax2.set_yticks([x for x in range(skip,cut+1,2)])
-            ax2.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
-    
+            if ystep == 0:
+                if (cut - skip ) // step > 10:
+                    step = (cut - skip ) // 10
+            else:
+                step = ystep
+
+            ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut])
+            ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut],fontsize=fontsize,family="sans-serif")
+        ax2.set_ylim(bottom = skip)
+
     ax2.tick_params(axis='both', which='both', labelsize=fontsize)
     #
     if qtitle:
@@ -114,3 +130,5 @@ def _plot_qq(
     
     # Creating QQ plot Finished #############################################################################################
     return ax2
+
+

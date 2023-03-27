@@ -117,6 +117,7 @@ def mqqplot(insumstats,
           suggestive_sig_line=False,
           suggestive_sig_level=5e-6,
           suggestive_sig_line_color="grey",
+          sc_linewidth=2,
           highlight = list(),
           highlight_color="#CB132D",
           highlight_windowkb = 500,
@@ -128,6 +129,7 @@ def mqqplot(insumstats,
           gc=True,
           include_chrXYMT = True,
           ylim=None,
+          xpad=None,
           title =None,
           mtitle=None,
           qtitle=None,
@@ -616,21 +618,21 @@ def mqqplot(insumstats,
         
         # genomewide significant line
         if sig_line is True:
-            sigline = ax1.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
+            sigline = ax1.axhline(y=-np.log10(sig_level), linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1)
         if suggestive_sig_line is True:
-            suggestive_sig_line = ax1.axhline(y=-np.log10(suggestive_sig_level), linewidth = 2,linestyle="--",color=suggestive_sig_line_color,zorder=1)
+            suggestive_sig_line = ax1.axhline(y=-np.log10(suggestive_sig_level), linewidth = sc_linewidth,linestyle="--",color=suggestive_sig_line_color,zorder=1)
         
         # for brisbane plot, add median and mean line
         if "b" in mode:    
-            meanline = ax1.axhline(y=bmean, linewidth = 2,linestyle="-",color=sig_line_color,zorder=1000)
-            medianline = ax1.axhline(y=bmedian, linewidth = 2,linestyle="--",color=sig_line_color,zorder=1000)
+            meanline = ax1.axhline(y=bmean, linewidth = sc_linewidth,linestyle="-",color=sig_line_color,zorder=1000)
+            medianline = ax1.axhline(y=bmedian, linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1000)
         
         # cut line
         if cut == 0: 
             ax1.set_ylim(skip, ceil(maxy*1.2) )
         
         if cut:
-            cutline = ax1.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+            cutline = ax1.axhline(y=cut, linewidth = sc_linewidth,linestyle="--",color=cut_line_color,zorder=1)
             step=2
             if ((maxticker-cut)/cutfactor + cut) > cut:
                 if ystep == 0:
@@ -770,6 +772,7 @@ def mqqplot(insumstats,
                     cutfactor=cutfactor,
                     skip=skip,
                     maxy=maxy,
+                    ystep=ystep,
                     colors=colors,
                     sig_line_color=sig_line_color,
                     stratified=stratified,
@@ -781,6 +784,7 @@ def mqqplot(insumstats,
                     title_fontsize=title_fontsize,
                     include_chrXYMT=include_chrXYMT,
                     cut_line_color=cut_line_color,
+                    linewidth=sc_linewidth,
                     verbose=verbose,
                     log=log
                 )
@@ -789,6 +793,9 @@ def mqqplot(insumstats,
         ax1.set_ylim(ylim)
         if "qq" in mode:
             ax2.set_ylim(ylim)
+    
+    if xpad!=None:
+        ax1.set_xlim([0 - xpad* sumstats["i"].max(),(1+xpad)*sumstats["i"].max()])
             
     # Saving plot ##########################################################################################################
     if save:
