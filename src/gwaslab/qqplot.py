@@ -16,6 +16,7 @@ def _plot_qq(
     gc,
     cut,
     cutfactor,
+    cut_log,
     skip,
     maxy,
     ystep,
@@ -32,6 +33,7 @@ def _plot_qq(
     include_chrXYMT,
     cut_line_color,
     linewidth,
+    ytick3,
     ylabels,
     ylabels_converted,
     verbose=True,
@@ -102,6 +104,7 @@ def _plot_qq(
 
     ax2 = _set_yticklabels(cut=cut,
                         cutfactor=cutfactor,
+                        cut_log=cut_log,
                         ax1=ax2,
                         skip=skip,
                         maxy=maxy,
@@ -112,6 +115,7 @@ def _plot_qq(
                         sc_linewidth = linewidth,
                         font_family=font_family,
                         ylabels=ylabels,
+                        ytick3=ytick3,
                         ylabels_converted=ylabels_converted
                         )
 
