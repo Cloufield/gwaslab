@@ -326,11 +326,11 @@ def _set_yticklabels(cut,
                     step = (cut - skip ) // 8
             else:
                 step = ystep
-                
-            if (cut-step)%step==0:
-                upper = cut-step+1
+
+            if (cut-skip)%step==0:
+                upper = cut - 1
             else:
-                upper = cut-1
+                upper = cut
             ax1.set_yticks([x for x in range(skip,upper,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
             ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut]+[maxticker],fontsize=fontsize,family=font_family)
             #ax1.set_yticks([x for x in range(skip,cut+1,step)]+[(maxticker-cut)/cutfactor + cut])
@@ -342,10 +342,10 @@ def _set_yticklabels(cut,
             else:
                 step = ystep
 
-            if (cut-step)%step==0:
-                upper = cut-step+1
+            if (cut-skip)%step==0:
+                upper = cut - 1
             else:
-                upper = cut-1
+                upper = cut
 
             ax1.set_yticks([x for x in range(skip,upper,step)]+[cut])
             ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut],fontsize=fontsize,family=font_family)
