@@ -109,6 +109,7 @@ def mqqplot(insumstats,
           cut=0,
           skip=0,
           ystep=0,
+          ylabels=None,
           cutfactor=10,
           cut_line_color="#ebebeb",  
           sig_line=True,
@@ -136,6 +137,7 @@ def mqqplot(insumstats,
           title_pad=1.08, 
           title_fontsize=13,
           fontsize = 10,
+          font_family="sans-serif",
           anno_fontsize = 10,
           figargs= dict(figsize=(15,5)),
           colors=["#597FBD","#74BAD3"],
@@ -406,10 +408,11 @@ def mqqplot(insumstats,
     
     # shrink variants above cut line #########################################################################################
     try:
-        sumstats["scaled_P"], maxy, maxticker, cut, cutfactor = _cut(series = sumstats["scaled_P"], 
+        sumstats["scaled_P"], maxy, maxticker, cut, cutfactor,ylabels_converted = _cut(series = sumstats["scaled_P"], 
                                                                         mode =mode, 
                                                                         cut=cut,
                                                                         cutfactor = cutfactor,
+                                                                        ylabels=ylabels,
                                                                         verbose =verbose, 
                                                                         log = log)
     except:
@@ -567,7 +570,7 @@ def mqqplot(insumstats,
                 if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
         
         #ax1.set_xticks(chrom_df.astype("float64"))
-        #ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family="sans-serif")
+        #ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)
         
         # if regional plot : pinpoint lead , add color bar ##################################################
         if (region is not None) and ("r" in mode):
@@ -614,7 +617,7 @@ def mqqplot(insumstats,
         if region is None:
             #plot.set_xlabel(chrom)
             ax1.set_xticks(chrom_df.astype("float64"))
-            ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family="sans-serif")
+            ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)
         
         # genomewide significant line
         if sig_line is True:
@@ -634,17 +637,23 @@ def mqqplot(insumstats,
         if cut:
             cutline = ax1.axhline(y=cut, linewidth = sc_linewidth,linestyle="--",color=cut_line_color,zorder=1)
             step=2
-            if ((maxticker-cut)/cutfactor + cut) > cut:
+            if ylabels is not None:  
+                ax1.set_yticks(ylabels_converted)
+                ax1.set_yticklabels(ylabels,fontsize=fontsize,family=font_family)
+            elif ((maxticker-cut)/cutfactor + cut) > cut:
                 if ystep == 0:
                     if (cut - skip ) // step > 10:
                         step = (cut - skip ) // 10
                 else:
                     step = ystep
-
-                ax1.set_yticks([x for x in range(skip,cut-step,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
-                ax1.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut]+[maxticker],fontsize=fontsize,family="sans-serif")
+                if (cut-step)%step==0:
+                    upper = cut-step+1
+                else:
+                    upper = cut-step
+                ax1.set_yticks([x for x in range(skip,upper,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
+                ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut]+[maxticker],fontsize=fontsize,family=font_family)
                 #ax1.set_yticks([x for x in range(skip,cut+1,step)]+[(maxticker-cut)/cutfactor + cut])
-                #ax1.set_yticklabels([x for x in range(skip,cut+1,step)]+[maxticker],fontsize=fontsize,family="sans-serif")
+                #ax1.set_yticklabels([x for x in range(skip,cut+1,step)]+[maxticker],fontsize=fontsize,family=font_family)
             else:
                 if ystep == 0:
                     if (cut - skip ) // step > 10:
@@ -652,10 +661,15 @@ def mqqplot(insumstats,
                 else:
                     step = ystep
 
-                ax1.set_yticks([x for x in range(skip,cut-step,step)]+[cut])
-                ax1.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut],fontsize=fontsize,family="sans-serif")
+                if (cut-step)%step==0:
+                    upper = cut-step+1
+                else:
+                    upper = cut-step
+
+                ax1.set_yticks([x for x in range(skip,upper,step)]+[cut])
+                ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut],fontsize=fontsize,family=font_family)
                 #ax1.set_yticks([x for x in range(skip,cut+1,step)])
-                #ax1.set_yticklabels([x for x in range(skip,cut+1,step)],fontsize=fontsize,family="sans-serif")
+                #ax1.set_yticklabels([x for x in range(skip,cut+1,step)],fontsize=fontsize,family=font_family)
             ax1.set_ylim(bottom = skip)
 
 
@@ -700,17 +714,17 @@ def mqqplot(insumstats,
         # Add Annotation to manhattan plot #######################################################
         
         if "b" in mode:
-            ax1.set_ylabel("Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb",ha="center",va="bottom",fontsize=fontsize,family="sans-serif")
+            ax1.set_ylabel("Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb",ha="center",va="bottom",fontsize=fontsize,family=font_family)
         else:
-            ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+            ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family=font_family)
 
         if region is not None:
             if (gtf_path is not None ) and ("r" in mode):
-                ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
+                ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family=font_family)
             else:
-                ax1.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family="sans-serif")
+                ax1.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family=font_family)
         else:
-            ax1.set_xlabel("Chromosomes",fontsize=fontsize,family="sans-serif")
+            ax1.set_xlabel("Chromosome",fontsize=fontsize,family=font_family)
         ##
         ax1.spines["top"].set_visible(False)
         ax1.spines["right"].set_visible(False)
@@ -723,9 +737,9 @@ def mqqplot(insumstats,
         if verbose: log.write("Finished creating Manhattan plot successfully!")
         if mtitle and anno and len(to_annotate)>0: 
             pad=(ax1.transData.transform((skip, title_pad*maxy))[1]-ax1.transData.transform((skip, maxy)))[1]
-            ax1.set_title(mtitle,pad=pad,fontsize=title_fontsize,family="sans-serif")
+            ax1.set_title(mtitle,pad=pad,fontsize=title_fontsize,family=font_family)
         elif mtitle:
-            ax1.set_title(mtitle,fontsize=title_fontsize,family="sans-serif")
+            ax1.set_title(mtitle,fontsize=title_fontsize,family=font_family)
             
         # add annotation arrows and texts
         ax1 = annotate_single(
@@ -780,6 +794,7 @@ def mqqplot(insumstats,
                     maf_bins=maf_bins,
                     maf_bin_colors=maf_bin_colors,
                     fontsize=fontsize,
+                    font_family=font_family,
                     qtitle=qtitle,
                     title_fontsize=title_fontsize,
                     include_chrXYMT=include_chrXYMT,

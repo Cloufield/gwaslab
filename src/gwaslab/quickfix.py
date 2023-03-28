@@ -263,7 +263,9 @@ def _quick_extract_snp_in_region(sumstats, region, chrom="CHR",pos="POS",verbose
     sumstats = sumstats.loc[is_in_region_snp,:]
     return sumstats
 
-def _cut(series, mode,cutfactor,cut, verbose, log):
+def _cut(series, mode,cutfactor,cut,ylabels, verbose, log):
+    if ylabels is not None:
+        ylabels = pd.Series(ylabels)
     maxy = series.max()
     series = series.copy()
     if "b" not in mode:
@@ -287,11 +289,15 @@ def _cut(series, mode,cutfactor,cut, verbose, log):
                 if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
 
             maxticker=int(np.round(series.max(skipna=True)))
+
             series[series>cut] = (series[series>cut]-cut)/cutfactor+cut
+            if ylabels is not None:
+                ylabels[ylabels>cut] = (ylabels[ylabels>cut]-cut)/cutfactor+cut
             #sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
+            
             maxy = (maxticker-cut)/cutfactor + cut
     if verbose: log.write("Finished data conversion and sanity check.")
-    return series, maxy, maxticker, cut, cutfactor
+    return series, maxy, maxticker, cut, cutfactor,ylabels
 
 def _set_yticklabels():
     pass

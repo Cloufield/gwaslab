@@ -1,4 +1,8 @@
 # Update Logs
+## 3.4.1 - 2023/03/28
+- fixed y tick labels
+- added font_family
+- added ylabels
 
 ## 3.4.1 - 2023/03/28
 - added sc_linewidth
