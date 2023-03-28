@@ -6,6 +6,7 @@ import scipy as sp
 from gwaslab.Log import Log
 from gwaslab.calculate_gc import lambdaGC
 from math import ceil
+from gwaslab.quickfix import _set_yticklabels
 # qq plot module for mqqplot
 def _plot_qq(
     sumstats,
@@ -31,6 +32,8 @@ def _plot_qq(
     include_chrXYMT,
     cut_line_color,
     linewidth,
+    ylabels,
+    ylabels_converted,
     verbose=True,
     log=Log()
 ):
@@ -95,32 +98,48 @@ def _plot_qq(
                     verticalalignment='top',
                     transform=ax2.transAxes,
                     fontsize=fontsize,family=font_family)
+    
 
-    if cut == 0: 
-        ax2.set_ylim(skip, ceil(maxy*1.2) )
-        
-    if cut:
-        qcutline = ax2.axhline(y=cut, linewidth = linewidth, linestyle="--",color=cut_line_color,zorder=1)
-        step=2
-        if ((maxticker-cut)/cutfactor + cut) > cut:
-            if ystep == 0:
-                if (cut - skip ) // step > 10:
-                    step = (cut - skip ) // 10
-            else:
-                step = ystep
+    ax2 = _set_yticklabels(cut=cut,
+                        cutfactor=cutfactor,
+                        ax1=ax2,
+                        skip=skip,
+                        maxy=maxy,
+                        maxticker=maxticker,
+                        ystep=ystep,
+                        cut_line_color=cut_line_color,
+                        fontsize=fontsize,
+                        sc_linewidth = linewidth,
+                        font_family=font_family,
+                        ylabels=ylabels,
+                        ylabels_converted=ylabels_converted
+                        )
 
-            ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
-            ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut]+[maxticker],fontsize=fontsize,family=font_family)
-        else:
-            if ystep == 0:
-                if (cut - skip ) // step > 10:
-                    step = (cut - skip ) // 10
-            else:
-                step = ystep
-
-            ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut])
-            ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut],fontsize=fontsize,family=font_family)
-        ax2.set_ylim(bottom = skip)
+    #if cut == 0: 
+    #    ax2.set_ylim(skip, ceil(maxy*1.2) )
+    #    
+    #if cut:
+    #    qcutline = ax2.axhline(y=cut, linewidth = linewidth, linestyle="--",color=cut_line_color,zorder=1)
+    #    step=2
+    #    if ((maxticker-cut)/cutfactor + cut) > cut:
+    #        if ystep == 0:
+    #            if (cut - skip ) // step > 10:
+    #                step = (cut - skip ) // 10
+    #        else:
+    #            step = ystep
+#
+    #        ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
+    #        ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut]+[maxticker],fontsize=fontsize,family=font_family)
+    #    else:
+    #        if ystep == 0:
+    #            if (cut - skip ) // step > 10:
+    #                step = (cut - skip ) // 10
+    #        else:
+    #            step = ystep
+#
+    #        ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut])
+    #        ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut],fontsize=fontsize,family=font_family)
+    #    ax2.set_ylim(bottom = skip)
 
     ax2.tick_params(axis='both', which='both', labelsize=fontsize)
     #

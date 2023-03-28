@@ -45,6 +45,7 @@ from gwaslab.quickfix import _quick_extract_snp_in_region
 from gwaslab.quickfix import _quick_assign_highlight_hue_pair
 from gwaslab.quickfix import _quick_assign_marker_relative_size
 from gwaslab.quickfix import _cut
+from gwaslab.quickfix import _set_yticklabels
 # 20230202 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -131,6 +132,7 @@ def mqqplot(insumstats,
           include_chrXYMT = True,
           ylim=None,
           xpad=None,
+          chrpad=0.03, 
           title =None,
           mtitle=None,
           qtitle=None,
@@ -310,7 +312,7 @@ def mqqplot(insumstats,
             return None
     
     ## EAF
-    eaf_raw = pd.Series()
+    eaf_raw = pd.Series(dtype="float64")
     if stratified is True: 
         sumstats["MAF"] = _quick_fix_eaf(sumstats[eaf])
         # for stratified qq plot
@@ -419,35 +421,6 @@ def mqqplot(insumstats,
         log.write(" -Warning : No valid data! Please check the input.")
         return None
     
-    #maxy = sumstats["scaled_P"].max()
-    #if "b" not in mode:
-    #    if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
-    #elif "b" in mode:
-    #    if verbose: log.write(" -Maximum DENSITY values is "+str(maxy) +" .")
-#
-    #maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
-    #if cut:
-    #    if cut is True:
-    #        if verbose: log.write(" -Cut Auto mode is activated...")
-    #        if maxy<20:
-    #            if verbose: log.write(" - maxy <20 , no need to cut.")
-    #            cut=0
-    #        else:
-    #            cut = 20
-    #            cutfactor = ( maxy - cut )/5
-    #    if cut:
-    #        if "b" not in mode:
-    #            if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
-    #        else:
-    #            if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
-#
-    #        maxticker=int(np.round(sumstats["scaled_P"].max(skipna=True)))
-#
-    #        sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
-    #        maxy = (maxticker-cut)/cutfactor + cut
-    #if verbose: log.write("Finished data conversion and sanity check.")
-
-
     # Manhattan plot ##########################################################################################################
     ## regional plot ->rsq
         #calculate rsq]
@@ -461,7 +434,7 @@ def mqqplot(insumstats,
     ## Manhatann plot ###################################################
     if ("m" in mode) or ("r" in mode): 
         # assign index i and tick position
-        sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, use_rank=use_rank, chrom="CHR",pos="POS")
+        sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, chrpad=chrpad, use_rank=use_rank, chrom="CHR",pos="POS")
         
         ## Assign marker size ##############################################
         sumstats["s"]=1
@@ -630,48 +603,20 @@ def mqqplot(insumstats,
             meanline = ax1.axhline(y=bmean, linewidth = sc_linewidth,linestyle="-",color=sig_line_color,zorder=1000)
             medianline = ax1.axhline(y=bmedian, linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1000)
         
-        # cut line
-        if cut == 0: 
-            ax1.set_ylim(skip, ceil(maxy*1.2) )
-        
-        if cut:
-            cutline = ax1.axhline(y=cut, linewidth = sc_linewidth,linestyle="--",color=cut_line_color,zorder=1)
-            step=2
-            if ylabels is not None:  
-                ax1.set_yticks(ylabels_converted)
-                ax1.set_yticklabels(ylabels,fontsize=fontsize,family=font_family)
-            elif ((maxticker-cut)/cutfactor + cut) > cut:
-                if ystep == 0:
-                    if (cut - skip ) // step > 10:
-                        step = (cut - skip ) // 10
-                else:
-                    step = ystep
-                if (cut-step)%step==0:
-                    upper = cut-step+1
-                else:
-                    upper = cut-step
-                ax1.set_yticks([x for x in range(skip,upper,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
-                ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut]+[maxticker],fontsize=fontsize,family=font_family)
-                #ax1.set_yticks([x for x in range(skip,cut+1,step)]+[(maxticker-cut)/cutfactor + cut])
-                #ax1.set_yticklabels([x for x in range(skip,cut+1,step)]+[maxticker],fontsize=fontsize,family=font_family)
-            else:
-                if ystep == 0:
-                    if (cut - skip ) // step > 10:
-                        step = (cut - skip ) // 10
-                else:
-                    step = ystep
-
-                if (cut-step)%step==0:
-                    upper = cut-step+1
-                else:
-                    upper = cut-step
-
-                ax1.set_yticks([x for x in range(skip,upper,step)]+[cut])
-                ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut],fontsize=fontsize,family=font_family)
-                #ax1.set_yticks([x for x in range(skip,cut+1,step)])
-                #ax1.set_yticklabels([x for x in range(skip,cut+1,step)],fontsize=fontsize,family=font_family)
-            ax1.set_ylim(bottom = skip)
-
+        ax1 = _set_yticklabels(cut=cut,
+                     cutfactor=cutfactor,
+                     ax1=ax1,
+                     skip=skip,
+                     maxy=maxy,
+                     maxticker=maxticker,
+                     ystep=ystep,
+                     sc_linewidth=sc_linewidth,
+                     cut_line_color=cut_line_color,
+                     fontsize=fontsize,
+                     font_family=font_family,
+                     ylabels=ylabels,
+                     ylabels_converted=ylabels_converted
+                     )
 
         # Get top variants for annotation #######################################################
         if (anno and anno!=True) or (len(anno_set)>0):
@@ -800,6 +745,8 @@ def mqqplot(insumstats,
                     include_chrXYMT=include_chrXYMT,
                     cut_line_color=cut_line_color,
                     linewidth=sc_linewidth,
+                    ylabels = ylabels,
+                    ylabels_converted = ylabels_converted,
                     verbose=verbose,
                     log=log
                 )

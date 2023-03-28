@@ -3,7 +3,7 @@ import numpy as np
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
-
+from math import ceil
 
 def _quick_fix(sumstats, chr_dict=get_chr_to_number(), scaled=False, chrom="CHR", pos="POS", p="P", verbose=True, log=Log()):
     '''
@@ -158,7 +158,7 @@ def _quick_assign_i(sumstats, chrom="CHR",pos="POS"):
     sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
     return sumstats, chrom_df
 
-def _quick_assign_i_with_rank(sumstats, use_rank=False, chrom="CHR",pos="POS"):
+def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos="POS"):
         sumstats = sumstats.sort_values([chrom,pos])
         if use_rank is True: 
             sumstats["POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
@@ -182,7 +182,7 @@ def _quick_assign_i_with_rank(sumstats, use_rank=False, chrom="CHR",pos="POS"):
         
         # cumulative sum dictionary
         for i in range(2,sumstats[chrom].max()+1):
-            posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*0.05
+            posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*chrpad
 
         # convert base pair postion to x axis position using the cumulative sum dictionary
         sumstats["add"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
@@ -299,5 +299,61 @@ def _cut(series, mode,cutfactor,cut,ylabels, verbose, log):
     if verbose: log.write("Finished data conversion and sanity check.")
     return series, maxy, maxticker, cut, cutfactor,ylabels
 
-def _set_yticklabels():
-    pass
+def _set_yticklabels(cut,
+                     cutfactor,
+                     ax1,
+                     skip,
+                     maxy,
+                     maxticker,
+                     ystep,
+                     sc_linewidth,
+                     cut_line_color,
+                     fontsize,
+                     font_family,
+                     ylabels,
+                     ylabels_converted
+                     ):
+    
+    if cut == 0: 
+            ax1.set_ylim(skip, ceil(maxy*1.2) )
+        
+    if cut:
+        cutline = ax1.axhline(y=cut, linewidth = sc_linewidth,linestyle="--",color=cut_line_color,zorder=1)
+        step=2
+        if ((maxticker-cut)/cutfactor + cut) > cut:
+            if ystep == 0:
+                if (cut - skip ) // step > 8:
+                    step = (cut - skip ) // 8
+            else:
+                step = ystep
+                
+            if (cut-step)%step==0:
+                upper = cut-step+1
+            else:
+                upper = cut-1
+            ax1.set_yticks([x for x in range(skip,upper,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
+            ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut]+[maxticker],fontsize=fontsize,family=font_family)
+            #ax1.set_yticks([x for x in range(skip,cut+1,step)]+[(maxticker-cut)/cutfactor + cut])
+            #ax1.set_yticklabels([x for x in range(skip,cut+1,step)]+[maxticker],fontsize=fontsize,family=font_family)
+        else:
+            if ystep == 0:
+                if (cut - skip ) // step > 8:
+                    step = (cut - skip ) // 8
+            else:
+                step = ystep
+
+            if (cut-step)%step==0:
+                upper = cut-step+1
+            else:
+                upper = cut-1
+
+            ax1.set_yticks([x for x in range(skip,upper,step)]+[cut])
+            ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut],fontsize=fontsize,family=font_family)
+            #ax1.set_yticks([x for x in range(skip,cut+1,step)])
+            #ax1.set_yticklabels([x for x in range(skip,cut+1,step)],fontsize=fontsize,family=font_family)
+        ax1.set_ylim(bottom = skip)
+    
+    if ylabels is not None:  
+        ax1.set_yticks(ylabels_converted)
+        ax1.set_yticklabels(ylabels,fontsize=fontsize,family=font_family)
+    return ax1
