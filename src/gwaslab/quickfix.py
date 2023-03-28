@@ -314,46 +314,63 @@ def _set_yticklabels(cut,
                      ylabels_converted
                      ):
     
+    # if no cut
     if cut == 0: 
             ax1.set_ylim(skip, ceil(maxy*1.2) )
-        
+
+    # if cut     
     if cut:
+        # add cut line
+        
         cutline = ax1.axhline(y=cut, linewidth = sc_linewidth,linestyle="--",color=cut_line_color,zorder=1)
+        
+        # default step
         step=2
-        if ((maxticker-cut)/cutfactor + cut) > cut:
-            if ystep == 0:
-                if (cut - skip ) // step > 8:
-                    step = (cut - skip ) // 8
-            else:
-                step = ystep
 
-            if (cut-skip)%step==0:
-                upper = cut - 1
-            else:
-                upper = cut
-            ax1.set_yticks([x for x in range(skip,upper,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
-            ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut]+[maxticker],fontsize=fontsize,family=font_family)
-            #ax1.set_yticks([x for x in range(skip,cut+1,step)]+[(maxticker-cut)/cutfactor + cut])
-            #ax1.set_yticklabels([x for x in range(skip,cut+1,step)]+[maxticker],fontsize=fontsize,family=font_family)
+        if ystep == 0:
+            if (cut - skip ) // step > 8:
+                step = (cut - skip ) // 8
         else:
-            if ystep == 0:
-                if (cut - skip ) // step > 8:
-                    step = (cut - skip ) // 8
-            else:
-                step = ystep
+            step = ystep
 
-            if (cut-skip)%step==0:
-                upper = cut - 1
-            else:
-                upper = cut
+        if (cut-skip)%step==0:
+            upper = cut - 1
+        else:
+            upper = cut
+        
+        ticks1= [x for x in range(skip,upper,step)]
+        ticks2= [cut]
+        ticks3= [x for x in range(cut,int((maxticker-cut)/cutfactor + cut),int(step) )]
+        ticks4= [(maxticker-cut)/cutfactor + cut]
+        tickslabel1= [x for x in range(skip,upper,step)]
+        tickslabel2= [cut]
+        #tickslabel3= [x for x in range(cut,int(maxticker),int(step*cutfactor))]
+        tickslabel3 = list(map(lambda x: int((x-cut)*cutfactor + cut) ,ticks3))
+        tickslabel4= [maxticker]
 
-            ax1.set_yticks([x for x in range(skip,upper,step)]+[cut])
-            ax1.set_yticklabels([x for x in range(skip,upper,step)]+[cut],fontsize=fontsize,family=font_family)
-            #ax1.set_yticks([x for x in range(skip,cut+1,step)])
-            #ax1.set_yticklabels([x for x in range(skip,cut+1,step)],fontsize=fontsize,family=font_family)
+        if maxy > cut:
+            ax1.set_yticks(ticks1+ticks2+ticks3+ticks4)
+            ax1.set_yticklabels(tickslabel1+tickslabel2+tickslabel3+tickslabel4,fontsize=fontsize,family=font_family)
+        else:
+            ax1.set_yticks(ticks1+ticks2)
+            ax1.set_yticklabels(tickslabel1+tickslabel2,fontsize=fontsize,family=font_family)
         ax1.set_ylim(bottom = skip)
     
     if ylabels is not None:  
         ax1.set_yticks(ylabels_converted)
         ax1.set_yticklabels(ylabels,fontsize=fontsize,family=font_family)
+    return ax1
+
+def _jagged_y(cut,skip,ax1,mode,mqqratio):
+    tycut = cut +0.1 #(cut - skip)/ (ax1.get_ylim()[1] - skip) + 0.002
+    dy= 0.005 * (cut - skip) 
+    x0 =  0
+    dx= 0.005
+    if mode>1:
+        dx = dx * mqqratio
+    kwargs = dict(transform=ax1.get_yaxis_transform(), color='k', clip_on=False,solid_capstyle="round",linewidth=0.8)
+    ax1.plot((x0,x0), (tycut,tycut+4*dy), zorder=1000, transform=ax1.get_yaxis_transform(), color="white",clip_on=False,solid_capstyle="butt")
+    ax1.plot((x0,-dx), (tycut,tycut+dy), zorder=1001, **kwargs)
+    ax1.plot((-dx,+dx), (tycut+dy,tycut+3*dy), zorder=1001, **kwargs)
+    ax1.plot((+dx,x0), (tycut+3*dy,tycut+4*dy), zorder=1001,  **kwargs)
     return ax1

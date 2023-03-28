@@ -46,6 +46,7 @@ from gwaslab.quickfix import _quick_assign_highlight_hue_pair
 from gwaslab.quickfix import _quick_assign_marker_relative_size
 from gwaslab.quickfix import _cut
 from gwaslab.quickfix import _set_yticklabels
+from gwaslab.quickfix import _jagged_y
 # 20230202 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -113,6 +114,7 @@ def mqqplot(insumstats,
           ylabels=None,
           cutfactor=10,
           cut_line_color="#ebebeb",  
+          jagged=False,
           sig_line=True,
           sig_level=5e-8,
           sig_line_color="grey",
@@ -751,14 +753,20 @@ def mqqplot(insumstats,
                     log=log
                 )
     
+
+    
+    if xpad!=None:
+        ax1.set_xlim([0 - xpad* sumstats["i"].max(),(1+xpad)*sumstats["i"].max()])
+    
+    if jagged==True:
+        ax1 = _jagged_y(cut=cut,skip=skip,ax1=ax1,mode=1,mqqratio=mqqratio)
+        if "qq" in mode:
+            ax2 = _jagged_y(cut=cut,skip=skip,ax1=ax2,mode=2,mqqratio=mqqratio)
+    
     if ylim is not None:
         ax1.set_ylim(ylim)
         if "qq" in mode:
             ax2.set_ylim(ylim)
-    
-    if xpad!=None:
-        ax1.set_xlim([0 - xpad* sumstats["i"].max(),(1+xpad)*sumstats["i"].max()])
-            
     # Saving plot ##########################################################################################################
     if save:
         if verbose: log.write("Saving plot:")
