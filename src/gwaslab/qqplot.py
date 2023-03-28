@@ -5,7 +5,7 @@ import numpy as np
 import scipy as sp
 from gwaslab.Log import Log
 from gwaslab.calculate_gc import lambdaGC
-
+from math import ceil
 # qq plot module for mqqplot
 def _plot_qq(
     sumstats,
@@ -17,6 +17,7 @@ def _plot_qq(
     cutfactor,
     skip,
     maxy,
+    ystep,
     colors,
     sig_line_color,
     stratified,
@@ -24,10 +25,12 @@ def _plot_qq(
     maf_bins,
     maf_bin_colors,
     fontsize,
+    font_family,
     qtitle,
     title_fontsize,
     include_chrXYMT,
     cut_line_color,
+    linewidth,
     verbose=True,
     log=Log()
 ):
@@ -69,11 +72,11 @@ def _plot_qq(
             label ="("+str(lower)+","+str(upper) +"]"
             ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
             ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=3,frameon=False)
-            plt.setp(ax2_legend.texts, family="sans-serif")
+            plt.setp(ax2_legend.texts, family=font_family)
     
     ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=sig_line_color)
-    ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
-    ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+    ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family=font_family)
+    ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family=font_family)
     ax2.spines["top"].set_visible(False)
     ax2.spines["right"].set_visible(False)
     ax2.spines["left"].set_visible(True)
@@ -91,26 +94,42 @@ def _plot_qq(
                     horizontalalignment='left',
                     verticalalignment='top',
                     transform=ax2.transAxes,
-                    fontsize=fontsize,family="sans-serif")
-    
-    # set set_yticks and set_yticklabels 
+                    fontsize=fontsize,family=font_family)
+
     if cut == 0: 
-        ax2.set_ylim(skip,maxy*1.2)
+        ax2.set_ylim(skip, ceil(maxy*1.2) )
+        
     if cut:
-        qcutline=ax2.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
+        qcutline = ax2.axhline(y=cut, linewidth = linewidth, linestyle="--",color=cut_line_color,zorder=1)
+        step=2
         if ((maxticker-cut)/cutfactor + cut) > cut:
-            ax2.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-            ax2.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif")
+            if ystep == 0:
+                if (cut - skip ) // step > 10:
+                    step = (cut - skip ) // 10
+            else:
+                step = ystep
+
+            ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
+            ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut]+[maxticker],fontsize=fontsize,family=font_family)
         else:
-            ax2.set_yticks([x for x in range(skip,cut+1,2)])
-            ax2.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
-    
+            if ystep == 0:
+                if (cut - skip ) // step > 10:
+                    step = (cut - skip ) // 10
+            else:
+                step = ystep
+
+            ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut])
+            ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut],fontsize=fontsize,family=font_family)
+        ax2.set_ylim(bottom = skip)
+
     ax2.tick_params(axis='both', which='both', labelsize=fontsize)
     #
     if qtitle:
-        ax2.set_title(qtitle,fontsize=title_fontsize,pad=10,family="sans-serif")
+        ax2.set_title(qtitle,fontsize=title_fontsize,pad=10,family=font_family)
 
     if verbose: log.write("Finished creating QQ plot successfully!")
     
     # Creating QQ plot Finished #############################################################################################
     return ax2
+
+
