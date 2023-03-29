@@ -263,7 +263,7 @@ def _quick_extract_snp_in_region(sumstats, region, chrom="CHR",pos="POS",verbose
     sumstats = sumstats.loc[is_in_region_snp,:]
     return sumstats
 
-def _cut(series, mode,cutfactor,cut,ylabels, verbose, log):
+def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
     if ylabels is not None:
         ylabels = pd.Series(ylabels)
     maxy = series.max()
@@ -282,25 +282,40 @@ def _cut(series, mode,cutfactor,cut,ylabels, verbose, log):
             else:
                 cut = 20
                 cutfactor = ( maxy - cut )/8
+        
         if cut:
-            if "b" not in mode:
-                if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+            if cut_log==True:
+                maxticker=int(np.round(series.max(skipna=True)))
+                
+                amp = (cut - skip)/ 2 / np.log2(maxy/cut) 
+                
+                series[series>cut] = (np.log2(series[series>cut]/cut)) * amp + cut
+                
+                if ylabels is not None:
+                    ylabels[ylabels>cut] = (np.log2(ylabels[ylabels>cut]/cut)) * amp +cut 
+                
+                
+                maxy = (np.log2(maxticker) - np.log2(cut)) * amp + cut
             else:
-                if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+                if "b" not in mode:
+                    if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+                else:
+                    if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
 
-            maxticker=int(np.round(series.max(skipna=True)))
+                maxticker=int(np.round(series.max(skipna=True)))
 
-            series[series>cut] = (series[series>cut]-cut)/cutfactor+cut
-            if ylabels is not None:
-                ylabels[ylabels>cut] = (ylabels[ylabels>cut]-cut)/cutfactor+cut
-            #sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
-            
-            maxy = (maxticker-cut)/cutfactor + cut
+                series[series>cut] = (series[series>cut]-cut)/cutfactor+cut
+                if ylabels is not None:
+                    ylabels[ylabels>cut] = (ylabels[ylabels>cut]-cut)/cutfactor+cut
+                #sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
+                
+                maxy = (maxticker-cut)/cutfactor + cut
     if verbose: log.write("Finished data conversion and sanity check.")
     return series, maxy, maxticker, cut, cutfactor,ylabels
 
 def _set_yticklabels(cut,
                      cutfactor,
+                     cut_log,
                      ax1,
                      skip,
                      maxy,
@@ -310,6 +325,7 @@ def _set_yticklabels(cut,
                      cut_line_color,
                      fontsize,
                      font_family,
+                     ytick3,
                      ylabels,
                      ylabels_converted
                      ):
@@ -340,12 +356,27 @@ def _set_yticklabels(cut,
         
         ticks1= [x for x in range(skip,upper,step)]
         ticks2= [cut]
-        ticks3= [x for x in range(cut,int((maxticker-cut)/cutfactor + cut),int(step) )]
-        ticks4= [(maxticker-cut)/cutfactor + cut]
         tickslabel1= [x for x in range(skip,upper,step)]
         tickslabel2= [cut]
+        
+        if cut_log==True:
+            ticks3= [x for x in range(cut,int(maxy),max(int(np.log2(maxticker//(cut-skip))),1))] 
+            ticks4= [int(maxy)]
+        elif ytick3 == True:
+            ticks3= [x for x in range(cut,int((maxticker-cut)/cutfactor + cut),int(step))]
+            ticks4= [(maxticker-cut)/cutfactor + cut]
+        else:
+            ticks3= []
+            ticks4= [(maxticker-cut)/cutfactor + cut]
+        
         #tickslabel3= [x for x in range(cut,int(maxticker),int(step*cutfactor))]
-        tickslabel3 = list(map(lambda x: int((x-cut)*cutfactor + cut) ,ticks3))
+        if cut_log==True:
+            amp = (cut - skip)/ 2 / np.log2(maxy - cut) 
+            tickslabel3 = list(map(lambda x: int(2**((x-cut)/amp)* cut) ,ticks3))
+        elif ytick3 == True:
+            tickslabel3 = list(map(lambda x: int((x-cut)*cutfactor + cut) ,ticks3))
+        else:
+            tickslabel3=[]
         tickslabel4= [maxticker]
 
         if maxy > cut:
