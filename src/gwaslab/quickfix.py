@@ -393,10 +393,10 @@ def _set_yticklabels(cut,
     return ax1
 
 def _jagged_y(cut,skip,ax1,mode,mqqratio):
-    tycut = cut +0.1 #(cut - skip)/ (ax1.get_ylim()[1] - skip) + 0.002
-    dy= 0.005 * (cut - skip) 
+    tycut = cut +0.3 #(cut - skip)/ (ax1.get_ylim()[1] - skip) + 0.002
+    dy= 0.008 * (cut - skip) 
     x0 =  0
-    dx= 0.005
+    dx= 0.008
     if mode>1:
         dx = dx * mqqratio
     kwargs = dict(transform=ax1.get_yaxis_transform(), color='k', clip_on=False,solid_capstyle="round",linewidth=0.8)

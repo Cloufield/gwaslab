@@ -1,5 +1,10 @@
 # Update Logs
-## 3.4.1 - 2023/03/28
+
+## 3.4.3 - 2023/03/29
+- added jagged y axis
+- added cut_log
+
+## 3.4.2 - 2023/03/28
 - fixed y tick labels
 - added font_family
 - added ylabels
