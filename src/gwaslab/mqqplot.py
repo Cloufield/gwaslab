@@ -117,6 +117,8 @@ def mqqplot(insumstats,
           cut_line_color="#ebebeb",  
           cut_log = False,
           jagged=False,
+          jagged_len=0.01,
+          jagged_wid=0.01,
           sig_line=True,
           sig_level=5e-8,
           sig_line_color="grey",
@@ -767,9 +769,9 @@ def mqqplot(insumstats,
         ax1.set_xlim([0 - xpad* sumstats["i"].max(),(1+xpad)*sumstats["i"].max()])
     
     if jagged==True:
-        ax1 = _jagged_y(cut=cut,skip=skip,ax1=ax1,mode=1,mqqratio=mqqratio)
+        ax1 = _jagged_y(cut=cut,skip=skip,ax1=ax1,mode=1,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid)
         if "qq" in mode:
-            ax2 = _jagged_y(cut=cut,skip=skip,ax1=ax2,mode=2,mqqratio=mqqratio)
+            ax2 = _jagged_y(cut=cut,skip=skip,ax1=ax2,mode=2,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid)
     
     if ylim is not None:
         ax1.set_ylim(ylim)
