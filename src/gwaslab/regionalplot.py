@@ -322,7 +322,10 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
     # load genotype data of the targeted region
     ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
-    
+    if ref_genotype is None:
+        if verbose: log.write(" -Warning: no data was retrieved. Skipping ...")
+        ref_genotype=dict()
+        ref_genotype["variants/POS"]=np.array([],dtype="int64")
     if verbose: log.write(" -Retrieving index...")
     if verbose: log.write(" -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])))
     # match sumstats pos and ref pos: 

@@ -1,5 +1,8 @@
 # Update Logs
 
+## 3.4.4 - 2023/04/04
+- fixed error in mqqplot (chr > 26)
+
 ## 3.4.3 - 2023/03/29
 - added jagged y axis
 - added cut_log

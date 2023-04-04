@@ -176,7 +176,7 @@ def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos=
         posdiccul = dict(posdic)
         
         # fill empty chr with 0
-        for i in range(0,26):
+        for i in range(0,sumstats[chrom].max()+1):
             if i in posdiccul: continue
             else: posdiccul[i]=0
         
