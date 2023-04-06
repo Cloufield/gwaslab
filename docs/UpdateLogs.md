@@ -1,4 +1,6 @@
 # Update Logs
+## 3.4.5 - 2023/04/06
+- added rr_lim : input a tuple like (0,100) or "max"
 
 ## 3.4.4 - 2023/04/04
 - fixed error in mqqplot (chr > 26)
