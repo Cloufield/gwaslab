@@ -390,6 +390,9 @@ def _set_yticklabels(cut,
     if ylabels is not None:  
         ax1.set_yticks(ylabels_converted)
         ax1.set_yticklabels(ylabels,fontsize=fontsize,family=font_family)
+    
+    ax1.tick_params(axis='y', labelsize=fontsize)
+    
     return ax1
 
 def _jagged_y(cut,skip,ax1,mode,mqqratio,jagged_len,jagged_wid):

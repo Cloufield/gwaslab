@@ -41,6 +41,7 @@ def _plot_regional(
     rr_path="default",
     rr_header_dict=None,
     rr_chr_dict = get_number_to_chr(),
+    rr_lim = (0,100),
     mode="mqq",
     region_step = 21,
     region_grid = False,
@@ -86,7 +87,8 @@ def _plot_regional(
                                         rr_path =rr_path, 
                                         rr_chr_dict = rr_chr_dict, 
                                         rr_header_dict =rr_header_dict, 
-                                        build= build)
+                                        build= build,
+                                        rr_lim=rr_lim)
      
     ## regional plot : gene track ######################################################################
                 # calculate offset
@@ -195,7 +197,7 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ld_colors):
     return ax1
 
 # -############################################################################################################################################################################
-def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, rr_header_dict, build):
+def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, rr_header_dict, build,rr_lim):
     ax4 = ax1.twinx()
     most_left_snp = sumstats["i"].idxmin()
     rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,pos]
@@ -213,7 +215,10 @@ def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, r
     rc = rc.loc[(rc["Position(bp)"]<region[2]) & (rc["Position(bp)"]>region[1]),:]
     ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
     ax4.set_ylabel("Recombination rate(cM/Mb)")
-    ax4.set_ylim(0,100)
+    if rr_lim!="max":
+        ax4.set_ylim(rr_lim[0],rr_lim[1])
+    else:
+        ax4.set_ylim(0, 1.05 * rc["Rate(cM/Mb)"].max())
     ax4.spines["top"].set_visible(False)
     ax4.spines["top"].set(zorder=1) 
     return ax4

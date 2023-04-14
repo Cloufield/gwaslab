@@ -65,6 +65,7 @@ def mqqplot(insumstats,
           rr_path="default",
           rr_header_dict=None,
           rr_chr_dict = get_number_to_chr(),
+          rr_lim=(0,100),
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
@@ -144,9 +145,9 @@ def mqqplot(insumstats,
           qtitle=None,
           title_pad=1.08, 
           title_fontsize=13,
-          fontsize = 10,
+          fontsize = 9,
           font_family="sans-serif",
-          anno_fontsize = 10,
+          anno_fontsize = 9,
           figargs= dict(figsize=(15,5)),
           colors=["#597FBD","#74BAD3"],
           marker_size=(5,25),
@@ -575,6 +576,7 @@ def mqqplot(insumstats,
                                 rr_path=rr_path,
                                 rr_header_dict=rr_header_dict,
                                 rr_chr_dict = rr_chr_dict,
+                                rr_lim=rr_lim,
                                 mode=mode,
                                 region_step = region_step,
                                 region_grid = region_grid,
@@ -763,7 +765,6 @@ def mqqplot(insumstats,
                     log=log
                 )
     
-
     
     if xpad!=None:
         ax1.set_xlim([0 - xpad* sumstats["i"].max(),(1+xpad)*sumstats["i"].max()])
