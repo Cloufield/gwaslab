@@ -9,6 +9,6 @@ def gwaslab_info():
     # for output header
     dic={
    "version":"3.4.6",
-   "release_date":"20230414"
+   "release_date":"20230418"
     }
     return dic   
