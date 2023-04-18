@@ -140,6 +140,7 @@ def mqqplot(insumstats,
           ylim=None,
           xpad=None,
           chrpad=0.03, 
+          drop_chr_start=False,
           title =None,
           mtitle=None,
           qtitle=None,
@@ -443,7 +444,7 @@ def mqqplot(insumstats,
     ## Manhatann plot ###################################################
     if ("m" in mode) or ("r" in mode): 
         # assign index i and tick position
-        sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, chrpad=chrpad, use_rank=use_rank, chrom="CHR",pos="POS")
+        sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, chrpad=chrpad, use_rank=use_rank, chrom="CHR",pos="POS",drop_chr_start=drop_chr_start)
         
         ## Assign marker size ##############################################
         sumstats["s"]=1
