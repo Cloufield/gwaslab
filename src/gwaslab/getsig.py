@@ -32,6 +32,7 @@ def getsig(insumstats,
            anno=False,
            build="19",
            source="ensembl",
+           mlog10p="MLOG10P",
            verbose=True):
     
     if verbose: log.write("Start to extract lead variants...")
@@ -49,18 +50,24 @@ def getsig(insumstats,
     
     sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
     sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
-    if p not in sumstats.columns:
-        if "MLOG10P" in sumstats.columns: 
-            fill_p(sumstats,log)
-    sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
     
     #extract all significant variants
-    sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:]
-    if verbose:log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...")
+    if scaled==True:
+        if mlog10p in sumstats.columns:
+            sumstats_sig = sumstats.loc[sumstats[mlog10p]> -np.log10(sig_level),:].copy()
+            sumstats_sig.loc[:,"_HELPER"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
+            
+    else:
+        if p not in sumstats.columns:
+            if mlog10p in sumstats.columns: 
+                fill_p(sumstats,log)
+        sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
+        sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:]
+        
     
+    if verbose:log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...")
     #sort the coordinates
     sumstats_sig = sumstats_sig.sort_values([chrom,pos])
-    
     if sumstats_sig is None:
         if verbose:log.write(" -No lead snps at given significance threshold!")
         return None
@@ -70,6 +77,8 @@ def getsig(insumstats,
     current_sig_p = 1
     current_sig_pos = 0
     current_sig_chr = 0
+    if scaled==True:
+        p="_HELPER"
     
     #iterate through all significant snps
     for line_number,(index, row) in enumerate(sumstats_sig.iterrows()):
@@ -115,7 +124,12 @@ def getsig(insumstats,
     #num_to_chr = get_number_to_chr(in_chr=True,xymt=xymt)
     #sumstats_sig.loc[:,chrom] = sumstats_sig[chrom].astype("string")
     #sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].map(num_to_chr)
+    if scaled==True:
+        sumstats_sig = sumstats_sig.drop("_HELPER",axis=1)
+    
+    # extract the lead variants
     output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
+
     if anno is True and len(output)>0:
         output = annogene(
                output,

@@ -1,8 +1,13 @@
 # Update Logs
 
-## 3.4.6 - 2023/04/06
-- update yticklabel fontsize
-- update drop_chr_start
+## 3.4.7
+- fixed font_family for annotation
+- get_lead can now use mlo10p to extract lead variants 
+- added sig_level_lead in plot_mqq
+
+## 3.4.6 - 2023/04/18
+- updated yticklabel fontsize
+- updated drop_chr_start
 
 ## 3.4.5 - 2023/04/06
 - added rr_lim : input a tuple like (0,100) or "max"

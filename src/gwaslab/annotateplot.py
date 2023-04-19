@@ -31,6 +31,7 @@ def annotate_single(
     anno_fixed_arm_length,
     maxy,
     anno_fontsize,
+    font_family,
     region,
     region_anno_bbox_args,
     skip,
@@ -169,10 +170,10 @@ def annotate_single(
             else:
                 bbox_para=None
             
-            anno_default = {"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":fontweight}
+            anno_default = {"rotation":40,"fontstyle":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":fontweight,"fontfamily":font_family}
             for key,value in anno_args.items():
                 anno_default[key]=value
-
+            
             if anno_adjust==True:
                 arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(0,0.5))
             anno_to_adjust = ax1.annotate(annotation_text,
@@ -249,7 +250,7 @@ def annotate_pair(
             ###################### annotate() args
             fontweight = "normal"
 
-            anno_default =dict({"rotation":40,"style":"italic","ha":"left","va":"bottom","fontsize":fontsize,"fontweight":fontweight})
+            anno_default =dict({"rotation":40,"fontstyle":"italic","ha":"left","va":"bottom","fontsize":fontsize,"fontweight":fontweight})
             ########################
             to_annotate = to_annotate_df.copy()
 

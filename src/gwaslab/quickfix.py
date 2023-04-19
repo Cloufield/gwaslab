@@ -286,12 +286,14 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
         if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
     elif "b" in mode:
         if verbose: log.write(" -Maximum DENSITY values is "+str(maxy) +" .")
+    
     maxticker=int(np.round(series.max(skipna=True)))
+    
     if cut:
-        if cut is True:
+        if cut==True:
             if verbose: log.write(" -Cut Auto mode is activated...")
             if maxy<30:
-                if verbose: log.write(" - maxy <20 , no need to cut.")
+                if verbose: log.write(" - maxy <30 , no need to cut.")
                 cut=0
             else:
                 cut = 20
@@ -301,7 +303,7 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
             if cut_log==True:
                 maxticker=int(np.round(series.max(skipna=True)))
                 
-                amp = (cut - skip)/ 2 / np.log2(maxy/cut) 
+                amp = (cut - skip)/ 2 / np.log2(maxticker/cut)
                 
                 series[series>cut] = (np.log2(series[series>cut]/cut)) * amp + cut
                 
@@ -385,7 +387,7 @@ def _set_yticklabels(cut,
         
         #tickslabel3= [x for x in range(cut,int(maxticker),int(step*cutfactor))]
         if cut_log==True:
-            amp = (cut - skip)/ 2 / np.log2(maxy - cut) 
+            amp = (cut - skip)/ 2 / np.log2(maxticker/cut) 
             tickslabel3 = list(map(lambda x: int(2**((x-cut)/amp)* cut) ,ticks3))
         elif ytick3 == True:
             tickslabel3 = list(map(lambda x: int((x-cut)*cutfactor + cut) ,ticks3))
