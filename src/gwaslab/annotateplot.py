@@ -119,6 +119,8 @@ def annotate_single(
                     annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
             elif anno:
                 annotation_text=row["Annotation"]
+                if row[snpid] in anno_alias.keys():
+                    annotation_text = anno_alias[row[snpid]]
             
             #
             fontweight = "normal"
