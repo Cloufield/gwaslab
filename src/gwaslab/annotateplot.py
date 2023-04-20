@@ -98,6 +98,8 @@ def annotate_single(
             ################################################################
 
             # vertical arm length in pixels
+            #to_annotate["scaled_P"] = to_annotate5["scaled_P_2"].copy()
+            # arm length in pixels
             armB_length_in_point = ax1.transData.transform((skip,1.15*maxy))[1]-ax1.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
             # scale if needed
             armB_length_in_point = armB_length_in_point*arm_scale
