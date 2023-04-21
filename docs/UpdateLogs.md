@@ -1,5 +1,10 @@
 # Update Logs
 
+## 3.4.8
+- fixed regional plot lead variant line error
+- added tutorial for v3.4
+- fixed anno_alias priority
+
 ## 3.4.7
 - fixed font_family for annotation
 - get_lead can now use mlo10p to extract lead variants 

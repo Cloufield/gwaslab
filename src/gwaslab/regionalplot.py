@@ -133,7 +133,7 @@ def _plot_regional(
                     ax1.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
                     ax3.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
             if region_lead_grid is True:
-                ax1.axvline(x=lead_snp_i,ymax=1/1.2, zorder=1,**region_lead_grid_line)
+                ax1.plot([lead_snp_i,lead_snp_i],[0,lead_snp_y], zorder=1,**region_lead_grid_line)
                 ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
         else:
             # set x ticks m plot

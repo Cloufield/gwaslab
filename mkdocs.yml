@@ -21,7 +21,7 @@ nav:
     - Home:
        - Home : index.md
        - "Update logs" : UpdateLogs.md
-    - Tutorial: tutorial_3.3.ipynb
+    - Tutorial: tutorial_3.4.ipynb
     - Sumstats manipulation:
        - "Sumstats Object": SumstatsObject.md
        - "Status Code": StatusCode.md
