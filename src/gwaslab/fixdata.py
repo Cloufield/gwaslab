@@ -832,7 +832,7 @@ def sanitycheckstats(sumstats,
         cols_to_check.append("OR_95U")
         if verbose: log.write(" -Checking if ",OR_95U[0],"<OR_95U<",OR_95U[1]," ...") 
         sumstats.loc[:,"OR_95U"] = pd.to_numeric(sumstats.loc[:,"OR_95U"], errors='coerce').astype("float32")
-        sumstats = sumstats.loc[(sumstats["OR_95U"]>OR_95U[0]) & (["OR_95U"]<OR_95U[1]),:]
+        sumstats = sumstats.loc[(sumstats["OR_95U"]>OR_95U[0]) & (sumstats["OR_95U"]<OR_95U[1]),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad OR_95U.") 
     
