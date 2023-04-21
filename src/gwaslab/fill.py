@@ -148,7 +148,10 @@ def fill_beta(sumstats,log,verbose=True):
 
 def fill_se(sumstats,log,verbose=True):
     # OR / OR_95L /OR_95U -> SE
-    if ("OR" in sumstats.columns) and ("OR_95U" in sumstats.columns): 
+    if ("P" in sumstats.columns) and ("BETA" in sumstats.columns):
+        if verbose: log.write("  - Filling SE value using BETA and P column...")
+        sumstats["SE"]= np.abs(sumstats["BETA"]/ ss.norm.ppf(1-sumstats["P"]/2))
+    elif ("OR" in sumstats.columns) and ("OR_95U" in sumstats.columns): 
         if verbose: log.write("  - Filling SE value using OR/OR_95U column...")
         # 
         sumstats["SE"]=(np.log(sumstats["OR_95U"]) - np.log(sumstats["OR"]))/ss.norm.ppf(0.975)
