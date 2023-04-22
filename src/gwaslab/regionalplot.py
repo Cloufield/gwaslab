@@ -322,7 +322,7 @@ def _plot_gene_track(
 # -############################################################################################################################################################################
 # Helpers    
 # -############################################################################################################################################################################
-def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_threshold, vcf_chr_dict,tabix):
+def process_vcf(sumstats, vcf_path, region, log, verbose, pos ,nea,ea, region_ld_threshold, vcf_chr_dict,tabix):
     if verbose: log.write("Start to load reference genotype...")
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
     # load genotype data of the targeted region
@@ -335,7 +335,33 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     if verbose: log.write(" -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])))
     # match sumstats pos and ref pos: 
     # get ref index for its first appearance of sumstats pos
-    sumstats["REFINDEX"] = sumstats[pos].apply(lambda x: np.where(ref_genotype["variants/POS"] == x )[0][0] if np.any(ref_genotype["variants/POS"] == x) else None)
+     #######################################################################################
+    def match_varaint(x):
+        # x: "POS,NEA,EA"
+        if np.any(ref_genotype["variants/POS"] == x.iloc[0]):
+            if len(np.where(ref_genotype["variants/POS"] == x.iloc[0] )[0])>1:  
+            # multiple position matches
+                for j in np.where(ref_genotype["variants/POS"] == x.iloc[0])[0]:
+                # for each possible match, compare ref and alt
+                    if x.iloc[1] == ref_genotype["variants/REF"][j]:
+                        if x.iloc[2] in ref_genotype["variants/ALT"][j]:
+                            return j
+                    elif x.iloc[1] in ref_genotype["variants/ALT"][j]:
+                        if x.iloc[2] == ref_genotype["variants/REF"][j]:
+                            return j
+                    else:
+                        return None
+            else: 
+                # single match
+                return np.where(ref_genotype["variants/POS"] == x.iloc[0] )[0][0] 
+        else:
+            # no position match
+            return None
+    if verbose: log.write(" -Matching variants using POS, NEA, EA ...")
+    sumstats["REFINDEX"] = sumstats.loc[:,[pos,nea,ea]].apply(lambda x: match_varaint(x),axis=1)
+    #############################################################################################
+    #sumstats["REFINDEX"] = sumstats[pos].apply(lambda x: np.where(ref_genotype["variants/POS"] == x )[0][0] if np.any(ref_genotype["variants/POS"] == x) else None)
+    
     # get lead variant id and pos
     lead_id = sumstats["scaled_P"].idxmax()
     lead_pos = sumstats.loc[lead_id,pos]
@@ -344,7 +370,8 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos , region_ld_thresh
     if lead_pos in ref_genotype["variants/POS"]:
         
         # get ref index for lead snp
-        lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
+        lead_snp_ref_index = match_varaint(sumstats.loc[lead_id,[pos,nea,ea]])
+        #lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
 
         # non-na other snp index
         other_snps_ref_index = sumstats["REFINDEX"].dropna().astype("int").values

@@ -1,11 +1,14 @@
 # Update Logs
 
-## 3.4.8
+## 3.4.9
+- update variant matching criteria for regional plot
+
+## 3.4.8 - 2023/04/21
 - fixed regional plot lead variant line error
 - added tutorial for v3.4
 - fixed anno_alias priority
 
-## 3.4.7
+## 3.4.7 - 2023/04/20
 - fixed font_family for annotation
 - get_lead can now use mlo10p to extract lead variants 
 - added sig_level_lead in plot_mqq

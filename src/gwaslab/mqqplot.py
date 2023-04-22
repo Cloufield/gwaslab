@@ -55,6 +55,8 @@ def mqqplot(insumstats,
           p=None,
           snpid=None,
           eaf=None,
+          ea="EA",
+          nea="NEA",
           chr_dict = get_chr_to_number(),
           xtick_chr_dict = get_number_to_chr(),
           vcf_path=None,
@@ -245,7 +247,14 @@ def mqqplot(insumstats,
             usecols.append(pos)
         else:
             raise ValueError("Please make sure "+pos+" column is in input sumstats.")
-            
+    
+    # for regional plot ea and nea
+    if ("r" in mode) and (ea in insumstats.columns) and (nea in insumstats.columns):
+        try:
+            usecols.append(ea)
+            usecols.append(nea)
+        except:
+            raise ValueError("Please make sure {} and {} columns are in input sumstats.".format(nea,ea))
     # SNPID ###############################################################################
     if len(highlight)>0 or len(pinpoint)>0 or (snpid is not None):
         # read snpid when highlight/pinpoint is needed.
@@ -439,7 +448,7 @@ def mqqplot(insumstats,
         if tabix is None:
             tabix = which("tabix")
         sumstats = process_vcf(sumstats=sumstats, vcf_path=vcf_path,region=region, 
-                               log=log ,pos=pos,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict,tabix=tabix)
+                               log=log ,pos=pos,ea=ea,nea=nea,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict,tabix=tabix)
 
     #sort & add id
     ## Manhatann plot ###################################################
