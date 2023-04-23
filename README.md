@@ -1,6 +1,6 @@
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197167760-5f761f5e-5856-4b27-a540-8b9cd90bdadb.png">
 
-# gwaslab
+# GWASLab
 
 ![badge](https://img.shields.io/pypi/v/gwaslab)
 [![Downloads](https://static.pepy.tech/badge/gwaslab)](https://pepy.tech/project/gwaslab)
@@ -8,12 +8,12 @@
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 ![badge_commit_m](https://img.shields.io/github/commit-activity/m/Cloufield/gwaslab)
 
-* A handy python toolkit for handling GWAS sumstats.
+* A handy Python toolkit for handling GWAS sumstats.
 * Each process is modularized and can be customized to your needs.
-* Sumstats-specific manipulations are designed as methods of a python object, `gwaslab.Sumstats`.
+* Sumstats-specific manipulations are designed as methods of a Python object, `gwaslab.Sumstats`.
 
 Please check GWASLab document at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
-Note: gwaslab is being updated very frequently for now. I will release the first stable version soon! Please stay tuned.
+Note: GWASLab is being updated very frequently for now. I will release the first stable version soon! Please stay tuned.
 
 ## Install
 
@@ -128,7 +128,7 @@ adjustText
 ## Citation
 
 - GWASLab manuscript is in preparation and will be released soon.
-- Sample GWAS data used in gwaslab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
+- Sample GWAS data used in GWASLab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
 
 ## Contacts
 * Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
