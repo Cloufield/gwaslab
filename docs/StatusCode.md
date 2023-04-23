@@ -1,9 +1,9 @@
 # Status Code
-- A 7-digit code:  showing the status of a variants.
+- A 7-digit code:  showing the status of a variant.
 - Reflecting the reliability of the statistics.
 - Design principals:
-    - Tracable
-    - Higher value ->higer uncertainty 
+    - Traceable
+    - Higher value -> higher uncertainty 
 
 | Digit | Description               |
 | ----- | ------------------------- |

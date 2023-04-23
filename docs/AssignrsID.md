@@ -76,7 +76,7 @@ mysumstats.assign_rsid(
 
 - `ref_rsid_tsv` : tsv file for annotation of common used variants. Using SNPID (like 1:725932:G:A)
 - `ref_rsid_vcf` : vcf file for annotation of other variants.
-- `chr_dict`: a dictionary for to convert 1-25 to CHR in vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). gwaslab provides built-in conversion dictionaries.   `gl.get_number_to_NC(build="19")` and `gl.get_number_to_NC(build="19")`
+- `chr_dict`: a dictionary for to convert 1-25 to CHR in vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries.   `gl.get_number_to_NC(build="19")` and `gl.get_number_to_NC(build="19")`
 - `n_cores`: number of cores to use.
 
 

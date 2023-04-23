@@ -51,7 +51,7 @@ The processed dataset can then be used for:
 - regional plot
 
 ## rsID conversion table for quick annotation
-Since gwaslab will check chr:pos and ea/nea to match rsID, it would take a little bit longer if we only use vcf. 
+Since GWASLab will check chr:pos and ea/nea to match rsID, it would take a little bit longer if we only use vcf. 
 
 But we can use a pre-annotated conversion table for common SNPs, and then annotate the rest of SNPs using large VCF file from dbSNP. 
 ```python
@@ -92,11 +92,11 @@ done
 
 ## Reference Library for variants annotation 
 
-GWASlab uses:
+GWASLab uses:
 
 - ensembl release 87 (hg19): https://ftp.ensembl.org/pub/grch37/release-109/gtf/homo_sapiens/
 - ensembl release 109 (hg38):  https://ftp.ensembl.org/pub/release-109/gtf/homo_sapiens/
 - NCBI refseq GRCh37 : https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh37_latest/refseq_identifiers/GRCh37_latest_genomic.gtf.gz
 - NCBI refseq GRCh38 : https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
 
-Currently, gwaslab could use ensembl or refseq gtf reference data to annotate lead SNPs with the nearest gene name.
+Currently, GWASLab could use either ensembl or refseq gtf reference data to annotate lead SNPs with the nearest gene name.

@@ -1,6 +1,6 @@
 # Infer Genome Build
 
-Gwaslab use the chromosome and basepair position information for Hapmap3 SNPs to infer the reference genome build for sumstats.
+GWASLab use the chromosome and basepair position information for Hapmap3 SNPs to infer the reference genome build for sumstats.
 
 Reference genome build will be simply assigned based on the matching count. (Note: the results are more reliable if you have more than 10,000 variants)
 

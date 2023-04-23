@@ -1,5 +1,5 @@
 # QC and filtering
-gwaslab provides all-in-one function and customizable functions for sumstats QC and filtering.
+GWASLab provides all-in-one function and customizable functions for sumstats QC and filtering.
 
 See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_filtering/)
 

@@ -1,4 +1,4 @@
-# Sumstats Object in gwaslab
+# Sumstats Object in GWASLab
 
 In GWASLab, sumstats were stored in a `Sumstats Object`，which is built on `pandas Dataframe`. All other function are designed as methods of this Sumstats Object. 
 
@@ -72,7 +72,7 @@ All other columns and options are optional.
 * `OR`: `string`, odds ratio column name
 * `OR_95L`: `string`, odds ratio lower 95% ci column name
 * `OR_95U`:`string`, odds ratio upper 95% ci column name
-* `direction`: `string`, direction column name. gwaslab uses METAL format (e.g. "++--+?+")
+* `direction`: `string`, direction column name. GWASLab uses METAL format (e.g. "++--+?+")
 * `other`: `list`, a list  of other column names you want to keep with the core columns (probably some annotations).
 * `status`: `string`, status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.
 * `verbose`: `boolean`, if True, print log. 
@@ -150,7 +150,7 @@ You can simply save the processed data using pandas saving functions, for exampl
     mysumstats.data.to_csv("./mysumstats.csv")
     ```  
     
-or convert the sumstats to other sumstats using gwaslab `to_format()` function (**strongly recommended**):
+or convert the sumstats to other sumstats using GWASLab `to_format()` function (**strongly recommended**):
 
 !!! example 
     ```
@@ -189,7 +189,7 @@ You can check the meta information of sumstats by:
 
 ## Other functions
 
-Other functions of gwaslab are implemented as the methods of Sumstats Object.
+Other functions of GWASLab are implemented as the methods of Sumstats Object.
 
 !!! example
     ```python

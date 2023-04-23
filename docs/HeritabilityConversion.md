@@ -1,6 +1,6 @@
-# Heritabilty conversion 
+# Heritability conversion 
 
-gwaslab can convert Observed-scale heritability to Liability-scale heritability. 
+GWASLab can convert Observed-scale heritability to Liability-scale heritability. 
 
 !!! quote
     Conversion formula (Equation 23 from Lee. 2011):

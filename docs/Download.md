@@ -4,7 +4,7 @@
 
 |functions|options|description|
 |-|-|-|
-|`gl.check_available_ref()`|| list current available reference data gwaslab can use |
+|`gl.check_available_ref()`|| list current available reference data GWASLab can use |
 |`gl.check_downloaded_ref()`||list downloaded reference data |
 |`gl.download_ref(keyword)`|keyword|download the refernce data|
 |`gl.remove_file(keyword)`|keyword|remove the downloaded data|

@@ -52,7 +52,7 @@ gl.compare_effect (path1,
     - [snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
 
 ### Snplist
-- `snplist` : optional, specify the variants you want to compare. If None, gwaslab will automatically extract lead variants from both sumstats.
+- `snplist` : optional, specify the variants you want to compare. If None, GWASLab will automatically extract lead variants from both sumstats.
 
 ### Filter by maf: 
 - `eaf` : optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is needed when you need to filter by maf using `maf_level`.
@@ -91,7 +91,7 @@ $$ s.e.(\hat{r^2}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r^2_i} -\ba
     
     ```python
     
-    # gwaslab will automatically extract significant variants from both sumstats. 
+    # GWASLab will automatically extract significant variants from both sumstats. 
     a = gl.compare_effect("bbj_bmi_female.txt.gz",
                           ["SNP","P","REF","ALT","CHR","POS"],["BETA","SE"],
                           "bbj_bmi_male.txt.gz",

@@ -24,7 +24,7 @@
 - fixed error in mqqplot (chr > 26)
 
 ## 3.4.3 - 2023/03/29
-- added jagged y axis
+- added jagged y-axis
 - added cut_log
 
 ## 3.4.2 - 2023/03/28

@@ -2,7 +2,7 @@
 
 !!! info "Implemented since v3.3.4"
 
-As a standalone function, gwaslab can plot miami plot given a pair of sumstats files.
+As a standalone function, GWASLab can plot miami plot given a pair of sumstats files.
 
 ## Usage
 
