@@ -3,6 +3,7 @@
 ## 3.4.9
 - update variant matching criteria for regional plot
 - fixed default values for mqqplot
+- added qq_scatter_args
 
 ## 3.4.8 - 2023/04/21
 - fixed regional plot lead variant line error
