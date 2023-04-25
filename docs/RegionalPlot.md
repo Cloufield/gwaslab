@@ -1,8 +1,8 @@
-# Regional plot:
+# Regional plots
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png">
 
-gwaslab provides off-line functions for creating regional plot.
+GWASLab provides off-line functions for creating regional plots.
 
 See examples [here.](https://cloufield.github.io/gwaslab/visualization_regional/)
 
@@ -71,7 +71,7 @@ mqqplot(  vcf_path=None,
           log=Log()
           ):
 ```
-gwaslab regional plot function is based on plot_mqq().
+GWASLab regional plot function is based on plot_mqq().
 
 ## Regional mqq plot
 ```

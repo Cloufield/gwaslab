@@ -1,6 +1,6 @@
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197167760-5f761f5e-5856-4b27-a540-8b9cd90bdadb.png">
 
-# gwaslab
+# GWASLab
 
 ![badge](https://img.shields.io/pypi/v/gwaslab)
 [![Downloads](https://static.pepy.tech/badge/gwaslab)](https://pepy.tech/project/gwaslab)
@@ -8,12 +8,12 @@
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 ![badge_commit_m](https://img.shields.io/github/commit-activity/m/Cloufield/gwaslab)
 
-* A handy python toolkit for handling GWAS sumstats.
+* A handy Python toolkit for handling GWAS sumstats.
 * Each process is modularized and can be customized to your needs.
-* Sumstats-specific manipulations are designed as methods of a python object, `gwaslab.Sumstats`.
+* Sumstats-specific manipulations are designed as methods of a Python object, `gwaslab.Sumstats`.
 
 Please check GWASLab document at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
-Note: gwaslab is being updated very frequently for now. I will release the first stable version soon! Please stay tuned.
+Note: GWASLab is being updated very frequently for now. I will release the first stable version soon! Please stay tuned.
 
 ## Install
 
@@ -94,9 +94,10 @@ mysumstats.plot_mqq()
 
 ### Visualization Examples
 
-<img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/195526882-dff70593-752d-4672-901e-0b3cea3d8cda.png"><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png"><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197463243-89352749-f882-418d-907d-27530fd4e922.png"><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png">
-
-<img width="400" alt="image" src="https://user-images.githubusercontent.com/40289485/195526481-df060ad5-dc61-4e35-ab37-3ea45ed00618.png">
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/233836639-34b03c47-5a59-4fd4-9677-5e13b02aab15.png">
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png">
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197463243-89352749-f882-418d-907d-27530fd4e922.png">
+<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png">
 
 ### Other Utilities
 
@@ -128,7 +129,7 @@ adjustText
 ## Citation
 
 - GWASLab manuscript is in preparation and will be released soon.
-- Sample GWAS data used in gwaslab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
+- Sample GWAS data used in GWASLab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
 
 ## Contacts
 * Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)

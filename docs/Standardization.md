@@ -13,7 +13,7 @@ See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow
 | `.fix_allele()`       | `remove=False`        | standardize base notation to ATCG                                              |
 | `.normalize_allele()` | `n_cores=1`                                                  | normalize indels (only support ATA:AA -> AT:A but not -:T)                     |
 | `.sort_coordinate()`  |                                                              | sort the variant coordinates                                                   |
-| `.sort_column()`  |                                                              | sort the column order to gwaslab default                                                   |
+| `.sort_column()`  |                                                              | sort the column order to GWASLab default                                                   |
 | `.basic_check()`  |                                                              | all-in-one function to perform the defaul pipeline                                             |
 
 ## 1. IDs

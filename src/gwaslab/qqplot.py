@@ -13,6 +13,7 @@ def _plot_qq(
     p_toplot_raw,
     ax2,
     maxticker,
+    marker_size,
     gc,
     cut,
     cutfactor,
@@ -21,7 +22,7 @@ def _plot_qq(
     maxy,
     ystep,
     colors,
-    sig_line_color,
+    qq_line_color,
     stratified,
     eaf_raw,
     maf_bins,
@@ -36,6 +37,7 @@ def _plot_qq(
     ytick3,
     ylabels,
     ylabels_converted,
+    qq_scatter_kwargs,
     verbose=True,
     log=Log()
 ):
@@ -61,7 +63,7 @@ def _plot_qq(
         expected = -np.log10(np.linspace(minit,1,len(p_toplot_raw)))[:len(observed)]
         
         #p_toplot = sumstats["scaled_P"]
-        ax2.scatter(expected,observed,s=8,color=colors[0])
+        ax2.scatter(expected,observed,s=marker_size[1],color=colors[0],**qq_scatter_kwargs)
     else:
         # stratified qq plot
         for i,(lower, upper) in enumerate(maf_bins):
@@ -75,11 +77,11 @@ def _plot_qq(
             # uniform distribution using raw number -> -log10 -> observed number (omit variants with low -log10p)
             expected = -np.log10(np.linspace(minit,1,max(len(databin_raw),len(databin))))[:len(observed)]
             label ="("+str(lower)+","+str(upper) +"]"
-            ax2.scatter(expected,observed,s=8,color=maf_bin_colors[i],label=label)
+            ax2.scatter(expected,observed,s=marker_size[1],color=maf_bin_colors[i],label=label,**qq_scatter_kwargs)
             ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=3,frameon=False)
             plt.setp(ax2_legend.texts, family=font_family)
     
-    ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=sig_line_color)
+    ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=qq_line_color)
     ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family=font_family)
     ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family=font_family)
     ax2.spines["top"].set_visible(False)

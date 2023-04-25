@@ -55,36 +55,40 @@ def mqqplot(insumstats,
           p=None,
           snpid=None,
           eaf=None,
-          chr_dict = get_chr_to_number(),
-          xtick_chr_dict = get_number_to_chr(),
+          ea="EA",
+          nea="NEA",
+          chr_dict = None,
+          xtick_chr_dict = None,
           vcf_path=None,
-          vcf_chr_dict = get_number_to_chr(),
+          vcf_chr_dict = None,
           gtf_path="default",
-          gtf_chr_dict = get_number_to_chr(),
+          gtf_chr_dict = None,
           gtf_gene_name=None,
           rr_path="default",
           rr_header_dict=None,
-          rr_chr_dict = get_number_to_chr(),
+          rr_chr_dict = None,
           rr_lim=(0,100),
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
-          scatter_kwargs=dict(),
+          scatter_kwargs=None,
+          qq_scatter_kwargs=None,
+          qq_line_color = "grey",
           # region
           region = None,
           region_step = 21,
           region_grid = False,
-          region_grid_line = {"linewidth": 2,"linestyle":"--"},
+          region_grid_line = None,
           region_lead_grid = True,
-          region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"},
+          region_lead_grid_line = None,
           region_hspace=0.02,
-          region_ld_threshold = [0.2,0.4,0.6,0.8],
-          region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
+          region_ld_threshold = None,
+          region_ld_colors = None,
           region_recombination = True,
-          region_protein_coding=True,
+          region_protein_coding = True,
           region_flank_factor = 0.05,
-          region_anno_bbox_args=dict(),
-          taf=[4,0,0.95,1,1],
+          region_anno_bbox_args = None,
+          taf = None,
           # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
           tabix=None,
           mqqratio=3,
@@ -97,10 +101,10 @@ def mqqplot(insumstats,
           density_palette="Reds",
           windowsizekb=500,
           anno=None,
-          anno_set=list(),
-          anno_alias=dict(),
-          anno_d=dict(),
-          anno_args=dict(),
+          anno_set=None,
+          anno_alias=None,
+          anno_d=None,
+          anno_args=None,
           anno_style="right",
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
@@ -128,14 +132,14 @@ def mqqplot(insumstats,
           suggestive_sig_level=5e-6,
           suggestive_sig_line_color="grey",
           sc_linewidth=2,
-          highlight = list(),
+          highlight = None,
           highlight_color="#CB132D",
           highlight_windowkb = 500,
-          pinpoint=list(),
+          pinpoint= None,
           pinpoint_color ="red",
           stratified=False,
-          maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
-          maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
+          maf_bins=None,
+          maf_bin_colors = None,
           gc=True,
           include_chrXYMT = True,
           ylim=None,
@@ -150,22 +154,68 @@ def mqqplot(insumstats,
           fontsize = 9,
           font_family="Arial",
           anno_fontsize = 9,
-          figargs= dict(figsize=(15,5)),
-          colors=["#597FBD","#74BAD3"],
-          marker_size=(5,25),
+          figargs= None,
+          colors=None,
+          marker_size=(5,20),
           use_rank=False,
           verbose=True,
           repel_force=0.03,
           build="19",
           dpi=200,
           save=None,
-          saveargs={"dpi":300,"facecolor":"white"},
+          saveargs=None,
           _invert=False,
           log=Log()
           ):
 
 # log.writeing meta info #######################################################################################
-
+    if chr_dict is None:          
+        chr_dict = get_chr_to_number()
+    if xtick_chr_dict is None:         
+        xtick_chr_dict = get_number_to_chr()
+    if vcf_chr_dict is None:  
+        vcf_chr_dict = get_number_to_chr()
+    if gtf_chr_dict is None:   
+        gtf_chr_dict = get_number_to_chr()
+    if rr_chr_dict is None:   
+        rr_chr_dict = get_number_to_chr()
+    if figargs is None:
+        figargs= dict(figsize=(15,5))
+    if "dpi" not in figargs.keys():
+        figargs["dpi"] = dpi
+    if region_anno_bbox_args is None:
+        region_anno_bbox_args = dict()
+    if anno_set is None:
+        anno_set=list()
+    if anno_alias is None:
+        anno_alias=dict()
+    if anno_d is None:
+        anno_d=dict()
+    if anno_args is None:
+        anno_args=dict()
+    if colors is None:
+        colors=["#597FBD","#74BAD3"]
+    if region_grid_line is None:
+        region_grid_line = {"linewidth": 2,"linestyle":"--"}
+    if region_lead_grid_line is None:
+        region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
+    if region_ld_threshold is None:
+        region_ld_threshold = [0.2,0.4,0.6,0.8]
+    if region_ld_colors is None:     
+        region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
+    if taf is None:
+        taf = [4,0,0.95,1,1]
+    if maf_bins is None:
+        maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]
+    if maf_bin_colors is None:
+        maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]
+    if saveargs is None:
+        saveargs = {"dpi":300,"facecolor":"white"}
+    if highlight is None:
+        highlight = list()
+    if pinpoint is None:
+        pinpoint = list()
+    
     if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
@@ -179,8 +229,6 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Variants to pinpoint : "+",".join(pinpoint))  
     if region is not None:
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
-    if "dpi" not in figargs.keys():
-        figargs["dpi"] = dpi
 
 # Plotting mode selection : layout ####################################################################
     # ax1 : manhattanplot / brisbane plot
@@ -217,6 +265,10 @@ def mqqplot(insumstats,
         marker_size= (marker_size[1],marker_size[1])
     else:
         raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
+    if scatter_kwargs is None:
+        scatter_kwargs={}
+    if qq_scatter_kwargs is None:
+        qq_scatter_kwargs={}
 
 
 # Read sumstats #################################################################################################
@@ -245,7 +297,14 @@ def mqqplot(insumstats,
             usecols.append(pos)
         else:
             raise ValueError("Please make sure "+pos+" column is in input sumstats.")
-            
+    
+    # for regional plot ea and nea
+    if ("r" in mode) and (ea in insumstats.columns) and (nea in insumstats.columns):
+        try:
+            usecols.append(ea)
+            usecols.append(nea)
+        except:
+            raise ValueError("Please make sure {} and {} columns are in input sumstats.".format(nea,ea))
     # SNPID ###############################################################################
     if len(highlight)>0 or len(pinpoint)>0 or (snpid is not None):
         # read snpid when highlight/pinpoint is needed.
@@ -439,7 +498,7 @@ def mqqplot(insumstats,
         if tabix is None:
             tabix = which("tabix")
         sumstats = process_vcf(sumstats=sumstats, vcf_path=vcf_path,region=region, 
-                               log=log ,pos=pos,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict,tabix=tabix)
+                               log=log ,pos=pos,ea=ea,nea=nea,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict,tabix=tabix)
 
     #sort & add id
     ## Manhatann plot ###################################################
@@ -745,6 +804,7 @@ def mqqplot(insumstats,
                     p_toplot_raw=p_toplot_raw,
                     ax2=ax2,
                     maxticker=maxticker,
+                    marker_size=marker_size,
                     gc=gc,
                     cut=cut,
                     cutfactor=cutfactor,
@@ -753,7 +813,7 @@ def mqqplot(insumstats,
                     maxy=maxy,
                     ystep=ystep,
                     colors=colors,
-                    sig_line_color=sig_line_color,
+                    qq_line_color=qq_line_color,
                     stratified=stratified,
                     eaf_raw=eaf_raw,
                     maf_bins=maf_bins,
@@ -769,6 +829,7 @@ def mqqplot(insumstats,
                     ylabels = ylabels,
                     ylabels_converted = ylabels_converted,
                     verbose=verbose,
+                    qq_scatter_kwargs=qq_scatter_kwargs,
                     log=log
                 )
     

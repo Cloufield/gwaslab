@@ -46,7 +46,7 @@ to_format(
 
 ## Example 1: common tabular format
 
-gwaslab support commonly used tabular format, which are listed in a companion repository `formatbook`.
+GWASLab support commonly used tabular format, which are listed in a companion repository `formatbook`.
 
 !!! quote "formatbook"
     for more details, please check [formatbook](https://github.com/Cloufield/formatbook)
