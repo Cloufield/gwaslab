@@ -4,6 +4,7 @@
 - update variant matching criteria for regional plot
 - fixed default values for mqqplot
 - added qq_scatter_args
+- added connection timeout, status code check and md5sum verification for download_ref
 
 ## 3.4.8 - 2023/04/21
 - fixed regional plot lead variant line error

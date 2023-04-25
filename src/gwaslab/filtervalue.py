@@ -261,7 +261,7 @@ def sampling(sumstats,n,verbose=True,log=Log(),**args):
     if verbose:log.write(" -Number of variants selected from the sumstats:",n)
     if "random_state" in args.keys():
         if verbose:log.write(" -Random state (seed): {}".format(args["random_state"]))
-    sampled = sumstats.sample(n=n)
+    sampled = sumstats.sample(n=n,**args)
     if verbose:log.write("Finished sampling...")
     gc.collect()
     return sampled
