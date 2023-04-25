@@ -4,6 +4,7 @@ from os import path
 import json
 import requests
 import shutil
+import hashlib
 from gwaslab.Log import Log
 from gwaslab.config import options
 
@@ -212,6 +213,10 @@ def download_ref(name,
         # download file
         download_file(url,local_path)
         # update record in config json
+        if name+"_md5" in dicts.keys():
+            file_status = check_file_integrity(local_path=local_path, md5sum=dicts[name+"_md5"],log=log)
+            if file_status==0:
+                log.write("Downloading ",name," failed! Please check the internet connection.")
         update_record(name,local_path)
         
         # if vcf.gz -> check tbi
@@ -240,6 +245,21 @@ def download_ref(name,
         log.write(name," is not available. Please use check_available_ref() to check available reference files.")
 
 #### helper #############################################################################################
+
+def check_file_integrity(local_path, md5sum,log):
+    md5_hash = hashlib.md5()
+    with open(local_path,"rb") as f:
+        # Read and update hash in chunks
+        for byte_block in iter(lambda: f.read(4096*1000),b""):
+            md5_hash.update(byte_block)
+    log.write(" -File path: {}".format(local_path))
+    log.write(" -MD5 check: {}".format(str(md5_hash.hexdigest())))
+    if str(md5_hash.hexdigest()) == md5sum:
+        log.write(" -MD5 verified.")
+        return 1
+    else:
+        log.write("WARNING: -MD5 VERIFICATION FAILED !")
+        return 0
 
 def remove_file(name,log=Log()):
     log.write("Start to remove ",name," ...")
@@ -281,7 +301,9 @@ def download_file(url, file_path=None):
     '''
     # download file from url to file_path
     if file_path is not None:
-        with requests.get(url, stream=True) as r:
+        with requests.get(url, stream=True,timeout=(20, 20)) as r:
+            # checking status
+            r.raise_for_status()
             with open(file_path, 'wb') as f:
                 shutil.copyfileobj(r.raw, f)     
         return file_path
