@@ -297,7 +297,7 @@ class Sumstats():
     def check_ref(self,**args):
         self.data = checkref(self.data,log=self.log,**args)
     def infer_strand(self,**args):
-        self.data =inferstrand(self.data,maf_threshold=0.43,log=self.log,**args)
+        self.data = inferstrand(self.data,maf_threshold=0.43,log=self.log,**args)
     def flip_allele_stats(self,**args):
         self.data = flipallelestats(self.data,log=self.log,**args)
     def normalize_allele(self,**args):

@@ -256,9 +256,11 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NE
         gc.collect()
         raise ValueError("Not enough information to match SNPs. Please check if CHR and POS columns are in your sumstats...")
 
-def sampling(sumstats,n,verbose=True,log=Log()):
+def sampling(sumstats,n,verbose=True,log=Log(),**args):
     if verbose:log.write("Start to randomly select variants from the sumstats...") 
     if verbose:log.write(" -Number of variants selected from the sumstats:",n)
+    if "random_state" in args.keys():
+        if verbose:log.write(" -Random state (seed): {}".format(args["random_state"]))
     sampled = sumstats.sample(n=n)
     if verbose:log.write("Finished sampling...")
     gc.collect()
