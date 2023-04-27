@@ -37,6 +37,9 @@ def tofmt(sumstats,
     
     if fmt in ["ssf"]: 
         xymt_number=True
+        if "SNPID" in sumstats.columns:
+            if verbose: log.write(' - Replacing SNPID separator from ":" to "_"...')
+            sumstats["SNPID"] = sumstats["SNPID"].str.replace(":","_")
     if verbose: log.write(" - Start outputting sumstats in "+fmt+" format...")
     if xymt_number is False and sumstats["CHR"].dtype in ["Int64","int"]:
         sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt,prefix=chr_prefix))

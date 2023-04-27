@@ -1,5 +1,9 @@
 # Update Logs
 
+## 3.4.10
+- fixed variant_id sep for ssf
+- update tutorials
+
 ## 3.4.9
 - update variant matching criteria for regional plot
 - fixed default values for mqqplot
