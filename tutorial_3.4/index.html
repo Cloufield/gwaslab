@@ -2461,9 +2461,9 @@ t2d_bbj.txt.gz      100%[===================&gt;] 261.49M  25.2MB/s    in 11s
                     </div>
                 </clipboard-copy>
             </div>
-            <div class="highlight-ipynb hl-python "><pre><span></span><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">gwaslab</span><span class="o">==</span><span class="mf">3.4.9</span>
+            <div class="highlight-ipynb hl-python "><pre><span></span><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">gwaslab</span><span class="o">==</span><span class="mf">3.4.10</span>
 </pre></div>
-<div id="cell-2" class="clipboard-copy-txt">!pip install gwaslab==3.4.9</div>
+<div id="cell-2" class="clipboard-copy-txt">!pip install gwaslab==3.4.10</div>
         
         </div>
     </div>
@@ -2655,22 +2655,22 @@ import gwaslab as gl</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Tue Apr 25 15:12:12 2023 GWASLab version 3.4.9 https://cloufield.github.io/gwaslab/
-Tue Apr 25 15:12:12 2023 (C) 2022-2023, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
-Tue Apr 25 15:12:12 2023 Start to initiate from file :t2d_bbj.txt.gz
-Tue Apr 25 15:12:27 2023  -Reading columns          : SNP,REF,P,Frq,N,Dir,SE,BETA,ALT,POS,CHR
-Tue Apr 25 15:12:27 2023  -Renaming columns to      : SNPID,NEA,P,EAF,N,DIRECTION,SE,BETA,EA,POS,CHR
-Tue Apr 25 15:12:27 2023  -Current Dataframe shape : 12557761  x  11
-Tue Apr 25 15:12:28 2023  -Initiating a status column: STATUS ...
-Tue Apr 25 15:12:31 2023  -NEAF is specified...
-Tue Apr 25 15:12:31 2023  -Checking if 0&lt;= NEAF &lt;=1 ...
-Tue Apr 25 15:12:31 2023  -Converted NEAF to EAF.
-Tue Apr 25 15:12:31 2023  -Removed 0 variants with bad NEAF.
-Tue Apr 25 15:12:32 2023 Start to reorder the columns...
-Tue Apr 25 15:12:32 2023  -Current Dataframe shape : 12557761  x  12
-Tue Apr 25 15:12:32 2023  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
-Tue Apr 25 15:12:32 2023 Finished sorting columns successfully!
-Tue Apr 25 15:12:32 2023 Finished loading data successfully!
+<pre>Thu Apr 27 11:42:12 2023 GWASLab version 3.4.10 https://cloufield.github.io/gwaslab/
+Thu Apr 27 11:42:12 2023 (C) 2022-2023, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+Thu Apr 27 11:42:12 2023 Start to initiate from file :t2d_bbj.txt.gz
+Thu Apr 27 11:42:25 2023  -Reading columns          : Dir,SE,POS,ALT,N,Frq,P,SNP,BETA,CHR,REF
+Thu Apr 27 11:42:25 2023  -Renaming columns to      : DIRECTION,SE,POS,EA,N,EAF,P,SNPID,BETA,CHR,NEA
+Thu Apr 27 11:42:25 2023  -Current Dataframe shape : 12557761  x  11
+Thu Apr 27 11:42:25 2023  -Initiating a status column: STATUS ...
+Thu Apr 27 11:42:27 2023  -NEAF is specified...
+Thu Apr 27 11:42:27 2023  -Checking if 0&lt;= NEAF &lt;=1 ...
+Thu Apr 27 11:42:28 2023  -Converted NEAF to EAF.
+Thu Apr 27 11:42:28 2023  -Removed 0 variants with bad NEAF.
+Thu Apr 27 11:42:28 2023 Start to reorder the columns...
+Thu Apr 27 11:42:28 2023  -Current Dataframe shape : 12557761  x  12
+Thu Apr 27 11:42:28 2023  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS
+Thu Apr 27 11:42:28 2023 Finished sorting columns successfully!
+Thu Apr 27 11:42:28 2023 Finished loading data successfully!
 </pre>
 </div>
 </div>
@@ -7559,6 +7559,91 @@ Tue Apr 25 15:18:52 2023 Finished outputting successfully!
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>Output in GWAS-SSF format</p>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div  class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[31]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+            <div class="zeroclipboard-container">
+                <clipboard-copy for="cell-36">
+                <div>
+                    <span class="notice" hidden>Copied!</span>
+                    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                        <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                        <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                    </svg>
+                    </div>
+                </clipboard-copy>
+            </div>
+            <div class="highlight-ipynb hl-python "><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;clean_sumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;ssf&quot;</span><span class="p">,</span><span class="n">md5sum</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div id="cell-36" class="clipboard-copy-txt">mysumstats.to_format("clean_sumstats",fmt="ssf",md5sum=True)</div>
+        
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Thu Apr 27 11:45:41 2023 Start to format the output sumstats in:  ssf  format
+Thu Apr 27 11:45:41 2023  -Formatting statistics ...
+Thu Apr 27 11:45:52 2023  - Float statistics formats:
+Thu Apr 27 11:45:52 2023   - Columns: [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+Thu Apr 27 11:45:52 2023   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+Thu Apr 27 11:45:52 2023  - Replacing separator from &#34;:&#34; to &#34;_&#34;...
+Thu Apr 27 11:45:54 2023  - Start outputting sumstats in ssf format...
+Thu Apr 27 11:45:55 2023  -ssf format will be loaded...
+Thu Apr 27 11:45:55 2023  -ssf format meta info:
+Thu Apr 27 11:45:55 2023   - format_name  :  ssf
+Thu Apr 27 11:45:55 2023   - format_source  :  https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full
+Thu Apr 27 11:45:55 2023   - format_version  :  20220726
+Thu Apr 27 11:45:55 2023  -gwaslab to ssf format dictionary:
+Thu Apr 27 11:45:55 2023   - gwaslab keys: SNPID,rsID,CHR,POS,NEA,EA,N,BETA,SE,P,INFO,OR,OR_95L,OR_95U
+Thu Apr 27 11:45:55 2023   - ssf values: variant_id,rsid,chromosome,base_pair_location,other_allele,effect_allele,n,beta,standard_error,p_value,info,odds_ratio,ci_lower,ci_upper
+Thu Apr 27 11:45:57 2023  -Output columns: variant_id,chromosome,base_pair_location,effect_allele,other_allele,beta,standard_error,p_value,n
+Thu Apr 27 11:45:57 2023  -Output path: clean_sumstats.ssf.tsv.gz
+Thu Apr 27 11:47:35 2023  -md5sum hashing for the file: clean_sumstats.ssf.tsv.gz
+Thu Apr 27 11:47:35 2023  -md5sum path: clean_sumstats.ssf.tsv.gz.md5sum
+Thu Apr 27 11:47:35 2023  -Saving log file: clean_sumstats.ssf.log
+Thu Apr 27 11:47:35 2023 Finished outputting successfully!
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div  class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h2 id="liftover">Liftover<a class="anchor-link" href="#liftover">&#182;</a></h2>
 </div>
 </div>
@@ -7598,7 +7683,7 @@ Tue Apr 25 15:18:52 2023 Finished outputting successfully!
         
         <div class="CodeMirror cm-s-jupyter">
             <div class="zeroclipboard-container">
-                <clipboard-copy for="cell-36">
+                <clipboard-copy for="cell-37">
                 <div>
                     <span class="notice" hidden>Copied!</span>
                     <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -7610,7 +7695,7 @@ Tue Apr 25 15:18:52 2023 Finished outputting successfully!
             </div>
             <div class="highlight-ipynb hl-python "><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">liftover</span><span class="p">(</span><span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">from_build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span> <span class="n">to_build</span><span class="o">=</span><span class="s2">&quot;38&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-36" class="clipboard-copy-txt">mysumstats.liftover(n_cores=1, from_build="19", to_build="38")</div>
+<div id="cell-37" class="clipboard-copy-txt">mysumstats.liftover(n_cores=1, from_build="19", to_build="38")</div>
         
         </div>
     </div>
@@ -7658,7 +7743,7 @@ Tue Apr 25 15:19:13 2023 Finished liftover successfully!
         
         <div class="CodeMirror cm-s-jupyter">
             <div class="zeroclipboard-container">
-                <clipboard-copy for="cell-37">
+                <clipboard-copy for="cell-38">
                 <div>
                     <span class="notice" hidden>Copied!</span>
                     <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -7670,7 +7755,7 @@ Tue Apr 25 15:19:13 2023 Finished liftover successfully!
             </div>
             <div class="highlight-ipynb hl-python "><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div id="cell-37" class="clipboard-copy-txt">mysumstats.data</div>
+<div id="cell-38" class="clipboard-copy-txt">mysumstats.data</div>
         
         </div>
     </div>
