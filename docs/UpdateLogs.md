@@ -1,5 +1,8 @@
 # Update Logs
 
+## 3.4.11
+- fixed anno=None in miami plot
+
 ## 3.4.10
 - fixed variant_id sep for ssf
 - update tutorials

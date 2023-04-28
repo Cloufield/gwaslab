@@ -40,10 +40,10 @@ from gwaslab.annotateplot import annotate_pair
 def plot_miami( 
           path1,
           path2,
-          cols1=["CHR","POS","P"],
-          cols2=["CHR","POS","P"],
-          sep=["\t","\t"],
-          chr_dict  = get_chr_to_number(),
+          cols1=None,
+          cols2=None,
+          sep=None,
+          chr_dict  = None,
           chr_dict1 = False,
           chr_dict2 = False,
           scaled=False,
@@ -52,18 +52,18 @@ def plot_miami(
           region=None,
           region_step = 21,
           region_grid = False,
-          region_grid_line = {"linewidth": 2,"linestyle":"--"},
+          region_grid_line = None,
           region_lead_grid = True,
-          region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"},
+          region_lead_grid_line = None,
           anno = None,
-          anno_set=list(),
-          anno_set1=list(),
-          anno_set2=list(),
-          anno_alias1=dict(),
-          anno_alias2=dict(),
-          anno_d1=dict(),
-          anno_d2=dict(),
-          anno_args=dict(),
+          anno_set=None,
+          anno_set1=None,
+          anno_set2=None,
+          anno_alias1=None,
+          anno_alias2=None,
+          anno_d1=None,
+          anno_d2=None,
+          anno_args=None,
           anno_style="right",
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
@@ -72,22 +72,22 @@ def plot_miami(
           arm_offset=50,
           arm_scale=1,
           arm_scale_d=None,
-          highlight  = list(),
-          highlight1 = list(),
-          highlight2 = list(),
+          highlight  = None,
+          highlight1 = None,
+          highlight2 = None,
           highlight_color="#CB132D",
           highlight_windowkb = 500,
-          pinpoint=list(),
-          pinpoint1=list(),
-          pinpoint2=list(),
+          pinpoint=None,
+          pinpoint1=None,
+          pinpoint2=None,
           pinpoint_color ="red",
-          titles=["",""],
-          titles_pad=[0.2,0.2], 
+          titles=None,
+          titles_pad=None, 
           cut=0,
           skip=0,
           build="19",
           cutfactor=10,
-          readcsv_args={},
+          readcsv_args=None,
           cut_line_color="#ebebeb",  
           sig_level=5e-8,
           sig_line_color="grey",
@@ -95,19 +95,78 @@ def plot_miami(
           region_hspace = 0.1,
           windowsizekb=500,
           dpi=100,
-          figargs= {"figsize":(15,5),"dpi":100},
+          figargs=None,
           fontsize = 10,
-          colors1=["#597FBD","#74BAD3"],
-          colors2=["#597FBD","#74BAD3"],
-          scatter_kwargs={},
+          font_family="Arial",
+          colors1=None,
+          colors2=None,
+          scatter_kwargs=None,
+          xlabel_coords=(-0.025, -0.025),
+          xtick_label_pad=10,
           marker_size=(5,25),
           verbose=True,
           repel_force=0.03,
           save=None,
-          saveargs={"dpi":100,"facecolor":"white"},
+          saveargs=None,
           log=Log()
           ):
     ## figuring arguments ###########################################################################################################
+    if highlight is None:
+        highlight  = list()
+    if highlight1 is None:
+        highlight1 = list()
+    if highlight2 is None:
+        highlight2 = list()
+    if pinpoint is None:
+        pinpoint= list()
+    if pinpoint1 is None:
+        pinpoint1 = list()
+    if pinpoint2 is None:
+        pinpoint2 = list()
+    if sep is None:
+        sep=["\t","\t"]
+    if chr_dict is None:
+        chr_dict  = get_chr_to_number()
+    if anno_set is None:
+        anno_set= list()
+    if anno_set1 is None:
+        anno_set1=list()
+    if anno_set2 is None:
+        anno_set2=list()
+    if anno_alias1 is None:
+        anno_alias1=dict()
+    if anno_alias2 is None:
+        anno_alias2=dict()
+    if anno_d1 is None:
+        anno_d1= dict()
+    if anno_d2 is None:
+        anno_d2= dict()
+    if anno_args is None:
+        anno_args= dict()
+    if readcsv_args is None:
+        readcsv_args={}
+    if scatter_kwargs is None:
+        scatter_kwargs={}
+    if figargs is None:
+        figargs= {"figsize":(15,5),"dpi":100}
+    if saveargs is None:
+        saveargs={"dpi":100,"facecolor":"white"}
+    if colors1 is None:
+        colors1=["#597FBD","#74BAD3"]
+    if colors2 is None:
+        colors2=["#597FBD","#74BAD3"]
+    if region_lead_grid_line is None:
+        region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
+    if region_grid_line is None:
+        region_grid_line = {"linewidth": 2,"linestyle":"--"}
+    if titles is None:
+        titles=["",""]
+    if titles_pad is None:
+        titles_pad=[0.2,0.2]
+    
+    
+    
+    
     if verbose: log.write("Start to plot miami plot with the following basic settings:")
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
     if len(anno_set)>0 :
@@ -326,7 +385,7 @@ def plot_miami(
     
     ax1.set_xlabel("")
     ax1.set_xticks(chrom_df)
-    ax1.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family="sans-serif") 
+    ax1.set_xticklabels(chrom_df.index.map(get_number_to_chr()),fontsize=fontsize,family=font_family) 
     
     ax5.set_ylim(ax1.get_ylim())
     ax5.set_xlim(ax1.get_xlim())
@@ -346,10 +405,10 @@ def plot_miami(
             cutline = ax.axhline(y=cut, linewidth = 2,linestyle="--",color=cut_line_color,zorder=1)
             if ((maxticker-cut)/cutfactor + cut) > cut:
                 ax.set_yticks([x for x in range(skip,cut+1,2)]+[(maxticker-cut)/cutfactor + cut])
-                ax.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family="sans-serif")
+                ax.set_yticklabels([x for x in range(skip,cut+1,2)]+[maxticker],fontsize=fontsize,family=font_family)
             else:
                 ax.set_yticks([x for x in range(skip,cut+1,2)])
-                ax.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family="sans-serif")
+                ax.set_yticklabels([x for x in range(skip,cut+1,2)],fontsize=fontsize,family=font_family)
             ax.set_ylim(bottom = skip)
             
      
@@ -382,7 +441,7 @@ def plot_miami(
                        windowsizekb=windowsizekb,
                        verbose=False,
                        sig_level=sig_level)
-
+    
         #######################################################################################
         if (to_annotate1.empty is False) and anno=="GENENAME":
                 to_annotate1 = annogene(to_annotate1,
@@ -402,6 +461,9 @@ def plot_miami(
                                        build=build,
                                        source=anno_source,
                                        verbose=verbose).rename(columns={"GENE":"GENENAME"})
+    else:
+        to_annotate1 = pd.DataFrame()
+        to_annotate5 = pd.DataFrame()
             
 ####################################################################################################################
 
@@ -429,6 +491,7 @@ def plot_miami(
                                 maxy1=maxy1,
                                 maxy5=maxy5,
                                 fontsize=fontsize,
+                                font_family=font_family,
                                 region=region,
                                 skip=skip,
                                 chrom="CHR",
@@ -473,7 +536,7 @@ def plot_miami(
             # set x ticks m plot
         ax1.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
         ax5.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
-        ax1.set_xticklabels(region_ticks,rotation=30,fontsize=fontsize,family="sans-serif")
+        ax1.set_xticklabels(region_ticks,rotation=30,fontsize=fontsize,family=font_family)
         fig.tight_layout()
 
         ax1.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
@@ -481,14 +544,15 @@ def plot_miami(
 
 ####################################################################################################################
     # set labels
-    ax1.set_xlabel("CHR",fontsize=fontsize,family="sans-serif")
-    ax1.xaxis.set_label_coords(-0.02, -0.02)
+    ax1.set_xlabel("CHR",fontsize=fontsize,family=font_family)
+    ax1.xaxis.set_label_coords(xlabel_coords[0],xlabel_coords[1])
+    ax1.tick_params(axis='x', which='major', pad=xtick_label_pad)
     
-    ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
-    ax5.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family="sans-serif")
+    ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family=font_family)
+    ax5.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family=font_family)
     
-    ax1.set_title(titles[0],y=1+titles_pad[0])
-    ax5.set_title(titles[1],y=-titles_pad[1])
+    ax1.set_title(titles[0],y=1+titles_pad[0],family=font_family)
+    ax5.set_title(titles[1],y=-titles_pad[1],family=font_family)
     ax5.invert_yaxis() 
     
     #return fig
