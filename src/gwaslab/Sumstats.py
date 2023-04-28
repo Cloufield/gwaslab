@@ -77,6 +77,11 @@ class Sumstats():
              OR=None,
              OR_95L=None,
              OR_95U=None,
+             HR=None,
+             HR_95L=None,
+             HR_95U=None,
+             ncase=None,
+             ncontrol=None,
              status=None,
              other=[],
              direction=None,
@@ -89,7 +94,27 @@ class Sumstats():
         self.build = build
         self.meta = {"GenomeBuild":build,
                      "Name":"Sumstats_1",
-                     "StudyType":"Unknown"}
+                     "StudyType":"Unknown",
+                     "genotyping_technology":"Unknown", 
+                     "gwas_id":"Unknown", 
+                     "samples":{
+                          "sample_size":"Unknown", 
+                          "sample_ancestry":"Unknown", 
+                          "ancestry_method":"Unknown", 
+                     } ,
+                     "trait_description":"Unknown", 
+                     "minor_allele_freq_lower_limit":"Unknown", 
+                     "data_file_name":"Unknown", 
+                     "file_type":"Unknown", 
+                     "data_file_md5sum":"Unknown", 
+                     "is_harmonised":"Unknown", 
+                     "is_sorted":"Unknown", 
+                     "date_last_modified":"Unknown", 
+                     "genome_assembly":"Unknown", 
+                     "coordinate_system":" 1-based",
+                     "sex": "Unknown"
+                     }
+
         self.meta["Study"]=study
         self.log = Log()
         
@@ -517,6 +542,7 @@ class Sumstats():
               xymt_number=False,
               xymt=["X","Y","MT"],
               chr_prefix="",
+              ssfmeta=False,
               md5sum=False,
               bgzip=False,
               tabix=False):
@@ -612,6 +638,7 @@ class Sumstats():
                   to_csvargs=to_csvargs,
                   chr_prefix=chr_prefix,
                   meta = self.meta,
+                  ssfmeta=ssfmeta,
                   bgzip=bgzip,
                   tabix=tabix,
                   md5sum=md5sum,

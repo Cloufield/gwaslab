@@ -1,4 +1,5 @@
 import pandas as pd
+import yaml
 import hashlib
 from gwaslab.Log import Log
 from gwaslab.CommonData import get_format_dict
@@ -28,6 +29,7 @@ def tofmt(sumstats,
           xymt=["X","Y","MT"],
           build="19",
           chr_prefix="",
+          ssfmeta=False,
           md5sum=False,
           bgzip=False,
           tabix=False,
@@ -304,12 +306,12 @@ def tofmt(sumstats,
                 FORMAT=":".join(output_format)
                 DATA=":".join(row[output_format].astype("string"))
                 file.write(CHROM+"\t"+POS+"\t"+ID+"\t"+REF+"\t"+ALT+"\t"+QUAL+"\t"+FILTER+"\t"+INFO+"\t"+FORMAT+"\t"+DATA+"\n")
-       
-        if bgzip is True:
+
+        if bgzip==True:
             if verbose: log.write(" -bgzip compressing ...") 
             tabix_compress(path, path+".gz",force=True)
             if md5sum is True: md5sum_file(path+".gz",log,verbose)
-        if tabix is True:
+        if tabix==True:
             if verbose: log.write(" -tabix indexing...") 
             tabix_index(path+".gz" ,preset="vcf",force=True) 
     ####################################################################################################################
@@ -340,11 +342,20 @@ def tofmt(sumstats,
         
         sumstats = sumstats.loc[:,ouput_cols]
         sumstats = sumstats.rename(columns=rename_dictionary) 
+        
+        if ssfmeta==True:
+            ymal_path = path + "."+suffix+".tsv-meta.ymal"
+            if verbose: log.write(" -Exporting SSF-style meta data to {}".format(ymal_path)) 
+            with open(ymal_path, 'w') as outfile:
+                yaml.dump(meta, outfile)
+
         path = path + "."+suffix+".tsv.gz"
         if verbose: log.write(" -Output columns:",','.join(sumstats.columns))
         if verbose: log.write(" -Output path:",path) 
+        
         if path is not None: 
             sumstats.to_csv(path,sep="\t",index=None,**to_csvargs)
+
         if md5sum is True: md5sum_file(path,log,verbose)
         return sumstats  
     
