@@ -49,6 +49,7 @@ from gwaslab.CommonData import get_high_ld
 from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_formats_list
 from gwaslab.version import _show_version
+from gwaslab.version import gwaslab_info
 import gc
 
 #20220309
@@ -92,30 +93,30 @@ class Sumstats():
 
         self.data = pd.DataFrame()
         self.build = build
-        self.meta = {"GenomeBuild":build,
-                     "Name":"Sumstats_1",
-                     "StudyType":"Unknown",
+        self.meta = {"gwaslab_version": gwaslab_info()["version"],
+                     "study_name":"Sumstats_1",
+                     "study_type":"Unknown",
                      "genotyping_technology":"Unknown", 
                      "gwas_id":"Unknown", 
                      "samples":{
                           "sample_size":"Unknown", 
                           "sample_ancestry":"Unknown", 
-                          "ancestry_method":"Unknown", 
+                          "ancestry_method":"self-reported|genetically determined", 
                      } ,
                      "trait_description":"Unknown", 
                      "minor_allele_freq_lower_limit":"Unknown", 
                      "data_file_name":"Unknown", 
                      "file_type":"Unknown", 
                      "data_file_md5sum":"Unknown", 
-                     "is_harmonised":"Unknown", 
-                     "is_sorted":"Unknown", 
+                     "is_harmonised":"Unchecked", 
+                     "is_sorted":"Unchecked", 
                      "date_last_modified":"Unknown", 
-                     "genome_assembly":"Unknown", 
-                     "coordinate_system":" 1-based",
-                     "sex": "Unknown"
+                     "genome_assembly":build, 
+                     "coordinate_system":"1-based",
+                     "sex": "male|female|combined"
                      }
 
-        self.meta["Study"]=study
+        self.meta["study_name"]=study
         self.log = Log()
         
         _show_version(self.log)
@@ -158,11 +159,14 @@ class Sumstats():
 #### healper #################################################################################
 
     def update_meta(self):
-        self.meta["Number_of_variants"]=len(self.data)
+        self.meta["number_of_variants"]=len(self.data)
         if "CHR" in self.data.columns:
-            self.meta["Number_of_chromosomes"]=len(self.data["CHR"].unique())
+            self.meta["number_of_chromosomes"]=len(self.data["CHR"].unique())
         if "P" in self.data.columns:
-            self.meta["Min_P"]=np.min(self.data["P"])
+            self.meta["min_P"]=np.min(self.data["P"])
+        if "EAF" in self.data.columns:
+            self.meta["min_minor_allele_freq"]=min (np.min(self.data["EAF"]) , 1- np.max(self.data["EAF"]))
+
     def summary(self):
         return summarize(self.data)
 

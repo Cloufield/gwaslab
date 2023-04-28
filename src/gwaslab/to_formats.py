@@ -8,6 +8,8 @@ from gwaslab.version import gwaslab_info
 from pysam import tabix_compress 
 from pysam import tabix_index
 from gwaslab.CommonData import get_formats_list
+from datetime import datetime
+from datetime import date
 
 # to vcf
 # to fmt
@@ -49,6 +51,20 @@ def tofmt(sumstats,
         sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
     
     ### calculate meta data
+    if "EAF" in sumstats.columns:
+        min_maf = sumstats["EAF"].min()
+    else:
+        min_maf = "Unknown"
+    
+    if "N" in sumstats.columns:
+        n_median =  sumstats["N"].median()
+        n_max = sumstats["N"].max()
+        n_min = sumstats["N"].min()
+    else:
+        n_median = "Unknown"
+        n_max = "Unknown"
+        n_min = "Unknown"
+
 
     if fmt=="bed":
         # bed-like format, 0-based, 
@@ -268,7 +284,7 @@ def tofmt(sumstats,
         # Create vcf header
         vcf_header= meta_data["format_fixed_header"] +"\n"+ meta_data["format_contig_"+str(build)]+"\n"
         # Create sample header
-        vcf_header+="##SAMPLE=<ID={},TotalVariants={},VariantsNotRead=0,HarmonisedVariants={},VariantsNotHarmonised={},SwitchedAlleles={},StudyType={}>\n".format(meta["Name"],len(sumstats),harmonised,len(sumstats)-harmonised,switchedalleles,meta["StudyType"])
+        vcf_header+="##SAMPLE=<ID={},TotalVariants={},VariantsNotRead=0,HarmonisedVariants={},VariantsNotHarmonised={},SwitchedAlleles={},StudyType={}>\n".format(meta["study_name"],len(sumstats),harmonised,len(sumstats)-harmonised,switchedalleles,meta["study_type"])
         vcf_header+="##gwaslab_version="+gwaslab_info()["version"]+"\n"
         
         
@@ -290,8 +306,8 @@ def tofmt(sumstats,
             file.write(vcf_header)
         
         with open(path,"a") as file:
-            if verbose: log.write(" -Output columns:"," ".join(meta_data["format_fixed"]+[meta["Name"]]))
-            file.write("\t".join(meta_data["format_fixed"]+[meta["Name"]])+"\n")
+            if verbose: log.write(" -Output columns:"," ".join(meta_data["format_fixed"]+[meta["study_name"]]))
+            file.write("\t".join(meta_data["format_fixed"]+[meta["study_name"]])+"\n")
             if verbose: log.write(" -Outputing data...")
             counter=0
             QUAL="."
@@ -343,12 +359,8 @@ def tofmt(sumstats,
         sumstats = sumstats.loc[:,ouput_cols]
         sumstats = sumstats.rename(columns=rename_dictionary) 
         
-        if ssfmeta==True:
-            ymal_path = path + "."+suffix+".tsv-meta.ymal"
-            if verbose: log.write(" -Exporting SSF-style meta data to {}".format(ymal_path)) 
-            with open(ymal_path, 'w') as outfile:
-                yaml.dump(meta, outfile)
 
+        ymal_path = path + "."+suffix+".tsv-meta.ymal"
         path = path + "."+suffix+".tsv.gz"
         if verbose: log.write(" -Output columns:",','.join(sumstats.columns))
         if verbose: log.write(" -Output path:",path) 
@@ -356,7 +368,26 @@ def tofmt(sumstats,
         if path is not None: 
             sumstats.to_csv(path,sep="\t",index=None,**to_csvargs)
 
-        if md5sum is True: md5sum_file(path,log,verbose)
+        if md5sum is True: 
+            md5_value = md5sum_file(path,log,verbose)
+        else:
+            md5_value = calculate_md5sum_file(path)
+        
+        ## update ssf-style meta data and export to yaml file
+        if ssfmeta==True:
+            meta_copy = meta.copy()
+            meta_copy["minor_allele_freq_lower_limit"] = min_maf
+            meta_copy["file_type"] = fmt
+            meta_copy["data_file_name"] = path
+            meta_copy["data_file_md5sum"] = md5_value
+            meta_copy["date_last_modified"] = get_format_date_and_time()
+            meta_copy["samples"]["sample_size"] = n_max
+            meta_copy["samples"]["sample_size_min"] = n_min
+            meta_copy["samples"]["sample_size_median"] = n_median
+            meta_copy["variant_number"] = len(sumstats)
+            if verbose: log.write(" -Exporting SSF-style meta data to {}".format(ymal_path)) 
+            with open(ymal_path, 'w') as outfile:
+                yaml.dump(meta_copy, outfile)
         return sumstats  
     
 def md5sum_file(filename,log,verbose):
@@ -369,4 +400,19 @@ def md5sum_file(filename,log,verbose):
     with open(filename+".md5sum","w") as f:
         out = str(md5_hash.hexdigest())
         f.write(out+"\n")
-        if verbose: log.write(" -md5sum path:",filename+".md5sum")     
+        if verbose: log.write(" -md5sum path:",filename+".md5sum")    
+        return out
+
+def calculate_md5sum_file(filename):
+    md5_hash = hashlib.md5()
+    with open(filename,"rb") as f:
+        # Read and update hash in chunks
+        for byte_block in iter(lambda: f.read(4096*1000),b""):
+            md5_hash.update(byte_block)
+        out = str(md5_hash.hexdigest())
+        return out    
+
+def get_format_date_and_time():
+    now = datetime.now()
+    dt_string = now.strftime("%Y-%m-%d-%H:%M:%S")
+    return dt_string
