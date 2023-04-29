@@ -31,6 +31,13 @@ def preformat(sumstats,
           OR=None,
           OR_95L=None,
           OR_95U=None,
+          beta_95L=None,
+          beta_95U=None,
+          HR=None,
+          HR_95L=None,
+          HR_95U=None,
+          ncase=None,
+          ncontrol=None,
           direction=None,
           status=None,
           study=None,
@@ -145,9 +152,21 @@ def preformat(sumstats,
     if n and (type(n) is str):
         usecols.append(n)
         rename_dictionary[n]= "N"
+    if ncase and (type(ncase) is str):
+        usecols.append(ncase)
+        rename_dictionary[ncase]= "N_CASE"    
+    if ncontrol and (type(ncontrol) is str):
+        usecols.append(ncontrol)
+        rename_dictionary[ncontrol]= "N_CONTROL"    
     if beta:
         usecols.append(beta)
         rename_dictionary[beta]= "BETA"
+    if beta_95L:
+        usecols.append(beta_95L)
+        rename_dictionary[beta_95L]= "beta_95L"
+    if beta_95U:
+        usecols.append(beta_95U)
+        rename_dictionary[beta_95U]= "beta_95U"  
     if se:
         usecols.append(se)
         rename_dictionary[se]= "SE"
@@ -175,6 +194,15 @@ def preformat(sumstats,
     if OR_95U:
         usecols.append(OR_95U)
         rename_dictionary[OR_95U]= "OR_95U"
+    if HR:
+        usecols.append(HR)
+        rename_dictionary[HR]= "HR"
+    if HR_95L:
+        usecols.append(HR_95L)
+        rename_dictionary[HR_95L]= "HR_95L"
+    if HR_95U:
+        usecols.append(HR_95U)
+        rename_dictionary[HR_95U]= "HR_95U"        
     if direction:
         usecols.append(direction)
         rename_dictionary[direction]="DIRECTION"
@@ -256,6 +284,10 @@ def preformat(sumstats,
     ## if n was provided as int #####################################################################################
     if type(n) is int:
         sumstats["N"] = n
+    if type(ncase) is int:
+        sumstats["N_CASE"] = ncase
+    if type(ncontrol) is int:
+        sumstats["N_CONTROL"] = ncontrol
     
     ### status ######################################################################################################
     if status is None:

@@ -50,6 +50,7 @@ from gwaslab.CommonData import get_format_dict
 from gwaslab.CommonData import get_formats_list
 from gwaslab.version import _show_version
 from gwaslab.version import gwaslab_info
+from gwaslab.meta import init_meta
 import gc
 
 #20220309
@@ -78,6 +79,8 @@ class Sumstats():
              OR=None,
              OR_95L=None,
              OR_95U=None,
+             beta_95L=None,
+             beta_95U=None,
              HR=None,
              HR_95L=None,
              HR_95U=None,
@@ -93,32 +96,10 @@ class Sumstats():
 
         self.data = pd.DataFrame()
         self.build = build
-        self.meta = {"gwaslab_version": gwaslab_info()["version"],
-                     "study_name":"Sumstats_1",
-                     "study_type":"Unknown",
-                     "genotyping_technology":"Unknown", 
-                     "gwas_id":"Unknown", 
-                     "samples":{
-                          "sample_size":"Unknown", 
-                          "sample_ancestry":"Unknown", 
-                          "ancestry_method":"self-reported|genetically determined", 
-                     } ,
-                     "trait_description":"Unknown", 
-                     "minor_allele_freq_lower_limit":"Unknown", 
-                     "data_file_name":"Unknown", 
-                     "file_type":"Unknown", 
-                     "data_file_md5sum":"Unknown", 
-                     "is_harmonised":"Unchecked", 
-                     "is_sorted":"Unchecked", 
-                     "date_last_modified":"Unknown", 
-                     "genome_assembly":build, 
-                     "coordinate_system":"1-based",
-                     "sex": "male|female|combined"
-                     }
-
-        self.meta["study_name"]=study
         self.log = Log()
-        
+        self.meta = init_meta() 
+        self.meta["gwaslab"]["study_name"] = study
+        self.meta["gwaslab"]["genome_build"] = build
         _show_version(self.log)
 
         #preformat the data
@@ -146,6 +127,13 @@ class Sumstats():
           OR=OR,
           OR_95L=OR_95L,
           OR_95U=OR_95U,
+          beta_95L=beta_95L,
+          beta_95U=beta_95U,
+          HR=HR,
+          HR_95L=HR_95L,
+          HR_95U=HR_95U,
+          ncase=ncase,
+          ncontrol=ncontrol,
           direction=direction,
           study=study,
           build=build,
@@ -159,13 +147,17 @@ class Sumstats():
 #### healper #################################################################################
 
     def update_meta(self):
-        self.meta["number_of_variants"]=len(self.data)
+        self.meta["gwaslab"]["variants"]["variant_number"]=len(self.data)
         if "CHR" in self.data.columns:
-            self.meta["number_of_chromosomes"]=len(self.data["CHR"].unique())
+            self.meta["gwaslab"]["variants"]["number_of_chromosomes"]=len(self.data["CHR"].unique())
         if "P" in self.data.columns:
-            self.meta["min_P"]=np.min(self.data["P"])
+            self.meta["gwaslab"]["variants"]["min_P"]=np.min(self.data["P"])
         if "EAF" in self.data.columns:
-            self.meta["min_minor_allele_freq"]=min (np.min(self.data["EAF"]) , 1- np.max(self.data["EAF"]))
+            self.meta["gwaslab"]["variants"]["min_minor_allele_freq"]=min (np.min(self.data["EAF"]) , 1- np.max(self.data["EAF"]))
+        if "N" in self.data.columns:
+            self.meta["gwaslab"]["samples"]["sample_size"] = int(self.data["N"].max())
+            self.meta["gwaslab"]["samples"]["sample_size_median"] = self.data["N"].median()
+            self.meta["gwaslab"]["samples"]["sample_size_min"] = int(self.data["N"].min())
 
     def summary(self):
         return summarize(self.data)
@@ -200,6 +192,7 @@ class Sumstats():
             self.data = parallelnormalizeallele(self.data,n_cores=n_cores,verbose=verbose,log=self.log,**normalizeallele_args)
         self.data = sortcoordinate(self.data,verbose=verbose,log=self.log)
         self.data = sortcolumn(self.data,verbose=verbose,log=self.log)
+        self.meta["is_sorted"] = True
         ###############################################
         
     
@@ -277,7 +270,7 @@ class Sumstats():
             
         if ref_infer is not None: 
             
-            self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
+            self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=maf_threshold,
                                               n_cores=n_cores,log=self.log,**inferstrand_args)
             
             self.data =flipallelestats(self.data,log=self.log,**flipallelestats_args)
@@ -305,6 +298,8 @@ class Sumstats():
         
         self.data = sortcolumn(self.data,log=self.log)
         gc.collect()
+        self.meta["is_sorted"] = True
+        self.meta["is_harmonised"] = True
         return self
     ############################################################################################################
     #customizable API to build your own QC pipeline
@@ -326,7 +321,7 @@ class Sumstats():
     def check_ref(self,**args):
         self.data = checkref(self.data,log=self.log,**args)
     def infer_strand(self,**args):
-        self.data = inferstrand(self.data,maf_threshold=0.43,log=self.log,**args)
+        self.data = parallelinferstrand(self.data,log=self.log,**args)
     def flip_allele_stats(self,**args):
         self.data = flipallelestats(self.data,log=self.log,**args)
     def normalize_allele(self,**args):
@@ -346,10 +341,13 @@ class Sumstats():
         self.data = parallelrsidtochrpos(self.data,log=self.log,**args)
     def liftover(self,**args):
         self.data = parallelizeliftovervariant(self.data,log=self.log,**args)
+        self.meta["is_sorted"] = False
+        self.meta["is_harmonised"] = False
     ############################################################################################################
     
     def sort_coordinate(self,**sort_args):
         self.data = sortcoordinate(self.data,log=self.log,**sort_args)
+        self.meta["is_sorted"] = True
     def sort_column(self,**args):
         self.data = sortcolumn(self.data,log=self.log,**args)
     
@@ -358,8 +356,7 @@ class Sumstats():
         self.data = filldata(self.data,**args)
     
     def infer_build(self,**args):
-        self.data, self.meta["GenomeBuild"] = inferbuild(self.data,**args)
-
+        self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**args)
 # utilities ############################################################################################################
     # filter series ######################################################################
     def filter_value(self, expr, inplace=False, **args):

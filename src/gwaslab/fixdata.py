@@ -690,8 +690,10 @@ def normalizevariant(pos,a,b,status):
 ###############################################################################################################
 # 20220426
 def sanitycheckstats(sumstats,
-                     coltocheck=["P","MLOG10P","Z","BETA","SE","EAF","CHISQ","N","OR","OR_95L","OR_95U","STATUS"],
+                     coltocheck=["P","MLOG10P","Z","BETA","SE","EAF","CHISQ","N","N_CASE","N_CONTROL","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","STATUS"],
                      n=(0,2**31-1),
+                     ncase=(0,2**31-1),
+                     ncontrol=(0,2**31-1),
                      eaf=(0,1),
                      mac=(0,float("Inf")),
                      chisq=(0,float("Inf")),
@@ -700,9 +702,12 @@ def sanitycheckstats(sumstats,
                      mlog10p=(0,float("Inf")),
                      beta=(-10,10),
                      se=(0,float("Inf")),
-                     OR=(-10,10),
+                     OR=(0,10),
                      OR_95L=(0,float("Inf")),
                      OR_95U=(0,float("Inf")),
+                     HR=(-10,10),
+                     HR_95L=(0,float("Inf")),
+                     HR_95U=(0,float("Inf")),
                      info=(0,float("Inf")),
                      verbose=True,
                      log=Log()):
@@ -725,6 +730,7 @@ def sanitycheckstats(sumstats,
     cols_to_check=[]
     oringinal_number=len(sumstats)
     sumstats = sumstats.copy()
+    
     pre_number=len(sumstats)
     if "N" in coltocheck and "N" in sumstats.columns:
         cols_to_check.append("N")
@@ -733,7 +739,23 @@ def sanitycheckstats(sumstats,
         sumstats = sumstats.loc[(sumstats["N"]>=n[0]) & (sumstats["N"]<=n[1]),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad N.") 
-            
+    pre_number=len(sumstats)
+    if "N_CASE" in coltocheck and "N_CASE" in sumstats.columns:
+        cols_to_check.append("N_CASE")
+        if verbose: log.write(" -Checking if ",n[0],"<=N_CASE<=",n[1]," ...") 
+        sumstats.loc[:,"N_CASE"] = np.floor(pd.to_numeric(sumstats.loc[:,"N_CASE"], errors='coerce')).astype("Int32")
+        sumstats = sumstats.loc[(sumstats["N_CASE"]>=n[0]) & (sumstats["N_CASE"]<=n[1]),:]
+        after_number=len(sumstats)
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad N_CASE.") 
+    pre_number=len(sumstats)
+    if "N_CONTROL" in coltocheck and "N_CONTROL" in sumstats.columns:
+        cols_to_check.append("N_CONTROL")
+        if verbose: log.write(" -Checking if ",n[0],"<=N_CONTROL<=",n[1]," ...") 
+        sumstats.loc[:,"N_CONTROL"] = np.floor(pd.to_numeric(sumstats.loc[:,"N_CONTROL"], errors='coerce')).astype("Int32")
+        sumstats = sumstats.loc[(sumstats["N_CONTROL"]>=n[0]) & (sumstats["N_CONTROL"]<=n[1]),:]
+        after_number=len(sumstats)
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad N_CONTROL.") 
+
     pre_number=len(sumstats)    
     if "EAF" in coltocheck and "EAF" in sumstats.columns:
         cols_to_check.append("EAF")
@@ -837,6 +859,33 @@ def sanitycheckstats(sumstats,
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad OR_95U.") 
     
     pre_number=len(sumstats)    
+    if "HR" in coltocheck and "HR" in sumstats.columns:
+        cols_to_check.append("HR")
+        if verbose: log.write(" -Checking if ",HR[0],"<log(HR)<",HR[1]," ...") 
+        sumstats.loc[:,"HR"] = pd.to_numeric(sumstats.loc[:,"HR"], errors='coerce').astype("float32")
+        sumstats = sumstats.loc[(np.log(sumstats["HR"])>HR[0]) & (np.log(sumstats["HR"])<HR[1]),:]
+        after_number=len(sumstats)
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad HR.") 
+            
+    pre_number=len(sumstats)   
+    if "HR_95L" in coltocheck and "HR_95L" in sumstats.columns:
+        cols_to_check.append("HR_95L")
+        if verbose: log.write(" -Checking if ",HR_95L[0],"<HR_95L<",HR_95L[1]," ...") 
+        sumstats.loc[:,"HR_95L"] = pd.to_numeric(sumstats.loc[:,"HR_95L"], errors='coerce').astype("float32")
+        sumstats = sumstats.loc[(sumstats["HR_95L"]>HR_95L[0]) & (sumstats["HR_95L"]<HR_95L[1]),:]
+        after_number=len(sumstats)
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad HR_95L.") 
+            
+    pre_number=len(sumstats)    
+    if "HR_95U" in coltocheck and "HR_95U" in sumstats.columns:
+        cols_to_check.append("HR_95U")
+        if verbose: log.write(" -Checking if ",HR_95U[0],"<HR_95U<",HR_95U[1]," ...") 
+        sumstats.loc[:,"HR_95U"] = pd.to_numeric(sumstats.loc[:,"HR_95U"], errors='coerce').astype("float32")
+        sumstats = sumstats.loc[(sumstats["HR_95U"]>HR_95U[0]) & (sumstats["HR_95U"]<HR_95U[1]),:]
+        after_number=len(sumstats)
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad HR_95U.") 
+
+    pre_number=len(sumstats)    
     if "STATUS" in coltocheck and "STATUS" in sumstats.columns:
         cols_to_check.append("STATUS")
         if verbose: log.write(" -Checking STATUS...") 
@@ -910,6 +959,12 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         if "BETA" in sumstats.columns:
             if verbose: log.write(" -Flipping column: BETA = - BETA...") 
             sumstats.loc[matched_index,"BETA"] =     - sumstats.loc[matched_index,"BETA"].values
+        if "BETA_95L" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: BETA_95L = - BETA_95L...") 
+            sumstats.loc[matched_index,"BETA_95L"] =     - sumstats.loc[matched_index,"BETA_95L"].values
+        if "BETA_95U" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: BETA_95U = - BETA_95U...") 
+            sumstats.loc[matched_index,"BETA_95U"] =     - sumstats.loc[matched_index,"BETA_95U"].values
         if "EAF" in sumstats.columns:
             if verbose: log.write(" -Flipping column: EAF = 1 - EAF...") 
             sumstats.loc[matched_index,"EAF"] =   1 - sumstats.loc[matched_index,"EAF"].values
@@ -922,6 +977,15 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         if "OR_95U" in sumstats.columns:
             if verbose: log.write(" -Flipping column: OR_95U = 1 / OR_95U...") 
             sumstats.loc[matched_index,"OR_95U"] =   1 / sumstats.loc[matched_index,"OR_95U"].values
+        if "HR" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: HR = 1 / HR...") 
+            sumstats.loc[matched_index,"HR"] =   1 / sumstats.loc[matched_index,"HR"].values
+        if "HR_95L" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: HR_95L = 1 / HR_95L...") 
+            sumstats.loc[matched_index,"HR_95L"] =   1 / sumstats.loc[matched_index,"HR_95L"].values
+        if "HR_95U" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: HR_95U = 1 / HR_95U...") 
+            sumstats.loc[matched_index,"HR_95U"] =   1 / sumstats.loc[matched_index,"HR_95U"].values
         if "DIRECTION" in sumstats.columns:
             if verbose: log.write(" -Flipping column: DIRECTION +-? <=> -+? ...") 
             sumstats.loc[matched_index,"DIRECTION"] =   sumstats.loc[matched_index,"DIRECTION"].apply(flip_direction)
@@ -942,6 +1006,12 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         if "BETA" in sumstats.columns:
             if verbose: log.write(" -Flipping column: BETA = - BETA...") 
             sumstats.loc[matched_index,"BETA"] =     - sumstats.loc[matched_index,"BETA"].values
+        if "BETA_95L" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: BETA_95L = - BETA_95L...") 
+            sumstats.loc[matched_index,"BETA_95L"] =     - sumstats.loc[matched_index,"BETA_95L"].values
+        if "BETA_95U" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: BETA_95U = - BETA_95U...") 
+            sumstats.loc[matched_index,"BETA_95U"] =     - sumstats.loc[matched_index,"BETA_95U"].values
         if "EAF" in sumstats.columns:
             if verbose: log.write(" -Flipping column: EAF = 1 - EAF...") 
             sumstats.loc[matched_index,"EAF"] =   1 - sumstats.loc[matched_index,"EAF"].values
@@ -954,6 +1024,15 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         if "OR_95U" in sumstats.columns:
             if verbose: log.write(" -Flipping column: OR_95U = 1 / OR_95U...") 
             sumstats.loc[matched_index,"OR_95U"] =   1 / sumstats.loc[matched_index,"OR_95U"].values
+        if "HR" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: HR = 1 / HR...") 
+            sumstats.loc[matched_index,"HR"] =   1 / sumstats.loc[matched_index,"freq"].values
+        if "HR_95L" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: HR_95L = 1 / HR_95L...") 
+            sumstats.loc[matched_index,"HR_95L"] =   1 / sumstats.loc[matched_index,"HR_95L"].values
+        if "HR_95U" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: HR_95U = 1 / HR_95U...") 
+            sumstats.loc[matched_index,"HR_95U"] =   1 / sumstats.loc[matched_index,"HR_95U"].values
         if "DIRECTION" in sumstats.columns:
             if verbose: log.write(" -Flipping column: DIRECTION +-? <=> -+? ...") 
             sumstats.loc[matched_index,"DIRECTION"] =   sumstats.loc[matched_index,"DIRECTION"].apply(flip_direction)
@@ -971,6 +1050,12 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         if "BETA" in sumstats.columns:
             if verbose: log.write(" -Flipping column: BETA = - BETA...") 
             sumstats.loc[matched_index,"BETA"] =     - sumstats.loc[matched_index,"BETA"].values
+        if "BETA_95L" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: BETA_95L = - BETA_95L...") 
+            sumstats.loc[matched_index,"BETA_95L"] =     - sumstats.loc[matched_index,"BETA_95L"].values
+        if "BETA_95U" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: BETA_95U = - BETA_95U...") 
+            sumstats.loc[matched_index,"BETA_95U"] =     - sumstats.loc[matched_index,"BETA_95U"].values
         if "EAF" in sumstats.columns:
             if verbose: log.write(" -Flipping column: EAF = 1 - EAF...") 
             sumstats.loc[matched_index,"EAF"] =   1 - sumstats.loc[matched_index,"EAF"].values
@@ -983,6 +1068,15 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         if "OR_95U" in sumstats.columns:
             if verbose: log.write(" -Flipping column: OR_95U = 1 / OR_95U...") 
             sumstats.loc[matched_index,"OR_95U"] =   1 / sumstats.loc[matched_index,"OR_95U"].values
+        if "HR" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: HR = 1 / HR...") 
+            sumstats.loc[matched_index,"HR"] =   1 / sumstats.loc[matched_index,"freq"].values
+        if "HR_95L" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: HR_95L = 1 / HR_95L...") 
+            sumstats.loc[matched_index,"HR_95L"] =   1 / sumstats.loc[matched_index,"HR_95L"].values
+        if "HR_95U" in sumstats.columns:
+            if verbose: log.write(" -Flipping column: HR_95U = 1 / HR_95U...") 
+            sumstats.loc[matched_index,"HR_95U"] =   1 / sumstats.loc[matched_index,"HR_95U"].values
         if "DIRECTION" in sumstats.columns:
             if verbose: log.write(" -Flipping column: DIRECTION +-? <=> -+? ...") 
             sumstats.loc[matched_index,"DIRECTION"] =   sumstats.loc[matched_index,"DIRECTION"].apply(flip_direction)
@@ -1094,10 +1188,10 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
     gc.collect()
     return sumstats
 ###############################################################################################################
-# 20221105
+# 20230430 added HR HR_95 BETA_95 N_CASE N_CONTROL
 def sortcolumn(sumstats,verbose=True,log=Log(),order = [
-        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "MAF", "BETA", "SE", "Z",
-        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS"
+        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "MAF", "BETA", "SE","BETA_95L","BETA_95U", "Z",
+        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U","HR", "HR_95L", "HR_95U","INFO", "N","N_CASE","N_CONTROL","DIRECTION","STATUS"
            ]):
     if verbose: log.write("Start to reorder the columns...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   

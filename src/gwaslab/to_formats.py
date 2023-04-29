@@ -284,7 +284,7 @@ def tofmt(sumstats,
         # Create vcf header
         vcf_header= meta_data["format_fixed_header"] +"\n"+ meta_data["format_contig_"+str(build)]+"\n"
         # Create sample header
-        vcf_header+="##SAMPLE=<ID={},TotalVariants={},VariantsNotRead=0,HarmonisedVariants={},VariantsNotHarmonised={},SwitchedAlleles={},StudyType={}>\n".format(meta["study_name"],len(sumstats),harmonised,len(sumstats)-harmonised,switchedalleles,meta["study_type"])
+        vcf_header+="##SAMPLE=<ID={},TotalVariants={},VariantsNotRead=0,HarmonisedVariants={},VariantsNotHarmonised={},SwitchedAlleles={},StudyType={}>\n".format(meta["gwaslab"]["study_name"],len(sumstats),harmonised,len(sumstats)-harmonised,switchedalleles,meta["gwaslab"]["study_type"])
         vcf_header+="##gwaslab_version="+gwaslab_info()["version"]+"\n"
         
         
@@ -306,8 +306,8 @@ def tofmt(sumstats,
             file.write(vcf_header)
         
         with open(path,"a") as file:
-            if verbose: log.write(" -Output columns:"," ".join(meta_data["format_fixed"]+[meta["study_name"]]))
-            file.write("\t".join(meta_data["format_fixed"]+[meta["study_name"]])+"\n")
+            if verbose: log.write(" -Output columns:"," ".join(meta_data["format_fixed"]+[meta["gwaslab"]["study_name"]]))
+            file.write("\t".join(meta_data["format_fixed"]+[meta["gwaslab"]["study_name"]])+"\n")
             if verbose: log.write(" -Outputing data...")
             counter=0
             QUAL="."
@@ -382,9 +382,9 @@ def tofmt(sumstats,
             meta_copy["data_file_md5sum"] = md5_value
             meta_copy["date_last_modified"] = get_format_date_and_time()
             meta_copy["samples"]["sample_size"] = n_max
-            meta_copy["samples"]["sample_size_min"] = n_min
-            meta_copy["samples"]["sample_size_median"] = n_median
-            meta_copy["variant_number"] = len(sumstats)
+            meta_copy["gwaslab"]["samples"]["sample_size_min"] = n_min
+            meta_copy["gwaslab"]["samples"]["sample_size_median"] = n_median
+            meta_copy["gwaslab"]["variants"]["variant_number"] = len(sumstats)
             if verbose: log.write(" -Exporting SSF-style meta data to {}".format(ymal_path)) 
             with open(ymal_path, 'w') as outfile:
                 yaml.dump(meta_copy, outfile)
