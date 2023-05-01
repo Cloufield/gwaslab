@@ -17,6 +17,12 @@ def init_meta():
                             "sample_size_control":"Unknown",
                             "sample_size_median":"Unknown",
                             "sample_size_min":"Unknown",
+                        },
+                        "references":{
+                            "ref_rsid_tsv":"Unknown",
+                            "ref_rsid_vcf":"Unknown",
+                            "ref_seq":"Unknown",
+                            "ref_infer":"Unknown"
                         }
                     },
                      "genotyping_technology":"Unknown", 

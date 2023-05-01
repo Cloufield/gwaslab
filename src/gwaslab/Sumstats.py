@@ -264,6 +264,8 @@ class Sumstats():
             
             self.data = checkref(self.data,ref_seq,log=self.log,**checkref_args)
             
+            self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
+            
             self.data = flipallelestats(self.data,log=self.log,**flipallelestats_args)
             
             gc.collect()
@@ -273,6 +275,8 @@ class Sumstats():
             self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=maf_threshold,
                                               n_cores=n_cores,log=self.log,**inferstrand_args)
             
+            self.meta["gwaslab"]["references"]["ref_infer"] = ref_infer
+
             self.data =flipallelestats(self.data,log=self.log,**flipallelestats_args)
             
             gc.collect()
@@ -282,11 +286,13 @@ class Sumstats():
             
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
                                                  n_cores=n_cores,log=self.log,**assignrsid_args)
+            self.meta["gwaslab"]["references"]["ref_rsid_tsv"] = ref_rsid_tsv
             gc.collect()
         if ref_rsid_vcf is not None:
             
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
                                                  n_cores=n_cores,log=self.log,**assignrsid_args)   
+            self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = ref_rsid_vcf
             gc.collect()
         ######################################################    
         if remove is True:
@@ -332,9 +338,10 @@ class Sumstats():
                     **args):
         if ref_rsid_tsv is not None:
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**args)
+            self.meta["gwaslab"]["references"]["ref_rsid_tsv"] = ref_rsid_tsv
         if ref_rsid_vcf is not None:
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**args)   
-        
+            self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = ref_rsid_vcf
     def rsid_to_chrpos(self,**args):
         self.data = rsidtochrpos(self.data,log=self.log,**args)
     def rsid_to_chrpos2(self,**args):
