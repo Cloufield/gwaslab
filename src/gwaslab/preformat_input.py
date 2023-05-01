@@ -44,7 +44,7 @@ def preformat(sumstats,
           build=None,
           other=[],
           verbose=False,
-          readargs={"sep": "\t"},
+          readargs=None,
           log=None):
 
     #renaming dictionary
@@ -54,6 +54,7 @@ def preformat(sumstats,
     
  #######################################################################################################################################################
     if fmt is not None:
+        # loading format parameters
         if verbose: log.write("Start to load format from formatbook....")
         
         # load format data
@@ -61,7 +62,20 @@ def preformat(sumstats,
         
         ########## print format information################################################
         print_format_info(fmt=fmt, meta_data=meta_data,rename_dictionary=rename_dictionary,verbose=verbose, log=log)
-                
+        
+        if "format_separator" in meta_data.keys():
+            if "sep" not in readargs.keys():
+                readargs["sep"] = meta_data["format_separator"]
+        
+        if "format_na" in meta_data.keys():
+            readargs["na_values"] = meta_data["format_na"]
+        
+        if "format_comment" in meta_data.keys():
+            readargs["comment"] = meta_data["format_comment"]
+        
+        if "sep" not in readargs.keys():
+             readargs["sep"] = "\t"
+        
 #########################################################################################################################################################      
     
     # check chr-separated path / vcf / then print header.            
@@ -355,10 +369,14 @@ def parse_vcf_study(sumstats,format_cols,study,vcf_usecols,log,verbose=True):
 def print_format_info(fmt,meta_data, rename_dictionary, verbose, log):
     if verbose: log.write(" -"+fmt+" format meta info:")   
     for key,value in meta_data.items():
+        if value is None:
+            continue
         if type(value) is str:
             if "\n" in value:
                 value_first_line=value.split("\n")[0]
-                log.write("  -",key," : "+value_first_line.strip()+"...")  
+                log.write("  -",key," : "+value_first_line.strip()+"...")
+            elif value==" ":
+                log.write('  -',key,' : " "')  
             else:
                 log.write("  -",key," : "+value.strip())  
         else:

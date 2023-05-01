@@ -376,8 +376,11 @@ def tofmt(sumstats,
         ## update ssf-style meta data and export to yaml file
         if ssfmeta==True:
             meta_copy = meta.copy()
+            if "format_cite_name" in meta_data.keys():
+                meta_copy["file_type"] = meta_data["format_cite_name"]
+            else:
+                meta_copy["file_type"] = fmt
             meta_copy["minor_allele_freq_lower_limit"] = min_maf
-            meta_copy["file_type"] = fmt
             meta_copy["data_file_name"] = path
             meta_copy["data_file_md5sum"] = md5_value
             meta_copy["date_last_modified"] = get_format_date_and_time()
