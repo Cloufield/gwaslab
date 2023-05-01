@@ -527,27 +527,37 @@ class Sumstats():
 # to_format ###############################################################################################       
     def to_format(self,
               path="./sumstats",
-              fmt="ldsc",   
+              fmt="gwaslab",   
               extract=None,
               exclude=None,
-              cols=[],
+              cols=None,
               id_use="rsID",
               hapmap3=False,
-              exclude_hla=False,  
+              exclude_hla=False,
+              hla_range=(25,34),  
               build="19", 
               n=None,
               verbose=True,
               output_log=True,
-              to_csvargs={},
-              float_formats={},
+              to_csvargs=None,
+              float_formats=None,
               xymt_number=False,
-              xymt=["X","Y","MT"],
+              xymt=None,
               chr_prefix="",
               ssfmeta=False,
               md5sum=False,
               bgzip=False,
               tabix=False):
         
+        if  to_csvargs is None:
+            to_csvargs = {}
+        if  float_formats is None:
+            float_formats={}
+        if cols is None:
+            cols=[]
+        if xymt is None:
+            xymt = ["X","Y","MT"]
+
         formatlist= get_formats_list() + ["vep","bed","annovar","vcf"]
         if fmt in formatlist:
             if verbose: self.log.write("Start to format the output sumstats in: ",fmt, " format")
@@ -569,12 +579,12 @@ class Sumstats():
         
         #exclude hla
         if exclude_hla is True:
-            if verbose: self.log.write(" -Excluding variants in HLA region ...")
+            if verbose: self.log.write(" -Excluding variants in MHC (HLA) region ...")
             before = len(output)
-            is_hla = (output["CHR"].astype("string")=="6") & (output["POS"].astype("Int64") >25000000) & (output["POS"].astype("Int64") < 34000000)
+            is_hla = (output["CHR"].astype("string") == "6") & (output["POS"].astype("Int64") > hla_range[0]*1000000) & (output["POS"].astype("Int64") < hla_range[1]*1000000)
             output = output.loc[~is_hla,:]
             after = len(output)
-            if verbose: self.log.write(" -Exclude "+ str(before - after) + " variants in HLA region.")
+            if verbose: self.log.write(" -Exclude "+ str(before - after) + " variants in MHC (HLA) region : {}Mb - {}Mb.".format(hla_range[0], hla_range[1]))
             suffix = "noMHC."+suffix
         
         #extract hapmap3 SNPs

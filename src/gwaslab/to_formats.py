@@ -37,8 +37,10 @@ def tofmt(sumstats,
           tabix=False,
           verbose=True,
           log=Log(),
-          to_csvargs={}):
+          to_csvargs=None):
     
+    if to_csvargs is None:
+        to_csvargs=dict()
     if fmt in ["ssf"]: 
         xymt_number=True
         if "SNPID" in sumstats.columns:
@@ -366,7 +368,13 @@ def tofmt(sumstats,
         if verbose: log.write(" -Output path:",path) 
         
         if path is not None: 
-            sumstats.to_csv(path,sep="\t",index=None,**to_csvargs)
+            if "format_separator" in meta_data.keys():
+                to_csvargs["sep"] = meta_data["format_separator"]
+            else:
+                to_csvargs["sep"]="\t"
+            if "format_na" in meta_data.keys():
+                to_csvargs["na_rep"] = meta_data["format_na"]
+            sumstats.to_csv(path, index=None,**to_csvargs)
 
         if md5sum is True: 
             md5_value = md5sum_file(path,log,verbose)
