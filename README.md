@@ -127,8 +127,9 @@ adjustText
 ```
 
 ## Citation
+- GWASLab manuscript： https://doi.org/10.51094/jxiv.370
 
-- GWASLab manuscript is in preparation and will be released soon.
+## Sample Data
 - Sample GWAS data used in GWASLab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
 
 ## Contacts
