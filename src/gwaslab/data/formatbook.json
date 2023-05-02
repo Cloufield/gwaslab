@@ -178,6 +178,20 @@
             "format_separator": " ",
             "format_na": "NA",
             "format_comment": null,
+            "format_col_order": [
+                "CHROM",
+                "GENPOS",
+                "ID",
+                "ALLELE0",
+                "ALLELE1",
+                "A1FREQ",
+                "N",
+                "TEST",
+                "BETA",
+                "SE",
+                "CHISQ",
+                "LOG10P"
+            ],
             "last_check_date": 20230501
         },
         "format_dict": {
@@ -367,7 +381,31 @@
         "meta_data": {
             "format_name": "ssf",
             "format_source": "https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full",
-            "format_version": 20220726
+            "format_cite_name": "GWAS-SSF v0.1",
+            "format_separator": "\t",
+            "format_na": "#NA",
+            "format_comment": null,
+            "format_col_order": [
+                "chromosome",
+                "base_pair_location",
+                "effect_allele",
+                "other_allele",
+                "beta",
+                "odds_ratio",
+                "hazard_ratio",
+                "standard_error",
+                "effect_allele_frequency",
+                "p_value",
+                "neg_log_10_p_value",
+                "ci_upper",
+                "ci_lower",
+                "rsid",
+                "variant_id",
+                "info",
+                "ref_allele",
+                "n"
+            ],
+            "format_version": 20230328
         },
         "format_dict": {
             "variant_id": "SNPID",
@@ -376,6 +414,7 @@
             "base_pair_location": "POS",
             "other_allele": "NEA",
             "effect_allele": "EA",
+            "effect_allele_frequency": "EAF",
             "n": "N",
             "beta": "BETA",
             "standard_error": "SE",
@@ -383,6 +422,7 @@
             "neg_log_10_p_value": "MLOG10P",
             "info": "INFO",
             "odds_ratio": "OR",
+            "hazard_ratio": "HR",
             "ci_lower": "OR_95L",
             "ci_upper": "OR_95U"
         }

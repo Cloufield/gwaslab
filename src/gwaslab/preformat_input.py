@@ -376,7 +376,9 @@ def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=Fals
                 value_first_line=value.split("\n")[0]
                 log.write("  -",key," : "+value_first_line.strip()+"...")
             elif value==" ":
-                log.write('  -',key,' : " "')      
+                log.write('  -',key,' : \\s ')     
+            elif value=="\t":
+                log.write('  -',key,' : \\t')    
             else:
                 log.write("  -",key," : "+value.strip())  
         elif type(value) is list:
