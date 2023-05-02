@@ -366,7 +366,7 @@ def parse_vcf_study(sumstats,format_cols,study,vcf_usecols,log,verbose=True):
     gc.collect()
     return sumstats
 
-def print_format_info(fmt,meta_data, rename_dictionary, verbose, log):
+def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=False):
     if verbose: log.write(" -"+fmt+" format meta info:")   
     for key,value in meta_data.items():
         if value is None:
@@ -376,9 +376,11 @@ def print_format_info(fmt,meta_data, rename_dictionary, verbose, log):
                 value_first_line=value.split("\n")[0]
                 log.write("  -",key," : "+value_first_line.strip()+"...")
             elif value==" ":
-                log.write('  -',key,' : " "')  
+                log.write('  -',key,' : " "')      
             else:
                 log.write("  -",key," : "+value.strip())  
+        elif type(value) is list:
+            log.write("  -",key," : "+','.join(value))  
         else:
             log.write("  -",key," : ",value)  
     keys=[]
@@ -387,9 +389,19 @@ def print_format_info(fmt,meta_data, rename_dictionary, verbose, log):
         keys.append(key)
         values.append(value)
     if fmt!="gwaslab":
-        log.write(" -"+fmt+" format dictionary:")  
-        log.write("  - "+fmt+" keys:",",".join(keys)) 
-        log.write("  - gwaslab values:",",".join(values))  
+        if output == False:
+            log.write(" -"+fmt+" to gwaslab format dictionary:")  
+            log.write("  - "+fmt+" keys:",",".join(keys)) 
+            log.write("  - gwaslab values:",",".join(values))  
+        else:
+            log.write(" -gwaslab to "+fmt+" format dictionary:",)  
+            keys=[]
+            values=[]
+            for key,value in rename_dictionary.items():
+                keys.append(key)
+                values.append(value)
+            log.write("  - gwaslab keys:",  ','.join(keys)) 
+            log.write("  - "+fmt+" values:"  , ','.join(values))       
 
 def process_neaf(sumstats,log,verbose):
     if verbose: log.write(" -NEAF is specified...") 

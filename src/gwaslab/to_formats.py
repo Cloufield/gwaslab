@@ -10,7 +10,7 @@ from pysam import tabix_index
 from gwaslab.CommonData import get_formats_list
 from datetime import datetime
 from datetime import date
-
+from gwaslab.preformat_input import print_format_info
 # to vcf
 # to fmt
     ## vcf
@@ -41,16 +41,19 @@ def tofmt(sumstats,
     
     if to_csvargs is None:
         to_csvargs=dict()
+    
     if fmt in ["ssf"]: 
         xymt_number=True
         if "SNPID" in sumstats.columns:
             if verbose: log.write(' - Replacing SNPID separator from ":" to "_"...')
             sumstats["SNPID"] = sumstats["SNPID"].str.replace(":","_")
     if verbose: log.write(" - Start outputting sumstats in "+fmt+" format...")
-    if xymt_number is False and sumstats["CHR"].dtype in ["Int64","int"]:
-        sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt,prefix=chr_prefix))
-    elif chr_prefix is not None:
-        sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
+    
+    if "CHR" in sumstats.columns:
+        if xymt_number is False and sumstats["CHR"].dtype in ["Int64","int"]:
+            sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt,prefix=chr_prefix))
+        elif chr_prefix is not None:
+            sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
     
     ### calculate meta data
     if "EAF" in sumstats.columns:
@@ -336,19 +339,23 @@ def tofmt(sumstats,
     elif fmt in get_formats_list():       
         if verbose: log.write(" -"+fmt+" format will be loaded...")
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
-        if verbose:             
-            log.write(" -"+fmt+" format meta info:")   
-            for key,value in meta_data.items():
-                log.write("  -",key," : ",value)
-        if verbose: 
-            log.write(" -gwaslab to "+fmt+" format dictionary:",)  
-            keys=[]
-            values=[]
-            for key,value in rename_dictionary.items():
-                keys.append(key)
-                values.append(value)
-            log.write("  - gwaslab keys:",  ','.join(keys)) 
-            log.write("  - "+fmt+" values:"  , ','.join(values))
+        print_format_info(fmt=fmt, meta_data=meta_data,rename_dictionary=rename_dictionary,verbose=verbose, log=log, output=True)
+        #if verbose:             
+        #    log.write(" -"+fmt+" format meta info:")   
+        #    for key,value in meta_data.items():
+        #        if type(value) is list:
+        #            log.write("  -",key," : ",','.join(value))
+        #        else:
+        #            log.write("  -",key," : ",value)
+        #if verbose: 
+        #    log.write(" -gwaslab to "+fmt+" format dictionary:",)  
+        #    keys=[]
+        #    values=[]
+        #    for key,value in rename_dictionary.items():
+        #        keys.append(key)
+        #        values.append(value)
+        #    log.write("  - gwaslab keys:",  ','.join(keys)) 
+        #    log.write("  - "+fmt+" values:"  , ','.join(values))
         
         # grab format cols that exist in sumstats
         ouput_cols=[]
@@ -364,7 +371,7 @@ def tofmt(sumstats,
 
         ymal_path = path + "."+suffix+".tsv-meta.ymal"
         path = path + "."+suffix+".tsv.gz"
-        if verbose: log.write(" -Output columns:",','.join(sumstats.columns))
+        
         if verbose: log.write(" -Output path:",path) 
         
         if path is not None: 
@@ -374,6 +381,20 @@ def tofmt(sumstats,
                 to_csvargs["sep"]="\t"
             if "format_na" in meta_data.keys():
                 to_csvargs["na_rep"] = meta_data["format_na"]
+            if "format_col_order" in meta_data.keys():
+                fixed_col =[]
+                other_col=[]
+                for i in meta_data["format_col_order"]:
+                    if i in sumstats.columns:
+                        fixed_col.append(i)
+                for i in sumstats.columns:
+                    if i not in meta_data["format_col_order"]:
+                        other_col.append(i)
+                
+                sumstats = sumstats.loc[:,fixed_col + other_col]
+                if verbose: log.write(" -Reordering columns...") 
+
+            if verbose: log.write(" -Output columns:",','.join(sumstats.columns))
             sumstats.to_csv(path, index=None,**to_csvargs)
 
         if md5sum is True: 
