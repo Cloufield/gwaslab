@@ -127,7 +127,7 @@ adjustText
 ```
 
 ## Citation
-- GWASLab preprint: He, Y., Koido, M.,Shimmori, Y; Kamatani, Y. (2023). GWASLab: a Python package for processing and visualizing GWAS summary statistics. Preprint at Jxiv, 2023-5. https://doi.org/10.51094/jxiv.370
+- GWASLab preprint: He, Y., Koido, M., Shimmori, Y., Kamatani, Y. (2023). GWASLab: a Python package for processing and visualizing GWAS summary statistics. Preprint at Jxiv, 2023-5. https://doi.org/10.51094/jxiv.370
 
 ## Sample Data
 - Sample GWAS data used in GWASLab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
