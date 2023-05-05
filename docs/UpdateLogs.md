@@ -1,13 +1,17 @@
 # Update Logs
 
-## 3.4.11
+## 3.4.12 (upcoming)
+- added highlight_anno_args in plot_mqq()
+- added GWAS-SSF style metadata yaml output support
+
+## 3.4.11 - 2023/04/28
 - fixed anno=None in miami plot
 
-## 3.4.10
+## 3.4.10 - 2023/04/27
 - fixed variant_id sep for ssf
 - update tutorials
 
-## 3.4.9
+## 3.4.9 - 2023/04/25
 - update variant matching criteria for regional plot
 - fixed default values for mqqplot
 - added qq_scatter_args
