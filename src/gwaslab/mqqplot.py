@@ -135,6 +135,7 @@ def mqqplot(insumstats,
           highlight = None,
           highlight_color="#CB132D",
           highlight_windowkb = 500,
+          highlight_anno_args = None,
           pinpoint= None,
           pinpoint_color ="red",
           stratified=False,
@@ -213,6 +214,8 @@ def mqqplot(insumstats,
         saveargs = {"dpi":300,"facecolor":"white"}
     if highlight is None:
         highlight = list()
+    if highlight_anno_args is None:
+        highlight_anno_args = {}
     if pinpoint is None:
         pinpoint = list()
     
@@ -770,6 +773,7 @@ def mqqplot(insumstats,
                                 mode=mode,
                                 ax1=ax1,
                                 highlight_i=highlight_i,
+                                highlight_anno_args=highlight_anno_args,
                                 to_annotate=to_annotate,
                                 anno_d=anno_d,
                                 anno_alias=anno_alias,

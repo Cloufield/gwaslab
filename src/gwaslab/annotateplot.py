@@ -18,6 +18,7 @@ def annotate_single(
     mode,
     ax1,
     highlight_i,
+    highlight_anno_args,
     to_annotate,
     anno_d,
     anno_alias,
@@ -122,11 +123,7 @@ def annotate_single(
                 if row[snpid] in anno_alias.keys():
                     annotation_text = anno_alias[row[snpid]]
             
-            #
-            fontweight = "normal"
-            if len(highlight_i) >0:
-                if row["i"] in highlight_i:
-                    fontweight = "bold"
+
 
             
             xy=(row["i"],row["scaled_P"]+0.2)
@@ -174,9 +171,14 @@ def annotate_single(
             else:
                 bbox_para=None
             
-            anno_default = {"rotation":40,"fontstyle":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":fontweight,"fontfamily":font_family}
+            
+            anno_default = {"rotation":40,"fontstyle":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":"normal","fontfamily":font_family}
             for key,value in anno_args.items():
                 anno_default[key]=value
+            if len(highlight_i) >0:
+                if row["i"] in highlight_i:
+                    for key,value in highlight_anno_args.items():
+                        anno_default[key]=value
             
             if anno_adjust==True:
                 arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(0,0.5))
