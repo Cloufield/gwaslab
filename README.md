@@ -8,17 +8,17 @@
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcloufield.github.io%2Fgwaslab%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 ![badge_commit_m](https://img.shields.io/github/commit-activity/m/Cloufield/gwaslab)
 
-* A handy Python toolkit for handling GWAS sumstats.
+* A handy Python toolkit for handling GWAS summary statistics (sumstats).
 * Each process is modularized and can be customized to your needs.
 * Sumstats-specific manipulations are designed as methods of a Python object, `gwaslab.Sumstats`.
 
-Please check GWASLab document at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
+Please check GWASLab documentation at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
 Note: GWASLab is being updated very frequently for now. I will release the first stable version soon! Please stay tuned.
 
 ## Install
 
 ```
-pip install gwaslab==3.4.10
+pip install gwaslab==3.4.11
 ```
 
 
@@ -126,16 +126,15 @@ statsmodels > =0.13
 adjustText
 ```
 
-## Citation
+## How to cite
 - GWASLab preprint: He, Y., Koido, M., Shimmori, Y., Kamatani, Y. (2023). GWASLab: a Python package for processing and visualizing GWAS summary statistics. Preprint at Jxiv, 2023-5. https://doi.org/10.51094/jxiv.370
 
 ## Sample Data
 - Sample GWAS data used in GWASLab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
+
 
 ## Contacts
 * Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
 * Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
 * Email: gwaslab@gmail.com
 * Stats: [https://pypistats.org/packages/gwaslab](https://pypistats.org/packages/gwaslab)
-
-
