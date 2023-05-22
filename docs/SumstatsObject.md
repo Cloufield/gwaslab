@@ -124,7 +124,7 @@ or just specify the sumstats format:
     * `ldsc`: input format
     * `locuszoom`: input format
     * `vcf`: gwas-vcf format
-    * `bolt-lmm`: output format
+    * `bolt_lmm`: output format
     
 ### Loading sumstats from chromosome-separated files
 GWASLab support loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace chromosome number. 

@@ -1,4 +1,270 @@
 {
+    "bolt_lmm": {
+        "meta_data": {
+            "format_name": ".stats",
+            "format_source": "https://alkesgroup.broadinstitute.org/BOLT-LMM/BOLT-LMM_manual.html",
+            "format_version": "v2.4 (July 22, 2022)",
+            "software_license": "BOLT-LMM is free software under the GNU General Public License v3.0 (GPLv3).",
+            "format_citation": "Loh, P. R., Tucker, G., Bulik-Sullivan, B. K., Vilhjalmsson, B. J., Finucane, H. K., Salem, R. M., ... & Price, A. L. (2015). Efficient Bayesian mixed-model analysis increases association power in large cohorts. Nature genetics, 47(3), 284-290."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "ALLELE0": "NEA",
+            "ALLELE1": "EA",
+            "A1FREQ": "EAF",
+            "BETA": "BETA",
+            "SE": "SE",
+            "P_BOLT_LMM": "P",
+            "INFO": "INFO",
+            "CHISQ_BOLT_LMM": "CHISQ"
+        }
+    },
+    "fastgwa": {
+        "meta_data": {
+            "format_name": "fastgwa",
+            "format_source": "https://yanglab.westlake.edu.cn/software/gcta/#fastGWA",
+            "format_source2": "https://yanglab.westlake.edu.cn/software/gcta/#fastGWA-GLMM",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "POS": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "AF1": "EAF",
+            "BETA": "BETA",
+            "SE": "SE",
+            "P": "P"
+        }
+    },
+    "gwascatalog": {
+        "meta_data": {
+            "format_name": "gwascatalog",
+            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "variant_id": "SNPID",
+            "chromosome": "CHR",
+            "base_pair_location": "POS",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "beta": "BETA",
+            "effect_allele_frequency": "EAF",
+            "standard_error": "SE",
+            "p-value": "P",
+            "odds_ratio": "OR",
+            "ci_lower": "OR_95L",
+            "ci_upper": "OR_95U"
+        }
+    },
+    "gwascatalog_hm": {
+        "meta_data": {
+            "format_name": "gwascatalog_hm",
+            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
+            "format_version": 20220806
+        },
+        "format_dict": {
+            "hm_variant_id": "SNPID",
+            "chromosome": "CHR",
+            "base_pair_location": "POS",
+            "hm_other_allele": "NEA",
+            "hm_effect_allele": "EA",
+            "hm_beta": "BETA",
+            "hm_effect_allele_frequency": "EAF",
+            "standard_error": "SE",
+            "p-value": "P",
+            "hm_odds_ratio": "OR",
+            "hm_ci_lower": "OR_95L",
+            "hm_ci_upper": "OR_95U"
+        }
+    },
+    "gwaslab": {
+        "meta_data": {
+            "format_name": "gwaslab",
+            "format_source": "https://cloufield.github.io/gwaslab/",
+            "format_version": "20220729_v3"
+        },
+        "format_dict": {
+            "SNPID": "SNPID",
+            "rsID": "rsID",
+            "CHR": "CHR",
+            "POS": "POS",
+            "NEA": "NEA",
+            "EA": "EA",
+            "N": "N",
+            "BETA": "BETA",
+            "SE": "SE",
+            "P": "P",
+            "INFO": "INFO",
+            "OR": "OR",
+            "OR_95L": "OR_95L",
+            "OR_95U": "OR_95U",
+            "MLOG10": "MLOG10",
+            "CHISQ": "CHISQ",
+            "Z": "Z",
+            "DIRECTION": "DIRECTION",
+            "STATUS": "STATUS"
+        }
+    },
+    "ldsc": {
+        "meta_data": {
+            "format_name": "ldsc",
+            "format_source": "https://github.com/bulik/ldsc/wiki/Summary-Statistics-File-Format",
+            "format_source2": "https://github.com/bulik/ldsc/blob/master/munge_sumstats.py",
+            "format_version": 20150306
+        },
+        "format_dict": {
+            "SNP": "rsID",
+            "A2": "NEA",
+            "A1": "EA",
+            "Frq": "EAF",
+            "N": "N",
+            "Beta": "BETA",
+            "P": "P",
+            "Z": "Z",
+            "INFO": "INFO",
+            "OR": "OR",
+            "CHR": "CHR",
+            "POS": "POS"
+        }
+    },
+    "metal": {
+        "meta_data": {
+            "format_name": "metal",
+            "format_source": "https://genome.sph.umich.edu/wiki/METAL_Documentation",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "MarkerName": "SNPID",
+            "Allele1": "EA",
+            "Allele2": "NEA",
+            "Freq1": "EAF",
+            "Effect": "BETA",
+            "StdErr": "SE",
+            "P-value": "P",
+            "Direction": "DIRECTION"
+        }
+    },
+    "mrmega": {
+        "meta_data": {
+            "format_name": "mrmega",
+            "format_source": "https://genomics.ut.ee/en/tools",
+            "format_version": "ver0.2",
+            "last_check_date": 20220806
+        },
+        "format_dict": {
+            "MarkerName ": "SNPID",
+            "Chromosome": "CHR",
+            "Position": "POS",
+            "NEA": "NEA",
+            "EA": "EA",
+            "EAF": "EAF",
+            "Nsample": "N",
+            "Effects": "DIRECTION",
+            "chisq_association": "CHISQ",
+            "ndf_association": "ndf_association",
+            "P-value_association": "P"
+        }
+    },
+    "mtag": {
+        "meta_data": {
+            "format_name": "mtag",
+            "format_source": "https://github.com/JonJala/mtag/wiki/Tutorial-1:-The-Basics",
+            "format_version": "v1.0.8",
+            "format_separator": "\t",
+            "format_cite_name": "MTAG v1.0.8",
+            "format_comment": null,
+            "format_na": null,
+            "format_col_order": [
+                "snpid",
+                "chr",
+                "bpos",
+                "a1",
+                "beta",
+                "a2",
+                "freq",
+                "beta",
+                "se",
+                "z",
+                "pval",
+                "p_value",
+                "n"
+            ]
+        },
+        "format_dict": {
+            "snpid": "rsID",
+            "chr": "CHR",
+            "bpos": "POS",
+            "a2": "NEA",
+            "a1": "EA",
+            "freq": "EAF",
+            "n": "N",
+            "beta": "BETA",
+            "se": "SE",
+            "pval": "P",
+            "z": "Z"
+        }
+    },
+    "pgscatalog": {
+        "meta_data": {
+            "format_name": "pgscatalog",
+            "format_source": "https://www.pgscatalog.org/downloads/",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "rsID": "rsID",
+            "chr_name": "CHR",
+            "chr_position": "POS",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "allelefrequency_effect": "EAF",
+            "effect_weight": "BETA",
+            "OR": "OR"
+        }
+    },
+    "pgscatalog_hm": {
+        "meta_data": {
+            "format_name": "pgscatalog_hm Harmonized File",
+            "format_source": "https://www.pgscatalog.org/downloads/",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "hm_rsID": "rsID",
+            "hm_chr": "CHR",
+            "hm_pos": "POS",
+            "hm_inferOtherAllele": "NEA",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "allelefrequency_effect": "EAF",
+            "effect_weight": "BETA",
+            "OR": "OR"
+        }
+    },
+    "pheweb": {
+        "meta_data": {
+            "format_name": "pheweb",
+            "format_source": "https://github.com/statgen/pheweb",
+            "format_version": "20220928"
+        },
+        "format_dict": {
+            "rsids": "rsID",
+            "chrom": "CHR",
+            "pos": "POS",
+            "ref": "NEA",
+            "alt": "EA",
+            "beta": "BETA",
+            "af": "EAF",
+            "sebeta": "SE",
+            "pval": "P",
+            "or": "OR",
+            "r2": "INFO",
+            "num_samples": "n"
+        }
+    },
     "plink": {
         "meta_data": {
             "format_name": ".assoc, .assoc.fisher, .assoc.linear, .assoc.logistic, .assoc.dosage",
@@ -24,148 +290,32 @@
             "NMISS": "N"
         }
     },
-    "vcf": {
+    "plink2": {
         "meta_data": {
-            "format_name": "vcf",
-            "format_source": "https://github.com/MRCIEU/gwas-vcf-specification/tree/1.0.0",
-            "format_version": 20220923,
-            "format_citation": "Lyon, M.S., Andrews, S.J., Elsworth, B. et al. The variant call format provides efficient and robust storage of GWAS summary statistics. Genome Biol 22, 32 (2021). https://doi.org/10.1186/s13059-020-02248-0",
-            "format_fixed_header": "##fileformat=VCFv4.2\r\n##FILTER=<ID=PASS,Description=\"All filters passed\">\r\n##INFO=<ID=AF,Number=A,Type=Float,Description=\"Allele Frequency\">\r\n##FORMAT=<ID=ES,Number=A,Type=Float,Description=\"Effect size estimate relative to the alternative allele\">\r\n##FORMAT=<ID=SE,Number=A,Type=Float,Description=\"Standard error of effect size estimate\">\r\n##FORMAT=<ID=LP,Number=A,Type=Float,Description=\"-log10 p-value for effect estimate\">\r\n##FORMAT=<ID=AF,Number=A,Type=Float,Description=\"Alternate allele frequency in the association study\">\r\n##FORMAT=<ID=SS,Number=A,Type=Float,Description=\"Sample size used to estimate genetic effect\">\r\n##FORMAT=<ID=EZ,Number=A,Type=Float,Description=\"Z-score provided if it was used to derive the EFFECT and SE fields\">\r\n##FORMAT=<ID=SI,Number=A,Type=Float,Description=\"Accuracy score of summary data imputation\">\r\n##FORMAT=<ID=NC,Number=A,Type=Float,Description=\"Number of cases used to estimate genetic effect\">\r\n##FORMAT=<ID=ID,Number=1,Type=String,Description=\"Study variant identifier\">\r\n##META=<ID=TotalVariants,Number=1,Type=Integer,Description=\"Total number of variants in input\">\r\n##META=<ID=VariantsNotRead,Number=1,Type=Integer,Description=\"Number of variants that could not be read\">\r\n##META=<ID=HarmonisedVariants,Number=1,Type=Integer,Description=\"Total number of harmonised variants\">\r\n##META=<ID=VariantsNotHarmonised,Number=1,Type=Integer,Description=\"Total number of variants that could not be harmonised\">\r\n##META=<ID=SwitchedAlleles,Number=1,Type=Integer,Description=\"Total number of variants strand switched\">\r\n##META=<ID=TotalControls,Number=1,Type=Integer,Description=\"Total number of controls in the association study\">\r\n##META=<ID=TotalCases,Number=1,Type=Integer,Description=\"Total number of cases in the association study\">\r\n##META=<ID=StudyType,Number=1,Type=String,Description=\"Type of GWAS study [Continuous or CaseControl]\">",
-            "format_fixed": [
-                "#CHROM",
-                "POS",
-                "ID",
-                "REF",
-                "ALT",
-                "QUAL",
-                "FILTER",
-                "INFO",
-                "FORMAT"
-            ],
-            "format_format": [
-                "ID",
-                "SS",
-                "ES",
-                "SE",
-                "LP",
-                "SI",
-                "EZ"
-            ],
-            "format_contig_19": "##contig=<ID=1,length=249250621,assembly=HG19/GRCh37>\r\n##contig=<ID=2,length=243199373,assembly=HG19/GRCh37>\r\n##contig=<ID=3,length=198022430,assembly=HG19/GRCh37>\r\n##contig=<ID=4,length=191154276,assembly=HG19/GRCh37>\r\n##contig=<ID=5,length=180915260,assembly=HG19/GRCh37>\r\n##contig=<ID=6,length=171115067,assembly=HG19/GRCh37>\r\n##contig=<ID=7,length=159138663,assembly=HG19/GRCh37>\r\n##contig=<ID=8,length=146364022,assembly=HG19/GRCh37>\r\n##contig=<ID=9,length=141213431,assembly=HG19/GRCh37>\r\n##contig=<ID=10,length=135534747,assembly=HG19/GRCh37>\r\n##contig=<ID=11,length=135006516,assembly=HG19/GRCh37>\r\n##contig=<ID=12,length=133851895,assembly=HG19/GRCh37>\r\n##contig=<ID=13,length=115169878,assembly=HG19/GRCh37>\r\n##contig=<ID=14,length=107349540,assembly=HG19/GRCh37>\r\n##contig=<ID=15,length=102531392,assembly=HG19/GRCh37>\r\n##contig=<ID=16,length=90354753,assembly=HG19/GRCh37>\r\n##contig=<ID=17,length=81195210,assembly=HG19/GRCh37>\r\n##contig=<ID=18,length=78077248,assembly=HG19/GRCh37>\r\n##contig=<ID=19,length=59128983,assembly=HG19/GRCh37>\r\n##contig=<ID=20,length=63025520,assembly=HG19/GRCh37>\r\n##contig=<ID=21,length=48129895,assembly=HG19/GRCh37>\r\n##contig=<ID=22,length=51304566,assembly=HG19/GRCh37>\r\n##contig=<ID=23,length=155270560,assembly=HG19/GRCh37>\r\n##contig=<ID=24,length=59373566,assembly=HG19/GRCh37>\r\n##contig=<ID=25,length=16569,assembly=HG19/GRCh37>",
-            "format_contig_38": "##contig=<ID=1,length=248956422,assembly=HG38/GRCh38>\r\n##contig=<ID=2,length=242193529,assembly=HG38/GRCh38>\r\n##contig=<ID=3,length=198295559,assembly=HG38/GRCh38>\r\n##contig=<ID=4,length=190214555,assembly=HG38/GRCh38>\r\n##contig=<ID=5,length=181538259,assembly=HG38/GRCh38>\r\n##contig=<ID=6,length=170805979,assembly=HG38/GRCh38>\r\n##contig=<ID=7,length=159345973,assembly=HG38/GRCh38>\r\n##contig=<ID=8,length=145138636,assembly=HG38/GRCh38>\r\n##contig=<ID=9,length=138394717,assembly=HG38/GRCh38>\r\n##contig=<ID=10,length=133797422,assembly=HG38/GRCh38>\r\n##contig=<ID=11,length=135086622,assembly=HG38/GRCh38>\r\n##contig=<ID=12,length=133275309,assembly=HG38/GRCh38>\r\n##contig=<ID=13,length=114364328,assembly=HG38/GRCh38>\r\n##contig=<ID=14,length=107043718,assembly=HG38/GRCh38>\r\n##contig=<ID=15,length=101991189,assembly=HG38/GRCh38>\r\n##contig=<ID=16,length=90338345,assembly=HG38/GRCh38>\r\n##contig=<ID=17,length=83257441,assembly=HG38/GRCh38>\r\n##contig=<ID=18,length=80373285,assembly=HG38/GRCh38>\r\n##contig=<ID=19,length=58617616,assembly=HG38/GRCh38>\r\n##contig=<ID=20,length=64444167,assembly=HG38/GRCh38>\r\n##contig=<IDs=21,length=46709983,assembly=HG38/GRCh38>\r\n##contig=<ID=22,length=50818468,assembly=HG38/GRCh38>\r\n##contig=<ID=23,length=156040895,assembly=HG38/GRCh38>\r\n##contig=<ID=24,length=57227415,assembly=HG38/GRCh38>\r\n##contig=<ID=25,length=16569,assembly=HG38/GRCh38>"
-        },
-        "format_dict": {
-            "ID": "rsID",
-            "#CHROM": "CHR",
-            "POS": "POS",
-            "REF": "NEA",
-            "ALT": "EA",
-            "SS": "N",
-            "AF": "EAF",
-            "ES": "BETA",
-            "SE": "SE",
-            "LP": "MLOG10P",
-            "SI": "INFO",
-            "EZ": "Z"
-        }
-    },
-    "bolt_lmm": {
-        "meta_data": {
-            "format_name": ".stats",
-            "format_source": "https://alkesgroup.broadinstitute.org/BOLT-LMM/BOLT-LMM_manual.html",
-            "format_version": "v2.4 (July 22, 2022)",
-            "software_license": "BOLT-LMM is free software under the GNU General Public License v3.0 (GPLv3).",
-            "format_citation": "Loh, P. R., Tucker, G., Bulik-Sullivan, B. K., Vilhjalmsson, B. J., Finucane, H. K., Salem, R. M., ... & Price, A. L. (2015). Efficient Bayesian mixed-model analysis increases association power in large cohorts. Nature genetics, 47(3), 284-290."
-        },
-        "format_dict": {
-            "SNP": "SNPID",
-            "CHR": "CHR",
-            "BP": "POS",
-            "ALLELE0": "NEA",
-            "ALLELE1": "EA",
-            "A1FREQ": "EAF",
-            "BETA": "BETA",
-            "SE": "SE",
-            "P_BOLT_LMM": "P",
-            "INFO": "INFO",
-            "CHISQ_BOLT_LMM": "CHISQ"
-        }
-    },
-    "mrmega": {
-        "meta_data": {
-            "format_name": "mrmega",
-            "format_source": "https://genomics.ut.ee/en/tools",
-            "format_version": "ver0.2",
+            "format_name": "PLINK2 .glm.firth, .glm.logistic,.glm.linear",
+            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
+            "format_version": "Alpha 3.3 final (3 Jun)",
             "last_check_date": 20220806
         },
         "format_dict": {
-            "MarkerName ": "SNPID",
-            "Chromosome": "CHR",
-            "Position": "POS",
-            "NEA": "NEA",
-            "EA": "EA",
-            "EAF": "EAF",
-            "Nsample": "N",
-            "Effects": "DIRECTION",
-            "chisq_association": "CHISQ",
-            "ndf_association": "ndf_association",
-            "P-value_association": "P"
-        }
-    },
-    "gwascatalog_hm": {
-        "meta_data": {
-            "format_name": "gwascatalog_hm",
-            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
-            "format_version": 20220806
-        },
-        "format_dict": {
-            "hm_variant_id": "SNPID",
-            "chromosome": "CHR",
-            "base_pair_location": "POS",
-            "hm_other_allele": "NEA",
-            "hm_effect_allele": "EA",
-            "hm_beta": "BETA",
-            "hm_effect_allele_frequency": "EAF",
-            "standard_error": "SE",
-            "p-value": "P",
-            "hm_odds_ratio": "OR",
-            "hm_ci_lower": "OR_95L",
-            "hm_ci_upper": "OR_95U"
-        }
-    },
-    "metal": {
-        "meta_data": {
-            "format_name": "metal",
-            "format_source": "https://genome.sph.umich.edu/wiki/METAL_Documentation",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "MarkerName": "SNPID",
-            "Allele1": "EA",
-            "Allele2": "NEA",
-            "Freq1": "EAF",
-            "Effect": "BETA",
-            "StdErr": "SE",
-            "P-value": "P",
-            "Direction": "DIRECTION"
-        }
-    },
-    "pgscatalog_hm": {
-        "meta_data": {
-            "format_name": "pgscatalog_hm Harmonized File",
-            "format_source": "https://www.pgscatalog.org/downloads/",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "hm_rsID": "rsID",
-            "hm_chr": "CHR",
-            "hm_pos": "POS",
-            "hm_inferOtherAllele": "NEA",
-            "other_allele": "NEA",
-            "effect_allele": "EA",
-            "allelefrequency_effect": "EAF",
-            "effect_weight": "BETA",
-            "OR": "OR"
+            "ID": "SNPID",
+            "#CHROM": "CHR",
+            "POS": "POS",
+            "REF": "REF",
+            "ALT": "ALT",
+            "A1": "EA",
+            "OBS_CT": "N",
+            "A1_FREQ": "EAF",
+            "BETA": "BETA",
+            "LOG(OR)_SE": "SE",
+            "SE": "SE",
+            "Z_STAT": "Z",
+            "P": "P",
+            "LOG10_P": "MLOG10P",
+            "MACH_R2": "INFO",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "U95": "OR_95U"
         }
     },
     "regenie": {
@@ -209,62 +359,6 @@
             "LOG10P": "MLOG10P"
         }
     },
-    "plink2": {
-        "meta_data": {
-            "format_name": "PLINK2 .glm.firth, .glm.logistic,.glm.linear",
-            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
-            "format_version": "Alpha 3.3 final (3 Jun)",
-            "last_check_date": 20220806
-        },
-        "format_dict": {
-            "ID": "SNPID",
-            "#CHROM": "CHR",
-            "POS": "POS",
-            "REF": "REF",
-            "ALT": "ALT",
-            "A1": "EA",
-            "OBS_CT": "N",
-            "A1_FREQ": "EAF",
-            "BETA": "BETA",
-            "LOG(OR)_SE": "SE",
-            "SE": "SE",
-            "Z_STAT": "Z",
-            "P": "P",
-            "LOG10_P": "MLOG10P",
-            "MACH_R2": "INFO",
-            "OR": "OR",
-            "L95": "OR_95L",
-            "U95": "OR_95U"
-        }
-    },
-    "gwaslab": {
-        "meta_data": {
-            "format_name": "gwaslab",
-            "format_source": "https://cloufield.github.io/gwaslab/",
-            "format_version": "20220729_v3"
-        },
-        "format_dict": {
-            "SNPID": "SNPID",
-            "rsID": "rsID",
-            "CHR": "CHR",
-            "POS": "POS",
-            "NEA": "NEA",
-            "EA": "EA",
-            "N": "N",
-            "BETA": "BETA",
-            "SE": "SE",
-            "P": "P",
-            "INFO": "INFO",
-            "OR": "OR",
-            "OR_95L": "OR_95L",
-            "OR_95U": "OR_95U",
-            "MLOG10": "MLOG10",
-            "CHISQ": "CHISQ",
-            "Z": "Z",
-            "DIRECTION": "DIRECTION",
-            "STATUS": "STATUS"
-        }
-    },
     "saige": {
         "meta_data": {
             "format_name": "saige",
@@ -284,97 +378,6 @@
             "SE": "SE",
             "p.value": "P",
             "imputationInfo": "INFO"
-        }
-    },
-    "pheweb": {
-        "meta_data": {
-            "format_name": "pheweb",
-            "format_source": "https://github.com/statgen/pheweb",
-            "format_version": "20220928"
-        },
-        "format_dict": {
-            "rsids": "rsID",
-            "chrom": "CHR",
-            "pos": "POS",
-            "ref": "NEA",
-            "alt": "EA",
-            "beta": "BETA",
-            "af": "EAF",
-            "sebeta": "SE",
-            "pval": "P",
-            "or": "OR",
-            "r2": "INFO",
-            "num_samples": "n"
-        }
-    },
-    "template": {
-        "meta_data": {
-            "format_name": "",
-            "format_source": "",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "": "OR_95U"
-        }
-    },
-    "ldsc": {
-        "meta_data": {
-            "format_name": "ldsc",
-            "format_source": "https://github.com/bulik/ldsc/wiki/Summary-Statistics-File-Format",
-            "format_source2": "https://github.com/bulik/ldsc/blob/master/munge_sumstats.py",
-            "format_version": 20150306
-        },
-        "format_dict": {
-            "SNP": "rsID",
-            "A2": "NEA",
-            "A1": "EA",
-            "Frq": "EAF",
-            "N": "N",
-            "Beta": "BETA",
-            "P": "P",
-            "Z": "Z",
-            "INFO": "INFO",
-            "OR": "OR",
-            "CHR": "CHR",
-            "POS": "POS"
-        }
-    },
-    "pgscatalog": {
-        "meta_data": {
-            "format_name": "pgscatalog",
-            "format_source": "https://www.pgscatalog.org/downloads/",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "rsID": "rsID",
-            "chr_name": "CHR",
-            "chr_position": "POS",
-            "other_allele": "NEA",
-            "effect_allele": "EA",
-            "allelefrequency_effect": "EAF",
-            "effect_weight": "BETA",
-            "OR": "OR"
-        }
-    },
-    "gwascatalog": {
-        "meta_data": {
-            "format_name": "gwascatalog",
-            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "variant_id": "SNPID",
-            "chromosome": "CHR",
-            "base_pair_location": "POS",
-            "other_allele": "NEA",
-            "effect_allele": "EA",
-            "beta": "BETA",
-            "effect_allele_frequency": "EAF",
-            "standard_error": "SE",
-            "p-value": "P",
-            "odds_ratio": "OR",
-            "ci_lower": "OR_95L",
-            "ci_upper": "OR_95U"
         }
     },
     "ssf": {
@@ -427,23 +430,59 @@
             "ci_upper": "OR_95U"
         }
     },
-    "fastgwa": {
+    "template": {
         "meta_data": {
-            "format_name": "fastgwa",
-            "format_source": "https://yanglab.westlake.edu.cn/software/gcta/#fastGWA",
-            "format_source2": "https://yanglab.westlake.edu.cn/software/gcta/#fastGWA-GLMM",
+            "format_name": "",
+            "format_source": "",
             "format_version": "20220726"
         },
         "format_dict": {
-            "SNP": "SNPID",
-            "CHR": "CHR",
+            "": "OR_95U"
+        }
+    },
+    "vcf": {
+        "meta_data": {
+            "format_name": "vcf",
+            "format_source": "https://github.com/MRCIEU/gwas-vcf-specification/tree/1.0.0",
+            "format_version": 20220923,
+            "format_citation": "Lyon, M.S., Andrews, S.J., Elsworth, B. et al. The variant call format provides efficient and robust storage of GWAS summary statistics. Genome Biol 22, 32 (2021). https://doi.org/10.1186/s13059-020-02248-0",
+            "format_fixed_header": "##fileformat=VCFv4.2\r\n##FILTER=<ID=PASS,Description=\"All filters passed\">\r\n##INFO=<ID=AF,Number=A,Type=Float,Description=\"Allele Frequency\">\r\n##FORMAT=<ID=ES,Number=A,Type=Float,Description=\"Effect size estimate relative to the alternative allele\">\r\n##FORMAT=<ID=SE,Number=A,Type=Float,Description=\"Standard error of effect size estimate\">\r\n##FORMAT=<ID=LP,Number=A,Type=Float,Description=\"-log10 p-value for effect estimate\">\r\n##FORMAT=<ID=AF,Number=A,Type=Float,Description=\"Alternate allele frequency in the association study\">\r\n##FORMAT=<ID=SS,Number=A,Type=Float,Description=\"Sample size used to estimate genetic effect\">\r\n##FORMAT=<ID=EZ,Number=A,Type=Float,Description=\"Z-score provided if it was used to derive the EFFECT and SE fields\">\r\n##FORMAT=<ID=SI,Number=A,Type=Float,Description=\"Accuracy score of summary data imputation\">\r\n##FORMAT=<ID=NC,Number=A,Type=Float,Description=\"Number of cases used to estimate genetic effect\">\r\n##FORMAT=<ID=ID,Number=1,Type=String,Description=\"Study variant identifier\">\r\n##META=<ID=TotalVariants,Number=1,Type=Integer,Description=\"Total number of variants in input\">\r\n##META=<ID=VariantsNotRead,Number=1,Type=Integer,Description=\"Number of variants that could not be read\">\r\n##META=<ID=HarmonisedVariants,Number=1,Type=Integer,Description=\"Total number of harmonised variants\">\r\n##META=<ID=VariantsNotHarmonised,Number=1,Type=Integer,Description=\"Total number of variants that could not be harmonised\">\r\n##META=<ID=SwitchedAlleles,Number=1,Type=Integer,Description=\"Total number of variants strand switched\">\r\n##META=<ID=TotalControls,Number=1,Type=Integer,Description=\"Total number of controls in the association study\">\r\n##META=<ID=TotalCases,Number=1,Type=Integer,Description=\"Total number of cases in the association study\">\r\n##META=<ID=StudyType,Number=1,Type=String,Description=\"Type of GWAS study [Continuous or CaseControl]\">",
+            "format_fixed": [
+                "#CHROM",
+                "POS",
+                "ID",
+                "REF",
+                "ALT",
+                "QUAL",
+                "FILTER",
+                "INFO",
+                "FORMAT"
+            ],
+            "format_format": [
+                "ID",
+                "SS",
+                "ES",
+                "SE",
+                "LP",
+                "SI",
+                "EZ"
+            ],
+            "format_contig_19": "##contig=<ID=1,length=249250621,assembly=HG19/GRCh37>\r\n##contig=<ID=2,length=243199373,assembly=HG19/GRCh37>\r\n##contig=<ID=3,length=198022430,assembly=HG19/GRCh37>\r\n##contig=<ID=4,length=191154276,assembly=HG19/GRCh37>\r\n##contig=<ID=5,length=180915260,assembly=HG19/GRCh37>\r\n##contig=<ID=6,length=171115067,assembly=HG19/GRCh37>\r\n##contig=<ID=7,length=159138663,assembly=HG19/GRCh37>\r\n##contig=<ID=8,length=146364022,assembly=HG19/GRCh37>\r\n##contig=<ID=9,length=141213431,assembly=HG19/GRCh37>\r\n##contig=<ID=10,length=135534747,assembly=HG19/GRCh37>\r\n##contig=<ID=11,length=135006516,assembly=HG19/GRCh37>\r\n##contig=<ID=12,length=133851895,assembly=HG19/GRCh37>\r\n##contig=<ID=13,length=115169878,assembly=HG19/GRCh37>\r\n##contig=<ID=14,length=107349540,assembly=HG19/GRCh37>\r\n##contig=<ID=15,length=102531392,assembly=HG19/GRCh37>\r\n##contig=<ID=16,length=90354753,assembly=HG19/GRCh37>\r\n##contig=<ID=17,length=81195210,assembly=HG19/GRCh37>\r\n##contig=<ID=18,length=78077248,assembly=HG19/GRCh37>\r\n##contig=<ID=19,length=59128983,assembly=HG19/GRCh37>\r\n##contig=<ID=20,length=63025520,assembly=HG19/GRCh37>\r\n##contig=<ID=21,length=48129895,assembly=HG19/GRCh37>\r\n##contig=<ID=22,length=51304566,assembly=HG19/GRCh37>\r\n##contig=<ID=23,length=155270560,assembly=HG19/GRCh37>\r\n##contig=<ID=24,length=59373566,assembly=HG19/GRCh37>\r\n##contig=<ID=25,length=16569,assembly=HG19/GRCh37>",
+            "format_contig_38": "##contig=<ID=1,length=248956422,assembly=HG38/GRCh38>\r\n##contig=<ID=2,length=242193529,assembly=HG38/GRCh38>\r\n##contig=<ID=3,length=198295559,assembly=HG38/GRCh38>\r\n##contig=<ID=4,length=190214555,assembly=HG38/GRCh38>\r\n##contig=<ID=5,length=181538259,assembly=HG38/GRCh38>\r\n##contig=<ID=6,length=170805979,assembly=HG38/GRCh38>\r\n##contig=<ID=7,length=159345973,assembly=HG38/GRCh38>\r\n##contig=<ID=8,length=145138636,assembly=HG38/GRCh38>\r\n##contig=<ID=9,length=138394717,assembly=HG38/GRCh38>\r\n##contig=<ID=10,length=133797422,assembly=HG38/GRCh38>\r\n##contig=<ID=11,length=135086622,assembly=HG38/GRCh38>\r\n##contig=<ID=12,length=133275309,assembly=HG38/GRCh38>\r\n##contig=<ID=13,length=114364328,assembly=HG38/GRCh38>\r\n##contig=<ID=14,length=107043718,assembly=HG38/GRCh38>\r\n##contig=<ID=15,length=101991189,assembly=HG38/GRCh38>\r\n##contig=<ID=16,length=90338345,assembly=HG38/GRCh38>\r\n##contig=<ID=17,length=83257441,assembly=HG38/GRCh38>\r\n##contig=<ID=18,length=80373285,assembly=HG38/GRCh38>\r\n##contig=<ID=19,length=58617616,assembly=HG38/GRCh38>\r\n##contig=<ID=20,length=64444167,assembly=HG38/GRCh38>\r\n##contig=<IDs=21,length=46709983,assembly=HG38/GRCh38>\r\n##contig=<ID=22,length=50818468,assembly=HG38/GRCh38>\r\n##contig=<ID=23,length=156040895,assembly=HG38/GRCh38>\r\n##contig=<ID=24,length=57227415,assembly=HG38/GRCh38>\r\n##contig=<ID=25,length=16569,assembly=HG38/GRCh38>"
+        },
+        "format_dict": {
+            "ID": "rsID",
+            "#CHROM": "CHR",
             "POS": "POS",
-            "A2": "NEA",
-            "A1": "EA",
-            "AF1": "EAF",
-            "BETA": "BETA",
+            "REF": "NEA",
+            "ALT": "EA",
+            "SS": "N",
+            "AF": "EAF",
+            "ES": "BETA",
             "SE": "SE",
-            "P": "P"
+            "LP": "MLOG10P",
+            "SI": "INFO",
+            "EZ": "Z"
         }
     }
 }
