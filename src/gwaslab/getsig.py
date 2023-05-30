@@ -131,6 +131,9 @@ def getsig(insumstats,
     output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
 
     if anno is True and len(output)>0:
+        if verbose:log.write(" -Annotating variants using references:{}".format(source))
+        if verbose:log.write(" -Annotating variants using references based on genome build:{}".format(build))
+        
         output = annogene(
                output,
                id=id,

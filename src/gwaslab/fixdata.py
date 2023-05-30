@@ -356,9 +356,10 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
 
 ###############################################################################################################
 # 20230128
-def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = get_chr_list(), log=Log()):
+def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, log=Log()):
         #chrom_list = get_chr_list() #bottom 
-
+        if chrom_list is None:
+            chrom_list = get_chr_list()
         if check_col(sumstats,chrom,status) is not True:
             if verbose: log.write(".fix_chr: Specified not detected..skipping...")
             return sumstats
@@ -439,7 +440,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
                 sumstats.loc[is_chr_fixable.index,status] = vchange_status(sumstats.loc[is_chr_fixable.index,status],4,"986","520")
             if len(is_chr_fixable.index)>0:
                 sumstats.loc[is_chr_invalid.index,status] = vchange_status(sumstats.loc[is_chr_invalid.index,status],4,"986","743")
-
+            
             # check variants with unrecognized CHR
             unrecognized_num = sum(~sumstats[chrom].isin(chrom_list))
             if (remove is True) and unrecognized_num>0:
@@ -1117,9 +1118,9 @@ def liftover_variant(sumstats,
         chrom_to_convert = dic[i]
         variants_on_chrom_to_convert = sumstats[chrom]==i
         lifted = sumstats.loc[variants_on_chrom_to_convert,[pos,status]].apply(lambda x: liftover_snv(x[[pos,status]],chrom_to_convert,converter,to_build),axis=1)
-        sumstats.loc[sumstats[chrom]==i,pos]     =   lifted.str[1]
-        sumstats.loc[sumstats[chrom]==i,status]   =  lifted.str[2]
-        sumstats.loc[sumstats[chrom]==i,chrom]    =  lifted.str[0].map(dic2)
+        sumstats.loc[variants_on_chrom_to_convert,pos]     =   lifted.str[1]
+        sumstats.loc[variants_on_chrom_to_convert,status]   =  lifted.str[2]
+        sumstats.loc[variants_on_chrom_to_convert,chrom]    =  lifted.str[0].map(dic2).astype("Int64")
     return sumstats
 
 def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True, verbose=True,log=Log()):
@@ -1157,8 +1158,8 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         sumstats = sumstats.loc[~sumstats[pos].isna(),:]
     
     # after liftover check chr and pos
-    sumstats = fixchr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=False)
-    sumstats = fixpos(sumstats,pos=pos,remove=remove, verbose=False)
+    sumstats = fixchr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=True)
+    sumstats = fixpos(sumstats,pos=pos,remove=remove, verbose=True)
     
     if verbose: log.write("Finished liftover successfully!")
     return sumstats

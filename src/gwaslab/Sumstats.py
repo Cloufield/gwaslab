@@ -355,10 +355,16 @@ class Sumstats():
         self.data = rsidtochrpos(self.data,log=self.log,**args)
     def rsid_to_chrpos2(self,**args):
         self.data = parallelrsidtochrpos(self.data,log=self.log,**args)
-    def liftover(self,**args):
-        self.data = parallelizeliftovervariant(self.data,log=self.log,**args)
+
+    def liftover(self,to_build, from_build=None,**args):
+        if from_build is None:
+            if self.meta["gwaslab"]["genome_build"]=="99":
+                self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**args)
+            from_build = self.meta["gwaslab"]["genome_build"]
+        self.data = parallelizeliftovervariant(self.data,from_build=from_build, to_build=to_build, log=self.log,**args)
         self.meta["is_sorted"] = False
         self.meta["is_harmonised"] = False
+        self.meta["gwaslab"]["genome_build"]=to_build
     ############################################################################################################
     
     def sort_coordinate(self,**sort_args):
@@ -444,6 +450,7 @@ class Sumstats():
         else:
             eaf=None
 
+        # extract build information from meta data
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
 
@@ -458,17 +465,23 @@ class Sumstats():
         
         return plot
 
-    def get_lead(self, **args):
+    def get_lead(self, build=None, **args):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
             id_to_use = "rsID"
+        
+        # extract build information from meta data
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+        
         output = getsig(self.data,
                            id=id_to_use,
                            chrom="CHR",
                            pos="POS",
                            p="P",
                            log=self.log,
+                           build=build,
                            **args)
         # return sumstats object    
         return output
