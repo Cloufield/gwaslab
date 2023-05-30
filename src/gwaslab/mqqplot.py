@@ -162,7 +162,7 @@ def mqqplot(insumstats,
           use_rank=False,
           verbose=True,
           repel_force=0.03,
-          build="19",
+          build=None,
           dpi=200,
           save=None,
           saveargs=None,
@@ -219,8 +219,11 @@ def mqqplot(insumstats,
         highlight_anno_args = {}
     if pinpoint is None:
         pinpoint = list()
-    
+    if build is None:
+        build = "19"
+
     if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
+    if verbose: log.write(" -Genomic coordinates version:{}...".format(build))
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Plot layout mode is : "+mode)

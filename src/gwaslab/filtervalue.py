@@ -251,6 +251,7 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NE
         else:
             if verbose:log.write(" -Since num_hg19 = num_hg38, unable to infer...") 
         gc.collect()
+        if verbose:log.write("Finished inferring genome build version using hapmap3 SNPs...") 
         return sumstats, inferred_build
     else:
         gc.collect()

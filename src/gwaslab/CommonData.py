@@ -237,10 +237,13 @@ def get_recombination_rate(chrom, build="19"):
             file.extractall(options.paths["data_directory"]+'recombination/hg38/')
             file.close()
             recombination_rate = pd.read_csv(data_path,sep="\t")
+    else:
+        recombination_rate = pd.DataFrame(columns=["Rate(cM/Mb)","Position(bp)"])
     return recombination_rate
 
 ####################################################################################################################
 def get_gtf(chrom, build="19",source="ensembl"):
+    gtf = None
     if source=="ensembl":
         if build=="19": 
             data_path = check_and_download("ensembl_hg19_gtf")
@@ -265,6 +268,8 @@ def get_gtf(chrom, build="19",source="ensembl"):
             gtf = read_gtf(data_path,usecols=["seqname","start","end","strand","feature","gene_biotype","gene_id","gene_name"])
             gtf = gtf.loc[gtf["seqname"]==chrom_NC,:]
         gtf["seqname"] = str(chrom)
+    if gtf is None:
+        gtf = pd.DataFrame(columns=["seqname","start","end","strand","feature","gene_biotype","gene_id","gene_name"])
     return gtf
 
 

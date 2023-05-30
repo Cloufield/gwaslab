@@ -92,6 +92,8 @@ class Sumstats():
              verbose=True,
              study=None,
              build="99",
+             species="homo sapiens",
+             build_infer=False,
              **readargs):
 
         self.data = pd.DataFrame()
@@ -100,6 +102,7 @@ class Sumstats():
         self.meta = init_meta() 
         self.meta["gwaslab"]["study_name"] = study
         self.meta["gwaslab"]["genome_build"] = build
+        self.meta["gwaslab"]["species"] = species
         _show_version(self.log)
 
         #preformat the data
@@ -142,6 +145,12 @@ class Sumstats():
           verbose=verbose,
           readargs=readargs,
           log=self.log)
+        
+        if species=="homo sapiens" and build=="99" and build_infer is True:
+            try:
+                self.infer_build()
+            except:
+                pass
         gc.collect()   
 
 #### healper #################################################################################
@@ -419,7 +428,7 @@ class Sumstats():
     def plot_daf(self, **args):
         plot = plotdaf(self.data, **args)
         
-    def plot_mqq(self, **args):
+    def plot_mqq(self, build=None, **args):
 
         chrom="CHR"
         pos="POS"
@@ -434,8 +443,18 @@ class Sumstats():
             eaf="EAF"
         else:
             eaf=None
-        
-        plot = mqqplot(self.data,snpid=snpid, chrom=chrom, pos=pos, p=p, eaf=eaf,**args)
+
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+
+        plot = mqqplot(self.data,
+                       snpid=snpid, 
+                       chrom=chrom, 
+                       pos=pos, 
+                       p=p, 
+                       eaf=eaf,
+                       build = build, 
+                       **args)
         
         return plot
 

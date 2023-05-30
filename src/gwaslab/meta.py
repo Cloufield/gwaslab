@@ -5,6 +5,7 @@ def init_meta():
                         "gwaslab_version": gwaslab_info()["version"],
                         "study_name":"Sumstats_1",
                         "study_type":"Unknown",
+                        "species":"homo sapiens",
                         "genome_build":"99",
                         "variants":{
                             "variant_number":"Unknown",
