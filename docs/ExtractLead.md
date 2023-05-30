@@ -33,6 +33,9 @@ mysumstats.get_lead(
 
 Return a dataframe of the lead variants.
 
+!!! note 
+    Please trying running `.basic_check()` to standardize the sumstats if there are any errors.
+
 ## Example
 
 !!! example

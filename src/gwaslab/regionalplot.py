@@ -44,6 +44,7 @@ def _plot_regional(
     rr_lim = (0,100),
     mode="mqq",
     region_step = 21,
+    region_ref=None,
     region_grid = False,
     region_grid_line = {"linewidth": 2,"linestyle":"--"},
     region_lead_grid = True,
@@ -68,9 +69,11 @@ def _plot_regional(
         # pinpoint lead
         ax1, lead_id = _pinpoint_lead(sumstats = sumstats,
                                         ax1 = ax1, 
+                                        region_ref=region_ref,
                                         region_ld_threshold = region_ld_threshold, 
                                         region_ld_colors = region_ld_colors, 
-                                        marker_size= marker_size)
+                                        marker_size= marker_size,
+                                        log=log)
 
         if (vcf_path is not None):
             ax1 = _add_ld_legend(sumstats=sumstats, 
@@ -96,8 +99,10 @@ def _plot_regional(
         most_left_snp      = sumstats["i"].idxmin()
         gene_track_offset  = sumstats.loc[most_left_snp,pos]-region[1]
         gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
-        lead_id            = sumstats["scaled_P"].idxmax()
-        lead_snp_y         = sumstats["scaled_P"].max()
+        
+        #lead_id            = sumstats["scaled_P"].idxmax()
+        lead_snp_y         = sumstats.loc[lead_id,"scaled_P"] 
+        #sumstats["scaled_P"].max()
         lead_snp_i         = sumstats.loc[lead_id,"i"]
         
     if gtf_path is not None:
@@ -162,10 +167,33 @@ def _plot_regional(
     return ax1, ax3
 
 # + ###########################################################################################################################################################################
-def _pinpoint_lead(sumstats,ax1, region_ld_threshold, region_ld_colors, marker_size):
-    lead_id = sumstats["scaled_P"].idxmax()
+def _get_lead_id(sumstats, region_ref, log):
+    lead_id=None
+    if "rsID" in sumstats.columns:
+        lead_id = sumstats.index[sumstats["rsID"] == region_ref].to_list()
+    if lead_id is None and "SNPID" in sumstats.columns:
+        lead_id = sumstats.index[sumstats["SNPID"] == region_ref].to_list()
+    if type(lead_id) is list:
+        if len(lead_id)>0:
+            lead_id = int(lead_id[0])
+    if region_ref is not None:
+        log.write(" -Lead variant ID: {} - {}".format(region_ref, lead_id))
+
+    if lead_id is None:
+        log.write(" -Extracting lead variant...")
+        lead_id = sumstats["scaled_P"].idxmax()
+    return lead_id
+
+def _pinpoint_lead(sumstats,ax1,region_ref, region_ld_threshold, region_ld_colors, marker_size, log):
+    if region_ref is None:
+        log.write(" -Extracting lead variant...")
+        lead_id = sumstats["scaled_P"].idxmax()
+    else:
+        lead_id = _get_lead_id(sumstats, region_ref, log)
+        
     ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],
-                color=region_ld_colors[-1],marker="D",zorder=3,s=marker_size[1]+1,edgecolor="black")
+            color=region_ld_colors[-1],marker="D",zorder=3,s=marker_size[1]+1,edgecolor="black")
+
     return ax1, lead_id
 # -############################################################################################################################################################################
 def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ld_colors):
@@ -322,7 +350,7 @@ def _plot_gene_track(
 # -############################################################################################################################################################################
 # Helpers    
 # -############################################################################################################################################################################
-def process_vcf(sumstats, vcf_path, region, log, verbose, pos ,nea,ea, region_ld_threshold, vcf_chr_dict,tabix):
+def process_vcf(sumstats, vcf_path, region,region_ref, log, verbose, pos ,nea,ea, region_ld_threshold, vcf_chr_dict,tabix):
     if verbose: log.write("Start to load reference genotype...")
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
     # load genotype data of the targeted region
@@ -363,7 +391,11 @@ def process_vcf(sumstats, vcf_path, region, log, verbose, pos ,nea,ea, region_ld
     #sumstats["REFINDEX"] = sumstats[pos].apply(lambda x: np.where(ref_genotype["variants/POS"] == x )[0][0] if np.any(ref_genotype["variants/POS"] == x) else None)
     
     # get lead variant id and pos
-    lead_id = sumstats["scaled_P"].idxmax()
+    #lead_id = sumstats["scaled_P"].idxmax()
+    if region_ref is None:
+        lead_id = sumstats["scaled_P"].idxmax()
+    else:
+        lead_id = _get_lead_id(sumstats, region_ref, log)
     lead_pos = sumstats.loc[lead_id,pos]
     
     # if lead pos is available: 

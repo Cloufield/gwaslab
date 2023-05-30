@@ -1,8 +1,13 @@
 # Update Logs
 
-## 3.4.12 (upcoming)
+## 3.4.13 (coming soon)
+- auto-check for genome build version
+
+## 3.4.12 2023/05/30
 - added highlight_anno_args in plot_mqq()
 - added GWAS-SSF style metadata yaml output support
+- added region_ref for regional plots
+- updated default formatbook
 
 ## 3.4.11 - 2023/04/28
 - fixed anno=None in miami plot

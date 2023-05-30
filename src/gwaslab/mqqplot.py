@@ -76,6 +76,7 @@ def mqqplot(insumstats,
           qq_line_color = "grey",
           # region
           region = None,
+          region_ref=None,
           region_step = 21,
           region_grid = False,
           region_grid_line = None,
@@ -500,7 +501,7 @@ def mqqplot(insumstats,
     if vcf_path is not None:
         if tabix is None:
             tabix = which("tabix")
-        sumstats = process_vcf(sumstats=sumstats, vcf_path=vcf_path,region=region, 
+        sumstats = process_vcf(sumstats=sumstats, vcf_path=vcf_path,region=region, region_ref=region_ref,
                                log=log ,pos=pos,ea=ea,nea=nea,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict,tabix=tabix)
 
     #sort & add id
@@ -643,6 +644,7 @@ def mqqplot(insumstats,
                                 rr_lim=rr_lim,
                                 mode=mode,
                                 region_step = region_step,
+                                region_ref=region_ref,
                                 region_grid = region_grid,
                                 region_grid_line = region_grid_line,
                                 region_lead_grid = region_lead_grid,
