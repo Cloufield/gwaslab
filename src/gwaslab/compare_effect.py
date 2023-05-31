@@ -12,6 +12,7 @@ from gwaslab.winnerscurse import wc_correct
 from gwaslab.winnerscurse import wc_correct_test
 import gc
 from statsmodels.stats.multitest import fdrcorrection
+from matplotlib.patches import Rectangle
 
 from adjustText import adjust_text
 #20220422
@@ -49,14 +50,16 @@ def compare_effect(path1,
                    r_se=False,
                    is_45_helper_line=True,
                    legend_title=r'$ P < 5 x 10^{-8}$ in:',
+                   legend_title2=r'Heterogeneity test:',
                    legend_pos='upper left',
                    scatterargs={"s":20},
                    plt_args={"figsize":(8,8),"dpi":300},
                    xylabel_prefix="Per-allele effect size in ",
                    helper_line_args={"color":'black', "linestyle":'-',"lw":1},
-                   fontargs={'fontsize':12},
-                   # 'family':'sans','fontname':'Arial',
+                   fontargs={'fontsize':8,'family':'sans','fontname':'Arial'},
+                   # 
                    errargs={"ecolor":"#cccccc","elinewidth":1},
+                   legend_args=None,
                    sep=["\t","\t"],
                    log = Log(),
                    verbose=False):
@@ -411,7 +414,7 @@ def compare_effect(path1,
     ## heterogeneity test
     if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
         if verbose: log.write(" -Calculating Cochran's Q statistics and peform chisq test...")
-        sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2")
+        sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2",q_level=q_level)
         
     ######################### save ###############################################################
     ## save the merged data
@@ -458,23 +461,25 @@ def compare_effect(path1,
             
             ax.scatter(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"],label=label[3],zorder=2,color="#cccccc",edgecolors=sum0["Edge_color"],marker=".",**scatterargs)
             #legend_elements.append(mpatches.Circle(facecolor='#cccccc', edgecolor='white', label=label[3]))
+            legend_elements.append(label[3])
         if len(sum1only)>0:
             ax.errorbar(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"], xerr=sum1only["SE_1"],yerr=sum1only["SE_2"],
                         linewidth=0,zorder=1,**errargs)
             ax.scatter(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"],label=label[0],zorder=2,color="#e6320e",edgecolors=sum1only["Edge_color"],marker="^",**scatterargs)
             #legend_elements.append(mpatches.Patch(facecolor='#e6320e', edgecolor='white', label=label[0]))
-
+            legend_elements.append(label[0])
         if len(sum2only)>0:
             ax.errorbar(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"], xerr=sum2only["SE_1"],yerr=sum2only["SE_2"],
                         linewidth=0,zorder=1,**errargs)
             ax.scatter(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"],label=label[1],zorder=2,color="#41e620",edgecolors=sum2only["Edge_color"],marker="o",**scatterargs)
             #legend_elements.append(mpatches.Circle(facecolor='#41e620', edgecolor='white', label=label[1]))
-
+            legend_elements.append(label[1])
         if len(both)>0:
             ax.errorbar(both["EFFECT_1"],both["EFFECT_2_aligned"], xerr=both["SE_1"],yerr=both["SE_2"],
                         linewidth=0,zorder=1,**errargs)
             ax.scatter(both["EFFECT_1"],both["EFFECT_2_aligned"],label=label[2],zorder=2,color="#205be6",edgecolors=both["Edge_color"],marker="s",**scatterargs)  
             #legend_elements.append(mpatches.Patch(facecolor='#205be6', edgecolor='white', label=label[2]))
+            legend_elements.append(label[2])
     else:
         ## if OR
         if len(sum0)>0:
@@ -627,18 +632,76 @@ def compare_effect(path1,
     ax.set_xlabel(xylabel_prefix+label[0],**fontargs)
     ax.set_ylabel(xylabel_prefix+label[1],**fontargs)
     
-    L = ax.legend(title=legend_title,loc=legend_pos,framealpha=1,edgecolor="grey",alignment="left")
     
-    for i, handle in enumerate(L.legendHandles):
-        handle.set_edgecolor("white")
+    title_proxy = Rectangle((0,0), 0, 0, color='w',label=legend_title)
+    title_proxy2 = Rectangle((0,0), 0, 0, color='w',label=legend_title2)
+    het_label_sig = r"$P_{het} < $" + "${}$".format(q_level)
+    het_label_sig2 = r"$P_{het} > $" + "${}$".format(q_level)
+    het_sig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="black", linewidth=1, label=het_label_sig)
+    het_nonsig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="white",linewidth=1, label=het_label_sig2)
     
+    ax.add_patch(title_proxy)
+    ax.add_patch(title_proxy2)
+    ax.add_patch(het_sig)
+    ax.add_patch(het_nonsig)
+
+    legend_order = [legend_title] + legend_elements + [legend_title2] +[het_label_sig, het_label_sig2]
+    handles, labels = reorderLegend(ax=ax, order=legend_order)
+    
+    #handles.append([het_sig,het_nonsig])
+    #labels.append([het_label_sig,het_label_sig2])
+    legend_args_to_use ={
+        "framealpha":1,
+        "handlelength":0.7,
+        "handletextpad":0.8,
+        "edgecolor":"grey",
+        "borderpad":0.3,
+        "alignment":"left"
+    }
+
+    if legend_args is not None:
+        for key,value in legend_args.items():
+            legend_args_to_use[key] = value
+
+    L = ax.legend(
+        handles=handles, 
+        labels=labels,
+        #title=legend_title,
+        loc=legend_pos,update="bbox",
+        **legend_args_to_use
+        )
+    
+    #for i, handle in enumerate(L.legendHandles):
+    #    handle.set_edgecolor("white")
+
+    
+    ## Move titles to the left 
+    for item, label in zip(L.legendHandles, L.texts):
+        if label._text  in legend_elements:
+            item.set_edgecolor("white")
+            #item._legmarker.set_markersize(scatterargs["s"]*1.5)
+            item._sizes = [scatterargs["s"]*2]
+        if label._text  in [legend_title, legend_title2]:
+            width=item.get_window_extent(fig.canvas.get_renderer()).width
+            label.set_ha('left')
+            label.set_position((-8*width,0))
+    
+    # <v3.6
+    L.set_tight_layout(True)
+
+    ax.tick_params(axis='both', labelsize=fontargs["fontsize"])
     plt.setp(L.texts,**fontargs)
     plt.setp(L.get_title(),**fontargs)
     ##plot finished########################################################################################
     gc.collect()
     return [sig_list_merged, fig,log]
 
+def reorderLegend(ax=None, order=None, add=None):
+    handles, labels = ax.get_legend_handles_labels()
+    info = dict(zip(labels, handles))
 
+    new_handles = [info[l] for l in order]
+    return new_handles, order
 
 ################################################################################################################################
 def plotdaf(sumstats,
@@ -706,7 +769,7 @@ def plotdaf(sumstats,
     plt.tight_layout()
     return fig
     
-def test_q(df,beta1,se1,beta2,se2):
+def test_q(df,beta1,se1,beta2,se2,q_level=0.05):
     w1="Weight_1"
     w2="Weight_2"
     beta="BETA_FE"
@@ -721,7 +784,7 @@ def test_q(df,beta1,se1,beta2,se2):
     df[q] = df[w1]*(df[beta1]-df[beta])**2 + df[w2]*(df[beta2]-df[beta])**2
     df[pq] = ss.chi2.sf(df[q], 1)
     df["Edge_color"]="white"
-    df.loc[df[pq]<0.05,"Edge_color"]="black"
+    df.loc[df[pq]<q_level,"Edge_color"]="black"
     df.drop(columns=["Weight_1","Weight_2","BETA_FE"],inplace=True)
     # Huedo-Medina, T. B., Sánchez-Meca, J., Marín-Martínez, F., & Botella, J. (2006). Assessing heterogeneity in meta-analysis: Q statistic or I² index?. Psychological methods, 11(2), 193.
     
