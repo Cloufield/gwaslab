@@ -49,6 +49,7 @@ def compare_effect(path1,
                    allele_match=False,
                    r_se=False,
                    is_45_helper_line=True,
+                   legend_mode="full",
                    legend_title=r'$ P < 5 x 10^{-8}$ in:',
                    legend_title2=r'Heterogeneity test:',
                    legend_pos='upper left',
@@ -632,62 +633,65 @@ def compare_effect(path1,
     ax.set_xlabel(xylabel_prefix+label[0],**fontargs)
     ax.set_ylabel(xylabel_prefix+label[1],**fontargs)
     
-    
-    title_proxy = Rectangle((0,0), 0, 0, color='w',label=legend_title)
-    title_proxy2 = Rectangle((0,0), 0, 0, color='w',label=legend_title2)
-    het_label_sig = r"$P_{het} < $" + "${}$".format(q_level)
-    het_label_sig2 = r"$P_{het} > $" + "${}$".format(q_level)
-    het_sig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="black", linewidth=1, label=het_label_sig)
-    het_nonsig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="white",linewidth=1, label=het_label_sig2)
-    
-    ax.add_patch(title_proxy)
-    ax.add_patch(title_proxy2)
-    ax.add_patch(het_sig)
-    ax.add_patch(het_nonsig)
+    if legend_mode == "full":
+        title_proxy = Rectangle((0,0), 0, 0, color='w',label=legend_title)
+        title_proxy2 = Rectangle((0,0), 0, 0, color='w',label=legend_title2)
+        het_label_sig = r"$P_{het} < $" + "${}$".format(q_level)
+        het_label_sig2 = r"$P_{het} > $" + "${}$".format(q_level)
+        het_sig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="black", linewidth=1, label=het_label_sig)
+        het_nonsig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="white",linewidth=1, label=het_label_sig2)
+        
+        ax.add_patch(title_proxy)
+        ax.add_patch(title_proxy2)
+        ax.add_patch(het_sig)
+        ax.add_patch(het_nonsig)
 
-    legend_order = [legend_title] + legend_elements + [legend_title2] +[het_label_sig, het_label_sig2]
-    handles, labels = reorderLegend(ax=ax, order=legend_order)
-    
-    #handles.append([het_sig,het_nonsig])
-    #labels.append([het_label_sig,het_label_sig2])
-    legend_args_to_use ={
-        "framealpha":1,
-        "handlelength":0.7,
-        "handletextpad":0.8,
-        "edgecolor":"grey",
-        "borderpad":0.3,
-        "alignment":"left"
-    }
+        legend_order = [legend_title] + legend_elements + [legend_title2] +[het_label_sig, het_label_sig2]
+        handles, labels = reorderLegend(ax=ax, order=legend_order)
+        
+        #handles.append([het_sig,het_nonsig])
+        #labels.append([het_label_sig,het_label_sig2])
+        legend_args_to_use ={
+            "framealpha":1,
+            "handlelength":0.7,
+            "handletextpad":0.8,
+            "edgecolor":"grey",
+            "borderpad":0.3,
+            "alignment":"left"
+        }
 
-    if legend_args is not None:
-        for key,value in legend_args.items():
-            legend_args_to_use[key] = value
+        if legend_args is not None:
+            for key,value in legend_args.items():
+                legend_args_to_use[key] = value
 
-    L = ax.legend(
-        handles=handles, 
-        labels=labels,
-        #title=legend_title,
-        loc=legend_pos,update="bbox",
-        **legend_args_to_use
-        )
+        L = ax.legend(
+            handles=handles, 
+            labels=labels,
+            #title=legend_title,
+            loc=legend_pos,
+            **legend_args_to_use
+            )
+    else:
+        L = ax.legend(
+            title=legend_title,
+            loc=legend_pos,
+            **legend_args_to_use
+            )
     
     #for i, handle in enumerate(L.legendHandles):
     #    handle.set_edgecolor("white")
 
-    
     ## Move titles to the left 
     for item, label in zip(L.legendHandles, L.texts):
         if label._text  in legend_elements:
             item.set_edgecolor("white")
             #item._legmarker.set_markersize(scatterargs["s"]*1.5)
             item._sizes = [scatterargs["s"]*2]
-        if label._text  in [legend_title, legend_title2]:
-            width=item.get_window_extent(fig.canvas.get_renderer()).width
-            label.set_ha('left')
-            label.set_position((-8*width,0))
-    
-    # <v3.6
-    L.set_tight_layout(True)
+        if legend_mode == "full":
+            if label._text  in [legend_title, legend_title2]:
+                width=item.get_window_extent(fig.canvas.get_renderer()).width
+                label.set_ha('left')
+                label.set_position((-8*width,0))
 
     ax.tick_params(axis='both', labelsize=fontargs["fontsize"])
     plt.setp(L.texts,**fontargs)
