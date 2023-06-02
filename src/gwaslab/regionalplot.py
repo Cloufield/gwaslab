@@ -390,7 +390,7 @@ def _plot_gene_track(
             gene_anno = "<-" + row["name"] 
         
         if region_lead_grid is True and lead_snp_i > gene_track_start_i+row["start"] and lead_snp_i < gene_track_start_i+row["end"] :
-                gene_color=region_ld_colors1[-1]
+                gene_color=region_lead_grid_line["color"]
                 sig_gene_name = row["name"]
                 sig_gene_left = gene_track_start_i+row["start"]
                 sig_gene_right= gene_track_start_i+row["end"]
@@ -401,7 +401,7 @@ def _plot_gene_track(
         
         if lead_snp_i2 is not None:
             if region_lead_grid is True and lead_snp_i2 > gene_track_start_i+row["start"] and lead_snp_i2 < gene_track_start_i+row["end"] :
-                    gene_color=region_ld_colors1[-1]
+                    gene_color=region_lead_grid_line["color"]
                     sig_gene_name2 = row["name"]
                     sig_gene_left2 = gene_track_start_i+row["start"]
                     sig_gene_right2= gene_track_start_i+row["end"]
