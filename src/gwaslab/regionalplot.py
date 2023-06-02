@@ -45,6 +45,7 @@ def _plot_regional(
     mode="mqq",
     region_step = 21,
     region_ref=None,
+    region_ref2=None,
     region_grid = False,
     region_grid_line = {"linewidth": 2,"linestyle":"--"},
     region_lead_grid = True,
@@ -52,6 +53,8 @@ def _plot_regional(
     region_hspace=0.02,
     region_ld_threshold = [0.2,0.4,0.6,0.8],
     region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
+    region_ld_colors1=None,
+    region_ld_colors2=None,
     region_recombination = True,
     region_protein_coding=True,
     region_flank_factor = 0.05,
@@ -67,19 +70,47 @@ def _plot_regional(
     # if regional plot : pinpoint lead , add color bar ##################################################
     if (region is not None) :
         # pinpoint lead
-        ax1, lead_id = _pinpoint_lead(sumstats = sumstats,
+        if region_ref2 is None:
+            ax1, lead_id = _pinpoint_lead(sumstats = sumstats,
                                         ax1 = ax1, 
                                         region_ref=region_ref,
                                         region_ld_threshold = region_ld_threshold, 
                                         region_ld_colors = region_ld_colors, 
                                         marker_size= marker_size,
                                         log=log)
+        else:
+            ax1, lead_id = _pinpoint_lead(sumstats = sumstats,
+                                            ax1 = ax1, 
+                                            region_ref=region_ref,
+                                            region_ld_threshold = region_ld_threshold, 
+                                            region_ld_colors = region_ld_colors1, 
+                                            marker_size= marker_size,
+                                            log=log)
+            ax1, lead_id2 = _pinpoint_lead(sumstats = sumstats,
+                                            ax1 = ax1, 
+                                            region_ref=region_ref2,
+                                            region_ld_threshold = region_ld_threshold, 
+                                            region_ld_colors = region_ld_colors2, 
+                                            marker_size= marker_size,
+                                            log=log)
 
         if (vcf_path is not None):
-            ax1 = _add_ld_legend(sumstats=sumstats, 
-                            ax1=ax1, 
-                            region_ld_threshold=region_ld_threshold, 
-                            region_ld_colors=region_ld_colors)
+            if region_ref2 is None:
+                ax1 = _add_ld_legend(sumstats=sumstats, 
+                                ax1=ax1, 
+                                region_ld_threshold=region_ld_threshold, 
+                                region_ld_colors=region_ld_colors)
+            else:
+                ax1 = _add_ld_legend(sumstats=sumstats, 
+                                ax1=ax1, 
+                                region_ld_threshold=region_ld_threshold, 
+                                region_ld_colors=region_ld_colors1,
+                                position=1)
+                ax1 = _add_ld_legend(sumstats=sumstats, 
+                                ax1=ax1, 
+                                region_ld_threshold=region_ld_threshold, 
+                                region_ld_colors=region_ld_colors2,
+                                position=2)
 
     ## recombinnation rate ##################################################       
     if (region is not None) and (region_recombination is True):
@@ -97,7 +128,11 @@ def _plot_regional(
                 # calculate offset
     if (region is not None):
         most_left_snp      = sumstats["i"].idxmin()
-        gene_track_offset  = sumstats.loc[most_left_snp,pos]-region[1]
+        
+        # distance between leftmost variant position to region left bound
+        gene_track_offset  = sumstats.loc[most_left_snp,pos] - region[1]
+        
+        # rebase i to region[1]
         gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
         
         #lead_id            = sumstats["scaled_P"].idxmax()
@@ -105,6 +140,13 @@ def _plot_regional(
         #sumstats["scaled_P"].max()
         lead_snp_i         = sumstats.loc[lead_id,"i"]
         
+        if region_ref2 is not None:
+            lead_snp_y2    = sumstats.loc[lead_id2,"scaled_P"] 
+            #sumstats["scaled_P"].max()
+            lead_snp_i2    = sumstats.loc[lead_id2,"i"]
+        else:
+            lead_snp_i2 = None
+
     if gtf_path is not None:
         # load gtf
         ax3, texts_to_adjust_middle =_plot_gene_track(
@@ -117,6 +159,7 @@ def _plot_regional(
                         region_lead_grid=region_lead_grid,
                         region_lead_grid_line=region_lead_grid_line,
                         lead_snp_i=lead_snp_i,
+                        lead_snp_i2 = lead_snp_i2,
                         gene_track_start_i=gene_track_start_i,
                         gtf_chr_dict=gtf_chr_dict,
                         gtf_gene_name=gtf_gene_name, 
@@ -138,8 +181,17 @@ def _plot_regional(
                     ax1.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
                     ax3.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
             if region_lead_grid is True:
-                ax1.plot([lead_snp_i,lead_snp_i],[0,lead_snp_y], zorder=1,**region_lead_grid_line)
-                ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
+                if region_ref2 is None:
+                    ax1.plot([lead_snp_i,lead_snp_i],[0,lead_snp_y], zorder=1,**region_lead_grid_line)
+                    ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
+                else:
+                    region_lead_grid_line["color"] = region_ld_colors1[-1]
+                    ax1.plot([lead_snp_i,lead_snp_i],[0,lead_snp_y], zorder=1,**region_lead_grid_line)
+                    ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
+                    
+                    region_lead_grid_line["color"] = region_ld_colors2[-1]
+                    ax1.plot([lead_snp_i2,lead_snp_i2],[0,lead_snp_y2], zorder=1,**region_lead_grid_line)
+                    ax3.axvline(x=lead_snp_i2, zorder=1,**region_lead_grid_line)
         else:
             # set x ticks m plot
             ax1.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
@@ -192,35 +244,64 @@ def _pinpoint_lead(sumstats,ax1,region_ref, region_ld_threshold, region_ld_color
         lead_id = _get_lead_id(sumstats, region_ref, log)
         
     ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],
-            color=region_ld_colors[-1],marker="D",zorder=3,s=marker_size[1]+1,edgecolor="black")
+            color=region_ld_colors[-1],
+            marker="D",
+            zorder=3,
+            s=marker_size[1]+2,
+            edgecolor="black")
 
     return ax1, lead_id
 # -############################################################################################################################################################################
-def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ld_colors):
+def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ld_colors,position=1):
     # add a in-axis axis for colorbar
-    axins1 = inset_axes(ax1,
-            width="5%",  # width = 50% of parent_bbox width
-            height="40%",  # height : 5%
-            loc='upper right',axes_kwargs={"frameon":True,"facecolor":"white","zorder":999999})
+    if position==1:
+        axins1 = inset_axes(ax1,
+                width="5%",  # width = 50% of parent_bbox width
+                height="40%",  # height : 5%
+                loc='upper right',axes_kwargs={"frameon":True,"facecolor":"white","zorder":999999})
 
-    cmp= mpl.colors.ListedColormap(region_ld_colors[1:])
-    norm= mpl.colors.BoundaryNorm([0]+region_ld_threshold+[1],cmp.N)     
-    cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),
-                        cax=axins1,
-                        fraction=1,
-                        orientation="vertical",
-                        ticklocation="left")
-    cbar.set_ticks(ticks=region_ld_threshold) 
-    cbar.set_ticklabels([str(i) for i in region_ld_threshold]) 
-    cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.2)
-    rect = patches.Rectangle((0.91,0.50),
-                            height=0.5,
-                            width=0.09, 
-                            transform=ax1.transAxes,
-                            linewidth=1, 
-                            edgecolor='black', 
-                            facecolor='white',
-                            zorder=999998)
+        cmp= mpl.colors.ListedColormap(region_ld_colors[1:])
+        norm= mpl.colors.BoundaryNorm([0]+region_ld_threshold+[1],cmp.N)     
+        cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),
+                            cax=axins1,
+                            fraction=1,
+                            orientation="vertical",
+                            ticklocation="left")
+        cbar.set_ticks(ticks=region_ld_threshold) 
+        cbar.set_ticklabels([str(i) for i in region_ld_threshold]) 
+        cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.2)
+        rect = patches.Rectangle((0.91,0.50),
+                                height=0.5,
+                                width=0.09, 
+                                transform=ax1.transAxes,
+                                linewidth=1, 
+                                edgecolor='black', 
+                                facecolor='white',
+                                zorder=999998)
+    elif position==2:
+        axins1 = inset_axes(ax1,
+                width="5%",  # width = 50% of parent_bbox width
+                height="40%",  # height : 5%
+                loc='upper left',axes_kwargs={"frameon":True,"facecolor":"white","zorder":999999})
+
+        cmp= mpl.colors.ListedColormap(region_ld_colors[1:])
+        norm= mpl.colors.BoundaryNorm([0]+region_ld_threshold+[1],cmp.N)     
+        cbar= plt.colorbar(mpl.cm.ScalarMappable(norm=norm,cmap=cmp),
+                            cax=axins1,
+                            fraction=1,
+                            orientation="vertical",
+                            ticklocation="right")
+        cbar.set_ticks(ticks=region_ld_threshold) 
+        cbar.set_ticklabels([str(i) for i in region_ld_threshold]) 
+        cbar.ax.set_title('LD $r^{2}$',loc="center",y=-0.2)
+        rect = patches.Rectangle((0.0,0.50),
+                                height=0.5,
+                                width=0.09, 
+                                transform=ax1.transAxes,
+                                linewidth=1, 
+                                edgecolor='black', 
+                                facecolor='white',
+                                zorder=999998)
     ax1.add_patch(rect)
     return ax1
 
@@ -262,6 +343,7 @@ def _plot_gene_track(
     region_lead_grid,
     region_lead_grid_line,
     lead_snp_i,
+    lead_snp_i2,
     gene_track_start_i,
     gtf_chr_dict,gtf_gene_name, 
     taf,
@@ -291,6 +373,7 @@ def _plot_gene_track(
     if verbose: log.write(" -plotting gene track..")
     
     sig_gene_name = "Undefined"
+    sig_gene_name2 = "Undefined"
     texts_to_adjust_left = []
     texts_to_adjust_middle = []
     texts_to_adjust_right = []
@@ -308,6 +391,15 @@ def _plot_gene_track(
                 sig_gene_right= gene_track_start_i+row["end"]
         else:
             gene_color="#020080"
+        
+        if lead_snp_i2 is not None:
+            if region_lead_grid is True and lead_snp_i2 > gene_track_start_i+row["start"] and lead_snp_i2 < gene_track_start_i+row["end"] :
+                    gene_color="#FF0000"
+                    sig_gene_name2 = row["name"]
+                    sig_gene_left2 = gene_track_start_i+row["start"]
+                    sig_gene_right2= gene_track_start_i+row["end"]
+            else:
+                gene_color="#020080"
         
         # plot gene line
         ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
@@ -338,6 +430,15 @@ def _plot_gene_track(
             exon_color = region_lead_grid_line["color"]  
         else:
             exon_color="#020080"
+
+        if lead_snp_i2 is not None:
+            if not pd.isnull(row["name"]):
+                if (region_lead_grid is True) and row["name"]==sig_gene_name2:
+                    exon_color = region_lead_grid_line["color"] 
+            elif gene_track_start_i+row["starts"] > sig_gene_left2 and gene_track_start_i+row["end"] < sig_gene_right2:
+                exon_color = region_lead_grid_line["color"]  
+
+        
         #if row["gene_biotype"]!="protein_coding":
         #    exon_color="grey"
         ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
@@ -350,7 +451,7 @@ def _plot_gene_track(
 # -############################################################################################################################################################################
 # Helpers    
 # -############################################################################################################################################################################
-def process_vcf(sumstats, vcf_path, region,region_ref, log, verbose, pos ,nea,ea, region_ld_threshold, vcf_chr_dict,tabix):
+def process_vcf(sumstats, vcf_path, region,region_ref, region_ref2, log, verbose, pos ,nea,ea, region_ld_threshold, vcf_chr_dict,tabix):
     if verbose: log.write("Start to load reference genotype...")
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
     # load genotype data of the targeted region
@@ -421,9 +522,10 @@ def process_vcf(sumstats, vcf_path, region,region_ref, log, verbose, pos ,nea,ea
     else:
         if verbose: log.write(" -Lead SNP not found in reference...")
         sumstats["RSQ"]=None
-        
+    
     sumstats["RSQ"] = sumstats["RSQ"].astype("float")
     sumstats["LD"] = 0
+    
     for index,ld_threshold in enumerate(region_ld_threshold):
         if index==0:
             to_change_color = sumstats["RSQ"]>-1
@@ -431,10 +533,58 @@ def process_vcf(sumstats, vcf_path, region,region_ref, log, verbose, pos ,nea,ea
         else:
             to_change_color = sumstats["RSQ"]>ld_threshold
             sumstats.loc[to_change_color,"LD"] = index+1
-    
     sumstats.loc[lead_id,"LD"] = len(region_ld_threshold)+2
     sumstats["LEAD"]="Other variants"
     sumstats.loc[lead_id,"LEAD"] = "Lead variants"
+    sumstats["SHAPE"] = 1
+    #####################################################################################################
+    if region_ref2 is not None:
+        lead_id2 = _get_lead_id(sumstats, region_ref2, log)
+        lead_pos2 = sumstats.loc[lead_id2,pos]
+        if lead_pos2 in ref_genotype["variants/POS"]:
+            
+            # get ref index for lead snp
+            lead_snp_ref_index = match_varaint(sumstats.loc[lead_id2,[pos,nea,ea]])
+            #lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
+
+            # non-na other snp index
+            other_snps_ref_index = sumstats["REFINDEX"].dropna().astype("int").values
+            # get genotype 
+            lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
+            other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
+            
+            if verbose: log.write(" -Calculating Rsq...")
+            
+            if len(other_snp_genotype)>1:
+                valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0],2)
+            else:
+                valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype),2)
+            sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ2"] = valid_r2
+        else:
+            if verbose: log.write(" -Lead SNP not found in reference...")
+            sumstats["RSQ2"]=None
+
+        sumstats["RSQ2"] = sumstats["RSQ2"].astype("float")
+        sumstats["LD2"] = 0
+
+        for index,ld_threshold in enumerate(region_ld_threshold):
+            if index==0:
+                to_change_color = sumstats["RSQ2"]>-1
+                sumstats.loc[to_change_color,"LD2"] = 1
+            else:
+                to_change_color = sumstats["RSQ2"]>ld_threshold
+                sumstats.loc[to_change_color,"LD2"] = index+1
+            
+        sumstats.loc[lead_id,"LD2"] = len(region_ld_threshold)+2
+        sumstats["LEAD2"]="Other variants"
+        sumstats.loc[lead_id,"LEAD2"] = "Lead variants"
+
+        a_ngt_b = sumstats["LD"] < sumstats["LD2"]
+        sumstats.loc[a_ngt_b, "LD"] = 100 + sumstats.loc[a_ngt_b, "LD2"]
+        sumstats.loc[a_ngt_b, "SHAPE"] =2 
+        #sumstats.loc[lead_id,"LEAD2"]
+    ####################################################################################################
+
     if verbose: log.write("Finished loading reference genotype successfully!")
     return sumstats
 

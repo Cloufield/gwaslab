@@ -77,6 +77,7 @@ def mqqplot(insumstats,
           # region
           region = None,
           region_ref=None,
+          region_ref2=None,
           region_step = 21,
           region_grid = False,
           region_grid_line = None,
@@ -85,6 +86,8 @@ def mqqplot(insumstats,
           region_hspace=0.02,
           region_ld_threshold = None,
           region_ld_colors = None,
+          region_ld_colors1 = None,
+          region_ld_colors2 = None,
           region_recombination = True,
           region_protein_coding = True,
           region_flank_factor = 0.05,
@@ -205,6 +208,10 @@ def mqqplot(insumstats,
         region_ld_threshold = [0.2,0.4,0.6,0.8]
     if region_ld_colors is None:     
         region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
+    if region_ld_colors1 is None:
+        region_ld_colors1 = ["#E4E4E4","#F8CFCF","#F5A2A5","#F17474","#EB4445","#E51819","#E51819"]
+    if region_ld_colors2 is None:
+        region_ld_colors2 = ["#E4E4E4","#D8E2F2","#AFCBE3","#86B3D4","#5D98C4","#367EB7","#367EB7"]
     if taf is None:
         taf = [4,0,0.95,1,1]
     if maf_bins is None:
@@ -221,6 +228,18 @@ def mqqplot(insumstats,
         pinpoint = list()
     if build is None:
         build = "19"
+    if scatter_kwargs is None:
+        scatter_kwargs={}
+    if qq_scatter_kwargs is None:
+        qq_scatter_kwargs={}
+    
+    if save is not None:
+        if type(save) is not bool:
+            if len(save)>3:
+                if save[-3:]=="pdf" or save[-3:]=="svg":
+                    figargs["dpi"]=72
+                    scatter_kwargs["rasterized"]=True
+                    qq_scatter_kwargs["rasterized"]=True
 
     if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
     if verbose: log.write(" -Genomic coordinates version:{}...".format(build))
@@ -272,10 +291,7 @@ def mqqplot(insumstats,
         marker_size= (marker_size[1],marker_size[1])
     else:
         raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
-    if scatter_kwargs is None:
-        scatter_kwargs={}
-    if qq_scatter_kwargs is None:
-        qq_scatter_kwargs={}
+
 
 
 # Read sumstats #################################################################################################
@@ -504,8 +520,19 @@ def mqqplot(insumstats,
     if vcf_path is not None:
         if tabix is None:
             tabix = which("tabix")
-        sumstats = process_vcf(sumstats=sumstats, vcf_path=vcf_path,region=region, region_ref=region_ref,
-                               log=log ,pos=pos,ea=ea,nea=nea,region_ld_threshold=region_ld_threshold,verbose=verbose,vcf_chr_dict=vcf_chr_dict,tabix=tabix)
+        sumstats = process_vcf(sumstats=sumstats, 
+                               vcf_path=vcf_path,
+                               region=region, 
+                               region_ref=region_ref, 
+                               region_ref2=region_ref2,
+                               log=log ,
+                               pos=pos,
+                               ea=ea,
+                               nea=nea,
+                               region_ld_threshold=region_ld_threshold,
+                               verbose=verbose,
+                               vcf_chr_dict=vcf_chr_dict,
+                               tabix=tabix)
 
     #sort & add id
     ## Manhatann plot ###################################################
@@ -533,12 +560,22 @@ def mqqplot(insumstats,
         legend = None
         style=None
         linewidth=0
+        edgecolor="black"
         # if regional plot assign colors
         if vcf_path is not None:
-            palette = { i:region_ld_colors[i] for i in range(len(region_ld_colors))}
             legend=None
-            style=None
             linewidth=1
+            palette = { i:region_ld_colors[i] for i in range(len(region_ld_colors))}
+            if region_ref2 is not None:
+                palette = {} 
+                for i in range(len(region_ld_colors)):
+                    palette[i]=region_ld_colors1[i]
+                    palette[100+i]=region_ld_colors2[i]
+                edgecolor="none"
+                scatter_kwargs["markers"]=['o', 's']
+                style="SHAPE"
+                
+            
             
         ## if highlight 
         highlight_i = pd.DataFrame()
@@ -551,7 +588,7 @@ def mqqplot(insumstats,
                                size="s",
                                sizes=marker_size,
                                linewidth=linewidth,
-                               zorder=2,ax=ax1,edgecolor="black", **scatter_kwargs)   
+                               zorder=2,ax=ax1,edgecolor=edgecolor, **scatter_kwargs)   
             
             if verbose: log.write(" -Highlighting target loci...")
             sns.scatterplot(data=sumstats.loc[sumstats["HUE"]=="0"], x='i', y='scaled_P',
@@ -562,7 +599,7 @@ def mqqplot(insumstats,
                    size="s",
                    sizes=(marker_size[0]+1,marker_size[1]+1),
                    linewidth=linewidth,
-                   zorder=3,ax=ax1,edgecolor="black",**scatter_kwargs)  
+                   zorder=3,ax=ax1,edgecolor=edgecolor,**scatter_kwargs)  
             highlight_i = sumstats.loc[sumstats[snpid].isin(highlight),"i"].values
         
         ## if not highlight    
@@ -581,7 +618,7 @@ def mqqplot(insumstats,
                        sizes=(marker_size[0]+1,marker_size[0]+1),
                        linewidth=linewidth,
                        hue_norm=density_trange,
-                       zorder=2,ax=ax1,edgecolor="black",**scatter_kwargs) 
+                       zorder=2,ax=ax1,edgecolor=edgecolor,**scatter_kwargs) 
 
                 plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]>density_threshold,:], x='i', y='scaled_P',
                    hue=hue,
@@ -592,7 +629,7 @@ def mqqplot(insumstats,
                    sizes=marker_size,
                    hue_norm=density_range,
                    linewidth=linewidth,
-                   zorder=2,ax=ax1,edgecolor="black",**scatter_kwargs)   
+                   zorder=2,ax=ax1,edgecolor=edgecolor,**scatter_kwargs)   
             else:
                 s = "s"
                 hue = 'chr_hue'
@@ -607,7 +644,8 @@ def mqqplot(insumstats,
                        sizes=marker_size,
                        hue_norm=hue_norm,
                        linewidth=linewidth,
-                       zorder=2,ax=ax1,edgecolor="black",**scatter_kwargs)   
+                       edgecolor = edgecolor,
+                       zorder=2,ax=ax1,**scatter_kwargs)   
         
         
         ## if pinpoint variants
@@ -648,6 +686,7 @@ def mqqplot(insumstats,
                                 mode=mode,
                                 region_step = region_step,
                                 region_ref=region_ref,
+                                region_ref2=region_ref2,
                                 region_grid = region_grid,
                                 region_grid_line = region_grid_line,
                                 region_lead_grid = region_lead_grid,
@@ -655,6 +694,8 @@ def mqqplot(insumstats,
                                 region_hspace=region_hspace,
                                 region_ld_threshold = region_ld_threshold,
                                 region_ld_colors = region_ld_colors,
+                                region_ld_colors1=region_ld_colors1,
+                                region_ld_colors2=region_ld_colors2,
                                 region_recombination = region_recombination,
                                 region_protein_coding=region_protein_coding,
                                 region_flank_factor =region_flank_factor,

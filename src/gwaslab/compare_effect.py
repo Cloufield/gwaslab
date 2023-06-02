@@ -633,6 +633,19 @@ def compare_effect(path1,
     ax.set_xlabel(xylabel_prefix+label[0],**fontargs)
     ax.set_ylabel(xylabel_prefix+label[1],**fontargs)
     
+    legend_args_to_use ={
+            "framealpha":1,
+            "handlelength":0.7,
+            "handletextpad":0.8,
+            "edgecolor":"grey",
+            "borderpad":0.3,
+            "alignment":"left"
+        }
+
+    if legend_args is not None:
+        for key,value in legend_args.items():
+            legend_args_to_use[key] = value
+
     if legend_mode == "full":
         title_proxy = Rectangle((0,0), 0, 0, color='w',label=legend_title)
         title_proxy2 = Rectangle((0,0), 0, 0, color='w',label=legend_title2)
@@ -651,19 +664,6 @@ def compare_effect(path1,
         
         #handles.append([het_sig,het_nonsig])
         #labels.append([het_label_sig,het_label_sig2])
-        legend_args_to_use ={
-            "framealpha":1,
-            "handlelength":0.7,
-            "handletextpad":0.8,
-            "edgecolor":"grey",
-            "borderpad":0.3,
-            "alignment":"left"
-        }
-
-        if legend_args is not None:
-            for key,value in legend_args.items():
-                legend_args_to_use[key] = value
-
         L = ax.legend(
             handles=handles, 
             labels=labels,
