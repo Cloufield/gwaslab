@@ -31,6 +31,7 @@ def plot_rg(ldscrg,
         correction="",
         cmap = matplotlib.cm.get_cmap('RdBu'),
         log=Log(),
+        panno_args=None,
         verbose=True,
         asize=10,
         sort_key=None,
@@ -167,11 +168,18 @@ def plot_rg(ldscrg,
             if i[2]<-1: i[2]=-1
             ax.text(i[0],i[1],"{:.3f}".format(i[2]),color=i[3],weight="bold",ha="center", va="center",font="Arial")
     
+    
+    
+    panno_default_args={"size":asize,"color":"white","weight":"bold","ha":"center","va":"center","font":"Arial"}
+    if panno_args is not None:
+        for key, value in panno_args.items():
+            panno_default_args[key] = value
+
     for i in panno:
         if i[2]<sig_level/len(dfp):
-            ax.text(i[0],i[1],"**",size=asize, color="black",weight="bold",ha="center", va="center",font="Arial")
+            ax.text(i[0],i[1],"**", **panno_default_args)
         else:
-            ax.text(i[0],i[1],"*", size=asize, color="black",weight="bold",ha="center", va="center",font="Arial")
+            ax.text(i[0],i[1],"*", **panno_default_args)
 
             
     ## color bar ###############################################
