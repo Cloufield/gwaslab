@@ -747,7 +747,7 @@ def mqqplot(insumstats,
                 if to_annotate.empty is not True:
                     if verbose: log.write(" -Found "+str(len(to_annotate))+" specified variants to annotate...")
             else:
-                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level)),:],
+                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level_lead)),:],
                                snpid,
                                chrom,
                                pos,
@@ -760,7 +760,7 @@ def mqqplot(insumstats,
                 if (to_annotate.empty is not True) and ("b" not in mode):
                     if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
         else:
-            to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level)),:],
+            to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level_lead)),:],
                                "i",
                                chrom,
                                pos,
