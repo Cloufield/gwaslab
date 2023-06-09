@@ -135,6 +135,8 @@ def mqqplot(insumstats,
           suggestive_sig_line=False,
           suggestive_sig_level=5e-6,
           suggestive_sig_line_color="grey",
+          additional_line = None,
+          additional_line_color = None,
           sc_linewidth=2,
           highlight = None,
           highlight_color="#CB132D",
@@ -255,6 +257,15 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Variants to pinpoint : "+",".join(pinpoint))  
     if region is not None:
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
+    
+    # construct line series for coversion
+    if additional_line is None:
+        lines_to_plot = pd.Series([sig_level, sig_level] )
+    else:
+        lines_to_plot = pd.Series([sig_level, sig_level] + additional_line ) 
+        if additional_line_color is None:
+            additional_line_color = ["grey"]
+    lines_to_plot = -np.log10(lines_to_plot)
 
 # Plotting mode selection : layout ####################################################################
     # ax1 : manhattanplot / brisbane plot
@@ -499,9 +510,12 @@ def mqqplot(insumstats,
     sumstats = sumstats.loc[sumstats["scaled_P"]>=skip,:]
     garbage_collect.collect()
     
+
+    # 
+
     # shrink variants above cut line #########################################################################################
     try:
-        sumstats["scaled_P"], maxy, maxticker, cut, cutfactor,ylabels_converted = _cut(series = sumstats["scaled_P"], 
+        sumstats["scaled_P"], maxy, maxticker, cut, cutfactor,ylabels_converted, lines_to_plot = _cut(series = sumstats["scaled_P"], 
                                                                         mode =mode, 
                                                                         cut=cut,
                                                                         skip=skip,
@@ -509,6 +523,7 @@ def mqqplot(insumstats,
                                                                         ylabels=ylabels,
                                                                         cut_log = cut_log,
                                                                         verbose =verbose, 
+                                                                        lines_to_plot=lines_to_plot,
                                                                         log = log)
     except:
         log.write(" -Warning : No valid data! Please check the input.")
@@ -714,10 +729,26 @@ def mqqplot(insumstats,
         
         # genomewide significant line
         if sig_line is True:
-            sigline = ax1.axhline(y=-np.log10(sig_level), linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1)
+            sigline = ax1.axhline(y=lines_to_plot[0], 
+                                  linewidth = sc_linewidth,
+                                  linestyle="--",
+                                  color=sig_line_color,
+                                  zorder=1)
         if suggestive_sig_line is True:
-            suggestive_sig_line = ax1.axhline(y=-np.log10(suggestive_sig_level), linewidth = sc_linewidth,linestyle="--",color=suggestive_sig_line_color,zorder=1)
-        
+            suggestive_sig_line = ax1.axhline(y=lines_to_plot[1], 
+                                              linewidth = sc_linewidth, 
+                                              linestyle="--", 
+                                              color=suggestive_sig_line_color,
+                                              zorder=1)
+        if additional_line is not None:
+            for index, level in enumerate(lines_to_plot[2:].values):
+                ax1.axhline(y=level, 
+                            linewidth = sc_linewidth, 
+                            linestyle="--", 
+                            color=additional_line_color[index%len(additional_line_color)],
+                            zorder=1)
+            
+            
         # for brisbane plot, add median and mean line
         if "b" in mode:    
             meanline = ax1.axhline(y=bmean, linewidth = sc_linewidth,linestyle="-",color=sig_line_color,zorder=1000)
