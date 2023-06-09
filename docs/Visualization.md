@@ -255,6 +255,40 @@ Pinpoint certain variants in the manhattan plot.
 
 ----------------------------------------------------------------
 
+### Lines
+- `sig_line`: boolean. if True, plot the significant threshold line (default: True)
+- `sig_level`: float. The significance threshold (default:5e-8)
+- `sig_level_lead`: float. The significance threshold for extracting lead variants to annotate (default:5e-8)
+- `sig_line_color`:color. Significant threshold line color (default:"grey")
+- `suggestive_sig_line`:boolean. if True, plot the suggestive line (default:False),
+- `suggestive_sig_level`:float. The suggestive level (default:5e-6),
+- `suggestive_sig_line_color`:color. Suggestive level line color (default:"grey"),
+- `additional_line`: list of threshold. (default:None)
+- `additional_line_color`: list of colors. (default:None)
+- `cut_line_color`: color. the color for cut line (default: "#ebebeb")
+
+!!! example "Plot lines"
+    ```python
+    mysumstats.plot_mqq(skip=3,
+                    build="19",
+                    anno="GENENAME",
+                    windowsizekb=1000000,
+                    cut=20,
+                    cut_line_color="purple",
+                    sig_level=5e-8,  
+                    sig_level_lead=1e-6, 
+                    sig_line_color="grey",
+                    suggestive_sig_line = True,
+                    suggestive_sig_level = 1e-6,
+                    suggestive_sig_line_color="blue",
+                    additional_line=[1e-40,1e-60],
+                    additional_line_color=["yellow","green"])
+    ```
+    <img width="600" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/e0a8c92b-a3b5-430e-b11c-114f970ca34a">
+
+
+
+
 ### MAF-stratified QQ plot
 - `stratified`: `boolean` if True, plot MAF straitified QQ plot. Require EAF in sumstats.
 - `maf_bins`: `list` maf bins for straitification. (default: `maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]`)
