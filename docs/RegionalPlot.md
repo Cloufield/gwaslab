@@ -24,6 +24,8 @@ mqqplot(  vcf_path=None,
           region_hspace=0.02,
           region_ld_threshold = [0.2,0.4,0.6,0.8],
           region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
+          region_ld_colors1 = ["#E4E4E4","#F8CFCF","#F5A2A5","#F17474","#EB4445","#E51819","#E51819"],
+          region_ld_colors2 = ["#E4E4E4","#D8E2F2","#AFCBE3","#86B3D4","#5D98C4","#367EB7","#367EB7"],
           region_recombination = True,
           region_protein_coding=True,
           region_flank_factor = 0.05,
@@ -105,3 +107,13 @@ mysumstats.plot_mqq(mode="r",region=(7,156538803,157538803),region_grid=True,
                     vcf_path="/home/yunye/mydata/d_disk/eas_1kg_af/EAS.chr7.split_norm_af.vcf.gz")
 ```
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png">
+
+## Two-reference-variant regional plot
+```
+mysumstats.plot_mqq(mode="r",region=(7,156538803,157538803),
+                    region_grid=True,
+                    region_ref ="7:156994964_C_T",
+                    region_ref2="7:156793713_T_C",
+                    vcf_path=gl.get_path("1kg_eas_hg19"))
+```
+<img width="600" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/930bed00-74ab-4870-947c-06bc11b932c7">
