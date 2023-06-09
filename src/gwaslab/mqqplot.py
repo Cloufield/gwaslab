@@ -260,9 +260,9 @@ def mqqplot(insumstats,
     
     # construct line series for coversion
     if additional_line is None:
-        lines_to_plot = pd.Series([sig_level, sig_level] )
+        lines_to_plot = pd.Series([sig_level, suggestive_sig_level] )
     else:
-        lines_to_plot = pd.Series([sig_level, sig_level] + additional_line ) 
+        lines_to_plot = pd.Series([sig_level, suggestive_sig_level] + additional_line ) 
         if additional_line_color is None:
             additional_line_color = ["grey"]
     lines_to_plot = -np.log10(lines_to_plot)

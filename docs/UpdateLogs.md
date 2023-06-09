@@ -1,6 +1,9 @@
 # Update Logs
 
-## 3.4.14 upcoming
+## 3.4.15 upcoming
+
+## 3.4.14 2023/06/09
+- fixed bug
 
 ## 3.4.13 2023/06/09
 - added two-reference-variant mode for regional plot
