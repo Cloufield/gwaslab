@@ -690,6 +690,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#lines" class="md-nav__link">
+    Lines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#maf-stratified-qq-plot" class="md-nav__link">
     MAF-stratified QQ plot
   </a>
@@ -1127,6 +1134,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#lines" class="md-nav__link">
+    Lines
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#maf-stratified-qq-plot" class="md-nav__link">
     MAF-stratified QQ plot
   </a>
@@ -1408,6 +1422,38 @@
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
 </div>
 <hr />
+<h3 id="lines">Lines</h3>
+<ul>
+<li><code>sig_line</code>: boolean. if True, plot the significant threshold line (default: True)</li>
+<li><code>sig_level</code>: float. The significance threshold (default:5e-8)</li>
+<li><code>sig_level_lead</code>: float. The significance threshold for extracting lead variants to annotate (default:5e-8)</li>
+<li><code>sig_line_color</code>:color. Significant threshold line color (default:"grey")</li>
+<li><code>suggestive_sig_line</code>:boolean. if True, plot the suggestive line (default:False),</li>
+<li><code>suggestive_sig_level</code>:float. The suggestive level (default:5e-6),</li>
+<li><code>suggestive_sig_line_color</code>:color. Suggestive level line color (default:"grey"),</li>
+<li><code>additional_line</code>: list of threshold. (default:None)</li>
+<li><code>additional_line_color</code>: list of colors. (default:None)</li>
+<li><code>cut_line_color</code>: color. the color for cut line (default: "#ebebeb")</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">Plot lines</p>
+<p><div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
+                <span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span>
+                <span class="n">windowsizekb</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span>
+                <span class="n">cut</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                <span class="n">cut_line_color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span>
+                <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>  
+                <span class="n">sig_level_lead</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> 
+                <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+                <span class="n">suggestive_sig_line</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="n">suggestive_sig_level</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+                <span class="n">suggestive_sig_line_color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                <span class="n">additional_line</span><span class="o">=</span><span class="p">[</span><span class="mf">1e-40</span><span class="p">,</span><span class="mf">1e-60</span><span class="p">],</span>
+                <span class="n">additional_line_color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;yellow&quot;</span><span class="p">,</span><span class="s2">&quot;green&quot;</span><span class="p">])</span>
+</code></pre></div>
+<img width="600" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/e0a8c92b-a3b5-430e-b11c-114f970ca34a"></p>
+</div>
 <h3 id="maf-stratified-qq-plot">MAF-stratified QQ plot</h3>
 <ul>
 <li><code>stratified</code>: <code>boolean</code> if True, plot MAF straitified QQ plot. Require EAF in sumstats.</li>
