@@ -428,8 +428,10 @@ class Sumstats():
             return new_Sumstats_object
     ######################################################################
     
-    def check_af(self,**args):
-        self.data = parallelecheckaf(self.data,log=self.log,**args)
+    def check_af(self,ref_infer,**args):
+        self.data = parallelecheckaf(self.data,ref_infer=ref_infer,log=self.log,**args)
+        self.meta["gwaslab"]["references"]["ref_infer_daf"] = ref_infer
+
       
     def plot_daf(self, **args):
         plot = plotdaf(self.data, **args)

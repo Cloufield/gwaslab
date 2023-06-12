@@ -728,6 +728,7 @@ def plotdaf(sumstats,
             verbose=True,
             log=Log()
            ):
+    
     if font_args is None:
         font_args={'family':'sans','fontname':'Arial','fontsize':8}
     if scatter_args is None:
@@ -760,11 +761,15 @@ def plotdaf(sumstats,
     sns.set_style("ticks")
     fig, (ax1, ax2) = plt.subplots(1, 2,**plt_args)
     ax1.scatter(sumstats["RAF"],sumstats[eaf],label="Non-outlier", **scatter_args)
-    is_outliers = sumstats[daf].abs() > threshold 
-    if sum(is_outliers)>0:
-        ax1.scatter(sumstats.loc[is_outliers, "RAF"],sumstats.loc[is_outliers, eaf],label="Outlier", **scatter_args_outlier)
+    
+    if is_threshold is True:
+        is_outliers = sumstats[daf].abs() > threshold 
+        if sum(is_outliers)>0:
+            ax1.scatter(sumstats.loc[is_outliers, "RAF"],sumstats.loc[is_outliers, eaf],label="Outlier", **scatter_args_outlier)
+    
     if legend1 ==True:
         ax1.legend()
+    
     if is_reg is True:
         if verbose: log.write(" -Plotting regression line...")
         reg = ss.linregress(sumstats["RAF"],sumstats[eaf])
@@ -772,6 +777,7 @@ def plotdaf(sumstats,
         if verbose:log.write(" -Intercept = ", reg[1])
         if verbose:log.write(" -R2 = ", reg[2])
         ax1.axline(xy1=(0,reg[1]),slope=reg[0],zorder=1,**reg_line_args)
+    
     if is_threshold is True:
         if verbose: log.write(" -Threshold : " + str(threshold))
         num = sum(np.abs(sumstats[daf])>threshold )
@@ -779,16 +785,20 @@ def plotdaf(sumstats,
         if verbose: log.write(" -Percentage for variants with relatively large DAF : ",num/len(sumstats) )
         ax1.axline(xy1=(0,threshold),slope=1,zorder=1,**threshold_line_args)
         ax1.axline(xy1=(threshold,0),slope=1,zorder=1,**threshold_line_args)
+    
     xl,xh=ax1.get_xlim()
     yl,yh=ax1.get_ylim()
+    
     if is_45_helper_line is True:
         ax1.axline([0,0], [1,1],zorder=1, **helper_line_args)
+    
     ax1.set_xlabel("Alternative Allele Frequency in Reference Population (RAF)",**font_args)
     ax1.set_ylabel("Effect Allele Frequency in Sumstats (EAF)",**font_args)
     ax1.set_xlim([0,1])
     ax1.set_ylim([0,1])
     
     sumstats.loc[:,"ID"] = sumstats.index
+    
     to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele Frequency')
     
     sns.histplot(data=to_plot, x="Allele Frequency", hue="Types", fill=True, ax=ax2, legend = legend2 ,**histplot_args)
