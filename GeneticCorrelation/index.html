@@ -893,8 +893,27 @@
 
   <h1>GeneticCorrelation</h1>
 
-<div class="highlight"><pre><span></span><code>load data
-plot
+<div class="highlight"><pre><span></span><code>#load multiple log
+ldsclist = [&quot;my_ldsc_trait1.log&quot;,&quot;my_ldsc_trait2.log&quot;]
+
+ldsc = gl.read_ldsc(ldsclist,mode=&quot;rg&quot;)
+
+#plot
+
+gl.plot_rg(ldsc,
+            rganno=True,
+            sig_level=0.05,
+            correction=&quot;fdr&quot;,
+            figsize=(5,5),
+            colorbarargs={&quot;shrink&quot;:0.8},
+            panno_args={&quot;size&quot;:15}
+            )
+
+# make the box square
+# plt.gca().set_aspect(&#39;equal&#39;, adjustable=&#39;box&#39;)
+
+# save figure
+# fig[0].savefig(&quot;./my_ldsc_heatmap.png&quot;,dpi=300,bbox_inches=&#39;tight&#39;)
 </code></pre></div>
 
               

@@ -543,6 +543,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#allele-frequency-correlation-plot" class="md-nav__link">
+    Allele frequency correlation plot
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#flipping-based-on-status-code" class="md-nav__link">
     Flipping based on status code
   </a>
@@ -1015,6 +1022,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#allele-frequency-correlation-plot" class="md-nav__link">
+    Allele frequency correlation plot
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#flipping-based-on-status-code" class="md-nav__link">
     Flipping based on status code
   </a>
@@ -1127,19 +1141,29 @@
 <p><code>infer_strand()</code> only change the status code. Use <a href="#flipping-based-on-status-code">filp function</a> <code>.flip_allele_stats()</code> to filp the allele-specific stats.</p>
 </div>
 <h2 id="check-the-difference-in-allele-frequency">Check the difference in allele frequency</h2>
-<p><code>.check_daf()</code> : check the allele frequency discrepancy with a reference vcf.</p>
+<p><code>.check_daf()</code> : check the allele frequency discrepancy with a reference vcf. Please make sure your sumstats are already harmonized, and the variants in reference VCF are also aligned. gwaslab will retrieve infomation only for matched variants (CHR, POS, EA-ALT, and NEA-REF).</p>
+<p><code>ref_infer</code>: reference VCF file path.
+<code>ref_alt_freq</code>:  allele frequency for ALT in the INFO field of reference VCF file.
+<code>n_cores</code>: number of cores to use.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code>mysumstats.check_daf()
+<div class="highlight"><pre><span></span><code>mysumstats.check_af(ref_infer=gl.get_path(&quot;1kg_eas_hg19&quot;), 
+                    ref_alt_freq=&quot;AF&quot;,
+                    n_cores=2)
 </code></pre></div>
 </div>
-<p>You may want to check the allele frequency discrepancy with a reference vcf. Just specify the path and the right allele frequency for your target ancestry in INFO field.</p>
+<p>DAF : Difference between Effect allele frequency and Reference ALT frequency
+EAF: Effect allele frequency
+RAF: Reference ALT frequency</p>
+<p>You may want to check the allele frequency discrepancy with a reference VCF. Just specify the path and the right allele frequency for your target ancestry in INFO field.</p>
+<h2 id="allele-frequency-correlation-plot">Allele frequency correlation plot</h2>
 <p>GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in DAF column. DAF can then be used for plotting (<code>.plot_daf()</code>) or filter variants.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_daf</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_daf</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mf">0.12</span><span class="p">)</span>
 </code></pre></div>
 </div>
+<p><img alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/0c607470-bbb6-4f11-93fe-038a53f6eebb" /></p>
 <h2 id="flipping-based-on-status-code">Flipping based on status code</h2>
 <p><code>.flip_allele_stats()</code> :  Flip allele-specific statistics to harmonize the variants based on the tracking status code. </p>
 <div class="admonition example">
