@@ -1,7 +1,15 @@
 # Update Logs
 
-## 3.4.13 (coming soon)
+## 3.4.15 upcoming
+
+## 3.4.14 2023/06/09
+- fixed bug
+
+## 3.4.13 2023/06/09
+- added two-reference-variant mode for regional plot
 - auto-check for genome build version
+- added `additional_line` and `additional_line_color` for plot_mqq
+- fixed bugs for sig_level_lead
 
 ## 3.4.12 2023/05/30
 - added highlight_anno_args in plot_mqq()

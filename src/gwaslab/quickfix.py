@@ -277,7 +277,7 @@ def _quick_extract_snp_in_region(sumstats, region, chrom="CHR",pos="POS",verbose
     sumstats = sumstats.loc[is_in_region_snp,:]
     return sumstats
 
-def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
+def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose,lines_to_plot, log):
     if ylabels is not None:
         ylabels = pd.Series(ylabels)
     maxy = series.max()
@@ -290,6 +290,7 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
     maxticker=int(np.round(series.max(skipna=True)))
     
     if cut:
+        # auto mode : determine curline and cut factor
         if cut==True:
             if verbose: log.write(" -Cut Auto mode is activated...")
             if maxy<30:
@@ -300,19 +301,25 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
                 cutfactor = ( maxy - cut )/8
         
         if cut:
+            #cut log mode
             if cut_log==True:
                 maxticker=int(np.round(series.max(skipna=True)))
                 
                 amp = (cut - skip)/ 2 / np.log2(maxticker/cut)
                 
+                # scaled_P
                 series[series>cut] = (np.log2(series[series>cut]/cut)) * amp + cut
                 
+                # y labels
                 if ylabels is not None:
                     ylabels[ylabels>cut] = (np.log2(ylabels[ylabels>cut]/cut)) * amp +cut 
                 
+                # lines
+                lines_to_plot[lines_to_plot>cut] = (np.log2(lines_to_plot[lines_to_plot>cut]/cut)) * amp +cut 
                 
                 maxy = (np.log2(maxticker) - np.log2(cut)) * amp + cut
             else:
+                # cut linear mode
                 if "b" not in mode:
                     if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
                 else:
@@ -321,13 +328,21 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
                 maxticker=int(np.round(series.max(skipna=True)))
 
                 series[series>cut] = (series[series>cut]-cut)/cutfactor+cut
+                
                 if ylabels is not None:
                     ylabels[ylabels>cut] = (ylabels[ylabels>cut]-cut)/cutfactor+cut
+                
+                lines_to_plot[lines_to_plot>cut] = (lines_to_plot[lines_to_plot>cut]-cut)/cutfactor+cut
                 #sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
                 
                 maxy = (maxticker-cut)/cutfactor + cut
     if verbose: log.write("Finished data conversion and sanity check.")
-    return series, maxy, maxticker, cut, cutfactor,ylabels
+    return series, maxy, maxticker, cut, cutfactor,ylabels,lines_to_plot
+
+#def _cut_line(level, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
+
+
+
 
 def _set_yticklabels(cut,
                      cutfactor,
