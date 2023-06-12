@@ -60,18 +60,32 @@ See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/
 
 `.check_daf()` : check the allele frequency discrepancy with a reference vcf.
 
+`ref_infer`: reference VCF file path.
+`ref_alt_freq`:  allele frequency for ALT in the INFO field of reference VCF file.
+`n_cores`: number of cores to use.
+
 !!! example
     ```
-    mysumstats.check_daf()
+    mysumstats.check_af(ref_infer=gl.get_path("1kg_eas_hg19"), 
+                        ref_alt_freq="AF",
+                        n_cores=2)
     ```
 
-You may want to check the allele frequency discrepancy with a reference vcf. Just specify the path and the right allele frequency for your target ancestry in INFO field.
+DAF : Difference between Effect allele frequency and Reference ALT frequency
+EAF: Effect allele frequency
+RAF: Reference ALT frequency
+
+
+
+You may want to check the allele frequency discrepancy with a reference VCF. Just specify the path and the right allele frequency for your target ancestry in INFO field.
+
+## Allele frequency correlation plot
 
 GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in DAF column. DAF can then be used for plotting (`.plot_daf()`) or filter variants.
 
 !!! example
     ```python
-    mysumstats.plot_daf()
+    mysumstats.plot_daf(threshold=0.12)
     ```
 
 ## Flipping based on status code
