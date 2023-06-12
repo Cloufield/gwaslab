@@ -635,11 +635,11 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_co
         
         #sumstats.loc[good_chrpos,"DAF"] = status_inferred.values
         #sumstats.loc[:,"DAF"]=sumstats.loc[:,"DAF"].astype("float")     
-        if verbose: log.write(" - DAF min:", np.nanmax(sumstats.loc[:,"DAF"])) 
-        if verbose: log.write(" - DAF max:", np.nanmin(sumstats.loc[:,"DAF"])) 
-        if verbose: log.write(" - abs(DAF) min:", np.nanmax(np.abs(sumstats.loc[:,"DAF"]))) 
-        if verbose: log.write(" - abs(DAF) max:", np.nanmin(np.abs(sumstats.loc[:,"DAF"])))
-        if verbose: log.write(" - DAF sd:", np.nanstd(sumstats.loc[:,"DAF"])) 
+        if verbose: log.write(" - DAF min:", np.nanmax(sumstats.loc[:,"DAF"]))
+        if verbose: log.write(" - DAF max:", np.nanmin(sumstats.loc[:,"DAF"]))
+        if verbose: log.write(" - DAF sd:", np.nanstd(sumstats.loc[:,"DAF"]))
+        if verbose: log.write(" - abs(DAF) min:", np.nanmin(np.abs(sumstats.loc[:,"DAF"]))) 
+        if verbose: log.write(" - abs(DAF) max:", np.nanmax(np.abs(sumstats.loc[:,"DAF"])))
         if verbose: log.write(" - abs(DAF) sd:", np.nanstd(np.abs(sumstats.loc[:,"DAF"]))) 
         
     return sumstats
