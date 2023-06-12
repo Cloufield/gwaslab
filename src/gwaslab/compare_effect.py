@@ -711,22 +711,41 @@ def reorderLegend(ax=None, order=None, add=None):
 def plotdaf(sumstats,
              eaf="EAF",
              daf="DAF",
-             scatter_args={"s":1},
              threshold=0.16,
              is_reg=True,
              is_45_helper_line=True,
              is_threshold=True,
-             helper_line_args={"color":'black', "linestyle":'-',"lw":1},
-             threshold_line_args={"color":'#cccccc', "linestyle":'dotted'},
-             reg_line_args={"color":'#cccccc', "linestyle":'--'},
-             plt_args={"figsize":(8,4),"dpi":300},
-            histplot_args={"log_scale":(False,True)},
-            fontargs={'family':'sans','fontname':'Arial','fontsize':8},
+             helper_line_args=None,
+             threshold_line_args=None,
+             reg_line_args=None,
+             plt_args=None,
+             scatter_args=None,
+             scatter_args_outlier =None,
+            histplot_args=None,
+            font_args=None,
+            legend1=True,
+            legend2=True,
             verbose=True,
             log=Log()
            ):
-    
-    
+    if font_args is None:
+        font_args={'family':'sans','fontname':'Arial','fontsize':8}
+    if scatter_args is None:
+        scatter_args={"s":1}
+    if scatter_args_outlier is None:
+        scatter_args_outlier={"s":3,"c":"red"}
+    if plt_args is None:
+        plt_args={"figsize":(8,4),"dpi":300}
+    if histplot_args is None:
+        histplot_args={"log_scale":(False,True)}
+    if reg_line_args is None:
+        reg_line_args={"color":'#cccccc', "linestyle":'--'}
+    if threshold_line_args is None:
+        threshold_line_args={"color":'#cccccc', "linestyle":'dotted'}
+    if helper_line_args is None:
+        helper_line_args={"color":'black', "linestyle":'-',"lw":1}
+
+
     if verbose: log.write("Start to plot Reference frequency vs Effect allele frequency plot...")
     if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
         raise ValueError("EAF and/or DAF columns were not detected.")
@@ -740,8 +759,12 @@ def plotdaf(sumstats,
     sumstats.loc[:,"RAF"]=sumstats[eaf] - sumstats[daf]
     sns.set_style("ticks")
     fig, (ax1, ax2) = plt.subplots(1, 2,**plt_args)
-    ax1.scatter(sumstats["RAF"],sumstats[eaf],**scatter_args)
-    
+    ax1.scatter(sumstats["RAF"],sumstats[eaf],label="Non-outlier", **scatter_args)
+    is_outliers = sumstats[daf].abs() > threshold 
+    if sum(is_outliers)>0:
+        ax1.scatter(sumstats.loc[is_outliers, "RAF"],sumstats.loc[is_outliers, eaf],label="Outlier", **scatter_args_outlier)
+    if legend1 ==True:
+        ax1.legend()
     if is_reg is True:
         if verbose: log.write(" -Plotting regression line...")
         reg = ss.linregress(sumstats["RAF"],sumstats[eaf])
@@ -760,16 +783,16 @@ def plotdaf(sumstats,
     yl,yh=ax1.get_ylim()
     if is_45_helper_line is True:
         ax1.axline([0,0], [1,1],zorder=1, **helper_line_args)
-    ax1.set_xlabel("Alternative Allele Frequency in Reference Population (RAF)",**fontargs)
-    ax1.set_ylabel("Effect Allele Frequency in Sumstats (EAF)",**fontargs)
+    ax1.set_xlabel("Alternative Allele Frequency in Reference Population (RAF)",**font_args)
+    ax1.set_ylabel("Effect Allele Frequency in Sumstats (EAF)",**font_args)
     ax1.set_xlim([0,1])
     ax1.set_ylim([0,1])
     
     sumstats.loc[:,"ID"] = sumstats.index
     to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele Frequency')
     
-    sns.histplot(data=to_plot, x="Allele Frequency", hue="Types", fill=True, ax=ax2,**histplot_args)
-    ax2.set_xlabel("Allele Frequency",**fontargs)
+    sns.histplot(data=to_plot, x="Allele Frequency", hue="Types", fill=True, ax=ax2, legend = legend2 ,**histplot_args)
+    ax2.set_xlabel("Allele Frequency",**font_args)
     plt.tight_layout()
     return fig
     
