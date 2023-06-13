@@ -95,7 +95,6 @@ def plot_rg(ldscrg,
 
     df_fill_na = pd.DataFrame(columns=df.columns)
     df_fill_na[[p1,p2]] = [(i,j) for i in df[p1].sort_values(ascending=False).drop_duplicates() for j in df[p2].sort_values(ascending=False).drop_duplicates()]
-    df_fill_na
     # fill diagonal
     df = pd.concat([df,df_fill_reverse,df_fill_dia,df_fill_na],ignore_index=True).sort_values(by=p).drop_duplicates(subset=[p1,p2])
     #if verbose: log.write(" -Dataset shape match:", len(df)==)
@@ -182,7 +181,7 @@ def plot_rg(ldscrg,
     #########patches###########################################
     
     squares=[]
-    panno_list={}
+    panno_list={1:{},2:{}}
     rgtoanno=[]
     
     if verbose: log.write("Full cell : {}-corrected P == {}".format(full_cell[0],full_cell[1]))
@@ -205,28 +204,36 @@ def plot_rg(ldscrg,
                 rgba = convert_rg_to_color(1,cmap)    
             else:    
                 # get the adjusted p value from dict
+                if  xcenter + ycenter < len(df[p1].unique()): 
+                    panno_set=1
+                else:
+                    panno_set=2
                 for i,correction in enumerate(corrections):
                     for j,sig_level in enumerate(sig_levels):
+                        
                         index = len(sig_levels)*i + j
+                        
                         p1p2="_".join(sorted([row[p1],row[p2]]))
-                        raw_p = df_rawp["_".join(sorted([row[p1],row[p2]]))]
+                        
+                        raw_p = df_rawp[p1p2]
                     
                         if correction in ["B","bonferroni ","bon","Bon","b"]:
                             current_threhold = sig_level/len(dfp)
                             if raw_p < current_threhold:
-                                panno_list[p1p2] = [xcenter,ycenter,raw_p,"bon",panno_texts[index]]
+                                panno_list[panno_set][p1p2] = [xcenter,ycenter,raw_p,"bon",panno_texts[index]]
 
                         elif correction in ["fdr","FDR","F","f"]:
-                            adjusted_p = dfp["_".join(sorted([row[p1],row[p2]]))]
+                            adjusted_p = dfp[p1p2]
                             if adjusted_p < sig_level and square is True:
                                 #if square is True, only annotate half 
                                 if xcenter + ycenter < len(df[p1].unique()):
-                                    panno_list[p1p2]=[xcenter,ycenter,adjusted_p,"fdr",panno_texts[index]]
+                                    panno_list[panno_set][p1p2]=[xcenter,ycenter,adjusted_p,"fdr",panno_texts[index]]
                             elif adjusted_p < sig_level:
-                                    panno_list[p1p2]=[xcenter,ycenter,adjusted_p,"fdr",panno_texts[index]]
+                                    panno_list[panno_set][p1p2]=[xcenter,ycenter,adjusted_p,"fdr",panno_texts[index]]
+
                         elif correction == "non":
                             if raw_p < sig_level:
-                                panno_list[p1p2]=[xcenter,ycenter,"raw",raw_p,panno_texts[index]]
+                                panno_list[panno_set][p1p2]=[xcenter,ycenter,"raw",raw_p,panno_texts[index]]
                 
                 # configuring the square 
                 if full_cell[0] == "fdr":
@@ -266,13 +273,15 @@ def plot_rg(ldscrg,
     if panno is True:
         if verbose: log.write("P value annotation text : ")
         for i,correction in enumerate(corrections):
-            
             for j,sig_level in enumerate(sig_levels):
                 index = len(sig_levels)*i + j
                 if verbose: log.write(" -{} : {}-corrected P < {}".format(panno_texts[index], correction, sig_level))
-        for key, i in panno_list.items():
-            ax.text(i[0],i[1],i[4], **panno_default_args)
-
+        for panno_set_number in panno_list.keys():
+            for key, i in panno_list[panno_set_number].items():
+                if panno_set_number == 1:
+                    ax.text(i[0],i[1],i[4], **panno_default_args)
+                else:
+                    ax.text(i[0],i[1],i[4], **panno_default_args)
             
     ## color bar ###############################################
     norm = matplotlib.colors.Normalize(vmin=-1, vmax=1)
