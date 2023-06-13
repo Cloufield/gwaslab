@@ -15,7 +15,7 @@
     
     
       
-        <title>GeneticCorrelation - GWASLab</title>
+        <title>Genetic correlation heatmap (test) - GWASLab</title>
       
     
     
@@ -66,6 +66,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#genetic-correlation-loading-and-plotting" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -94,7 +99,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              GeneticCorrelation
+              Genetic correlation heatmap (test)
             
           </span>
         </div>
@@ -210,13 +215,15 @@
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../Visualization/" class="md-tabs__link">
+      <a href="../Visualization/" class="md-tabs__link md-tabs__link--active">
         Visualization
       </a>
     </li>
@@ -541,12 +548,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
       
       
       
@@ -628,6 +637,61 @@
       <a href="../EffectSize/" class="md-nav__link">
         Effect Size Comparison
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Genetic correlation heatmap (test)
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Genetic correlation heatmap (test)
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#heatmap-genetic-correlation-matrix" class="md-nav__link">
+    Heatmap: Genetic correlation matrix
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -878,6 +942,23 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#heatmap-genetic-correlation-matrix" class="md-nav__link">
+    Heatmap: Genetic correlation matrix
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -891,30 +972,73 @@
                 
 
 
-  <h1>GeneticCorrelation</h1>
+<h1 id="genetic-correlation-loading-and-plotting">Genetic correlation loading and plotting</h1>
+<h2 id="heatmap-genetic-correlation-matrix">Heatmap: Genetic correlation matrix</h2>
+<ul>
+<li><code>p1</code>: <code>string</code>, column name for trait1, defaul: <code>p1</code></li>
+<li><code>p2</code>: <code>string</code>, column name for trait2 defaul: <code>p2</code></li>
+<li><code>rg</code>: <code>string</code>, column name for rg defaul: <code>rg</code></li>
+<li><code>p</code>: <code>string</code>, column name for p defaul: <code>p</code></li>
+<li><code>sig_levels</code>: <code>list</code>, default: <code>[0.05]</code></li>
+<li><code>panno</code>: <code>boolean</code>, default: <code>True</code></li>
+<li><code>corrections</code>: <code>list</code>,<code>non</code> no correction, <code>fdr</code> FDR, <code>bon</code> bonferroni , default: <code>["non","fdr","bom"]</code></li>
+<li><code>panno_texts</code>: <code>list</code>, text to annotate significant correlations, match the number of <code>corrections</code> times the number of <code>sig_levels</code>, default: <code>["*","**","***"]</code></li>
+<li><code>sort_key</code>: <code>function</code>, sort the columns , default: <code>None</code></li>
+<li><code>equal_aspect</code>: <code>`, defaul:</code>True`</li>
+<li><code>fontsize</code>: <code>`, defaul:</code>10`</li>
+<li><code>save</code>: <code>string</code> or <code>boolean</code>, defaul: <code>None</code></li>
+<li><code>save_args</code>: <code>dict</code>, defaul: <code>None</code></li>
+<li><code>full_cell</code>: <code>tuple</code>, threshold for full cell, default: <code>("fdr",0.05)</code></li>
+<li><code>yticklabel_args</code>: <code>dict</code>, default: <code>{"fontsize":10}</code></li>
+<li><code>xticklabel_args</code>: <code>dict</code>, default: <code>{"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":10}</code></li>
+<li><code>colorbar_args</code> :  <code>dict</code> , default:<code>{"shrink":0.82}</code></li>
+<li><code>cmap</code>: <code>cmap</code>, default:<code>matplotlib.cm.get_cmap('RdBu')</code></li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">Simple plot</p>
+<div class="highlight"><pre><span></span><code># load ldsc log files
+ldsc_log_file_list = [&quot;ldscrg.log&quot;] 
 
-<div class="highlight"><pre><span></span><code>#load multiple log
-ldsclist = [&quot;my_ldsc_trait1.log&quot;,&quot;my_ldsc_trait2.log&quot;]
+ldsc = gl.read_ldsc(ldsc_log_file_list, mode=&quot;rg&quot;)
 
-ldsc = gl.read_ldsc(ldsclist,mode=&quot;rg&quot;)
-
-#plot
-
-gl.plot_rg(ldsc,
-            rganno=True,
-            sig_level=0.05,
-            correction=&quot;fdr&quot;,
-            figsize=(5,5),
-            colorbarargs={&quot;shrink&quot;:0.8},
-            panno_args={&quot;size&quot;:15}
-            )
-
-# make the box square
-# plt.gca().set_aspect(&#39;equal&#39;, adjustable=&#39;box&#39;)
-
-# save figure
-# fig[0].savefig(&quot;./my_ldsc_heatmap.png&quot;,dpi=300,bbox_inches=&#39;tight&#39;)
+gl.plot_rg( ldsc )
 </code></pre></div>
+<p><img alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/46ea20c5-5e4d-4ad4-86ea-965f3a953518" /></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Customized plot</p>
+<div class="highlight"><pre><span></span><code># or load from tabular files
+ldsc = pd.read_csv(&quot;toy_data/input_rg.txt&quot;,sep=&quot;\t&quot;)
+ldsc
+#prepare the final dataset
+trait =  pd.read_csv(&quot;toy_data/trait_list.txt&quot;,sep=&quot;\t&quot;)
+trait[&quot;order&quot;] = range(len(trait))
+order = trait[&quot;TRAIT&quot;].values
+trait_set1 = trait.loc[trait[&quot;order&quot;]&gt;=59,&quot;TRAIT&quot;].values
+trait_set2 = trait.loc[trait[&quot;order&quot;]&lt;59,&quot;TRAIT&quot;].values
+ldsc = ldsc.loc[((ldsc[&quot;p1&quot;].isin(trait_set1))&amp;(ldsc[&quot;p2&quot;].isin(trait_set2))) | ((ldsc[&quot;p1&quot;].isin(trait_set2))&amp;(ldsc[&quot;p2&quot;].isin(trait_set1))),:]
+map_dic={order[i]:i+1 for i in range(len(order))}
+key=lambda x:x.map(map_dic)
+
+# plot
+df = gl.plot_rg( ldsc,
+            sig_levels=[0.05],
+            corrections =[&quot;non&quot;],
+            p=&quot;q&quot;,
+            p1=&quot;p2&quot;,
+            p2=&quot;p1&quot;,
+            full_cell=(&quot;non&quot;,0.05),
+            panno_texts=[&quot;*&quot;],
+            fig_args={&quot;figsize&quot;:(15,15),&quot;dpi&quot;:300},
+            colorbar_args={&quot;shrink&quot;:0.4},
+            panno_args={&quot;size&quot;:12,&quot;c&quot;:&quot;black&quot;},fdr_method=&quot;i&quot;,
+            fontsize=8,
+            sort_key=key
+            )
+</code></pre></div>
+<p><img alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/4f6c7dd8-5047-435a-8b08-5346bc168052" /></p>
+<p>sample data source: https://github.com/mkanai/ldsc-corrplot-rg , Kanai, M., Akiyama, M., Takahashi, A., Matoba, N., Momozawa, Y., Ikeda, M., ... &amp; Kamatani, Y. (2018). Genetic analysis of quantitative traits in the     Japanese population links cell types to complex human diseases. Nature genetics, 50(3), 390-400.</p>
+</div>
 
               
             </article>
@@ -924,6 +1048,41 @@ gl.plot_rg(ldsc,
       </main>
       
         <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../EffectSize/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Effect Size Comparison" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Effect Size Comparison
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../ExtractLead/" class="md-footer__link md-footer__link--next" aria-label="Next: Extract Lead Variants" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Extract Lead Variants
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
