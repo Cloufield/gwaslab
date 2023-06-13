@@ -1,0 +1,90 @@
+CATEGORY	TRAIT	COLOR
+Anthropometric	Height	#4C72AE
+Anthropometric	BMI	#4C72AE
+Metabolic	TC	#E4812F
+Metabolic	HDL-C	#E4812F
+Metabolic	LDL-C	#E4812F
+Metabolic	TG	#E4812F
+Metabolic	BS	#E4812F
+Metabolic	HbA1c	#E4812F
+Protein	TP	#8C61B6
+Protein	Alb	#8C61B6
+Protein	NAP	#8C61B6
+Protein	A/G	#8C61B6
+Kidney-related	BUN	#80584E
+Kidney-related	sCr	#80584E
+Kidney-related	eGFR	#80584E
+Kidney-related	UA	#80584E
+Electrolyte	Na	#6BBCCC
+Electrolyte	K	#6BBCCC
+Electrolyte	Cl	#6BBCCC
+Electrolyte	Ca	#6BBCCC
+Electrolyte	P	#6BBCCC
+Liver-related	TBil	#BA2E2C
+Liver-related	ZTT	#BA2E2C
+Liver-related	AST	#BA2E2C
+Liver-related	ALT	#BA2E2C
+Liver-related	ALP	#BA2E2C
+Liver-related	GGT	#BA2E2C
+Other biochemical	APTT	#7F7F7F
+Other biochemical	PT	#7F7F7F
+Other biochemical	Fbg	#7F7F7F
+Other biochemical	CK	#7F7F7F
+Other biochemical	LDH	#7F7F7F
+Other biochemical	CRP	#7F7F7F
+Hematological	WBC	#5AA245
+Hematological	Neutro	#5AA245
+Hematological	Eosino	#5AA245
+Hematological	Baso	#5AA245
+Hematological	Mono	#5AA245
+Hematological	Lym	#5AA245
+Hematological	RBC	#5AA245
+Hematological	Hb	#5AA245
+Hematological	Ht	#5AA245
+Hematological	MCV	#5AA245
+Hematological	MCH	#5AA245
+Hematological	MCHC	#5AA245
+Hematological	Plt	#5AA245
+Blood pressure	SBP	#F3DE67
+Blood pressure	DBP	#F3DE67
+Blood pressure	MAP	#F3DE67
+Blood pressure	PP	#F3DE67
+Echocardiographic	IVS	#CE72BB
+Echocardiographic	PW	#CE72BB
+Echocardiographic	LVDd	#CE72BB
+Echocardiographic	LVDs	#CE72BB
+Echocardiographic	LVM	#CE72BB
+Echocardiographic	LVMI	#CE72BB
+Echocardiographic	RWT	#CE72BB
+Echocardiographic	FS	#CE72BB
+Echocardiographic	EF	#CE72BB
+Metabolic disease	T2D	#FFFFFF
+Cardiovascular disease	IS	#FFFFFF
+Cardiovascular disease	CeAn	#FFFFFF
+Cardiovascular disease	MI	#FFFFFF
+Cardiovascular disease	PAD	#FFFFFF
+Cardiovascular disease	AF	#FFFFFF
+Allergic disease	Asthma	#FFFFFF
+Allergic disease	AD	#FFFFFF
+Autoimmune disease	GD	#FFFFFF
+Autoimmune disease	RA	#FFFFFF
+Infectious disease	CHB	#FFFFFF
+Infectious disease	CHC	#FFFFFF
+Hematologic disease	Anemia	#FFFFFF
+Psychiatric disease	BD	#FFFFFF
+Psychiatric disease	SCZ	#FFFFFF
+Musculoskeletal disease	AIS	#FFFFFF
+Musculoskeletal disease	Osteoporosis	#FFFFFF
+Tumor	LuCa	#FFFFFF
+Tumor	GaCa	#FFFFFF
+Tumor	EsCa	#FFFFFF
+Tumor	CoCa	#FFFFFF
+Tumor	PrCa	#FFFFFF
+Tumor	BrCa	#FFFFFF
+Tumor	EnCa	#FFFFFF
+Other	UF	#FFFFFF
+Other	Glaucoma	#FFFFFF
+Other	COPD	#FFFFFF
+Other	Epilepsy	#FFFFFF
+Other	Pollinosis	#FFFFFF
+Other	Urolithiasis	#FFFFFF
