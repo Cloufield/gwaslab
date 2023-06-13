@@ -47,6 +47,8 @@ def plot_rg(ldscrg,
         fig_args=None,
         xticklabel_args=None,
         yticklabel_args=None,
+        fdr_method="i",
+        fontsize=10,
         save=None,
         save_args=None):
     
@@ -57,9 +59,9 @@ def plot_rg(ldscrg,
     if colorbar_args is None:
         colorbar_args={"shrink":0.82}
     if yticklabel_args is None:
-        yticklabel_args={"fontsize":15}
+        yticklabel_args={"fontsize":fontsize}
     if xticklabel_args is None:    
-        xticklabel_args={"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":15}
+        xticklabel_args={"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":fontsize}
     if sig_levels is None:
         sig_levels = [0.05]
     if corrections is None:
@@ -116,9 +118,9 @@ def plot_rg(ldscrg,
     
     #if correction=="fdr":
         # fdr corrected p
-    dfp["fdr_p"]=fdrcorrection(dfp[p],alpha=1)[1]
+    dfp["fdr_p"]=fdrcorrection(dfp[p],alpha=1,method=fdr_method)[1]
         # is fdr < sig_level
-    dfp["fdr"]=fdrcorrection(dfp[p],alpha=0.05)[0]
+    dfp["fdr"]=fdrcorrection(dfp[p],alpha=0.05,method=fdr_method)[0]
     if verbose: log.write(" -Significant correlations with FDR <0.05:",sum(dfp["fdr"]))
         # convert to dict for annotation and plotting
     df_rawp = dfp.set_index("p1p2").loc[:,p].to_dict()
@@ -189,12 +191,14 @@ def plot_rg(ldscrg,
     for i,row in df.iterrows():
         xcenter=row["x"]
         ycenter=row["y"]
+
         if np.isnan(row[rg]):
             width=1
             x=xcenter-width/2
             y=ycenter-width/2
             ax.plot([x,x+width],[y,y+width],c="grey")
             ax.plot([x,x+width],[y+width,y],c="grey")
+        
         else:
             if row[p1]==row[p2]:
                 # diagonal line
@@ -264,7 +268,7 @@ def plot_rg(ldscrg,
             ax.text(i[0],i[1],"{:.3f}".format(i[2]),color=i[3],weight="bold",ha="center", va="center",font="Arial")
     
     # configure args for p annotation
-    panno_default_args={"size":asize,"color":"white","weight":"bold","ha":"center","va":"center","font":"Arial"}
+    panno_default_args={"size":asize,"color":"white","weight":"bold","horizontalalignment":"center","verticalalignment":"center_baseline","font":"Arial"}
     if panno_args is not None:
         for key, value in panno_args.items():
             panno_default_args[key] = value
@@ -279,9 +283,9 @@ def plot_rg(ldscrg,
         for panno_set_number in panno_list.keys():
             for key, i in panno_list[panno_set_number].items():
                 if panno_set_number == 1:
-                    ax.text(i[0],i[1],i[4], **panno_default_args)
+                    ax.text(i[0],i[1]-0.1,i[4], **panno_default_args)
                 else:
-                    ax.text(i[0],i[1],i[4], **panno_default_args)
+                    ax.text(i[0],i[1]-0.1,i[4], **panno_default_args)
             
     ## color bar ###############################################
     norm = matplotlib.colors.Normalize(vmin=-1, vmax=1)
@@ -299,5 +303,5 @@ def plot_rg(ldscrg,
             fig.savefig(save,bbox_inches="tight",**save_args)
             log.write(" -Saved to "+ save + " successfully!" )
     if verbose: log.write("Finished creating ldsc genetic correlation heatmap!")
-    return fig,ax,log
+    return fig,ax,log,df
     
