@@ -17,7 +17,7 @@ def convert_p_to_width(p,sig_level):
         #scaled using mlog10(p)
         return max(-np.log10(p)/width_factor,0.1)
 
-def conver_rg_to_color(rg,cmap):
+def convert_rg_to_color(rg,cmap):
     #(1,1)
     if rg>1: rg=1
     if rg<-1: rg=-1
@@ -25,48 +25,116 @@ def conver_rg_to_color(rg,cmap):
 ####################################################################################################
 
 def plot_rg(ldscrg,
-        p1="p1",p2="p2",rg="rg",p="p",
-        sig_level=0.05,
+        p1="p1",
+        p2="p2",
+        rg="rg",
+        p="p",
+        sig_levels=None,
         rganno=False,
-        correction="",
+        panno=True,
+        corrections=None,
+        panno_texts=None,
+        equal_aspect=True,
         cmap = matplotlib.cm.get_cmap('RdBu'),
+        full_cell =None,
         log=Log(),
         panno_args=None,
         verbose=True,
         asize=10,
         sort_key=None,
         square=False,
-        colorbarargs={"shrink":0.82},
-        **args):
+        colorbar_args=None,
+        fig_args=None,
+        xticklabel_args=None,
+        yticklabel_args=None,
+        save=None,
+        save_args=None):
     
-    if verbose: log.write("Total non-NA records:",len(ldscrg.dropna(subset=[p])))
+    if verbose: log.write("Start to create ldsc genetic correlation heatmap...")
+    # configure arguments
+    if fig_args is None:
+        fig_args = {"dpi":300}
+    if colorbar_args is None:
+        colorbar_args={"shrink":0.82}
+    if yticklabel_args is None:
+        yticklabel_args={"fontsize":15}
+    if xticklabel_args is None:    
+        xticklabel_args={"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":15}
+    if sig_levels is None:
+        sig_levels = [0.05]
+    if corrections is None:
+        corrections = ["non", "fdr","bon"]
+    if panno_texts is None:
+        panno_texts = ["*"*(i+1) for i in range(len(sig_levels)*len(corrections))]
+    if full_cell is None:
+        full_cell = ("fdr",0.05)
+    
+    #drop na records in P column 
+    if verbose: log.write("Raw dataset records:",len(ldscrg))
     df=ldscrg.dropna(subset=[p]).copy()
+    
+    if verbose: log.write(" -Raw dataset non-NA records:",len(df))
+    # create unique pair column
     df["p1p2"]=df.apply(lambda x:"_".join(sorted([x[p1],x[p2]])),axis=1)
     
+    if verbose: log.write("Filling diagnal line and duplicated pair for plotting...")
+    # fill na
+    df_fill_reverse = df.loc[(df[p2].isin(df[p1].values)) & (df[p1].isin(df[p2].values)),:].copy()
+    df_fill_reverse = df_fill_reverse.rename(columns={p1:p2,p2:p1})
+    
+    # fill dia
+    df_fill_dia = pd.DataFrame(columns=df.columns)
+    p1_dup_list = list(df.loc[(df[p2].isin(df[p1].values)),"p2"].values)
+    p2_dup_list = list(df.loc[(df[p1].isin(df[p2].values)),"p1"].values)
+    p_dup_list = p2_dup_list + p1_dup_list
+    if len(set(p_dup_list)) > 0:
+        if verbose: log.write(" -Diagnal records:", len(set(p_dup_list)))
+    df_fill_dia["p1"] = p_dup_list
+    df_fill_dia["p2"] = df_fill_dia["p1"] 
+    df_fill_dia["rg"] = 1
+
+    df_fill_na = pd.DataFrame(columns=df.columns)
+    df_fill_na[[p1,p2]] = [(i,j) for i in df[p1].sort_values(ascending=False).drop_duplicates() for j in df[p2].sort_values(ascending=False).drop_duplicates()]
+    df_fill_na
+    # fill diagonal
+    df = pd.concat([df,df_fill_reverse,df_fill_dia,df_fill_na],ignore_index=True).sort_values(by=p).drop_duplicates(subset=[p1,p2])
+    #if verbose: log.write(" -Dataset shape match:", len(df)==)
+    #
+    ## remove record with p1 = p2, dropna in P column
     dfp=ldscrg.loc[ldscrg[p1]!=ldscrg[p2],:].dropna(subset=[p]).copy()
+    
+    ## create pair column
     dfp["p1p2"]=dfp.apply(lambda x:"_".join(sorted([x[p1],x[p2]])),axis=1)
+    
+    ## drop duplicate and keep only unique pairs 
     dfp = dfp.drop_duplicates(subset=["p1p2"]).copy()
     
-    if verbose: log.write("Valid unique records:",len(dfp))
-    if verbose: log.write("Significant correlations after Bonferroni correction:",sum(dfp[p]<0.05/len(dfp)))
+    if verbose: log.write("Valid unique trait pairs:",len(dfp))
+    if verbose: log.write(" -Valid unique trait1:",dfp["p1"].nunique())
+    if verbose: log.write(" -Valid unique trait2:",dfp["p2"].nunique())
+    if verbose: log.write(" -Significant correlations with P < 0.05:",sum(dfp[p]<0.05))
+    if verbose: log.write(" -Significant correlations after Bonferroni correction:",sum(dfp[p]<(0.05/len(dfp))))
     
-    if correction=="fdr":
-        dfp["fdr_p"]=fdrcorrection(dfp[p],alpha=1)[1]
-        
-        dfp["fdr"]=fdrcorrection(dfp[p],alpha=sig_level)[0]
-        if verbose: log.write("Significant correlations after FDR correction:",sum(dfp["fdr"]))
-        dfp=dfp.set_index("p1p2").loc[:,"fdr_p"].to_dict()
-        
-    else:
-        dfp=dfp.set_index("p1p2").loc[:,p].to_dict()
-        
+    #if correction=="fdr":
+        # fdr corrected p
+    dfp["fdr_p"]=fdrcorrection(dfp[p],alpha=1)[1]
+        # is fdr < sig_level
+    dfp["fdr"]=fdrcorrection(dfp[p],alpha=0.05)[0]
+    if verbose: log.write(" -Significant correlations with FDR <0.05:",sum(dfp["fdr"]))
+        # convert to dict for annotation and plotting
+    df_rawp = dfp.set_index("p1p2").loc[:,p].to_dict()
+    dfp = dfp.set_index("p1p2").loc[:,"fdr_p"].to_dict()
+
     #########ticks dict###########################################   
     dic_p1={}
     dic_p2={}
+    
     dic_p1_r={}
     dic_p2_r={}
     
+    ## sort position 
     if sort_key is None:
+        # alphabetic order
         for i,p1_name in enumerate(df[p1].sort_values(ascending=False).drop_duplicates()):
             dic_p1[p1_name]  = i
             dic_p1_r[i] = p1_name
@@ -74,6 +142,7 @@ def plot_rg(ldscrg,
             dic_p2[p2_name]  = i
             dic_p2_r[i] = p2_name
     else:
+        # user-provided order
         for i,p1_name in enumerate(df[p1].sort_values(ascending=False,key=sort_key).drop_duplicates()):
             dic_p1[p1_name]  = i
             dic_p1_r[i] = p1_name
@@ -81,14 +150,17 @@ def plot_rg(ldscrg,
             dic_p2[p2_name]  = i
             dic_p2_r[i] = p2_name
 
+    # assign coordinate
     df["y"]=df[p1].map(dic_p1)
     df["y_x"]=df[p1].map(dic_p2)
     df["x"]=df[p2].map(dic_p2)
     df["x_y"]=df[p2].map(dic_p1)
     
-    if verbose: log.write("Plotting...")
+    if verbose: log.write("Plotting heatmap...")
     ########ticks###############################################
-    fig,ax = plt.subplots(dpi=300,**args)
+    fig,ax = plt.subplots(**fig_args)
+    
+    # configure x/y ticks
     xticks=df["x"].sort_values().drop_duplicates().astype(int)
     yticks=df["y"].sort_values().drop_duplicates().astype(int)  
     ax.xaxis.tick_top()
@@ -103,61 +175,77 @@ def plot_rg(ldscrg,
     ax.tick_params('both', length=0, width=0, which='minor')
     
     #labels
-    ax.set_yticklabels(yticks.map(dic_p1_r),fontsize=15)
-    ax.set_xticklabels(xticks.map(dic_p2_r),rotation=45,horizontalalignment="left", verticalalignment="bottom",fontsize=15)
-    
-    width_max=1
+    ax.set_yticklabels(yticks.map(dic_p1_r),**yticklabel_args)
 
+    ax.set_xticklabels(xticks.map(dic_p2_r),**xticklabel_args)
     
     #########patches###########################################
     
     squares=[]
-    panno=[]
+    panno_list={}
     rgtoanno=[]
-    maxsigp=sig_level
     
-    #if correction=="fdr":
-    #    if len(df.loc[df["fdr"]==True,p])>=1:
-    #        maxsigp = df.loc[df["fdr"]==True,p].max()*1.0001
-    #        
-    #    else:
-    #        maxsigp = sig_level/len(df.dropna(subset=[p]))
-    if correction=="fdr":
-        p="fdr_p"
-    
-        
+    if verbose: log.write("Full cell : {}-corrected P == {}".format(full_cell[0],full_cell[1]))
+
     for i,row in df.iterrows():
         xcenter=row["x"]
         ycenter=row["y"]
-        if row[p1]==row[p2]:
+        if np.isnan(row[rg]):
             width=1
             x=xcenter-width/2
             y=ycenter-width/2
-            rgba = conver_rg_to_color(1,cmap)
+            ax.plot([x,x+width],[y,y+width],c="grey")
+            ax.plot([x,x+width],[y+width,y],c="grey")
+        else:
+            if row[p1]==row[p2]:
+                # diagonal line
+                width=1
+                x=xcenter-width/2
+                y=ycenter-width/2
+                rgba = convert_rg_to_color(1,cmap)    
+            else:    
+                # get the adjusted p value from dict
+                for i,correction in enumerate(corrections):
+                    for j,sig_level in enumerate(sig_levels):
+                        index = len(sig_levels)*i + j
+                        p1p2="_".join(sorted([row[p1],row[p2]]))
+                        raw_p = df_rawp["_".join(sorted([row[p1],row[p2]]))]
+                    
+                        if correction in ["B","bonferroni ","bon","Bon","b"]:
+                            current_threhold = sig_level/len(dfp)
+                            if raw_p < current_threhold:
+                                panno_list[p1p2] = [xcenter,ycenter,raw_p,"bon",panno_texts[index]]
+
+                        elif correction in ["fdr","FDR","F","f"]:
+                            adjusted_p = dfp["_".join(sorted([row[p1],row[p2]]))]
+                            if adjusted_p < sig_level and square is True:
+                                #if square is True, only annotate half 
+                                if xcenter + ycenter < len(df[p1].unique()):
+                                    panno_list[p1p2]=[xcenter,ycenter,adjusted_p,"fdr",panno_texts[index]]
+                            elif adjusted_p < sig_level:
+                                    panno_list[p1p2]=[xcenter,ycenter,adjusted_p,"fdr",panno_texts[index]]
+                        elif correction == "non":
+                            if raw_p < sig_level:
+                                panno_list[p1p2]=[xcenter,ycenter,"raw",raw_p,panno_texts[index]]
+                
+                # configuring the square 
+                if full_cell[0] == "fdr":
+                    width= convert_p_to_width(adjusted_p,full_cell[1])
+                elif full_cell[0] == "bon":
+                    width= convert_p_to_width(raw_p*len(dfp),full_cell[1])
+                else:
+                    width= convert_p_to_width(raw_p,full_cell[1])
+
+                x=xcenter-width/2
+                y=ycenter-width/2           
+                rgba = convert_rg_to_color(row[rg],cmap)
+                if xcenter + ycenter > len(df[p1].unique())-1 and (square is True) and (rganno is True):
+                    rgtoanno.append([xcenter,ycenter,row[rg],rgba])  
             
-        else:    
-            adjusted_p = dfp["_".join(sorted([row[p1],row[p2]]))]
-            if adjusted_p<0.05 and square is True:
-                if xcenter + ycenter < len(df[p1].unique()):
-                    panno.append([xcenter,ycenter,adjusted_p])
-            elif adjusted_p<0.05:
-                panno.append([xcenter,ycenter,adjusted_p])
-            
-            width= convert_p_to_width(adjusted_p,sig_level)    
-            x=xcenter-width/2
-            y=ycenter-width/2           
-            rgba = conver_rg_to_color(row[rg],cmap)
-            
-            if xcenter + ycenter > len(df[p1].unique())-1 and (square is True) and (rganno is True):
-                rgtoanno.append([xcenter,ycenter,row[rg],rgba])  
-        
-        if xcenter + ycenter < len(df[p1].unique()) and (square is True) and (rganno is True):
-            squares.append(patches.Rectangle((x,y),width=width,height=width,fc=rgba,ec="white",lw=0))  
-        elif (square is not True):
-            squares.append(patches.Rectangle((x,y),width=width,height=width,fc=rgba,ec="white",lw=0))  
-    
-    
-    
+            if xcenter + ycenter < len(df[p1].unique()) and (square is True) and (rganno is True):
+                squares.append(patches.Rectangle((x,y),width=width,height=width,fc=rgba,ec="white",lw=0))  
+            elif (square is not True):
+                squares.append(patches.Rectangle((x,y),width=width,height=width,fc=rgba,ec="white",lw=0))  
     
     squares_collection = matplotlib.collections.PatchCollection(squares,match_original=True)
     ax.add_collection(squares_collection)       
@@ -168,23 +256,39 @@ def plot_rg(ldscrg,
             if i[2]<-1: i[2]=-1
             ax.text(i[0],i[1],"{:.3f}".format(i[2]),color=i[3],weight="bold",ha="center", va="center",font="Arial")
     
-    
-    
+    # configure args for p annotation
     panno_default_args={"size":asize,"color":"white","weight":"bold","ha":"center","va":"center","font":"Arial"}
     if panno_args is not None:
         for key, value in panno_args.items():
             panno_default_args[key] = value
 
-    for i in panno:
-        if i[2]<sig_level/len(dfp):
-            ax.text(i[0],i[1],"**", **panno_default_args)
-        else:
-            ax.text(i[0],i[1],"*", **panno_default_args)
+    # annotate p
+    if panno is True:
+        if verbose: log.write("P value annotation text : ")
+        for i,correction in enumerate(corrections):
+            
+            for j,sig_level in enumerate(sig_levels):
+                index = len(sig_levels)*i + j
+                if verbose: log.write(" -{} : {}-corrected P < {}".format(panno_texts[index], correction, sig_level))
+        for key, i in panno_list.items():
+            ax.text(i[0],i[1],i[4], **panno_default_args)
 
             
     ## color bar ###############################################
     norm = matplotlib.colors.Normalize(vmin=-1, vmax=1)
-    fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, **colorbarargs)
+    fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, **colorbar_args)
 
+    if equal_aspect is True:
+        ax.set_aspect('equal', adjustable='box')
+
+    if save:
+        if verbose: log.write("Saving plot:")
+        if save==True:
+            fig.savefig("./ldscrg_heatmap.png",bbox_inches="tight",**save_args)
+            log.write(" -Saved to "+ "./ldscrg_heatmap.png" + " successfully!" )
+        else:
+            fig.savefig(save,bbox_inches="tight",**save_args)
+            log.write(" -Saved to "+ save + " successfully!" )
+    if verbose: log.write("Finished creating ldsc genetic correlation heatmap!")
     return fig,ax,log
     
