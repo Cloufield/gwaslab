@@ -1,25 +1,24 @@
-# Genetic correlation matrix
-
+# Genetic correlation loading and plotting
 ## Heatmap: Genetic correlation matrix
 
-`p1`: `string`, column name for trait1, defaul: `p1`
-`p2`: `string`, column name for trait2 defaul: `p2`
-`rg`: `string`, column name for rg defaul: `rg`
-`p`: `string`, column name for p defaul: `p`
-`sig_levels`: `list`, default: `[0.05]`
-`panno`: `boolean`, default: `True`
-`corrections`: `list`,`non` no correction, `fdr` FDR, `bon` bonferroni , default: `["non","fdr","bom"]`
-`panno_texts`: `list`, text to annotate significant correlations, match the number of `corrections` times the number of `sig_levels`, default: `["*","**","***"]`
-`sort_key`: `function`, sort the columns , default: `None`
-`equal_aspect`: ``, defaul: `True`
-`fontsize`: ``, defaul: `10`
-`save`: `string` or `boolean`, defaul: `None`
-`save_args`: `dict`, defaul: `None`
-`full_cell`: `tuple`, threshold for full cell, default: `("fdr",0.05)`
-`yticklabel_args`: `dict`, default: `{"fontsize":10}`
-`xticklabel_args`: `dict`, default: `{"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":10}`
-`colorbar_args` :  `dict` , default:`{"shrink":0.82}`
-`cmap`: `cmap`, default:`matplotlib.cm.get_cmap('RdBu')`
+- `p1`: `string`, column name for trait1, defaul: `p1`
+- `p2`: `string`, column name for trait2 defaul: `p2`
+- `rg`: `string`, column name for rg defaul: `rg`
+- `p`: `string`, column name for p defaul: `p`
+- `sig_levels`: `list`, default: `[0.05]`
+- `panno`: `boolean`, default: `True`
+- `corrections`: `list`,`non` no correction, `fdr` FDR, `bon` bonferroni , default: `["non","fdr","bom"]`
+- `panno_texts`: `list`, text to annotate significant correlations, match the number of `corrections` times the number of `sig_levels`, default: `["*","**","***"]`
+- `sort_key`: `function`, sort the columns , default: `None`
+- `equal_aspect`: ``, defaul: `True`
+- `fontsize`: ``, defaul: `10`
+- `save`: `string` or `boolean`, defaul: `None`
+- `save_args`: `dict`, defaul: `None`
+- `full_cell`: `tuple`, threshold for full cell, default: `("fdr",0.05)`
+- `yticklabel_args`: `dict`, default: `{"fontsize":10}`
+- `xticklabel_args`: `dict`, default: `{"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":10}`
+- `colorbar_args` :  `dict` , default:`{"shrink":0.82}`
+- `cmap`: `cmap`, default:`matplotlib.cm.get_cmap('RdBu')`
 
 !!! example "Simple plot"
     ```
@@ -30,6 +29,8 @@
     
     gl.plot_rg( ldsc )
     ```
+    
+    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/46ea20c5-5e4d-4ad4-86ea-965f3a953518)
 
 !!! example "Customized plot"
     ```
@@ -63,4 +64,6 @@
                 )
     ```
     
+    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/4f6c7dd8-5047-435a-8b08-5346bc168052)
+
     sample data source: https://github.com/mkanai/ldsc-corrplot-rg , Kanai, M., Akiyama, M., Takahashi, A., Matoba, N., Momozawa, Y., Ikeda, M., ... & Kamatani, Y. (2018). Genetic analysis of quantitative traits in the     Japanese population links cell types to complex human diseases. Nature genetics, 50(3), 390-400.
