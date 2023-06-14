@@ -1,6 +1,5 @@
 Scatter & Distribution plot : allele frequency comparison
 
-
 Available from v3.4.15
 
 ```
@@ -13,6 +12,7 @@ For check_af, see here.
 
 Options for `plot_daf`:
 `threshold`: `float`, the threshold used to determine outliers.
+
 
 !!! example
     ```
@@ -32,13 +32,19 @@ Options for `plot_daf`:
     # harmonize
     mysumstats.harmonize(basic_check = True, 
                          ref_seq=gl.get_path("ucsc_genome_hg19"))
+    ```
     
+    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/dc3716d6-1b85-42dd-99ca-d0a38a3ad6a1)
+
+    ```
     # check the difference in allele frequency with reference vcf
     mysumstats.check_af(ref_infer=gl.get_path("1kg_eas_hg19"), 
                         ref_alt_freq="AF",
                         n_cores=2)
     ```
     
+    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/8cdc53b4-f661-40d6-a61b-ab5f23af6a4c)
+
     ```
     plot and get the outliers
     outliers = mysumstats.plot_daf(threshold=0.12, 
@@ -46,6 +52,11 @@ Options for `plot_daf`:
                                     save_args={"dpi":300})
     ```
     
+    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/0e9c92d4-3bea-4734-8ba6-76f7fc6e329b)
+
     ```
     outliers[1]
     ```
+    
+    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/c99d91cb-f1f8-4412-bfbf-960457fc9d0e)
+
