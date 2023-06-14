@@ -30,7 +30,7 @@ def plot_rg(ldscrg,
         rg="rg",
         p="p",
         sig_levels=None,
-        rganno=False,
+        rganno="non",
         panno=True,
         corrections=None,
         panno_texts=None,
@@ -39,6 +39,7 @@ def plot_rg(ldscrg,
         full_cell =None,
         log=Log(),
         panno_args=None,
+        rganno_args=None,
         verbose=True,
         asize=10,
         sort_key=None,
@@ -59,9 +60,9 @@ def plot_rg(ldscrg,
     if colorbar_args is None:
         colorbar_args={"shrink":0.82}
     if yticklabel_args is None:
-        yticklabel_args={"fontsize":fontsize}
+        yticklabel_args={"fontsize":fontsize, "fontfamily":"Arial"}
     if xticklabel_args is None:    
-        xticklabel_args={"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":fontsize}
+        xticklabel_args={"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":fontsize, "fontfamily":"Arial"}
     if sig_levels is None:
         sig_levels = [0.05]
     if corrections is None:
@@ -70,6 +71,8 @@ def plot_rg(ldscrg,
         panno_texts = ["*"*(i+1) for i in range(len(sig_levels)*len(corrections))]
     if full_cell is None:
         full_cell = ("fdr",0.05)
+    if rganno_args is None:
+        rganno_args ={}
     
     #drop na records in P column 
     if verbose: log.write("Raw dataset records:",len(ldscrg))
@@ -250,22 +253,35 @@ def plot_rg(ldscrg,
                 x=xcenter-width/2
                 y=ycenter-width/2           
                 rgba = convert_rg_to_color(row[rg],cmap)
-                if xcenter + ycenter > len(df[p1].unique())-1 and (square is True) and (rganno is True):
+                if xcenter + ycenter > len(df[p1].unique())-1 and (square is True) and (rganno == "half"):
+                    rgtoanno.append([xcenter,ycenter,row[rg],rgba])  
+                elif "full" in rganno:
                     rgtoanno.append([xcenter,ycenter,row[rg],rgba])  
             
-            if xcenter + ycenter < len(df[p1].unique()) and (square is True) and (rganno is True):
-                squares.append(patches.Rectangle((x,y),width=width,height=width,fc=rgba,ec="white",lw=0))  
-            elif (square is not True):
-                squares.append(patches.Rectangle((x,y),width=width,height=width,fc=rgba,ec="white",lw=0))  
+            #if xcenter + ycenter < len(df[p1].unique()) and (square is True) and (rganno == "half"):
+            #    squares.append(patches.Rectangle((x,y),width=width,height=width,fc=rgba,ec="white",lw=0))  
+            #elif (square is not True):
+            if ("nb" not in rganno):
+                if rganno == "half":
+                    if xcenter + ycenter < len(df[p1].unique()) and (square is True):
+                        squares.append(patches.Rectangle((x,y),width=width,height=width,fc=rgba,ec="white",lw=0))  
+                else:
+                    squares.append(patches.Rectangle((x,y),width=width,height=width,fc=rgba,ec="white",lw=0))
     
     squares_collection = matplotlib.collections.PatchCollection(squares,match_original=True)
     ax.add_collection(squares_collection)       
     
     if rganno is not False:
+        rganno_default_args = {"weight":"bold","ha":"center", "va":"center", "fontfamily":"Arial","fontsize":fontsize}
+        for key, value in rganno_args.items():
+            rganno_default_args[key] = value
         for i in rgtoanno:
             if i[2]>1: i[2]=1
             if i[2]<-1: i[2]=-1
-            ax.text(i[0],i[1],"{:.3f}".format(i[2]),color=i[3],weight="bold",ha="center", va="center",font="Arial")
+            if "color" in rganno_default_args.keys() or "c" in rganno_default_args.keys():
+                ax.text(i[0],i[1],"{:.3f}".format(i[2]),**rganno_default_args)
+            else:
+                ax.text(i[0],i[1],"{:.3f}".format(i[2]),color=i[3],**rganno_default_args)
     
     # configure args for p annotation
     panno_default_args={"size":asize,"color":"white","weight":"bold","horizontalalignment":"center","verticalalignment":"center_baseline","font":"Arial"}
