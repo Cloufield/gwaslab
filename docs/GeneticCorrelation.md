@@ -1,6 +1,8 @@
 # Genetic correlation loading and plotting
 ## Heatmap: Genetic correlation matrix
 
+Available since v3.4.15
+
 ```
 gl.plot_rg()
 ```
