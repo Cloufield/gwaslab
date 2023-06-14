@@ -1,5 +1,6 @@
 import pickle
 import os
+import gc
 from gwaslab.Log import Log 
 
 def dump_pickle(glsumstats,path="~/mysumstats.pickle",overwrite=False):
@@ -20,3 +21,14 @@ def load_pickle(path):
             return glsumstats
     else:
         Log().write("File not exists : ", path)
+
+def load_data_from_pickle(path,usecols=None):
+    data = load_pickle(path).data
+    existing_cols = []
+    if usecols is not None:
+        for i in usecols:
+            if i in data.columns:
+                existing_cols.append(i)
+        data = data.loc[:,existing_cols]
+        gc.collect()
+    return data

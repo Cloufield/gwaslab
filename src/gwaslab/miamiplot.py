@@ -37,7 +37,7 @@ from gwaslab.quickfix import _quick_assign_highlight_hue_pair
 from gwaslab.quickfix import _quick_assign_marker_relative_size
 from gwaslab.annotateplot import annotate_pair
 from gwaslab.to_pickle import load_pickle
-
+from gwaslab.to_pickle import load_data_from_pickle
 def plot_miami( 
           path1,
           path2,
@@ -113,6 +113,10 @@ def plot_miami(
           log=Log()
           ):
     ## figuring arguments ###########################################################################################################
+    if cols1 is None:
+        cols1 = ["CHR","POS","P"]
+    if cols2 is None:
+        cols2 = ["CHR","POS","P"]
     if highlight is None:
         highlight  = list()
     if highlight1 is None:
@@ -165,9 +169,10 @@ def plot_miami(
         titles=["",""]
     if titles_pad is None:
         titles_pad=[0.2,0.2]
-    
-    
-    
+    if type(mode) is str:
+        modes =[ mode, mode]
+    else:
+        modes = mode
     
     if verbose: log.write("Start to plot miami plot with the following basic settings:")
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
@@ -194,21 +199,20 @@ def plot_miami(
     pos="POS"
     
     ## load sumstats1 ###########################################################################################################
-    if verbose: log.write(" -Loading sumstats1:" + path1)
+    if verbose: log.write(" -Loading sumstats1 ({} mode):".format(modes[0]) + path1)
     if verbose: log.write(" -Sumstats1 CHR,POS,P information will be obtained from:",cols1)
-    if mode=="txt":
-        sumstats1 = pd.read_csv(path1,sep=sep[0],usecols=cols1,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
+    if modes[0]=="pickle":
+        sumstats1 = load_data_from_pickle(path1,usecols=cols1)
     else:
-        sumstats1 = load_pickle(path1).data 
-    
+        sumstats1 = pd.read_csv(path1,sep=sep[0],usecols=cols1,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
 
     ## load sumstats2 ###########################################################################################################
-    if verbose: log.write(" -Loading sumstats2:" + path2)
+    if verbose: log.write(" -Loading sumstats2 ({} mode):".format(modes[1]) + path2)
     if verbose: log.write(" -Sumstats2 CHR,POS,P information will be obtained from:",cols2)
-    if mode=="txt":
-        sumstats2 = pd.read_csv(path2,sep=sep[1],usecols=cols2,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
+    if modes[1]=="pickle":
+        sumstats2 = load_data_from_pickle(path2,usecols=cols2) 
     else:
-        sumstats2 = load_pickle(path2).data 
+        sumstats2 = pd.read_csv(path2,sep=sep[1],usecols=cols2,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args) 
 
     sumstats1 = sumstats1.rename(columns={cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"})
     sumstats1 = _quick_fix(sumstats1,chr_dict=chr_dict1, scaled=scaled1, verbose=verbose, log=log)
