@@ -712,7 +712,10 @@ def plotdaf(sumstats,
              eaf="EAF",
              daf="DAF",
              threshold=0.16,
+             xlabel="Alternative Allele Frequency in Reference Population (RAF)",
+             ylabel="Effect Allele Frequency in Sumstats (EAF)",
              is_reg=True,
+             r2=True,
              is_45_helper_line=True,
              is_threshold=True,
              helper_line_args=None,
@@ -721,12 +724,15 @@ def plotdaf(sumstats,
              plt_args=None,
              scatter_args=None,
              scatter_args_outlier =None,
-            histplot_args=None,
-            font_args=None,
-            legend1=True,
-            legend2=True,
-            verbose=True,
-            log=Log()
+             histplot_args=None,
+             font_args=None,
+             r2_args=None,
+             legend1=True,
+             legend2=True,
+             save=False,
+             save_args=None,
+             verbose=True,
+             log=Log()
            ):
     
     if font_args is None:
@@ -745,14 +751,27 @@ def plotdaf(sumstats,
         threshold_line_args={"color":'#cccccc', "linestyle":'dotted'}
     if helper_line_args is None:
         helper_line_args={"color":'black', "linestyle":'-',"lw":1}
+    if r2_args is None:
+        r2_args = {"va":"bottom","ha":"right"}
 
 
     if verbose: log.write("Start to plot Reference frequency vs Effect allele frequency plot...")
     if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
         raise ValueError("EAF and/or DAF columns were not detected.")
     
+    if "SNPID" in sumstats.columns:
+        snpid = "SNPID"
+    else:
+        snpid = "rsID"
     
-    sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[eaf,daf]].copy()
+    alleles =[]
+    if "EA" in sumstats.columns:
+        alleles.append("EA")
+    if "NEA" in sumstats.columns:
+        alleles.append("NEA")
+    
+
+    sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[snpid,eaf,daf]+alleles].copy()
     sumstats.loc[:,daf] = sumstats.loc[:,daf].astype("float")
     sumstats.loc[:,eaf] = sumstats.loc[:,eaf].astype("float")
     if verbose: log.write(" -Plotting valriants:" + str(len(sumstats)))
@@ -777,7 +796,9 @@ def plotdaf(sumstats,
         if verbose:log.write(" -Intercept = ", reg[1])
         if verbose:log.write(" -R2 = ", reg[2])
         ax1.axline(xy1=(0,reg[1]),slope=reg[0],zorder=1,**reg_line_args)
-    
+        if r2 is True:
+            ax1.text(0.98,0.02, "$R^2 = {:.3f}$".format(reg[2]), transform=ax1.transAxes, **r2_args)
+
     if is_threshold is True:
         if verbose: log.write(" -Threshold : " + str(threshold))
         num = sum(np.abs(sumstats[daf])>threshold )
@@ -792,19 +813,31 @@ def plotdaf(sumstats,
     if is_45_helper_line is True:
         ax1.axline([0,0], [1,1],zorder=1, **helper_line_args)
     
-    ax1.set_xlabel("Alternative Allele Frequency in Reference Population (RAF)",**font_args)
-    ax1.set_ylabel("Effect Allele Frequency in Sumstats (EAF)",**font_args)
+    ax1.set_xlabel(xlabel,**font_args)
+    ax1.set_ylabel(ylabel,**font_args)
     ax1.set_xlim([0,1])
     ax1.set_ylim([0,1])
     
+
     sumstats.loc[:,"ID"] = sumstats.index
     
     to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele Frequency')
     
     sns.histplot(data=to_plot, x="Allele Frequency", hue="Types", fill=True, ax=ax2, legend = legend2 ,**histplot_args)
     ax2.set_xlabel("Allele Frequency",**font_args)
+
+
     plt.tight_layout()
-    return fig
+    if save:
+        if verbose: log.write("Saving plot:")
+        if save==True:
+            fig.savefig("./allele_frequency_comparison.png",bbox_inches="tight",**save_args)
+            log.write(" -Saved to "+ "./allele_frequency_comparison.png" + " successfully!" )
+        else:
+            fig.savefig(save,bbox_inches="tight",**save_args)
+            log.write(" -Saved to "+ save + " successfully!" )
+    sumstats = sumstats.drop(columns="ID")
+    return fig, sumstats[is_outliers].copy()
     
 def test_q(df,beta1,se1,beta2,se2,q_level=0.05):
     w1="Weight_1"

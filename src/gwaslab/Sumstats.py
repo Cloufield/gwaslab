@@ -434,8 +434,8 @@ class Sumstats():
 
       
     def plot_daf(self, **args):
-        plot = plotdaf(self.data, **args)
-        
+        fig,outliers = plotdaf(self.data, **args)
+        return fig, outliers
     def plot_mqq(self, build=None, **args):
 
         chrom="CHR"

@@ -328,7 +328,7 @@ def annotate_pair(
                             arm_scale = arm_scale_d[anno_count]
 
                     # vertical arm length in pixels
-                    armB_length_in_point = ax.transData.transform((skip,1.15*maxy_anno))[1]-ax.transData.transform((skip, row["scaled_P"]+1))[1]
+                    armB_length_in_point = ax.transData.transform((skip,1.15*maxy_anno))[1]-ax.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
                     # times arm_scale to increase or reduce the length
                     armB_length_in_point = armB_length_in_point*arm_scale
                     
@@ -564,7 +564,7 @@ def annotate_subtype(
 
             
             xy=(row["i"],row["scaled_P"]+0.2)
-            xytext=(last_pos,1.15*maxy*arm_scale)
+            xytext=(last_pos, 1.15*maxy*arm_scale)
             
             if anno_fixed_arm_length is not None:
                 armB_length_in_point = anno_fixed_arm_length

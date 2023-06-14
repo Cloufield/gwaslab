@@ -36,6 +36,7 @@ from gwaslab.quickfix import _quick_extract_snp_in_region
 from gwaslab.quickfix import _quick_assign_highlight_hue_pair
 from gwaslab.quickfix import _quick_assign_marker_relative_size
 from gwaslab.annotateplot import annotate_pair
+from gwaslab.to_pickle import load_pickle
 
 def plot_miami( 
           path1,
@@ -43,6 +44,7 @@ def plot_miami(
           cols1=None,
           cols2=None,
           sep=None,
+          mode="txt",
           chr_dict  = None,
           chr_dict1 = False,
           chr_dict2 = False,
@@ -194,14 +196,23 @@ def plot_miami(
     ## load sumstats1 ###########################################################################################################
     if verbose: log.write(" -Loading sumstats1:" + path1)
     if verbose: log.write(" -Sumstats1 CHR,POS,P information will be obtained from:",cols1)
-    sumstats1 = pd.read_csv(path1,sep=sep[0],usecols=cols1,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
-    sumstats1 = sumstats1.rename(columns={cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"})
-    sumstats1 = _quick_fix(sumstats1,chr_dict=chr_dict1, scaled=scaled1, verbose=verbose, log=log)
+    if mode=="txt":
+        sumstats1 = pd.read_csv(path1,sep=sep[0],usecols=cols1,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
+    else:
+        sumstats1 = load_pickle(path1).data 
+    
 
     ## load sumstats2 ###########################################################################################################
     if verbose: log.write(" -Loading sumstats2:" + path2)
     if verbose: log.write(" -Sumstats2 CHR,POS,P information will be obtained from:",cols2)
-    sumstats2 = pd.read_csv(path2,sep=sep[1],usecols=cols2,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
+    if mode=="txt":
+        sumstats2 = pd.read_csv(path2,sep=sep[1],usecols=cols2,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
+    else:
+        sumstats2 = load_pickle(path2).data 
+
+    sumstats1 = sumstats1.rename(columns={cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"})
+    sumstats1 = _quick_fix(sumstats1,chr_dict=chr_dict1, scaled=scaled1, verbose=verbose, log=log)
+
     sumstats2 = sumstats2.rename(columns={cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"P"})
     sumstats2 = _quick_fix(sumstats2,chr_dict=chr_dict2, scaled=scaled2, verbose=verbose, log=log)
 

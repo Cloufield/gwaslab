@@ -601,13 +601,14 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
 
 ################################################################################################################
-def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_cores=1,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),force=False, verbose=True,log=Log()):
+def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,column_name="DAF",suffix="",n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),force=False, verbose=True,log=Log()):
         
     if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
     if verbose: log.write(" -CPU Cores to use :",n_cores)
-
+    
+    column_name = column_name + suffix
     # check if the columns are complete
     if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
         raise ValueError("Not enough information: CHR, POS, NEA , EA, ALT, STATUS...")
@@ -618,7 +619,7 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_co
         if not force:
             good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
         if verbose: log.write(" -Checking variants:", sum(good_chrpos)) 
-        sumstats["DAF"]=np.nan
+        sumstats[column_name]=np.nan
     
     ########################  
         if sum(~sumstats[eaf].isna())<10000: 
@@ -626,8 +627,8 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_co
         df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], n_cores)
         pool = Pool(n_cores)
         if sum(~sumstats[eaf].isna())>0:
-            map_func = partial(checkaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
-            sumstats.loc[good_chrpos,["DAF"]] = pd.concat(pool.map(map_func,df_split))
+            map_func = partial(checkaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,column_name=column_name,chr_dict=chr_dict) 
+            sumstats.loc[good_chrpos,[column_name]] = pd.concat(pool.map(map_func,df_split))
         pool.close()
         pool.join()
     ###########################
@@ -635,24 +636,24 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,n_co
         
         #sumstats.loc[good_chrpos,"DAF"] = status_inferred.values
         #sumstats.loc[:,"DAF"]=sumstats.loc[:,"DAF"].astype("float")     
-        if verbose: log.write(" - DAF min:", np.nanmax(sumstats.loc[:,"DAF"]))
-        if verbose: log.write(" - DAF max:", np.nanmin(sumstats.loc[:,"DAF"]))
-        if verbose: log.write(" - DAF sd:", np.nanstd(sumstats.loc[:,"DAF"]))
-        if verbose: log.write(" - abs(DAF) min:", np.nanmin(np.abs(sumstats.loc[:,"DAF"]))) 
-        if verbose: log.write(" - abs(DAF) max:", np.nanmax(np.abs(sumstats.loc[:,"DAF"])))
-        if verbose: log.write(" - abs(DAF) sd:", np.nanstd(np.abs(sumstats.loc[:,"DAF"]))) 
-        
+        if verbose: log.write(" - {} min:".format(column_name), np.nanmax(sumstats.loc[:,column_name]))
+        if verbose: log.write(" - {} max:".format(column_name), np.nanmin(sumstats.loc[:,column_name]))
+        if verbose: log.write(" - {} sd:".format(column_name), np.nanstd(sumstats.loc[:,column_name]))
+        if verbose: log.write(" - abs({}) min:".format(column_name), np.nanmin(np.abs(sumstats.loc[:,column_name]))) 
+        if verbose: log.write(" - abs({}) max:".format(column_name), np.nanmax(np.abs(sumstats.loc[:,column_name])))
+        if verbose: log.write(" - abs({}) sd:".format(column_name), np.nanstd(np.abs(sumstats.loc[:,column_name]))) 
+        if verbose: log.write("Finished allele frequency checking!") 
     return sumstats
 
-def checkaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):
+def checkaf(sumstats,ref_infer,ref_alt_freq=None,column_name="DAF",chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):
     #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
     vcf_reader = VariantFile(ref_infer)
     def afapply(x,vcf,alt_freq,chr_dict):
             return check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict)
     map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
     status_inferred = sumstats.apply(map_func,axis=1)
-    sumstats.loc[:,"DAF"] = status_inferred.values
-    sumstats.loc[:,"DAF"]=sumstats.loc[:,"DAF"].astype("float") 
+    sumstats.loc[:,column_name] = status_inferred.values
+    sumstats.loc[:,column_name]=sumstats.loc[:,column_name].astype("float") 
     return sumstats
 
 def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
