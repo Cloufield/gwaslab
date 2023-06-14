@@ -1,6 +1,11 @@
 # Genetic correlation loading and plotting
 ## Heatmap: Genetic correlation matrix
 
+```
+gl.plot_rg()
+```
+
+- `ldscrg` : `DataFrame`, results from ldsc-rg.
 - `p1`: `string`, column name for trait1, defaul: `p1`
 - `p2`: `string`, column name for trait2 defaul: `p2`
 - `rg`: `string`, column name for rg defaul: `rg`
