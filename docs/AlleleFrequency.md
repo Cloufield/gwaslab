@@ -3,12 +3,14 @@ Scatter & Distribution plot : allele frequency comparison
 Available from v3.4.15
 
 ```
+#check the difference between the EAF in the sumstats and the allele frequency in VCF files
 sumstats.check_af()
 
+#allele frequnecy correlation plot
 sumstats.plot_daf()
 ```
 
-For check_af, see here.
+You need to run 'check_af()' first before plotting. For check_af(), see [here](https://cloufield.github.io/gwaslab/Harmonization/#check-the-difference-in-allele-frequency).
 
 Options for `plot_daf`:
 `threshold`: `float`, the threshold used to determine outliers.
@@ -33,8 +35,7 @@ Options for `plot_daf`:
     mysumstats.harmonize(basic_check = True, 
                          ref_seq=gl.get_path("ucsc_genome_hg19"))
     ```
-    
-    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/dc3716d6-1b85-42dd-99ca-d0a38a3ad6a1)
+    <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/dc3716d6-1b85-42dd-99ca-d0a38a3ad6a1">
 
     ```
     # check the difference in allele frequency with reference vcf
@@ -42,8 +43,7 @@ Options for `plot_daf`:
                         ref_alt_freq="AF",
                         n_cores=2)
     ```
-    
-    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/8cdc53b4-f661-40d6-a61b-ab5f23af6a4c)
+    <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/8cdc53b4-f661-40d6-a61b-ab5f23af6a4c">
 
     ```
     plot and get the outliers
@@ -51,12 +51,10 @@ Options for `plot_daf`:
                                     save="af_correlation.png",
                                     save_args={"dpi":300})
     ```
-    
-    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/0e9c92d4-3bea-4734-8ba6-76f7fc6e329b)
+    <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/0e9c92d4-3bea-4734-8ba6-76f7fc6e329b">
 
     ```
     outliers[1]
     ```
-    
-    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/c99d91cb-f1f8-4412-bfbf-960457fc9d0e)
+    <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/c99d91cb-f1f8-4412-bfbf-960457fc9d0e">
 

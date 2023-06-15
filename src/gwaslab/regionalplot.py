@@ -231,11 +231,17 @@ def _get_lead_id(sumstats, region_ref, log):
         if len(lead_id)>0:
             lead_id = int(lead_id[0])
     if region_ref is not None:
-        log.write(" -Lead variant ID: {} - {}".format(region_ref, lead_id))
+        if type(lead_id) is list:
+            if len(lead_id)==0 :
+                log.write(" -WARNING: {} not found. Roll back to lead variant...".format(region_ref))
+                lead_id = sumstats["scaled_P"].idxmax()
+        else:
+            log.write(" -Reference variant ID: {} - {}".format(region_ref, lead_id))
 
     if lead_id is None:
         log.write(" -Extracting lead variant...")
         lead_id = sumstats["scaled_P"].idxmax()
+
     return lead_id
 
 def _pinpoint_lead(sumstats,ax1,region_ref, region_ld_threshold, region_ld_colors, marker_size, log):

@@ -73,7 +73,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/
 
 DAF : Difference between Effect allele frequency and Reference ALT frequency
 EAF: Effect allele frequency
-RAF: Reference ALT frequency
+RAF: Reference ALT allele frequency
 
 You may want to check the allele frequency discrepancy with a reference VCF. Just specify the path and the right allele frequency for your target ancestry in INFO field.
 

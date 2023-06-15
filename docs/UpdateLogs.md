@@ -1,6 +1,9 @@
 # Update Logs
 
 ## 3.4.15 upcoming
+- [LDSC-rg genetic correlatio heatmap](https://cloufield.github.io/gwaslab/GeneticCorrelation/)
+- [Allele frequency correlation plot](https://cloufield.github.io/gwaslab/AlleleFrequency/)
+- Miami plot using gl.Sumstats Object ickle files
 
 ## 3.4.14 2023/06/09
 - fixed bug

@@ -210,13 +210,20 @@ def download_ref(name,
         local_path = directory + local_filename
         log.write(" -Downloading to:",local_path)
         
+        # if existing in default path
+        if search_local(local_path) == True:
+            log.write(" -File {} exists.".format(local_path))
+        else:
+            download_file(url,local_path)
+
         # download file
-        download_file(url,local_path)
+        #download_file(url,local_path)
+        
         # update record in config json
         if name+"_md5" in dicts.keys():
             file_status = check_file_integrity(local_path=local_path, md5sum=dicts[name+"_md5"],log=log)
             if file_status==0:
-                log.write("Downloading ",name," failed! Please check the internet connection.")
+                log.write("Md5sum verification of ",name," failed! Please check again.")
         update_record(name,local_path)
         
         # if vcf.gz -> check tbi
@@ -224,7 +231,11 @@ def download_ref(name,
                 if name+"_tbi" in dicts.keys():
                     tbi_url = dicts[name+"_tbi"]
                 try:
-                    download_file(tbi_url, local_path+".tbi")
+                    if search_local(local_path+".tbi") == True:
+                        log.write(" -File {} exists.".format(local_path+".tbi"))
+                    else:
+                        download_file(tbi_url,local_path+".tbi")
+                    #download_file(tbi_url, local_path+".tbi")
                     update_record(name+"_tbi",local_path+ ".tbi")
                     log.write(" -Downloading to:",local_path+".tbi")
                 except:
@@ -343,7 +354,8 @@ def check_and_download(name):
     data_path = get_path(name)
     return data_path
 
-
+def search_local(file_path):
+    return path.exists(file_path)
 ##### format book ###################################################################################################
 
 def update_formatbook(log=Log()):
@@ -388,5 +400,8 @@ def check_format(fmt,log=Log()):
     log.write("") 
     for i in book[fmt].values():
         log.write(i,end="")
+
+
+
 
 ########################################################################################################
