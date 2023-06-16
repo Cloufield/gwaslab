@@ -290,7 +290,7 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
 
 def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",
                           n_cores=1,chunksize=5000000,ref_snpid="SNPID",ref_rsid="rsID",
-                          overwrite="empty",verbose=True,log=Log(),chr_dict=get_number_to_chr()):
+                          overwrite="empty",verbose=True,log=Log(),chr_dict=None):
     '''
     overwrite mode : 
     all ,    overwrite rsid for all availalbe rsid 
@@ -303,7 +303,12 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         if verbose: log.write(" -CPU Cores to use :",n_cores)
         if verbose: log.write(" -Reference VCF file:", path)
+        
+        chr_dict = auto_check_vcf_chr_dict(path, chr_dict, verbose, log)
+        
         if verbose: log.write(" -Assigning rsID based on chr:pos and ref:alt/alt:ref...")
+
+
         ##############################################
         if rsid not in sumstats.columns:
             sumstats[rsid]=pd.Series(dtype="string")
@@ -476,11 +481,13 @@ def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NE
 
 def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,remove_snp="",mode="pi",n_cores=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
-                       chr_dict=get_number_to_chr(),verbose=True,log=Log()):
+                       chr_dict=None,verbose=True,log=Log()):
     if verbose: log.write("Start to infer strand for palindromic SNPs...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
-    
+
+    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
+
     # check if the columns are complete
     if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
         raise ValueError("Not enough information: CHR, POS, NEA , EA, ALT, STATUS...")
@@ -601,13 +608,15 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
 
 ################################################################################################################
-def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,column_name="DAF",suffix="",n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=get_number_to_chr(),force=False, verbose=True,log=Log()):
+def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,column_name="DAF",suffix="",n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
         
     if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
     if verbose: log.write(" -CPU Cores to use :",n_cores)
     
+    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
+
     column_name = column_name + suffix
     # check if the columns are complete
     if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
@@ -667,3 +676,24 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
     return np.nan
 ################################################################################################################
 ################################################################################################################
+def auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log):    
+    if vcf_path is not None:
+        if vcf_chr_dict is None:
+            if verbose: log.write(" -Checking prefix for chromosomes in vcf files..." )  
+            prefix = check_vcf_chr_prefix(vcf_path) 
+            if prefix is not None:
+                if verbose: log.write(" -Prefix for chromosomes: ",prefix) 
+                vcf_chr_dict = get_number_to_chr(prefix=prefix)
+            else:
+                if verbose: log.write(" -No prefix for chromosomes in the VCF files." )  
+                vcf_chr_dict = get_number_to_chr()
+    return vcf_chr_dict
+
+def check_vcf_chr_prefix(vcf_bcf_path):
+    vcf_bcf = VariantFile(vcf_bcf_path)
+    for i in list(vcf_bcf.header.contigs):
+        m = re.search('(chr|Chr|CHR)([0-9xXyYmM]+)', i)
+        if m is not None:
+            return m.group(1)
+    else:
+        return None

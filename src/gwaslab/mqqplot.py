@@ -29,6 +29,7 @@ from adjustText import adjust_text
 from gwaslab.textreposition import adjust_text_position
 from gwaslab.annotateplot import annotate_single
 from gwaslab.qqplot import _plot_qq
+from gwaslab.retrievedata import auto_check_vcf_chr_dict
 from gwaslab.regionalplot import _plot_regional
 from gwaslab.regionalplot import process_vcf
 from gwaslab.quickfix import _get_largenumber
@@ -180,8 +181,7 @@ def mqqplot(insumstats,
         chr_dict = get_chr_to_number()
     if xtick_chr_dict is None:         
         xtick_chr_dict = get_number_to_chr()
-    if vcf_chr_dict is None:  
-        vcf_chr_dict = get_number_to_chr()
+
     if gtf_chr_dict is None:   
         gtf_chr_dict = get_number_to_chr()
     if rr_chr_dict is None:   
@@ -267,6 +267,7 @@ def mqqplot(insumstats,
             additional_line_color = ["grey"]
     lines_to_plot = -np.log10(lines_to_plot)
 
+    vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log)
 # Plotting mode selection : layout ####################################################################
     # ax1 : manhattanplot / brisbane plot
     # ax2 : qq plot 
