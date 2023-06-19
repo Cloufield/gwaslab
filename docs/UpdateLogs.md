@@ -1,10 +1,12 @@
 # Update Logs
 
-## 3.4.15 upcoming
-- [LDSC-rg genetic correlatio heatmap](https://cloufield.github.io/gwaslab/GeneticCorrelation/)
+## 3.4.15 2023/06/20
+- [LDSC-rg genetic correlation heatmap](https://cloufield.github.io/gwaslab/GeneticCorrelation/)
 - [Allele frequency correlation plot](https://cloufield.github.io/gwaslab/AlleleFrequency/)
-- Miami plot using gl.Sumstats Object ickle files
+- Miami plot using gl.Sumstats Object pickle files
 - Auto-check for VCF chromosome prefix (chr1 or 1)
+- fill_data() is now implemented iteratively
+- Downloaded files auto detection.
 
 ## 3.4.14 2023/06/09
 - fixed bug
