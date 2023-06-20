@@ -15,6 +15,15 @@ GWASLab can convert equvalent statistics, including:
 |CHISQ|Z|`sumstats["CHISQ"] = (sumstats["Z"])**2`|
 |MAF|EAF|` sumstats["MAF"] =  sumstats["EAF"].apply(lambda x: min(x,1-x) if pd.notnull(x) else np.nan)`|
 
+
+!!! info "Extreme P values"
+    For extreme P, `extreme=True` can be added to overcome the limitation of extreme P values (P<1e-308):
+    
+    ```mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)```
+    
+    Z socres (or BETA and SE) will be used to calculate MLOG10P, two additional columns `P_MANTISSA` and `P_EXPONENT` will be added to present p values. 
+
+
 !!! note
     The conversion is implemented using scipy and numpy.
     
