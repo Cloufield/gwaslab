@@ -836,6 +836,20 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gallery/" class="md-nav__link">
+        Gallery
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1294,6 +1308,10 @@
           <span class="n">saveargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">},</span>
           <span class="p">):</span>
 </code></pre></div>
+</div>
+<div class="admonition note variant with extreme p values">
+<p class="admonition-title">Note</p>
+<p>To plot the variant with extreme P values (P &lt; 1e-300), you can use <code>scaled=False</code> to create the plot with MLOG10P instead of raw P values. To calculate MLOG10P for extreme P values from BETA/SE or Z scores, you can use <code>mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)</code>. For details, please refer to the "Extreme P values" section in <a href="https://cloufield.github.io/gwaslab/Conversion/">https://cloufield.github.io/gwaslab/Conversion/</a>.</p>
 </div>
 <h2 id="customized-plot-example">Customized plot example</h2>
 <p>By setting the options, you can create highly customized Manhattan plots and Q-Q plots.</p>

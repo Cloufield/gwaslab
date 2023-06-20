@@ -739,6 +739,20 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Gallery/" class="md-nav__link">
+        Gallery
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1103,7 +1117,7 @@
 </table>
 <div class="admonition info">
 <p class="admonition-title">Extreme P values</p>
-<p>For extreme P, <code>extreme=True</code> can be added to overcome the limitation of extreme P values (P&lt;1e-308):</p>
+<p>For extreme P, <code>extreme=True</code> can be added to overcome the limitation of extreme P values (P&lt;1e-308). MLOG10P will be calculated using the methods described <a href="https://stackoverflow.com/questions/46416027/how-to-compute-p-values-from-z-scores-in-r-when-the-z-score-is-large-pvalue-muc/46416222#46416222">here</a>:</p>
 <p><code>mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)</code></p>
 <p><img width="446" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/7c1c96e3-f6e0-4232-a13f-af7fc551cc24"></p>
 <p>Z socres (or BETA and SE) will be used to calculate MLOG10P, two additional columns <code>P_MANTISSA</code> and <code>P_EXPONENT</code> will be added to present p values. </p>
