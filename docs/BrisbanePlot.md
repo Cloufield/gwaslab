@@ -11,7 +11,6 @@ mysumstats.plot_mqq(mode="b")
 - `mode="b"` : create Brisbane plot !
 - `bwindowsizekb = 100` : windowsize in kb.
 
-See examples [here.](https://cloufield.github.io/gwaslab/visualization_brisbane/)
 
 !!! example "Brisbane plot"
     

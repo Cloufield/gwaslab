@@ -4,7 +4,6 @@
 
 GWASLab provides off-line functions for creating regional plots.
 
-See examples [here.](https://cloufield.github.io/gwaslab/visualization_regional/)
 
 ## Usage
 ```

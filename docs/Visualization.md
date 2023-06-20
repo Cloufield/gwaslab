@@ -4,8 +4,6 @@
 
 GWASLab provides customizable plotting functions for Manhattan and Q-Q plots.
 
-See examples [here](https://cloufield.github.io/gwaslab/visualization_mqq/).
-
 ## Quick plot
 
 !!! example "Quick Manhattan and Q-Q plot"
