@@ -4,10 +4,24 @@
 Available since v3.4.15
 
 ```
-gl.plot_rg()
+gl.plot_rg(ldsc)
 ```
 
-- `ldscrg` : `DataFrame`, results from ldsc-rg.
+!!! example "Simple plot"
+    ```
+    # load ldsc log files
+    ldsc_log_file_list = ["ldscrg.log"] 
+    
+    ldsc = gl.read_ldsc(ldsc_log_file_list, mode="rg")
+    
+    gl.plot_rg( ldsc )
+    ```
+    
+    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/46ea20c5-5e4d-4ad4-86ea-965f3a953518)
+
+Options:
+
+- `ldscrg` : `DataFrame`, results from ldsc-rg. 4 columns are required, `p1`,`p2`,`p`,`rg`.
 - `p1`: `string`, column name for trait1, defaul: `p1`
 - `p2`: `string`, column name for trait2 defaul: `p2`
 - `rg`: `string`, column name for rg defaul: `rg`
@@ -27,17 +41,6 @@ gl.plot_rg()
 - `colorbar_args` :  `dict` , default:`{"shrink":0.82}`
 - `cmap`: `cmap`, default:`matplotlib.cm.get_cmap('RdBu')`
 
-!!! example "Simple plot"
-    ```
-    # load ldsc log files
-    ldsc_log_file_list = ["ldscrg.log"] 
-    
-    ldsc = gl.read_ldsc(ldsc_log_file_list, mode="rg")
-    
-    gl.plot_rg( ldsc )
-    ```
-    
-    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/46ea20c5-5e4d-4ad4-86ea-965f3a953518)
 
 !!! example "Customized plot"
     ```
