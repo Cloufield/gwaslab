@@ -21,8 +21,10 @@ GWASLab can convert equvalent statistics, including:
     
     ```mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)```
     
-    Z socres (or BETA and SE) will be used to calculate MLOG10P, two additional columns `P_MANTISSA` and `P_EXPONENT` will be added to present p values. 
+    <img width="446" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/7c1c96e3-f6e0-4232-a13f-af7fc551cc24">
 
+    Z socres (or BETA and SE) will be used to calculate MLOG10P, two additional columns `P_MANTISSA` and `P_EXPONENT` will be added to present p values. 
+    
 
 !!! note
     The conversion is implemented using scipy and numpy.
