@@ -38,8 +38,9 @@ nav:
        - "Brisbane Plot": BrisbanePlot.md
        - "Miami Plot": MiamiPlot.md
        - "Effect Size Comparison": EffectSize.md
-       - "Allele Frequency Comparison (test)": AlleleFrequency.md
-       - "Genetic correlation heatmap (test)" : GeneticCorrelation.md
+       - "Allele Frequency Comparison": AlleleFrequency.md
+       - "Genetic correlation heatmap" : GeneticCorrelation.md
+       - "Gallery" : Gallery.md
     - Utilities: 
        - "Extract Lead Variants": ExtractLead.md
        - "Extract Novel Variants": ExtractNovel.md

@@ -17,7 +17,7 @@ GWASLab can convert equvalent statistics, including:
 
 
 !!! info "Extreme P values"
-    For extreme P, `extreme=True` can be added to overcome the limitation of extreme P values (P<1e-308):
+    For extreme P, `extreme=True` can be added to overcome the limitation of extreme P values (P<1e-308). MLOG10P will be calculated using the methods described [here](https://stackoverflow.com/questions/46416027/how-to-compute-p-values-from-z-scores-in-r-when-the-z-score-is-large-pvalue-muc/46416222#46416222):
     
     ```mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)```
     

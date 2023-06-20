@@ -70,6 +70,9 @@ See examples [here](https://cloufield.github.io/gwaslab/visualization_mqq/).
     ```
 
 
+!!! note Variant with extreme P values
+    To plot the variant with extreme P values (P < 1e-300), you can use `scaled=False` to create the plot with MLOG10P instead of raw P values. To calculate MLOG10P for extreme P values from BETA/SE or Z scores, you can use `mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)`. For details, please refer to the "Extreme P values" section in [https://cloufield.github.io/gwaslab/Conversion/](https://cloufield.github.io/gwaslab/Conversion/).
+
 ## Customized plot example
 
 By setting the options, you can create highly customized Manhattan plots and Q-Q plots.
