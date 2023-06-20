@@ -33,3 +33,5 @@ from gwaslab.to_pickle import dump_pickle
 from gwaslab.to_pickle import load_pickle
 from gwaslab.config import options
 from gwaslab.version import _show_version as show_version
+from gwaslab.calculate_power import get_power
+from gwaslab.calculate_power import get_beta
