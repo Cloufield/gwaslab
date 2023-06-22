@@ -725,8 +725,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#label-and-annotation" class="md-nav__link">
-    Label and annotation
+  <a href="#label" class="md-nav__link">
+    Label
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotation" class="md-nav__link">
+    Annotation
   </a>
   
 </li>
@@ -1122,8 +1129,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#label-and-annotation" class="md-nav__link">
-    Label and annotation
+  <a href="#label" class="md-nav__link">
+    Label
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotation" class="md-nav__link">
+    Annotation
   </a>
   
 </li>
@@ -1181,37 +1195,54 @@
 <h2 id="warning-this-function-is-still-being-tested-will-be-available-from-v3417">(WARNING: this function is still being tested!!! Will be available from v3.4.17)</h2>
 <p><code>gl.compare_effect()</code> will plot effect size comparison plot using two sets of sumstats. Alleles will be aligned to effect alleles in sumstats1.</p>
 <div class="highlight"><pre><span></span><code><span class="n">gl</span><span class="o">.</span><span class="n">compare_effect</span> <span class="p">(</span><span class="n">path1</span><span class="p">,</span>
-                   <span class="n">cols_name_list_1</span><span class="p">,</span> <span class="n">effect_cols_list_1</span><span class="p">,</span>
                    <span class="n">path2</span><span class="p">,</span>
-                   <span class="n">cols_name_list_2</span><span class="p">,</span> <span class="n">effect_cols_list_2</span><span class="p">,</span>
+                   <span class="n">cols_name_list_1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">effect_cols_list_1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">cols_name_list_2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">effect_cols_list_2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">eaf</span><span class="o">=</span><span class="p">[],</span>
                    <span class="n">maf_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                   <span class="n">label</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Sumstats_1&quot;</span><span class="p">,</span><span class="s2">&quot;Sumstats_2&quot;</span><span class="p">,</span><span class="s2">&quot;Both&quot;</span><span class="p">,</span><span class="s2">&quot;None&quot;</span><span class="p">],</span>
+                   <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">snplist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span>
                    <span class="n">anno</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">anno_het</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">anno_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                   <span class="n">anno_min1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                   <span class="n">anno_min2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                   <span class="n">anno_diff</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                   <span class="n">scaled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">scaled1</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">scaled2</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                    <span class="n">wc_correction</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
                    <span class="n">null_beta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                   <span class="n">is_q</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">is_q</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">include_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                    <span class="n">q_level</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
                    <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>
+                   <span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                    <span class="n">wc_sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>
-                   <span class="n">reg_box</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">),</span>
+                   <span class="c1"># reg</span>
+                   <span class="n">reg_box</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">is_reg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">fdr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">allele_match</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                    <span class="n">r_se</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                    <span class="n">is_45_helper_line</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">legend_mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
                    <span class="n">legend_title</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$ P &lt; 5 x 10^{-8}$ in:&#39;</span><span class="p">,</span>
+                   <span class="n">legend_title2</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;Heterogeneity test:&#39;</span><span class="p">,</span>
                    <span class="n">legend_pos</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">,</span>
-                   <span class="n">scatterargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;s&quot;</span><span class="p">:</span><span class="mi">20</span><span class="p">},</span>
-                   <span class="n">plt_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">300</span><span class="p">},</span>
+                   <span class="n">scatterargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">plt_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">xylabel_prefix</span><span class="o">=</span><span class="s2">&quot;Per-allele effect size in &quot;</span><span class="p">,</span>
-                   <span class="n">helper_line_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="s2">&quot;linestyle&quot;</span><span class="p">:</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s2">&quot;lw&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span>
-                   <span class="n">fontargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;fontsize&#39;</span><span class="p">:</span><span class="mi">12</span><span class="p">},</span>
-                   <span class="c1"># &#39;family&#39;:&#39;sans&#39;,&#39;fontname&#39;:&#39;Arial&#39;,</span>
-                   <span class="n">errargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ecolor&quot;</span><span class="p">:</span><span class="s2">&quot;#cccccc&quot;</span><span class="p">,</span><span class="s2">&quot;elinewidth&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">},</span>
+                   <span class="n">helper_line_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">fontargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">errargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">legend_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                    <span class="n">sep</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">],</span>
                    <span class="n">log</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(),</span>
-                   <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                   <span class="n">save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">saveargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="options">Options</h2>
 <h3 id="path-and-column">Path and column</h3>
@@ -1220,7 +1251,7 @@
 <li><code>cols_name_list_1</code> and <code>cols_name_list_2</code> : list of column names for variants basic information</li>
 <li><code>effect_cols_list_1</code> and <code>effect_cols_list_1</code> : list of column names for effect size-related columns</li>
 <li><code>mode</code> : use beta or OR </li>
-<li>examples:<ul>
+<li><code>cols_name_list_x</code> and <code>effect_cols_list_x</code> examples:<ul>
 <li>[snpid,p,ea,nea]        ,[effect,se]</li>
 <li>[snpid,p,ea,nea,chr,pos],[effect,se]</li>
 <li>[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]</li>
@@ -1242,16 +1273,19 @@
 </ul>
 <h3 id="filter-by-maf">Filter by maf:</h3>
 <ul>
-<li><code>eaf</code> : optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is needed when you need to filter by maf using <code>maf_level</code>.</li>
-<li><code>maf_level</code>: the maf filter for variants. Vairants with maf &lt; maf_level will be removed from comparison.</li>
+<li><code>eaf</code> : <code>list</code>, optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is needed when you need to filter by maf using <code>maf_level</code>.</li>
+<li><code>maf_level</code>: <code>float</code>, the maf filter for variants. Vairants with maf &lt; maf_level will be removed from comparison.</li>
 </ul>
-<h3 id="label-and-annotation">Label and annotation</h3>
+<h3 id="label">Label</h3>
 <ul>
-<li><code>label</code> : a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].</li>
-<li><code>sig_level</code>: the significance level for auto-extracting lead variants.</li>
-<li><code>legend_title</code>: r'$ P &lt; 5 x 10^{-8}$ in:',</li>
-<li><code>legend_pos</code>: legend position, default: 'upper left'</li>
-<li><code>xylabel_prefix</code> : "Per-allele effect size in "</li>
+<li><code>label</code> : <code>list</code>, a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].</li>
+<li><code>sig_level</code>: <code>float</code>, the significance level for auto-extracting lead variants. If <code>snplist</code> is provided, the auto-extraction will be skipped. </li>
+<li><code>legend_title</code>: <code>string</code>, default: r'$ P &lt; 5 x 10^{-8}$ in:'.</li>
+<li><code>legend_pos</code>: <code>string</code>, legend position, default: 'upper left'.</li>
+<li><code>xylabel_prefix</code> : default: "Per-allele effect size in ".</li>
+</ul>
+<h3 id="annotation">Annotation</h3>
+<ul>
 <li><code>is_reg</code> : <code>boolean</code>, if true, draw regression line.</li>
 <li><code>is_45_helper_line</code>: <code>boolean</code>, if true, draw 45 degree line.</li>
 <li><code>anno</code> : <code>boolean</code>, if true, annotate the variants with ID.</li>
@@ -1261,8 +1295,8 @@
 </ul>
 <h3 id="heterogeneity-test">Heterogeneity test</h3>
 <ul>
-<li><code>is_q</code> : if apply the heterogeneity tests by Cochran's Q test.</li>
-<li><code>q_level</code> : the significance threshold for Cochran's Q test (raw p value).</li>
+<li><code>is_q</code> : if true, apply the heterogeneity tests by Cochran's Q test.</li>
+<li><code>q_level</code> : <code>float</code>, the significance threshold for Cochran's Q test (raw p value).</li>
 <li><code>anno_het</code>: annotate only variants with Phet &lt; <code>q_level</code></li>
 </ul>
 <h3 id="r-se">R SE</h3>
@@ -1285,7 +1319,7 @@ a = gl.compare_effect(path1= gl1,
 <img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/258d3316-7d73-408a-8e20-e560b831861c"></p>
 </div>
 <div class="admonition example">
-<p class="admonition-title">Use pandas DataFrame object</p>
+<p class="admonition-title">Use pandas DataFrame</p>
 <div class="highlight"><pre><span></span><code>pd1 = pd.read_table(&quot;bbj_bmi_female.txt.gz&quot;,sep=&quot;\t&quot;)
 pd2 = pd.read_table(&quot;bbj_bmi_male.txt.gz&quot;,sep=&quot;\t&quot;)
 
@@ -1300,12 +1334,14 @@ a = gl.compare_effect(path1 = pd1,
 </code></pre></div>
 </div>
 <div class="admonition example">
-<p class="admonition-title">heterogeneity test</p>
+<p class="admonition-title">Heterogeneity test</p>
 <p><div class="highlight"><pre><span></span><code>pd1 = pd.read_table(&quot;bbj_bmi_female.txt.gz&quot;,sep=&quot;\t&quot;)
 pd2 = pd.read_table(&quot;bbj_bmi_male.txt.gz&quot;,sep=&quot;\t&quot;)
 
 # cols_name_list should be SNPID, P, Effect Allele, Non-Effect allele, Chromosome and Position
 # effect_cols_list should be BETA,SE
+# is_q : if true, apply the heterogeneity tests by Cochran&#39;s Q test.
+# q_level` : `float`, the significance threshold for Cochran&#39;s Q test (raw p value).
 
 a = gl.compare_effect(path1 = pd1,
                       cols_name_list_1 = [&quot;SNP&quot;,&quot;P&quot;,&quot;REF&quot;,&quot;ALT&quot;,&quot;CHR&quot;,&quot;POS&quot;],effect_cols_list_1= [&quot;BETA&quot;,&quot;SE&quot;],
@@ -1361,7 +1397,7 @@ Headers of the files : # SNP    CHR POS REF ALT Frq Rsq BETA    SE  P
                   <span class="n">saveargs</span><span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">300</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">}</span>
 <span class="p">)</span>
 </code></pre></div>
-<img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021843-4572636d-b1a8-43f5-8f6e-070b09e5270f.png"></p>
+<img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/ed462a3d-64cf-4f06-bdb5-13294b4182c8"></p>
 <p>Reference: Akiyama, M., Okada, Y., Kanai, M., Takahashi, A., Momozawa, Y., Ikeda, M., ... &amp; Kamatani, Y. (2017). Genome-wide association study identifies 112 new loci for body mass index in the Japanese population. Nature genetics, 49(10), 1458-1467.</p>
 </div>
 
