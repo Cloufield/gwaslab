@@ -22,7 +22,7 @@ gl.compare_effect (path1,
                    wc_sig_level=5e-8,
                    reg_box=dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey"),
                    is_reg=True,
-                   r2_se=False,
+                   r_se=False,
                    is_45_helper_line=True,
                    legend_title=r'$ P < 5 x 10^{-8}$ in:',
                    legend_pos='upper left',
@@ -42,7 +42,7 @@ gl.compare_effect (path1,
 
 ## Options
 ### Path and column
-- `path1` and `path2` : the paths to the sumstats.
+- `path1` and `path2` : the paths to the sumstats. Can also be `gl.Sumstats` Object or `pd.DataFrame` (from v3.4.17). If `gl.Sumstats` Objects are provided, there is no need to set cols_name_list and effect_cols_list.
 - `cols_name_list_1` and `cols_name_list_2` : list of column names for variants basic information
 - `effect_cols_list_1` and `effect_cols_list_1` : list of column names for effect size-related columns
 - `mode` : use beta or OR 
@@ -50,6 +50,9 @@ gl.compare_effect (path1,
     - [snpid,p,ea,nea]        ,[effect,se]
     - [snpid,p,ea,nea,chr,pos],[effect,se]
     - [snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
+
+!!! note 
+    from v3.4.17, you need to specify the parameters using keywords instead of using them as positional arguments for `cols_name_list_1` and `cols_name_list_2`, `effect_cols_list_1` and `effect_cols_list_1` .
 
 ### Snplist
 - `snplist` : optional, specify the variants you want to compare. If None, GWASLab will automatically extract lead variants from both sumstats.
@@ -70,15 +73,45 @@ gl.compare_effect (path1,
 
 ### Heterogeneity test
 - `is_q` : if apply the heterogeneity tests by Cochran's Q test.
-- `q_level` : the significance threshold for Cochran's Q test.
+- `q_level` : the significance threshold for Cochran's Q test (raw p value).
 
-### R2 SE
+### R SE
+- `r_se`: `boolean` If True, SE for r will be estimated using the jackknife method. (Note: available from v3.4.17)
 
-- `r2_se`: `boolean` If True, SE for r2 will be estimated using the jackknife method.
+$$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}_{jack} )^2 } $$
 
-$$ s.e.(\hat{r^2}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r^2_i} -\bar{r^2}_{jack} )^2 } $$
+###
 
 ## Example:
+
+
+!!! example "Use gl.Sumstats object"
+    ```
+    gl1 = gl.Sumstats("bbj_bmi_female.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")
+    gl2 = gl.Sumstats("bbj_bmi_male.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")
+
+    # auto extract lead SNPs and compare the effect sizes
+    a = gl.compare_effect(path1= gl1,
+                          path2= gl2
+    )
+    ```
+
+!!! example "Use pandas DataFrame object"
+    ```
+    pd1 = pd.read_table("bbj_bmi_female.txt.gz",sep="\t")
+    pd2 = pd.read_table("bbj_bmi_male.txt.gz",sep="\t")
+
+    # cols_name_list should be SNPID, P, Effect Allele, Non-Effect allele, Chromosome and Position
+    # effect_cols_list should be BETA,SE
+
+    a = gl.compare_effect(path1 = pd1,
+                        cols_name_list_1 = ["SNP","P","REF","ALT","CHR","POS"],effect_cols_list_1= ["BETA","SE"],
+                        path2 = pd2,
+                        cols_name_list_2 = ["SNP","P","REF","ALT","CHR","POS"],effect_cols_list_2= ["BETA","SE"]
+                        )
+    ```
+
+!!! example "heterogeneity test"
 
 !!! example "Male-specific and female-specific BMI Sumstats from JENGER"
     
@@ -86,21 +119,26 @@ $$ s.e.(\hat{r^2}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r^2_i} -\ba
     !wget -O bbj_bmi_male.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
     !wget -O bbj_bmi_female.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
 
-    Headers of the files : # SNP	CHR	POS	REF	ALT	Frq	Rsq	BETA	SE	P
+    Headers of the files : # SNP    CHR	POS	REF	ALT	Frq	Rsq	BETA	SE	P
     ```
     
     ```python
-    
     # GWASLab will automatically extract significant variants from both sumstats. 
-    a = gl.compare_effect("bbj_bmi_female.txt.gz",
-                          ["SNP","P","REF","ALT","CHR","POS"],["BETA","SE"],
-                          "bbj_bmi_male.txt.gz",
-                          ["SNP","P","REF","ALT","CHR","POS"],["BETA","SE"],
-                          label=["Female","Male","Both","None"],
-                          xylabel_prefix="Per-allele effect size for ",
-                          sig_level=5e-6,
-                          legend_title=r'$ P < 5 x 10^{-6}$ in:',
-                          verbose=True)
+    a = gl.compare_effect(path1="bbj_bmi_female.txt.gz",
+                      cols_name_list_1=["SNP","P","REF","ALT","CHR","POS"],effect_cols_list_1=["BETA","SE"],
+                      path2="bbj_bmi_male.txt.gz",
+                      cols_name_list_2=["SNP","P","REF","ALT","CHR","POS"],effect_cols_list_2=["BETA","SE"],
+                      label=["Female","Male","Both","None"],
+                      xylabel_prefix="Per-allele effect size for ",
+                      anno=True,
+                      anno_het=True,
+                      anno_diff=0.015,
+                      sig_level=5e-8,
+                      legend_title=r'$ P < 5 x 10^{-8}$ in:',
+                      verbose=True,
+                      save = "myplot.png",
+                      saveargs= {"dpi":300,"facecolor":"white"}
+    )
     ```
     <img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021843-4572636d-b1a8-43f5-8f6e-070b09e5270f.png">
     
