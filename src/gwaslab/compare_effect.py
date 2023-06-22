@@ -10,16 +10,17 @@ from gwaslab.getsig import getsig
 from gwaslab.Log import Log
 from gwaslab.winnerscurse import wc_correct
 from gwaslab.winnerscurse import wc_correct_test
+from gwaslab.Sumstats import Sumstats
 import gc
 from statsmodels.stats.multitest import fdrcorrection
 from matplotlib.patches import Rectangle
-
 from adjustText import adjust_text
+
 #20220422
 def compare_effect(path1,
-                   cols_name_list_1, effect_cols_list_1,
                    path2,
-                   cols_name_list_2, effect_cols_list_2,
+                   cols_name_list_1=None, effect_cols_list_1=None,
+                   cols_name_list_2=None, effect_cols_list_2=None,
                    eaf=[],
                    maf_level=None,
                    label=["Sumstats_1","Sumstats_2","Both","None"],
@@ -78,9 +79,34 @@ def compare_effect(path1,
     if mode not in ["Beta","beta","BETA","OR","or"]:
         raise ValueError("Please input Beta or OR")
     
+    if type(path1) is Sumstats:
+        if verbose: log.write("Path1 is gwaslab Sumstats object...")
+        if cols_name_list_1 is None:
+            cols_name_list_1 = ["SNPID","P","EA","NEA","CHR","POS"]
+        if effect_cols_list_1 is None:
+            effect_cols_list_1 = ["BETA","SE"]
+    elif type(path1) is pd.DataFrame:
+        if verbose: log.write("Path1 is pandas DataFrame object...")
+
+    if type(path2) is Sumstats:
+        if verbose: log.write("Path2 is gwaslab Sumstats object...")
+        if cols_name_list_2 is None:
+            cols_name_list_2 = ["SNPID","P","EA","NEA","CHR","POS"]
+        if effect_cols_list_2 is None:
+            effect_cols_list_2 = ["BETA","SE"]
+    elif type(path2) is pd.DataFrame:
+        if verbose: log.write("Path1 is pandas DataFrame object...")
+    
     ######### 2 extract snplist2
     if verbose: log.write(" -Loading "+label[1]+" SNP list in memory...")    
-    sumstats=pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0]])
+    
+    if type(path2) is Sumstats:
+        sumstats = path1.data[[cols_name_list_2[0]]].copy()
+    elif type(path2) is pd.DataFrame:
+        sumstats = path1[[cols_name_list_2[0]]].copy()
+    else:
+        sumstats=pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0]])
+        
     common_snp_set=set(sumstats[cols_name_list_2[0]].values)
     
     ######### 3 extract snplist1
@@ -91,7 +117,16 @@ def compare_effect(path1,
  
     ######### 4 load sumstats1
     if verbose: log.write(" -Loading sumstats for "+label[0]+":",",".join(cols_to_extract))
-    sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
+    
+    if type(path1) is Sumstats:
+        sumstats = path1.data[cols_to_extract].copy()
+    elif type(path1) is pd.DataFrame:
+        sumstats = path1[cols_to_extract].copy()
+    else:
+        sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
+    
+    gc.collect()
+
     if scaled1==True:
         sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
     ######### 5 extract the common set
@@ -134,7 +169,16 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1],cols_name_list_2[4],cols_name_list_2[5]]
     
     if verbose: log.write(" -Loading sumstats for "+label[1]+":",",".join(cols_to_extract))
-    sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
+    
+    if type(path2) is Sumstats:
+        sumstats = path2.data[cols_to_extract].copy()
+    elif type(path2) is pd.DataFrame:
+        sumstats = path2[cols_to_extract].copy()
+    else:
+        sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
+    
+    gc.collect()
+    
     if scaled2==True:
         sumstats[cols_name_list_2[1]] = np.power(10,-sumstats[cols_name_list_2[1]])
     ######### 10 rename sumstats2
@@ -185,7 +229,14 @@ def compare_effect(path1,
     
     if len(eaf)>0: cols_to_extract.append(eaf[0])   
     if verbose: log.write(" -Extract statistics of selected variants from "+label[0]+" : ",",".join(cols_to_extract) )
-    sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
+    
+    if type(path1) is Sumstats:
+        sumstats = path1.data[cols_to_extract].copy()
+    elif type(path1) is pd.DataFrame:
+        sumstats = path1[cols_to_extract].copy()
+    else:
+        sumstats = pd.read_table(path1,sep=sep[0],usecols=cols_to_extract)
+    
     if scaled1==True:
         sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
 
@@ -234,10 +285,18 @@ def compare_effect(path1,
     if len(eaf)>0: cols_to_extract.append(eaf[1])
     
     if verbose: log.write(" -Extract statistics of selected variants from "+label[1]+" : ",",".join(cols_to_extract) )
-    sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
+    if type(path2) is Sumstats:
+        sumstats = path2.data[cols_to_extract].copy()
+    elif type(path2) is pd.DataFrame:
+        sumstats = path2[cols_to_extract].copy()
+    else:
+        sumstats = pd.read_table(path2,sep=sep[1],usecols=cols_to_extract)
+    
     if scaled2==True:
         sumstats[cols_name_list_2[1]] = np.power(10,-sumstats[cols_name_list_2[1]])
+    
     gc.collect()
+    
     if mode=="beta" or mode=="BETA" or mode=="Beta":
           rename_dict = { cols_name_list_2[0]:"SNPID",
                         cols_name_list_2[1]:"P_2",
@@ -271,7 +330,12 @@ def compare_effect(path1,
 
     ################ 16 update sumstats1
     if verbose: log.write(" -Updating missing information for "+label[0]+" ...")
-    sumstats = pd.read_table(path1,sep=sep[0],usecols=[cols_name_list_1[0],cols_name_list_1[1]])
+    if type(path1) is Sumstats:
+        sumstats = path1.data[[cols_name_list_1[0],cols_name_list_1[1]]].copy()
+    elif type(path1) is pd.DataFrame:
+        sumstats = path1[[cols_name_list_1[0],cols_name_list_1[1]]].copy()
+    else:
+        sumstats = pd.read_table(path1,sep=sep[0],usecols=[cols_name_list_1[0],cols_name_list_1[1]])
     if scaled1==True:
         sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
     sumstats.rename(columns={
@@ -288,7 +352,13 @@ def compare_effect(path1,
     
     ################# 17 update sumstats2
     if verbose: log.write(" -Updating missing information for "+label[1]+" ...")
-    sumstats = pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0],cols_name_list_2[1]])
+    if type(path2) is Sumstats:
+        sumstats = path2.data[[cols_name_list_2[0],cols_name_list_2[1]]].copy()
+    elif type(path2) is pd.DataFrame:
+        sumstats = path2[[cols_name_list_2[0],cols_name_list_2[1]]].copy()
+    else:
+        sumstats = pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0],cols_name_list_2[1]])
+
     if scaled2==True:
         sumstats[cols_name_list_2[1]] = np.power(10,-sumstats[cols_name_list_2[1]])
     sumstats.rename(columns={
@@ -444,6 +514,12 @@ def compare_effect(path1,
     sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:].dropna(axis=0)
     both     = sig_list_merged.loc[sig_list_merged["indicator"]==3,:].dropna(axis=0)
     
+    if is_q==False:
+        sum0["Edge_color"]="none"
+        sum1only["Edge_color"]="none"
+        sum2only["Edge_color"]="none"
+        both["Edge_color"]="none"
+
     if verbose: log.write(" -Identified "+str(len(sum0)) + " variants which are not significant in " + label[3]+".")
     if verbose: log.write(" -Identified "+str(len(sum1only)) + " variants which are only significant in " + label[0]+".")
     if verbose: log.write(" -Identified "+str(len(sum2only)) + " variants which are only significant in " + label[1]+".")
@@ -646,7 +722,7 @@ def compare_effect(path1,
         for key,value in legend_args.items():
             legend_args_to_use[key] = value
 
-    if legend_mode == "full":
+    if legend_mode == "full" and is_q==True :
         title_proxy = Rectangle((0,0), 0, 0, color='w',label=legend_title)
         title_proxy2 = Rectangle((0,0), 0, 0, color='w',label=legend_title2)
         het_label_sig = r"$P_{het} < $" + "${}$".format(q_level)
@@ -707,138 +783,6 @@ def reorderLegend(ax=None, order=None, add=None):
     new_handles = [info[l] for l in order]
     return new_handles, order
 
-################################################################################################################################
-def plotdaf(sumstats,
-             eaf="EAF",
-             daf="DAF",
-             threshold=0.16,
-             xlabel="Alternative Allele Frequency in Reference Population (RAF)",
-             ylabel="Effect Allele Frequency in Sumstats (EAF)",
-             is_reg=True,
-             r2=True,
-             is_45_helper_line=True,
-             is_threshold=True,
-             helper_line_args=None,
-             threshold_line_args=None,
-             reg_line_args=None,
-             plt_args=None,
-             scatter_args=None,
-             scatter_args_outlier =None,
-             histplot_args=None,
-             font_args=None,
-             r2_args=None,
-             legend1=True,
-             legend2=True,
-             save=False,
-             save_args=None,
-             verbose=True,
-             log=Log()
-           ):
-    
-    if font_args is None:
-        font_args={'family':'sans','fontname':'Arial','fontsize':8}
-    if scatter_args is None:
-        scatter_args={"s":1}
-    if scatter_args_outlier is None:
-        scatter_args_outlier={"s":3,"c":"red"}
-    if plt_args is None:
-        plt_args={"figsize":(8,4),"dpi":300}
-    if histplot_args is None:
-        histplot_args={"log_scale":(False,True)}
-    if reg_line_args is None:
-        reg_line_args={"color":'#cccccc', "linestyle":'--'}
-    if threshold_line_args is None:
-        threshold_line_args={"color":'#cccccc', "linestyle":'dotted'}
-    if helper_line_args is None:
-        helper_line_args={"color":'black', "linestyle":'-',"lw":1}
-    if r2_args is None:
-        r2_args = {"va":"bottom","ha":"right"}
-
-
-    if verbose: log.write("Start to plot Reference frequency vs Effect allele frequency plot...")
-    if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
-        raise ValueError("EAF and/or DAF columns were not detected.")
-    
-    if "SNPID" in sumstats.columns:
-        snpid = "SNPID"
-    else:
-        snpid = "rsID"
-    
-    alleles =[]
-    if "EA" in sumstats.columns:
-        alleles.append("EA")
-    if "NEA" in sumstats.columns:
-        alleles.append("NEA")
-    
-
-    sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[snpid,eaf,daf]+alleles].copy()
-    sumstats.loc[:,daf] = sumstats.loc[:,daf].astype("float")
-    sumstats.loc[:,eaf] = sumstats.loc[:,eaf].astype("float")
-    if verbose: log.write(" -Plotting valriants:" + str(len(sumstats)))
-    
-    sumstats.loc[:,"RAF"]=sumstats[eaf] - sumstats[daf]
-    sns.set_style("ticks")
-    fig, (ax1, ax2) = plt.subplots(1, 2,**plt_args)
-    ax1.scatter(sumstats["RAF"],sumstats[eaf],label="Non-outlier", **scatter_args)
-    
-    if is_threshold is True:
-        is_outliers = sumstats[daf].abs() > threshold 
-        if sum(is_outliers)>0:
-            ax1.scatter(sumstats.loc[is_outliers, "RAF"],sumstats.loc[is_outliers, eaf],label="Outlier", **scatter_args_outlier)
-    
-    if legend1 ==True:
-        ax1.legend()
-    
-    if is_reg is True:
-        if verbose: log.write(" -Plotting regression line...")
-        reg = ss.linregress(sumstats["RAF"],sumstats[eaf])
-        if verbose:log.write(" -Beta = ", reg[0])
-        if verbose:log.write(" -Intercept = ", reg[1])
-        if verbose:log.write(" -R2 = ", reg[2])
-        ax1.axline(xy1=(0,reg[1]),slope=reg[0],zorder=1,**reg_line_args)
-        if r2 is True:
-            ax1.text(0.98,0.02, "$R^2 = {:.3f}$".format(reg[2]), transform=ax1.transAxes, **r2_args)
-
-    if is_threshold is True:
-        if verbose: log.write(" -Threshold : " + str(threshold))
-        num = sum(np.abs(sumstats[daf])>threshold )
-        if verbose: log.write(" -Variants with relatively large DAF : ",num )
-        if verbose: log.write(" -Percentage for variants with relatively large DAF : ",num/len(sumstats) )
-        ax1.axline(xy1=(0,threshold),slope=1,zorder=1,**threshold_line_args)
-        ax1.axline(xy1=(threshold,0),slope=1,zorder=1,**threshold_line_args)
-    
-    xl,xh=ax1.get_xlim()
-    yl,yh=ax1.get_ylim()
-    
-    if is_45_helper_line is True:
-        ax1.axline([0,0], [1,1],zorder=1, **helper_line_args)
-    
-    ax1.set_xlabel(xlabel,**font_args)
-    ax1.set_ylabel(ylabel,**font_args)
-    ax1.set_xlim([0,1])
-    ax1.set_ylim([0,1])
-    
-
-    sumstats.loc[:,"ID"] = sumstats.index
-    
-    to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele Frequency')
-    
-    sns.histplot(data=to_plot, x="Allele Frequency", hue="Types", fill=True, ax=ax2, legend = legend2 ,**histplot_args)
-    ax2.set_xlabel("Allele Frequency",**font_args)
-
-
-    plt.tight_layout()
-    if save:
-        if verbose: log.write("Saving plot:")
-        if save==True:
-            fig.savefig("./allele_frequency_comparison.png",bbox_inches="tight",**save_args)
-            log.write(" -Saved to "+ "./allele_frequency_comparison.png" + " successfully!" )
-        else:
-            fig.savefig(save,bbox_inches="tight",**save_args)
-            log.write(" -Saved to "+ save + " successfully!" )
-    sumstats = sumstats.drop(columns="ID")
-    return fig, sumstats[is_outliers].copy()
-    
 def test_q(df,beta1,se1,beta2,se2,q_level=0.05):
     w1="Weight_1"
     w2="Weight_2"

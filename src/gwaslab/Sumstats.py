@@ -41,7 +41,7 @@ from gwaslab.getsig import getnovel
 from gwaslab.fill import filldata
 from gwaslab.to_formats import tofmt
 from gwaslab.get_hapmap3 import gethapmap3
-from gwaslab.compare_effect import plotdaf
+from gwaslab.compare_af import plotdaf
 from gwaslab.CommonData import get_chr_list
 from gwaslab.CommonData import get_number_to_chr
 from gwaslab.CommonData import get_chr_to_number
