@@ -67,9 +67,9 @@ gl.compare_effect (path1,
 - `effect_cols_list_1` and `effect_cols_list_1` : list of column names for effect size-related columns
 - `mode` : use beta or OR 
 -  `cols_name_list_x` and `effect_cols_list_x` examples:
-    - [snpid,p,ea,nea]        ,[effect,se]
-    - [snpid,p,ea,nea,chr,pos],[effect,se]
-    - [snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
+    - `[snpid,p,ea,nea]`        ,`[effect,se]`
+    - `[snpid,p,ea,nea,chr,pos]`,`[effect,se]`
+    - `[snpid,p,ea,nea,chr,pos]`,`[OR,OR_l,OR_h]`
 
 !!! note 
     from v3.4.17, you need to specify the parameters using keywords instead of using them as positional arguments for `cols_name_list_1` and `cols_name_list_2`, `effect_cols_list_1` and `effect_cols_list_1` .
