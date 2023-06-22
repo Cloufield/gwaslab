@@ -23,7 +23,7 @@ def compare_effect(path1,
                    cols_name_list_2=None, effect_cols_list_2=None,
                    eaf=[],
                    maf_level=None,
-                   label=["Sumstats_1","Sumstats_2","Both","None"],
+                   label=None,
                    snplist=None,
                    mode="beta",
                    anno=False,
@@ -37,14 +37,14 @@ def compare_effect(path1,
                    scaled2=False,
                    wc_correction=False, 
                    null_beta=0,
-                   is_q=True,
+                   is_q=False,
                    include_all=True,
                    q_level=0.05,
                    sig_level=5e-8,
                    drop=False,
                    wc_sig_level=5e-8,
                    # reg
-                   reg_box=dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey"),
+                   reg_box=None,
                    is_reg=True,
                    fdr=False,
                    allele_match=False,
@@ -54,16 +54,19 @@ def compare_effect(path1,
                    legend_title=r'$ P < 5 x 10^{-8}$ in:',
                    legend_title2=r'Heterogeneity test:',
                    legend_pos='upper left',
-                   scatterargs={"s":20},
-                   plt_args={"figsize":(8,8),"dpi":300},
+                   scatterargs=None,
+                   plt_args=None,
                    xylabel_prefix="Per-allele effect size in ",
-                   helper_line_args={"color":'black', "linestyle":'-',"lw":1},
-                   fontargs={'fontsize':8,'family':'sans','fontname':'Arial'},
+                   helper_line_args=None,
+                   fontargs=None,
+                   r_or_r2="r",
                    # 
-                   errargs={"ecolor":"#cccccc","elinewidth":1},
+                   errargs=None,
                    legend_args=None,
                    sep=["\t","\t"],
                    log = Log(),
+                   save=False,
+                   saveargs=None,
                    verbose=False):
     
     #[snpid,p,ea,nea]      ,[effect,se]
@@ -73,6 +76,27 @@ def compare_effect(path1,
         scaled1 = True
         scaled2 = True
     
+    if saveargs is None:
+        saveargs = {"dpi":300,"facecolor":"white"}
+    if reg_box is None:
+        reg_box = dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey")
+    if sep is None:
+        sep = ["\t","\t"]
+    if errargs is None:
+        errargs={"ecolor":"#cccccc","elinewidth":1}
+    if fontargs is None:
+        fontargs={'fontsize':12,'family':'sans','fontname':'Arial'}
+    if helper_line_args is None:
+        helper_line_args={"color":'black', "linestyle":'-',"lw":1}
+    if plt_args is None:
+        plt_args={"figsize":(8,8),"dpi":300}
+    if scatterargs is None:
+        scatterargs={"s":20}
+    if label is None:
+        label = ["Sumstats_1","Sumstats_2","Both","None"]
+    if anno_het ==True:
+        is_q=True
+
     if verbose: log.write("Start to process the raw sumstats for plotting...")
     
     ######### 1 check the value used to plot
@@ -84,7 +108,10 @@ def compare_effect(path1,
         if cols_name_list_1 is None:
             cols_name_list_1 = ["SNPID","P","EA","NEA","CHR","POS"]
         if effect_cols_list_1 is None:
-            effect_cols_list_1 = ["BETA","SE"]
+            if mode=="beta":
+                effect_cols_list_1 = ["BETA","SE"]
+            else:
+                effect_cols_list_1 = ["OR","OR_95L","OR_95U"]
     elif type(path1) is pd.DataFrame:
         if verbose: log.write("Path1 is pandas DataFrame object...")
 
@@ -93,7 +120,10 @@ def compare_effect(path1,
         if cols_name_list_2 is None:
             cols_name_list_2 = ["SNPID","P","EA","NEA","CHR","POS"]
         if effect_cols_list_2 is None:
-            effect_cols_list_2 = ["BETA","SE"]
+            if mode=="beta":
+                effect_cols_list_2 = ["BETA","SE"]
+            else:
+                effect_cols_list_2 = ["OR","OR_95L","OR_95U"]
     elif type(path2) is pd.DataFrame:
         if verbose: log.write("Path1 is pandas DataFrame object...")
     
@@ -101,9 +131,9 @@ def compare_effect(path1,
     if verbose: log.write(" -Loading "+label[1]+" SNP list in memory...")    
     
     if type(path2) is Sumstats:
-        sumstats = path1.data[[cols_name_list_2[0]]].copy()
+        sumstats = path2.data[[cols_name_list_2[0]]].copy()
     elif type(path2) is pd.DataFrame:
-        sumstats = path1[[cols_name_list_2[0]]].copy()
+        sumstats = path2[[cols_name_list_2[0]]].copy()
     else:
         sumstats=pd.read_table(path2,sep=sep[1],usecols=[cols_name_list_2[0]])
         
@@ -581,7 +611,7 @@ def compare_effect(path1,
     ## annotation #################################################################################################################
     if anno==True:
         sig_list_toanno = sig_list_merged.dropna(axis=0)
-        if anno_het == True:
+        if is_q==True and anno_het == True:
             sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["Edge_color"]=="black",:]
         
 
@@ -606,7 +636,7 @@ def compare_effect(path1,
     elif type(anno) is dict:
         # if input is a dict
         sig_list_toanno = sig_list_toanno.loc[sig_list_toanno.index.isin(list(anno.keys())),:]
-        if anno_het == True:
+        if is_q==True and anno_het == True:
             sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["Edge_color"]=="black",:]
         sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
         sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
@@ -641,13 +671,13 @@ def compare_effect(path1,
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             reg = ss.linregress(sig_list_merged["EFFECT_1"],sig_list_merged["EFFECT_2_aligned"])
             
-            # estimate se for r2
-            #if r_se==True:
-            #    if verbose:log.write(" -Estimating SE for Rsq using Jackknife method.")
-            #    r_se_jackknife = jackknife_r2(sig_list_merged)
-            #    r_se_jackknife_string = " ({:.2f})".format(r_se_jackknife)
-            #else:
-            r_se_jackknife_string= ""
+            # estimate se for r
+            if r_se==True:
+                if verbose:log.write(" -Estimating SE for rsq using Jackknife method.")
+                r_se_jackknife = jackknife_r(sig_list_merged)
+                r_se_jackknife_string = " ({:.2f})".format(r_se_jackknife)
+            else:
+                r_se_jackknife_string= ""
         else:
             reg = ss.linregress(sig_list_merged["OR_1"],sig_list_merged["OR_2_aligned"])
         #### calculate p values based on selected value , default = 0 
@@ -659,8 +689,8 @@ def compare_effect(path1,
         if verbose:log.write(" -Beta_se = ", reg[4])
         #if verbose:log.write(" -H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
         if verbose:log.write(" -H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]))
-        #if r_se==True:
-        #    if verbose:log.write(" -R se (jackknife) = {:.2e}".format(r_se_jackknife))
+        if r_se==True:
+            if verbose:log.write(" -R se (jackknife) = {:.2e}".format(r_se_jackknife))
 
         if reg[0] > 0:
             #if regression coeeficient >0 : auxiliary line slope = 1
@@ -774,6 +804,16 @@ def compare_effect(path1,
     plt.setp(L.get_title(),**fontargs)
     ##plot finished########################################################################################
     gc.collect()
+    
+    if save:
+        if verbose: log.write("Saving plot:")
+        if save==True:
+            fig.savefig("./{}_{}_effect_comparison_plot.png".format(label[0],label[1]),bbox_inches="tight",**saveargs)
+            log.write(" -Saved to "+ "./{}_{}_effect_comparison_plot.png".format(label[0],label[1]) + " successfully!" )
+        else:
+            fig.savefig(save,bbox_inches="tight",**saveargs)
+            log.write(" -Saved to "+ save + " successfully!" )
+    
     return [sig_list_merged, fig,log]
 
 def reorderLegend(ax=None, order=None, add=None):
@@ -825,7 +865,7 @@ def jackknife_r(df,x="EFFECT_1",y="EFFECT_2_aligned"):
     # a list to store r2
     r_list=[]
     
-    # estimate r2
+    # estimate r
     for i in range(n):
         # exclude 1 record
         records_to_use = df_nona["nrow"]!=i
