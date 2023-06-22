@@ -49,7 +49,7 @@ gl.compare_effect (path1,
 - `cols_name_list_1` and `cols_name_list_2` : list of column names for variants basic information
 - `effect_cols_list_1` and `effect_cols_list_1` : list of column names for effect size-related columns
 - `mode` : use beta or OR 
--  examples:
+-  `cols_name_list_x` and `effect_cols_list_x` examples:
     - [snpid,p,ea,nea]        ,[effect,se]
     - [snpid,p,ea,nea,chr,pos],[effect,se]
     - [snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
@@ -65,15 +65,17 @@ gl.compare_effect (path1,
 - `snplist` : optional, specify the variants you want to compare. If None, GWASLab will automatically extract lead variants from both sumstats.
 
 ### Filter by maf: 
-- `eaf` : optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is needed when you need to filter by maf using `maf_level`.
-- `maf_level`: the maf filter for variants. Vairants with maf < maf_level will be removed from comparison.
+- `eaf` : `list`, optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is needed when you need to filter by maf using `maf_level`.
+- `maf_level`: `float`, the maf filter for variants. Vairants with maf < maf_level will be removed from comparison.
 
-### Label and annotation
-- `label` : a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].
-- `sig_level`: the significance level for auto-extracting lead variants.
-- `legend_title`: r'$ P < 5 x 10^{-8}$ in:',
-- `legend_pos`: legend position, default: 'upper left'
-- `xylabel_prefix` : "Per-allele effect size in "
+### Label 
+- `label` : `list`, a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].
+- `sig_level`: `float`, the significance level for auto-extracting lead variants. If `snplist` is provided, the auto-extraction will be skipped. 
+- `legend_title`: `string`, default: r'$ P < 5 x 10^{-8}$ in:'.
+- `legend_pos`: `string`, legend position, default: 'upper left'.
+- `xylabel_prefix` : default: "Per-allele effect size in ".
+
+### Annotation
 - `is_reg` : `boolean`, if true, draw regression line.
 - `is_45_helper_line`: `boolean`, if true, draw 45 degree line.
 - `anno` : `boolean`, if true, annotate the variants with ID.
@@ -82,11 +84,9 @@ gl.compare_effect (path1,
 - `anno_min2`: `float`, threshold of sumstats2 minimum absolute effect size for annotation.
 
 ### Heterogeneity test
-- `is_q` : if apply the heterogeneity tests by Cochran's Q test.
-- `q_level` : the significance threshold for Cochran's Q test (raw p value).
+- `is_q` : if true, apply the heterogeneity tests by Cochran's Q test.
+- `q_level` : `float`, the significance threshold for Cochran's Q test (raw p value).
 - `anno_het`: annotate only variants with Phet < `q_level`
-
-
 
 ### R SE
 - `r_se`: `boolean` If True, SE for r will be estimated using the jackknife method. (Note: available from v3.4.17)
@@ -111,7 +111,7 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
     ```
     <img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/258d3316-7d73-408a-8e20-e560b831861c">
 
-!!! example "Use pandas DataFrame object"
+!!! example "Use pandas DataFrame"
     ```
     pd1 = pd.read_table("bbj_bmi_female.txt.gz",sep="\t")
     pd2 = pd.read_table("bbj_bmi_male.txt.gz",sep="\t")
@@ -126,13 +126,15 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
                         )
     ```
 
-!!! example "heterogeneity test"
+!!! example "Heterogeneity test"
     ```
     pd1 = pd.read_table("bbj_bmi_female.txt.gz",sep="\t")
     pd2 = pd.read_table("bbj_bmi_male.txt.gz",sep="\t")
 
     # cols_name_list should be SNPID, P, Effect Allele, Non-Effect allele, Chromosome and Position
     # effect_cols_list should be BETA,SE
+    # is_q : if true, apply the heterogeneity tests by Cochran's Q test.
+    # q_level` : `float`, the significance threshold for Cochran's Q test (raw p value).
 
     a = gl.compare_effect(path1 = pd1,
                           cols_name_list_1 = ["SNP","P","REF","ALT","CHR","POS"],effect_cols_list_1= ["BETA","SE"],
