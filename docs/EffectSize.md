@@ -70,17 +70,23 @@ gl.compare_effect (path1,
 
 ### Label and annotation
 - `label` : a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].
-- `anno` : if annotate the variants
 - `sig_level`: the significance level for auto-extracting lead variants.
 - `legend_title`: r'$ P < 5 x 10^{-8}$ in:',
 - `legend_pos`: legend position, default: 'upper left'
 - `xylabel_prefix` : "Per-allele effect size in "
-- `is_reg` : draw regression line or not
-- `is_45_helper_line`: draw 45 degree line or not
+- `is_reg` : `boolean`, if true, draw regression line.
+- `is_45_helper_line`: `boolean`, if true, draw 45 degree line.
+- `anno` : `boolean`, if true, annotate the variants with ID.
+- `anno_diff`: `float`, threshold of effect size difference for annotation.
+- `anno_min1`: `float`, threshold of sumstats1 minimum absolute effect size for annotation.
+- `anno_min2`: `float`, threshold of sumstats2 minimum absolute effect size for annotation.
 
 ### Heterogeneity test
 - `is_q` : if apply the heterogeneity tests by Cochran's Q test.
 - `q_level` : the significance threshold for Cochran's Q test (raw p value).
+- `anno_het`: annotate only variants with Phet < `q_level`
+
+
 
 ### R SE
 - `r_se`: `boolean` If True, SE for r will be estimated using the jackknife method. (Note: available from v3.4.17)
