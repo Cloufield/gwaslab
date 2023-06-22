@@ -2,7 +2,7 @@
 
 ## Scatter plot : effect size comparison 
 
-## (WARNing testing!!! will be available from v3.4.17)
+## (WARNING: this function is still being tested!!! Will be available from v3.4.17)
 
 `gl.compare_effect()` will plot effect size comparison plot using two sets of sumstats. Alleles will be aligned to effect alleles in sumstats1.
 
