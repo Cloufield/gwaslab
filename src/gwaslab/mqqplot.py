@@ -322,7 +322,7 @@ def mqqplot(insumstats,
     
     # CHR and POS ########################################################################
     # chrom and pos exists && (m || r mode)
-    if (chrom is not None) and (pos is not None) and (("m" in mode) or ("r" in mode)):
+    if (chrom is not None) and (pos is not None) and (("qq" in mode) or ("m" in mode) or ("r" in mode)):
         # when manhattan plot, chrom and pos is needed.
         if chrom in insumstats.columns:
             usecols.append(chrom)
