@@ -1248,18 +1248,22 @@
 <h3 id="label-and-annotation">Label and annotation</h3>
 <ul>
 <li><code>label</code> : a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].</li>
-<li><code>anno</code> : if annotate the variants</li>
 <li><code>sig_level</code>: the significance level for auto-extracting lead variants.</li>
 <li><code>legend_title</code>: r'$ P &lt; 5 x 10^{-8}$ in:',</li>
 <li><code>legend_pos</code>: legend position, default: 'upper left'</li>
 <li><code>xylabel_prefix</code> : "Per-allele effect size in "</li>
-<li><code>is_reg</code> : draw regression line or not</li>
-<li><code>is_45_helper_line</code>: draw 45 degree line or not</li>
+<li><code>is_reg</code> : <code>boolean</code>, if true, draw regression line.</li>
+<li><code>is_45_helper_line</code>: <code>boolean</code>, if true, draw 45 degree line.</li>
+<li><code>anno</code> : <code>boolean</code>, if true, annotate the variants with ID.</li>
+<li><code>anno_diff</code>: <code>float</code>, threshold of effect size difference for annotation.</li>
+<li><code>anno_min1</code>: <code>float</code>, threshold of sumstats1 minimum absolute effect size for annotation.</li>
+<li><code>anno_min2</code>: <code>float</code>, threshold of sumstats2 minimum absolute effect size for annotation.</li>
 </ul>
 <h3 id="heterogeneity-test">Heterogeneity test</h3>
 <ul>
 <li><code>is_q</code> : if apply the heterogeneity tests by Cochran's Q test.</li>
 <li><code>q_level</code> : the significance threshold for Cochran's Q test (raw p value).</li>
+<li><code>anno_het</code>: annotate only variants with Phet &lt; <code>q_level</code></li>
 </ul>
 <h3 id="r-se">R SE</h3>
 <ul>
