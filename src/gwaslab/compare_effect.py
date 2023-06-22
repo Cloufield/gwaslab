@@ -440,11 +440,7 @@ def compare_effect(path1,
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EFFECT_2_aligned"]= -sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EFFECT_2"]
     else:
         #flip for OR or - +
-        sig_list_merged["OR_L_1"]=np.abs(sig_list_merged["OR_L_1"]-sig_list_merged["OR_1"])
-        sig_list_merged["OR_H_1"]=np.abs(sig_list_merged["OR_H_1"]-sig_list_merged["OR_1"])
-        sig_list_merged["OR_L_2"]=np.abs(sig_list_merged["OR_L_2"]-sig_list_merged["OR_2"])
-        sig_list_merged["OR_H_2"]=np.abs(sig_list_merged["OR_H_2"]-sig_list_merged["OR_2"])
-        
+
         sig_list_merged["EA_2_aligned"]=sig_list_merged["EA_2"]
         sig_list_merged["NEA_2_aligned"]=sig_list_merged["NEA_2"]
         sig_list_merged["OR_2_aligned"]=sig_list_merged["OR_2"]
@@ -454,9 +450,19 @@ def compare_effect(path1,
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EA_2_aligned"]= sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"NEA_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"NEA_2_aligned"]= sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EA_2"]
         sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_2"]
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2"]
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2"]
-    
+        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2"]
+        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2"]
+        
+        sig_list_merged["BETA_1"]=np.log(sig_list_merged["OR_1"])
+        sig_list_merged["BETA_2_aligned"]=np.log(sig_list_merged["OR_2_aligned"])
+        sig_list_merged["SE_1"]=(np.log(sig_list_merged["OR_H_1"]) - np.log(sig_list_merged["OR_1"]))/ss.norm.ppf(0.975)
+        sig_list_merged["SE_2"]=(np.log(sig_list_merged["OR_H_2_aligned"]) - np.log(sig_list_merged["OR_2_aligned"]))/ss.norm.ppf(0.975)
+        
+        sig_list_merged["OR_L_1_err"]=np.abs(sig_list_merged["OR_L_1"]-sig_list_merged["OR_1"])
+        sig_list_merged["OR_H_1_err"]=np.abs(sig_list_merged["OR_H_1"]-sig_list_merged["OR_1"])
+        sig_list_merged["OR_L_2_aligned_err"]=np.abs(sig_list_merged["OR_L_2_aligned"]-sig_list_merged["OR_2_aligned"])
+        sig_list_merged["OR_H_2_aligned_err"]=np.abs(sig_list_merged["OR_H_2_aligned"]-sig_list_merged["OR_2_aligned"])
+        
     if len(eaf)>0:
         # flip eaf
         sig_list_merged["EAF_2_aligned"]=sig_list_merged["EAF_2"]
@@ -479,44 +485,47 @@ def compare_effect(path1,
 
     ####################################################################################################################################
     ## winner's curse correction using aligned beta
-    if wc_correction == "all":
-        if verbose: log.write(" -Correcting BETA for winner's curse with threshold at {} for all variants...".format(sig_level))
-        sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
-        sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
-        
-        if verbose: log.write("  -Correcting BETA for {} variants in sumstats1...".format(sum(~sig_list_merged["EFFECT_1"].isna())))
-        sig_list_merged["EFFECT_1"] = sig_list_merged[["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
+    if mode=="beta":
+        if wc_correction == "all":
+            if verbose: log.write(" -Correcting BETA for winner's curse with threshold at {} for all variants...".format(sig_level))
+            sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
+            sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
+            
+            if verbose: log.write("  -Correcting BETA for {} variants in sumstats1...".format(sum(~sig_list_merged["EFFECT_1"].isna())))
+            sig_list_merged["EFFECT_1"] = sig_list_merged[["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
 
-        if verbose: log.write("  -Correcting BETA for {} variants in sumstats2...".format(sum(~sig_list_merged["EFFECT_2_aligned"].isna())))
-        sig_list_merged["EFFECT_2_aligned"] = sig_list_merged[["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
-    
-    elif wc_correction == "sig" :
-        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants...".format(sig_level))
-        sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
-        sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
-        if verbose: log.write("  -Correcting BETA for {} variants in sumstats1...".format(sum(sig_list_merged["P_1"]<sig_level)))
-        sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, "EFFECT_1"]         = sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, ["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
-        if verbose: log.write("  -Correcting BETA for {} variants in sumstats2...".format(sum(sig_list_merged["P_2"]<sig_level)))
-        sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, "EFFECT_2_aligned"] = sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
-    
-    elif wc_correction == "sumstats1" :
-        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants in sumstats1...".format(sig_level))
-        sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
-        if verbose: log.write("  -Correcting BETA for {} variants in sumstats1...".format(sum(sig_list_merged["P_1"]<sig_level)))
-        sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, "EFFECT_1"]         = sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, ["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+            if verbose: log.write("  -Correcting BETA for {} variants in sumstats2...".format(sum(~sig_list_merged["EFFECT_2_aligned"].isna())))
+            sig_list_merged["EFFECT_2_aligned"] = sig_list_merged[["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct(x[0],x[1],sig_level),axis=1)
         
-    elif wc_correction == "sumstats2" :
-        if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants in sumstats2...".format(sig_level))
-        sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
-        if verbose: log.write("  -Correcting BETA for {} variants in sumstats2...".format(sum(sig_list_merged["P_2"]<sig_level)))
-        sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, "EFFECT_2_aligned"] = sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+        elif wc_correction == "sig" :
+            if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants...".format(sig_level))
+            sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
+            sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
+            if verbose: log.write("  -Correcting BETA for {} variants in sumstats1...".format(sum(sig_list_merged["P_1"]<sig_level)))
+            sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, "EFFECT_1"]         = sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, ["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+            if verbose: log.write("  -Correcting BETA for {} variants in sumstats2...".format(sum(sig_list_merged["P_2"]<sig_level)))
+            sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, "EFFECT_2_aligned"] = sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+        
+        elif wc_correction == "sumstats1" :
+            if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants in sumstats1...".format(sig_level))
+            sig_list_merged["EFFECT_1_RAW"] = sig_list_merged["EFFECT_1"].copy()
+            if verbose: log.write("  -Correcting BETA for {} variants in sumstats1...".format(sum(sig_list_merged["P_1"]<sig_level)))
+            sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, "EFFECT_1"]         = sig_list_merged.loc[sig_list_merged["P_1"]<sig_level, ["EFFECT_1_RAW","SE_1"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
+            
+        elif wc_correction == "sumstats2" :
+            if verbose: log.write(" - Correcting BETA for winner's curse with threshold at {} for significant variants in sumstats2...".format(sig_level))
+            sig_list_merged["EFFECT_2_aligned_RAW"] = sig_list_merged["EFFECT_2_aligned"].copy()
+            if verbose: log.write("  -Correcting BETA for {} variants in sumstats2...".format(sum(sig_list_merged["P_2"]<sig_level)))
+            sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, "EFFECT_2_aligned"] = sig_list_merged.loc[sig_list_merged["P_2"]<sig_level, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
 
     ########################## Het test############################################################
     ## heterogeneity test
-    if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
+    if (is_q is True):
         if verbose: log.write(" -Calculating Cochran's Q statistics and peform chisq test...")
-        sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2",q_level=q_level)
-        
+        if mode=="beta" or mode=="BETA" or mode=="Beta":
+            sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2",q_level=q_level)
+        else:
+            sig_list_merged = test_q(sig_list_merged,"BETA_1","SE_1","BETA_2_aligned","SE_2",q_level=q_level)
     ######################### save ###############################################################
     ## save the merged data
     save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
@@ -529,7 +538,7 @@ def compare_effect(path1,
         if verbose: log.write(" -Exclude "+str(len(sig_list_merged) -sum(both_eaf_clear))+ " variants with maf <",maf_level)
         sig_list_merged = sig_list_merged.loc[both_eaf_clear,:]
     # heterogeneity summary
-    if (is_q is True) and (mode=="beta" or mode=="BETA" or mode=="Beta"):
+    if (is_q is True):
         if verbose: log.write(" -Significant het:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:]))
         if verbose: log.write(" -All sig:" ,len(sig_list_merged))
         if verbose: log.write(" -Het rate:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:])/len(sig_list_merged))   
@@ -590,35 +599,41 @@ def compare_effect(path1,
     else:
         ## if OR
         if len(sum0)>0:
-            ax.errorbar(sum0["OR_1"],sum0["OR_2_aligned"], xerr=sum0[["OR_L_1","OR_H_1"]].T,yerr=sum0[["OR_L_2_aligned","OR_H_2_aligned"]].T,
+            ax.errorbar(sum0["OR_1"],sum0["OR_2_aligned"], xerr=sum0[["OR_L_1_err","OR_H_1_err"]].T,yerr=sum0[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum0["OR_1"],sum0["OR_2_aligned"],label=label[3],zorder=2,color="#cccccc",marker=".",**scatterargs)
+            ax.scatter(sum0["OR_1"],sum0["OR_2_aligned"],label=label[3],zorder=2,color="#cccccc",edgecolors=sum0["Edge_color"],marker=".",**scatterargs)
+            legend_elements.append(label[3])
         if len(sum1only)>0:
-            ax.errorbar(sum1only["OR_1"],sum1only["OR_2_aligned"], xerr=sum1only[["OR_L_1","OR_H_1"]].T,yerr=sum1only[["OR_L_2_aligned","OR_H_2_aligned"]].T,
+            ax.errorbar(sum1only["OR_1"],sum1only["OR_2_aligned"], xerr=sum1only[["OR_L_1_err","OR_H_1_err"]].T,yerr=sum1only[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum1only["OR_1"],sum1only["OR_2_aligned"],label=label[0],zorder=2,color="#205be6",marker="^",**scatterargs)
-
+            ax.scatter(sum1only["OR_1"],sum1only["OR_2_aligned"],label=label[0],zorder=2,color="#e6320e",edgecolors=sum1only["Edge_color"],marker="^",**scatterargs)
+            legend_elements.append(label[0])
         if len(sum2only)>0:
-            ax.errorbar(sum2only["OR_1"],sum2only["OR_2_aligned"], xerr=sum2only[["OR_L_1","OR_H_1"]].T,yerr=sum2only[["OR_L_2_aligned","OR_H_2_aligned"]].T,
+            ax.errorbar(sum2only["OR_1"],sum2only["OR_2_aligned"], xerr=sum2only[["OR_L_1_err","OR_H_1_err"]].T,yerr=sum2only[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum2only["OR_1"],sum2only["OR_2_aligned"],label=label[1],zorder=2,color="#41e620",marker="o",**scatterargs)
-
+            ax.scatter(sum2only["OR_1"],sum2only["OR_2_aligned"],label=label[1],zorder=2,color="#41e620",edgecolors=sum2only["Edge_color"],marker="o",**scatterargs)
+            legend_elements.append(label[1])
         if len(both)>0:
-            ax.errorbar(both["OR_1"],both["OR_2_aligned"], xerr=both[["OR_L_1","OR_H_1"]].T,yerr=both[["OR_L_2_aligned","OR_H_2_aligned"]].T,
+            ax.errorbar(both["OR_1"],both["OR_2_aligned"], xerr=both[["OR_L_1_err","OR_H_1_err"]].T,yerr=both[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
                         linewidth=0,zorder=1,**errargs)
-            ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label[2],zorder=2,color="#e6320e",marker="s",**scatterargs)
-    
+            ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label[2],zorder=2,color="#205be6",edgecolors=both["Edge_color"],marker="s",**scatterargs)
+            legend_elements.append(label[2])
     ## annotation #################################################################################################################
     if anno==True:
         sig_list_toanno = sig_list_merged.dropna(axis=0)
         if is_q==True and anno_het == True:
             sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["Edge_color"]=="black",:]
         
-
-        sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
-        sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
-        sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["EFFECT_1"].abs() >=anno_min) & (sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min) ,:]
-        sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["EFFECT_1"] - sig_list_toanno["EFFECT_2_aligned"]) >=anno_diff,:]
+        if mode=="beta":
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
+            sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["EFFECT_1"].abs() >=anno_min) & (sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min) ,:]
+            sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["EFFECT_1"] - sig_list_toanno["EFFECT_2_aligned"]) >=anno_diff,:]
+        else:            
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["OR_1"].abs() >=anno_min1 ,:]
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["OR_2_aligned"].abs() >=anno_min2 ,:]
+            sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["OR_1"].abs() >=anno_min) & (sig_list_toanno["OR_2_aligned"].abs() >=anno_min) ,:]
+            sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["OR_1"] - sig_list_toanno["OR_2_aligned"]) >=anno_diff,:]
 
         texts_l=[]
         texts_r=[]
@@ -629,7 +644,11 @@ def compare_effect(path1,
                 else:
                     texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],index,ha="left",va="top"))
             else:
-                texts.append(plt.text(row["OR_1"], row["OR_2_aligned"],index, ha='center', va='center')) 
+                if row["OR_1"] <  row["OR_2_aligned"]:
+                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],index, ha='right', va='bottom')) 
+                else:
+                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],index, ha='left', va='top')) 
+
         adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
         adjust_text(texts_r,autoalign =False,precision =0.001,lim=1000, ha="left",va="top", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects =(0.8,0.8),arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
     
@@ -638,14 +657,34 @@ def compare_effect(path1,
         sig_list_toanno = sig_list_toanno.loc[sig_list_toanno.index.isin(list(anno.keys())),:]
         if is_q==True and anno_het == True:
             sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["Edge_color"]=="black",:]
-        sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
-        sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
-        sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["EFFECT_1"].abs() >=anno_min) & (sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min) ,:]
+
+        if mode=="beta":
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
+            sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["EFFECT_1"].abs() >=anno_min) & (sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min) ,:]
+            sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["EFFECT_1"] - sig_list_toanno["EFFECT_2_aligned"]) >=anno_diff,:]
+        else:            
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["OR_1"].abs() >=anno_min1 ,:]
+            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["OR_2_aligned"].abs() >=anno_min2 ,:]
+            sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["OR_1"].abs() >=anno_min) & (sig_list_toanno["OR_2_aligned"].abs() >=anno_min) ,:]
+            sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["OR_1"] - sig_list_toanno["OR_2_aligned"]) >=anno_diff,:]
         
-        texts=[]
+        texts_l=[]
+        texts_r=[]
         for index, row in sig_list_toanno.iterrows():
-            texts.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index], ha='right', va='top')) 
-        adjust_text(texts, expand_text=(1.2,1.2) , expand_objects=(1.2,1.2), expand_points=(1.2,1.2) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
+            if mode=="beta" or mode=="BETA" or mode=="Beta":
+                if row["EFFECT_1"] <  row["EFFECT_2_aligned"]:
+                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="right",va="bottom"))
+                else:
+                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="left",va="top"))
+            else:
+                if row["OR_1"] <  row["OR_2_aligned"]:
+                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='right', va='bottom')) 
+                else:
+                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='left', va='top')) 
+
+        adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
+        adjust_text(texts_r,autoalign =False,precision =0.001,lim=1000, ha="left",va="top", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects =(0.8,0.8),arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
     #################################################################################################################################
     
     # plot x=0,y=0, and a 45 degree line
@@ -680,6 +719,8 @@ def compare_effect(path1,
                 r_se_jackknife_string= ""
         else:
             reg = ss.linregress(sig_list_merged["OR_1"],sig_list_merged["OR_2_aligned"])
+            r_se_jackknife_string= ""
+
         #### calculate p values based on selected value , default = 0 
         if verbose:log.write(" -Calculating p values based on given null slope :",null_beta)
         t_score = (reg[0]-null_beta) / reg[4]
