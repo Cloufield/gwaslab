@@ -1,5 +1,8 @@
 # Update Logs
 
+## 3.4.16 2023/06/22
+- fixed bug for qq mode in `plot_mqq()`
+
 ## 3.4.15 2023/06/20
 - [LDSC-rg genetic correlation heatmap](https://cloufield.github.io/gwaslab/GeneticCorrelation/)
 - [Allele frequency correlation plot](https://cloufield.github.io/gwaslab/AlleleFrequency/)
