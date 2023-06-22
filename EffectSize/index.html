@@ -682,6 +682,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#warning-testing-will-be-available-from-v3417" class="md-nav__link">
+    (WARNing testing!!! will be available from v3.4.17)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#options" class="md-nav__link">
     Options
   </a>
@@ -692,6 +699,13 @@
           <li class="md-nav__item">
   <a href="#path-and-column" class="md-nav__link">
     Path and column
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save" class="md-nav__link">
+    Save
   </a>
   
 </li>
@@ -725,8 +739,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#r2-se" class="md-nav__link">
-    R2 SE
+  <a href="#r-se" class="md-nav__link">
+    R SE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    
   </a>
   
 </li>
@@ -1058,6 +1079,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#warning-testing-will-be-available-from-v3417" class="md-nav__link">
+    (WARNing testing!!! will be available from v3.4.17)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#options" class="md-nav__link">
     Options
   </a>
@@ -1068,6 +1096,13 @@
           <li class="md-nav__item">
   <a href="#path-and-column" class="md-nav__link">
     Path and column
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#save" class="md-nav__link">
+    Save
   </a>
   
 </li>
@@ -1101,8 +1136,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#r2-se" class="md-nav__link">
-    R2 SE
+  <a href="#r-se" class="md-nav__link">
+    R SE
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    
   </a>
   
 </li>
@@ -1136,6 +1178,7 @@
 
 <h1 id="comparing-effect-sizes">Comparing effect sizes</h1>
 <h2 id="scatter-plot-effect-size-comparison">Scatter plot : effect size comparison</h2>
+<h2 id="warning-testing-will-be-available-from-v3417">(WARNing testing!!! will be available from v3.4.17)</h2>
 <p><code>gl.compare_effect()</code> will plot effect size comparison plot using two sets of sumstats. Alleles will be aligned to effect alleles in sumstats1.</p>
 <div class="highlight"><pre><span></span><code><span class="n">gl</span><span class="o">.</span><span class="n">compare_effect</span> <span class="p">(</span><span class="n">path1</span><span class="p">,</span>
                    <span class="n">cols_name_list_1</span><span class="p">,</span> <span class="n">effect_cols_list_1</span><span class="p">,</span>
@@ -1155,7 +1198,7 @@
                    <span class="n">wc_sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>
                    <span class="n">reg_box</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;round&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">),</span>
                    <span class="n">is_reg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                   <span class="n">r2_se</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">r_se</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                    <span class="n">is_45_helper_line</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                    <span class="n">legend_title</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$ P &lt; 5 x 10^{-8}$ in:&#39;</span><span class="p">,</span>
                    <span class="n">legend_pos</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">,</span>
@@ -1173,7 +1216,7 @@
 <h2 id="options">Options</h2>
 <h3 id="path-and-column">Path and column</h3>
 <ul>
-<li><code>path1</code> and <code>path2</code> : the paths to the sumstats.</li>
+<li><code>path1</code> and <code>path2</code> : the paths to the sumstats. Can also be <code>gl.Sumstats</code> Object or <code>pd.DataFrame</code> (from v3.4.17). If <code>gl.Sumstats</code> Objects are provided, there is no need to set cols_name_list and effect_cols_list.</li>
 <li><code>cols_name_list_1</code> and <code>cols_name_list_2</code> : list of column names for variants basic information</li>
 <li><code>effect_cols_list_1</code> and <code>effect_cols_list_1</code> : list of column names for effect size-related columns</li>
 <li><code>mode</code> : use beta or OR </li>
@@ -1183,6 +1226,15 @@
 <li>[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]</li>
 </ul>
 </li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>from v3.4.17, you need to specify the parameters using keywords instead of using them as positional arguments for <code>cols_name_list_1</code> and <code>cols_name_list_2</code>, <code>effect_cols_list_1</code> and <code>effect_cols_list_1</code> .</p>
+</div>
+<h3 id="save">Save</h3>
+<ul>
+<li><code>save</code>: path to the saved file.</li>
+<li><code>saveargs</code>: parametrs for plt.savefig(). <code>{"dpi":300,"facecolor":"white"}</code></li>
 </ul>
 <h3 id="snplist">Snplist</h3>
 <ul>
@@ -1207,14 +1259,80 @@
 <h3 id="heterogeneity-test">Heterogeneity test</h3>
 <ul>
 <li><code>is_q</code> : if apply the heterogeneity tests by Cochran's Q test.</li>
-<li><code>q_level</code> : the significance threshold for Cochran's Q test.</li>
+<li><code>q_level</code> : the significance threshold for Cochran's Q test (raw p value).</li>
 </ul>
-<h3 id="r2-se">R2 SE</h3>
+<h3 id="r-se">R SE</h3>
 <ul>
-<li><code>r2_se</code>: <code>boolean</code> If True, SE for r2 will be estimated using the jackknife method.</li>
+<li><code>r_se</code>: <code>boolean</code> If True, SE for r will be estimated using the jackknife method. (Note: available from v3.4.17)</li>
 </ul>
-<div class="arithmatex">\[ s.e.(\hat{r^2}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r^2_i} -\bar{r^2}_{jack} )^2 } \]</div>
+<div class="arithmatex">\[ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}_{jack} )^2 } \]</div>
+<h3 id="_1"></h3>
 <h2 id="example">Example:</h2>
+<div class="admonition example">
+<p class="admonition-title">Use gl.Sumstats object</p>
+<p><div class="highlight"><pre><span></span><code>gl1 = gl.Sumstats(&quot;bbj_bmi_female.txt.gz&quot;,fmt=&quot;gwaslab&quot;,snpid=&quot;SNP&quot;,ea=&quot;REF&quot;,nea=&quot;ALT&quot;,sep=&quot;\t&quot;)
+gl2 = gl.Sumstats(&quot;bbj_bmi_male.txt.gz&quot;,fmt=&quot;gwaslab&quot;,snpid=&quot;SNP&quot;,ea=&quot;REF&quot;,nea=&quot;ALT&quot;,sep=&quot;\t&quot;)
+
+# auto extract lead SNPs and compare the effect sizes
+a = gl.compare_effect(path1= gl1,
+                      path2= gl2
+)
+</code></pre></div>
+<img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/258d3316-7d73-408a-8e20-e560b831861c"></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Use pandas DataFrame object</p>
+<div class="highlight"><pre><span></span><code>pd1 = pd.read_table(&quot;bbj_bmi_female.txt.gz&quot;,sep=&quot;\t&quot;)
+pd2 = pd.read_table(&quot;bbj_bmi_male.txt.gz&quot;,sep=&quot;\t&quot;)
+
+# cols_name_list should be SNPID, P, Effect Allele, Non-Effect allele, Chromosome and Position
+# effect_cols_list should be BETA,SE
+
+a = gl.compare_effect(path1 = pd1,
+                    cols_name_list_1 = [&quot;SNP&quot;,&quot;P&quot;,&quot;REF&quot;,&quot;ALT&quot;,&quot;CHR&quot;,&quot;POS&quot;],effect_cols_list_1= [&quot;BETA&quot;,&quot;SE&quot;],
+                    path2 = pd2,
+                    cols_name_list_2 = [&quot;SNP&quot;,&quot;P&quot;,&quot;REF&quot;,&quot;ALT&quot;,&quot;CHR&quot;,&quot;POS&quot;],effect_cols_list_2= [&quot;BETA&quot;,&quot;SE&quot;]
+                    )
+</code></pre></div>
+</div>
+<div class="admonition example">
+<p class="admonition-title">heterogeneity test</p>
+<p><div class="highlight"><pre><span></span><code>pd1 = pd.read_table(&quot;bbj_bmi_female.txt.gz&quot;,sep=&quot;\t&quot;)
+pd2 = pd.read_table(&quot;bbj_bmi_male.txt.gz&quot;,sep=&quot;\t&quot;)
+
+# cols_name_list should be SNPID, P, Effect Allele, Non-Effect allele, Chromosome and Position
+# effect_cols_list should be BETA,SE
+
+a = gl.compare_effect(path1 = pd1,
+                      cols_name_list_1 = [&quot;SNP&quot;,&quot;P&quot;,&quot;REF&quot;,&quot;ALT&quot;,&quot;CHR&quot;,&quot;POS&quot;],effect_cols_list_1= [&quot;BETA&quot;,&quot;SE&quot;],
+                      path2 = pd2,
+                      cols_name_list_2 = [&quot;SNP&quot;,&quot;P&quot;,&quot;REF&quot;,&quot;ALT&quot;,&quot;CHR&quot;,&quot;POS&quot;],effect_cols_list_2= [&quot;BETA&quot;,&quot;SE&quot;],
+                      is_q=True,
+                      q_level=0.05,
+                      legend_mode=&quot;full&quot;
+                      )
+</code></pre></div>
+ <img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/b9c4511c-c1eb-4c36-8b72-788d2b21b790"></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Annotation</p>
+<p><div class="highlight"><pre><span></span><code>a = gl.compare_effect(path1=&quot;bbj_bmi_female.txt.gz&quot;,
+                  cols_name_list_1=[&quot;SNP&quot;,&quot;P&quot;,&quot;REF&quot;,&quot;ALT&quot;,&quot;CHR&quot;,&quot;POS&quot;],effect_cols_list_1=[&quot;BETA&quot;,&quot;SE&quot;],
+                  path2=&quot;bbj_bmi_male.txt.gz&quot;,
+                  cols_name_list_2=[&quot;SNP&quot;,&quot;P&quot;,&quot;REF&quot;,&quot;ALT&quot;,&quot;CHR&quot;,&quot;POS&quot;],effect_cols_list_2=[&quot;BETA&quot;,&quot;SE&quot;],
+                  label=[&quot;Female&quot;,&quot;Male&quot;,&quot;Both&quot;,&quot;None&quot;],
+                  xylabel_prefix=&quot;Per-allele effect size for &quot;,
+                  r_se=True, 
+                  is_q=True, 
+                  anno=True, 
+                  anno_het=True, # only annotate variants with significant heterogeneity
+                  anno_diff=0.015,    # only annotate variants with a difference in effect size &gt; 0.015
+                  sig_level=5e-8,
+                  legend_title=r&#39;$ P &lt; 5 x 10^{-8}$ in:&#39;,
+                  verbose=True)
+</code></pre></div>
+<img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/9e2ac224-63d6-44da-9dbc-1cd43596055f"></p>
+</div>
 <div class="admonition example">
 <p class="admonition-title">Male-specific and female-specific BMI Sumstats from JENGER</p>
 <div class="highlight"><pre><span></span><code>!wget -O bbj_bmi_male.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
@@ -1223,15 +1341,21 @@
 Headers of the files : # SNP    CHR POS REF ALT Frq Rsq BETA    SE  P
 </code></pre></div>
 <p><div class="highlight"><pre><span></span><code><span class="c1"># GWASLab will automatically extract significant variants from both sumstats. </span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">compare_effect</span><span class="p">(</span><span class="s2">&quot;bbj_bmi_female.txt.gz&quot;</span><span class="p">,</span>
-                      <span class="p">[</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span><span class="s2">&quot;POS&quot;</span><span class="p">],[</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span><span class="s2">&quot;SE&quot;</span><span class="p">],</span>
-                      <span class="s2">&quot;bbj_bmi_male.txt.gz&quot;</span><span class="p">,</span>
-                      <span class="p">[</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span><span class="s2">&quot;POS&quot;</span><span class="p">],[</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span><span class="s2">&quot;SE&quot;</span><span class="p">],</span>
-                      <span class="n">label</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Female&quot;</span><span class="p">,</span><span class="s2">&quot;Male&quot;</span><span class="p">,</span><span class="s2">&quot;Both&quot;</span><span class="p">,</span><span class="s2">&quot;None&quot;</span><span class="p">],</span>
-                      <span class="n">xylabel_prefix</span><span class="o">=</span><span class="s2">&quot;Per-allele effect size for &quot;</span><span class="p">,</span>
-                      <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-6</span><span class="p">,</span>
-                      <span class="n">legend_title</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$ P &lt; 5 x 10^{-6}$ in:&#39;</span><span class="p">,</span>
-                      <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">compare_effect</span><span class="p">(</span><span class="n">path1</span><span class="o">=</span><span class="s2">&quot;bbj_bmi_female.txt.gz&quot;</span><span class="p">,</span>
+                  <span class="n">cols_name_list_1</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span><span class="s2">&quot;POS&quot;</span><span class="p">],</span><span class="n">effect_cols_list_1</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span><span class="s2">&quot;SE&quot;</span><span class="p">],</span>
+                  <span class="n">path2</span><span class="o">=</span><span class="s2">&quot;bbj_bmi_male.txt.gz&quot;</span><span class="p">,</span>
+                  <span class="n">cols_name_list_2</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span><span class="s2">&quot;P&quot;</span><span class="p">,</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span><span class="s2">&quot;POS&quot;</span><span class="p">],</span><span class="n">effect_cols_list_2</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span><span class="s2">&quot;SE&quot;</span><span class="p">],</span>
+                  <span class="n">label</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Female&quot;</span><span class="p">,</span><span class="s2">&quot;Male&quot;</span><span class="p">,</span><span class="s2">&quot;Both&quot;</span><span class="p">,</span><span class="s2">&quot;None&quot;</span><span class="p">],</span>
+                  <span class="n">xylabel_prefix</span><span class="o">=</span><span class="s2">&quot;Per-allele effect size for &quot;</span><span class="p">,</span>
+                  <span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">anno_het</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">anno_diff</span><span class="o">=</span><span class="mf">0.015</span><span class="p">,</span>
+                  <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>
+                  <span class="n">legend_title</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$ P &lt; 5 x 10^{-8}$ in:&#39;</span><span class="p">,</span>
+                  <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">save</span> <span class="o">=</span> <span class="s2">&quot;myplot.png&quot;</span><span class="p">,</span>
+                  <span class="n">saveargs</span><span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">300</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">}</span>
+<span class="p">)</span>
 </code></pre></div>
 <img width="500" alt="image" src="https://user-images.githubusercontent.com/40289485/215021843-4572636d-b1a8-43f5-8f6e-070b09e5270f.png"></p>
 <p>Reference: Akiyama, M., Okada, Y., Kanai, M., Takahashi, A., Momozawa, Y., Ikeda, M., ... &amp; Kamatani, Y. (2017). Genome-wide association study identifies 112 new loci for body mass index in the Japanese population. Nature genetics, 49(10), 1458-1467.</p>
