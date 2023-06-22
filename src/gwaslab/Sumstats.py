@@ -51,6 +51,7 @@ from gwaslab.CommonData import get_formats_list
 from gwaslab.version import _show_version
 from gwaslab.version import gwaslab_info
 from gwaslab.meta import init_meta
+from gwaslab.trumpetplot import plottrumpet
 import gc
 
 #20220309
@@ -466,6 +467,10 @@ class Sumstats():
                        **args)
         
         return plot
+    
+    def plot_trumpet(self, **args):
+        fig = plottrumpet(self.data, **args)
+        return fig
 
     def get_lead(self, build=None, **args):
         if "SNPID" in self.data.columns:
