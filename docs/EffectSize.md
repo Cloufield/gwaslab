@@ -1,6 +1,9 @@
 # Comparing effect sizes
 
-## Scatter plot : effect size comparison
+## Scatter plot : effect size comparison 
+
+## (WARNing testing!!! will be available from v3.4.17)
+
 `gl.compare_effect()` will plot effect size comparison plot using two sets of sumstats. Alleles will be aligned to effect alleles in sumstats1.
 
 ```python
@@ -54,6 +57,10 @@ gl.compare_effect (path1,
 !!! note 
     from v3.4.17, you need to specify the parameters using keywords instead of using them as positional arguments for `cols_name_list_1` and `cols_name_list_2`, `effect_cols_list_1` and `effect_cols_list_1` .
 
+### Save
+- `save`: path to the saved file.
+- `saveargs`: parametrs for plt.savefig(). `{"dpi":300,"facecolor":"white"}`
+
 ### Snplist
 - `snplist` : optional, specify the variants you want to compare. If None, GWASLab will automatically extract lead variants from both sumstats.
 
@@ -94,7 +101,9 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
     a = gl.compare_effect(path1= gl1,
                           path2= gl2
     )
+
     ```
+    <img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/258d3316-7d73-408a-8e20-e560b831861c">
 
 !!! example "Use pandas DataFrame object"
     ```
@@ -112,7 +121,44 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
     ```
 
 !!! example "heterogeneity test"
+    ```
+    pd1 = pd.read_table("bbj_bmi_female.txt.gz",sep="\t")
+    pd2 = pd.read_table("bbj_bmi_male.txt.gz",sep="\t")
 
+    # cols_name_list should be SNPID, P, Effect Allele, Non-Effect allele, Chromosome and Position
+    # effect_cols_list should be BETA,SE
+
+    a = gl.compare_effect(path1 = pd1,
+                          cols_name_list_1 = ["SNP","P","REF","ALT","CHR","POS"],effect_cols_list_1= ["BETA","SE"],
+                          path2 = pd2,
+                          cols_name_list_2 = ["SNP","P","REF","ALT","CHR","POS"],effect_cols_list_2= ["BETA","SE"],
+                          is_q=True,
+                          q_level=0.05,
+                          legend_mode="full"
+                          )
+    ```
+     <img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/b9c4511c-c1eb-4c36-8b72-788d2b21b790">
+     
+!!! example "Annotation"
+    ```
+    a = gl.compare_effect(path1="bbj_bmi_female.txt.gz",
+                      cols_name_list_1=["SNP","P","REF","ALT","CHR","POS"],effect_cols_list_1=["BETA","SE"],
+                      path2="bbj_bmi_male.txt.gz",
+                      cols_name_list_2=["SNP","P","REF","ALT","CHR","POS"],effect_cols_list_2=["BETA","SE"],
+                      label=["Female","Male","Both","None"],
+                      xylabel_prefix="Per-allele effect size for ",
+                      r_se=True, 
+                      is_q=True, 
+                      anno=True, 
+                      anno_het=True, # only annotate variants with significant heterogeneity
+                      anno_diff=0.015,    # only annotate variants with a difference in effect size > 0.015
+                      sig_level=5e-8,
+                      legend_title=r'$ P < 5 x 10^{-8}$ in:',
+                      verbose=True)
+                      
+    ```
+    <img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/9e2ac224-63d6-44da-9dbc-1cd43596055f">
+    
 !!! example "Male-specific and female-specific BMI Sumstats from JENGER"
     
     ```
