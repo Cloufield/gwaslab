@@ -62,51 +62,82 @@ gl.compare_effect (path1,
 
 ## Options
 ### Path and column
+
 - `path1` and `path2` : the paths to the sumstats. Can also be `gl.Sumstats` Object or `pd.DataFrame` (from v3.4.17). If `gl.Sumstats` Objects are provided, there is no need to set cols_name_list and effect_cols_list.
 - `cols_name_list_1` and `cols_name_list_2` : list of column names for variants basic information
-- `effect_cols_list_1` and `effect_cols_list_1` : list of column names for effect size-related columns
+- `effect_cols_list_1` and `effect_cols_list_2` : list of column names for effect size-related columns
 - `mode` : use beta or OR 
 -  `cols_name_list_x` and `effect_cols_list_x` examples:
     - `[snpid,p,ea,nea]`        ,`[effect,se]`
     - `[snpid,p,ea,nea,chr,pos]`,`[effect,se]`
     - `[snpid,p,ea,nea,chr,pos]`,`[OR,OR_l,OR_h]`
 
+|Option|Type|Description|Default|
+|-|-|-|-|
+|`path1`|`string`,`gl.Sumstats`, or `pd.DataFrame`|path to the sumstats file, or gwaslab Sumstats object or pandas Dataframe|None|
+|`path2` |`string`,`gl.Sumstats`, or `pd.DataFrame`|path to the sumstats file, or gwaslab Sumstats object or pandas Dataframe|None|
+|`cols_name_list_1`|`list`| "[snpid,p,ea,nea]" or "[snpid,p,ea,nea,chr,pos]" |None|
+|`cols_name_list_2`|`list`|"[snpid,p,ea,nea]" or "[snpid,p,ea,nea,chr,pos]"|None|
+|`effect_cols_list_1`|`list`|"[effect,se]" or "[OR,OR_95l,OR_95h]"|None|
+|`effect_cols_list_2`|`list`|"[effect,se]" or "[OR,OR_95l,OR_95h]"|None|
+|`mode`|`beta` or `OR`|plot beta or OR|`beta`|
+
 !!! note 
     from v3.4.17, you need to specify the parameters using keywords instead of using them as positional arguments for `cols_name_list_1` and `cols_name_list_2`, `effect_cols_list_1` and `effect_cols_list_1` .
 
-### Save
-- `save`: path to the saved file.
-- `saveargs`: parametrs for plt.savefig(). `{"dpi":300,"facecolor":"white"}`
+### Save figures
+|Option|Type|Description|Default|
+|-|-|-|-|
+|`save`|`string`|path to the saved file|`./Sumstats1_Sumstats2_effect_comparison_plot.png`|
+|`saveargs`|`dict`|parametrs for plt.savefig()|`{"dpi":300,"facecolor":"white"}`|
 
 ### Snplist
-- `snplist` : optional, specify the variants you want to compare. If None, GWASLab will automatically extract lead variants from both sumstats.
 
-### Filter by maf: 
-- `eaf` : `list`, optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is needed when you need to filter by maf using `maf_level`.
-- `maf_level`: `float`, the maf filter for variants. Vairants with maf < maf_level will be removed from comparison.
+|Option|Type|Description|Default|
+|-|-|-|-|
+|`snplist`|`list`|optional, specify the variants you want to compare. If None, GWASLab will automatically extract lead variants from both sumstats.|None|
 
-### Label 
-- `label` : `list`, a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"].
-- `sig_level`: `float`, the significance level for auto-extracting lead variants. If `snplist` is provided, the auto-extraction will be skipped. 
-- `legend_title`: `string`, default: r'$ P < 5 x 10^{-8}$ in:'.
-- `legend_pos`: `string`, legend position, default: 'upper left'.
-- `xylabel_prefix` : default: "Per-allele effect size in ".
+### Filter by maf:
+
+|Option|Type|Description|Default|
+|-|-|-|-|
+|`eaf`|`list`|optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is required when you need to filter by maf using `maf_level`.|`None`|
+|`maf_level`|`float`| the maf filter for variants. Vairants with maf < maf_level will be removed from comparison.|`None`|
+
+### Label
+
+|Option|Type|Description|Default|
+|-|-|-|-|
+|`label`|`list`|a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"]|`["Sumstats_1","Sumstats_2","Both","None"]`|
+|`sig_level`|`float`|the significance level for auto-extracting lead variants. If `snplist` is provided, the auto-extraction will be skipped. |`5e-8`|
+|`legend_title`| `string`|legend title|`'$ P < 5 x 10^{-8}$ in:'`|
+|`legend_pos`| `string`|legend position|`upper left`|
+|`xylabel_prefix`| `string`|-|`"Per-allele effect size in "`|
 
 ### Annotation
-- `is_reg` : `boolean`, if true, draw regression line.
-- `is_45_helper_line`: `boolean`, if true, draw 45 degree line.
-- `anno` : `boolean`, if true, annotate the variants with ID.
-- `anno_diff`: `float`, threshold of effect size difference for annotation.
-- `anno_min1`: `float`, threshold of sumstats1 minimum absolute effect size for annotation.
-- `anno_min2`: `float`, threshold of sumstats2 minimum absolute effect size for annotation.
+
+|Option|Type|Description|Default|
+|-|-|-|-|
+|`is_reg`|`boolean`|if true, draw regression line.|`True`|
+|`is_45_helper_line`|`boolean`|if true, draw 45 degree line.|`True`|
+|`anno`|`boolean`|if true, annotate the variants with ID.|`False`|
+|`anno_diff`|`float`|threshold of effect size difference for annotation.|`0`|
+|`anno_min1`|`float`|threshold of sumstats1 minimum absolute effect size for annotation.|`0`|
+|`anno_min2`|`float`|threshold of sumstats2 minimum absolute effect size for annotation.|`0`|
 
 ### Heterogeneity test
-- `is_q` : if true, apply the heterogeneity tests by Cochran's Q test.
-- `q_level` : `float`, the significance threshold for Cochran's Q test (raw p value).
-- `anno_het`: annotate only variants with Phet < `q_level`
+
+|Option|Type|Description|Default|
+|-|-|-|-|
+|`is_q`|`boolean`| if true, apply the heterogeneity tests by Cochran's Q test.|`True`|
+|`q_level`| `float`| the significance threshold for Cochran's Q test (raw p value).|`0.05`|
+|`anno_het`||annotate only variants with Phet < `q_level`|`False`|
 
 ### R SE
-- `r_se`: `boolean` If True, SE for r will be estimated using the jackknife method. (Note: available from v3.4.17)
+
+|Option|Type|Description|Default|
+|-|-|-|-|
+|`r_se`|`boolean`|If True, SE for r will be estimated using the jackknife method. (Note: available from v3.4.17)|`False`|
 
 $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}_{jack} )^2 } $$
 
