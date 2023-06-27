@@ -38,6 +38,7 @@ from gwaslab.quickfix import _quick_assign_marker_relative_size
 from gwaslab.annotateplot import annotate_pair
 from gwaslab.to_pickle import load_pickle
 from gwaslab.to_pickle import load_data_from_pickle
+from gwaslab.Sumstats import Sumstats
 def plot_miami( 
           path1,
           path2,
@@ -103,10 +104,11 @@ def plot_miami(
           colors1=None,
           colors2=None,
           scatter_kwargs=None,
-          xlabel_coords=(-0.025, -0.025),
-          xtick_label_pad=10,
+          xlabel_coords=(-0.027, -0.027),
+          xtick_label_pad=None,
           marker_size=(5,25),
           verbose=True,
+          xtickpad=None,
           repel_force=0.03,
           save=None,
           saveargs=None,
@@ -187,7 +189,15 @@ def plot_miami(
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
     if dpi!=100:
         figargs["dpi"] = dpi
-    
+    if xtickpad is None:
+        if "figsize" not in figargs.keys():
+            figargs["figsize"] = (15,5)
+        xtickpad =   figargs["figsize"][1] * region_hspace *72 / 6
+    if xtick_label_pad is None:
+        if "figsize" not in figargs.keys():
+            figargs["figsize"] = (15,5)
+        xtick_label_pad =  72 * figargs["figsize"][1] * region_hspace / 6
+
     if chr_dict1==False:
         chr_dict1 = chr_dict
     if chr_dict2==False:
@@ -199,20 +209,37 @@ def plot_miami(
     pos="POS"
     
     ## load sumstats1 ###########################################################################################################
-    if verbose: log.write(" -Loading sumstats1 ({} mode):".format(modes[0]) + path1)
+    if type(path1) is str:
+        if verbose: log.write(" -Loading sumstats1 ({} mode):".format(modes[0]) + path1)
     if verbose: log.write(" -Sumstats1 CHR,POS,P information will be obtained from:",cols1)
+    
     if modes[0]=="pickle":
         sumstats1 = load_data_from_pickle(path1,usecols=cols1)
     else:
-        sumstats1 = pd.read_csv(path1,sep=sep[0],usecols=cols1,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
+        if type(path1) is Sumstats:
+            if verbose: log.write(" -Loading sumstats1 from gwaslab.Sumstats Object")
+            sumstats1 = path1.data[cols1].copy()
+        elif type(path1) is pd.DataFrame:
+            if verbose: log.write(" -Loading sumstats1 from pandas.DataFrame Object")
+            sumstats1 = path1[cols1].copy()
+        else:
+            sumstats1=pd.read_table(path1,sep=sep[0],usecols=cols1,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args)
 
     ## load sumstats2 ###########################################################################################################
-    if verbose: log.write(" -Loading sumstats2 ({} mode):".format(modes[1]) + path2)
+    if type(path2) is str:
+        if verbose: log.write(" -Loading sumstats2 ({} mode):".format(modes[1]) + path2)
     if verbose: log.write(" -Sumstats2 CHR,POS,P information will be obtained from:",cols2)
     if modes[1]=="pickle":
         sumstats2 = load_data_from_pickle(path2,usecols=cols2) 
     else:
-        sumstats2 = pd.read_csv(path2,sep=sep[1],usecols=cols2,dtype={cols1[0]:"string",cols1[1]:"Int64",cols1[2]:"float64"},**readcsv_args) 
+        if type(path2) is Sumstats:
+            if verbose: log.write(" -Loading sumstats2 from gwaslab.Sumstats Object")
+            sumstats2 = path2.data[cols2].copy()
+        elif type(path2) is pd.DataFrame:
+            if verbose: log.write(" -Loading sumstats2 from pandas.DataFrame Object")
+            sumstats2 = path2[cols2].copy()
+        else:
+            sumstats2=pd.read_table(path2,sep=sep[0],usecols=cols2,dtype={cols2[0]:"string",cols2[1]:"Int64",cols2[2]:"float64"},**readcsv_args)
 
     sumstats1 = sumstats1.rename(columns={cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"})
     sumstats1 = _quick_fix(sumstats1,chr_dict=chr_dict1, scaled=scaled1, verbose=verbose, log=log)
@@ -561,6 +588,7 @@ def plot_miami(
     # set labels
     ax1.set_xlabel("CHR",fontsize=fontsize,family=font_family)
     ax1.xaxis.set_label_coords(xlabel_coords[0],xlabel_coords[1])
+    
     ax1.tick_params(axis='x', which='major', pad=xtick_label_pad)
     
     ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family=font_family)

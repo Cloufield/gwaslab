@@ -125,7 +125,7 @@ def compare_effect(path1,
             else:
                 effect_cols_list_2 = ["OR","OR_95L","OR_95U"]
     elif type(path2) is pd.DataFrame:
-        if verbose: log.write("Path1 is pandas DataFrame object...")
+        if verbose: log.write("Path2 is pandas DataFrame object...")
     
     ######### 2 extract snplist2
     if verbose: log.write(" -Loading "+label[1]+" SNP list in memory...")    
