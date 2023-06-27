@@ -24,22 +24,22 @@ def lambdaGC(insumstats,include_chrXYMT=True, x=23 ,y=24, mt=25, mode="P",level=
         observedMedianChi2 = sp.stats.chi2.isf(np.nanmedian(indata),1)
         expectedMedianChi2 = sp.stats.chi2.ppf(level,1)
         lambdagc=observedMedianChi2/expectedMedianChi2
-        if verbose: log.write(" -Lambda GC (P mode) at "+ str(level)+ " is"," ","{:.5f}".format(lambdagc))
+        if verbose: log.write(" -Lambda GC (P mode) at "+ str(1 - level)+ " is"," ","{:.5f}".format(lambdagc))
     elif mode=="mlog10p" or mode=="MLOG10P":
         observedMedianChi2 = sp.stats.chi2.isf( np.nanmedian(np.power(10,-indata)) ,1)
-        expectedMedianChi2 = sp.stats.chi2.ppf(0.5,1)
+        expectedMedianChi2 = sp.stats.chi2.ppf(level,1)
         lambdagc=observedMedianChi2/expectedMedianChi2
-        if verbose: log.write(" -Lambda GC (MLOG10P mode) at "+ str(level)+ " is"," ","{:.5f}".format(lambdagc))
+        if verbose: log.write(" -Lambda GC (MLOG10P mode) at "+ str(1- level)+ " is"," ","{:.5f}".format(lambdagc))
     elif mode=="z" or mode=="Z":
         observedMedianChi2 = np.median((indata)**2)
         expectedMedianChi2 = sp.stats.chi2.ppf(level,1)
         lambdagc=observedMedianChi2/expectedMedianChi2
-        if verbose:log.write(" -Lambda GC (Z mode) at "+ str(level)+ " is"," ","{:.5f}".format(lambdagc))
+        if verbose:log.write(" -Lambda GC (Z mode) at "+ str(1- level)+ " is"," ","{:.5f}".format(lambdagc))
     elif mode=="chi2" or mode=="CHISQ":
         observedMedianChi2 = np.median(indata)
         expectedMedianChi2 = sp.stats.chi2.ppf(level,1)
         lambdagc=observedMedianChi2/expectedMedianChi2
-        if verbose:log.write(" -Lambda GC (CHISQ mode) at "+ str(level)+ " is"," ","{:.5f}".format(lambdagc))
+        if verbose:log.write(" -Lambda GC (CHISQ mode) at "+ str(1- level)+ " is"," ","{:.5f}".format(lambdagc))
     else:
         return np.nan
     return lambdagc

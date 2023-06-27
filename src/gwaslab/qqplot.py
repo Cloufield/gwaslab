@@ -38,6 +38,7 @@ def _plot_qq(
     ylabels,
     ylabels_converted,
     qq_scatter_kwargs,
+    expected_min_mlog10p,
     verbose=True,
     log=Log()
 ):
@@ -54,34 +55,50 @@ def _plot_qq(
     # min p value for uniform distribution 
     minit=1/len(p_toplot)
     
+    
+    upper_bound_p = np.power(10.0, -expected_min_mlog10p)
+
+
     if stratified is False:
         # sort x,y for qq plot
         # high to low
         observed = p_toplot.sort_values(ascending=False)
         
         # uniform distribution using raw number -> -log10 -> observed number (omit variants with low -log10p)
-        expected = -np.log10(np.linspace(minit,1,len(p_toplot_raw)))[:len(observed)]
+        #expected = -np.log10(np.linspace(minit,1,len(p_toplot_raw)))[:len(observed)]
         
+        
+
+        expected = -np.log10(np.linspace(minit,upper_bound_p,len(p_toplot_raw)))[:len(observed)]
+
+        if verbose:log.write("Expected range of P: (0,{})".format(upper_bound_p))
         #p_toplot = sumstats["scaled_P"]
         ax2.scatter(expected,observed,s=marker_size[1],color=colors[0],**qq_scatter_kwargs)
+
     else:
         # stratified qq plot
         for i,(lower, upper) in enumerate(maf_bins):
             # extract data for a maf_bin
+            
             databin = sumstats.loc[(sumstats["MAF"]>lower) &( sumstats["MAF"]<=upper),["MAF","scaled_P"]]
             # raw data : varaints with maf(eaf_raw) in maf_bin
+            
             databin_raw = eaf_raw[(eaf_raw>lower) & (eaf_raw<=upper)]
             # sort x,y for qq plot
             # high to low
+            
             observed = databin["scaled_P"].sort_values(ascending=False)
             # uniform distribution using raw number -> -log10 -> observed number (omit variants with low -log10p)
-            expected = -np.log10(np.linspace(minit,1,max(len(databin_raw),len(databin))))[:len(observed)]
+            
+            expected = -np.log10(np.linspace(minit,upper_bound_p,max(len(databin_raw),len(databin))))[:len(observed)]
+
             label ="("+str(lower)+","+str(upper) +"]"
             ax2.scatter(expected,observed,s=marker_size[1],color=maf_bin_colors[i],label=label,**qq_scatter_kwargs)
             ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=3,frameon=False)
             plt.setp(ax2_legend.texts, family=font_family)
-    
-    ax2.plot([skip,-np.log10(minit)],[skip,-np.log10(minit)],linestyle="--",color=qq_line_color)
+
+    qq_x = max(skip, expected_min_mlog10p)
+    ax2.plot([qq_x,-np.log10(minit)],[qq_x,-np.log10(minit)],linestyle="--",color=qq_line_color)
     ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family=font_family)
     ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family=font_family)
     ax2.spines["top"].set_visible(False)
@@ -92,9 +109,15 @@ def _plot_qq(
     if gc == True:
         # gc was calculated using raw data (before cut and skip)
         p_toplot_raw = p_toplot_raw.rename(columns={"scaled_P":"MLOG10P"})
+        
+        level = 0.5
+
+        if expected_min_mlog10p!=0 and stratified!=True:
+            level = 1 -  np.power(10.0,-np.nanmedian(expected))
+            if verbose: log.write(" -Level for calculating lambda GC : {}".format(1 - level))
+
         if verbose and not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.")
-        lambdagc = lambdaGC(p_toplot_raw, mode="MLOG10P", include_chrXYMT=include_chrXYMT,log=log,verbose=False)
-        if verbose: log.write(" -Calculating lambda GC:",lambdagc)
+        lambdagc = lambdaGC(p_toplot_raw, mode="MLOG10P", level=level, include_chrXYMT=include_chrXYMT,log=log,verbose=True)
         
         # annotate lambda gc to qq plot
         ax2.text(0.10, 1.03,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),

@@ -1,5 +1,12 @@
 # Update Logs
 
+## 3.4.17 2023/06/27
+- added `expected_min_mlog10p` for qq mode in `plot_mqq()`
+- added trumpet plot
+- added support for gwaslab Sumstats object for gl.compare_effect()
+- added saveing options for gl.compare_effect()
+- fixed bug for `is_q=False` in gl.compare_effect().
+
 ## 3.4.16 2023/06/22
 - fixed bug for qq mode in `plot_mqq()`
 

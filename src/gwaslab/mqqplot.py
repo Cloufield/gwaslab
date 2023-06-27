@@ -173,6 +173,7 @@ def mqqplot(insumstats,
           save=None,
           saveargs=None,
           _invert=False,
+          expected_min_mlog10p=0,
           log=Log()
           ):
 
@@ -244,7 +245,8 @@ def mqqplot(insumstats,
                     qq_scatter_kwargs["rasterized"]=True
 
     if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
-    if verbose: log.write(" -Genomic coordinates version:{}...".format(build))
+    if verbose: log.write(" -Genomic coordinates version: {}...".format(build))
+    if verbose: log.write("   -WARNING!!! Genomic coordinates version is unknown...")
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Plot layout mode is : "+mode)
@@ -912,6 +914,7 @@ def mqqplot(insumstats,
                     ylabels_converted = ylabels_converted,
                     verbose=verbose,
                     qq_scatter_kwargs=qq_scatter_kwargs,
+                    expected_min_mlog10p=expected_min_mlog10p,
                     log=log
                 )
     
