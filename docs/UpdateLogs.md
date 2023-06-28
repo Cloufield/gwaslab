@@ -1,4 +1,6 @@
 # Update Logs
+## 3.4.18 2023/06/28
+- fixed bugs for miami plot
 
 ## 3.4.17 2023/06/27
 - added `expected_min_mlog10p` for qq mode in `plot_mqq()`
