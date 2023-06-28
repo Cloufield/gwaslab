@@ -92,9 +92,16 @@ def plot_miami(
           cutfactor=10,
           readcsv_args=None,
           cut_line_color="#ebebeb",  
+          sig_line=True,
           sig_level=5e-8,
+          sig_level_lead=5e-8,
           sig_line_color="grey",
+          suggestive_sig_line=False,
           suggestive_sig_level=5e-6,
+          suggestive_sig_line_color="grey",
+          sc_linewidth=2,
+          additional_line = None,
+          additional_line_color = None,
           region_hspace = 0.1,
           windowsizekb=500,
           dpi=100,
@@ -197,6 +204,15 @@ def plot_miami(
         if "figsize" not in figargs.keys():
             figargs["figsize"] = (15,5)
         xtick_label_pad =  72 * figargs["figsize"][1] * region_hspace / 6
+    
+    if additional_line is None:
+        lines_to_plot = pd.Series([sig_level, suggestive_sig_level] )
+    else:
+        lines_to_plot = pd.Series([sig_level, suggestive_sig_level] + additional_line ) 
+        if additional_line_color is None:
+            additional_line_color = ["grey"]
+    
+    lines_to_plot = -np.log10(lines_to_plot)
 
     if chr_dict1==False:
         chr_dict1 = chr_dict
@@ -348,6 +364,7 @@ def plot_miami(
             maxy = (maxticker-cut)/cutfactor + cut
             maxy1=( (sumstats["scaled_P_1"].max(skipna=True)) -cut)/cutfactor + cut
             maxy5=( (sumstats["scaled_P_2"].max(skipna=True)) -cut)/cutfactor + cut
+            lines_to_plot[lines_to_plot>cut] = (lines_to_plot[lines_to_plot>cut]-cut)/cutfactor+cut
     ##########################################################################################################################
     legend=None
     style=None
@@ -437,8 +454,8 @@ def plot_miami(
     ax5.xaxis.set_ticks_position("top")
     
     ## Y #######################################################################################################################
-    sigline = ax1.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
-    sigline = ax5.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
+    #sigline = ax1.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
+    #sigline = ax5.axhline(y=-np.log10(sig_level), linewidth = 2,linestyle="--",color=sig_line_color,zorder=1)
      
     for ax in [ax1,ax5]:
         if cut == 0: 
@@ -472,6 +489,8 @@ def plot_miami(
                        windowsizekb=windowsizekb,
                        verbose=False,
                        sig_level=sig_level)
+        
+        to_annotate1 = to_annotate1.sort_values("scaled_P_1").drop_duplicates(subset=["TCHR+POS"])
 
         to_annotate5 = getsig(sumstats.loc[sumstats["scaled_P_2"]> float(-np.log10(sig_level)),:],
                        "TCHR+POS",
@@ -483,7 +502,8 @@ def plot_miami(
                        windowsizekb=windowsizekb,
                        verbose=False,
                        sig_level=sig_level)
-    
+        
+        to_annotate5 = to_annotate5.sort_values("scaled_P_2").drop_duplicates(subset=["TCHR+POS"])
         #######################################################################################
         if (to_annotate1.empty is False) and anno=="GENENAME":
                 to_annotate1 = annogene(to_annotate1,
@@ -494,6 +514,7 @@ def plot_miami(
                                        build=build,
                                        source=anno_source,
                                        verbose=verbose).rename(columns={"GENE":"GENENAME"})
+                to_annotate1 = to_annotate1.sort_values("scaled_P_1").drop_duplicates(subset=["TCHR+POS"])
         if (to_annotate5.empty is False) and anno=="GENENAME":
                 to_annotate5 = annogene(to_annotate5,
                                        id="TCHR+POS",
@@ -503,6 +524,7 @@ def plot_miami(
                                        build=build,
                                        source=anno_source,
                                        verbose=verbose).rename(columns={"GENE":"GENENAME"})
+                to_annotate5 = to_annotate5.sort_values("scaled_P_2").drop_duplicates(subset=["TCHR+POS"])
     else:
         to_annotate1 = pd.DataFrame()
         to_annotate5 = pd.DataFrame()
@@ -596,6 +618,29 @@ def plot_miami(
     
     ax1.set_title(titles[0],y=1+titles_pad[0],family=font_family)
     ax5.set_title(titles[1],y=-titles_pad[1],family=font_family)
+
+    # genomewide significant line
+    for ax in [ax1, ax5]:
+        if sig_line is True:
+            sigline = ax.axhline(y=lines_to_plot[0], 
+                                    linewidth = sc_linewidth,
+                                    linestyle="--",
+                                    color=sig_line_color,
+                                    zorder=1)
+        if suggestive_sig_line is True:
+            suggestive_sig_line = ax.axhline(y=lines_to_plot[1], 
+                                                linewidth = sc_linewidth, 
+                                                linestyle="--", 
+                                                color=suggestive_sig_line_color,
+                                                zorder=1)
+        if additional_line is not None:
+            for index, level in enumerate(lines_to_plot[2:].values):
+                ax.axhline(y=level, 
+                            linewidth = sc_linewidth, 
+                            linestyle="--", 
+                            color=additional_line_color[index%len(additional_line_color)],
+                            zorder=1)
+
     ax5.invert_yaxis() 
     
     #return fig

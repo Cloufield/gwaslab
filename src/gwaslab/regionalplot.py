@@ -10,7 +10,6 @@ from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
 from gwaslab.CommonData import get_recombination_rate
 from gwaslab.CommonData import get_gtf
-from gwaslab.retrievedata import check_vcf_chr_prefix
 from pyensembl import EnsemblRelease
 from allel import GenotypeArray
 from allel import read_vcf
@@ -67,16 +66,6 @@ def _plot_regional(
     verbose=True,
     log=Log()
 ):  
-    if vcf_path is not None:
-        if vcf_chr_dict is None:
-            if verbose: log.write(" -Checking prefix for chromosomes in vcf files..." )  
-            prefix = check_vcf_chr_prefix(vcf_path) 
-            if prefix is not None:
-                if verbose: log.write(" -Prefix for chromosomes: ",prefix) 
-                vcf_chr_dict = get_number_to_chr(prefix=prefix)
-            else:
-                if verbose: log.write(" -No prefix for chromosomes." )  
-                vcf_chr_dict = get_number_to_chr()
 
     # if regional plot : pinpoint lead , add color bar ##################################################
     if (region is not None) :
@@ -481,6 +470,8 @@ def _plot_gene_track(
 def process_vcf(sumstats, vcf_path, region,region_ref, region_ref2, log, verbose, pos ,nea,ea, region_ld_threshold, vcf_chr_dict,tabix):
     if verbose: log.write("Start to load reference genotype...")
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
+
+
 
     # load genotype data of the targeted region
     ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
