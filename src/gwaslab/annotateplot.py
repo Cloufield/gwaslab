@@ -251,7 +251,7 @@ def annotate_pair(
     verbose=True,
     log=Log()
 ):
-
+    print(sumstats)
     if anno is not None:
         for index,ax,to_annotate_df,anno_d, anno_alias in [(0,ax1,to_annotate1,anno_d1,anno_alias1),(1,ax5,to_annotate5,anno_d2,anno_alias2)]:
             ###################### annotate() args
@@ -287,7 +287,13 @@ def annotate_pair(
                 if anno==True:
                         annotation_col="CHR:POS"
                 elif anno is not None:
-                        annotation_col = anno
+                    if type(anno) == list:
+                        annotation_col=anno[index]
+                    else:
+                        if anno =="GENENAME":
+                            annotation_col=anno
+                        else:
+                            annotation_col=anno+"_"+str(index+1)
                 if verbose: log.write(" -Annotating using column "+annotation_col+"...")
                 
                 ## calculate y span
@@ -345,6 +351,11 @@ def annotate_pair(
                             annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
                     elif anno == "GENENAME":
                         annotation_text=row["GENENAME"]
+                    elif anno is not None:
+                        if type(anno) == list:
+                            annotation_text=row[anno[index]]
+                        else: 
+                            annotation_text=row[anno+"_"+str(index+1)]
 
                     # annoatte position
                     xy=(row["i"],row["scaled_P"]+0.2)  
