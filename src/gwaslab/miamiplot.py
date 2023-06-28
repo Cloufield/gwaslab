@@ -490,8 +490,9 @@ def plot_miami(
                        verbose=False,
                        sig_level=sig_level)
         
-        to_annotate1 = to_annotate1.sort_values("scaled_P_1").drop_duplicates(subset=["TCHR+POS"])
-
+        if verbose: log.write(" -Keeping only the most significant variants to annotate for each position for sumstast #1...")
+        to_annotate1 = to_annotate1.sort_values("scaled_P_1").drop_duplicates(subset=["TCHR+POS"]).sort_values("i")
+        
         to_annotate5 = getsig(sumstats.loc[sumstats["scaled_P_2"]> float(-np.log10(sig_level)),:],
                        "TCHR+POS",
                        "CHR",
@@ -503,7 +504,10 @@ def plot_miami(
                        verbose=False,
                        sig_level=sig_level)
         
-        to_annotate5 = to_annotate5.sort_values("scaled_P_2").drop_duplicates(subset=["TCHR+POS"])
+
+        if verbose: log.write(" -Keeping only the most significant variants to annotate for each position for sumstast #2...")
+        to_annotate5 = to_annotate5.sort_values("scaled_P_2").drop_duplicates(subset=["TCHR+POS"]).sort_values("i")
+        
         #######################################################################################
         if (to_annotate1.empty is False) and anno=="GENENAME":
                 to_annotate1 = annogene(to_annotate1,
@@ -514,7 +518,7 @@ def plot_miami(
                                        build=build,
                                        source=anno_source,
                                        verbose=verbose).rename(columns={"GENE":"GENENAME"})
-                to_annotate1 = to_annotate1.sort_values("scaled_P_1").drop_duplicates(subset=["TCHR+POS"])
+
         if (to_annotate5.empty is False) and anno=="GENENAME":
                 to_annotate5 = annogene(to_annotate5,
                                        id="TCHR+POS",
@@ -524,7 +528,7 @@ def plot_miami(
                                        build=build,
                                        source=anno_source,
                                        verbose=verbose).rename(columns={"GENE":"GENENAME"})
-                to_annotate5 = to_annotate5.sort_values("scaled_P_2").drop_duplicates(subset=["TCHR+POS"])
+                
     else:
         to_annotate1 = pd.DataFrame()
         to_annotate5 = pd.DataFrame()
