@@ -1,4 +1,9 @@
 # Update Logs
+
+## 3.4.19 2023/06/29
+- added annotation using custom column for miami plot
+- updated alogorithm for extracting lead variants (using scaled P)
+
 ## 3.4.18 2023/06/28
 - fixed bugs for miami plot
 

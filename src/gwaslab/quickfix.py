@@ -35,7 +35,7 @@ def _quick_fix_p_value(sumstats, scaled=False,verbose=True, log=Log()):
         if verbose:log.write(" -Sumstats -log10(P) values are being converted to P...")
         sumstats["scaled_P"] = sumstats["P"].copy()
         sumstats["P"]= np.power(10,-sumstats["P"])
-    
+        return sumstats
     # bad p : na and outside (0,1]
     bad_p_value = (sumstats["P"].isna()) | (
         sumstats["P"] > 1) | (sumstats["P"] <= 0)

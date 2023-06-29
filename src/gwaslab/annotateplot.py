@@ -251,7 +251,6 @@ def annotate_pair(
     verbose=True,
     log=Log()
 ):
-    print(sumstats)
     if anno is not None:
         for index,ax,to_annotate_df,anno_d, anno_alias in [(0,ax1,to_annotate1,anno_d1,anno_alias1),(1,ax5,to_annotate5,anno_d2,anno_alias2)]:
             ###################### annotate() args

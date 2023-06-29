@@ -34,13 +34,16 @@ def getsig(insumstats,
            source="ensembl",
            mlog10p="MLOG10P",
            verbose=True):
-    
+    """
+    Extract the lead variants using a sliding window. P or MLOG10P will be used and converted to SCALEDP for sorting. 
+    """
+
     if verbose: log.write("Start to extract lead variants...")
     if verbose: log.write(" -Processing "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Significance threshold :", sig_level)
     if verbose: log.write(" -Sliding window size:", str(windowsizekb) ," kb")
-    #load data
     
+    #load data
     sumstats=insumstats.loc[~insumstats[id].isna(),:].copy()
     
     #convert chrom to int
@@ -48,37 +51,48 @@ def getsig(insumstats,
         chr_to_num = get_chr_to_number(out_chr=True,xymt=["X","Y","MT"])
         sumstats[chrom]=sumstats[chrom].map(chr_to_num)
     
+    # make sure the dtype is integer
     sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
     sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
     
+    #create internal uniqid
+    sumstats["__ID"] = range(len(sumstats))
+    id = "__ID"
+
     #extract all significant variants
     if scaled==True:
+        #use MLOG10P 
         if mlog10p in sumstats.columns:
             sumstats_sig = sumstats.loc[sumstats[mlog10p]> -np.log10(sig_level),:].copy()
-            sumstats_sig.loc[:,"_HELPER"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
-            
+            sumstats_sig.loc[:,"__SCALEDP"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
     else:
         if p not in sumstats.columns:
+            #use MLOG10P 
             if mlog10p in sumstats.columns: 
                 fill_p(sumstats,log)
-        sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
-        sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:]
-        
-    
+                sumstats_sig = sumstats.loc[sumstats[mlog10p]> -np.log10(sig_level),:].copy()
+                sumstats_sig.loc[:,"__SCALEDP"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
+        else:
+            #use P         
+            sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
+            sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:]
+            sumstats_sig.loc[:,"__SCALEDP"] = pd.to_numeric(sumstats_sig[p], errors='coerce')
     if verbose:log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...")
+
     #sort the coordinates
     sumstats_sig = sumstats_sig.sort_values([chrom,pos])
     if sumstats_sig is None:
         if verbose:log.write(" -No lead snps at given significance threshold!")
         return None
     
+    #init 
     sig_index_list=[]
     current_sig_index = False
     current_sig_p = 1
     current_sig_pos = 0
     current_sig_chr = 0
-    if scaled==True:
-        p="_HELPER"
+    
+    p="__SCALEDP"
     
     #iterate through all significant snps
     for line_number,(index, row) in enumerate(sumstats_sig.iterrows()):
@@ -121,15 +135,13 @@ def getsig(insumstats,
     
     if verbose:log.write(" -Identified "+str(len(sig_index_list))+" lead variants!")
     
-    #num_to_chr = get_number_to_chr(in_chr=True,xymt=xymt)
-    #sumstats_sig.loc[:,chrom] = sumstats_sig[chrom].astype("string")
-    #sumstats_sig.loc[:,chrom] = sumstats_sig.loc[:,chrom].map(num_to_chr)
-    if scaled==True:
-        sumstats_sig = sumstats_sig.drop("_HELPER",axis=1)
+    # drop internal __SCALEDP
+    sumstats_sig = sumstats_sig.drop("__SCALEDP",axis=1)
     
     # extract the lead variants
     output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
 
+    # annotate GENENAME
     if anno is True and len(output)>0:
         if verbose:log.write(" -Annotating variants using references:{}".format(source))
         if verbose:log.write(" -Annotating variants using references based on genome build:{}".format(build))
@@ -144,7 +156,11 @@ def getsig(insumstats,
                build=build,
                source=source,
                verbose=verbose)
+        
+    # Finishing
     if verbose: log.write("Finished extracting lead variants successfully!")
+    # drop internal id
+    sumstats_sig = sumstats_sig.drop("__ID",axis=1)
     gc.collect()
     return output.copy()
 
@@ -212,8 +228,8 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ense
 def annogene(
            insumstats,
            id,
-           chrom,
-           pos,
+           chrom="CHR",
+           pos="POS",
            log=Log(),
            xymt=["X","Y","MT"],
            build="19",
@@ -243,7 +259,7 @@ def annogene(
             if path.isfile(gtf_db_path) is False:
                 data.index()
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
-                list(output.apply(lambda x:closest_gene(x,data=data,source=source), axis=1)), 
+                list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source), axis=1)), 
                 index=output.index).values
         elif build=="38":
             if verbose:log.write(" -Assigning Gene name using ensembl_hg38_gtf for protein coding genes")
@@ -258,7 +274,7 @@ def annogene(
             if path.isfile(gtf_db_path) is False:
                 data.index()
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
-                list(output.apply(lambda x:closest_gene(x,data=data,source=source), axis=1)), 
+                list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source), axis=1)), 
                 index=output.index).values
     
     if source == "refseq":
@@ -275,7 +291,7 @@ def annogene(
             if path.isfile(gtf_db_path) is False:
                 data.index()
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
-                list(output.apply(lambda x:closest_gene(x,data=data,source=source,build=build), axis=1)), 
+                list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source,build=build), axis=1)), 
                 index=output.index).values
         elif build=="38":
             if verbose:log.write(" -Assigning Gene name using NCBI refseq latest GRCh38 for protein coding genes")
@@ -290,7 +306,7 @@ def annogene(
             if path.isfile(gtf_db_path) is False:
                 data.index()
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
-                list(output.apply(lambda x:closest_gene(x,data=data,source=source,build=build), axis=1)), 
+                list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source,build=build), axis=1)), 
                 index=output.index).values
     if verbose: log.write("Finished annotating variants with nearest gene name(s) successfully!")
     return output
