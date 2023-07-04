@@ -23,7 +23,7 @@ dependencies = [
     "scipy>=1.6.2",
     "pySAM>=0.18.1,<0.20",
     "Biopython>=1.79",
-    "adjustText>=0.7.3",
+    "adjustText>=0.7.3, <=0.8",
     "liftover>=1.1.13",
     "statsmodels>=0.13",
     "scikit-allel>=1.3.5",

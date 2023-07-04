@@ -12,9 +12,12 @@ from gwaslab.fill import filldata
 from matplotlib.collections import LineCollection
 import matplotlib.colors as mc
 import matplotlib
+from adjustText import adjust_text
 
 def plottrumpet(mysumstats,
+                snpid="SNPID",
                 mode="q",
+                anno=None,
                 prevalence=None,
                 scase=None,
                 scontrol=None, 
@@ -24,12 +27,16 @@ def plottrumpet(mysumstats,
                 sig_level=5e-8,
                 p_level=5e-8,
                 beta="BETA",
+                anno_y = 1,
+                anno_x = 0.01,
                 n="N",
                 eaf_range=None,
                 beta_range=None, 
                 ts=None,
                 verbose=True,
                 n_matrix=1000,
+                xscale="log",
+                yscale_factor=1,
                 cmap="cool",
                 markercolor="#349beb",
                 fontsize=12,
@@ -37,11 +44,13 @@ def plottrumpet(mysumstats,
                 sizes=None,
                 save=False,
                 saveargs=None,
+                ann_args=None,
                 log=Log()):
     
     if sizes is None:
         sizes = (20,80)
-
+    if ann_args is None:
+        anno_args={"fontsize":10}
     matplotlib.rc('font', family=fontfamily) 
     if verbose: log.write("Start to create trumpet plot...")
     if (beta not in mysumstats.columns) or (raweaf not in mysumstats.columns):
@@ -55,11 +64,16 @@ def plottrumpet(mysumstats,
             return None
         if prevalence is None:
                 prevalence= scase / (scase + scontrol)
-
+    
+    cols_to_use = [beta,raweaf,n, p]
+    if anno is not None:
+        cols_to_use.append(anno)
+    
     if p in mysumstats.columns:
-        sumstats = mysumstats.loc[mysumstats[p]< p_level, [beta,raweaf,n, p]].copy()
+        sumstats = mysumstats.loc[mysumstats[p]< p_level,cols_to_use ].copy()
         if verbose: log.write("Excluding variants with P values > {}".format(p_level))
     else:
+        cols_to_use.remove(p)
         sumstats = mysumstats[[beta,raweaf,n]].copy()
 
     if verbose: log.write("Plotting {} variants...".format(len(sumstats)))
@@ -116,6 +130,8 @@ def plottrumpet(mysumstats,
                             n_matrix=n_matrix)
             xpower2 = xpower.copy()
             xpower2[1] = -xpower2[1] 
+            xpower2[1] = xpower2[1] * yscale_factor
+            xpower[1] = xpower[1] * yscale_factor
             lines = LineCollection([xpower2,xpower], label=t,color=output_hex_colors[i],zorder=0)
             ax.add_collection(lines)
             #ax.plot(,label=t)
@@ -133,11 +149,16 @@ def plottrumpet(mysumstats,
                             n_matrix=n_matrix)
             xpower2 = xpower.copy()
             xpower2[1] = -xpower2[1] 
+            xpower2[1] = xpower2[1] * yscale_factor
+            xpower[1] = xpower[1] * yscale_factor
             lines = LineCollection([xpower2,xpower], label=t,color=output_hex_colors[i])
             ax.add_collection(lines)
     
     sumstats["ABS_BETA"] = sumstats[beta].abs()
     
+
+    sumstats[beta] = sumstats[beta]*yscale_factor
+
     sns.scatterplot(data=sumstats,
                     x=eaf,
                     y=beta,
@@ -148,7 +169,10 @@ def plottrumpet(mysumstats,
                     legend=False, 
                     alpha=0.6)
     
-    ax.set_xscale('log')
+
+
+    if xscale== "log":
+        ax.set_xscale('log')
     ax.set_xticks([0.001,0.01,0.05,0.1,0.2,0.5],[0.001,0.01,0.05,0.1,0.2,0.5],fontsize=fontsize)
     ax.tick_params(axis='y', labelsize=fontsize)
     leg = ax.legend(title="Power",fontsize =fontsize,title_fontsize=fontsize)
@@ -162,6 +186,30 @@ def plottrumpet(mysumstats,
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_visible(True)
+
+    if anno is not None:
+        if anno in sumstats.columns:
+            variants_toanno = sumstats.dropna(axis=0)
+            variants_toanno = variants_toanno.loc[ variants_toanno[beta].abs() > anno_y,:]
+            variants_toanno = variants_toanno.loc[ variants_toanno[eaf] < anno_x,:]
+            texts_u=[]
+            texts_d=[]
+            for index, row in variants_toanno.iterrows():
+                if row[beta] >0 :
+                    texts_u.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(row[eaf], row[beta]*1.1),arrowprops=dict(arrowstyle="-|>"),ha="left",va="bottom",fontsize=anno_args["fontsize"]))
+                    #texts_u.append(plt.text(row[eaf], row[beta], row[anno],ha="right",va="bottom"))
+                else:
+                    texts_d.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(row[eaf], row[beta]*1.1),arrowprops=dict(arrowstyle="-|>"),ha="left",va="top",fontsize=anno_args["fontsize"]))
+                    #texts_d.append(plt.text(row[eaf], row[beta], row[anno],ha="left",va="top"))
+
+            adjust_text(texts_u + texts_d, autoalign =False,
+                        precision =0.01,lim=1000, 
+                        expand_text=(0.5,0.5), 
+                        expand_points=(0.5,0.5),
+                        force_objects=(0.5,0.5), 
+                        #arrowprops=dict(arrowstyle='-|>', color='grey'),
+                        ax=ax)
+            #adjust_text(texts_d, arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)  
     
     if save:
         if verbose: log.write("Saving plot:")
@@ -174,3 +222,5 @@ def plottrumpet(mysumstats,
 
     if verbose: log.write("Finished creating trumpet plot!")
     return fig
+
+####################################################################
