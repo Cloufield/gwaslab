@@ -13,7 +13,15 @@ def gwascatalog_trait(efo,source="NCBI",sig_level=5e-8,verbose=True,log=Log()):
     if verbose: log.write(" -Please make sure your sumstats is based on GRCh38...")
     if verbose: log.write(" -Requesting (GET) trait information through the GWASCatalog API...")
     if verbose: log.write(" -EFO trait api: "+ base_url)
-    api_response = json.loads(requests.get(base_url).text)
+    text = requests.get(base_url)
+    if verbose: 
+        log.write(" -Status code: {}".format(text.status_code)) 
+        if text.status_code!=200:
+            log.write(" -Status code is not 200. Access failed. Please check your internet or the GWAS Catalog sever status.") 
+            log.write(" -Message:{}".format(text.text)) 
+            return 0
+
+    api_response = json.loads(text.text)
     if verbose: log.write(" -Trait Name:",api_response["trait"])
     if verbose: log.write(" -Trait URL:",api_response["uri"]) 
         

@@ -472,7 +472,7 @@ class Sumstats():
         fig = plottrumpet(self.data, **args)
         return fig
 
-    def get_lead(self, build=None, **args):
+    def get_lead(self, build=None, gls=False, **args):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
@@ -491,6 +491,11 @@ class Sumstats():
                            build=build,
                            **args)
         # return sumstats object    
+        if gls == True:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = output
+            gc.collect()
+            return new_Sumstats_object
         return output
 
     def get_density(self, sig_list=None, windowsizekb=100,**args):

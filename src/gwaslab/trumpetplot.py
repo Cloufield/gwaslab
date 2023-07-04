@@ -13,10 +13,14 @@ from matplotlib.collections import LineCollection
 import matplotlib.colors as mc
 import matplotlib
 from adjustText import adjust_text
+from gwaslab.getsig import annogene
+from gwaslab.annotateplot import annotate_single
 
 def plottrumpet(mysumstats,
                 snpid="SNPID",
                 mode="q",
+                chrom="CHR",
+                pos="POS",
                 anno=None,
                 prevalence=None,
                 scase=None,
@@ -39,19 +43,35 @@ def plottrumpet(mysumstats,
                 yscale_factor=1,
                 cmap="cool",
                 markercolor="#349beb",
-                fontsize=12,
-                fontfamily="Arial",
+                fontsize=15,
+                font_family="Arial",
                 sizes=None,
                 save=False,
                 saveargs=None,
                 ann_args=None,
+                build="99",
+                anno_set=None,
+                anno_alias=None,
+                anno_d=None,
+                anno_args=None,
+                anno_source = "ensembl",
                 log=Log()):
     
+    matplotlib.rc('font', family=font_family)
     if sizes is None:
         sizes = (20,80)
     if ann_args is None:
-        anno_args={"fontsize":10}
-    matplotlib.rc('font', family=fontfamily) 
+        anno_args={"fontsize":12}
+    if anno_set is None:
+        anno_set=list()
+    if anno_alias is None:
+        anno_alias=dict()
+    if anno_d is None:
+        anno_d=dict()
+    if anno_args is None:
+        anno_args=dict()
+
+
     if verbose: log.write("Start to create trumpet plot...")
     if (beta not in mysumstats.columns) or (raweaf not in mysumstats.columns):
         if verbose:
@@ -65,9 +85,14 @@ def plottrumpet(mysumstats,
         if prevalence is None:
                 prevalence= scase / (scase + scontrol)
     
-    cols_to_use = [beta,raweaf,n, p]
+    cols_to_use = [snpid, beta,raweaf,n, p]
     if anno is not None:
-        cols_to_use.append(anno)
+        if anno != "GENENAME":
+            cols_to_use.append(anno)
+        else:
+            cols_to_use.append(pos)
+            cols_to_use.append(chrom)
+            
     
     if p in mysumstats.columns:
         sumstats = mysumstats.loc[mysumstats[p]< p_level,cols_to_use ].copy()
@@ -156,7 +181,7 @@ def plottrumpet(mysumstats,
     
     sumstats["ABS_BETA"] = sumstats[beta].abs()
     
-
+    
     sumstats[beta] = sumstats[beta]*yscale_factor
 
     sns.scatterplot(data=sumstats,
@@ -169,7 +194,7 @@ def plottrumpet(mysumstats,
                     legend=False, 
                     alpha=0.6)
     
-
+    sumstats["i"] = sumstats[eaf] * 5000
 
     if xscale== "log":
         ax.set_xscale('log')
@@ -188,28 +213,43 @@ def plottrumpet(mysumstats,
     ax.spines["left"].set_visible(True)
 
     if anno is not None:
-        if anno in sumstats.columns:
+        if anno in sumstats.columns or anno=="GENENAME" :
             variants_toanno = sumstats.dropna(axis=0)
             variants_toanno = variants_toanno.loc[ variants_toanno[beta].abs() > anno_y,:]
             variants_toanno = variants_toanno.loc[ variants_toanno[eaf] < anno_x,:]
+            if (variants_toanno.empty is not True) and anno=="GENENAME":
+                variants_toanno = annogene(variants_toanno,
+                                    id=snpid,
+                                    chrom=chrom,
+                                    pos=pos,
+                                    log=log,
+                                    build=build,
+                                    source=anno_source,
+                                    verbose=verbose).rename(columns={"GENE":"GENENAME"})
+
             texts_u=[]
             texts_d=[]
-            for index, row in variants_toanno.iterrows():
-                if row[beta] >0 :
-                    texts_u.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(row[eaf], row[beta]*1.1),arrowprops=dict(arrowstyle="-|>"),ha="left",va="bottom",fontsize=anno_args["fontsize"]))
-                    #texts_u.append(plt.text(row[eaf], row[beta], row[anno],ha="right",va="bottom"))
-                else:
-                    texts_d.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(row[eaf], row[beta]*1.1),arrowprops=dict(arrowstyle="-|>"),ha="left",va="top",fontsize=anno_args["fontsize"]))
-                    #texts_d.append(plt.text(row[eaf], row[beta], row[anno],ha="left",va="top"))
+            variants_toanno["scaled_P"] = variants_toanno[beta]
+            if len(variants_toanno)>0:
+                offsety = 0.2 * max(variants_toanno[beta].abs().max(),1.5)
+                offsetx = 0.01
+                for index, row in variants_toanno.iterrows():
 
-            adjust_text(texts_u + texts_d, autoalign =False,
-                        precision =0.01,lim=1000, 
-                        expand_text=(0.5,0.5), 
-                        expand_points=(0.5,0.5),
-                        force_objects=(0.5,0.5), 
-                        #arrowprops=dict(arrowstyle='-|>', color='grey'),
-                        ax=ax)
-            #adjust_text(texts_d, arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)  
+                    if row[beta] >0 :
+                        texts_u.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(row[eaf]+offsetx, row[beta]+offsety),arrowprops=dict(arrowstyle="-|>"),ha="left",va="bottom",fontsize=anno_args["fontsize"]))
+                #        #texts_u.append(plt.text(row[eaf], row[beta], row[anno],ha="right",va="bottom"))
+                    else:
+                        texts_d.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(row[eaf]+offsetx, row[beta]-offsety),arrowprops=dict(arrowstyle="-|>"),ha="left",va="top",fontsize=anno_args["fontsize"]))
+                #        #texts_d.append(plt.text(row[eaf], row[beta], row[anno],ha="left",va="top"))
+
+                adjust_text(texts_u + texts_d, 
+                            autoalign =True,
+                            precision =0.001,
+                            lim=1000, 
+                            expand_text=(0.5,0.5), 
+                            expand_points=(0.5,0.5),
+                            force_objects=(0.1,0.1), 
+                            ax=ax)
     
     if save:
         if verbose: log.write("Saving plot:")

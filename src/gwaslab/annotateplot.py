@@ -36,6 +36,7 @@ def annotate_single(
     region,
     region_anno_bbox_args,
     skip,
+    scale_factor=1,
     snpid="SNPID",
     chrom="CHR",
     pos="POS",
@@ -64,7 +65,7 @@ def annotate_single(
         
         if verbose: log.write(" -Adjusting text positions with repel_force={}...".format(repel_force))
         if anno_style == "expand" :
-            to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force,max_iter=anno_max_iter,log=log,verbose=verbose)
+            to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force,max_iter=anno_max_iter,log=log,scale_factor=scale_factor,verbose=verbose)
         ##  iterate through variants to be annotated
         anno_to_adjust_list = list()
         
