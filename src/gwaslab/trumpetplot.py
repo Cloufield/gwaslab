@@ -16,6 +16,7 @@ from adjustText import adjust_text
 from gwaslab.getsig import annogene
 from gwaslab.annotateplot import annotate_single
 from gwaslab.textreposition import adjust_text_position
+from gwaslab.figuresave import save_figure
 
 def plottrumpet(mysumstats,
                 snpid="SNPID",
@@ -38,13 +39,12 @@ def plottrumpet(mysumstats,
                 anno_x = 0.01,                
                 eaf_range=None,
                 beta_range=None, 
-                verbose=True,
                 n_matrix=1000,
                 xscale="log",
                 yscale_factor=1,
-                cmap="cool",
+                cmap="Reds",
                 ylim=None,
-                markercolor="#349beb",
+                markercolor="#597FBD",
                 fontsize=15,
                 font_family="Arial",
                 sizes=None,
@@ -68,8 +68,10 @@ def plottrumpet(mysumstats,
                 yticks = None,
                 yticklabels=None,
                 sort="beta",
+                verbose=True,
                 log=Log()):
     
+    #Checking columns#################################################################################################################
     matplotlib.rc('font', family=font_family)
     if sizes is None:
         sizes = (20,80)
@@ -82,70 +84,84 @@ def plottrumpet(mysumstats,
     if anno_d is None:
         anno_d=dict()
     if xticks is None:
-        xticks = [0,0.01,0.05,0.1,0.2,0.5]
-        xticklabels = xticks
+        if xscale== "log":
+            xticks = [0.001,0.01,0.05,0.1,0.2,0.5]
+            xticklabels = xticks
+        else:
+            xticks = [0,0.01,0.05,0.1,0.2,0.5]
+            xticklabels = xticks            
 
-
+    #Checking columns#################################################################################################################
     if verbose: log.write("Start to create trumpet plot...")
+    
     if (beta not in mysumstats.columns) or (raweaf not in mysumstats.columns):
         if verbose:
             log.write(" -No EAF or BETA columns. Skipping...")
         return None
+    
     if mode=="b":
         if scase is None or scontrol is None:
             if verbose:
                 log.write(" -No scase or scontrol. Skipping...")
             return None
         if prevalence is None:
-                prevalence= scase / (scase + scontrol)
-    
+                prevalence= scase/(scase + scontrol)
+                log.write(" -Prevalence is not given. Estimating based on scase and scontrol :{}...".format(prevalence))
+
+    #loading columns #################################################################################################################
     cols_to_use = [snpid, beta,raweaf,n, p]
     if anno is not None:
         if anno != "GENENAME":
-            cols_to_use.append(anno)
+            if anno!=True:
+                log.write(" -Loading column {} for annotation...".format(anno))
+                cols_to_use.append(anno)
         else:
             cols_to_use.append(pos)
             cols_to_use.append(chrom)
             
-    
+    #filter by p #################################################################################################################
     if p in mysumstats.columns:
         sumstats = mysumstats.loc[mysumstats[p]< p_level,cols_to_use ].copy()
         if verbose: log.write("Excluding variants with P values > {}".format(p_level))
     else:
         cols_to_use.remove(p)
         sumstats = mysumstats[[beta,raweaf,n]].copy()
-
     if verbose: log.write("Plotting {} variants...".format(len(sumstats)))
-
+    
+    #add maf column #################################################################################################################
     if eaf not in sumstats.columns:
         sumstats = filldata(sumstats,to_fill=["MAF"])
     
-    if n == "N":
-        n = sumstats["N"].median() 
-    elif n == "max":
-        n = sumstats["N"].max() 
-    elif n == "min":
-        n = sumstats["N"].min() 
-    elif n == "median":
-        n = sumstats["N"].median() 
-    elif n == "mean":
-        n = sumstats["N"].mean() 
-
-    if verbose:
-        if mode=="q":
+    #configure n #################################################################################################################
+    if mode=="q":
+        if n == "N":
+            n = sumstats["N"].median() 
+        elif n == "max":
+            n = sumstats["N"].max() 
+        elif n == "min":
+            n = sumstats["N"].min() 
+        elif n == "median":
+            n = sumstats["N"].median() 
+        elif n == "mean":
+            n = sumstats["N"].mean() 
+        if verbose:
             log.write("N for power calculation: {}".format(n))
 
+    #configure beta and maf range ###################################################################################################
     if eaf_range is None:
-        eaf_range=(min(sumstats[eaf].min(),0.0001),0.5)
+        eaf_min_power = np.floor( -np.log10(sumstats[eaf].min())) + 1
+        eaf_range=(min(np.power(10.0,-eaf_min_power),np.power(10.0,-4)),0.5)
     if beta_range is None:
         if sumstats[beta].max()>3:
             beta_range=(0.0001,sumstats[beta].max())
         else:
             beta_range=(0.0001,3)
-
+    
+    #configure power threshold###################################################################################################
     if ts is None:
         ts=[0.3,0.5,0.8]
-
+    
+    #configure colormap##########################################################################################################
     cmap_to_use = plt.cm.get_cmap(cmap)
     if cmap_to_use.N >100:
         rgba = cmap_to_use(ts)
@@ -157,7 +173,10 @@ def plottrumpet(mysumstats,
         output_hex_colors.append(mc.to_hex(rgba[i]))
     output_hex_colors
 
+    ##################################################################################################
     fig, ax = plt.subplots(figsize=(10,10))
+    
+    ##creating power line############################################################################################
     if mode=="q":
         for i,t in enumerate(ts):
             xpower = get_beta(mode="q",          
@@ -173,8 +192,6 @@ def plottrumpet(mysumstats,
             xpower[1] = xpower[1] * yscale_factor
             lines = LineCollection([xpower2,xpower], label=t,color=output_hex_colors[i],zorder=0)
             ax.add_collection(lines)
-            #ax.plot(,label=t)
-            #ax.plot(xpower[0],-xpower[1],label=t)
     else:
         for i,t in enumerate(ts):
             xpower = get_beta_binary(        
@@ -192,12 +209,13 @@ def plottrumpet(mysumstats,
             xpower[1] = xpower[1] * yscale_factor
             lines = LineCollection([xpower2,xpower], label=t,color=output_hex_colors[i])
             ax.add_collection(lines)
-    
-    sumstats["ABS_BETA"] = sumstats[beta].abs()
-    
-    
+    ###################################################################################################
+    # get abs  and convert using scaling factor
     sumstats[beta] = sumstats[beta]*yscale_factor
+    sumstats["ABS_BETA"] = sumstats[beta].abs()
 
+    ##################################################################################################
+    
     sns.scatterplot(data=sumstats,
                     x=eaf,
                     y=beta,
@@ -206,8 +224,11 @@ def plottrumpet(mysumstats,
                     sizes=sizes,
                     color=markercolor,
                     legend=False, 
-                    alpha=0.6)
+                    edgecolor="black",
+                    alpha=0.8)
     
+    ##################################################################################################
+
     ax.tick_params(axis='y', labelsize=fontsize)
     leg = ax.legend(title="Power",fontsize =fontsize,title_fontsize=fontsize)
 
@@ -215,18 +236,16 @@ def plottrumpet(mysumstats,
         line.set_linewidth(5.0)
     ax.axhline(y=0,color="grey",linestyle="dashed")
     
-    
     if xscale== "log":
         ax.set_xscale('log')
         rotation=0
         ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
-        ax.set_xlim(min(sumstats[eaf].min()/2,0.001/2),0.5)
+        ax.set_xlim(min(sumstats[eaf].min()/2,0.001/2),0.52)
     else:
         rotation=90    
         ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
-        ax.set_xlim(-0.02,0.5)
+        ax.set_xlim(-0.02,0.52)
     
-
     if ylim is not None:
         ax.set_ylim(ylim)
     if yticks is not None:
@@ -239,6 +258,7 @@ def plottrumpet(mysumstats,
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_visible(True)
 
+    ############  Annotation ##################################################################################################
     if anno is not None:
         if anno in sumstats.columns or anno=="GENENAME" :
             variants_toanno = sumstats.copy()
@@ -305,11 +325,11 @@ def plottrumpet(mysumstats,
                     if anno_style == "right"  or anno_style == "expand":
                         if row[beta] >0 :
                             texts_u.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(last_pos , 1.2*maxy),
-                                                    arrowprops=dict(relpos=(0,0),arrowstyle="-|>",connectionstyle="arc,angleA=-90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
+                                                    arrowprops=dict(relpos=(0,0),arrowstyle="-|>",facecolor='black',connectionstyle="arc,angleA=-90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
                                                     ha="left",va="bottom",**anno_args))
                         else:
                             texts_d.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(last_pos , -1.2*maxy),
-                                                    arrowprops=dict(relpos=(0,1),arrowstyle="-|>",connectionstyle="arc,angleA=90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
+                                                    arrowprops=dict(relpos=(0,1),arrowstyle="-|>",facecolor='black',connectionstyle="arc,angleA=90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
                                                     ha="left",va="top",**anno_args))
                     
                     if anno_style=="tight":
@@ -322,16 +342,9 @@ def plottrumpet(mysumstats,
                                     expand_points=(0.5,0.5),
                                     force_objects=(0.5,0.5), 
                                     ax=ax)
- 
-
-    if save:
-        if verbose: log.write("Saving plot:")
-        if save==True:
-            fig.savefig("./trumpet_plot.png",bbox_inches="tight",**saveargs)
-            log.write(" -Saved to "+ "./trumpet_plot.png" + " successfully!" )
-        else:
-            fig.savefig(save,bbox_inches="tight",**saveargs)
-            log.write(" -Saved to "+ save + " successfully!" )
+    ############  Annotation ##################################################################################################
+    
+    save_figure(fig, save, keyword="trumpet",saveargs=saveargs, log=log, verbose=verbose)
 
     if verbose: log.write("Finished creating trumpet plot!")
     return fig

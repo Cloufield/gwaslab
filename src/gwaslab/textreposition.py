@@ -4,12 +4,12 @@ from gwaslab.Log import Log
 
 def adjust_text_position(positions, yspan, repel_force=0.01, max_iter=100,amode="int",log=Log(),verbose=True):
     # check the number of variants to annotate 
-    if repel_force>0:
-        if 1/(repel_force*2 +0.01) < len(positions):
-            if verbose: log.write(" -Too many variants to annotate; maybe it is better to reduce the number of variants")
-    else:
-        if len(positions)>30:
-            if verbose: log.write(" -Too many variants to annotate; maybe it is better to reduce the number of variants")
+    #if repel_force>0:
+    #    if 1/(repel_force*2 +0.01) < len(positions):
+    #        if verbose: log.write(" -Too many variants to annotate; maybe it is better to reduce the number of variants")
+    #else:
+    if len(positions)>30:
+        if verbose: log.write(" -Too many variants to annotate; maybe it is better to reduce the number of variants")
 
     # calculate the steps
     if amode=="int":
