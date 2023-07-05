@@ -15,6 +15,7 @@ import matplotlib
 from adjustText import adjust_text
 from gwaslab.getsig import annogene
 from gwaslab.annotateplot import annotate_single
+from gwaslab.textreposition import adjust_text_position
 
 def plottrumpet(mysumstats,
                 snpid="SNPID",
@@ -42,6 +43,7 @@ def plottrumpet(mysumstats,
                 xscale="log",
                 yscale_factor=1,
                 cmap="cool",
+                ylim=None,
                 markercolor="#349beb",
                 fontsize=15,
                 font_family="Arial",
@@ -54,7 +56,16 @@ def plottrumpet(mysumstats,
                 anno_alias=None,
                 anno_d=None,
                 anno_args=None,
+                anno_style="expand",
+                anno_fixed_arm_length=None,
                 anno_source = "ensembl",
+                anno_adjust=False,
+                anno_max_iter=100,
+                arm_offset=50,
+                arm_scale=1,
+                arm_scale_d=None,
+                repel_force=0.05,
+                sort="beta",
                 log=Log()):
     
     matplotlib.rc('font', family=font_family)
@@ -194,17 +205,22 @@ def plottrumpet(mysumstats,
                     legend=False, 
                     alpha=0.6)
     
-    sumstats["i"] = sumstats[eaf] * 5000
+    #sumstats["i"] = sumstats[eaf] * 5000
 
     if xscale== "log":
         ax.set_xscale('log')
-    ax.set_xticks([0.001,0.01,0.05,0.1,0.2,0.5],[0.001,0.01,0.05,0.1,0.2,0.5],fontsize=fontsize)
+        rotation=0
+    else:
+        rotation=90
+    ax.set_xticks([0.001,0.01,0.05,0.1,0.2,0.5],[0.001,0.01,0.05,0.1,0.2,0.5],fontsize=fontsize,rotation=rotation)
     ax.tick_params(axis='y', labelsize=fontsize)
     leg = ax.legend(title="Power",fontsize =fontsize,title_fontsize=fontsize)
     for line in leg.get_lines():
         line.set_linewidth(5.0)
     ax.axhline(y=0,color="grey",linestyle="dashed")
     ax.set_xlim(min(sumstats[eaf].min()/2,0.001/2),0.5)
+    if ylim is not None:
+        ax.set_ylim(ylim)
     ax.set_ylabel("Effect size",fontsize=fontsize)
     ax.set_xlabel("Minor allele frequency",fontsize=fontsize)
     
@@ -214,7 +230,7 @@ def plottrumpet(mysumstats,
 
     if anno is not None:
         if anno in sumstats.columns or anno=="GENENAME" :
-            variants_toanno = sumstats.dropna(axis=0)
+            variants_toanno = sumstats.copy()
             variants_toanno = variants_toanno.loc[ variants_toanno[beta].abs() > anno_y,:]
             variants_toanno = variants_toanno.loc[ variants_toanno[eaf] < anno_x,:]
             if (variants_toanno.empty is not True) and anno=="GENENAME":
@@ -229,28 +245,76 @@ def plottrumpet(mysumstats,
 
             texts_u=[]
             texts_d=[]
-            variants_toanno["scaled_P"] = variants_toanno[beta]
+
             if len(variants_toanno)>0:
-                offsety = 0.2 * max(variants_toanno[beta].abs().max(),1.5)
-                offsetx = 0.01
+                
+                maxy = max(variants_toanno[beta].abs().max(),1.5)
+                offsety = 0.4 *maxy
+                offsetx = 1 + 0.1
+                variants_toanno["ADJUSTED_i"] = np.nan 
+                y_span = 0.5
+                
+                if sort == "beta" : 
+                    variants_toanno = variants_toanno.sort_values(by=beta, key= np.abs, ascending = False)
+                else:
+                    variants_toanno = variants_toanno.sort_values(by=eaf, key= np.abs, ascending = True)
+                
+                if anno_style == "expand":
+                    if len(variants_toanno.loc[variants_toanno[beta]>0, "ADJUSTED_i"])>1:
+                        variants_toanno.loc[variants_toanno[beta]>0, "ADJUSTED_i"] = adjust_text_position(variants_toanno.loc[variants_toanno[beta]>0,eaf].values.copy(), 
+                                                                                y_span, 
+                                                                                repel_force=repel_force,
+                                                                                max_iter=anno_max_iter,
+                                                                                log=log,
+                                                                                amode=xscale,
+                                                                                verbose=verbose)
+
+                    if len(variants_toanno.loc[variants_toanno[beta]<0, "ADJUSTED_i"])>1:
+                        variants_toanno.loc[variants_toanno[beta]<0, "ADJUSTED_i"] = adjust_text_position(variants_toanno.loc[variants_toanno[beta]<0,eaf].values.copy(), 
+                                                                y_span, 
+                                                                repel_force=repel_force,
+                                                                max_iter=anno_max_iter,
+                                                                log=log,
+                                                                amode=xscale,
+                                                                verbose=verbose)
+
+                last_pos = min(variants_toanno[eaf])/2
                 for index, row in variants_toanno.iterrows():
+                    
+                    armB_length_in_point = ax.transData.transform((0,1.1*maxy))[1]-ax.transData.transform((0, abs(row[beta])))[1]
+                    armB_length_in_point = armB_length_in_point*arm_scale
 
-                    if row[beta] >0 :
-                        texts_u.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(row[eaf]+offsetx, row[beta]+offsety),arrowprops=dict(arrowstyle="-|>"),ha="left",va="bottom",fontsize=anno_args["fontsize"]))
-                #        #texts_u.append(plt.text(row[eaf], row[beta], row[anno],ha="right",va="bottom"))
-                    else:
-                        texts_d.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(row[eaf]+offsetx, row[beta]-offsety),arrowprops=dict(arrowstyle="-|>"),ha="left",va="top",fontsize=anno_args["fontsize"]))
-                #        #texts_d.append(plt.text(row[eaf], row[beta], row[anno],ha="left",va="top"))
+                    if anno_style == "right" :
+                        #right style
+                        if row[eaf]>last_pos*(repel_force+1):
+                            last_pos=row[eaf]
+                        else:
+                            last_pos*= (repel_force+1)
+                    elif anno_style == "expand" :
+                        last_pos = row["ADJUSTED_i"]
 
-                adjust_text(texts_u + texts_d, 
-                            autoalign =True,
-                            precision =0.001,
-                            lim=1000, 
-                            expand_text=(0.5,0.5), 
-                            expand_points=(0.5,0.5),
-                            force_objects=(0.1,0.1), 
-                            ax=ax)
-    
+                    if anno_style == "right"  or anno_style == "expand":
+                        if row[beta] >0 :
+                            texts_u.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(last_pos , 1.2*maxy),
+                                                    arrowprops=dict(relpos=(0,0),arrowstyle="-|>",connectionstyle="arc,angleA=-90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
+                                                    ha="left",va="bottom",fontsize=anno_args["fontsize"]))
+                        else:
+                            texts_d.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(last_pos , -1.2*maxy),
+                                                    arrowprops=dict(relpos=(0,1),arrowstyle="-|>",connectionstyle="arc,angleA=90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
+                                                    ha="left",va="top",fontsize=anno_args["fontsize"]))
+                    
+                    if anno_style=="tight":
+                        texts_d.append(ax.text(row[eaf], row[beta], row[anno]))
+                        adjust_text(texts_d, 
+                                    autoalign =True,
+                                    precision =0.001,
+                                    lim=1000, 
+                                    expand_text=(0.5,0.5), 
+                                    expand_points=(0.5,0.5),
+                                    force_objects=(0.5,0.5), 
+                                    ax=ax)
+ 
+
     if save:
         if verbose: log.write("Saving plot:")
         if save==True:
