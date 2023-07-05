@@ -22,22 +22,22 @@ def plottrumpet(mysumstats,
                 mode="q",
                 chrom="CHR",
                 pos="POS",
+                n="N",
+                p="P",
+                eaf="MAF",
+                raweaf="EAF",
+                beta="BETA",
+                ts=None,
                 anno=None,
                 prevalence=None,
                 scase=None,
                 scontrol=None, 
-                raweaf="EAF",
-                eaf="MAF",
-                p="P",
                 sig_level=5e-8,
                 p_level=5e-8,
-                beta="BETA",
                 anno_y = 1,
-                anno_x = 0.01,
-                n="N",
+                anno_x = 0.01,                
                 eaf_range=None,
                 beta_range=None, 
-                ts=None,
                 verbose=True,
                 n_matrix=1000,
                 xscale="log",
@@ -57,14 +57,16 @@ def plottrumpet(mysumstats,
                 anno_d=None,
                 anno_args=None,
                 anno_style="expand",
-                anno_fixed_arm_length=None,
                 anno_source = "ensembl",
-                anno_adjust=False,
                 anno_max_iter=100,
-                arm_offset=50,
                 arm_scale=1,
-                arm_scale_d=None,
                 repel_force=0.05,
+                ylabel="Effect size",
+                xlabel="Minor allele frequency",
+                xticks = None,
+                xticklabels = None,
+                yticks = None,
+                yticklabels=None,
                 sort="beta",
                 log=Log()):
     
@@ -72,15 +74,16 @@ def plottrumpet(mysumstats,
     if sizes is None:
         sizes = (20,80)
     if ann_args is None:
-        anno_args={"fontsize":12}
+        anno_args={"fontsize":12,"fontstyle":"italic"}
     if anno_set is None:
         anno_set=list()
     if anno_alias is None:
         anno_alias=dict()
     if anno_d is None:
         anno_d=dict()
-    if anno_args is None:
-        anno_args=dict()
+    if xticks is None:
+        xticks = [0,0.01,0.05,0.1,0.2,0.5]
+        xticklabels = xticks
 
 
     if verbose: log.write("Start to create trumpet plot...")
@@ -205,24 +208,32 @@ def plottrumpet(mysumstats,
                     legend=False, 
                     alpha=0.6)
     
-    #sumstats["i"] = sumstats[eaf] * 5000
-
-    if xscale== "log":
-        ax.set_xscale('log')
-        rotation=0
-    else:
-        rotation=90
-    ax.set_xticks([0.001,0.01,0.05,0.1,0.2,0.5],[0.001,0.01,0.05,0.1,0.2,0.5],fontsize=fontsize,rotation=rotation)
     ax.tick_params(axis='y', labelsize=fontsize)
     leg = ax.legend(title="Power",fontsize =fontsize,title_fontsize=fontsize)
+
     for line in leg.get_lines():
         line.set_linewidth(5.0)
     ax.axhline(y=0,color="grey",linestyle="dashed")
-    ax.set_xlim(min(sumstats[eaf].min()/2,0.001/2),0.5)
+    
+    
+    if xscale== "log":
+        ax.set_xscale('log')
+        rotation=0
+        ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
+        ax.set_xlim(min(sumstats[eaf].min()/2,0.001/2),0.5)
+    else:
+        rotation=90    
+        ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
+        ax.set_xlim(-0.02,0.5)
+    
+
     if ylim is not None:
         ax.set_ylim(ylim)
-    ax.set_ylabel("Effect size",fontsize=fontsize)
-    ax.set_xlabel("Minor allele frequency",fontsize=fontsize)
+    if yticks is not None:
+        ax.set_yticks(yticks, yticklabels)
+
+    ax.set_ylabel(ylabel,fontsize=fontsize)
+    ax.set_xlabel(xlabel,fontsize=fontsize)
     
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -249,8 +260,6 @@ def plottrumpet(mysumstats,
             if len(variants_toanno)>0:
                 
                 maxy = max(variants_toanno[beta].abs().max(),1.5)
-                offsety = 0.4 *maxy
-                offsetx = 1 + 0.1
                 variants_toanno["ADJUSTED_i"] = np.nan 
                 y_span = 0.5
                 
@@ -297,11 +306,11 @@ def plottrumpet(mysumstats,
                         if row[beta] >0 :
                             texts_u.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(last_pos , 1.2*maxy),
                                                     arrowprops=dict(relpos=(0,0),arrowstyle="-|>",connectionstyle="arc,angleA=-90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
-                                                    ha="left",va="bottom",fontsize=anno_args["fontsize"]))
+                                                    ha="left",va="bottom",**anno_args))
                         else:
                             texts_d.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(last_pos , -1.2*maxy),
                                                     arrowprops=dict(relpos=(0,1),arrowstyle="-|>",connectionstyle="arc,angleA=90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
-                                                    ha="left",va="top",fontsize=anno_args["fontsize"]))
+                                                    ha="left",va="top",**anno_args))
                     
                     if anno_style=="tight":
                         texts_d.append(ax.text(row[eaf], row[beta], row[anno]))
