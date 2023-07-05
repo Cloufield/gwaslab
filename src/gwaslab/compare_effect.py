@@ -1,11 +1,8 @@
-import sys
-import os, psutil
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.stats as ss
 import seaborn as sns
-import matplotlib.patches as mpatches
 from gwaslab.getsig import getsig
 from gwaslab.Log import Log
 from gwaslab.winnerscurse import wc_correct
