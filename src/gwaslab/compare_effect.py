@@ -12,6 +12,7 @@ import gc
 from statsmodels.stats.multitest import fdrcorrection
 from matplotlib.patches import Rectangle
 from adjustText import adjust_text
+from gwaslab.figuresave import save_figure
 
 #20220422
 def compare_effect(path1,
@@ -842,15 +843,17 @@ def compare_effect(path1,
     plt.setp(L.get_title(),**fontargs)
     ##plot finished########################################################################################
     gc.collect()
+
+    save_figure(fig, save, keyword="esc",saveargs=saveargs, log=log, verbose=verbose)
     
-    if save:
-        if verbose: log.write("Saving plot:")
-        if save==True:
-            fig.savefig("./{}_{}_effect_comparison_plot.png".format(label[0],label[1]),bbox_inches="tight",**saveargs)
-            log.write(" -Saved to "+ "./{}_{}_effect_comparison_plot.png".format(label[0],label[1]) + " successfully!" )
-        else:
-            fig.savefig(save,bbox_inches="tight",**saveargs)
-            log.write(" -Saved to "+ save + " successfully!" )
+    #if save:
+    #    if verbose: log.write("Saving plot:")
+    #    if save==True:
+    #        fig.savefig("./{}_{}_effect_comparison_plot.png".format(label[0],label[1]),bbox_inches="tight",**saveargs)
+    #        log.write(" -Saved to "+ "./{}_{}_effect_comparison_plot.png".format(label[0],label[1]) + " successfully!" )
+    #    else:
+    #        fig.savefig(save,bbox_inches="tight",**saveargs)
+    #        log.write(" -Saved to "+ save + " successfully!" )
     
     return [sig_list_merged, fig,log]
 

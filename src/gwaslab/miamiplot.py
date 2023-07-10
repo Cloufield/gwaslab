@@ -39,6 +39,8 @@ from gwaslab.annotateplot import annotate_pair
 from gwaslab.to_pickle import load_pickle
 from gwaslab.to_pickle import load_data_from_pickle
 from gwaslab.Sumstats import Sumstats
+from gwaslab.figuresave import save_figure
+
 def plot_miami( 
           path1,
           path2,
@@ -649,15 +651,16 @@ def plot_miami(
     ax5.invert_yaxis() 
     
     #return fig
-    if save is not None:
-        if verbose: log.write("Saving plot:")
-        if save==True:
-            fig.savefig("./miami_plot.png",bbox_inches="tight",**saveargs)
-            log.write(" -Saved to "+ "./miami_plot.png" + " successfully!" )
-        else:
-            fig.savefig(save,bbox_inches="tight",**saveargs)
-            log.write(" -Saved to "+ save + " successfully!" )
-    
+    #if save is not None:
+    #    if verbose: log.write("Saving plot:")
+    #    if save==True:
+    #        fig.savefig("./miami_plot.png",bbox_inches="tight",**saveargs)
+    #        log.write(" -Saved to "+ "./miami_plot.png" + " successfully!" )
+    #    else:
+    #        fig.savefig(save,bbox_inches="tight",**saveargs)
+    #        log.write(" -Saved to "+ save + " successfully!" )
+    save_figure(fig, save, keyword="miami",saveargs=saveargs, log=log, verbose=verbose)
+
     garbage_collect.collect()
     if verbose: log.write("Finished creating miami plot successfully")
 # Return matplotlib figure object #######################################################################################

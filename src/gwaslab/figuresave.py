@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 from gwaslab.Log import Log
+import time
+import os.path
 
 def save_figure(fig, save, keyword, saveargs=None, log = Log(), verbose=True):
     if saveargs is None:
@@ -11,21 +13,36 @@ def save_figure(fig, save, keyword, saveargs=None, log = Log(), verbose=True):
             fig.savefig(default_path, bbox_inches="tight",**saveargs)
             log.write(" -Saved to "+ default_path + " successfully!" )
         else:
-            fig.savefig(save,bbox_inches="tight",**saveargs)
-            log.write(" -Saved to "+ save + " successfully!" )
+            if os.path.exists(save):
+                fig.savefig(save,bbox_inches="tight",**saveargs)
+                log.write(" -Saved to "+ save + " successfully! (overwrite)" )
+            else:
+                fig.savefig(save,bbox_inches="tight",**saveargs)
+                log.write(" -Saved to "+ save + " successfully!" )
     else:
         log.write(" -Skip saving figures!" )
 
-
-def get_default_path(keyword):
-    path_dictionary = {"trumpet":"./trumpet_plot.png",
-                        "mqq":"./mqq_plot.png",
-                        "regional":"./regional_plot.png",
-                        "genetic_correlation":"./genetic_correlation_heatmap.png",
-                        "qq":"./qq_plot.png",
-                        "brisbane":"./brisbane_plot.png",
-                        "miami":"./miami_plot.png",
-                        "effect_size_comparision":"./effect_size_comparision_plot.png",
-                        "allele_frequency_comparision":"./allele_frequency_comparision_plot.png"
+def get_default_path(keyword,fmt="png"):
+    path_dictionary = { 
+                        "m":"manhattan",
+                        "qq":"qq",
+                        "mqq":"mqq",
+                        "qqm":"qqm",
+                        "b":"brisbane",
+                        "r":"regional",
+                        "trumpet_b":"trumpet_binary",
+                        "trumpet_q":"trumpet_quant",
+                        "ldscrg":"ldscrg_heatmap",
+                        "miami":"miami",
+                        "esc":"effect_size_comparision",
+                        "afc":"allele_frequency_comparision"
                         }
-    return path_dictionary[keyword]
+    prefix = path_dictionary[keyword]
+    count = 1
+    for i in range(10000):
+        file_path = "./gwaslab_{}_{}_{}.{}".format(prefix, time.strftime('%Y%m%d'),count,fmt) 
+        if os.path.exists(file_path):
+            count+=1
+        else:
+            break
+    return file_path

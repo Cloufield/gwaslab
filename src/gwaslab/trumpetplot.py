@@ -343,8 +343,10 @@ def plottrumpet(mysumstats,
                                     force_objects=(0.5,0.5), 
                                     ax=ax)
     ############  Annotation ##################################################################################################
-    
-    save_figure(fig, save, keyword="trumpet",saveargs=saveargs, log=log, verbose=verbose)
+    if mode=="q":
+        save_figure(fig, save, keyword="trumpet_q",saveargs=saveargs, log=log, verbose=verbose)
+    elif mode=="b":
+        save_figure(fig, save, keyword="trumpet_b",saveargs=saveargs, log=log, verbose=verbose)
 
     if verbose: log.write("Finished creating trumpet plot!")
     return fig

@@ -48,6 +48,7 @@ from gwaslab.quickfix import _quick_assign_marker_relative_size
 from gwaslab.quickfix import _cut
 from gwaslab.quickfix import _set_yticklabels
 from gwaslab.quickfix import _jagged_y
+from gwaslab.figuresave import save_figure
 # 20230202 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -246,7 +247,8 @@ def mqqplot(insumstats,
 
     if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
     if verbose: log.write(" -Genomic coordinates version: {}...".format(build))
-    if verbose: log.write("   -WARNING!!! Genomic coordinates version is unknown...")
+    if build is None or build=="99":
+        if verbose: log.write("   -WARNING!!! Genomic coordinates version is unknown...")
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Plot layout mode is : "+mode)
@@ -932,14 +934,14 @@ def mqqplot(insumstats,
         if "qq" in mode:
             ax2.set_ylim(ylim)
     # Saving plot ##########################################################################################################
-    if save:
-        if verbose: log.write("Saving plot:")
-        if save==True:
-            fig.savefig("./"+mode+"_plot.png",bbox_inches="tight",**saveargs)
-            log.write(" -Saved to "+ "./"+mode+"_plot.png" + " successfully!" )
-        else:
-            fig.savefig(save,bbox_inches="tight",**saveargs)
-            log.write(" -Saved to "+ save + " successfully!" )
+    #if save:
+    #    if verbose: log.write("Saving plot:")
+    #    if save==True:
+    #        fig.savefig("./"+mode+"_plot.png",bbox_inches="tight",**saveargs)
+    #        log.write(" -Saved to "+ "./"+mode+"_plot.png" + " successfully!" )
+    #    else:
+    #        fig.savefig(save,bbox_inches="tight",**saveargs)
+    #        log.write(" -Saved to "+ save + " successfully!" )
     
     # add title 
     if title and anno and len(to_annotate)>0:
@@ -947,7 +949,9 @@ def mqqplot(insumstats,
         fig.suptitle(title , fontsize = title_fontsize ,x=0.5, y=1.05)
     else:
         fig.suptitle(title , fontsize = title_fontsize, x=0.5,y=1)
-    
+
+    save_figure(fig = fig, save = save, keyword=mode, saveargs=saveargs, log = log, verbose=verbose)
+
     garbage_collect.collect()
     
     # Return matplotlib figure object #######################################################################################
