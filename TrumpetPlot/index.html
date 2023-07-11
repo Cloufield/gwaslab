@@ -11,17 +11,17 @@
       
       
       
-        <link rel="prev" href="../BrisbanePlot/">
+        <link rel="prev" href="../MiamiPlot/">
       
       
-        <link rel="next" href="../TrumpetPlot/">
+        <link rel="next" href="../EffectSize/">
       
       <link rel="icon" href="../assets/gwaslab.png">
       <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.6">
     
     
       
-        <title>Miami Plot - GWASLab</title>
+        <title>Trumpet Plot (testing) - GWASLab</title>
       
     
     
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#miami-plot" class="md-skip">
+        <a href="#trumpet-plot" class="md-skip">
           Skip to content
         </a>
       
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Miami Plot
+              Trumpet Plot (testing)
             
           </span>
         </div>
@@ -625,6 +625,20 @@
               
   
   
+  
+    <li class="md-nav__item">
+      <a href="../MiamiPlot/" class="md-nav__link">
+        Miami Plot
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
     
   
   
@@ -637,12 +651,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Miami Plot
+          Trumpet Plot (testing)
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Miami Plot
+        Trumpet Plot (testing)
       </a>
       
         
@@ -661,15 +675,56 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#description" class="md-nav__link">
+    Description
   </a>
   
 </li>
       
         <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q-mode-for-quantitative-traits" class="md-nav__link">
+    "q" mode for quantitative traits
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-mode-for-binary-traits" class="md-nav__link">
+    "b" mode for binary traits
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-option" class="md-nav__link">
+    other option
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#example" class="md-nav__link">
-    Example
+    example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#citation" class="md-nav__link">
+    Citation
   </a>
   
 </li>
@@ -678,20 +733,6 @@
   
 </nav>
       
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../TrumpetPlot/" class="md-nav__link">
-        Trumpet Plot (testing)
-      </a>
     </li>
   
 
@@ -1010,15 +1051,56 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#description" class="md-nav__link">
+    Description
   </a>
   
 </li>
       
         <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q-mode-for-quantitative-traits" class="md-nav__link">
+    "q" mode for quantitative traits
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-mode-for-binary-traits" class="md-nav__link">
+    "b" mode for binary traits
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-option" class="md-nav__link">
+    other option
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#example" class="md-nav__link">
-    Example
+    example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#citation" class="md-nav__link">
+    Citation
   </a>
   
 </li>
@@ -1038,66 +1120,287 @@
                   
 
 
-<h1 id="miami-plot">Miami plot</h1>
-<div class="admonition info">
-<p class="admonition-title">Implemented since v3.3.4</p>
-</div>
-<p>As a standalone function, GWASLab can plot miami plot given a pair of sumstats files.</p>
-<h2 id="usage">Usage</h2>
-<div class="highlight"><pre><span></span><code>gl.plot_miami( 
-          path1,
-          path2,
-          cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-          cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-          sep=[&quot;\t&quot;,&quot;\t&quot;],
-          anno= None
-          )
-</code></pre></div>
+<h1 id="trumpet-plot">Trumpet plot</h1>
+<p>Under testing. Will be available since v3.4.20</p>
+<h2 id="description">Description</h2>
+<p>Scatter plot for visualization of the relationship between Minor Allele Frequency (MAF) and Effect size (BETA/ log(OR))</p>
 <ul>
-<li><code>path1</code> : <code>string</code> path to sumstats1</li>
-<li><code>path2</code> : <code>string</code> path to sumstats2</li>
-<li><code>cols1</code> : <code>list</code> CHR,POS,P names for sumstats1</li>
-<li><code>cols2</code> : <code>list</code> CHR,POS,P names for sumstats2</li>
-<li><code>sep</code>   : <code>list</code> separator for each sumstats</li>
-<li><code>anno</code>  : <code>boolean</code> or <code>GENENAME</code></li>
-<li><code>region</code> : only plot a region. For example, <code>region=(2,2153874,21753874)</code> .</li>
-<li><code>highlight1</code>: <code>list</code> , list of loci to highlight for sumstats1. For example, <code>highlight1=[(5,124289158)]</code> .</li>
-<li><code>highlight2</code>: <code>list</code> , list of loci to highlight for sumstats2. </li>
-<li><code>pinpoint1</code>: <code>list</code> , list of variants to pinpolint for sumstats1.</li>
-<li><code>pinpoint2</code>: <code>list</code>,  list of variants to pinpolint for sumstats2.</li>
-<li><code>titles</code>:<code>list</code>, two titles. For example,<code>titles=["male","female"]</code></li>
+<li>X axis: MAF</li>
+<li>Y axis: Effect size</li>
+<li>additional curves : power</li>
 </ul>
-<h2 id="example">Example</h2>
+<h2 id="usage">Usage</h2>
+<h3 id="q-mode-for-quantitative-traits">"q" mode for quantitative traits</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sig_level</code></td>
+<td><code>float</code></td>
+<td>signiifcance level for power calculation</td>
+<td><code>5e-8</code></td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td><code>string</code> or <code>int</code></td>
+<td>column name for sample size or an integer for sample size</td>
+<td>required</td>
+</tr>
+<tr>
+<td><code>ts</code></td>
+<td><code>list</code></td>
+<td>a list of power curve to draw</td>
+<td><code>[0.2,0.4,0.6,0.8]</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="b-mode-for-binary-traits">"b" mode for binary traits</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sig_level</code></td>
+<td><code>float</code></td>
+<td>signiifcance level for power calculation</td>
+<td><code>5e-8</code></td>
+</tr>
+<tr>
+<td><code>scase</code></td>
+<td><code>int</code></td>
+<td>number of cases</td>
+<td>required</td>
+</tr>
+<tr>
+<td><code>scontrol</code></td>
+<td><code>int</code></td>
+<td>number of controls</td>
+<td>required</td>
+</tr>
+<tr>
+<td><code>prevalence</code></td>
+<td><code>float</code></td>
+<td>disease prevalence in general population</td>
+<td>required</td>
+</tr>
+<tr>
+<td><code>or_to_rr</code></td>
+<td><code>boolean</code></td>
+<td>if estimate RR using OR/beta and prevalence; for prevalence &lt;10%, RR is similar to OR</td>
+<td>"False"</td>
+</tr>
+<tr>
+<td><code>ts</code></td>
+<td><code>list</code></td>
+<td>a list of power curve to draw</td>
+<td><code>[0.2,0.4,0.6,0.8]</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="other-option">other option</h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build</code></td>
+<td><code>string</code></td>
+<td><code>19</code> or <code>38</code>, which build to use for annotation</td>
+<td>"99"</td>
+</tr>
+<tr>
+<td><code>p_level</code></td>
+<td><code>float</code></td>
+<td>upper limit of p values; variants with p values higher than this will be excluded from plotting</td>
+<td><code>5e-8</code></td>
+</tr>
+<tr>
+<td><code>anno</code></td>
+<td><code>string</code></td>
+<td>which column in sumstats to use to annotate the variants</td>
+<td>None</td>
+</tr>
+<tr>
+<td><code>anno_style</code></td>
+<td><code>string</code></td>
+<td><code>expand</code>, <code>tight</code> or <code>right</code></td>
+<td><code>expand</code></td>
+</tr>
+<tr>
+<td><code>anno_args</code></td>
+<td><code>dict</code></td>
+<td>augurments for annotation</td>
+<td><code>{"fontsize":12,"fontstyle":"italic"}</code></td>
+</tr>
+<tr>
+<td><code>anno_x</code></td>
+<td><code>float</code></td>
+<td>upper bound of abs(y) for annotation</td>
+<td><code>0.05</code></td>
+</tr>
+<tr>
+<td><code>anno_y</code></td>
+<td><code>float</code></td>
+<td>lower bound of abs(y) for annotation</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>repel_force</code></td>
+<td><code>float</code></td>
+<td>determine the interval between each annotation</td>
+<td><code>0.05</code></td>
+</tr>
+<tr>
+<td><code>sort</code></td>
+<td><code>string</code></td>
+<td><code>beta</code> or <code>eaf</code>, which to use to determine the order for annotation</td>
+<td><code>beta</code></td>
+</tr>
+<tr>
+<td><code>ylim</code></td>
+<td><code>tuple</code></td>
+<td>ylim</td>
+<td>auto</td>
+</tr>
+<tr>
+<td><code>cmap</code></td>
+<td><code>string</code></td>
+<td>matplotlib color map for power line</td>
+<td>"cool"</td>
+</tr>
+<tr>
+<td><code>xscale</code></td>
+<td><code>string</code></td>
+<td><code>log</code> or <code>nonlog</code></td>
+<td><code>log</code></td>
+</tr>
+<tr>
+<td><code>yscale_factor</code></td>
+<td><code>float</code></td>
+<td>effect size will be multiplied by a factor</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>n_matrix</code></td>
+<td><code>int</code></td>
+<td>The higher the value is, the smoother the power line will be</td>
+<td>1000</td>
+</tr>
+<tr>
+<td><code>markercolor</code></td>
+<td><code>string</code></td>
+<td>color</td>
+<td>"#597FBD"</td>
+</tr>
+<tr>
+<td><code>ylabel</code></td>
+<td><code>string</code></td>
+<td>Y axis label</td>
+<td><code>Effect size</code></td>
+</tr>
+<tr>
+<td><code>xlabel</code></td>
+<td><code>string</code></td>
+<td>X axis label</td>
+<td><code>Minor allele frequency</code></td>
+</tr>
+<tr>
+<td><code>xticks</code></td>
+<td><code>list</code></td>
+<td>X axis ticks</td>
+<td><code>Effect size</code></td>
+</tr>
+<tr>
+<td><code>xticklabels</code></td>
+<td><code>list</code></td>
+<td>X axis tick labels</td>
+<td><code>Minor allele frequency</code></td>
+</tr>
+</tbody>
+</table>
+<p>|<code>save</code>|<code>string</code> or <code>True</code>|if True, the figure will be saved in the current directory with a default name. If <code>string</code> is provided, it will be used as the path for the figure |<code>False</code>|
+|<code>saveargs</code>|<code>dict</code>|augurments for matplotlib savefig|None|</p>
+<h2 id="example">example</h2>
 <div class="admonition example">
-<p class="admonition-title">Miami plot for male- amd female-specific GWAS on BMI</p>
-<p>Sample datasets are obtained from JENGER:</p>
-<div class="highlight"><pre><span></span><code>!wget -O bmi_male_bbj.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
-!wget -O bmi_female_bbj.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
+<p class="admonition-title">Trumpet plot for quantitative traits</p>
+<p><div class="highlight"><pre><span></span><code>mysumstats.plot_trumpet(mode=&quot;q&quot;,
+                            ts=[0.2,0.4,0.6,0.8] ,
+                            anno=&quot;Gene&quot;,
+                            anno_style=&quot;expand&quot;,
+                            cmap=&quot;cool&quot;,
+                            sig_level=5e-8,
+                            build=&quot;19&quot;,
+                            anno_x=0.01,
+                            anno_y=1,
+                            p_level=5e-8,
+                            n_matrix=2000,
+                            fontsize=12,
+                            xscale=&quot;log&quot;,
+                            repel_force=0.15,
+                            yscale_factor=5.63,
+                            sort=&quot;eaf&quot;,
+                            ylim=(-5,4),
+                            save=True)
 </code></pre></div>
-<div class="highlight"><pre><span></span><code>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
-                           path2=&quot;bmi_female_bbj.txt.gz&quot;,
-                           cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-                           cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-                           titles=[&quot;bmi male&quot;,&quot;bmi female&quot;],
-                           titles_pad=[0.15,0.0],
-                           anno=&quot;GENENAME&quot;,
-                           region_grid=True,
-                           highlight1=[(5,124289158)],
-                           pinpoint2=[(2,653874)]
-                           )
+<img alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/0b000467-4318-4045-b103-36b59aa3cd3d" /></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Trumpet plot for binary traits</p>
+<p><div class="highlight"><pre><span></span><code>mysumstats.get_lead(sig_level=5e-6,gls=True).plot_trumpet(mode=&quot;b&quot;,
+                            scase=36614,
+                            scontrol=155150,
+                            sig_level=5e-6,
+                            p_level=5e-6,
+                            ts=[0.2,0.4,0.6,0.8] ,
+                            anno=&quot;GENENAME&quot;,
+                            anno_style=&quot;right&quot;,
+                            cmap=&quot;cool&quot;,
+                            or_to_rr=True,
+                            build=&quot;19&quot;,
+                            anno_x=0.01,
+                            anno_y=0,
+                            n_matrix=2000,
+                            fontsize=12,
+                            xscale=&quot;log&quot;,
+                            repel_force=0.15,
+                            sort=&quot;eaf&quot;,
+                            ylim=(-5,4),
+                            save=True)
 </code></pre></div>
-<p><img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197526569-7850041d-e247-4f69-8505-ef7750a6d4de.png"></p>
-<div class="highlight"><pre><span></span><code>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
-                           path2=&quot;bmi_female_bbj.txt.gz&quot;,
-                           cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-                           cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-                           titles=[&quot;male&quot;,&quot;female&quot;],
-                           region=(2,2153874,21753874),
-                           titles_pad=[0.1,-0.05],
-                           anno=&quot;GENENAME&quot;,
-                           region_grid=True
-                           )
-</code></pre></div>
+<img alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/308f9e5b-386c-4f48-8ca4-dabe557ab472" /></p>
+</div>
+<h2 id="citation">Citation</h2>
+<div class="admonition quote trumpet plot">
+<p class="admonition-title">Quote</p>
+<p>This function was adapted from Corte, L., Liou, L., O'Reilly, P. F., &amp; García-González, J. (2023). Trumpet plots: Visualizing The Relationship Between Allele Frequency And Effect Size In Genetic Association Studies. medRxiv, 2023-04. 
+R Shiny app : https://juditgg.shinyapps.io/shinytrumpets/</p>
+</div>
+<div class="admonition power calculation">
+<p class="admonition-title">Power</p>
+<p>For power calculation: </p>
+<ul>
+<li>Sham, P. C., &amp; Purcell, S. M. (2014). Statistical power and significance testing in large-scale genetic studies. Nature Reviews Genetics, 15(5), 335-346.</li>
+<li>Skol, A. D., Scott, L. J., Abecasis, G. R., &amp; Boehnke, M. (2006). Joint analysis is more efficient than replication-based analysis for two-stage genome-wide association studies. Nature genetics, 38(2), 209-213.</li>
+</ul>
 </div>
 
 
