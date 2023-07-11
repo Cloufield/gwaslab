@@ -83,14 +83,14 @@ mysumstats.plot_mqq()
 
 ### Visualization
 
-- Mqq plot : Manhattan plot , QQ plot or MQQ plot (with a bunch of customizable features including auto-annotate nearest gene names)
-- Miami plot : Manhattan plot
+- Mqq plot: Manhattan plot, QQ plot or MQQ plot (with a bunch of customizable features including auto-annotate nearest gene names)
+- Miami plot: mirrored Manhattan plot
 - Brisbane plot:  GWAS hits density plot
-- Regional plot : GWAS regional plot
-- Heatmap : ldsc-rg genetic correlation matrix
-- Scatter Plot : variant effect size comparison with sumstats
-- Scatter Plot : allele frequency comparison 
-- Forest Plot : forest plots for meta-analysis of SNPs
+- Regional plot: GWAS regional plot
+- Genetic correlation heatmap: ldsc-rg genetic correlation matrix
+- Scatter plot: variant effect size comparison
+- Scatter plot: allele frequency comparison 
+- Scatter plot: trumpet plot (plot of MAF and effect size with power lines)
 
 ### Visualization Examples
 
@@ -103,27 +103,40 @@ mysumstats.plot_mqq()
 
 - Read ldsc h2 or rg outputs directly as DataFrames (auto-parsing).
 - Extract lead variants given a sliding window size.
-- Extract novel loci given a list of known lead variants / or known loci obtained form GWAS Catalog.
-- Logging : keep a complete record of manipulations applied to the sumstats.
+- Extract novel loci given a list of known lead variants / or known loci obtained from GWAS Catalog.
+- Logging: keep a complete record of manipulations applied to the sumstats.
 - Sumstats summary: give you a quick overview of the sumstats. 
 - ...
 
 ## Requirements
 
+environment.yml
+
 ```
-Python >= 3.8
-pySAM >0.18,<0.20
-pyensembl >=2.2.3
-scikit-allel
-Biopython >= 1.79
-liftover >= 1.1.13
-pandas >= 1.3,<1.5
-numpy >= 1.21.2
-matplotlib >=3.5
-seaborn >=0.11.1
-scipy >=1.6.2
-statsmodels > =0.13
-adjustText
+name: gwaslab
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8.16=h7a1cb2a_3
+  - jupyter==1.0.0
+  - pip==23.1.2
+  - pip:
+      - adjusttext==0.8
+      - biopython==1.81
+      - gwaslab==3.4.16
+      - liftover==1.1.16
+      - matplotlib==3.7.1
+      - numpy==1.24.2
+      - pandas==1.4.4
+      - scikit-allel==1.3.5
+      - scikit-learn==1.2.2
+      - scipy==1.10.1
+      - seaborn==0.11.2
+      - statsmodels==0.13
+      - adjustText==0.8
+      - pysam==0.19
+      - pyensembl==2.2.3
 ```
 
 ## How to cite
