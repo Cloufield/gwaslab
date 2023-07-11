@@ -36,7 +36,7 @@ def filldata(
         if verbose: log.write("  -Skipping columns: ",skip_cols) 
     if verbose: log.write(" -Filling columns: ",to_fill)
     
-    fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose)
+    fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose,sig_level)
 ## beta to or ####################################################################################################     
 #    if "OR" in to_fill:
 #        fill_or(sumstats,log,verbose=verbose)
@@ -250,7 +250,7 @@ def fill_extreme_mlog10(sumstats, z):
     return sumstats
 
 ####################################################################################################################
-def fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose):
+def fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose,sig_level):
     if verbose: log.write("  - Filling Columns iteratively...")
     filled=[]
     for i in range(len(to_fill)):

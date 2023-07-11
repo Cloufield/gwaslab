@@ -543,17 +543,17 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             if verbose: log.write("  -Non-palindromic : ",sum(status0))
             if verbose: log.write("  -Palindromic SNPs on + strand: ",sum(status1))
             if verbose: log.write("  -Palindromic SNPs on - strand and need to be flipped:",sum(status5))   
-            if verbose: log.write("  -Palindromic SNPs with maf not availble to infer : ",sum(status7))  
+            if verbose: log.write("  -Palindromic SNPs with maf not available to infer : ",sum(status7))  
             if verbose: log.write("  -Palindromic SNPs with no macthes or no information : ",sum(status8))  
 
             if ("7" in remove_snp) and ("8" in remove_snp) :
-                if verbose: log.write("  -Palindromic SNPs with maf not availble to infer and with no macthes or no information will will be removed") 
+                if verbose: log.write("  -Palindromic SNPs with maf not available to infer and with no macthes or no information will will be removed") 
                 sumstats = sumstats.loc[~(status7 | status8),:].copy()
             elif "8" in remove_snp:
                 if verbose: log.write("  -Palindromic SNPs with no macthes or no information will be removed")
                 sumstats = sumstats.loc[~status8,:].copy()
             elif "7" in remove_snp:
-                if verbose: log.write("  -Palindromic SNPs with maf not availble to infer will be removed") 
+                if verbose: log.write("  -Palindromic SNPs with maf not available to infer will be removed") 
                 sumstats = sumstats.loc[~status7,:].copy()
 
     ### unknow_indel
@@ -561,7 +561,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
         unknow_indel = sumstats[status].str.match(r'\w\w\w\w\w[6][89]', case=False, flags=0, na=False)   
         if verbose: log.write(" -Identified ", sum(unknow_indel)," indistinguishable Indels...")
         if sum(unknow_indel)>0:
-            if verbose: log.write(" -Indistinguishable Indels will be inferred from reference vcf ref and alt...")
+            if verbose: log.write(" -Indistinguishable indels will be inferred from reference vcf ref and alt...")
             #########################################################################################               
             if sum(unknow_indel)>0:
                 if sum(unknow_indel)<10000: 

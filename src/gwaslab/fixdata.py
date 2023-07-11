@@ -85,7 +85,7 @@ def fixID(sumstats,
                 to_fix = is_chrposrefalt & sumstats[chrom].isna() & sumstats[pos].isna()
                 to_fix_num = sum(to_fix)
                 if to_fix_num and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix_num)+" ...")
-                elif verbose: log.write(" -No fixable vairants. ...")
+                elif verbose: log.write(" -No fixable variants. ...")
             
             elif (chrom not in sumstats.columns) and (pos in sumstats.columns):
                 if verbose: log.write(" -Initiating CHR columns...")
@@ -93,7 +93,7 @@ def fixID(sumstats,
                 to_fix = is_chrposrefalt & sumstats[chrom].isna() & sumstats[pos].isna()
                 to_fix_num = sum(to_fix)
                 if to_fix_num>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix_num)+" ...")
-                elif verbose: log.write(" -No fixable vairants. ...")
+                elif verbose: log.write(" -No fixable variants. ...")
             
             elif (chrom in sumstats.columns) and (pos not in sumstats.columns):
                 if verbose: log.write(" -Initiating CHR and POS column...")
@@ -101,7 +101,7 @@ def fixID(sumstats,
                 to_fix = is_chrposrefalt & sumstats[chrom].isna() & sumstats[pos].isna() 
                 to_fix_num = sum(to_fix)
                 if to_fix_num>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix_num)+" ...")
-                elif verbose: log.write(" -No fixable vairants. ...")     
+                elif verbose: log.write(" -No fixable variants. ...")     
             else:
                 if verbose: log.write(" -Initiating CHR and POS columns...")
                 sumstats.loc[:,chrom]=pd.Series(dtype="string")   
@@ -109,7 +109,7 @@ def fixID(sumstats,
                 to_fix = is_chrposrefalt
                 to_fix_num = sum(to_fix)
                 if to_fix_num>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix_num)+" ...")
-                elif verbose: log.write(" -No fixable vairants. ...")   
+                elif verbose: log.write(" -No fixable variants. ...")   
                     
             if sum(to_fix)>0:
                 if verbose: log.write(" -Filling CHR and POS columns using valid SNPID's chr:pos...")
@@ -131,26 +131,26 @@ def fixID(sumstats,
             elif (chrom in sumstats.columns) and (pos in sumstats.columns) :
                 to_fix = is_rs_chrpos & sumstats[chrom].isna() & sumstats[pos].isna()
                 if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
-                elif verbose: log.write(" -No fixable vairants ...")
+                elif verbose: log.write(" -No fixable variants ...")
             elif (chrom not in sumstats.columns) and (pos in sumstats.columns):
                 if verbose: log.write(" -Initiating CHR columns...")
                 sumstats.loc[:,chrom]=pd.Series(dtype="string")   
                 to_fix = is_rs_chrpos & sumstats[chrom].isna() & sumstats[pos].isna()
                 if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
-                elif verbose: log.write(" -No fixable vairants ...")
+                elif verbose: log.write(" -No fixable variants ...")
             elif (chrom in sumstats.columns) and (pos not in sumstats.columns):
                 if verbose: log.write(" -Initiating CHR and POS column...")
                 sumstats.loc[:,pos]=pd.Series(dtype="Int64") 
                 to_fix = is_rs_chrpos & sumstats[chrom].isna() & sumstats[pos].isna() 
                 if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
-                elif verbose: log.write(" -No fixable vairants ...")
+                elif verbose: log.write(" -No fixable variants ...")
             else:
                 if verbose: log.write(" -Initiating CHR and POS columns...")
                 sumstats.loc[:,chrom]=pd.Series(dtype="string")   
                 sumstats.loc[:,pos]=pd.Series(dtype="Int64") 
                 to_fix = is_rs_chrpos
                 if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
-                elif verbose: log.write(" -No fixable vairants ...")   
+                elif verbose: log.write(" -No fixable variants ...")   
             
             if sum(to_fix)>0:    
                 if verbose: log.write(" -Filling CHR and POS columns using chr:pos:ref:alt format variants in rsID column...")
