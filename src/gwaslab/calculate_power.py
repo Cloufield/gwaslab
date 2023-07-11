@@ -14,7 +14,7 @@ def get_power(
               scase= 2000,
               scontrol= 15000,
               prevalence= 0.15,
-              prevalence_base=None,
+              or_to_rr=False,
               daf = 0.2,
               sig_level= 5e-8,
               vary=1,
@@ -34,13 +34,20 @@ def get_power(
         abf = 2 * (daf) * (1 - daf)
         bbf = (1- daf)**2
 
-        if prevalence_base is None:
+        if or_to_rr is False:
             genotype_or = np.exp(beta)
             genotype_rr = genotype_or
         else:
             genotype_or = np.exp(beta)
-            genotype_rr = genotype_or/ ((1-prevalence_base)+(genotype_or*prevalence_base))
+            genotype_rr = genotype_or/ ((1-prevalence)+(genotype_or*prevalence))
             # https://jamanetwork.com/journals/jama/fullarticle/188182
+        
+        if or_to_rr ==False:
+            if verbose: log.write(" -Alogorithm: Skol, Andrew D., et al. Nature genetics 38.2 (2006): 209-213....")
+            if verbose: log.write(" -GRR is approximated using OR. For prevalence < 10%, GRR is very similar to OR....")
+        else:
+            if verbose: log.write(" -OR is converted to GRR using base prevalence: {}".format(prevalence))
+            if verbose: log.write(" -Alogorithm: Zhang, J., & Kai, F. Y. (1998). What's the relative risk?: A method of correcting the odds ratio in cohort studies of common outcomes. Jama, 280(19), 1690-1691.....")
         
         # additive
         x = [ 2*genotype_rr-1, genotype_rr, 1 ] 
@@ -141,7 +148,7 @@ def get_beta_binary(
               log=Log(),
               verbose=True,
               n_matrix=500,
-              prevalence_base=None
+              or_to_rr=False
              ):
     if t >0:
         def calculate_power_single(
@@ -151,18 +158,18 @@ def get_beta_binary(
                             scase, 
                             scontrol, 
                             sig_level=5e-8,
-                            prevalence_base=None):
+                            or_to_rr=False):
                 
                 aaf = daf**2
                 abf = 2 * (daf) * (1 - daf)
                 bbf = (1- daf)**2
 
-                if prevalence_base is None:
+                if or_to_rr == False:
                     genotype_or = np.exp(beta)
                     genotype_rr = genotype_or
                 else:
                     genotype_or = np.exp(beta)
-                    genotype_rr = genotype_or/ ((1-prevalence_base)+(genotype_or*prevalence_base))
+                    genotype_rr = genotype_or/ ((1-prevalence)+(genotype_or*prevalence))
                     # https://jamanetwork.com/journals/jama/fullarticle/188182
                 # additive
                 x = [ 2*genotype_rr-1, genotype_rr, 1 ] 
@@ -185,12 +192,11 @@ def get_beta_binary(
         betas =  np.linspace(beta_range[0],beta_range[1],n_matrix)
         
         if verbose: log.write(" -Updating eaf-beta matrix...")
-        if prevalence_base is None:
-            if verbose: log.write(" -Alogorithm: Skol, Andrew D., et al. Nature genetics 38.2 (2006): 209-213....")
+        if or_to_rr ==False:
             if verbose: log.write(" -GRR is approximated using OR. For prevalence < 10%, GRR is very similar to OR....")
         else:
-            if verbose: log.write(" -OR is converted to GRR using base prevalence: {}".format(prevalence_base))
-
+            if verbose: log.write(" -OR is converted to GRR using base prevalence: {}".format(prevalence))
+        
         for i in range(n_matrix):
                 eaf_beta_matrix[i,] = calculate_power_single(beta=betas,
                                                                 daf=eafs[i],
@@ -198,7 +204,7 @@ def get_beta_binary(
                                                                 scontrol=scontrol,
                                                                 prevalence=prevalence,
                                                                 sig_level=sig_level,
-                                                                prevalence_base=prevalence_base)
+                                                                or_to_rr=or_to_rr)
         
         if verbose: log.write(" -Extracting eaf-beta combinations with power = {}...".format(t))
         i,j=1,1

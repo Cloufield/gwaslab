@@ -25,19 +25,20 @@ def plottrumpet(mysumstats,
                 pos="POS",
                 n="N",
                 p="P",
-                eaf="MAF",
-                raweaf="EAF",
+                maf="MAF",
+                eaf="EAF",
                 beta="BETA",
                 ts=None,
                 anno=None,
                 prevalence=None,
+                or_to_rr=False,
                 scase=None,
                 scontrol=None, 
                 sig_level=5e-8,
                 p_level=5e-8,
                 anno_y = 1,
                 anno_x = 0.01,                
-                eaf_range=None,
+                maf_range=None,
                 beta_range=None, 
                 n_matrix=1000,
                 xscale="log",
@@ -83,6 +84,8 @@ def plottrumpet(mysumstats,
         anno_alias=dict()
     if anno_d is None:
         anno_d=dict()
+    if ts is None:
+        ts = [0.2,0.4,0.6,0.8]
     if xticks is None:
         if xscale== "log":
             xticks = [0.001,0.01,0.05,0.1,0.2,0.5]
@@ -94,7 +97,7 @@ def plottrumpet(mysumstats,
     #Checking columns#################################################################################################################
     if verbose: log.write("Start to create trumpet plot...")
     
-    if (beta not in mysumstats.columns) or (raweaf not in mysumstats.columns):
+    if (beta not in mysumstats.columns) or (eaf not in mysumstats.columns):
         if verbose:
             log.write(" -No EAF or BETA columns. Skipping...")
         return None
@@ -109,7 +112,7 @@ def plottrumpet(mysumstats,
                 log.write(" -Prevalence is not given. Estimating based on scase and scontrol :{}...".format(prevalence))
 
     #loading columns #################################################################################################################
-    cols_to_use = [snpid, beta,raweaf,n, p]
+    cols_to_use = [snpid, beta, eaf, n, p]
     if anno is not None:
         if anno != "GENENAME":
             if anno!=True:
@@ -125,12 +128,15 @@ def plottrumpet(mysumstats,
         if verbose: log.write("Excluding variants with P values > {}".format(p_level))
     else:
         cols_to_use.remove(p)
-        sumstats = mysumstats[[beta,raweaf,n]].copy()
+        sumstats = mysumstats[[beta,eaf,n]].copy()
     if verbose: log.write("Plotting {} variants...".format(len(sumstats)))
     
     #add maf column #################################################################################################################
-    if eaf not in sumstats.columns:
+    if maf not in sumstats.columns:
         sumstats = filldata(sumstats,to_fill=["MAF"])
+        is_filpped = (sumstats["MAF"] < sumstats[eaf]) & (sumstats[eaf] > 0.5)& (sumstats["MAF"] < 0.5)
+        if verbose: log.write("Flipping {} variants...".format(sum(is_filpped)))
+        sumstats.loc[is_filpped, beta] = -sumstats.loc[is_filpped, beta]
     
     #configure n #################################################################################################################
     if mode=="q":
@@ -148,9 +154,9 @@ def plottrumpet(mysumstats,
             log.write("N for power calculation: {}".format(n))
 
     #configure beta and maf range ###################################################################################################
-    if eaf_range is None:
-        eaf_min_power = np.floor( -np.log10(sumstats[eaf].min())) + 1
-        eaf_range=(min(np.power(10.0,-eaf_min_power),np.power(10.0,-4)),0.5)
+    if maf_range is None:
+        maf_min_power = np.floor( -np.log10(sumstats[maf].min())) + 1
+        maf_range=(min(np.power(10.0,-maf_min_power),np.power(10.0,-4)),0.5)
     if beta_range is None:
         if sumstats[beta].max()>3:
             beta_range=(0.0001,sumstats[beta].max())
@@ -180,7 +186,7 @@ def plottrumpet(mysumstats,
     if mode=="q":
         for i,t in enumerate(ts):
             xpower = get_beta(mode="q",          
-                            eaf_range=eaf_range,
+                            eaf_range=maf_range,
                             beta_range=beta_range, 
                             n=n,
                             t=t,
@@ -195,9 +201,10 @@ def plottrumpet(mysumstats,
     else:
         for i,t in enumerate(ts):
             xpower = get_beta_binary(        
-                            eaf_range=eaf_range,
+                            eaf_range=maf_range,
                             beta_range=beta_range, 
                             prevalence=prevalence,
+                            or_to_rr = or_to_rr,
                             scase=scase, 
                             scontrol=scontrol, 
                             t=t,
@@ -217,7 +224,7 @@ def plottrumpet(mysumstats,
     ##################################################################################################
     
     sns.scatterplot(data=sumstats,
-                    x=eaf,
+                    x=maf,
                     y=beta,
                     size="ABS_BETA", 
                     ax=ax, 
@@ -240,7 +247,7 @@ def plottrumpet(mysumstats,
         ax.set_xscale('log')
         rotation=0
         ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
-        ax.set_xlim(min(sumstats[eaf].min()/2,0.001/2),0.52)
+        ax.set_xlim(min(sumstats[maf].min()/2,0.001/2),0.52)
     else:
         rotation=90    
         ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
@@ -263,7 +270,7 @@ def plottrumpet(mysumstats,
         if anno in sumstats.columns or anno=="GENENAME" :
             variants_toanno = sumstats.copy()
             variants_toanno = variants_toanno.loc[ variants_toanno[beta].abs() > anno_y,:]
-            variants_toanno = variants_toanno.loc[ variants_toanno[eaf] < anno_x,:]
+            variants_toanno = variants_toanno.loc[ variants_toanno[maf] < anno_x,:]
             if (variants_toanno.empty is not True) and anno=="GENENAME":
                 variants_toanno = annogene(variants_toanno,
                                     id=snpid,
@@ -286,11 +293,11 @@ def plottrumpet(mysumstats,
                 if sort == "beta" : 
                     variants_toanno = variants_toanno.sort_values(by=beta, key= np.abs, ascending = False)
                 else:
-                    variants_toanno = variants_toanno.sort_values(by=eaf, key= np.abs, ascending = True)
+                    variants_toanno = variants_toanno.sort_values(by=maf, key= np.abs, ascending = True)
                 
                 if anno_style == "expand":
                     if len(variants_toanno.loc[variants_toanno[beta]>0, "ADJUSTED_i"])>1:
-                        variants_toanno.loc[variants_toanno[beta]>0, "ADJUSTED_i"] = adjust_text_position(variants_toanno.loc[variants_toanno[beta]>0,eaf].values.copy(), 
+                        variants_toanno.loc[variants_toanno[beta]>0, "ADJUSTED_i"] = adjust_text_position(variants_toanno.loc[variants_toanno[beta]>0,maf].values.copy(), 
                                                                                 y_span, 
                                                                                 repel_force=repel_force,
                                                                                 max_iter=anno_max_iter,
@@ -299,7 +306,7 @@ def plottrumpet(mysumstats,
                                                                                 verbose=verbose)
 
                     if len(variants_toanno.loc[variants_toanno[beta]<0, "ADJUSTED_i"])>1:
-                        variants_toanno.loc[variants_toanno[beta]<0, "ADJUSTED_i"] = adjust_text_position(variants_toanno.loc[variants_toanno[beta]<0,eaf].values.copy(), 
+                        variants_toanno.loc[variants_toanno[beta]<0, "ADJUSTED_i"] = adjust_text_position(variants_toanno.loc[variants_toanno[beta]<0,maf].values.copy(), 
                                                                 y_span, 
                                                                 repel_force=repel_force,
                                                                 max_iter=anno_max_iter,
@@ -307,41 +314,44 @@ def plottrumpet(mysumstats,
                                                                 amode=xscale,
                                                                 verbose=verbose)
 
-                last_pos = min(variants_toanno[eaf])/2
-                for index, row in variants_toanno.iterrows():
-                    
-                    armB_length_in_point = ax.transData.transform((0,1.1*maxy))[1]-ax.transData.transform((0, abs(row[beta])))[1]
-                    armB_length_in_point = armB_length_in_point*arm_scale
+                
+                for variants_toanno_half in [variants_toanno.loc[variants_toanno[beta]<0,:], variants_toanno.loc[variants_toanno[beta]>0,:]]:
+                    last_pos = min(variants_toanno_half[maf])/2
+                    for index, row in variants_toanno_half.iterrows():
+                        
+                        armB_length_in_point = ax.transData.transform((0,1.1*maxy))[1]-ax.transData.transform((0, abs(row[beta])))[1]
+                        armB_length_in_point = armB_length_in_point*arm_scale
 
-                    if anno_style == "right" :
-                        #right style
-                        if row[eaf]>last_pos*(repel_force+1):
-                            last_pos=row[eaf]
-                        else:
-                            last_pos*= (repel_force+1)
-                    elif anno_style == "expand" :
-                        last_pos = row["ADJUSTED_i"]
+                        if anno_style == "right" :
+                            #right style
+                            if row[maf]>last_pos*(repel_force+1):
+                                last_pos=row[maf]
+                            else:
+                                last_pos*= (repel_force+1)
+                        elif anno_style == "expand" :
+                            last_pos = row["ADJUSTED_i"]
 
-                    if anno_style == "right"  or anno_style == "expand":
-                        if row[beta] >0 :
-                            texts_u.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(last_pos , 1.2*maxy),
-                                                    arrowprops=dict(relpos=(0,0),arrowstyle="-|>",facecolor='black',connectionstyle="arc,angleA=-90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
-                                                    ha="left",va="bottom",**anno_args))
-                        else:
-                            texts_d.append(ax.annotate(row[anno], xy=(row[eaf], row[beta]),xytext=(last_pos , -1.2*maxy),
-                                                    arrowprops=dict(relpos=(0,1),arrowstyle="-|>",facecolor='black',connectionstyle="arc,angleA=90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
-                                                    ha="left",va="top",**anno_args))
-                    
-                    if anno_style=="tight":
-                        texts_d.append(ax.text(row[eaf], row[beta], row[anno]))
-                        adjust_text(texts_d, 
-                                    autoalign =True,
-                                    precision =0.001,
-                                    lim=1000, 
-                                    expand_text=(0.5,0.5), 
-                                    expand_points=(0.5,0.5),
-                                    force_objects=(0.5,0.5), 
-                                    ax=ax)
+                        if anno_style == "right"  or anno_style == "expand":
+                            if row[beta] >0 :
+                                texts_u.append(ax.annotate(row[anno], xy=(row[maf], row[beta]),xytext=(last_pos , 1.2*maxy),
+                                                        arrowprops=dict(relpos=(0,0),arrowstyle="-|>",facecolor='black',connectionstyle="arc,angleA=-90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
+                                                        ha="left",va="bottom",**anno_args))
+                            else:
+                                texts_d.append(ax.annotate(row[anno], xy=(row[maf], row[beta]),xytext=(last_pos , -1.2*maxy),
+                                                        arrowprops=dict(relpos=(0,1),arrowstyle="-|>",facecolor='black',connectionstyle="arc,angleA=90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
+                                                        ha="left",va="top",**anno_args))
+                        
+                        if anno_style=="tight":
+                            texts_d.append(ax.text(row[maf], row[beta], row[anno]))
+                if anno_style=="tight":
+                    adjust_text(texts_d, 
+                                autoalign =True,
+                                precision =0.001,
+                                lim=1000, 
+                                expand_text=(0.5,0.5), 
+                                expand_points=(0.5,0.5),
+                                force_objects=(0.5,0.5), 
+                                ax=ax)
     ############  Annotation ##################################################################################################
     if mode=="q":
         save_figure(fig, save, keyword="trumpet_q",saveargs=saveargs, log=log, verbose=verbose)

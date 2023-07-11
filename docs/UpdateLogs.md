@@ -1,5 +1,12 @@
 # Update Logs
 
+## 3.4.20 upcoming
+
+- reimplement and unified the module for saving figures
+- fixed error in plot_mqq logging (genome build)
+- fixed error in cloumn header for plot_mqq "b" mode
+- added trumpet plot document page   
+
 ## 3.4.19 2023/06/29
 - added annotation using custom column for miami plot
 - updated alogorithm for extracting lead variants (using scaled P)

@@ -75,7 +75,7 @@ def getsig(insumstats,
         else:
             #use P         
             sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
-            sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:]
+            sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:].copy()
             sumstats_sig.loc[:,"__SCALEDP"] = pd.to_numeric(sumstats_sig[p], errors='coerce')
     if verbose:log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...")
 
