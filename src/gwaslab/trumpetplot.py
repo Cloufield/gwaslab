@@ -43,7 +43,7 @@ def plottrumpet(mysumstats,
                 n_matrix=1000,
                 xscale="log",
                 yscale_factor=1,
-                cmap="Reds",
+                cmap="cool",
                 ylim=None,
                 markercolor="#597FBD",
                 fontsize=15,
@@ -51,7 +51,6 @@ def plottrumpet(mysumstats,
                 sizes=None,
                 save=False,
                 saveargs=None,
-                ann_args=None,
                 build="99",
                 anno_set=None,
                 anno_alias=None,
@@ -76,7 +75,7 @@ def plottrumpet(mysumstats,
     matplotlib.rc('font', family=font_family)
     if sizes is None:
         sizes = (20,80)
-    if ann_args is None:
+    if anno_args is None:
         anno_args={"fontsize":12,"fontstyle":"italic"}
     if anno_set is None:
         anno_set=list()

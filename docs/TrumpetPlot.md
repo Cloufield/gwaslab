@@ -39,6 +39,7 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 |`p_level`|`float`|upper limit of p values; variants with p values higher than this will be excluded from plotting|`5e-8`|
 |`anno`|`string`|which column in sumstats to use to annotate the variants|None|
 |`anno_style`|`string`|`expand`, `tight` or `right`|`expand`|
+|`anno_args`|`dict`|augurments for annotation |`{"fontsize":12,"fontstyle":"italic"}`|
 |`anno_x`|`float`|upper bound of abs(y) for annotation|`0.05`|
 |`anno_y`|`float`|lower bound of abs(y) for annotation|`1`|
 |`repel_force`|`float`|determine the interval between each annotation|`0.05`|
@@ -51,7 +52,11 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 |`markercolor`|`string`|color|"#597FBD"|
 |`ylabel`|`string`|Y axis label|`Effect size`|
 |`xlabel`|`string`|X axis label|`Minor allele frequency`|
+|`xticks`|`list`|X axis ticks|`Effect size`|[0.001,0.01,0.05,0.1,0.2,0.5]|
+|`xticklabels`|`list`|X axis tick labels|`Minor allele frequency`|[0.001,0.01,0.05,0.1,0.2,0.5]|
 
+|`save`|`string` or `True`|if True, the figure will be saved in the current directory with a default name. If `string` is provided, it will be used as the path for the figure |`False`|
+|`saveargs`|`dict`|augurments for matplotlib savefig|None|
 
 ## example
 

@@ -37,7 +37,7 @@ nav:
        - "Regional Plot": RegionalPlot.md
        - "Brisbane Plot": BrisbanePlot.md
        - "Miami Plot": MiamiPlot.md
-       - "Trumpet Plot": TrumpetPlot.md
+       - "Trumpet Plot (testing)": TrumpetPlot.md
        - "Effect Size Comparison": EffectSize.md
        - "Allele Frequency Comparison": AlleleFrequency.md
        - "Genetic correlation heatmap" : GeneticCorrelation.md
