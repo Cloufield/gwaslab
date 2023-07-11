@@ -1,6 +1,6 @@
 # Trumpet plot
 
-Available since v3.4.20
+Under testing. Will be available since v3.4.20
 
 ## Description
 
@@ -34,30 +34,30 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 ### other option
 
 |Option|Type|Description|Default|
-|-|-|-||
+|-|-|-|-|
 |`build`|`string`|`19` or `38`, which build to use for annotation|"99"|
-|`p_level`|`float`|upper limit of p values; variants with p values higher than this will be excluded from plotting||
-|`anno`|`string`|which column in sumstats to use to annotate the variants||
-|`anno_style`|`string`|`expand`, `tight` or `right`||
-|`anno_x`|`float`|upper bound of abs(y) for annotation||
-|`anno_y`|`float`|lower bound of abs(y) for annotation||
-|`repel_force`|`float`|determine the interval between each annotation||
-|`sort`|`string`|`beta` or `maf`, which to use to determine the order for annotation||
-|`ylim`|`tuple`|ylim||
-|`cmap`|`string`|matplotlib color map for power line|"Reds"|
+|`p_level`|`float`|upper limit of p values; variants with p values higher than this will be excluded from plotting|`5e-8`|
+|`anno`|`string`|which column in sumstats to use to annotate the variants|None|
+|`anno_style`|`string`|`expand`, `tight` or `right`|`expand`|
+|`anno_x`|`float`|upper bound of abs(y) for annotation|`0.05`|
+|`anno_y`|`float`|lower bound of abs(y) for annotation|`1`|
+|`repel_force`|`float`|determine the interval between each annotation|`0.05`|
+|`sort`|`string`|`beta` or `eaf`, which to use to determine the order for annotation|`beta`|
+|`ylim`|`tuple`|ylim|auto|
+|`cmap`|`string`|matplotlib color map for power line|"cool"|
 |`xscale`|`string`| `log` or `nonlog`|`log`|
-|`yscale_factor`|`float`|in case effect size needs to be converted by a factor|1|
-|`n_matrix`|`int`|the higher the value is, the soomther the power line will be||
-|`markercolor`|`string`|color||
+|`yscale_factor`|`float`|effect size will be multiplied by a factor|1|
+|`n_matrix`|`int`| The higher the value is, the smoother the power line will be|1000|
+|`markercolor`|`string`|color|"#597FBD"|
 |`ylabel`|`string`|Y axis label|`Effect size`|
 |`xlabel`|`string`|X axis label|`Minor allele frequency`|
 
 
 ## example
 
-!!! example "Trumpet plot for quantatitive trait"
+!!! example "Trumpet plot for quantitative traits"
     ```
-    a = mysumstats.plot_trumpet(mode="q",
+    mysumstats.plot_trumpet(mode="q",
                                 ts=[0.2,0.4,0.6,0.8] ,
                                 anno="Gene",
                                 anno_style="expand",
@@ -76,8 +76,10 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
                                 ylim=(-5,4),
                                 save=True)
     ```
+    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/0b000467-4318-4045-b103-36b59aa3cd3d)
 
-!!! example "Trumpet plot for binary trait"
+
+!!! example "Trumpet plot for binary traits"
     ```
     mysumstats.get_lead(sig_level=5e-6,gls=True).plot_trumpet(mode="b",
                                 scase=36614,
@@ -100,6 +102,7 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
                                 ylim=(-5,4),
                                 save=True)
     ```
+    ![image](https://github.com/Cloufield/gwaslab/assets/40289485/308f9e5b-386c-4f48-8ca4-dabe557ab472)
 
 ## Citation
 
