@@ -51,7 +51,7 @@ def _quick_fix_mlog10p(sumstats, scaled=False, verbose=True, log=Log()):
     drop variants with bad -log10(P) values
     '''
     if scaled != True:
-        if verbose:log.write(" -sumstats P values are being converted to -log10(P)...")
+        if verbose:log.write(" -Sumstats P values are being converted to -log10(P)...")
         sumstats["scaled_P"] = -np.log10(sumstats["P"])
         
     with pd.option_context('mode.use_inf_as_na', True):
@@ -130,8 +130,8 @@ def _quick_assign_i(sumstats, chrom="CHR",pos="POS"):
     # sort by CHR an POS
     sumstats = sumstats.sort_values([chrom,pos])
     # set new id
-    sumstats["_id"]=range(len(sumstats))
-    sumstats = sumstats.set_index("_id")
+    sumstats["_ID"]=range(len(sumstats))
+    sumstats = sumstats.set_index("_ID")
     #create a df , groupby by chromosomes , and get the maximum position
     posdic = sumstats.groupby(chrom)[pos].max()
     # convert to dictionary
@@ -148,10 +148,10 @@ def _quick_assign_i(sumstats, chrom="CHR",pos="POS"):
     for i in range(1,sumstats[chrom].max()+1):
         posdiccul[i] =  posdiccul[i-1] + posdiccul[i] + interval_between_chr
     # convert base pair postion to x axis position using the cumulative sum dictionary
-    sumstats["add"] = sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
-    sumstats["i"]   = sumstats[pos] + sumstats["add"]
+    sumstats["_ADD"] = sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
+    sumstats["i"]   = sumstats[pos] + sumstats["_ADD"]
     # drop add
-    sumstats = sumstats.drop(labels=["add"],axis=1)
+    sumstats = sumstats.drop(labels=["_ADD"],axis=1)
     #for plot, get the chr text tick position  
     chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
     # fix dtype for i
@@ -161,14 +161,14 @@ def _quick_assign_i(sumstats, chrom="CHR",pos="POS"):
 def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos="POS",drop_chr_start=False):
         sumstats = sumstats.sort_values([chrom,pos])
         if use_rank is True: 
-            sumstats["POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
-            pos="POS_RANK"
-        sumstats["id"]=range(len(sumstats))
-        sumstats=sumstats.set_index("id")
+            sumstats["_POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
+            pos="_POS_RANK"
+        sumstats["_ID"]=range(len(sumstats))
+        sumstats=sumstats.set_index("_ID")
 
         #create a df , groupby by chromosomes , and get the maximum position
         if use_rank is True: 
-            posdic = sumstats.groupby(chrom)["POS_RANK"].max()
+            posdic = sumstats.groupby(chrom)["_POS_RANK"].max()
         else:
             posdic = sumstats.groupby(chrom)[pos].max()
                 
@@ -187,7 +187,7 @@ def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos=
             posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*chrpad
 
         # convert base pair postion to x axis position using the cumulative sum dictionary
-        sumstats["add"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
+        sumstats["_ADD"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
         
         if drop_chr_start==True:
                 posdic_min =  sumstats.groupby(chrom)[pos].min()
@@ -199,12 +199,12 @@ def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos=
                         posdiccul_min[i]=0
                 for i in range(1,sumstats[chrom].max()+1):
                     posdiccul_min[i]= posdiccul_min[i-1] + posdiccul_min[i]
-                sumstats["add"]=sumstats["add"] - sumstats[chrom].apply(lambda x : posdiccul_min[int(x)])
+                sumstats["_ADD"]=sumstats["_ADD"] - sumstats[chrom].apply(lambda x : posdiccul_min[int(x)])
             
         if use_rank is True: 
-            sumstats["i"]=sumstats["POS_RANK"]+sumstats["add"]
+            sumstats["i"]=sumstats["_POS_RANK"]+sumstats["_ADD"]
         else:
-            sumstats["i"]=sumstats[pos]+sumstats["add"]
+            sumstats["i"]=sumstats[pos]+sumstats["_ADD"]
         
 
         #for plot, get the chr text tick position      

@@ -460,6 +460,11 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
             # force convert
             sumstats.loc[:,chrom] = np.floor(pd.to_numeric(sumstats.loc[:,chrom], errors='coerce')).astype('Int64')
         
+        # filter out variants with CHR <=0
+        out_of_range_chr = sumstats[chrom]<=0
+        if verbose:log.write(" -Removed {} varaints with CHR <=0...".format(sum(out_of_range_chr)))
+        sumstats = sumstats.loc[~out_of_range_chr,:]       
+
         if verbose: log.write("Finished fixing chromosome notation successfully!")
         return sumstats
 

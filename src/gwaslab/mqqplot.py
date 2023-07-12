@@ -403,6 +403,7 @@ def mqqplot(insumstats,
         ## CHR X,Y,MT conversion ############################
         sumstats[pos] = _quick_fix_pos(sumstats[pos])
         sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict)
+
     ## r
     if region is not None:
         region_chr = region[0]
@@ -433,12 +434,16 @@ def mqqplot(insumstats,
 
 #sanity check############################################################################################################
     if verbose: log.write("Start conversion and sanity check:")
+    
     if ("m" in mode or "r" in mode): 
         pre_number=len(sumstats)
         #sanity check : drop variants with na values in chr and pos df
         sumstats = sumstats.dropna(subset=[chrom,pos])
         after_number=len(sumstats)
         if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...")
+        out_of_range_chr = sumstats[chrom]<=0
+        if verbose:log.write(" -Removed {} varaints with CHR <=0...".format(sum(out_of_range_chr)))
+        sumstats = sumstats.loc[~out_of_range_chr,:]
     
     if stratified is True: 
         pre_number=len(sumstats)
