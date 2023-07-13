@@ -177,10 +177,10 @@ def preformat(sumstats,
         rename_dictionary[beta]= "BETA"
     if beta_95L:
         usecols.append(beta_95L)
-        rename_dictionary[beta_95L]= "beta_95L"
+        rename_dictionary[beta_95L]= "BETA_95L"
     if beta_95U:
         usecols.append(beta_95U)
-        rename_dictionary[beta_95U]= "beta_95U"  
+        rename_dictionary[beta_95U]= "BETA_95U"  
     if se:
         usecols.append(se)
         rename_dictionary[se]= "SE"

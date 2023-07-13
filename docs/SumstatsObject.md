@@ -46,38 +46,59 @@ mysumstats = gl.Sumstats(
 
 Currently, GWASLab supports the following columns:
 
-* `snpid `: variant ID column name, preferably in chr:pos:ea:nea format.
-* `rsid `: dbSNP rsID column name
+|Option|DataType|Description|Header in gwaslab|
+|-|-|-|-|
+|`snpid`|`string`|variant ID column name, preferably in chr:pos:ea:nea format.|`SNPID`|
+|`rsid`|`string`|dbSNP rsID column name|`rsID`|
 
 The minimum required columns are just either `rsid `or `snpid`. 
 All other columns and options are optional.
 
-* `fmt`: `string`, input sumstats format. For formats supported by GWASLab, please check [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)
-* `chrom `: `string`, chromosome column name
-* `pos`: `string`, basepair position column name
-* `ea`: `string`, effect allele column name. 
-* `nea`: `string`, non-effect allele column name.
-* `ref`: `string`, reference allele column name.
-* `alt`: `string`, alternative allele column name , when `ea`,`ref` and `alt` are specified, `nea` will be inferred.
-* `eaf`: `string`, effect allele frequency
-* `neaf`: `string`, non-effect allele frequency. NEAF will be converted to EAF (EAF = 1 - NEAF) while loading.
-* `n` `string` or `integer`, sample size column name or just input a single `integer` as sample size for all variants.
-* `beta`: `string`, effect size beta column name
-* `se`: `string`, standard error column name
-* `chisq`: `string`, chi square column name
-* `z`: `string`, z score column name
-* `p`: `string`, p value column name
-* `mlog10p`: `string`, -log10(P) column name
-* `info`: `string`, imputation info or rsq column name
-* `OR`: `string`, odds ratio column name
-* `OR_95L`: `string`, odds ratio lower 95% ci column name
-* `OR_95U`:`string`, odds ratio upper 95% ci column name
-* `direction`: `string`, direction column name. GWASLab uses METAL format (e.g. "++--+?+")
-* `other`: `list`, a list  of other column names you want to keep with the core columns (probably some annotations).
-* `status`: `string`, status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.
-* `verbose`: `boolean`, if True, print log. 
-* `build`:  `string `, genome build. `19` for hg19, `38` for hg38 and `99` for unknown.
-* `**arg `: additional parameters for [pd.read_table()](https://pandas.pydata.org/docs/reference/api/pandas.read_table.html) function. Some common options include : `sep`,`nrows`, `skiprows` and `na_values`.
+|Option|DataType|Description|Header in gwaslab|
+|-|-|-|-|
+|`fmt`|`string`|input sumstats format. For formats supported by GWASLab, please check [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)|-|
+|`chrom`|`string`|chromosome column name|`CHR`|
+|`pos`|`string`|basepair position column name|`POS`|
+|`ea`|`string`|effect allele column name|`EA`|
+|`nea`|`string`|non-effect allele column name|`NEA`|
+|`ref`|`string`|reference allele column name|`REF`|
+|`alt`|`string`|alternative allele column name , when `ea`,`ref` and `alt` are specified, `nea` will be inferred.|`ALT`|
+|`eaf`|`string`|effect allele frequency|`EAF`|
+|`neaf`|`string`|non-effect allele frequency. NEAF will be converted to EAF (EAF = 1 - NEAF) while loading.|`EAF`|
+|`n`|`string` or `integer`|sample size column name or just input a single `integer` as sample size for all variants|`N`|
+|`beta`|`string`|effect size beta column name|`BETA`|
+|`se`|`string`|standard error column name|`SE`|
+|`chisq`|`string`|chi square column name|`CHISQ`|
+|`z`|`string`|z score column name|`Z`|
+|`p`|`string`|p value column name|`P`|
+|`mlog10p`|`string`| -log10(P) column name|`MLOG10P`|
+|`info`|`string`|imputation info or rsq column name|`INFO`|
+|`OR`|`string`|odds ratio column name|`OR`|
+|`OR_95L`|`string`|odds ratio lower 95% CI column name|`OR_95L`|
+| `OR_95U`|`string`|odds ratio upper 95% CI column name|`OR_95U`|
+|`direction`|`string`|direction column name. GWASLab uses METAL format (e.g. "++--+?+")|`DIRECTION`|
+|`other`|`list`|a list  of other column names you want to keep with the core columns (probably some annotations).|-|
+|`status`|`string`|status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.|`STATUS`|
+|`verbose`|`boolean`|if True, print log. |-|
+|`build`|`string`|genome build. `19` for hg19, `38` for hg38 and `99` for unknown.|The first two digits of `STATUS`|
+|`**arg `|`string`|additional parameters for [pd.read_table()](https://pandas.pydata.org/docs/reference/api/pandas.read_table.html) function. Some common options include : `sep`,`nrows`, `skiprows` and `na_values`.|-|
+
+!!! Other columns gwaslab uses (will be implemented soon)
+
+|Option|DataType|Description|Header in gwaslab|
+|-|-|-|-|
+|`ncontrol`|`string` or `integer`|sample size column name for controls or just input a single `integer` as sample size for all variants|`N_CONTROL`|
+|`ncase`|`string` or `integer`|sample size column name for cases or just input a single `integer` as sample size for all variants|`N_CASE`|
+|`HR`|`string`|hazrad ratio column name|`HR`|
+|`HR_95U`|`string`|hazrad ratio upper 95% CI column name|`HR_95U`|
+|`HR_95L`|`string`|hazrad ratio lower 95% CI column name|`HR_95L`|
+|`beta_95L`|`string`|beta upper 95% CI column name|`BETA_95L`|
+|`beta_95U`|`string`|beta upper 95% CI column name|`BETA_95U`|
+|`i2`|`string`|I2 column name|`I2_HET`|
+|`phet`|`string`|heterogeneity test P value|`P_HET`|
+|`dof`|`string` or `integer`|degree of freedom|`DOF`|
+|`snpr2`|`string`|column name for proportion of phenotypic variance explained by each variant |`SNPR2`|
+|`maf`|`string`|minor allele frequency column header|`MAF`|
 
 ## Loading sumstats
 
