@@ -99,6 +99,7 @@ All other columns and options are optional.
 |`dof`|`string` or `integer`|degree of freedom|`DOF`|
 |`snpr2`|`string`|column name for proportion of phenotypic variance explained by each variant |`SNPR2`|
 |`maf`|`string`|minor allele frequency column header|`MAF`|
+|`f`|`string`|F statistics column header|`F`|
 
 ## Loading sumstats
 

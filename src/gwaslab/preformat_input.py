@@ -20,11 +20,13 @@ def preformat(sumstats,
           alt=None,
           eaf=None,
           neaf=None,
+          maf=None,
           n=None,
           beta=None,
           se=None,
           chisq=None,
           z=None,
+          f=None,
           p=None,
           mlog10p=None,
           info=None,
@@ -36,6 +38,10 @@ def preformat(sumstats,
           HR=None,
           HR_95L=None,
           HR_95U=None,
+          i2=None,
+          snpr2=None,
+          phet=None,
+          dof=None,
           ncase=None,
           ncontrol=None,
           direction=None,
@@ -163,6 +169,9 @@ def preformat(sumstats,
     elif neaf:
         usecols.append(neaf)
         rename_dictionary[neaf]= "EAF"
+    if maf:
+        usecols.append(maf)
+        rename_dictionary[maf]= "MAF"
     if n and (type(n) is str):
         usecols.append(n)
         rename_dictionary[n]= "N"
@@ -193,6 +202,9 @@ def preformat(sumstats,
     if p:
         usecols.append(p)
         rename_dictionary[p]= "P"
+    if f:
+        usecols.append(f)
+        rename_dictionary[f]= "F"
     if mlog10p:
         usecols.append(mlog10p)
         rename_dictionary[mlog10p]= "MLOG10P"
@@ -217,6 +229,18 @@ def preformat(sumstats,
     if HR_95U:
         usecols.append(HR_95U)
         rename_dictionary[HR_95U]= "HR_95U"        
+    if phet:
+        usecols.append(phet)
+        rename_dictionary[phet]= "P_HET"      
+    if i2:
+        usecols.append(i2)
+        rename_dictionary[i2]= "I2"    
+    if snpr2:
+        usecols.append(snpr2)
+        rename_dictionary[snpr2]= "SNPR2"    
+    if dof:
+        usecols.append(dof)
+        rename_dictionary[dof]= "DOF"    
     if direction:
         usecols.append(direction)
         rename_dictionary[direction]="DIRECTION"
