@@ -113,7 +113,7 @@ def plot_miami(
           colors1=None,
           colors2=None,
           scatter_kwargs=None,
-          xlabel_coords=(-0.027, -0.027),
+          xlabel_coords=(-0.017, -0.027),
           xtick_label_pad=None,
           marker_size=(5,25),
           verbose=True,
@@ -478,8 +478,12 @@ def plot_miami(
     if len(anno_set1)>0 or len(anno_set2)>0:
         if len(anno_set1)>0:
             to_annotate1=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set1),:]
+        else:
+            to_annotate1 = pd.DataFrame()
         if len(anno_set2)>0:
             to_annotate5=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set2),:]
+        else:
+            to_annotate5 = pd.DataFrame()
     elif anno is not None:
         to_annotate1 = getsig(sumstats.loc[sumstats["scaled_P_1"]> float(-np.log10(sig_level_lead)),:],
                        "TCHR+POS",
@@ -615,7 +619,7 @@ def plot_miami(
 
 ####################################################################################################################
     # set labels
-    ax1.set_xlabel("CHR",fontsize=fontsize,family=font_family)
+    ax1.set_xlabel("Chromosome",fontsize=fontsize,family=font_family)
     ax1.xaxis.set_label_coords(xlabel_coords[0],xlabel_coords[1])
     
     ax1.tick_params(axis='x', which='major', pad=xtick_label_pad)
@@ -649,7 +653,6 @@ def plot_miami(
                             zorder=1)
 
     ax5.invert_yaxis() 
-    
     #return fig
     #if save is not None:
     #    if verbose: log.write("Saving plot:")
