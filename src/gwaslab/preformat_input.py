@@ -6,6 +6,7 @@ import os
 import gc
 from gwaslab.CommonData import get_format_dict
 from gwaslab.fixdata import sortcolumn
+from gwaslab.datatype_check import check_datatype
 
 #20221030
 def preformat(sumstats,
@@ -340,7 +341,7 @@ def preformat(sumstats,
 
     ## reodering ###################################################################################################  
     sumstats = sortcolumn(sumstats=sumstats,log=log,verbose=verbose)    
-    
+    check_datatype(sumstats,log=log,verbose=verbose)
     gc.collect()
     if verbose: log.write("Finished loading data successfully!")
     return sumstats
