@@ -8,7 +8,7 @@ def check_datatype(sumstats, verbose=True, log=Log()):
         headers = []
         dtypes = []
 
-        for header,dtype in sumstats.dtypes.iteritems():
+        for header,dtype in sumstats.dtypes.items():
             width = max(len(header),len(str(dtype)))
             header_fix_length = header + " "*(width- len(header) )
             dtype_fix_length  = str(dtype) + " "*(width- len(str(dtype)))
