@@ -417,9 +417,13 @@ def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=Fals
         values.append(value)
     if fmt!="gwaslab":
         if output == False:
-            log.write(" -"+fmt+" to gwaslab format dictionary:")  
-            log.write("  - "+fmt+" keys:",",".join(keys)) 
-            log.write("  - gwaslab values:",",".join(values))  
+            if fmt!="auto":
+                log.write(" -"+fmt+" to gwaslab format dictionary:")  
+                log.write("  - "+fmt+" keys:",",".join(keys)) 
+                log.write("  - gwaslab values:",",".join(values)) 
+            else:
+                log.write("  - Auto-detection mode. Note: auto-detection assumes A1=EA; Alt=EA and Frq=EAF...")
+                log.write("  - Header conversion source: https://github.com/Cloufield/formatbook/blob/main/formats/auto.json")  
         else:
             log.write(" -gwaslab to "+fmt+" format dictionary:",)  
             keys=[]
