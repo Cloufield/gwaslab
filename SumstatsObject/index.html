@@ -1177,40 +1177,291 @@
 <h2 id="parameters">Parameters</h2>
 <p><code>sumstats</code>: either a file path <code>string</code> or a pandas <code>DataFrame</code></p>
 <p>Currently, GWASLab supports the following columns:</p>
-<ul>
-<li><code>snpid</code>: variant ID column name, preferably in chr:pos:ea:nea format.</li>
-<li><code>rsid</code>: dbSNP rsID column name</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Header in gwaslab</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>snpid</code></td>
+<td><code>string</code></td>
+<td>variant ID column name, preferably in chr:pos:ea:nea format.</td>
+<td><code>SNPID</code></td>
+</tr>
+<tr>
+<td><code>rsid</code></td>
+<td><code>string</code></td>
+<td>dbSNP rsID column name</td>
+<td><code>rsID</code></td>
+</tr>
+</tbody>
+</table>
 <p>The minimum required columns are just either <code>rsid</code>or <code>snpid</code>. 
 All other columns and options are optional.</p>
-<ul>
-<li><code>fmt</code>: <code>string</code>, input sumstats format. For formats supported by GWASLab, please check <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></li>
-<li><code>chrom</code>: <code>string</code>, chromosome column name</li>
-<li><code>pos</code>: <code>string</code>, basepair position column name</li>
-<li><code>ea</code>: <code>string</code>, effect allele column name. </li>
-<li><code>nea</code>: <code>string</code>, non-effect allele column name.</li>
-<li><code>ref</code>: <code>string</code>, reference allele column name.</li>
-<li><code>alt</code>: <code>string</code>, alternative allele column name , when <code>ea</code>,<code>ref</code> and <code>alt</code> are specified, <code>nea</code> will be inferred.</li>
-<li><code>eaf</code>: <code>string</code>, effect allele frequency</li>
-<li><code>neaf</code>: <code>string</code>, non-effect allele frequency. NEAF will be converted to EAF (EAF = 1 - NEAF) while loading.</li>
-<li><code>n</code> <code>string</code> or <code>integer</code>, sample size column name or just input a single <code>integer</code> as sample size for all variants.</li>
-<li><code>beta</code>: <code>string</code>, effect size beta column name</li>
-<li><code>se</code>: <code>string</code>, standard error column name</li>
-<li><code>chisq</code>: <code>string</code>, chi square column name</li>
-<li><code>z</code>: <code>string</code>, z score column name</li>
-<li><code>p</code>: <code>string</code>, p value column name</li>
-<li><code>mlog10p</code>: <code>string</code>, -log10(P) column name</li>
-<li><code>info</code>: <code>string</code>, imputation info or rsq column name</li>
-<li><code>OR</code>: <code>string</code>, odds ratio column name</li>
-<li><code>OR_95L</code>: <code>string</code>, odds ratio lower 95% ci column name</li>
-<li><code>OR_95U</code>:<code>string</code>, odds ratio upper 95% ci column name</li>
-<li><code>direction</code>: <code>string</code>, direction column name. GWASLab uses METAL format (e.g. "++--+?+")</li>
-<li><code>other</code>: <code>list</code>, a list  of other column names you want to keep with the core columns (probably some annotations).</li>
-<li><code>status</code>: <code>string</code>, status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.</li>
-<li><code>verbose</code>: <code>boolean</code>, if True, print log. </li>
-<li><code>build</code>:  <code>string</code>, genome build. <code>19</code> for hg19, <code>38</code> for hg38 and <code>99</code> for unknown.</li>
-<li><code>**arg</code>: additional parameters for <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_table.html">pd.read_table()</a> function. Some common options include : <code>sep</code>,<code>nrows</code>, <code>skiprows</code> and <code>na_values</code>.</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Header in gwaslab</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fmt</code></td>
+<td><code>string</code></td>
+<td>input sumstats format. For formats supported by GWASLab, please check <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>chrom</code></td>
+<td><code>string</code></td>
+<td>chromosome column name</td>
+<td><code>CHR</code></td>
+</tr>
+<tr>
+<td><code>pos</code></td>
+<td><code>string</code></td>
+<td>basepair position column name</td>
+<td><code>POS</code></td>
+</tr>
+<tr>
+<td><code>ea</code></td>
+<td><code>string</code></td>
+<td>effect allele column name; BETA, OR, HR, EAF are in reference to EA...</td>
+<td><code>EA</code></td>
+</tr>
+<tr>
+<td><code>nea</code></td>
+<td><code>string</code></td>
+<td>non-effect allele column name</td>
+<td><code>NEA</code></td>
+</tr>
+<tr>
+<td><code>ref</code></td>
+<td><code>string</code></td>
+<td>reference allele column name; the allele on reference genome</td>
+<td><code>REF</code></td>
+</tr>
+<tr>
+<td><code>alt</code></td>
+<td><code>string</code></td>
+<td>alternative allele column name; the allele that is not on reference genome; when <code>ea</code>,<code>ref</code> and <code>alt</code> are specified, <code>nea</code> will be inferred.</td>
+<td><code>ALT</code></td>
+</tr>
+<tr>
+<td><code>eaf</code></td>
+<td><code>string</code></td>
+<td>effect allele frequency</td>
+<td><code>EAF</code></td>
+</tr>
+<tr>
+<td><code>neaf</code></td>
+<td><code>string</code></td>
+<td>non-effect allele frequency. NEAF will be converted to EAF (EAF = 1 - NEAF) while loading.</td>
+<td><code>EAF</code></td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td><code>string</code> or <code>integer</code></td>
+<td>sample size column name or just input a single <code>integer</code> as sample size for all variants</td>
+<td><code>N</code></td>
+</tr>
+<tr>
+<td><code>beta</code></td>
+<td><code>string</code></td>
+<td>effect size beta column name; in reference to EA</td>
+<td><code>BETA</code></td>
+</tr>
+<tr>
+<td><code>se</code></td>
+<td><code>string</code></td>
+<td>standard error column name</td>
+<td><code>SE</code></td>
+</tr>
+<tr>
+<td><code>chisq</code></td>
+<td><code>string</code></td>
+<td>chi square column name</td>
+<td><code>CHISQ</code></td>
+</tr>
+<tr>
+<td><code>z</code></td>
+<td><code>string</code></td>
+<td>z score column name</td>
+<td><code>Z</code></td>
+</tr>
+<tr>
+<td><code>p</code></td>
+<td><code>string</code></td>
+<td>p value column name</td>
+<td><code>P</code></td>
+</tr>
+<tr>
+<td><code>mlog10p</code></td>
+<td><code>string</code></td>
+<td>-log10(P) column name</td>
+<td><code>MLOG10P</code></td>
+</tr>
+<tr>
+<td><code>info</code></td>
+<td><code>string</code></td>
+<td>imputation info or rsq column name</td>
+<td><code>INFO</code></td>
+</tr>
+<tr>
+<td><code>OR</code></td>
+<td><code>string</code></td>
+<td>odds ratio column name; in reference to EA</td>
+<td><code>OR</code></td>
+</tr>
+<tr>
+<td><code>OR_95L</code></td>
+<td><code>string</code></td>
+<td>odds ratio lower 95% CI column name</td>
+<td><code>OR_95L</code></td>
+</tr>
+<tr>
+<td><code>OR_95U</code></td>
+<td><code>string</code></td>
+<td>odds ratio upper 95% CI column name</td>
+<td><code>OR_95U</code></td>
+</tr>
+<tr>
+<td><code>direction</code></td>
+<td><code>string</code></td>
+<td>direction column name. GWASLab uses METAL format (e.g. <code>++--+?+0</code>)</td>
+<td><code>DIRECTION</code></td>
+</tr>
+<tr>
+<td><code>other</code></td>
+<td><code>list</code></td>
+<td>a list  of other column names you want to keep with the core columns (probably some annotations).</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>string</code></td>
+<td>status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.</td>
+<td><code>STATUS</code></td>
+</tr>
+<tr>
+<td><code>verbose</code></td>
+<td><code>boolean</code></td>
+<td>if True, print log.</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td><code>string</code></td>
+<td>genome build. <code>19</code> for hg19, <code>38</code> for hg38 and <code>99</code> for unknown.</td>
+<td>The first two digits of <code>STATUS</code></td>
+</tr>
+<tr>
+<td><code>**arg</code></td>
+<td><code>string</code></td>
+<td>additional parameters for <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_table.html">pd.read_table()</a> function. Some common options include : <code>sep</code>,<code>nrows</code>, <code>skiprows</code> and <code>na_values</code>.</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>!!! Other columns gwaslab uses (will be implemented soon)</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Header in gwaslab</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ncontrol</code></td>
+<td><code>string</code> or <code>integer</code></td>
+<td>sample size column name for controls or just input a single <code>integer</code> as sample size for all variants</td>
+<td><code>N_CONTROL</code></td>
+</tr>
+<tr>
+<td><code>ncase</code></td>
+<td><code>string</code> or <code>integer</code></td>
+<td>sample size column name for cases or just input a single <code>integer</code> as sample size for all variants</td>
+<td><code>N_CASE</code></td>
+</tr>
+<tr>
+<td><code>HR</code></td>
+<td><code>string</code></td>
+<td>hazrad ratio column name</td>
+<td><code>HR</code></td>
+</tr>
+<tr>
+<td><code>HR_95U</code></td>
+<td><code>string</code></td>
+<td>hazrad ratio upper 95% CI column name</td>
+<td><code>HR_95U</code></td>
+</tr>
+<tr>
+<td><code>HR_95L</code></td>
+<td><code>string</code></td>
+<td>hazrad ratio lower 95% CI column name</td>
+<td><code>HR_95L</code></td>
+</tr>
+<tr>
+<td><code>beta_95L</code></td>
+<td><code>string</code></td>
+<td>beta upper 95% CI column name</td>
+<td><code>BETA_95L</code></td>
+</tr>
+<tr>
+<td><code>beta_95U</code></td>
+<td><code>string</code></td>
+<td>beta upper 95% CI column name</td>
+<td><code>BETA_95U</code></td>
+</tr>
+<tr>
+<td><code>i2</code></td>
+<td><code>string</code></td>
+<td>I2 column name</td>
+<td><code>I2_HET</code></td>
+</tr>
+<tr>
+<td><code>phet</code></td>
+<td><code>string</code></td>
+<td>heterogeneity test P value</td>
+<td><code>P_HET</code></td>
+</tr>
+<tr>
+<td><code>dof</code></td>
+<td><code>string</code> or <code>integer</code></td>
+<td>degree of freedom</td>
+<td><code>DOF</code></td>
+</tr>
+<tr>
+<td><code>snpr2</code></td>
+<td><code>string</code></td>
+<td>column name for proportion of phenotypic variance explained by each variant</td>
+<td><code>SNPR2</code></td>
+</tr>
+<tr>
+<td><code>maf</code></td>
+<td><code>string</code></td>
+<td>minor allele frequency column header</td>
+<td><code>MAF</code></td>
+</tr>
+<tr>
+<td><code>f</code></td>
+<td><code>string</code></td>
+<td>F statistics column header</td>
+<td><code>F</code></td>
+</tr>
+</tbody>
+</table>
 <h2 id="loading-sumstats">Loading sumstats</h2>
 <p>You can load the sumstats by specifying the columns like:</p>
 <div class="admonition example">
