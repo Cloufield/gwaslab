@@ -1043,20 +1043,162 @@
           anno= None
           )
 </code></pre></div>
-<ul>
-<li><code>path1</code> : <code>string</code> path to sumstats1</li>
-<li><code>path2</code> : <code>string</code> path to sumstats2</li>
-<li><code>cols1</code> : <code>list</code> CHR,POS,P names for sumstats1</li>
-<li><code>cols2</code> : <code>list</code> CHR,POS,P names for sumstats2</li>
-<li><code>sep</code>   : <code>list</code> separator for each sumstats</li>
-<li><code>anno</code>  : <code>boolean</code> or <code>GENENAME</code></li>
-<li><code>region</code> : only plot a region. For example, <code>region=(2,2153874,21753874)</code> .</li>
-<li><code>highlight1</code>: <code>list</code> , list of loci to highlight for sumstats1. For example, <code>highlight1=[(5,124289158)]</code> .</li>
-<li><code>highlight2</code>: <code>list</code> , list of loci to highlight for sumstats2. </li>
-<li><code>pinpoint1</code>: <code>list</code> , list of variants to pinpolint for sumstats1.</li>
-<li><code>pinpoint2</code>: <code>list</code>,  list of variants to pinpolint for sumstats2.</li>
-<li><code>titles</code>:<code>list</code>, two titles. For example,<code>titles=["male","female"]</code></li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path1</code></td>
+<td><code>string</code>, <code>pd.DataFrame</code>, or <code>gl.Sumstats</code></td>
+<td>path to sumstats1, or pd.DataFrame object, or gl.Sumstats Object</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>path2</code></td>
+<td><code>string</code>, <code>pd.DataFrame</code>, or <code>gl.Sumstats</code></td>
+<td>path to sumstats2, or pd.DataFrame object, or gl.Sumstats Object</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>cols1</code></td>
+<td><code>list</code></td>
+<td>CHR,POS,P names for sumstats1</td>
+<td><code>["CHR","POS","P"]</code></td>
+</tr>
+<tr>
+<td><code>cols2</code></td>
+<td><code>list</code></td>
+<td>CHR,POS,P names for sumstats2</td>
+<td><code>["CHR","POS","P"]</code></td>
+</tr>
+<tr>
+<td><code>sep</code></td>
+<td><code>list</code></td>
+<td>separator for each sumstats (when path is <code>string</code>)</td>
+<td><code>["\t","\t"]</code></td>
+</tr>
+<tr>
+<td><code>anno</code></td>
+<td><code>boolean</code> or <code>GENENAME</code></td>
+<td>if True, annotate <code>CHR:POS</code>; if <code>GENENAME</code>, annotate gene name</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>region</code></td>
+<td><code>tuple</code></td>
+<td>only plot a region. For example, <code>region=(2,2153874,21753874)</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>highlight</code></td>
+<td><code>list</code></td>
+<td>list of loci (tuples of CHR and POS) to highlight for both sumstats. For example, <code>highlight=[(2,2153874),(5,124289158)]</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>highlight1</code></td>
+<td><code>list</code></td>
+<td>list of loci (tuples of CHR and POS) to highlight for sumstats1. For example, <code>highlight1=[(2,2153874),(5,124289158)]</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>highlight2</code></td>
+<td><code>list</code></td>
+<td>list of loci (tuples of CHR and POS) to highlight for sumstats2. For example, <code>highlight2=[(2,2153874),(5,124289158)]</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>highlight_windowkb</code></td>
+<td><code>int</code></td>
+<td>window size for highlighting loci</td>
+<td><code>500</code></td>
+</tr>
+<tr>
+<td><code>highlight_color</code></td>
+<td><code>color</code></td>
+<td>color for highlighting loci</td>
+<td><code>"#CB132D"</code></td>
+</tr>
+<tr>
+<td><code>pinpoint</code></td>
+<td><code>list</code></td>
+<td>list of variants (tuples of CHR and POS) to pinpoint for both sumstats.  For example, <code>pinpoint=[(2,2153874),(5,124289158)]</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>pinpoint1</code></td>
+<td><code>list</code></td>
+<td>list of variants (tuples of CHR and POS) to pinpoint for sumstats1.  For example, <code>pinpoint1=[(2,2153874),(5,124289158)]</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>pinpoint2</code></td>
+<td><code>list</code></td>
+<td>list of variants (tuples of CHR and POS) to pinpoint for sumstats2.  For example, <code>pinpoint2=[(2,2153874),(5,124289158)]</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>pinpoint_color</code></td>
+<td><code>color</code></td>
+<td>color for highlighting loci</td>
+<td><code>"red"</code></td>
+</tr>
+<tr>
+<td><code>anno_set</code></td>
+<td><code>list</code></td>
+<td>list of variants (tuples of CHR and POS) to annotate for both sumstats.  For example, <code>anno_set=[(2,2153874),(5,124289158)]</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>anno_set1</code></td>
+<td><code>list</code></td>
+<td>list of variants (tuples of CHR and POS) to annotate for sumstats1.  For example, <code>anno_set1=[(2,2153874),(5,124289158)]</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>anno_set2</code></td>
+<td><code>list</code></td>
+<td>list of variants (tuples of CHR and POS) to annotate for sumstats2.  For example, <code>anno_set2=[(2,2153874),(5,124289158)]</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>titles</code></td>
+<td><code>list</code></td>
+<td>titles for sumstats. For example,<code>titles=["male","female"]</code></td>
+<td><code>["",""]</code></td>
+</tr>
+<tr>
+<td><code>titles_pad</code></td>
+<td><code>list</code></td>
+<td>paddings for titles</td>
+<td><code>[0.2,0.2]</code></td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td><code>list</code></td>
+<td>genome build for annotate gene names. For example,<code>titles=["male","female"]</code></td>
+<td><code>"19"</code></td>
+</tr>
+<tr>
+<td><code>save</code></td>
+<td><code>boolean</code> or <code>string</code></td>
+<td>if true, save to default path. if string, save to path specified by string</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>saveargs</code></td>
+<td><code>dict</code></td>
+<td>additional parameters for <code>plt.save_fig</code></td>
+<td><code>{"dpi":100,"facecolor":"white"}</code></td>
+</tr>
+</tbody>
+</table>
 <h2 id="example">Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Miami plot for male- amd female-specific GWAS on BMI</p>
@@ -1071,23 +1213,11 @@
                            titles=[&quot;bmi male&quot;,&quot;bmi female&quot;],
                            titles_pad=[0.15,0.0],
                            anno=&quot;GENENAME&quot;,
-                           region_grid=True,
                            highlight1=[(5,124289158)],
                            pinpoint2=[(2,653874)]
                            )
 </code></pre></div>
 <p><img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197526569-7850041d-e247-4f69-8505-ef7750a6d4de.png"></p>
-<div class="highlight"><pre><span></span><code>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
-                           path2=&quot;bmi_female_bbj.txt.gz&quot;,
-                           cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-                           cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-                           titles=[&quot;male&quot;,&quot;female&quot;],
-                           region=(2,2153874,21753874),
-                           titles_pad=[0.1,-0.05],
-                           anno=&quot;GENENAME&quot;,
-                           region_grid=True
-                           )
-</code></pre></div>
 </div>
 
               
