@@ -239,7 +239,7 @@ def _quick_assign_highlight_hue(sumstats,highlight,highlight_windowkb, snpid="SN
         sumstats.loc[right_chr&up_pos&low_pos,"HUE"]="0"
     return sumstats
 
-def _quick_assign_highlight_hue_pair(sumstats, highlight1, highlight2, highlight_windowkb,chrom="CHR",pos="POS",verbose=True, log=Log()):
+def _quick_assign_highlight_hue_pair(sumstats, highlight1, highlight2, highlight_windowkb, chrom="CHR",pos="POS",verbose=True, log=Log()):
     #assign colors: 0 is hightlight color
     to_highlight1 = pd.DataFrame()
     to_highlight2 = pd.DataFrame()

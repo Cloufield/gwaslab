@@ -59,24 +59,24 @@ All other columns and options are optional.
 |`fmt`|`string`|input sumstats format. For formats supported by GWASLab, please check [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)|-|
 |`chrom`|`string`|chromosome column name|`CHR`|
 |`pos`|`string`|basepair position column name|`POS`|
-|`ea`|`string`|effect allele column name|`EA`|
+|`ea`|`string`|effect allele column name; BETA, OR, HR, EAF are in reference to EA...|`EA`|
 |`nea`|`string`|non-effect allele column name|`NEA`|
-|`ref`|`string`|reference allele column name|`REF`|
-|`alt`|`string`|alternative allele column name , when `ea`,`ref` and `alt` are specified, `nea` will be inferred.|`ALT`|
+|`ref`|`string`|reference allele column name; the allele on reference genome|`REF`|
+|`alt`|`string`|alternative allele column name; the allele that is not on reference genome; when `ea`,`ref` and `alt` are specified, `nea` will be inferred.|`ALT`|
 |`eaf`|`string`|effect allele frequency|`EAF`|
 |`neaf`|`string`|non-effect allele frequency. NEAF will be converted to EAF (EAF = 1 - NEAF) while loading.|`EAF`|
 |`n`|`string` or `integer`|sample size column name or just input a single `integer` as sample size for all variants|`N`|
-|`beta`|`string`|effect size beta column name|`BETA`|
+|`beta`|`string`|effect size beta column name; in reference to EA|`BETA`|
 |`se`|`string`|standard error column name|`SE`|
 |`chisq`|`string`|chi square column name|`CHISQ`|
 |`z`|`string`|z score column name|`Z`|
 |`p`|`string`|p value column name|`P`|
 |`mlog10p`|`string`| -log10(P) column name|`MLOG10P`|
 |`info`|`string`|imputation info or rsq column name|`INFO`|
-|`OR`|`string`|odds ratio column name|`OR`|
+|`OR`|`string`|odds ratio column name; in reference to EA|`OR`|
 |`OR_95L`|`string`|odds ratio lower 95% CI column name|`OR_95L`|
 | `OR_95U`|`string`|odds ratio upper 95% CI column name|`OR_95U`|
-|`direction`|`string`|direction column name. GWASLab uses METAL format (e.g. "++--+?+")|`DIRECTION`|
+|`direction`|`string`|direction column name. GWASLab uses METAL format (e.g. `++--+?+0`)|`DIRECTION`|
 |`other`|`list`|a list  of other column names you want to keep with the core columns (probably some annotations).|-|
 |`status`|`string`|status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.|`STATUS`|
 |`verbose`|`boolean`|if True, print log. |-|

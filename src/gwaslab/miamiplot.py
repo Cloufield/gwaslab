@@ -46,6 +46,9 @@ def plot_miami(
           path2,
           cols1=None,
           cols2=None,
+          id0="TCHR+POS",
+          id1=None,
+          id2=None,
           sep=None,
           mode="txt",
           chr_dict  = None,
@@ -184,6 +187,18 @@ def plot_miami(
         modes =[ mode, mode]
     else:
         modes = mode
+    
+    # id1 
+    if id1 is None:
+        id1 = id0
+    else:
+        cols1.append(id1)
+
+    #id2
+    if id2 is None:
+        id2 = id0
+    else:
+        cols2.append(id2)
     
     if verbose: log.write("Start to plot miami plot with the following basic settings:")
     if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
@@ -475,50 +490,57 @@ def plot_miami(
      
     ### Spines ####################################################################################################################
     
-    if len(anno_set1)>0 or len(anno_set2)>0:
-        if len(anno_set1)>0:
-            to_annotate1=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set1),:]
+
+    if anno is not None:
+        if len(anno_set1)>0 or len(anno_set2)>0:
+            if len(anno_set1)>0:
+                if id1 is None:
+                    to_annotate1=sumstats.loc[sumstats[id0].isin(anno_set1),:]
+                else:
+                    to_annotate1=sumstats.loc[sumstats[id1].isin(anno_set1),:]
+            else:
+                to_annotate1 = pd.DataFrame()
+            if len(anno_set2)>0:
+                if id2 is None:
+                    to_annotate5=sumstats.loc[sumstats[id0].isin(anno_set2),:]
+                else:
+                    to_annotate5=sumstats.loc[sumstats[id2].isin(anno_set2),:]
+            else:
+                to_annotate5 = pd.DataFrame()
         else:
-            to_annotate1 = pd.DataFrame()
-        if len(anno_set2)>0:
-            to_annotate5=sumstats.loc[sumstats["TCHR+POS"].isin(anno_set2),:]
-        else:
-            to_annotate5 = pd.DataFrame()
-    elif anno is not None:
-        to_annotate1 = getsig(sumstats.loc[sumstats["scaled_P_1"]> float(-np.log10(sig_level_lead)),:],
-                       "TCHR+POS",
-                       "CHR",
-                       "POS",
-                       "P_1",
+            to_annotate1 = getsig(sumstats.loc[sumstats["scaled_P_1"]> float(-np.log10(sig_level_lead)),:],
+                        "TCHR+POS",
+                        "CHR",
+                        "POS",
+                        "P_1",
                         build=build,
                         source=anno_source,
-                       windowsizekb=windowsizekb,
-                       verbose=False,
-                       sig_level=sig_level)
-        
-        if verbose: log.write(" -Keeping only the most significant variants to annotate for each position for sumstast #1...")
-        to_annotate1 = to_annotate1.sort_values("scaled_P_1").drop_duplicates(subset=["TCHR+POS"]).sort_values("i")
-        
-        to_annotate5 = getsig(sumstats.loc[sumstats["scaled_P_2"]> float(-np.log10(sig_level_lead)),:],
-                       "TCHR+POS",
-                       "CHR",
-                       "POS",
-                       "P_2",
-                       build=build,
-                        source=anno_source,
-                       windowsizekb=windowsizekb,
-                       verbose=False,
-                       sig_level=sig_level)
-        
+                        windowsizekb=windowsizekb,
+                        verbose=False,
+                        sig_level=sig_level)
+            
+            if verbose: log.write(" -Keeping only the most significant variants to annotate for each position for sumstast #1...")
+            to_annotate1 = to_annotate1.sort_values("scaled_P_1").drop_duplicates(subset=["TCHR+POS"]).sort_values("i")
+            
+            to_annotate5 = getsig(sumstats.loc[sumstats["scaled_P_2"]> float(-np.log10(sig_level_lead)),:],
+                        "TCHR+POS",
+                        "CHR",
+                        "POS",
+                        "P_2",
+                        build=build,
+                            source=anno_source,
+                        windowsizekb=windowsizekb,
+                        verbose=False,
+                        sig_level=sig_level)
+            
 
-        if verbose: log.write(" -Keeping only the most significant variants to annotate for each position for sumstast #2...")
-        to_annotate5 = to_annotate5.sort_values("scaled_P_2").drop_duplicates(subset=["TCHR+POS"]).sort_values("i")
-        
+            if verbose: log.write(" -Keeping only the most significant variants to annotate for each position for sumstast #2...")
+            to_annotate5 = to_annotate5.sort_values("scaled_P_2").drop_duplicates(subset=["TCHR+POS"]).sort_values("i")
         #######################################################################################
         if type(anno) is str:
             if (to_annotate1.empty is False) and anno=="GENENAME":
                     to_annotate1 = annogene(to_annotate1,
-                                        id="TCHR+POS",
+                                        id=id0,
                                         chrom="CHR",
                                         pos="POS",
                                         log=log,
@@ -528,20 +550,18 @@ def plot_miami(
 
             if (to_annotate5.empty is False) and anno=="GENENAME":
                     to_annotate5 = annogene(to_annotate5,
-                                        id="TCHR+POS",
+                                        id=id0,
                                         chrom="CHR",
                                         pos="POS",
                                         log=log,
                                         build=build,
                                         source=anno_source,
-                                        verbose=verbose).rename(columns={"GENE":"GENENAME"})
-                
+                                        verbose=verbose).rename(columns={"GENE":"GENENAME"})        
     else:
         to_annotate1 = pd.DataFrame()
         to_annotate5 = pd.DataFrame()
             
 ####################################################################################################################
-
 # Add Annotation to manhattan plot #######################################################
     ax1, ax5 = annotate_pair(
                                 sumstats=sumstats,

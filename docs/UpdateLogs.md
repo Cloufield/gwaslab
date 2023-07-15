@@ -1,13 +1,14 @@
 # Update Logs
 
-## 3.4.20 upcoming
+## 3.4.20 2023/07/15
 
 - reimplement and unified the module for saving figures
 - added trumpet plot document page   
 - added CHR range check in `.fix_chr()` and `.plot_mqq()` (remove variants with CHR<=0) (#42)
-- fixed error in cloumn header for plot_mqq "b" mode (#40)
+- fixed error in column headers for plot_mqq "b" mode (#40)
 - fixed many typos.. (#41)
 - fixed error in plot_mqq logging (warning for genome build) 
+- fixed error in annotation for miami plot 
 
 ## 3.4.19 2023/06/29
 - added annotation using custom column for miami plot
