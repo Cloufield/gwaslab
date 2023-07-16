@@ -44,9 +44,29 @@ height: auto;
     margin-block-start: 0.7em;
     margin-block-end: 0.7em;
 }
-.md-typeset code {
+
+.md-typeset p > code {
     color: #E33D70;
-    background-color: var(--md-code-bg-color);
+  }
+
+.md-typeset td > code {
+    color: #E33D70;
+}
+
+.md-typeset th > code {
+    color: #E33D70;
+}
+
+.md-typeset h2 > code {
+    color: #E33D70;
+}
+
+.md-typeset h3 > code {
+    color: #E33D70;
+}
+
+.md-typeset h4 > code {
+    color: #E33D70;
 }
 
 .md-typeset table:not([class]) {
