@@ -186,7 +186,7 @@ Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.
     sumstats.sort_column()
     ```
 
-## All-in-one `.basic_check()`
+## 7. All-in-one `.basic_check()`
 
 ```
 .basic_check()
@@ -219,5 +219,3 @@ For `remove_dup()` and `check_sanity()`, please check [QC and filtering](https:/
 |`normalizeallele_args`|`dict`|options for `.normalize_allele()` |`{}`| 
 |`verbose`|`boolean`|if True, print log|`True`| 
 
-## Example
-Please check [https://cloufield.github.io/gwaslab/standardization_workflow/](https://cloufield.github.io/gwaslab/standardization_workflow/)

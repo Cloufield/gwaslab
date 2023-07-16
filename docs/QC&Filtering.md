@@ -7,7 +7,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 
 | Sumstats Methods  | Options                  | Description                                                             |
 | ----------------- | ------------------------ | ----------------------------------------------------------------------- |
-| `.check_sanity()` |  `n=(0,2**31 -1)`, <br/> `ncase=(0,2**31-1)`<br/>`ncontrol=(0,2**31-1)` <br/> <br/> <br/> <br/>`eaf=(0,1)`, <br/>`mac=(0,2**31 -1)`, <br/>`chisq=(0,float("Inf"))`, <br/>`p=(5e-300,1.0000011)`, <br/>`mlog10p=(0,float("Inf"))`, <br/>`beta=(-10,10)`, <br/>`z=(-37.5,37.5)`, <br/>`se=(0,float("Inf"))`, <br/>`OR=(-10,10)` , <br/>`OR_95L=(0,float("Inf"))`, <br/>`OR_95U=(0,float("Inf"))`, <br/>`info=(0,1.000001]`   | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
+| `.check_sanity()` |  `n=(0,2**31 -1)`, <br/> `ncase=(0,2**31-1)`<br/>`ncontrol=(0,2**31-1)` <br/>`eaf=(0,1)`, <br/>`mac=(0,2**31 -1)`, <br/>`chisq=(0,float("Inf"))`, <br/>`p=(5e-300,1.0000011)`, <br/>`mlog10p=(0,float("Inf"))`, <br/>`beta=(-10,10)`, <br/>`z=(-37.5,37.5)`, <br/>`se=(0,float("Inf"))`, <br/>`OR=(-10,10)` , <br/>`OR_95L=(0,float("Inf"))`, <br/>`OR_95U=(0,float("Inf"))`, <br/>`info=(0,1.000001]`   | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
 | `.remove_dup()`   |  `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants |
 | `.filter_value()`    |  expr     |    filter in variants base on expr                                                                    |
 | `.filter_region_in()`   | `path` , <br/> `inplace=True` , <br/>`high_ld=False`, <br/> `build="19"`                         |      filter in variants in the specified region define by a bed file                                                                   |
@@ -21,6 +21,8 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 |Parameters|Type|Range|
 |-|-|-|
 |`n=(0,2**31-1))` | `interger`| 0<N< $2^{31}-1$ |
+|`ncase=(0,2**31-1)` | `interger`| 0<N< $2^{31}-1$ |
+|`ncontrol=(0,2**31-1)` | `interger`| 0<N< $2^{31}-1$ |
 |`eaf=(0,1)` | `float` | 0<=EAF<=1|
 |`mac=(0,float("Inf"))`| `float`| MAC>=0|
 |`chisq=(0,float("Inf"))` | `float` | CHISQ>0|
