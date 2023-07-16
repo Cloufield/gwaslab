@@ -45,6 +45,10 @@ height: auto;
     margin-block-end: 0.7em;
 }
 
+.md-typeset p > code {
+    color: #E33D70;
+  }
+
 .md-typeset table:not([class]) {
     display: table;
     font-size: px2rem(11px);
