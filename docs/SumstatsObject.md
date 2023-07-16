@@ -6,7 +6,7 @@ To load any sumstats into the object, simply specify the column name and load th
 
 ## 1. Usage
 
-```python
+```py
 mysumstats = gl.Sumstats(
              sumstats,
              fmt=None,
