@@ -452,25 +452,25 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#1-usage" class="md-nav__link">
+    1. Usage
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    Parameters
+  <a href="#2-loading-options" class="md-nav__link">
+    2. Loading options
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#loading-sumstats" class="md-nav__link">
-    Loading sumstats
+  <a href="#3-loading-sumstats" class="md-nav__link">
+    3. Loading sumstats
   </a>
   
-    <nav class="md-nav" aria-label="Loading sumstats">
+    <nav class="md-nav" aria-label="3. Loading sumstats">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -481,8 +481,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#loading-by-specifying-format" class="md-nav__link">
-    Loading by specifying format
+  <a href="#loading-by-specifying-formats" class="md-nav__link">
+    Loading by specifying formats
   </a>
   
 </li>
@@ -1077,25 +1077,25 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#1-usage" class="md-nav__link">
+    1. Usage
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    Parameters
+  <a href="#2-loading-options" class="md-nav__link">
+    2. Loading options
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#loading-sumstats" class="md-nav__link">
-    Loading sumstats
+  <a href="#3-loading-sumstats" class="md-nav__link">
+    3. Loading sumstats
   </a>
   
-    <nav class="md-nav" aria-label="Loading sumstats">
+    <nav class="md-nav" aria-label="3. Loading sumstats">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1106,8 +1106,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#loading-by-specifying-format" class="md-nav__link">
-    Loading by specifying format
+  <a href="#loading-by-specifying-formats" class="md-nav__link">
+    Loading by specifying formats
   </a>
   
 </li>
@@ -1183,7 +1183,7 @@
 <h1 id="sumstats-object-in-gwaslab">Sumstats Object in GWASLab</h1>
 <p>In GWASLab, sumstats were stored in a <code>Sumstats Object</code>, which is built on <code>pandas Dataframe</code>. All other functions are designed as methods of this Sumstats Object. </p>
 <p>To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statistics from a pandas DataFrame or specify a file path. All raw data will be loaded as <code>"string"</code> datatype. </p>
-<h2 id="usage">Usage</h2>
+<h2 id="1-usage">1. Usage</h2>
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span>
              <span class="n">sumstats</span><span class="p">,</span>
              <span class="n">fmt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1196,7 +1196,7 @@
              <span class="o">...</span>
 <span class="p">)</span>
 </code></pre></div>
-<h2 id="parameters">Parameters</h2>
+<h2 id="2-loading-options">2. Loading options</h2>
 <p><code>sumstats</code>: either a file path <code>string</code> or a pandas <code>DataFrame</code></p>
 <p>Currently, GWASLab supports the following columns:</p>
 <table>
@@ -1484,7 +1484,7 @@ All other columns and options are optional.</p>
 </tr>
 </tbody>
 </table>
-<h2 id="loading-sumstats">Loading sumstats</h2>
+<h2 id="3-loading-sumstats">3. Loading sumstats</h2>
 <h3 id="loading-by-specifying-columns">Loading by specifying columns</h3>
 <p>You can load the sumstats by specifying the columns like:</p>
 <div class="admonition example">
@@ -1502,29 +1502,82 @@ All other columns and options are optional.</p>
              n=&quot;N&quot;)
 </code></pre></div>
 </div>
-<h3 id="loading-by-specifying-format">Loading by specifying format</h3>
+<h3 id="loading-by-specifying-formats">Loading by specifying formats</h3>
 <p>GWASLab supports common sumstats formats and you can load sumstats by specifying <code>fmt</code>.  </p>
 <div class="admonition info formatbook">
 <p class="admonition-title">Info</p>
 <p>GWASLab uses a manually curated format conversion dictionary in <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></p>
 <p>Supported formats:</p>
-<ul>
-<li><code>ssf</code>: GWAS-SSF</li>
-<li><code>gwascatalog</code>: GWAS Catalog format</li>
-<li><code>pgscatalog</code> : PGS Catalog format</li>
-<li><code>plink</code>: PLINK output format</li>
-<li><code>plink2</code>: PLINK2 output format</li>
-<li><code>saige</code>: SAIGE output format</li>
-<li><code>regenie</code>: output format</li>
-<li><code>fastgwa</code>: output format</li>
-<li><code>metal</code>: output format</li>
-<li><code>mrmega</code>: output format</li>
-<li><code>fuma</code>: input format</li>
-<li><code>ldsc</code>: input format</li>
-<li><code>locuszoom</code>: input format</li>
-<li><code>vcf</code>: gwas-vcf format</li>
-<li><code>bolt_lmm</code>: output format</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th><code>Keyword</code></th>
+<th><code>Description</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ssf</code></td>
+<td>GWAS-SSF</td>
+</tr>
+<tr>
+<td><code>gwascatalog</code></td>
+<td>GWAS Catalog format</td>
+</tr>
+<tr>
+<td><code>pgscatalog</code></td>
+<td>PGS Catalog format</td>
+</tr>
+<tr>
+<td><code>plink</code></td>
+<td>PLINK output format</td>
+</tr>
+<tr>
+<td><code>plink2</code></td>
+<td>PLINK2 output format</td>
+</tr>
+<tr>
+<td><code>saige</code></td>
+<td>SAIGE output format</td>
+</tr>
+<tr>
+<td><code>regenie</code></td>
+<td>output format</td>
+</tr>
+<tr>
+<td><code>fastgwa</code></td>
+<td>output format</td>
+</tr>
+<tr>
+<td><code>metal</code></td>
+<td>output format</td>
+</tr>
+<tr>
+<td><code>mrmega</code></td>
+<td>output format</td>
+</tr>
+<tr>
+<td><code>fuma</code></td>
+<td>input format</td>
+</tr>
+<tr>
+<td><code>ldsc</code></td>
+<td>input format</td>
+</tr>
+<tr>
+<td><code>locuszoom</code></td>
+<td>input format</td>
+</tr>
+<tr>
+<td><code>vcf</code></td>
+<td>gwas-vcf format</td>
+</tr>
+<tr>
+<td><code>bolt_lmm</code></td>
+<td>output format</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Load sumstats by simply specifying the format</p>
@@ -1558,7 +1611,7 @@ All other columns and options are optional.</p>
 <div class="highlight"><pre><span></span><code>mysumstats.data.to_csv(&quot;./mysumstats.csv&quot;)
 </code></pre></div>
 </div>
-<p>or convert the sumstats to other sumstats using GWASLab <code>to_format()</code> function (<strong>strongly recommended</strong>):</p>
+<p>or convert the sumstats to other sumstats using GWASLab <code>to_format()</code> function (recommended):</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code>mysumstats.to_format(&quot;./mysumstats&quot;, fmt=&quot;ldsc&quot;,hapmap3=True, exclude_hla=True, build=&quot;19&quot;)
