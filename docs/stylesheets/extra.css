@@ -49,6 +49,10 @@ height: auto;
     color: #E33D70;
   }
 
+.md-typeset li > code {
+    color: #E33D70;
+  }
+
 .md-typeset td > code {
     color: #E33D70;
 }
