@@ -474,6 +474,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#loading-by-specifying-columns" class="md-nav__link">
+    Loading by specifying columns
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-by-specifying-columns_1" class="md-nav__link">
+    Loading by specifying columns
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#loading-sumstats-from-chromosome-separated-files" class="md-nav__link">
     Loading sumstats from chromosome-separated files
   </a>
@@ -1078,6 +1092,20 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#loading-by-specifying-columns" class="md-nav__link">
+    Loading by specifying columns
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-by-specifying-columns_1" class="md-nav__link">
+    Loading by specifying columns
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#loading-sumstats-from-chromosome-separated-files" class="md-nav__link">
     Loading sumstats from chromosome-separated files
   </a>
@@ -1140,7 +1168,7 @@
 
 <h1 id="sumstats-object-in-gwaslab">Sumstats Object in GWASLab</h1>
 <p>In GWASLab, sumstats were stored in a <code>Sumstats Object</code>, which is built on <code>pandas Dataframe</code>. All other functions are designed as methods of this Sumstats Object. </p>
-<p>To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statistics from a pandas DataFrame or specifying a file path. All raw data will be loaded as <code>"string"</code> datatype. </p>
+<p>To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statistics from a pandas DataFrame or specify a file path. All raw data will be loaded as <code>"string"</code> datatype. </p>
 <h2 id="usage">Usage</h2>
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span>
              <span class="n">sumstats</span><span class="p">,</span>
@@ -1163,7 +1191,7 @@
 <th>Option</th>
 <th>DataType</th>
 <th>Description</th>
-<th>Header in gwaslab</th>
+<th>Header in GWASLab</th>
 </tr>
 </thead>
 <tbody>
@@ -1189,7 +1217,7 @@ All other columns and options are optional.</p>
 <th>Option</th>
 <th>DataType</th>
 <th>Description</th>
-<th>Header in gwaslab</th>
+<th>Header in GWASLab</th>
 </tr>
 </thead>
 <tbody>
@@ -1351,14 +1379,14 @@ All other columns and options are optional.</p>
 </tr>
 </tbody>
 </table>
-<p>Other columns gwaslab uses (these will be implemented soon)</p>
+<p>Other columns GWASLab uses (these will be implemented soon)</p>
 <table>
 <thead>
 <tr>
 <th>Option</th>
 <th>DataType</th>
 <th>Description</th>
-<th>Header in gwaslab</th>
+<th>Header in GWASLab</th>
 </tr>
 </thead>
 <tbody>
@@ -1443,6 +1471,7 @@ All other columns and options are optional.</p>
 </tbody>
 </table>
 <h2 id="loading-sumstats">Loading sumstats</h2>
+<h3 id="loading-by-specifying-columns">Loading by specifying columns</h3>
 <p>You can load the sumstats by specifying the columns like:</p>
 <div class="admonition example">
 <p class="admonition-title">Load sumstats by manually specifying columns</p>
@@ -1459,14 +1488,11 @@ All other columns and options are optional.</p>
              n=&quot;N&quot;)
 </code></pre></div>
 </div>
-<p>or just specify the sumstats format:</p>
-<div class="admonition example">
-<p class="admonition-title">Load sumstats by simply specifying the format</p>
-<div class="highlight"><pre><span></span><code>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, fmt=&quot;saige&quot;)
-</code></pre></div>
-</div>
-<div class="admonition note formatbook">
-<p class="admonition-title">Note</p>
+<h3 id="loading-by-specifying-columns_1">Loading by specifying columns</h3>
+<p>GWASLab supports common sumstats formats and you can load sumstats by specifying <code>fmt</code>.  </p>
+<p>GWASLab also provides an auto mode (<code>fmt="auto"</code>; available since v3.4.21) which assumes A1 or alternative allele (ALT) is the effect allele (EA) and Frq refers to the allele frequency of effect allele (EAF). You can find the conversion table <a href="https://github.com/Cloufield/formatbook/blob/main/formats/auto.json">here</a></p>
+<div class="admonition info formatbook">
+<p class="admonition-title">Info</p>
 <p>GWASLab uses a manually curated format conversion dictionary in <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></p>
 <p>Supported formats:</p>
 <ul>
@@ -1486,6 +1512,11 @@ All other columns and options are optional.</p>
 <li><code>vcf</code>: gwas-vcf format</li>
 <li><code>bolt_lmm</code>: output format</li>
 </ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Load sumstats by simply specifying the format</p>
+<div class="highlight"><pre><span></span><code>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, fmt=&quot;saige&quot;)
+</code></pre></div>
 </div>
 <h3 id="loading-sumstats-from-chromosome-separated-files">Loading sumstats from chromosome-separated files</h3>
 <p>GWASLab supports loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace the chromosome numbers. </p>
