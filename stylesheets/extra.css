@@ -3,16 +3,16 @@ max-width:700px;
 height: auto;
 }
 
+.md-typeset {
+    font-size: px2rem(12px);
+ }
+
 .md-typeset__table {
    min-width: 100%;
 }
 
 .md-typeset table:not([class]) {
     display: table;
-    font-size: 0.4rem;
-}
-
-
-.md-typeset body {
-    font-size: 0.4rem;
+    font-size: px2rem(11px);
+    padding: 5% 5%;
 }
