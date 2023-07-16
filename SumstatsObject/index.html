@@ -1184,7 +1184,7 @@
 <p>In GWASLab, sumstats were stored in a <code>Sumstats Object</code>, which is built on <code>pandas Dataframe</code>. All other functions are designed as methods of this Sumstats Object. </p>
 <p>To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statistics from a pandas DataFrame or specify a file path. All raw data will be loaded as <code>"string"</code> datatype. </p>
 <h2 id="1-usage">1. Usage</h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>             <span class="n">sumstats</span><span class="p">,</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>             <span class="n">fmt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>             <span class="n">snpid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
