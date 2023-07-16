@@ -9,8 +9,8 @@ height: auto;
 
 .md-typeset__table {
    min-width: 100%;
-   margin: px2em(0px);
-   padding: px2em(1px, 1.8px);
+   margin-bottom: 0.2em;
+   padding: 0 0.3rem;
 }
 
 .md-typeset__table td {
