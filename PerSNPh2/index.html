@@ -831,9 +831,40 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Per SNP Heritability and F statistics
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Per SNP Heritability and F statistics
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    Options
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -956,6 +987,21 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    Options
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -970,14 +1016,100 @@
 
 <h1 id="per-snp-heritability">Per SNP Heritability</h1>
 <p>GWASLab provides a simple function to calculate the variance explained by each SNP.</p>
+<div class="admonition tip">
+<p class="admonition-title">Available since v3.4.20</p>
+</div>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>mysumstats.get_per_snp_r2()
 </span></code></pre></div>
 <p>It needs effect size <code>BETA</code> and effect allele frequency <code>EAF</code> for calculation.
 If <code>N</code> is available, it will also calculate the F-statistics.</p>
+<h3 id="options">Options</h3>
+<table>
+<thead>
+<tr>
+<th><code>.get_per_snp_r2()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td><code>q</code> or <code>b</code></td>
+<td><code>q</code>: quantitative trait; <code>b</code>: binary trait</td>
+<td><code>q</code></td>
+</tr>
+</tbody>
+</table>
+<p>For quantitative traits (<code>mode="q"</code>), GWASLab will use <code>BETA</code>, <code>EAF</code> to calculate <code>SNPR2</code>.</p>
+<table>
+<thead>
+<tr>
+<th><code>.get_per_snp_r2()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vary</code></td>
+<td><code>float</code> or <code>se</code></td>
+<td>Var(Y); if <code>vary="se"</code>,Var(Y) will be estimated using <code>SE</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>k</code></td>
+<td><code>int</code></td>
+<td>k for calculating F</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition info">
 <p class="admonition-title">For SNP <code>i</code></p>
+<p>When <code>vary=1</code> and k=1:</p>
 <div class="arithmatex">\[ h^2_{i} = 2 \times \beta_i^2 \times EAF \times (1 - EAF) \]</div>
 <div class="arithmatex">\[ F = h^2_{i} \times (n -2) / (1 - h^2_{i}) \]</div>
+</div>
+<p>For binary traits  (<code>mode="b"</code>), <code>ncase</code>, <code>ncontrol</code> and <code>prevalence</code> are needed to estimate the variance of liability explained by variants:</p>
+<table>
+<thead>
+<tr>
+<th><code>.get_per_snp_r2()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ncase</code></td>
+<td><code>int</code></td>
+<td>number of cases</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>ncontrol</code></td>
+<td><code>int</code></td>
+<td>number of controls</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>prevalence</code></td>
+<td><code>float</code></td>
+<td>prevalence in general population</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition quote">
+<p class="admonition-title">Quote</p>
+<p>Equation 10 in Lee, S. H., Goddard, M. E., Wray, N. R., &amp; Visscher, P. M. (2012). A better coefficient of determination for genetic profile analysis. Genetic epidemiology, 36(3), 214-224.</p>
+<ul>
+<li>Implementation adopted from TwoSampleMR https://rdrr.io/github/MRCIEU/TwoSampleMR/src/R/add_rsq.r</li>
+</ul>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
@@ -990,17 +1122,19 @@ If <code>N</code> is available, it will also calculate the F-statistics.</p>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>mysumstats.get_per_snp_r2()
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>Tue Jan 31 22:44:34 2023 Start to calculate per-SNP heritibility...
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>Tue Jan 31 22:44:34 2023  -Calculating per-SNP heritibility by 2 * (BETA**2) * AF * (1-AF)...
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>Tue Jan 31 22:44:35 2023  -Calculating F-statistic...
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>Tue Jan 31 22:44:35 2023 Finished calculating per-SNP heritibility!
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>SNPID   EAF BETA    N   STATUS  SNPH2   F
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>0   1:725932_G_A    0.9960  -0.0737 166718  9999999 0.000043    7.215732
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>1   1:725933_A_G    0.0040  0.0737  166718  9999999 0.000043    7.215732
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>2   1:737801_T_C    0.0051  0.0490  166718  9999999 0.000024    4.062184
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>3   1:749963_T_TAA  0.8374  0.0213  166718  9999999 0.000124    20.600305
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>4   1:751343_T_A    0.8593  0.0172  166718  9999999 0.000072    11.927080
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>Mon Jul 17 01:39:02 2023 Start to calculate per-SNP heritability...
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>Mon Jul 17 01:39:02 2023  -Calculating per-SNP rsq by 2 * (BETA**2) * AF * (1-AF) / Var(y)...
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>Mon Jul 17 01:39:02 2023  -Var(y) is provided: 1...
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>Mon Jul 17 01:39:02 2023  -Calculating F-statistic: F = [(N-k-1)/k] * (r2/1-r2)... where k = 1
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>Mon Jul 17 01:39:02 2023  -For r2, SNPR2 is used.
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>Mon Jul 17 01:39:02 2023 Finished calculating per-SNP heritibility!
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>SNPID   EAF BETA    N   STATUS  SNPR2   F
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>0   1:725932_G_A    0.9960  -0.0737 166718  9999999 0.000043    7.215732
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>1   1:725933_A_G    0.0040  0.0737  166718  9999999 0.000043    7.215732
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>2   1:737801_T_C    0.0051  0.0490  166718  9999999 0.000024    4.062184
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>3   1:749963_T_TAA  0.8374  0.0213  166718  9999999 0.000124    20.600305
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>4   1:751343_T_A    0.8593  0.0172  166718  9999999 0.000072    11.927080
 </span></code></pre></div>
 </div>
 
