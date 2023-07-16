@@ -13,9 +13,10 @@ height: auto;
    padding: 0 0.3rem;
 }
 
-.md-typeset__table td {
-    margin: px2em(0px) px2em(0px);
-    padding: px2em(1px, 1.8px) px2em(1px, 1.8px);
+.md-typeset table:not([class]) td {
+    border-top: 0.05rem solid var(--md-typeset-table-color);
+    padding: 0.3em 0.4em;
+    vertical-align: top;
 }
 
 .md-typeset table:not([class]) {
