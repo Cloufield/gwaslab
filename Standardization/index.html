@@ -487,22 +487,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#1-ids" class="md-nav__link">
-    1. IDs
+  <a href="#1-ids-snpid-and-rsid" class="md-nav__link">
+    1. IDs - SNPID and rsID
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-chr" class="md-nav__link">
-    2. CHR
+  <a href="#2-chr-chromosomes" class="md-nav__link">
+    2. CHR - Chromosomes
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-pos" class="md-nav__link">
-    3. POS
+  <a href="#3-pos-base-pair-positions" class="md-nav__link">
+    3. POS - Base-pair positions
   </a>
   
 </li>
@@ -535,8 +535,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-coordinate-sorting" class="md-nav__link">
-    5. Coordinate sorting
+  <a href="#5-genome-coordinate-sorting" class="md-nav__link">
+    5. Genome coordinate sorting
   </a>
   
 </li>
@@ -1077,22 +1077,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#1-ids" class="md-nav__link">
-    1. IDs
+  <a href="#1-ids-snpid-and-rsid" class="md-nav__link">
+    1. IDs - SNPID and rsID
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-chr" class="md-nav__link">
-    2. CHR
+  <a href="#2-chr-chromosomes" class="md-nav__link">
+    2. CHR - Chromosomes
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-pos" class="md-nav__link">
-    3. POS
+  <a href="#3-pos-base-pair-positions" class="md-nav__link">
+    3. POS - Base-pair positions
   </a>
   
 </li>
@@ -1125,8 +1125,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-coordinate-sorting" class="md-nav__link">
-    5. Coordinate sorting
+  <a href="#5-genome-coordinate-sorting" class="md-nav__link">
+    5. Genome coordinate sorting
   </a>
   
 </li>
@@ -1197,7 +1197,7 @@
 <tr>
 <td><code>.fix_allele()</code></td>
 <td><code>remove=False</code></td>
-<td>standardize base notation to ATCG</td>
+<td>standardize base notations to ATCG</td>
 </tr>
 <tr>
 <td><code>.normalize_allele()</code></td>
@@ -1211,17 +1211,17 @@
 </tr>
 <tr>
 <td><code>.sort_column()</code></td>
-<td></td>
+<td><code>order</code></td>
 <td>sort the column order to GWASLab default</td>
 </tr>
 <tr>
 <td><code>.basic_check()</code></td>
 <td></td>
-<td>all-in-one function to perform the defaul pipeline</td>
+<td>all-in-one function to perform the default pipeline</td>
 </tr>
 </tbody>
 </table>
-<h2 id="1-ids">1. IDs</h2>
+<h2 id="1-ids-snpid-and-rsid">1. IDs - SNPID and rsID</h2>
 <p>GWASLab requires at least one ID column for sumstats, either in the form of SNPID or rsID, (or both). GWASLab will automatically check if SNPID is mixed in rsID.</p>
 <ul>
 <li><code>SNPID</code> : it could be user-provided IDs, or in <code>CHR:POS:REF:ALT</code> format, delimiters can be <code>":"</code>,<code>"_"</code> or <code>"-"</code>.</li>
@@ -1275,49 +1275,106 @@
                 <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 </div>
-<h2 id="2-chr">2. CHR</h2>
-<div class="highlight"><pre><span></span><code>.fix_chr(
-    x=(&quot;X&quot;,23), 
-    y=(&quot;Y&quot;,24), 
-    mt=(&quot;MT&quot;,25),
-    chrom_list=gl.get_chr_list()
-)
+<h2 id="2-chr-chromosomes">2. CHR - Chromosomes</h2>
+<div class="highlight"><pre><span></span><code>.fix_chr()
 </code></pre></div>
-<p>CHR will be standardized to integers. </p>
+<p>CHR will be standardized. </p>
 <ul>
-<li><code>"x","y","mt"</code>: <code>tuple</code> , how to convert sex chromosomes. For examplem <code>x = ("X",23)</code></li>
-<li><code>chrom_list</code> : <code>list</code> , vaild chromosome notations for filtering. Datatype should be <code>string</code> or <code>object</code>.</li>
+<li>Prefixes like "chr" will be removed.</li>
+<li>String datatype will be converted to integers.</li>
+<li>Sex chromosome will be converted to integers.</li>
+<li>Variants with unrecognized chromosome notations will be rmeoved. (notations not in <code>chrom_list</code>)</li>
+<li>Variantsc with CHR&lt;=0 will be removed. </li>
 </ul>
+<p>Options:</p>
+<table>
+<thead>
+<tr>
+<th><code>.fix_chr()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td><code>tuple</code></td>
+<td>how to convert X chromosomes. For examplem <code>x = ("X",23)</code></td>
+<td><code>("X",23)</code></td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td><code>tuple</code></td>
+<td>how to convert Y chromosomes.</td>
+<td><code>("Y",24)</code></td>
+</tr>
+<tr>
+<td><code>mt</code></td>
+<td><code>tuple</code></td>
+<td>how to convert Mitochondrial DNA.</td>
+<td><code>("MT",25)</code></td>
+</tr>
+<tr>
+<td><code>chrom_list</code></td>
+<td><code>list</code></td>
+<td>vaild chromosome notations for filtering. Datatype should be <code>string</code></td>
+<td><code>gl.get_chr_list()</code></td>
+</tr>
+</tbody>
+</table>
 <p>(by default) For human chromosomes, CHR will be converted to integers for autosomes, <code>23</code> for <code>X</code>, <code>24</code> for <code>Y</code>, and <code>25</code> for <code>MT</code>. </p>
-<ul>
-<li><code>x=("X",23)</code> </li>
-<li><code>y=("Y",24)</code>  </li>
-<li><code>mt=("MT",25)</code></li>
-</ul>
-<p>For other species, you can change it like:</p>
-<ul>
-<li><code>x=("X",26)</code> </li>
-<li><code>y=("Y",27)</code>  </li>
-<li><code>mt=("MT",28)</code></li>
-<li><code>chrom_list=gl.get_chr_list(n=28)</code></li>
-</ul>
+<p>For other species, you can change it like:
+- <code>x=("X",26)</code> 
+- <code>y=("Y",27)</code><br />
+- <code>mt=("MT",28)</code>
+- <code>chrom_list=gl.get_chr_list(n=28)</code></p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_chr</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span><span class="mi">23</span><span class="p">))</span>
+<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_chr</span><span class="p">()</span>
 </code></pre></div>
 </div>
 <p>!!! tip gl.get_chr_list()
-    Get a chromosome list for n autosomes and 'X', 'Y', 'M', 'MT. ("string" data type)
-    <div class="highlight"><pre><span></span><code>gl.get_chr_list(n=10)
-[&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;, &#39;5&#39;, &#39;6&#39;, &#39;7&#39;, &#39;8&#39;, &#39;9&#39;, &#39;10&#39;, &#39;X&#39;, &#39;Y&#39;, &#39;M&#39;, &#39;MT&#39;]
-</code></pre></div></p>
-<h2 id="3-pos">3. POS</h2>
-<p><code>.fix_pos()</code></p>
-<p>Values in POS must be positive integer numbers. Basepair position will be force converted to integers. Invalid pos will be converted to NA. </p>
-<p><code>limit=250000000</code> : After conversion, GWASLab will also sanity check if POS is in the range of 1 to 250,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  </p>
+    Get a chromosome list for n autosomes plus 'X', 'Y', 'M', 'MT. (`string`` data type)</p>
+<pre><code>```python
+gl.get_chr_list()
+['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','X','Y','M','MT']
+
+gl.get_chr_list(n=10)
+['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'X', 'Y', 'M', 'MT']
+```
+</code></pre>
+<h2 id="3-pos-base-pair-positions">3. POS - Base-pair positions</h2>
+<div class="highlight"><pre><span></span><code>.fix_pos()
+</code></pre></div>
+<p>Check and fix values in POS.</p>
+<ul>
+<li>Values in POS must be positive integer numbers. </li>
+<li>Basepair position will be force converted to integers. </li>
+<li>Invalid POS values will be converted to NA. </li>
+<li>POS outliers will be removed.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><code>.fix_pos()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>limit</code></td>
+<td><code>integer</code></td>
+<td>After conversion, GWASLab will also perform a sanity check for POS (if is in the range of 1 to 250,000,000). (The longest chromosome for human, namely chromosome 1, is less than 250,000,000bp long)</td>
+<td><code>250000000</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_pos</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">250000000</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_pos</span><span class="p">()</span>
 </code></pre></div>
 </div>
 <h2 id="4-allele">4. Allele</h2>
@@ -1326,25 +1383,42 @@
 <ul>
 <li>Currently, GWASLab only supports processing SNPs and INDELs. </li>
 <li>All alleles will be checked if containing letters other than <code>A</code>,<code>T</code>,<code>C</code>,<code>G</code>.</li>
-<li>Copy number variant (CNV) like <code>&lt;CN0&gt;</code> won't be recognized.</li>
+<li>Copy number variants (CNV) like <code>&lt;CN0&gt;</code> won't be recognized.</li>
 <li>Lower cases will be converted to UPPERCASES.</li>
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_allele</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_allele</span><span class="p">()</span>
 </code></pre></div>
 </div>
 <h3 id="42-variant-normalization">4.2 Variant Normalization</h3>
 <p><code>.normalize_allele()</code></p>
 <p>Alleles will be normalized according to the left alignment and parsimony principle. For example, chr1:123456:ATG:AT will be normalized to chr1:123457:TG:T.</p>
-<p><code>n_cores</code>: threads to use for normalization.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Currently, the normalization is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information needs to be obtained from a reference genome.  </p>
+<table>
+<thead>
+<tr>
+<th><code>.normalize_allele()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n_cores</code></td>
+<td><code>integer</code></td>
+<td>threads to use for normalization.</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Currently, the normalization is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing allele information needs to be obtained from a reference genome.  </p>
 </div>
 <div class="admonition quote">
-<p class="admonition-title">Quote</p>
-<p>For details on variant normalization, please check: <a href="https://genome.sph.umich.edu/wiki/Variant_Normalization">https://genome.sph.umich.edu/wiki/Variant_Normalization</a> )</p>
+<p class="admonition-title">Variant Normalization</p>
+<p>For details on variant normalization, please check: <a href="https://genome.sph.umich.edu/wiki/Variant_Normalization">https://genome.sph.umich.edu/wiki/Variant_Normalization</a></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
@@ -1355,7 +1429,7 @@
 <p>After:</p>
 <p><img width="345" alt="image" src="https://user-images.githubusercontent.com/40289485/212256576-7808a1ec-5cf2-42ec-819e-a6f1c9c200bb.png"></p>
 </div>
-<h2 id="5-coordinate-sorting">5. Coordinate sorting</h2>
+<h2 id="5-genome-coordinate-sorting">5. Genome coordinate sorting</h2>
 <p>Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
@@ -1363,8 +1437,26 @@
 </code></pre></div>
 </div>
 <h2 id="6-column-sorting">6. Column sorting</h2>
-<p>The default column order is <code>"SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",  "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS" and other additional columns</code>.</p>
-<p><code>order</code>:<code>list</code> , column order.</p>
+<div class="highlight"><pre><span></span><code>.sort_column()
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th><code>.sort_column()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>order</code></td>
+<td><code>list</code></td>
+<td>sort the columns</td>
+<td>The default column order is <code>"SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "MAF", "BETA", "SE","BETA_95L","BETA_95U", "Z", "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U","HR", "HR_95L", "HR_95U","INFO", "N","N_CASE","N_CONTROL","DIRECTION","I2","P_HET","DOF","SNPR2","STATUS"</code> and other additional columns.</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">sort_column</span><span class="p">()</span>
@@ -1378,14 +1470,83 @@ Fix data without dropping any variant.</p>
 <p class="admonition-title"><code>basic_check()</code> pipeline</p>
 <ul>
 <li>fix_id()</li>
+<li>remove_dup()</li>
 <li>fix_chr()</li>
 <li>fix_pos()</li>
 <li>fix_allele()</li>
 <li>normalize_allele()</li>
+<li>check_sanity()  </li>
 <li>sort_coordinate()</li>
 <li>sort_column()</li>
 </ul>
 </div>
+<p>For <code>remove_dup()</code> and <code>check_sanity()</code>, please check <a href="https://cloufield.github.io/gwaslab/QC%26Filtering/">QC and filtering</a></p>
+<table>
+<thead>
+<tr>
+<th><code>.basic_check()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remove</code></td>
+<td><code>boolean</code></td>
+<td>if True, remove duplicate and multi-allelic variants</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>removedup_args</code></td>
+<td><code>dict</code></td>
+<td>options for remove_dup()</td>
+<td><code>{}</code></td>
+</tr>
+<tr>
+<td><code>fixid_args</code></td>
+<td><code>dict</code></td>
+<td>options for <code>.fix_id()</code></td>
+<td><code>{}</code></td>
+</tr>
+<tr>
+<td><code>fixchr_agrs</code></td>
+<td><code>dict</code></td>
+<td>options for <code>.fix_chr()</code></td>
+<td><code>{}</code></td>
+</tr>
+<tr>
+<td><code>fixpos_args</code></td>
+<td><code>dict</code></td>
+<td>options for <code>.fix_pos()</code></td>
+<td><code>{}</code></td>
+</tr>
+<tr>
+<td><code>fixallele_args</code></td>
+<td><code>dict</code></td>
+<td>options for <code>.fix_allele()</code></td>
+<td><code>{}</code></td>
+</tr>
+<tr>
+<td><code>sanitycheckstats_args</code></td>
+<td><code>dict</code></td>
+<td>options for <code>.check_sanity()</code></td>
+<td><code>{}</code></td>
+</tr>
+<tr>
+<td><code>normalizeallele_args</code></td>
+<td><code>dict</code></td>
+<td>options for <code>.normalize_allele()</code></td>
+<td><code>{}</code></td>
+</tr>
+<tr>
+<td><code>verbose</code></td>
+<td><code>boolean</code></td>
+<td>if True, print log</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
 <h2 id="example">Example</h2>
 <p>Please check <a href="https://cloufield.github.io/gwaslab/standardization_workflow/">https://cloufield.github.io/gwaslab/standardization_workflow/</a></p>
 

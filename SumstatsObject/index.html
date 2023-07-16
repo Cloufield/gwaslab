@@ -1139,8 +1139,8 @@
 
 
 <h1 id="sumstats-object-in-gwaslab">Sumstats Object in GWASLab</h1>
-<p>In GWASLab, sumstats were stored in a <code>Sumstats Object</code>，which is built on <code>pandas Dataframe</code>. All other function are designed as methods of this Sumstats Object. </p>
-<p>To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statsitics from a pandas dataframe or specifying file path. All raw data will be loaded as <code>"string"</code> datatype. </p>
+<p>In GWASLab, sumstats were stored in a <code>Sumstats Object</code>, which is built on <code>pandas Dataframe</code>. All other functions are designed as methods of this Sumstats Object. </p>
+<p>To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statistics from a pandas DataFrame or specifying a file path. All raw data will be loaded as <code>"string"</code> datatype. </p>
 <h2 id="usage">Usage</h2>
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span>
              <span class="n">sumstats</span><span class="p">,</span>
@@ -1151,27 +1151,7 @@
              <span class="n">pos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">ea</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
              <span class="n">nea</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">alt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">eaf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">neaf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">beta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">se</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">chisq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">mlog10p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">OR</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">OR_95L</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">OR_95U</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">status</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">other</span><span class="o">=</span><span class="p">[],</span>
-             <span class="n">direction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-             <span class="n">build</span><span class="o">=</span><span class="s2">&quot;99&quot;</span><span class="p">,</span>
-             <span class="o">**</span><span class="n">args</span>
+             <span class="o">...</span>
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="parameters">Parameters</h2>
@@ -1371,7 +1351,7 @@ All other columns and options are optional.</p>
 </tr>
 </tbody>
 </table>
-<p>!!! Other columns gwaslab uses (will be implemented soon)</p>
+<p>Other columns gwaslab uses (these will be implemented soon)</p>
 <table>
 <thead>
 <tr>
@@ -1487,11 +1467,11 @@ All other columns and options are optional.</p>
 </div>
 <div class="admonition note formatbook">
 <p class="admonition-title">Note</p>
-<p>GWASLab uses manually curated format conversion dictionary in <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></p>
+<p>GWASLab uses a manually curated format conversion dictionary in <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></p>
 <p>Supported formats:</p>
 <ul>
 <li><code>ssf</code>: GWAS-SSF</li>
-<li><code>gwascatalog</code> : GWAS Catalog format</li>
+<li><code>gwascatalog</code>: GWAS Catalog format</li>
 <li><code>pgscatalog</code> : PGS Catalog format</li>
 <li><code>plink</code>: PLINK output format</li>
 <li><code>plink2</code>: PLINK2 output format</li>
@@ -1508,14 +1488,14 @@ All other columns and options are optional.</p>
 </ul>
 </div>
 <h3 id="loading-sumstats-from-chromosome-separated-files">Loading sumstats from chromosome-separated files</h3>
-<p>GWASLab support loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace chromosome number. </p>
+<p>GWASLab supports loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace the chromosome numbers. </p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code>mysumstats = gl.Sumstats(&quot;t2d.chr@.txt.gz&quot;,fmt=&quot;metal&quot;)
 </code></pre></div>
 </div>
 <h2 id="check-and-save-sumstats">Check and save sumstats</h2>
-<p>After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is store in <code>.data</code> :</p>
+<p>After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is stored in <code>.data</code> :</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
@@ -1539,7 +1519,7 @@ All other columns and options are optional.</p>
 <p>Please check <a href="https://cloufield.github.io/gwaslab/Pickle/">GWASLab - Pickle</a> for more details.</p>
 <h2 id="logging">Logging</h2>
 <p>All manipulation conducted to the sumstats will be logged for reproducibility and traceability. </p>
-<p>The log is stored in a <code>gl.Log()</code> object . You can check it by <code>.log.show()</code>and save it using <code>.log.save()</code></p>
+<p>The log is stored in a <code>gl.Log()</code> object. You can check it by <code>.log.show()</code>and save it using <code>.log.save()</code></p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code>mysumstats.log.show()
