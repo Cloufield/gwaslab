@@ -14,5 +14,11 @@ height: auto;
 .md-typeset table:not([class]) {
     display: table;
     font-size: px2rem(11px);
-    padding: 5% 5%;
+    padding: 0% 0%;
 }
+
+.md-typeset td {
+    padding: px2em(6px, 6.8px) px2em(8px, 6.8px);
+    vertical-align: top;
+    border-top: px2rem(1px) solid var(--md-typeset-table-color);
+  }
