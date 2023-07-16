@@ -45,6 +45,30 @@ height: auto;
     margin-block-end: 0.7em;
 }
 
+.md-typeset p > code {
+    color: #E33D70;
+  }
+
+.md-typeset td > code {
+    color: #E33D70;
+}
+
+.md-typeset th > code {
+    color: #E33D70;
+}
+
+.md-typeset h2 > code {
+    color: #E33D70;
+}
+
+.md-typeset h3 > code {
+    color: #E33D70;
+}
+
+.md-typeset h4 > code {
+    color: #E33D70;
+}
+
 .md-typeset table:not([class]) {
     display: table;
     font-size: px2rem(11px);
