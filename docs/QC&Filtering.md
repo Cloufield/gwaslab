@@ -7,7 +7,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 
 | Sumstats Methods  | Options                  | Description                                                             |
 | ----------------- | ------------------------ | ----------------------------------------------------------------------- |
-| `.check_sanity()` |  `n=(0,2**31 -1)`, <br/>`eaf=(0,1)`, <br/>`mac=(0,float("Inf"))`, <br/>`chisq=(0,float("Inf"))`, <br/>`p=(5e-300,1)`, <br/>`mlog10p=(0,float("Inf"))`, <br/>`beta=(-10,10)`, <br/>`z=(-37.5,37.5)`, <br/>`se=(0,float("Inf"))`, <br/>`OR=(-10,10)` , <br/>`OR_95L=(0,float("Inf"))`, <br/>`OR_95U=(0,float("Inf"))`, <br/>`info=(0,float("Inf"))`   | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
+| `.check_sanity()` |  `n=(0,2**31 -1)`, <br/> `ncase=(0,2**31-1)`<br/>`ncontrol=(0,2**31-1)` <br/> <br/> <br/> <br/>`eaf=(0,1)`, <br/>`mac=(0,2**31 -1)`, <br/>`chisq=(0,float("Inf"))`, <br/>`p=(5e-300,1.0000011)`, <br/>`mlog10p=(0,float("Inf"))`, <br/>`beta=(-10,10)`, <br/>`z=(-37.5,37.5)`, <br/>`se=(0,float("Inf"))`, <br/>`OR=(-10,10)` , <br/>`OR_95L=(0,float("Inf"))`, <br/>`OR_95U=(0,float("Inf"))`, <br/>`info=(0,1.000001]`   | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
 | `.remove_dup()`   |  `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants |
 | `.filter_value()`    |  expr     |    filter in variants base on expr                                                                    |
 | `.filter_region_in()`   | `path` , <br/> `inplace=True` , <br/>`high_ld=False`, <br/> `build="19"`                         |      filter in variants in the specified region define by a bed file                                                                   |
@@ -22,9 +22,9 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 |-|-|-|
 |`n=(0,2**31-1))` | `interger`| 0<N< $2^{31}-1$ |
 |`eaf=(0,1)` | `float` | 0<=EAF<=1|
-|`mac=(0,float("Inf"))`| `float`| MAC>0|
+|`mac=(0,float("Inf"))`| `float`| MAC>=0|
 |`chisq=(0,float("Inf"))` | `float` | CHISQ>0|
-|`p=(5e-300,1)` | `float`| 5e-300<P<=1|
+|`p=(5e-300,1.000001)` | `float`| 5e-300<P<=1|
 |`mlog10p=(0,float("Inf"))` | `float`| MLOG10>0|
 |`beta=(-10,10)` | `float`| -10<BETA<10|
 |`z=(-37.5,37.5)`| `float`| -37.5<z<37.5|
@@ -32,31 +32,34 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 |`OR=(-10,10)` | `float`| -10<log(OR)<10|
 |`OR_95L=(0,float("Inf"))` |`float`| OR_95L>0|
 |`OR_95U=(0,float("Inf"))` |`float`| OR_95U>0|
-|`info=(0,float("Inf"))` | `float`| INFO>0 |
+|`info=(0,1.000001)` | `float`| 1>=INFO>0 |
 |`direction` | `string`| only contains `"+"`,`"-"` ,`"0"`or `"?"`|
 
 !!! example
     ```python
     sumstats.check_sanity()
     
-    Fri Jan 13 16:31:50 2023 Start sanity check for statistics ...
-    Fri Jan 13 16:31:50 2023  -Current Dataframe shape : 12557761  x  12
-    Fri Jan 13 16:31:51 2023  -Checking if  0 <=N<= 2147483647  ...
-    Fri Jan 13 16:31:57 2023  -Removed 0 variants with bad N.
-    Fri Jan 13 16:31:57 2023  -Checking if  0 <=EAF<= 1  ...
-    Fri Jan 13 16:32:01 2023  -Removed 0 variants with bad EAF.
-    Fri Jan 13 16:32:01 2023  -Checking if  0 <=MAC<= inf  ...
-    Fri Jan 13 16:32:07 2023  -Removed 0 variants with bad MAC.
-    Fri Jan 13 16:32:07 2023  -Checking if  5e-300 <= P <= 1  ...
-    Fri Jan 13 16:32:09 2023  -Removed 0 variants with bad P.
-    Fri Jan 13 16:32:09 2023  -Checking if  -10 <BETA)< 10  ...
-    Fri Jan 13 16:32:11 2023  -Removed 0 variants with bad BETA.
-    Fri Jan 13 16:32:11 2023  -Checking if  0 <SE< inf  ...
-    Fri Jan 13 16:32:15 2023  -Removed 0 variants with bad SE.
-    Fri Jan 13 16:32:15 2023  -Checking STATUS...
-    Fri Jan 13 16:32:16 2023  -Coverting STAUTUS to interger.
-    Fri Jan 13 16:32:20 2023  -Removed 0 variants with bad statistics in total.
-    Fri Jan 13 16:32:20 2023 Finished sanity check successfully!
+    Sun Jul 16 15:24:39 2023 Start sanity check for statistics ...
+    Sun Jul 16 15:24:39 2023  -Current Dataframe shape : 50000  x  11
+    Sun Jul 16 15:24:39 2023  -Checking if  0 <=N<= 2147483647  ...
+    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad N.
+    Sun Jul 16 15:24:39 2023  -Checking if  0 <EAF< 1  ...
+    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad EAF.
+    Sun Jul 16 15:24:39 2023  -Checking if  0 <=MAC<= 2147483647  ...
+    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad MAC.
+    Sun Jul 16 15:24:39 2023  -Checking if  5e-300 < P < 1.000001  ...
+    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad P.
+    Sun Jul 16 15:24:39 2023  -Checking if  -10 <BETA< 10  ...
+    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad BETA.
+    Sun Jul 16 15:24:39 2023  -Checking if  0 <SE< inf  ...
+    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad SE.
+    Sun Jul 16 15:24:39 2023  -Checking STATUS and converting STATUS to categories....
+    Sun Jul 16 15:24:40 2023  -Dropping 0 variants with NAs in the checked columns...
+    Sun Jul 16 15:24:40 2023  -Removed 0 variants with bad statistics in total.
+    Sun Jul 16 15:24:40 2023  -Data types for each column:
+    Sun Jul 16 15:24:40 2023  -Column: SNPID  CHR    POS   EA       NEA      EAF     BETA    SE      P       N     STATUS  
+    Sun Jul 16 15:24:40 2023  -DType : object string int64 category category float32 float32 float32 float64 Int32 category
+    Sun Jul 16 15:24:40 2023 Finished sanity check successfully!
     ```
 
 ## Remove duplicated or multiallelic variants

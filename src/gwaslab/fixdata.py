@@ -13,7 +13,7 @@ from gwaslab.Log import Log
 from gwaslab.CommonData import get_chr_to_number
 from gwaslab.CommonData import get_number_to_chr
 from gwaslab.CommonData import get_chr_list
-
+from gwaslab.datatype_check import check_datatype
 #fixID
 #rsidtochrpos
 #remove_dup
@@ -702,11 +702,11 @@ def sanitycheckstats(sumstats,
                      ncase=(0,2**31-1),
                      ncontrol=(0,2**31-1),
                      eaf=(0,1),
-                     mac=(0,float("Inf")),
+                     mac=(0,2**31-1),
                      chisq=(0,float("Inf")),
                      z=(-37.5,37.5),
                      f=(0,float("Inf")),
-                     p=(5e-300,1),
+                     p=(5e-300,1.000001),
                      mlog10p=(0,float("Inf")),
                      beta=(-10,10),
                      se=(0,float("Inf")),
@@ -716,7 +716,7 @@ def sanitycheckstats(sumstats,
                      HR=(-10,10),
                      HR_95L=(0,float("Inf")),
                      HR_95U=(0,float("Inf")),
-                     info=(0,float("Inf")),
+                     info=(0,1.000001),
                      verbose=True,
                      log=Log()):
     '''
@@ -729,11 +729,11 @@ def sanitycheckstats(sumstats,
         OR:     float32  , -10<log(OR)<10
         OR_95L: float32  , OR_95L>0
         OR_95U: float32  , OR_95L>0
-        INFO:   float32  , INFO>0
+        INFO:   float32  , 1>=INFO>0
     '''
     ## add direction
     if coltocheck is None:
-        coltocheck = ["P","MLOG10P","Z","BETA","SE","EAF","CHISQ","F","N","N_CASE","N_CONTROL","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","STATUS"]
+        coltocheck = ["P","MLOG10P","INFO","Z","BETA","SE","EAF","CHISQ","F","N","N_CASE","N_CONTROL","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","STATUS"]
     if verbose: log.write("Start sanity check for statistics ...") 
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     cols_to_check=[]
@@ -777,7 +777,7 @@ def sanitycheckstats(sumstats,
     pre_number=len(sumstats)    
     if "EAF" in coltocheck and "EAF" in sumstats.columns:
         cols_to_check.append("EAF")
-        if verbose: log.write(" -Checking if ",eaf[0],"<=EAF<=",eaf[1]," ...") 
+        if verbose: log.write(" -Checking if ",eaf[0],"<EAF<",eaf[1]," ...") 
         sumstats.loc[:,"EAF"] = pd.to_numeric(sumstats.loc[:,"EAF"], errors='coerce').astype("float32")
         sumstats = sumstats.loc[(sumstats["EAF"]>=eaf[0]) & (sumstats["EAF"]<=eaf[1]),:]
         after_number=len(sumstats)
@@ -788,10 +788,11 @@ def sanitycheckstats(sumstats,
         if verbose: log.write(" -Checking if ",mac[0],"<=MAC<=",mac[1]," ...") 
         sumstats["_MAF"]=sumstats["EAF"]
         sumstats.loc[sumstats["EAF"]>0.5,"_MAF"] = 1 - sumstats.loc[sumstats["EAF"]>0.5,"EAF"]
-        macl = (sumstats.loc[:,"_MAF"] * sumstats.loc[:,"N"] >= mac[0]) 
-        macu = (sumstats.loc[:,"_MAF"] * sumstats.loc[:,"N"] <= mac[1]) 
+        sumstats["_MAC"] = np.floor(pd.to_numeric(sumstats.loc[:,"_MAF"] * sumstats.loc[:,"N"], errors='coerce')).astype("int64")
+        macl = ( sumstats["_MAC"] >= mac[0]) 
+        macu = ( sumstats["_MAC"] <= mac[1]) 
         sumstats = sumstats.loc[macl&macu,:]
-        sumstats = sumstats.drop(labels="_MAF",axis=1)
+        sumstats = sumstats.drop(labels=["_MAF","_MAC"],axis=1)
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad MAC.") 
 
@@ -827,7 +828,7 @@ def sanitycheckstats(sumstats,
     pre_number=len(sumstats) 
     if "P" in coltocheck and "P" in sumstats.columns:
         cols_to_check.append("P")
-        if verbose: log.write(" -Checking if ",p[0],"<= P <=",p[1]," ...") 
+        if verbose: log.write(" -Checking if ",p[0],"< P <",p[1]," ...") 
         sumstats.loc[:,"P"] = pd.to_numeric(sumstats.loc[:,"P"], errors='coerce')
         sumstats = sumstats.loc[(sumstats["P"]>=p[0]) & (sumstats["P"]<=p[1]),:]
         after_number=len(sumstats)
@@ -914,20 +915,32 @@ def sanitycheckstats(sumstats,
         sumstats = sumstats.loc[(sumstats["HR_95U"]>HR_95U[0]) & (sumstats["HR_95U"]<HR_95U[1]),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad HR_95U.") 
-
+    #INFO #################################################################################################################
+    pre_number=len(sumstats)    
+    if "INFO" in coltocheck and "INFO" in sumstats.columns:
+        cols_to_check.append("INFO")
+        if verbose: log.write(" -Checking if ",info[0],"<INFO<",info[1]," ...") 
+        sumstats.loc[:,"INFO"] = pd.to_numeric(sumstats.loc[:,"INFO"], errors='coerce').astype("float32")
+        sumstats = sumstats.loc[(sumstats["INFO"]>=info[0]) & (sumstats["INFO"]<=info[1]),:]
+        after_number=len(sumstats)
+        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad INFO.") 
     ###STATUS ################################################################################################################################################
     pre_number=len(sumstats)    
     if "STATUS" in coltocheck and "STATUS" in sumstats.columns:
         cols_to_check.append("STATUS")
-        if verbose: log.write(" -Checking STATUS...") 
-        #sumstats["STATUS"] = sumstats["STATUS"].astype("Int64")
+        if verbose: log.write(" -Checking STATUS and converting STATUS to categories....") 
         categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
         sumstats.loc[:,"STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
-        if verbose: log.write(" -Coverting STAUTUS to interger.") 
     
+    pre_number=len(sumstats)  
     sumstats = sumstats.dropna(subset=cols_to_check)
     after_number=len(sumstats)
+    if verbose:log.write(" -Dropping {} variants with NAs in the checked columns...".format(pre_number - after_number))
+
     if verbose: log.write(" -Removed "+str(oringinal_number - after_number)+" variants with bad statistics in total.") 
+    if verbose:
+        log.write(" -Data types for each column:")
+        check_datatype(sumstats,verbose=verbose, log=log)
     if verbose: log.write("Finished sanity check successfully!")
     return sumstats
 

@@ -10,13 +10,13 @@ See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow
 | `.fix_id()`           | `fixchrpos=False`, <br/>`fixid=False`, <br/>`fixsep=False`,<br/>`overwrite=False`,<br/>`forcefixid=False` | check and  fix rsID or SNPID(chr:pos:ref:alt), or use snpid to fix CHR and POS |
 | `.fix_chr()`          | `remove=False`, `x=("X",23)`, `y=("Y",24)`, `mt=("MT",25)`, `chrom_list = gl.get_chr_list()` | standardize chromsome notation                                                 |
 | `.fix_pos()`          | `remove=False` , `limit=250000000`          | standardize basepair posituion notation and filter out bad values              |
-| `.fix_allele()`       | `remove=False`        | standardize base notation to ATCG                                              |
+| `.fix_allele()`       | `remove=False`        | standardize base notations to ATCG                                              |
 | `.normalize_allele()` | `n_cores=1`                                                  | normalize indels (only support ATA:AA -> AT:A but not -:T)                     |
 | `.sort_coordinate()`  |                                                              | sort the variant coordinates                                                   |
-| `.sort_column()`  |                                                              | sort the column order to GWASLab default                                                   |
-| `.basic_check()`  |                                                              | all-in-one function to perform the defaul pipeline                                             |
+| `.sort_column()`  |     `order`                                                         | sort the column order to GWASLab default                                                   |
+| `.basic_check()`  |                                                              | all-in-one function to perform the default pipeline                                             |
 
-## 1. IDs
+## 1. IDs - SNPID and rsID
 
 GWASLab requires at least one ID column for sumstats, either in the form of SNPID or rsID, (or both). GWASLab will automatically check if SNPID is mixed in rsID.
 
@@ -46,30 +46,32 @@ SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants are already alig
                     overwrite=False)
     ```
 
-## 2. CHR
+## 2. CHR - Chromosomes
 
 ```
-.fix_chr(
-    x=("X",23), 
-    y=("Y",24), 
-    mt=("MT",25),
-    chrom_list=gl.get_chr_list()
-)
+.fix_chr()
 ```
 
-CHR will be standardized to integers. 
+CHR will be standardized. 
 
-- `"x","y","mt"`: `tuple` , how to convert sex chromosomes. For examplem `x = ("X",23)`
-- `chrom_list` : `list` , vaild chromosome notations for filtering. Datatype should be `string` or `object`.
+- Prefixes like "chr" will be removed.
+- String datatype will be converted to integers.
+- Sex chromosome will be converted to integers.
+- Variants with unrecognized chromosome notations will be rmeoved. (notations not in `chrom_list`)
+- Variantsc with CHR<=0 will be removed. 
+
+Options:
+
+|`.fix_chr()` options|DataType|Description|Default|
+|-|-|-|-|
+|`x`|`tuple`|how to convert X chromosomes. For examplem `x = ("X",23)`|`("X",23)`|
+|`y`|`tuple`|how to convert Y chromosomes.|`("Y",24)`|
+|`mt`|`tuple`|how to convert Mitochondrial DNA.|`("MT",25)`|
+|`chrom_list`|`list`|vaild chromosome notations for filtering. Datatype should be `string`|`gl.get_chr_list()`|
 
 (by default) For human chromosomes, CHR will be converted to integers for autosomes, `23` for `X`, `24` for `Y`, and `25` for `MT`. 
 
-- `x=("X",23)` 
-- `y=("Y",24)`  
-- `mt=("MT",25)`
-
 For other species, you can change it like:
-
 - `x=("X",26)` 
 - `y=("Y",27)`  
 - `mt=("MT",28)`
@@ -77,27 +79,40 @@ For other species, you can change it like:
 
 !!! example
     ```python
-    sumstats.fix_chr(x=("X",23))
+    sumstats.fix_chr()
     ```
 
 !!! tip gl.get_chr_list()
-    Get a chromosome list for n autosomes and 'X', 'Y', 'M', 'MT. ("string" data type)
-    ```
+    Get a chromosome list for n autosomes plus 'X', 'Y', 'M', 'MT. (`string`` data type)
+    
+    ```python
+    gl.get_chr_list()
+    ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','X','Y','M','MT']
+
     gl.get_chr_list(n=10)
     ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'X', 'Y', 'M', 'MT']
     ```
 
-## 3. POS
+## 3. POS - Base-pair positions
 
-`.fix_pos()`
+```
+.fix_pos()
+```
 
-Values in POS must be positive integer numbers. Basepair position will be force converted to integers. Invalid pos will be converted to NA. 
+Check and fix values in POS.
 
-`limit=250000000` : After conversion, GWASLab will also sanity check if POS is in the range of 1 to 250,000,000. (the longest chromosome, CHR1, is around 250,000,000bp long)  
+- Values in POS must be positive integer numbers. 
+- Basepair position will be force converted to integers. 
+- Invalid POS values will be converted to NA. 
+- POS outliers will be removed.
+
+|`.fix_pos()` options|DataType|Description|Default|
+|-|-|-|-|
+|`limit`|`integer`|After conversion, GWASLab will also perform a sanity check for POS (if is in the range of 1 to 250,000,000). (The longest chromosome for human, namely chromosome 1, is less than 250,000,000bp long) |`250000000`|
 
 !!! example
     ```python
-    sumstats.fix_pos(remove=False, limit=250000000)
+    sumstats.fix_pos()
     ```
 
 ## 4. Allele
@@ -108,12 +123,12 @@ Values in POS must be positive integer numbers. Basepair position will be force 
 
 - Currently, GWASLab only supports processing SNPs and INDELs. 
 - All alleles will be checked if containing letters other than `A`,`T`,`C`,`G`.
-- Copy number variant (CNV) like `<CN0>` won't be recognized.
+- Copy number variants (CNV) like `<CN0>` won't be recognized.
 - Lower cases will be converted to UPPERCASES.
 
 !!! example
     ```python
-    sumstats.fix_allele(remove=False)
+    sumstats.fix_allele()
     ```
 
 ### 4.2 Variant Normalization
@@ -122,13 +137,15 @@ Values in POS must be positive integer numbers. Basepair position will be force 
 
 Alleles will be normalized according to the left alignment and parsimony principle. For example, chr1:123456:ATG:AT will be normalized to chr1:123457:TG:T.
 
-`n_cores`: threads to use for normalization.
+|`.normalize_allele()` options|DataType|Description|Default|
+|-|-|-|-|
+|`n_cores`|`integer`|threads to use for normalization.|`1`| 
 
-!!! note
-    Currently, the normalization is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing information needs to be obtained from a reference genome.  
+!!! warning
+    Currently, the normalization is implemented without checking reference, which means it can not normalize variants like chr1:123456:G:- if the missing allele information needs to be obtained from a reference genome.  
     
-!!! quote
-    For details on variant normalization, please check: [https://genome.sph.umich.edu/wiki/Variant_Normalization](https://genome.sph.umich.edu/wiki/Variant_Normalization) )
+!!! quote "Variant Normalization"
+    For details on variant normalization, please check: [https://genome.sph.umich.edu/wiki/Variant_Normalization](https://genome.sph.umich.edu/wiki/Variant_Normalization)
 
 !!! example
 
@@ -145,7 +162,7 @@ Alleles will be normalized according to the left alignment and parsimony princip
     <img width="345" alt="image" src="https://user-images.githubusercontent.com/40289485/212256576-7808a1ec-5cf2-42ec-819e-a6f1c9c200bb.png">
     
 
-## 5. Coordinate sorting
+## 5. Genome coordinate sorting
 
 Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.
 
@@ -156,9 +173,13 @@ Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.
 
 ## 6. Column sorting
 
-The default column order is `"SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "BETA", "SE", "Z",  "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U", "INFO", "N","DIRECTION","STATUS" and other additional columns`.
+```
+.sort_column()
+```
 
-`order`:`list` , column order.
+|`.sort_column()` options|DataType|Description|Default|
+|-|-|-|-|
+|`order`|`list`|sort the columns|The default column order is `"SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "MAF", "BETA", "SE","BETA_95L","BETA_95U", "Z", "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U","HR", "HR_95L", "HR_95U","INFO", "N","N_CASE","N_CONTROL","DIRECTION","I2","P_HET","DOF","SNPR2","STATUS"` and other additional columns.| 
 
 !!! example
     ```python
@@ -175,12 +196,28 @@ Fix data without dropping any variant.
 !!! note "`basic_check()` pipeline"
     
     - fix_id()
+    - remove_dup()
     - fix_chr()
     - fix_pos()
     - fix_allele()
     - normalize_allele()
+    - check_sanity()  
     - sort_coordinate()
     - sort_column()
+
+For `remove_dup()` and `check_sanity()`, please check [QC and filtering](https://cloufield.github.io/gwaslab/QC%26Filtering/)
+
+|`.basic_check()` options|DataType|Description|Default|
+|-|-|-|-|
+|`remove`|`boolean`|if True, remove duplicate and multi-allelic variants|`False`| 
+|`removedup_args`|`dict`|options for remove_dup()| `{}`| 
+|`fixid_args`|`dict`|options for `.fix_id()`|`{}`| 
+|`fixchr_agrs`|`dict`|options for `.fix_chr()`|`{}`| 
+|`fixpos_args`|`dict`|options for `.fix_pos()`|`{}`| 
+|`fixallele_args`|`dict`|options for `.fix_allele()`|`{}`| 
+|`sanitycheckstats_args`|`dict`|options for `.check_sanity()`|`{}`|
+|`normalizeallele_args`|`dict`|options for `.normalize_allele()` |`{}`| 
+|`verbose`|`boolean`|if True, print log|`True`| 
 
 ## Example
 Please check [https://cloufield.github.io/gwaslab/standardization_workflow/](https://cloufield.github.io/gwaslab/standardization_workflow/)
