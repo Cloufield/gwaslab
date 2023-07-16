@@ -536,8 +536,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#1-reference-data" class="md-nav__link">
+    1. Reference data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-usage" class="md-nav__link">
+    2. Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-example" class="md-nav__link">
+    3. Example
   </a>
   
 </li>
@@ -994,8 +1008,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#1-reference-data" class="md-nav__link">
+    1. Reference data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-usage" class="md-nav__link">
+    2. Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-example" class="md-nav__link">
+    3. Example
   </a>
   
 </li>
@@ -1016,6 +1044,7 @@
 
 <h1 id="assigning-chrpos">Assigning CHR/POS</h1>
 <p>GWASLab can update CHR/POS using a pre-processed SNPID-rsID table to assign CHR and POS based on rsID. Currently, only variants in 1KG phase3v5 are supported.  </p>
+<h2 id="1-reference-data">1. Reference data</h2>
 <p>GWASLab provides a download function <code>gl.download_ref()</code> and two curated tables which contains ~80M 1KG variants:</p>
 <ul>
 <li><code>hg19</code> : <code>gl.download_ref("1kg_dbsnp151_hg19_auto")</code></li>
@@ -1037,13 +1066,14 @@ SNPID   rsID    CHR     POS     NEA     EA
 1:10616:CCGCCGTTGCAAAGGCGCGCCG:C        rs376342519     1       10616   CCGCCGTTGCAAAGGCGCGCCG  C
 </code></pre></div>
 </div>
-<h2 id="usage">Usage</h2>
+<h2 id="2-usage">2. Usage</h2>
 <div class="highlight"><pre><span></span><code># if not downloaded yet :
 # gl.download_ref(&quot;1kg_dbsnp151_hg19_auto&quot;)
 
 # assign chr and pos using rsID
 mysumstats.rsid_to_chrpos( path = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;))
 </code></pre></div>
+<h2 id="3-example">3. Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Assign CHR and POS using rsID</p>
 <div class="highlight"><pre><span></span><code>mysumstats.data
