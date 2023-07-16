@@ -9,4 +9,10 @@ height: auto;
 
 .md-typeset table:not([class]) {
     display: table;
+    font-size: 0.4rem;
+}
+
+
+.md-typeset body {
+    font-size: 0.4rem;
 }
