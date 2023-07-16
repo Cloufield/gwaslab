@@ -1213,7 +1213,7 @@
 <li><code>SNPID</code> : it could be user-provided IDs, or in <code>CHR:POS:REF:ALT</code> format, delimiters can be <code>":"</code>,<code>"_"</code> or <code>"-"</code>.</li>
 <li><code>rsID</code>: dbSNP rsIDs</li>
 </ul>
-<p>GWASLab will check if the IDs is valid SNPID or rsID.  It can also extract CHR and POS information from the <code>CHR:POS:REF:ALT</code> formatted IDs using <code>.fix_id()</code> method.</p>
+<p>GWASLab will check if the IDs are valid SNPID or rsID.  It can also extract CHR and POS information from the <code>CHR:POS:REF:ALT</code> formatted IDs using <code>.fix_id()</code> method.</p>
 <p>SNPID will be fixed by <code>CHR:POS:NEA:EA</code>  only when the variants are already aligned with the reference genome. Otherwise, a temporary SNPID in the format of <code>CHR:POS</code> will be assigned.</p>
 <p><code>.fix_id()</code>: check or fix SNPID and rsID.   </p>
 <table>
@@ -1268,9 +1268,9 @@
 <ul>
 <li>Prefixes like "chr" will be removed.</li>
 <li>String datatype will be converted to integers.</li>
-<li>Sex chromosome will be converted to integers.</li>
-<li>Variants with unrecognized chromosome notations will be rmeoved. (notations not in <code>chrom_list</code>)</li>
-<li>Variantsc with CHR&lt;=0 will be removed. </li>
+<li>Sex chromosomes will be converted to integers.</li>
+<li>Variants with unrecognized chromosome notations will be removed. (notations not in <code>chrom_list</code>)</li>
+<li>Variants with CHR&lt;=0 will be removed. </li>
 </ul>
 <p>Options:</p>
 <table>
