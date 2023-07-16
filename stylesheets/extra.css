@@ -44,10 +44,10 @@ height: auto;
     margin-block-start: 0.7em;
     margin-block-end: 0.7em;
 }
-
-.md-typeset p > code {
+.md-typeset code {
     color: #E33D70;
-  }
+    background-color: var(--md-code-bg-color);
+}
 
 .md-typeset table:not([class]) {
     display: table;
