@@ -481,8 +481,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#loading-by-specifying-columns_1" class="md-nav__link">
-    Loading by specifying columns
+  <a href="#loading-by-specifying-format" class="md-nav__link">
+    Loading by specifying format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load-sumstats-with-auto-mode" class="md-nav__link">
+    Load sumstats with auto mode
   </a>
   
 </li>
@@ -1099,8 +1106,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#loading-by-specifying-columns_1" class="md-nav__link">
-    Loading by specifying columns
+  <a href="#loading-by-specifying-format" class="md-nav__link">
+    Loading by specifying format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load-sumstats-with-auto-mode" class="md-nav__link">
+    Load sumstats with auto mode
   </a>
   
 </li>
@@ -1488,9 +1502,8 @@ All other columns and options are optional.</p>
              n=&quot;N&quot;)
 </code></pre></div>
 </div>
-<h3 id="loading-by-specifying-columns_1">Loading by specifying columns</h3>
+<h3 id="loading-by-specifying-format">Loading by specifying format</h3>
 <p>GWASLab supports common sumstats formats and you can load sumstats by specifying <code>fmt</code>.  </p>
-<p>GWASLab also provides an auto mode (<code>fmt="auto"</code>; available since v3.4.21) which assumes A1 or alternative allele (ALT) is the effect allele (EA) and Frq refers to the allele frequency of effect allele (EAF). You can find the conversion table <a href="https://github.com/Cloufield/formatbook/blob/main/formats/auto.json">here</a></p>
 <div class="admonition info formatbook">
 <p class="admonition-title">Info</p>
 <p>GWASLab uses a manually curated format conversion dictionary in <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></p>
@@ -1516,6 +1529,13 @@ All other columns and options are optional.</p>
 <div class="admonition example">
 <p class="admonition-title">Load sumstats by simply specifying the format</p>
 <div class="highlight"><pre><span></span><code>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, fmt=&quot;saige&quot;)
+</code></pre></div>
+</div>
+<h3 id="load-sumstats-with-auto-mode">Load sumstats with <code>auto</code> mode</h3>
+<p>GWASLab also provides an auto mode (<code>fmt="auto"</code>; available since v3.4.21) which assumes A1 or alternative allele (ALT) is the effect allele (EA) and Frq refers to the allele frequency of effect allele (EAF). Common headers will be detected. You can find the conversion table <a href="https://github.com/Cloufield/formatbook/blob/main/formats/auto.json">here</a></p>
+<div class="admonition example">
+<p class="admonition-title">Load sumstats with auto mode</p>
+<div class="highlight"><pre><span></span><code>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, fmt=&quot;auto&quot;)
 </code></pre></div>
 </div>
 <h3 id="loading-sumstats-from-chromosome-separated-files">Loading sumstats from chromosome-separated files</h3>
