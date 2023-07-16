@@ -3,8 +3,8 @@ max-width:700px;
 height: auto;
 }
 
-.md-typeset {
-    font-size: px2rem(12px);
+.md-typeset body {
+    font-size: px2rem(10px);
  }
 
 .md-typeset__table {
@@ -14,7 +14,6 @@ height: auto;
 .md-typeset table:not([class]) {
     display: table;
     font-size: px2rem(11px);
-    padding: 0% 0%;
 }
 
 .md-typeset td {
