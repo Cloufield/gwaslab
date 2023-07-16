@@ -1,9 +1,7 @@
 # Standardization and Normalization
 After loading raw sumstats into gwaslab.Sumstats Object, the first thing we probably want to do is to standardize the variant-related notations, normalize the indels and check if there are any unexpected errors in the statistics. When checking is finished, the status code will be automatically changed.
 
-See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow/).
-
-## Methods Summary
+## 1. Methods Summary
 
 | Sumstats Methods      | Options                                                      | Description                                                                    |
 | --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
@@ -16,14 +14,14 @@ See examples [here](https://cloufield.github.io/gwaslab/standardization_workflow
 | `.sort_column()`  |     `order`                                                         | sort the column order to GWASLab default                                                   |
 | `.basic_check()`  |                                                              | all-in-one function to perform the default pipeline                                             |
 
-## 1. IDs - SNPID and rsID
+## 2. IDs - SNPID and rsID
 
 GWASLab requires at least one ID column for sumstats, either in the form of SNPID or rsID, (or both). GWASLab will automatically check if SNPID is mixed in rsID.
 
 - `SNPID` : it could be user-provided IDs, or in `CHR:POS:REF:ALT` format, delimiters can be `":"`,`"_"` or `"-"`.
 - `rsID`: dbSNP rsIDs
 
-GWASLab will check if the IDs is valid SNPID or rsID.  It can also extract CHR and POS information from the `CHR:POS:REF:ALT` formatted IDs using `.fix_id()` method.
+GWASLab will check if the IDs are valid SNPID or rsID.  It can also extract CHR and POS information from the `CHR:POS:REF:ALT` formatted IDs using `.fix_id()` method.
 
 SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants are already aligned with the reference genome. Otherwise, a temporary SNPID in the format of `CHR:POS` will be assigned.
 
@@ -46,7 +44,7 @@ SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants are already alig
                     overwrite=False)
     ```
 
-## 2. CHR - Chromosomes
+## 3. CHR - Chromosomes
 
 ```
 .fix_chr()
@@ -56,9 +54,9 @@ CHR will be standardized.
 
 - Prefixes like "chr" will be removed.
 - String datatype will be converted to integers.
-- Sex chromosome will be converted to integers.
-- Variants with unrecognized chromosome notations will be rmeoved. (notations not in `chrom_list`)
-- Variantsc with CHR<=0 will be removed. 
+- Sex chromosomes will be converted to integers.
+- Variants with unrecognized chromosome notations will be removed. (notations not in `chrom_list`)
+- Variants with CHR<=0 will be removed. 
 
 Options:
 
@@ -93,7 +91,7 @@ For other species, you can change it like:
     ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'X', 'Y', 'M', 'MT']
     ```
 
-## 3. POS - Base-pair positions
+## 4. POS - Base-pair positions
 
 ```
 .fix_pos()
@@ -115,9 +113,9 @@ Check and fix values in POS.
     sumstats.fix_pos()
     ```
 
-## 4. Allele
+## 5. Allele
 
-### 4.1 Allele notation Standardization
+### 5.1 Allele notation Standardization
 
 `.fix_allele()`
 
@@ -131,7 +129,7 @@ Check and fix values in POS.
     sumstats.fix_allele()
     ```
 
-### 4.2 Variant Normalization
+### 5.2 Variant Normalization
 
 `.normalize_allele()`
 
@@ -162,7 +160,7 @@ Alleles will be normalized according to the left alignment and parsimony princip
     <img width="345" alt="image" src="https://user-images.githubusercontent.com/40289485/212256576-7808a1ec-5cf2-42ec-819e-a6f1c9c200bb.png">
     
 
-## 5. Genome coordinate sorting
+## 6. Genome coordinate sorting
 
 Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.
 
@@ -171,7 +169,7 @@ Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.
     sumstats.sort_coordinate()
     ```
 
-## 6. Column sorting
+## 7. Column sorting
 
 ```
 .sort_column()
@@ -186,7 +184,7 @@ Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.
     sumstats.sort_column()
     ```
 
-## 7. All-in-one `.basic_check()`
+## 8. All-in-one `.basic_check()`
 
 ```
 .basic_check()

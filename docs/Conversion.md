@@ -86,6 +86,3 @@ mysumstats.fill_data(
     Wed Oct 19 10:13:32 2022   - Filling MLOG10P using P column...
     Wed Oct 19 10:13:38 2022 Finished filling data using existing columns.
     ```
-
-For more examples:
-[Utility_data_conversion](https://github.com/Cloufield/gwaslab/blob/main/examples/Utility_data_conversion.ipynb)

@@ -2,9 +2,7 @@
 
 GWASLab provides reference-dependent harmonization functions.
 
-See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/)
-
-## Methods summary
+## 1. Methods summary
 
 | Sumstats Methods| Options| Description |
 |-|-|-|
@@ -15,7 +13,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/
 | `.flip_allele_stats()` |                                                       | After alignment and inferring, flip the alleles to harmonise the variants. |
 |`.harmonize()`|`basic_check=True`, <br /> `ref_seq=None`,<br />`ref_rsid_tsv=None`,<br />`ref_rsid_vcf=None`,<br />`ref_infer=None`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`n_cores=1`,<br />`remove=False`,<br />`checkref_args={}`,<br />`removedup_args={}`,<br />`assignrsid_args={}`,<br />`inferstrand_args={}`,<br />`flipallelestats_args={}`,<br />`fixid_args={}`,<br />`fixchr_agrs={}`,<br />`fixpos_args={}`,<br />`fixallele_args={}`,<br />`sanitycheckstats_args={}`,<br />`normalizeallele_args={}` |all-in-one function for harmonization|
 
-## Align NEA with REF in the reference genome
+## 2. Align NEA with REF in the reference genome
 
 `.check_ref()`:  Check if NEA is aligned with the reference sequence. After checking, the tracking status code will be changed accordingly. 
 
@@ -27,7 +25,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/
 !!! note
     `check_ref()` only change the status code. Use [flip function](#flipping-based-on-status-code) `.flip_allele_stats()` to flip the allele-specific stats.
 
-## Assign rsID according to CHR, POS, REF/ALT
+## 3. Assign rsID according to CHR, POS, REF/ALT
 
 `.assign_rsid()` : Annotated variants with rsID using a reference tsv file (1KG variants) and reference vcf file (tabix indexed, entire dbSNP).
 
@@ -39,7 +37,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/
 - For tsv file, variants will be matched using SNPID (CHR:POS:NEA:EA) for quick assigning.
 - For VCF file, GWASLab will first extract all variants in the reference file with matching CHR and POS. And then compare EA/NEA in sumstats with REF/ALT in reference vcf. When matching, it will annotate the variant in sumstats with the matching rsID in reference vcf.  
 
-## Check panlidromic SNPs or undistingushable Indels
+## 4. Check palindromic SNPs or indistinguishable Indels
 
 `.infer_strand()`:
 
@@ -56,9 +54,9 @@ See examples [here.](https://cloufield.github.io/gwaslab/harmonization_workflow/
     `infer_strand()` only change the status code. Use [filp function](#flipping-based-on-status-code) `.flip_allele_stats()` to filp the allele-specific stats.
 
 
-## Check the difference in allele frequency
+## 5. Check the difference in allele frequency
 
-`.check_daf()` : check the allele frequency discrepancy with a reference vcf. Please make sure your sumstats are already harmonized, and the variants in reference VCF are also aligned. gwaslab will retrieve infomation only for matched variants (CHR, POS, EA-ALT, and NEA-REF).
+`.check_daf()` : check the allele frequency discrepancy with a reference vcf. Please make sure your sumstats are already harmonized, and the variants in reference VCF are also aligned. gwaslab will retrieve information only for matched variants (CHR, POS, EA-ALT, and NEA-REF).
 
 `ref_infer`: reference VCF file path.
 `ref_alt_freq`:  allele frequency for ALT in the INFO field of reference VCF file.
@@ -77,7 +75,7 @@ RAF: Reference ALT allele frequency
 
 You may want to check the allele frequency discrepancy with a reference VCF. Just specify the path and the right allele frequency for your target ancestry in INFO field.
 
-## Allele frequency correlation plot
+## 6. Allele frequency correlation plot
 
 GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in DAF column. DAF can then be used for plotting (`.plot_daf()`) or filter variants.
 
@@ -87,7 +85,7 @@ GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in D
     ```
 ![image](https://github.com/Cloufield/gwaslab/assets/40289485/0c607470-bbb6-4f11-93fe-038a53f6eebb)
 
-## Flipping based on status code
+## 7. Flipping based on status code
 
 `.flip_allele_stats()` :  Flip allele-specific statistics to harmonize the variants based on the tracking status code. 
 
@@ -101,7 +99,7 @@ GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in D
     ```
 
 
-## Assign CHR and POS according to rsID and reference data
+## 8. Assign CHR and POS according to rsID and reference data
 
 ```python
 mysumstats.rsid_to_chrpos()  

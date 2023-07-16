@@ -2,19 +2,19 @@
 
 GWASLab uses a two-step strategy (both steps are optional).
 
-- For quick annotation, GWASLab iterates over a SNPID-rsID table and assign rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats. GWASLab provides a curated table  (1KG autosome variants). 
-- For full annotation, GWASLab will query a large reference VCF file (dbSNP for example, >20GB ) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EN/NEA matches.
+- For quick annotation, GWASLab iterates over a SNPID-rsID table and assigns rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats. GWASLab provides a curated table  (1KG autosome variants). 
+- For full annotation, GWASLab will query a large reference VCF file (dbSNP for example, >20GB ) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EN/NEA match.
 
-## Reference data
+## 1. Reference data
 
-### SNPID-rsID table
+### 1.1 SNPID-rsID table
 
 GWASLab provides a download function `gl.download_ref()` and two curated tables which contains ~80M 1KG variants:
 
 - `hg19` : `gl.download_ref("1kg_dbsnp151_hg19_auto")`
 - `hg38` : `gl.download_ref("1kg_dbsnp151_hg38_auto")`
 
-### VCF file
+### 1.2 VCF file
 
 You can download this from dbSNP:
 
@@ -59,7 +59,7 @@ You can download this from dbSNP:
     NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=1639545200;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
     ```
 
-## Usage
+## 2. Usage
 
 ```
 mysumstats.basic_check()
@@ -69,76 +69,29 @@ mysumstats.assign_rsid(
                         chr_dict = gl.get_number_to_NC(build="19"),
                         n_cores = 2)
 ```
-!!! note
-    Please always run `.basic_check()` first. This will convert the data to right data type, standardize and normalize the sumstats.
+!!! info
+    Please always run `.basic_check()` first. This will convert the data to right data type in most cases, and standardize and normalize the sumstats.
 
-## Options
+## 3. Options
 
-- `ref_rsid_tsv` : tsv file for annotation of common used variants. Using SNPID (like 1:725932:G:A)
-- `ref_rsid_vcf` : vcf file for annotation of other variants.
-- `chr_dict`: a dictionary for to convert 1-25 to CHR in vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries.   `gl.get_number_to_NC(build="19")` and `gl.get_number_to_NC(build="19")`
-- `n_cores`: number of cores to use.
-
+|`.assign_rsid()` options|DataType|Description|Default|
+|-|-|-|-|
+|`ref_rsid_tsv`|`string`|tsv file path for annotation of commonly used variants using SNPID (like 1:725932:G:A) as key.|-|
+| `ref_rsid_vcf`|`string`|vcf file path for annotation of other variants. .tbi file is also needed.|-|
+|`chr_dict`|`dict`|a dictionary for converting 1-25 to CHR in the vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries.   `gl.get_number_to_NC(build="19")` and `gl.get_number_to_NC(build="19")` |-|
+|`n_cores`|`int`|number of cores to use.|`1`|
 
 !!! note "Conversion for RefSeq sequence"
 
     ```
     gl.get_number_to_NC(build="19")
-    {1: 'NC_000001.10',
-     2: 'NC_000002.11',
-     3: 'NC_000003.11',
-     4: 'NC_000004.11',
-     5: 'NC_000005.9',
-     6: 'NC_000006.11',
-     7: 'NC_000007.13',
-     8: 'NC_000008.10',
-     9: 'NC_000009.11',
-     10: 'NC_000010.10',
-     11: 'NC_000011.9',
-     12: 'NC_000012.11',
-     13: 'NC_000013.10',
-     14: 'NC_000014.8',
-     15: 'NC_000015.9',
-     16: 'NC_000016.9',
-     17: 'NC_000017.10',
-     18: 'NC_000018.9',
-     19: 'NC_000019.9',
-     20: 'NC_000020.10',
-     21: 'NC_000021.8',
-     22: 'NC_000022.10',
-     23: 'NC_000023.10',
-     24: 'NC_000024.9',
-     25: 'NC_012920.1'}
+    {1: 'NC_000001.10',2: 'NC_000002.11',3: 'NC_000003.11', 4: 'NC_000004.11', 5: 'NC_000005.9', 6: 'NC_000006.11', 7: 'NC_000007.13', 8: 'NC_000008.10', 9: 'NC_000009.11', 10: 'NC_000010.10', 11: 'NC_000011.9', 12: 'NC_000012.11', 13: 'NC_000013.10', 14: 'NC_000014.8', 15: 'NC_000015.9', 16: 'NC_000016.9', 17: 'NC_000017.10', 18: 'NC_000018.9', 19: 'NC_000019.9', 20: 'NC_000020.10', 21: 'NC_000021.8', 22: 'NC_000022.10', 23: 'NC_000023.10', 24: 'NC_000024.9', 25: 'NC_012920.1'}
 
     gl.get_number_to_NC(build="19")
-    {1: 'NC_000001.11',
-     2: 'NC_000002.12',
-     3: 'NC_000003.12',
-     4: 'NC_000004.12',
-     5: 'NC_000005.10',
-     6: 'NC_000006.12',
-     7: 'NC_000007.14',
-     8: 'NC_000008.11',
-     9: 'NC_000009.12',
-     10: 'NC_000010.11',
-     11: 'NC_000011.10',
-     12: 'NC_000012.12',
-     13: 'NC_000013.11',
-     14: 'NC_000014.9',
-     15: 'NC_000015.10',
-     16: 'NC_000016.10',
-     17: 'NC_000017.11',
-     18: 'NC_000018.10',
-     19: 'NC_000019.10',
-     20: 'NC_000020.11',
-     21: 'NC_000021.9',
-     22: 'NC_000022.11',
-     23: 'NC_000023.11',
-     24: 'NC_000024.1',
-     25: 'NC_012920.1'}
+    {1: 'NC_000001.11',2: 'NC_000002.12',3: 'NC_000003.12',4: 'NC_000004.12',5: 'NC_000005.10',6: 'NC_000006.12',7: 'NC_000007.14',8: 'NC_000008.11',9: 'NC_000009.12',10: 'NC_000010.11',11: 'NC_000011.10',12: 'NC_000012.12',13: 'NC_000013.11',14: 'NC_000014.9',15: 'NC_000015.10',16: 'NC_000016.10',17: 'NC_000017.11',18: 'NC_000018.10',19: 'NC_000019.10',20: 'NC_000020.11',21: 'NC_000021.9',22: 'NC_000022.11',23: 'NC_000023.11',24: 'NC_000024.1',25: 'NC_012920.1'}
     ```
 
-## Example
+## 4. Example
 !!! example
     ```
     # download ref SNPID-rsID table first

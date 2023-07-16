@@ -2,6 +2,8 @@
 
 GWASLab can update CHR/POS using a pre-processed SNPID-rsID table to assign CHR and POS based on rsID. Currently, only variants in 1KG phase3v5 are supported.  
 
+
+## 1. Reference data
 GWASLab provides a download function `gl.download_ref()` and two curated tables which contains ~80M 1KG variants:
 
 - `hg19` : `gl.download_ref("1kg_dbsnp151_hg19_auto")`
@@ -24,7 +26,7 @@ GWASLab provides a download function `gl.download_ref()` and two curated tables 
     1:10616:CCGCCGTTGCAAAGGCGCGCCG:C        rs376342519     1       10616   CCGCCGTTGCAAAGGCGCGCCG  C
     ```
 
-## Usage
+## 2. Usage
 
 ```
 # if not downloaded yet :
@@ -33,6 +35,9 @@ GWASLab provides a download function `gl.download_ref()` and two curated tables 
 # assign chr and pos using rsID
 mysumstats.rsid_to_chrpos( path = gl.get_path("1kg_dbsnp151_hg19_auto"))
 ```
+
+
+## 3. Example 
 
 !!! example "Assign CHR and POS using rsID"
 

@@ -1,9 +1,7 @@
 # QC and filtering
-GWASLab provides all-in-one function and customizable functions for sumstats QC and filtering.
+GWASLab provides all-in-one functions and customizable functions for sumstats QC and filtering.
 
-See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_filtering/)
-
-## Methods Summary
+## 1. Methods Summary
 
 | Sumstats Methods  | Options                  | Description                                                             |
 | ----------------- | ------------------------ | ----------------------------------------------------------------------- |
@@ -13,8 +11,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
 | `.filter_region_in()`   | `path` , <br/> `inplace=True` , <br/>`high_ld=False`, <br/> `build="19"`                         |      filter in variants in the specified region define by a bed file                                                                   |
 | `.filter_region_out()`   | `path` , <br/> `inplace=True` , <br/>`high_ld=False`, <br/> `build="19"`                        |      filter out variants in the specified region define by a bed file                                                                  |
 
-
-## Statistics Sanity Check
+## 2. Statistics Sanity Check
 
 `.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected ranges`.
 
@@ -64,7 +61,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/quality_control_and_fil
     Sun Jul 16 15:24:40 2023 Finished sanity check successfully!
     ```
 
-## Remove duplicated or multiallelic variants
+## 3. Remove duplicated or multiallelic variants
 
 After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using
 
@@ -116,7 +113,7 @@ After standardizing and normalizing the sumstats, you can also remove duplicated
     <img width="525" alt="image" src="https://user-images.githubusercontent.com/40289485/212274043-fe37a99e-1fed-4340-944a-e731126e51f3.png">
 
 
-## Filtering by condition
+## 4. Filtering by condition
 
 Filter the sumstats by `expr` (a wrapper of `pandas.DataFrame.query`), and return a new Sumstats Object by default. This allows method chaining. For example, you can filter certain variants first and then create a Mahanttan plot like `mysumstats.filter_value('BETA<0 & CHR==1').plot_mqq()`.
 
@@ -160,7 +157,7 @@ Filter the sumstats by `expr` (a wrapper of `pandas.DataFrame.query`), and retur
     ![image](https://user-images.githubusercontent.com/40289485/211584317-6c1583b5-53e4-4aae-9141-af5781e2439b.png)
  
 
-## Filtering regions
+## 5. Filtering regions
 
 ```
 .filter_region_in(path="./abc.bed")
@@ -178,7 +175,7 @@ filter variants in certain regions defined in bed files.
     mysumstats.filter_region_out(high_ld=True,inplace=False).data
     ```
    
-## filter_in & filter_out (deprecated)
+## 6. filter_in & filter_out (deprecated)
 
 ```python
 .filter_in(gt={},lt={},eq={},inplace=False)

@@ -2,9 +2,7 @@
 
 GWASLab can directly liftover the positions of variants in sumstats.
 
-See examples [here.](https://cloufield.github.io/gwaslab/harmonization_liftover/)
-
-## Usage
+## 1. Usage
 
 ```
 mysumstats.liftover(n_cores=3, 
@@ -16,20 +14,19 @@ mysumstats.liftover(n_cores=3,
 !!! note
     GWASLab will only liftover basepair positions. If needed, please perform harmonization using the reference file of the target build.  
 
+## 2. Options
 
-## Options
-
-- `n_cores` : `Interger`. Number of threads to use for liftover.
-- `from_build` : `"19"` or `"38"`. Original genome build.
-- `to_build` : `"19"` or `"38"`. Target genome build.
-- `remove` : `Boolean`. If True, remove unmapped variants
-
-
+|`.liftover()` options|DataType|Description|Default|
+|-|-|-|-|
+|`n_cores`|`interger`|Number of threads to use for liftover.|`1`|
+|`from_build`|`"19"` or `"38"`|Original genome build|-|
+|`to_build`|`"19"` or `"38"`|Target genome build|-|
+|`remove`|`boolean`|If True, remove unmapped variants|`True`|
 
 !!! quote
     This method is based on [GitHub - jeremymcrae/liftover: liftover for python, made fast with cython](https://github.com/jeremymcrae/liftover)
 
-## example
+## 3. Example
 
 !!!example
     ```

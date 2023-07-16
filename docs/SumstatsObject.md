@@ -2,9 +2,9 @@
 
 In GWASLab, sumstats were stored in a `Sumstats Object`, which is built on `pandas Dataframe`. All other functions are designed as methods of this Sumstats Object. 
 
-To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statistics from a pandas DataFrame or specifying a file path. All raw data will be loaded as `"string"` datatype. 
+To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statistics from a pandas DataFrame or specify a file path. All raw data will be loaded as `"string"` datatype. 
 
-## Usage
+## 1. Usage
 
 ```python
 mysumstats = gl.Sumstats(
@@ -20,13 +20,13 @@ mysumstats = gl.Sumstats(
 )
 ```
 
-## Parameters
+## 2. Loading options
 
 `sumstats`: either a file path `string` or a pandas `DataFrame`
 
 Currently, GWASLab supports the following columns:
 
-|Option|DataType|Description|Header in gwaslab|
+|Option|DataType|Description|Header in GWASLab|
 |-|-|-|-|
 |`snpid`|`string`|variant ID column name, preferably in chr:pos:ea:nea format.|`SNPID`|
 |`rsid`|`string`|dbSNP rsID column name|`rsID`|
@@ -34,7 +34,7 @@ Currently, GWASLab supports the following columns:
 The minimum required columns are just either `rsid `or `snpid`. 
 All other columns and options are optional.
 
-|Option|DataType|Description|Header in gwaslab|
+|Option|DataType|Description|Header in GWASLab|
 |-|-|-|-|
 |`fmt`|`string`|input sumstats format. For formats supported by GWASLab, please check [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)|-|
 |`chrom`|`string`|chromosome column name|`CHR`|
@@ -63,9 +63,9 @@ All other columns and options are optional.
 |`build`|`string`|genome build. `19` for hg19, `38` for hg38 and `99` for unknown.|The first two digits of `STATUS`|
 |`**arg `|`string`|additional parameters for [pd.read_table()](https://pandas.pydata.org/docs/reference/api/pandas.read_table.html) function. Some common options include : `sep`,`nrows`, `skiprows` and `na_values`.|-|
 
-Other columns gwaslab uses (these will be implemented soon)
+Other columns GWASLab uses (these will be implemented soon)
 
-|Option|DataType|Description|Header in gwaslab|
+|Option|DataType|Description|Header in GWASLab|
 |-|-|-|-|
 |`ncontrol`|`string` or `integer`|sample size column name for controls or just input a single `integer` as sample size for all variants|`N_CONTROL`|
 |`ncase`|`string` or `integer`|sample size column name for cases or just input a single `integer` as sample size for all variants|`N_CASE`|
@@ -81,7 +81,9 @@ Other columns gwaslab uses (these will be implemented soon)
 |`maf`|`string`|minor allele frequency column header|`MAF`|
 |`f`|`string`|F statistics column header|`F`|
 
-## Loading sumstats
+## 3 Loading sumstats
+
+### 3.1 Loading by specifying columns
 
 You can load the sumstats by specifying the columns like:
 
@@ -100,35 +102,48 @@ You can load the sumstats by specifying the columns like:
                  n="N")
     ```
 
-or just specify the sumstats format:
+### 3.2 Loading by specifying formats
+
+GWASLab supports common sumstats formats and you can load sumstats by specifying `fmt`.  
+    
+!!! info formatbook
+    GWASLab uses a manually curated format conversion dictionary in [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)
+
+    Supported formats:
+
+    |`Keyword`|`Description`|
+    |-|-|
+    |`ssf`|GWAS-SSF|
+    |`gwascatalog`|GWAS Catalog format|
+    |`pgscatalog` |PGS Catalog format|
+    |`plink`|PLINK output format|
+    |`plink2`|PLINK2 output format|
+    |`saige`|SAIGE output format|
+    |`regenie`|output format|
+    |`fastgwa`|output format|
+    |`metal`|output format|
+    |`mrmega`|output format|
+    |`fuma`|input format|
+    |`ldsc`|input format|
+    |`locuszoom`|input format|
+    |`vcf`|gwas-vcf format|
+    |`bolt_lmm`|output format|
 
 !!! example "Load sumstats by simply specifying the format"
     ```
     mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="saige")
     ```
-    
-!!! note formatbook
-    GWASLab uses a manually curated format conversion dictionary in [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)
 
-    Supported formats:
+### 3.3 Load sumstats with `auto` mode
+
+GWASLab also provides an auto mode (`fmt="auto"`; available since v3.4.21) which assumes A1 or alternative allele (ALT) is the effect allele (EA) and Frq refers to the allele frequency of effect allele (EAF). Common headers will be detected. You can find the conversion table [here](https://github.com/Cloufield/formatbook/blob/main/formats/auto.json)
+
+!!! example "Load sumstats with auto mode"
+    ```
+    mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="auto")
+    ```
     
-    * `ssf`: GWAS-SSF
-    * `gwascatalog`: GWAS Catalog format
-    * `pgscatalog` : PGS Catalog format
-    * `plink`: PLINK output format
-    * `plink2`: PLINK2 output format
-    * `saige`: SAIGE output format
-    * `regenie`: output format
-    * `fastgwa`: output format
-    * `metal`: output format
-    * `mrmega`: output format
-    * `fuma`: input format
-    * `ldsc`: input format
-    * `locuszoom`: input format
-    * `vcf`: gwas-vcf format
-    * `bolt_lmm`: output format
-    
-### Loading sumstats from chromosome-separated files
+### 3.4 Loading sumstats from chromosome-separated files
 GWASLab supports loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace the chromosome numbers. 
 
 !!! example
@@ -137,7 +152,7 @@ GWASLab supports loading sumstats from chromosome-separated files (file names ne
     ```
 
 
-## Check and save sumstats
+## 4. Check and save sumstats
 After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is stored in `.data` :
 
 !!! example
@@ -152,7 +167,7 @@ You can simply save the processed data using pandas saving functions, for exampl
     mysumstats.data.to_csv("./mysumstats.csv")
     ```  
     
-or convert the sumstats to other sumstats using GWASLab `to_format()` function (**strongly recommended**):
+or convert the sumstats to other sumstats using GWASLab `to_format()` function (recommended):
 
 !!! example 
     ```
@@ -161,13 +176,13 @@ or convert the sumstats to other sumstats using GWASLab `to_format()` function (
     
 Please check [GWASLab - Format](https://cloufield.github.io/gwaslab/Format/) for more details.
 
-## Saving half-finished Sumstats Object
+## 5. Saving half-finished Sumstats Object
 
 If the pipeline is very long, and you need to temporarily save the Sumstats Object, you can use the `.dump_pickle()` method to temporarily save the Sumstats Object.
 
 Please check [GWASLab - Pickle](https://cloufield.github.io/gwaslab/Pickle/) for more details.
 
-## Logging
+## 6. Logging
 
 All manipulation conducted to the sumstats will be logged for reproducibility and traceability. 
 
@@ -180,7 +195,7 @@ The log is stored in a `gl.Log()` object. You can check it by `.log.show() `and 
     mysumstats.log.save()
     ```
 
-## Sumstats summary
+## 7. Sumstats summary
 
 You can check the meta information of sumstats by:
 
@@ -189,7 +204,7 @@ You can check the meta information of sumstats by:
     mysumstats.summary()
     ```
 
-## Other functions
+## 8. Other functions
 
 Other functions of GWASLab are implemented as the methods of Sumstats Object.
 
