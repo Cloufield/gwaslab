@@ -1160,9 +1160,9 @@
 <p><code>.check_ref()</code>:  Check if NEA is aligned with the reference sequence. After checking, the tracking status code will be changed accordingly. </p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="n">ref_path</span><span class="o">=</span><span class="s2">&quot;ref_genome.fa&quot;</span><span class="p">)</span>
-<span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="n">ref_path</span><span class="o">=</span><span class="s2">&quot;ref_genome.fa&quot;</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
+</span></code></pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1172,8 +1172,8 @@
 <p><code>.assign_rsid()</code> : Annotated variants with rsID using a reference tsv file (1KG variants) and reference vcf file (tabix indexed, entire dbSNP).</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">assign_rsid</span><span class="p">(</span><span class="n">ref_rsid_tsv</span><span class="p">,</span> <span class="n">ref_rsid_vcf</span><span class="p">,</span> <span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">assign_rsid</span><span class="p">(</span><span class="n">ref_rsid_tsv</span><span class="p">,</span> <span class="n">ref_rsid_vcf</span><span class="p">,</span> <span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span></code></pre></div>
 </div>
 <ul>
 <li>For tsv file, variants will be matched using SNPID (CHR:POS:NEA:EA) for quick assigning.</li>
@@ -1187,9 +1187,9 @@
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_strand</span><span class="p">()</span>
-<span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_strand</span><span class="p">()</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
+</span></code></pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1202,10 +1202,10 @@
 <code>n_cores</code>: number of cores to use.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code>mysumstats.check_af(ref_infer=gl.get_path(&quot;1kg_eas_hg19&quot;), 
-                    ref_alt_freq=&quot;AF&quot;,
-                    n_cores=2)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mysumstats.check_af(ref_infer=gl.get_path(&quot;1kg_eas_hg19&quot;), 
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>                    ref_alt_freq=&quot;AF&quot;,
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>                    n_cores=2)
+</span></code></pre></div>
 </div>
 <p>DAF : Difference between Effect allele frequency and Reference ALT frequency
 EAF: Effect allele frequency
@@ -1215,24 +1215,24 @@ RAF: Reference ALT allele frequency</p>
 <p>GWASlab will simply calculate DAF = AF-EAF - AF-ALT , and store the results in DAF column. DAF can then be used for plotting (<code>.plot_daf()</code>) or filter variants.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_daf</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mf">0.12</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_daf</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mf">0.12</span><span class="p">)</span>
+</span></code></pre></div>
 </div>
 <p><img alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/0c607470-bbb6-4f11-93fe-038a53f6eebb" /></p>
 <h2 id="7-flipping-based-on-status-code">7. Flipping based on status code</h2>
 <p><code>.flip_allele_stats()</code> :  Flip allele-specific statistics to harmonize the variants based on the tracking status code. </p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="n">ref_path</span><span class="o">=</span><span class="s2">&quot;ref_genome.fa&quot;</span><span class="p">)</span>
-<span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
-
-<span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_strand</span><span class="p">()</span>
-<span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="n">ref_path</span><span class="o">=</span><span class="s2">&quot;ref_genome.fa&quot;</span><span class="p">)</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_strand</span><span class="p">()</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
+</span></code></pre></div>
 </div>
 <h2 id="8-assign-chr-and-pos-according-to-rsid-and-reference-data">8. Assign CHR and POS according to rsID and reference data</h2>
-<div class="highlight"><pre><span></span><code><span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos</span><span class="p">()</span>  
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos</span><span class="p">()</span>  
+</span></code></pre></div>
 
               
             </article>

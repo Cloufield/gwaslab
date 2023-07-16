@@ -1087,26 +1087,26 @@
 <h1 id="output-sumstats-in-certain-formats">Output sumstats in certain formats</h1>
 <p>GWASLab provides a flexible formatting and saving function.</p>
 <h2 id="usage">Usage</h2>
-<div class="highlight"><pre><span></span><code>to_format(
-          path=&quot;./sumstats&quot;,
-          fmt=&quot;ldsc&quot;,   
-          extract=None,
-          exclude=None,
-          id_use=&quot;rsID&quot;,
-          hapmap3=False,
-          exclude_hla=False,  
-          build=&quot;19&quot;, 
-          verbose=True,
-          output_log=True,
-          to_csvargs={},
-          float_formats={},
-          xymt_number=False,
-          xymt=[&quot;X&quot;,&quot;Y&quot;,&quot;MT&quot;],
-          chr_prefix=None,
-          bgzip=False,
-          tabix=False
-          )
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>to_format(
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>          path=&quot;./sumstats&quot;,
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>          fmt=&quot;ldsc&quot;,   
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>          extract=None,
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>          exclude=None,
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>          id_use=&quot;rsID&quot;,
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>          hapmap3=False,
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>          exclude_hla=False,  
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>          build=&quot;19&quot;, 
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>          verbose=True,
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>          output_log=True,
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>          to_csvargs={},
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>          float_formats={},
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>          xymt_number=False,
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>          xymt=[&quot;X&quot;,&quot;Y&quot;,&quot;MT&quot;],
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>          chr_prefix=None,
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>          bgzip=False,
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>          tabix=False
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>          )
+</span></code></pre></div>
 <ul>
 <li><code>path</code> : <code>string</code>, the path for the output, only prefix is needed.</li>
 <li><code>fmt</code>="ldsc": output format for sumstats. Currently support <code>plink</code> ,<code>plink2</code>, <code>ldsc</code>, <code>saige</code>, <code>fastgwa</code>, <code>regenie</code> . For details , please check <a href="https://github.com/Cloufield/formatbook"> https://github.com/Cloufield/formatbook</a>.</li>
@@ -1149,68 +1149,68 @@ bolt_lmm : output format</p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">output metal format</p>
-<div class="highlight"><pre><span></span><code>import gwaslab as gl
-# load your raw sumstats
-mysumstats = gl.Sumstats(...)
-# basic QC
-mysumstats.basic_check()
-# output metal format
-mysumstats.to_format(&quot;./test&quot;,fmt=&quot;metal&quot;)
-
-Tue Sep 13 18:00:41 2022 Start to format the output sumstats in:  metal  format
-Tue Sep 13 18:00:41 2022  -Formatting statistics ...
-Tue Sep 13 18:00:41 2022  - Float statistics formats:
-Tue Sep 13 18:00:41 2022   - Columns: [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
-Tue Sep 13 18:00:41 2022   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
-Tue Sep 13 18:00:41 2022  - Start outputting sumstats in metal format...
-Tue Sep 13 18:00:41 2022  -metal format will be loaded...
-Tue Sep 13 18:00:41 2022  -metal format meta info:
-Tue Sep 13 18:00:41 2022   - format_name  :  metal
-Tue Sep 13 18:00:41 2022   - format_source  :  https://genome.sph.umich.edu/wiki/METAL_Documentation
-Tue Sep 13 18:00:41 2022   - format_version  :  20220726
-Tue Sep 13 18:00:41 2022  -gwaslab to metal format dictionary:
-Tue Sep 13 18:00:41 2022   - gwaslab keys: [&#39;SNPID&#39;, &#39;EA&#39;, &#39;NEA&#39;, &#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;, &#39;DIRECTION&#39;]
-Tue Sep 13 18:00:41 2022   - metal values: [&#39;MarkerName&#39;, &#39;Allele1&#39;, &#39;Allele2&#39;, &#39;Freq1&#39;, &#39;Effect&#39;, &#39;StdErr&#39;, &#39;P-value&#39;, &#39;Direction&#39;]
-Tue Sep 13 18:00:41 2022  -Output columns: Index([&#39;MarkerName&#39;, &#39;Allele1&#39;, &#39;Allele2&#39;, &#39;Freq1&#39;, &#39;Effect&#39;, &#39;StdErr&#39;,
-       &#39;P-value&#39;],
-      dtype=&#39;object&#39;)
-Tue Sep 13 18:00:41 2022  -Output path: ./test.metal.tsv.gz
-Tue Sep 13 18:00:41 2022  -Saving log file: ./test.metal.log
-Tue Sep 13 18:00:41 2022 Finished outputting successfully!
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>import gwaslab as gl
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a># load your raw sumstats
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>mysumstats = gl.Sumstats(...)
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a># basic QC
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>mysumstats.basic_check()
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a># output metal format
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;metal&quot;)
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>Tue Sep 13 18:00:41 2022 Start to format the output sumstats in:  metal  format
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>Tue Sep 13 18:00:41 2022  -Formatting statistics ...
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>Tue Sep 13 18:00:41 2022  - Float statistics formats:
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>Tue Sep 13 18:00:41 2022   - Columns: [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>Tue Sep 13 18:00:41 2022   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>Tue Sep 13 18:00:41 2022  - Start outputting sumstats in metal format...
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>Tue Sep 13 18:00:41 2022  -metal format will be loaded...
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>Tue Sep 13 18:00:41 2022  -metal format meta info:
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>Tue Sep 13 18:00:41 2022   - format_name  :  metal
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>Tue Sep 13 18:00:41 2022   - format_source  :  https://genome.sph.umich.edu/wiki/METAL_Documentation
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>Tue Sep 13 18:00:41 2022   - format_version  :  20220726
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>Tue Sep 13 18:00:41 2022  -gwaslab to metal format dictionary:
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>Tue Sep 13 18:00:41 2022   - gwaslab keys: [&#39;SNPID&#39;, &#39;EA&#39;, &#39;NEA&#39;, &#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;, &#39;DIRECTION&#39;]
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>Tue Sep 13 18:00:41 2022   - metal values: [&#39;MarkerName&#39;, &#39;Allele1&#39;, &#39;Allele2&#39;, &#39;Freq1&#39;, &#39;Effect&#39;, &#39;StdErr&#39;, &#39;P-value&#39;, &#39;Direction&#39;]
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>Tue Sep 13 18:00:41 2022  -Output columns: Index([&#39;MarkerName&#39;, &#39;Allele1&#39;, &#39;Allele2&#39;, &#39;Freq1&#39;, &#39;Effect&#39;, &#39;StdErr&#39;,
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>       &#39;P-value&#39;],
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>      dtype=&#39;object&#39;)
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>Tue Sep 13 18:00:41 2022  -Output path: ./test.metal.tsv.gz
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>Tue Sep 13 18:00:41 2022  -Saving log file: ./test.metal.log
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>Tue Sep 13 18:00:41 2022 Finished outputting successfully!
+</span></code></pre></div>
 </div>
 <h2 id="example-2-ldsc">Example 2 : LDSC</h2>
 <div class="admonition example">
 <p class="admonition-title">LDSC format, extract hapmap3 SNPs and exclude SNPs in HLA region</p>
-<div class="highlight"><pre><span></span><code>## format the sumstats to ldsc format
-## extract only hapmap3 SNPs
-## exclude SNPs in HLA region
-mysumstats.to_format(&quot;./test&quot;,fmt=&quot;ldsc&quot;, hapmap3=True, exclude_hla=False, build=&quot;19&quot;)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>## format the sumstats to ldsc format
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>## extract only hapmap3 SNPs
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>## exclude SNPs in HLA region
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;ldsc&quot;, hapmap3=True, exclude_hla=False, build=&quot;19&quot;)
+</span></code></pre></div>
 </div>
 <h2 id="example-3-bed">Example 3 : BED</h2>
 <div class="admonition example bed-like format">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code># output 1-based bed-like files for vep
-mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vep&quot;,xymt_number=True,chr_prefix=&quot;Chr&quot;)
-
-# output 0-based bed-like file, and then bgzip and index the file.
-mysumstats.to_format(&quot;./test&quot;,fmt=&quot;bed&quot;,bgzip=True,tabix=True)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a># output 1-based bed-like files for vep
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vep&quot;,xymt_number=True,chr_prefix=&quot;Chr&quot;)
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a># output 0-based bed-like file, and then bgzip and index the file.
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;bed&quot;,bgzip=True,tabix=True)
+</span></code></pre></div>
 </div>
 <h2 id="example-4-vcf">Example 4: VCF</h2>
 <div class="admonition example vcf format">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code># output vcf file, and then bgzip and index the file.
-mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vcf&quot;,bgzip=True,tabix=True)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a># output vcf file, and then bgzip and index the file.
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vcf&quot;,bgzip=True,tabix=True)
+</span></code></pre></div>
 </div>
 <h2 id="example-5-gwas-ssf">Example 5: GWAS-ssf</h2>
 <div class="admonition example gwas-ssf format">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code># output  GWAS-ssf format
-mysumstats.to_format(&quot;./test&quot;,fmt=&quot;ssf&quot;)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a># output  GWAS-ssf format
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;ssf&quot;)
+</span></code></pre></div>
 </div>
 <p>For sample codes, please check <a href="https://cloufield.github.io/gwaslab/format_load_save/">here.</a></p>
 

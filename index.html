@@ -1209,31 +1209,31 @@
 <p>Please check GWASLab documentation at <a href="https://cloufield.github.io/gwaslab/">https://cloufield.github.io/gwaslab/</a>
 Note: GWASLab is being updated very frequently for now. I will release the first stable version soon! Please stay tuned.</p>
 <h2 id="install">Install</h2>
-<div class="highlight"><pre><span></span><code>pip install gwaslab==3.4.20
-</code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">gwaslab</span> <span class="k">as</span> <span class="nn">gl</span>
-<span class="c1"># load plink2 output</span>
-<span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;t2d_bbj.txt.gz&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;plink2&quot;</span><span class="p">)</span>
-
-<span class="c1"># or you can specify the columns:</span>
-<span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;t2d_bbj.txt.gz&quot;</span><span class="p">,</span>
-             <span class="n">snpid</span><span class="o">=</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span>
-             <span class="n">chrom</span><span class="o">=</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span>
-             <span class="n">pos</span><span class="o">=</span><span class="s2">&quot;POS&quot;</span><span class="p">,</span>
-             <span class="n">ea</span><span class="o">=</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span>
-             <span class="n">nea</span><span class="o">=</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span>
-             <span class="n">neaf</span><span class="o">=</span><span class="s2">&quot;Frq&quot;</span><span class="p">,</span>
-             <span class="n">beta</span><span class="o">=</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span>
-             <span class="n">se</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
-             <span class="n">p</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">,</span>
-             <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;Dir&quot;</span><span class="p">,</span>
-             <span class="n">n</span><span class="o">=</span><span class="s2">&quot;N&quot;</span><span class="p">,</span>
-             <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)</span>
-
-<span class="c1"># manhattan and qq plot</span>
-<span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">()</span>
-<span class="o">...</span>
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip install gwaslab==3.4.20
+</span></code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span> <span class="nn">gwaslab</span> <span class="k">as</span> <span class="nn">gl</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># load plink2 output</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;t2d_bbj.txt.gz&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;plink2&quot;</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># or you can specify the columns:</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;t2d_bbj.txt.gz&quot;</span><span class="p">,</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>             <span class="n">snpid</span><span class="o">=</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>             <span class="n">chrom</span><span class="o">=</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>             <span class="n">pos</span><span class="o">=</span><span class="s2">&quot;POS&quot;</span><span class="p">,</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>             <span class="n">ea</span><span class="o">=</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>             <span class="n">nea</span><span class="o">=</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>             <span class="n">neaf</span><span class="o">=</span><span class="s2">&quot;Frq&quot;</span><span class="p">,</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>             <span class="n">beta</span><span class="o">=</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>             <span class="n">se</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>             <span class="n">p</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">,</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>             <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;Dir&quot;</span><span class="p">,</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>             <span class="n">n</span><span class="o">=</span><span class="s2">&quot;N&quot;</span><span class="p">,</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>             <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="c1"># manhattan and qq plot</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">()</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="o">...</span>
+</span></code></pre></div>
 <h2 id="functions">Functions</h2>
 <h3 id="loading-and-formatting">Loading and Formatting</h3>
 <ul>
@@ -1296,31 +1296,31 @@ Note: GWASLab is being updated very frequently for now. I will release the first
 </ul>
 <h2 id="requirements">Requirements</h2>
 <p>environment.yml</p>
-<div class="highlight"><pre><span></span><code>name: gwaslab
-channels:
-  - conda-forge
-  - defaults
-dependencies:
-  - python=3.8.16=h7a1cb2a_3
-  - jupyter==1.0.0
-  - pip==23.1.2
-  - pip:
-      - adjusttext==0.8
-      - biopython==1.81
-      - gwaslab==3.4.16
-      - liftover==1.1.16
-      - matplotlib==3.7.1
-      - numpy==1.24.2
-      - pandas==1.4.4
-      - scikit-allel==1.3.5
-      - scikit-learn==1.2.2
-      - scipy==1.10.1
-      - seaborn==0.11.2
-      - statsmodels==0.13
-      - adjustText==0.8
-      - pysam==0.19
-      - pyensembl==2.2.3
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>name: gwaslab
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>channels:
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  - conda-forge
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  - defaults
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>dependencies:
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>  - python=3.8.16=h7a1cb2a_3
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>  - jupyter==1.0.0
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>  - pip==23.1.2
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>  - pip:
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>      - adjusttext==0.8
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>      - biopython==1.81
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>      - gwaslab==3.4.16
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>      - liftover==1.1.16
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>      - matplotlib==3.7.1
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>      - numpy==1.24.2
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>      - pandas==1.4.4
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>      - scikit-allel==1.3.5
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>      - scikit-learn==1.2.2
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>      - scipy==1.10.1
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>      - seaborn==0.11.2
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>      - statsmodels==0.13
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>      - adjustText==0.8
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>      - pysam==0.19
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>      - pyensembl==2.2.3
+</span></code></pre></div>
 <h2 id="how-to-cite">How to cite</h2>
 <ul>
 <li>GWASLab preprint: He, Y., Koido, M., Shimmori, Y., Kamatani, Y. (2023). GWASLab: a Python package for processing and visualizing GWAS summary statistics. Preprint at Jxiv, 2023-5. https://doi.org/10.51094/jxiv.370</li>

@@ -1136,13 +1136,13 @@
 </div>
 <p>See examples <a href="https://cloufield.github.io/gwaslab/utility_data_conversion/">here.</a></p>
 <h2 id="fill_data">fill_data()</h2>
-<div class="highlight"><pre><span></span><code>mysumstats.fill_data( 
-    to_fill=[],
-    df=None,
-    overwrite=False,
-    only_sig=False
-    )
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>mysumstats.fill_data( 
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    to_fill=[],
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    df=None,
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    overwrite=False,
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    only_sig=False
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    )
+</span></code></pre></div>
 <h2 id="options">Options</h2>
 <ul>
 <li><code>to_fill</code>: the columns to fill. ["OR","OR_95L","OR_95U","BETA","SE","P","MLOG10P","Z","CHISQ"]</li>
@@ -1162,27 +1162,27 @@
 <h2 id="example">Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code># raw data
-#SNPID  CHR POS EA  NEA EAF BETA    SE  P   STATUS
-#1:725932_G_A   1   725932  G   A   0.9960  -0.0737 0.1394  0.5970  9999999
-#1:725933_A_G   1   725933  G   A   0.0040  0.0737  0.1394  0.5973  9999999
-#1:737801_T_C   1   737801  C   T   0.0051  0.0490  0.1231  0.6908  9999999
-
-# let&#39;s fill &quot;MLOG10P&quot;,&quot;Z&quot;,&quot;OR&quot;,&quot;OR_95L&quot;,&quot;OR_95U&quot;
-# gwaslab will automatically search for equivalent statistics
-
-mysumstats.fill_data(to_fill=[&quot;MLOG10P&quot;,&quot;Z&quot;,&quot;OR&quot;,&quot;OR_95L&quot;,&quot;OR_95U&quot;])
-
-Wed Oct 19 10:13:30 2022 Start filling data using existing columns...
-Wed Oct 19 10:13:30 2022  -Raw input columns:  [&#39;SNPID&#39;, &#39;CHR&#39;, &#39;POS&#39;, &#39;EA&#39;, &#39;NEA&#39;, &#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;, &#39;STATUS&#39;]
-Wed Oct 19 10:13:30 2022  -Overwrite mode:  False
-Wed Oct 19 10:13:30 2022   - Skipping columns:  []
-Wed Oct 19 10:13:30 2022 Filling columns:  [&#39;MLOG10P&#39;, &#39;OR&#39;, &#39;OR_95L&#39;, &#39;OR_95U&#39;]
-Wed Oct 19 10:13:30 2022   - Filling OR using BETA column...
-Wed Oct 19 10:13:31 2022   - Filling OR_95L/OR_95U using BETA/SE columns...
-Wed Oct 19 10:13:32 2022   - Filling MLOG10P using P column...
-Wed Oct 19 10:13:38 2022 Finished filling data using existing columns.
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a># raw data
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>#SNPID  CHR POS EA  NEA EAF BETA    SE  P   STATUS
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>#1:725932_G_A   1   725932  G   A   0.9960  -0.0737 0.1394  0.5970  9999999
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>#1:725933_A_G   1   725933  G   A   0.0040  0.0737  0.1394  0.5973  9999999
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>#1:737801_T_C   1   737801  C   T   0.0051  0.0490  0.1231  0.6908  9999999
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a># let&#39;s fill &quot;MLOG10P&quot;,&quot;Z&quot;,&quot;OR&quot;,&quot;OR_95L&quot;,&quot;OR_95U&quot;
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a># gwaslab will automatically search for equivalent statistics
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>mysumstats.fill_data(to_fill=[&quot;MLOG10P&quot;,&quot;Z&quot;,&quot;OR&quot;,&quot;OR_95L&quot;,&quot;OR_95U&quot;])
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>Wed Oct 19 10:13:30 2022 Start filling data using existing columns...
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>Wed Oct 19 10:13:30 2022  -Raw input columns:  [&#39;SNPID&#39;, &#39;CHR&#39;, &#39;POS&#39;, &#39;EA&#39;, &#39;NEA&#39;, &#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;, &#39;STATUS&#39;]
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>Wed Oct 19 10:13:30 2022  -Overwrite mode:  False
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>Wed Oct 19 10:13:30 2022   - Skipping columns:  []
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>Wed Oct 19 10:13:30 2022 Filling columns:  [&#39;MLOG10P&#39;, &#39;OR&#39;, &#39;OR_95L&#39;, &#39;OR_95U&#39;]
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>Wed Oct 19 10:13:30 2022   - Filling OR using BETA column...
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>Wed Oct 19 10:13:31 2022   - Filling OR_95L/OR_95U using BETA/SE columns...
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>Wed Oct 19 10:13:32 2022   - Filling MLOG10P using P column...
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>Wed Oct 19 10:13:38 2022 Finished filling data using existing columns.
+</span></code></pre></div>
 </div>
 
               

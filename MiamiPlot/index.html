@@ -1034,15 +1034,15 @@
 </div>
 <p>As a standalone function, GWASLab can plot miami plot given a pair of sumstats files.</p>
 <h2 id="usage">Usage</h2>
-<div class="highlight"><pre><span></span><code>gl.plot_miami( 
-          path1,
-          path2,
-          cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-          cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-          sep=[&quot;\t&quot;,&quot;\t&quot;],
-          anno= None
-          )
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gl.plot_miami( 
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>          path1,
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>          path2,
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>          cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>          cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>          sep=[&quot;\t&quot;,&quot;\t&quot;],
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>          anno= None
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>          )
+</span></code></pre></div>
 <table>
 <thead>
 <tr>
@@ -1203,20 +1203,20 @@
 <div class="admonition example">
 <p class="admonition-title">Miami plot for male- amd female-specific GWAS on BMI</p>
 <p>Sample datasets are obtained from JENGER:</p>
-<div class="highlight"><pre><span></span><code>!wget -O bmi_male_bbj.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
-!wget -O bmi_female_bbj.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
-                           path2=&quot;bmi_female_bbj.txt.gz&quot;,
-                           cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-                           cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-                           titles=[&quot;bmi male&quot;,&quot;bmi female&quot;],
-                           titles_pad=[0.15,0.0],
-                           anno=&quot;GENENAME&quot;,
-                           highlight1=[(5,124289158)],
-                           pinpoint2=[(2,653874)]
-                           )
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>!wget -O bmi_male_bbj.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>!wget -O bmi_female_bbj.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>                           path2=&quot;bmi_female_bbj.txt.gz&quot;,
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>                           cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>                           cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>                           titles=[&quot;bmi male&quot;,&quot;bmi female&quot;],
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>                           titles_pad=[0.15,0.0],
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>                           anno=&quot;GENENAME&quot;,
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>                           highlight1=[(5,124289158)],
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>                           pinpoint2=[(2,653874)]
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>                           )
+</span></code></pre></div>
 <p><img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197526569-7850041d-e247-4f69-8505-ef7750a6d4de.png"></p>
 </div>
 

@@ -1253,16 +1253,16 @@
 </table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_id</span><span class="p">(</span><span class="n">fixchrpos</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">fixid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">fixsep</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">forcefixid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_id</span><span class="p">(</span><span class="n">fixchrpos</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                <span class="n">fixid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                <span class="n">fixsep</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                <span class="n">forcefixid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
 </div>
 <h2 id="3-chr-chromosomes">3. CHR - Chromosomes</h2>
-<div class="highlight"><pre><span></span><code>.fix_chr()
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>.fix_chr()
+</span></code></pre></div>
 <p>CHR will be standardized. </p>
 <ul>
 <li>Prefixes like "chr" will be removed.</li>
@@ -1316,22 +1316,22 @@
 - <code>chrom_list=gl.get_chr_list(n=28)</code></p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_chr</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_chr</span><span class="p">()</span>
+</span></code></pre></div>
 </div>
 <p>!!! tip gl.get_chr_list()
     Get a chromosome list for n autosomes plus 'X', 'Y', 'M', 'MT. (`string`` data type)</p>
-<pre><code>```python
+<div class="language-text highlight"><pre><span></span><code>```python
 gl.get_chr_list()
-['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','X','Y','M','MT']
+[&#39;1&#39;,&#39;2&#39;,&#39;3&#39;,&#39;4&#39;,&#39;5&#39;,&#39;6&#39;,&#39;7&#39;,&#39;8&#39;,&#39;9&#39;,&#39;10&#39;,&#39;11&#39;,&#39;12&#39;,&#39;13&#39;,&#39;14&#39;,&#39;15&#39;,&#39;16&#39;,&#39;17&#39;,&#39;18&#39;,&#39;19&#39;,&#39;20&#39;,&#39;21&#39;,&#39;22&#39;,&#39;23&#39;,&#39;24&#39;,&#39;25&#39;,&#39;X&#39;,&#39;Y&#39;,&#39;M&#39;,&#39;MT&#39;]
 
 gl.get_chr_list(n=10)
-['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'X', 'Y', 'M', 'MT']
+[&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;, &#39;5&#39;, &#39;6&#39;, &#39;7&#39;, &#39;8&#39;, &#39;9&#39;, &#39;10&#39;, &#39;X&#39;, &#39;Y&#39;, &#39;M&#39;, &#39;MT&#39;]
 ```
-</code></pre>
-<h2 id="4-pos-base-pair-positions">4. POS - Base-pair positions</h2>
-<div class="highlight"><pre><span></span><code>.fix_pos()
 </code></pre></div>
+<h2 id="4-pos-base-pair-positions">4. POS - Base-pair positions</h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>.fix_pos()
+</span></code></pre></div>
 <p>Check and fix values in POS.</p>
 <ul>
 <li>Values in POS must be positive integer numbers. </li>
@@ -1359,8 +1359,8 @@ gl.get_chr_list(n=10)
 </table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_pos</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_pos</span><span class="p">()</span>
+</span></code></pre></div>
 </div>
 <h2 id="5-allele">5. Allele</h2>
 <h3 id="51-allele-notation-standardization">5.1 Allele notation Standardization</h3>
@@ -1373,8 +1373,8 @@ gl.get_chr_list(n=10)
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_allele</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">sumstats</span><span class="o">.</span><span class="n">fix_allele</span><span class="p">()</span>
+</span></code></pre></div>
 </div>
 <h3 id="52-variant-normalization">5.2 Variant Normalization</h3>
 <p><code>.normalize_allele()</code></p>
@@ -1407,8 +1407,8 @@ gl.get_chr_list(n=10)
 </div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">normalize_allele</span><span class="p">(</span><span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">sumstats</span><span class="o">.</span><span class="n">normalize_allele</span><span class="p">(</span><span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span></code></pre></div>
 <p>Before:</p>
 <p><img width="345" alt="image" src="https://user-images.githubusercontent.com/40289485/212257048-1a5517a4-dd4d-4210-9e19-1dcf7747b7f5.png"></p>
 <p>After:</p>
@@ -1418,12 +1418,12 @@ gl.get_chr_list(n=10)
 <p>Sort genomic coordinates. Make sure CHR and POS are fixed beforehand.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">sort_coordinate</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">sumstats</span><span class="o">.</span><span class="n">sort_coordinate</span><span class="p">()</span>
+</span></code></pre></div>
 </div>
 <h2 id="7-column-sorting">7. Column sorting</h2>
-<div class="highlight"><pre><span></span><code>.sort_column()
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>.sort_column()
+</span></code></pre></div>
 <table>
 <thead>
 <tr>
@@ -1444,12 +1444,12 @@ gl.get_chr_list(n=10)
 </table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">sumstats</span><span class="o">.</span><span class="n">sort_column</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">sumstats</span><span class="o">.</span><span class="n">sort_column</span><span class="p">()</span>
+</span></code></pre></div>
 </div>
 <h2 id="8-all-in-one-basic_check">8. All-in-one <code>.basic_check()</code></h2>
-<p><div class="highlight"><pre><span></span><code>.basic_check()
-</code></pre></div>
+<p><div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>.basic_check()
+</span></code></pre></div>
 Fix data without dropping any variant.</p>
 <div class="admonition note">
 <p class="admonition-title"><code>basic_check()</code> pipeline</p>

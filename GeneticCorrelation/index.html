@@ -1017,17 +1017,17 @@
 <h1 id="genetic-correlation-loading-and-plotting">Genetic correlation loading and plotting</h1>
 <h2 id="heatmap-genetic-correlation-matrix">Heatmap: Genetic correlation matrix</h2>
 <p>Available since v3.4.15</p>
-<div class="highlight"><pre><span></span><code>gl.plot_rg(ldsc)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gl.plot_rg(ldsc)
+</span></code></pre></div>
 <div class="admonition example">
 <p class="admonition-title">Simple plot</p>
-<div class="highlight"><pre><span></span><code># load ldsc log files
-ldsc_log_file_list = [&quot;ldscrg.log&quot;] 
-
-ldsc = gl.read_ldsc(ldsc_log_file_list, mode=&quot;rg&quot;)
-
-gl.plot_rg( ldsc )
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a># load ldsc log files
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>ldsc_log_file_list = [&quot;ldscrg.log&quot;] 
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>ldsc = gl.read_ldsc(ldsc_log_file_list, mode=&quot;rg&quot;)
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>gl.plot_rg( ldsc )
+</span></code></pre></div>
 <p><img alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/46ea20c5-5e4d-4ad4-86ea-965f3a953518" /></p>
 </div>
 <p>Options:</p>
@@ -1054,35 +1054,35 @@ gl.plot_rg( ldsc )
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Customized plot</p>
-<div class="highlight"><pre><span></span><code># or load from tabular files
-ldsc = pd.read_csv(&quot;toy_data/input_rg.txt&quot;,sep=&quot;\t&quot;)
-ldsc
-#prepare the final dataset
-trait =  pd.read_csv(&quot;toy_data/trait_list.txt&quot;,sep=&quot;\t&quot;)
-trait[&quot;order&quot;] = range(len(trait))
-order = trait[&quot;TRAIT&quot;].values
-trait_set1 = trait.loc[trait[&quot;order&quot;]&gt;=59,&quot;TRAIT&quot;].values
-trait_set2 = trait.loc[trait[&quot;order&quot;]&lt;59,&quot;TRAIT&quot;].values
-ldsc = ldsc.loc[((ldsc[&quot;p1&quot;].isin(trait_set1))&amp;(ldsc[&quot;p2&quot;].isin(trait_set2))) | ((ldsc[&quot;p1&quot;].isin(trait_set2))&amp;(ldsc[&quot;p2&quot;].isin(trait_set1))),:]
-map_dic={order[i]:i+1 for i in range(len(order))}
-key=lambda x:x.map(map_dic)
-
-# plot
-df = gl.plot_rg( ldsc,
-            sig_levels=[0.05],
-            corrections =[&quot;non&quot;],
-            p=&quot;q&quot;,
-            p1=&quot;p2&quot;,
-            p2=&quot;p1&quot;,
-            full_cell=(&quot;non&quot;,0.05),
-            panno_texts=[&quot;*&quot;],
-            fig_args={&quot;figsize&quot;:(15,15),&quot;dpi&quot;:300},
-            colorbar_args={&quot;shrink&quot;:0.4},
-            panno_args={&quot;size&quot;:12,&quot;c&quot;:&quot;black&quot;},fdr_method=&quot;i&quot;,
-            fontsize=8,
-            sort_key=key
-            )
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># or load from tabular files
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>ldsc = pd.read_csv(&quot;toy_data/input_rg.txt&quot;,sep=&quot;\t&quot;)
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>ldsc
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>#prepare the final dataset
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>trait =  pd.read_csv(&quot;toy_data/trait_list.txt&quot;,sep=&quot;\t&quot;)
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>trait[&quot;order&quot;] = range(len(trait))
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>order = trait[&quot;TRAIT&quot;].values
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>trait_set1 = trait.loc[trait[&quot;order&quot;]&gt;=59,&quot;TRAIT&quot;].values
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>trait_set2 = trait.loc[trait[&quot;order&quot;]&lt;59,&quot;TRAIT&quot;].values
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>ldsc = ldsc.loc[((ldsc[&quot;p1&quot;].isin(trait_set1))&amp;(ldsc[&quot;p2&quot;].isin(trait_set2))) | ((ldsc[&quot;p1&quot;].isin(trait_set2))&amp;(ldsc[&quot;p2&quot;].isin(trait_set1))),:]
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>map_dic={order[i]:i+1 for i in range(len(order))}
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>key=lambda x:x.map(map_dic)
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a># plot
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>df = gl.plot_rg( ldsc,
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>            sig_levels=[0.05],
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>            corrections =[&quot;non&quot;],
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>            p=&quot;q&quot;,
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>            p1=&quot;p2&quot;,
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>            p2=&quot;p1&quot;,
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>            full_cell=(&quot;non&quot;,0.05),
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>            panno_texts=[&quot;*&quot;],
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>            fig_args={&quot;figsize&quot;:(15,15),&quot;dpi&quot;:300},
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>            colorbar_args={&quot;shrink&quot;:0.4},
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>            panno_args={&quot;size&quot;:12,&quot;c&quot;:&quot;black&quot;},fdr_method=&quot;i&quot;,
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>            fontsize=8,
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>            sort_key=key
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>            )
+</span></code></pre></div>
 <p><img alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/4f6c7dd8-5047-435a-8b08-5346bc168052" /></p>
 <p>sample data source: https://github.com/mkanai/ldsc-corrplot-rg , Kanai, M., Akiyama, M., Takahashi, A., Matoba, N., Momozawa, Y., Ikeda, M., ... &amp; Kamatani, Y. (2018). Genetic analysis of quantitative traits in the     Japanese population links cell types to complex human diseases. Nature genetics, 50(3), 390-400.</p>
 </div>

@@ -1123,42 +1123,42 @@
 </ul>
 <div class="admonition note">
 <p class="admonition-title">1kg_dbsnp151_hg19_auto</p>
-<div class="highlight"><pre><span></span><code>~/.gwaslab$ zcat 1kg_dbsnp151_hg19_auto.txt.gz |head
-SNPID   rsID    CHR     POS     NEA     EA
-1:10177:A:AC    rs367896724     1       10177   A       AC
-1:10235:T:TA    rs540431307     1       10235   T       TA
-1:10352:T:TA    rs555500075     1       10352   T       TA
-1:10505:A:T     rs548419688     1       10505   A       T
-1:10511:G:A     rs534229142     1       10511   G       A
-1:10539:C:A     rs537182016     1       10539   C       A
-1:10542:C:T     rs572818783     1       10542   C       T
-1:10579:C:A     rs538322974     1       10579   C       A
-1:10616:CCGCCGTTGCAAAGGCGCGCCG:C        rs376342519     1       10616   CCGCCGTTGCAAAGGCGCGCCG  C
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>~/.gwaslab$ zcat 1kg_dbsnp151_hg19_auto.txt.gz |head
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>SNPID   rsID    CHR     POS     NEA     EA
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>1:10177:A:AC    rs367896724     1       10177   A       AC
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>1:10235:T:TA    rs540431307     1       10235   T       TA
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>1:10352:T:TA    rs555500075     1       10352   T       TA
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>1:10505:A:T     rs548419688     1       10505   A       T
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>1:10511:G:A     rs534229142     1       10511   G       A
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>1:10539:C:A     rs537182016     1       10539   C       A
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>1:10542:C:T     rs572818783     1       10542   C       T
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>1:10579:C:A     rs538322974     1       10579   C       A
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>1:10616:CCGCCGTTGCAAAGGCGCGCCG:C        rs376342519     1       10616   CCGCCGTTGCAAAGGCGCGCCG  C
+</span></code></pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">VCF file form dbSNP</p>
-<div class="highlight"><pre><span></span><code> zcat GCF_000001405.25.vcf.gz | head -100 | tail -10
-NC_000001.10    10059   rs1570391745    C       G       .       .       RS=1570391745;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9997,0.0003425|dbGaP_PopFreq:1,0
-NC_000001.10    10060   rs1639544146    C       CT      .       .       RS=1639544146;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10060   rs1639544159    CT      C       .       .       RS=1639544159;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=DEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10063   rs1010989343    A       C,G     .       .       RS=1010989343;dbSNPBuildID=150;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9928,0.004112,0.003084|Siberian:0.5,0.5,.|dbGaP_PopFreq:1,.,0
-NC_000001.10    10067   rs1489251879    T       TAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCC      .       .       RS=1489251879;dbSNPBuildID=151;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=GnomAD:1,1.789e-05
-NC_000001.10    10067   rs1639545042    T       C       .       .       RS=1639545042;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10067   rs1639545104    TA      T       .       .       RS=1639545104;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10068   rs1639545079    A       T       .       .       RS=1639545079;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-NC_000001.10    10069   rs1570391755    A       C,G     .       .       RS=1570391755;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9966,.,0.003425|dbGaP_PopFreq:1,0,0
-NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=1639545200;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a> zcat GCF_000001405.25.vcf.gz | head -100 | tail -10
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>NC_000001.10    10059   rs1570391745    C       G       .       .       RS=1570391745;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9997,0.0003425|dbGaP_PopFreq:1,0
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>NC_000001.10    10060   rs1639544146    C       CT      .       .       RS=1639544146;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>NC_000001.10    10060   rs1639544159    CT      C       .       .       RS=1639544159;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=DEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>NC_000001.10    10063   rs1010989343    A       C,G     .       .       RS=1010989343;dbSNPBuildID=150;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9928,0.004112,0.003084|Siberian:0.5,0.5,.|dbGaP_PopFreq:1,.,0
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>NC_000001.10    10067   rs1489251879    T       TAACCCTAACCCTAACCCTAACCCTAACCCTAACCCTAACCC      .       .       RS=1489251879;dbSNPBuildID=151;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=GnomAD:1,1.789e-05
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>NC_000001.10    10067   rs1639545042    T       C       .       .       RS=1639545042;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>NC_000001.10    10067   rs1639545104    TA      T       .       .       RS=1639545104;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>NC_000001.10    10068   rs1639545079    A       T       .       .       RS=1639545079;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>NC_000001.10    10069   rs1570391755    A       C,G     .       .       RS=1570391755;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9966,.,0.003425|dbGaP_PopFreq:1,0,0
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=1639545200;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
+</span></code></pre></div>
 </div>
 <h2 id="2-usage">2. Usage</h2>
-<div class="highlight"><pre><span></span><code>mysumstats.basic_check()
-mysumstats.assign_rsid( 
-                        ref_rsid_tsv = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;),
-                        ref_rsid_vcf = &quot;/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz&quot;,
-                        chr_dict = gl.get_number_to_NC(build=&quot;19&quot;),
-                        n_cores = 2)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mysumstats.basic_check()
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>mysumstats.assign_rsid( 
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>                        ref_rsid_tsv = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;),
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>                        ref_rsid_vcf = &quot;/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz&quot;,
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>                        chr_dict = gl.get_number_to_NC(build=&quot;19&quot;),
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>                        n_cores = 2)
+</span></code></pre></div>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <p>Please always run <code>.basic_check()</code> first. This will convert the data to right data type in most cases, and standardize and normalize the sumstats.</p>
@@ -1202,65 +1202,65 @@ mysumstats.assign_rsid(
 </table>
 <div class="admonition note">
 <p class="admonition-title">Conversion for RefSeq sequence</p>
-<div class="highlight"><pre><span></span><code>gl.get_number_to_NC(build=&quot;19&quot;)
-{1: &#39;NC_000001.10&#39;,2: &#39;NC_000002.11&#39;,3: &#39;NC_000003.11&#39;, 4: &#39;NC_000004.11&#39;, 5: &#39;NC_000005.9&#39;, 6: &#39;NC_000006.11&#39;, 7: &#39;NC_000007.13&#39;, 8: &#39;NC_000008.10&#39;, 9: &#39;NC_000009.11&#39;, 10: &#39;NC_000010.10&#39;, 11: &#39;NC_000011.9&#39;, 12: &#39;NC_000012.11&#39;, 13: &#39;NC_000013.10&#39;, 14: &#39;NC_000014.8&#39;, 15: &#39;NC_000015.9&#39;, 16: &#39;NC_000016.9&#39;, 17: &#39;NC_000017.10&#39;, 18: &#39;NC_000018.9&#39;, 19: &#39;NC_000019.9&#39;, 20: &#39;NC_000020.10&#39;, 21: &#39;NC_000021.8&#39;, 22: &#39;NC_000022.10&#39;, 23: &#39;NC_000023.10&#39;, 24: &#39;NC_000024.9&#39;, 25: &#39;NC_012920.1&#39;}
-
-gl.get_number_to_NC(build=&quot;19&quot;)
-{1: &#39;NC_000001.11&#39;,2: &#39;NC_000002.12&#39;,3: &#39;NC_000003.12&#39;,4: &#39;NC_000004.12&#39;,5: &#39;NC_000005.10&#39;,6: &#39;NC_000006.12&#39;,7: &#39;NC_000007.14&#39;,8: &#39;NC_000008.11&#39;,9: &#39;NC_000009.12&#39;,10: &#39;NC_000010.11&#39;,11: &#39;NC_000011.10&#39;,12: &#39;NC_000012.12&#39;,13: &#39;NC_000013.11&#39;,14: &#39;NC_000014.9&#39;,15: &#39;NC_000015.10&#39;,16: &#39;NC_000016.10&#39;,17: &#39;NC_000017.11&#39;,18: &#39;NC_000018.10&#39;,19: &#39;NC_000019.10&#39;,20: &#39;NC_000020.11&#39;,21: &#39;NC_000021.9&#39;,22: &#39;NC_000022.11&#39;,23: &#39;NC_000023.11&#39;,24: &#39;NC_000024.1&#39;,25: &#39;NC_012920.1&#39;}
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>gl.get_number_to_NC(build=&quot;19&quot;)
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>{1: &#39;NC_000001.10&#39;,2: &#39;NC_000002.11&#39;,3: &#39;NC_000003.11&#39;, 4: &#39;NC_000004.11&#39;, 5: &#39;NC_000005.9&#39;, 6: &#39;NC_000006.11&#39;, 7: &#39;NC_000007.13&#39;, 8: &#39;NC_000008.10&#39;, 9: &#39;NC_000009.11&#39;, 10: &#39;NC_000010.10&#39;, 11: &#39;NC_000011.9&#39;, 12: &#39;NC_000012.11&#39;, 13: &#39;NC_000013.10&#39;, 14: &#39;NC_000014.8&#39;, 15: &#39;NC_000015.9&#39;, 16: &#39;NC_000016.9&#39;, 17: &#39;NC_000017.10&#39;, 18: &#39;NC_000018.9&#39;, 19: &#39;NC_000019.9&#39;, 20: &#39;NC_000020.10&#39;, 21: &#39;NC_000021.8&#39;, 22: &#39;NC_000022.10&#39;, 23: &#39;NC_000023.10&#39;, 24: &#39;NC_000024.9&#39;, 25: &#39;NC_012920.1&#39;}
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>gl.get_number_to_NC(build=&quot;19&quot;)
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>{1: &#39;NC_000001.11&#39;,2: &#39;NC_000002.12&#39;,3: &#39;NC_000003.12&#39;,4: &#39;NC_000004.12&#39;,5: &#39;NC_000005.10&#39;,6: &#39;NC_000006.12&#39;,7: &#39;NC_000007.14&#39;,8: &#39;NC_000008.11&#39;,9: &#39;NC_000009.12&#39;,10: &#39;NC_000010.11&#39;,11: &#39;NC_000011.10&#39;,12: &#39;NC_000012.12&#39;,13: &#39;NC_000013.11&#39;,14: &#39;NC_000014.9&#39;,15: &#39;NC_000015.10&#39;,16: &#39;NC_000016.10&#39;,17: &#39;NC_000017.11&#39;,18: &#39;NC_000018.10&#39;,19: &#39;NC_000019.10&#39;,20: &#39;NC_000020.11&#39;,21: &#39;NC_000021.9&#39;,22: &#39;NC_000022.11&#39;,23: &#39;NC_000023.11&#39;,24: &#39;NC_000024.1&#39;,25: &#39;NC_012920.1&#39;}
+</span></code></pre></div>
 </div>
 <h2 id="4-example">4. Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code># download ref SNPID-rsID table first
-gl.download_ref(&quot;1kg_dbsnp151_hg19_auto&quot;) 
-
-# if you want to annotate as much as possible. Please download the very large dbSNP vcf file.
-
-mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
-             snpid=&quot;SNP&quot;,
-             chrom=&quot;CHR&quot;,
-             pos=&quot;POS&quot;,
-             ea=&quot;ALT&quot;,
-             nea=&quot;REF&quot;,
-             neaf=&quot;Frq&quot;,
-             beta=&quot;BETA&quot;,
-             se=&quot;SE&quot;,
-             p=&quot;P&quot;,
-             direction=&quot;Dir&quot;,
-             n=&quot;N&quot;,
-             nrows=10000)
-
-# run basic_check first
-mysumstats.basic_check() 
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a># download ref SNPID-rsID table first
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>gl.download_ref(&quot;1kg_dbsnp151_hg19_auto&quot;) 
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a># if you want to annotate as much as possible. Please download the very large dbSNP vcf file.
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>             snpid=&quot;SNP&quot;,
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>             chrom=&quot;CHR&quot;,
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>             pos=&quot;POS&quot;,
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>             ea=&quot;ALT&quot;,
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>             nea=&quot;REF&quot;,
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>             neaf=&quot;Frq&quot;,
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>             beta=&quot;BETA&quot;,
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>             se=&quot;SE&quot;,
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>             p=&quot;P&quot;,
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>             direction=&quot;Dir&quot;,
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>             n=&quot;N&quot;,
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>             nrows=10000)
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a># run basic_check first
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>mysumstats.basic_check() 
+</span></code></pre></div>
 <p><img alt="image" src="https://user-images.githubusercontent.com/40289485/211799713-032b3571-ae01-4307-909b-973cdf043e17.png" /></p>
-<div class="highlight"><pre><span></span><code># if you SNPID is like 1:725932_G_A , you can use fix_id to fix the separator.
-mysumstats.fix_id(fixsep=True)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a># if you SNPID is like 1:725932_G_A , you can use fix_id to fix the separator.
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>mysumstats.fix_id(fixsep=True)
+</span></code></pre></div>
 <p><img alt="image" src="https://user-images.githubusercontent.com/40289485/211799561-dddf7649-09fc-4eb5-b8e3-d7301a8944d1.png" /></p>
-<div class="highlight"><pre><span></span><code># rsID annotation
-mysumstats.assign_rsid( n_cores = 2,
-                        ref_rsid_tsv = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;),
-                        ref_rsid_vcf =&quot;/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz&quot;,
-                        chr_dict = gl.get_number_to_NC(build=&quot;19&quot;))
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>Wed Jan 11 20:05:38 2023 Start to annotate rsID based on chromosome and position information...
-Wed Jan 11 20:05:38 2023  -Current Dataframe shape : 10000  x  12
-Wed Jan 11 20:05:38 2023  -SNPID-rsID text file: /home/yunye/.gwaslab/1kg_dbsnp151_hg19_auto.txt.gz
-Wed Jan 11 20:05:38 2023  -10000 rsID could be possibly fixed...
-Wed Jan 11 20:05:38 2023  -Setting block size:  5000000
-Wed Jan 11 20:05:38 2023  -Loading block: 0   1   2   3   4   5   6   7   8   9   10   11   12   13   14   15   
-Wed Jan 11 20:10:16 2023  -rsID Annotation for 58 need to be fixed!
-Wed Jan 11 20:10:16 2023  -Annotated 9942 rsID successfully!
-Wed Jan 11 20:10:16 2023 Start to assign rsID using vcf...
-Wed Jan 11 20:10:16 2023  -Current Dataframe shape : 10000  x  13
-Wed Jan 11 20:10:16 2023  -CPU Cores to use : 2
-Wed Jan 11 20:10:16 2023  -Reference VCF file: /home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz
-Wed Jan 11 20:10:16 2023  -Assigning rsID based on chr:pos and ref:alt/alt:ref...
-Wed Jan 11 20:10:17 2023  -rsID Annotation for 1 need to be fixed!
-Wed Jan 11 20:10:17 2023  -Annotated 57 rsID successfully!
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a># rsID annotation
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>mysumstats.assign_rsid( n_cores = 2,
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>                        ref_rsid_tsv = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;),
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>                        ref_rsid_vcf =&quot;/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz&quot;,
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>                        chr_dict = gl.get_number_to_NC(build=&quot;19&quot;))
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Wed Jan 11 20:05:38 2023 Start to annotate rsID based on chromosome and position information...
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Wed Jan 11 20:05:38 2023  -Current Dataframe shape : 10000  x  12
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>Wed Jan 11 20:05:38 2023  -SNPID-rsID text file: /home/yunye/.gwaslab/1kg_dbsnp151_hg19_auto.txt.gz
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>Wed Jan 11 20:05:38 2023  -10000 rsID could be possibly fixed...
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>Wed Jan 11 20:05:38 2023  -Setting block size:  5000000
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>Wed Jan 11 20:05:38 2023  -Loading block: 0   1   2   3   4   5   6   7   8   9   10   11   12   13   14   15   
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>Wed Jan 11 20:10:16 2023  -rsID Annotation for 58 need to be fixed!
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>Wed Jan 11 20:10:16 2023  -Annotated 9942 rsID successfully!
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>Wed Jan 11 20:10:16 2023 Start to assign rsID using vcf...
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>Wed Jan 11 20:10:16 2023  -Current Dataframe shape : 10000  x  13
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>Wed Jan 11 20:10:16 2023  -CPU Cores to use : 2
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>Wed Jan 11 20:10:16 2023  -Reference VCF file: /home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>Wed Jan 11 20:10:16 2023  -Assigning rsID based on chr:pos and ref:alt/alt:ref...
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>Wed Jan 11 20:10:17 2023  -rsID Annotation for 1 need to be fixed!
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>Wed Jan 11 20:10:17 2023  -Annotated 57 rsID successfully!
+</span></code></pre></div>
 <p>As you can see, SNPID-rsID (<code>1kg_dbsnp151_hg19_auto</code>) annotated 9942 rsID and the large reference VCF file (from dbSNP) annotated additonal 57 rare rsID.</p>
 <p><img alt="image" src="https://user-images.githubusercontent.com/40289485/211800319-68f33eaa-4c48-4ba4-aa52-afb9ac145dee.png" /></p>
 </div>
