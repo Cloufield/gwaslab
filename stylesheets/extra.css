@@ -14,6 +14,7 @@ height: auto;
 .md-typeset table:not([class]) {
     display: table;
     font-size: px2rem(11px);
+    border-spacing:  px2em(2px);
 }
 
 .md-typeset td {
