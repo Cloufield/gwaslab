@@ -550,22 +550,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#1-usage" class="md-nav__link">
+    1. Usage
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#options" class="md-nav__link">
-    Options
+  <a href="#2-options" class="md-nav__link">
+    2. Options
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    example
+  <a href="#3-example" class="md-nav__link">
+    3. Example
   </a>
   
 </li>
@@ -1008,22 +1008,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#1-usage" class="md-nav__link">
+    1. Usage
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#options" class="md-nav__link">
-    Options
+  <a href="#2-options" class="md-nav__link">
+    2. Options
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    example
+  <a href="#3-example" class="md-nav__link">
+    3. Example
   </a>
   
 </li>
@@ -1044,7 +1044,7 @@
 
 <h1 id="liftover">Liftover</h1>
 <p>GWASLab can directly liftover the positions of variants in sumstats.</p>
-<h2 id="usage">Usage</h2>
+<h2 id="1-usage">1. Usage</h2>
 <div class="highlight"><pre><span></span><code>mysumstats.liftover(n_cores=3, 
                     from_build=&quot;19&quot;, 
                     to_build=&quot;38&quot;,
@@ -1054,18 +1054,48 @@
 <p class="admonition-title">Note</p>
 <p>GWASLab will only liftover basepair positions. If needed, please perform harmonization using the reference file of the target build.  </p>
 </div>
-<h2 id="options">Options</h2>
-<ul>
-<li><code>n_cores</code> : <code>Interger</code>. Number of threads to use for liftover.</li>
-<li><code>from_build</code> : <code>"19"</code> or <code>"38"</code>. Original genome build.</li>
-<li><code>to_build</code> : <code>"19"</code> or <code>"38"</code>. Target genome build.</li>
-<li><code>remove</code> : <code>Boolean</code>. If True, remove unmapped variants</li>
-</ul>
+<h2 id="2-options">2. Options</h2>
+<table>
+<thead>
+<tr>
+<th><code>.liftover()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n_cores</code></td>
+<td><code>interger</code></td>
+<td>Number of threads to use for liftover.</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>from_build</code></td>
+<td><code>"19"</code> or <code>"38"</code></td>
+<td>Original genome build</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>to_build</code></td>
+<td><code>"19"</code> or <code>"38"</code></td>
+<td>Target genome build</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>remove</code></td>
+<td><code>boolean</code></td>
+<td>If True, remove unmapped variants</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition quote">
 <p class="admonition-title">Quote</p>
 <p>This method is based on <a href="https://github.com/jeremymcrae/liftover">GitHub - jeremymcrae/liftover: liftover for python, made fast with cython</a></p>
 </div>
-<h2 id="example">example</h2>
+<h2 id="3-example">3. Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,

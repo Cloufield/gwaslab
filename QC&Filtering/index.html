@@ -494,43 +494,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#methods-summary" class="md-nav__link">
-    Methods Summary
+  <a href="#1-methods-summary" class="md-nav__link">
+    1. Methods Summary
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#statistics-sanity-check" class="md-nav__link">
-    Statistics Sanity Check
+  <a href="#2-statistics-sanity-check" class="md-nav__link">
+    2. Statistics Sanity Check
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#remove-duplicated-or-multiallelic-variants" class="md-nav__link">
-    Remove duplicated or multiallelic variants
+  <a href="#3-remove-duplicated-or-multiallelic-variants" class="md-nav__link">
+    3. Remove duplicated or multiallelic variants
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering-by-condition" class="md-nav__link">
-    Filtering by condition
+  <a href="#4-filtering-by-condition" class="md-nav__link">
+    4. Filtering by condition
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering-regions" class="md-nav__link">
-    Filtering regions
+  <a href="#5-filtering-regions" class="md-nav__link">
+    5. Filtering regions
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#filter_in-filter_out-deprecated" class="md-nav__link">
-    filter_in &amp; filter_out (deprecated)
+  <a href="#6-filter_in-filter_out-deprecated" class="md-nav__link">
+    6. filter_in &amp; filter_out (deprecated)
   </a>
   
 </li>
@@ -1029,43 +1029,43 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#methods-summary" class="md-nav__link">
-    Methods Summary
+  <a href="#1-methods-summary" class="md-nav__link">
+    1. Methods Summary
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#statistics-sanity-check" class="md-nav__link">
-    Statistics Sanity Check
+  <a href="#2-statistics-sanity-check" class="md-nav__link">
+    2. Statistics Sanity Check
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#remove-duplicated-or-multiallelic-variants" class="md-nav__link">
-    Remove duplicated or multiallelic variants
+  <a href="#3-remove-duplicated-or-multiallelic-variants" class="md-nav__link">
+    3. Remove duplicated or multiallelic variants
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering-by-condition" class="md-nav__link">
-    Filtering by condition
+  <a href="#4-filtering-by-condition" class="md-nav__link">
+    4. Filtering by condition
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering-regions" class="md-nav__link">
-    Filtering regions
+  <a href="#5-filtering-regions" class="md-nav__link">
+    5. Filtering regions
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#filter_in-filter_out-deprecated" class="md-nav__link">
-    filter_in &amp; filter_out (deprecated)
+  <a href="#6-filter_in-filter_out-deprecated" class="md-nav__link">
+    6. filter_in &amp; filter_out (deprecated)
   </a>
   
 </li>
@@ -1086,7 +1086,7 @@
 
 <h1 id="qc-and-filtering">QC and filtering</h1>
 <p>GWASLab provides all-in-one functions and customizable functions for sumstats QC and filtering.</p>
-<h2 id="methods-summary">Methods Summary</h2>
+<h2 id="1-methods-summary">1. Methods Summary</h2>
 <table>
 <thead>
 <tr>
@@ -1123,7 +1123,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="statistics-sanity-check">Statistics Sanity Check</h2>
+<h2 id="2-statistics-sanity-check">2. Statistics Sanity Check</h2>
 <p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected ranges</code>.</p>
 <table>
 <thead>
@@ -1243,7 +1243,7 @@
 <span class="n">Sun</span> <span class="n">Jul</span> <span class="mi">16</span> <span class="mi">15</span><span class="p">:</span><span class="mi">24</span><span class="p">:</span><span class="mi">40</span> <span class="mi">2023</span> <span class="n">Finished</span> <span class="n">sanity</span> <span class="n">check</span> <span class="n">successfully</span><span class="err">!</span>
 </code></pre></div>
 </div>
-<h2 id="remove-duplicated-or-multiallelic-variants">Remove duplicated or multiallelic variants</h2>
+<h2 id="3-remove-duplicated-or-multiallelic-variants">3. Remove duplicated or multiallelic variants</h2>
 <p>After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using</p>
 <div class="highlight"><pre><span></span><code>.remove_dup(mode=&quot;md&quot;)
 </code></pre></div>
@@ -1290,7 +1290,7 @@
 <p>After</p>
 <p><img width="525" alt="image" src="https://user-images.githubusercontent.com/40289485/212274043-fe37a99e-1fed-4340-944a-e731126e51f3.png"></p>
 </div>
-<h2 id="filtering-by-condition">Filtering by condition</h2>
+<h2 id="4-filtering-by-condition">4. Filtering by condition</h2>
 <p>Filter the sumstats by <code>expr</code> (a wrapper of <code>pandas.DataFrame.query</code>), and return a new Sumstats Object by default. This allows method chaining. For example, you can filter certain variants first and then create a Mahanttan plot like <code>mysumstats.filter_value('BETA&lt;0 &amp; CHR==1').plot_mqq()</code>.</p>
 <div class="highlight"><pre><span></span><code>.filter_value(expr,inplace=False)
 </code></pre></div>
@@ -1329,7 +1329,7 @@ Wed Dec  7 01:32:09 2022 Finished creating QQ plot successfully!
 </code></pre></div>
 <img alt="image" src="https://user-images.githubusercontent.com/40289485/211584317-6c1583b5-53e4-4aae-9141-af5781e2439b.png" /></p>
 </div>
-<h2 id="filtering-regions">Filtering regions</h2>
+<h2 id="5-filtering-regions">5. Filtering regions</h2>
 <p><div class="highlight"><pre><span></span><code>.filter_region_in(path=&quot;./abc.bed&quot;)
 .filter_region_out(high_ld=True)
 </code></pre></div>
@@ -1345,7 +1345,7 @@ filter variants in certain regions defined in bed files.</p>
 mysumstats.filter_region_out(high_ld=True,inplace=False).data
 </code></pre></div>
 </div>
-<h2 id="filter_in-filter_out-deprecated">filter_in &amp; filter_out (deprecated)</h2>
+<h2 id="6-filter_in-filter_out-deprecated">6. filter_in &amp; filter_out (deprecated)</h2>
 <p><div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">filter_in</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="o">.</span><span class="n">filter_out</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>

@@ -522,23 +522,23 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#reference-data" class="md-nav__link">
-    Reference data
+  <a href="#1-reference-data" class="md-nav__link">
+    1. Reference data
   </a>
   
-    <nav class="md-nav" aria-label="Reference data">
+    <nav class="md-nav" aria-label="1. Reference data">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#snpid-rsid-table" class="md-nav__link">
-    SNPID-rsID table
+  <a href="#11-snpid-rsid-table" class="md-nav__link">
+    1.1 SNPID-rsID table
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#vcf-file" class="md-nav__link">
-    VCF file
+  <a href="#12-vcf-file" class="md-nav__link">
+    1.2 VCF file
   </a>
   
 </li>
@@ -549,22 +549,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#2-usage" class="md-nav__link">
+    2. Usage
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#options" class="md-nav__link">
-    Options
+  <a href="#3-options" class="md-nav__link">
+    3. Options
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
+  <a href="#4-example" class="md-nav__link">
+    4. Example
   </a>
   
 </li>
@@ -1035,23 +1035,23 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#reference-data" class="md-nav__link">
-    Reference data
+  <a href="#1-reference-data" class="md-nav__link">
+    1. Reference data
   </a>
   
-    <nav class="md-nav" aria-label="Reference data">
+    <nav class="md-nav" aria-label="1. Reference data">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#snpid-rsid-table" class="md-nav__link">
-    SNPID-rsID table
+  <a href="#11-snpid-rsid-table" class="md-nav__link">
+    1.1 SNPID-rsID table
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#vcf-file" class="md-nav__link">
-    VCF file
+  <a href="#12-vcf-file" class="md-nav__link">
+    1.2 VCF file
   </a>
   
 </li>
@@ -1062,22 +1062,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
+  <a href="#2-usage" class="md-nav__link">
+    2. Usage
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#options" class="md-nav__link">
-    Options
+  <a href="#3-options" class="md-nav__link">
+    3. Options
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
+  <a href="#4-example" class="md-nav__link">
+    4. Example
   </a>
   
 </li>
@@ -1099,17 +1099,17 @@
 <h1 id="assigning-rsid">Assigning rsID</h1>
 <p>GWASLab uses a two-step strategy (both steps are optional).</p>
 <ul>
-<li>For quick annotation, GWASLab iterates over a SNPID-rsID table and assign rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats. GWASLab provides a curated table  (1KG autosome variants). </li>
-<li>For full annotation, GWASLab will query a large reference VCF file (dbSNP for example, &gt;20GB ) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EN/NEA matches.</li>
+<li>For quick annotation, GWASLab iterates over a SNPID-rsID table and assigns rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats. GWASLab provides a curated table  (1KG autosome variants). </li>
+<li>For full annotation, GWASLab will query a large reference VCF file (dbSNP for example, &gt;20GB ) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EN/NEA match.</li>
 </ul>
-<h2 id="reference-data">Reference data</h2>
-<h3 id="snpid-rsid-table">SNPID-rsID table</h3>
+<h2 id="1-reference-data">1. Reference data</h2>
+<h3 id="11-snpid-rsid-table">1.1 SNPID-rsID table</h3>
 <p>GWASLab provides a download function <code>gl.download_ref()</code> and two curated tables which contains ~80M 1KG variants:</p>
 <ul>
 <li><code>hg19</code> : <code>gl.download_ref("1kg_dbsnp151_hg19_auto")</code></li>
 <li><code>hg38</code> : <code>gl.download_ref("1kg_dbsnp151_hg38_auto")</code></li>
 </ul>
-<h3 id="vcf-file">VCF file</h3>
+<h3 id="12-vcf-file">1.2 VCF file</h3>
 <p>You can download this from dbSNP:</p>
 <p><code>hg19</code></p>
 <ul>
@@ -1151,7 +1151,7 @@ NC_000001.10    10069   rs1570391755    A       C,G     .       .       RS=15703
 NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=1639545200;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
 </code></pre></div>
 </div>
-<h2 id="usage">Usage</h2>
+<h2 id="2-usage">2. Usage</h2>
 <div class="highlight"><pre><span></span><code>mysumstats.basic_check()
 mysumstats.assign_rsid( 
                         ref_rsid_tsv = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;),
@@ -1159,75 +1159,57 @@ mysumstats.assign_rsid(
                         chr_dict = gl.get_number_to_NC(build=&quot;19&quot;),
                         n_cores = 2)
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Please always run <code>.basic_check()</code> first. This will convert the data to right data type, standardize and normalize the sumstats.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>Please always run <code>.basic_check()</code> first. This will convert the data to right data type in most cases, and standardize and normalize the sumstats.</p>
 </div>
-<h2 id="options">Options</h2>
-<ul>
-<li><code>ref_rsid_tsv</code> : tsv file for annotation of common used variants. Using SNPID (like 1:725932:G:A)</li>
-<li><code>ref_rsid_vcf</code> : vcf file for annotation of other variants.</li>
-<li><code>chr_dict</code>: a dictionary for to convert 1-25 to CHR in vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). <code>gwaslab</code> provides built-in conversion dictionaries.   <code>gl.get_number_to_NC(build="19")</code> and <code>gl.get_number_to_NC(build="19")</code></li>
-<li><code>n_cores</code>: number of cores to use.</li>
-</ul>
+<h2 id="3-options">3. Options</h2>
+<table>
+<thead>
+<tr>
+<th><code>.assign_rsid()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ref_rsid_tsv</code></td>
+<td><code>string</code></td>
+<td>tsv file path for annotation of commonly used variants using SNPID (like 1:725932:G:A) as key.</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>ref_rsid_vcf</code></td>
+<td><code>string</code></td>
+<td>vcf file path for annotation of other variants. .tbi file is also needed.</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>chr_dict</code></td>
+<td><code>dict</code></td>
+<td>a dictionary for converting 1-25 to CHR in the vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). <code>gwaslab</code> provides built-in conversion dictionaries.   <code>gl.get_number_to_NC(build="19")</code> and <code>gl.get_number_to_NC(build="19")</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>n_cores</code></td>
+<td><code>int</code></td>
+<td>number of cores to use.</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition note">
 <p class="admonition-title">Conversion for RefSeq sequence</p>
 <div class="highlight"><pre><span></span><code>gl.get_number_to_NC(build=&quot;19&quot;)
-{1: &#39;NC_000001.10&#39;,
- 2: &#39;NC_000002.11&#39;,
- 3: &#39;NC_000003.11&#39;,
- 4: &#39;NC_000004.11&#39;,
- 5: &#39;NC_000005.9&#39;,
- 6: &#39;NC_000006.11&#39;,
- 7: &#39;NC_000007.13&#39;,
- 8: &#39;NC_000008.10&#39;,
- 9: &#39;NC_000009.11&#39;,
- 10: &#39;NC_000010.10&#39;,
- 11: &#39;NC_000011.9&#39;,
- 12: &#39;NC_000012.11&#39;,
- 13: &#39;NC_000013.10&#39;,
- 14: &#39;NC_000014.8&#39;,
- 15: &#39;NC_000015.9&#39;,
- 16: &#39;NC_000016.9&#39;,
- 17: &#39;NC_000017.10&#39;,
- 18: &#39;NC_000018.9&#39;,
- 19: &#39;NC_000019.9&#39;,
- 20: &#39;NC_000020.10&#39;,
- 21: &#39;NC_000021.8&#39;,
- 22: &#39;NC_000022.10&#39;,
- 23: &#39;NC_000023.10&#39;,
- 24: &#39;NC_000024.9&#39;,
- 25: &#39;NC_012920.1&#39;}
+{1: &#39;NC_000001.10&#39;,2: &#39;NC_000002.11&#39;,3: &#39;NC_000003.11&#39;, 4: &#39;NC_000004.11&#39;, 5: &#39;NC_000005.9&#39;, 6: &#39;NC_000006.11&#39;, 7: &#39;NC_000007.13&#39;, 8: &#39;NC_000008.10&#39;, 9: &#39;NC_000009.11&#39;, 10: &#39;NC_000010.10&#39;, 11: &#39;NC_000011.9&#39;, 12: &#39;NC_000012.11&#39;, 13: &#39;NC_000013.10&#39;, 14: &#39;NC_000014.8&#39;, 15: &#39;NC_000015.9&#39;, 16: &#39;NC_000016.9&#39;, 17: &#39;NC_000017.10&#39;, 18: &#39;NC_000018.9&#39;, 19: &#39;NC_000019.9&#39;, 20: &#39;NC_000020.10&#39;, 21: &#39;NC_000021.8&#39;, 22: &#39;NC_000022.10&#39;, 23: &#39;NC_000023.10&#39;, 24: &#39;NC_000024.9&#39;, 25: &#39;NC_012920.1&#39;}
 
 gl.get_number_to_NC(build=&quot;19&quot;)
-{1: &#39;NC_000001.11&#39;,
- 2: &#39;NC_000002.12&#39;,
- 3: &#39;NC_000003.12&#39;,
- 4: &#39;NC_000004.12&#39;,
- 5: &#39;NC_000005.10&#39;,
- 6: &#39;NC_000006.12&#39;,
- 7: &#39;NC_000007.14&#39;,
- 8: &#39;NC_000008.11&#39;,
- 9: &#39;NC_000009.12&#39;,
- 10: &#39;NC_000010.11&#39;,
- 11: &#39;NC_000011.10&#39;,
- 12: &#39;NC_000012.12&#39;,
- 13: &#39;NC_000013.11&#39;,
- 14: &#39;NC_000014.9&#39;,
- 15: &#39;NC_000015.10&#39;,
- 16: &#39;NC_000016.10&#39;,
- 17: &#39;NC_000017.11&#39;,
- 18: &#39;NC_000018.10&#39;,
- 19: &#39;NC_000019.10&#39;,
- 20: &#39;NC_000020.11&#39;,
- 21: &#39;NC_000021.9&#39;,
- 22: &#39;NC_000022.11&#39;,
- 23: &#39;NC_000023.11&#39;,
- 24: &#39;NC_000024.1&#39;,
- 25: &#39;NC_012920.1&#39;}
+{1: &#39;NC_000001.11&#39;,2: &#39;NC_000002.12&#39;,3: &#39;NC_000003.12&#39;,4: &#39;NC_000004.12&#39;,5: &#39;NC_000005.10&#39;,6: &#39;NC_000006.12&#39;,7: &#39;NC_000007.14&#39;,8: &#39;NC_000008.11&#39;,9: &#39;NC_000009.12&#39;,10: &#39;NC_000010.11&#39;,11: &#39;NC_000011.10&#39;,12: &#39;NC_000012.12&#39;,13: &#39;NC_000013.11&#39;,14: &#39;NC_000014.9&#39;,15: &#39;NC_000015.10&#39;,16: &#39;NC_000016.10&#39;,17: &#39;NC_000017.11&#39;,18: &#39;NC_000018.10&#39;,19: &#39;NC_000019.10&#39;,20: &#39;NC_000020.11&#39;,21: &#39;NC_000021.9&#39;,22: &#39;NC_000022.11&#39;,23: &#39;NC_000023.11&#39;,24: &#39;NC_000024.1&#39;,25: &#39;NC_012920.1&#39;}
 </code></pre></div>
 </div>
-<h2 id="example">Example</h2>
+<h2 id="4-example">4. Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code># download ref SNPID-rsID table first
