@@ -1,77 +1,33 @@
 # Manhattan plot and QQ plot : plot_mqq()
 
-<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png">
+GWASLab provides a customizable plotting function for Manhattan and Q-Q plots.
 
-GWASLab provides customizable plotting functions for Manhattan and Q-Q plots.
+```
+.plot_mqq()
+```
 
-## Quick plot
+## Examples
 
-!!! example "Quick Manhattan and Q-Q plot"
+!!! example "Quick Manhattan and Q-Q plot without any options"
     ```python
     mysumstats.plot_mqq()
     ```
     
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196595098-23ff14eb-5579-4177-8d20-54816a410f48.png">
 
+## Options
 
-## Usage
-
-!!! info "All options for `plot_mqq`"
-    ```python
-    mysumstats.plot_mqq(
-              mlog10p="MLOG10P",
-              scaled=False,
-              mode="mqq",
-              mqqratio=3,
-              windowsizekb=500,
-              anno=None,
-              anno_set=[],
-              anno_alias={},
-              anno_d={},
-              anno_style="right",
-              anno_fixed_arm_length=None,
-              arm_offset=50,
-              arm_scale=1,
-              cut=0,
-              skip=0,
-              cutfactor=10,
-              cut_line_color="#ebebeb",  
-              sig_level=5e-8,
-              sig_line_color="grey",
-              suggestive_sig_level=5e-6,
-              highlight = [],
-              highlight_color="#CB132D",
-              highlight_windowkb = 500,
-              pinpoint=[],
-              pinpoint_color ="red",
-              stratified=False,
-              maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
-              maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
-              gc=True,
-              title =None,
-              mtitle=None,
-              qtitle=None,
-              figargs= {"figsize":(15,5),"dpi":100},
-              title_fontsize=13,
-              fontsize = 10,
-              anno_fontsize = 10,
-              colors=["#597FBD","#74BAD3"],
-              marker_size=(5,25),
-              use_rank=False,
-              verbose=True,
-              repel_force=0.03,
-              build="19",
-              title_pad=1.08, 
-              save=None,
-              saveargs={"dpi":400,"facecolor":"white"},
-              ):
-    ```
-
-
-!!! note Variant with extreme P values
-    To plot the variant with extreme P values (P < 1e-300), you can use `scaled=False` to create the plot with MLOG10P instead of raw P values. To calculate MLOG10P for extreme P values from BETA/SE or Z scores, you can use `mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)`. For details, please refer to the "Extreme P values" section in [https://cloufield.github.io/gwaslab/Conversion/](https://cloufield.github.io/gwaslab/Conversion/).
-
-## Customized plot example
+- [Using P or MLOG10P](#use-mlog10p-for-extreme-p-values)
+- [Adjusting x axis](#x-axis-physical-position-or-rank)
+- [Adjusting y axis](#y-axis-skip-low-and-shrink-high)
+- [Changing layout](#manhattan-and-qq-plot-layout)
+- [Annotation](#annotation)
+- [Adding lines](#lines)
+- [Highlight loci and Pinpoint variants](#highlight-specified-loci) 
+- [Colors and fonts](#colors-and-fontsizes)
+- [MAF-stratified QQ plot](#maf-stratified-qq-plot).
+- [Changing titles](#titles)
+- [Saving figures](#save-plots)
 
 By setting the options, you can create highly customized Manhattan plots and Q-Q plots.
 
@@ -92,9 +48,6 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
     
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196594621-840217aa-117d-49ac-ab58-15a5fa6675b1.png">
 
-
-## Options
-
 ### Manhattan and QQ plot layout
 
 - `mode` : determine the layout of manhattan plot and qq plot.
@@ -103,18 +56,33 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
     - `"m"`: only manhattan plot
     - `"qq"`: only qq plot
     - `mqqratio`: width ratio
+
 !!! info "Layout"
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593277-0908d49e-40aa-4fe3-b214-d774ab4d0382.png">
 
 ----------------------------------------------------------------
 
-### Skip "low" and shrink "high"
+### Use MLOG10P for extreme P values
 
-- `skip` : sometimes it is not necessary to plot all variants, we can skip the insignicant variants . For example, we can exclude varints with -log10p lower than 3 from the plot by specifying `skip=3`
-- `cut` : loci with extremly large -log10(P) value are very likely to dwarf other significant loci , so we want to scale down the extrame loci from a certain threshold. 
-- `cutfactor`:  shrinkage factor, default is 10 
-- `cut_line_color`: the color of the line above which y axis is rescaled 
-- `sig_level=5e-8` : genome-wide significance threshold
+- `scaled` : `boolean`. By default, GWASLab uses P values for mqq plot. But you can set `scaled=Ture` to use MLOG10P to plot.
+
+!!! note "Variant with extreme P values"
+    To plot the variant with extreme P values (P < 1e-300), you can use `scaled=False` to create the plot with MLOG10P instead of raw P values. To calculate MLOG10P for extreme P values from BETA/SE or Z scores, you can use `mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)`. For details, please refer to the "Extreme P values" section in [https://cloufield.github.io/gwaslab/Conversion/](https://cloufield.github.io/gwaslab/Conversion/).
+
+### X axis: Physical position or rank
+
+- `use_rank` : `boolean`. If True, GWASLab will use position rank instead of the physical base-pair positions for x aixs.
+
+!!! note
+    If using rank, there will be no gap in the plot. If using base-pair positions, certain regions of the chromosome might be reflected in the plot like the heterochromatin.
+
+### Y axis: Skip "low" and shrink "high"
+
+- `skip` : sometimes it is not necessary to plot all variants, we can skip the variants with low -log10(P) values. For example, we can exclude varints with -log10(P) lower than 3 from the plot by specifying `skip=3`
+- `cut` : loci with extremly large -log10(P) value are very likely to dwarf other significant loci, so we want to scale down the -log10(P) for variants above a certain threshold. 
+- `cutfactor`:  shrinkage factor, default is 10.
+- `cut_line_color`: the color of the line above which y axis is rescaled.
+- `sig_level=5e-8` : genome-wide significance threshold.
 
 !!! info "Auxiliary lines"
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593118-b7358559-71ef-49ae-b8b0-15b34031c142.png">

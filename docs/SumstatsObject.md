@@ -106,28 +106,34 @@ You can load the sumstats by specifying the columns like:
 
 GWASLab supports common sumstats formats and you can load sumstats by specifying `fmt`.  
     
-!!! info formatbook
-    GWASLab uses a manually curated format conversion dictionary in [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)
+GWASLab uses a manually curated format conversion dictionary in [https://github.com/Cloufield/formatbook](https:/github.com/Cloufield/formatbook). Currently, it supports the following formats:
 
-    Supported formats:
+|`Keyword`|`Description`|
+|-|-|
+|`ssf`|GWAS-SSF|
+|`gwascatalog`|GWAS Catalog format|
+|`pgscatalog` |PGS Catalog format|
+|`plink`|PLINK output format|
+|`plink2`|PLINK2 output format|
+|`saige`|SAIGE output format|
+|`regenie`|output format|
+|`fastgwa`|output format|
+|`metal`|output format|
+|`mrmega`|output format|
+|`fuma`|input format|
+|`ldsc`|input format|
+|`locuszoom`|input format|
+|`vcf`|gwas-vcf format|
+|`bolt_lmm`|output format|
 
-    |`Keyword`|`Description`|
-    |-|-|
-    |`ssf`|GWAS-SSF|
-    |`gwascatalog`|GWAS Catalog format|
-    |`pgscatalog` |PGS Catalog format|
-    |`plink`|PLINK output format|
-    |`plink2`|PLINK2 output format|
-    |`saige`|SAIGE output format|
-    |`regenie`|output format|
-    |`fastgwa`|output format|
-    |`metal`|output format|
-    |`mrmega`|output format|
-    |`fuma`|input format|
-    |`ldsc`|input format|
-    |`locuszoom`|input format|
-    |`vcf`|gwas-vcf format|
-    |`bolt_lmm`|output format|
+!!! info "Update Formatbook using `gl.update_formaybook()`"
+    ```
+    gl.update_formatbook()
+    Mon Jul 17 17:38:11 2023 Updating formatbook from: https://raw.github.com/Cloufield/formatbook/main/formatbook.json
+    Mon Jul 17 17:38:12 2023 Overwrite formatbook to :  /home/yunye/gwaslab/gwaslab/src/gwaslab/data/formatbook.json
+    Mon Jul 17 17:38:12 2023 Available formats: auto,bolt_lmm,fastgwa,gwascatalog,gwascatalog_hm,gwaslab,ldsc,metal,mrmega,mtag,pgscatalog,pgscatalog_hm,pheweb,plink,plink2,regenie,saige,ssf,template,vcf
+    Mon Jul 17 17:38:12 2023 Formatbook has been updated!
+    ```
 
 !!! example "Load sumstats by simply specifying the format"
     ```
