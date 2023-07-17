@@ -40,12 +40,13 @@ GWASLab provides a flexible formatting and saving function.
 
 Using `float_formats`, you can specify the formats for numbers.
 
-##info "Default formats for floating-point numbers"
+!!! info "Default formats for floating-point numbers"
     ```
     {'EAF': '{:.4g}', 'BETA': '{:.4f}', 'Z': '{:.4f}','CHISQ': '{:.4f}','SE': '{:.4f}','OR': '{:.4f}','OR_95U': '{:.4f}','OR_95L': '{:.4f}','INFO': '{:.4f}','P': '{:.4e}','MLOG10P': '{:.4f}','DAF': '{:.4f}'}
     ```
 
-## Example 1: common tabular format
+## Examples
+### Common tabular formats
 
 GWASLab support commonly used tabular formats, which are listed in a companion repository `formatbook`.
 
@@ -100,7 +101,7 @@ GWASLab support commonly used tabular formats, which are listed in a companion r
     Tue Sep 13 18:00:41 2022 Finished outputting successfully!
     ```
 
-## Example 2 : LDSC
+## LDSC format
 !!! example "LDSC format, extract hapmap3 SNPs and exclude SNPs in HLA region"
     ```
     ## format the sumstats to ldsc format
@@ -109,7 +110,7 @@ GWASLab support commonly used tabular formats, which are listed in a companion r
     mysumstats.to_format("./test",fmt="ldsc", hapmap3=True, exclude_hla=False, build="19")
     ```
 
-## Example 3 : BED
+## BED format
 !!! example bed-like format
     ```
     # output 1-based bed-like files for vep
@@ -119,14 +120,14 @@ GWASLab support commonly used tabular formats, which are listed in a companion r
     mysumstats.to_format("./test",fmt="bed",bgzip=True,tabix=True)
     ```
 
-## Example 4: VCF 
+## GWAS VCF format
 !!! example vcf format
     ```
     # output vcf file, and then bgzip and index the file.
     mysumstats.to_format("./test",fmt="vcf",bgzip=True,tabix=True)
     ```
 
-## Example 5: GWAS-ssf
+## GWAS-SSF format
 !!! example GWAS-ssf format
     ```
     # output  GWAS-ssf format
