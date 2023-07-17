@@ -45,6 +45,11 @@ height: auto;
     margin-block-end: 0.7em;
 }
 
+md-typeset ul li {
+    margin-left: 1em;
+    margin-bottom: 0.4em;
+}
+
 .md-typeset p > code {
     color: #E33D70;
   }
