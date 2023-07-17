@@ -18,7 +18,7 @@ Note: GWASLab is being updated very frequently for now. I will release the first
 ## Install
 
 ```
-pip install gwaslab==3.4.20
+pip install gwaslab==3.4.21
 ```
 
 
@@ -26,6 +26,10 @@ pip install gwaslab==3.4.20
 import gwaslab as gl
 # load plink2 output
 mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="plink2")
+
+# load sumstats with auto mode (auto-detecting common headers) 
+# assuming ALT/A1 is EA, and frq is EAF
+mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="auto")
 
 # or you can specify the columns:
 mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
