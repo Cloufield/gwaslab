@@ -1,5 +1,8 @@
 # Update Logs
 
+## 3.4.21 2023/07/18
+- fix error in gc calculation for mqq plot when `expected_min_mlog10p` is not 0 and `stratified=True`.
+
 ## 3.4.20 2023/07/15
 
 - reimplement and unified the module for saving figures

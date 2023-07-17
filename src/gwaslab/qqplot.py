@@ -58,7 +58,6 @@ def _plot_qq(
     
     upper_bound_p = np.power(10.0, -expected_min_mlog10p)
 
-
     if stratified is False:
         # sort x,y for qq plot
         # high to low
@@ -66,17 +65,19 @@ def _plot_qq(
         
         # uniform distribution using raw number -> -log10 -> observed number (omit variants with low -log10p)
         #expected = -np.log10(np.linspace(minit,1,len(p_toplot_raw)))[:len(observed)]
-        
-        
-
-        expected = -np.log10(np.linspace(minit,upper_bound_p,len(p_toplot_raw)))[:len(observed)]
+    
+        expected_all = -np.log10(np.linspace(minit,upper_bound_p,len(p_toplot_raw)))[:len(observed)]
 
         if verbose:log.write("Expected range of P: (0,{})".format(upper_bound_p))
         #p_toplot = sumstats["scaled_P"]
-        ax2.scatter(expected,observed,s=marker_size[1],color=colors[0],**qq_scatter_kwargs)
+        ax2.scatter(expected_all,observed,s=marker_size[1],color=colors[0],**qq_scatter_kwargs)
 
     else:
         # stratified qq plot
+        
+        observed = p_toplot.sort_values(ascending=False)
+        expected_all = -np.log10(np.linspace(minit,upper_bound_p,len(p_toplot_raw)))[:len(observed)]
+
         for i,(lower, upper) in enumerate(maf_bins):
             # extract data for a maf_bin
             
@@ -112,12 +113,17 @@ def _plot_qq(
         
         level = 0.5
 
-        if expected_min_mlog10p!=0 and stratified!=True:
-            level = 1 -  np.power(10.0,-np.nanmedian(expected))
+        if expected_min_mlog10p!=0:
+            level = 1 -  np.power(10.0,-np.nanmedian(expected_all))
             if verbose: log.write(" -Level for calculating lambda GC : {}".format(1 - level))
 
         if verbose and not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.")
-        lambdagc = lambdaGC(p_toplot_raw, mode="MLOG10P", level=level, include_chrXYMT=include_chrXYMT,log=log,verbose=True)
+        lambdagc = lambdaGC(p_toplot_raw, 
+                            mode="MLOG10P", 
+                            level=level, 
+                            include_chrXYMT=include_chrXYMT,
+                            log=log,
+                            verbose=True)
         
         # annotate lambda gc to qq plot
         ax2.text(0.10, 1.03,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
