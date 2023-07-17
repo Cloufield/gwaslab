@@ -1310,7 +1310,7 @@
 <hr />
 <h3 id="use-mlog10p-for-extreme-p-values">Use MLOG10P for extreme P values</h3>
 <ul>
-<li><code>scaled</code> : <code>boolean</code>. By default, GWASLab use P values for mqq plot. But you can set <code>scaled=Ture</code> to use MLOG10P to plot.</li>
+<li><code>scaled</code> : <code>boolean</code>. By default, GWASLab uses P values for mqq plot. But you can set <code>scaled=Ture</code> to use MLOG10P to plot.</li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Variant with extreme P values</p>
@@ -1318,7 +1318,7 @@
 </div>
 <h3 id="x-axis-physical-position-or-rank">X axis: Physical position or rank</h3>
 <ul>
-<li><code>use_rank</code> : <code>boolean</code>, whether to use rank instead of base-pair positions for x aixs.</li>
+<li><code>use_rank</code> : <code>boolean</code>. If True, GWASLab will use position rank instead of the physical base-pair positions for x aixs.</li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1326,11 +1326,11 @@
 </div>
 <h3 id="y-axis-skip-low-and-shrink-high">Y axis: Skip "low" and shrink "high"</h3>
 <ul>
-<li><code>skip</code> : sometimes it is not necessary to plot all variants, we can skip the insignicant variants . For example, we can exclude varints with -log10p lower than 3 from the plot by specifying <code>skip=3</code></li>
-<li><code>cut</code> : loci with extremly large -log10(P) value are very likely to dwarf other significant loci , so we want to scale down the extrame loci from a certain threshold. </li>
-<li><code>cutfactor</code>:  shrinkage factor, default is 10 </li>
-<li><code>cut_line_color</code>: the color of the line above which y axis is rescaled </li>
-<li><code>sig_level=5e-8</code> : genome-wide significance threshold</li>
+<li><code>skip</code> : sometimes it is not necessary to plot all variants, we can skip the variants with low -log10(P) values. For example, we can exclude varints with -log10(P) lower than 3 from the plot by specifying <code>skip=3</code></li>
+<li><code>cut</code> : loci with extremly large -log10(P) value are very likely to dwarf other significant loci, so we want to scale down the -log10(P) for variants above a certain threshold. </li>
+<li><code>cutfactor</code>:  shrinkage factor, default is 10.</li>
+<li><code>cut_line_color</code>: the color of the line above which y axis is rescaled.</li>
+<li><code>sig_level=5e-8</code> : genome-wide significance threshold.</li>
 </ul>
 <div class="admonition info">
 <p class="admonition-title">Auxiliary lines</p>
