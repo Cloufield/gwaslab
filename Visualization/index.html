@@ -612,22 +612,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quick-plot" class="md-nav__link">
-    Quick plot
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#customized-plot-example" class="md-nav__link">
-    Customized plot example
+  <a href="#examples" class="md-nav__link">
+    Examples
   </a>
   
 </li>
@@ -1126,22 +1112,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quick-plot" class="md-nav__link">
-    Quick plot
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    Usage
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#customized-plot-example" class="md-nav__link">
-    Customized plot example
+  <a href="#examples" class="md-nav__link">
+    Examples
   </a>
   
 </li>
@@ -1279,17 +1251,17 @@
 
 
 <h1 id="manhattan-plot-and-qq-plot-plot_mqq">Manhattan plot and QQ plot : plot_mqq()</h1>
-<p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
-<p>GWASLab provides customizable plotting functions for Manhattan and Q-Q plots.</p>
-<h2 id="quick-plot">Quick plot</h2>
+<p>GWASLab provides a customizable plotting function for Manhattan and Q-Q plots.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>.plot_mqq()
+</span></code></pre></div>
+<h2 id="examples">Examples</h2>
 <div class="admonition example">
-<p class="admonition-title">Quick Manhattan and Q-Q plot</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">()</span>
+<p class="admonition-title">Quick Manhattan and Q-Q plot without any options</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">()</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196595098-23ff14eb-5579-4177-8d20-54816a410f48.png"></p>
 </div>
-<h2 id="usage">Usage</h2>
-<p>Options:</p>
+<h2 id="options">Options</h2>
 <ul>
 <li><a href="#use-mlog10p-for-extreme-p-values">Using P or MLOG10P</a></li>
 <li><a href="#x-axis-physical-position-or-rank">Adjusting x axis</a></li>
@@ -1303,25 +1275,23 @@
 <li><a href="#titles">Changing titles</a></li>
 <li><a href="#save-plots">Saving figures</a></li>
 </ul>
-<h2 id="customized-plot-example">Customized plot example</h2>
 <p>By setting the options, you can create highly customized Manhattan plots and Q-Q plots.</p>
 <div class="admonition example">
 <p class="admonition-title">A customized Manhattan and QQ plot</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>                  <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;qqm&quot;</span><span class="p">,</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>                  <span class="n">cut</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>                  <span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>                  <span class="n">anno_set</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;rs7989823&quot;</span><span class="p">]</span> <span class="p">,</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>                  <span class="n">pinpoint</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs7989823&quot;</span><span class="p">],</span> 
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>                  <span class="n">highlight</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">],</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>                  <span class="n">highlight_windowkb</span> <span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>                  <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>                  <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>                  <span class="n">figargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">300</span><span class="p">})</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>                  <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;qqm&quot;</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>                  <span class="n">cut</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>                  <span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>                  <span class="n">anno_set</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;rs7989823&quot;</span><span class="p">]</span> <span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>                  <span class="n">pinpoint</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs7989823&quot;</span><span class="p">],</span> 
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>                  <span class="n">highlight</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">],</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>                  <span class="n">highlight_windowkb</span> <span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>                  <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>                  <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>                  <span class="n">figargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">300</span><span class="p">})</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196594621-840217aa-117d-49ac-ab58-15a5fa6675b1.png"></p>
 </div>
-<h2 id="options">Options</h2>
 <h3 id="manhattan-and-qq-plot-layout">Manhattan and QQ plot layout</h3>
 <ul>
 <li><code>mode</code> : determine the layout of manhattan plot and qq plot.<ul>
@@ -1389,25 +1359,25 @@
 </div>
 <div class="admonition example">
 <p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the lead variants with chr:pos</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591270-592ce820-c541-4b84-a766-0b58bc6423ee.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the lead variants with GENENAME</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591371-262d31d5-9640-474f-af0d-d6c511c77280.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the variants in <code>anno_set</code></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">anno_set</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">])</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">anno_set</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">])</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591966-c9618c45-456b-4eb8-991b-66420f847a97.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Skip variants with -log10P&lt;3 and annotate the variants in <code>anno_set</code> with alias in <code>anno_alias</code></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">anno_set</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">],</span> <span class="n">anno_alias</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">:</span><span class="s2">&quot;anything you want here&quot;</span><span class="p">})</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">anno_set</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">],</span> <span class="n">anno_alias</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">:</span><span class="s2">&quot;anything you want here&quot;</span><span class="p">})</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196592136-f2cbc488-e02f-409b-b0ac-2ab16f7b1fd4.png"></p>
 </div>
@@ -1440,24 +1410,24 @@
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Adjust the direction the first to left and the thrd to right</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197342763-ffd4b3c1-d57a-4351-8f42-fb91ae282d32.png"></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>          
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>                    <span class="n">anno_d</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="s2">&quot;l&quot;</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="s2">&quot;r&quot;</span><span class="p">},</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>                    <span class="n">arm_offset</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>          
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>                    <span class="n">anno_d</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="s2">&quot;l&quot;</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="s2">&quot;r&quot;</span><span class="p">},</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>                    <span class="n">arm_offset</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Adjust the length of arm</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">arm_scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">arm_scale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345571-6a6ccb4e-6837-475d-ae3b-3c59fb447c56.png"></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Adjust the length of arm for each variant</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">arm_scale_d</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="mf">1.2</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="mf">1.1</span><span class="p">})</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">arm_scale_d</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="mf">1.2</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="mf">1.1</span><span class="p">})</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345530-08f4c9f6-d804-4e7e-865b-0b219179f6a9.png"></p>
 </div>
@@ -1477,9 +1447,9 @@
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Highlight loci and pinpoint variants</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>                   <span class="n">highlight</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;rs7989823&quot;</span><span class="p">],</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>                   <span class="n">pinpoint</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs671&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">])</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>                   <span class="n">highlight</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs12509595&quot;</span><span class="p">,</span><span class="s2">&quot;rs7989823&quot;</span><span class="p">],</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>                   <span class="n">pinpoint</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rs671&quot;</span><span class="p">,</span><span class="s2">&quot;19:15040733:T:C&quot;</span><span class="p">])</span>
 </span></code></pre></div>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593330-1794223c-79fd-40f9-942d-8acbbe00827b.png"></p>
 </div>
@@ -1499,20 +1469,20 @@
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Plot lines</p>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>                <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>                <span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>                <span class="n">windowsizekb</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>                <span class="n">cut</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>                <span class="n">cut_line_color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>                <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>  
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>                <span class="n">sig_level_lead</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> 
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>                <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>                <span class="n">suggestive_sig_line</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>                <span class="n">suggestive_sig_level</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
-</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>                <span class="n">suggestive_sig_line_color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
-</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>                <span class="n">additional_line</span><span class="o">=</span><span class="p">[</span><span class="mf">1e-40</span><span class="p">,</span><span class="mf">1e-60</span><span class="p">],</span>
-</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>                <span class="n">additional_line_color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;yellow&quot;</span><span class="p">,</span><span class="s2">&quot;green&quot;</span><span class="p">])</span>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>                <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>                <span class="n">anno</span><span class="o">=</span><span class="s2">&quot;GENENAME&quot;</span><span class="p">,</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>                <span class="n">windowsizekb</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>                <span class="n">cut</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>                <span class="n">cut_line_color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">,</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>                <span class="n">sig_level</span><span class="o">=</span><span class="mf">5e-8</span><span class="p">,</span>  
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>                <span class="n">sig_level_lead</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> 
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>                <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>                <span class="n">suggestive_sig_line</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>                <span class="n">suggestive_sig_level</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>                <span class="n">suggestive_sig_line_color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>                <span class="n">additional_line</span><span class="o">=</span><span class="p">[</span><span class="mf">1e-40</span><span class="p">,</span><span class="mf">1e-60</span><span class="p">],</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>                <span class="n">additional_line_color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;yellow&quot;</span><span class="p">,</span><span class="s2">&quot;green&quot;</span><span class="p">])</span>
 </span></code></pre></div>
 <img width="600" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/e0a8c92b-a3b5-430e-b11c-114f970ca34a"></p>
 </div>
@@ -1528,18 +1498,18 @@
 </div>
 <hr />
 <h3 id="colors-and-fontsizes">Colors and Fontsizes</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>          <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;#597FBD&quot;</span><span class="p">,</span><span class="s2">&quot;#74BAD3&quot;</span><span class="p">],</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>          <span class="n">cut_line_color</span><span class="o">=</span><span class="s2">&quot;#ebebeb&quot;</span><span class="p">,</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>          <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>          <span class="n">highlight_color</span><span class="o">=</span><span class="s2">&quot;#CB132D&quot;</span><span class="p">,</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>          <span class="n">pinpoint_color</span> <span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>          <span class="n">maf_bin_colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#f0ad4e&quot;</span><span class="p">,</span><span class="s2">&quot;#5cb85c&quot;</span><span class="p">,</span> <span class="s2">&quot;#5bc0de&quot;</span><span class="p">,</span><span class="s2">&quot;#000042&quot;</span><span class="p">],</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>          <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>          <span class="n">anno_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>          <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">13</span><span class="p">,</span>
-</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>          <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">25</span><span class="p">)</span>
-</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>          <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;#597FBD&quot;</span><span class="p">,</span><span class="s2">&quot;#74BAD3&quot;</span><span class="p">],</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>          <span class="n">cut_line_color</span><span class="o">=</span><span class="s2">&quot;#ebebeb&quot;</span><span class="p">,</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>          <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>          <span class="n">highlight_color</span><span class="o">=</span><span class="s2">&quot;#CB132D&quot;</span><span class="p">,</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>          <span class="n">pinpoint_color</span> <span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>          <span class="n">maf_bin_colors</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#f0ad4e&quot;</span><span class="p">,</span><span class="s2">&quot;#5cb85c&quot;</span><span class="p">,</span> <span class="s2">&quot;#5bc0de&quot;</span><span class="p">,</span><span class="s2">&quot;#000042&quot;</span><span class="p">],</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>          <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>          <span class="n">anno_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>          <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">13</span><span class="p">,</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>          <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">25</span><span class="p">)</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="p">)</span>
 </span></code></pre></div>
 <ul>
 <li><code>colors</code> : <code>list</code>, a list of color for Manhattan plot. (default: <code>["#597FBD","#74BAD3"]</code>)</li>
@@ -1554,21 +1524,21 @@
 </ul>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>                    <span class="n">cut</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>                    <span class="n">colors</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s2">&quot;Set3&quot;</span><span class="p">),</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>                    <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>                    <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>                    <span class="n">cut</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>                    <span class="n">colors</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s2">&quot;Set3&quot;</span><span class="p">),</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>                    <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>                    <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span>
 </span></code></pre></div>
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/217693629-98261192-c521-4466-a9eb-6e9a4d4bd2cb.png"></p>
 </div>
 <h3 id="titles">Titles</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>          <span class="n">title</span> <span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>          <span class="n">mtitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>          <span class="n">qtitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>          <span class="n">title_pad</span><span class="o">=</span><span class="mf">1.08</span>
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>        <span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>          <span class="n">title</span> <span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>          <span class="n">mtitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>          <span class="n">qtitle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>          <span class="n">title_pad</span><span class="o">=</span><span class="mf">1.08</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>        <span class="p">)</span>
 </span></code></pre></div>
 <ul>
 <li>title : <code>string</code> , title for the whole plot</li>
@@ -1579,7 +1549,7 @@
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png"></p>
 <hr />
 <h3 id="figure-settings">Figure settings</h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>figargs= {&quot;figsize&quot;:(15,5),&quot;dpi&quot;:100}
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>figargs= {&quot;figsize&quot;:(15,5),&quot;dpi&quot;:100}
 </span></code></pre></div>
 <ul>
 <li><code>figargs</code> : <code>dict</code>, key-values pairs that are passed to matplotlib <code>plt.subplots()</code><ul>
@@ -1589,7 +1559,7 @@
 </li>
 </ul>
 <h3 id="save-plots">Save plots</h3>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="s2">&quot;mymqqplots.png&quot;</span><span class="p">,</span><span class="n">saveargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">})</span>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="s2">&quot;mymqqplots.png&quot;</span><span class="p">,</span><span class="n">saveargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">})</span>
 </span></code></pre></div>
 Two options for saving plots in <code>.plot_mqq</code></p>
 <ul>
