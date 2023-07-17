@@ -1504,10 +1504,7 @@ All other columns and options are optional.</p>
 </div>
 <h3 id="32-loading-by-specifying-formats">3.2 Loading by specifying formats</h3>
 <p>GWASLab supports common sumstats formats and you can load sumstats by specifying <code>fmt</code>.  </p>
-<div class="admonition info formatbook">
-<p class="admonition-title">Info</p>
-<p>GWASLab uses a manually curated format conversion dictionary in <a href="https://github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a></p>
-<p>Supported formats:</p>
+<p>GWASLab uses a manually curated format conversion dictionary in <a href="https:/github.com/Cloufield/formatbook">https://github.com/Cloufield/formatbook</a>. Currently, it supports the following formats:</p>
 <table>
 <thead>
 <tr>
@@ -1578,43 +1575,51 @@ All other columns and options are optional.</p>
 </tr>
 </tbody>
 </table>
+<div class="admonition info">
+<p class="admonition-title">Update Formatbook using <code>gl.update_formaybook()</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gl.update_formatbook()
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Mon Jul 17 17:38:11 2023 Updating formatbook from: https://raw.github.com/Cloufield/formatbook/main/formatbook.json
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Mon Jul 17 17:38:12 2023 Overwrite formatbook to :  /home/yunye/gwaslab/gwaslab/src/gwaslab/data/formatbook.json
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>Mon Jul 17 17:38:12 2023 Available formats: auto,bolt_lmm,fastgwa,gwascatalog,gwascatalog_hm,gwaslab,ldsc,metal,mrmega,mtag,pgscatalog,pgscatalog_hm,pheweb,plink,plink2,regenie,saige,ssf,template,vcf
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>Mon Jul 17 17:38:12 2023 Formatbook has been updated!
+</span></code></pre></div>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Load sumstats by simply specifying the format</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, fmt=&quot;saige&quot;)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, fmt=&quot;saige&quot;)
 </span></code></pre></div>
 </div>
 <h3 id="33-load-sumstats-with-auto-mode">3.3 Load sumstats with <code>auto</code> mode</h3>
 <p>GWASLab also provides an auto mode (<code>fmt="auto"</code>; available since v3.4.21) which assumes A1 or alternative allele (ALT) is the effect allele (EA) and Frq refers to the allele frequency of effect allele (EAF). Common headers will be detected. You can find the conversion table <a href="https://github.com/Cloufield/formatbook/blob/main/formats/auto.json">here</a></p>
 <div class="admonition example">
 <p class="admonition-title">Load sumstats with auto mode</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, fmt=&quot;auto&quot;)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;, fmt=&quot;auto&quot;)
 </span></code></pre></div>
 </div>
 <h3 id="34-loading-sumstats-from-chromosome-separated-files">3.4 Loading sumstats from chromosome-separated files</h3>
 <p>GWASLab supports loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace the chromosome numbers. </p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>mysumstats = gl.Sumstats(&quot;t2d.chr@.txt.gz&quot;,fmt=&quot;metal&quot;)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>mysumstats = gl.Sumstats(&quot;t2d.chr@.txt.gz&quot;,fmt=&quot;metal&quot;)
 </span></code></pre></div>
 </div>
 <h2 id="4-check-and-save-sumstats">4. Check and save sumstats</h2>
 <p>After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is stored in <code>.data</code> :</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </span></code></pre></div>
 </div>
 <p>You can simply save the processed data using pandas saving functions, for example:</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>mysumstats.data.to_csv(&quot;./mysumstats.csv&quot;)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>mysumstats.data.to_csv(&quot;./mysumstats.csv&quot;)
 </span></code></pre></div>
 </div>
 <p>or convert the sumstats to other sumstats using GWASLab <code>to_format()</code> function (recommended):</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>mysumstats.to_format(&quot;./mysumstats&quot;, fmt=&quot;ldsc&quot;,hapmap3=True, exclude_hla=True, build=&quot;19&quot;)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>mysumstats.to_format(&quot;./mysumstats&quot;, fmt=&quot;ldsc&quot;,hapmap3=True, exclude_hla=True, build=&quot;19&quot;)
 </span></code></pre></div>
 </div>
 <p>Please check <a href="https://cloufield.github.io/gwaslab/Format/">GWASLab - Format</a> for more details.</p>
@@ -1626,27 +1631,27 @@ All other columns and options are optional.</p>
 <p>The log is stored in a <code>gl.Log()</code> object. You can check it by <code>.log.show()</code>and save it using <code>.log.save()</code></p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>mysumstats.log.show()
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>mysumstats.log.save()
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>mysumstats.log.show()
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>mysumstats.log.save()
 </span></code></pre></div>
 </div>
 <h2 id="7-sumstats-summary">7. Sumstats summary</h2>
 <p>You can check the meta information of sumstats by:</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
 </span></code></pre></div>
 </div>
 <h2 id="8-other-functions">8. Other functions</h2>
 <p>Other functions of GWASLab are implemented as the methods of Sumstats Object.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">()</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">()</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="o">...</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">()</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">()</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="o">...</span>
 </span></code></pre></div>
 </div>
 
