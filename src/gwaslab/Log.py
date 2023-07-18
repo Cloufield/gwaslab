@@ -11,7 +11,7 @@ class Log():
             self.log_text = self.log_text + " ".join(map(str,message)) + end
     def show(self):
         print(self.log_text)
-    def save(self,path):
+    def save(self,path,verbose=True):
         with open(path,"w") as f:
-            print(str(time.ctime(time.time())) + " " + " -Save log file to : ", path)
+            if verbose: print(str(time.ctime(time.time())) + " " + " -Save log file to : ", path)
             f.write(self.log_text)

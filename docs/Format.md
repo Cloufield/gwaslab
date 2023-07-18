@@ -2,7 +2,7 @@
 
 GWASLab provides a flexible formatting and saving function.
 
-## Usage
+## 1. Usage
 
 ```
 .to_format(
@@ -11,6 +11,8 @@ GWASLab provides a flexible formatting and saving function.
           ...
           )
 ```
+
+## 2. Options
 
 |`.to_format()` options|DataType|Description|Default|
 |-|-|-|-|
@@ -36,7 +38,7 @@ GWASLab provides a flexible formatting and saving function.
 |`output_log`|`boolean`|If True, save the log to a file.|`True`|
 |`ssfmeta`|`boolean`|If True, output a gwas-ssf-style meta file.|`False`|
 
-## Format dictionary
+## 3. Format dictionary
 
 Using `float_formats`, you can specify the formats for numbers.
 
@@ -45,8 +47,8 @@ Using `float_formats`, you can specify the formats for numbers.
     {'EAF': '{:.4g}', 'BETA': '{:.4f}', 'Z': '{:.4f}','CHISQ': '{:.4f}','SE': '{:.4f}','OR': '{:.4f}','OR_95U': '{:.4f}','OR_95L': '{:.4f}','INFO': '{:.4f}','P': '{:.4e}','MLOG10P': '{:.4f}','DAF': '{:.4f}'}
     ```
 
-## Examples
-### Common tabular formats
+## 4. Examples
+### 4.1 Common tabular formats
 
 GWASLab support commonly used tabular formats, which are listed in a companion repository `formatbook`.
 
@@ -101,8 +103,8 @@ GWASLab support commonly used tabular formats, which are listed in a companion r
     Tue Sep 13 18:00:41 2022 Finished outputting successfully!
     ```
 
-## LDSC format
-!!! example "LDSC format, extract hapmap3 SNPs and exclude SNPs in HLA region"
+## 4.2 LDSC format
+!!! example "LDSC format; extract hapmap3 SNPs and exclude SNPs in HLA region"
     ```
     ## format the sumstats to ldsc format
     ## extract only hapmap3 SNPs
@@ -110,27 +112,27 @@ GWASLab support commonly used tabular formats, which are listed in a companion r
     mysumstats.to_format("./test",fmt="ldsc", hapmap3=True, exclude_hla=False, build="19")
     ```
 
-## BED format
-!!! example bed-like format
+## 4.3 GWAS VCF format
+!!! example "GWAS-VCF format"
+    ```
+    # output vcf file, and then bgzip and index the file.
+    mysumstats.to_format("./test",fmt="vcf",bgzip=True,tabix=True)
+    ```
+
+## 4.4 GWAS-SSF format
+!!! example "GWAS-ssf format"
+    ```
+    # output  GWAS-ssf format
+    mysumstats.to_format("./test",fmt="ssf")
+    ```
+
+## 4.5 BED format
+!!! example "BED-like format for variant information"
     ```
     # output 1-based bed-like files for vep
     mysumstats.to_format("./test",fmt="vep",xymt_number=True,chr_prefix="Chr")
     
     # output 0-based bed-like file, and then bgzip and index the file.
     mysumstats.to_format("./test",fmt="bed",bgzip=True,tabix=True)
-    ```
-
-## GWAS VCF format
-!!! example vcf format
-    ```
-    # output vcf file, and then bgzip and index the file.
-    mysumstats.to_format("./test",fmt="vcf",bgzip=True,tabix=True)
-    ```
-
-## GWAS-SSF format
-!!! example GWAS-ssf format
-    ```
-    # output  GWAS-ssf format
-    mysumstats.to_format("./test",fmt="ssf")
     ```
 

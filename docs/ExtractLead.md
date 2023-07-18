@@ -1,18 +1,39 @@
 # Extract lead variants
 
-GWASLab can extract the lead variants from identified significant loci using a sliding window.
+GWASLab can extract the lead variants based on P values or MLOG10P values from identified significant loci using a sliding window, and return the result as a pandas.DataFrame or gl.Sumstats Object.
 
-# Usage
+## 1. get_lead()
 
 ```python
 mysumstats.get_lead(
+           scaled=False,
            windowsizekb=500,
            sig_level=5e-8,
            anno=False,
            build="19",
            source="ensembl",
-           verbose=True)
+           verbose=True,
+           gls=False)
 ```
+
+## 2. Options
+
+|`.get_lead()` options|DataType|Description|Default|
+|-|-|-|-|
+|`scaled`|`boolean`|If True, use MLOG10P for extraction instead of P values|`False`|
+|`windowsizekb`|`int`|Specify the sliding window size in **kb**|`500`|
+|`sig_level`|`float`|Specify the P value threshold|`5e-8`|
+|`anno`|`boolean`|If True, annotate the lead variants with nearest gene names.|`False`|
+|`source`|`ensembl` or `refseq`| When `anno=True`, annotate variants using gtf files from `ensembl` or `refseq`|`ensembl`|
+|`build`|`"19"` or `"38"`|genome build version "19" or "38".|`"19"`|
+|`verbose`|`boolean`|If True, print logs|`True`|
+|`gls`|`boolean`|If True, return a new gl.Sumstats Object instead of pandas DataFrame|`False`|
+
+!!! note 
+    `.get_lead()` simply extract the lead variants of each significant loci. It is different from clumping.
+
+!!! note 
+    Please trying running `.basic_check()` to standardize the sumstats if there are any errors.
 
 !!! quote
     GWASLab basically adopted the definition for novel loci from Global Biobank Meta-analysis Initiative flagship paper. 
@@ -23,20 +44,8 @@ mysumstats.get_lead(
 
     GWASlab currently iteratively extends ± `windowsizekb` kb region around the most significant variant and merges overlapping regions until no genome-wide significant variants were detected within ± `windowsizekb`. (slightly different from the GBMI paper. When `windowsizekb=1000`, it is equvalent to GBMI's definition.)
 
-## Options
 
-- `windowsizekb` : `int`. Specify the sliding window size in **kb** (default: `500`)
-- `sig_level` : `float`.Specify the P value threshold (default: `5e-8`).
-- `anno`: `boolean`. If annotate the lead variants with nearest gene names.
-- `source`: `ensembl` or `refseq`. When anno is True, annotate variants using gtf file from `ensembl` or `refseq` (default: `ensembl`). 
-- `build` : `string`. genome build version "19" or "38".
-
-Return a dataframe of the lead variants.
-
-!!! note 
-    Please trying running `.basic_check()` to standardize the sumstats if there are any errors.
-
-## Example
+## 3. Example
 
 !!! example
     Sample sumstats: IS from pheweb.jp [https://pheweb.jp/pheno/IS](https://pheweb.jp/pheno/IS)

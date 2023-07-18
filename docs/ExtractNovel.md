@@ -3,7 +3,7 @@
 
 GWASLab can check if the lead variants of your summary statistics overlap with reported variants or not based on the physical distance.
 
-## get_novel()
+## 1. get_novel()
 
 ```
 sumstats.get_novel(
@@ -16,27 +16,35 @@ sumstats.get_novel(
                     output_known=False)
 ```
 
+
+GWASLab checks overlap with a local files of variants or records in GWASCatalog.
+
 Required (either):
 
-GWASLab can check with a local files of variants or query GWASCatalog.
-
 - `known` : `string`, path to local file of reported variants
+
+or 
+
 - `efo` : `string`, efo id for the target trait, which is used for querying the GWASCatalog.
 
-Options:
+## 2. Options:
 
-- `sig_level=5e-8` : significance threshold for extracting lead variants
-- `windowsizekb=500` : windowsize for extracting lead variants
-- `windowsizekb_for_novel=1000` : windowsize for determining if lead variants overlap with reported variants in GWASCatalog
-- `only_novel`: output only novel variants
-- `output_known`: additionally output the reported variants
+|`.get_lead()` options|DataType|Description|Default|
+|-|-|-|-|
+|`windowsizekb`|`int`|Specify the sliding window size in **kb**|`500`|
+|`sig_level`|`float`|Specify the P value threshold|`5e-8`|
+|`windowsizekb_for_novel`|`int`|windowsize for determining if lead variants overlap with reported variants in GWASCatalog|`1000`|
+|`only_novel`|`boolean`|output only novel variants|`False`|
+|`output_known`|`boolean`|additionally output the reported variants|`False`|
+|`verbose`|`boolean`|If True, print logs|`True`|
+
 
 !!! info "EFO ID"
     You can find the efo id by simply searching in GWASCatalog. For example, the EFO ID for T2D can be obtained like:
     
     <img width="700" alt="Screenshot 2023-02-03 at 13 36 16" src="https://user-images.githubusercontent.com/40289485/216513724-27f4e742-a03c-4346-a6bc-6b1002e22847.png">
 
-## Checking with GWAScatalog API 
+## 3. Example: Checking with GWAScatalog API 
 
 !!! warning "Only works when your sumstats are based on GRCh38" 
 
@@ -117,7 +125,7 @@ Options:
 !!! warning 
     GWAS Catalog API is unstable sometimes.
 
-## Checking with local files
+## 4. Example: Checking with local files
 
 !!! example
     

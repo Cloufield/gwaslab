@@ -612,6 +612,7 @@ class Sumstats():
               bgzip=False,
               tabix=False):
         
+        onetime_log = copy.deepcopy(self.log)
         if  to_csvargs is None:
             to_csvargs = {}
         if  float_formats is None:
@@ -623,7 +624,7 @@ class Sumstats():
 
         formatlist= get_formats_list() + ["vep","bed","annovar","vcf"]
         if fmt in formatlist:
-            if verbose: self.log.write("Start to format the output sumstats in: ",fmt, " format")
+            if verbose: onetime_log.write("Start to format the output sumstats in: ",fmt, " format")
         else:
             raise ValueError("Please select a format to output")
         
@@ -642,19 +643,19 @@ class Sumstats():
         
         #exclude hla
         if exclude_hla is True:
-            if verbose: self.log.write(" -Excluding variants in MHC (HLA) region ...")
+            if verbose: onetime_log.write(" -Excluding variants in MHC (HLA) region ...")
             before = len(output)
             is_hla = (output["CHR"].astype("string") == "6") & (output["POS"].astype("Int64") > hla_range[0]*1000000) & (output["POS"].astype("Int64") < hla_range[1]*1000000)
             output = output.loc[~is_hla,:]
             after = len(output)
-            if verbose: self.log.write(" -Exclude "+ str(before - after) + " variants in MHC (HLA) region : {}Mb - {}Mb.".format(hla_range[0], hla_range[1]))
+            if verbose: onetime_log.write(" -Exclude "+ str(before - after) + " variants in MHC (HLA) region : {}Mb - {}Mb.".format(hla_range[0], hla_range[1]))
             suffix = "noMHC."+suffix
         
         #extract hapmap3 SNPs
         if hapmap3 is True:
             output = gethapmap3(output,build=build,verbose=True)
             after = len(output)
-            if verbose: self.log.write(" -Extract "+ str(after) + " variants in Hapmap3 datasets for build "+build+".")
+            if verbose: onetime_log.write(" -Extract "+ str(after) + " variants in Hapmap3 datasets for build "+build+".")
             suffix = "hapmap3."+suffix
         
         # add a n column
@@ -663,7 +664,7 @@ class Sumstats():
                 
         #######################################################################################################
         #formatting float statistics
-        if verbose: self.log.write(" -Formatting statistics ...")
+        if verbose: onetime_log.write(" -Formatting statistics ...")
         
         formats = {'EAF': '{:.4g}', 
                 'BETA': '{:.4f}', 
@@ -687,15 +688,15 @@ class Sumstats():
                 if output[col].dtype in ["float64","float32","float16","float"]:
                     output[col] = output[col].map(f.format)
         if verbose: 
-            self.log.write(" - Float statistics formats:")  
+            onetime_log.write(" - Float statistics formats:")  
             keys=[]
             values=[]
             for key,value in formats.items():
                 if key in output.columns: 
                     keys.append(key)
                     values.append(value)
-            self.log.write("  - Columns:",keys) 
-            self.log.write("  - Output formats:",values) 
+            onetime_log.write("  - Columns:",keys) 
+            onetime_log.write("  - Output formats:",values) 
             
         ##########################################################################################################          
         # output, mapping column names
@@ -708,7 +709,7 @@ class Sumstats():
                   suffix=suffix,
                   build=build,
                   verbose=True,
-                  log=self.log,
+                  log=onetime_log,
                   to_csvargs=to_csvargs,
                   chr_prefix=chr_prefix,
                   meta = self.meta,
@@ -719,5 +720,11 @@ class Sumstats():
                   xymt_number=xymt_number,
                   xymt=xymt)
         if output_log is True:
-            if verbose: self.log.write(" -Saving log file:",path + "."+ suffix +".log")
-        if verbose: self.log.write("Finished outputting successfully!")
+            log_path = path + "."+ suffix + ".log"
+            if verbose: onetime_log.write(" -Saveing log file to: {}".format(log_path))
+            if verbose: onetime_log.write("Finished outputting successfully!")
+            try:
+                onetime_log.save(log_path, verbose=False)
+            except:
+                pass
+        
