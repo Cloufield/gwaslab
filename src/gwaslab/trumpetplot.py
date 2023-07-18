@@ -361,3 +361,212 @@ def plottrumpet(mysumstats,
     return fig
 
 ####################################################################
+
+
+def plot_power( ns=1000,
+                mode="q",
+                ts=None,
+                prevalences=None,
+                or_to_rr=False,
+                scases=None,
+                scontrols=None, 
+                sig_levels=5e-8,       
+                maf_range=None,
+                beta_range=None, 
+                n_matrix=1000,
+                xscale="log",
+                yscale_factor=1,
+                cmap="cool",
+                ylim=None,
+                fontsize=15,
+                font_family="Arial",
+                sizes=None,
+                save=False,
+                saveargs=None,
+                ylabel="Effect size",
+                xlabel="Minor allele frequency",
+                xticks = None,
+                xticklabels = None,
+                yticks = None,
+                yticklabels=None,
+                verbose=True,
+                log=Log()):
+    
+    #Checking columns#################################################################################################################
+    matplotlib.rc('font', family=font_family)
+    if sizes is None:
+        sizes = (20,80)
+    if ts is None:
+        ts=[0.2,0.4,0.6,0.8]
+    if xticks is None:
+        if xscale== "log":
+            xticks = [0.001,0.01,0.05,0.1,0.2,0.5]
+            xticklabels = xticks
+        else:
+            xticks = [0,0.01,0.05,0.1,0.2,0.5]
+            xticklabels = xticks            
+
+    #Checking columns#################################################################################################################
+    if verbose: log.write("Start to create trumpet plot...")
+    
+    if mode=="b":
+        if scases is None or scontrols is None:
+            if verbose:
+                log.write(" -No scase or scontrol. Skipping...")
+            return None
+        if prevalence is None:
+                prevalence= scases/(scases + scontrols)
+                log.write(" -Prevalence is not given. Estimating based on scase and scontrol :{}...".format(prevalence))
+
+    #configure beta and maf range ###################################################################################################
+    if maf_range is None:
+        maf_range=(np.power(10.0,-3),0.5)
+    if beta_range is None:
+        beta_range=(0.0001,3)
+    
+    #configure power threshold###################################################################################################
+
+    if type(ns) is list:
+        var_to_change = ns
+        legend_title = "N"
+    if type(ts) is list:
+        var_to_change = ts
+        legend_title = "Power"
+    if type(scases) is list:
+        var_to_change = scases
+        legend_title = "Number of cases"    
+    if type(scontrols) is list:
+        var_to_change = scontrols
+        legend_title = "Number of controls"  
+    if type(sig_levels) is list:
+        var_to_change = sig_levels
+        legend_title = "Significance level" 
+    if type(prevalences) is list:
+        var_to_change = prevalences
+        legend_title = "Prevalence" 
+    
+
+    #configure colormap##########################################################################################################
+    cmap_to_use = plt.cm.get_cmap(cmap)
+    if cmap_to_use.N >100:
+        max_value = max(var_to_change)
+        min_value = min(var_to_change)
+        norm = lambda x: x/max_value
+        if legend_title == "Significance level":
+            norm = lambda x: np.log10(x)/np.log10(min_value)
+        rgba = cmap_to_use(list(map(norm, var_to_change)))
+    else:
+        rgba = cmap_to_use(range(len(var_to_change)))
+    
+    output_hex_colors=[]
+    for i in range(len(rgba)):
+        output_hex_colors.append(mc.to_hex(rgba[i]))
+    output_hex_colors
+
+    ##################################################################################################
+    fig, ax = plt.subplots(figsize=(10,10))
+    
+    ##creating power line############################################################################################
+    if mode=="q":
+        for i,value in enumerate(var_to_change):
+            
+            n = ns
+            t = ts
+            sig_level = sig_levels
+            
+            if legend_title == "N":
+                n = value
+            elif legend_title == "Power":
+                t = value
+            elif legend_title == "Significance level":
+                sig_level = value
+                    
+            xpower = get_beta(mode="q",          
+                            eaf_range=maf_range,
+                            beta_range=beta_range, 
+                            n=n,
+                            t=t,
+                            sig_level=sig_level,
+                            n_matrix=n_matrix)
+            xpower2 = xpower.copy()
+            xpower2[1] = -xpower2[1] 
+            xpower2[1] = xpower2[1] * yscale_factor
+            xpower[1] = xpower[1] * yscale_factor
+            lines = LineCollection([xpower2,xpower], label=value,color=output_hex_colors[i],zorder=0)
+            ax.add_collection(lines)
+    else:
+        for i,t in enumerate(var_to_change):
+            
+            scase = scases
+            scontrol = scontrols
+            t = ts
+            prevalence = prevalences
+            sig_level = sig_levels
+            
+            if legend_title == "Prevalence":
+                prevalence = value
+            elif legend_title == "Power":
+                t = value
+            elif legend_title == "Significance level":
+                sig_level = value
+            elif legend_title == "Number of cases":
+                scase = value
+            elif legend_title == "Number of controls":
+                scontrol = value
+
+            xpower = get_beta_binary(        
+                            eaf_range=maf_range,
+                            beta_range=beta_range, 
+                            prevalence=prevalence,
+                            or_to_rr = or_to_rr,
+                            scase=scase, 
+                            scontrol=scontrol, 
+                            t=t,
+                            sig_level=sig_level,
+                            n_matrix=n_matrix)
+            xpower2 = xpower.copy()
+            xpower2[1] = -xpower2[1] 
+            xpower2[1] = xpower2[1] * yscale_factor
+            xpower[1] = xpower[1] * yscale_factor
+            lines = LineCollection([xpower2,xpower], label=value,color=output_hex_colors[i])
+            ax.add_collection(lines)
+    ###################################################################################################
+
+    ax.tick_params(axis='y', labelsize=fontsize)
+    leg = ax.legend(title=legend_title,fontsize =fontsize,title_fontsize=fontsize)
+
+    for line in leg.get_lines():
+        line.set_linewidth(5.0)
+    ax.axhline(y=0,color="grey",linestyle="dashed")
+    
+    if xscale== "log":
+        ax.set_xscale('log')
+        rotation=0
+        ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
+        ax.set_xlim(maf_range[0]/2,0.52)
+    else:
+        rotation=90    
+        ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
+        ax.set_xlim(-0.02,0.52)
+    
+    if ylim is not None:
+        ax.set_ylim(ylim)
+    if yticks is not None:
+        ax.set_yticks(yticks, yticklabels)
+
+    ax.set_ylabel(ylabel,fontsize=fontsize)
+    ax.set_xlabel(xlabel,fontsize=fontsize)
+    
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(True)
+
+    ############  Annotation ##################################################################################################
+ 
+    if mode=="q":
+        save_figure(fig, save, keyword="trumpet_q",saveargs=saveargs, log=log, verbose=verbose)
+    elif mode=="b":
+        save_figure(fig, save, keyword="trumpet_b",saveargs=saveargs, log=log, verbose=verbose)
+
+    if verbose: log.write("Finished creating trumpet plot!")
+    return fig
