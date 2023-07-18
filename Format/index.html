@@ -856,22 +856,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#43-bed-format" class="md-nav__link">
-    4.3 BED format
+  <a href="#43-gwas-vcf-format" class="md-nav__link">
+    4.3 GWAS VCF format
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#44-gwas-vcf-format" class="md-nav__link">
-    4.4 GWAS VCF format
+  <a href="#44-gwas-ssf-format" class="md-nav__link">
+    4.4 GWAS-SSF format
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#45-gwas-ssf-format" class="md-nav__link">
-    4.5 GWAS-SSF format
+  <a href="#45-bed-format" class="md-nav__link">
+    4.5 BED format
   </a>
   
 </li>
@@ -1113,22 +1113,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#43-bed-format" class="md-nav__link">
-    4.3 BED format
+  <a href="#43-gwas-vcf-format" class="md-nav__link">
+    4.3 GWAS VCF format
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#44-gwas-vcf-format" class="md-nav__link">
-    4.4 GWAS VCF format
+  <a href="#44-gwas-ssf-format" class="md-nav__link">
+    4.4 GWAS-SSF format
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#45-gwas-ssf-format" class="md-nav__link">
-    4.5 GWAS-SSF format
+  <a href="#45-bed-format" class="md-nav__link">
+    4.5 BED format
   </a>
   
 </li>
@@ -1359,35 +1359,35 @@ bolt_lmm : output format</p>
 </div>
 <h2 id="42-ldsc-format">4.2 LDSC format</h2>
 <div class="admonition example">
-<p class="admonition-title">LDSC format, extract hapmap3 SNPs and exclude SNPs in HLA region</p>
+<p class="admonition-title">LDSC format; extract hapmap3 SNPs and exclude SNPs in HLA region</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>## format the sumstats to ldsc format
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>## extract only hapmap3 SNPs
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>## exclude SNPs in HLA region
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;ldsc&quot;, hapmap3=True, exclude_hla=False, build=&quot;19&quot;)
 </span></code></pre></div>
 </div>
-<h2 id="43-bed-format">4.3 BED format</h2>
-<div class="admonition example bed-like format">
-<p class="admonition-title">Example</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a># output 1-based bed-like files for vep
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vep&quot;,xymt_number=True,chr_prefix=&quot;Chr&quot;)
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a># output 0-based bed-like file, and then bgzip and index the file.
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;bed&quot;,bgzip=True,tabix=True)
+<h2 id="43-gwas-vcf-format">4.3 GWAS VCF format</h2>
+<div class="admonition example">
+<p class="admonition-title">GWAS-VCF format</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a># output vcf file, and then bgzip and index the file.
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vcf&quot;,bgzip=True,tabix=True)
 </span></code></pre></div>
 </div>
-<h2 id="44-gwas-vcf-format">4.4 GWAS VCF format</h2>
-<div class="admonition example vcf format">
-<p class="admonition-title">Example</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a># output vcf file, and then bgzip and index the file.
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vcf&quot;,bgzip=True,tabix=True)
+<h2 id="44-gwas-ssf-format">4.4 GWAS-SSF format</h2>
+<div class="admonition example">
+<p class="admonition-title">GWAS-ssf format</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a># output  GWAS-ssf format
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;ssf&quot;)
 </span></code></pre></div>
 </div>
-<h2 id="45-gwas-ssf-format">4.5 GWAS-SSF format</h2>
-<div class="admonition example gwas-ssf format">
-<p class="admonition-title">Example</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a># output  GWAS-ssf format
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;ssf&quot;)
+<h2 id="45-bed-format">4.5 BED format</h2>
+<div class="admonition example">
+<p class="admonition-title">BED-like format for variant information</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a># output 1-based bed-like files for vep
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vep&quot;,xymt_number=True,chr_prefix=&quot;Chr&quot;)
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a># output 0-based bed-like file, and then bgzip and index the file.
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;bed&quot;,bgzip=True,tabix=True)
 </span></code></pre></div>
 </div>
 
