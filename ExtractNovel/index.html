@@ -1088,13 +1088,54 @@
 <li><code>efo</code> : <code>string</code>, efo id for the target trait, which is used for querying the GWASCatalog.</li>
 </ul>
 <p>Options:</p>
-<p>|<code>.get_lead()</code> options|DataType|Description|Default|
-|<code>windowsizekb</code>|<code>int</code>|Specify the sliding window size in <strong>kb</strong>|<code>500</code>|
-|<code>sig_level</code>|<code>float</code>|Specify the P value threshold|<code>5e-8</code>|
-|<code>windowsizekb_for_novel</code>|<code>int</code>|windowsize for determining if lead variants overlap with reported variants in GWASCatalog|<code>1000</code>|
-|<code>only_novel</code>|<code>boolean</code>|output only novel variants|<code>False</code>|
-|<code>output_known</code>|<code>boolean</code>|additionally output the reported variants|<code>False</code>|
-|<code>verbose</code>|<code>boolean</code>|If True, print logs|<code>True</code>|</p>
+<table>
+<thead>
+<tr>
+<th><code>.get_lead()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>windowsizekb</code></td>
+<td><code>int</code></td>
+<td>Specify the sliding window size in <strong>kb</strong></td>
+<td><code>500</code></td>
+</tr>
+<tr>
+<td><code>sig_level</code></td>
+<td><code>float</code></td>
+<td>Specify the P value threshold</td>
+<td><code>5e-8</code></td>
+</tr>
+<tr>
+<td><code>windowsizekb_for_novel</code></td>
+<td><code>int</code></td>
+<td>windowsize for determining if lead variants overlap with reported variants in GWASCatalog</td>
+<td><code>1000</code></td>
+</tr>
+<tr>
+<td><code>only_novel</code></td>
+<td><code>boolean</code></td>
+<td>output only novel variants</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>output_known</code></td>
+<td><code>boolean</code></td>
+<td>additionally output the reported variants</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>verbose</code></td>
+<td><code>boolean</code></td>
+<td>If True, print logs</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition info">
 <p class="admonition-title">EFO ID</p>
 <p>You can find the efo id by simply searching in GWASCatalog. For example, the EFO ID for T2D can be obtained like:</p>
