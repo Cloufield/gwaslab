@@ -755,9 +755,54 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Extract Lead Variants
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Extract Lead Variants
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-get_lead" class="md-nav__link">
+    1. get_lead()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-options" class="md-nav__link">
+    2. Options
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-example" class="md-nav__link">
+    3. Example
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -965,6 +1010,35 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-get_lead" class="md-nav__link">
+    1. get_lead()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-options" class="md-nav__link">
+    2. Options
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-example" class="md-nav__link">
+    3. Example
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -980,7 +1054,7 @@
 
 <h1 id="extract-lead-variants">Extract lead variants</h1>
 <p>GWASLab can extract the lead variants based on P values or MLOG10P values from identified significant loci using a sliding window, and return the result as a pandas.DataFrame or gl.Sumstats Object.</p>
-<h1 id="usage">Usage</h1>
+<h2 id="1-get_lead">1. get_lead()</h2>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>           <span class="n">scaled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>           <span class="n">windowsizekb</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
@@ -991,7 +1065,7 @@
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>           <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>           <span class="n">gls</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></code></pre></div>
-<h2 id="options">Options</h2>
+<h2 id="2-options">2. Options</h2>
 <table>
 <thead>
 <tr>
@@ -1067,7 +1141,7 @@
 <p>(Details are described in Zhou, W., Kanai, M., Wu, K. H. H., Rasheed, H., Tsuo, K., Hirbo, J. B., ... &amp; Study, C. O. H. (2022). Global Biobank Meta-analysis Initiative: Powering genetic discovery across human disease. Cell Genomics, 2(10), 100192. )</p>
 <p>GWASlab currently iteratively extends ± <code>windowsizekb</code> kb region around the most significant variant and merges overlapping regions until no genome-wide significant variants were detected within ± <code>windowsizekb</code>. (slightly different from the GBMI paper. When <code>windowsizekb=1000</code>, it is equvalent to GBMI's definition.)</p>
 </div>
-<h2 id="example">Example</h2>
+<h2 id="3-example">3. Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <p>Sample sumstats: IS from pheweb.jp <a href="https://pheweb.jp/pheno/IS">https://pheweb.jp/pheno/IS</a>
