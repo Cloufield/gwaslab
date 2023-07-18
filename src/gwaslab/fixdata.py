@@ -381,7 +381,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         is_chr_fixed = sumstats[chrom].str.isnumeric()
         # fill NAs with False
         is_chr_fixed = is_chr_fixed.fillna(False)
-        if verbose: log.write(" -Vairants with standardized chromosome notation:",sum(is_chr_fixed))  
+        if verbose: log.write(" -Variants with standardized chromosome notation:",sum(is_chr_fixed))  
         
         # if there are variants whose CHR need to be fixed
         if sum(is_chr_fixed)<len(sumstats):
@@ -389,17 +389,17 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
             #extract the CHR number or X Y M MT
             chr_extracted = sumstats.loc[~is_chr_fixed,chrom].str.extract(r'(chr)?([0-9]{1,3}|[XYM]|MT)$',flags=re.IGNORECASE|re.ASCII)[1]
             is_chr_fixable = ~chr_extracted.isna()
-            if verbose: log.write(" -Vairants with fixable chromosome notations:",sum(is_chr_fixable))  
+            if verbose: log.write(" -Variants with fixable chromosome notations:",sum(is_chr_fixable))  
 
             # For not fixed variants, check if na
             is_chr_na  = sumstats.loc[~is_chr_fixed, chrom].isna()
             if sum(is_chr_na)>0 and verbose: 
-                log.write(" -Vairants with NA chromosome notations:",sum(is_chr_na))  
+                log.write(" -Variants with NA chromosome notations:",sum(is_chr_na))  
             
             # Check variants with CHR being not NA and not fixable
             is_chr_invalid = (~is_chr_fixable)&(~is_chr_na)
             if sum(is_chr_invalid)>0 and verbose: 
-                log.write(" -Vairants with invalid chromosome notations:",sum(is_chr_invalid)) 
+                log.write(" -Variants with invalid chromosome notations:",sum(is_chr_invalid)) 
                 log.write(" -Invalid chromosome notations converted to NA :" , set(sumstats.loc[~sumstats[chrom].isin(chrom_list),chrom].head()))
             elif verbose:
                 log.write(" -No unrecognized chromosome notations...")
