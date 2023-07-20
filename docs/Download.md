@@ -2,17 +2,19 @@
 
 ## Downloading and file management system
 
-|functions|options|description|
-|-|-|-|
-|`gl.check_available_ref()`|| list current available reference data GWASLab can use |
-|`gl.check_downloaded_ref()`||list downloaded reference data |
-|`gl.download_ref(keyword)`|keyword|download the refernce data|
-|`gl.remove_file(keyword)`|keyword|remove the downloaded data|
-|`gl.get_path(keyword)`|keyword|get the path to the refernce data|
+|Functions|Options|Datatype|Description|
+|-|-|-|-|
+|`gl.check_available_ref()`||| list available reference datasets GWASLab can use |
+|`gl.check_downloaded_ref()`|||list downloaded reference dataset |
+|`gl.download_ref(keyword)`|keyword|`string`|download the reference dataset|
+|`gl.remove_file(keyword)`|keyword|`string`|remove the downloaded dataset|
+|`gl.get_path(keyword)`|keyword|`string`|get the path to the refernce dataset|
 
-Currently, you can download the following files using GWASLab with the keywords:
+You can download the following files using GWASLab with the keywords:
 
 !!! error "Processed datasets are currently hosted on Dropbox which may not be accessible for users in certain regions."
+
+Datasets you need to download explicitly if needed.
 
 |Keyword|Description|Note|
 |-|-|-|
@@ -26,12 +28,26 @@ Currently, you can download the following files using GWASLab with the keywords:
 |'ucsc_genome_hg38'|UCSC human reference genome (hg38)|Original source|
 |'1kg_dbsnp151_hg19_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg19)|Processed, Dropbox|
 |'1kg_dbsnp151_hg38_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg38)|Processed, Dropbox|
+
+!!! example "Download and check the local path of `1kg_eas_hg19`"
+    ```
+    gl.download_ref("1kg_eas_hg19")
+
+    gl.get_path("1kg_eas_hg19")
+    '/Users/he/work/gwaslab/src/gwaslab/data/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz'
+    ```
+
+Other reference datasets GWASLab uses to create regional plot and annotate variants (GWASLab will automatically download and process these files when needed): 
+
+|Keyword|Description|Note|
+|-|-|-|
 |'recombination_hg19'|Recombination rate reference files from Hapmap Project (hg19)|Processed, Dropbox|
 |'recombination_hg38'|Recombination rate reference files from Hapmap Project (hg38)|Processed, Dropbox|
 |'ensembl_hg19_gtf'|GTF file for genes from Ensembl (hg19)|Original source|
 |'ensembl_hg38_gtf'|GTF file for genes from Ensembl (hg38)|Original source|
 |'refseq_hg19_gtf'|GTF file for genes from Refseq (hg19)|Original source|
 |'refseq_hg38_gtf'|GTF file for genes from Refseq (hg19)|Original source|
+
 
 ## Configurations
 
