@@ -1772,7 +1772,7 @@
 </div>
 <hr />
 <h3 id="212-colors-and-fontsizes">2.12 Colors and Fontsizes</h3>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>          <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;#597FBD&quot;</span><span class="p">,</span><span class="s2">&quot;#74BAD3&quot;</span><span class="p">],</span>
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>          <span class="n">cut_line_color</span><span class="o">=</span><span class="s2">&quot;#ebebeb&quot;</span><span class="p">,</span>
 </span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>          <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
@@ -1785,14 +1785,56 @@
 </span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>          <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">25</span><span class="p">)</span>
 </span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="p">)</span>
 </span></code></pre></div>
-|Color Option|DataType|Description|Default|
-|-|-|-|-|
-|<code>colors</code>|<code>list</code>|a list of colors for chromsomes in the Manhattan plot; it will be used repetitively.|<code>["#597FBD","#74BAD3"]</code>|
-|<code>cut_line_color</code>|<code>string</code>|color for the cut line.|<code>"#EBEBEB"</code>|
-|<code>sig_line_color</code>|<code>string</code>|color for significance threshold line.|<code>"grey"</code>|
-|<code>highlight_color</code>|<code>string</code>|color for highlighting loci|<code>"#CB132D"</code>|
-|<code>pinpoint_color</code>|<code>string</code>|color for pinpointing variants|<code>"red"</code>|
-|<code>maf_bin_colors</code>|<code>list</code>|a list of colors for maf-stratified Q-Q plot.|<code>["#f0ad4e","#5cb85c", "#5bc0de","#000042"]</code>| </p>
+<p>Color-related options</p>
+<table>
+<thead>
+<tr>
+<th>Color Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>colors</code></td>
+<td><code>list</code></td>
+<td>a list of colors for chromsomes in the Manhattan plot; it will be used repetitively.</td>
+<td><code>["#597FBD","#74BAD3"]</code></td>
+</tr>
+<tr>
+<td><code>cut_line_color</code></td>
+<td><code>string</code></td>
+<td>color for the cut line.</td>
+<td><code>"#EBEBEB"</code></td>
+</tr>
+<tr>
+<td><code>sig_line_color</code></td>
+<td><code>string</code></td>
+<td>color for significance threshold line.</td>
+<td><code>"grey"</code></td>
+</tr>
+<tr>
+<td><code>highlight_color</code></td>
+<td><code>string</code></td>
+<td>color for highlighting loci</td>
+<td><code>"#CB132D"</code></td>
+</tr>
+<tr>
+<td><code>pinpoint_color</code></td>
+<td><code>string</code></td>
+<td>color for pinpointing variants</td>
+<td><code>"red"</code></td>
+</tr>
+<tr>
+<td><code>maf_bin_colors</code></td>
+<td><code>list</code></td>
+<td>a list of colors for maf-stratified Q-Q plot.</td>
+<td><code>["#f0ad4e","#5cb85c", "#5bc0de","#000042"]</code></td>
+</tr>
+</tbody>
+</table>
+<p>Font-related options</p>
 <table>
 <thead>
 <tr>
