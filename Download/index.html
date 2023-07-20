@@ -1043,43 +1043,50 @@
 <table>
 <thead>
 <tr>
-<th>functions</th>
-<th>options</th>
-<th>description</th>
+<th>Functions</th>
+<th>Options</th>
+<th>Datatype</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>gl.check_available_ref()</code></td>
 <td></td>
-<td>list current available reference data GWASLab can use</td>
+<td></td>
+<td>list available reference datasets GWASLab can use</td>
 </tr>
 <tr>
 <td><code>gl.check_downloaded_ref()</code></td>
 <td></td>
-<td>list downloaded reference data</td>
+<td></td>
+<td>list downloaded reference dataset</td>
 </tr>
 <tr>
 <td><code>gl.download_ref(keyword)</code></td>
 <td>keyword</td>
-<td>download the refernce data</td>
+<td><code>string</code></td>
+<td>download the reference dataset</td>
 </tr>
 <tr>
 <td><code>gl.remove_file(keyword)</code></td>
 <td>keyword</td>
-<td>remove the downloaded data</td>
+<td><code>string</code></td>
+<td>remove the downloaded dataset</td>
 </tr>
 <tr>
 <td><code>gl.get_path(keyword)</code></td>
 <td>keyword</td>
-<td>get the path to the refernce data</td>
+<td><code>string</code></td>
+<td>get the path to the refernce dataset</td>
 </tr>
 </tbody>
 </table>
-<p>Currently, you can download the following files using GWASLab with the keywords:</p>
+<p>You can download the following files using GWASLab with the keywords:</p>
 <div class="admonition error">
 <p class="admonition-title">Processed datasets are currently hosted on Dropbox which may not be accessible for users in certain regions.</p>
 </div>
+<p>Datasets you need to download explicitly if needed.</p>
 <table>
 <thead>
 <tr>
@@ -1139,6 +1146,26 @@
 <td>1KGp3v5 variants SNPID-rsID conversion table (hg38)</td>
 <td>Processed, Dropbox</td>
 </tr>
+</tbody>
+</table>
+<div class="admonition example">
+<p class="admonition-title">Download and check the local path of <code>1kg_eas_hg19</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gl.download_ref(&quot;1kg_eas_hg19&quot;)
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>gl.get_path(&quot;1kg_eas_hg19&quot;)
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>&#39;/Users/he/work/gwaslab/src/gwaslab/data/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz&#39;
+</span></code></pre></div>
+</div>
+<p>Other reference datasets GWASLab uses to create regional plot and annotate variants (GWASLab will automatically download and process these files when needed): </p>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Description</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td>'recombination_hg19'</td>
 <td>Recombination rate reference files from Hapmap Project (hg19)</td>
@@ -1180,21 +1207,21 @@
 <li><code>data_directory</code>: the path for downloaded reference file. default: (<code>~/.gwaslab</code>)</li>
 </ul>
 <p>You can use <code>gl.options.paths</code> to check the paths of the three files.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gl.options.paths
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>{&#39;config&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/config.json&#39;,
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a> &#39;reference&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/reference.json&#39;,
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a> &#39;formatbook&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/formatbook.json&#39;,
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a> &#39;data_directory&#39;: &#39;/Users/he/.gwaslab/&#39;}
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>gl.options.paths
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>{&#39;config&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/config.json&#39;,
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a> &#39;reference&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/reference.json&#39;,
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a> &#39;formatbook&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/formatbook.json&#39;,
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a> &#39;data_directory&#39;: &#39;/Users/he/.gwaslab/&#39;}
 </span></code></pre></div>
 <p>Sometimes you might need to use your own files, which can be done using <code>gl.options.set_option(key, newpath)</code> (simply run this after loadnig the gwaslab package):</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a># change the path for formatbook
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>gl.options.set_option(&quot;formatbook&quot;,&quot;/newpath/formatbook.json&quot;)
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>gl.options.paths
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>{&#39;config&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/config.json&#39;,
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a> &#39;reference&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/reference.json&#39;,
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a> &#39;formatbook&#39;: &#39;/newpath/formatbook.json&#39;,
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a> &#39;data_directory&#39;: &#39;/Users/he/.gwaslab/&#39;}
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># change the path for formatbook
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>gl.options.set_option(&quot;formatbook&quot;,&quot;/newpath/formatbook.json&quot;)
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>gl.options.paths
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>{&#39;config&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/config.json&#39;,
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a> &#39;reference&#39;: &#39;/Users/he/work/gwaslab/src/gwaslab/data/reference.json&#39;,
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a> &#39;formatbook&#39;: &#39;/newpath/formatbook.json&#39;,
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a> &#39;data_directory&#39;: &#39;/Users/he/.gwaslab/&#39;}
 </span></code></pre></div>
 
 

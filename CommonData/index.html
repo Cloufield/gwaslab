@@ -957,6 +957,33 @@
     Chromosme notation conversion dictionary
   </a>
   
+    <nav class="md-nav" aria-label="Chromosme notation conversion dictionary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#full-chromosome-list" class="md-nav__link">
+    Full chromosome list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chr-nc-conversion" class="md-nav__link">
+    CHR - NC conversion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chr-datatype-conversion-string-int" class="md-nav__link">
+    CHR Datatype conversion (string &lt;-&gt; int)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -969,13 +996,6 @@
         <li class="md-nav__item">
   <a href="#sumstats-format-list" class="md-nav__link">
     Sumstats Format list
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#gene-gtf" class="md-nav__link">
-    Gene GTF
   </a>
   
 </li>
@@ -1026,6 +1046,33 @@
     Chromosme notation conversion dictionary
   </a>
   
+    <nav class="md-nav" aria-label="Chromosme notation conversion dictionary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#full-chromosome-list" class="md-nav__link">
+    Full chromosome list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chr-nc-conversion" class="md-nav__link">
+    CHR - NC conversion
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chr-datatype-conversion-string-int" class="md-nav__link">
+    CHR Datatype conversion (string &lt;-&gt; int)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1038,13 +1085,6 @@
         <li class="md-nav__item">
   <a href="#sumstats-format-list" class="md-nav__link">
     Sumstats Format list
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#gene-gtf" class="md-nav__link">
-    Gene GTF
   </a>
   
 </li>
@@ -1067,32 +1107,90 @@
 <h1 id="commonly-used-data-in-gwaslab">Commonly used data in GWASLab</h1>
 <p>GWASLab integrates a few pre-defined datasets for quick conversion and access, which are used in the functions of GWASLab.</p>
 <h2 id="chromosme-notation-conversion-dictionary">Chromosme notation conversion dictionary</h2>
-<ul>
-<li><code>get_chr_list()</code> : get a full list of chromosomes</li>
-<li>chr/ number &lt;-&gt; NC dictionary<ul>
-<li><code>get_chr_to_NC(build)</code> : </li>
-<li><code>get_number_to_NC(build)</code></li>
-<li><code>get_NC_to_chr(build)</code></li>
-<li><code>get_NC_to_number(build)</code></li>
-</ul>
-</li>
-<li>chr &lt;-&gt; number </li>
-<li><code>get_chr_to_number()</code></li>
-<li><code>get_number_to_chr()</code></li>
-</ul>
+<h3 id="full-chromosome-list">Full chromosome list</h3>
+<p><code>gl.get_chr_list()</code>: Get a full list of chromosomes (string datatype):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gl.get_chr_list()
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>[&#39;1&#39;,&#39;2&#39;,&#39;3&#39;,&#39;4&#39;,&#39;5&#39;,&#39;6&#39;,&#39;7&#39;,&#39;8&#39;,&#39;9&#39;,&#39;10&#39;,&#39;11&#39;,&#39;12&#39;,&#39;13&#39;,&#39;14&#39;,&#39;15&#39;,&#39;16&#39;,&#39;17&#39;,&#39;18&#39;,&#39;19&#39;,&#39;20&#39;,&#39;21&#39;,&#39;22&#39;,&#39;23&#39;,&#39;24&#39;,&#39;25&#39;,&#39;X&#39;,&#39;Y&#39;,&#39;M&#39;,&#39;MT&#39;]
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>gl.get_chr_list(n=2)
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>[&#39;1&#39;, &#39;2&#39;, &#39;X&#39;, &#39;Y&#39;, &#39;M&#39;, &#39;MT&#39;]
+</span></code></pre></div>
+<h3 id="chr-nc-conversion">CHR - NC conversion</h3>
+<p><code>gl.get_chr_to_NC(build)</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>gl.get_chr_to_NC(build=&quot;19&quot;)
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>{&#39;1&#39;: &#39;NC_000001.10&#39;, &#39;2&#39;: &#39;NC_000002.11&#39;, &#39;3&#39;: &#39;NC_000003.11&#39;, &#39;4&#39;: &#39;NC_000004.11&#39;, &#39;5&#39;: &#39;NC_000005.9&#39;, &#39;6&#39;: &#39;NC_000006.11&#39;, &#39;7&#39;: &#39;NC_000007.13&#39;, &#39;8&#39;: &#39;NC_000008.10&#39;, &#39;9&#39;: &#39;NC_000009.11&#39;, &#39;10&#39;: &#39;NC_000010.10&#39;, &#39;11&#39;: &#39;NC_000011.9&#39;, &#39;12&#39;: &#39;NC_000012.11&#39;, &#39;13&#39;: &#39;NC_000013.10&#39;, &#39;14&#39;: &#39;NC_000014.8&#39;, &#39;15&#39;: &#39;NC_000015.9&#39;, &#39;16&#39;: &#39;NC_000016.9&#39;, &#39;17&#39;: &#39;NC_000017.10&#39;, &#39;18&#39;: &#39;NC_000018.9&#39;, &#39;19&#39;: &#39;NC_000019.9&#39;, &#39;20&#39;: &#39;NC_000020.10&#39;, &#39;21&#39;: &#39;NC_000021.8&#39;, &#39;22&#39;: &#39;NC_000022.10&#39;, &#39;X&#39;: &#39;NC_000023.10&#39;, &#39;Y&#39;: &#39;NC_000024.9&#39;, &#39;MT&#39;: &#39;NC_012920.1&#39;}
+</span></code></pre></div>
+<p><code>gl.get_number_to_NC(build)</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gl.get_number_to_NC(build=&quot;19&quot;)
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>{1: &#39;NC_000001.10&#39;, 2: &#39;NC_000002.11&#39;, 3: &#39;NC_000003.11&#39;, 4: &#39;NC_000004.11&#39;, 5: &#39;NC_000005.9&#39;, 6: &#39;NC_000006.11&#39;, 7: &#39;NC_000007.13&#39;, 8: &#39;NC_000008.10&#39;, 9: &#39;NC_000009.11&#39;, 10: &#39;NC_000010.10&#39;, 11: &#39;NC_000011.9&#39;, 12: &#39;NC_000012.11&#39;, 13: &#39;NC_000013.10&#39;, 14: &#39;NC_000014.8&#39;, 15: &#39;NC_000015.9&#39;, 16: &#39;NC_000016.9&#39;, 17: &#39;NC_000017.10&#39;, 18: &#39;NC_000018.9&#39;, 19: &#39;NC_000019.9&#39;, 20: &#39;NC_000020.10&#39;, 21: &#39;NC_000021.8&#39;, 22: &#39;NC_000022.10&#39;, 23: &#39;NC_000023.10&#39;, 24: &#39;NC_000024.9&#39;, 25: &#39;NC_012920.1&#39;}
+</span></code></pre></div>
+<p><code>gl.get_NC_to_chr(build)</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>gl.get_NC_to_chr(build=&quot;19&quot;)
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>{&#39;NC_000001.10&#39;: &#39;1&#39;, &#39;NC_000002.11&#39;: &#39;2&#39;, &#39;NC_000003.11&#39;: &#39;3&#39;, &#39;NC_000004.11&#39;: &#39;4&#39;, &#39;NC_000005.9&#39;: &#39;5&#39;, &#39;NC_000006.11&#39;: &#39;6&#39;, &#39;NC_000007.13&#39;: &#39;7&#39;, &#39;NC_000008.10&#39;: &#39;8&#39;, &#39;NC_000009.11&#39;: &#39;9&#39;, &#39;NC_000010.10&#39;: &#39;10&#39;, &#39;NC_000011.9&#39;: &#39;11&#39;, &#39;NC_000012.11&#39;: &#39;12&#39;, &#39;NC_000013.10&#39;: &#39;13&#39;, &#39;NC_000014.8&#39;: &#39;14&#39;, &#39;NC_000015.9&#39;: &#39;15&#39;, &#39;NC_000016.9&#39;: &#39;16&#39;, &#39;NC_000017.10&#39;: &#39;17&#39;, &#39;NC_000018.9&#39;: &#39;18&#39;, &#39;NC_000019.9&#39;: &#39;19&#39;, &#39;NC_000020.10&#39;: &#39;20&#39;, &#39;NC_000021.8&#39;: &#39;21&#39;, &#39;NC_000022.10&#39;: &#39;22&#39;, &#39;NC_000023.10&#39;: &#39;X&#39;, &#39;NC_000024.9&#39;: &#39;Y&#39;, &#39;NC_012920.1&#39;: &#39;MT&#39;}
+</span></code></pre></div>
+<p><code>gl.get_NC_to_number(build)</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>gl.get_NC_to_number(build=&quot;19&quot;)
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>{&#39;NC_000001.10&#39;: 1, &#39;NC_000002.11&#39;: 2, &#39;NC_000003.11&#39;: 3, &#39;NC_000004.11&#39;: 4, &#39;NC_000005.9&#39;: 5, &#39;NC_000006.11&#39;: 6, &#39;NC_000007.13&#39;: 7, &#39;NC_000008.10&#39;: 8, &#39;NC_000009.11&#39;: 9, &#39;NC_000010.10&#39;: 10, &#39;NC_000011.9&#39;: 11, &#39;NC_000012.11&#39;: 12, &#39;NC_000013.10&#39;: 13, &#39;NC_000014.8&#39;: 14, &#39;NC_000015.9&#39;: 15, &#39;NC_000016.9&#39;: 16, &#39;NC_000017.10&#39;: 17, &#39;NC_000018.9&#39;: 18, &#39;NC_000019.9&#39;: 19, &#39;NC_000020.10&#39;: 20, &#39;NC_000021.8&#39;: 21, &#39;NC_000022.10&#39;: 22, &#39;NC_000023.10&#39;: 23, &#39;NC_000024.9&#39;: 24, &#39;NC_012920.1&#39;: 25}
+</span></code></pre></div>
+<h3 id="chr-datatype-conversion-string-int">CHR Datatype conversion (string &lt;-&gt; int)</h3>
+<p><code>gl.get_chr_to_number()</code>: <code>string</code> to <code>int</code></p>
+<p><code>gl.get_number_to_chr()</code>: <code>int</code> to <code>string</code></p>
 <h2 id="high-ld-region-bed">High-LD region bed</h2>
-<ul>
-<li><code>get_high_ld(build)</code></li>
-</ul>
+<p><code>gl.get_high_ld(build)</code>: get the path for the BED file of high-LD regions</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>gl.get_high_ld(&quot;19&quot;)
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>&#39;/home/yunye/anaconda3/envs/gwaslab/lib/python3.8/site-packages/gwaslab/data/high_ld/high_ld_hla_hg19.bed.gz&#39;
+</span></code></pre></div>
 <h2 id="sumstats-format-list">Sumstats Format list</h2>
-<ul>
-<li><code>get_format_dict(fmt)</code></li>
-<li><code>get_formats_list()</code></li>
-</ul>
-<h2 id="gene-gtf">Gene GTF</h2>
-<ul>
-<li><code>get_gtf(chrom, build="19",source="ensembl")</code></li>
-</ul>
+<p><code>gl.get_format_dict(fmt)</code>: check the details of a format.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>gl.get_format_dict(fmt=&quot;gwaslab&quot;)
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>({&#39;format_name&#39;: &#39;ldsc&#39;,
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  &#39;format_source&#39;: &#39;https://github.com/bulik/ldsc/wiki/Summary-Statistics-File-Format&#39;,
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>  &#39;format_source2&#39;: &#39;https://github.com/bulik/ldsc/blob/master/munge_sumstats.py&#39;,
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>  &#39;format_version&#39;: 20150306},
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a> {&#39;SNP&#39;: &#39;rsID&#39;,
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>  &#39;A2&#39;: &#39;NEA&#39;,
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>  &#39;A1&#39;: &#39;EA&#39;,
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>  &#39;Frq&#39;: &#39;EAF&#39;,
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>  &#39;N&#39;: &#39;N&#39;,
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>  &#39;Beta&#39;: &#39;BETA&#39;,
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>  &#39;P&#39;: &#39;P&#39;,
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>  &#39;Z&#39;: &#39;Z&#39;,
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>  &#39;INFO&#39;: &#39;INFO&#39;,
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>  &#39;OR&#39;: &#39;OR&#39;,
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>  &#39;CHR&#39;: &#39;CHR&#39;,
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>  &#39;POS&#39;: &#39;POS&#39;})
+</span></code></pre></div>
+<p><code>gl.get_formats_list()</code>: show all available format GWASLab supports.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>[&#39;auto&#39;,
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a> &#39;bolt_lmm&#39;,
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a> &#39;fastgwa&#39;,
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a> &#39;gwascatalog&#39;,
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a> &#39;gwascatalog_hm&#39;,
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a> &#39;gwaslab&#39;,
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a> &#39;ldsc&#39;,
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a> &#39;metal&#39;,
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a> &#39;mrmega&#39;,
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a> &#39;mtag&#39;,
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a> &#39;pgscatalog&#39;,
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a> &#39;pgscatalog_hm&#39;,
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a> &#39;pheweb&#39;,
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a> &#39;plink&#39;,
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a> &#39;plink2&#39;,
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a> &#39;regenie&#39;,
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a> &#39;saige&#39;,
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a> &#39;ssf&#39;,
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a> &#39;template&#39;,
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a> &#39;vcf&#39;]
+</span></code></pre></div>
 
 
 
