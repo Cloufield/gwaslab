@@ -1508,7 +1508,7 @@
 </div>
 <hr />
 <h3 id="colors-and-fontsizes">Colors and Fontsizes</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>          <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;#597FBD&quot;</span><span class="p">,</span><span class="s2">&quot;#74BAD3&quot;</span><span class="p">],</span>
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>          <span class="n">cut_line_color</span><span class="o">=</span><span class="s2">&quot;#ebebeb&quot;</span><span class="p">,</span>
 </span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>          <span class="n">sig_line_color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
@@ -1521,17 +1521,44 @@
 </span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>          <span class="n">marker_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">25</span><span class="p">)</span>
 </span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="p">)</span>
 </span></code></pre></div>
-<ul>
-<li><code>colors</code> : <code>list</code>, a list of color for Manhattan plot. (default: <code>["#597FBD","#74BAD3"]</code>)</li>
-<li><code>cut_line_color</code> : <code>string</code>, color for cut line.  (default: <code>"#ebebeb"</code>)</li>
-<li><code>sig_line_color</code> : <code>string</code>, color for significance threshold line. (default: <code>"grey"</code>)</li>
-<li><code>highlight_color</code> : <code>string</code>, color for highlighting. (default: <code>"#CB132D"</code>)</li>
-<li><code>pinpoint_color</code> : <code>string</code>, color for pinpointing. (default: <code>"red"</code>)</li>
-<li><code>maf_bin_colors</code> : <code>list</code>, a list of color formaf stratified Q-Q plot. (default: <code>"["#f0ad4e","#5cb85c", "#5bc0de","#000042"]"</code>)</li>
-<li><code>fontsize = 10</code>: fontsize for ticklabels.</li>
-<li><code>title_fontsize = 13</code>, fontsize for title.</li>
-<li><code>anno_fontsize = 10</code>, fontsize for annotation.</li>
-</ul>
+|Color Option|DataType|Description|Default|
+|-|-|-|-|
+|<code>colors</code>|<code>list</code>|a list of colors for chromsomes in the Manhattan plot; it will be used repetitively.|<code>["#597FBD","#74BAD3"]</code>|
+|<code>cut_line_color</code>|<code>list</code>|color for the cut line.|<code>"#ebebeb"</code>|
+|<code>sig_line_color</code>|<code>list</code>|color for significance threshold line.|<code>"grey"</code>|
+|<code>highlight_color</code>|<code>list</code>|color for highlighting loci|<code>"#CB132D"</code>|
+|<code>pinpoint_color</code>|<code>list</code>|color for pinpointing variants|<code>"red"</code>|
+|<code>maf_bin_colors</code>|<code>list</code>|a list of colors for maf-stratified Q-Q plot.|<code>"["#f0ad4e","#5cb85c", "#5bc0de","#000042"]"</code>| </p>
+<table>
+<thead>
+<tr>
+<th>Fontsize Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fontsize</code></td>
+<td><code>list</code></td>
+<td>fontsize for ticklabels.</td>
+<td><code>9</code></td>
+</tr>
+<tr>
+<td><code>title_fontsize</code></td>
+<td><code>13</code></td>
+<td>fontsize for title.</td>
+<td><code>13</code></td>
+</tr>
+<tr>
+<td><code>anno_fontsize</code></td>
+<td><code>10</code></td>
+<td>fontsize for annotation.</td>
+<td><code>9</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <p><div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
@@ -1550,32 +1577,98 @@
 </span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>          <span class="n">title_pad</span><span class="o">=</span><span class="mf">1.08</span>
 </span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>        <span class="p">)</span>
 </span></code></pre></div>
-<ul>
-<li>title : <code>string</code> , title for the whole plot</li>
-<li>mtitle : <code>string</code> , title for the Manhattan plot</li>
-<li>qtitle : <code>string</code> , title for the Q-Q plot</li>
-<li>title_pad : <code>float</code> , padding for title</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Title Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td><code>string</code></td>
+<td>title for the figure.</td>
+<td>``</td>
+</tr>
+<tr>
+<td><code>mtitle</code></td>
+<td><code>string</code></td>
+<td>title for the Manhattan plot</td>
+<td>``</td>
+</tr>
+<tr>
+<td><code>qtitle</code></td>
+<td><code>string</code></td>
+<td>title for the Q-Q plot</td>
+<td>``</td>
+</tr>
+<tr>
+<td><code>title_pad</code></td>
+<td><code>float</code></td>
+<td>padding for title</td>
+<td><code>1.08</code></td>
+</tr>
+</tbody>
+</table>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png"></p>
 <hr />
 <h3 id="figure-settings">Figure settings</h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>figargs= {&quot;figsize&quot;:(15,5),&quot;dpi&quot;:100}
 </span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Figure Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>figargs</code></td>
+<td><code>dict</code></td>
+<td>key-values pairs that are passed to matplotlib <code>plt.subplots()</code></td>
+<td><code>{"figsize":(15,5),"dpi":200}</code></td>
+</tr>
+</tbody>
+</table>
+<p>Commonly used ones: </p>
 <ul>
-<li><code>figargs</code> : <code>dict</code>, key-values pairs that are passed to matplotlib <code>plt.subplots()</code><ul>
 <li><code>figsize</code> : figure size</li>
 <li><code>dpi</code> : dots per inch. For pulications, dpi&gt;=300 is on of the common criteria.</li>
 </ul>
-</li>
-</ul>
 <h3 id="save-plots">Save plots</h3>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="s2">&quot;mymqqplots.png&quot;</span><span class="p">,</span><span class="n">saveargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">})</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">plot_mqq</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="s2">&quot;mymqqplots.png&quot;</span><span class="p">,</span><span class="n">saveargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dpi&quot;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span><span class="s2">&quot;white&quot;</span><span class="p">})</span>
 </span></code></pre></div>
-Two options for saving plots in <code>.plot_mqq</code></p>
-<ul>
-<li><code>save</code>:<code>string</code>,path for saved plot</li>
-<li><code>saveargs</code>: <code>dict</code>, other parameters passed to matplotlib <code>savefig</code> function.</li>
-</ul>
+<p>Two options for saving plots in <code>.plot_mqq</code></p>
+<table>
+<thead>
+<tr>
+<th>Saving Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>save</code></td>
+<td><code>string</code> or <code>boolean</code></td>
+<td>If <code>string</code>, the plot will be saved to the specified path; If <code>True</code>, it will be saved to default path</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>saveargs</code></td>
+<td><code>dict</code></td>
+<td>other parameters passed to matplotlib <code>savefig</code> function.</td>
+<td><code>{"dpi":300,"facecolor":"white"}</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <ul>
