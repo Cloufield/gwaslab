@@ -2,79 +2,45 @@
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png">
 
-GWASLab provides off-line functions for creating regional plots.
+GWASLab provides functions for creating regional plots.
 
-
-## Usage
+## 1. Usage
 ```
-mqqplot(  vcf_path=None,
-          vcf_chr_dict=get_number_to_chr(),
-          gtf_path="defualt",
-          mlog10p="MLOG10P",
-          scaled=False,
-          mode="r",
-          # region
+.plot_mqq(mode="r",
           region = None,
-          region_step = 21,
-          region_grid = False,
-          region_grid_line = {"linewidth": 2,"linestyle":"--"},
-          region_lead_grid = True,
-          region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"},
-          region_hspace=0.02,
-          region_ld_threshold = [0.2,0.4,0.6,0.8],
-          region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
-          region_ld_colors1 = ["#E4E4E4","#F8CFCF","#F5A2A5","#F17474","#EB4445","#E51819","#E51819"],
-          region_ld_colors2 = ["#E4E4E4","#D8E2F2","#AFCBE3","#86B3D4","#5D98C4","#367EB7","#367EB7"],
-          region_recombination = True,
-          region_protein_coding=True,
-          region_flank_factor = 0.05,
-          taf=[4,0,0.95,1,1],
-          # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
-          mqqratio=3,
-          windowsizekb=500,
-          anno=None,
-          anno_set=[],
-          anno_alias={},
-          anno_d={},
-          anno_source = "ensembl",
-          arm_offset=50,
-          arm_scale=1,
-          cut=0,
-          skip=0,
-          cutfactor=10,
-          cut_line_color="#ebebeb",  
-          sig_level=5e-8,
-          sig_line_color="grey",
-          suggestive_sig_level=5e-6,
-          highlight = [],
-          highlight_color="#CB132D",
-          highlight_windowkb = 500,
-          pinpoint=[],
-          pinpoint_color ="red",
-          stratified=False,
-          maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
-          maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"],
-          gc=True,
-          title =None,
-          mtitle=None,
-          qtitle=None,
-          figargs= {"figsize":(15,5),"dpi":100},
-          fontsize = 10,
-          colors=["#597FBD","#74BAD3"],
-          marker_size=(5,25),
-          use_rank=False,
-          verbose=True,
-          repel_force=0.03,
-          build="19",
-          title_pad=1.08, 
-          save=None,
-          saveargs={"dpi":400,"facecolor":"white"},
-          log=Log()
+          ...
           ):
 ```
-GWASLab regional plot function is based on plot_mqq().
 
-## Regional mqq plot
+GWASLab regional plot function is based on plot_mqq().
+Most options are largely the same as [Manhattan plot](https://cloufield.github.io/gwaslab/Visualization/).
+
+|Option|DataType|Description|Default|
+|-|-|-|-|
+|`mode`|`r`|specify regional plot mode|-|
+|`region`|`tuple`|a three elements tuple (chr, start, end); for example, (7,156538803,157538803)|-|
+|`vcf_path`|`string`|path to LD reference in VCF format: if None, LD information will not be plotted.|`None`|
+|`region_ref`|`boolean`|the SNPID or rsID (if SNPID is not available) for reference variant; if None, lead variants will be selected|`None`|
+|`region_ref2`|`boolean`|the SNPID or rsID for the second reference variant|`None`|
+|`region_grid`|`boolean`|If True, plot the grid line|`False`|
+|`region_grid_line`|`dict`|parameters for the grid line|`{"linewidth": 2,"linestyle":"--"}`|
+|`region_lead_grid`|`string`|If True, plot a line to show the reference variants|-|
+|`region_lead_grid_line`|`string`|parameters for the line to show the reference variants|{"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}|
+|`region_ld_threshold`|`list`|LD r2 categories|`[0.2,0.4,0.6,0.8]`|
+|`region_ld_colors`|`list`|LD r2 categories colors|`["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]`|
+|`region_ld_colors1`|`list`|LD r2 categories colors for the first reference varaint (when region_ref2 is specified)|`["#E4E4E4","#F8CFCF","#F5A2A5","#F17474","#EB4445","#E51819","#E51819"]`|
+|`region_ld_colors2`|`list`|LD r2 categories colors for the second reference varaint (when region_ref2 is specified)|`["#E4E4E4","#D8E2F2","#AFCBE3","#86B3D4","#5D98C4","#367EB7","#367EB7"]`|
+|`region_hspace`|`float`|the space between the scatter plot and the gene track|`0.02`|
+|`region_step`|`int`|number of X axis ticks|`21`|
+|`region_recombination`|`boolean`||`True`|
+|`tabix`|`string`|path to tabix; if None, GWASLab will search in environmental path; Note: if tabix is available, the speed is much faster!!!|`None`|
+|`taf`|`list`|a five-element list; number of gene track lanes, offset for gene track, font_ratio, exon_ratio, text_offset|`[4,0,0.95,1,1]`|
+|`build`|`19` or `38`|reference genome build; `99` for unknown|`99`|
+
+
+## 2. Examples
+
+### 2.1 Regional mqq plot
 ```
 !wget -O t2d_bbj.txt.gz http://jenger.riken.jp/14/
 ```
@@ -92,7 +58,7 @@ mysumstats.plot_mqq(region=(7,156538803,157538803))
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197125768-89c7fdd0-c80a-4db6-b8fc-9e970b39610e.png">
 
 
-## Regional plot without LD
+### 2.2 Regional plot without LD
 ```
 mysumstats.plot_mqq(mode="r", region=(7,156538803,157538803),region_grid=True)
 ```
@@ -100,14 +66,14 @@ mysumstats.plot_mqq(mode="r", region=(7,156538803,157538803),region_grid=True)
 
 
 
-## Regional plot
+### 2.3 Regional plot
 ```
 mysumstats.plot_mqq(mode="r",region=(7,156538803,157538803),region_grid=True,
                     vcf_path="/home/yunye/mydata/d_disk/eas_1kg_af/EAS.chr7.split_norm_af.vcf.gz")
 ```
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png">
 
-## Two-reference-variant regional plot
+### 2.4 Two-reference-variant regional plot
 ```
 mysumstats.plot_mqq(mode="r",region=(7,156538803,157538803),
                     region_grid=True,

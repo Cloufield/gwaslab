@@ -1,17 +1,28 @@
 #  Brisbane plot
 
-## GWAS signal density plot
+##  1. Brisbane plot : GWAS signal density plot
 
-GWASLab can create the Brisbane plot (GWAS signal density plot; See the citation). Brisbane plot is a scatter plot that shows the signal density, very useful for presenting large-scale GWAS data.  
+GWASLab can create the [Brisbane plot](https://www.nature.com/articles/s41586-022-05275-y/figures/2) (GWAS signal density plot). Brisbane plot is a scatter plot that shows the signal density (number of variants within the 500 Kb flanking region of the reference variant) for each variant, which is very useful for presenting the independent signals obtained from large-scale GWAS of complex traits. The signals are usually determined by other statistical methods such as conditional analysis. 
+
+
+### 1.1 Usage
 
 ```
 mysumstats.plot_mqq(mode="b")
 ```
 
-- `mode="b"` : create Brisbane plot !
-- `bwindowsizekb = 100` : windowsize in kb.
+!!! note
+    To create Brisbane plot using this function, you just need to load the sumstats of indenpedent signals. If you load the entire datasets, the plot will simply reflect the marker density for your sumstats. To investigate indenpedent signals, please use other tools such as GCTA-COJO. GWASLab only calculates the density of all variants in the gl.Sumstats Object.
+
+### 1.2 Options
+
+|Option|DataType|Description|Default|
+|-|-|-|-|
+|`mode`|`b`|specify Brisbane plot mode|-|
+|`bwindowsizekb`|`int`|windowsize in kb (flanking region length on one side)|`100`|
 
 
+### 1.3 Example
 !!! example "Brisbane plot"
     
     Data was obtained from : Yengo, L., Vedantam, S., Marouli, E., Sidorenko, J., Bartell, E., Sakaue, S., ... & Lee, J. Y. (2022). A saturated map of common genetic variants associated with human height. Nature, 1-16.
@@ -32,13 +43,18 @@ mysumstats.plot_mqq(mode="b")
     <img width=600 src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png">
 
 
-## Calculate the density for sumstats
+## 2. Calculate the density for sumstats
 
 ```
 mysumstats.get_density(windowsizekb=100)
 ```
 
-- `windowsizekb`: window size for calculation of signal density.
+Or you can use `.get_density()` to just calculate the density.
+
+|Option|DataType|Description|Default|
+|-|-|-|-|
+|`windowsizekb`|`int`|window size for calculation of signal density. `DENSITY` |`100`|
+
 
 !!! example "Calculate signal density"
 

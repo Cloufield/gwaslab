@@ -445,7 +445,8 @@ def plot_power( ns=1000,
         var_to_change = prevalences
         legend_title = "Prevalence" 
     
-
+    #Print settings#############################################################################
+    
     #configure colormap##########################################################################################################
     cmap_to_use = plt.cm.get_cmap(cmap)
     if cmap_to_use.N >100:
