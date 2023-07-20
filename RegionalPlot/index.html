@@ -1082,74 +1082,141 @@
 
 <h1 id="regional-plots">Regional plots</h1>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png"></p>
-<p>GWASLab provides off-line functions for creating regional plots.</p>
+<p>GWASLab provides functions for creating regional plots.</p>
 <h2 id="usage">Usage</h2>
-<p><div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>mqqplot(  vcf_path=None,
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>          vcf_chr_dict=get_number_to_chr(),
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>          gtf_path=&quot;defualt&quot;,
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>          mlog10p=&quot;MLOG10P&quot;,
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>          scaled=False,
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>          mode=&quot;r&quot;,
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>          # region
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>          region = None,
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>          region_step = 21,
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>          region_grid = False,
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>          region_grid_line = {&quot;linewidth&quot;: 2,&quot;linestyle&quot;:&quot;--&quot;},
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>          region_lead_grid = True,
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>          region_lead_grid_line = {&quot;alpha&quot;:0.5,&quot;linewidth&quot; : 2,&quot;linestyle&quot;:&quot;--&quot;,&quot;color&quot;:&quot;#FF0000&quot;},
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>          region_hspace=0.02,
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>          region_ld_threshold = [0.2,0.4,0.6,0.8],
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>          region_ld_colors = [&quot;#E4E4E4&quot;,&quot;#020080&quot;,&quot;#86CEF9&quot;,&quot;#24FF02&quot;,&quot;#FDA400&quot;,&quot;#FF0000&quot;,&quot;#FF0000&quot;],
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>          region_ld_colors1 = [&quot;#E4E4E4&quot;,&quot;#F8CFCF&quot;,&quot;#F5A2A5&quot;,&quot;#F17474&quot;,&quot;#EB4445&quot;,&quot;#E51819&quot;,&quot;#E51819&quot;],
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>          region_ld_colors2 = [&quot;#E4E4E4&quot;,&quot;#D8E2F2&quot;,&quot;#AFCBE3&quot;,&quot;#86B3D4&quot;,&quot;#5D98C4&quot;,&quot;#367EB7&quot;,&quot;#367EB7&quot;],
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>          region_recombination = True,
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>          region_protein_coding=True,
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>          region_flank_factor = 0.05,
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>          taf=[4,0,0.95,1,1],
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>          # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>          mqqratio=3,
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>          windowsizekb=500,
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>          anno=None,
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>          anno_set=[],
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>          anno_alias={},
-</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>          anno_d={},
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>          anno_source = &quot;ensembl&quot;,
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>          arm_offset=50,
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>          arm_scale=1,
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>          cut=0,
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>          skip=0,
-</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>          cutfactor=10,
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>          cut_line_color=&quot;#ebebeb&quot;,  
-</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>          sig_level=5e-8,
-</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>          sig_line_color=&quot;grey&quot;,
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>          suggestive_sig_level=5e-6,
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>          highlight = [],
-</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>          highlight_color=&quot;#CB132D&quot;,
-</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>          highlight_windowkb = 500,
-</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>          pinpoint=[],
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>          pinpoint_color =&quot;red&quot;,
-</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>          stratified=False,
-</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>          maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)],
-</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>          maf_bin_colors = [&quot;#f0ad4e&quot;,&quot;#5cb85c&quot;, &quot;#5bc0de&quot;,&quot;#000042&quot;],
-</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>          gc=True,
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>          title =None,
-</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>          mtitle=None,
-</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>          qtitle=None,
-</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>          figargs= {&quot;figsize&quot;:(15,5),&quot;dpi&quot;:100},
-</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>          fontsize = 10,
-</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>          colors=[&quot;#597FBD&quot;,&quot;#74BAD3&quot;],
-</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>          marker_size=(5,25),
-</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>          use_rank=False,
-</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>          verbose=True,
-</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>          repel_force=0.03,
-</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>          build=&quot;19&quot;,
-</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>          title_pad=1.08, 
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>          save=None,
-</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>          saveargs={&quot;dpi&quot;:400,&quot;facecolor&quot;:&quot;white&quot;},
-</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>          log=Log()
-</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>          ):
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>.plot_mqq(mode=&quot;r&quot;,
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>          region = None,
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>          ...
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>          ):
 </span></code></pre></div>
-GWASLab regional plot function is based on plot_mqq().</p>
+<p>GWASLab regional plot function is based on plot_mqq().
+Most options are largely the same as <a href="https://cloufield.github.io/gwaslab/Visualization/">Manhattan plot</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td><code>r</code></td>
+<td>specify regional plot mode</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>region</code></td>
+<td><code>tuple</code></td>
+<td>a three elements tuple (chr, start, end); for example, (7,156538803,157538803)</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>vcf_path</code></td>
+<td><code>string</code></td>
+<td>path to LD reference in VCF format: if None, LD information will not be plotted.</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>region_ref</code></td>
+<td><code>boolean</code></td>
+<td>the snpid or rsid for reference variant; if None, lead variants will be selected</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>region_ref2</code></td>
+<td><code>boolean</code></td>
+<td>the snpid or rsid for the second reference variant</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>region_grid</code></td>
+<td><code>boolean</code></td>
+<td>If True, plot the grid line</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>region_grid_line</code></td>
+<td><code>dict</code></td>
+<td>parameters for the grid line</td>
+<td><code>{"linewidth": 2,"linestyle":"--"}</code></td>
+</tr>
+<tr>
+<td><code>region_lead_grid</code></td>
+<td><code>string</code></td>
+<td>If True, plot a line to show the reference variants</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>region_lead_grid_line</code></td>
+<td><code>string</code></td>
+<td>parameters for the line to show the reference variants</td>
+<td>{"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}</td>
+</tr>
+<tr>
+<td><code>region_ld_threshold</code></td>
+<td><code>list</code></td>
+<td>LD r2 categories</td>
+<td><code>[0.2,0.4,0.6,0.8]</code></td>
+</tr>
+<tr>
+<td><code>region_ld_colors</code></td>
+<td><code>list</code></td>
+<td>LD r2 categories colors</td>
+<td><code>["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]</code></td>
+</tr>
+<tr>
+<td><code>region_ld_colors1</code></td>
+<td><code>list</code></td>
+<td>LD r2 categories colors for the first reference varaint (when region_ref2 is specified)</td>
+<td><code>["#E4E4E4","#F8CFCF","#F5A2A5","#F17474","#EB4445","#E51819","#E51819"]</code></td>
+</tr>
+<tr>
+<td><code>region_ld_colors2</code></td>
+<td><code>list</code></td>
+<td>LD r2 categories colors for the second reference varaint (when region_ref2 is specified)</td>
+<td><code>["#E4E4E4","#D8E2F2","#AFCBE3","#86B3D4","#5D98C4","#367EB7","#367EB7"]</code></td>
+</tr>
+<tr>
+<td><code>region_hspace</code></td>
+<td><code>float</code></td>
+<td>the space between the scatter plot and the gene track</td>
+<td><code>0.02</code></td>
+</tr>
+<tr>
+<td><code>region_step</code></td>
+<td><code>int</code></td>
+<td>number of X axis ticks</td>
+<td><code>21</code></td>
+</tr>
+<tr>
+<td><code>region_recombination</code></td>
+<td><code>boolean</code></td>
+<td></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>tabix</code></td>
+<td><code>string</code></td>
+<td>path to tabix; if None, GWASLab will search in environmental path; Note: if tabix is available, the speed is much faster!!!</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>taf</code></td>
+<td><code>list</code></td>
+<td>a five-element list; number of gene track lanes, offset for gene track, font_ratio, exon_ratio, text_offset</td>
+<td><code>[4,0,0.95,1,1]</code></td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td><code>19</code> or <code>38</code></td>
+<td>reference genome build; <code>99</code> for unknown</td>
+<td><code>99</code></td>
+</tr>
+</tbody>
+</table>
 <h2 id="regional-mqq-plot">Regional mqq plot</h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>!wget -O t2d_bbj.txt.gz http://jenger.riken.jp/14/
 </span></code></pre></div>
