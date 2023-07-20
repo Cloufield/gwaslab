@@ -1550,12 +1550,6 @@
 <td>factors to adjust the height for specific arms. key is the number of arm startinf form 0, value is the factor which will be multiplied to arm height.</td>
 <td><code>None</code></td>
 </tr>
-<tr>
-<td>s</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
 </tbody>
 </table>
 <div class="admonition example">
@@ -1742,11 +1736,36 @@
 <img width="600" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/e0a8c92b-a3b5-430e-b11c-114f970ca34a"></p>
 </div>
 <h3 id="211-maf-stratified-qq-plot">2.11 MAF-stratified QQ plot</h3>
-<ul>
-<li><code>stratified</code>: <code>boolean</code> if True, plot MAF straitified QQ plot. Require EAF in sumstats.</li>
-<li><code>maf_bins</code>: <code>list</code> maf bins for straitification. (default: <code>maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]</code>)</li>
-<li><code>maf_bin_colors</code>: <code>list</code> colors used for each bin. (default: <code>maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]</code>)</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>QQ plot Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stratified</code></td>
+<td><code>boolean</code></td>
+<td>if True, plot MAF straitified QQ plot. Require EAF in sumstats.</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>maf_bins</code></td>
+<td><code>list</code></td>
+<td>MAF bins for straitification.</td>
+<td><code>[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]</code></td>
+</tr>
+<tr>
+<td><code>maf_bin_colors</code></td>
+<td><code>list</code></td>
+<td>colors used for each MAF bin.</td>
+<td><code>["#f0ad4e","#5cb85c", "#5bc0de","#000042"]</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition example">
 <p class="admonition-title">MAF-stratified Q-Q plot</p>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593456-93539e3e-e8c0-476f-ae4e-e5843f970ba6.png"></p>
@@ -1769,10 +1788,10 @@
 |Color Option|DataType|Description|Default|
 |-|-|-|-|
 |<code>colors</code>|<code>list</code>|a list of colors for chromsomes in the Manhattan plot; it will be used repetitively.|<code>["#597FBD","#74BAD3"]</code>|
-|<code>cut_line_color</code>|<code>list</code>|color for the cut line.|<code>"#EBEBEB"</code>|
-|<code>sig_line_color</code>|<code>list</code>|color for significance threshold line.|<code>"grey"</code>|
-|<code>highlight_color</code>|<code>list</code>|color for highlighting loci|<code>"#CB132D"</code>|
-|<code>pinpoint_color</code>|<code>list</code>|color for pinpointing variants|<code>"red"</code>|
+|<code>cut_line_color</code>|<code>string</code>|color for the cut line.|<code>"#EBEBEB"</code>|
+|<code>sig_line_color</code>|<code>string</code>|color for significance threshold line.|<code>"grey"</code>|
+|<code>highlight_color</code>|<code>string</code>|color for highlighting loci|<code>"#CB132D"</code>|
+|<code>pinpoint_color</code>|<code>string</code>|color for pinpointing variants|<code>"red"</code>|
 |<code>maf_bin_colors</code>|<code>list</code>|a list of colors for maf-stratified Q-Q plot.|<code>["#f0ad4e","#5cb85c", "#5bc0de","#000042"]</code>| </p>
 <table>
 <thead>
