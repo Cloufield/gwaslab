@@ -11,7 +11,7 @@ height: auto;
 .md-typeset__table {
    min-width: 100%;
    margin-bottom: 0.2em;
-   padding: 0 0.3rem;
+   padding: 0 0.8rem;
 }
 
 .md-typeset table:not([class]) td {
