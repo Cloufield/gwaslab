@@ -158,12 +158,12 @@ def preformat(sumstats,
         dtype_dictionary[nea]="string"
     if ref:
         usecols.append(ref)
-        rename_dictionary[nea]= "REF"
-        dtype_dictionary[nea]="string"
+        rename_dictionary[ref]= "REF"
+        dtype_dictionary[ref]="string"
     if alt:
         usecols.append(alt)
-        rename_dictionary[nea]= "ALT"
-        dtype_dictionary[nea]="string"
+        rename_dictionary[alt]= "ALT"
+        dtype_dictionary[alt]="string"
     if eaf:
         usecols.append(eaf)
         rename_dictionary[eaf]= "EAF"
