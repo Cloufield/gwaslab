@@ -7,6 +7,7 @@ import numpy as np
 import scipy as sp
 from gwaslab.Log import Log
 from gwaslab.calculate_power import get_beta
+from gwaslab.calculate_power import get_power
 from gwaslab.calculate_power import get_beta_binary
 from gwaslab.fill import filldata
 from matplotlib.collections import LineCollection
@@ -368,8 +369,8 @@ def plot_power( ns=1000,
                 ts=None,
                 prevalences=None,
                 or_to_rr=False,
-                scases=None,
-                scontrols=None, 
+                ncases=None,
+                ncontrols=None, 
                 sig_levels=5e-8,       
                 maf_range=None,
                 beta_range=None, 
@@ -410,12 +411,12 @@ def plot_power( ns=1000,
     if verbose: log.write("Start to create trumpet plot...")
     
     if mode=="b":
-        if scases is None or scontrols is None:
+        if ncases is None or ncontrols is None:
             if verbose:
                 log.write(" -No scase or scontrol. Skipping...")
             return None
         if prevalence is None:
-                prevalence= scases/(scases + scontrols)
+                prevalence= ncases/(ncases + ncontrols)
                 log.write(" -Prevalence is not given. Estimating based on scase and scontrol :{}...".format(prevalence))
 
     #configure beta and maf range ###################################################################################################
@@ -432,11 +433,11 @@ def plot_power( ns=1000,
     if type(ts) is list:
         var_to_change = ts
         legend_title = "Power"
-    if type(scases) is list:
-        var_to_change = scases
+    if type(ncases) is list:
+        var_to_change = ncases
         legend_title = "Number of cases"    
-    if type(scontrols) is list:
-        var_to_change = scontrols
+    if type(ncontrols) is list:
+        var_to_change = ncontrols
         legend_title = "Number of controls"  
     if type(sig_levels) is list:
         var_to_change = sig_levels
@@ -498,8 +499,8 @@ def plot_power( ns=1000,
     else:
         for i,t in enumerate(var_to_change):
             
-            scase = scases
-            scontrol = scontrols
+            scase = ncases
+            scontrol = ncontrols
             t = ts
             prevalence = prevalences
             sig_level = sig_levels
@@ -565,9 +566,304 @@ def plot_power( ns=1000,
     ############  Annotation ##################################################################################################
  
     if mode=="q":
-        save_figure(fig, save, keyword="trumpet_q",saveargs=saveargs, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_q",saveargs=saveargs, log=log, verbose=verbose)
     elif mode=="b":
-        save_figure(fig, save, keyword="trumpet_b",saveargs=saveargs, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_b",saveargs=saveargs, log=log, verbose=verbose)
 
     if verbose: log.write("Finished creating trumpet plot!")
+    return fig
+
+
+def plot_power_x(
+                x=None, 
+                ts=None,
+                mode="q",
+                ns=10000,
+                mafs=0.1,
+                betas=0.1,
+                prevalences=0.1,
+                or_to_rr=False,
+                ncases=5000,
+                ncontrols=5000, 
+                sig_levels=5e-8,       
+                maf_range=None,
+                beta_range=None, 
+                n_range=None,
+                prevalence_range=None,
+                n_matrix=1000,
+                xscale="log",
+                yscale_factor=1,
+                cmap="cool",
+                ylim=None,
+                fontsize=15,
+                font_family="Arial",
+                save=False,
+                saveargs=None,
+                ylabel="Power",
+                xlabel="N",
+                xticks = None,
+                xticklabels = None,
+                yticks = None,
+                yticklabels=None,
+                verbose=True,
+                log=Log()):
+    
+    #Checking columns#################################################################################################################
+    if verbose: log.write("Start to create power plot...")
+    matplotlib.rc('font', family=font_family)
+    if verbose:
+        log.write(" -Settings:")
+        log.write("  -Mode: {}".format(mode))
+        if mode == "q" :
+            log.write("  -X axis: {}".format(x))
+            if x!="N":
+                log.write("  -N: {}".format(ns))
+            if x!="MAF":
+                log.write("  -MAF: {}".format(mafs))
+        if mode == "b" :
+            log.write("  -X axis: {}".format(x))
+            if x!="N_CASE":
+                log.write("  -N_CASE: {}".format(ncases))
+            if x!="N_CASE":
+                log.write("  -N_CONTROL: {}".format(ncontrols))
+            if x!="PREVALENCE":
+                log.write("  -PREVALENCE: {}".format(prevalences))
+        if x!="BETA":
+            log.write("  -BETA: {}".format(betas))
+
+        log.write(" -Significance level: {}".format(sig_levels))
+
+    if x is None:
+        if mode=="b":
+            x = "N_CASE"
+        else:
+            x = "N"
+
+    if ylim is None:
+        ylim=(0,1)
+
+    if ts is None:
+        ts = [0.8]
+    #Checking columns#################################################################################################################
+    
+    
+    if mode=="b":
+        if ncases is None or ncontrols is None:
+            if verbose:
+                log.write(" -No scase or scontrol. Skipping...")
+            return None
+
+    #configure beta and maf range ###################################################################################################
+    if n_range is None:
+        n_range = np.linspace(1,50000,n_matrix)
+    else:
+        n_range = np.linspace(n_range[0],n_range[1],n_matrix)
+
+    if beta_range is None:
+        beta_range = np.linspace(0.0001,3,n_matrix)
+    else:
+        beta_range = np.linspace(beta_range[0],beta_range[1],n_matrix)
+    
+    if maf_range is None:
+        if mode=="q":
+            maf_range = np.linspace(0.0001,0.5,n_matrix)
+        else:
+            maf_range = np.linspace(0.0001,0.9999,n_matrix)
+    else:
+        maf_range = np.linspace(maf_range[0],maf_range[1],n_matrix)
+    
+    if prevalence_range is None:
+        prevalence_range = np.linspace(0.01,0.99,n_matrix)
+    else:
+        prevalence_range = np.linspace(prevalence_range[0],prevalence_range[1],n_matrix)
+    #configure power threshold###################################################################################################
+    
+    if type(ns) is list:
+        var_to_change = ns
+        legend_title = "N"
+    if type(betas) is list:
+        var_to_change = betas
+        legend_title = "BETA"
+    if type(mafs) is list:
+        var_to_change = mafs
+        legend_title = "MAF"
+    if type(ncases) is list:
+        var_to_change = ncases
+        legend_title = "Number of cases"    
+    if type(ncontrols) is list:
+        var_to_change = ncontrols
+        legend_title = "Number of controls"  
+    if type(sig_levels) is list:
+        var_to_change = sig_levels
+        legend_title = "Significance level" 
+    if type(prevalences) is list:
+        var_to_change = prevalences
+        legend_title = "Prevalence" 
+    
+    #Print settings#############################################################################
+    
+    #configure colormap##########################################################################################################
+    cmap_to_use = plt.cm.get_cmap(cmap)
+    if cmap_to_use.N >100:
+        max_value = max(var_to_change)
+        min_value = min(var_to_change)
+        norm = lambda x: x/max_value
+        if legend_title == "Significance level":
+            norm = lambda x: np.log10(x)/np.log10(min_value)
+        rgba = cmap_to_use(list(map(norm, var_to_change)))
+    else:
+        rgba = cmap_to_use(range(len(var_to_change)))
+    
+    output_hex_colors=[]
+    for i in range(len(rgba)):
+        output_hex_colors.append(mc.to_hex(rgba[i]))
+    output_hex_colors
+
+    ##################################################################################################
+    fig, ax = plt.subplots(figsize=(10,10))
+    
+    ##creating power line############################################################################################
+    if mode=="q":
+        for i,value in enumerate(var_to_change):
+            
+            n = ns
+            beta = betas
+            maf = mafs
+            sig_level = sig_levels
+            
+            if legend_title == "BETA":
+                beta = value
+            elif legend_title == "MAF":
+                maf = value
+            elif legend_title == "N":
+                n = value
+            elif legend_title == "Significance level":
+                sig_level = value
+
+
+            if x == "N":
+                x_values = n_range
+                n = x_values
+            elif x=="MAF":
+                x_values = maf_range
+                maf = x_values
+            elif x=="BETA":
+                x_values = beta_range
+                beta = x_values
+
+            xpower = get_power(mode="q",          
+                              eaf=maf,
+                              beta=beta, 
+                              n=n,
+                              sig_level=sig_level,
+                              verbose=False)
+            
+            ax.plot(x_values, xpower, label=value,color=output_hex_colors[i],zorder=0)
+
+    else:
+        for i,value in enumerate(var_to_change):
+            
+            beta = betas
+            maf = mafs
+            ncase = ncases
+            ncontrol = ncontrols
+            prevalence = prevalences
+            sig_level = sig_levels
+            
+            if legend_title == "BETA":
+                beta = value
+            elif legend_title == "MAF":
+                maf = value
+            elif legend_title == "Prevalence":
+                prevalence = value
+            elif legend_title == "Significance level":
+                sig_level = value
+            elif legend_title == "Number of cases":
+                ncase = value
+            elif legend_title == "Number of controls":
+                ncontrol = value
+            
+            if x == "N_CASE":
+                x_values = n_range
+                ncase = x_values
+            elif x== "N_CONTROL":
+                x_values = n_range
+                ncontrol = x_values
+            elif x=="MAF":
+                x_values = maf_range
+                maf = x_values
+            elif x=="BETA":
+                x_values = beta_range
+                beta = x_values
+            elif x=="PREVALENCE":
+                x_values = prevalence_range
+                prevalence = x_values
+
+            xpower = get_power(mode="b",          
+                              beta = beta, 
+                              daf = maf,
+                              ncase=ncase,
+                              ncontrol=ncontrol,
+                              prevalence=prevalence,
+                              sig_level=sig_level,
+                              or_to_rr = or_to_rr,
+                              verbose=False)
+            
+            ax.plot(x_values, xpower, label=value,color=output_hex_colors[i],zorder=0)
+    ###################################################################################################
+
+    ax.tick_params(axis='y', labelsize=fontsize)
+    leg = ax.legend(title=legend_title,fontsize =fontsize,title_fontsize=fontsize)
+
+    for line in leg.get_lines():
+        line.set_linewidth(5.0)
+    ax.axhline(y=0,color="grey",linestyle="dashed")
+    
+    for i in ts:
+        ax.axhline(y=i,color="grey",linestyle="dashed")
+    
+
+    #if xscale== "log":
+    #    ax.set_xscale('log')
+    #    rotation=0
+    #    ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
+    #    ax.set_xlim(0,max(ns))
+    #else:
+    #    rotation=90    
+    #    ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
+    #    ax.set_xlim(0,max(ns))
+    
+    if ylim is not None:
+        ax.set_ylim(ylim)
+    if yticks is not None:
+        ax.set_yticks(yticks, yticklabels)
+
+    ax.set_ylabel(ylabel,fontsize=fontsize)
+    
+    if x == "N_CASE":
+        xlabel = "Number of cases"
+    elif x== "N_CONTROL":
+        xlabel = "Number of controls"
+    elif x== "N":
+        xlabel = "Number of samples"
+    elif x=="MAF":
+        xlabel = "Minor allele frequency"
+    elif x=="BETA":
+        xlabel = "Risk allele effect size"
+    elif x=="PREVALENCE":
+        xlabel = "Prevalence"
+    ax.set_xlabel(xlabel,fontsize=fontsize)
+    
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(True)
+
+    ############  Annotation ##################################################################################################
+ 
+    if mode=="q":
+        save_figure(fig, save, keyword="power_xq",saveargs=saveargs, log=log, verbose=verbose)
+    elif mode=="b":
+        save_figure(fig, save, keyword="power_xb",saveargs=saveargs, log=log, verbose=verbose)
+
+    if verbose: log.write("Finished creating power plot!")
     return fig

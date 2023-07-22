@@ -36,3 +36,4 @@ from gwaslab.version import _show_version as show_version
 from gwaslab.calculate_power import get_power
 from gwaslab.calculate_power import get_beta
 from gwaslab.trumpetplot import plot_power
+from gwaslab.trumpetplot import plot_power_x
