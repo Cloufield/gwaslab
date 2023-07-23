@@ -25,8 +25,8 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 |Option|Type|Description|Default|
 |-|-|-|-|
 |`sig_level`|`float`|signiifcance level for power calculation| `5e-8`| 
-|`scase`|`int`|number of cases|required|
-|`scontrol`|`int`|number of controls|required|
+|`ncase`|`int`|number of cases|required|
+|`ncontrol`|`int`|number of controls|required|
 |`prevalence`|`float`|disease prevalence in general population|required|
 |`or_to_rr`|`boolean`|if estimate RR using OR/beta and prevalence; for prevalence <10%, RR is similar to OR|"False"|
 |`ts`|`list`|a list of power curve to draw| `[0.2,0.4,0.6,0.8]`|
@@ -87,8 +87,8 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 !!! example "Trumpet plot for binary traits"
     ```
     mysumstats.get_lead(sig_level=5e-6,gls=True).plot_trumpet(mode="b",
-                                scase=36614,
-                                scontrol=155150,
+                                ncase=36614,
+                                ncontrol=155150,
                                 sig_level=5e-6,
                                 p_level=5e-6,
                                 ts=[0.2,0.4,0.6,0.8] ,

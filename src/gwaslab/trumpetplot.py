@@ -33,8 +33,8 @@ def plottrumpet(mysumstats,
                 anno=None,
                 prevalence=None,
                 or_to_rr=False,
-                scase=None,
-                scontrol=None, 
+                ncase=None,
+                ncontrol=None, 
                 sig_level=5e-8,
                 p_level=5e-8,
                 anno_y = 1,
@@ -103,12 +103,12 @@ def plottrumpet(mysumstats,
         return None
     
     if mode=="b":
-        if scase is None or scontrol is None:
+        if ncase is None or ncontrol is None:
             if verbose:
                 log.write(" -No scase or scontrol. Skipping...")
             return None
         if prevalence is None:
-                prevalence= scase/(scase + scontrol)
+                prevalence= ncase/(ncase + ncontrol)
                 log.write(" -Prevalence is not given. Estimating based on scase and scontrol :{}...".format(prevalence))
 
     #loading columns #################################################################################################################
@@ -205,8 +205,8 @@ def plottrumpet(mysumstats,
                             beta_range=beta_range, 
                             prevalence=prevalence,
                             or_to_rr = or_to_rr,
-                            scase=scase, 
-                            scontrol=scontrol, 
+                            ncase=ncase, 
+                            ncontrol=ncontrol, 
                             t=t,
                             sig_level=sig_level,
                             n_matrix=n_matrix)
@@ -367,10 +367,10 @@ def plottrumpet(mysumstats,
 def plot_power( ns=1000,
                 mode="q",
                 ts=None,
-                prevalences=None,
+                prevalences=0.1,
                 or_to_rr=False,
-                ncases=None,
-                ncontrols=None, 
+                ncases=5000,
+                ncontrols=5000, 
                 sig_levels=5e-8,       
                 maf_range=None,
                 beta_range=None, 
@@ -415,10 +415,7 @@ def plot_power( ns=1000,
             if verbose:
                 log.write(" -No scase or scontrol. Skipping...")
             return None
-        if prevalence is None:
-                prevalence= ncases/(ncases + ncontrols)
-                log.write(" -Prevalence is not given. Estimating based on scase and scontrol :{}...".format(prevalence))
-
+        
     #configure beta and maf range ###################################################################################################
     if maf_range is None:
         maf_range=(np.power(10.0,-3),0.5)
@@ -497,10 +494,10 @@ def plot_power( ns=1000,
             lines = LineCollection([xpower2,xpower], label=value,color=output_hex_colors[i],zorder=0)
             ax.add_collection(lines)
     else:
-        for i,t in enumerate(var_to_change):
+        for i,value in enumerate(var_to_change):
             
-            scase = ncases
-            scontrol = ncontrols
+            ncase = ncases
+            ncontrol = ncontrols
             t = ts
             prevalence = prevalences
             sig_level = sig_levels
@@ -512,17 +509,17 @@ def plot_power( ns=1000,
             elif legend_title == "Significance level":
                 sig_level = value
             elif legend_title == "Number of cases":
-                scase = value
+                ncase = value
             elif legend_title == "Number of controls":
-                scontrol = value
+                ncontrol = value
 
             xpower = get_beta_binary(        
                             eaf_range=maf_range,
                             beta_range=beta_range, 
                             prevalence=prevalence,
                             or_to_rr = or_to_rr,
-                            scase=scase, 
-                            scontrol=scontrol, 
+                            ncase=ncase, 
+                            ncontrol=ncontrol, 
                             t=t,
                             sig_level=sig_level,
                             n_matrix=n_matrix)

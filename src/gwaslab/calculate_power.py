@@ -6,7 +6,6 @@ import scipy as sp
 
 def get_power(
               mode="b",
-              t=0,
               genotype_rr=None ,
               genotype_or=None ,
               beta=0.3,
@@ -25,7 +24,7 @@ def get_power(
     if verbose: log.write(" Start to calculate statistical power...")
     if mode=="b":
         if verbose: 
-            log.write(" -Input settings:")
+            log.write(" -Input settings (b mode):")
             log.write("  -Number of cases:{}".format(ncase))
             log.write("  -Number of controls:{}".format(ncontrol))
             if genotype_rr is not None:
@@ -34,6 +33,9 @@ def get_power(
                 log.write("  -Risk allele OR:{:.3f}".format(genotype_or))
             elif beta is not None:
                 log.write("  -Risk allele beta:{:.3f}".format(beta))
+            else:
+                genotype_rr = 0.1
+                log.write("  -Risk allele RR:{:.3f}".format(genotype_rr))
             log.write("  -Disease prevalence:{:.3f}".format(prevalence))
             log.write("  -Risk allele frequency: {:.3f}".format(daf))
             log.write("  -Significance level: {:.3e}".format(sig_level))
@@ -89,8 +91,10 @@ def get_power(
         if verbose: log.write("Expected power: {:.3f}".format(power))
 
     elif mode=="q":
+        if beta is None:
+            beta = 0.1
         if verbose:
-            log.write(" -Input settings:")
+            log.write(" -Input settings (q mode):")
             log.write("  -Significance level: {}".format(sig_level))
             log.write("  -EAF: {}".format(eaf))
             log.write("  -BETA: {}".format(beta))
