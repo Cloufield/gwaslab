@@ -403,17 +403,17 @@ def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=Fals
         if type(value) is str:
             if "\n" in value:
                 value_first_line=value.split("\n")[0]
-                log.write("  -",key," : "+value_first_line.strip()+"...")
+                if verbose:log.write("  -",key," : "+value_first_line.strip()+"...")
             elif value==" ":
-                log.write('  -',key,' : \\s ')     
+                if verbose:log.write('  -',key,' : \\s ')     
             elif value=="\t":
-                log.write('  -',key,' : \\t')    
+                if verbose:log.write('  -',key,' : \\t')    
             else:
-                log.write("  -",key," : "+value.strip())  
+                if verbose:log.write("  -",key," : "+value.strip())  
         elif type(value) is list:
-            log.write("  -",key," : "+','.join(value))  
+            if verbose:log.write("  -",key," : "+','.join(value))  
         else:
-            log.write("  -",key," : ",value)  
+            if verbose:log.write("  -",key," : ",value)  
     keys=[]
     values=[]
     for key,value in rename_dictionary.items():
@@ -422,21 +422,21 @@ def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=Fals
     if fmt!="gwaslab":
         if output == False:
             if fmt!="auto":
-                log.write(" -"+fmt+" to gwaslab format dictionary:")  
-                log.write("  - "+fmt+" keys:",",".join(keys)) 
-                log.write("  - gwaslab values:",",".join(values)) 
+                if verbose:log.write(" -"+fmt+" to gwaslab format dictionary:")  
+                if verbose:log.write("  - "+fmt+" keys:",",".join(keys)) 
+                if verbose:log.write("  - gwaslab values:",",".join(values)) 
             else:
-                log.write("  - Auto-detection mode. Note: auto-detection assumes A1=EA; Alt=EA and Frq=EAF...")
-                log.write("  - Header conversion source: https://github.com/Cloufield/formatbook/blob/main/formats/auto.json")  
+                if verbose:log.write("  - Auto-detection mode. Note: auto-detection assumes A1=EA; Alt=EA and Frq=EAF...")
+                if verbose:log.write("  - Header conversion source: https://github.com/Cloufield/formatbook/blob/main/formats/auto.json")  
         else:
-            log.write(" -gwaslab to "+fmt+" format dictionary:",)  
+            if verbose:log.write(" -gwaslab to "+fmt+" format dictionary:",)  
             keys=[]
             values=[]
             for key,value in rename_dictionary.items():
                 keys.append(key)
                 values.append(value)
-            log.write("  - gwaslab keys:",  ','.join(keys)) 
-            log.write("  - "+fmt+" values:"  , ','.join(values))       
+            if verbose:log.write("  - gwaslab keys:",  ','.join(keys)) 
+            if verbose:log.write("  - "+fmt+" values:"  , ','.join(values))       
 
 def process_neaf(sumstats,log,verbose):
     if verbose: log.write(" -NEAF is specified...") 

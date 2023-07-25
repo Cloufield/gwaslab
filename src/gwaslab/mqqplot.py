@@ -308,8 +308,6 @@ def mqqplot(insumstats,
     else:
         raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
 
-
-
 # Read sumstats #################################################################################################
 
     usecols=[]

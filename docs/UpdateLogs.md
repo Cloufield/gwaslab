@@ -1,5 +1,10 @@
 # Update Logs
 
+## 3.4.22 upcoming
+- added plot_power() and plot_power_x()
+- added support for multiple EFO IDs
+- fixed typos
+
 ## 3.4.21 2023/07/18
 - fix error in gc calculation for mqq plot when `expected_min_mlog10p` is not 0 and `stratified=True`.
 

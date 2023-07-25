@@ -347,8 +347,17 @@ def getnovel(insumstats,
     
     knownsig = pd.DataFrame()
     if efo != False:
-        known_Sumstats = gwascatalog_trait(efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
-        knownsig = known_Sumstats.data.copy()
+        if type(efo) is not list:
+            if verbose: log.write("Start to retrieve data using EFO: {}...".format(efo))
+            known_Sumstats = gwascatalog_trait(efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
+            knownsig = known_Sumstats.data.copy()
+        else:
+            knownsig=pd.DataFrame()
+            if verbose: log.write("Start to retrieve data using {} EFOs: {}...".format(len(efo),efo))
+            for single_efo in efo:
+                known_Sumstats = gwascatalog_trait(single_efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
+                known_Sumstats.data["EFOID"] = single_efo
+                knownsig = pd.concat([known_Sumstats.data, knownsig],ignore_index=True)
         knownsig["CHR"] = knownsig["CHR"].astype("Int64")
         knownsig["POS"] = knownsig["POS"].astype("Int64")
         if verbose: log.write(" -Retrieved {} associations from GWAS catalog.".format(len(knownsig)))
@@ -385,6 +394,8 @@ def getnovel(insumstats,
         knownpubmedids=knownsig["PUBMEDID"].values
     if "AUTHOR" in knownsig.columns:
         knownauthor=knownsig["AUTHOR"].values
+    if "EFOID" in knownsig.columns:
+        knownefo=knownsig["EFOID"].values
     
     # get distance
     lambda x:np.min(np.abs(knownsig["TCHR+POS"]-x))
@@ -397,7 +408,9 @@ def getnovel(insumstats,
         allsig["KNOWN_PUBMED_ID"] = allsig["TCHR+POS"].apply(lambda x:knownpubmedids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
     if "AUTHOR" in knownsig.columns:
         allsig["KNOWN_AUTHOR"] = allsig["TCHR+POS"].apply(lambda x:knownauthor[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
-    
+    if "EFOID" in knownsig.columns:
+        allsig["KNOWN_EFOID"] = allsig["TCHR+POS"].apply(lambda x:knownefo[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
+
     # determine if novel
     allsig["NOVEL"] = allsig["DISTANCE_TO_KNOWN"].abs() > windowsizekb_for_novel*1000
     
@@ -418,6 +431,8 @@ def getnovel(insumstats,
             allsig.loc[ not_on_same_chromosome ,"KNOWN_PUBMED_ID"] = pd.NA
         if "AUTHOR" in knownsig.columns:
             allsig.loc[ not_on_same_chromosome ,"KNOWN_AUTHOR"] = pd.NA
+        if "EFOID" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_EFOID"] = pd.NA
 
     # drop helper column TCHR+POS
     allsig = allsig.drop(["TCHR+POS"], axis=1)

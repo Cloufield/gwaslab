@@ -111,7 +111,7 @@ class Sumstats():
         self.meta["gwaslab"]["study_name"] = study
         self.meta["gwaslab"]["genome_build"] = build
         self.meta["gwaslab"]["species"] = species
-        _show_version(self.log)
+        if verbose: _show_version(self.log)
 
         #preformat the data
         self.data  = preformat(

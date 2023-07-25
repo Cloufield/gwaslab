@@ -48,6 +48,8 @@ or
 
 !!! warning "Only works when your sumstats are based on GRCh38" 
 
+!!! warning "Only associations with the EFO trait will be obtained. This does not inlcude associations with child traits." 
+
 !!! example "Querying the GWAS Catalog"
 
     ```python
