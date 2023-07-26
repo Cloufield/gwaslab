@@ -100,7 +100,7 @@ def get_power(
             log.write("  -BETA: {}".format(beta))
             log.write("  -N: {}".format(n))
             log.write("  -SNPR2: {}".format(2*eaf*(1-eaf)*(beta**2)))
-        c = ss.chi2.isf(sig_level/2,df=1)
+        c = ss.chi2.isf(sig_level,df=1)
         NCP = n * 2*eaf*(1-eaf)*(beta**2)/vary
         power = 1 - ss.ncx2.cdf(c, df=1, nc=NCP)
     if verbose: log.write("Finished calculating statistical power.")

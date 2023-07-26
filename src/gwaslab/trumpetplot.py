@@ -97,11 +97,11 @@ def plottrumpet(mysumstats,
     #Checking columns#################################################################################################################
     if verbose: log.write("Start to create trumpet plot...")
     
+    #parameter check##################################################################################################################
     if (beta not in mysumstats.columns) or (eaf not in mysumstats.columns):
         if verbose:
             log.write(" -No EAF or BETA columns. Skipping...")
         return None
-    
     if mode=="b":
         if ncase is None or ncontrol is None:
             if verbose:
@@ -110,9 +110,25 @@ def plottrumpet(mysumstats,
         if prevalence is None:
                 prevalence= ncase/(ncase + ncontrol)
                 log.write(" -Prevalence is not given. Estimating based on scase and scontrol :{}...".format(prevalence))
-
+    
+    #print settings##################################################################################################################
+    if verbose:
+        log.write(" -Settings:")
+        log.write("  -Mode: {}".format(mode))
+        if mode == "q" :
+            log.write("  -N: {}".format(n))
+        if mode == "b" :
+            log.write("  -N_CASE: {}".format(ncase))
+            log.write("  -N_CONTROL: {}".format(ncontrol))
+            log.write("  -PREVALENCE: {}".format(prevalence))
+        log.write("  -BETA: {}".format(beta))
+        log.write("  -Significance level: {}".format(sig_level))
+        log.write("  -Power thresholds: {}".format(ts))
+        log.write("  -Power line smoothness: {}".format(n_matrix))
+    
     #loading columns #################################################################################################################
     cols_to_use = [snpid, beta, eaf, n, p]
+    
     if anno is not None:
         if anno != "GENENAME":
             if anno!=True:
@@ -125,17 +141,17 @@ def plottrumpet(mysumstats,
     #filter by p #################################################################################################################
     if p in mysumstats.columns:
         sumstats = mysumstats.loc[mysumstats[p]< p_level,cols_to_use ].copy()
-        if verbose: log.write("Excluding variants with P values > {}".format(p_level))
+        if verbose: log.write(" -Excluding variants with P values > {}".format(p_level))
     else:
         cols_to_use.remove(p)
         sumstats = mysumstats[[beta,eaf,n]].copy()
-    if verbose: log.write("Plotting {} variants...".format(len(sumstats)))
+    if verbose: log.write(" -Plotting {} variants...".format(len(sumstats)))
     
     #add maf column #################################################################################################################
     if maf not in sumstats.columns:
-        sumstats = filldata(sumstats,to_fill=["MAF"])
+        sumstats = filldata(sumstats,to_fill=["MAF"],verbose=False)
         is_filpped = (sumstats["MAF"] < sumstats[eaf]) & (sumstats[eaf] > 0.5)& (sumstats["MAF"] < 0.5)
-        if verbose: log.write("Flipping {} variants...".format(sum(is_filpped)))
+        if verbose: log.write(" -Flipping {} variants...".format(sum(is_filpped)))
         sumstats.loc[is_filpped, beta] = -sumstats.loc[is_filpped, beta]
     
     #configure n #################################################################################################################
@@ -151,7 +167,7 @@ def plottrumpet(mysumstats,
         elif n == "mean":
             n = sumstats["N"].mean() 
         if verbose:
-            log.write("N for power calculation: {}".format(n))
+            log.write(" -N for power calculation: {}".format(n))
 
     #configure beta and maf range ###################################################################################################
     if maf_range is None:
