@@ -3,6 +3,7 @@
 ## 3.4.22 upcoming
 - added plot_power() and plot_power_x()
 - added support for multiple EFO IDs
+- updated built-in formatbook
 - fixed typos
 
 ## 3.4.21 2023/07/18

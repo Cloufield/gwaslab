@@ -30,7 +30,7 @@ def plotdaf(sumstats,
              legend2=True,
              save=False,
              save_args=None,
-             savearg=None,
+             saveargs=None,
              verbose=True,
              log=Log()
            ):
