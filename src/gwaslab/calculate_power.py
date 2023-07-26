@@ -127,7 +127,7 @@ def get_beta(
                                 sig_level=5e-8,
                                 vary=1):
                 
-                c = ss.chi2.isf(sig_level/2,df=1)
+                c = ss.chi2.isf(sig_level,df=1)
                 h2 = 2*eaf*(1-eaf)*(beta**2)
                 NCP = n * h2/vary
                 power = 1 - ss.ncx2.cdf(c,df=1,nc=NCP)
