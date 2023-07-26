@@ -133,7 +133,8 @@ def plottrumpet(mysumstats,
         if anno != "GENENAME":
             if anno!=True:
                 log.write(" -Loading column {} for annotation...".format(anno))
-                cols_to_use.append(anno)
+                if anno not in cols_to_use:
+                    cols_to_use.append(anno)
         else:
             cols_to_use.append(pos)
             cols_to_use.append(chrom)
