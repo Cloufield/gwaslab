@@ -139,7 +139,7 @@ def plottrumpet(mysumstats,
         else:
             cols_to_use.append(pos)
             cols_to_use.append(chrom)
-            
+
     if size != "ABS_BETA":
         if size not in cols_to_use:
             cols_to_use.append(size)
@@ -237,6 +237,8 @@ def plottrumpet(mysumstats,
             xpower[1] = xpower[1] * yscale_factor
             lines = LineCollection([xpower2,xpower], label=t,color=output_hex_colors[i])
             ax.add_collection(lines)
+
+
     ###################################################################################################
     # get abs  and convert using scaling factor
     sumstats[beta] = sumstats[beta]*yscale_factor
@@ -244,24 +246,33 @@ def plottrumpet(mysumstats,
 
     ##################################################################################################
     
-    sns.scatterplot(data=sumstats,
+    dots = sns.scatterplot(data=sumstats,
                     x=maf,
                     y=beta,
                     size=size, 
                     ax=ax, 
                     sizes=sizes,
                     color=markercolor,
-                    legend=False, 
+                    legend=True, 
                     edgecolor="black",
                     alpha=0.8)
     
+    #second_legend = ax.legend(title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
+    
+    h,l = ax.get_legend_handles_labels()
+    if len(ts)>0:
+        l1 = ax.legend(h[:int(len(ts))],l[:int(len(ts))], title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
+        for line in l1.get_lines():
+            line.set_linewidth(5.0)
+    l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=size, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
+    if len(ts)>0:
+        ax.add_artist(l1)
+    #first_legend = ax.legend(handles=dots, loc="lower right" ,title=size,fontsize =fontsize,title_fontsize=fontsize)
+    #ax.add_artist(first_legend)
     ##################################################################################################
 
     ax.tick_params(axis='y', labelsize=fontsize)
-    leg = ax.legend(title="Power",fontsize =fontsize,title_fontsize=fontsize)
 
-    for line in leg.get_lines():
-        line.set_linewidth(5.0)
     ax.axhline(y=0,color="grey",linestyle="dashed")
     
     if xscale== "log":
