@@ -160,9 +160,9 @@ def getsig(insumstats,
     # Finishing
     if verbose: log.write("Finished extracting lead variants successfully!")
     # drop internal id
-    sumstats_sig = sumstats_sig.drop("__ID",axis=1)
+    output = output.drop("__ID",axis=1)
     gc.collect()
-    return sumstats_sig.copy()
+    return output.copy()
 
 
 def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ensembl",build="19"):
