@@ -547,9 +547,9 @@ def compare_effect(path1,
     else:
         sum0 = pd.DataFrame()
 
-    sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:].dropna(axis=0)
-    sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:].dropna(axis=0)
-    both     = sig_list_merged.loc[sig_list_merged["indicator"]==3,:].dropna(axis=0)
+    sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:]
+    sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:]
+    both     = sig_list_merged.loc[sig_list_merged["indicator"]==3,:]
     
     if is_q==False:
         sum0["Edge_color"]="none"

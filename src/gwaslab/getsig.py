@@ -162,7 +162,7 @@ def getsig(insumstats,
     # drop internal id
     sumstats_sig = sumstats_sig.drop("__ID",axis=1)
     gc.collect()
-    return output.copy()
+    return sumstats_sig.copy()
 
 
 def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ensembl",build="19"):
