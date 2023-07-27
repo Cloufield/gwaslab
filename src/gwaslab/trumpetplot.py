@@ -49,6 +49,7 @@ def plottrumpet(mysumstats,
                 markercolor="#597FBD",
                 fontsize=15,
                 font_family="Arial",
+                size= "BETA",
                 sizes=None,
                 save=False,
                 saveargs=None,
@@ -139,6 +140,9 @@ def plottrumpet(mysumstats,
             cols_to_use.append(pos)
             cols_to_use.append(chrom)
             
+    if size != "ABS_BETA":
+        if size not in cols_to_use:
+            cols_to_use.append(size)
     #filter by p #################################################################################################################
     if p in mysumstats.columns:
         sumstats = mysumstats.loc[mysumstats[p]< p_level,cols_to_use ].copy()
@@ -243,7 +247,7 @@ def plottrumpet(mysumstats,
     sns.scatterplot(data=sumstats,
                     x=maf,
                     y=beta,
-                    size="ABS_BETA", 
+                    size=size, 
                     ax=ax, 
                     sizes=sizes,
                     color=markercolor,
