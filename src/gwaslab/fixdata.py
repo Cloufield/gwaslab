@@ -534,19 +534,30 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = categories) 
         sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = categories) 
         all_var_num = len(sumstats)
+        
+        ## check ATCG
         bad_ea = sumstats[ea].str.contains("[^actgACTG]",na=True)
         bad_nea = sumstats[nea].str.contains("[^actgACTG]",na=True)
         good_ea  = ~bad_ea
         good_nea = ~bad_nea
+        
+        ## check NA
         is_eanea_na = sumstats[ea].isna() |  sumstats[nea].isna()
+        
+        ## check same alleles
         not_variant = sumstats[nea] == sumstats[ea]
+        
+        ## sum up invalid variants
         is_invalid = bad_ea | bad_nea | not_variant
+        
         exclude  = bad_nea | bad_ea
+        
         if verbose: 
             if len(set(sumstats.loc[bad_ea,ea].head())) >0:
                 log.write(" -A look at the non-ATCG EA:",set(sumstats.loc[bad_ea,ea].head()),"...") 
             if len(set(sumstats.loc[bad_nea,nea].head())) >0:
                 log.write(" -A look at the non-ATCG NEA:",set(sumstats.loc[bad_nea,nea].head()),"...") 
+        
         if remove is True:
             sumstats = sumstats.loc[(good_ea & good_nea),:].copy()
             if verbose: log.write(" -Removed "+str(sum(exclude))+" variants with alleles that contain bases other than A/C/T/G .")  
