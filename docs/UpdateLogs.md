@@ -1,9 +1,10 @@
 # Update Logs
 
-## 3.4.22 upcoming
+## 3.4.22 20230803
 - added plot_power() and plot_power_x()
 - added support for multiple EFO IDs
 - updated built-in formatbook
+- fixed regex error in read_ldsc for numbers in the format of 1e-01
 - fixed typos
 
 ## 3.4.21 2023/07/18
