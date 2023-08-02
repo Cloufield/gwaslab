@@ -22,21 +22,21 @@ def read_ldsc(filelist=[],mode="h2"):
                         
                 
                         ## first line h2 se
-                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+|NA').findall(line)
+                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(line)
                 row["h2_obs"]=objects[1]
                 row["h2_se"]=objects[2]
 
                 ##next line lambda gc
 
-                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+|NA').findall(file.readline())
+                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
                 row["Lambda_gc"] = objects[1]
                 ##next line Mean_chi2
 
-                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+|NA').findall(file.readline())
+                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
                 row["Mean_chi2"]=objects[1]
                 ##next line Intercept
 
-                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+|NA').findall(file.readline())
+                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
                 row["Intercept"]=objects[1]
                 row["Intercept_se"]=objects[2]
                 ##next line Ratio
@@ -49,7 +49,7 @@ def read_ldsc(filelist=[],mode="h2"):
                     row["Ratio"]="Ratio < 0"
                     row["Ratio_se"]="NA"
                 else:
-                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+').findall(lastline)
+                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+').findall(lastline)
                     row["Ratio"]=objects[1]
                     row["Ratio_se"]=objects[2]
             #summary = summary.append(row,ignore_index=True)
