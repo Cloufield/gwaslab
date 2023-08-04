@@ -61,11 +61,13 @@ def rsidtochrpos(sumstats,
     if verbose:  log.write(" -Setting block size: ",chunksize)
     if verbose:  log.write(" -Loading block: ",end="")     
     for i,dic in enumerate(dic_chuncks): 
-        dic = dic[dic.index.notnull()]
+        dic_to_update = dic[dic.index.notnull()]
         log.write(i," ",end=" ",show_time=False)  
-        dic = dic.rename(index={ref_rsid:rsid})
-        dic = dic.rename(columns={ref_chr:chrom,ref_pos:pos})  
-        sumstats.update(dic,overwrite="True")
+        dic_to_update = dic_to_update.rename(index={ref_rsid:rsid})
+        dic_to_update = dic_to_update.rename(columns={ref_chr:chrom,ref_pos:pos})  
+        dic_to_update = dic_to_update[~dic_to_update.index.duplicated(keep='first')]
+        sumstats.update(dic_to_update,overwrite="True")
+        gc.collect()
     
     if verbose:  log.write("\n",end="",show_time=False) 
     sumstats = sumstats.reset_index()
