@@ -4,6 +4,7 @@ from gwaslab.h2_conversion import _get_per_snp_r2
 from gwaslab.h2_conversion import h2_se_to_p
 from gwaslab.compare_effect import compare_effect
 from gwaslab.read_ldsc import read_ldsc
+from gwaslab.read_ldsc import read_popcorn
 from gwaslab.metaanalysis import plot_forest
 from gwaslab.miamiplot import plot_miami
 from gwaslab.plotrg import plot_rg
