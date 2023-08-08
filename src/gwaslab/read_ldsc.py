@@ -20,38 +20,48 @@ def read_ldsc(filelist=[],mode="h2"):
                     line = file.readline()
                     if not line: break
                         
-                
-                        ## first line h2 se
-                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(line)
-                row["h2_obs"]=objects[1]
-                row["h2_se"]=objects[2]
+                try:
+                    ## first line h2 se
+                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(line)
+                    row["h2_obs"]=objects[1]
+                    row["h2_se"]=objects[2]
 
-                ##next line lambda gc
+                    ##next line lambda gc
 
-                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
-                row["Lambda_gc"] = objects[1]
-                ##next line Mean_chi2
+                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                    row["Lambda_gc"] = objects[1]
+                    ##next line Mean_chi2
 
-                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
-                row["Mean_chi2"]=objects[1]
-                ##next line Intercept
+                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                    row["Mean_chi2"]=objects[1]
+                    ##next line Intercept
 
-                objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
-                row["Intercept"]=objects[1]
-                row["Intercept_se"]=objects[2]
-                ##next line Ratio
-                
-                lastline=file.readline()
-                if re.compile('NA').findall(lastline):
-                    row["Ratio"]="NA"
-                    row["Ratio_se"]="NA"
-                elif re.compile('<').findall(lastline):
-                    row["Ratio"]="Ratio < 0"
-                    row["Ratio_se"]="NA"
-                else:
-                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+').findall(lastline)
-                    row["Ratio"]=objects[1]
-                    row["Ratio_se"]=objects[2]
+                    objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                    row["Intercept"]=objects[1]
+                    row["Intercept_se"]=objects[2]
+                    ##next line Ratio
+                    
+                    lastline=file.readline()
+                    if re.compile('NA').findall(lastline):
+                        row["Ratio"]="NA"
+                        row["Ratio_se"]="NA"
+                    elif re.compile('<').findall(lastline):
+                        row["Ratio"]="Ratio < 0"
+                        row["Ratio_se"]="NA"
+                    else:
+                        objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+').findall(lastline)
+                        row["Ratio"]=objects[1]
+                        row["Ratio_se"]=objects[2]
+                except:
+                        row["h2_obs"]="NA"
+                        row["h2_se"]="NA"
+                        row["Lambda_gc"] = "NA"
+                        row["Mean_chi2"]="NA"
+                        row["Intercept"]="NA"
+                        row["Intercept_se"]="NA"
+                        row["Ratio"]="NA"
+                        row["Ratio_se"]="NA"
+
             #summary = summary.append(row,ignore_index=True)
             row = pd.DataFrame([row], columns = summary.columns)
             summary = pd.concat([summary, row], ignore_index=True)
