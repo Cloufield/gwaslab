@@ -1243,6 +1243,10 @@ Most options are largely the same as <a href="https://cloufield.github.io/gwasla
 </tr>
 </tbody>
 </table>
+<div class="admonition info">
+<p class="admonition-title">Calculation of LD r2</p>
+<p>The calculation is based on <a href="https://scikit-allel.readthedocs.io/en/stable/stats/ld.html">Rogers and Huff r implemented in scikit-alle</a>. Variants in refernece vcf file should be biallelic format. Unphased data is acceptable. AF information is not needed. Variant ID is not required. Missing genotype is allowed.</p>
+</div>
 <h2 id="2-examples">2. Examples</h2>
 <h3 id="21-regional-mqq-plot">2.1 Regional mqq plot</h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>!wget -O t2d_bbj.txt.gz http://jenger.riken.jp/14/
