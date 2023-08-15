@@ -38,6 +38,10 @@ Most options are largely the same as [Manhattan plot](https://cloufield.github.i
 |`build`|`19` or `38`|reference genome build; `99` for unknown|`99`|
 
 
+!!! info "Calculation of LD r2"
+    The calculation is based on [Rogers and Huff r implemented in scikit-alle](https://scikit-allel.readthedocs.io/en/stable/stats/ld.html). Variants in refernece vcf file should be biallelic format. Unphased data is acceptable. AF information is not needed. Variant ID is not required. Missing genotype is allowed.
+
+
 ## 2. Examples
 
 ### 2.1 Regional mqq plot
