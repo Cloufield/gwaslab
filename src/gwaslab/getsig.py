@@ -118,6 +118,8 @@ def getsig(insumstats,
             current_sig_pos=row[pos]
             current_sig_p=row[p]
             current_sig_index=row[id]
+            if  line_number == len(sumstats_sig)-1:
+                sig_index_list.append(current_sig_index)
             continue
         
         # update current pos and p
