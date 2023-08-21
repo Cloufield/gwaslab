@@ -7,6 +7,7 @@ import shutil
 import hashlib
 from gwaslab.Log import Log
 from gwaslab.config import options
+import re
 
 #### config ##############################################################################################
 # config.json
@@ -327,12 +328,14 @@ def url_to_local_file_name(local_filename, url, from_dropbox):
         # if local name not provided, grab it from url
         local_filename = url.split('/')[-1]
         
-    if local_filename.endswith("?dl=1"):
+    if local_filename.endswith("dl=1"):
         # if file are downloaded form dropbox
         # set from_dropbox indicator to 1
         from_dropbox=1
         # remove "?dl=1" suffix
-        local_filename = local_filename[:-5]
+        #local_filename = local_filename[:-5]
+        local_filename = re.match(r'([^\?]+)(\?rlkey=[\w]+)?[&\?]dl=1$', local_filename)
+        local_filename = local_filename.group(1)
     return local_filename, from_dropbox
 
 ##########################################################################################################
