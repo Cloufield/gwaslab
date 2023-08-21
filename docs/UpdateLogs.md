@@ -1,5 +1,8 @@
 # Update Logs
 
+## 3.4.23 20230817
+- fixed bug in get_lead(). In some rare cases, it was not counted when the last variant is a new lead variant.
+
 ## 3.4.22 20230803
 - added plot_power() and plot_power_x()
 - added support for multiple EFO IDs
