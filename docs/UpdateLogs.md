@@ -1,5 +1,8 @@
 # Update Logs
 
+## 3.4.24 20230821
+- update references
+
 ## 3.4.23 20230817
 - fixed bug in get_lead(). In some rare cases, it was not counted when the last variant is a new lead variant.
 

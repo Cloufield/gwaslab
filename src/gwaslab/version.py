@@ -8,7 +8,7 @@ def _show_version(log=Log()):
 def gwaslab_info():
     # for output header
     dic={
-   "version":"3.4.23",
-   "release_date":"20230817"
+   "version":"3.4.24",
+   "release_date":"20230821"
     }
     return dic   
