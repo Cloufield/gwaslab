@@ -50,7 +50,7 @@ def tofmt(sumstats,
     if verbose: log.write(" - Start outputting sumstats in "+fmt+" format...")
     
     if "CHR" in sumstats.columns:
-        if xymt_number is False and sumstats["CHR"].dtype in ["Int64","int"]:
+        if xymt_number is False and pd.api.types.is_integer_dtype(sumstats["CHR"]):
             sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt,prefix=chr_prefix))
         elif chr_prefix is not None:
             sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
