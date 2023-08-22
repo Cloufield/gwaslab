@@ -36,6 +36,7 @@ def tofmt(sumstats,
           bgzip=False,
           tabix=False,
           verbose=True,
+          no_status=False,
           log=Log(),
           to_csvargs=None):
     
@@ -364,7 +365,11 @@ def tofmt(sumstats,
                 ouput_cols.append(i)  
         # + additional cols
         ouput_cols = ouput_cols + cols
-        
+        try:
+            if no_status == True:
+                ouput_cols.remove("STATUS")
+        except:
+            pass
         sumstats = sumstats.loc[:,ouput_cols]
         sumstats = sumstats.rename(columns=rename_dictionary) 
         
