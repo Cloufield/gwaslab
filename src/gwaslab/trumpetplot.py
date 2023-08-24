@@ -46,13 +46,15 @@ def plottrumpet(mysumstats,
                 yscale_factor=1,
                 cmap="cool",
                 ylim=None,
+                xlim=None,
                 markercolor="#597FBD",
                 fontsize=15,
                 font_family="Arial",
-                size= "BETA",
+                size= "ABS_BETA",
                 sizes=None,
                 save=False,
                 saveargs=None,
+                figargs=None,
                 build="99",
                 anno_set=None,
                 anno_alias=None,
@@ -94,7 +96,8 @@ def plottrumpet(mysumstats,
         else:
             xticks = [0,0.01,0.05,0.1,0.2,0.5]
             xticklabels = xticks            
-
+    if figargs is None:
+        figargs={"figsize":(10,15)}
     #Checking columns#################################################################################################################
     if verbose: log.write("Start to create trumpet plot...")
     
@@ -201,7 +204,7 @@ def plottrumpet(mysumstats,
     output_hex_colors
 
     ##################################################################################################
-    fig, ax = plt.subplots(figsize=(10,10))
+    fig, ax = plt.subplots(**figargs)
     
     ##creating power line############################################################################################
     if mode=="q":
@@ -284,6 +287,9 @@ def plottrumpet(mysumstats,
         rotation=90    
         ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
         ax.set_xlim(-0.02,0.52)
+        
+    if xlim is not None:
+        ax.set_xlim(xlim)
     
     if ylim is not None:
         ax.set_ylim(ylim)
