@@ -728,6 +728,8 @@ def compare_effect(path1,
         if verbose:log.write(" -Beta_se = ", reg[4])
         #if verbose:log.write(" -H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
         if verbose:log.write(" -H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]))
+        if verbose:log.write(" -Peason correlation coefficient =  ", "{:.2f}".format(reg[2]))
+        if verbose:log.write(" -r2 =  ", "{:.2f}".format(reg[2]**2))
         if r_se==True:
             if verbose:log.write(" -R se (jackknife) = {:.2e}".format(r_se_jackknife))
 
