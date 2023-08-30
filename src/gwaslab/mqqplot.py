@@ -229,7 +229,7 @@ def mqqplot(insumstats,
     if highlight_anno_args is None:
         highlight_anno_args = {}
     if pinpoint is None:
-        pinpoint = list()
+        pinpoint = list()  
     if build is None:
         build = "19"
     if scatter_kwargs is None:
@@ -255,10 +255,25 @@ def mqqplot(insumstats,
     if len(anno_set)>0 and ("m" in mode):
         if verbose: log.write(" -Variants to annotate : "+",".join(anno_set))    
     if len(highlight)>0 and ("m" in mode):
-        if verbose: log.write(" -Loci to highlight : "+",".join(highlight))    
-        if verbose: log.write("  -Highlight_window is set to: ", highlight_windowkb, " kb")  
+        if pd.api.types.is_list_like(highlight[0]):
+            if len(highlight[0]) == len(highlight_color):
+                log.write(" -WARNING: number of locus list does not match number of colors !!!")
+            for i, highlight_set in enumerate(highlight):
+                  if verbose: log.write(" -Set {} loci to highlight ({}) : ".format(i+1, highlight_color[i%len(highlight_color)])+",".join(highlight_set))   
+            if verbose: log.write("  -Highlight_window is set to: ", highlight_windowkb, " kb") 
+        else:
+            if verbose: log.write(" -Loci to highlight ({}): ".format(highlight_color)+",".join(highlight))    
+            if verbose: log.write("  -Highlight_window is set to: ", highlight_windowkb, " kb") 
+    
     if len(pinpoint)>0 :
-        if verbose: log.write(" -Variants to pinpoint : "+",".join(pinpoint))  
+        if pd.api.types.is_list_like(pinpoint[0]):
+            if len(pinpoint[0]) == len(pinpoint_color):
+                log.write(" -WARNING: number of variant list does not match number of colors !!!")
+            for i, pinpoint_set in enumerate(pinpoint):
+                  if verbose: log.write(" -Set {} variants to pinpoint ({}) : ".format(i+1,pinpoint_color[i%len(pinpoint_color)])+",".join(pinpoint_set))      
+        else:
+            if verbose: log.write(" -Variants to pinpoint ({}) : ".format(pinpoint_color)+",".join(pinpoint))   
+    
     if region is not None:
         if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
     
@@ -425,8 +440,9 @@ def mqqplot(insumstats,
         eaf_raw = sumstats["MAF"].copy()
         
     if len(highlight)>0 and ("m" in mode):
-        sumstats["HUE"] = sumstats[chrom].astype("string")
-    
+        sumstats["HUE"] = pd.NA
+        sumstats["HUE"] = sumstats["HUE"].astype("Int64")
+
     if verbose: log.write("Finished loading specified columns from the sumstats.")
 
 
@@ -451,15 +467,27 @@ def mqqplot(insumstats,
             
         ## Highlight
     if len(highlight)>0 and ("m" in mode or "r" in mode):
-        to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
-        #assign colors: 0 is hightlight color
-        for i,row in to_highlight.iterrows():
-            target_chr = int(row[chrom])
-            target_pos = int(row[pos])
-            right_chr=sumstats[chrom]==target_chr
-            up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
-            low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
-            sumstats.loc[right_chr&up_pos&low_pos,"HUE"]="0"
+        if pd.api.types.is_list_like(highlight[0]):
+            for i, highlight_set in enumerate(highlight):
+                to_highlight = sumstats.loc[sumstats[snpid].isin(highlight_set),:]
+                #assign colors: 0 is hightlight color
+                for index,row in to_highlight.iterrows():
+                    target_chr = int(row[chrom])
+                    target_pos = int(row[pos])
+                    right_chr=sumstats[chrom]==target_chr
+                    up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
+                    low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
+                    sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i
+        else:
+            to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
+            #assign colors: 0 is hightlight color
+            for index,row in to_highlight.iterrows():
+                target_chr = int(row[chrom])
+                target_pos = int(row[pos])
+                right_chr=sumstats[chrom]==target_chr
+                up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
+                low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
+                sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0
 
 # Density #####################################################################################################              
     if "b" in mode and "DENSITY" not in sumstats.columns:
@@ -612,18 +640,33 @@ def mqqplot(insumstats,
                                sizes=marker_size,
                                linewidth=linewidth,
                                zorder=2,ax=ax1,edgecolor=edgecolor, **scatter_kwargs)   
-            
-            if verbose: log.write(" -Highlighting target loci...")
-            sns.scatterplot(data=sumstats.loc[sumstats["HUE"]=="0"], x='i', y='scaled_P',
-                   hue="HUE",
-                   palette={"0":highlight_color},
-                   legend=legend,
-                   style=style,
-                   size="s",
-                   sizes=(marker_size[0]+1,marker_size[1]+1),
-                   linewidth=linewidth,
-                   zorder=3,ax=ax1,edgecolor=edgecolor,**scatter_kwargs)  
-            highlight_i = sumstats.loc[sumstats[snpid].isin(highlight),"i"].values
+            if pd.api.types.is_list_like(highlight[0]):
+                for i, highlight_set in enumerate(highlight):
+                    if verbose: log.write(" -Highlighting set {} target loci...".format(i+1))
+                    print(sumstats["HUE"].dtype)
+                    sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==i], x='i', y='scaled_P',
+                        hue="HUE",
+                        palette={i:highlight_color[i%len(highlight_color)]},
+                        legend=legend,
+                        style=style,
+                        size="s",
+                        sizes=(marker_size[0]+1,marker_size[1]+1),
+                        linewidth=linewidth,
+                        zorder=3+i,ax=ax1,edgecolor=edgecolor,**scatter_kwargs)  
+                highlight_i = sumstats.loc[~sumstats["HUE"].isna(),"i"].values
+            else:
+                if verbose: log.write(" -Highlighting target loci...")
+                sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==0], x='i', y='scaled_P',
+                    hue="HUE",
+                    palette={0:highlight_color},
+                    legend=legend,
+                    style=style,
+                    size="s",
+                    sizes=(marker_size[0]+1,marker_size[1]+1),
+                    linewidth=linewidth,
+                    zorder=3,ax=ax1,edgecolor=edgecolor,**scatter_kwargs)  
+                # for annotate
+                highlight_i = sumstats.loc[sumstats[snpid].isin(highlight),"i"].values
         
         ## if not highlight    
         else:
@@ -673,12 +716,23 @@ def mqqplot(insumstats,
         
         ## if pinpoint variants
         if (len(pinpoint)>0):
-            if sum(sumstats[snpid].isin(pinpoint))>0:
-                to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
-                if verbose: log.write(" -Pinpointing target vairants...")
-                ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color,zorder=3,s=marker_size[1]+1)
+            if pd.api.types.is_list_like(pinpoint[0]):
+                for i, pinpoint_set in enumerate(pinpoint):
+                    if sum(sumstats[snpid].isin(pinpoint_set))>0:
+                        to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint_set),:]
+                        if verbose: log.write(" -Pinpointing set {} target vairants...".format(i+1))
+                        ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color[i%len(pinpoint_color)],zorder=100,s=marker_size[1]+1)
+                    else:
+                        if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
             else:
-                if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
+                if sum(sumstats[snpid].isin(pinpoint))>0:
+                    to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
+                    if verbose: log.write(" -Pinpointing target vairants...")
+                    ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color,zorder=100,s=marker_size[1]+1)
+                else:
+                    if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
+            
+
         
         #ax1.set_xticks(chrom_df.astype("float64"))
         #ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)
