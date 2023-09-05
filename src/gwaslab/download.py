@@ -185,6 +185,7 @@ def get_path(name,log=Log(),verbose=True):
 def download_ref(name,
                 directory=None,
                 local_filename=None,
+                overwrite=False,
                 log=Log()):
     '''
     Download the reference file for a given keyword. Url are retrieved from the reference.json file.
@@ -214,6 +215,9 @@ def download_ref(name,
         # if existing in default path
         if search_local(local_path) == True:
             log.write(" -File {} exists.".format(local_path))
+            if overwrite == True:
+                log.write(" -Overwriting the existing file.")
+                download_file(url,local_path)
         else:
             download_file(url,local_path)
 
@@ -234,6 +238,9 @@ def download_ref(name,
                 try:
                     if search_local(local_path+".tbi") == True:
                         log.write(" -File {} exists.".format(local_path+".tbi"))
+                        if overwrite == True:
+                            log.write(" -Overwriting the existing file.")
+                            download_file(tbi_url,local_path+".tbi")
                     else:
                         download_file(tbi_url,local_path+".tbi")
                     #download_file(tbi_url, local_path+".tbi")

@@ -1,10 +1,14 @@
 # Update Logs
 
 ## 3.4.24 20230821
+- supported `highligt` and `pinpoint` for multiple sets of loci and variants in `.plot_mqq()`
+- added `overwrite` option for `gl.download_ref()`
+
+## 3.4.24 20230821
 - update references
 
 ## 3.4.23 20230817
-- fixed bug in get_lead(). In some rare cases, it was not counted when the last variant is a new lead variant.
+- fixed bug in `get_lead()`. In some rare cases, it was not counted when the last variant is a new lead variant.
 
 ## 3.4.22 20230803
 - added plot_power() and plot_power_x()
