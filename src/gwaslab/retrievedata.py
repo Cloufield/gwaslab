@@ -612,7 +612,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 ################################################################################################################
 def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,column_name="DAF",suffix="",n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
         
-    if verbose: log.write("Start to check the difference between EAF and refence vcf alt frequency ...")
+    if verbose: log.write("Start to check the difference between EAF and reference vcf alt frequency ...")
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
     if verbose: log.write(" -CPU Cores to use :",n_cores)
@@ -677,6 +677,73 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
                 return eaf - record.info[alt_freq][0]
     return np.nan
 ################################################################################################################
+
+def paralleleinferaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
+        
+    if verbose: log.write("Start to infer the AF and reference vcf alt frequency ...")
+    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    if verbose: log.write(" -Reference vcf file:", ref_infer)   
+    if verbose: log.write(" -CPU Cores to use :",n_cores)
+    
+    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
+
+    # check if the columns are complete
+    if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
+        raise ValueError("Not enough information: CHR, POS, NEA , EA, ALT, STATUS...")
+    
+    if eaf not in sumstats.columns:
+        sumstats[eaf]=np.nan
+    
+    prenumber = sum(sumstats[eaf].isna())
+    # ref_alt_freq INFO in vcf was provided
+    if ref_alt_freq is not None:
+        if verbose: log.write(" -Alternative allele frequency in INFO:", ref_alt_freq)  
+        if not force:
+            good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
+        if verbose: log.write(" -Checking variants:", sum(good_chrpos)) 
+    
+    ########################  
+        if sum(sumstats[eaf].isna())<10000: 
+            n_cores=1       
+        df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
+        pool = Pool(n_cores)
+        map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
+        sumstats.loc[good_chrpos,[eaf]] = pd.concat(pool.map(map_func,df_split))
+        pool.close()
+        pool.join()
+    ###########################
+        
+        afternumber = sum(sumstats[eaf].isna())
+        if verbose: log.write(" -Inferred EAF for {} variants.".format(prenumber - afternumber)) 
+        if verbose: log.write(" -EAF is still missing for {} variants.".format(afternumber)) 
+        if verbose: log.write("Finished allele frequency inferring!") 
+    return sumstats
+
+def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):
+    #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+    vcf_reader = VariantFile(ref_infer)
+    def afapply(x,vcf,alt_freq,chr_dict):
+            return infer_af(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,ref_alt_freq,chr_dict)
+    map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
+    status_inferred = sumstats.apply(map_func,axis=1)
+    sumstats.loc[:,eaf] = status_inferred.values
+    sumstats.loc[:,eaf]=sumstats.loc[:,eaf].astype("float") 
+    return sumstats
+
+def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
+    if chr_dict is not None: chr=chr_dict[chr]
+    chr_seq = vcf_reader.fetch(chr,start,end)
+    
+    for record in chr_seq:
+        if record.pos==end:
+            if record.ref==ref and (alt in record.alts):
+                return record.info[alt_freq][0]
+            elif record.ref==alt and (ref in record.alts):
+                return 1 - record.info[alt_freq][0]
+    return np.nan
+
+
+
 ################################################################################################################
 def auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log):    
     if vcf_path is not None:

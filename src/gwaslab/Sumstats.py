@@ -18,6 +18,7 @@ from gwaslab.fixdata import flipallelestats
 from gwaslab.fixdata import sortcoordinate
 from gwaslab.fixdata import sortcolumn
 from gwaslab.retrievedata import parallelecheckaf
+from gwaslab.retrievedata import paralleleinferaf
 from gwaslab.retrievedata import checkref
 from gwaslab.retrievedata import rsidtochrpos
 from gwaslab.retrievedata import parallelizeassignrsid
@@ -448,7 +449,10 @@ class Sumstats():
     def check_af(self,ref_infer,**args):
         self.data = parallelecheckaf(self.data,ref_infer=ref_infer,log=self.log,**args)
         self.meta["gwaslab"]["references"]["ref_infer_daf"] = ref_infer
-
+    
+    def infer_af(self,ref_infer,**args):
+        self.data = paralleleinferaf(self.data,ref_infer=ref_infer,log=self.log,**args)
+        self.meta["gwaslab"]["references"]["ref_infer_af"] = ref_infer
       
     def plot_daf(self, **args):
         fig,outliers = plotdaf(self.data, **args)
