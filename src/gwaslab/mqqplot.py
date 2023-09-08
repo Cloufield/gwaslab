@@ -158,6 +158,8 @@ def mqqplot(insumstats,
           title =None,
           mtitle=None,
           qtitle=None,
+          ylabel=None,
+          xlabel=None,
           title_pad=1.08, 
           title_fontsize=13,
           fontsize = 9,
@@ -878,17 +880,25 @@ def mqqplot(insumstats,
         # Add Annotation to manhattan plot #######################################################
         
         if "b" in mode:
-            ax1.set_ylabel("Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb",ha="center",va="bottom",fontsize=fontsize,family=font_family)
+            if ylabel is None:
+                ylabel ="Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb"
+            ax1.set_ylabel(ylabel,ha="center",va="bottom",fontsize=fontsize,family=font_family)
         else:
-            ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family=font_family)
+            if ylabel is None:
+                ylabel ="$-log_{10}(P)$"
+            ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family)
 
         if region is not None:
+            if xlabel is None:
+                xlabel = "Chromosome "+str(region[0])+" (MB)"
             if (gtf_path is not None ) and ("r" in mode):
-                ax3.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family=font_family)
+                ax3.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
             else:
-                ax1.set_xlabel("Chromosome "+str(region[0])+" (MB)",fontsize=fontsize,family=font_family)
+                ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
         else:
-            ax1.set_xlabel("Chromosome",fontsize=fontsize,family=font_family)
+            if xlabel is None:
+                xlabel = "Chromosome"
+            ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
         ##
         ax1.spines["top"].set_visible(False)
         ax1.spines["right"].set_visible(False)
