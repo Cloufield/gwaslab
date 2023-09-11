@@ -1,5 +1,9 @@
 # Update Logs
 
+## 3.4.26 20230911
+- added `infer_af()`
+- updated reference datasets
+
 ## 3.4.24 20230821
 - supported `highligt` and `pinpoint` for multiple sets of loci and variants in `.plot_mqq()`
 - added `overwrite` option for `gl.download_ref()`
