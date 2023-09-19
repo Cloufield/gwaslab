@@ -437,12 +437,12 @@ class Sumstats():
         else:
             self.data = filterregionout(self.data,log=self.log,**args)
     
-    def random_variants(self,inplace=False,n=1,**args):
+    def random_variants(self,inplace=False,n=1,p=None,**args):
         if inplace is True:
-            self.data = sampling(self.data,n=n,log=self.log,**args)
+            self.data = sampling(self.data,n=n,p=p,log=self.log,**args)
         else:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**args)
             return new_Sumstats_object
     ######################################################################
     
