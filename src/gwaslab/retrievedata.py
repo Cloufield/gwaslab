@@ -647,8 +647,8 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,colu
         
         #sumstats.loc[good_chrpos,"DAF"] = status_inferred.values
         #sumstats.loc[:,"DAF"]=sumstats.loc[:,"DAF"].astype("float")     
-        if verbose: log.write(" - {} min:".format(column_name), np.nanmax(sumstats.loc[:,column_name]))
-        if verbose: log.write(" - {} max:".format(column_name), np.nanmin(sumstats.loc[:,column_name]))
+        if verbose: log.write(" - {} max:".format(column_name), np.nanmax(sumstats.loc[:,column_name]))
+        if verbose: log.write(" - {} min:".format(column_name), np.nanmin(sumstats.loc[:,column_name]))
         if verbose: log.write(" - {} sd:".format(column_name), np.nanstd(sumstats.loc[:,column_name]))
         if verbose: log.write(" - abs({}) min:".format(column_name), np.nanmin(np.abs(sumstats.loc[:,column_name]))) 
         if verbose: log.write(" - abs({}) max:".format(column_name), np.nanmax(np.abs(sumstats.loc[:,column_name])))
