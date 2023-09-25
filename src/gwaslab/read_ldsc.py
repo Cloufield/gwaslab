@@ -158,3 +158,41 @@ def read_popcorn(filelist=[]):
         row = pd.DataFrame([row], columns = summary.columns)
         summary = pd.concat([summary, row], ignore_index=True)
     return summary
+
+def read_greml(filelist=[]):
+    summary = pd.DataFrame(columns = ["Filename", 'Sum of V(G)/Vp', 'SE','Pval', 'n'])
+    for index, hsqfile in enumerate(filelist):
+        print("Loading file "+str(index+1)+" :" + hsqfile +" ...")
+        row={}
+        try:
+            with open(hsqfile,"r") as file:
+                row["Filename"]=hsqfile.split("/")[-1]
+                line=""
+                while not re.compile('Sum of').match(line):
+                    line = file.readline()
+
+                objects = line.strip().split("\t")
+                row["Sum of V(G)/Vp"]=objects[1]
+                row["SE"]=objects[2]
+
+                while not re.compile(r'Pval').findall(line.strip()):
+                    line = file.readline()
+                    if not line: break
+                #objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                
+                objects = line.split()
+                row["Pval"] = objects[1]
+                print(row["Pval"])
+                
+                while not re.compile(r'^n').findall(line.strip()):
+                    line = file.readline()
+                    if not line: break
+                #objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(file.readline())
+                objects = line.split()
+                row["n"] = objects[1]            
+                print(row["n"])
+        except:
+            continue
+        row = pd.DataFrame([row], columns = summary.columns)
+        summary = pd.concat([summary, row], ignore_index=True)
+    return summary
