@@ -102,12 +102,14 @@ def annotate_single(
             # vertical arm length in pixels
             #to_annotate["scaled_P"] = to_annotate5["scaled_P_2"].copy()
             # arm length in pixels
-            armB_length_in_point = ax1.transData.transform((skip,1.15*maxy))[1]-ax1.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
+            #armB_length_in_point = ax1.transData.transform((skip,1.15*maxy))[1]-ax1.transData.transform((skip, row["scaled_P"]+1))[1]-arm_offset/2
+            armB_length_in_point = ax1.transData.transform((skip,1.15*maxy))[1]-ax1.transData.transform((skip, row["scaled_P"]+0.01*maxy))[1]-arm_offset/2
             # scale if needed
             armB_length_in_point = armB_length_in_point*arm_scale
             ################################################################
             if arm_scale>=1:
-                armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else ax1.transData.transform((skip, maxy+2))[1]-ax1.transData.transform((skip,  row["scaled_P"]+1))[1] 
+                #armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else ax1.transData.transform((skip, maxy+2))[1]-ax1.transData.transform((skip,  row["scaled_P"]+1))[1] 
+                armB_length_in_point= armB_length_in_point if armB_length_in_point>0 else ax1.transData.transform((skip, maxy+0.02*maxy))[1]-ax1.transData.transform((skip,  row["scaled_P"]+0.01*maxy))[1] 
             ###if anno_fixed_arm_length #############################################################
             if anno_fixed_arm_length is not None:
                 anno_fixed_arm_length_factor = ax1.transData.transform((skip,anno_fixed_arm_length))[1]-ax1.transData.transform((skip,0))[1] 
@@ -127,7 +129,8 @@ def annotate_single(
 
 
             
-            xy=(row["i"],row["scaled_P"]+0.2)
+            #xy=(row["i"],row["scaled_P"]+0.2)
+            xy=(row["i"],row["scaled_P"]+0.01*maxy)
             xytext=(last_pos,1.15*maxy*arm_scale)
             
             if anno_fixed_arm_length is not None:
