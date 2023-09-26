@@ -619,7 +619,8 @@ class Sumstats():
               ssfmeta=False,
               md5sum=False,
               bgzip=False,
-              tabix=False):
+              tabix=False,
+              tabix_indexargs={}):
         
         onetime_log = copy.deepcopy(self.log)
         if  to_csvargs is None:
@@ -726,6 +727,7 @@ class Sumstats():
                   ssfmeta=ssfmeta,
                   bgzip=bgzip,
                   tabix=tabix,
+                  tabix_indexargs=tabix_indexargs,
                   md5sum=md5sum,
                   xymt_number=xymt_number,
                   xymt=xymt)

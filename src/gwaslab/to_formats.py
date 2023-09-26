@@ -35,6 +35,7 @@ def tofmt(sumstats,
           md5sum=False,
           bgzip=False,
           tabix=False,
+          tabix_indexargs={},
           verbose=True,
           no_status=False,
           log=Log(),
@@ -125,8 +126,13 @@ def tofmt(sumstats,
             if verbose: log.write(" -bgzip compressing ...") 
             tabix_compress(path, path+".gz",force=True)
         if tabix is True:
-            if verbose: log.write(" -tabix indexing...") 
-            tabix_index(path+".gz" ,preset="bed",force=True) 
+            if verbose: log.write(" -tabix indexing...")
+            if "preset" not in  tabix_indexargs:
+                tabix_indexargs["preset"] = "bed"
+            if "force" not in tabix_indexargs:
+                tabix_indexargs["force"] = True
+
+            tabix_index(path+".gz", **tabix_indexargs)
     ####################################################################################################################   
     elif fmt=="vep":
         # bed-like format, 1-based
@@ -231,8 +237,12 @@ def tofmt(sumstats,
             tabix_compress(path, path+".gz",force=True)
             if md5sum is True: md5sum_file(path+".gz",log,verbose)
         if tabix is True:
-            if verbose: log.write(" -tabix indexing...") 
-            tabix_index(path+".gz" ,preset="bed",force=True) 
+            if verbose: log.write(" -tabix indexing...")
+            if "preset" not in tabix_indexargs:
+                tabix_indexargs["preset"] = "bed"
+            if "force" not in tabix_indexargs:
+                tabix_indexargs["force"] = True
+            tabix_index(path+".gz", **tabix_indexargs)
     ####################################################################################################################       
     elif fmt=="vcf":
         if verbose: log.write(" -"+fmt+" format will be loaded...")
@@ -334,8 +344,12 @@ def tofmt(sumstats,
             tabix_compress(path, path+".gz",force=True)
             if md5sum is True: md5sum_file(path+".gz",log,verbose)
         if tabix==True:
-            if verbose: log.write(" -tabix indexing...") 
-            tabix_index(path+".gz" ,preset="vcf",force=True) 
+            if verbose: log.write(" -tabix indexing...")
+            if "preset" not in tabix_indexargs:
+                tabix_indexargs["preset"] = "vcf"
+            if "force" not in tabix_indexargs:
+                tabix_indexargs["force"] = True
+            tabix_index(path+".gz", **tabix_indexargs)
     ####################################################################################################################
     elif fmt in get_formats_list():       
         if verbose: log.write(" -"+fmt+" format will be loaded...")
