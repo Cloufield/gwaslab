@@ -17,9 +17,7 @@
             "SE": "SE",
             "P": "P",
             "INFO": "INFO",
-            "L95": "OR_95L",
-            "H95": "OR_95U",
-            "STAT": "Z",
+            "STAT": "T",
             "CHISQ": "CHISQ",
             "NMISS": "N"
         }
@@ -89,6 +87,33 @@
             "P_BOLT_LMM": "P",
             "INFO": "INFO",
             "CHISQ_BOLT_LMM": "CHISQ"
+        }
+    },
+    "cojo": {
+        "meta_data": {
+            "format_name": "cojo",
+            "format_source": "https://yanglab.westlake.edu.cn/software/gcta/#COJO",
+            "format_version": 20230807,
+            "format_col_order": [
+                "SNP",
+                "A1",
+                "A2",
+                "freq",
+                "b",
+                "se",
+                "p",
+                "N"
+            ]
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "A1": "EA",
+            "A2": "NEA",
+            "freq": "EAF",
+            "b": "BETA",
+            "se": "SE",
+            "p": "P",
+            "N": "N"
         }
     },
     "mrmega": {
@@ -259,6 +284,27 @@
             "STATUS": "STATUS"
         }
     },
+    "plink_dosage": {
+        "meta_data": {
+            "format_name": ".assoc.dosage",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc_dosage",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "FRQ": "EAF",
+            "OR": "OR",
+            "BETA": "BETA",
+            "INFO": "INFO",
+            "SE": "SE",
+            "P": "P"
+        }
+    },
     "gwascatalog_hm": {
         "meta_data": {
             "format_name": "gwascatalog_hm",
@@ -278,6 +324,90 @@
             "hm_odds_ratio": "OR",
             "hm_ci_lower": "OR_95L",
             "hm_ci_upper": "OR_95U"
+        }
+    },
+    "plink_assoc": {
+        "meta_data": {
+            "format_name": ".assoc, .assoc.fisher",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "H95": "OR_95U",
+            "SE": "SE",
+            "P": "P",
+            "CHISQ": "CHISQ"
+        }
+    },
+    "plink_fisher": {
+        "meta_data": {
+            "format_name": ".assoc, .assoc.fisher",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "H95": "OR_95U",
+            "SE": "SE",
+            "P": "P",
+            "CHISQ": "CHISQ"
+        }
+    },
+    "regenie_gene": {
+        "meta_data": {
+            "format_name": "regenie_gene",
+            "format_source_1": "https://rgcgithub.github.io/regenie/",
+            "format_source_2": "https://github.com/rgcgithub/regenie/blob/master/example/test_bin_out_firth_Y1.regenie",
+            "format_version": "20230926",
+            "format_cite_name": "REGENIE",
+            "format_separator": " ",
+            "format_na": "NA",
+            "format_comment": "#",
+            "format_col_order": [
+                "CHROM",
+                "GENPOS",
+                "ID",
+                "ALLELE0",
+                "ALLELE1",
+                "A1FREQ",
+                "N",
+                "TEST",
+                "BETA",
+                "SE",
+                "CHISQ",
+                "LOG10P"
+            ],
+            "last_check_date": 20230926
+        },
+        "format_dict": {
+            "ID": "SNPID",
+            "CHROM": "CHR",
+            "GENPOS": "POS",
+            "ALLELE0": "NEA",
+            "ALLELE1": "EA",
+            "A1FREQ": "EAF",
+            "TEST": "TEST",
+            "N": "N",
+            "BETA": "BETA",
+            "SE": "SE",
+            "CHISQ": "CHISQ",
+            "LOG10P": "MLOG10P",
+            "EXTRA": "DOF"
         }
     },
     "metal": {
@@ -450,6 +580,36 @@
             "STATUS": "STATUS"
         }
     },
+    "popcorn": {
+        "meta_data": {
+            "format_name": "popcorn",
+            "format_source": "https://github.com/brielin/Popcorn",
+            "format_version": 20230807,
+            "format_col_order": [
+                "rsid",
+                "A1",
+                "A2",
+                "N",
+                "beta",
+                "SE",
+                "OR",
+                "p-value",
+                "Z",
+                "AF"
+            ]
+        },
+        "format_dict": {
+            "rsid": "rsID",
+            "A2": "EA",
+            "A1": "NEA",
+            "AF": "EAF",
+            "N": "N",
+            "beta": "BETA",
+            "SE": "SE",
+            "p-value": "P",
+            "OR": "OR"
+        }
+    },
     "saige": {
         "meta_data": {
             "format_name": "saige",
@@ -490,6 +650,52 @@
             "or": "OR",
             "r2": "INFO",
             "num_samples": "n"
+        }
+    },
+    "plink_linear": {
+        "meta_data": {
+            "format_name": ".assoc.linear",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "BETA": "BETA",
+            "L95": "BETA_95L",
+            "H95": "BETA_95U",
+            "SE": "SE",
+            "P": "P",
+            "STAT": "T",
+            "CHISQ": "CHISQ",
+            "NMISS": "N"
+        }
+    },
+    "plink_logistic": {
+        "meta_data": {
+            "format_name": ".assoc.logistic",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "H95": "OR_95U",
+            "SE": "SE",
+            "P": "P",
+            "STAT": "T",
+            "CHISQ": "CHISQ",
+            "NMISS": "N"
         }
     },
     "plink2_firth": {
