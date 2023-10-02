@@ -1,5 +1,10 @@
 # Update Logs
 
+## 3.4.27 20231002
+- update reference book
+- added extra parameters for tabix_index()
+- update random variants
+
 ## 3.4.26 20230911
 - added `infer_af()`
 - updated reference datasets
