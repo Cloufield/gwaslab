@@ -187,7 +187,12 @@ def plot_miami(
         modes =[ mode, mode]
     else:
         modes = mode
-    
+    if save is not None:
+        if type(save) is not bool:
+            if len(save)>3:
+                if save[-3:]=="pdf" or save[-3:]=="svg":
+                    figargs["dpi"]=72
+                    scatter_kwargs["rasterized"]=True
     # id1 
     if id1 is None:
         id1 = id0
@@ -397,7 +402,10 @@ def plot_miami(
         size="s1",
         sizes=marker_size,
         linewidth=linewidth,
-        zorder=2,ax=ax1,edgecolor="black")     
+        zorder=2,
+        ax=ax1,
+        edgecolor="black",
+        **scatter_kwargs)     
     palette = sns.color_palette(colors2,n_colors=sumstats[chrom].nunique())  
     plot2 = sns.scatterplot(data=sumstats, x='i', y='scaled_P_2',
         hue='chr_hue',
@@ -407,7 +415,10 @@ def plot_miami(
         size="s2",
         sizes=marker_size,
         linewidth=linewidth,
-        zorder=2,ax=ax5,edgecolor="black") 
+        zorder=2,
+        ax=ax5,
+        edgecolor="black",
+        **scatter_kwargs) 
     
     highlight_i = pd.DataFrame()
     if len(highlight1)>0 :

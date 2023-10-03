@@ -1,4 +1,8 @@
 # Update Logs
+
+## 3.4.29 20231003
+- set `scatter_kwargs={"rasterized":True}` as default for miami plot
+
 ## 3.4.28 20231003
 - fixed a bug in `compare_effect`
 
