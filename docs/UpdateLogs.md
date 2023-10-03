@@ -1,4 +1,6 @@
 # Update Logs
+## 3.4.28 20231003
+- fixed a bug in `compare_effect`
 
 ## 3.4.27 20231002
 - update reference book

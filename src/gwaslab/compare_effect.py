@@ -426,6 +426,10 @@ def compare_effect(path1,
     
     if verbose: log.write(" -Aligning "+label[1]+" EA with "+label[0]+" EA ...")
     ############### 19 align allele effect with sumstats 1
+    sig_list_merged["EA_1"]=sig_list_merged["EA_1"].astype("string")
+    sig_list_merged["EA_2"]=sig_list_merged["EA_2"].astype("string")
+    sig_list_merged["NEA_1"]=sig_list_merged["NEA_1"].astype("string")
+    sig_list_merged["NEA_2"]=sig_list_merged["NEA_2"].astype("string")
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         # copy raw
         sig_list_merged["EA_2_aligned"]=sig_list_merged["EA_2"]
@@ -547,9 +551,9 @@ def compare_effect(path1,
     else:
         sum0 = pd.DataFrame()
 
-    sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:]
-    sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:]
-    both     = sig_list_merged.loc[sig_list_merged["indicator"]==3,:]
+    sum1only = sig_list_merged.loc[sig_list_merged["indicator"]==1,:].copy()
+    sum2only = sig_list_merged.loc[sig_list_merged["indicator"]==2,:].copy()
+    both     = sig_list_merged.loc[sig_list_merged["indicator"]==3,:].copy()
     
     if is_q==False:
         sum0["Edge_color"]="none"
