@@ -274,7 +274,7 @@ def sampling(sumstats,n=1, p=None, verbose=True,log=Log(),**args):
     if "random_state" in args.keys():
         if verbose:log.write(" -Random state (seed): {}".format(args["random_state"]))
     else:
-        args["random_state"] = np.random.randint(0,9999999999)
+        args["random_state"] = np.random.randint(0,4294967295)
         if verbose:log.write(" -Random state (seed): {}".format(args["random_state"]))
     sampled = sumstats.sample(n=n,**args)
     if verbose:log.write("Finished sampling...")
