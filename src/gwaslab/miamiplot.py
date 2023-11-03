@@ -670,7 +670,7 @@ def plot_miami(
                                     color=sig_line_color,
                                     zorder=1)
         if suggestive_sig_line is True:
-            suggestive_sig_line = ax.axhline(y=lines_to_plot[1], 
+            suggestive_sigline = ax.axhline(y=lines_to_plot[1], 
                                                 linewidth = sc_linewidth, 
                                                 linestyle="--", 
                                                 color=suggestive_sig_line_color,
