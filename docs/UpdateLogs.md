@@ -1,5 +1,10 @@
 # Update Logs
 
+## 3.4.30 20231103
+- updated random seed range (0,2^32-1).
+- fixed error for suggestive_sig_line in miami plot.
+- loosened version requirements for python, pandas and matplotlib.  
+
 ## 3.4.29 20231003
 - set `scatter_kwargs={"rasterized":True}` as default for miami plot
 

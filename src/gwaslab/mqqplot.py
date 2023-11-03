@@ -916,6 +916,7 @@ def mqqplot(insumstats,
             ax1.set_title(mtitle,fontsize=title_fontsize,family=font_family)
             
         # add annotation arrows and texts
+        ## Annotation column
         ax1 = annotate_single(
                                 sumstats=sumstats,
                                 anno=anno,

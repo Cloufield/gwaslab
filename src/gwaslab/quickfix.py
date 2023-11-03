@@ -54,12 +54,13 @@ def _quick_fix_mlog10p(sumstats, scaled=False, verbose=True, log=Log()):
         if verbose:log.write(" -Sumstats P values are being converted to -log10(P)...")
         sumstats["scaled_P"] = -np.log10(sumstats["P"])
         
-    with pd.option_context('mode.use_inf_as_na', True):
-        is_na = sumstats["scaled_P"].isna()
+    #with pd.option_context('mode.use_inf_as_na', True):
+    #    is_na = sumstats["scaled_P"].isna()
+    if_inf_na = np.isinf(sumstats["scaled_P"]) | sumstats["scaled_P"].isna()
     if verbose:
-        log.write(" -Sanity check: "+str(sum(is_na)) +
+        log.write(" -Sanity check: "+str(sum(if_inf_na)) +
                   " na/inf/-inf variants will be removed...")
-    sumstats = sumstats.loc[~is_na, :]
+    sumstats = sumstats.loc[~if_inf_na, :]
     return sumstats
 
 

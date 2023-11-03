@@ -10,6 +10,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from adjustText import adjust_text
 from gwaslab.Log import Log
 from gwaslab.textreposition import adjust_text_position
+from pandas.api.types import is_string_dtype
 
 # single mqqplot
 def annotate_single(
@@ -122,12 +123,11 @@ def annotate_single(
                 else:
                     annotation_text="Chr"+ str(row[chrom]) +":"+ str(int(row[pos]))
             elif anno:
-                annotation_text=row["Annotation"]
                 if row[snpid] in anno_alias.keys():
                     annotation_text = anno_alias[row[snpid]]
+                else:
+                    annotation_text=row["Annotation"]
             
-
-
             
             #xy=(row["i"],row["scaled_P"]+0.2)
             xy=(row["i"],row["scaled_P"]+0.01*maxy)
