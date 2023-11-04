@@ -735,7 +735,7 @@ class Sumstats():
                   xymt=xymt)
         if output_log is True:
             log_path = path + "."+ suffix + ".log"
-            if verbose: onetime_log.write(" -Saveing log file to: {}".format(log_path))
+            if verbose: onetime_log.write(" -Saving log file to: {}".format(log_path))
             if verbose: onetime_log.write("Finished outputting successfully!")
             try:
                 onetime_log.save(log_path, verbose=False)
