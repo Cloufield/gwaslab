@@ -29,11 +29,11 @@ SNPID will be fixed by `CHR:POS:NEA:EA`  only when the variants are already alig
 
 |`.fix_id()` options|Type|Description|
 |-|-|-|
-|`fixchrpos`|`Boolean`|If True, extract CHR and POS from SNPID (CHR:POS:NEA:EA) to fill CHR and POS columns (deaful:`False`)|
-|`fixid`|`Boolean`|If True, use CHR/POS/NEA/EA to reconstruct the SNPID. For variant that are not aligned with reference genome. Only CHR/POS will be used. (deaful:`False`)|
-|`forcefixid`|`Boolean`|If True, use CHR/POS/NEA/EA to reconstruct the SNPID without checking if the variant is aligned. (deaful:`False`)|
-|`fixsep`|`Boolean`|If True, fix SNPID delimiter (For example: 1:123_A_C to 1:123:A:C) (deaful:`False`)|
-|`overwrite`|`Boolean`|If True, overwrite existing data. (deaful:`False`)|
+|`fixchrpos`|`Boolean`|If True, extract CHR and POS from SNPID (CHR:POS:NEA:EA) to fill CHR and POS columns (default:`False`)|
+|`fixid`|`Boolean`|If True, use CHR/POS/NEA/EA to reconstruct the SNPID. For variant that are not aligned with reference genome. Only CHR/POS will be used. (default:`False`)|
+|`forcefixid`|`Boolean`|If True, use CHR/POS/NEA/EA to reconstruct the SNPID without checking if the variant is aligned. (default:`False`)|
+|`fixsep`|`Boolean`|If True, fix SNPID delimiter (For example: 1:123_A_C to 1:123:A:C) (default:`False`)|
+|`overwrite`|`Boolean`|If True, overwrite existing data. (default:`False`)|
 
 !!! example
     ```python

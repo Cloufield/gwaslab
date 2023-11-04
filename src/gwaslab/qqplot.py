@@ -82,7 +82,7 @@ def _plot_qq(
             # extract data for a maf_bin
             
             databin = sumstats.loc[(sumstats["MAF"]>lower) &( sumstats["MAF"]<=upper),["MAF","scaled_P"]]
-            # raw data : varaints with maf(eaf_raw) in maf_bin
+            # raw data : variants with maf(eaf_raw) in maf_bin
             
             databin_raw = eaf_raw[(eaf_raw>lower) & (eaf_raw<=upper)]
             # sort x,y for qq plot
