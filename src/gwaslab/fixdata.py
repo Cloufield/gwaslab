@@ -466,7 +466,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         out_of_range_chr = sumstats[chrom] < minchr
         out_of_range_chr = out_of_range_chr.fillna(False)
         
-        if verbose:log.write(" -Removed {} varaints with CHR < {}...".format(sum(out_of_range_chr),minchr))
+        if verbose:log.write(" -Removed {} variants with CHR < {}...".format(sum(out_of_range_chr),minchr))
         
         sumstats = sumstats.loc[~out_of_range_chr,:]
 

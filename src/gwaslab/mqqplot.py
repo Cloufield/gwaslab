@@ -458,7 +458,7 @@ def mqqplot(insumstats,
         after_number=len(sumstats)
         if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...")
         out_of_range_chr = sumstats[chrom]<=0
-        if verbose:log.write(" -Removed {} varaints with CHR <=0...".format(sum(out_of_range_chr)))
+        if verbose:log.write(" -Removed {} variants with CHR <=0...".format(sum(out_of_range_chr)))
         sumstats = sumstats.loc[~out_of_range_chr,:]
     
     if stratified is True: 
