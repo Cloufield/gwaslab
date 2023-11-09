@@ -84,7 +84,8 @@ def rsidtochrpos(sumstats,
 def merge_chrpos(sumstats_part,path,build,status):
     group=str(sumstats_part["group"].mode(dropna=True)[0])
     if group in [str(i) for i in range(75)]:
-        to_merge=pd.read_hdf(path, key="part"+str(group))
+        to_merge=pd.read_hdf(path, key="group_"+str(group)).drop_duplicates(subset="rsn")
+        to_merge = to_merge.set_index("rsn")
         is_chrpos_fixable = sumstats_part.index.isin(to_merge.index)
         sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  1,"139",3*build[0])
         sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  2,"987",3*build[1])
@@ -95,7 +96,7 @@ def merge_chrpos(sumstats_part,path,build,status):
 
 def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None,build="19",status="STATUS",
                          n_cores=4,block_size=20000000,verbose=True,log=Log()):
-    if verbose:  log.write(" -Start to assign CHR and POS using rsIDs... ")
+    if verbose:  log.write("Start to assign CHR and POS using rsIDs... ")
     if path is None:
         raise ValueError("Please provide path to hdf5 file.")
     
@@ -106,22 +107,30 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     if verbose:  log.write(" -Blocksize (make sure it is the same as hdf5 file ): ",block_size)
     
     input_columns= sumstats.columns
-    sumstats_nonrs = sumstats.loc[sumstats["rsn"].isna(),:].copy()
+    sumstats_nonrs = sumstats.loc[sumstats["rsn"].isna()|sumstats["rsn"].duplicated(keep='first') ,:].copy()
     sumstats_rs  = sumstats.loc[sumstats["rsn"].notnull(),:].copy()
-
+    
+    if verbose:  log.write(" -Non-Valid rsIDs: ",len(sumstats["rsn"].isna()))
+    if verbose:  log.write(" -Duplicated rsIDs except for the first occurrence: ",len(sumstats["rsn"].duplicated(keep='first')))
+    if verbose:  log.write(" -Valid rsIDs: ", len(sumstats_rs))
+    
     del sumstats
+    gc.collect()
     
-    if verbose:  log.write(" -Non-Valid rsIDs: ",len(sumstats_nonrs))
-    if verbose:  log.write(" -Valid rsIDs: ",len(sumstats_rs))
-    
+    # assign group number
     sumstats_rs.loc[:,"group"]= sumstats_rs.loc[:,"rsn"]//block_size
+    
+    # all groups
     if verbose:  log.write(" -Groups : ",set(sumstats_rs.loc[:,"group"].unique()))
+    
+    # set index
     sumstats_rs = sumstats_rs.set_index("rsn")
- 
+    
+    #
     pool = Pool(n_cores)
     if chrom not in input_columns:
         if verbose:  log.write(" -Initiating CHR ... ")
-        sumstats_rs[chrom]=pd.Series(dtype="string") 
+        sumstats_rs[chrom]=pd.Series(dtype="Int32") 
         
     if pos not in input_columns:
         if verbose:  log.write(" -Initiating POS ... ")
@@ -130,22 +139,30 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     df_split=[y for x, y in sumstats_rs.groupby('group', as_index=False)]
     if verbose:  log.write(" -Divided into groups: ",len(df_split))
     
-    sumstats_rs = pd.concat(pool.map(partial(merge_chrpos,path=path,build=build,status=status),df_split))
+    # update CHR and POS using rsID with multiple threads
+    sumstats_rs = pd.concat(pool.map(partial(merge_chrpos,path=path,build=build,status=status),df_split),ignore_index=True)
+    sumstats_rs.loc[:,["CHR","POS"]] = sumstats_rs.loc[:,["CHR","POS"]].astype("Int64")
     del df_split
-   
+    gc.collect()
     if verbose:  log.write(" -Merging group data... ")
-    
+    # drop group and rsn
     sumstats_rs = sumstats_rs.drop(columns=["group"])
     sumstats_nonrs = sumstats_nonrs.drop(columns=["rsn"])
-  
+    
+    # merge back
     if verbose:  log.write(" -Append data... ")
     sumstats = pd.concat([sumstats_rs,sumstats_nonrs],ignore_index=True)
     del sumstats_rs
     del sumstats_nonrs
-    sumstats = fixchr(sumstats,verbose=False)
-    sumstats = fixpos(sumstats,verbose=False)
+    gc.collect()
+    
+    # check
+    sumstats = fixchr(sumstats,verbose=True)
+    sumstats = fixpos(sumstats,verbose=True)
     pool.close()
     pool.join()
+    gc.collect()
+    if verbose:  log.write("Finished assigning CHR and POS using rsIDs.")
     return sumstats
 ####################################################################################################################
 #20220426 check if non-effect allele is aligned with reference genome 

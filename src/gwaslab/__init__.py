@@ -38,3 +38,4 @@ from gwaslab.calculate_power import get_power
 from gwaslab.calculate_power import get_beta
 from gwaslab.trumpetplot import plot_power
 from gwaslab.trumpetplot import plot_power_x
+from gwaslab.processdata import process_ref_vcf
