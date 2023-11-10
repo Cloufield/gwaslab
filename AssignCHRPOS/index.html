@@ -563,8 +563,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#dbsnp-reference-file-and-rsid_to_chrpos2" class="md-nav__link">
-    dbSNP reference file and rsid_to_chrpos2
+  <a href="#4-dbsnp-reference-file-rsid_to_chrpos2" class="md-nav__link">
+    4. dbSNP reference file / .rsid_to_chrpos2()
   </a>
   
 </li>
@@ -1045,8 +1045,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#dbsnp-reference-file-and-rsid_to_chrpos2" class="md-nav__link">
-    dbSNP reference file and rsid_to_chrpos2
+  <a href="#4-dbsnp-reference-file-rsid_to_chrpos2" class="md-nav__link">
+    4. dbSNP reference file / .rsid_to_chrpos2()
   </a>
   
 </li>
@@ -1155,7 +1155,7 @@
 </span><span id="__span-2-53"><a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>9999    rs77575110  G   A   0.9828  -0.0084 0.0433  0.84620 191764  +--+    9960099 1   3142762
 </span></code></pre></div>
 </div>
-<h2 id="dbsnp-reference-file-and-rsid_to_chrpos2">dbSNP reference file and rsid_to_chrpos2</h2>
+<h2 id="4-dbsnp-reference-file-rsid_to_chrpos2">4. dbSNP reference file / .rsid_to_chrpos2()</h2>
 <p><strong>Available since v3.4.31</strong></p>
 <p><code>.rsid_to_chrpos2()</code> is a function to assign CHR and POS based on rsID using a HDF5 file derived from dbSNP reference VCF files.</p>
 <p>First, download reference VCF file from dbSNP ftp site.</p>
@@ -1205,12 +1205,37 @@
 </span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>Fri Nov 10 11:27:59 2023  -Processing chunk: 0 1 2 3 4 ...
 </span></code></pre></div>
 <p>Assign CHR POS using the HDF5 file. </p>
-<p><code>.rsid_to_chrpos2()</code>
-|Option|DataType|Description|Default|
-|-|-|-|-|
-|<code>path</code>|<code>string</code>|the path to the HDF5 file|-|
-|<code>n_cores</code>|<code>int</code>|number of threads to use|<code>./</code>|
-|<code>build</code>|<code>string</code>|genome build version for CHR and POS|<code>"99"</code>|</p>
+<p><code>.rsid_to_chrpos2()</code></p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td><code>string</code></td>
+<td>the path to the HDF5 file</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>n_cores</code></td>
+<td><code>int</code></td>
+<td>number of threads to use</td>
+<td><code>./</code></td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td><code>string</code></td>
+<td>genome build version for CHR and POS</td>
+<td><code>"99"</code></td>
+</tr>
+</tbody>
+</table>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>...
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>mysumstats.rsid_to_chrpos2(path=&quot;/home/yunye/work/gwaslab/examples/vcf_hd5/rsID_CHR_POS_groups_20000000.h5&quot;)
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
