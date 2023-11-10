@@ -96,3 +96,92 @@ mysumstats.rsid_to_chrpos( path = gl.get_path("1kg_dbsnp151_hg19_auto"))
     9998	rs137909285	C	CT	0.9418	-0.0047	0.0199	0.81500	191764	---+	9960399	1	3142212
     9999	rs77575110	G	A	0.9828	-0.0084	0.0433	0.84620	191764	+--+	9960099	1	3142762
     ```
+
+
+## dbSNP reference file and rsid_to_chrpos2
+
+**Available since v3.4.31**
+
+`.rsid_to_chrpos2()` is a function to assign CHR and POS based on rsID using a HDF5 file derived from dbSNP reference VCF files.
+
+
+First, download reference VCF file from dbSNP ftp site.
+
+```
+# For example, dbSNP v155 hg19
+GCF_000001405.25.gz (24G)
+GCF_000001405.25.gz.tbi (2.9M)
+```
+
+Process the vcf file and convert it to HDF5 file using `.process_ref_vcf()`. This step may take up to one or two hours.
+
+|Option|DataType|Description|Default|
+|-|-|-|-|
+|`vcf`|`string`|the path to dbSNP VCF file|-|
+|`directory`|`string`|the directory where you want output the converted HDF5 file|`./`|
+
+```
+directory="/home/yunye/work/gwaslab/examples/vcf_hd5/"
+vcf = "/home/yunye/CommonData/Reference/ncbi_dbsnp/ncbi_dbsnp/db155/GCF_000001405.25.gz"
+
+gl.process_ref_vcf(vcf=vcf,
+                   directory=directory,
+                   chr_dict=gl.get_NC_to_number(build="19"))
+
+Fri Nov 10 11:27:59 2023 Start processing VCF files:
+Fri Nov 10 11:27:59 2023  -Reference VCF path:/home/yunye/CommonData/Reference/ncbi_dbsnp/ncbi_dbsnp/db155/GCF_000001405.25.gz
+Fri Nov 10 11:27:59 2023  -Output group size:20000000
+Fri Nov 10 11:27:59 2023  -Compression level:9
+Fri Nov 10 11:27:59 2023  -Loading chunksize:20000000
+Fri Nov 10 11:27:59 2023  -HDF5 Output path: /home/yunye/work/gwaslab/examples/vcf_hd5/rsID_CHR_POS_groups_20000000.h5
+Fri Nov 10 11:27:59 2023  -Log output path: /home/yunye/work/gwaslab/examples/vcf_hd5/rsID_CHR_POS_groups_20000000.log
+Fri Nov 10 11:27:59 2023  -Processing chunk: 0 1 2 3 4 ...
+```
+
+Assign CHR POS using the HDF5 file. 
+
+`.rsid_to_chrpos2()`
+|Option|DataType|Description|Default|
+|-|-|-|-|
+|`path`|`string`|the path to the HDF5 file|-|
+|`n_cores`|`int`|number of threads to use|`./`|
+|`build`|`string`|genome build version for CHR and POS|`"99"`|
+
+```
+...
+mysumstats.rsid_to_chrpos2(path="/home/yunye/work/gwaslab/examples/vcf_hd5/rsID_CHR_POS_groups_20000000.h5")
+
+Fri Nov 10 17:30:44 2023 Start to assign CHR and POS using rsIDs... 
+Fri Nov 10 17:30:44 2023  -Source hdf5 file:  ./vcf_hd5/rsID_CHR_POS_groups_20000000.hd5
+Fri Nov 10 17:30:44 2023  -Cores to use :  4
+Fri Nov 10 17:30:44 2023  -Blocksize (make sure it is the same as hdf5 file ):  20000000
+Fri Nov 10 17:30:44 2023  -Non-Valid rsIDs:  58
+Fri Nov 10 17:30:44 2023  -Duplicated rsIDs except for the first occurrence:  0
+Fri Nov 10 17:30:44 2023  -Valid rsIDs:  9942
+Fri Nov 10 17:30:44 2023  -Initiating CHR ... 
+Fri Nov 10 17:30:44 2023  -Initiating POS ... 
+Fri Nov 10 17:30:44 2023  -Divided into groups:  41
+Fri Nov 10 17:30:44 2023   - {0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 18, 19, 26, 27, 28, 37, 38, 39, 43, 44, 48, 49, 52, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74}
+Fri Nov 10 17:30:46 2023  -Number of groups in HDF5:  92
+Fri Nov 10 17:30:46 2023  -Max index of groups in HDF5:  105
+Fri Nov 10 17:32:44 2023  -Merging group data... 
+Fri Nov 10 17:32:44 2023  -Append data... 
+Fri Nov 10 17:32:44 2023 Start to fix chromosome notation...
+Fri Nov 10 17:32:44 2023  -Current Dataframe shape : 10000  x  13
+Fri Nov 10 17:32:44 2023  -Checking CHR data type...
+Fri Nov 10 17:32:44 2023  -Variants with standardized chromosome notation: 9705
+Fri Nov 10 17:32:44 2023  -Variants with fixable chromosome notations: 0
+Fri Nov 10 17:32:44 2023  -Variants with NA chromosome notations: 295
+Fri Nov 10 17:32:44 2023  -No unrecognized chromosome notations...
+Fri Nov 10 17:32:44 2023  -Sanity check for CHR...
+Fri Nov 10 17:32:44 2023  -Removed 0 variants with CHR < 1...
+Fri Nov 10 17:32:44 2023 Finished fixing chromosome notation successfully!
+Fri Nov 10 17:32:44 2023 Start to fix basepair positions...
+Fri Nov 10 17:32:44 2023  -Current Dataframe shape : 10000  x  13
+Fri Nov 10 17:32:44 2023  -Converting to Int64 data type ...
+Fri Nov 10 17:32:44 2023  -Position upper_bound is: 250,000,000
+Fri Nov 10 17:32:44 2023  -Remove outliers: 0
+Fri Nov 10 17:32:44 2023  -Converted all position to datatype Int64.
+Fri Nov 10 17:32:44 2023 Finished fixing basepair position successfully!
+Fri Nov 10 17:32:44 2023 Finished assigning CHR and POS using rsIDs.
+```

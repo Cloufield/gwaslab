@@ -81,20 +81,22 @@ def rsidtochrpos(sumstats,
 
 ####################################################################################################################
     
-def merge_chrpos(sumstats_part,path,build,status):
+def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
     group=str(sumstats_part["group"].mode(dropna=True)[0])
-    if group in [str(i) for i in range(75)]:
-        to_merge=pd.read_hdf(path, key="group_"+str(group)).drop_duplicates(subset="rsn")
-        to_merge = to_merge.set_index("rsn")
-        is_chrpos_fixable = sumstats_part.index.isin(to_merge.index)
-        sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  1,"139",3*build[0])
-        sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  2,"987",3*build[1])
-        sumstats_part.update(to_merge)
+    if group in [str(i) for i in range(all_groups_max+1)]:
+        try:
+            to_merge=pd.read_hdf(path, key="group_"+str(group)).drop_duplicates(subset="rsn")
+            to_merge = to_merge.set_index("rsn")
+            is_chrpos_fixable = sumstats_part.index.isin(to_merge.index)
+            sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  1,"139",3*build[0])
+            sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  2,"987",3*build[1])
+            sumstats_part.update(to_merge)
+        except:
+            pass
     return sumstats_part
 
 
-
-def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None,build="19",status="STATUS",
+def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None,build="99",status="STATUS",
                          n_cores=4,block_size=20000000,verbose=True,log=Log()):
     if verbose:  log.write("Start to assign CHR and POS using rsIDs... ")
     if path is None:
@@ -110,8 +112,8 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     sumstats_nonrs = sumstats.loc[sumstats["rsn"].isna()|sumstats["rsn"].duplicated(keep='first') ,:].copy()
     sumstats_rs  = sumstats.loc[sumstats["rsn"].notnull(),:].copy()
     
-    if verbose:  log.write(" -Non-Valid rsIDs: ",len(sumstats["rsn"].isna()))
-    if verbose:  log.write(" -Duplicated rsIDs except for the first occurrence: ",len(sumstats["rsn"].duplicated(keep='first')))
+    if verbose:  log.write(" -Non-Valid rsIDs: ",sum(sumstats["rsn"].isna()))
+    if verbose:  log.write(" -Duplicated rsIDs except for the first occurrence: ",sum(sumstats.loc[~sumstats["rsn"].isna(), "rsn"].duplicated(keep='first')))
     if verbose:  log.write(" -Valid rsIDs: ", len(sumstats_rs))
     
     del sumstats
@@ -121,7 +123,7 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     sumstats_rs.loc[:,"group"]= sumstats_rs.loc[:,"rsn"]//block_size
     
     # all groups
-    if verbose:  log.write(" -Groups : ",set(sumstats_rs.loc[:,"group"].unique()))
+    
     
     # set index
     sumstats_rs = sumstats_rs.set_index("rsn")
@@ -138,9 +140,19 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     
     df_split=[y for x, y in sumstats_rs.groupby('group', as_index=False)]
     if verbose:  log.write(" -Divided into groups: ",len(df_split))
+    if verbose:  log.write("  -",set(sumstats_rs.loc[:,"group"].unique()))
     
+    # check keys
+    store = pd.HDFStore(path, 'r')
+    all_groups = store.keys()
+    all_groups_len = len(all_groups)
+    store.close()
+    all_groups_max = max(map(lambda x: int(x.split("_")[1]), all_groups))
+    if verbose:  log.write(" -Number of groups in HDF5: ",all_groups_len)
+    if verbose:  log.write(" -Max index of groups in HDF5: ",all_groups_max)
+
     # update CHR and POS using rsID with multiple threads
-    sumstats_rs = pd.concat(pool.map(partial(merge_chrpos,path=path,build=build,status=status),df_split),ignore_index=True)
+    sumstats_rs = pd.concat(pool.map(partial(merge_chrpos,all_groups_max=all_groups_max,path=path,build=build,status=status),df_split),ignore_index=True)
     sumstats_rs.loc[:,["CHR","POS"]] = sumstats_rs.loc[:,["CHR","POS"]].astype("Int64")
     del df_split
     gc.collect()

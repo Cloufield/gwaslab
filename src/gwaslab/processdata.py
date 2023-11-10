@@ -6,10 +6,10 @@ from gwaslab.Log import Log
 def process_ref_vcf(vcf, directory=None, chr_dict=None, group_size=20000000,complevel=9,chunksize=20000000,log=Log()):
     #load vcf
     log.write("Start processing VCF files:")
-    log.write(" - Reference VCF path:{}".format(vcf))
-    log.write(" - Output group size:{}".format(group_size))
-    log.write(" - Compression level:{}".format(complevel))
-    log.write(" - Loading chunksize:{}".format(chunksize))
+    log.write(" -Reference VCF path:{}".format(vcf))
+    log.write(" -Output group size:{}".format(group_size))
+    log.write(" -Compression level:{}".format(complevel))
+    log.write(" -Loading chunksize:{}".format(chunksize))
 
     if directory is None:
         directory="./"
@@ -27,7 +27,7 @@ def process_ref_vcf(vcf, directory=None, chr_dict=None, group_size=20000000,comp
     log.write(" -Processing chunk: ",end="")
     
     for index,chunk in enumerate(df):
-        log.write(index,end=" ")
+        log.write(index,end=" ",show_time=False)
         chunk = chunk.rename(columns={0:"CHR",1:"POS",2:"rsn"})
         if chr_dict is not None:
             chunk["CHR"] = chunk["CHR"].map(chr_dict)
