@@ -98,7 +98,7 @@ mysumstats.rsid_to_chrpos( path = gl.get_path("1kg_dbsnp151_hg19_auto"))
     ```
 
 
-## dbSNP reference file and rsid_to_chrpos2
+## 4. dbSNP reference file / .rsid_to_chrpos2()
 
 **Available since v3.4.31**
 
@@ -141,6 +141,7 @@ Fri Nov 10 11:27:59 2023  -Processing chunk: 0 1 2 3 4 ...
 Assign CHR POS using the HDF5 file. 
 
 `.rsid_to_chrpos2()`
+
 |Option|DataType|Description|Default|
 |-|-|-|-|
 |`path`|`string`|the path to the HDF5 file|-|
