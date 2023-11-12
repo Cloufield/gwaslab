@@ -222,7 +222,7 @@ def compare_effect(path1,
     sumstats = sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
     
     ######## 12 extact SNPs for comparison 
-    if snplist: 
+    if snplist is not None: 
         ######### 12.1 if a snplist is provided, use the snp list
         if verbose: log.write(" -Extract snps in the given list from "+label[1]+"...")
         sig_list_2 = sumstats.loc[sumstats["SNPID"].isin(snplist),:].copy()
