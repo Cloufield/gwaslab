@@ -4,20 +4,21 @@ import os
 import pandas as pd
 from gwaslab.Log import Log
 
-def _clump(insumstats, vcf=None, scaled=False, bfile=None, n_cores=2, 
+def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", bfile=None, n_cores=2, 
           chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.2, clump_kb=250,log=Log()):
     ## process reference
-    log.write("Start to perform clumping with the following parameters using plink:")
-    log.write(" -clump_p1 : {}...".format(clump_p1))
-    log.write(" -clump_p2 : {}...".format(clump_p2))
-    log.write(" -clump_kb : {}...".format(clump_kb))
-    log.write(" -clump_r2 : {}...".format(clump_r2))
+    log.write("Start to perform clumping...")
+    log.write(" -Clumping parameters for PLINK2:")
+    log.write("  -clump_p1 : {}...".format(clump_p1))
+    log.write("  -clump_p2 : {}...".format(clump_p2))
+    log.write("  -clump_kb : {}...".format(clump_kb))
+    log.write("  -clump_r2 : {}...".format(clump_r2))
     if scaled == True:
         log.write(" -Clumping will be performed using MLOG10P")
         clump_log10_p1=-np.log10(clump_p1)
         clump_log10_p2=-np.log10(clump_p2)
-        log.write(" -clump_log10_p1 : {}...".format(clump_log10_p1))
-        log.write(" -clump_log10_p2 : {}...".format(clump_log10_p2))
+        log.write("  -clump_log10_p1 : {}...".format(clump_log10_p1))
+        log.write("  -clump_log10_p2 : {}...".format(clump_log10_p2))
         sumstats = insumstats.loc[insumstats["MLOG10P"]>min(clump_log10_p1,clump_log10_p2),:].copy()
     # extract lead variants
     else:
@@ -78,7 +79,7 @@ def _clump(insumstats, vcf=None, scaled=False, bfile=None, n_cores=2,
         # temp file  
         clump = "_gwaslab_tmp.{}.SNPIDP".format(chrom)
         # output prefix
-        out="_gwaslab_tmp.{}".format(chrom)
+        out= out + ".{}".format(chrom)
         
         if bfile is None:
             bfile_to_use = bfile_gwaslab
@@ -124,9 +125,9 @@ def _clump(insumstats, vcf=None, scaled=False, bfile=None, n_cores=2,
         except subprocess.CalledProcessError as e:
             log.write(e.output)
         #os.system(script)
-        clumped = pd.read_csv("_gwaslab_tmp.{}.clumped".format(chrom),usecols=[2,0,3,4],sep="\s+")
+        clumped = pd.read_csv("{}.clumps".format(out),usecols=[2,0,1,3],sep="\s+")
         results = pd.concat([results,clumped],ignore_index=True)
         os.remove(clump)
-    results = results.sort_values(by=["CHR","BP"]).rename(columns={"BP":"POS","SNP":"SNPID"})
+    results = results.sort_values(by=["#CHROM","POS"]).rename(columns={"#CHROM":"CHR","ID":"SNPID"})
     log.write("Finished clumping.")
     return results, plink_log
