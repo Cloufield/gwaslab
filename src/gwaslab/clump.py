@@ -124,8 +124,9 @@ def _clump(insumstats, vcf=None, scaled=False, bfile=None, n_cores=2,
         except subprocess.CalledProcessError as e:
             log.write(e.output)
         #os.system(script)
-    
         clumped = pd.read_csv("_gwaslab_tmp.{}.clumped".format(chrom),usecols=[2,0,3,4],sep="\s+")
         results = pd.concat([results,clumped],ignore_index=True)
+        os.remove(clump)
+    results = results.sort_values(by=["CHR","BP"]).rename(columns={"BP":"POS","SNP":"SNPID"})
     log.write("Finished clumping.")
     return results, plink_log
