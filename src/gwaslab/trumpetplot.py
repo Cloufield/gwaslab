@@ -48,6 +48,7 @@ def plottrumpet(mysumstats,
                 ylim=None,
                 xlim=None,
                 markercolor="#597FBD",
+                scatter_args=None,
                 fontsize=15,
                 font_family="Arial",
                 size= "ABS_BETA",
@@ -98,6 +99,8 @@ def plottrumpet(mysumstats,
             xticklabels = xticks            
     if figargs is None:
         figargs={"figsize":(10,15)}
+    if scatter_args is None:
+        scatter_args ={}
     #Checking columns#################################################################################################################
     if verbose: log.write("Start to create trumpet plot...")
     
@@ -258,7 +261,7 @@ def plottrumpet(mysumstats,
                     color=markercolor,
                     legend=True, 
                     edgecolor="black",
-                    alpha=0.8)
+                    alpha=0.8,**scatter_args)
     
     #second_legend = ax.legend(title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
     
