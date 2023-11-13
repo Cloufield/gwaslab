@@ -101,6 +101,8 @@ def plottrumpet(mysumstats,
         figargs={"figsize":(10,15)}
     if scatter_args is None:
         scatter_args ={}
+    if "c" not in scatter_args.keys():
+        scatter_args["color"]=markercolor
     #Checking columns#################################################################################################################
     if verbose: log.write("Start to create trumpet plot...")
     
@@ -149,6 +151,8 @@ def plottrumpet(mysumstats,
     if size != "ABS_BETA":
         if size not in cols_to_use:
             cols_to_use.append(size)
+    if "hue" in scatter_args.keys():
+        cols_to_use.append(scatter_args["hue"]) 
     #filter by p #################################################################################################################
     if p in mysumstats.columns:
         sumstats = mysumstats.loc[mysumstats[p]< p_level,cols_to_use ].copy()
@@ -258,7 +262,6 @@ def plottrumpet(mysumstats,
                     size=size, 
                     ax=ax, 
                     sizes=sizes,
-                    color=markercolor,
                     legend=True, 
                     edgecolor="black",
                     alpha=0.8,**scatter_args)
