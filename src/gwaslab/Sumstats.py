@@ -53,6 +53,7 @@ from gwaslab.version import _show_version
 from gwaslab.version import gwaslab_info
 from gwaslab.meta import init_meta
 from gwaslab.trumpetplot import plottrumpet
+from gwaslab.clump import _clump
 import gc
 
 #20220309
@@ -446,6 +447,10 @@ class Sumstats():
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**args)
             return new_Sumstats_object
+    
+    def clump(self,**args):
+        clumped,plink_log = _clump(self.data, log=self.log, **args)
+        return clumped,plink_log
     ######################################################################
     
     def check_af(self,ref_infer,**args):
