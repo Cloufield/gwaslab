@@ -1,5 +1,9 @@
 # Update Logs
 
+## 3.4.30 2023111x
+- added clump()
+- added extra log in compare_effect
+
 ## 3.4.30 20231103
 - updated random seed range (0,2^32-1).
 - fixed error for suggestive_sig_line in miami plot.

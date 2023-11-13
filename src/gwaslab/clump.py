@@ -67,6 +67,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", bfile=None
             sumstats.loc[sumstats["CHR"]==i,["SNPID","MLOG10P"]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=None,sep="\t")
         else:
             sumstats.loc[sumstats["CHR"]==i,["SNPID","P"]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=None,sep="\t")
+        
     # create a empty dataframe for combining results from each CHR 
     results = pd.DataFrame()
     
@@ -79,7 +80,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", bfile=None
         # temp file  
         clump = "_gwaslab_tmp.{}.SNPIDP".format(chrom)
         # output prefix
-        out= out + ".{}".format(chrom)
+        out_single_chr= out + ".{}".format(chrom)
         
         if bfile is None:
             bfile_to_use = bfile_gwaslab
@@ -102,7 +103,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", bfile=None
                 --clump-kb {} \
                 --threads {} \
                 --out {}
-            """.format(bfile_to_use, chrom, clump, clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, out)    
+            """.format(bfile_to_use, chrom, clump, clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, out_single_chr)    
         else:
             script = """
             plink2 \
@@ -117,17 +118,20 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", bfile=None
                 --clump-kb {} \
                 --threads {} \
                 --out {}
-            """.format(bfile_to_use, chrom, clump, clump_p1, clump_p2, clump_r2, clump_kb, n_cores, out)
+            """.format(bfile_to_use, chrom, clump, clump_p1, clump_p2, clump_r2, clump_kb, n_cores, out_single_chr)
         
         try:
             output = subprocess.check_output(script, stderr=subprocess.STDOUT, shell=True,text=True)
+            log.write(" -Saved results for CHR {} to : {}".format(i,"{}.clumps".format(out_single_chr)))
             plink_log +=output + "\n"
         except subprocess.CalledProcessError as e:
             log.write(e.output)
         #os.system(script)
-        clumped = pd.read_csv("{}.clumps".format(out),usecols=[2,0,1,3],sep="\s+")
+        clumped = pd.read_csv("{}.clumps".format(out_single_chr),usecols=[2,0,1,3],sep="\s+")
         results = pd.concat([results,clumped],ignore_index=True)
+        # remove temp SNPIDP file 
         os.remove(clump)
     results = results.sort_values(by=["#CHROM","POS"]).rename(columns={"#CHROM":"CHR","ID":"SNPID"})
     log.write("Finished clumping.")
-    return results, plink_log
+    results_sumstats = insumstats.loc[insumstats["SNPID"].isin(results["SNPID"]),:].copy()
+    return results_sumstats, plink_log
