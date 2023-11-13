@@ -48,6 +48,7 @@ def plottrumpet(mysumstats,
                 ylim=None,
                 xlim=None,
                 markercolor="#597FBD",
+                hue=None,
                 scatter_args=None,
                 fontsize=15,
                 font_family="Arial",
@@ -101,8 +102,11 @@ def plottrumpet(mysumstats,
         figargs={"figsize":(10,15)}
     if scatter_args is None:
         scatter_args ={}
-    if "c" not in scatter_args.keys():
+    if hue is not None:
+        scatter_args["hue"]=hue
+    if markercolor is not None:
         scatter_args["color"]=markercolor
+    
     #Checking columns#################################################################################################################
     if verbose: log.write("Start to create trumpet plot...")
     
@@ -264,7 +268,8 @@ def plottrumpet(mysumstats,
                     sizes=sizes,
                     legend=True, 
                     edgecolor="black",
-                    alpha=0.8,**scatter_args)
+                    alpha=0.8,
+                    **scatter_args)
     
     #second_legend = ax.legend(title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
     
@@ -273,7 +278,10 @@ def plottrumpet(mysumstats,
         l1 = ax.legend(h[:int(len(ts))],l[:int(len(ts))], title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
         for line in l1.get_lines():
             line.set_linewidth(5.0)
-    l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=size, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
+    if hue is None:
+        l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=size, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
+    else:
+        l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=None, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
     if len(ts)>0:
         ax.add_artist(l1)
     #first_legend = ax.legend(handles=dots, loc="lower right" ,title=size,fontsize =fontsize,title_fontsize=fontsize)
