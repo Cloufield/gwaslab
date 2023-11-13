@@ -729,6 +729,7 @@ def compare_effect(path1,
         degree = len(sig_list_merged.dropna())-2
         p =  reg[3]
         #ss.t.sf(abs(t_score), df=degree)*2
+        if verbose:log.write(" -Beta = ", reg[0])
         if verbose:log.write(" -Beta_se = ", reg[4])
         #if verbose:log.write(" -H0 beta = ", null_beta, ", recalculated p = ", "{:.2e}".format(p))
         if verbose:log.write(" -H0 beta =  0",", default p = ", "{:.2e}".format(reg[3]))
