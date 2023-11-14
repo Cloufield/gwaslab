@@ -52,6 +52,7 @@ def tofinemapping(sumstats, bfile=None, vcf=None, out="./",windowsizekb=1000,n_c
                         
                 else:
                     log.write("  -Plink bfile for CHR {} exists. Skipping...".format(i))
+                ## load bim file
                 bim_path =bfile_gwaslab+".bim"
                 ref_bim = pd.read_csv(bim_path,sep="\s+",usecols=[1,3,4,5],header=None,dtype={1:"string",3:"int",4:"string",5:"string"}).rename(columns={1:"SNPID",4:"NEA_bim",5:"EA_bim"})
                 log.write("#variants in ref file: {}".format(len(ref_bim)))
@@ -60,60 +61,63 @@ def tofinemapping(sumstats, bfile=None, vcf=None, out="./",windowsizekb=1000,n_c
         
         else:
             log.write(" -PLINK bfile as LD reference panel: {}".format(bfile))  
+            ## load bim file
             bim_path =bfile_gwaslab+".bim"
             ref_bim = pd.read_csv(bim_path,sep="\s+",usecols=[1,3,4,5],header=None,dtype={1:"string",3:"int",4:"string",5:"string"}).rename(columns={1:"SNPID",4:"NEA_bim",5:"EA_bim"})
             log.write(" -#variants in ref file: {}".format(len(ref_bim)))
 
-        align_sumstats_with_bim(locus_sumstats, ref_bim):
+        ## check available snps with reference file
+        matched_sumstats = _align_sumstats_with_bim(locus_sumstats, ref_bim)
         #avaiable_snplist = locus_snplist[locus_snplist.isin(ref_snplist[1])]
-        log.write(" -#variants available in sumstats and LD panel: {}".format(len(avaiable_snplist)))
+        log.write(" -#variants available in sumstats and LD panel: {}".format(len(matched_sumstats)))
+        print(matched_sumstats)
         
-        avaiable_snplist.to_csv("{}/available_{}_{}.snplist".format(out.rstrip("/"),row["SNPID"],windowsizekb),index=None,header=None)
+        matched_sumstats["SNPID"].to_csv("{}/available_{}_{}.snplist".format(out.rstrip("/"),row["SNPID"],windowsizekb),index=None,header=None)
 
-        log.write(" -#Calculating LD r...")
-        if os.path.exists(bfile_gwaslab+".bed"):
-            script_vcf_to_bfile = """
-            plink \
-                --bfile {} \
-                --extract {} \
-                --chr {} \
-                --r square gz \
-                --allow-no-sex \
-                --threads {} \
-                --out {}
-            """.format(bfile_gwaslab, "{}/available_{}_{}.snplist".format(out.rstrip("/"),row["SNPID"],windowsizekb), i, n_cores, "{}/{}_{}".format(out.rstrip("/"),row["SNPID"],windowsizekb))
-            
-            try:
-                output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
-                plink_log+=output + "\n"
-                log.write(" -Finished calculating LD r for locus with lead variant {} at CHR {} POS {} ################...".format(row["SNPID"],row["CHR"],row["POS"]))
-            except subprocess.CalledProcessError as e:
-                log.write(e.output)
+        ## Calculate ld matrix using PLINK
+        _calculate_ld_r(row, bfile_gwaslab, i, n_cores, windowsizekb,out,log)
 
-                
 
-    ## check available snps with reference file
 
-    ## matching alleles
 
-    ## extract available SNPs and calculate ld matrix using PLINK
-def calculateldr():
-    pass
+def _calculate_ld_r(row, bfile_gwaslab, i, n_cores, windowsizekb,out,log):
+    log.write(" -#Calculating LD r...")
+    if os.path.exists(bfile_gwaslab+".bed"):
+        snplist_path =   "{}/available_{}_{}.snplist".format(out.rstrip("/"),row["SNPID"],windowsizekb)
+        output_prefix =  "{}/{}_{}".format(out.rstrip("/"),row["SNPID"],windowsizekb)
+        script_vcf_to_bfile = """
+        plink \
+            --bfile {} \
+            --extract {} \
+            --chr {} \
+            --r square gz \
+            --allow-no-sex \
+            --threads {} \
+            --out {}
+        """.format(bfile_gwaslab, snplist_path , i, n_cores, output_prefix)
+        
+        try:
+            output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
+            plink_log+=output + "\n"
+            log.write(" -Finished calculating LD r for locus with lead variant {} at CHR {} POS {} ################...".format(row["SNPID"],row["CHR"],row["POS"]))
+        except subprocess.CalledProcessError as e:
+            log.write(e.output)
 
-def align_sumstats_with_bim(locus_sumstats, bim_path, log=Log()):
+def _align_sumstats_with_bim(locus_sumstats, bim, log=Log()):
     
     locus_sumstats["EA"] = locus_sumstats["EA"].atype("string")
     locus_sumstats["NEA"] = locus_sumstats["NEA"].atype("string")
 
-    
-    
+    # matching by SNPID
     combined_df = pd.merge(locus_sumstats, bim, on="SNPID",how="inner")
     
+    # match allele
     allele_match =  ((combined_df["EA"] == combined_df["EA_bim"]) & (combined_df["NEA"] == combined_df["NEA_bim"]) ) | ((combined_df["EA"] == combined_df["NEA_bim"])& (combined_df["NEA"] == combined_df["EA_bim"]))
     log.write("#Variants with matched alleles:{}".format(sum(allele_match)))
     ea_mis_match = combined_df["EA"] != combined_df["EA_bim"]
     log.write("#Variants with flipped alleles:{}".format(sum(allele_match)))
     
+    # adjust statistics
     output_columns=["SNPID","EA_bim","NEA_bim"]
 
     if "BETA" in locus_sumstats.columns:
@@ -127,16 +131,3 @@ def align_sumstats_with_bim(locus_sumstats, bim_path, log=Log()):
         output_columns.append("EAF")
     
     return combined_df.loc[allele_match,output_columns]
-#plink \
-#  --bfile ${plinkFile} \
-#  --keep-allele-order \
-#  --r square \
-#  --extract sig_locus.snplist \
-#  --out sig_locus_mt
-#
-#plink \
-#  --bfile ${plinkFile} \
-#  --keep-allele-order \
-#  --r2 square \
-#  --extract sig_locus.snplist \
-#  --out sig_locus_mt_r2
