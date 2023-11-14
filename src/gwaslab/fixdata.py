@@ -631,6 +631,8 @@ def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NE
                 before_normalize_id = sumstats.loc[variants_to_check,snpid]
             elif rsid in sumstats.columns:
                 before_normalize_id = sumstats.loc[variants_to_check,rsid]
+            else:
+                before_normalize_id = pd.DataFrame(sumstats.index[variants_to_check],index=sumstats.index[variants_to_check])
             
             log.write(" -Not normalized allele IDs:",end="")
             for i in before_normalize_id.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea])].head().values:
