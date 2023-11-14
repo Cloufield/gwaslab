@@ -15,7 +15,7 @@
     
     
       
-        <title>Data conversion - GWASLab</title>
+        <title>Clumping in GWASLab by calling PLINK2 - GWASLab</title>
       
     
     
@@ -67,7 +67,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#statistics-conversion" class="md-skip">
+        <a href="#clumping-in-gwaslab-by-calling-plink2" class="md-skip">
           Skip to content
         </a>
       
@@ -99,7 +99,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Data conversion
+              Clumping in GWASLab by calling PLINK2
             
           </span>
         </div>
@@ -199,15 +199,13 @@
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../SumstatsObject/" class="md-tabs__link md-tabs__link--active">
+      <a href="../SumstatsObject/" class="md-tabs__link">
         Sumstats manipulation
       </a>
     </li>
@@ -388,14 +386,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
@@ -528,73 +524,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Data conversion
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../Conversion/" class="md-nav__link">
         Data conversion
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#fill_data" class="md-nav__link">
-    fill_data()
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#options" class="md-nav__link">
-    Options
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#priority" class="md-nav__link">
-    Priority
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1008,42 +942,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#fill_data" class="md-nav__link">
-    fill_data()
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#options" class="md-nav__link">
-    Options
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#priority" class="md-nav__link">
-    Priority
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1056,134 +954,7 @@
                 
 
 
-<h1 id="statistics-conversion">Statistics conversion</h1>
-<p>GWASLab can convert equvalent statistics, including:</p>
-<table>
-<thead>
-<tr>
-<th>Target stats</th>
-<th>Original stats</th>
-<th>Implementation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>MLOG10P</td>
-<td>P</td>
-<td><code>sumstats["MLOG10P"] = -np.log10(sumstats["P"])</code></td>
-</tr>
-<tr>
-<td>P</td>
-<td>MLOG10P</td>
-<td><code>sumstats["P"] = np.power(10,-sumstats["MLOG10P"])</code></td>
-</tr>
-<tr>
-<td>P</td>
-<td>Z</td>
-<td><code>sumstats["P"] = ss.norm.sf(np.abs(sumstats["Z"])) * 2</code></td>
-</tr>
-<tr>
-<td>P</td>
-<td>CHISQ</td>
-<td><code>sumstats["P"] = ss.chi2.sf(sumstats["CHISQ"], 1)</code></td>
-</tr>
-<tr>
-<td>OR<br />OR_95L<br />OR_95U</td>
-<td>BETA<br />SE</td>
-<td><code>sumstats["OR"]   = np.exp(sumstats["BETA"])</code>, <br /> <code>sumstats["OR_95L"] = np.exp(sumstats["BETA"]-ss.norm.ppf(0.975)*sumstats["SE"])</code>, <br /> <code>sumstats["OR_95U"] = np.exp(sumstats["BETA"]+ss.norm.ppf(0.975)*sumstats["SE"])</code></td>
-</tr>
-<tr>
-<td>BETA <br /> SE</td>
-<td>OR <br />OR_95L<br />OR_95U</td>
-<td><code>sumstats["BETA"]  = np.log(sumstats["OR"])</code>, <br /> <code>sumstats["SE"]=(np.log(sumstats["OR"]) - np.log(sumstats["OR_95L"]))/ss.norm.ppf(0.975)</code>, <br /> <code>sumstats["SE"]=(np.log(sumstats["OR_95U"]) - np.log(sumstats["OR"]))/ss.norm.ppf(0.975)</code></td>
-</tr>
-<tr>
-<td>Z</td>
-<td>BETA/SE</td>
-<td><code>sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]</code></td>
-</tr>
-<tr>
-<td>CHISQ</td>
-<td>P</td>
-<td><code>sumstats["CHISQ"] = ss.chi2.isf(sumstats["P"], 1)</code></td>
-</tr>
-<tr>
-<td>CHISQ</td>
-<td>Z</td>
-<td><code>sumstats["CHISQ"] = (sumstats["Z"])**2</code></td>
-</tr>
-<tr>
-<td>MAF</td>
-<td>EAF</td>
-<td><code>sumstats["MAF"] =  sumstats["EAF"].apply(lambda x: min(x,1-x) if pd.notnull(x) else np.nan)</code></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition info">
-<p class="admonition-title">Extreme P values</p>
-<p>For extreme P, <code>extreme=True</code> can be added to overcome the limitation of extreme P values (P&lt;1e-308). MLOG10P will be calculated using the methods described <a href="https://stackoverflow.com/questions/46416027/how-to-compute-p-values-from-z-scores-in-r-when-the-z-score-is-large-pvalue-muc/46416222#46416222">here</a>:</p>
-<p><code>mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)</code></p>
-<p><img width="446" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/7c1c96e3-f6e0-4232-a13f-af7fc551cc24"></p>
-<p>Z socres (or BETA and SE) will be used to calculate MLOG10P, two additional columns <code>P_MANTISSA</code> and <code>P_EXPONENT</code> will be added to present p values. </p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The conversion is implemented using scipy and numpy.</p>
-<ul>
-<li>ss : <code>import scipy.stats as ss</code></li>
-<li>np : <code>import numpy as np</code></li>
-</ul>
-</div>
-<p>See examples <a href="https://cloufield.github.io/gwaslab/utility_data_conversion/">here.</a></p>
-<h2 id="fill_data">fill_data()</h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>mysumstats.fill_data( 
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    to_fill=[],
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    df=None,
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    overwrite=False,
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    only_sig=False
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    )
-</span></code></pre></div>
-<h2 id="options">Options</h2>
-<ul>
-<li><code>to_fill</code>: the columns to fill. ["OR","OR_95L","OR_95U","BETA","SE","P","MLOG10P","Z","CHISQ"]</li>
-<li><code>df</code> : columns name for degree of freedom</li>
-<li><code>overwrite</code>: if overwrite when the specified column existed</li>
-<li><code>only_sig</code> : fill the data only for significant variants</li>
-</ul>
-<h2 id="priority">Priority</h2>
-<ul>
-<li>For P : using MLOG10P, Z, CHISQ </li>
-<li>For MLOG10P : using P, MLOG10P, Z, CHISQ </li>
-<li>For BETA/SE : using OR/OR_95L/OR_95U</li>
-<li>For OR/OR_95L/OR_95U : using BETA/SE</li>
-<li>For Z : using BETA/SE</li>
-<li>For CHISQ : using  Z, P</li>
-</ul>
-<h2 id="example">Example</h2>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a># raw data
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>#SNPID  CHR POS EA  NEA EAF BETA    SE  P   STATUS
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>#1:725932_G_A   1   725932  G   A   0.9960  -0.0737 0.1394  0.5970  9999999
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>#1:725933_A_G   1   725933  G   A   0.0040  0.0737  0.1394  0.5973  9999999
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>#1:737801_T_C   1   737801  C   T   0.0051  0.0490  0.1231  0.6908  9999999
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a># let&#39;s fill &quot;MLOG10P&quot;,&quot;Z&quot;,&quot;OR&quot;,&quot;OR_95L&quot;,&quot;OR_95U&quot;
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a># gwaslab will automatically search for equivalent statistics
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>mysumstats.fill_data(to_fill=[&quot;MLOG10P&quot;,&quot;Z&quot;,&quot;OR&quot;,&quot;OR_95L&quot;,&quot;OR_95U&quot;])
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>Wed Oct 19 10:13:30 2022 Start filling data using existing columns...
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>Wed Oct 19 10:13:30 2022  -Raw input columns:  [&#39;SNPID&#39;, &#39;CHR&#39;, &#39;POS&#39;, &#39;EA&#39;, &#39;NEA&#39;, &#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;, &#39;STATUS&#39;]
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>Wed Oct 19 10:13:30 2022  -Overwrite mode:  False
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>Wed Oct 19 10:13:30 2022   - Skipping columns:  []
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>Wed Oct 19 10:13:30 2022 Filling columns:  [&#39;MLOG10P&#39;, &#39;OR&#39;, &#39;OR_95L&#39;, &#39;OR_95U&#39;]
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>Wed Oct 19 10:13:30 2022   - Filling OR using BETA column...
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>Wed Oct 19 10:13:31 2022   - Filling OR_95L/OR_95U using BETA/SE columns...
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>Wed Oct 19 10:13:32 2022   - Filling MLOG10P using P column...
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>Wed Oct 19 10:13:38 2022 Finished filling data using existing columns.
-</span></code></pre></div>
-</div>
+<h1 id="clumping-in-gwaslab-by-calling-plink2">Clumping in GWASLab by calling PLINK2</h1>
 
               
             </article>
@@ -1193,41 +964,6 @@
       </main>
       
         <footer class="md-footer">
-  
-    <nav class="md-footer__inner md-grid" aria-label="Footer">
-      
-        
-        <a href="../LiftOver/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Liftover" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Liftover
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../Visualization/" class="md-footer__link md-footer__link--next" aria-label="Next: Manhattan and QQ plot" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Manhattan and QQ plot
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
