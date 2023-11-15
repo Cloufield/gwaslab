@@ -54,6 +54,7 @@ from gwaslab.version import gwaslab_info
 from gwaslab.meta import init_meta
 from gwaslab.trumpetplot import plottrumpet
 from gwaslab.clump import _clump
+from gwaslab.calculate_ldmatrix import tofinemapping
 import gc
 
 #20220309
@@ -603,6 +604,9 @@ class Sumstats():
             return output 
 
 # to_format ###############################################################################################       
+    def to_finemapping(self,**args):
+        tofinemapping(self.data,**args)
+
     def to_format(self,
               path="./sumstats",
               fmt="gwaslab",   
