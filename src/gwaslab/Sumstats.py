@@ -452,6 +452,7 @@ class Sumstats():
     def clump(self,**args):
         clumped,plink_log = _clump(self.data, log=self.log, **args)
         return clumped,plink_log
+    
     ######################################################################
     
     def check_af(self,ref_infer,**args):
@@ -583,7 +584,6 @@ class Sumstats():
         self.data = _get_per_snp_r2(self.data, beta="BETA", af="EAF", n="N", log=self.log, **args)
         #add data inplace
 
-    
     def get_gc(self, mode=None, **args):
         if mode is None:
             if "P" in self.data.columns:
@@ -605,7 +605,8 @@ class Sumstats():
 
 # to_format ###############################################################################################       
     def to_finemapping(self,**args):
-        tofinemapping(self.data,**args)
+        output_filelist_path = tofinemapping(self.data,**args)
+        return output_filelist_path
 
     def to_format(self,
               path="./sumstats",

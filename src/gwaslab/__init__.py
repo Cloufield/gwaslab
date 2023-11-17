@@ -39,3 +39,4 @@ from gwaslab.calculate_power import get_beta
 from gwaslab.trumpetplot import plot_power
 from gwaslab.trumpetplot import plot_power_x
 from gwaslab.processdata import process_ref_vcf
+from gwaslab.run_susie import _run_susie_rss as run_susie_rss

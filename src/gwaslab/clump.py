@@ -3,6 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 from gwaslab.Log import Log
+from gwaslab.processreference import _process_vcf_and_bfile
 
 def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=False, bfile=None, n_cores=2, 
           chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.2, clump_kb=250,log=Log()):
@@ -28,10 +29,14 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
     
     plink_log=""
 
-    chrlist = sumstats["CHR"].unique()
-    
     # process reference file
-    bfile,plink_log = _process_reference(chrlist, bfile, vcf, n_cores,plink_log, log,overwrite)           
+    bfile, plink_log, ref_bim = _process_vcf_and_bfile(chrlist=sumstats["CHR"].unique(), 
+                                                       bfile=bfile, 
+                                                       vcf=vcf, 
+                                                       n_cores=n_cores,
+                                                       plink_log=plink_log, 
+                                                       log=log,
+                                                       overwrite=overwrite)           
     
     ## process sumstats by CHR
     for i in sumstats["CHR"].unique():
@@ -129,48 +134,4 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
     return results_sumstats, plink_log
 
 
-def _process_reference(chrlist, bfile, vcf, n_cores, plink_log, log, overwrite):
-    
-    # return bfile_path and plink_log
-
-    if bfile is None:
-        if vcf is not None:
-            log.write(" -Processing VCF : {}...".format(vcf))
-            
-            for i in chrlist:
-                log.write("  -Processing VCF for CHR {}...".format(i))
-                if "@" in vcf:
-                    vcf_to_load = vcf.replace("@",str(i))
-                else:
-                    vcf_to_load = vcf
-
-                bfile_root = vcf.replace(".vcf.gz","")
-                bfile_prefix = bfile_root + ".{}".format(i)
-                
-                if (not os.path.exists(bfile_prefix+".bed")) or overwrite:
-                    script_vcf_to_bfile = """
-                    plink2 \
-                        --vcf {} \
-                        --chr {} \
-                        --make-bed \
-                        --rm-dup force-first \
-                        --threads {}\
-                        --out {}
-                    """.format(vcf_to_load, i, n_cores, bfile_prefix)
-                    
-                    try:
-                        log.write("  -Converting VCF to bed: {}.bim/bed/fam...".format(bfile_prefix))
-                        output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
-                        plink_log+=output + "\n"
-                    except subprocess.CalledProcessError as e:
-                        log.write(e.output)
-                        
-                else:
-                    log.write("  -Plink bfile for CHR {} exists. Skipping...".format(i))
-                
-            return bfile_root+".@", plink_log
-        else:
-            log.write("  -Please provide PLINK bfile or VCF as reference!")
-    else:
-        log.write(" -PLINK bfile as LD reference panel: {}".format(bfile))      
-        return bfile, plink_log          
+       

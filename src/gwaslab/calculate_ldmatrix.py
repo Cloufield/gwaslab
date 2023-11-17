@@ -5,8 +5,9 @@ import pandas as pd
 import numpy as np
 from gwaslab.Log import Log
 from gwaslab.getsig import getsig
+from gwaslab.processreference import _process_vcf_and_bfile
 
-def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, log=Log()):
+def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, overwrite=False,log=Log()):
 ## for each lead variant 
     ## extract snp list from sumstats
     sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P")
@@ -16,8 +17,10 @@ def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",wi
     sumstats = sumstats.drop_duplicates(subset=["SNPID"]).copy()
 
 
-    output_file_list = pd.DataFrame(columns=["SNPID","SNPID_List","LD_r_matrix"])
+    output_file_list = pd.DataFrame(columns=["SNPID","SNPID_List","LD_r_matrix","Locus_sumstats"])
     
+    plink_log=""
+
     for index, row in sig_df.iterrows():
         # extract snplist in each locus
         gc.collect()
@@ -30,30 +33,35 @@ def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",wi
         
         
         #process reference file
-        ref_bim , plink_log, bfile_gwaslab = _process_vcf_and_bfile(
+        bfile_prefix, plink_log, ref_bim = _process_vcf_and_bfile(  chrlist=[row["CHR"]],
                                                                     bfile=bfile, 
                                                                     vcf=vcf, 
-                                                                    row=row, 
+                                                                    plink_log=plink_log,
                                                                     n_cores=n_cores, 
-                                                                    log=log)
+                                                                    log=log,
+                                                                    load_bim=True,
+                                                                    overwrite=overwrite)
 
         ## check available snps with reference file
         matched_sumstats = _align_sumstats_with_bim(row=row, 
                                                     locus_sumstats=locus_sumstats, 
-                                                    ref_bim=ref_bim,
+                                                    ref_bim=ref_bim[0],
                                                     log=log)
         
-        #avaiable_snplist = locus_snplist[locus_snplist.isin(ref_snplist[1])]
-        log.write(" -#variants available in sumstats and LD panel: {}".format(len(matched_sumstats)))
-        
+        #########################################################################################################
         # create matched snp list
-        matched_snp_list_path = "{}/{}_{}_{}.snplist".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
-        matched_sumstats["SNPID"].to_csv(matched_snp_list_path, index=None, header=None)
+        matched_snp_list_path,matched_sumstats_path=_export_snplist_and_locus_sumstats(matched_sumstats=matched_sumstats, 
+                                                                                       out=out, 
+                                                                                       study=study, 
+                                                                                       row=row, 
+                                                                                       windowsizekb=windowsizekb,
+                                                                                       log=log)
+        #########################################################################################################
 
         ## Calculate ld matrix using PLINK
         matched_ld_matrix_path = _calculate_ld_r(study=study,
                                                 row=row, 
-                                                bfile_gwaslab=bfile_gwaslab, 
+                                                bfile_prefix=bfile_prefix, 
                                                 n_cores=n_cores, 
                                                 windowsizekb=windowsizekb,
                                                 out=out,
@@ -64,8 +72,9 @@ def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",wi
     # print file list
         row_dict={}
         row_dict["SNPID"]=row["SNPID"]
-        row_dict["SNPID_List"]=matched_snp_list_path
-        row_dict["LD_r_matrix"]=matched_ld_matrix_path
+        row_dict["SNPID_List"] = matched_snp_list_path
+        row_dict["LD_r_matrix"] = matched_ld_matrix_path
+        row_dict["Locus_sumstats"] = matched_sumstats_path
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
         output_file_list_path =  "{}/{}_{}.filelist".format(out.rstrip("/"), study,windowsizekb)
@@ -73,66 +82,32 @@ def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",wi
         log.write(" -File list is saved to: {}".format(output_file_list_path))
 
     log.write(" -Finished LD matrix calculation.")
+    return output_file_list_path
 
 
-def _process_vcf_and_bfile(bfile, vcf, row, n_cores, log):
-    plink_log =""
-    if bfile is None:
-        if vcf is not None:
-            log.write(" -Processing VCF : {}...".format(vcf))
-            bfile_gwaslab = vcf.replace(".vcf.gz","") + ".{}".format(row["CHR"])
-            bfile_prefix= vcf.split("/")[-1].replace(".vcf.gz","") + ".{}".format(row["CHR"])
-            log.write("  -Processing VCF for CHR {}...".format(row["CHR"]))
-            
-            if not os.path.exists(bfile_gwaslab+".bed"):
-                script_vcf_to_bfile = """
-                plink2 \
-                    --vcf {} \
-                    --chr {} \
-                    --make-bed \
-                    --rm-dup force-first \
-                    --threads {}\
-                    --out {}
-                """.format(vcf, row["CHR"], n_cores, bfile_gwaslab)
-                
-                try:
-                    output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
-                    plink_log+=output + "\n"
-                except subprocess.CalledProcessError as e:
-                    log.write(e.output)
-                    
-            else:
-                log.write("  -Plink bfile for CHR {} exists. Skipping...".format(row["CHR"]))
-            ## load bim file
-            bim_path =bfile_gwaslab+".bim"
-            ref_bim = pd.read_csv(bim_path,sep="\s+",usecols=[1,3,4,5],header=None,dtype={1:"string",3:"int",4:"string",5:"string"}).rename(columns={1:"SNPID",4:"NEA_bim",5:"EA_bim"})
-            log.write("#variants in ref file: {}".format(len(ref_bim)))
-        else:
-            log.write("  -Please provide PLINK bfile or VCF as reference!")
-    else:
-        log.write(" -PLINK bfile as LD reference panel: {}".format(bfile))  
-        ## load bim file
-        bim_path =bfile_gwaslab+".bim"
-        ref_bim = pd.read_csv(bim_path,sep="\s+",usecols=[1,3,4,5],header=None,dtype={1:"string",3:"int",4:"string",5:"string"}).rename(columns={1:"SNPID",4:"NEA_bim",5:"EA_bim"})
-        log.write(" -#variants in ref file: {}".format(len(ref_bim)))
-    
-    return ref_bim , plink_log, bfile_gwaslab
 
-def _calculate_ld_r(study, row, bfile_gwaslab, n_cores, windowsizekb,out,plink_log,log):
+def _calculate_ld_r(study, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log):
     log.write(" -#Calculating LD r...")
-    if os.path.exists(bfile_gwaslab+".bed"):
+    
+    if "@" in bfile_prefix:
+        bfile_to_use = bfile_prefix.replace("@",str(row["CHR"]))
+    else:
+        bfile_to_use = bfile_prefix
+    
+    if os.path.exists(bfile_to_use+".bed"):
         snplist_path =   "{}/{}_{}_{}.snplist".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
         output_prefix =  "{}/{}_{}_{}".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
         script_vcf_to_bfile = """
         plink \
             --bfile {} \
+            --keep-allele-order \
             --extract {} \
             --chr {} \
             --r square gz \
             --allow-no-sex \
             --threads {} \
             --out {}
-        """.format(bfile_gwaslab, snplist_path , row["CHR"], n_cores, output_prefix)
+        """.format(bfile_to_use, snplist_path , row["CHR"], n_cores, output_prefix)
         
         try:
             output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
@@ -161,16 +136,40 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
     log.write(" -#Variants with flipped alleles:{}".format(sum(ea_mis_match)))
     
     # adjust statistics
-    output_columns=["SNPID","EA_bim","NEA_bim"]
+    output_columns=["SNPID","CHR","POS","EA_bim","NEA_bim"]
 
-    if "BETA" in locus_sumstats.columns:
+    if ("BETA" in locus_sumstats.columns) and ("SE" in locus_sumstats.columns):
         combined_df.loc[ea_mis_match,"BETA"] = - combined_df.loc[ea_mis_match,"BETA"]
         output_columns.append("BETA")
+        output_columns.append("SE")
     if "Z" in locus_sumstats.columns:
         combined_df.loc[ea_mis_match,"Z"] = - combined_df.loc[ea_mis_match,"Z"]
         output_columns.append("Z")
     if "EAF" in locus_sumstats.columns:
         combined_df.loc[ea_mis_match,"EAF"] = 1 - combined_df.loc[ea_mis_match,"EAF"]
         output_columns.append("EAF")
+    if "N" in locus_sumstats.columns:
+        output_columns.append("N")
     
     return combined_df.loc[allele_match,output_columns]
+
+
+def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, windowsizekb,log):
+        matched_snp_list_path = "{}/{}_{}_{}.snplist".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
+        matched_sumstats["SNPID"].to_csv(matched_snp_list_path, index=None, header=None)
+
+        # create locus-sumstats EA, NEA, (BETA, SE), Z 
+        matched_sumstats_path =  "{}/{}_{}_{}.sumstats.gz".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
+        
+        to_export_columns=["CHR","POS","EA_bim","NEA_bim"]
+        if "Z" in matched_sumstats.columns :
+            to_export_columns.append("Z")
+        if ("BETA" in matched_sumstats.columns) and ("SE" in matched_sumstats.columns):
+            to_export_columns.append("BETA")
+            to_export_columns.append("SE")
+        if "EAF" in matched_sumstats.columns :
+            to_export_columns.append("EAF")
+        if "N" in matched_sumstats.columns:
+            to_export_columns.append("N")
+        matched_sumstats.loc[:, ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path, index=None)
+        return matched_snp_list_path, matched_sumstats_path
