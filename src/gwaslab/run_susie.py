@@ -7,7 +7,7 @@ from gwaslab.Log import Log
 from gwaslab.getsig import getsig
 from gwaslab.processreference import _process_vcf_and_bfile
 
-def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1, refine="TRUE",L=10, log=Log()):
+def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1, refine="TRUE",L=10, susie_args="", log=Log()):
     filelist = pd.read_csv(filepath,sep="\t")
     r_log=""
     # write R script
@@ -28,7 +28,7 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1, refi
         R <- as.matrix(read.csv("{}",sep="\t",header=FALSE))
         R[is.na(R)] <- 0
 
-        n <- mean(sumstats$N)
+        n <- floor(mean(sumstats$N))
 
         fitted_rss1 <- susie_rss(bhat = sumstats$BETA, 
                                 shat = sumstats$SE, 
@@ -37,7 +37,7 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1, refi
                                 max_iter = {}, 
                                 min_abs_corr={}, 
                                 refine = {},
-                                L = {})
+                                L = {}{})
 
         susie_fitted_summary <- summary(fitted_rss1)
 
@@ -45,7 +45,7 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1, refi
         output$SNPID <- sumstats$SNPID[susie_fitted_summary$vars$variable]
 
         write.csv(output, "{}.pipcs", row.names = FALSE)
-        '''.format(sumstats, ld_r_matrix, max_iter,min_abs_corr, refine, L, output_prefix)
+        '''.format(sumstats, ld_r_matrix, max_iter,min_abs_corr, refine, L, susie_args, output_prefix)
 
         with open("_gwaslab_susie_temp.R","w") as file:
                 file.write(rscript)
