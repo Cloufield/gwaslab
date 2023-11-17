@@ -60,6 +60,7 @@ def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",wi
 
         ## Calculate ld matrix using PLINK
         matched_ld_matrix_path = _calculate_ld_r(study=study,
+                                                 matched_sumstats_snpid= matched_sumstats["SNPID"],
                                                 row=row, 
                                                 bfile_prefix=bfile_prefix, 
                                                 n_cores=n_cores, 
@@ -86,7 +87,7 @@ def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",wi
 
 
 
-def _calculate_ld_r(study, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log):
+def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log):
     log.write(" -#Calculating LD r...")
     
     if "@" in bfile_prefix:
@@ -95,7 +96,7 @@ def _calculate_ld_r(study, row, bfile_prefix, n_cores, windowsizekb,out,plink_lo
         bfile_to_use = bfile_prefix
     
     if os.path.exists(bfile_to_use+".bed"):
-        snplist_path =   "{}/{}_{}_{}.snplist".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
+        snplist_path =   "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
         output_prefix =  "{}/{}_{}_{}".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
         script_vcf_to_bfile = """
         plink \
@@ -106,6 +107,7 @@ def _calculate_ld_r(study, row, bfile_prefix, n_cores, windowsizekb,out,plink_lo
             --r square gz \
             --allow-no-sex \
             --threads {} \
+            --write-snplist \
             --out {}
         """.format(bfile_to_use, snplist_path , row["CHR"], n_cores, output_prefix)
         
@@ -115,6 +117,9 @@ def _calculate_ld_r(study, row, bfile_prefix, n_cores, windowsizekb,out,plink_lo
             log.write(" -Finished calculating LD r for locus with lead variant {} at CHR {} POS {} ################...".format(row["SNPID"],row["CHR"],row["POS"]))
         except subprocess.CalledProcessError as e:
             log.write(e.output)
+        
+        _check_snpid_order(snplist_path.replace(".raw",""), matched_sumstats_snpid,log)
+
         return output_prefix+".ld.gz"
 
 def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
@@ -125,7 +130,8 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
     locus_sumstats["NEA"] = locus_sumstats["NEA"].astype("string")
 
     # matching by SNPID
-    combined_df = pd.merge(locus_sumstats, ref_bim, on="SNPID",how="inner")
+    # preserve bim keys (use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.)
+    combined_df = pd.merge(ref_bim, locus_sumstats, on="SNPID",how="inner")
     
     # match allele
     allele_match =  ((combined_df["EA"] == combined_df["EA_bim"]) & (combined_df["NEA"] == combined_df["NEA_bim"]) ) | ((combined_df["EA"] == combined_df["NEA_bim"])& (combined_df["NEA"] == combined_df["EA_bim"]))
@@ -155,7 +161,7 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
 
 
 def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, windowsizekb,log):
-        matched_snp_list_path = "{}/{}_{}_{}.snplist".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
+        matched_snp_list_path = "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
         matched_sumstats["SNPID"].to_csv(matched_snp_list_path, index=None, header=None)
 
         # create locus-sumstats EA, NEA, (BETA, SE), Z 
@@ -173,3 +179,10 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
             to_export_columns.append("N")
         matched_sumstats.loc[:, ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path, index=None)
         return matched_snp_list_path, matched_sumstats_path
+
+def _check_snpid_order(snplist_path, matched_sumstats_snpid,log):
+    snpid_list = pd.read_csv(snplist_path,dtype="string",header=None)[0]
+    if list(matched_sumstats_snpid) == list(snpid_list):
+        log.write(" -Order matched.")
+    else:
+        log.write(" -Warning: Order not matched...")

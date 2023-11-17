@@ -61,5 +61,6 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1, refi
             os.remove("_gwaslab_susie_temp.R")
         except subprocess.CalledProcessError as e:
             log.write(e.output)
+            os.remove("_gwaslab_susie_temp.R")
 
     return locus_pip_cs
