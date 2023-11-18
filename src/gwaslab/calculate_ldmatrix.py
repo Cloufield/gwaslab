@@ -23,10 +23,10 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
     output_file_list = pd.DataFrame(columns=["SNPID","SNPID_List","LD_r_matrix","Locus_sumstats"])
     
     plink_log=""
-    
+
     if exclude_hla==True:
         is_in_hla = (sig_df["CHR"]==6)&(sig_df["POS"]>25000000)&(sig_df["POS"]<34000000)
-        sig_df = sig_df.loc[is_in_hla, : ]
+        sig_df = sig_df.loc[~is_in_hla, : ]
     
     for index, row in sig_df.iterrows():
         # extract snplist in each locus
