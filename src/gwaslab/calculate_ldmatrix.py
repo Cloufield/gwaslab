@@ -8,7 +8,7 @@ from gwaslab.getsig import getsig
 from gwaslab.processreference import _process_vcf_and_bfile
 from gwaslab.version import _checking_plink_version
 
-def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, getlead_args=None, overwrite=False,log=Log()):
+def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, exclude_hla=False, getlead_args=None, overwrite=False,log=Log()):
 ## for each lead variant 
     ## extract snp list from sumstats
     if getlead_args is None:
@@ -23,7 +23,11 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
     output_file_list = pd.DataFrame(columns=["SNPID","SNPID_List","LD_r_matrix","Locus_sumstats"])
     
     plink_log=""
-
+    
+    if exclude_hla==True:
+        is_in_hla = (sig_df["CHR"]==6)&(sig_df["POS"]>25000000)&(sig_df["POS"]<34000000)
+        sig_df = sig_df.loc[is_in_hla, : ]
+    
     for index, row in sig_df.iterrows():
         # extract snplist in each locus
         gc.collect()
@@ -81,12 +85,17 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
         row_dict["Locus_sumstats"] = matched_sumstats_path
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
-    output_file_list["study"] = study
-    nloci = len(output_file_list)
-    output_file_list_path =  "{}/{}_{}loci_{}kb.filelist".format(out.rstrip("/"), study,nloci, windowsizekb)
-    output_file_list.to_csv(output_file_list_path,index=None,sep="\t")
-    log.write(" -File list is saved to: {}".format(output_file_list_path))
-    log.write(" -Finished LD matrix calculation.")
+    if len(output_file_list)>0:
+        output_file_list["study"] = study
+        nloci = len(output_file_list)
+        output_file_list_path =  "{}/{}_{}loci_{}kb.filelist".format(out.rstrip("/"), study,nloci, windowsizekb)
+        output_file_list.to_csv(output_file_list_path,index=None,sep="\t")
+        log.write(" -File list is saved to: {}".format(output_file_list_path))
+        log.write(" -Finished LD matrix calculation.")
+    else:
+        output_file_list_path=None
+        log.write(" -No avaialable lead variants.")
+        log.write(" -Stopped LD matrix calculation.")
     return output_file_list_path
 
 

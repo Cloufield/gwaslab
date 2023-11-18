@@ -9,7 +9,7 @@ from gwaslab.processreference import _process_vcf_and_bfile
 from gwaslab.version import _checking_r_version
 from gwaslab.version import _check_susie_version
 
-def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, n=None, susie_args="", log=Log()):
+def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, n=None,  susie_args="", log=Log()):
     log.write(" Start to run finemapping using SuSieR from command line:")
     filelist = pd.read_csv(filepath,sep="\t")
     r_log=""
@@ -20,6 +20,7 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
     log = _check_susie_version(r,log)
 
     for index, row in filelist.iterrows(): 
+        gc.colloct()
         study = row["study"]
         ld_r_matrix = row["LD_r_matrix"]
         sumstats = row["Locus_sumstats"]
