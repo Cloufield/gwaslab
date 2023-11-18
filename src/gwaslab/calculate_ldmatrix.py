@@ -8,10 +8,12 @@ from gwaslab.getsig import getsig
 from gwaslab.processreference import _process_vcf_and_bfile
 from gwaslab.version import _checking_plink_version
 
-def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, overwrite=False,log=Log()):
+def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, getlead_args=None, overwrite=False,log=Log()):
 ## for each lead variant 
     ## extract snp list from sumstats
-    sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P")
+    if getlead_args is None:
+        getlead_args={}
+    sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P",**getlead_args)
 
     # drop duplicate!!!!
     log.write(" -Dropping duplicated SNPIDs...")
