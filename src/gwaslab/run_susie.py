@@ -20,7 +20,7 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
     log = _check_susie_version(r,log)
 
     for index, row in filelist.iterrows(): 
-        gc.colloct()
+        gc.collect()
         study = row["study"]
         ld_r_matrix = row["LD_r_matrix"]
         sumstats = row["Locus_sumstats"]

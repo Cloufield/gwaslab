@@ -132,7 +132,7 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
             log.write(e.output)
         
         _check_snpid_order(snplist_path.replace(".raw",""), matched_sumstats_snpid,log)
-
+        gc.collect()
         return output_prefix+".ld.gz"
 
 def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
