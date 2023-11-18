@@ -7,12 +7,13 @@ from gwaslab.Log import Log
 from gwaslab.getsig import getsig
 from gwaslab.processreference import _process_vcf_and_bfile
 
-def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1, refine="TRUE",L=10, n=None, susie_args="", log=Log()):
+def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, n=None, susie_args="", log=Log()):
     filelist = pd.read_csv(filepath,sep="\t")
     r_log=""
     # write R script
     locus_pip_cs = pd.DataFrame()
     for index, row in filelist.iterrows(): 
+        study = row["study"]
         ld_r_matrix = row["LD_r_matrix"]
         sumstats = row["Locus_sumstats"]
         output_prefix = sumstats.replace(".sumstats.gz","")
@@ -47,10 +48,10 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1, refi
         write.csv(output, "{}.pipcs", row.names = FALSE)
         '''.format(sumstats, ld_r_matrix, n if n is not None else "n", max_iter,min_abs_corr, refine, L, susie_args, output_prefix)
 
-        with open("_gwaslab_susie_temp.R","w") as file:
+        with open("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]),"w") as file:
                 file.write(rscript)
 
-        script_run_r = "{} _gwaslab_susie_temp.R".format(r)
+        script_run_r = "{} _{}_{}_gwaslab_susie_temp.R".format(r, study,row["SNPID"])
         
         try:
             output = subprocess.check_output(script_run_r, stderr=subprocess.STDOUT, shell=True,text=True)

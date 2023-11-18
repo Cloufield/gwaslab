@@ -102,8 +102,8 @@ class Sumstats():
              other=[],
              direction=None,
              verbose=True,
-             study=None,
-             trait="Trait1",
+             study="Study_1",
+             trait="Trait_1",
              build="99",
              species="homo sapiens",
              build_infer=False,
@@ -450,7 +450,7 @@ class Sumstats():
             return new_Sumstats_object
     
     def clump(self,**args):
-        clumped,plink_log = _clump(self.data, log=self.log, **args)
+        clumped,plink_log = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **args)
         return clumped,plink_log
     
     ######################################################################
@@ -605,7 +605,7 @@ class Sumstats():
 
 # to_format ###############################################################################################       
     def to_finemapping(self,**args):
-        output_filelist_path = tofinemapping(self.data,**args)
+        output_filelist_path = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**args)
         return output_filelist_path
 
     def to_format(self,

@@ -5,7 +5,7 @@ import pandas as pd
 from gwaslab.Log import Log
 from gwaslab.processreference import _process_vcf_and_bfile
 
-def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=False, bfile=None, n_cores=2, 
+def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=False, study=None, bfile=None, n_cores=2, 
           chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.2, clump_kb=250,log=Log()):
     ## process reference
     log.write("Start to perform clumping...")

@@ -785,7 +785,7 @@ def sanitycheckstats(sumstats,
     pre_number=len(sumstats)
     if "N" in coltocheck and "N" in sumstats.columns and "N_CONTROL" in coltocheck and "N_CONTROL" in sumstats.columns and "N_CASE" in coltocheck and "N_CASE" in sumstats.columns:
         if verbose: log.write(" -Checking if N = N_CASE + N_CONTROL ...") 
-        matched_n = sumstats.loc[:,"N"] == sumstats.loc[:,"N_CASE"] + sumstats.loc[:,"N_CASE"] 
+        matched_n = sumstats.loc[:,"N"] == sumstats.loc[:,"N_CASE"] + sumstats.loc[:,"N_CONTROL"] 
         sumstats = sumstats.loc[matched_n,:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with N != N_CASE + N_CONTROL.") 

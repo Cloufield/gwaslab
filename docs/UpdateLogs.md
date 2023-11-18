@@ -1,8 +1,16 @@
 # Update Logs
 
-## 3.4.30 2023111x
-- added clump()
+## 3.4.32 20231118
+- fixed bug in sanity_check : N = N_CASE + N_CONTROL
+- fixed the logic chain for normalization
 - added extra log in compare_effect
+- fixed a few typos (credit to @gmauro Mr. Gianmauro Cuccuru)
+- added clump() for beta testing
+- added to_finemapping() for beta testing
+- added run_susie_rss() for beta testing
+
+## 3.4.31 20231115
+- updated version requirements
 
 ## 3.4.30 20231103
 - updated random seed range (0,2^32-1).
@@ -25,7 +33,7 @@
 - updated reference datasets
 
 ## 3.4.24 20230821
-- supported `highligt` and `pinpoint` for multiple sets of loci and variants in `.plot_mqq()`
+- supported `highlight` and `pinpoint` for multiple sets of loci and variants in `.plot_mqq()`
 - added `overwrite` option for `gl.download_ref()`
 
 ## 3.4.24 20230821

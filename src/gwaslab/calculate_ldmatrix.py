@@ -7,7 +7,7 @@ from gwaslab.Log import Log
 from gwaslab.getsig import getsig
 from gwaslab.processreference import _process_vcf_and_bfile
 
-def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, overwrite=False,log=Log()):
+def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, overwrite=False,log=Log()):
 ## for each lead variant 
     ## extract snp list from sumstats
     sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P")
@@ -78,6 +78,7 @@ def tofinemapping(sumstats, study="sumstats1", bfile=None, vcf=None, out="./",wi
         row_dict["Locus_sumstats"] = matched_sumstats_path
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
+        output_file_list["study"] = study
         output_file_list_path =  "{}/{}_{}.filelist".format(out.rstrip("/"), study,windowsizekb)
         output_file_list.to_csv(output_file_list_path,index=None,sep="\t")
         log.write(" -File list is saved to: {}".format(output_file_list_path))
