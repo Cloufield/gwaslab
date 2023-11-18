@@ -35,7 +35,6 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
         sumstats <- read.csv("{}")
         
         R <- as.matrix(read.csv("{}",sep="\t",header=FALSE))
-        R[is.na(R)] <- 0
 
         n <- floor(mean(sumstats$N))
 
