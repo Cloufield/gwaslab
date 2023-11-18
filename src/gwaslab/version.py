@@ -27,7 +27,7 @@ def _checking_plink_version(v=2,log=Log()):
 def _checking_r_version(r, log):
     which_r_script = "{} --version".format(r)
     output = subprocess.check_output(which_r_script, stderr=subprocess.STDOUT, shell=True,text=True)
-    log.write("R version: {}".format(output.strip()))
+    log.write(" -R version: {}".format(output.strip()))
     return log
 
 def _check_susie_version(r,log):
@@ -36,6 +36,6 @@ def _check_susie_version(r,log):
         file.write(rscript)
     which_susie_script = "{} {}".format(r, "_gwaslab_susie_temp_check_version.R")
     output = subprocess.check_output(which_susie_script, stderr=subprocess.STDOUT, shell=True,text=True)
-    log.write("SuSieR version: {}".format(output.strip()))
+    log.write(" -SuSieR version: {}".format(output.strip()))
     os.remove("_gwaslab_susie_temp_check_version.R")
     return log

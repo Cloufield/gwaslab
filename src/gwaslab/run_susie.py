@@ -10,6 +10,7 @@ from gwaslab.version import _checking_r_version
 from gwaslab.version import _check_susie_version
 
 def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, n=None, susie_args="", log=Log()):
+    log.write(" Start to run finemapping using SuSieR from command line:")
     filelist = pd.read_csv(filepath,sep="\t")
     r_log=""
     # write R script
@@ -23,9 +24,10 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1,refin
         ld_r_matrix = row["LD_r_matrix"]
         sumstats = row["Locus_sumstats"]
         output_prefix = sumstats.replace(".sumstats.gz","")
-        log.write("Locus sumstats:{}".format(sumstats))
-        log.write("LD r matrix:{}".format(ld_r_matrix))
-        log.write("output_prefix:{}".format(output_prefix))
+        log.write(" -Running for: {} - {}".format(row["SNPID"],row["study"] ))
+        log.write("  -Locus sumstats:{}".format(sumstats))
+        log.write("  -LD r matrix:{}".format(ld_r_matrix))
+        log.write("  -output_prefix:{}".format(output_prefix))
         
         rscript='''
         library(susieR)
@@ -61,14 +63,16 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1,refin
         
         try:
             output = subprocess.check_output(script_run_r, stderr=subprocess.STDOUT, shell=True,text=True)
+            log.write(" Running SuSieR from command line...")
             r_log+= output + "\n"
             pip_cs = pd.read_csv("{}.pipcs".format(output_prefix))
             pip_cs["Locus"] = row["SNPID"]
+            pip_cs["STUDY"] = row["study"]
             locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
             os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))
         except subprocess.CalledProcessError as e:
             log.write(e.output)
             os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))
-
+    log.write("Finished finemapping using SuSieR.")
     return locus_pip_cs
 
