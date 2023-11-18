@@ -6,6 +6,7 @@ import numpy as np
 from gwaslab.Log import Log
 from gwaslab.getsig import getsig
 from gwaslab.processreference import _process_vcf_and_bfile
+from gwaslab.version import _checking_plink_version
 
 def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, overwrite=False,log=Log()):
 ## for each lead variant 
@@ -25,7 +26,7 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
         # extract snplist in each locus
         gc.collect()
 
-        log.write(" -Processing locus with lead variant {} at CHR {} POS {} #########################...".format(row["SNPID"],row["CHR"],row["POS"]))
+        log.write(" -Processing locus with lead variant {} at CHR {} POS {} ...".format(row["SNPID"],row["CHR"],row["POS"]))
         
         is_in_locus = (sumstats["CHR"] == row["CHR"]) & (sumstats["POS"] >= row["POS"] - windowsizekb*1000) & (sumstats["POS"] < row["POS"] + windowsizekb*1000)
         
@@ -78,19 +79,19 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
         row_dict["Locus_sumstats"] = matched_sumstats_path
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
-        output_file_list["study"] = study
-        output_file_list_path =  "{}/{}_{}.filelist".format(out.rstrip("/"), study,windowsizekb)
-        output_file_list.to_csv(output_file_list_path,index=None,sep="\t")
-        log.write(" -File list is saved to: {}".format(output_file_list_path))
-
+    output_file_list["study"] = study
+    nloci = len(output_file_list)
+    output_file_list_path =  "{}/{}_{}loci_{}kb.filelist".format(out.rstrip("/"), study,nloci, windowsizekb)
+    output_file_list.to_csv(output_file_list_path,index=None,sep="\t")
+    log.write(" -File list is saved to: {}".format(output_file_list_path))
     log.write(" -Finished LD matrix calculation.")
     return output_file_list_path
 
 
 
 def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log):
-    log.write(" -#Calculating LD r...")
-    
+    log.write(" -Start to calculate LD r matrix...")
+    log = _checking_plink_version(v=1, log=log)
     if "@" in bfile_prefix:
         bfile_to_use = bfile_prefix.replace("@",str(row["CHR"]))
     else:
@@ -115,7 +116,7 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
         try:
             output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
             plink_log+=output + "\n"
-            log.write(" -Finished calculating LD r for locus with lead variant {} at CHR {} POS {} ################...".format(row["SNPID"],row["CHR"],row["POS"]))
+            log.write(" -Finished calculating LD r for locus with lead variant {} at CHR {} POS {}...".format(row["SNPID"],row["CHR"],row["POS"]))
         except subprocess.CalledProcessError as e:
             log.write(e.output)
         
@@ -125,7 +126,7 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
 
 def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
     
-    log.write(" -#variants in locus ({}): {}".format(row["SNPID"],len(locus_sumstats)))
+    log.write("   -#variants in locus ({}): {}".format(row["SNPID"],len(locus_sumstats)))
     # convert category to string
     locus_sumstats["EA"] = locus_sumstats["EA"].astype("string")
     locus_sumstats["NEA"] = locus_sumstats["NEA"].astype("string")
@@ -136,11 +137,11 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
     
     # match allele
     allele_match =  ((combined_df["EA"] == combined_df["EA_bim"]) & (combined_df["NEA"] == combined_df["NEA_bim"]) ) | ((combined_df["EA"] == combined_df["NEA_bim"])& (combined_df["NEA"] == combined_df["EA_bim"]))
-    log.write(" -#Variants with matched alleles:{}".format(sum(allele_match)))
+    log.write("   -#Variants with matched alleles:{}".format(sum(allele_match)))
 
     # fliipped allele
     ea_mis_match = combined_df["EA"] != combined_df["EA_bim"]
-    log.write(" -#Variants with flipped alleles:{}".format(sum(ea_mis_match)))
+    log.write("   -#Variants with flipped alleles:{}".format(sum(ea_mis_match)))
     
     # adjust statistics
     output_columns=["SNPID","CHR","POS","EA_bim","NEA_bim"]
@@ -184,6 +185,6 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
 def _check_snpid_order(snplist_path, matched_sumstats_snpid,log):
     snpid_list = pd.read_csv(snplist_path,dtype="string",header=None)[0]
     if list(matched_sumstats_snpid) == list(snpid_list):
-        log.write(" -Order matched.")
+        log.write(" -Sumstats SNPID order and LD matrix SNPID order are matched.")
     else:
-        log.write(" -Warning: Order not matched...")
+        log.write(" -Warning: Sumstats SNPID order and LD matrix SNPID order are not matched...")

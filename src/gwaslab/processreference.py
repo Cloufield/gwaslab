@@ -3,6 +3,7 @@ import numpy as np
 import subprocess
 from gwaslab.Log import Log
 import os
+from gwaslab.version import _checking_plink_version
 
 def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwrite, load_bim=False):
     # return bfile_path and plink_log
@@ -11,7 +12,8 @@ def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwri
         if vcf is not None:
             log.write(" -Processing VCF : {}...".format(vcf))
             for i in chrlist:
-                log.write("  -Processing VCF for CHR {}...".format(i))
+                log = _checking_plink_version(v=2,log=log)
+                log.write("   -Processing VCF for CHR {}...".format(i))
                 if "@" in vcf:
                     vcf_to_load = vcf.replace("@",str(i))
                 else:
@@ -57,10 +59,9 @@ def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwri
 def _load_bim(bfile_prefix, ref_bims, log):
     bim_path =bfile_prefix+".bim"
     single_bim = pd.read_csv(bim_path,sep="\s+",usecols=[1,3,4,5],header=None,dtype={1:"string",3:"int",4:"string",5:"string"}).rename(columns={1:"SNPID",4:"NEA_bim",5:"EA_bim"})
-    log.write(" -#variants in ref file: {}".format(len(single_bim))) 
+    log.write("   -#variants in ref file: {}".format(len(single_bim))) 
     ref_bims.append(single_bim)
     return ref_bims
-
 
 
 

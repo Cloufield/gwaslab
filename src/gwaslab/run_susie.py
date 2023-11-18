@@ -6,12 +6,18 @@ import numpy as np
 from gwaslab.Log import Log
 from gwaslab.getsig import getsig
 from gwaslab.processreference import _process_vcf_and_bfile
+from gwaslab.version import _checking_r_version
+from gwaslab.version import _check_susie_version
 
 def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, n=None, susie_args="", log=Log()):
     filelist = pd.read_csv(filepath,sep="\t")
     r_log=""
     # write R script
     locus_pip_cs = pd.DataFrame()
+
+    log = _checking_r_version(r, log)
+    log = _check_susie_version(r,log)
+
     for index, row in filelist.iterrows(): 
         study = row["study"]
         ld_r_matrix = row["LD_r_matrix"]
@@ -59,9 +65,10 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1,refin
             pip_cs = pd.read_csv("{}.pipcs".format(output_prefix))
             pip_cs["Locus"] = row["SNPID"]
             locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
-            os.remove("_gwaslab_susie_temp.R")
+            os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))
         except subprocess.CalledProcessError as e:
             log.write(e.output)
-            os.remove("_gwaslab_susie_temp.R")
+            os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))
 
     return locus_pip_cs
+

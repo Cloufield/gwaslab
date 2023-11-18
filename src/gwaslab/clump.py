@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from gwaslab.Log import Log
 from gwaslab.processreference import _process_vcf_and_bfile
+from gwaslab.version import _checking_plink_version
 
 def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=False, study=None, bfile=None, n_cores=2, 
           chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.2, clump_kb=250,log=Log()):
@@ -65,6 +66,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
         
     # create a empty dataframe for combining results from each CHR 
     results = pd.DataFrame()
+
     
     # clumping using plink
     for i in sumstats["CHR"].unique():
@@ -80,6 +82,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
             bfile_to_use = bfile
 
         log.write(" -Performing clumping for CHR {}...".format(i))
+        log = _checking_plink_version(v=2, log=log)
         if scaled == True:
             # clumping using LOG10P
             script = """
