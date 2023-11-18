@@ -1,6 +1,7 @@
 from gwaslab.Log import Log
 import subprocess
 import os
+import numpy as np 
 
 def _show_version(log=Log()):
     # show when loading sumstats
@@ -32,10 +33,11 @@ def _checking_r_version(r, log):
 
 def _check_susie_version(r,log):
     rscript = 'print(packageVersion("susieR"))'
-    with open("_gwaslab_susie_temp_check_version.R","w") as file:
+    temp_r = "_gwaslab_susie_temp_check_version_{}.R".format(np.random.randint(1, 99999999))
+    with open(temp_r,"w") as file:
         file.write(rscript)
-    which_susie_script = "{} {}".format(r, "_gwaslab_susie_temp_check_version.R")
+    which_susie_script = "{} {}".format(r, temp_r)
     output = subprocess.check_output(which_susie_script, stderr=subprocess.STDOUT, shell=True,text=True)
     log.write(" -SuSieR version: {}".format(output.strip()))
-    os.remove("_gwaslab_susie_temp_check_version.R")
+    os.remove(temp_r)
     return log
