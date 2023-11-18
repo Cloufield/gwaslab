@@ -115,8 +115,8 @@ def fill_p(sumstats,log,df=None,only_sig=False,sig_level=5e-8,overwrite=False,ve
                 sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],sumstats[df].astype("int"))
                 filled_count +=1
     else:
-        return 0
-    return 1
+        return 0,filled_count
+    return 1,filled_count
 
 def fill_z(sumstats,log,verbose=True,filled_count=0):
     # BETA/SE -> Z
@@ -125,8 +125,8 @@ def fill_z(sumstats,log,verbose=True,filled_count=0):
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
         filled_count +=1
     else:
-        return 0
-    return 1
+        return 0,filled_count
+    return 1,filled_count
 
 def fill_chisq(sumstats,log,verbose=True,filled_count=0):
     # Z -> CHISQ
@@ -140,8 +140,8 @@ def fill_chisq(sumstats,log,verbose=True,filled_count=0):
         sumstats["CHISQ"] = ss.chi2.isf(sumstats["P"], 1)
         filled_count +=1
     else:
-        return 0
-    return 1
+        return 0,filled_count
+    return 1,filled_count
 
 def fill_or(sumstats,log,verbose=True,filled_count=0):
     # BETA -> OR
@@ -158,8 +158,8 @@ def fill_or(sumstats,log,verbose=True,filled_count=0):
             sumstats["OR_95U"] = np.exp(sumstats["BETA"]+ss.norm.ppf(0.975)*sumstats["SE"])
             filled_count +=1
     else:
-        return 0
-    return 1
+        return 0,filled_count
+    return 1,filled_count
 def fill_or95(sumstats,log,verbose=True,filled_count=0):
     # get confidence interval 95
     if ("BETA" in sumstats.columns) and ("SE" in sumstats.columns):
@@ -169,7 +169,8 @@ def fill_or95(sumstats,log,verbose=True,filled_count=0):
         sumstats["OR_95U"] = np.exp(sumstats["BETA"]+ss.norm.ppf(0.975)*sumstats["SE"])
         filled_count +=1
     else:
-        return 0
+        return 0,filled_count
+    return 1,filled_count
     
 def fill_beta(sumstats,log,verbose=True,filled_count=0):
     # OR -> beta
@@ -178,8 +179,8 @@ def fill_beta(sumstats,log,verbose=True,filled_count=0):
         sumstats["BETA"]  = np.log(sumstats["OR"])    
         filled_count +=1
     else:
-        return 0
-    return 1
+        return 0,filled_count
+    return 1,filled_count
 
 def fill_se(sumstats,log,verbose=True,filled_count=0):
     # OR / OR_95L /OR_95U -> SE
@@ -198,8 +199,8 @@ def fill_se(sumstats,log,verbose=True,filled_count=0):
         filled_count +=1
     else:
         if verbose: log.write("  - Not enough information to fill SE...")
-        return 0
-    return 1
+        return 0,filled_count
+    return 1,filled_count
 
 def fill_mlog10p(sumstats,log,verbose=True,filled_count=0):
     if "P" in sumstats.columns:
@@ -208,8 +209,8 @@ def fill_mlog10p(sumstats,log,verbose=True,filled_count=0):
         sumstats["MLOG10P"] = -np.log10(sumstats["P"])
         filled_count +=1
     else:
-        return 0
-    return 1
+        return 0,filled_count
+    return 1,filled_count
 def fill_extreme_mlog10p(sumstats,log,verbose=True,filled_count=0):
     # ref: https://stackoverflow.com/questions/46416027/how-to-compute-p-values-from-z-scores-in-r-when-the-z-score-is-large-pvalue-muc/46416222#46416222
     if "Z" in sumstats.columns:
@@ -225,8 +226,8 @@ def fill_extreme_mlog10p(sumstats,log,verbose=True,filled_count=0):
         sumstats = fill_extreme_mlog10(sumstats, "Z")
         filled_count +=1
     else:
-        return 0
-    return 1
+        return 0,filled_count
+    return 1,filled_count
 
 def fill_maf(sumstats,log,verbose=True,filled_count=0):
     if "EAF" in sumstats.columns:
@@ -235,8 +236,8 @@ def fill_maf(sumstats,log,verbose=True,filled_count=0):
         sumstats["MAF"] =  sumstats["EAF"].apply(lambda x: min(x,1-x) if pd.notnull(x) else np.nan)
         filled_count +=1
     else:
-        return 0
-    return 1
+        return 0,filled_count
+    return 1,filled_count
 
 ####################################################################################################################
 def fill_extreme_mlog10(sumstats, z):
@@ -253,48 +254,51 @@ def fill_extreme_mlog10(sumstats, z):
 def fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose,sig_level):
     if verbose: log.write("  - Filling Columns iteratively...")
     filled=[]
+    previous_count=0
+    filled_count=0
     for i in range(len(to_fill)):
-        filled_count=0
-        previous_count=filled_count
     # beta to or ####################################################################################################     
         if "OR" in to_fill:
-            status = fill_or(sumstats,log,verbose=verbose,filled_count=filled_count)
+            status, filled_count = fill_or(sumstats,log,verbose=verbose,filled_count=filled_count)
             if status == 1 : to_fill.remove("OR")
     # or to beta #################################################################################################### 
         if "BETA" in to_fill:
-            status = fill_beta(sumstats,log,verbose=verbose,filled_count=filled_count)
+            status,filled_count = fill_beta(sumstats,log,verbose=verbose,filled_count=filled_count)
             if status == 1 : to_fill.remove("BETA")
         if "SE" in to_fill:
-            status = fill_se(sumstats,log,verbose=verbose,filled_count=filled_count)
+            status,filled_count = fill_se(sumstats,log,verbose=verbose,filled_count=filled_count)
             if status == 1 : to_fill.remove("SE")
     # z/chi2 to p ##################################################################################################
         if "P" in to_fill:
-            status = fill_p(sumstats,log,only_sig=only_sig,df=df,sig_level=sig_level,verbose=verbose,filled_count=filled_count)
+            status,filled_count = fill_p(sumstats,log,only_sig=only_sig,df=df,sig_level=sig_level,verbose=verbose,filled_count=filled_count)
             if status == 1 : to_fill.remove("P")
     # beta/se to z ##################################################################################################            
         if "Z" in to_fill:   
-            status = fill_z(sumstats,log,verbose=verbose,filled_count=filled_count)
+            status,filled_count = fill_z(sumstats,log,verbose=verbose,filled_count=filled_count)
             if status == 1 : to_fill.remove("Z")
     # z/p to chisq ##################################################################################################             
         if "CHISQ" in to_fill:
-            status = fill_chisq(sumstats,log,verbose=verbose,filled_count=filled_count)
+            status,filled_count = fill_chisq(sumstats,log,verbose=verbose,filled_count=filled_count)
             if status == 1 : to_fill.remove("CHISQ")
     # EAF to MAF ##################################################################################################   
         if "MAF" in to_fill:
-            status = fill_maf(sumstats,log,verbose=verbose,filled_count=filled_count)
+            status,filled_count = fill_maf(sumstats,log,verbose=verbose,filled_count=filled_count)
             if status == 1 : to_fill.remove("MAF")
     # p to -log10(P)  ###############################################################################################
         if "MLOG10P" in to_fill:
             if extreme==True:
-                status = fill_extreme_mlog10p(sumstats,log,verbose=verbose,filled_count=filled_count)
+                status,filled_count = fill_extreme_mlog10p(sumstats,log,verbose=verbose,filled_count=filled_count)
                 filled_count +=1
             elif "P" not in sumstats.columns:
                 fill_p(sumstats,log,verbose=verbose)
-                status = fill_mlog10p(sumstats,log,verbose=verbose,filled_count=filled_count)
+                status,filled_count = fill_mlog10p(sumstats,log,verbose=verbose,filled_count=filled_count)
                 sumstats = sumstats.drop(labels=["P"],axis=1)
             else:
-                status = fill_mlog10p(sumstats,log,verbose=verbose)
+                status,filled_count = fill_mlog10p(sumstats,log,verbose=verbose)
             if status == 1 : to_fill.remove("MLOG10P")
-
+        
+        previous_count+=filled_count
         if previous_count == filled_count:
             break
+         
+        

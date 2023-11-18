@@ -9,7 +9,7 @@ from gwaslab.processreference import _process_vcf_and_bfile
 from gwaslab.version import _checking_r_version
 from gwaslab.version import _check_susie_version
 
-def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, n=None, susie_args="", log=Log()):
+def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, n=None, susie_args="", log=Log()):
     log.write(" Start to run finemapping using SuSieR from command line:")
     filelist = pd.read_csv(filepath,sep="\t")
     r_log=""
@@ -39,14 +39,7 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1,refin
 
         n <- floor(mean(sumstats$N))
 
-        fitted_rss1 <- susie_rss(bhat = sumstats$BETA, 
-                                shat = sumstats$SE, 
-                                n = {}, 
-                                R = R, 
-                                max_iter = {}, 
-                                min_abs_corr={}, 
-                                refine = {},
-                                L = {}{})
+        fitted_rss1 <- susie_rss({}, n = {}, R = R, max_iter = {}, min_abs_corr={}, refine = {}, L = {}{})
 
         susie_fitted_summary <- summary(fitted_rss1)
 
@@ -54,8 +47,24 @@ def _run_susie_rss(filepath, r="Rscript", max_iter=100000,min_abs_corr=0.1,refin
         output$SNPID <- sumstats$SNPID[susie_fitted_summary$vars$variable]
 
         write.csv(output, "{}.pipcs", row.names = FALSE)
-        '''.format(sumstats, ld_r_matrix, n if n is not None else "n", max_iter,min_abs_corr, refine, L, susie_args, output_prefix)
-
+        '''.format(sumstats, 
+                   ld_r_matrix,
+                    "z= sumstats$Z," if mode=="z" else "bhat = sumstats$BETA,shat = sumstats$SE,",
+                    n if n is not None else "n", 
+                    max_iter,
+                    min_abs_corr, 
+                    refine, 
+                    L, 
+                    susie_args, 
+                    output_prefix)
+        susier_line = "susie_rss({}, n = {}, R = R, max_iter = {}, min_abs_corr={}, refine = {}, L = {}{})".format("z= sumstats$Z," if mode=="z" else "bhat = sumstats$BETA,shat = sumstats$SE,",
+                    n if n is not None else "n", 
+                    max_iter,
+                    min_abs_corr, 
+                    refine, 
+                    L, 
+                    susie_args)
+        log.write("  -SuSieR script: {}".format(susier_line))
         with open("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]),"w") as file:
                 file.write(rscript)
 
