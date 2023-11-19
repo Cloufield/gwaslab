@@ -9,7 +9,7 @@ from gwaslab.processreference import _process_vcf_and_bfile
 from gwaslab.version import _checking_r_version
 from gwaslab.version import _check_susie_version
 
-def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, n=None,  susie_args="", log=Log()):
+def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, fillldna=True, n=None, delete=False, susie_args="", log=Log()):
     log.write(" Start to run finemapping using SuSieR from command line:")
     filelist = pd.read_csv(filepath,sep="\t")
     r_log=""
@@ -36,7 +36,7 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
         sumstats <- read.csv("{}")
         
         R <- as.matrix(read.csv("{}",sep="\t",header=FALSE))
-        R[is.na(R)] <- 0
+        {}
 
         n <- floor(mean(sumstats$N))
 
@@ -50,6 +50,7 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
         write.csv(output, "{}.pipcs", row.names = FALSE)
         '''.format(sumstats, 
                    ld_r_matrix,
+                    "R[is.na(R)] <- 0" if fillldna==True else "",
                     "z= sumstats$Z," if mode=="z" else "bhat = sumstats$BETA,shat = sumstats$SE,",
                     n if n is not None else "n", 
                     max_iter,
@@ -84,6 +85,10 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
             pip_cs["STUDY"] = row["study"]
             locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
             os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))
+            if delete == True:
+                os.remove("{}.pipcs".format(output_prefix))
+            else:
+                log.write("  -SuSieR result summary to: {}".format("{}.pipcs".format(output_prefix)))
         except subprocess.CalledProcessError as e:
             log.write(e.output)
             os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))

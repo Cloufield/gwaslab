@@ -5,7 +5,7 @@ from gwaslab.Log import Log
 import os
 from gwaslab.version import _checking_plink_version
 
-def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwrite, load_bim=False):
+def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwrite, memory=None, load_bim=False):
     # return bfile_path and plink_log
     ref_bims = []
     if bfile is None:
@@ -21,7 +21,8 @@ def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwri
 
                 bfile_root = vcf.replace(".vcf.gz","")
                 bfile_prefix = bfile_root + ".{}".format(i)
-                
+                if memory is not None:
+                    memory_flag = "--memory {}".format(memory)
                 if (not os.path.exists(bfile_prefix+".bed")) or overwrite:
                     script_vcf_to_bfile = """
                     plink2 \
@@ -29,9 +30,9 @@ def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwri
                         --chr {} \
                         --make-bed \
                         --rm-dup force-first \
-                        --threads {}\
+                        --threads {}{}\
                         --out {}
-                    """.format(vcf_to_load, i, n_cores, bfile_prefix)
+                    """.format(vcf_to_load, i, n_cores, memory_flag if memory is not None else "",bfile_prefix)
                     
                     try:
                         log.write("  -Converting VCF to bed: {}.bim/bed/fam...".format(bfile_prefix))

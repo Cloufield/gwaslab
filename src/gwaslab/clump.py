@@ -6,7 +6,7 @@ from gwaslab.Log import Log
 from gwaslab.processreference import _process_vcf_and_bfile
 from gwaslab.version import _checking_plink_version
 
-def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=False, study=None, bfile=None, n_cores=2, 
+def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=False, study=None, bfile=None, n_cores=1, memory=None, 
           chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.2, clump_kb=250,log=Log()):
     ## process reference
     log.write("Start to perform clumping...")
@@ -83,6 +83,8 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
 
         log.write(" -Performing clumping for CHR {}...".format(i))
         log = _checking_plink_version(v=2, log=log)
+        if memory is not None:
+            memory_flag = "--memory {}".format(memory)
         if scaled == True:
             # clumping using LOG10P
             script = """
@@ -97,9 +99,9 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
                 --clump-log10-p2 {} \
                 --clump-r2 {} \
                 --clump-kb {} \
-                --threads {} \
+                --threads {} {}\
                 --out {}
-            """.format(bfile_to_use, chrom, clump, clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, out_single_chr)    
+            """.format(bfile_to_use, chrom, clump, clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, memory_flag if memory is not None else "", out_single_chr)    
         else:
             # clumping using P
             script = """
@@ -113,9 +115,9 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
                 --clump-p2 {} \
                 --clump-r2 {} \
                 --clump-kb {} \
-                --threads {} \
+                --threads {} {}\
                 --out {}
-            """.format(bfile_to_use, chrom, clump, clump_p1, clump_p2, clump_r2, clump_kb, n_cores, out_single_chr)
+            """.format(bfile_to_use, chrom, clump, clump_p1, clump_p2, clump_r2, clump_kb, n_cores,memory_flag if memory is not None else "", out_single_chr)
         
         try:
             output = subprocess.check_output(script, stderr=subprocess.STDOUT, shell=True,text=True)

@@ -11,18 +11,29 @@ import signal
 
 
 
-def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, exclude_hla=False, getlead_args=None, overwrite=False,log=Log()):
-## for each lead variant 
-    ## extract snp list from sumstats
+def tofinemapping(sumstats, 
+                  study=None, 
+                  bfile=None, 
+                  vcf=None, 
+                  out="./",
+                  windowsizekb=1000,
+                  n_cores=1, 
+                  mode="r",
+                  exclude_hla=False, 
+                  getlead_args=None, 
+                  memory=None, 
+                  overwrite=False,
+                  log=Log()):
+
     if getlead_args is None:
         getlead_args={}
     sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P",**getlead_args)
 
-    # drop duplicate!!!!
+    # Drop duplicate!!!!
     log.write(" -Dropping duplicated SNPIDs...")
     sumstats = sumstats.drop_duplicates(subset=["SNPID"]).copy()
 
-
+    # init Filelist DataFrame
     output_file_list = pd.DataFrame(columns=["SNPID","SNPID_List","LD_r_matrix","Locus_sumstats"])
     
     plink_log=""
@@ -31,6 +42,7 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
         is_in_hla = (sig_df["CHR"]==6)&(sig_df["POS"]>25000000)&(sig_df["POS"]<34000000)
         sig_df = sig_df.loc[~is_in_hla, : ]
     
+    ## for each lead variant 
     for index, row in sig_df.iterrows():
         # extract snplist in each locus
         gc.collect()
@@ -38,7 +50,7 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
         log.write(" -Processing locus with lead variant {} at CHR {} POS {} ...".format(row["SNPID"],row["CHR"],row["POS"]))
         
         is_in_locus = (sumstats["CHR"] == row["CHR"]) & (sumstats["POS"] >= row["POS"] - windowsizekb*1000) & (sumstats["POS"] < row["POS"] + windowsizekb*1000)
-        
+        ## extract snp list from sumstats
         locus_sumstats = sumstats.loc[is_in_locus,:].copy()
         
         
@@ -70,7 +82,9 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
 
         ## Calculate ld matrix using PLINK
         matched_ld_matrix_path,plink_log = _calculate_ld_r(study=study,
-                                                 matched_sumstats_snpid= matched_sumstats["SNPID"],
+                                                           mode=mode,
+                                                memory=memory,
+                                                matched_sumstats_snpid= matched_sumstats["SNPID"],
                                                 row=row, 
                                                 bfile_prefix=bfile_prefix, 
                                                 n_cores=n_cores, 
@@ -80,7 +94,7 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
                                                 log=log)
     
     
-    # print file list
+        # print file list
         row_dict={}
         row_dict["SNPID"]=row["SNPID"]
         row_dict["SNPID_List"] = matched_snp_list_path
@@ -88,6 +102,7 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
         row_dict["Locus_sumstats"] = matched_sumstats_path
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
+    
     if len(output_file_list)>0:
         output_file_list["study"] = study
         nloci = len(output_file_list)
@@ -103,7 +118,7 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
 
 
 
-def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log):
+def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode):
     log.write(" -Start to calculate LD r matrix...")
     log = _checking_plink_version(v=1, log=log)
     if "@" in bfile_prefix:
@@ -114,18 +129,22 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
     if os.path.exists(bfile_to_use+".bed"):
         snplist_path =   "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
         output_prefix =  "{}/{}_{}_{}".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
+        
+        if memory is not None:
+            memory_flag = "--memory {}".format(memory)
+        
         script_vcf_to_bfile = """
         plink \
             --bfile {} \
             --keep-allele-order \
             --extract {} \
             --chr {} \
-            --r square gz \
+            --{} square gz \
             --allow-no-sex \
-            --threads {} \
+            --threads {} {}\
             --write-snplist \
             --out {}
-        """.format(bfile_to_use, snplist_path , row["CHR"], n_cores, output_prefix)
+        """.format(bfile_to_use, snplist_path , row["CHR"], mode, n_cores, memory_flag if memory is not None else "", output_prefix)
 
         try:
             #output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
