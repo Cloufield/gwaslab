@@ -7,6 +7,9 @@ from gwaslab.Log import Log
 from gwaslab.getsig import getsig
 from gwaslab.processreference import _process_vcf_and_bfile
 from gwaslab.version import _checking_plink_version
+import signal
+
+
 
 def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsizekb=1000,n_cores=2, exclude_hla=False, getlead_args=None, overwrite=False,log=Log()):
 ## for each lead variant 
@@ -66,7 +69,7 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
         #########################################################################################################
 
         ## Calculate ld matrix using PLINK
-        matched_ld_matrix_path = _calculate_ld_r(study=study,
+        matched_ld_matrix_path,plink_log = _calculate_ld_r(study=study,
                                                  matched_sumstats_snpid= matched_sumstats["SNPID"],
                                                 row=row, 
                                                 bfile_prefix=bfile_prefix, 
@@ -96,7 +99,7 @@ def tofinemapping(sumstats, study=None, bfile=None, vcf=None, out="./",windowsiz
         output_file_list_path=None
         log.write(" -No avaialable lead variants.")
         log.write(" -Stopped LD matrix calculation.")
-    return output_file_list_path
+    return output_file_list_path, plink_log
 
 
 
@@ -123,17 +126,20 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
             --write-snplist \
             --out {}
         """.format(bfile_to_use, snplist_path , row["CHR"], n_cores, output_prefix)
-        
+
         try:
-            output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
-            plink_log+=output + "\n"
+            #output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
+            plink_process = subprocess.Popen("exec "+script_vcf_to_bfile, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,text=True)
+            output1,output2 = plink_process.communicate()
+            plink_log+=output1 + output2+ "\n"
+            plink_process.kill()
             log.write(" -Finished calculating LD r for locus with lead variant {} at CHR {} POS {}...".format(row["SNPID"],row["CHR"],row["POS"]))
         except subprocess.CalledProcessError as e:
             log.write(e.output)
         
         _check_snpid_order(snplist_path.replace(".raw",""), matched_sumstats_snpid,log)
         gc.collect()
-        return output_prefix+".ld.gz"
+        return output_prefix+".ld.gz",plink_log
 
 def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
     
