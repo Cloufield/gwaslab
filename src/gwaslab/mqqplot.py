@@ -131,7 +131,8 @@ def mqqplot(insumstats,
           jagged_len=0.01,
           jagged_wid=0.01,
           sig_line=True,
-          sig_level=5e-8,
+          sig_level=None,
+          sig_level_plot=5e-8,
           sig_level_lead=5e-8,
           sig_line_color="grey",
           suggestive_sig_line=False,
@@ -238,7 +239,13 @@ def mqqplot(insumstats,
         scatter_kwargs={}
     if qq_scatter_kwargs is None:
         qq_scatter_kwargs={}
-    
+    if sig_level is None:
+        sig_level_plot=sig_level_plot
+        sig_level_lead=sig_level_lead 
+    else:
+        sig_level_plot = sig_level
+        sig_level_lead = sig_level     
+
     if save is not None:
         if type(save) is not bool:
             if len(save)>3:
@@ -251,7 +258,7 @@ def mqqplot(insumstats,
     if verbose: log.write(" -Genomic coordinates version: {}...".format(build))
     if build is None or build=="99":
         if verbose: log.write("   -WARNING!!! Genomic coordinates version is unknown...")
-    if verbose: log.write(" -Genome-wide significance level is set to "+str(sig_level)+" ...")
+    if verbose: log.write(" -Genome-wide significance level to plot is set to "+str(sig_level_plot)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Plot layout mode is : "+mode)
     if len(anno_set)>0 and ("m" in mode):
@@ -281,9 +288,9 @@ def mqqplot(insumstats,
     
     # construct line series for coversion
     if additional_line is None:
-        lines_to_plot = pd.Series([sig_level, suggestive_sig_level] )
+        lines_to_plot = pd.Series([sig_level_plot, suggestive_sig_level] )
     else:
-        lines_to_plot = pd.Series([sig_level, suggestive_sig_level] + additional_line ) 
+        lines_to_plot = pd.Series([sig_level_plot, suggestive_sig_level] + additional_line ) 
         if additional_line_color is None:
             additional_line_color = ["grey"]
     lines_to_plot = -np.log10(lines_to_plot)
@@ -598,7 +605,7 @@ def mqqplot(insumstats,
         if "b" not in mode:
             sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
             sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
-            sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=4
+            sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level_plot),"s"]=4
         sumstats["chr_hue"]=sumstats[chrom].astype("string")
 
         if vcf_path is not None:
