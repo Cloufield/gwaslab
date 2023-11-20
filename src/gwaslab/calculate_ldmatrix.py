@@ -37,10 +37,13 @@ def tofinemapping(sumstats,
     output_file_list = pd.DataFrame(columns=["SNPID","SNPID_List","LD_r_matrix","Locus_sumstats"])
     
     plink_log=""
+    raw_len = len(sig_df)
 
     if exclude_hla==True:
         is_in_hla = (sig_df["CHR"]==6)&(sig_df["POS"]>25000000)&(sig_df["POS"]<34000000)
         sig_df = sig_df.loc[~is_in_hla, : ]
+        after_len = len(sig_df)
+        log.write(" -Leads variants in HLA region: {}...".format(raw_len - after_len))
     
     ## for each lead variant 
     for index, row in sig_df.iterrows():
@@ -147,11 +150,11 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
         """.format(bfile_to_use, snplist_path , row["CHR"], mode, n_cores, memory_flag if memory is not None else "", output_prefix)
 
         try:
-            #output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
-            plink_process = subprocess.Popen("exec "+script_vcf_to_bfile, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,text=True)
-            output1,output2 = plink_process.communicate()
-            plink_log+=output1 + output2+ "\n"
-            plink_process.kill()
+            output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
+            #plink_process = subprocess.Popen("exec "+script_vcf_to_bfile, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,text=True)
+            #output1,output2 = plink_process.communicate()
+            plink_log+=output + "\n"
+            #plink_process.kill()
             log.write(" -Finished calculating LD r for locus with lead variant {} at CHR {} POS {}...".format(row["SNPID"],row["CHR"],row["POS"]))
         except subprocess.CalledProcessError as e:
             log.write(e.output)
@@ -178,6 +181,9 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
     # fliipped allele
     ea_mis_match = combined_df["EA"] != combined_df["EA_bim"]
     log.write("   -#Variants with flipped alleles:{}".format(sum(ea_mis_match)))
+    
+    if row["SNPID"] not in combined_df.loc[allele_match,"SNPID"].values:
+        log.write("   -Warning: Lead variant was not available in reference!!!!!!!!!!!!!!!")
     
     # adjust statistics
     output_columns=["SNPID","CHR","POS","EA_bim","NEA_bim"]

@@ -21,21 +21,13 @@ def _checking_plink_version(v=2,log=Log()):
         which_plink_script = "plink --version"
     elif v==2:
         which_plink_script = "plink2 --version" 
-    #output = subprocess.check_output(which_plink_script, stderr=subprocess.STDOUT, shell=True,text=True)
-    plink_process = subprocess.Popen("exec "+which_plink_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,text=True)
-    output1,output2 = plink_process.communicate()
-    output=output1 + output2+ "\n"
-    plink_process.kill()
+    output = subprocess.check_output(which_plink_script, stderr=subprocess.STDOUT, shell=True,text=True)
     log.write("   -PLINK version: {}".format(output.strip()))
     return log
 
 def _checking_r_version(r, log):
     which_r_script = "{} --version".format(r)
-    #output = subprocess.check_output(which_r_script, stderr=subprocess.STDOUT, shell=True,text=True)
-    plink_process = subprocess.Popen("exec "+which_r_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,text=True)
-    output1,output2 = plink_process.communicate()
-    output = output1 + output2+ "\n"
-    plink_process.kill()
+    output = subprocess.check_output(which_r_script, stderr=subprocess.STDOUT, shell=True,text=True)
     log.write(" -R version: {}".format(output.strip()))
     return log
 
@@ -45,11 +37,7 @@ def _check_susie_version(r,log):
     with open(temp_r,"w") as file:
         file.write(rscript)
     which_susie_script = "{} {}".format(r, temp_r)
-    #output = subprocess.check_output(which_susie_script, stderr=subprocess.STDOUT, shell=True,text=True)
-    plink_process = subprocess.Popen("exec "+which_susie_script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,text=True)
-    output1,output2 = plink_process.communicate()
-    output=output1 + output2+ "\n"
-    plink_process.kill()
+    output = subprocess.check_output(which_susie_script, stderr=subprocess.STDOUT, shell=True,text=True)
     log.write(" -SuSieR version: {}".format(output.strip()))
     os.remove(temp_r)
     return log
