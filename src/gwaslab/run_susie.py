@@ -11,7 +11,7 @@ from gwaslab.version import _check_susie_version
 
 def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, fillldna=True, n=None, delete=False, susie_args="", log=Log()):
     log.write(" Start to run finemapping using SuSieR from command line:")
-    if filelist is None:
+    if filepath is None:
         log.write(" -File path is None.")
         log.write("Finished finemapping using SuSieR.")
         return pd.DataFrame()
