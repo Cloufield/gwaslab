@@ -14,6 +14,8 @@ def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwri
             for i in chrlist:
                 log = _checking_plink_version(v=2,log=log)
                 log.write("   -Processing VCF for CHR {}...".format(i))
+                
+                # if multiple bfiles
                 if "@" in vcf:
                     vcf_to_load = vcf.replace("@",str(i))
                 else:
@@ -21,8 +23,10 @@ def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwri
 
                 bfile_root = vcf.replace(".vcf.gz","")
                 bfile_prefix = bfile_root + ".{}".format(i)
+                
                 if memory is not None:
                     memory_flag = "--memory {}".format(memory)
+                
                 if (not os.path.exists(bfile_prefix+".bed")) or overwrite:
                     script_vcf_to_bfile = """
                     plink2 \
@@ -59,7 +63,7 @@ def _process_vcf_and_bfile(chrlist, bfile, vcf, n_cores, plink_log, log, overwri
 
 def _load_bim(bfile_prefix, ref_bims, log):
     bim_path =bfile_prefix+".bim"
-    single_bim = pd.read_csv(bim_path,sep="\s+",usecols=[1,3,4,5],header=None,dtype={1:"string",3:"int",4:"string",5:"string"}).rename(columns={1:"SNPID",4:"NEA_bim",5:"EA_bim"})
+    single_bim = pd.read_csv(bim_path,sep="\s+",usecols=[1,2,3,4,5],header=None,dtype={1:"string",2:"category", 3:"int", 4:"string", 5:"string"}).rename(columns={1:"SNPID",2:"CHR_bim",3:"POS_bim",4:"NEA_bim",5:"EA_bim"})
     log.write("   -#variants in ref file: {}".format(len(single_bim))) 
     ref_bims.append(single_bim)
     return ref_bims

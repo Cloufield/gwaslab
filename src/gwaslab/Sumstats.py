@@ -55,6 +55,7 @@ from gwaslab.meta import init_meta
 from gwaslab.trumpetplot import plottrumpet
 from gwaslab.clump import _clump
 from gwaslab.calculate_ldmatrix import tofinemapping
+from gwaslab.calculate_prs import _calculate_prs
 import gc
 
 #20220309
@@ -453,6 +454,10 @@ class Sumstats():
         clumped,plink_log = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **args)
         return clumped,plink_log
     
+
+    def calculate_prs(self,**args):
+        combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **args)
+        return combined_results_summary
     ######################################################################
     
     def check_af(self,ref_infer,**args):
