@@ -1,0 +1,458 @@
+import pandas as pd
+import numpy as np
+import scipy as sp
+import gc
+from pyensembl import EnsemblRelease
+from pyensembl import Genome
+from os import path
+from gwaslab.util_in_fill_data import fill_p
+from gwaslab.g_Log import Log
+from gwaslab.bd_common_data import get_chr_to_number
+from gwaslab.bd_common_data import get_number_to_chr
+from gwaslab.bd_common_data import get_chr_to_NC
+from gwaslab.bd_common_data import gtf_to_protein_coding
+from gwaslab.bd_download import check_and_download
+from gwaslab.util_ex_gwascatalog import gwascatalog_trait
+
+
+# getsig
+# closest_gene
+# annogene
+# getnovel
+
+def getsig(insumstats,
+           id,
+           chrom,
+           pos,
+           p,
+           scaled=False,
+           windowsizekb=500,
+           sig_level=5e-8,
+           log=Log(),
+           xymt=["X","Y","MT"],
+           anno=False,
+           build="19",
+           source="ensembl",
+           mlog10p="MLOG10P",
+           verbose=True):
+    """
+    Extract the lead variants using a sliding window. P or MLOG10P will be used and converted to SCALEDP for sorting. 
+    """
+
+    if verbose: log.write("Start to extract lead variants...")
+    if verbose: log.write(" -Processing "+str(len(insumstats))+" variants...")
+    if verbose: log.write(" -Significance threshold :", sig_level)
+    if verbose: log.write(" -Sliding window size:", str(windowsizekb) ," kb")
+    
+    #load data
+    sumstats=insumstats.loc[~insumstats[id].isna(),:].copy()
+    
+    #convert chrom to int
+    if sumstats[chrom].dtype in ["object",str,pd.StringDtype]:
+        chr_to_num = get_chr_to_number(out_chr=True,xymt=["X","Y","MT"])
+        sumstats[chrom]=sumstats[chrom].map(chr_to_num)
+    
+    # make sure the dtype is integer
+    sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
+    sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+    
+    #create internal uniqid
+    sumstats["__ID"] = range(len(sumstats))
+    id = "__ID"
+
+    #extract all significant variants
+    if scaled==True:
+        #use MLOG10P 
+        if mlog10p in sumstats.columns:
+            sumstats_sig = sumstats.loc[sumstats[mlog10p]> -np.log10(sig_level),:].copy()
+            sumstats_sig.loc[:,"__SCALEDP"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
+    else:
+        if p not in sumstats.columns:
+            #use MLOG10P 
+            if mlog10p in sumstats.columns: 
+                fill_p(sumstats,log)
+                sumstats_sig = sumstats.loc[sumstats[mlog10p]> -np.log10(sig_level),:].copy()
+                sumstats_sig.loc[:,"__SCALEDP"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
+        else:
+            #use P         
+            sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
+            sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:].copy()
+            sumstats_sig.loc[:,"__SCALEDP"] = pd.to_numeric(sumstats_sig[p], errors='coerce')
+    if verbose:log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...")
+
+    #sort the coordinates
+    sumstats_sig = sumstats_sig.sort_values([chrom,pos])
+    if sumstats_sig is None:
+        if verbose:log.write(" -No lead snps at given significance threshold!")
+        return None
+    
+    #init 
+    sig_index_list=[]
+    current_sig_index = False
+    current_sig_p = 1
+    current_sig_pos = 0
+    current_sig_chr = 0
+    
+    p="__SCALEDP"
+    
+    #iterate through all significant snps
+    for line_number,(index, row) in enumerate(sumstats_sig.iterrows()):
+        #when finished one chr 
+        if row[chrom]!=current_sig_chr:
+            #add the current lead variants id to lead variant list
+            if current_sig_index is not False:sig_index_list.append(current_sig_index)
+            
+            #update lead vairant info to the new variant
+            current_sig_chr=row[chrom]
+            current_sig_pos=row[pos]
+            current_sig_p=row[p]
+            current_sig_index=row[id]
+            
+            # only one significant variant on a new chromsome and this is the last sig variant
+            if  line_number == len(sumstats_sig)-1:
+                sig_index_list.append(current_sig_index)
+            continue
+        
+        # next loci : gap > windowsizekb*1000
+        if row[pos]>current_sig_pos + windowsizekb*1000:
+            sig_index_list.append(current_sig_index)
+            current_sig_pos=row[pos]
+            current_sig_p=row[p]
+            current_sig_index=row[id]
+            if  line_number == len(sumstats_sig)-1:
+                sig_index_list.append(current_sig_index)
+            continue
+        
+        # update current pos and p
+        if row[p]<current_sig_p:
+            current_sig_pos=row[pos]
+            current_sig_p=row[p]
+            current_sig_index=row[id]
+        else:
+            current_sig_pos=row[pos]
+            
+        #when last line in sig_index_list
+        if  line_number == len(sumstats_sig)-1:
+            sig_index_list.append(current_sig_index)
+            continue
+    
+    if verbose:log.write(" -Identified "+str(len(sig_index_list))+" lead variants!")
+    
+    # drop internal __SCALEDP
+    sumstats_sig = sumstats_sig.drop("__SCALEDP",axis=1)
+    
+    # extract the lead variants
+    output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
+
+    # annotate GENENAME
+    if anno is True and len(output)>0:
+        if verbose:log.write(" -Annotating variants using references:{}".format(source))
+        if verbose:log.write(" -Annotating variants using references based on genome build:{}".format(build))
+        
+        output = annogene(
+               output,
+               id=id,
+               chrom=chrom,
+               pos=pos,
+               log=log,
+               xymt=xymt,
+               build=build,
+               source=source,
+               verbose=verbose)
+        
+    # Finishing
+    if verbose: log.write("Finished extracting lead variants successfully!")
+    # drop internal id
+    output = output.drop("__ID",axis=1)
+    gc.collect()
+    return output.copy()
+
+
+def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ensembl",build="19"):
+        #
+        # data
+        # check snp position
+        #convert 23,24,25 back to X,Y,MT for EnsemblRelease query
+        if source=="ensembl":
+            contig = get_number_to_chr()[x[chrom]]
+        elif source=="refseq":
+            contig = get_number_to_chr()[x[chrom]]
+            contig = get_chr_to_NC(build=build)[contig]
+            # for refseq , gene names are stored as gene_id, using gene_ids_at_locus instead
+            data.gene_names_at_locus = data.gene_ids_at_locus
+        position = int(x[pos])
+        # query
+        gene = data.gene_names_at_locus(contig=contig, position=position)
+        if len(gene)==0:
+            # if not in any gene
+            i=0
+            while i<=maxiter:
+                # using distance to check upstram and downstream region
+                distance = i*step
+                # upstream
+                gene_u = data.gene_names_at_locus(contig=contig, position=position-distance)
+                
+                # downstream
+                gene_d = data.gene_names_at_locus(contig=contig, position=position+distance)
+                
+                if len(gene_u)>0 and len(gene_d)>0:
+                    # if found gene uptream and downstream at the same time 
+                    # go back to last step
+                    distance = (i-1)*step
+                    for j in range(0,step,1):
+                        # use small step to finemap                        
+                        gene_u = data.gene_names_at_locus(contig=contig, position=position-distance-j)
+                        gene_d = data.gene_names_at_locus(contig=contig, position=position+distance+j)
+                        if len(gene_u)>0:
+                            return -distance-j,",".join(gene_u).strip(",")
+                        elif len(gene_d)>0:
+                            return distance+j,",".join(gene_d).strip(",")
+                elif len(gene_u)>0:                    
+                    # if found gene uptream
+                    distance = (i-1)*step
+                    for j in range(0,step,1):
+                        gene_u2 = data.gene_names_at_locus(contig=contig, position=position-distance-j)
+                        if len(gene_u2)>0:
+                            return -distance-j,",".join(gene_u).strip(",")
+                elif len(gene_d)>0:
+                    # if found gene downstream
+                    distance = (i-1)*step
+                    for j in range(0,step,1):
+                        gene_d2 = data.gene_names_at_locus(contig=contig, position=position+distance+j)
+                        if len(gene_d2)>0:
+                            return distance+j,",".join(gene_d).strip(",")
+                i+=1
+                # increase i by 1
+            return distance,"intergenic"
+        else:
+            return 0,",".join(gene).strip(",")
+
+
+def annogene(
+           insumstats,
+           id,
+           chrom="CHR",
+           pos="POS",
+           log=Log(),
+           xymt=["X","Y","MT"],
+           build="19",
+           source="ensembl",
+           verbose=True):
+    
+    if verbose: log.write("Start to annotate variants with nearest gene name(s)...")
+    output = insumstats.copy()
+    
+    if source == "ensembl":
+        if build=="19":
+            #data = EnsemblRelease(75)
+            if verbose:log.write(" -Assigning Gene name using ensembl_hg19_gtf for protein coding genes")
+            #zcat Homo_sapiens.GRCh37.75.gtf.gz| 
+            #grep -E 'processed_transcript|protein_coding|_gene' 
+            #| gzip >Homo_sapiens.GRCh37.75.processed.chr.gtf.gz     
+            
+            #gtf_path = check_and_download("ensembl_hg19_gtf_protein_coding")
+            gtf_path = check_and_download("ensembl_hg19_gtf")
+            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            gtf_db_path = gtf_path[:-2]+"db"
+            
+            data = Genome(
+                reference_name='GRCh37',
+                annotation_name='Ensembl',
+                gtf_path_or_url=gtf_path)
+            if path.isfile(gtf_db_path) is False:
+                data.index()
+            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+                list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source), axis=1)), 
+                index=output.index).values
+        elif build=="38":
+            if verbose:log.write(" -Assigning Gene name using ensembl_hg38_gtf for protein coding genes")
+            #gtf_path = check_and_download("ensembl_hg38_gtf_protein_coding")
+            gtf_path = check_and_download("ensembl_hg38_gtf")
+            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            gtf_db_path = gtf_path[:-2]+"db"
+            data = Genome(
+                reference_name='GRCh38',
+                annotation_name='Ensembl',
+                gtf_path_or_url=gtf_path)
+            if path.isfile(gtf_db_path) is False:
+                data.index()
+            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+                list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source), axis=1)), 
+                index=output.index).values
+    
+    if source == "refseq":
+        if build=="19":
+            if verbose:log.write(" -Assigning Gene name using NCBI refseq latest GRCh37 for protein coding genes")
+            #gtf_path = check_and_download("refseq_hg19_gtf_protein_coding")
+            gtf_path = check_and_download("refseq_hg19_gtf")
+            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            gtf_db_path = gtf_path[:-2]+"db"
+            data = Genome(
+                reference_name='GRCh37',
+                annotation_name='Refseq',
+                gtf_path_or_url=gtf_path)
+            if path.isfile(gtf_db_path) is False:
+                data.index()
+            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+                list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source,build=build), axis=1)), 
+                index=output.index).values
+        elif build=="38":
+            if verbose:log.write(" -Assigning Gene name using NCBI refseq latest GRCh38 for protein coding genes")
+            #gtf_path = check_and_download("refseq_hg38_gtf_protein_coding")
+            gtf_path = check_and_download("refseq_hg38_gtf")
+            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            gtf_db_path = gtf_path[:-2]+"db"
+            data = Genome(
+                reference_name='GRCh38',
+                annotation_name='Refseq',
+                gtf_path_or_url=gtf_path)
+            if path.isfile(gtf_db_path) is False:
+                data.index()
+            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+                list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source,build=build), axis=1)), 
+                index=output.index).values
+    if verbose: log.write("Finished annotating variants with nearest gene name(s) successfully!")
+    return output
+
+def getnovel(insumstats,
+           id,
+           chrom,
+           pos,
+           p,
+           known=False,
+           efo=False,
+           only_novel=False,
+           windowsizekb_for_novel=1000,
+           windowsizekb=500,
+           sig_level=5e-8,
+           log=Log(),
+           xymt=["X","Y","MT"],
+           anno=False,
+           build="19",
+           source="ensembl",
+           gwascatalog_source="NCBI",
+           output_known=False,
+           verbose=True):
+    if verbose: log.write("Start to check if lead variants are known...")
+    allsig = getsig(insumstats=insumstats,
+           id=id,chrom=chrom,pos=pos,p=p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
+           xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
+    
+    big_number = 1000000000
+    for i in range(7):
+        if insumstats["POS"].max()*10 >  big_number:
+            big_number = int(big_number * 10)
+        else:
+            break
+
+    # create helper column TCHR+POS for allsig
+    allsig["TCHR+POS"]=allsig[chrom]*big_number + allsig[pos]
+    
+    knownsig = pd.DataFrame()
+    if efo != False:
+        if type(efo) is not list:
+            if verbose: log.write("Start to retrieve data using EFO: {}...".format(efo))
+            known_Sumstats = gwascatalog_trait(efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
+            knownsig = known_Sumstats.data.copy()
+        else:
+            knownsig=pd.DataFrame()
+            if verbose: log.write("Start to retrieve data using {} EFOs: {}...".format(len(efo),efo))
+            for single_efo in efo:
+                known_Sumstats = gwascatalog_trait(single_efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
+                known_Sumstats.data["EFOID"] = single_efo
+                knownsig = pd.concat([known_Sumstats.data, knownsig],ignore_index=True)
+        knownsig["CHR"] = knownsig["CHR"].astype("Int64")
+        knownsig["POS"] = knownsig["POS"].astype("Int64")
+        if verbose: log.write(" -Retrieved {} associations from GWAS catalog.".format(len(knownsig)))
+    if type(known) is pd.DataFrame:
+        knownsig_2 = known.copy()
+        knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
+        knownsig["CHR"] = knownsig["CHR"].astype("Int64")
+        knownsig["POS"] = knownsig["POS"].astype("Int64")
+        if "SNPID" not in knownsig.columns:
+            knownsig["SNPID"] =knownsig["CHR"].astype("string") + ":" + knownsig["POS"].astype("string")
+    elif type(known) is str:
+        knownsig_2 = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
+        knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
+        knownsig["CHR"] = knownsig["CHR"].astype("Int64")
+        knownsig["POS"] = knownsig["POS"].astype("Int64")
+        if "SNPID" not in knownsig.columns:
+            knownsig["SNPID"] =knownsig["CHR"].astype("string") + ":" + knownsig["POS"].astype("string")
+    if len(knownsig)<1:
+        raise ValueError("Please input a dataframe of known loci or valid efo code")
+
+    # create helper column TCHR+POS for knownsig
+    knownsig["TCHR+POS"]=knownsig[chrom]*big_number + knownsig[pos]
+    
+    if verbose: log.write(" -Lead variants in known loci:",len(knownsig))
+    if verbose: log.write(" -Checking the minimum distance between identified lead variants and provided known variants...")
+    
+    #sorting
+    allsig = allsig.sort_values(by="TCHR+POS",ignore_index=True)
+    knownsig = knownsig.sort_values(by="TCHR+POS",ignore_index=True)
+    
+    if "SNPID" in knownsig.columns:
+        knownids=knownsig["SNPID"].values
+    if "PUBMEDID" in knownsig.columns:
+        knownpubmedids=knownsig["PUBMEDID"].values
+    if "AUTHOR" in knownsig.columns:
+        knownauthor=knownsig["AUTHOR"].values
+    if "EFOID" in knownsig.columns:
+        knownefo=knownsig["EFOID"].values
+    
+    # get distance
+    lambda x:np.min(np.abs(knownsig["TCHR+POS"]-x))
+    allsig["DISTANCE_TO_KNOWN"] = allsig["TCHR+POS"].apply(lambda x:min(knownsig["TCHR+POS"]-x, key=abs))
+    
+    # get other info 
+    if "SNPID" in knownsig.columns:
+        allsig["KNOWN_ID"] = allsig["TCHR+POS"].apply(lambda x:knownids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])    
+    if "PUBMEDID" in knownsig.columns:
+        allsig["KNOWN_PUBMED_ID"] = allsig["TCHR+POS"].apply(lambda x:knownpubmedids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
+    if "AUTHOR" in knownsig.columns:
+        allsig["KNOWN_AUTHOR"] = allsig["TCHR+POS"].apply(lambda x:knownauthor[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
+    if "EFOID" in knownsig.columns:
+        allsig["KNOWN_EFOID"] = allsig["TCHR+POS"].apply(lambda x:knownefo[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
+
+    # determine if novel
+    allsig["NOVEL"] = allsig["DISTANCE_TO_KNOWN"].abs() > windowsizekb_for_novel*1000
+    
+    # determine location
+    allsig["LOCATION_OF_KNOWN"]="Unknown"
+    allsig.loc[ allsig["DISTANCE_TO_KNOWN"]== 0,"LOCATION_OF_KNOWN"] = "Same"
+    allsig.loc[ allsig["DISTANCE_TO_KNOWN"] > 0 ,"LOCATION_OF_KNOWN"] = "Upstream"
+    allsig.loc[ allsig["DISTANCE_TO_KNOWN"] < 0 ,"LOCATION_OF_KNOWN"] = "Downstream"
+
+    # if not on same chromosome, distance set to pd.NA
+    if sum(allsig["DISTANCE_TO_KNOWN"].abs() > insumstats["POS"].max())>0:
+        not_on_same_chromosome = allsig["DISTANCE_TO_KNOWN"].abs() > insumstats["POS"].max()
+        allsig.loc[ not_on_same_chromosome ,"DISTANCE_TO_KNOWN"] = pd.NA
+        allsig.loc[ not_on_same_chromosome ,"LOCATION_OF_KNOWN"] = "NoneOnThisChr"
+        if "SNPID" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_ID"] = pd.NA
+        if "PUBMEDID" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_PUBMED_ID"] = pd.NA
+        if "AUTHOR" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_AUTHOR"] = pd.NA
+        if "EFOID" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_EFOID"] = pd.NA
+
+    # drop helper column TCHR+POS
+    allsig = allsig.drop(["TCHR+POS"], axis=1)
+
+    if verbose: log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...")
+    if verbose: log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...")
+    if verbose: log.write("Finished checking known or novel successfully!")
+    gc.collect()
+    
+    # how to return
+    if only_novel is True:
+        if output_known is True:
+            return allsig.loc[allsig["NOVEL"],:], knownsig
+        else:
+            return allsig.loc[allsig["NOVEL"],:]
+    else:
+        if output_known is True:
+            return allsig, knownsig
+        else:
+            return allsig
