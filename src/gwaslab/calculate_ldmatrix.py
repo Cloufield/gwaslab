@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from gwaslab.Log import Log
 from gwaslab.getsig import getsig
-from gwaslab.processreference import _process_vcf_and_bfile
+from gwaslab.processreference import _process_plink_input_files
 from gwaslab.version import _checking_plink_version
 import signal
 
@@ -23,7 +23,7 @@ def tofinemapping(sumstats,
                   getlead_args=None, 
                   memory=None, 
                   overwrite=False,
-                  log=Log()):
+                  log=Log(),**args):
 
     if getlead_args is None:
         getlead_args={}
@@ -58,14 +58,14 @@ def tofinemapping(sumstats,
         
         
         #process reference file
-        bfile_prefix, plink_log, ref_bim = _process_vcf_and_bfile(  chrlist=[row["CHR"]],
+        bfile_prefix, plink_log, ref_bim, filetype = _process_plink_input_files(  chrlist=[row["CHR"]],
                                                                     bfile=bfile, 
                                                                     vcf=vcf, 
                                                                     plink_log=plink_log,
                                                                     n_cores=n_cores, 
                                                                     log=log,
                                                                     load_bim=True,
-                                                                    overwrite=overwrite)
+                                                                    overwrite=overwrite,**args)
 
         ## check available snps with reference file
         matched_sumstats = _align_sumstats_with_bim(row=row, 
@@ -94,7 +94,7 @@ def tofinemapping(sumstats,
                                                 windowsizekb=windowsizekb,
                                                 out=out,
                                                 plink_log=plink_log,
-                                                log=log)
+                                                log=log,filetype=filetype)
     
     
         # print file list
@@ -121,7 +121,7 @@ def tofinemapping(sumstats,
 
 
 
-def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode):
+def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype):
     log.write(" -Start to calculate LD r matrix...")
     log = _checking_plink_version(v=1, log=log)
     if "@" in bfile_prefix:
@@ -135,6 +135,9 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
         
         if memory is not None:
             memory_flag = "--memory {}".format(memory)
+        
+        if filetype=="pfile":
+            raise ValueError("Please use bfile instead of pfile for PLINK1.")
         
         script_vcf_to_bfile = """
         plink \

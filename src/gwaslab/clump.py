@@ -3,7 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 from gwaslab.Log import Log
-from gwaslab.processreference import _process_vcf_and_bfile
+from gwaslab.processreference import _process_plink_input_files
 from gwaslab.version import _checking_plink_version
 
 def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=False, study=None, bfile=None, n_cores=1, memory=None, 
@@ -31,7 +31,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
     plink_log=""
 
     # process reference file
-    bfile, plink_log, ref_bim = _process_vcf_and_bfile(chrlist=sumstats["CHR"].unique(), 
+    bfile, plink_log, ref_bim,filetype = _process_plink_input_files(chrlist=sumstats["CHR"].unique(), 
                                                        bfile=bfile, 
                                                        vcf=vcf, 
                                                        n_cores=n_cores,
@@ -50,7 +50,10 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
         
         # checking # variants
         try:
-            bim = pd.read_csv(bfile_to_use + ".bim",usecols=[1],header=None,sep="\s+")[1]
+            if filetype=="bfile":
+                bim = pd.read_csv(bfile_to_use + ".bim",usecols=[1],header=None,sep="\s+")[1]
+            else:
+                bim = pd.read_csv(bfile_to_use + ".pvar",usecols=[2],header=None,comment="#",sep="\s+")[2]
             snplist = sumstats.loc[sumstats["CHR"]==i,"SNPID"]
             is_on_both = snplist.isin(bim)
             log.write(" -#variants in reference file: {}...".format(len(bim)))
@@ -85,11 +88,17 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
         log = _checking_plink_version(v=2, log=log)
         if memory is not None:
             memory_flag = "--memory {}".format(memory)
+        
+        if filetype=="bfile":
+            file_flag = "--bfile {}".format(bfile_to_use) 
+        else:
+            file_flag = "--pfile {}".format(bfile_to_use) 
+    
         if scaled == True:
             # clumping using LOG10P
             script = """
             plink2 \
-                --bfile {}\
+                {}\
                 --chr {} \
                 --clump {} \
                 --clump-log10 \
@@ -101,12 +110,12 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
                 --clump-kb {} \
                 --threads {} {}\
                 --out {}
-            """.format(bfile_to_use, chrom, clump, clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, memory_flag if memory is not None else "", out_single_chr)    
+            """.format(file_flag, chrom, clump, clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, memory_flag if memory is not None else "", out_single_chr)    
         else:
             # clumping using P
             script = """
             plink2 \
-                --bfile {}\
+                {}\
                 --chr {} \
                 --clump {} \
                 --clump-field P \
@@ -117,7 +126,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
                 --clump-kb {} \
                 --threads {} {}\
                 --out {}
-            """.format(bfile_to_use, chrom, clump, clump_p1, clump_p2, clump_r2, clump_kb, n_cores,memory_flag if memory is not None else "", out_single_chr)
+            """.format(file_flag, chrom, clump, clump_p1, clump_p2, clump_r2, clump_kb, n_cores,memory_flag if memory is not None else "", out_single_chr)
         
         try:
             output = subprocess.check_output(script, stderr=subprocess.STDOUT, shell=True,text=True)

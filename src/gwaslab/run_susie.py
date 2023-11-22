@@ -4,8 +4,6 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.Log import Log
-from gwaslab.getsig import getsig
-from gwaslab.processreference import _process_vcf_and_bfile
 from gwaslab.version import _checking_r_version
 from gwaslab.version import _check_susie_version
 
