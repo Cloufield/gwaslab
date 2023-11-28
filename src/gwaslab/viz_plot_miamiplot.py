@@ -298,6 +298,8 @@ def plot_miami(
     del(sumstats2)
     garbage_collect.collect()
     
+    # merged_sumstats
+    # P_1  scaled_P_1  P_2  scaled_P_2  TCHR+POS CHR POS  
     ######################################################################################################################
     #process highlight and pinpoint id
     for i in range(len(highlight)):

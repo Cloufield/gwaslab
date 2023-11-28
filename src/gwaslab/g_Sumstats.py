@@ -31,7 +31,6 @@ from gwaslab.util_in_filter_value import filterregionin
 from gwaslab.util_in_filter_value import filterregionout
 from gwaslab.util_in_filter_value import inferbuild
 from gwaslab.util_in_filter_value import sampling
-from gwaslab.viz_plot_mqqplot import mqqplot
 from gwaslab.util_in_calculate_gc import lambdaGC
 from gwaslab.util_in_convert_h2 import _get_per_snp_r2
 from gwaslab.util_in_get_sig import getsig
@@ -42,7 +41,6 @@ from gwaslab.util_in_get_sig import getnovel
 from gwaslab.util_in_fill_data import filldata
 from gwaslab.io_to_formats import tofmt
 from gwaslab.bd_get_hapmap3 import gethapmap3
-from gwaslab.viz_plot_compare_af import plotdaf
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_to_number
@@ -52,10 +50,12 @@ from gwaslab.bd_common_data import get_formats_list
 from gwaslab.g_version import _show_version
 from gwaslab.g_version import gwaslab_info
 from gwaslab.g_meta import init_meta
-from gwaslab.viz_plot_trumpetplot import plottrumpet
 from gwaslab.util_ex_run_clumping import _clump
 from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
 from gwaslab.util_ex_calculate_prs import _calculate_prs
+from gwaslab.viz_plot_mqqplot import mqqplot
+from gwaslab.viz_plot_trumpetplot import plottrumpet
+from gwaslab.viz_plot_compare_af import plotdaf
 import gc
 
 #20220309

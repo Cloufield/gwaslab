@@ -5,7 +5,7 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_number_to_chr
 from math import ceil
 
-def _quick_fix(sumstats, chr_dict=get_chr_to_number(), scaled=False, chrom="CHR", pos="POS", p="P", verbose=True, log=Log()):
+def _quick_fix(sumstats, chr_dict=get_chr_to_number(), scaled=False, chrom="CHR", pos="POS", p="P", mlog10p="MLOG10P",verbose=True, log=Log()):
     '''
     quick sanity check for input sumstats
     '''
@@ -17,15 +17,15 @@ def _quick_fix(sumstats, chr_dict=get_chr_to_number(), scaled=False, chrom="CHR"
     sumstats[pos] = _quick_fix_pos(sumstats[pos], verbose=verbose, log=log)
 
     # quick fix p
-    sumstats = _quick_fix_p_value(sumstats, scaled=scaled, verbose=verbose, log=log)
+    sumstats = _quick_fix_p_value(sumstats, p=p, mlog10p=mlog10p, scaled=scaled, verbose=verbose, log=log)
 
     # quick fix mlog10p
-    sumstats = _quick_fix_mlog10p(sumstats, scaled=scaled, verbose=verbose, log=log)
+    sumstats = _quick_fix_mlog10p(sumstats, p=p, mlog10p=mlog10p, scaled=scaled, verbose=verbose, log=log)
 
     return sumstats
 
 
-def _quick_fix_p_value(sumstats, scaled=False,verbose=True, log=Log()):
+def _quick_fix_p_value(sumstats, p="P", mlog10p="MLOG10P", scaled=False,verbose=True, log=Log()):
     '''
     drop variants with bad P values
     '''
@@ -33,12 +33,11 @@ def _quick_fix_p_value(sumstats, scaled=False,verbose=True, log=Log()):
         # if scaled, add scaled P and P col 
         if verbose:log.write(" -P values are already scaled...")
         if verbose:log.write(" -Sumstats -log10(P) values are being converted to P...")
-        sumstats["scaled_P"] = sumstats["P"].copy()
-        sumstats["P"]= np.power(10,-sumstats["P"])
+        sumstats["scaled_P"] = sumstats[mlog10p].copy()
+        sumstats[p]= np.power(10,-sumstats[mlog10p])
         return sumstats
     # bad p : na and outside (0,1]
-    bad_p_value = (sumstats["P"].isna()) | (
-        sumstats["P"] > 1) | (sumstats["P"] <= 0)
+    bad_p_value = (sumstats[p].isna()) | (sumstats[p] > 1) | (sumstats[p] <= 0)
     if verbose:
         log.write(" -Sanity check after conversion: " + str(sum(bad_p_value)) +
                   " variants with P value outside of (0,1] will be removed...")
@@ -46,13 +45,13 @@ def _quick_fix_p_value(sumstats, scaled=False,verbose=True, log=Log()):
     return sumstats
 
 
-def _quick_fix_mlog10p(sumstats, scaled=False, verbose=True, log=Log()):
+def _quick_fix_mlog10p(sumstats,p="P", mlog10p="MLOG10P", scaled=False, verbose=True, log=Log()):
     '''
     drop variants with bad -log10(P) values
     '''
     if scaled != True:
         if verbose:log.write(" -Sumstats P values are being converted to -log10(P)...")
-        sumstats["scaled_P"] = -np.log10(sumstats["P"])
+        sumstats["scaled_P"] = -np.log10(sumstats[p])
         
     #with pd.option_context('mode.use_inf_as_na', True):
     #    is_na = sumstats["scaled_P"].isna()

@@ -43,6 +43,7 @@ def annotate_single(
     pos="POS",
     repel_force=0.02,
     verbose=True,
+    _invert=False,
     log=Log()
 ):
     if anno and (to_annotate.empty is not True):
@@ -140,10 +141,14 @@ def annotate_single(
             if anno_count not in anno_d.keys():
                 #arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                 #                         connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
-                arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
+                if _invert==False:
+                    arrowargs = dict(arrowstyle="-|>",relpos=(0,0),color="#ebebeb",
                                             connectionstyle="arc,angleA=0,armA=0,angleB=90,armB="+str(armB_length_in_point)+",rad=0")
+                else:
+                    arrowargs = dict(arrowstyle="-|>",relpos=(0,1),color="#ebebeb",
+                                            connectionstyle="arc,angleA=0,armA=0,angleB=-90,armB="+str(armB_length_in_point)+",rad=0")
             else:
-                # adjuest direction
+                # adjuest horizontal direction
                 xy=(row["i"],row["scaled_P"])
                 if anno_d[anno_count] in ["right","left","l","r"]:
                     if anno_d[anno_count]=="right" or anno_d[anno_count]=="r": 
@@ -175,8 +180,11 @@ def annotate_single(
             else:
                 bbox_para=None
             
-            
-            anno_default = {"rotation":40,"fontstyle":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":"normal","fontfamily":font_family}
+            if  _invert==False:
+                anno_default = {"rotation":40,"fontstyle":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":"normal","fontfamily":font_family}
+            else:
+                anno_default = {"rotation":-40,"fontstyle":"italic","ha":"left","va":"top","fontsize":anno_fontsize,"fontweight":"normal","fontfamily":font_family}
+
             for key,value in anno_args.items():
                 anno_default[key]=value
             if len(highlight_i) >0:
@@ -185,7 +193,11 @@ def annotate_single(
                         anno_default[key]=value
             
             if anno_adjust==True:
-                arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(0,0.5))
+                if  _invert==False:
+                    arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(0,0.5))
+                else:
+                    arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(1,0.5))
+
             anno_to_adjust = ax1.annotate(annotation_text,
                         xy=xy,
                         xytext=xytext,

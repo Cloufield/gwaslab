@@ -7,6 +7,7 @@ from gwaslab.io_read_ldsc import read_ldsc
 from gwaslab.io_read_ldsc import read_popcorn
 from gwaslab.viz_plot_forestplot import plot_forest
 from gwaslab.viz_plot_miamiplot import plot_miami
+from gwaslab.viz_plot_miamiplot2 import plot_miami2
 from gwaslab.viz_plot_rg_heatmap import plot_rg
 from gwaslab.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.bd_common_data import get_NC_to_chr

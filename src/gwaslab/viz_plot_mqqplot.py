@@ -167,6 +167,7 @@ def mqqplot(insumstats,
           font_family="Arial",
           anno_fontsize = 9,
           figargs= None,
+          figax=None,
           colors=None,
           marker_size=(5,20),
           use_rank=False,
@@ -177,6 +178,8 @@ def mqqplot(insumstats,
           save=None,
           saveargs=None,
           _invert=False,
+          _chrom_df_for_i=None,
+          _if_quick_qc=True,
           expected_min_mlog10p=0,
           log=Log()
           ):
@@ -312,7 +315,11 @@ def mqqplot(insumstats,
     elif mode=="mqq":
         fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**figargs)
     elif mode=="m":
-        fig, ax1 = plt.subplots(1, 1,**figargs)
+        if figax is not None:
+            fig = figax[0]
+            ax1 = figax[1]
+        else:
+            fig, ax1 = plt.subplots(1, 1,**figargs)
     elif mode=="qq": 
         fig, ax2 = plt.subplots(1, 1,**figargs) 
     elif mode=="r": 
@@ -381,7 +388,9 @@ def mqqplot(insumstats,
             usecols.append(eaf)
         else:
             raise ValueError("Please make sure "+eaf+" column is in input sumstats.")
-    
+    ## i ##################################################################################
+    if _chrom_df_for_i is not None:
+        usecols.append("i")
     # ANNOTATion ##########################################################################
     #
     if len(anno_set)>0 or len(anno_alias)>0:
@@ -458,7 +467,7 @@ def mqqplot(insumstats,
 #sanity check############################################################################################################
     if verbose: log.write("Start conversion and sanity check:")
     
-    if ("m" in mode or "r" in mode): 
+    if ("m" in mode or "r" in mode) and _if_quick_qc: 
         pre_number=len(sumstats)
         #sanity check : drop variants with na values in chr and pos df
         sumstats = sumstats.dropna(subset=[chrom,pos])
@@ -468,7 +477,7 @@ def mqqplot(insumstats,
         if verbose:log.write(" -Removed {} variants with CHR <=0...".format(sum(out_of_range_chr)))
         sumstats = sumstats.loc[~out_of_range_chr,:]
     
-    if stratified is True: 
+    if stratified is True and _if_quick_qc: 
         pre_number=len(sumstats)
         sumstats = sumstats.dropna(subset=["MAF"])
         after_number=len(sumstats)
@@ -526,7 +535,7 @@ def mqqplot(insumstats,
     #############################
 # P value conversion #####################################################################################################  
     ## m,qq,r -> dropna
-    if "b" not in mode:
+    if "b" not in mode and _if_quick_qc:
         pre_number=len(sumstats)
         sumstats = sumstats.dropna(subset=["raw_P"])
         after_number=len(sumstats)
@@ -543,10 +552,10 @@ def mqqplot(insumstats,
     else:
         if not scaled:
             # quick fix p
-            sumstats = _quick_fix_p_value(sumstats, verbose=verbose, log=log)
+            sumstats = _quick_fix_p_value(sumstats, p=p, mlog10p=mlog10p,verbose=verbose, log=log)
 
         # quick fix mlog10p
-        sumstats = _quick_fix_mlog10p(sumstats, scaled=scaled, verbose=verbose, log=log)
+        sumstats = _quick_fix_mlog10p(sumstats,p=p, mlog10p=mlog10p, scaled=scaled, verbose=verbose, log=log)
 
     # raw p for calculate lambda
     p_toplot_raw = sumstats[["CHR","scaled_P"]].copy()
@@ -598,8 +607,10 @@ def mqqplot(insumstats,
     ## Manhatann plot ###################################################
     if ("m" in mode) or ("r" in mode): 
         # assign index i and tick position
-        sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, chrpad=chrpad, use_rank=use_rank, chrom="CHR",pos="POS",drop_chr_start=drop_chr_start)
-        
+        if _chrom_df_for_i is None:
+            sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, chrpad=chrpad, use_rank=use_rank, chrom="CHR",pos="POS",drop_chr_start=drop_chr_start)
+        else:
+            chrom_df = _chrom_df_for_i
         ## Assign marker size ##############################################
         sumstats["s"]=1
         if "b" not in mode:
@@ -953,7 +964,8 @@ def mqqplot(insumstats,
                                 pos=pos,
                                 repel_force=repel_force,
                                 verbose=verbose,
-                                log=log
+                                log=log,
+                               _invert=_invert
                             )  
     # Creating Manhatann plot Finished #####################################################################
 
