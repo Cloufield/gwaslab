@@ -299,8 +299,10 @@ def gtf_to_protein_coding(gtfpath,log=Log(),verbose=True):
         
 ####################################################################################################################   
         
-    
-        
+def _inch_to_point(inch):
+    #dpi: Dots per Inch
+    #points: 1/72 inch
+    return inch*72
         
         
         
