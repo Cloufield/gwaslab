@@ -19,6 +19,7 @@ def annotate_single(
     mode,
     ax1,
     highlight_i,
+    highlight_chrpos,
     highlight_anno_args,
     to_annotate,
     anno_d,
@@ -187,7 +188,7 @@ def annotate_single(
 
             for key,value in anno_args.items():
                 anno_default[key]=value
-            if len(highlight_i) >0:
+            if len(highlight_i) >0 and highlight_chrpos==True:
                 if row["i"] in highlight_i:
                     for key,value in highlight_anno_args.items():
                         anno_default[key]=value

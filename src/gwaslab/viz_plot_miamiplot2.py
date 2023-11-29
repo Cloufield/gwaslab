@@ -136,8 +136,6 @@ def plot_miami2(
     if save_args is None:
         save_args={"dpi":100,"facecolor":"white"}
 
-
-    
     # figure out mqq args
     mqq_args1,mqq_args2 = _sort_args_to_12(mqq_args)
     
@@ -162,14 +160,15 @@ def plot_miami2(
     if titles is None:
         titles=["",""]
     if titles_pad is None:
-        titles_pad=[1 + 0.2, - 0.2]
-        pad = 0.35
+        titles_pad=[0.2,0.2]
+        titles_pad_adjusted=[1 + titles_pad[0], - titles_pad[1]]
         if "anno" in mqq_args.keys():
-            titles_pad= [1+pad, -pad]
+            titles_pad_adjusted= [1 + titles_pad[0], -titles_pad[1]]
         if "anno1" in mqq_args.keys():
-            titles_pad[0]= 1 + pad
+            titles_pad_adjusted[0]= 1 + titles_pad[0]
         if "anno2" in mqq_args.keys():
-            titles_pad[1]=  - pad
+            titles_pad_adjusted[1]=  - titles_pad[1]
+    
     ## load sumstats1 ###########################################################################################################
     sumstats1 = _figure_type_load_sumstats(name="Sumstats1", 
                                            path=path1, 
@@ -201,7 +200,7 @@ def plot_miami2(
     ## create merge index ###########################################################################################################
     sumstats1 = _quick_add_tchrpos(sumstats1,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
     sumstats2 = _quick_add_tchrpos(sumstats2,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
-    if verbose: log.write(" - Merging sumstats using chr and pos...")
+    if verbose: log.write(" -Merging sumstats using chr and pos...")
     
     ###### merge #####################################################################################################
     merged_sumstats = _quick_merge_sumstats(sumstats1=sumstats1,sumstats2=sumstats2)
@@ -238,16 +237,13 @@ def plot_miami2(
                       log=log, 
                       mode="m",
                       figax=(fig,ax1),
-                      scatter_kwargs=scatter_args,
+                      scatter_args=scatter_args,
                       _chrom_df_for_i = chrom_df,
                       _invert=False,
                       _if_quick_qc=False,
                       **mqq_args1
                      )
-    if same_ylim==True:
-        ylim1 = ax1.get_ylim()
-    else:
-        ylim1 = None
+
 
     fig,log = mqqplot(merged_sumstats,
                       chrom="CHR",
@@ -259,13 +255,21 @@ def plot_miami2(
                       log=log, 
                       mode="m",
                       figax=(fig,ax5),
-                      ylim=ylim1,
-                      scatter_kwargs=scatter_args,
+                      scatter_args=scatter_args,
                       _chrom_df_for_i = chrom_df,
                        _invert=True,
                       _if_quick_qc=False,
                      **mqq_args2)
-
+    
+    if same_ylim==True:
+        ylim1_converted = ax1.get_ylim()
+        ylim2_converted = ax5.get_ylim()
+        if ylim1_converted > ylim2_converted:
+            ax5.set_ylim(ylim1_converted)
+        else:
+            ax1.set_ylim(ylim2_converted)
+    
+    
     #####################################################################################################################    
     
     ax5.set_xlabel("")
@@ -286,12 +290,12 @@ def plot_miami2(
     ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family=font_family)
     ax5.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family=font_family)
     
-    ax1.set_title(titles[0],y=titles_pad[0],family=font_family)
-    ax5.set_title(titles[1],y=titles_pad[1],family=font_family)
+    ax1.set_title(titles[0],y=titles_pad_adjusted[0],family=font_family)
+    ax5.set_title(titles[1],y=titles_pad_adjusted[1],family=font_family)
 
     ax5.invert_yaxis() 
 
-    save_figure(fig, save, keyword="miami",saveargs=save_args, log=log, verbose=verbose)
+    save_figure(fig, save, keyword="miami",save_args=save_args, log=log, verbose=verbose)
 
     garbage_collect.collect()
     

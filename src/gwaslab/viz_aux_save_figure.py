@@ -3,21 +3,21 @@ from gwaslab.g_Log import Log
 import time
 import os.path
 
-def save_figure(fig, save, keyword, saveargs=None, log = Log(), verbose=True):
-    if saveargs is None:
-        saveargs = {}
+def save_figure(fig, save, keyword, save_args=None, log = Log(), verbose=True):
+    if save_args is None:
+        save_args = {}
     if save:
         if verbose: log.write("Saving plot:")
         if save==True:
             default_path = get_default_path(keyword)
-            fig.savefig(default_path, bbox_inches="tight",**saveargs)
+            fig.savefig(default_path, bbox_inches="tight",**save_args)
             log.write(" -Saved to "+ default_path + " successfully!" )
         else:
             if os.path.exists(save):
-                fig.savefig(save,bbox_inches="tight",**saveargs)
+                fig.savefig(save,bbox_inches="tight",**save_args)
                 log.write(" -Saved to "+ save + " successfully! (overwrite)" )
             else:
-                fig.savefig(save,bbox_inches="tight",**saveargs)
+                fig.savefig(save,bbox_inches="tight",**save_args)
                 log.write(" -Saved to "+ save + " successfully!" )
     else:
         log.write(" -Skip saving figures!" )

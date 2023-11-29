@@ -73,8 +73,8 @@ def mqqplot(insumstats,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
-          scatter_kwargs=None,
-          qq_scatter_kwargs=None,
+          scatter_args=None,
+          qq_scatter_args=None,
           qq_line_color = "grey",
           # region
           region = None,
@@ -142,6 +142,7 @@ def mqqplot(insumstats,
           additional_line_color = None,
           sc_linewidth=2,
           highlight = None,
+          highlight_chrpos = False,
           highlight_color="#CB132D",
           highlight_windowkb = 500,
           highlight_anno_args = None,
@@ -166,7 +167,7 @@ def mqqplot(insumstats,
           fontsize = 9,
           font_family="Arial",
           anno_fontsize = 9,
-          figargs= None,
+          fig_args= None,
           figax=None,
           colors=None,
           marker_size=(5,20),
@@ -176,7 +177,7 @@ def mqqplot(insumstats,
           build=None,
           dpi=200,
           save=None,
-          saveargs=None,
+          save_args=None,
           _invert=False,
           _chrom_df_for_i=None,
           _if_quick_qc=True,
@@ -194,10 +195,10 @@ def mqqplot(insumstats,
         gtf_chr_dict = get_number_to_chr()
     if rr_chr_dict is None:   
         rr_chr_dict = get_number_to_chr()
-    if figargs is None:
-        figargs= dict(figsize=(15,5))
-    if "dpi" not in figargs.keys():
-        figargs["dpi"] = dpi
+    if fig_args is None:
+        fig_args= dict(figsize=(15,5))
+    if "dpi" not in fig_args.keys():
+        fig_args["dpi"] = dpi
     if region_anno_bbox_args is None:
         region_anno_bbox_args = dict()
     if anno_set is None:
@@ -228,8 +229,8 @@ def mqqplot(insumstats,
         maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]
     if maf_bin_colors is None:
         maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]
-    if saveargs is None:
-        saveargs = {"dpi":300,"facecolor":"white"}
+    if save_args is None:
+        save_args = {"dpi":300,"facecolor":"white"}
     if highlight is None:
         highlight = list()
     if highlight_anno_args is None:
@@ -238,10 +239,10 @@ def mqqplot(insumstats,
         pinpoint = list()  
     if build is None:
         build = "19"
-    if scatter_kwargs is None:
-        scatter_kwargs={}
-    if qq_scatter_kwargs is None:
-        qq_scatter_kwargs={}
+    if scatter_args is None:
+        scatter_args={}
+    if qq_scatter_args is None:
+        qq_scatter_args={}
     if sig_level is None:
         sig_level_plot=sig_level_plot
         sig_level_lead=sig_level_lead 
@@ -253,9 +254,9 @@ def mqqplot(insumstats,
         if type(save) is not bool:
             if len(save)>3:
                 if save[-3:]=="pdf" or save[-3:]=="svg":
-                    figargs["dpi"]=72
-                    scatter_kwargs["rasterized"]=True
-                    qq_scatter_kwargs["rasterized"]=True
+                    fig_args["dpi"]=72
+                    scatter_args["rasterized"]=True
+                    qq_scatter_args["rasterized"]=True
 
     if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
     if verbose: log.write(" -Genomic coordinates version: {}...".format(build))
@@ -268,10 +269,13 @@ def mqqplot(insumstats,
         if verbose: log.write(" -Variants to annotate : "+",".join(anno_set))    
     if len(highlight)>0 and ("m" in mode):
         if pd.api.types.is_list_like(highlight[0]):
-            if len(highlight[0]) == len(highlight_color):
-                log.write(" -WARNING: number of locus list does not match number of colors !!!")
-            for i, highlight_set in enumerate(highlight):
-                  if verbose: log.write(" -Set {} loci to highlight ({}) : ".format(i+1, highlight_color[i%len(highlight_color)])+",".join(highlight_set))   
+            if highlight_chrpos==False:
+                if len(highlight[0]) == len(highlight_color):
+                    log.write(" -WARNING: number of locus list does not match number of colors !!!")
+                for i, highlight_set in enumerate(highlight):
+                    if verbose: log.write(" -Set {} loci to highlight ({}) : ".format(i+1, highlight_color[i%len(highlight_color)])+",".join(highlight_set))
+            else:
+                if verbose: log.write(" -Loci to highlight ({}): {}".format(highlight_color,highlight))
             if verbose: log.write("  -Highlight_window is set to: ", highlight_windowkb, " kb") 
         else:
             if verbose: log.write(" -Loci to highlight ({}): ".format(highlight_color)+",".join(highlight))    
@@ -311,30 +315,30 @@ def mqqplot(insumstats,
     # "r" : regional plot
     
     if  mode=="qqm": 
-        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**figargs)
+        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**fig_args)
     elif mode=="mqq":
-        fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**figargs)
+        fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**fig_args)
     elif mode=="m":
         if figax is not None:
             fig = figax[0]
             ax1 = figax[1]
         else:
-            fig, ax1 = plt.subplots(1, 1,**figargs)
+            fig, ax1 = plt.subplots(1, 1,**fig_args)
     elif mode=="qq": 
-        fig, ax2 = plt.subplots(1, 1,**figargs) 
+        fig, ax2 = plt.subplots(1, 1,**fig_args) 
     elif mode=="r": 
-        figargs["figsize"] = (15,10)
+        fig_args["figsize"] = (15,10)
         fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
-                                       gridspec_kw={'height_ratios': [mqqratio, 1]},**figargs)
+                                       gridspec_kw={'height_ratios': [mqqratio, 1]},**fig_args)
         plt.subplots_adjust(hspace=region_hspace)
     elif mode =="b" :
-        figargs["figsize"] = (15,5)
-        fig, ax1 = plt.subplots(1, 1,**figargs)
+        fig_args["figsize"] = (15,5)
+        fig, ax1 = plt.subplots(1, 1,**fig_args)
         sig_level=1,
         sig_line=False,
         windowsizekb = 100000000   
         mode="mb"
-        scatter_kwargs={"marker":"s"}
+        scatter_args={"marker":"s"}
         marker_size= (marker_size[1],marker_size[1])
     else:
         raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
@@ -486,17 +490,38 @@ def mqqplot(insumstats,
         ## Highlight
     if len(highlight)>0 and ("m" in mode or "r" in mode):
         if pd.api.types.is_list_like(highlight[0]):
-            for i, highlight_set in enumerate(highlight):
-                to_highlight = sumstats.loc[sumstats[snpid].isin(highlight_set),:]
-                #assign colors: 0 is hightlight color
-                for index,row in to_highlight.iterrows():
-                    target_chr = int(row[chrom])
-                    target_pos = int(row[pos])
-                    right_chr=sumstats[chrom]==target_chr
-                    up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
-                    low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
-                    sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i
+            # highlight for multiple sets
+            if highlight_chrpos == False:
+                for i, highlight_set in enumerate(highlight):
+                    to_highlight = sumstats.loc[sumstats[snpid].isin(highlight_set),:]
+                    #assign colors: 0 is hightlight color
+                    for index,row in to_highlight.iterrows():
+                        target_chr = int(row[chrom])
+                        target_pos = int(row[pos])
+                        right_chr=sumstats[chrom]==target_chr
+                        up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
+                        low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
+                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i
+            else:
+                for i, highlight_chrpos_tuple in enumerate(highlight):
+                    #assign colors: 0 is hightlight color
+                    if len(highlight_chrpos_tuple) ==2:
+                        target_chr = int(highlight_chrpos_tuple[0])
+                        target_pos = int(highlight_chrpos_tuple[1])
+                        right_chr=sumstats[chrom]==target_chr
+                        up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
+                        low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
+                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i
+                    else:
+                        target_chr = int(highlight_chrpos_tuple[0])
+                        target_pos_low = int(highlight_chrpos_tuple[1])
+                        target_pos_up = int(highlight_chrpos_tuple[2])
+                        right_chr=sumstats[chrom]==target_chr
+                        up_pos=sumstats[pos] > target_pos_low
+                        low_pos=sumstats[pos] < target_pos_up
+                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i                        
         else:
+            # highlight for one set
             to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
             #assign colors: 0 is hightlight color
             for index,row in to_highlight.iterrows():
@@ -643,7 +668,7 @@ def mqqplot(insumstats,
                     palette[i]=region_ld_colors1[i]
                     palette[100+i]=region_ld_colors2[i]
                 edgecolor="none"
-                scatter_kwargs["markers"]=['o', 's']
+                scatter_args["markers"]=['o', 's']
                 style="SHAPE"
                 
             
@@ -659,8 +684,8 @@ def mqqplot(insumstats,
                                size="s",
                                sizes=marker_size,
                                linewidth=linewidth,
-                               zorder=2,ax=ax1,edgecolor=edgecolor, **scatter_kwargs)   
-            if pd.api.types.is_list_like(highlight[0]):
+                               zorder=2,ax=ax1,edgecolor=edgecolor, **scatter_args)   
+            if pd.api.types.is_list_like(highlight[0]) and highlight_chrpos==False:
                 for i, highlight_set in enumerate(highlight):
                     if verbose: log.write(" -Highlighting set {} target loci...".format(i+1))
                     print(sumstats["HUE"].dtype)
@@ -672,7 +697,7 @@ def mqqplot(insumstats,
                         size="s",
                         sizes=(marker_size[0]+1,marker_size[1]+1),
                         linewidth=linewidth,
-                        zorder=3+i,ax=ax1,edgecolor=edgecolor,**scatter_kwargs)  
+                        zorder=3+i,ax=ax1,edgecolor=edgecolor,**scatter_args)  
                 highlight_i = sumstats.loc[~sumstats["HUE"].isna(),"i"].values
             else:
                 if verbose: log.write(" -Highlighting target loci...")
@@ -684,9 +709,12 @@ def mqqplot(insumstats,
                     size="s",
                     sizes=(marker_size[0]+1,marker_size[1]+1),
                     linewidth=linewidth,
-                    zorder=3,ax=ax1,edgecolor=edgecolor,**scatter_kwargs)  
+                    zorder=3,ax=ax1,edgecolor=edgecolor,**scatter_args)  
                 # for annotate
-                highlight_i = sumstats.loc[sumstats[snpid].isin(highlight),"i"].values
+                if highlight_chrpos==False:
+                    highlight_i = sumstats.loc[sumstats[snpid].isin(highlight),"i"].values
+                else:
+                    highlight_i = []
         
         ## if not highlight    
         else:
@@ -704,7 +732,7 @@ def mqqplot(insumstats,
                        sizes=(marker_size[0]+1,marker_size[0]+1),
                        linewidth=linewidth,
                        hue_norm=density_trange,
-                       zorder=2,ax=ax1,edgecolor=edgecolor,**scatter_kwargs) 
+                       zorder=2,ax=ax1,edgecolor=edgecolor,**scatter_args) 
 
                 plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]>density_threshold,:], x='i', y='scaled_P',
                    hue=hue,
@@ -715,7 +743,7 @@ def mqqplot(insumstats,
                    sizes=marker_size,
                    hue_norm=density_range,
                    linewidth=linewidth,
-                   zorder=2,ax=ax1,edgecolor=edgecolor,**scatter_kwargs)   
+                   zorder=2,ax=ax1,edgecolor=edgecolor,**scatter_args)   
             else:
                 s = "s"
                 hue = 'chr_hue'
@@ -731,7 +759,7 @@ def mqqplot(insumstats,
                        hue_norm=hue_norm,
                        linewidth=linewidth,
                        edgecolor = edgecolor,
-                       zorder=2,ax=ax1,**scatter_kwargs)   
+                       zorder=2,ax=ax1,**scatter_args)   
         
         
         ## if pinpoint variants
@@ -941,6 +969,7 @@ def mqqplot(insumstats,
                                 mode=mode,
                                 ax1=ax1,
                                 highlight_i=highlight_i,
+                                highlight_chrpos=highlight_chrpos,
                                 highlight_anno_args=highlight_anno_args,
                                 to_annotate=to_annotate,
                                 anno_d=anno_d,
@@ -1002,7 +1031,7 @@ def mqqplot(insumstats,
                     ylabels = ylabels,
                     ylabels_converted = ylabels_converted,
                     verbose=verbose,
-                    qq_scatter_kwargs=qq_scatter_kwargs,
+                    qq_scatter_args=qq_scatter_args,
                     expected_min_mlog10p=expected_min_mlog10p,
                     log=log
                 )
@@ -1024,10 +1053,10 @@ def mqqplot(insumstats,
     #if save:
     #    if verbose: log.write("Saving plot:")
     #    if save==True:
-    #        fig.savefig("./"+mode+"_plot.png",bbox_inches="tight",**saveargs)
+    #        fig.savefig("./"+mode+"_plot.png",bbox_inches="tight",**save_args)
     #        log.write(" -Saved to "+ "./"+mode+"_plot.png" + " successfully!" )
     #    else:
-    #        fig.savefig(save,bbox_inches="tight",**saveargs)
+    #        fig.savefig(save,bbox_inches="tight",**save_args)
     #        log.write(" -Saved to "+ save + " successfully!" )
     
     # add title 
@@ -1037,7 +1066,7 @@ def mqqplot(insumstats,
     else:
         fig.suptitle(title , fontsize = title_fontsize, x=0.5,y=1)
 
-    save_figure(fig = fig, save = save, keyword=mode, saveargs=saveargs, log = log, verbose=verbose)
+    save_figure(fig = fig, save = save, keyword=mode, save_args=save_args, log = log, verbose=verbose)
 
     garbage_collect.collect()
     

@@ -30,7 +30,6 @@ def plotdaf(sumstats,
              legend2=True,
              save=False,
              save_args=None,
-             saveargs=None,
              verbose=True,
              log=Log()
            ):
@@ -53,11 +52,8 @@ def plotdaf(sumstats,
         helper_line_args={"color":'black', "linestyle":'-',"lw":1}
     if r2_args is None:
         r2_args = {"va":"bottom","ha":"right"}
-    if saveargs is None:
-        if save_args is None:
-            saveargs = save_args = {}
-        else:
-            saveargs = save_args
+    if save_args is None:
+        save_args =  {}
 
     if verbose: log.write("Start to plot Reference frequency vs Effect allele frequency plot...")
     if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
@@ -132,7 +128,7 @@ def plotdaf(sumstats,
 
 
     plt.tight_layout()
-    save_figure(fig, save, keyword="afc",saveargs=saveargs, log=log, verbose=verbose)
+    save_figure(fig, save, keyword="afc",save_args=save_args, log=log, verbose=verbose)
 
     #if save:
     #    if verbose: log.write("Saving plot:")

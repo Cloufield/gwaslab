@@ -52,7 +52,6 @@ def plot_rg(ldscrg,
         fdr_method="i",
         fontsize=10,
         save=None,
-        saveargs=None,
         save_args=None):
     
     if verbose: log.write("Start to create ldsc genetic correlation heatmap...")
@@ -75,11 +74,8 @@ def plot_rg(ldscrg,
         full_cell = ("fdr",0.05)
     if rganno_args is None:
         rganno_args ={}
-    if saveargs is None:
-        if save_args is None:
-            saveargs = save_args = {}
-        else:
-            saveargs = save_args
+    if save_args is None:
+        save_args = {}
     
     #drop na records in P column 
     if verbose: log.write("Raw dataset records:",len(ldscrg))
@@ -317,7 +313,7 @@ def plot_rg(ldscrg,
     if equal_aspect is True:
         ax.set_aspect('equal', adjustable='box')
     
-    save_figure(fig, save, keyword="ldscrg",saveargs=saveargs, log=log, verbose=verbose)
+    save_figure(fig, save, keyword="ldscrg",save_args=save_args, log=log, verbose=verbose)
     #if save:
     #    if verbose: log.write("Saving plot:")
     #    if save==True:

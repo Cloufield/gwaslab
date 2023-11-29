@@ -55,7 +55,7 @@ def plottrumpet(mysumstats,
                 size= "ABS_BETA",
                 sizes=None,
                 save=False,
-                saveargs=None,
+                save_args=None,
                 figargs=None,
                 build="99",
                 anno_set=None,
@@ -406,9 +406,9 @@ def plottrumpet(mysumstats,
                                 ax=ax)
     ############  Annotation ##################################################################################################
     if mode=="q":
-        save_figure(fig, save, keyword="trumpet_q",saveargs=saveargs, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="trumpet_q",save_args=save_args, log=log, verbose=verbose)
     elif mode=="b":
-        save_figure(fig, save, keyword="trumpet_b",saveargs=saveargs, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="trumpet_b",save_args=save_args, log=log, verbose=verbose)
 
     if verbose: log.write("Finished creating trumpet plot!")
     return fig
@@ -435,7 +435,7 @@ def plot_power( ns=1000,
                 font_family="Arial",
                 sizes=None,
                 save=False,
-                saveargs=None,
+                save_args=None,
                 ylabel="Effect size",
                 xlabel="Minor allele frequency",
                 xticks = None,
@@ -615,9 +615,9 @@ def plot_power( ns=1000,
     ############  Annotation ##################################################################################################
  
     if mode=="q":
-        save_figure(fig, save, keyword="power_q",saveargs=saveargs, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_q",save_args=save_args, log=log, verbose=verbose)
     elif mode=="b":
-        save_figure(fig, save, keyword="power_b",saveargs=saveargs, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_b",save_args=save_args, log=log, verbose=verbose)
 
     if verbose: log.write("Finished creating trumpet plot!")
     return fig
@@ -647,7 +647,7 @@ def plot_power_x(
                 fontsize=15,
                 font_family="Arial",
                 save=False,
-                saveargs=None,
+                save_args=None,
                 ylabel="Power",
                 xlabel="N",
                 xticks = None,
@@ -910,9 +910,9 @@ def plot_power_x(
     ############  Annotation ##################################################################################################
  
     if mode=="q":
-        save_figure(fig, save, keyword="power_xq",saveargs=saveargs, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_xq",save_args=save_args, log=log, verbose=verbose)
     elif mode=="b":
-        save_figure(fig, save, keyword="power_xb",saveargs=saveargs, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_xb",save_args=save_args, log=log, verbose=verbose)
 
     if verbose: log.write("Finished creating power plot!")
     return fig

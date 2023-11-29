@@ -64,7 +64,7 @@ def compare_effect(path1,
                    sep=["\t","\t"],
                    log = Log(),
                    save=False,
-                   saveargs=None,
+                   save_args=None,
                    verbose=False):
     
     #[snpid,p,ea,nea]      ,[effect,se]
@@ -74,8 +74,8 @@ def compare_effect(path1,
         scaled1 = True
         scaled2 = True
     
-    if saveargs is None:
-        saveargs = {"dpi":300,"facecolor":"white"}
+    if save_args is None:
+        save_args = {"dpi":300,"facecolor":"white"}
     if reg_box is None:
         reg_box = dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey")
     if sep is None:
@@ -851,15 +851,15 @@ def compare_effect(path1,
     ##plot finished########################################################################################
     gc.collect()
 
-    save_figure(fig, save, keyword="esc",saveargs=saveargs, log=log, verbose=verbose)
+    save_figure(fig, save, keyword="esc",save_args=save_args, log=log, verbose=verbose)
     
     #if save:
     #    if verbose: log.write("Saving plot:")
     #    if save==True:
-    #        fig.savefig("./{}_{}_effect_comparison_plot.png".format(label[0],label[1]),bbox_inches="tight",**saveargs)
+    #        fig.savefig("./{}_{}_effect_comparison_plot.png".format(label[0],label[1]),bbox_inches="tight",**save_args)
     #        log.write(" -Saved to "+ "./{}_{}_effect_comparison_plot.png".format(label[0],label[1]) + " successfully!" )
     #    else:
-    #        fig.savefig(save,bbox_inches="tight",**saveargs)
+    #        fig.savefig(save,bbox_inches="tight",**save_args)
     #        log.write(" -Saved to "+ save + " successfully!" )
     
     return [sig_list_merged, fig,log]
