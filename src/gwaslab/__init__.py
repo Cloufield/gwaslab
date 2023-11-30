@@ -1,4 +1,5 @@
 from gwaslab.g_Sumstats import Sumstats
+from gwaslab.g_SumstatsT import SumstatsT
 from gwaslab.util_in_convert_h2 import h2_obs_to_liab
 from gwaslab.util_in_convert_h2 import _get_per_snp_r2
 from gwaslab.util_in_convert_h2 import h2_se_to_p
