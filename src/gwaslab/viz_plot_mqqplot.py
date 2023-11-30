@@ -303,6 +303,7 @@ def mqqplot(insumstats,
     lines_to_plot = -np.log10(lines_to_plot)
 
     vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log)
+
 # Plotting mode selection : layout ####################################################################
     # ax1 : manhattanplot / brisbane plot
     # ax2 : qq plot 
@@ -345,77 +346,11 @@ def mqqplot(insumstats,
 
 # Read sumstats #################################################################################################
 
-    usecols=[]
-    #  P ###############################################################################
-    if mlog10p in insumstats.columns and scaled is True:
-        usecols.append(mlog10p)
-    elif p in insumstats.columns:
-        # p value is necessary for all modes.
-        usecols.append(p)  
-    elif "b" in mode:
-        pass
-    else :
-        raise ValueError("Please make sure "+p+" column is in input sumstats.")
-    
-    # CHR and POS ########################################################################
-    # chrom and pos exists && (m || r mode)
-    if (chrom is not None) and (pos is not None) and (("qq" in mode) or ("m" in mode) or ("r" in mode)):
-        # when manhattan plot, chrom and pos is needed.
-        if chrom in insumstats.columns:
-            usecols.append(chrom)
-        else:
-            raise ValueError("Please make sure "+chrom+" column is in input sumstats.")
-        if pos in insumstats.columns:
-            usecols.append(pos)
-        else:
-            raise ValueError("Please make sure "+pos+" column is in input sumstats.")
-    
-    # for regional plot ea and nea
-    if ("r" in mode) and (ea in insumstats.columns) and (nea in insumstats.columns):
-        try:
-            usecols.append(ea)
-            usecols.append(nea)
-        except:
-            raise ValueError("Please make sure {} and {} columns are in input sumstats.".format(nea,ea))
-    # SNPID ###############################################################################
-    if len(highlight)>0 or len(pinpoint)>0 or (snpid is not None):
-        # read snpid when highlight/pinpoint is needed.
-        if snpid in insumstats.columns:
-            usecols.append(snpid)
-        else:
-            raise ValueError("Please make sure "+snpid+" column is in input sumstats.")
-    
-    # EAF #################################################################################
-    if (stratified is True) and (eaf is not None):
-        # read eaf when stratified qq plot is needed.
-        if eaf in insumstats.columns:
-            usecols.append(eaf)
-        else:
-            raise ValueError("Please make sure "+eaf+" column is in input sumstats.")
-    ## i ##################################################################################
-    if _chrom_df_for_i is not None:
-        usecols.append("i")
-    # ANNOTATion ##########################################################################
-    #
-    if len(anno_set)>0 or len(anno_alias)>0:
-        if anno is None:
-            anno=True
-    if (anno is not None) and (anno is not True):
-        if anno=="GENENAME":
-            pass
-        elif (anno in insumstats.columns):
-            if (anno not in usecols):
-                usecols.append(anno)
-        else:
-            raise ValueError("Please make sure "+anno+" column is in input sumstats.")
-    
-    if (density_color==True) or ("b" in mode and "DENSITY" in insumstats.columns):
-        usecols.append("DENSITY")
-
-    #################################################################################################
+    usecols = _configure_cols_to_use(insumstats, snpid,  chrom, pos, ea, nea, eaf, p, mlog10p,scaled, mode,stratified,anno, anno_set, anno_alias,_chrom_df_for_i,highlight ,pinpoint,density_color)
     sumstats = insumstats.loc[:,usecols].copy()
-
-
+    
+    #################################################################################################
+    
     #Standardize
     ## Annotation
     if (anno == "GENENAME"):
@@ -487,77 +422,27 @@ def mqqplot(insumstats,
         after_number=len(sumstats)
         if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in EAF column ...")
             
-        ## Highlight
+    ## configure highlight regions
     if len(highlight)>0 and ("m" in mode or "r" in mode):
-        if pd.api.types.is_list_like(highlight[0]):
-            # highlight for multiple sets
-            if highlight_chrpos == False:
-                for i, highlight_set in enumerate(highlight):
-                    to_highlight = sumstats.loc[sumstats[snpid].isin(highlight_set),:]
-                    #assign colors: 0 is hightlight color
-                    for index,row in to_highlight.iterrows():
-                        target_chr = int(row[chrom])
-                        target_pos = int(row[pos])
-                        right_chr=sumstats[chrom]==target_chr
-                        up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
-                        low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
-                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i
-            else:
-                for i, highlight_chrpos_tuple in enumerate(highlight):
-                    #assign colors: 0 is hightlight color
-                    if len(highlight_chrpos_tuple) ==2:
-                        target_chr = int(highlight_chrpos_tuple[0])
-                        target_pos = int(highlight_chrpos_tuple[1])
-                        right_chr=sumstats[chrom]==target_chr
-                        up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
-                        low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
-                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i
-                    else:
-                        target_chr = int(highlight_chrpos_tuple[0])
-                        target_pos_low = int(highlight_chrpos_tuple[1])
-                        target_pos_up = int(highlight_chrpos_tuple[2])
-                        right_chr=sumstats[chrom]==target_chr
-                        up_pos=sumstats[pos] > target_pos_low
-                        low_pos=sumstats[pos] < target_pos_up
-                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i                        
-        else:
-            # highlight for one set
-            to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
-            #assign colors: 0 is hightlight color
-            for index,row in to_highlight.iterrows():
-                target_chr = int(row[chrom])
-                target_pos = int(row[pos])
-                right_chr=sumstats[chrom]==target_chr
-                up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
-                low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
-                sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0
+        sumstats = _process_highlight(sumstats=sumstats, 
+                                                    highlight=highlight, 
+                                                    highlight_chrpos=highlight_chrpos, 
+                                                    highlight_windowkb=highlight_windowkb, 
+                                                    snpid=snpid, 
+                                                    chrom=chrom, 
+                                                    pos=pos)
 
 # Density #####################################################################################################              
-    if "b" in mode and "DENSITY" not in sumstats.columns:
-        if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
-        large_number = _get_largenumber(sumstats[pos].max(),log=log)
-
-        stack=[]
-        sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
-        sumstats = sumstats.sort_values(by="TCHR+POS")
-        for index,row in sumstats.iterrows():
-            stack.append([row["SNPID"],row["TCHR+POS"],0])  
-            for i in range(2,len(stack)+1):
-                if stack[-i][1]>= (row["TCHR+POS"]- 1000*bwindowsizekb):
-                    stack[-i][2]+=1
-                    stack[-1][2]+=1
-                else:
-                    break
-        df = pd.DataFrame(stack,columns=["SNPID","TCHR+POS","DENSITY"])
-        sumstats["DENSITY"] = df["DENSITY"].values
-        bmean=sumstats["DENSITY"].mean()
-        bmedian=sumstats["DENSITY"].median()
-    elif "b" in mode and "DENSITY" in sumstats.columns:
-        bmean=sumstats["DENSITY"].mean()
-        bmedian=sumstats["DENSITY"].median()
-        if verbose:log.write(" -DENSITY column exists. Skipping calculation...")
-     
-    #############################
+    if "b" in mode:
+        sumstats, bmean, bmedian = _process_density(sumstats=sumstats, 
+                                                    mode=mode, 
+                                                    bwindowsizekb=bwindowsizekb, 
+                                                    chrom=chrom, 
+                                                    pos=pos, 
+                                                    verbose=verbose, 
+                                                    log=log)
+    else:
+        bmean, bmedian=0,0 
 # P value conversion #####################################################################################################  
     ## m,qq,r -> dropna
     if "b" not in mode and _if_quick_qc:
@@ -833,36 +718,21 @@ def mqqplot(insumstats,
                             )
 
         if region is None:
-            #plot.set_xlabel(chrom)
-            ax1.set_xticks(chrom_df.astype("float64"))
-            ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)
+            ax1 = _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family)
         
         # genomewide significant line
-        if sig_line is True:
-            sigline = ax1.axhline(y=lines_to_plot[0], 
-                                  linewidth = sc_linewidth,
-                                  linestyle="--",
-                                  color=sig_line_color,
-                                  zorder=1)
-        if suggestive_sig_line is True:
-            suggestive_sig_line = ax1.axhline(y=lines_to_plot[1], 
-                                              linewidth = sc_linewidth, 
-                                              linestyle="--", 
-                                              color=suggestive_sig_line_color,
-                                              zorder=1)
-        if additional_line is not None:
-            for index, level in enumerate(lines_to_plot[2:].values):
-                ax1.axhline(y=level, 
-                            linewidth = sc_linewidth, 
-                            linestyle="--", 
-                            color=additional_line_color[index%len(additional_line_color)],
-                            zorder=1)
-            
-            
-        # for brisbane plot, add median and mean line
-        if "b" in mode:    
-            meanline = ax1.axhline(y=bmean, linewidth = sc_linewidth,linestyle="-",color=sig_line_color,zorder=1000)
-            medianline = ax1.axhline(y=bmedian, linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1000)
+        ax1 = _process_line(ax1, 
+                            sig_line, 
+                            suggestive_sig_line, 
+                            additional_line, 
+                            lines_to_plot , 
+                            sc_linewidth, 
+                            sig_line_color, 
+                            suggestive_sig_line_color, 
+                            additional_line_color,
+                            mode, 
+                            bmean, 
+                            bmedian )
         
         ax1 = _set_yticklabels(cut=cut,
                      cutfactor=cutfactor,
@@ -923,46 +793,20 @@ def mqqplot(insumstats,
                                    source=anno_source,
                                    verbose=verbose).rename(columns={"GENE":"Annotation"})
 
-        # Add Annotation to manhattan plot #######################################################
-        
-        if "b" in mode:
-            if ylabel is None:
-                ylabel ="Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb"
-            ax1.set_ylabel(ylabel,ha="center",va="bottom",fontsize=fontsize,family=font_family)
-        else:
-            if ylabel is None:
-                ylabel ="$-log_{10}(P)$"
-            ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family)
-
-        if region is not None:
-            if xlabel is None:
-                xlabel = "Chromosome "+str(region[0])+" (MB)"
-            if (gtf_path is not None ) and ("r" in mode):
-                ax3.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
-            else:
-                ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
-        else:
-            if xlabel is None:
-                xlabel = "Chromosome"
-            ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
-        ##
-        ax1.spines["top"].set_visible(False)
-        ax1.spines["right"].set_visible(False)
-        ax1.spines["left"].set_visible(True)
-        if mode=="r":
-            ax1.spines["top"].set_visible(True)
-            ax1.spines["top"].set_zorder(1)    
-            ax1.spines["right"].set_visible(True)
+        # Configure X, Y axes #######################################################
+        ax1 = _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family)
+        ax1, ax3 = _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=None )
+        ax1 = _process_spine(ax1, mode)
         
         if verbose: log.write("Finished creating Manhattan plot successfully!")
+        
         if mtitle and anno and len(to_annotate)>0: 
             pad=(ax1.transData.transform((skip, title_pad*maxy))[1]-ax1.transData.transform((skip, maxy)))[1]
             ax1.set_title(mtitle,pad=pad,fontsize=title_fontsize,family=font_family)
         elif mtitle:
             ax1.set_title(mtitle,fontsize=title_fontsize,family=font_family)
             
-        # add annotation arrows and texts
-        ## Annotation column
+        # Add annotation arrows and texts
         ax1 = annotate_single(
                                 sumstats=sumstats,
                                 anno=anno,
@@ -996,7 +840,7 @@ def mqqplot(insumstats,
                                 log=log,
                                _invert=_invert
                             )  
-    # Creating Manhatann plot Finished #####################################################################
+    # Manhatann plot Finished #####################################################################
 
     # QQ plot #########################################################################################################
     if "qq" in mode:
@@ -1036,39 +880,264 @@ def mqqplot(insumstats,
                     log=log
                 )
     
-    
-    if xpad!=None:
-        ax1.set_xlim([0 - xpad* sumstats["i"].max(),(1+xpad)*sumstats["i"].max()])
-    
+    # QQ plot Finished #######################################################################################################
+
+    # Y axis jagged
     if jagged==True:
         ax1 = _jagged_y(cut=cut,skip=skip,ax1=ax1,mode=1,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid)
         if "qq" in mode:
             ax2 = _jagged_y(cut=cut,skip=skip,ax1=ax2,mode=2,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid)
     
+    # XY lim
     if ylim is not None:
         ax1.set_ylim(ylim)
         if "qq" in mode:
             ax2.set_ylim(ylim)
-    # Saving plot ##########################################################################################################
-    #if save:
-    #    if verbose: log.write("Saving plot:")
-    #    if save==True:
-    #        fig.savefig("./"+mode+"_plot.png",bbox_inches="tight",**save_args)
-    #        log.write(" -Saved to "+ "./"+mode+"_plot.png" + " successfully!" )
-    #    else:
-    #        fig.savefig(save,bbox_inches="tight",**save_args)
-    #        log.write(" -Saved to "+ save + " successfully!" )
     
-    # add title 
+    if xpad!=None:
+        ax1.set_xlim([0 - xpad* sumstats["i"].max(),(1+xpad)*sumstats["i"].max()])
+
+    # Titles 
     if title and anno and len(to_annotate)>0:
         # increase height if annotation 
         fig.suptitle(title , fontsize = title_fontsize ,x=0.5, y=1.05)
     else:
         fig.suptitle(title , fontsize = title_fontsize, x=0.5,y=1)
 
+    # Saving figure
     save_figure(fig = fig, save = save, keyword=mode, save_args=save_args, log = log, verbose=verbose)
 
     garbage_collect.collect()
-    
     # Return matplotlib figure object #######################################################################################
     return fig, log
+
+##############################################################################################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##############################################################################################################################################################################
+def _configure_cols_to_use(insumstats, snpid,  chrom, pos, ea, nea, eaf, p, mlog10p,scaled, mode,stratified,anno, anno_set, anno_alias,_chrom_df_for_i,highlight ,pinpoint,density_color):
+    usecols=[]
+    #  P ###############################################################################
+    if mlog10p in insumstats.columns and scaled is True:
+        usecols.append(mlog10p)
+    elif p in insumstats.columns:
+        # p value is necessary for all modes.
+        usecols.append(p)  
+    elif "b" in mode:
+        pass
+    else :
+        raise ValueError("Please make sure "+p+" column is in input sumstats.")
+    
+    # CHR and POS ########################################################################
+    # chrom and pos exists && (m || r mode)
+    if (chrom is not None) and (pos is not None) and (("qq" in mode) or ("m" in mode) or ("r" in mode)):
+        # when manhattan plot, chrom and pos is needed.
+        if chrom in insumstats.columns:
+            usecols.append(chrom)
+        else:
+            raise ValueError("Please make sure "+chrom+" column is in input sumstats.")
+        if pos in insumstats.columns:
+            usecols.append(pos)
+        else:
+            raise ValueError("Please make sure "+pos+" column is in input sumstats.")
+    
+    # for regional plot ea and nea
+    if ("r" in mode) and (ea in insumstats.columns) and (nea in insumstats.columns):
+        try:
+            usecols.append(ea)
+            usecols.append(nea)
+        except:
+            raise ValueError("Please make sure {} and {} columns are in input sumstats.".format(nea,ea))
+    # SNPID ###############################################################################
+    if len(highlight)>0 or len(pinpoint)>0 or (snpid is not None):
+        # read snpid when highlight/pinpoint is needed.
+        if snpid in insumstats.columns:
+            usecols.append(snpid)
+        else:
+            raise ValueError("Please make sure "+snpid+" column is in input sumstats.")
+    
+    # EAF #################################################################################
+    if (stratified is True) and (eaf is not None):
+        # read eaf when stratified qq plot is needed.
+        if eaf in insumstats.columns:
+            usecols.append(eaf)
+        else:
+            raise ValueError("Please make sure "+eaf+" column is in input sumstats.")
+    ## i ##################################################################################
+    if _chrom_df_for_i is not None:
+        usecols.append("i")
+    # ANNOTATion ##########################################################################
+    #
+    if len(anno_set)>0 or len(anno_alias)>0:
+        if anno is None:
+            anno=True
+    if (anno is not None) and (anno is not True):
+        if anno=="GENENAME":
+            pass
+        elif (anno in insumstats.columns):
+            if (anno not in usecols):
+                usecols.append(anno)
+        else:
+            raise ValueError("Please make sure "+anno+" column is in input sumstats.")
+    
+    if (density_color==True) or ("b" in mode and "DENSITY" in insumstats.columns):
+        usecols.append("DENSITY")
+    return usecols
+
+
+def _sanity_check():
+    pass
+
+def _process_p_value():
+    pass
+
+def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb, snpid, chrom, pos):
+        if pd.api.types.is_list_like(highlight[0]):
+            if highlight_chrpos == False:
+                # highlight for multiple sets
+                for i, highlight_set in enumerate(highlight):
+                    to_highlight = sumstats.loc[sumstats[snpid].isin(highlight_set),:]
+                    #assign colors: 0 is hightlight color
+                    for index,row in to_highlight.iterrows():
+                        target_chr = int(row[chrom])
+                        target_pos = int(row[pos])
+                        right_chr=sumstats[chrom]==target_chr
+                        up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
+                        low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
+                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i
+            else:
+                for i, highlight_chrpos_tuple in enumerate(highlight):
+                    # len 2 : chr, center
+                    # len 3 : chr, start, end
+                    if len(highlight_chrpos_tuple) ==2:
+                        target_chr = int(highlight_chrpos_tuple[0])
+                        target_pos = int(highlight_chrpos_tuple[1])
+                        right_chr=sumstats[chrom]==target_chr
+                        up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
+                        low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
+                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0
+                    elif len(highlight_chrpos_tuple) ==3:
+                        target_chr = int(highlight_chrpos_tuple[0])
+                        target_pos_low = int(highlight_chrpos_tuple[1])
+                        target_pos_up = int(highlight_chrpos_tuple[2])
+                        right_chr=sumstats[chrom]==target_chr
+                        up_pos=sumstats[pos] > target_pos_low
+                        low_pos=sumstats[pos] < target_pos_up
+                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0                        
+        else:
+            # highlight for one set
+            # to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
+            #assign colors: 0 is hightlight color
+            for index,row in to_highlight.iterrows():
+                target_chr = int(row[chrom])
+                target_pos = int(row[pos])
+                right_chr=sumstats[chrom]==target_chr
+                up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
+                low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
+                sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0
+        return sumstats
+
+def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
+    if "b" in mode and "DENSITY" not in sumstats.columns:
+        if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
+        large_number = _get_largenumber(sumstats[pos].max(),log=log)
+
+        stack=[]
+        sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
+        sumstats = sumstats.sort_values(by="TCHR+POS")
+        for index,row in sumstats.iterrows():
+            stack.append([row["SNPID"],row["TCHR+POS"],0])  
+            for i in range(2,len(stack)+1):
+                if stack[-i][1]>= (row["TCHR+POS"]- 1000*bwindowsizekb):
+                    stack[-i][2]+=1
+                    stack[-1][2]+=1
+                else:
+                    break
+        df = pd.DataFrame(stack,columns=["SNPID","TCHR+POS","DENSITY"])
+        sumstats["DENSITY"] = df["DENSITY"].values
+        bmean=sumstats["DENSITY"].mean()
+        bmedian=sumstats["DENSITY"].median()
+    elif "b" in mode and "DENSITY" in sumstats.columns:
+        bmean=sumstats["DENSITY"].mean()
+        bmedian=sumstats["DENSITY"].median()
+        if verbose:log.write(" -DENSITY column exists. Skipping calculation...") 
+    return   sumstats, bmean, bmedian
+
+def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_plot , sc_linewidth, sig_line_color, suggestive_sig_line_color, additional_line_color, mode, bmean, bmedian ):
+    # genomewide significant line
+    if sig_line is True:
+        sigline = ax1.axhline(y=lines_to_plot[0], 
+                                linewidth = sc_linewidth,
+                                linestyle="--",
+                                color=sig_line_color,
+                                zorder=1)
+    if suggestive_sig_line is True:
+        suggestive_sig_line = ax1.axhline(y=lines_to_plot[1], 
+                                            linewidth = sc_linewidth, 
+                                            linestyle="--", 
+                                            color=suggestive_sig_line_color,
+                                            zorder=1)
+    if additional_line is not None:
+        for index, level in enumerate(lines_to_plot[2:].values):
+            ax1.axhline(y=level, 
+                        linewidth = sc_linewidth, 
+                        linestyle="--", 
+                        color=additional_line_color[index%len(additional_line_color)],
+                        zorder=1)
+    if "b" in mode:   
+        # for brisbane plot, add median and mean line 
+        meanline = ax1.axhline(y=bmean, linewidth = sc_linewidth,linestyle="-",color=sig_line_color,zorder=1000)
+        medianline = ax1.axhline(y=bmedian, linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1000)
+    return ax1
+
+def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family):
+    ax1.set_xticks(chrom_df.astype("float64"))
+    ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)    
+    return ax1
+
+def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=None ):
+    if region is not None:
+        if xlabel is None:
+            xlabel = "Chromosome "+str(region[0])+" (MB)"
+        if (gtf_path is not None ) and ("r" in mode):
+            ax3.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
+        else:
+            ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
+    else:
+        if xlabel is None:
+            xlabel = "Chromosome"
+        ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
+    return ax1, ax3
+
+def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family):
+    if "b" in mode:
+        if ylabel is None:
+            ylabel ="Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb"
+        ax1.set_ylabel(ylabel,ha="center",va="bottom",fontsize=fontsize,family=font_family)
+    else:
+        if ylabel is None:
+            ylabel ="$-log_{10}(P)$"
+        ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family)
+    return ax1
+
+def _process_spine(ax1, mode):
+    ax1.spines["top"].set_visible(False)
+    ax1.spines["right"].set_visible(False)
+    ax1.spines["left"].set_visible(True)
+    if mode=="r":
+        ax1.spines["top"].set_visible(True)
+        ax1.spines["top"].set_zorder(1)    
+        ax1.spines["right"].set_visible(True)
+    return ax1
