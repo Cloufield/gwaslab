@@ -377,7 +377,7 @@ Commonly used ones:
 ### 2.15 Saving plots
 
 ```python
-mysumstats.plot_mqq(save="mymqqplots.png",saveargs={"dpi":400,"facecolor":"white"})
+mysumstats.plot_mqq(save="mymqqplots.png",save_args={"dpi":400,"facecolor":"white"})
 ```
 
 Two options for saving plots in `.plot_mqq`
@@ -385,9 +385,9 @@ Two options for saving plots in `.plot_mqq`
 |Saving Option|DataType|Description|Default|
 |-|-|-|-|
 |`save`|`string` or `boolean`|If `string`, the plot will be saved to the specified path; If `True`, it will be saved to default path|`True`|
-|`saveargs`|`dict`|other parameters passed to matplotlib `savefig` function.|`{"dpi":300,"facecolor":"white"}`|
+|`save_args`|`dict`|other parameters passed to matplotlib `savefig` function.|`{"dpi":300,"facecolor":"white"}`|
 
 !!! example
 
-    - save as png: `mysumstats.plot_mqq(save="mymqqplots.png",saveargs={"dpi":300})`
-    - save as PDF: `mysumstats.plot_mqq(save="mymqqplots.pdf",saveargs={"dpi":300})`
+    - save as png: `mysumstats.plot_mqq(save="mymqqplots.png",save_args={"dpi":300})`
+    - save as PDF: `mysumstats.plot_mqq(save="mymqqplots.pdf",save_args={"dpi":300})`
