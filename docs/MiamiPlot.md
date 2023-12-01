@@ -42,7 +42,7 @@ gl.plot_miami(
 |`titles_pad`|`list`|paddings for titles|`[0.2,0.2]`|
 |`build`|`list`|genome build for annotate gene names. For example,`titles=["male","female"]`|`"19"`|
 |`save`|`boolean` or `string`|if true, save to default path. if string, save to path specified by string|`True`|
-|`saveargs`|`dict`|additional parameters for `plt.save_fig`|`{"dpi":100,"facecolor":"white"}`|
+|`save_args`|`dict`|additional parameters for `plt.save_fig`|`{"dpi":100,"facecolor":"white"}`|
 
 ## Example
 

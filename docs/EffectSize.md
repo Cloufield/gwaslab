@@ -54,7 +54,7 @@ gl.compare_effect (path1,
                    sep=["\t","\t"],
                    log = Log(),
                    save=False,
-                   saveargs=None,
+                   save_args=None,
                    verbose=False)
     
 
@@ -89,7 +89,7 @@ gl.compare_effect (path1,
 |Option|Type|Description|Default|
 |-|-|-|-|
 |`save`|`string`|path to the saved file|`./Sumstats1_Sumstats2_effect_comparison_plot.png`|
-|`saveargs`|`dict`|parametrs for plt.savefig()|`{"dpi":300,"facecolor":"white"}`|
+|`save_args`|`dict`|parametrs for plt.savefig()|`{"dpi":300,"facecolor":"white"}`|
 
 ### Snplist
 
@@ -239,7 +239,7 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
                       legend_title=r'$ P < 5 x 10^{-8}$ in:',
                       verbose=True,
                       save = "myplot.png",
-                      saveargs= {"dpi":300,"facecolor":"white"}
+                      save_args= {"dpi":300,"facecolor":"white"}
     )
     ```
     <img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/ed462a3d-64cf-4f06-bdb5-13294b4182c8">

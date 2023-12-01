@@ -123,7 +123,7 @@ def plot_miami(
           xtickpad=None,
           repel_force=0.03,
           save=None,
-          saveargs=None,
+          save_args=None,
           log=Log()
           ):
     ## figuring arguments ###########################################################################################################
@@ -169,8 +169,8 @@ def plot_miami(
         scatter_kwargs={}
     if figargs is None:
         figargs= {"figsize":(15,5),"dpi":100}
-    if saveargs is None:
-        saveargs={"dpi":100,"facecolor":"white"}
+    if save_args is None:
+        save_args={"dpi":100,"facecolor":"white"}
     if colors1 is None:
         colors1=["#597FBD","#74BAD3"]
     if colors2 is None:
@@ -690,12 +690,12 @@ def plot_miami(
     #if save is not None:
     #    if verbose: log.write("Saving plot:")
     #    if save==True:
-    #        fig.savefig("./miami_plot.png",bbox_inches="tight",**saveargs)
+    #        fig.savefig("./miami_plot.png",bbox_inches="tight",**save_args)
     #        log.write(" -Saved to "+ "./miami_plot.png" + " successfully!" )
     #    else:
-    #        fig.savefig(save,bbox_inches="tight",**saveargs)
+    #        fig.savefig(save,bbox_inches="tight",**save_args)
     #        log.write(" -Saved to "+ save + " successfully!" )
-    save_figure(fig, save, keyword="miami",saveargs=saveargs, log=log, verbose=verbose)
+    save_figure(fig, save, keyword="miami",save_args=save_args, log=log, verbose=verbose)
 
     garbage_collect.collect()
     if verbose: log.write("Finished creating miami plot successfully")

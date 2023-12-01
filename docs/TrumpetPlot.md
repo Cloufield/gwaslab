@@ -56,7 +56,7 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 |`xticklabels`|`list`|X axis tick labels|`Minor allele frequency`|[0.001,0.01,0.05,0.1,0.2,0.5]|
 
 |`save`|`string` or `True`|if True, the figure will be saved in the current directory with a default name. If `string` is provided, it will be used as the path for the figure |`False`|
-|`saveargs`|`dict`|augurments for matplotlib savefig|None|
+|`save_args`|`dict`|augurments for matplotlib savefig|None|
 
 ## example
 
