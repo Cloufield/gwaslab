@@ -37,7 +37,7 @@ def _plot_qq(
     ytick3,
     ylabels,
     ylabels_converted,
-    qq_scatter_kwargs,
+    qq_scatter_args,
     expected_min_mlog10p,
     verbose=True,
     log=Log()
@@ -70,7 +70,7 @@ def _plot_qq(
 
         if verbose:log.write("Expected range of P: (0,{})".format(upper_bound_p))
         #p_toplot = sumstats["scaled_P"]
-        ax2.scatter(expected_all,observed,s=marker_size[1],color=colors[0],**qq_scatter_kwargs)
+        ax2.scatter(expected_all,observed,s=marker_size[1],color=colors[0],**qq_scatter_args)
 
     else:
         # stratified qq plot
@@ -94,7 +94,7 @@ def _plot_qq(
             expected = -np.log10(np.linspace(minit,upper_bound_p,max(len(databin_raw),len(databin))))[:len(observed)]
 
             label ="("+str(lower)+","+str(upper) +"]"
-            ax2.scatter(expected,observed,s=marker_size[1],color=maf_bin_colors[i],label=label,**qq_scatter_kwargs)
+            ax2.scatter(expected,observed,s=marker_size[1],color=maf_bin_colors[i],label=label,**qq_scatter_args)
             ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=3,frameon=False)
             plt.setp(ax2_legend.texts, family=font_family)
 
