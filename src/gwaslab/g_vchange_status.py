@@ -25,6 +25,9 @@ def schange_status(status,digit,after):
     status = pd.eval("prefix*10**(7-digit+1) + after*10**(7-digit) + suffix")
     return status
 
+def copy_status():
+    pass
+
 def status_match(status,digit,to_match):   
     #middle = status.floordiv(10**(7-digit)).mod(10)
     middle = pd.eval('(status // 10**(7-digit) ) % 10')
