@@ -24,21 +24,13 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
     
     mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=("_MOLD",""))
     log.write("After merging by CHR and POS:{}".format(len(mold_sumstats)))
-
     mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats)
     log.write("Matched variants:{}".format(len(mold_sumstats)))
-
-
     
     if ref_path is not None:
         mold_removed = mold.loc[~mold["_INDEX"].isin(mold_sumstats["_INDEX_MOLD"]),:]
         iron_removed = sumstats.loc[~sumstats["_INDEX"].isin(mold_sumstats["_INDEX"]),:]
         _match_two_sumstats(mold_removed,iron_removed,ref_path,windowsizeb=windowsizeb)
-
-
-
-
-
 
     return mold_sumstats
 
@@ -113,13 +105,12 @@ def _match_two_sumstats(mold,sumstats,ref_path,windowsizeb=25,verbose=True,log=L
                     if sum(is_in_variants_lista)>0 and sum(is_in_variants_listb)>0 and (sum(is_in_variants_lista) + sum(is_in_variants_listb) >2):
                         variants_lista = mold.loc[is_in_variants_lista,:]
                         variants_listb = sumstats.loc[is_in_variants_listb,:]
-                        print(variants_lista[["CHR","POS","NEA_MOLD","EA_MOLD"]])
-                        print(variants_listb[["CHR","POS","NEA","EA"]])
+                        
                         refseq = record[row["POS"]-1 - windowsizeb: row["POS"] + windowsizeb].seq.upper()
                         _match_single_variant(refseq, variants_lista, variants_listb, left_offset=row["POS"] - windowsizeb, windowsizeb=windowsizeb)
 
 def _match_single_variant(refseq,  variants_lista, variants_listb, left_offset,windowsizeb):
-    print(refseq,left_offset)
+    
     
     seta=set()
     setb=set()
@@ -142,12 +133,18 @@ def _match_single_variant(refseq,  variants_lista, variants_listb, left_offset,w
             continue
         else:
             setb = _form_haplotype(refseq, variants_listb.loc[i,:], setb, left_offset,suffix="")
-    print("------------------------------------")  
-    print(seta)
-    print("#s------------------------------------")    
-    print(setb)   
-    print("------------------------------------")            
+        
     if len(seta & setb)>0:
+        print("-Topmed--------------------------------")  
+        print(variants_lista[["CHR","POS","NEA_MOLD","EA_MOLD","EAF_MOLD"]])
+        print("-Finngen--------------------------------")  
+        print(variants_listb[["CHR","POS","NEA","EA","EAF"]])
+        print(refseq,left_offset)
+        print("-set a--------------------------------")  
+        print(seta)
+        print("-set b---------------------------------")    
+        print(setb)   
+        print("------------------------------------")    
         print("maybe equivalent ########################################################################")
         a = seta & setb
         for i in a:

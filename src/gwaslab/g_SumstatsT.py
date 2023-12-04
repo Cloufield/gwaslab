@@ -28,7 +28,7 @@ class SumstatsT( ):
 
         self.snp_info = sumstatsObject.data.loc[:,self.snp_info_cols]
 
-        self.snp_info = self.snp_info.rename(columns={"EA":"EA_MOLD","NEA":"NEA_MOLD"})
+        self.snp_info = self.snp_info.rename(columns={"EA":"EA_MOLD","NEA":"NEA_MOLD","EAF":"EAF_MOLD"})
     
     def cast(self, sumstatsObject, threshold=0.2, verbose=True,windowsizeb=10, ref_path=None):
 
