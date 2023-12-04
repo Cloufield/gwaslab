@@ -455,12 +455,11 @@ def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,status,chr
     return status_pre+"8"+status_end
 
 
-def check_unkonwn_indel(chr,start,end,ref,alt,vcf_reader,alt_freq,status,chr_dict=get_number_to_chr()):
+def check_unkonwn_indel(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,status,chr_dict=get_number_to_chr(),daf_tolerance=0.2):
     ### input : unknown indel, both on genome (xx1[45]x)
     ### 3 no flip
     ### 4 unknown indel,fixed   (6->5)
     ### 6 flip
-    ### 9 noinfo or not matching
     
     if chr_dict is not None: chr=chr_dict[chr]
     status_pre=status[:6]
@@ -473,9 +472,13 @@ def check_unkonwn_indel(chr,start,end,ref,alt,vcf_reader,alt_freq,status,chr_dic
 
     for record in chr_seq:
         if record.pos==end and record.ref==ref and (alt in record.alts):
-            return status_pre+"3"+status_end
+            if  abs(record.info[alt_freq][0] - eaf)<daf_tolerance:
+                return status_pre+"3"+status_end
+   
         elif record.pos==end and record.ref==alt and (ref in record.alts):
-            return status_pre+"6"+status_end
+            if  abs(record.info[alt_freq][0] - (1 - eaf))<daf_tolerance:
+                return status_pre+"6"+status_end
+
     return status_pre+"8"+status_end
 
                                                
@@ -502,14 +505,14 @@ def check_strand(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="N
     status_part = sumstats.apply(lambda x:check_strand_status(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,x[5],chr_dict),axis=1) 
     return status_part
 
-def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS"):
+def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS",daf_tolerance=0.2):
     vcf_reader = VariantFile(ref_infer)
-    status_part = sumstats.apply(lambda x:check_unkonwn_indel(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,ref_alt_freq,x[4],chr_dict),axis=1)
+    status_part = sumstats.apply(lambda x:check_unkonwn_indel(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,x[5],chr_dict,daf_tolerance),axis=1)
     return status_part
 
 ##################################################################################################################################################
 
-def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,remove_snp="",mode="pi",n_cores=1,remove_indel="",
+def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,daf_tolerance=0.20,remove_snp="",mode="pi",n_cores=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
                        chr_dict=None,verbose=True,log=Log()):
     if verbose: log.write("Start to infer strand for palindromic SNPs...")
@@ -592,13 +595,18 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
         if verbose: log.write(" -Identified ", sum(unknow_indel)," indistinguishable Indels...")
         if sum(unknow_indel)>0:
             if verbose: log.write(" -Indistinguishable indels will be inferred from reference vcf ref and alt...")
-            #########################################################################################               
+            #########################################################################################  
+            #with maf can not infer
+            #maf_can_infer   = (sumstats.loc[:,eaf] < maf_threshold) | (sumstats.loc[:,eaf] > 1 - maf_threshold) 
+            #sumstats.loc[unknow_indel&(~maf_can_infer),status] = vchange_status(sumstats.loc[unknow_indel&(~maf_can_infer),status],7,"9","8") 
+            if verbose: log.write(" -DAF tolerance: {}".format(daf_tolerance))
+                         
             if sum(unknow_indel)>0:
                 if sum(unknow_indel)<10000: 
                     n_cores=1    
-                df_split = np.array_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,status]], n_cores)
+                df_split = np.array_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], n_cores)
                 pool = Pool(n_cores)
-                map_func = partial(check_indel,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
+                map_func = partial(check_indel,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict,daf_tolerance=daf_tolerance) 
                 status_inferred = pd.concat(pool.map(map_func,df_split))
                 sumstats.loc[unknow_indel,status] = status_inferred.values 
             pool.close()

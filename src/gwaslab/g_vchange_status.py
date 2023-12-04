@@ -8,7 +8,14 @@ def vchange_status(status,digit,before,after):
         return status.str[:digit-1]+status.str[digit-1].replace(dic)+status.str[digit:]
     else:
         return status.str[digit-1].replace(dic)+status.str[digit:]
-    
+
+def copy_status(from_status,to_status, digit):
+    if digit>1:
+        return to_status.str[:digit-1]+from_status.str[digit-1]+to_status.str[digit:]
+    else:
+        return to_status.str[digit-1]+to_status.str[digit:]
+
+
 def change_status(status,digit,after):
     prefix= status // 10**(7-digit+1)
     #middle= (status // 10**(7-digit) ) % 10
@@ -25,8 +32,7 @@ def schange_status(status,digit,after):
     status = pd.eval("prefix*10**(7-digit+1) + after*10**(7-digit) + suffix")
     return status
 
-def copy_status():
-    pass
+
 
 def status_match(status,digit,to_match):   
     #middle = status.floordiv(10**(7-digit)).mod(10)
