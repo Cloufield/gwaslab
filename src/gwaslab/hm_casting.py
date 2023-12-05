@@ -9,7 +9,7 @@ from gwaslab.util_in_fill_data import filldata
 from Bio import SeqIO
 from itertools import combinations
 
-def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log=Log(),verbose=True):
+def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log=Log(),mold_suffix="_MOLD",verbose=True):
     cols_to_drop = []
     for i in sumstats.columns:
         if i in ["SNPID","rsID"]:
@@ -22,36 +22,36 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
     mold["_INDEX"] = range(len(mold))
     sumstats["_INDEX"] = range(len(sumstats))
     
-    mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=("_MOLD",""))
+    mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=(mold_suffix,""))
     log.write("After merging by CHR and POS:{}".format(len(mold_sumstats)))
-    mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats)
+    mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats,mold_suffix=mold_suffix)
     log.write("Matched variants:{}".format(len(mold_sumstats)))
     
     if ref_path is not None:
-        mold_removed = mold.loc[~mold["_INDEX"].isin(mold_sumstats["_INDEX_MOLD"]),:]
+        mold_removed = mold.loc[~mold["_INDEX"].isin(mold_sumstats["_INDEX"+mold_suffix]),:]
         iron_removed = sumstats.loc[~sumstats["_INDEX"].isin(mold_sumstats["_INDEX"]),:]
         _match_two_sumstats(mold_removed,iron_removed,ref_path,windowsizeb=windowsizeb)
 
     return mold_sumstats
 
-def _keep_variants_with_same_allele_set(sumstats, log=Log(),verbose=True):
+def _keep_variants_with_same_allele_set(sumstats, log=Log(),verbose=True,mold_suffix="_MOLD"):
 
-    all_alleles = set(list(sumstats["EA"].unique())+list(sumstats["NEA"].unique())+list(sumstats["EA_MOLD"].unique())+list(sumstats["NEA_MOLD"].unique()))
+    all_alleles = set(list(sumstats["EA"].unique())+list(sumstats["NEA"].unique())+list(sumstats["EA"+mold_suffix].unique())+list(sumstats["NEA"+mold_suffix].unique()))
     allele_type = CategoricalDtype(categories=all_alleles, ordered=False)
-    sumstats.loc[:, ["EA","EA_MOLD","NEA","NEA_MOLD"]] = sumstats.loc[:, ["EA","EA_MOLD","NEA","NEA_MOLD"]].astype(allele_type)
+    sumstats.loc[:, ["EA","EA"+mold_suffix,"NEA","NEA"+mold_suffix]] = sumstats.loc[:, ["EA","EA"+mold_suffix,"NEA","NEA"+mold_suffix]].astype(allele_type)
     
-    is_perfect_match = (sumstats["EA"] == sumstats["EA_MOLD"]) & (sumstats["NEA"] == sumstats["NEA_MOLD"])
-    is_flipped_match = (sumstats["EA"] == sumstats["NEA_MOLD"]) & (sumstats["NEA"] == sumstats["EA_MOLD"])
+    is_perfect_match = (sumstats["EA"] == sumstats["EA"+mold_suffix]) & (sumstats["NEA"] == sumstats["NEA"+mold_suffix])
+    is_flipped_match = (sumstats["EA"] == sumstats["NEA"+mold_suffix]) & (sumstats["NEA"] == sumstats["EA"+mold_suffix])
     is_allele_set_match = is_flipped_match | is_perfect_match
     
     sumstats.loc[~is_allele_set_match,:]
 
     return sumstats.loc[is_allele_set_match,:]
 
-def _align_with_mold(sumstats, log=Log(),verbose=True):
-    is_perfect_match = (sumstats["EA"] == sumstats["EA_MOLD"]) & (sumstats["NEA"] == sumstats["NEA_MOLD"])
-    is_flipped_match = (sumstats["EA"] == sumstats["NEA_MOLD"]) & (sumstats["NEA"] == sumstats["EA_MOLD"])
-    sumstats.loc[is_perfect_match,"STATUS"] = copy_status(sumstats.loc[is_perfect_match,"STATUS_MOLD"], sumstats.loc[is_perfect_match,"STATUS"],6)
+def _align_with_mold(sumstats, log=Log(),verbose=True, mold_suffix="_MOLD"):
+    is_perfect_match = (sumstats["EA"] == sumstats["EA"+mold_suffix]) & (sumstats["NEA"] == sumstats["NEA"+mold_suffix])
+    is_flipped_match = (sumstats["EA"] == sumstats["NEA"+mold_suffix]) & (sumstats["NEA"] == sumstats["EA"+mold_suffix])
+    sumstats.loc[is_perfect_match,"STATUS"] = copy_status(sumstats.loc[is_perfect_match,"STATUS"+mold_suffix], sumstats.loc[is_perfect_match,"STATUS"],6)
     sumstats.loc[is_flipped_match,"STATUS"] = vchange_status(sumstats.loc[is_flipped_match,"STATUS"],6,"456789","333333")
     return sumstats
 
@@ -59,8 +59,16 @@ def _fill_missing_columns(sumstats, columns, log=Log(),verbose=True):
     sumstats = filldata(sumstats, to_fill=columns)
     return sumstats
 
-def _check_daf(sumstats, log=Log(),verbose=True):
-    sumstats["DAF"] = sumstats["EAF_MOLD"] - sumstats["EAF"]
+def _renaming_cols(sumstats, columns, log=Log(),verbose=True, suffix=""):
+    to_rename =[]
+    for col in columns:
+        if col in sumstats.columns:
+            to_rename.append(col)
+    sumstats = sumstats.rename(columns={i:i + suffix for i in to_rename})
+    return sumstats
+
+def _check_daf(sumstats, log=Log(),verbose=True,mold_suffix="_MOLD"):
+    sumstats["DAF"] = sumstats["EAF"+mold_suffix] - sumstats["EAF"]
     return sumstats
 
 def _assign_warning_code(sumstats, threshold=0.2, log=Log(),verbose=True):
