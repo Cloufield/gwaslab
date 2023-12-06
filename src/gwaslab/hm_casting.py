@@ -9,7 +9,7 @@ from gwaslab.util_in_fill_data import filldata
 from Bio import SeqIO
 from itertools import combinations
 
-def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log=Log(),mold_suffix="_MOLD",verbose=True):
+def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log=Log(),suffixes=("_MOLD",""),verbose=True):
     cols_to_drop = []
     for i in sumstats.columns:
         if i in ["SNPID","rsID"]:
@@ -19,56 +19,104 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
         log.write("Dropping old IDs:{}".format(cols_to_drop))
         sumstats = sumstats.drop(columns=cols_to_drop)
     
-    mold["_INDEX"] = range(len(mold))
-    sumstats["_INDEX"] = range(len(sumstats))
+    if ref_path is not None:
+        # index for checking removed variants
+        index1= "_INDEX" + suffixes[0]
+        index2= "_INDEX" + suffixes[1]
+        mold[index1] = range(len(mold))
+        sumstats[index2] = range(len(sumstats))
     
-    mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=(mold_suffix,""))
+    mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=suffixes)
     log.write("After merging by CHR and POS:{}".format(len(mold_sumstats)))
-    mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats,mold_suffix=mold_suffix)
+    
+    mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats,suffixes=suffixes)
     log.write("Matched variants:{}".format(len(mold_sumstats)))
     
     if ref_path is not None:
-        mold_removed = mold.loc[~mold["_INDEX"].isin(mold_sumstats["_INDEX"+mold_suffix]),:]
-        iron_removed = sumstats.loc[~sumstats["_INDEX"].isin(mold_sumstats["_INDEX"]),:]
+        # match removed sumstats
+        mold_removed = mold.loc[~mold[index1].isin(mold_sumstats[index1]),:]
+        iron_removed = sumstats.loc[~sumstats[index2].isin(mold_sumstats[index2]),:]
         _match_two_sumstats(mold_removed,iron_removed,ref_path,windowsizeb=windowsizeb)
-
+        mold_sumstats.drop(columns=["_INDEX",""])
     return mold_sumstats
 
-def _keep_variants_with_same_allele_set(sumstats, log=Log(),verbose=True,mold_suffix="_MOLD"):
+def _keep_variants_with_same_allele_set(sumstats, log=Log(),verbose=True,suffixes=("_MOLD","")):
 
-    all_alleles = set(list(sumstats["EA"].unique())+list(sumstats["NEA"].unique())+list(sumstats["EA"+mold_suffix].unique())+list(sumstats["NEA"+mold_suffix].unique()))
+    ea1="EA"+suffixes[0]
+    nea1="NEA"+suffixes[0]
+    ea2="EA"+suffixes[1]
+    nea2="NEA"+suffixes[1]
+
+    all_alleles = set(list(sumstats[ea1].unique())+list(sumstats[nea1].unique())+list(sumstats[ea2].unique())+list(sumstats[nea2].unique()))
     allele_type = CategoricalDtype(categories=all_alleles, ordered=False)
-    sumstats.loc[:, ["EA","EA"+mold_suffix,"NEA","NEA"+mold_suffix]] = sumstats.loc[:, ["EA","EA"+mold_suffix,"NEA","NEA"+mold_suffix]].astype(allele_type)
+    sumstats.loc[:, [nea1,ea1,nea2,ea2]] = sumstats.loc[:, [nea1,ea1,nea2,ea2]].astype(allele_type)
     
-    is_perfect_match = (sumstats["EA"] == sumstats["EA"+mold_suffix]) & (sumstats["NEA"] == sumstats["NEA"+mold_suffix])
-    is_flipped_match = (sumstats["EA"] == sumstats["NEA"+mold_suffix]) & (sumstats["NEA"] == sumstats["EA"+mold_suffix])
+    is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1])
+    is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])
     is_allele_set_match = is_flipped_match | is_perfect_match
     
     sumstats.loc[~is_allele_set_match,:]
 
     return sumstats.loc[is_allele_set_match,:]
 
-def _align_with_mold(sumstats, log=Log(),verbose=True, mold_suffix="_MOLD"):
-    is_perfect_match = (sumstats["EA"] == sumstats["EA"+mold_suffix]) & (sumstats["NEA"] == sumstats["NEA"+mold_suffix])
-    is_flipped_match = (sumstats["EA"] == sumstats["NEA"+mold_suffix]) & (sumstats["NEA"] == sumstats["EA"+mold_suffix])
-    sumstats.loc[is_perfect_match,"STATUS"] = copy_status(sumstats.loc[is_perfect_match,"STATUS"+mold_suffix], sumstats.loc[is_perfect_match,"STATUS"],6)
-    sumstats.loc[is_flipped_match,"STATUS"] = vchange_status(sumstats.loc[is_flipped_match,"STATUS"],6,"456789","333333")
+def _align_with_mold(sumstats, log=Log(),verbose=True, suffixes=("_MOLD","")):
+    
+    ea1="EA"+suffixes[0]
+    nea1="NEA"+suffixes[0]
+    ea2="EA"+suffixes[1]
+    nea2="NEA"+suffixes[1]
+    status1="STATUS"+suffixes[0]
+    status2="STATUS"+suffixes[1]
+    is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1])
+    is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])
+    
+    sumstats.loc[is_perfect_match,status2] = copy_status(sumstats.loc[is_perfect_match,status1], sumstats.loc[is_perfect_match,status2],6)
+    sumstats.loc[is_flipped_match,status2] = vchange_status(sumstats.loc[is_flipped_match,status2],6,"456789","333333")
+    
     return sumstats
 
 def _fill_missing_columns(sumstats, columns, log=Log(),verbose=True):
     sumstats = filldata(sumstats, to_fill=columns)
     return sumstats
 
-def _renaming_cols(sumstats, columns, log=Log(),verbose=True, suffix=""):
-    to_rename =[]
+def _renaming_cols(sumstats, columns, log=Log(),verbose=True, suffixes=("_1","_2")):
+    to_rename =["STATUS"]
     for col in columns:
         if col in sumstats.columns:
             to_rename.append(col)
-    sumstats = sumstats.rename(columns={i:i + suffix for i in to_rename})
+    sumstats = sumstats.rename(columns={i:i + suffixes[1] for i in to_rename})
+    log.write(" -Renaming sumstats2 columns by adding suffix {}".format(suffixes[1]),verbose=verbose)
     return sumstats
 
-def _check_daf(sumstats, log=Log(),verbose=True,mold_suffix="_MOLD"):
-    sumstats["DAF"] = sumstats["EAF"+mold_suffix] - sumstats["EAF"]
+def _sort_pair_cols(molded_sumstats, verbose=True, log=Log(), order=None, stats_order=None,suffixes=("_1","_2")):
+    if stats_order is None:
+        order = ["SNPID","rsID", "CHR", "POS", "EA", "NEA"]
+        stats_order = ["EAF", "MAF", "BETA", "SE","BETA_95L","BETA_95U", "Z",
+        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U","HR", "HR_95L", "HR_95U","INFO", "N","N_CASE","N_CONTROL","DIRECTION","I2","P_HET","DOF","SNPR2","STATUS"]
+        
+    for suffix in suffixes:
+        for i in stats_order:
+            order.append(i+suffix)
+    
+    log.write("Start to reorder the columns...",verbose=verbose)
+    
+    output_columns = []
+    
+    for i in order:
+        if i in molded_sumstats.columns: 
+            output_columns.append(i)
+    for i in molded_sumstats.columns:
+        if i not in order: 
+            output_columns.append(i)
+    
+    if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns))
+    molded_sumstats = molded_sumstats.loc[:, output_columns]
+    if verbose: log.write("Finished sorting columns successfully!")
+    
+    return molded_sumstats
+
+def _check_daf(sumstats, log=Log(),verbose=True,suffixes=("_MOLD","")):
+    sumstats["DAF"] = sumstats["EAF"+suffixes[0]] - sumstats["EAF"]
     return sumstats
 
 def _assign_warning_code(sumstats, threshold=0.2, log=Log(),verbose=True):

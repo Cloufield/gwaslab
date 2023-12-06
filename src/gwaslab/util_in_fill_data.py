@@ -34,8 +34,11 @@ def filldata(
         for i in skip_cols:
             to_fill.remove(i)
         if verbose: log.write("  -Skipping columns: ",skip_cols) 
+    if len(set(to_fill) & set(["OR","OR95L","OR95U","BETA","SE","P","Z","CHI2","MLOG10P"]))==0:
+        log.write(" -No available columns to fill. Skipping.", verbose=verbose)
+        log.write("Finished filling data using existing columns.", verbose=verbose)
+        return sumstats
     if verbose: log.write(" -Filling columns: ",to_fill)
-    
     fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose,sig_level)
 ## beta to or ####################################################################################################     
 #    if "OR" in to_fill:

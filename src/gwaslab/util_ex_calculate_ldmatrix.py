@@ -20,11 +20,14 @@ def tofinemapping(sumstats,
                   getlead_args=None, 
                   memory=None, 
                   overwrite=False,
-                  log=Log(),**args):
-
+                  log=Log(),
+                  suffixes=None,
+                  **args):
+    if suffixes is None:
+        suffixes=[""]
     if getlead_args is None:
         getlead_args={}
-    sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P",**getlead_args)
+    sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
 
     # Drop duplicate!!!!
     log.write(" -Dropping duplicated SNPIDs...")
@@ -68,7 +71,7 @@ def tofinemapping(sumstats,
         matched_sumstats = _align_sumstats_with_bim(row=row, 
                                                     locus_sumstats=locus_sumstats, 
                                                     ref_bim=ref_bim[0],
-                                                    log=log)
+                                                    log=log,suffixes=suffixes)
         
         #########################################################################################################
         # create matched snp list
@@ -77,7 +80,8 @@ def tofinemapping(sumstats,
                                                                                        study=study, 
                                                                                        row=row, 
                                                                                        windowsizekb=windowsizekb,
-                                                                                       log=log)
+                                                                                       log=log,
+                                                                                       suffixes=suffixes)
         #########################################################################################################
 
         ## Calculate ld matrix using PLINK
@@ -163,8 +167,9 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
         gc.collect()
         return output_prefix+".ld.gz",plink_log
 
-def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
-    
+def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=None):
+    if suffixes is None:
+            suffixes=[""]
     log.write("   -#variants in locus ({}): {}".format(row["SNPID"],len(locus_sumstats)))
     # convert category to string
     locus_sumstats["EA"] = locus_sumstats["EA"].astype("string")
@@ -187,40 +192,44 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log()):
     
     # adjust statistics
     output_columns=["SNPID","CHR","POS","EA_bim","NEA_bim"]
-
-    if ("BETA" in locus_sumstats.columns) and ("SE" in locus_sumstats.columns):
-        combined_df.loc[ea_mis_match,"BETA"] = - combined_df.loc[ea_mis_match,"BETA"]
-        output_columns.append("BETA")
-        output_columns.append("SE")
-    if "Z" in locus_sumstats.columns:
-        combined_df.loc[ea_mis_match,"Z"] = - combined_df.loc[ea_mis_match,"Z"]
-        output_columns.append("Z")
-    if "EAF" in locus_sumstats.columns:
-        combined_df.loc[ea_mis_match,"EAF"] = 1 - combined_df.loc[ea_mis_match,"EAF"]
-        output_columns.append("EAF")
-    if "N" in locus_sumstats.columns:
-        output_columns.append("N")
+    for suffix in suffixes:
+        if ("BETA"+suffix in locus_sumstats.columns) and ("SE"+suffix in locus_sumstats.columns):
+            combined_df.loc[ea_mis_match,"BETA"+suffix] = - combined_df.loc[ea_mis_match,"BETA"+suffix]
+            output_columns.append("BETA"+suffix)
+            output_columns.append("SE"+suffix)
+        if "Z" in locus_sumstats.columns:
+            combined_df.loc[ea_mis_match,"Z"+suffix] = - combined_df.loc[ea_mis_match,"Z"+suffix]
+            output_columns.append("Z"+suffix)
+        if "EAF" in locus_sumstats.columns:
+            combined_df.loc[ea_mis_match,"EAF"+suffix] = 1 - combined_df.loc[ea_mis_match,"EAF"+suffix]
+            output_columns.append("EAF"+suffix)
+        if "N" in locus_sumstats.columns:
+            output_columns.append("N"+suffix)
     
     return combined_df.loc[allele_match,output_columns]
 
 
-def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, windowsizekb,log):
+def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, windowsizekb,log,suffixes=None):
+        if suffixes is None:
+            suffixes=[""]
         matched_snp_list_path = "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
+        
         matched_sumstats["SNPID"].to_csv(matched_snp_list_path, index=None, header=None)
 
         # create locus-sumstats EA, NEA, (BETA, SE), Z 
         matched_sumstats_path =  "{}/{}_{}_{}.sumstats.gz".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
         
         to_export_columns=["CHR","POS","EA_bim","NEA_bim"]
-        if "Z" in matched_sumstats.columns :
-            to_export_columns.append("Z")
-        if ("BETA" in matched_sumstats.columns) and ("SE" in matched_sumstats.columns):
-            to_export_columns.append("BETA")
-            to_export_columns.append("SE")
-        if "EAF" in matched_sumstats.columns :
-            to_export_columns.append("EAF")
-        if "N" in matched_sumstats.columns:
-            to_export_columns.append("N")
+        for suffix in suffixes:
+            if "Z"+suffix in matched_sumstats.columns :
+                to_export_columns.append("Z"+suffix)
+            if ("BETA"+suffix in matched_sumstats.columns) and ("SE"+suffix in matched_sumstats.columns):
+                to_export_columns.append("BETA"+suffix)
+                to_export_columns.append("SE"+suffix)
+            if "EAF"+suffix in matched_sumstats.columns :
+                to_export_columns.append("EAF"+suffix)
+            if "N"+suffix in matched_sumstats.columns:
+                to_export_columns.append("N"+suffix)
         matched_sumstats.loc[:, ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path, index=None)
         return matched_snp_list_path, matched_sumstats_path
 
