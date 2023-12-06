@@ -11,6 +11,7 @@ from gwaslab.qc_fix_sumstats import flipallelestats
 from gwaslab.hm_casting import _renaming_cols
 from gwaslab.hm_casting import _sort_pair_cols
 from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
+from gwaslab.util_ex_run_coloc import _run_coloc_susie
 
 class SumstatsPair( ):
     def __init__(self, sumstatsObject1, sumstatsObject2, suffixes = ("_1","_2") ):
@@ -40,6 +41,9 @@ class SumstatsPair( ):
         self.data = self.data.rename(columns={i:i + suffixes[0] for i in self.stats_cols})
 
         self.data = self._merge_two_sumstats(sumstatsObject2, suffixes=suffixes)
+
+        self.to_finemapping_file_path = ""
+        self.plink_log = ""
     
     def _merge_two_sumstats(self, sumstatsObject2, threshold=0.2, verbose=True,windowsizeb=10, ref_path=None,suffixes=("_1","_2")):
 
@@ -67,4 +71,7 @@ class SumstatsPair( ):
         return molded_sumstats
 
     def to_coloc(self,**args):
-        tofinemapping(self.data,suffixes=self.suffixes,**args)
+        self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,suffixes=self.suffixes,**args)
+
+    def run_coloc_susie(self,**args):
+        return _run_coloc_susie(self.to_finemapping_file_path,**args)
