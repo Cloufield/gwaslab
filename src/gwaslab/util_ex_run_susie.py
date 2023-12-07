@@ -54,7 +54,7 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
         '''.format(sumstats, 
                    ld_r_matrix,
                     "R[is.na(R)] <- 0" if fillldna==True else "",
-                    "z= sumstats$Z," if mode=="z" else "bhat = sumstats$BETA,shat = sumstats$SE,",
+                    "z= sumstats$Z," if mode=="z" else "bhat = sumstats$BETA,shat = sumstats$SE",
                     n if n is not None else "n", 
                     max_iter,
                     min_abs_corr, 
