@@ -52,8 +52,8 @@ def _run_coloc_susie(filepath, r="Rscript",types=None, ns=None, fillldna=True, d
         D1 <- list( "LD"=R, "beta"=df[,"BETA_1"],"varbeta"=df[,"SE_1"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{}","N"={})
         D2 <- list( "LD"=R, "beta"=df[,"BETA_2"],"varbeta"=df[,"SE_2"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{}","N"={})
 
-        S1=runsusie(D1)
-        S2=runsusie(D2)
+        S1=runsusie(D1{})
+        S2=runsusie(D2{})
 
         susie.res=coloc.susie(S1,S2{})
 
@@ -63,6 +63,8 @@ def _run_coloc_susie(filepath, r="Rscript",types=None, ns=None, fillldna=True, d
                     "R[is.na(R)] <- 0" if fillldna==True else "",
                     types[0], ns[0],
                     types[1], ns[1],
+                    susie_args,
+                    susie_args,
                     coloc_args,
                     output_prefix)
         
@@ -80,16 +82,21 @@ def _run_coloc_susie(filepath, r="Rscript",types=None, ns=None, fillldna=True, d
             #plink_process.kill()
             log.write(" Running coloc.SuSieR from command line...")
             r_log+= output + "\n"
-            pip_cs = pd.read_csv("{}..coloc.susie".format(output_prefix))
-            pip_cs["Locus"] = row["SNPID"]
-            pip_cs["STUDY"] = row["study"]
-            locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
+            pip_cs = pd.read_csv("{}.coloc.susie".format(output_prefix))
+            if len(pip_cs)==0:
+                 log.write("  -SuSieR result for {} is empty. Please check parameters.".format(output_prefix))
+            else:
+                pip_cs["Locus"] = row["SNPID"]
+                pip_cs["STUDY"] = row["study"]
+                locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
             os.remove("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]))
             if delete == True:
                 os.remove("{}.pipcs".format(output_prefix))
             else:
                 log.write("  -SuSieR result summary to: {}".format("{}.pipcs".format(output_prefix)))
+                
         except subprocess.CalledProcessError as e:
+            log.write(output)
             log.write(e.output)
             os.remove("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]))
     log.write("Finished finemapping using SuSieR.")

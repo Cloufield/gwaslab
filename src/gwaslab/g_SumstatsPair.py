@@ -12,7 +12,7 @@ from gwaslab.hm_casting import _renaming_cols
 from gwaslab.hm_casting import _sort_pair_cols
 from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
 from gwaslab.util_ex_run_coloc import _run_coloc_susie
-
+from gwaslab.viz_plot_miamiplot2 import plot_miami2
 class SumstatsPair( ):
     def __init__(self, sumstatsObject1, sumstatsObject2, suffixes = ("_1","_2") ):
         
@@ -71,7 +71,13 @@ class SumstatsPair( ):
         return molded_sumstats
 
     def to_coloc(self,**args):
-        self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,suffixes=self.suffixes,**args)
+        self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,suffixes=self.suffixes,log=self.log,**args)
 
     def run_coloc_susie(self,**args):
-        return _run_coloc_susie(self.to_finemapping_file_path,**args)
+        return _run_coloc_susie(self.to_finemapping_file_path,log=self.log,**args)
+    
+    def plot_miami(self,**args):
+
+        plot_miami2(merged_sumstats=self.data, 
+                    suffixes=self.suffixes,
+                    **args)

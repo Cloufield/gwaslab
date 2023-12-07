@@ -39,8 +39,10 @@ from gwaslab.viz_aux_save_figure import save_figure
 from gwaslab.viz_plot_mqqplot import mqqplot
 
 def plot_miami2( 
-          path1,
-          path2,
+          path1=None,
+          path2=None,
+          merged_sumstats=None,
+          suffixes = None,
           cols=None,
           cols1=None,
           cols2=None,
@@ -86,12 +88,19 @@ def plot_miami2(
     
     ## figuring arguments ###########################################################################################################
     # figure columns to use
+    if scaled == True:
+        scaled1 = True
+        scaled2 = True
+    
     if cols is None:
-        cols = ["CHR","POS","P"]
+        if scaled == True:
+            cols = ["CHR","POS","MLOG10P"]
+        else:
+            cols = ["CHR","POS","P"]
     if cols1 is None:
-        cols1 = cols
+        cols1 = cols.copy()
     if cols2 is None:
-        cols2 = cols
+        cols2 = cols.copy()
 
     if id1 is not None:
         cols1.append(id1)
@@ -112,9 +121,7 @@ def plot_miami2(
     if chr_dict2 is None:
         chr_dict2 = chr_dict
 
-    if scaled == True:
-        scaled1 = True
-        scaled2 = True
+
     
     if readcsv_args is None:
         readcsv_args={}
@@ -168,30 +175,39 @@ def plot_miami2(
             titles_pad_adjusted[0]= 1 + titles_pad[0]
         if "anno2" in mqq_args.keys():
             titles_pad_adjusted[1]=  - titles_pad[1]
-    
+    if merged_sumstats is None:
     ## load sumstats1 ###########################################################################################################
-    sumstats1 = _figure_type_load_sumstats(name="Sumstats1", 
-                                           path=path1, 
-                                           sep=sep1, 
-                                           cols=cols1, 
-                                           readcsv_args=readcsv_args2, 
-                                           loadmode=loadmode1, 
-                                           log=log,
-                                           verbose=verbose)
-    ## load sumstats2 ###########################################################################################################
-    sumstats2 = _figure_type_load_sumstats(name="Sumstats2", 
-                                           path=path2, 
-                                           sep=sep2, 
-                                           cols=cols2, 
-                                           readcsv_args=readcsv_args2, 
-                                           loadmode=loadmode2, 
-                                           log=log,
-                                           verbose=verbose)
+        sumstats1 = _figure_type_load_sumstats(name="Sumstats1", 
+                                            path=path1, 
+                                            sep=sep1, 
+                                            cols=cols1, 
+                                            readcsv_args=readcsv_args2, 
+                                            loadmode=loadmode1, 
+                                            log=log,
+                                            verbose=verbose)
+        ## load sumstats2 ###########################################################################################################
+        sumstats2 = _figure_type_load_sumstats(name="Sumstats2", 
+                                            path=path2, 
+                                            sep=sep2, 
+                                            cols=cols2, 
+                                            readcsv_args=readcsv_args2, 
+                                            loadmode=loadmode2, 
+                                            log=log,
+                                            verbose=verbose)
+    else:
+        cols1[2] += suffixes[0]
+        cols2[2] += suffixes[1]
+        sumstats1 = merged_sumstats.loc[:,cols1].copy()
+        sumstats2 = merged_sumstats.loc[:,cols2].copy()
+
     ## rename and quick fix ###########################################################################################################
-    sumstats1 = sumstats1.rename(columns={cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"})
+    renaming_dict1 = {cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"}
+    renaming_dict2 = {cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"P"}
+
+    sumstats1 = sumstats1.rename(columns=renaming_dict1)
     sumstats1 = _quick_fix(sumstats1,chr_dict=chr_dict1, scaled=scaled1, verbose=verbose, log=log)
 
-    sumstats2 = sumstats2.rename(columns={cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"P"})
+    sumstats2 = sumstats2.rename(columns=renaming_dict2)
     sumstats2 = _quick_fix(sumstats2,chr_dict=chr_dict2, scaled=scaled2, verbose=verbose, log=log)
 
     # get a large number ###########################################################################################################

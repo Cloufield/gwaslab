@@ -56,6 +56,7 @@ from gwaslab.util_ex_calculate_prs import _calculate_prs
 from gwaslab.viz_plot_mqqplot import mqqplot
 from gwaslab.viz_plot_trumpetplot import plottrumpet
 from gwaslab.viz_plot_compare_af import plotdaf
+from gwaslab.util_ex_run_susie import _run_susie_rss
 import gc
 
 #20220309
@@ -117,6 +118,8 @@ class Sumstats():
         self.meta["gwaslab"]["study_name"] = study
         self.meta["gwaslab"]["genome_build"] = build
         self.meta["gwaslab"]["species"] = species
+        self.to_finemapping_file_path = ""
+        self.plink_log = ""
         if verbose: _show_version(self.log)
 
         #preformat the data
@@ -169,6 +172,7 @@ class Sumstats():
           readargs=readargs,
           log=self.log)
         
+
         if species=="homo sapiens" and build=="99" and build_infer is True:
             try:
                 self.infer_build()
@@ -610,9 +614,11 @@ class Sumstats():
 
 # to_format ###############################################################################################       
     def to_finemapping(self,**args):
-        output_filelist_path = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**args)
-        return output_filelist_path
-
+        self.to_finemapping_file_path, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**args)
+    
+    def run_susie_rss(self,**args):
+        return _run_susie_rss(self.to_finemapping_file_path,**args)
+    
     def to_format(self,
               path="./sumstats",
               fmt="gwaslab",   
