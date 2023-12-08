@@ -111,6 +111,7 @@ class Sumstats():
              build_infer=False,
              **readargs):
 
+        # attributes
         self.data = pd.DataFrame()
         self.build = build
         self.log = Log()
@@ -120,6 +121,9 @@ class Sumstats():
         self.meta["gwaslab"]["species"] = species
         self.to_finemapping_file_path = ""
         self.plink_log = ""
+        self.clumps = pd.DataFrame()
+        self.pipcs = pd.DataFrame()
+
         if verbose: _show_version(self.log)
 
         #preformat the data
@@ -454,14 +458,6 @@ class Sumstats():
             new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**args)
             return new_Sumstats_object
     
-    def clump(self,**args):
-        clumped,plink_log = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **args)
-        return clumped,plink_log
-    
-
-    def calculate_prs(self,**args):
-        combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **args)
-        return combined_results_summary
     ######################################################################
     
     def check_af(self,ref_infer,**args):
@@ -611,14 +607,23 @@ class Sumstats():
             output = lambdaGC(self.data[["CHR",mode]],mode=mode,**args)
             self.meta["Genomic inflation factor"] = output
             return output 
-
-# to_format ###############################################################################################       
+# external ################################################################################################
+    
     def to_finemapping(self,**args):
         self.to_finemapping_file_path, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**args)
     
     def run_susie_rss(self,**args):
-        return _run_susie_rss(self.to_finemapping_file_path,**args)
+        self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**args)
     
+    def clump(self,**args):
+        self.clumps,self.plink_log = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **args)
+
+    def calculate_prs(self,**args):
+        combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **args)
+        return combined_results_summary
+    
+# to_format ###############################################################################################       
+
     def to_format(self,
               path="./sumstats",
               fmt="gwaslab",   
