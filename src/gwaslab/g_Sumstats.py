@@ -31,7 +31,7 @@ from gwaslab.util_in_filter_value import filterregionin
 from gwaslab.util_in_filter_value import filterregionout
 from gwaslab.util_in_filter_value import inferbuild
 from gwaslab.util_in_filter_value import sampling
-from gwaslab.util_in_filter_value import _get_flank
+from gwaslab.util_in_filter_value import _get_flanking
 from gwaslab.util_in_calculate_gc import lambdaGC
 from gwaslab.util_in_convert_h2 import _get_per_snp_r2
 from gwaslab.util_in_get_sig import getsig
@@ -413,13 +413,13 @@ class Sumstats():
         self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**args)
 # utilities ############################################################################################################
     # filter series ######################################################################
-    def get_flank(self, inplace=False,**args):
+    def get_flanking(self, inplace=False,**args):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _get_flank(new_Sumstats_object.data, **args)
+            new_Sumstats_object.data = _get_flanking(new_Sumstats_object.data, **args)
             return new_Sumstats_object
         else:
-            self.data = filtervalues(self.data, expr,log=self.log,**args)
+            self.data = _get_flanking(self.data, **args)
     
     def filter_value(self, expr, inplace=False, **args):
         if inplace is False:

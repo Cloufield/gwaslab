@@ -281,13 +281,24 @@ def sampling(sumstats,n=1, p=None, verbose=True,log=Log(),**args):
     gc.collect()
     return sampled
 
-def _get_flank(sumstats, snpid, windowsizekb=500):
+def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True,log=Log(),**args):
+    
+    log.write("Start to extract variants in the flanking regions:",verbose=verbose)
+    log.write(" - Central variant: {}".format(snpid))
     
     row = sumstats.loc[sumstats["SNPID"]==snpid,:]
+    
     for index, row in row.iterrows():
         chrom = row["CHR"]
         left = row["POS"] - 1000 * windowsizekb
         right = row["POS"] + 1000 * windowsizekb
+    
+    log.write(" - Flanking regions: {}:{}-{}".format(chrom, left, right ))
+
     flanking = sumstats.query("CHR==@chrom & POS > @left & POS < @right ")
+    
+    log.write(" - Extracted {} variants in the regions.".format(len(flanking)),verbose=verbose)
+    log.write("Finished extracting variants in the flanking regions.",verbose=verbose)
+
     return flanking
     

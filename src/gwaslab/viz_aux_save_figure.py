@@ -30,6 +30,7 @@ def get_default_path(keyword,fmt="png"):
                         "qqm":"qqm",
                         "b":"brisbane",
                         "r":"regional",
+                        "stacked_r":"stacked_regional",
                         "trumpet_b":"trumpet_binary",
                         "trumpet_q":"trumpet_quant",
                         "power_b":"power_binary",

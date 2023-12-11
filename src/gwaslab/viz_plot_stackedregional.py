@@ -49,7 +49,10 @@ def plot_stacked_mqq(objects,
                         region_hspace=0.05,
                         subplot_height=4,
                         region_lead_grid_line=None,
-                        build="99",
+                        build="99", 
+                        save=None,
+                        save_args=None,
+                        verbose=True,
                         **mqq_args
                         ):
     
@@ -116,7 +119,7 @@ def plot_stacked_mqq(objects,
                             rr_ylabel=False,
                             figax=(fig,axes[index],axes[-1]),
                             _get_region_lead=True,
-                            build=build,
+                            build=build,verbose=verbose,
                             **mqq_args_for_each_plot[index]
                             )  
             lead_variants_is[index] = (lead_i,lead_i2)
@@ -137,7 +140,7 @@ def plot_stacked_mqq(objects,
                             gtf_path=None,
                             figax=(fig,axes[index],axes[-1]),
                             _get_region_lead=True,
-                            build=build,
+                            build=build,verbose=verbose,
                             **mqq_args_for_each_plot[index]
                             )
             lead_variants_is[index] = (lead_i,lead_i2)
@@ -159,7 +162,10 @@ def plot_stacked_mqq(objects,
     ylabel_height = (1 - gene_track_height_ratio)*0.5 + gene_track_height_ratio
     fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')
     fig.text(0.93, ylabel_height, "Recombination rate(cM/Mb)", va='center', rotation=-90)
-          
+
+    save_figure(fig = fig, save = save, keyword= "stacked_" + mode, save_args=save_args, log = log, verbose=verbose)
+
+    return fig
 
 
 def _sort_args(mqq_args, n_plot):
