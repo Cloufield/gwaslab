@@ -326,48 +326,43 @@ def mqqplot(insumstats,
     # "qq": QQ plot
     # "r" : regional plot
     
-    if  mode=="qqm": 
-        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**fig_args)
-        ax3 = None
-    elif mode=="mqq":
-        fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**fig_args)
-        ax3 = None
-    elif mode=="m":
-        if figax is not None:
-            fig = figax[0]
-            ax1 = figax[1]
-        else:
-            fig, ax1 = plt.subplots(1, 1,**fig_args)
-        ax3 = None
-    elif mode=="qq": 
-        fig, ax2 = plt.subplots(1, 1,**fig_args) 
-        ax3=None
-    elif mode=="r": 
-        if figax is not None:
-            fig = figax[0]
-            ax1 = figax[1]
-            ax3 = figax[2]
-        else:
-            fig_args["figsize"] = (15,10)
-            fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
-                                       gridspec_kw={'height_ratios': [mqqratio, 1]},**fig_args)
-            plt.subplots_adjust(hspace=region_hspace)
-    elif mode =="b" :
-        fig_args["figsize"] = (15,5)
-        fig, ax1 = plt.subplots(1, 1,**fig_args)
+    fig, ax1, ax2, ax3 = _process_layout(mode=mode, 
+                                         figax=figax, 
+                                         fig_args=fig_args, 
+                                         mqqratio=mqqratio, 
+                                         region_hspace=region_hspace)
+    
+# mode specific settings ####################################################################
+    if mode=="b":
         sig_level=1,
         sig_line=False,
         windowsizekb = 100000000   
         mode="mb"
         scatter_args={"marker":"s"}
         marker_size= (marker_size[1],marker_size[1])
-        ax3 = None
-    else:
-        raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
 
 # Read sumstats #################################################################################################
 
-    usecols = _configure_cols_to_use(insumstats, snpid,  chrom, pos, ea, nea, eaf, p, mlog10p,scaled, mode,stratified,anno, anno_set, anno_alias,_chrom_df_for_i,highlight ,pinpoint,density_color)
+    usecols = _configure_cols_to_use(insumstats=insumstats, 
+                                     snpid=snpid,  
+                                     chrom=chrom, 
+                                     pos=pos, 
+                                     ea=ea, 
+                                     nea=nea, 
+                                     eaf=eaf, 
+                                     p=p, 
+                                     mlog10p=mlog10p,
+                                     scaled=scaled, 
+                                     mode=mode,
+                                     stratified=stratified,
+                                     anno=anno, 
+                                     anno_set=anno_set, 
+                                     anno_alias=anno_alias,
+                                     _chrom_df_for_i=_chrom_df_for_i,
+                                     highlight=highlight,
+                                     pinpoint=pinpoint,
+                                     density_color=density_color)
+    
     sumstats = insumstats.loc[:,usecols].copy()
     
     #################################################################################################
@@ -401,11 +396,13 @@ def mqqplot(insumstats,
         region_start = region[1]
         region_end = region[2]
         marker_size=(25,45)
-        if verbose:log.write(" -Extract SNPs in region : chr"+str(region_chr)+":"+str(region[1])+"-"+str(region[2])+ "...")
+        if verbose:log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region[1], region[2]))
         
         in_region_snp = (sumstats[chrom]==region_chr) &(sumstats[pos]<region_end) &(sumstats[pos]>region_start)
+        
         if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)))
         sumstats = sumstats.loc[in_region_snp,:]
+        
         if len(sumstats)==0:
             log.write(" -Warning : No valid data! Please check the input.")
             return None
@@ -1172,3 +1169,49 @@ def _process_spine(ax1, mode):
         ax1.spines["top"].set_zorder(1)    
         ax1.spines["right"].set_visible(True)
     return ax1
+
+
+def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
+    if  mode=="qqm": 
+        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**fig_args)
+        ax3 = None
+    elif mode=="mqq":
+        if figax is not None:
+            fig = figax[0]
+            ax1 = figax[1]
+            ax2 = figax[2]        
+        else:
+            fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**fig_args)
+        ax3 = None
+    elif mode=="m":
+        if figax is not None:
+            fig = figax[0]
+            ax1 = figax[1]
+        else:
+            fig, ax1 = plt.subplots(1, 1,**fig_args)
+        ax2 = None
+        ax3 = None
+    elif mode=="qq": 
+        fig, ax2 = plt.subplots(1, 1,**fig_args) 
+        ax1=None
+        ax3=None
+    elif mode=="r": 
+        if figax is not None:
+            fig = figax[0]
+            ax1 = figax[1]
+            ax3 = figax[2]
+            ax2 = None
+        else:
+            fig_args["figsize"] = (15,10)
+            fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
+                                       gridspec_kw={'height_ratios': [mqqratio, 1]},**fig_args)
+            ax2 = None
+            plt.subplots_adjust(hspace=region_hspace)
+    elif mode =="b" :
+        fig_args["figsize"] = (15,5)
+        fig, ax1 = plt.subplots(1, 1,**fig_args)
+        ax2 = None
+        ax3 = None
+    else:
+        raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
+    return fig, ax1, ax2, ax3

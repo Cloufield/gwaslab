@@ -39,10 +39,13 @@ from gwaslab.viz_aux_save_figure import save_figure
 from gwaslab.viz_plot_mqqplot import mqqplot
 
 def plot_stacked_mqq(objects,
-                        vcfs,
+                        vcfs=None,
                         mode="r",
+                        mqqratio=3,
                         region=None,
-                        region_titles= None,
+                        titles= None,
+                        title_pos=None,
+                        title_args=None,
                         gtf=None,
                         gene_track_height=0.5,
                         fig_args=None,
@@ -53,19 +56,30 @@ def plot_stacked_mqq(objects,
                         save=None,
                         save_args=None,
                         verbose=True,
+                        log=Log(),
                         **mqq_args
                         ):
-    
+    log.write("Start to create stacked mqq plot by iteratively calling plot_mqq:",verbose=verbose)
+    # load sumstats
+    sumstats_list = [] 
+    for each_object in objects:
+        sumstats_list.append(each_object.data)
+
 
     if fig_args is None:
         fig_args = {"dpi":200}
     if region_lead_grid_line is None:
         region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
+    if title_pos is None:
+        title_pos = [0.03,0.97]
+    if title_args is None:
+        title_args = {}
     # create figure and axes
+
     if mode=="r":
         if len(vcfs)==1:
-            vcfs = vcfs *len(objects)
-        n_plot = len(objects)
+            vcfs = vcfs *len(sumstats_list)
+        n_plot = len(sumstats_list)
         n_plot_plus_gene_track = n_plot + 1
 
         fig_args["figsize"] = [16,subplot_height*n_plot_plus_gene_track]
@@ -74,30 +88,30 @@ def plot_stacked_mqq(objects,
                              **fig_args)
         plt.subplots_adjust(hspace=region_hspace)
     elif mode=="m":
-        n_plot = len(objects)
+        n_plot = len(sumstats_list)
         fig_args["figsize"] = [10,subplot_height*n_plot]
         fig, axes = plt.subplots(n_plot, 1, sharex=True, 
                              gridspec_kw={'height_ratios': [1 for i in range(n_plot)]},
                              **fig_args)
         plt.subplots_adjust(hspace=region_hspace)
         vcfs = [None for i in range(n_plot)]
-    if region_titles is None:
-        region_titles=["" for i in range(n_plot) ]
+    elif mode=="mqq":
+        n_plot = len(objects)
+#
+        fig_args["figsize"] = [10,subplot_height*n_plot]
+        fig, axes = plt.subplots(n_plot, 2, sharex=True, 
+                             gridspec_kw={'height_ratios': [1 for i in range(n_plot-1)],
+                                          'width_ratios':[mqqratio,1]},
+                                          **fig_args)
+        plt.subplots_adjust(hspace=region_hspace)
 
 #
-    #elif mode=="mqq":
-    #    n_plot = len(objects)
-#
-    #    fig_args["figsize"] = [10,subplot_height*n_plot]
-    #    fig, axes = plt.subplots(n_plot, 1, sharex=True, 
-    #                         gridspec_kw={'height_ratios': [1 for i in range(n_plot-1)]},
-    #                         **fig_args)
-    #    plt.subplots_adjust(hspace=region_hspace)
+
 
     mqq_args_for_each_plot = _sort_args(mqq_args, n_plot)
     
-    # load sumstats
-    sumstats_list = objects
+
+
     if mode=="m":
         _posdiccul = _get_chrom_dic(sumstats_list,chrom="CHR",pos="POS",chrpad=0.02)
     else:
@@ -106,6 +120,12 @@ def plot_stacked_mqq(objects,
     lead_variants_is={}
     # plot manhattan plot
     for index,sumstats in enumerate(sumstats_list):
+        if mode=="m" or mode=="r":
+            figax = (fig,axes[index],axes[-1])
+        elif mode=="mqq":
+            figax = (fig,axes[index,0],axes[index,1])
+        
+        
         if index==0:
             # plot last m and gene track 
             fig,log,lead_i,lead_i2 = mqqplot(sumstats,
@@ -116,15 +136,17 @@ def plot_stacked_mqq(objects,
                             mlog10p="MLOG10P",
                             snpid="SNPID",
                             vcf_path=vcfs[index],
-                            region_title = region_titles[index],
                             mode=mode,
                             region_lead_grid=False,
                             gtf_path="default",
                             rr_ylabel=False,
-                            figax=(fig,axes[index],axes[-1]),
+                            figax=figax,
                             _get_region_lead=True,
+                            _if_quick_qc=False,
                             _posdiccul=_posdiccul,
-                            build=build,verbose=verbose,
+                            build=build,
+                            verbose=verbose,
+                            log=log,
                             **mqq_args_for_each_plot[index]
                             )  
             lead_variants_is[index] = (lead_i,lead_i2)
@@ -136,17 +158,19 @@ def plot_stacked_mqq(objects,
                             region=region,
                             mlog10p="MLOG10P",
                             snpid="SNPID",
-                            region_title = region_titles[index],
                             vcf_path=vcfs[index],
                             region_lead_grid=False,
                             mode=mode,
                             rr_ylabel=False,
                             region_ld_legend=False,
                             gtf_path=None,
-                            figax=(fig,axes[index],axes[-1]),
+                            figax=figax,
                             _get_region_lead=True,
+                            _if_quick_qc=False,
                             _posdiccul=_posdiccul,
-                            build=build,verbose=verbose,
+                            build=build,
+                            verbose=verbose,
+                            log=log,
                             **mqq_args_for_each_plot[index]
                             )
             lead_variants_is[index] = (lead_i,lead_i2)
@@ -157,6 +181,10 @@ def plot_stacked_mqq(objects,
     for index in range(n_plot):
         axes[index].set_ylabel("")
     
+    if titles is not None:
+        for index,title in enumerate(titles):
+            axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',**title_args)
+
     if mode=="r":
         for index, sig_is in lead_variants_is.items():
             for sig_i in sig_is:
@@ -174,12 +202,11 @@ def plot_stacked_mqq(objects,
         fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')
 
     save_figure(fig = fig, save = save, keyword= "stacked_" + mode, save_args=save_args, log = log, verbose=verbose)
-
-    return fig
+    log.write("Finished creating stacked mqq plot by iteratively calling plot_mqq.",verbose=verbose)
+    return fig, log
 
 
 def _sort_args(mqq_args, n_plot):
-
     mqq_args_for_each_plot={i:{} for i in range(n_plot)}
     
     for key, value in mqq_args.items():
