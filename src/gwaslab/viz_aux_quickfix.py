@@ -158,7 +158,7 @@ def _quick_assign_i(sumstats, chrom="CHR",pos="POS"):
     sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
     return sumstats, chrom_df
 
-def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos="POS",drop_chr_start=False):
+def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos="POS",drop_chr_start=False,_posdiccul=None):
         sumstats = sumstats.sort_values([chrom,pos])
         if use_rank is True: 
             sumstats["_POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
@@ -171,20 +171,23 @@ def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos=
             posdic = sumstats.groupby(chrom)["_POS_RANK"].max()
         else:
             posdic = sumstats.groupby(chrom)[pos].max()
-                
-        # convert to dictionary
-        posdiccul = dict(posdic)
         
-        # fill empty chr with 0
-        for i in range(0,sumstats[chrom].max()+1):
-            if i in posdiccul: 
-                continue
-            else: 
-                posdiccul[i]=0
-  
-        # cumulative sum dictionary
-        for i in range(1,sumstats[chrom].max()+1):
-            posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*chrpad
+        if _posdiccul is None:
+            # convert to dictionary
+            posdiccul = dict(posdic)
+            
+            # fill empty chr with 0
+            for i in range(0,sumstats[chrom].max()+1):
+                if i in posdiccul: 
+                    continue
+                else: 
+                    posdiccul[i]=0
+    
+            # cumulative sum dictionary
+            for i in range(1,sumstats[chrom].max()+1):
+                posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*chrpad
+        else:
+            posdiccul = _posdiccul
 
         # convert base pair postion to x axis position using the cumulative sum dictionary
         sumstats["_ADD"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])

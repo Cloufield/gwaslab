@@ -73,17 +73,17 @@ def plot_stacked_mqq(objects,
                              gridspec_kw={'height_ratios': [1 for i in range(n_plot_plus_gene_track-1)]+[gene_track_height]},
                              **fig_args)
         plt.subplots_adjust(hspace=region_hspace)
-
+    elif mode=="m":
+        n_plot = len(objects)
+        fig_args["figsize"] = [10,subplot_height*n_plot]
+        fig, axes = plt.subplots(n_plot, 1, sharex=True, 
+                             gridspec_kw={'height_ratios': [1 for i in range(n_plot)]},
+                             **fig_args)
+        plt.subplots_adjust(hspace=region_hspace)
+        vcfs = [None for i in range(n_plot)]
     if region_titles is None:
         region_titles=["" for i in range(n_plot) ]
-    #elif mode=="m":
-    #    n_plot = len(objects)
-#
-    #    fig_args["figsize"] = [10,subplot_height*n_plot]
-    #    fig, axes = plt.subplots(n_plot, 1, sharex=True, 
-    #                         gridspec_kw={'height_ratios': [1 for i in range(n_plot-1)]},
-    #                         **fig_args)
-    #    plt.subplots_adjust(hspace=region_hspace)
+
 #
     #elif mode=="mqq":
     #    n_plot = len(objects)
@@ -98,6 +98,10 @@ def plot_stacked_mqq(objects,
     
     # load sumstats
     sumstats_list = objects
+    if mode=="m":
+        _posdiccul = _get_chrom_dic(sumstats_list,chrom="CHR",pos="POS",chrpad=0.02)
+    else:
+        _posdiccul=None
     
     lead_variants_is={}
     # plot manhattan plot
@@ -119,6 +123,7 @@ def plot_stacked_mqq(objects,
                             rr_ylabel=False,
                             figax=(fig,axes[index],axes[-1]),
                             _get_region_lead=True,
+                            _posdiccul=_posdiccul,
                             build=build,verbose=verbose,
                             **mqq_args_for_each_plot[index]
                             )  
@@ -140,6 +145,7 @@ def plot_stacked_mqq(objects,
                             gtf_path=None,
                             figax=(fig,axes[index],axes[-1]),
                             _get_region_lead=True,
+                            _posdiccul=_posdiccul,
                             build=build,verbose=verbose,
                             **mqq_args_for_each_plot[index]
                             )
@@ -151,17 +157,21 @@ def plot_stacked_mqq(objects,
     for index in range(n_plot):
         axes[index].set_ylabel("")
     
-    for index, sig_is in lead_variants_is.items():
-        for sig_i in sig_is:
-            if sig_i is not None:
-                for each_axis_index in range(n_plot + 1):    
-                    axes[each_axis_index].axvline(x=sig_i, zorder=2,**region_lead_grid_line)
+    if mode=="r":
+        for index, sig_is in lead_variants_is.items():
+            for sig_i in sig_is:
+                if sig_i is not None:
+                    for each_axis_index in range(n_plot + 1):    
+                        axes[each_axis_index].axvline(x=sig_i, zorder=2,**region_lead_grid_line)
 
 
     gene_track_height_ratio = gene_track_height/(gene_track_height + n_plot*subplot_height)
     ylabel_height = (1 - gene_track_height_ratio)*0.5 + gene_track_height_ratio
-    fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')
-    fig.text(0.93, ylabel_height, "Recombination rate(cM/Mb)", va='center', rotation=-90)
+    if mode=="r":
+        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')
+        fig.text(0.93, ylabel_height, "Recombination rate(cM/Mb)", va='center', rotation=-90)
+    elif mode=="m":
+        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')
 
     save_figure(fig = fig, save = save, keyword= "stacked_" + mode, save_args=save_args, log = log, verbose=verbose)
 
@@ -180,3 +190,35 @@ def _sort_args(mqq_args, n_plot):
             for i in range(n_plot):
                 mqq_args_for_each_plot[i][key] = value
     return mqq_args_for_each_plot
+
+def _get_chrom_dic(sumstats_list,chrom="CHR",pos="POS",chrpad=0.02):
+    posdiccul = {}
+    max_chr = 0 
+    max_pos = 0
+    for sumstats in sumstats_list:
+        posdic = sumstats.groupby(chrom)[pos].max()
+        if sumstats[chrom].max() > max_chr:
+            max_chr = sumstats[chrom].max()
+        if sumstats[pos].max() > max_chr:
+            max_pos = sumstats[pos].max()
+        # convert to dictionary
+        posdic = dict(posdic)
+            
+        # fill empty chr with 0
+        for i in posdic.keys():
+            if i in posdiccul.keys():
+                if posdic[i] > posdiccul[i]:
+                    posdiccul[i] = posdic[i]
+            else:
+                posdiccul[i] = posdic[i]
+
+    for i in range(0,max_chr+1):
+        if i in posdiccul: 
+            continue
+        else: 
+            posdiccul[i]=0
+            # cumulative sum dictionary
+    posdiccul_raw = posdiccul.copy()
+    for i in range(1,sumstats[chrom].max()+1):
+        posdiccul[i]= posdiccul[i-1] + posdiccul[i] + max_pos*chrpad
+    return posdiccul

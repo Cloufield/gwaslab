@@ -180,6 +180,7 @@ def mqqplot(insumstats,
           verbose=True,
           repel_force=0.03,
           build=None,
+          _posdiccul=None,
           dpi=200,
           save=None,
           save_args=None,
@@ -538,7 +539,7 @@ def mqqplot(insumstats,
     if ("m" in mode) or ("r" in mode): 
         # assign index i and tick position
         if _chrom_df_for_i is None:
-            sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, chrpad=chrpad, use_rank=use_rank, chrom="CHR",pos="POS",drop_chr_start=drop_chr_start)
+            sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, chrpad=chrpad, use_rank=use_rank, chrom="CHR",pos="POS",drop_chr_start=drop_chr_start,_posdiccul=_posdiccul)
         else:
             chrom_df = _chrom_df_for_i
         ## Assign marker size ##############################################
@@ -692,6 +693,7 @@ def mqqplot(insumstats,
         
         # if regional plot : pinpoint lead , add color bar ##################################################
         if (region is not None) and ("r" in mode):
+            
             ax1, ax3, lead_snp_i, lead_snp_i2 =_plot_regional(
                                 sumstats=sumstats,
                                 fig=fig,
@@ -740,7 +742,10 @@ def mqqplot(insumstats,
                                 verbose=verbose,
                                 log=log
                             )
-
+        else:
+            lead_snp_i= None
+            lead_snp_i2=None
+            
         if region is None:
             ax1 = _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family)
         
