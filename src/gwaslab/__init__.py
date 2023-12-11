@@ -11,6 +11,7 @@ from gwaslab.viz_plot_forestplot import plot_forest
 from gwaslab.viz_plot_miamiplot import plot_miami
 from gwaslab.viz_plot_miamiplot2 import plot_miami2
 from gwaslab.viz_plot_rg_heatmap import plot_rg
+from gwaslab.viz_plot_stackedregional import plot_stacked_mqq
 from gwaslab.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.bd_common_data import get_NC_to_chr
 from gwaslab.bd_common_data import get_NC_to_number

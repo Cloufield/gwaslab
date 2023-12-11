@@ -42,14 +42,19 @@ def _plot_regional(
     rr_header_dict=None,
     rr_chr_dict = get_number_to_chr(),
     rr_lim = (0,100),
+    rr_ylabel = True,
+    rr_title=None,
+    region_ld_legend=True,
+    region_title=None,
     mode="mqq",
     region_step = 21,
     region_ref=None,
-    region_ref2=None,
+    region_ref_second=None,
     region_grid = False,
     region_grid_line = {"linewidth": 2,"linestyle":"--"},
     region_lead_grid = True,
     region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"},
+    region_title_args = None,
     region_hspace=0.02,
     region_ld_threshold = [0.2,0.4,0.6,0.8],
     region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
@@ -70,7 +75,7 @@ def _plot_regional(
     # if regional plot : pinpoint lead , add color bar ##################################################
     if (region is not None) :
         # pinpoint lead
-        if region_ref2 is None:
+        if region_ref_second is None:
             ax1, lead_id = _pinpoint_lead(sumstats = sumstats,
                                         ax1 = ax1, 
                                         region_ref=region_ref,
@@ -88,14 +93,14 @@ def _plot_regional(
                                             log=log)
             ax1, lead_id2 = _pinpoint_lead(sumstats = sumstats,
                                             ax1 = ax1, 
-                                            region_ref=region_ref2,
+                                            region_ref=region_ref_second,
                                             region_ld_threshold = region_ld_threshold, 
                                             region_ld_colors = region_ld_colors2, 
                                             marker_size= marker_size,
                                             log=log)
 
-        if (vcf_path is not None):
-            if region_ref2 is None:
+        if (vcf_path is not None) and region_ld_legend:
+            if region_ref_second is None:
                 ax1 = _add_ld_legend(sumstats=sumstats, 
                                 ax1=ax1, 
                                 region_ld_threshold=region_ld_threshold, 
@@ -111,7 +116,8 @@ def _plot_regional(
                                 region_ld_threshold=region_ld_threshold, 
                                 region_ld_colors=region_ld_colors2,
                                 position=2)
-
+        if region_title is not None:
+                ax1 = _add_region_title(region_title, ax1=ax1,region_title_args=region_title_args )
     ## recombinnation rate ##################################################       
     if (region is not None) and (region_recombination is True):
         ax4 = _plot_recombination_rate(sumstats = sumstats,
@@ -122,7 +128,8 @@ def _plot_regional(
                                         rr_chr_dict = rr_chr_dict, 
                                         rr_header_dict =rr_header_dict, 
                                         build= build,
-                                        rr_lim=rr_lim)
+                                        rr_lim=rr_lim,
+                                        rr_ylabel=rr_ylabel)
      
     ## regional plot : gene track ######################################################################
                 # calculate offset
@@ -140,7 +147,7 @@ def _plot_regional(
         #sumstats["scaled_P"].max()
         lead_snp_i         = sumstats.loc[lead_id,"i"]
         
-        if region_ref2 is not None:
+        if region_ref_second is not None:
             lead_snp_y2    = sumstats.loc[lead_id2,"scaled_P"] 
             #sumstats["scaled_P"].max()
             lead_snp_i2    = sumstats.loc[lead_id2,"i"]
@@ -175,17 +182,19 @@ def _plot_regional(
         region_ticks = list(map('{:.3f}'.format,np.linspace(region[1], region[2], num=region_step).astype("int")/1000000)) 
         
         # set x ticks for gene track
-        if (gtf_path is not None ) and ("r" in mode):
-            ax3.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
-            ax3.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
-            if region_grid is True:
+        if "r" in mode:
+            if gtf_path is not None: 
+                ax3.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
+                ax3.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
+            if region_grid==True:
                 for i in np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step):
                     ax1.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
                     ax3.axvline(x=i, color=cut_line_color,zorder=1,**region_grid_line)
-            if region_lead_grid is True:
-                if region_ref2 is None:
+            if region_lead_grid==True:
+                if region_ref_second is None:
                     ax1.plot([lead_snp_i,lead_snp_i],[0,lead_snp_y], zorder=1,**region_lead_grid_line)
-                    ax3.axvline(x=lead_snp_i, zorder=1,**region_lead_grid_line)
+                    ax3.axvline(x=lead_snp_i, zorder=2,**region_lead_grid_line)
+                    #ax3.plot([lead_snp_i,lead_snp_i],[0,1], zorder=1,transform=ax3.transAxes, **region_lead_grid_line)
                 else:
                     region_lead_grid_line["color"] = region_ld_colors1[-1]
                     ax1.plot([lead_snp_i,lead_snp_i],[0,lead_snp_y], zorder=1,**region_lead_grid_line)
@@ -218,7 +227,7 @@ def _plot_regional(
                     avoid_points=False,
                     lim =1000)     
     
-    return ax1, ax3
+    return ax1, ax3, lead_snp_i, lead_snp_i2
 
 # + ###########################################################################################################################################################################
 def _get_lead_id(sumstats, region_ref, log):
@@ -260,6 +269,10 @@ def _pinpoint_lead(sumstats,ax1,region_ref, region_ld_threshold, region_ld_color
 
     return ax1, lead_id
 # -############################################################################################################################################################################
+def _add_region_title(region_title, ax1,region_title_args):
+    ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", **region_title_args )
+    return ax1
+
 def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ld_colors,position=1):
     # add a in-axis axis for colorbar
     if position==1:
@@ -314,7 +327,7 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ld_colors,position
     return ax1
 
 # -############################################################################################################################################################################
-def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, rr_header_dict, build,rr_lim):
+def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, rr_header_dict, build,rr_lim,rr_ylabel=True):
     ax4 = ax1.twinx()
     most_left_snp = sumstats["i"].idxmin()
     rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,pos]
@@ -331,7 +344,8 @@ def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, r
 
     rc = rc.loc[(rc["Position(bp)"]<region[2]) & (rc["Position(bp)"]>region[1]),:]
     ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
-    ax4.set_ylabel("Recombination rate(cM/Mb)")
+    if rr_ylabel:
+        ax4.set_ylabel("Recombination rate(cM/Mb)")
     if rr_lim!="max":
         ax4.set_ylim(rr_lim[0],rr_lim[1])
     else:
@@ -467,7 +481,7 @@ def _plot_gene_track(
 # -############################################################################################################################################################################
 # Helpers    
 # -############################################################################################################################################################################
-def process_vcf(sumstats, vcf_path, region,region_ref, region_ref2, log, verbose, pos ,nea,ea, region_ld_threshold, vcf_chr_dict,tabix):
+def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, verbose, pos ,nea,ea, region_ld_threshold, vcf_chr_dict,tabix):
     if verbose: log.write("Start to load reference genotype...")
     if verbose: log.write(" -reference vcf path : "+ vcf_path)
 
@@ -557,8 +571,8 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref2, log, verbose
     sumstats.loc[lead_id,"LEAD"] = "Lead variants"
     sumstats["SHAPE"] = 1
     #####################################################################################################
-    if region_ref2 is not None:
-        lead_id2 = _get_lead_id(sumstats, region_ref2, log)
+    if region_ref_second is not None:
+        lead_id2 = _get_lead_id(sumstats, region_ref_second, log)
         lead_pos2 = sumstats.loc[lead_id2,pos]
         if lead_pos2 in ref_genotype["variants/POS"]:
             

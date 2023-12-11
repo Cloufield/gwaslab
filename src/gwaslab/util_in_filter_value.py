@@ -281,3 +281,13 @@ def sampling(sumstats,n=1, p=None, verbose=True,log=Log(),**args):
     gc.collect()
     return sampled
 
+def _get_flank(sumstats, snpid, windowsizekb=500):
+    
+    row = sumstats.loc[sumstats["SNPID"]==snpid,:]
+    for index, row in row.iterrows():
+        chrom = row["CHR"]
+        left = row["POS"] - 1000 * windowsizekb
+        right = row["POS"] + 1000 * windowsizekb
+    flanking = sumstats.query("CHR==@chrom & POS > @left & POS < @right ")
+    return flanking
+    

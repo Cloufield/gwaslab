@@ -85,12 +85,10 @@ def annotate_single(
             elif anno_style == "expand" :
                 #expand style
                 last_pos = row["ADJUSTED_i"]
-                anno_args["rotation"] = 90
             elif anno_style == "tight" :
                 #tight style
                 anno_fixed_arm_length = 1
                 anno_adjust = True
-                anno_args["rotation"] = 90
             else:
                 pass
             ################################################################
@@ -185,6 +183,11 @@ def annotate_single(
                 anno_default = {"rotation":40,"fontstyle":"italic","ha":"left","va":"bottom","fontsize":anno_fontsize,"fontweight":"normal","fontfamily":font_family}
             else:
                 anno_default = {"rotation":-40,"fontstyle":"italic","ha":"left","va":"top","fontsize":anno_fontsize,"fontweight":"normal","fontfamily":font_family}
+
+            if anno_style == "expand" :
+                anno_default["rotation"] = 90
+            if anno_style == "tight" :
+                anno_default["rotation"] = 90
 
             for key,value in anno_args.items():
                 anno_default[key]=value

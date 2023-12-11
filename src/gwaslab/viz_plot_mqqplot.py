@@ -70,6 +70,7 @@ def mqqplot(insumstats,
           rr_header_dict=None,
           rr_chr_dict = None,
           rr_lim=(0,100),
+          rr_ylabel=True,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
@@ -78,8 +79,11 @@ def mqqplot(insumstats,
           qq_line_color = "grey",
           # region
           region = None,
+          region_title=None,
+          region_title_args=None,
           region_ref=None,
           region_ref2=None,
+          region_ref_second=None,
           region_step = 21,
           region_grid = False,
           region_grid_line = None,
@@ -87,6 +91,7 @@ def mqqplot(insumstats,
           region_lead_grid_line = None,
           region_hspace=0.02,
           region_ld_threshold = None,
+          region_ld_legend = True,
           region_ld_colors = None,
           region_ld_colors1 = None,
           region_ld_colors2 = None,
@@ -181,6 +186,7 @@ def mqqplot(insumstats,
           _invert=False,
           _chrom_df_for_i=None,
           _if_quick_qc=True,
+          _get_region_lead=False,
           expected_min_mlog10p=0,
           log=Log()
           ):
@@ -211,6 +217,8 @@ def mqqplot(insumstats,
         anno_args=dict()
     if colors is None:
         colors=["#597FBD","#74BAD3"]
+    if region_ref2 is not None:
+        region_ref_second = region_ref2,
     if region_grid_line is None:
         region_grid_line = {"linewidth": 2,"linestyle":"--"}
     if region_lead_grid_line is None:
@@ -223,6 +231,8 @@ def mqqplot(insumstats,
         region_ld_colors1 = ["#E4E4E4","#F8CFCF","#F5A2A5","#F17474","#EB4445","#E51819","#E51819"]
     if region_ld_colors2 is None:
         region_ld_colors2 = ["#E4E4E4","#D8E2F2","#AFCBE3","#86B3D4","#5D98C4","#367EB7","#367EB7"]
+    if region_title_args is None:
+        region_title_args = {"size":10}
     if taf is None:
         taf = [4,0,0.95,1,1]
     if maf_bins is None:
@@ -317,21 +327,30 @@ def mqqplot(insumstats,
     
     if  mode=="qqm": 
         fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**fig_args)
+        ax3 = None
     elif mode=="mqq":
         fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**fig_args)
+        ax3 = None
     elif mode=="m":
         if figax is not None:
             fig = figax[0]
             ax1 = figax[1]
         else:
             fig, ax1 = plt.subplots(1, 1,**fig_args)
+        ax3 = None
     elif mode=="qq": 
         fig, ax2 = plt.subplots(1, 1,**fig_args) 
+        ax3=None
     elif mode=="r": 
-        fig_args["figsize"] = (15,10)
-        fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
+        if figax is not None:
+            fig = figax[0]
+            ax1 = figax[1]
+            ax3 = figax[2]
+        else:
+            fig_args["figsize"] = (15,10)
+            fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
                                        gridspec_kw={'height_ratios': [mqqratio, 1]},**fig_args)
-        plt.subplots_adjust(hspace=region_hspace)
+            plt.subplots_adjust(hspace=region_hspace)
     elif mode =="b" :
         fig_args["figsize"] = (15,5)
         fig, ax1 = plt.subplots(1, 1,**fig_args)
@@ -341,6 +360,7 @@ def mqqplot(insumstats,
         mode="mb"
         scatter_args={"marker":"s"}
         marker_size= (marker_size[1],marker_size[1])
+        ax3 = None
     else:
         raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
 
@@ -503,7 +523,7 @@ def mqqplot(insumstats,
                                vcf_path=vcf_path,
                                region=region, 
                                region_ref=region_ref, 
-                               region_ref2=region_ref2,
+                               region_ref_second=region_ref_second,
                                log=log ,
                                pos=pos,
                                ea=ea,
@@ -547,7 +567,7 @@ def mqqplot(insumstats,
             legend=None
             linewidth=1
             palette = { i:region_ld_colors[i] for i in range(len(region_ld_colors))}
-            if region_ref2 is not None:
+            if region_ref_second is not None:
                 palette = {} 
                 for i in range(len(region_ld_colors)):
                     palette[i]=region_ld_colors1[i]
@@ -672,7 +692,7 @@ def mqqplot(insumstats,
         
         # if regional plot : pinpoint lead , add color bar ##################################################
         if (region is not None) and ("r" in mode):
-            ax1, ax3 =_plot_regional(
+            ax1, ax3, lead_snp_i, lead_snp_i2 =_plot_regional(
                                 sumstats=sumstats,
                                 fig=fig,
                                 ax1=ax1,
@@ -693,15 +713,19 @@ def mqqplot(insumstats,
                                 rr_header_dict=rr_header_dict,
                                 rr_chr_dict = rr_chr_dict,
                                 rr_lim=rr_lim,
+                                rr_ylabel=rr_ylabel,
                                 mode=mode,
                                 region_step = region_step,
                                 region_ref=region_ref,
-                                region_ref2=region_ref2,
+                                region_ref_second=region_ref_second,
                                 region_grid = region_grid,
                                 region_grid_line = region_grid_line,
                                 region_lead_grid = region_lead_grid,
                                 region_lead_grid_line = region_lead_grid_line,
                                 region_hspace=region_hspace,
+                                region_title=region_title,
+                                region_title_args=region_title_args,
+                                region_ld_legend = region_ld_legend,
                                 region_ld_threshold = region_ld_threshold,
                                 region_ld_colors = region_ld_colors,
                                 region_ld_colors1=region_ld_colors1,
@@ -795,7 +819,7 @@ def mqqplot(insumstats,
 
         # Configure X, Y axes #######################################################
         ax1 = _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family)
-        ax1, ax3 = _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=None )
+        ax1, ax3 = _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=ax3 )
         ax1 = _process_spine(ax1, mode)
         
         if verbose: log.write("Finished creating Manhattan plot successfully!")
@@ -909,6 +933,8 @@ def mqqplot(insumstats,
 
     garbage_collect.collect()
     # Return matplotlib figure object #######################################################################################
+    if _get_region_lead==True:
+        return fig, log, lead_snp_i, lead_snp_i2
     return fig, log
 
 ##############################################################################################################################################################################
