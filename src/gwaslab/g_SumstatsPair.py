@@ -15,6 +15,7 @@ from gwaslab.util_ex_run_coloc import _run_coloc_susie
 from gwaslab.viz_plot_miamiplot2 import plot_miami2
 from gwaslab.util_ex_run_2samplemr import _run_two_sample_mr
 from gwaslab.util_ex_run_clumping import _clump
+from gwaslab.util_ex_ldproxyfinder import _extract_with_ld_proxy
 
 class SumstatsPair( ):
     def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ):
@@ -31,8 +32,8 @@ class SumstatsPair( ):
         self.log = Log()
         self.suffixes = suffixes
         self.colocalization=pd.DataFrame()
-        self.set1 = pd.DataFrame()
-        self.set2 = pd.DataFrame()
+        self.sumstats1 = pd.DataFrame()
+        self.sumstats2 = pd.DataFrame()
         self.mr = {}
         self.clumps ={}
 
@@ -50,18 +51,19 @@ class SumstatsPair( ):
 
         self.data = self.data.rename(columns={i:i + suffixes[0] for i in self.stats_cols})
 
-        self.data = self._merge_two_sumstats(sumstatsObject2, suffixes=suffixes)
+        self.data, self.sumstats1 = self._merge_two_sumstats(sumstatsObject2, suffixes=suffixes)
 
         self.to_finemapping_file_path = ""
         self.plink_log = ""
     
     def _merge_two_sumstats(self, sumstatsObject2, threshold=0.2, verbose=True,windowsizeb=10, ref_path=None,suffixes=("_1","_2")):
 
-        molded_sumstats = _merge_mold_with_sumstats(self.data, 
+        molded_sumstats, sumstats1 = _merge_mold_with_sumstats(self.data, 
                                                     sumstatsObject2.data, 
                                                     log=self.log,
                                                     verbose=verbose,
-                                                    suffixes=(suffixes[0],""))
+                                                    suffixes=(suffixes[0],""),
+                                                    return_not_matched_mold = True)
 
         molded_sumstats = _align_with_mold(molded_sumstats, log=self.log, verbose=verbose,suffixes=(suffixes[0],""))
         
@@ -78,7 +80,7 @@ class SumstatsPair( ):
         
         molded_sumstats = _sort_pair_cols(molded_sumstats, verbose=verbose, log=self.log)
         
-        return molded_sumstats
+        return molded_sumstats, sumstats1
 
 
     def clump(self,**args):
@@ -98,3 +100,6 @@ class SumstatsPair( ):
     
     def run_two_sample_mr(self, clump=False, **args):
         _run_two_sample_mr(self, clump=clump,**args)
+
+    def extract_with_ld_proxy(self,**arg):
+        return _extract_with_ld_proxy(common_sumstats = self.data, sumstats1=self.sumstats1,  **arg)

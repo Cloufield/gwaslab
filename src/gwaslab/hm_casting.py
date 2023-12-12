@@ -9,7 +9,7 @@ from gwaslab.util_in_fill_data import filldata
 from Bio import SeqIO
 from itertools import combinations
 
-def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log=Log(),suffixes=("_MOLD",""),verbose=True):
+def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log=Log(),suffixes=("_MOLD",""),verbose=True,return_not_matched_mold =False):
     cols_to_drop = []
     for i in sumstats.columns:
         if i in ["SNPID","rsID"]:
@@ -19,13 +19,16 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
         log.write("Dropping old IDs:{}".format(cols_to_drop))
         sumstats = sumstats.drop(columns=cols_to_drop)
     
-    if ref_path is not None:
+    if ref_path is not None :
         # index for checking removed variants
         index1= "_INDEX" + suffixes[0]
         index2= "_INDEX" + suffixes[1]
         mold[index1] = range(len(mold))
         sumstats[index2] = range(len(sumstats))
     
+    if return_not_matched_mold:
+        mold["_IDENTIFIER_FOR_VARIANT"] = range(len(mold))
+
     mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=suffixes)
     log.write("After merging by CHR and POS:{}".format(len(mold_sumstats)))
     
@@ -38,6 +41,13 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
         iron_removed = sumstats.loc[~sumstats[index2].isin(mold_sumstats[index2]),:]
         _match_two_sumstats(mold_removed,iron_removed,ref_path,windowsizeb=windowsizeb)
         mold_sumstats.drop(columns=["_INDEX",""])
+    
+    if return_not_matched_mold == True:
+        sumstats1 = mold.loc[~mold["_IDENTIFIER_FOR_VARIANT"].isin(mold_sumstats["_IDENTIFIER_FOR_VARIANT"]),:]
+        sumstats1= sumstats1.drop(columns=["_IDENTIFIER_FOR_VARIANT"])
+        mold_sumstats= mold_sumstats.drop(columns=["_IDENTIFIER_FOR_VARIANT"])
+        return mold_sumstats, sumstats1
+    
     return mold_sumstats
 
 def _keep_variants_with_same_allele_set(sumstats, log=Log(),verbose=True,suffixes=("_MOLD","")):
