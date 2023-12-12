@@ -13,22 +13,29 @@ from gwaslab.hm_casting import _sort_pair_cols
 from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
 from gwaslab.util_ex_run_coloc import _run_coloc_susie
 from gwaslab.viz_plot_miamiplot2 import plot_miami2
+from gwaslab.util_ex_run_2samplemr import _run_two_sample_mr
+from gwaslab.util_ex_run_clumping import _clump
 
 class SumstatsPair( ):
-    def __init__(self, sumstatsObject1, sumstatsObject2, suffixes = ("_1","_2") ):
+    def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ):
         
         if not isinstance(sumstatsObject1, Sumstats):
             raise ValueError("Please provide GWASLab Sumstats Object #1.")
         if not isinstance(sumstatsObject2, Sumstats):
             raise ValueError("Please provide GWASLab Sumstats Object #2.")
-
+        
+        self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"])
         self.snp_info_cols = []
         self.stats_cols =[]
         self.other_cols=[]
         self.log = Log()
         self.suffixes = suffixes
         self.colocalization=pd.DataFrame()
-        
+        self.set1 = pd.DataFrame()
+        self.set2 = pd.DataFrame()
+        self.mr = {}
+        self.clumps ={}
+
         for i in sumstatsObject1.data.columns:
             if i in ["SNPID","rsID","CHR","POS","EA","NEA","STATUS"]:
                 self.snp_info_cols.append(i)
@@ -73,6 +80,10 @@ class SumstatsPair( ):
         
         return molded_sumstats
 
+
+    def clump(self,**args):
+        self.clumps["clumps"], self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.study_name, **args)
+
     def to_coloc(self,**args):
         self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,suffixes=self.suffixes,log=self.log,**args)
 
@@ -84,3 +95,6 @@ class SumstatsPair( ):
         plot_miami2(merged_sumstats=self.data, 
                     suffixes=self.suffixes,
                     **args)
+    
+    def run_two_sample_mr(self, clump=False, **args):
+        _run_two_sample_mr(self, clump=clump,**args)

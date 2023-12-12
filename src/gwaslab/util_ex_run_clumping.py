@@ -6,7 +6,7 @@ from gwaslab.g_Log import Log
 from gwaslab.util_ex_process_ref import _process_plink_input_files
 from gwaslab.g_version import _checking_plink_version
 
-def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=False, study=None, bfile=None, n_cores=1, memory=None, 
+def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, n_cores=1, memory=None, 
           chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.2, clump_kb=250,log=Log()):
     ## process reference
     log.write("Start to perform clumping...")
@@ -16,16 +16,16 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
     log.write("  -clump_kb : {}...".format(clump_kb))
     log.write("  -clump_r2 : {}...".format(clump_r2))
     if scaled == True:
-        log.write(" -Clumping will be performed using MLOG10P")
+        log.write(" -Clumping will be performed using {}".format(mlog10p))
         clump_log10_p1=-np.log10(clump_p1)
         clump_log10_p2=-np.log10(clump_p2)
         log.write("  -clump_log10_p1 : {}...".format(clump_log10_p1))
         log.write("  -clump_log10_p2 : {}...".format(clump_log10_p2))
-        sumstats = insumstats.loc[insumstats["MLOG10P"]>min(clump_log10_p1,clump_log10_p2),:].copy()
+        sumstats = insumstats.loc[insumstats[mlog10p]>min(clump_log10_p1,clump_log10_p2),:].copy()
     # extract lead variants
     else:
-        log.write(" -Clumping will be performed using P")
-        sumstats = insumstats.loc[insumstats["P"]<max(clump_p1,clump_p2),:].copy()
+        log.write(" -Clumping will be performed using {}".format(p))
+        sumstats = insumstats.loc[insumstats[p]<max(clump_p1,clump_p2),:].copy()
     log.write(" -Significant variants on CHR: ",list(sumstats["CHR"].unique()))
     
     plink_log=""
@@ -61,9 +61,9 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
             log.write(" -#variants available in both reference and sumstats: {}...".format(sum(is_on_both)))
 
             if scaled == True:
-                sumstats.loc[(sumstats["CHR"]==i) &(is_on_both),["SNPID","MLOG10P"]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=None,sep="\t")
+                sumstats.loc[(sumstats["CHR"]==i) &(is_on_both),["SNPID",mlog10p]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=None,sep="\t")
             else:
-                sumstats.loc[(sumstats["CHR"]==i) & (is_on_both),["SNPID","P"]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=None,sep="\t")
+                sumstats.loc[(sumstats["CHR"]==i) & (is_on_both),["SNPID",p]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=None,sep="\t")
         except:
             log.write(" -Not available for: {}...".format(i))
         
@@ -102,7 +102,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
                 --chr {} \
                 --clump {} \
                 --clump-log10 \
-                --clump-field MLOG10P \
+                --clump-field {} \
                 --clump-snp-field SNPID \
                 --clump-log10-p1 {} \
                 --clump-log10-p2 {} \
@@ -110,7 +110,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
                 --clump-kb {} \
                 --threads {} {}\
                 --out {}
-            """.format(file_flag, chrom, clump, clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, memory_flag if memory is not None else "", out_single_chr)    
+            """.format(file_flag, chrom, clump, mlog10p,clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, memory_flag if memory is not None else "", out_single_chr)    
         else:
             # clumping using P
             script = """
@@ -118,7 +118,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
                 {}\
                 --chr {} \
                 --clump {} \
-                --clump-field P \
+                --clump-field {} \
                 --clump-snp-field SNPID \
                 --clump-p1 {} \
                 --clump-p2 {} \
@@ -126,7 +126,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", overwrite=
                 --clump-kb {} \
                 --threads {} {}\
                 --out {}
-            """.format(file_flag, chrom, clump, clump_p1, clump_p2, clump_r2, clump_kb, n_cores,memory_flag if memory is not None else "", out_single_chr)
+            """.format(file_flag, chrom, clump, p, clump_p1, clump_p2, clump_r2, clump_kb, n_cores,memory_flag if memory is not None else "", out_single_chr)
         
         try:
             output = subprocess.check_output(script, stderr=subprocess.STDOUT, shell=True,text=True)
