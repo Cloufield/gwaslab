@@ -77,11 +77,18 @@ def _extract_with_ld_proxy(  snplist=None,
         end=   int(row["POS"]+windowsizekb*1000)
 
         region = (chrom, start, end)
+        
         ###  #######################################################################################
         #is_flanking = common_sumstats["CHR"] == chrom & common_sumstats["CHR"]>start & common_sumstats["CHR"]<end
         #flanking_sumstats = common_sumstats.loc[is_flanking,:]
         flanking_sumstats = common_sumstats.query('CHR == @chrom and @start < POS < @end',engine='python').copy()
         
+        log.write(" -Extract {} variants in flanking region of {} for checking: {}:{}-{}".format(len(flanking_sumstats), snpid, chrom, start, end), verbose=verbose)
+
+        if len(flanking_sumstats)==0:
+            log.write("  -No availble variants in the region...Skipping!", verbose=verbose)
+            continue
+
         flanking_sumstats = _get_rsq(row =in_sumstats.loc[index,["POS","NEA_1","EA_1"]],
                                      sumstats = flanking_sumstats, 
                                      row_pos=row["POS"], 
@@ -91,15 +98,22 @@ def _extract_with_ld_proxy(  snplist=None,
                                      verbose=verbose, 
                                      vcf_chr_dict=vcf_chr_dict, 
                                      tabix=tabix)
-
+        if flanking_sumstats is None:
+            log.write("  -{} is not found in the vcf...Skipping!".format(snpid))
+            continue
         flanking_sumstats = flanking_sumstats.loc[flanking_sumstats["RSQ"]>ld_threshold,:]
-
-        flanking_sumstats["LD_REF_VARIANT"]= snpid
         
-        for i,row_with_rsq in flanking_sumstats.iterrows():
-            if row_with_rsq["SNPID"] in common_sumstats["SNPID"]:
-                ld_proxies = ld_proxies.concat([ld_proxies, row_with_rsq],ignore_index=True)
-                break
+        log.write("  -#variants in LD with {} (RSQ > {}): {}".format(snpid, ld_threshold,len(flanking_sumstats)), verbose=verbose)
+        
+        if len(flanking_sumstats)>0:
+            flanking_sumstats["LD_REF_VARIANT"]= snpid
+            for i,row_with_rsq in flanking_sumstats.iterrows():
+                if row_with_rsq["SNPID"] in common_sumstats["SNPID"].values:
+                    log.write("  -Proxy for {} is found: {} (LD RSQ= {})".format(snpid, row_with_rsq["SNPID"], row_with_rsq["RSQ"]))
+                    row_with_rsq = pd.DataFrame(row_with_rsq)
+                    ld_proxies = pd.concat([ld_proxies, row_with_rsq.T], ignore_index=True)
+                    break
+            
     
     extracted_sumstats = pd.concat([extracted_sumstats, ld_proxies],ignore_index=True)
 
@@ -120,13 +134,13 @@ def _get_rsq(    row,
         ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
         
         if ref_genotype is None:
-            if verbose: log.write(" -Warning: no data was retrieved. Skipping ...")
+            if verbose: log.write("  -Warning: no data was retrieved. Skipping ...")
             ref_genotype=dict()
             ref_genotype["variants/POS"]=np.array([],dtype="int64")
             return None
         
-        if verbose: log.write(" -Retrieving index...")
-        if verbose: log.write(" -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])))
+        if verbose: log.write("  -Retrieving index...")
+        if verbose: log.write("  -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])))
         #  match sumstats pos and ref pos: 
         # get ref index for its first appearance of sumstats pos
         #######################################################################################
@@ -151,9 +165,10 @@ def _get_rsq(    row,
             else:
                 # no position match
                 return None
-        if verbose: log.write(" -Matching variants using POS, NEA, EA ...")
+        if verbose: log.write("  -Matching variants using POS, NEA, EA ...")
 
         sumstats["REFINDEX"] = sumstats.loc[:,["POS","NEA","EA"]].apply(lambda x: match_varaint(x), axis=1)
+        log.write("  -Matched variants in sumstats and vcf:{} ".format(sum(~sumstats["REFINDEX"].isna())))
         #############################################################################################
         lead_pos = row_pos
 
@@ -170,7 +185,7 @@ def _get_rsq(    row,
             lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
             other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
             
-            if verbose: log.write(" -Calculating Rsq...")
+            if verbose: log.write("  -Calculating Rsq...")
             
             if len(other_snp_genotype)>1:
                 valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0],2)
@@ -178,7 +193,7 @@ def _get_rsq(    row,
                 valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype),2)
             sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = valid_r2
         else:
-            if verbose: log.write(" -Lead SNP not found in reference...")
+            if verbose: log.write("  -Lead SNP not found in reference...")
             sumstats["RSQ"]=None
         
         sumstats["RSQ"] = sumstats["RSQ"].astype("float")
