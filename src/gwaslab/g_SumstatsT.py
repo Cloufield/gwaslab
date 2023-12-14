@@ -5,7 +5,7 @@ from gwaslab.hm_casting import _merge_mold_with_sumstats
 from gwaslab.hm_casting import _align_with_mold
 from gwaslab.hm_casting import _fill_missing_columns
 from gwaslab.hm_casting import _check_daf
-from gwaslab.hm_casting import _renaming_cols
+
 from gwaslab.hm_casting import _assign_warning_code
 from gwaslab.qc_fix_sumstats import flipallelestats
 
@@ -42,7 +42,6 @@ class SumstatsT( ):
 
         molded_sumstats = _fill_missing_columns(molded_sumstats, self.stats_cols, log=sumstatsObject.log, verbose=verbose)
 
-        molded_sumstats = _renaming_cols(molded_sumstats, self.stats_cols, log=sumstatsObject.log, verbose=verbose)
         
         molded_sumstats = _check_daf(molded_sumstats, log=sumstatsObject.log, verbose=verbose)
 

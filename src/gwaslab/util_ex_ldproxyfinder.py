@@ -59,7 +59,7 @@ def _extract_with_ld_proxy(  snplist=None,
     no_need  =[]
     
     for i in snplist:
-        if i in common_sumstats["SNPID"]:
+        if i in common_sumstats["SNPID"].values:
             no_need.append(i)
         else:
             is_needed.append(i)
@@ -69,6 +69,11 @@ def _extract_with_ld_proxy(  snplist=None,
     ld_proxies  = pd.DataFrame()
     in_sumstats = sumstats1.loc[sumstats1["SNPID"].isin(is_needed),:]
     
+    if len(in_sumstats)==0:
+        log.write(" -No available variants for LD proxy checking...Skipping... ", verbose=verbose)
+    else:
+        log.write(" -{}} available variants for LD proxy checking... ".format(len(in_sumstats)), verbose=verbose)
+
     for index,row in in_sumstats.iterrows():
         # determine SNP and select region
         snpid = row["SNPID"]
