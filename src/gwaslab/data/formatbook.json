@@ -347,6 +347,40 @@
             "CHISQ": "CHISQ"
         }
     },
+    "plink_psam": {
+        "meta_data": {
+            "format_name": "plink_psam",
+            "format_source_1": "https://www.cog-genomics.org/plink/2.0/formats#psam",
+            "format_version": "20231124",
+            "format_cite_name": "psam",
+            "format_separator": "\t",
+            "format_na": null,
+            "format_comment": null,
+            "format_header": true,
+            "format_datatype": {
+                "IID": "string",
+                "SID": "string",
+                "PAT": "string",
+                "MAT": "string",
+                "SEX": "category"
+            },
+            "format_col_order": [
+                "IID",
+                "SID",
+                "PAT",
+                "MAT",
+                "SEX"
+            ],
+            "last_check_date": "20231124"
+        },
+        "format_dict": {
+            "#IID": "IID",
+            "SID": "SID",
+            "PAT": "PAT",
+            "MAT": "MAT",
+            "SEX": "SEX"
+        }
+    },
     "plink_fisher": {
         "meta_data": {
             "format_name": ".assoc, .assoc.fisher",
@@ -425,6 +459,43 @@
             "StdErr": "SE",
             "P-value": "P",
             "Direction": "DIRECTION"
+        }
+    },
+    "plink_fam": {
+        "meta_data": {
+            "format_name": "plink_fam",
+            "format_source_1": "https://www.cog-genomics.org/plink/1.9/formats#fam",
+            "format_version": "20231124",
+            "format_cite_name": "fam",
+            "format_separator": "\t",
+            "format_na": null,
+            "format_comment": null,
+            "format_header": null,
+            "format_datatype": {
+                "FID": "string",
+                "IID": "string",
+                "PAT": "string",
+                "MAT": "string",
+                "SEX": "category",
+                "PHENO1": "category"
+            },
+            "format_col_order": [
+                "FID",
+                "IID",
+                "PAT",
+                "MAT",
+                "SEX",
+                "PHENO1"
+            ],
+            "last_check_date": "20231124"
+        },
+        "format_dict": {
+            "0": "FID",
+            "1": "IID",
+            "2": "PAT",
+            "3": "MAT",
+            "4": "SEX",
+            "5": "PHENO1"
         }
     },
     "mtag": {
@@ -525,6 +596,41 @@
             "LOG10P": "MLOG10P"
         }
     },
+    "plink_pvar": {
+        "meta_data": {
+            "format_name": "plink_pvar",
+            "format_source_1": "https://www.cog-genomics.org/plink/2.0/formats#pvar",
+            "format_version": "20231124",
+            "format_cite_name": "pvar",
+            "format_separator": "\t",
+            "format_na": ".",
+            "format_comment": "#",
+            "format_header": true,
+            "format_col_order": [
+                "POS",
+                "SNPID",
+                "NEA",
+                "EA",
+                "QUAL",
+                "FILTER",
+                "INFO",
+                "FORMAT",
+                "CM"
+            ],
+            "last_check_date": "20231124"
+        },
+        "format_dict": {
+            "POS": "POS",
+            "ID": "SNPID",
+            "REF": "NEA",
+            "ALT": "EA",
+            "QUAL": "QUAL",
+            "FILTER": "FILTER",
+            "INFO": "INFO",
+            "FORMAT": "FORMAT",
+            "CM": "CM"
+        }
+    },
     "plink2": {
         "meta_data": {
             "format_name": "PLINK2 .glm.firth, .glm.logistic,.glm.linear",
@@ -569,6 +675,7 @@
             "BETA": "BETA",
             "SE": "SE",
             "P": "P",
+            "MLOG10P": "MLOG10P",
             "INFO": "INFO",
             "OR": "OR",
             "OR_95L": "OR_95L",
@@ -783,6 +890,43 @@
             "MACH_R2": "INFO",
             "L95": "BETA_95L",
             "U95": "BETA_95U"
+        }
+    },
+    "plink_bim": {
+        "meta_data": {
+            "format_name": "plink_bim",
+            "format_source_1": "https://www.cog-genomics.org/plink/1.9/formats#bim",
+            "format_version": "20231124",
+            "format_cite_name": "bim",
+            "format_separator": "\t",
+            "format_na": null,
+            "format_comment": null,
+            "format_header": null,
+            "format_datatype": {
+                "CHR": "category",
+                "SNPID": "string",
+                "CM": "float",
+                "POS": "int",
+                "NEA": "string",
+                "EA": "string"
+            },
+            "format_col_order": [
+                "CHR",
+                "SNPID",
+                "CM",
+                "POS",
+                "NEA",
+                "EA"
+            ],
+            "last_check_date": "20231124"
+        },
+        "format_dict": {
+            "0": "CHR",
+            "1": "SNPID",
+            "2": "CM",
+            "3": "POS",
+            "4": "NEA",
+            "5": "EA"
         }
     },
     "pgscatalog": {
