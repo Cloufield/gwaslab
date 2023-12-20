@@ -1,4 +1,98 @@
 {
+    "metal": {
+        "meta_data": {
+            "format_name": "metal",
+            "format_source": "https://genome.sph.umich.edu/wiki/METAL_Documentation",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "MarkerName": "SNPID",
+            "Allele1": "EA",
+            "Allele2": "NEA",
+            "Freq1": "EAF",
+            "Effect": "BETA",
+            "StdErr": "SE",
+            "P-value": "P",
+            "Direction": "DIRECTION"
+        }
+    },
+    "gwascatalog_hm": {
+        "meta_data": {
+            "format_name": "gwascatalog_hm",
+            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
+            "format_version": 20220806
+        },
+        "format_dict": {
+            "hm_variant_id": "SNPID",
+            "chromosome": "CHR",
+            "base_pair_location": "POS",
+            "hm_other_allele": "NEA",
+            "hm_effect_allele": "EA",
+            "hm_beta": "BETA",
+            "hm_effect_allele_frequency": "EAF",
+            "standard_error": "SE",
+            "p-value": "P",
+            "hm_odds_ratio": "OR",
+            "hm_ci_lower": "OR_95L",
+            "hm_ci_upper": "OR_95U"
+        }
+    },
+    "gwascatalog": {
+        "meta_data": {
+            "format_name": "gwascatalog",
+            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "variant_id": "SNPID",
+            "chromosome": "CHR",
+            "base_pair_location": "POS",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "beta": "BETA",
+            "effect_allele_frequency": "EAF",
+            "standard_error": "SE",
+            "p-value": "P",
+            "odds_ratio": "OR",
+            "ci_lower": "OR_95L",
+            "ci_upper": "OR_95U"
+        }
+    },
+    "plink_pvar": {
+        "meta_data": {
+            "format_name": "plink_pvar",
+            "format_source_1": "https://www.cog-genomics.org/plink/2.0/formats#pvar",
+            "format_version": "20231124",
+            "format_cite_name": "pvar",
+            "format_separator": "\t",
+            "format_na": ".",
+            "format_comment": "#",
+            "format_header": true,
+            "format_col_order": [
+                "POS",
+                "SNPID",
+                "NEA",
+                "EA",
+                "QUAL",
+                "FILTER",
+                "INFO",
+                "FORMAT",
+                "CM"
+            ],
+            "last_check_date": "20231124"
+        },
+        "format_dict": {
+            "POS": "POS",
+            "ID": "SNPID",
+            "REF": "NEA",
+            "ALT": "EA",
+            "QUAL": "QUAL",
+            "FILTER": "FILTER",
+            "INFO": "INFO",
+            "FORMAT": "FORMAT",
+            "CM": "CM"
+        }
+    },
     "plink": {
         "meta_data": {
             "format_name": ".assoc, .assoc.fisher, .assoc.linear, .assoc.logistic, .assoc.dosage",
@@ -20,6 +114,109 @@
             "STAT": "T",
             "CHISQ": "CHISQ",
             "NMISS": "N"
+        }
+    },
+    "plink_logistic": {
+        "meta_data": {
+            "format_name": ".assoc.logistic",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "H95": "OR_95U",
+            "SE": "SE",
+            "P": "P",
+            "STAT": "T",
+            "CHISQ": "CHISQ",
+            "NMISS": "N"
+        }
+    },
+    "regenie": {
+        "meta_data": {
+            "format_name": "regenie",
+            "format_source_1": "https://rgcgithub.github.io/regenie/",
+            "format_source_2": "https://github.com/rgcgithub/regenie/blob/master/example/test_bin_out_firth_Y1.regenie",
+            "format_version": "20220726",
+            "format_cite_name": "REGENIE",
+            "format_separator": " ",
+            "format_na": "NA",
+            "format_comment": null,
+            "format_col_order": [
+                "CHROM",
+                "GENPOS",
+                "ID",
+                "ALLELE0",
+                "ALLELE1",
+                "A1FREQ",
+                "N",
+                "TEST",
+                "BETA",
+                "SE",
+                "CHISQ",
+                "LOG10P"
+            ],
+            "last_check_date": 20230501
+        },
+        "format_dict": {
+            "ID": "SNPID",
+            "CHROM": "CHR",
+            "GENPOS": "POS",
+            "ALLELE0": "NEA",
+            "ALLELE1": "EA",
+            "A1FREQ": "EAF",
+            "N": "N",
+            "INFO": "INFO",
+            "BETA": "BETA",
+            "SE": "SE",
+            "CHISQ": "CHISQ",
+            "LOG10P": "MLOG10P"
+        }
+    },
+    "mtag": {
+        "meta_data": {
+            "format_name": "mtag",
+            "format_source": "https://github.com/JonJala/mtag/wiki/Tutorial-1:-The-Basics",
+            "format_version": "v1.0.8",
+            "format_separator": "\t",
+            "format_cite_name": "MTAG v1.0.8",
+            "format_comment": null,
+            "format_na": null,
+            "format_col_order": [
+                "snpid",
+                "chr",
+                "bpos",
+                "a1",
+                "beta",
+                "a2",
+                "freq",
+                "beta",
+                "se",
+                "z",
+                "pval",
+                "p_value",
+                "n"
+            ]
+        },
+        "format_dict": {
+            "snpid": "rsID",
+            "chr": "CHR",
+            "bpos": "POS",
+            "a2": "NEA",
+            "a1": "EA",
+            "freq": "EAF",
+            "n": "N",
+            "beta": "BETA",
+            "se": "SE",
+            "pval": "P",
+            "z": "Z"
         }
     },
     "vcf": {
@@ -67,26 +264,53 @@
             "EZ": "Z"
         }
     },
-    "bolt_lmm": {
+    "plink_assoc": {
         "meta_data": {
-            "format_name": ".stats",
-            "format_source": "https://alkesgroup.broadinstitute.org/BOLT-LMM/BOLT-LMM_manual.html",
-            "format_version": "v2.4 (July 22, 2022)",
-            "software_license": "BOLT-LMM is free software under the GNU General Public License v3.0 (GPLv3).",
-            "format_citation": "Loh, P. R., Tucker, G., Bulik-Sullivan, B. K., Vilhjalmsson, B. J., Finucane, H. K., Salem, R. M., ... & Price, A. L. (2015). Efficient Bayesian mixed-model analysis increases association power in large cohorts. Nature genetics, 47(3), 284-290."
+            "format_name": ".assoc, .assoc.fisher",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
         },
         "format_dict": {
             "SNP": "SNPID",
             "CHR": "CHR",
             "BP": "POS",
-            "ALLELE0": "NEA",
-            "ALLELE1": "EA",
-            "A1FREQ": "EAF",
-            "BETA": "BETA",
+            "A2": "NEA",
+            "A1": "EA",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "H95": "OR_95U",
             "SE": "SE",
-            "P_BOLT_LMM": "P",
-            "INFO": "INFO",
-            "CHISQ_BOLT_LMM": "CHISQ"
+            "P": "P",
+            "CHISQ": "CHISQ"
+        }
+    },
+    "plink2_logistic": {
+        "meta_data": {
+            "format_name": "PLINK2 .glm.firth, .glm.logistic[.hybrid]",
+            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
+            "format_version": "Alpha 3.3 final (3 Jun)",
+            "last_check_date": 20220806
+        },
+        "format_dict": {
+            "ID": "SNPID",
+            "#CHROM": "CHR",
+            "POS": "POS",
+            "REF": "REF",
+            "ALT": "ALT",
+            "A1": "EA",
+            "OBS_CT": "N",
+            "A1_FREQ": "EAF",
+            "BETA": "BETA",
+            "LOG(OR)_SE": "SE",
+            "SE": "SE",
+            "Z_STAT": "Z",
+            "P": "P",
+            "LOG10_P": "MLOG10P",
+            "MACH_R2": "INFO",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "U95": "OR_95U"
         }
     },
     "cojo": {
@@ -114,6 +338,576 @@
             "se": "SE",
             "p": "P",
             "N": "N"
+        }
+    },
+    "plink_linear": {
+        "meta_data": {
+            "format_name": ".assoc.linear",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "BETA": "BETA",
+            "L95": "BETA_95L",
+            "H95": "BETA_95U",
+            "SE": "SE",
+            "P": "P",
+            "STAT": "T",
+            "CHISQ": "CHISQ",
+            "NMISS": "N"
+        }
+    },
+    "plink2_firth": {
+        "meta_data": {
+            "format_name": "PLINK2 .glm.firth, .glm.logistic[.hybrid]",
+            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
+            "format_version": "Alpha 3.3 final (3 Jun)",
+            "last_check_date": 20220806
+        },
+        "format_dict": {
+            "ID": "SNPID",
+            "#CHROM": "CHR",
+            "POS": "POS",
+            "REF": "REF",
+            "ALT": "ALT",
+            "A1": "EA",
+            "OBS_CT": "N",
+            "A1_FREQ": "EAF",
+            "BETA": "BETA",
+            "LOG(OR)_SE": "SE",
+            "SE": "SE",
+            "Z_STAT": "Z",
+            "P": "P",
+            "LOG10_P": "MLOG10P",
+            "MACH_R2": "INFO",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "U95": "OR_95U"
+        }
+    },
+    "pheweb": {
+        "meta_data": {
+            "format_name": "pheweb",
+            "format_source": "https://github.com/statgen/pheweb",
+            "format_version": "20220928"
+        },
+        "format_dict": {
+            "rsids": "rsID",
+            "chrom": "CHR",
+            "pos": "POS",
+            "ref": "NEA",
+            "alt": "EA",
+            "beta": "BETA",
+            "af": "EAF",
+            "sebeta": "SE",
+            "pval": "P",
+            "or": "OR",
+            "r2": "INFO",
+            "num_samples": "n"
+        }
+    },
+    "ssf": {
+        "meta_data": {
+            "format_name": "ssf",
+            "format_source": "https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full",
+            "format_cite_name": "GWAS-SSF v0.1",
+            "format_separator": "\t",
+            "format_na": "#NA",
+            "format_comment": null,
+            "format_col_order": [
+                "chromosome",
+                "base_pair_location",
+                "effect_allele",
+                "other_allele",
+                "beta",
+                "odds_ratio",
+                "hazard_ratio",
+                "standard_error",
+                "effect_allele_frequency",
+                "p_value",
+                "neg_log_10_p_value",
+                "ci_upper",
+                "ci_lower",
+                "rsid",
+                "variant_id",
+                "info",
+                "ref_allele",
+                "n"
+            ],
+            "format_version": 20230328
+        },
+        "format_dict": {
+            "variant_id": "SNPID",
+            "rsid": "rsID",
+            "chromosome": "CHR",
+            "base_pair_location": "POS",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "effect_allele_frequency": "EAF",
+            "n": "N",
+            "beta": "BETA",
+            "standard_error": "SE",
+            "p_value": "P",
+            "neg_log_10_p_value": "MLOG10P",
+            "info": "INFO",
+            "odds_ratio": "OR",
+            "hazard_ratio": "HR",
+            "ci_lower": "OR_95L",
+            "ci_upper": "OR_95U"
+        }
+    },
+    "plink_fisher": {
+        "meta_data": {
+            "format_name": ".assoc, .assoc.fisher",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "OR": "OR",
+            "L95": "OR_95L",
+            "H95": "OR_95U",
+            "SE": "SE",
+            "P": "P",
+            "CHISQ": "CHISQ"
+        }
+    },
+    "fastgwa": {
+        "meta_data": {
+            "format_name": "fastgwa",
+            "format_source": "https://yanglab.westlake.edu.cn/software/gcta/#fastGWA",
+            "format_source2": "https://yanglab.westlake.edu.cn/software/gcta/#fastGWA-GLMM",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "POS": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "AF1": "EAF",
+            "BETA": "BETA",
+            "SE": "SE",
+            "P": "P"
+        }
+    },
+    "template": {
+        "meta_data": {
+            "format_name": "",
+            "format_source": "",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "": "OR_95U"
+        }
+    },
+    "gwaslab": {
+        "meta_data": {
+            "format_name": "gwaslab",
+            "format_source": "https://cloufield.github.io/gwaslab/",
+            "format_version": "20231220_v4"
+        },
+        "format_dict": {
+            "SNPID": "SNPID",
+            "rsID": "rsID",
+            "CHR": "CHR",
+            "POS": "POS",
+            "NEA": "NEA",
+            "EA": "EA",
+            "N": "N",
+            "BETA": "BETA",
+            "SE": "SE",
+            "P": "P",
+            "MLOG10P": "MLOG10P",
+            "INFO": "INFO",
+            "OR": "OR",
+            "OR_95L": "OR_95L",
+            "OR_95U": "OR_95U",
+            "MLOG10": "MLOG10",
+            "CHISQ": "CHISQ",
+            "Z": "Z",
+            "T": "T",
+            "F": "F",
+            "HR": "HR",
+            "HR_95L": "HR_95L",
+            "HR_95U": "HR_95U",
+            "P_HET": "P_HET",
+            "I2": "I2",
+            "SNPR2": "SNPR2",
+            "DOF": "DOF",
+            "N_CASE": "N_CASE",
+            "N_CONTROL": "N_CONTROL",
+            "MAF": "MAF",
+            "DIRECTION": "DIRECTION",
+            "STATUS": "STATUS",
+            "REF": "REF",
+            "ALT": "ALT"
+        }
+    },
+    "plink2_linear": {
+        "meta_data": {
+            "format_name": "PLINK2 .glm.linear",
+            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
+            "format_version": "Alpha 3.3 final (3 Jun)",
+            "last_check_date": 20220806
+        },
+        "format_dict": {
+            "ID": "SNPID",
+            "CHROM": "CHR",
+            "POS": "POS",
+            "REF": "REF",
+            "ALT": "ALT",
+            "A1": "EA",
+            "OBS_CT": "N",
+            "A1_FREQ": "EAF",
+            "BETA": "BETA",
+            "LOG(OR)_SE": "SE",
+            "SE": "SE",
+            "T_STAT": "T",
+            "P": "P",
+            "LOG10_P": "MLOG10P",
+            "MACH_R2": "INFO",
+            "L95": "BETA_95L",
+            "U95": "BETA_95U"
+        }
+    },
+    "plink_bim": {
+        "meta_data": {
+            "format_name": "plink_bim",
+            "format_source_1": "https://www.cog-genomics.org/plink/1.9/formats#bim",
+            "format_version": "20231124",
+            "format_cite_name": "bim",
+            "format_separator": "\t",
+            "format_na": null,
+            "format_comment": null,
+            "format_header": null,
+            "format_datatype": {
+                "CHR": "category",
+                "SNPID": "string",
+                "CM": "float",
+                "POS": "int",
+                "NEA": "string",
+                "EA": "string"
+            },
+            "format_col_order": [
+                "CHR",
+                "SNPID",
+                "CM",
+                "POS",
+                "NEA",
+                "EA"
+            ],
+            "last_check_date": "20231124"
+        },
+        "format_dict": {
+            "0": "CHR",
+            "1": "SNPID",
+            "2": "CM",
+            "3": "POS",
+            "4": "NEA",
+            "5": "EA"
+        }
+    },
+    "regenie_gene": {
+        "meta_data": {
+            "format_name": "regenie_gene",
+            "format_source_1": "https://rgcgithub.github.io/regenie/",
+            "format_source_2": "https://github.com/rgcgithub/regenie/blob/master/example/test_bin_out_firth_Y1.regenie",
+            "format_version": "20230926",
+            "format_cite_name": "REGENIE",
+            "format_separator": " ",
+            "format_na": "NA",
+            "format_comment": "#",
+            "format_col_order": [
+                "CHROM",
+                "GENPOS",
+                "ID",
+                "ALLELE0",
+                "ALLELE1",
+                "A1FREQ",
+                "N",
+                "TEST",
+                "BETA",
+                "SE",
+                "CHISQ",
+                "LOG10P"
+            ],
+            "last_check_date": 20230926
+        },
+        "format_dict": {
+            "ID": "SNPID",
+            "CHROM": "CHR",
+            "GENPOS": "POS",
+            "ALLELE0": "NEA",
+            "ALLELE1": "EA",
+            "A1FREQ": "EAF",
+            "TEST": "TEST",
+            "N": "N",
+            "BETA": "BETA",
+            "SE": "SE",
+            "CHISQ": "CHISQ",
+            "LOG10P": "MLOG10P",
+            "EXTRA": "DOF"
+        }
+    },
+    "saige": {
+        "meta_data": {
+            "format_name": "saige",
+            "format_source": "https://saigegit.github.io//SAIGE-doc/docs/single_step2.html",
+            "format_version": "v1.1.3",
+            "last_check_date": 20220806
+        },
+        "format_dict": {
+            "SNPID": "SNPID",
+            "CHR": "CHR",
+            "POS": "POS",
+            "Allele1": "NEA",
+            "Allele2": "EA",
+            "AF_Allele2": "EAF",
+            "N": "N",
+            "BETA": "BETA",
+            "SE": "SE",
+            "p.value": "P",
+            "imputationInfo": "INFO"
+        }
+    },
+    "bolt_lmm": {
+        "meta_data": {
+            "format_name": ".stats",
+            "format_source": "https://alkesgroup.broadinstitute.org/BOLT-LMM/BOLT-LMM_manual.html",
+            "format_version": "v2.4 (July 22, 2022)",
+            "software_license": "BOLT-LMM is free software under the GNU General Public License v3.0 (GPLv3).",
+            "format_citation": "Loh, P. R., Tucker, G., Bulik-Sullivan, B. K., Vilhjalmsson, B. J., Finucane, H. K., Salem, R. M., ... & Price, A. L. (2015). Efficient Bayesian mixed-model analysis increases association power in large cohorts. Nature genetics, 47(3), 284-290."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "ALLELE0": "NEA",
+            "ALLELE1": "EA",
+            "A1FREQ": "EAF",
+            "BETA": "BETA",
+            "SE": "SE",
+            "P_BOLT_LMM": "P",
+            "INFO": "INFO",
+            "CHISQ_BOLT_LMM": "CHISQ"
+        }
+    },
+    "plink_psam": {
+        "meta_data": {
+            "format_name": "plink_psam",
+            "format_source_1": "https://www.cog-genomics.org/plink/2.0/formats#psam",
+            "format_version": "20231124",
+            "format_cite_name": "psam",
+            "format_separator": "\t",
+            "format_na": null,
+            "format_comment": null,
+            "format_header": true,
+            "format_datatype": {
+                "IID": "string",
+                "SID": "string",
+                "PAT": "string",
+                "MAT": "string",
+                "SEX": "category"
+            },
+            "format_col_order": [
+                "IID",
+                "SID",
+                "PAT",
+                "MAT",
+                "SEX"
+            ],
+            "last_check_date": "20231124"
+        },
+        "format_dict": {
+            "#IID": "IID",
+            "SID": "SID",
+            "PAT": "PAT",
+            "MAT": "MAT",
+            "SEX": "SEX"
+        }
+    },
+    "pgscatalog_hm": {
+        "meta_data": {
+            "format_name": "pgscatalog_hm Harmonized File",
+            "format_source": "https://www.pgscatalog.org/downloads/",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "hm_rsID": "rsID",
+            "hm_chr": "CHR",
+            "hm_pos": "POS",
+            "hm_inferOtherAllele": "NEA",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "allelefrequency_effect": "EAF",
+            "effect_weight": "BETA",
+            "OR": "OR"
+        }
+    },
+    "ldsc": {
+        "meta_data": {
+            "format_name": "ldsc",
+            "format_source": "https://github.com/bulik/ldsc/wiki/Summary-Statistics-File-Format",
+            "format_source2": "https://github.com/bulik/ldsc/blob/master/munge_sumstats.py",
+            "format_version": 20150306
+        },
+        "format_dict": {
+            "SNP": "rsID",
+            "A2": "NEA",
+            "A1": "EA",
+            "Frq": "EAF",
+            "N": "N",
+            "Beta": "BETA",
+            "P": "P",
+            "Z": "Z",
+            "INFO": "INFO",
+            "OR": "OR",
+            "CHR": "CHR",
+            "POS": "POS"
+        }
+    },
+    "plink_fam": {
+        "meta_data": {
+            "format_name": "plink_fam",
+            "format_source_1": "https://www.cog-genomics.org/plink/1.9/formats#fam",
+            "format_version": "20231124",
+            "format_cite_name": "fam",
+            "format_separator": "\t",
+            "format_na": null,
+            "format_comment": null,
+            "format_header": null,
+            "format_datatype": {
+                "FID": "string",
+                "IID": "string",
+                "PAT": "string",
+                "MAT": "string",
+                "SEX": "category",
+                "PHENO1": "category"
+            },
+            "format_col_order": [
+                "FID",
+                "IID",
+                "PAT",
+                "MAT",
+                "SEX",
+                "PHENO1"
+            ],
+            "last_check_date": "20231124"
+        },
+        "format_dict": {
+            "0": "FID",
+            "1": "IID",
+            "2": "PAT",
+            "3": "MAT",
+            "4": "SEX",
+            "5": "PHENO1"
+        }
+    },
+    "pgscatalog": {
+        "meta_data": {
+            "format_name": "pgscatalog",
+            "format_source": "https://www.pgscatalog.org/downloads/",
+            "format_version": "20220726"
+        },
+        "format_dict": {
+            "rsID": "rsID",
+            "chr_name": "CHR",
+            "chr_position": "POS",
+            "other_allele": "NEA",
+            "effect_allele": "EA",
+            "allelefrequency_effect": "EAF",
+            "effect_weight": "BETA",
+            "OR": "OR"
+        }
+    },
+    "plink2": {
+        "meta_data": {
+            "format_name": "PLINK2 .glm.firth, .glm.logistic,.glm.linear",
+            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
+            "format_version": "Alpha 3.3 final (3 Jun)",
+            "last_check_date": 20220806
+        },
+        "format_dict": {
+            "ID": "SNPID",
+            "#CHROM": "CHR",
+            "POS": "POS",
+            "REF": "REF",
+            "ALT": "ALT",
+            "A1": "EA",
+            "OBS_CT": "N",
+            "A1_FREQ": "EAF",
+            "BETA": "BETA",
+            "LOG(OR)_SE": "SE",
+            "SE": "SE",
+            "T_STAT": "T",
+            "Z_STAT": "Z",
+            "P": "P",
+            "LOG10_P": "MLOG10P",
+            "MACH_R2": "INFO",
+            "OR": "OR"
+        }
+    },
+    "plink_dosage": {
+        "meta_data": {
+            "format_name": ".assoc.dosage",
+            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc_dosage",
+            "format_version": "Stable (beta 6.26, 2 Apr)",
+            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "FRQ": "EAF",
+            "OR": "OR",
+            "BETA": "BETA",
+            "INFO": "INFO",
+            "SE": "SE",
+            "P": "P"
+        }
+    },
+    "popcorn": {
+        "meta_data": {
+            "format_name": "popcorn",
+            "format_source": "https://github.com/brielin/Popcorn",
+            "format_version": 20230807,
+            "format_col_order": [
+                "rsid",
+                "A1",
+                "A2",
+                "N",
+                "beta",
+                "SE",
+                "OR",
+                "p-value",
+                "Z",
+                "AF"
+            ]
+        },
+        "format_dict": {
+            "rsid": "rsID",
+            "A2": "EA",
+            "A1": "NEA",
+            "AF": "EAF",
+            "N": "N",
+            "beta": "BETA",
+            "SE": "SE",
+            "p-value": "P",
+            "OR": "OR"
         }
     },
     "mrmega": {
@@ -282,786 +1076,6 @@
             "ci_upper": "OR_95U",
             "OR_95U": "OR_95U",
             "STATUS": "STATUS"
-        }
-    },
-    "plink_dosage": {
-        "meta_data": {
-            "format_name": ".assoc.dosage",
-            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc_dosage",
-            "format_version": "Stable (beta 6.26, 2 Apr)",
-            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
-        },
-        "format_dict": {
-            "SNP": "SNPID",
-            "CHR": "CHR",
-            "BP": "POS",
-            "A2": "NEA",
-            "A1": "EA",
-            "FRQ": "EAF",
-            "OR": "OR",
-            "BETA": "BETA",
-            "INFO": "INFO",
-            "SE": "SE",
-            "P": "P"
-        }
-    },
-    "gwascatalog_hm": {
-        "meta_data": {
-            "format_name": "gwascatalog_hm",
-            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
-            "format_version": 20220806
-        },
-        "format_dict": {
-            "hm_variant_id": "SNPID",
-            "chromosome": "CHR",
-            "base_pair_location": "POS",
-            "hm_other_allele": "NEA",
-            "hm_effect_allele": "EA",
-            "hm_beta": "BETA",
-            "hm_effect_allele_frequency": "EAF",
-            "standard_error": "SE",
-            "p-value": "P",
-            "hm_odds_ratio": "OR",
-            "hm_ci_lower": "OR_95L",
-            "hm_ci_upper": "OR_95U"
-        }
-    },
-    "plink_assoc": {
-        "meta_data": {
-            "format_name": ".assoc, .assoc.fisher",
-            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
-            "format_version": "Stable (beta 6.26, 2 Apr)",
-            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
-        },
-        "format_dict": {
-            "SNP": "SNPID",
-            "CHR": "CHR",
-            "BP": "POS",
-            "A2": "NEA",
-            "A1": "EA",
-            "OR": "OR",
-            "L95": "OR_95L",
-            "H95": "OR_95U",
-            "SE": "SE",
-            "P": "P",
-            "CHISQ": "CHISQ"
-        }
-    },
-    "plink_psam": {
-        "meta_data": {
-            "format_name": "plink_psam",
-            "format_source_1": "https://www.cog-genomics.org/plink/2.0/formats#psam",
-            "format_version": "20231124",
-            "format_cite_name": "psam",
-            "format_separator": "\t",
-            "format_na": null,
-            "format_comment": null,
-            "format_header": true,
-            "format_datatype": {
-                "IID": "string",
-                "SID": "string",
-                "PAT": "string",
-                "MAT": "string",
-                "SEX": "category"
-            },
-            "format_col_order": [
-                "IID",
-                "SID",
-                "PAT",
-                "MAT",
-                "SEX"
-            ],
-            "last_check_date": "20231124"
-        },
-        "format_dict": {
-            "#IID": "IID",
-            "SID": "SID",
-            "PAT": "PAT",
-            "MAT": "MAT",
-            "SEX": "SEX"
-        }
-    },
-    "plink_fisher": {
-        "meta_data": {
-            "format_name": ".assoc, .assoc.fisher",
-            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
-            "format_version": "Stable (beta 6.26, 2 Apr)",
-            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
-        },
-        "format_dict": {
-            "SNP": "SNPID",
-            "CHR": "CHR",
-            "BP": "POS",
-            "A2": "NEA",
-            "A1": "EA",
-            "OR": "OR",
-            "L95": "OR_95L",
-            "H95": "OR_95U",
-            "SE": "SE",
-            "P": "P",
-            "CHISQ": "CHISQ"
-        }
-    },
-    "regenie_gene": {
-        "meta_data": {
-            "format_name": "regenie_gene",
-            "format_source_1": "https://rgcgithub.github.io/regenie/",
-            "format_source_2": "https://github.com/rgcgithub/regenie/blob/master/example/test_bin_out_firth_Y1.regenie",
-            "format_version": "20230926",
-            "format_cite_name": "REGENIE",
-            "format_separator": " ",
-            "format_na": "NA",
-            "format_comment": "#",
-            "format_col_order": [
-                "CHROM",
-                "GENPOS",
-                "ID",
-                "ALLELE0",
-                "ALLELE1",
-                "A1FREQ",
-                "N",
-                "TEST",
-                "BETA",
-                "SE",
-                "CHISQ",
-                "LOG10P"
-            ],
-            "last_check_date": 20230926
-        },
-        "format_dict": {
-            "ID": "SNPID",
-            "CHROM": "CHR",
-            "GENPOS": "POS",
-            "ALLELE0": "NEA",
-            "ALLELE1": "EA",
-            "A1FREQ": "EAF",
-            "TEST": "TEST",
-            "N": "N",
-            "BETA": "BETA",
-            "SE": "SE",
-            "CHISQ": "CHISQ",
-            "LOG10P": "MLOG10P",
-            "EXTRA": "DOF"
-        }
-    },
-    "metal": {
-        "meta_data": {
-            "format_name": "metal",
-            "format_source": "https://genome.sph.umich.edu/wiki/METAL_Documentation",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "MarkerName": "SNPID",
-            "Allele1": "EA",
-            "Allele2": "NEA",
-            "Freq1": "EAF",
-            "Effect": "BETA",
-            "StdErr": "SE",
-            "P-value": "P",
-            "Direction": "DIRECTION"
-        }
-    },
-    "plink_fam": {
-        "meta_data": {
-            "format_name": "plink_fam",
-            "format_source_1": "https://www.cog-genomics.org/plink/1.9/formats#fam",
-            "format_version": "20231124",
-            "format_cite_name": "fam",
-            "format_separator": "\t",
-            "format_na": null,
-            "format_comment": null,
-            "format_header": null,
-            "format_datatype": {
-                "FID": "string",
-                "IID": "string",
-                "PAT": "string",
-                "MAT": "string",
-                "SEX": "category",
-                "PHENO1": "category"
-            },
-            "format_col_order": [
-                "FID",
-                "IID",
-                "PAT",
-                "MAT",
-                "SEX",
-                "PHENO1"
-            ],
-            "last_check_date": "20231124"
-        },
-        "format_dict": {
-            "0": "FID",
-            "1": "IID",
-            "2": "PAT",
-            "3": "MAT",
-            "4": "SEX",
-            "5": "PHENO1"
-        }
-    },
-    "mtag": {
-        "meta_data": {
-            "format_name": "mtag",
-            "format_source": "https://github.com/JonJala/mtag/wiki/Tutorial-1:-The-Basics",
-            "format_version": "v1.0.8",
-            "format_separator": "\t",
-            "format_cite_name": "MTAG v1.0.8",
-            "format_comment": null,
-            "format_na": null,
-            "format_col_order": [
-                "snpid",
-                "chr",
-                "bpos",
-                "a1",
-                "beta",
-                "a2",
-                "freq",
-                "beta",
-                "se",
-                "z",
-                "pval",
-                "p_value",
-                "n"
-            ]
-        },
-        "format_dict": {
-            "snpid": "rsID",
-            "chr": "CHR",
-            "bpos": "POS",
-            "a2": "NEA",
-            "a1": "EA",
-            "freq": "EAF",
-            "n": "N",
-            "beta": "BETA",
-            "se": "SE",
-            "pval": "P",
-            "z": "Z"
-        }
-    },
-    "pgscatalog_hm": {
-        "meta_data": {
-            "format_name": "pgscatalog_hm Harmonized File",
-            "format_source": "https://www.pgscatalog.org/downloads/",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "hm_rsID": "rsID",
-            "hm_chr": "CHR",
-            "hm_pos": "POS",
-            "hm_inferOtherAllele": "NEA",
-            "other_allele": "NEA",
-            "effect_allele": "EA",
-            "allelefrequency_effect": "EAF",
-            "effect_weight": "BETA",
-            "OR": "OR"
-        }
-    },
-    "regenie": {
-        "meta_data": {
-            "format_name": "regenie",
-            "format_source_1": "https://rgcgithub.github.io/regenie/",
-            "format_source_2": "https://github.com/rgcgithub/regenie/blob/master/example/test_bin_out_firth_Y1.regenie",
-            "format_version": "20220726",
-            "format_cite_name": "REGENIE",
-            "format_separator": " ",
-            "format_na": "NA",
-            "format_comment": null,
-            "format_col_order": [
-                "CHROM",
-                "GENPOS",
-                "ID",
-                "ALLELE0",
-                "ALLELE1",
-                "A1FREQ",
-                "N",
-                "TEST",
-                "BETA",
-                "SE",
-                "CHISQ",
-                "LOG10P"
-            ],
-            "last_check_date": 20230501
-        },
-        "format_dict": {
-            "ID": "SNPID",
-            "CHROM": "CHR",
-            "GENPOS": "POS",
-            "ALLELE0": "NEA",
-            "ALLELE1": "EA",
-            "A1FREQ": "EAF",
-            "N": "N",
-            "INFO": "INFO",
-            "BETA": "BETA",
-            "SE": "SE",
-            "CHISQ": "CHISQ",
-            "LOG10P": "MLOG10P"
-        }
-    },
-    "plink_pvar": {
-        "meta_data": {
-            "format_name": "plink_pvar",
-            "format_source_1": "https://www.cog-genomics.org/plink/2.0/formats#pvar",
-            "format_version": "20231124",
-            "format_cite_name": "pvar",
-            "format_separator": "\t",
-            "format_na": ".",
-            "format_comment": "#",
-            "format_header": true,
-            "format_col_order": [
-                "POS",
-                "SNPID",
-                "NEA",
-                "EA",
-                "QUAL",
-                "FILTER",
-                "INFO",
-                "FORMAT",
-                "CM"
-            ],
-            "last_check_date": "20231124"
-        },
-        "format_dict": {
-            "POS": "POS",
-            "ID": "SNPID",
-            "REF": "NEA",
-            "ALT": "EA",
-            "QUAL": "QUAL",
-            "FILTER": "FILTER",
-            "INFO": "INFO",
-            "FORMAT": "FORMAT",
-            "CM": "CM"
-        }
-    },
-    "plink2": {
-        "meta_data": {
-            "format_name": "PLINK2 .glm.firth, .glm.logistic,.glm.linear",
-            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
-            "format_version": "Alpha 3.3 final (3 Jun)",
-            "last_check_date": 20220806
-        },
-        "format_dict": {
-            "ID": "SNPID",
-            "#CHROM": "CHR",
-            "POS": "POS",
-            "REF": "REF",
-            "ALT": "ALT",
-            "A1": "EA",
-            "OBS_CT": "N",
-            "A1_FREQ": "EAF",
-            "BETA": "BETA",
-            "LOG(OR)_SE": "SE",
-            "SE": "SE",
-            "T_STAT": "T",
-            "Z_STAT": "Z",
-            "P": "P",
-            "LOG10_P": "MLOG10P",
-            "MACH_R2": "INFO",
-            "OR": "OR"
-        }
-    },
-    "gwaslab": {
-        "meta_data": {
-            "format_name": "gwaslab",
-            "format_source": "https://cloufield.github.io/gwaslab/",
-            "format_version": "20220729_v3"
-        },
-        "format_dict": {
-            "SNPID": "SNPID",
-            "rsID": "rsID",
-            "CHR": "CHR",
-            "POS": "POS",
-            "NEA": "NEA",
-            "EA": "EA",
-            "N": "N",
-            "BETA": "BETA",
-            "SE": "SE",
-            "P": "P",
-            "MLOG10P": "MLOG10P",
-            "INFO": "INFO",
-            "OR": "OR",
-            "OR_95L": "OR_95L",
-            "OR_95U": "OR_95U",
-            "MLOG10": "MLOG10",
-            "CHISQ": "CHISQ",
-            "Z": "Z",
-            "DIRECTION": "DIRECTION",
-            "STATUS": "STATUS"
-        }
-    },
-    "popcorn": {
-        "meta_data": {
-            "format_name": "popcorn",
-            "format_source": "https://github.com/brielin/Popcorn",
-            "format_version": 20230807,
-            "format_col_order": [
-                "rsid",
-                "A1",
-                "A2",
-                "N",
-                "beta",
-                "SE",
-                "OR",
-                "p-value",
-                "Z",
-                "AF"
-            ]
-        },
-        "format_dict": {
-            "rsid": "rsID",
-            "A2": "EA",
-            "A1": "NEA",
-            "AF": "EAF",
-            "N": "N",
-            "beta": "BETA",
-            "SE": "SE",
-            "p-value": "P",
-            "OR": "OR"
-        }
-    },
-    "saige": {
-        "meta_data": {
-            "format_name": "saige",
-            "format_source": "https://saigegit.github.io//SAIGE-doc/docs/single_step2.html",
-            "format_version": "v1.1.3",
-            "last_check_date": 20220806
-        },
-        "format_dict": {
-            "SNPID": "SNPID",
-            "CHR": "CHR",
-            "POS": "POS",
-            "Allele1": "NEA",
-            "Allele2": "EA",
-            "AF_Allele2": "EAF",
-            "N": "N",
-            "BETA": "BETA",
-            "SE": "SE",
-            "p.value": "P",
-            "imputationInfo": "INFO"
-        }
-    },
-    "pheweb": {
-        "meta_data": {
-            "format_name": "pheweb",
-            "format_source": "https://github.com/statgen/pheweb",
-            "format_version": "20220928"
-        },
-        "format_dict": {
-            "rsids": "rsID",
-            "chrom": "CHR",
-            "pos": "POS",
-            "ref": "NEA",
-            "alt": "EA",
-            "beta": "BETA",
-            "af": "EAF",
-            "sebeta": "SE",
-            "pval": "P",
-            "or": "OR",
-            "r2": "INFO",
-            "num_samples": "n"
-        }
-    },
-    "plink_linear": {
-        "meta_data": {
-            "format_name": ".assoc.linear",
-            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
-            "format_version": "Stable (beta 6.26, 2 Apr)",
-            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
-        },
-        "format_dict": {
-            "SNP": "SNPID",
-            "CHR": "CHR",
-            "BP": "POS",
-            "A2": "NEA",
-            "A1": "EA",
-            "BETA": "BETA",
-            "L95": "BETA_95L",
-            "H95": "BETA_95U",
-            "SE": "SE",
-            "P": "P",
-            "STAT": "T",
-            "CHISQ": "CHISQ",
-            "NMISS": "N"
-        }
-    },
-    "plink_logistic": {
-        "meta_data": {
-            "format_name": ".assoc.logistic",
-            "format_source": "https://www.cog-genomics.org/plink/1.9/formats#assoc",
-            "format_version": "Stable (beta 6.26, 2 Apr)",
-            "format_citation": "Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., Ferreira, M. A., Bender, D., ... & Sham, P. C. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. The American journal of human genetics, 81(3), 559-575."
-        },
-        "format_dict": {
-            "SNP": "SNPID",
-            "CHR": "CHR",
-            "BP": "POS",
-            "A2": "NEA",
-            "A1": "EA",
-            "OR": "OR",
-            "L95": "OR_95L",
-            "H95": "OR_95U",
-            "SE": "SE",
-            "P": "P",
-            "STAT": "T",
-            "CHISQ": "CHISQ",
-            "NMISS": "N"
-        }
-    },
-    "plink2_firth": {
-        "meta_data": {
-            "format_name": "PLINK2 .glm.firth, .glm.logistic[.hybrid]",
-            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
-            "format_version": "Alpha 3.3 final (3 Jun)",
-            "last_check_date": 20220806
-        },
-        "format_dict": {
-            "ID": "SNPID",
-            "#CHROM": "CHR",
-            "POS": "POS",
-            "REF": "REF",
-            "ALT": "ALT",
-            "A1": "EA",
-            "OBS_CT": "N",
-            "A1_FREQ": "EAF",
-            "BETA": "BETA",
-            "LOG(OR)_SE": "SE",
-            "SE": "SE",
-            "Z_STAT": "Z",
-            "P": "P",
-            "LOG10_P": "MLOG10P",
-            "MACH_R2": "INFO",
-            "OR": "OR",
-            "L95": "OR_95L",
-            "U95": "OR_95U"
-        }
-    },
-    "template": {
-        "meta_data": {
-            "format_name": "",
-            "format_source": "",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "": "OR_95U"
-        }
-    },
-    "ldsc": {
-        "meta_data": {
-            "format_name": "ldsc",
-            "format_source": "https://github.com/bulik/ldsc/wiki/Summary-Statistics-File-Format",
-            "format_source2": "https://github.com/bulik/ldsc/blob/master/munge_sumstats.py",
-            "format_version": 20150306
-        },
-        "format_dict": {
-            "SNP": "rsID",
-            "A2": "NEA",
-            "A1": "EA",
-            "Frq": "EAF",
-            "N": "N",
-            "Beta": "BETA",
-            "P": "P",
-            "Z": "Z",
-            "INFO": "INFO",
-            "OR": "OR",
-            "CHR": "CHR",
-            "POS": "POS"
-        }
-    },
-    "plink2_linear": {
-        "meta_data": {
-            "format_name": "PLINK2 .glm.linear",
-            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
-            "format_version": "Alpha 3.3 final (3 Jun)",
-            "last_check_date": 20220806
-        },
-        "format_dict": {
-            "ID": "SNPID",
-            "CHROM": "CHR",
-            "POS": "POS",
-            "REF": "REF",
-            "ALT": "ALT",
-            "A1": "EA",
-            "OBS_CT": "N",
-            "A1_FREQ": "EAF",
-            "BETA": "BETA",
-            "LOG(OR)_SE": "SE",
-            "SE": "SE",
-            "T_STAT": "T",
-            "P": "P",
-            "LOG10_P": "MLOG10P",
-            "MACH_R2": "INFO",
-            "L95": "BETA_95L",
-            "U95": "BETA_95U"
-        }
-    },
-    "plink_bim": {
-        "meta_data": {
-            "format_name": "plink_bim",
-            "format_source_1": "https://www.cog-genomics.org/plink/1.9/formats#bim",
-            "format_version": "20231124",
-            "format_cite_name": "bim",
-            "format_separator": "\t",
-            "format_na": null,
-            "format_comment": null,
-            "format_header": null,
-            "format_datatype": {
-                "CHR": "category",
-                "SNPID": "string",
-                "CM": "float",
-                "POS": "int",
-                "NEA": "string",
-                "EA": "string"
-            },
-            "format_col_order": [
-                "CHR",
-                "SNPID",
-                "CM",
-                "POS",
-                "NEA",
-                "EA"
-            ],
-            "last_check_date": "20231124"
-        },
-        "format_dict": {
-            "0": "CHR",
-            "1": "SNPID",
-            "2": "CM",
-            "3": "POS",
-            "4": "NEA",
-            "5": "EA"
-        }
-    },
-    "pgscatalog": {
-        "meta_data": {
-            "format_name": "pgscatalog",
-            "format_source": "https://www.pgscatalog.org/downloads/",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "rsID": "rsID",
-            "chr_name": "CHR",
-            "chr_position": "POS",
-            "other_allele": "NEA",
-            "effect_allele": "EA",
-            "allelefrequency_effect": "EAF",
-            "effect_weight": "BETA",
-            "OR": "OR"
-        }
-    },
-    "gwascatalog": {
-        "meta_data": {
-            "format_name": "gwascatalog",
-            "format_source": "https://www.ebi.ac.uk/gwas/docs/methods/summary-statistics",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "variant_id": "SNPID",
-            "chromosome": "CHR",
-            "base_pair_location": "POS",
-            "other_allele": "NEA",
-            "effect_allele": "EA",
-            "beta": "BETA",
-            "effect_allele_frequency": "EAF",
-            "standard_error": "SE",
-            "p-value": "P",
-            "odds_ratio": "OR",
-            "ci_lower": "OR_95L",
-            "ci_upper": "OR_95U"
-        }
-    },
-    "ssf": {
-        "meta_data": {
-            "format_name": "ssf",
-            "format_source": "https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full",
-            "format_cite_name": "GWAS-SSF v0.1",
-            "format_separator": "\t",
-            "format_na": "#NA",
-            "format_comment": null,
-            "format_col_order": [
-                "chromosome",
-                "base_pair_location",
-                "effect_allele",
-                "other_allele",
-                "beta",
-                "odds_ratio",
-                "hazard_ratio",
-                "standard_error",
-                "effect_allele_frequency",
-                "p_value",
-                "neg_log_10_p_value",
-                "ci_upper",
-                "ci_lower",
-                "rsid",
-                "variant_id",
-                "info",
-                "ref_allele",
-                "n"
-            ],
-            "format_version": 20230328
-        },
-        "format_dict": {
-            "variant_id": "SNPID",
-            "rsid": "rsID",
-            "chromosome": "CHR",
-            "base_pair_location": "POS",
-            "other_allele": "NEA",
-            "effect_allele": "EA",
-            "effect_allele_frequency": "EAF",
-            "n": "N",
-            "beta": "BETA",
-            "standard_error": "SE",
-            "p_value": "P",
-            "neg_log_10_p_value": "MLOG10P",
-            "info": "INFO",
-            "odds_ratio": "OR",
-            "hazard_ratio": "HR",
-            "ci_lower": "OR_95L",
-            "ci_upper": "OR_95U"
-        }
-    },
-    "fastgwa": {
-        "meta_data": {
-            "format_name": "fastgwa",
-            "format_source": "https://yanglab.westlake.edu.cn/software/gcta/#fastGWA",
-            "format_source2": "https://yanglab.westlake.edu.cn/software/gcta/#fastGWA-GLMM",
-            "format_version": "20220726"
-        },
-        "format_dict": {
-            "SNP": "SNPID",
-            "CHR": "CHR",
-            "POS": "POS",
-            "A2": "NEA",
-            "A1": "EA",
-            "AF1": "EAF",
-            "BETA": "BETA",
-            "SE": "SE",
-            "P": "P"
-        }
-    },
-    "plink2_logistic": {
-        "meta_data": {
-            "format_name": "PLINK2 .glm.firth, .glm.logistic[.hybrid]",
-            "format_source": "https://www.cog-genomics.org/plink/2.0/formats",
-            "format_version": "Alpha 3.3 final (3 Jun)",
-            "last_check_date": 20220806
-        },
-        "format_dict": {
-            "ID": "SNPID",
-            "#CHROM": "CHR",
-            "POS": "POS",
-            "REF": "REF",
-            "ALT": "ALT",
-            "A1": "EA",
-            "OBS_CT": "N",
-            "A1_FREQ": "EAF",
-            "BETA": "BETA",
-            "LOG(OR)_SE": "SE",
-            "SE": "SE",
-            "Z_STAT": "Z",
-            "P": "P",
-            "LOG10_P": "MLOG10P",
-            "MACH_R2": "INFO",
-            "OR": "OR",
-            "L95": "OR_95L",
-            "U95": "OR_95U"
         }
     }
 }
