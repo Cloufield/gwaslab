@@ -39,6 +39,7 @@ def compare_effect(path1,
                    include_all=True,
                    q_level=0.05,
                    sig_level=5e-8,
+                   get_lead_args=None,
                    drop=False,
                    wc_sig_level=5e-8,
                    # reg
@@ -80,6 +81,8 @@ def compare_effect(path1,
         reg_box = dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey")
     if sep is None:
         sep = ["\t","\t"]
+    if get_lead_args is None:
+        get_lead_args = {}
     if errargs is None:
         errargs={"ecolor":"#cccccc","elinewidth":1}
     if fontargs is None:
@@ -185,7 +188,7 @@ def compare_effect(path1,
     else:
         ######### 8,2 otherwise use the sutomatically detected lead SNPs
         if verbose: log.write(" -Extract lead variants from "+label[0]+"...")
-        sig_list_1 = getsig(sumstats,"SNPID","CHR","POS","P", verbose=verbose,sig_level=sig_level)
+        sig_list_1 = getsig(sumstats,"SNPID","CHR","POS","P", verbose=verbose,sig_level=sig_level,**get_lead_args)
     
     if drop==True:
         sig_list_1 = drop_duplicate_and_na(sig_list_1, sort_by="P", log=log ,verbose=verbose)
@@ -230,7 +233,7 @@ def compare_effect(path1,
         if verbose: log.write(" -Extract lead snps from "+label[1]+"...")
         ######### 12.2 otherwise use the sutomatically detected lead SNPs
         sig_list_2 = getsig(sumstats,"SNPID","CHR","POS","P",
-                                 verbose=verbose,sig_level=sig_level)
+                                 verbose=verbose,sig_level=sig_level,**get_lead_args)
     if drop==True:
         sig_list_2 = drop_duplicate_and_na(sig_list_2, sort_by="P", log=log ,verbose=verbose)
 
