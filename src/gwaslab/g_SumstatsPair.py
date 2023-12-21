@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+import copy
+import gc
+from gwaslab.util_in_filter_value import filtervalues
 from gwaslab.g_Log import Log
 from math import floor
 from gwaslab.g_Sumstats import Sumstats
@@ -113,3 +116,12 @@ class SumstatsPair( ):
 
     def extract_with_ld_proxy(self,**arg):
         return _extract_with_ld_proxy(common_sumstats = self.data, sumstats1=self.sumstats1,  **arg)
+
+    def filter_value(self, expr, inplace=False, **args):
+        if inplace is False:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = filtervalues(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **args)
+            return new_Sumstats_object
+        else:
+            self.data = filtervalues(self.data, expr,log=self.log,**args)
+        gc.collect()
