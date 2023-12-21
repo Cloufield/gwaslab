@@ -7,15 +7,21 @@ from gwaslab.g_Log import Log
 from gwaslab.g_version import _checking_r_version
 from gwaslab.g_version import _check_susie_version
 
-def _run_coloc_susie(filepath, r="Rscript",types=None, ns=None, fillldna=True, delete=False, coloc_args="", susie_args="", log=Log()):
-    log.write(" Start to run coloc.susie from command line:")
+def _run_coloc_susie(filepath, r="Rscript",
+                     types=None, ns=None, 
+                     fillldna=True, delete=False, 
+                     coloc_args="", 
+                     susie_args="", 
+                     log=Log(), 
+                     verbose=True):
+    log.write(" Start to run coloc.susie from command line:", verbose=verbose)
 
     if types is None:
          types = ("cc","cc")
 
     if filepath is None:
-        log.write(" -File path is None.")
-        log.write("Finished finemapping using SuSieR.")
+        log.write(" -File path is None.", verbose=verbose)
+        log.write("Finished finemapping using SuSieR.", verbose=verbose)
         return pd.DataFrame()
         
     filelist = pd.read_csv(filepath,sep="\t")
@@ -32,43 +38,44 @@ def _run_coloc_susie(filepath, r="Rscript",types=None, ns=None, fillldna=True, d
         ld_r_matrix = row["LD_r_matrix"]
         sumstats = row["Locus_sumstats"]
         output_prefix = sumstats.replace(".sumstats.gz","")
-        log.write(" -Running for: {} - {}".format(row["SNPID"],row["study"] ))
-        log.write("  -Locus sumstats:{}".format(sumstats))
-        log.write("  -LD r matrix:{}".format(ld_r_matrix))
-        log.write("  -output_prefix:{}".format(output_prefix))
+        log.write(" -Running for: {} - {}".format(row["SNPID"],row["study"] ), verbose=verbose)
+        log.write("  -Locus sumstats:{}".format(sumstats), verbose=verbose)
+        log.write("  -LD r matrix:{}".format(ld_r_matrix), verbose=verbose)
+        log.write("  -output_prefix:{}".format(output_prefix), verbose=verbose)
         
         rscript='''
         library(coloc)
         
-        df = read.csv("{}",header=TRUE)
+        df = read.csv("{sumstats_path}",header=TRUE)
 
-        R <- as.matrix(read.csv("{}",sep="\t",header=FALSE))
+        R <- as.matrix(read.csv("{ld_r_matrix_path}",sep="\t",header=FALSE))
 
         rownames(R)<-df[,"SNPID"]
         colnames(R)<-df[,"SNPID"]
         
-        {}
+        {fillna_script}
 
-        D1 <- list( "LD"=R, "beta"=df[,"BETA_1"],"varbeta"=df[,"SE_1"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{}","N"={})
-        D2 <- list( "LD"=R, "beta"=df[,"BETA_2"],"varbeta"=df[,"SE_2"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{}","N"={})
+        D1 <- list( "LD"=R, "beta"=df[,"BETA_1"],"varbeta"=df[,"SE_1"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type1}","N"={n1})
+        D2 <- list( "LD"=R, "beta"=df[,"BETA_2"],"varbeta"=df[,"SE_2"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type2}","N"={n2})
 
-        S1=runsusie(D1{})
-        S2=runsusie(D2{})
+        S1=runsusie(D1{susie_args})
+        S2=runsusie(D2{susie_args})
 
-        susie.res=coloc.susie(S1,S2{})
+        susie.res=coloc.susie(S1,S2{coloc_args})
 
-        write.csv(susie.res$summary, "{}.coloc.susie", row.names = FALSE)
-        '''.format(sumstats, 
-                   ld_r_matrix,
-                    "R[is.na(R)] <- 0" if fillldna==True else "",
-                    types[0], ns[0],
-                    types[1], ns[1],
-                    susie_args,
-                    susie_args,
-                    coloc_args,
-                    output_prefix)
+        write.csv(susie.res$summary, "{output_prefix}.coloc.susie", row.names = FALSE)
+        '''.format(sumstats_path = sumstats, 
+                   ld_r_matrix_path = ld_r_matrix,
+                    fillna_script = "R[is.na(R)] <- 0" if fillldna==True else "",
+                    type1 = types[0], 
+                    n1 =ns[0],
+                    type2= types[1], 
+                    n2= ns[1],
+                    susie_args = susie_args,
+                    coloc_args = coloc_args,
+                    output_prefix = output_prefix)
         
-        log.write("  -coloc script: {}".format("coloc.susie(S1,S2)"))
+        log.write("  -coloc script: {}".format("coloc.susie(S1,S2)"), verbose=verbose)
         with open("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]),"w") as file:
                 file.write(rscript)
 
@@ -80,11 +87,11 @@ def _run_coloc_susie(filepath, r="Rscript",types=None, ns=None, fillldna=True, d
             #output1,output2 = plink_process.communicate()
             #output= output1 + output2+ "\n"
             #plink_process.kill()
-            log.write(" Running coloc.SuSieR from command line...")
+            log.write(" Running coloc.SuSieR from command line...", verbose=verbose)
             r_log+= output + "\n"
             pip_cs = pd.read_csv("{}.coloc.susie".format(output_prefix))
             if len(pip_cs)==0:
-                 log.write("  -SuSieR result for {} is empty. Please check parameters.".format(output_prefix))
+                 log.write("  -SuSieR result for {} is empty. Please check parameters.".format(output_prefix), verbose=verbose)
             else:
                 pip_cs["Locus"] = row["SNPID"]
                 pip_cs["STUDY"] = row["study"]
@@ -93,11 +100,10 @@ def _run_coloc_susie(filepath, r="Rscript",types=None, ns=None, fillldna=True, d
             if delete == True:
                 os.remove("{}.pipcs".format(output_prefix))
             else:
-                log.write("  -SuSieR result summary to: {}".format("{}.pipcs".format(output_prefix)))
+                log.write("  -SuSieR result summary to: {}".format("{}.pipcs".format(output_prefix)), verbose=verbose)
                 
         except subprocess.CalledProcessError as e:
-            log.write(output)
             log.write(e.output)
             os.remove("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]))
-    log.write("Finished finemapping using SuSieR.")
+    log.write("Finished finemapping using SuSieR.", verbose=verbose)
     return locus_pip_cs
