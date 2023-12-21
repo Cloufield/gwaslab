@@ -12,12 +12,22 @@ def _run_coloc_susie(filepath, r="Rscript",
                      fillldna=True, delete=False, 
                      coloc_args="", 
                      susie_args="", 
+                     ncols=None,
+                     d1_args="",
+                     d2_args="",
                      log=Log(), 
                      verbose=True):
+    
     log.write(" Start to run coloc.susie from command line:", verbose=verbose)
 
     if types is None:
-         types = ("cc","cc")
+        types = ("cc","cc")
+    log.write(" -Phenotype types: {} and {}".format(types[0],types[1]), verbose=verbose)
+
+    if ns is None:
+        if ncols is not None:
+            ns = ncols
+    log.write(" -Ns: {} and {}".format(ns[0],ns[1]), verbose=verbose)
 
     if filepath is None:
         log.write(" -File path is None.", verbose=verbose)
@@ -55,8 +65,8 @@ def _run_coloc_susie(filepath, r="Rscript",
         
         {fillna_script}
 
-        D1 <- list( "LD"=R, "beta"=df[,"BETA_1"],"varbeta"=df[,"SE_1"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type1}","N"={n1})
-        D2 <- list( "LD"=R, "beta"=df[,"BETA_2"],"varbeta"=df[,"SE_2"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type2}","N"={n2})
+        D1 <- list( "LD"=R, "beta"=df[,"BETA_1"],"varbeta"=df[,"SE_1"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type1}","N"={n1}{d1_args})
+        D2 <- list( "LD"=R, "beta"=df[,"BETA_2"],"varbeta"=df[,"SE_2"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type2}","N"={n2}{d2_args})
 
         S1=runsusie(D1{susie_args})
         S2=runsusie(D2{susie_args})
@@ -69,7 +79,9 @@ def _run_coloc_susie(filepath, r="Rscript",
                     fillna_script = "R[is.na(R)] <- 0" if fillldna==True else "",
                     type1 = types[0], 
                     n1 =ns[0],
+                    d1_args = d1_args,
                     type2= types[1], 
+                    d2_args = d2_args,
                     n2= ns[1],
                     susie_args = susie_args,
                     coloc_args = coloc_args,

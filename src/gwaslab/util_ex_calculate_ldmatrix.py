@@ -26,7 +26,7 @@ def tofinemapping(sumstats,
     if suffixes is None:
         suffixes=[""]
     if getlead_args is None:
-        getlead_args={}
+        getlead_args={"windowsizekb":1000}
     sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
 
     # Drop duplicate!!!!

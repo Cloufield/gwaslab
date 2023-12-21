@@ -8,7 +8,7 @@ from gwaslab.g_version import _checking_plink_version
 
 def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", 
            p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, 
-           n_cores=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.2, clump_kb=250,
+           n_cores=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
            log=Log(),verbose=True):
     ## process reference
     log.write("Start to perform clumping...",verbose=verbose)

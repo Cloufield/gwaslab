@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
+from math import floor
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.hm_casting import _merge_mold_with_sumstats
 from gwaslab.hm_casting import _align_with_mold
@@ -36,6 +37,7 @@ class SumstatsPair( ):
         self.sumstats2 = pd.DataFrame()
         self.mr = {}
         self.clumps ={}
+        self.ns = None
 
         for i in sumstatsObject1.data.columns:
             if i in ["SNPID","rsID","CHR","POS","EA","NEA","STATUS"]:
@@ -55,7 +57,14 @@ class SumstatsPair( ):
 
         self.to_finemapping_file_path = ""
         self.plink_log = ""
-    
+
+        if "N{}".format(self.suffixes[0]) in self.data.columns and "N{}".format(self.suffixes[1]) in self.data.columns:
+            n1 = int(floor(self.data["N{}".format(self.suffixes[0])].mean()))
+            n2 = int(floor(self.data["N{}".format(self.suffixes[1])].mean()))
+            self.ns=(n1, n2)
+        else:
+            self.ns = None
+
     def _merge_two_sumstats(self, sumstatsObject2, threshold=0.2, verbose=True,windowsizeb=10, ref_path=None,suffixes=("_1","_2")):
 
         molded_sumstats, sumstats1 = _merge_mold_with_sumstats(self.data, 
@@ -90,7 +99,8 @@ class SumstatsPair( ):
         self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,suffixes=self.suffixes,log=self.log,**args)
 
     def run_coloc_susie(self,**args):
-        self.colocalization = _run_coloc_susie(self.to_finemapping_file_path,log=self.log,**args)
+
+        self.colocalization = _run_coloc_susie(self.to_finemapping_file_path,log=self.log,ncols=self.ns,**args)
     
     def plot_miami(self,**args):
 
