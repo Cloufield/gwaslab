@@ -99,7 +99,7 @@ class SumstatsPair( ):
         self.clumps["clumps"], self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.study_name, **args)
 
     def to_coloc(self,**args):
-        self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,suffixes=self.suffixes,log=self.log,**args)
+        self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**args)
 
     def run_coloc_susie(self,**args):
 
@@ -112,7 +112,9 @@ class SumstatsPair( ):
                     **args)
     
     def run_two_sample_mr(self, clump=False, **args):
-        _run_two_sample_mr(self, clump=clump,**args)
+        exposure1 = self.study_name.split("_")[0]
+        outcome2 = self.study_name.split("_")[1]
+        _run_two_sample_mr(self,exposure1=exposure1,outcome2=outcome2, clump=clump,**args)
 
     def extract_with_ld_proxy(self,**arg):
         return _extract_with_ld_proxy(common_sumstats = self.data, sumstats1=self.sumstats1,  **arg)
