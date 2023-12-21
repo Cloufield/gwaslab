@@ -26,10 +26,13 @@ def _run_two_sample_mr(sumstatspair_object,
                        ncase2=None,
                        ncontrol2=None,
                        prevalence2=None,
+                       methods=None,
                        log=Log()):
 
     log.write(" Start to run MR using twosampleMR from command line:")
-    
+    if methods is None:
+        methods = ["mr_ivw","mr_simple_mode","mr_weighted_median","mr_egger_regression","mr_ivw_mre", "mr_weighted_mode"]
+        methods_string = '"{}"'.format('","'.join(methods))
     if clump==True:
         sumstatspair = sumstatspair_object.clumps["clumps"]
     else: 
@@ -116,7 +119,7 @@ def _run_two_sample_mr(sumstatspair_object,
     
     harmonized_data <- harmonise_data(exp_dat,out_dat,action=1)
     
-    results_mr <- mr(harmonized_data)
+    results_mr <- mr(harmonized_data, method_list = c({methods_string}))
     write.csv(results_mr, "{prefix}.mr", row.names = FALSE)
 
     results_heterogeneity <- mr_heterogeneity(harmonized_data)
@@ -140,6 +143,7 @@ def _run_two_sample_mr(sumstatspair_object,
         pheno2 = 'sumstats$PHENO_2 <- "{}"'.format(outcome2) if outcome2 is not None else "", 
         cols_for_trait1 = cols_for_trait1_script,
         cols_for_trait2 = cols_for_trait2_script,
+        methods_string=methods_string,
         prefix=prefix,
         calculate_r = calculate_r_script,
         directionality_test = directionality_test_script
