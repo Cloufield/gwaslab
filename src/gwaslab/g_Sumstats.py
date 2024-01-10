@@ -5,6 +5,7 @@ import copy
 from gwaslab.g_Sumstats_summary import summarize
 from gwaslab.g_Sumstats_summary import lookupstatus
 from gwaslab.io_preformat_input import preformat
+from gwaslab.io_to_formats import tofmt
 from gwaslab.g_Log import Log
 from gwaslab.qc_fix_sumstats import fixID
 from gwaslab.qc_fix_sumstats import removedup
@@ -17,6 +18,8 @@ from gwaslab.qc_fix_sumstats import parallelizeliftovervariant
 from gwaslab.qc_fix_sumstats import flipallelestats
 from gwaslab.qc_fix_sumstats import sortcoordinate
 from gwaslab.qc_fix_sumstats import sortcolumn
+from gwaslab.qc_fix_sumstats import _set_build
+from gwaslab.qc_fix_sumstats import _process_build
 from gwaslab.hm_harmonize_sumstats import parallelecheckaf
 from gwaslab.hm_harmonize_sumstats import paralleleinferaf
 from gwaslab.hm_harmonize_sumstats import checkref
@@ -40,7 +43,7 @@ from gwaslab.util_in_get_density import assigndensity
 from gwaslab.util_in_get_sig import annogene
 from gwaslab.util_in_get_sig import getnovel
 from gwaslab.util_in_fill_data import filldata
-from gwaslab.io_to_formats import tofmt
+
 from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.bd_common_data import get_number_to_chr
@@ -114,11 +117,12 @@ class Sumstats():
 
         # attributes
         self.data = pd.DataFrame()
-        self.build = build
         self.log = Log()
         self.meta = init_meta() 
+    
+        self.build = build
         self.meta["gwaslab"]["study_name"] = study
-        self.meta["gwaslab"]["genome_build"] = build
+        #self.meta["gwaslab"]["genome_build"] = build
         self.meta["gwaslab"]["species"] = species
         self.to_finemapping_file_path = ""
         self.plink_log = ""
@@ -177,8 +181,9 @@ class Sumstats():
           readargs=readargs,
           log=self.log)
         
+        self.meta["gwaslab"]["genome_build"] = _process_build(build, log=self.log, verbose=False)
 
-        if species=="homo sapiens" and build=="99" and build_infer is True:
+        if species=="homo sapiens" and self.meta["gwaslab"]["genome_build"]=="99" and build_infer is True:
             try:
                 self.infer_build()
             except:
@@ -205,7 +210,10 @@ class Sumstats():
 
     def lookup_status(self,status="STATUS"):
         return lookupstatus(self.data[status])
-        
+    
+    def set_build(self, build, verbose=True):
+        self.data = _set_build(self.data, build=build, log=self.log,verbose=verbose)
+        gc.collect()
 # QC ######################################################################################
     #clean the sumstats with one line
     def basic_check(self,
@@ -643,7 +651,7 @@ class Sumstats():
               hapmap3=False,
               exclude_hla=False,
               hla_range=(25,34),  
-              build="19", 
+              build=None, 
               n=None,
               verbose=True,
               no_status=False,
@@ -658,7 +666,8 @@ class Sumstats():
               bgzip=False,
               tabix=False,
               tabix_indexargs={}):
-        
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
         onetime_log = copy.deepcopy(self.log)
         if  to_csvargs is None:
             to_csvargs = {}

@@ -14,6 +14,7 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.qc_check_datatype import check_datatype
+#setbuild
 #fixID
 #rsidtochrpos
 #remove_dup
@@ -31,6 +32,23 @@ from gwaslab.qc_check_datatype import check_datatype
 
 ###############################################################################################################
 # 20220514 
+def _process_build(build,log,verbose):
+    if str(build).lower() in ["hg19","19","37","b37","grch37"]:
+        log.write(" -Genomic coordinates are based on GRCh37/hg19...", verbose=verbose)
+        final_build = "19"
+    elif str(build).lower() in ["hg38","38","b38","grch38"]:
+        log.write(" -Genomic coordinates are based on GRCh38/hg38...", verbose=verbose)
+        final_build = "38"
+    else:
+        log.write(" -Version of genomic coordinates are unknown...", verbose=verbose)
+        final_build = "99"
+    return final_build
+
+def _set_build(sumstats, build="99", status="STATUS",verbose=True,log=Log()):
+    build = _process_build(build,log=log,verbose=verbose)
+    sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status], 1, "139",build[0]*3)
+    sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status], 2, "89",build[1]*3)
+    return sumstats
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",

@@ -6,6 +6,7 @@ import os
 import gc
 from gwaslab.bd_common_data import get_format_dict
 from gwaslab.qc_fix_sumstats import sortcolumn
+from gwaslab.qc_fix_sumstats import _process_build
 from gwaslab.qc_check_datatype import check_datatype
 
 #20221030
@@ -481,7 +482,11 @@ def process_allele(sumstats,log,verbose):
 def process_status(sumstats,build,log,verbose):
     if verbose: log.write(" -Initiating a status column: STATUS ...")
     #sumstats["STATUS"] = int(build)*(10**5) +99999
+    build = _process_build(build,log,verbose)
     sumstats["STATUS"] = build +"99999"
     categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
     sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
     return sumstats
+
+
+    
