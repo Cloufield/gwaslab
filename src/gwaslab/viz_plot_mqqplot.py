@@ -5,6 +5,7 @@ import matplotlib.patches as patches
 import seaborn as sns
 import numpy as np
 import scipy as sp
+import copy
 from math import ceil
 from shutil import which
 from pyensembl import EnsemblRelease
@@ -219,7 +220,7 @@ def mqqplot(insumstats,
     if colors is None:
         colors=["#597FBD","#74BAD3"]
     if region_ref2 is not None:
-        region_ref_second = region_ref2,
+        region_ref_second = copy.copy(region_ref2),
     if region_grid_line is None:
         region_grid_line = {"linewidth": 2,"linestyle":"--"}
     if region_lead_grid_line is None:

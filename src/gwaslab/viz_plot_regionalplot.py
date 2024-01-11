@@ -230,22 +230,29 @@ def _plot_regional(
     return ax1, ax3, lead_snp_i, lead_snp_i2
 
 # + ###########################################################################################################################################################################
-def _get_lead_id(sumstats, region_ref, log):
+def _get_lead_id(sumstats=None, region_ref_to_check=None, log=None):
+    try: 
+        if len(region_ref_to_check)>0:
+            region_ref_to_check = region_ref_to_check[0]
+    except:
+        pass
     lead_id=None
     if "rsID" in sumstats.columns:
-        lead_id = sumstats.index[sumstats["rsID"] == region_ref].to_list()
+        lead_id = sumstats.index[sumstats["rsID"] == region_ref_to_check].to_list()
+
     if lead_id is None and "SNPID" in sumstats.columns:
-        lead_id = sumstats.index[sumstats["SNPID"] == region_ref].to_list()
+        lead_id = sumstats.index[sumstats["SNPID"] == region_ref_to_check].to_list()
+
     if type(lead_id) is list:
         if len(lead_id)>0:
             lead_id = int(lead_id[0])
-    if region_ref is not None:
+    if region_ref_to_check is not None:
         if type(lead_id) is list:
             if len(lead_id)==0 :
-                log.write(" -WARNING: {} not found. Roll back to lead variant...".format(region_ref))
+                log.write(" -WARNING: {} not found. Roll back to lead variant...".format(region_ref_to_check))
                 lead_id = sumstats["scaled_P"].idxmax()
         else:
-            log.write(" -Reference variant ID: {} - {}".format(region_ref, lead_id))
+            log.write(" -Reference variant ID: {} - {}".format(region_ref_to_check, lead_id))
 
     if lead_id is None:
         log.write(" -Extracting lead variant...")
@@ -572,7 +579,9 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
     sumstats["SHAPE"] = 1
     #####################################################################################################
     if region_ref_second is not None:
+
         lead_id2 = _get_lead_id(sumstats, region_ref_second, log)
+
         lead_pos2 = sumstats.loc[lead_id2,pos]
         if lead_pos2 in ref_genotype["variants/POS"]:
             
