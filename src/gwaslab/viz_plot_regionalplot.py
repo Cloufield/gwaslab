@@ -4,6 +4,7 @@ import matplotlib.ticker as ticker
 import matplotlib.patches as patches
 import seaborn as sns
 import numpy as np
+import copy
 import scipy as sp
 from pyensembl import EnsemblRelease
 from allel import GenotypeArray
@@ -230,9 +231,10 @@ def _plot_regional(
     return ax1, ax3, lead_snp_i, lead_snp_i2
 
 # + ###########################################################################################################################################################################
-def _get_lead_id(sumstats=None, region_ref_to_check=None, log=None):
+def _get_lead_id(sumstats=None, region_ref=None, log=None):
+    region_ref_to_check = copy.copy(region_ref)
     try: 
-        if len(region_ref_to_check)>0:
+        if len(region_ref_to_check)>0 and type(region_ref_to_check) is not str:
             region_ref_to_check = region_ref_to_check[0]
     except:
         pass
