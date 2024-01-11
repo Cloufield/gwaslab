@@ -552,6 +552,11 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
         other_snps_ref_index = sumstats["REFINDEX"].dropna().astype("int").values
         # get genotype 
         lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
+        try:
+            if len(set(lead_snp_genotype[0]))==1:
+                log.write(" -WARNING: The variant is mono-allelic in reference VCF. LD can not be calculated.", verbose=verbose)
+        except:
+            pass
         other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
         
         if verbose: log.write(" -Calculating Rsq...")
@@ -595,6 +600,11 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
             other_snps_ref_index = sumstats["REFINDEX"].dropna().astype("int").values
             # get genotype 
             lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
+            try:
+                if len(set(lead_snp_genotype[0]))==1:
+                    log.write(" -WARNING: The variant is mono-allelic in reference VCF. LD can not be calculated.", verbose=verbose)
+            except:
+                pass
             other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
             
             if verbose: log.write(" -Calculating Rsq...")

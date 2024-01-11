@@ -572,7 +572,10 @@ def mqqplot(insumstats,
                     palette[i]=region_ld_colors1[i]
                     palette[100+i]=region_ld_colors2[i]
                 edgecolor="none"
-                scatter_args["markers"]=['o', 's']
+                if sumstats["SHAPE"].nunique() >1:
+                    scatter_args["markers"]=['o', 's']
+                else:
+                    scatter_args["markers"]=['o']
                 style="SHAPE"
                 
             
