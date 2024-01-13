@@ -86,3 +86,18 @@ mysumstats.plot_mqq(mode="r",region=(7,156538803,157538803),
                     vcf_path=gl.get_path("1kg_eas_hg19"))
 ```
 <img width="600" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/930bed00-74ab-4870-947c-06bc11b932c7">
+
+
+### FAQ
+
+1. Why some genes are missing in the gene track?
+
+We only included protein-coding genes in the reference GTF files for plotting the gene track.
+
+2. Why some exons are missing in the gene track?
+
+Sometimes the exon is too short to reach even 1 pixel in the plot. You can either increase the dpi or reduce the length of the region.
+
+3. Why an error occurs even if both variants are in the reference VCF?
+
+When the reference variant is mono-allelic in the reference VCF, LD can not be calculated.

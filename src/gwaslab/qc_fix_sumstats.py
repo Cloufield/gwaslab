@@ -562,13 +562,18 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         bad_nea = sumstats[nea].str.contains("[^actgACTG]",na=True)
         good_ea  = ~bad_ea
         good_nea = ~bad_nea
+
+        log.write(" -Variants with bad EA  : {}".format(sum(bad_ea)), verbose=verbose)
+        log.write(" -Variants with bad NEA : {}".format(sum(bad_nea)), verbose=verbose)
         
         ## check NA
         is_eanea_na = sumstats[ea].isna() |  sumstats[nea].isna()
+        log.write(" -Variants with NA for EA or NEA: {}".format(sum(is_eanea_na)), verbose=verbose)
         
         ## check same alleles
         not_variant = sumstats[nea] == sumstats[ea]
-        
+        log.write(" -Variants with same EA and NEA: {}".format(sum(not_variant)), verbose=verbose)
+
         ## sum up invalid variants
         is_invalid = bad_ea | bad_nea | not_variant
         
@@ -580,9 +585,13 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
             if len(set(sumstats.loc[bad_nea,nea].head())) >0:
                 log.write(" -A look at the non-ATCG NEA:",set(sumstats.loc[bad_nea,nea].head()),"...") 
         
-        if remove is True:
+        if remove == True:
             sumstats = sumstats.loc[(good_ea & good_nea),:].copy()
-            if verbose: log.write(" -Removed "+str(sum(exclude))+" variants with alleles that contain bases other than A/C/T/G .")  
+            good_eanea_num = len(sumstats)
+            if verbose: log.write(" -Removed "+str(all_var_num - good_eanea_num)+" variants with NA alleles or alleles that contain bases other than A/C/T/G.")  
+            sumstats = sumstats.loc[(good_ea & good_nea & (~not_variant)),:].copy()
+            good_eanea_notsame_num = len(sumstats)
+            if verbose: log.write(" -Removed "+str(good_eanea_num - good_eanea_notsame_num)+" variants with same allele for EA and NEA.") 
         else:
             sumstats.loc[:,[ea,nea]] = sumstats.loc[:,[ea,nea]].fillna("N")
             if verbose: log.write(" -Detected "+str(sum(exclude))+" variants with alleles that contain bases other than A/C/T/G .") 

@@ -60,6 +60,7 @@ def mqqplot(insumstats,
           eaf=None,
           ea="EA",
           nea="NEA",
+          check = True,
           chr_dict = None,
           xtick_chr_dict = None,
           vcf_path=None,
@@ -262,6 +263,11 @@ def mqqplot(insumstats,
         sig_level_plot = sig_level
         sig_level_lead = sig_level     
 
+    if check==True and _if_quick_qc==True:
+        _if_quick_qc = True
+    else:
+        _if_quick_qc = False
+
     if save is not None:
         if type(save) is not bool:
             if len(save)>3:
@@ -273,7 +279,7 @@ def mqqplot(insumstats,
     if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
     if verbose: log.write(" -Genomic coordinates version: {}...".format(build))
     if build is None or build=="99":
-        if verbose: log.write("   -WARNING!!! Genomic coordinates version is unknown...")
+        if verbose: log.write("   -WARNING: Genomic coordinates version is unknown...")
     if verbose: log.write(" -Genome-wide significance level to plot is set to "+str(sig_level_plot)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Plot layout mode is : "+mode)
@@ -423,26 +429,23 @@ def mqqplot(insumstats,
 
 
 #sanity check############################################################################################################
-    if verbose: log.write("Start conversion and sanity check:")
+    log.write("Start conversion and sanity check:",verbose=verbose)
     
-    if ("m" in mode or "r" in mode) and _if_quick_qc: 
-        pre_number=len(sumstats)
-        #sanity check : drop variants with na values in chr and pos df
-        sumstats = sumstats.dropna(subset=[chrom,pos])
-        after_number=len(sumstats)
-        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...")
-        out_of_range_chr = sumstats[chrom]<=0
-        if verbose:log.write(" -Removed {} variants with CHR <=0...".format(sum(out_of_range_chr)))
-        sumstats = sumstats.loc[~out_of_range_chr,:]
-    
-    if stratified is True and _if_quick_qc: 
-        pre_number=len(sumstats)
-        sumstats = sumstats.dropna(subset=["MAF"])
-        after_number=len(sumstats)
-        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in EAF column ...")
+    if _if_quick_qc == False:
+        log.write(" -Sanity check will be skipped.", verbose=verbose)
+    else:
+        sumstats = _sanity_check(sumstats=sumstats, 
+                                 mode=mode,
+                                 chrom =chrom, 
+                                 pos=pos, 
+                                 stratified=stratified, 
+                                 _if_quick_qc=_if_quick_qc, 
+                                 log=log, 
+                                 verbose=verbose)
             
     ## configure highlight regions
     if len(highlight)>0 and ("m" in mode or "r" in mode):
+        # add HUE
         sumstats = _process_highlight(sumstats=sumstats, 
                                                     highlight=highlight, 
                                                     highlight_chrpos=highlight_chrpos, 
@@ -453,6 +456,7 @@ def mqqplot(insumstats,
 
 # Density #####################################################################################################              
     if "b" in mode:
+        # add DENSITY
         sumstats, bmean, bmedian = _process_density(sumstats=sumstats, 
                                                     mode=mode, 
                                                     bwindowsizekb=bwindowsizekb, 
@@ -463,29 +467,16 @@ def mqqplot(insumstats,
     else:
         bmean, bmedian=0,0 
 # P value conversion #####################################################################################################  
-    ## m,qq,r -> dropna
-    if "b" not in mode and _if_quick_qc:
-        pre_number=len(sumstats)
-        sumstats = sumstats.dropna(subset=["raw_P"])
-        after_number=len(sumstats)
-        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...")
     
-    ## b: value to plot is density
-    if "b" in mode:
-        sumstats["scaled_P"] = sumstats["DENSITY"].copy()
-        sumstats["raw_P"] = -np.log10(sumstats["DENSITY"].copy()+2)
-    elif scaled is True:
-        if verbose:log.write(" -P values are already converted to -log10(P)!")
-        sumstats["scaled_P"] = sumstats["raw_P"].copy()
-        sumstats["raw_P"] = np.power(10,-sumstats["scaled_P"].astype("float64"))
-    else:
-        if not scaled:
-            # quick fix p
-            sumstats = _quick_fix_p_value(sumstats, p=p, mlog10p=mlog10p,verbose=verbose, log=log)
-
-        # quick fix mlog10p
-        sumstats = _quick_fix_mlog10p(sumstats,p=p, mlog10p=mlog10p, scaled=scaled, verbose=verbose, log=log)
-
+    # add raw_P and scaled_P
+    sumstats =  _process_p_value(sumstats=sumstats, 
+                                 mode=mode,
+                                 p=p, 
+                                 mlog10p=mlog10p, 
+                                 scaled=scaled, 
+                                 log=log, 
+                                 verbose=verbose )
+    
     # raw p for calculate lambda
     p_toplot_raw = sumstats[["CHR","scaled_P"]].copy()
     
@@ -493,8 +484,6 @@ def mqqplot(insumstats,
     sumstats = sumstats.loc[sumstats["scaled_P"]>=skip,:]
     garbage_collect.collect()
     
-
-    # 
 
     # shrink variants above cut line #########################################################################################
     try:
@@ -1029,11 +1018,48 @@ def _configure_cols_to_use(insumstats, snpid,  chrom, pos, ea, nea, eaf, p, mlog
     return usecols
 
 
-def _sanity_check():
-    pass
+def _sanity_check(sumstats, mode, chrom, pos, stratified, _if_quick_qc, log, verbose):
+    if ("m" in mode or "r" in mode) and _if_quick_qc: 
+        pre_number=len(sumstats)
+        #sanity check : drop variants with na values in chr and pos df
+        sumstats = sumstats.dropna(subset=[chrom,pos])
+        after_number=len(sumstats)
+        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...")
+        out_of_range_chr = sumstats[chrom]<=0
+        if verbose:log.write(" -Removed {} variants with CHR <=0...".format(sum(out_of_range_chr)))
+        sumstats = sumstats.loc[~out_of_range_chr,:]
+    
+    if stratified is True and _if_quick_qc: 
+        pre_number=len(sumstats)
+        sumstats = sumstats.dropna(subset=["MAF"])
+        after_number=len(sumstats)
+        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in EAF column ...")
+    
+    if "b" not in mode and _if_quick_qc:
+        pre_number=len(sumstats)
+        sumstats = sumstats.dropna(subset=["raw_P"])
+        after_number=len(sumstats)
+        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...")
+    return sumstats
 
-def _process_p_value():
-    pass
+def _process_p_value(sumstats, mode,p, mlog10p, scaled, log, verbose ):
+    ## b: value to plot is density
+    if "b" in mode:
+        sumstats["scaled_P"] = sumstats["DENSITY"].copy()
+        sumstats["raw_P"] = -np.log10(sumstats["DENSITY"].copy()+2)
+    elif scaled is True:
+        if verbose:log.write(" -P values are already converted to -log10(P)!")
+        sumstats["scaled_P"] = sumstats["raw_P"].copy()
+        sumstats["raw_P"] = np.power(10,-sumstats["scaled_P"].astype("float64"))
+    else:
+        if not scaled:
+            # quick fix p
+            sumstats = _quick_fix_p_value(sumstats, p=p, mlog10p=mlog10p,verbose=verbose, log=log)
+
+        # quick fix mlog10p
+        sumstats = _quick_fix_mlog10p(sumstats,p=p, mlog10p=mlog10p, scaled=scaled, verbose=verbose, log=log)
+
+    return sumstats
 
 def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb, snpid, chrom, pos):
         if pd.api.types.is_list_like(highlight[0]):

@@ -115,20 +115,24 @@ class Sumstats():
              build_infer=False,
              **readargs):
 
-        # attributes
+        # basic attributes
         self.data = pd.DataFrame()
         self.log = Log()
+
+        # meta information
         self.meta = init_meta() 
-    
         self.build = build
         self.meta["gwaslab"]["study_name"] = study
         #self.meta["gwaslab"]["genome_build"] = build
         self.meta["gwaslab"]["species"] = species
+        
+        # initialize attributes for clumping and finmapping
         self.to_finemapping_file_path = ""
         self.plink_log = ""
         self.clumps = pd.DataFrame()
         self.pipcs = pd.DataFrame()
 
+        # print gwaslab version information
         if verbose: _show_version(self.log)
 
         #preformat the data
@@ -181,8 +185,11 @@ class Sumstats():
           readargs=readargs,
           log=self.log)
         
+
+        # checking genome build
         self.meta["gwaslab"]["genome_build"] = _process_build(build, log=self.log, verbose=False)
 
+        # if build is unknown and build_infer is True, infer the build
         if species=="homo sapiens" and self.meta["gwaslab"]["genome_build"]=="99" and build_infer is True:
             try:
                 self.infer_build()
@@ -191,7 +198,6 @@ class Sumstats():
         gc.collect()   
 
 #### healper #################################################################################
-
     def update_meta(self):
         self.meta["gwaslab"]["variants"]["variant_number"]=len(self.data)
         if "CHR" in self.data.columns:
@@ -218,6 +224,7 @@ class Sumstats():
     #clean the sumstats with one line
     def basic_check(self,
                     remove=False,
+                    remove_dup=False,
                     n_cores=1,
                     fixid_args={},
                     removedup_args={},
@@ -231,11 +238,11 @@ class Sumstats():
         ###############################################
         # try to fix data without dropping any information
         self.data = fixID(self.data,verbose=verbose, **fixid_args)
-        if remove is True:
+        if remove_dup is True:
             self.data = removedup(self.data,log=self.log,verbose=verbose,**removedup_args)
         self.data = fixchr(self.data,log=self.log,remove=remove,verbose=verbose,**fixchr_agrs)
         self.data = fixpos(self.data,log=self.log,remove=remove,verbose=verbose,**fixpos_args)
-        self.data = fixallele(self.data,log=self.log,verbose=verbose,**fixallele_args)
+        self.data = fixallele(self.data,log=self.log,remove=remove,verbose=verbose,**fixallele_args)
         self.data = sanitycheckstats(self.data,log=self.log,verbose=verbose,**sanitycheckstats_args)
         if normalize is True:
             self.data = parallelnormalizeallele(self.data,n_cores=n_cores,verbose=verbose,log=self.log,**normalizeallele_args)
