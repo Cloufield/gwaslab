@@ -18,16 +18,42 @@ Datasets you need to download explicitly if needed.
 
 |Keyword|Description|Note|
 |-|-|-|
-|'1kg_eas_hg19','1kg_eas_hg19_tbi'|1KGp3v5 low-coverage EAS VCF and index (hg19)|Processed, Dropbox|
-|'1kg_eur_hg19','1kg_eur_hg19_tbi'|1KGp3v5 low-coverage EUR VCF and index (hg19)|Processed, Dropbox|
-|'1kg_eas_hg38','1kg_eas_hg38_tbi'|1KGp3v5 30x EAS VCF and index (hg38)|Processed, Dropbox|
-|'1kg_eur_hg38','1kg_eur_hg38_tbi'|1KGp3v5 30x EUR VCF and index (hg38)|Processed, Dropbox|
+|'1kg_eas_hg19','1kg_eas_hg19_tbi'|Autosomes; 1KGp3v5 low-coverage EAS VCF and index (hg19)|Processed, Dropbox|
+|'1kg_eur_hg19','1kg_eur_hg19_tbi'|Autosomes; 1KGp3v5 low-coverage EUR VCF and index (hg19)|Processed, Dropbox|
+|'1kg_amr_hg19','1kg_amr_hg19_tbi'|Autosomes; 1KGp3v5 low-coverage AMR VCF and index (hg19)|Processed, Dropbox|
+|'1kg_afr_hg19','1kg_afr_hg19_tbi'|Autosomes; 1KGp3v5 low-coverage AFR VCF and index (hg19)|Processed, Dropbox|
+|'1kg_sas_hg19','1kg_sas_hg19_tbi'|Autosomes; 1KGp3v5 low-coverage SAS VCF and index (hg19)|Processed, Dropbox|
+|'1kg_pan_hg19','1kg_pan_hg19_tbi'|Autosomes; 1KGp3v5 low-coverage VCF and index (hg19); all ancestries|Processed, Dropbox|
+|'1kg_eas_hg38','1kg_eas_hg38_tbi'|Autosomes; 1KGp3v5 30x EAS VCF and index (hg38)|Processed, Dropbox|
+|'1kg_eur_hg38','1kg_eur_hg38_tbi'|Autosomes; 1KGp3v5 30x EUR VCF and index (hg38)|Processed, Dropbox|
+|'1kg_afr_hg38','1kg_eas_hg38_tbi'|Autosomes; 1KGp3v5 30x AFR VCF and index (hg38)|Processed, Dropbox|
+|'1kg_amr_hg38','1kg_eur_hg38_tbi'|Autosomes; 1KGp3v5 30x AMR VCF and index (hg38)|Processed, Dropbox|
+|'1kg_sas_hg38','1kg_sas_hg38_tbi'|Autosomes; 1KGp3v5 30x SAS VCF and index (hg38)|Processed, Dropbox|
+|'1kg_pan_hg38','1kg_pan_hg38_tbi'|Autosomes; 1KGp3v5 30x VCF and index (hg38); all ancestries|Processed, Dropbox|
+|'1kg_eas_x_hg19','1kg_eas_x_hg19_tbi'|ChrX; 1KGp3v5 low-coverage EAS VCF and index (hg19)|Processed, Dropbox|
+|'1kg_eur_x_hg19','1kg_eur_x_hg19_tbi'|ChrX; 1KGp3v5 low-coverage EUR VCF and index (hg19)|Processed, Dropbox|
+|'1kg_amr_x_hg19','1kg_amr_x_hg19_tbi'|ChrX; 1KGp3v5 low-coverage AMR VCF and index (hg19)|Processed, Dropbox|
+|'1kg_afr_x_hg19','1kg_afr_x_hg19_tbi'|ChrX; 1KGp3v5 low-coverage AFR VCF and index (hg19)|Processed, Dropbox|
+|'1kg_sas_x_hg19','1kg_sas_x_hg19_tbi'|ChrX; 1KGp3v5 low-coverage SAS VCF and index (hg19)|Processed, Dropbox|
+|'1kg_pan_x_hg19','1kg_pan_x_hg19_tbi'|ChrX; 1KGp3v5 low-coverage VCF and index (hg19); all ancestries|Processed, Dropbox|
+|'1kg_eas_x_hg38','1kg_eas_x_hg38_tbi'|ChrX; 1KGp3v5 30x EAS VCF and index (hg38)|Processed, Dropbox|
+|'1kg_eur_x_hg38','1kg_eur_x_hg38_tbi'|ChrX; 1KGp3v5 30x EUR VCF and index (hg38)|Processed, Dropbox|
+|'1kg_afr_x_hg38','1kg_eas_x_hg38_tbi'|ChrX; 1KGp3v5 30x AFR VCF and index (hg38)|Processed, Dropbox|
+|'1kg_amr_x_hg38','1kg_eur_x_hg38_tbi'|ChrX; 1KGp3v5 30x AMR VCF and index (hg38)|Processed, Dropbox|
+|'1kg_sas_x_hg38','1kg_sas_x_hg38_tbi'|ChrX; 1KGp3v5 30x SAS VCF and index (hg38)|Processed, Dropbox|
+|'1kg_pan_x_hg38','1kg_pan_x_hg38_tbi'|ChrX; 1KGp3v5 30x VCF and index (hg38); all ancestries|Processed, Dropbox|
 |'dbsnp_v151_hg19'|dbSNP151 (hg19, !!very large)|Original source|
 |'dbsnp_v151_hg38'|dbSNP151 (hg38, !!very large)|Original source|
+|'dbsnp_v156_hg19'|dbSNP151 (hg19, !!very large)|Original source|
+|'dbsnp_v156_hg38'|dbSNP151 (hg38, !!very large)|Original source|
 |'ucsc_genome_hg19'|UCSC human reference genome (hg19)|Original source|
 |'ucsc_genome_hg38'|UCSC human reference genome (hg38)|Original source|
-|'1kg_dbsnp151_hg19_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg19)|Processed, Dropbox|
-|'1kg_dbsnp151_hg38_auto'|1KGp3v5 variants SNPID-rsID conversion table (hg38)|Processed, Dropbox|
+|'1kg_dbsnp151_hg19_auto'|Autosomes; 1KGp3v5 variants SNPID-rsID conversion table (hg19)|Processed, Dropbox|
+|'1kg_dbsnp151_hg38_auto'|Autosomes; 1KGp3v5 variants SNPID-rsID conversion table (hg38)|Processed, Dropbox|
+|'1kg_dbsnp151_hg19_x'|ChrX; 1KGp3v5 variants SNPID-rsID conversion table (hg19)|Processed, Dropbox|
+|'1kg_dbsnp151_hg38_x'|ChrX; 1KGp3v5 variants SNPID-rsID conversion table (hg38)|Processed, Dropbox|
+
+!!! note "tbi index file will be automatically downloaded when you download VCF files"
 
 !!! example "Download and check the local path of `1kg_eas_hg19`"
     ```
