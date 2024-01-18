@@ -4,15 +4,19 @@ import os
 import numpy as np 
 
 def _show_version(log=Log()):
-    # show when loading sumstats
+    # show version when loading sumstats
     log.write("GWASLab v{} https://cloufield.github.io/gwaslab/".format(gwaslab_info()["version"]))
-    log.write("(C) 2022-2023, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com")
+    log.write("(C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com")
+
+def _get_version():
+    # return short version string like v3.4.33
+    return "v{}".format(gwaslab_info()["version"])
 
 def gwaslab_info():
-    # for output header
+    # version meta information
     dic={
-   "version":"3.4.32",
-   "release_date":"20231118"
+   "version":"3.4.33",
+   "release_date":"20240118"
     }
     return dic   
 

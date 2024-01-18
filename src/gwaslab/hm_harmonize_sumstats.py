@@ -15,6 +15,7 @@ from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.g_vchange_status import vchange_status
+from gwaslab.g_version import _get_version
 #rsidtochrpos
 #checkref
 #parallelizeassignrsid
@@ -33,7 +34,7 @@ def rsidtochrpos(sumstats,
     assign chr:pos based on rsID
     '''
     #########################################################################################################
-    if verbose:  log.write("Start to update chromosome and position information based on rsID...")  
+    if verbose:  log.write("Start to update chromosome and position information based on rsID...{}".format(_get_version()))  
     if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose:  log.write(" -rsID dictionary file: "+ path)  
     
@@ -97,7 +98,7 @@ def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
 
 def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None,build="99",status="STATUS",
                          n_cores=4,block_size=20000000,verbose=True,log=Log()):
-    if verbose:  log.write("Start to assign CHR and POS using rsIDs... ")
+    if verbose:  log.write("Start to assign CHR and POS using rsIDs...{}".format(_get_version()))
     if path is None:
         raise ValueError("Please provide path to hdf5 file.")
     
@@ -233,7 +234,7 @@ def check_status(row,record):
         
 
 def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
-    if verbose: log.write("Start to check if NEA is aligned with reference sequence...")
+    if verbose: log.write("Start to check if NEA is aligned with reference sequence...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
     if verbose: log.write(" -Reference genome fasta file: "+ ref_path)  
     if verbose: log.write(" -Checking records: ", end="")  
@@ -329,7 +330,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
     '''  
     if ref_mode=="vcf":
         ###################################################################################################################
-        if verbose: log.write("Start to assign rsID using vcf...")
+        if verbose: log.write("Start to assign rsID using vcf...{}".format(_get_version()))
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         if verbose: log.write(" -CPU Cores to use :",n_cores)
         if verbose: log.write(" -Reference VCF file:", path)
@@ -379,7 +380,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
         '''
         assign rsID based on chr:pos
         '''
-        if verbose:  log.write("Start to annotate rsID based on chromosome and position information...")  
+        if verbose:  log.write("Start to annotate rsID based on chromosome and position information...{}".format(_get_version()))  
         if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         if verbose:  log.write(" -SNPID-rsID text file: "+ path)  
         
@@ -515,7 +516,7 @@ def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NE
 def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,daf_tolerance=0.20,remove_snp="",mode="pi",n_cores=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
                        chr_dict=None,verbose=True,log=Log()):
-    if verbose: log.write("Start to infer strand for palindromic SNPs...")
+    if verbose: log.write("Start to infer strand for palindromic SNPs...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
 
@@ -648,7 +649,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 ################################################################################################################
 def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,column_name="DAF",suffix="",n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
         
-    if verbose: log.write("Start to check the difference between EAF and reference vcf alt frequency ...")
+    if verbose: log.write("Start to check the difference between EAF and reference vcf alt frequency ...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
     if verbose: log.write(" -CPU Cores to use :",n_cores)
@@ -716,7 +717,7 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
 
 def paralleleinferaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
         
-    if verbose: log.write("Start to infer the AF and reference vcf alt frequency ...")
+    if verbose: log.write("Start to infer the AF and reference vcf alt frequency ...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
     if verbose: log.write(" -CPU Cores to use :",n_cores)

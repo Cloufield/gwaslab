@@ -37,7 +37,7 @@ from gwaslab.io_to_pickle import load_data_from_pickle
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.viz_aux_save_figure import save_figure
 from gwaslab.viz_plot_mqqplot import mqqplot
-
+from gwaslab.g_version import _get_version
 def plot_miami2( 
           path1=None,
           path2=None,
@@ -153,7 +153,7 @@ def plot_miami2(
     # add suffix if ids are the same
     id1, id2, mqq_args1, mqq_args2 = _solve_id_contradictory(id0, id1, id2, mqq_args1, mqq_args2)
     
-    if verbose: log.write("Start to plot miami plot:")
+    if verbose: log.write("Start to plot miami plot {}:".format(_get_version()))
     if dpi!=100:
         fig_args["dpi"] = dpi
     if xtickpad is None:

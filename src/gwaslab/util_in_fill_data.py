@@ -5,6 +5,7 @@ from scipy import stats
 from gwaslab.g_Log import Log
 import gc
 from gwaslab.qc_fix_sumstats import sortcolumn
+from gwaslab.g_version import _get_version
 
 def filldata( 
     sumstats,
@@ -22,7 +23,7 @@ def filldata(
     if type(to_fill) is str:
         to_fill = [to_fill]
 
-    if verbose: log.write("Start filling data using existing columns...")
+    if verbose: log.write("Start filling data using existing columns...{}".format(_get_version()))
     if verbose: log.write(" -Raw input columns: ",list(sumstats.columns))
 # check dupication ##############################################################################################
     skip_cols=[]

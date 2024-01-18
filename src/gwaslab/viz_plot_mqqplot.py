@@ -50,6 +50,7 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_recombination_rate
 from gwaslab.bd_common_data import get_gtf
+from gwaslab.g_version import _get_version
 # 20230202 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -276,7 +277,7 @@ def mqqplot(insumstats,
                     scatter_args["rasterized"]=True
                     qq_scatter_args["rasterized"]=True
 
-    if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings:")
+    if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings {}:".format(_get_version()))
     if verbose: log.write(" -Genomic coordinates version: {}...".format(build))
     if build is None or build=="99":
         if verbose: log.write("   -WARNING: Genomic coordinates version is unknown...")

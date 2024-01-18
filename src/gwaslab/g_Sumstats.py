@@ -43,7 +43,6 @@ from gwaslab.util_in_get_density import assigndensity
 from gwaslab.util_in_get_sig import annogene
 from gwaslab.util_in_get_sig import getnovel
 from gwaslab.util_in_fill_data import filldata
-
 from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.bd_common_data import get_number_to_chr

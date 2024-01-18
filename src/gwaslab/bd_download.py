@@ -8,7 +8,7 @@ import hashlib
 from gwaslab.g_Log import Log
 from gwaslab.bd_config import options
 import re
-
+from gwaslab.g_version import _get_version
 #### config ##############################################################################################
 # config.json
 # {
