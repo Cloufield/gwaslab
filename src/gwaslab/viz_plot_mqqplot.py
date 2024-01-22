@@ -78,7 +78,9 @@ def mqqplot(insumstats,
           scaled=False,
           mode="mqq",
           scatter_args=None,
+          scatterargs=None,
           qq_scatter_args=None,
+          qqscatterargs=None,
           qq_line_color = "grey",
           # region
           region = None,
@@ -175,6 +177,7 @@ def mqqplot(insumstats,
           fontsize = 9,
           font_family="Arial",
           anno_fontsize = 9,
+          figargs=None,
           fig_args= None,
           figax=None,
           colors=None,
@@ -187,6 +190,7 @@ def mqqplot(insumstats,
           dpi=200,
           save=None,
           save_args=None,
+          saveargs=None,
           _invert=False,
           _chrom_df_for_i=None,
           _if_quick_qc=True,
@@ -207,6 +211,8 @@ def mqqplot(insumstats,
         rr_chr_dict = get_number_to_chr()
     if fig_args is None:
         fig_args= dict(figsize=(15,5))
+    if figargs is not None:
+        fig_args = figargs
     if "dpi" not in fig_args.keys():
         fig_args["dpi"] = dpi
     if region_anno_bbox_args is None:
@@ -255,8 +261,14 @@ def mqqplot(insumstats,
         build = "19"
     if scatter_args is None:
         scatter_args={}
+    if scatterargs is not None:
+        scatter_args = scatterargs
     if qq_scatter_args is None:
         qq_scatter_args={}
+    if qqscatterargs is not None:
+        qq_scatter_args = qqscatterargs
+    if saveargs is not None:
+        save_args = saveargs
     if sig_level is None:
         sig_level_plot=sig_level_plot
         sig_level_lead=sig_level_lead 

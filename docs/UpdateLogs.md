@@ -1,5 +1,20 @@
 # Update Logs
 
+## 3.4.33 20240122
+
+- fix_allele() now prints out allele information 
+- updated sanity check default values (added tolerance for floats)
+- fixed error in loading pickle created by older versions
+- fixed bug in flipping OR and HR
+- added version information to the start line of each checking function
+- updated reference VCF
+- updated clump() / to_finemapping() / run_susie_rss() (beta)
+- updated Manhattan-like plotting system 
+- updated datatype for certain statistics
+- updated file naming system (beta)
+- added stacked mqq plot (beta)
+- plot_miami2() can iteratively call plot_mqq to create miami plot, which supports more functions (beta)
+
 ## 3.4.32 20231118
 - fixed bug in sanity_check : N = N_CASE + N_CONTROL
 - fixed the logic chain for normalization
