@@ -1,6 +1,7 @@
 import pickle
 import os
 import gc
+from gwaslab.g_Sumstats import Sumstats
 from gwaslab.g_Log import Log 
 
 def dump_pickle(glsumstats,path="~/mysumstats.pickle",overwrite=False):
