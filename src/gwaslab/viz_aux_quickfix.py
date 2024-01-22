@@ -34,7 +34,7 @@ def _quick_fix_p_value(sumstats, p="P", mlog10p="MLOG10P", scaled=False,verbose=
         if verbose:log.write(" -P values are already scaled...")
         if verbose:log.write(" -Sumstats -log10(P) values are being converted to P...")
         sumstats["scaled_P"] = sumstats[mlog10p].copy()
-        sumstats[p]= np.power(10,-sumstats[mlog10p])
+        sumstats[p]= np.power(10,-sumstats[mlog10p].astype("float64"))
         return sumstats
     # bad p : na and outside (0,1]
     bad_p_value = (sumstats[p].isna()) | (sumstats[p] > 1) | (sumstats[p] <= 0)
@@ -51,7 +51,7 @@ def _quick_fix_mlog10p(sumstats,p="P", mlog10p="MLOG10P", scaled=False, verbose=
     '''
     if scaled != True:
         if verbose:log.write(" -Sumstats P values are being converted to -log10(P)...")
-        sumstats["scaled_P"] = -np.log10(sumstats[p])
+        sumstats["scaled_P"] = -np.log10(sumstats[p].astype("float64"))
         
     #with pd.option_context('mode.use_inf_as_na', True):
     #    is_na = sumstats["scaled_P"].isna()

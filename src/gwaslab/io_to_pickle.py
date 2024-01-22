@@ -1,9 +1,10 @@
 import pickle
 import os
 import gc
-from gwaslab.g_Sumstats import Sumstats
 from gwaslab.g_Log import Log 
-
+import sys
+from gwaslab import g_Sumstats
+from gwaslab import g_Log
 def dump_pickle(glsumstats,path="~/mysumstats.pickle",overwrite=False):
     glsumstats.log.write("Start to dump the Sumstats Object.")
     if overwrite==False and os.path.exists(path):
@@ -16,10 +17,21 @@ def dump_pickle(glsumstats,path="~/mysumstats.pickle",overwrite=False):
 
 def load_pickle(path):
     if os.path.exists(path):
-        with open(path, 'rb') as file:
-            glsumstats =  pickle.load(file)
-            glsumstats.log.write("Loaded dumped Sumstats object from : ", path)
-            return glsumstats
+        try:
+            with open(path, 'rb') as file:
+                glsumstats =  pickle.load(file)
+                glsumstats.log.write("Loaded dumped Sumstats object created using gwaslab>=v3.4.32")    
+                glsumstats.log.write("Loaded dumped Sumstats object from : ", path)
+                return glsumstats
+        except:
+            sys.modules['gwaslab.Sumstats'] = g_Sumstats
+            sys.modules['gwaslab.Log'] = g_Log
+            
+            with open(path, 'rb') as file:
+                glsumstats =  pickle.load(file)
+                glsumstats.log.write("Loaded dumped Sumstats object created using gwaslab<v3.4.32")    
+                glsumstats.log.write("Loaded dumped Sumstats object from : ", path)
+                return glsumstats
     else:
         Log().write("File not exists : ", path)
 
