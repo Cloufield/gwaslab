@@ -14,6 +14,7 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.qc_check_datatype import check_datatype
+from gwaslab.g_version import _get_version
 #setbuild
 #fixID
 #rsidtochrpos
@@ -59,7 +60,7 @@ def fixID(sumstats,
     2. fix chr and pos using snpid
     3. checking rsid and chr:pos:nea:ea
     '''
-    if verbose: log.write("Start to check IDs...")
+    if verbose: log.write("Start to check IDs...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     
     check_col(sumstats,[snpid,rsid],status)
@@ -314,7 +315,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
     
     # remove by duplicated SNPID
     if (snpid in sumstats.columns) and "d" in mode:
-        if verbose: log.write("Start to remove duplicated variants based on snpid...")
+        if verbose: log.write("Start to remove duplicated variants based on snpid...{}".format(_get_version()))
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
         if verbose: log.write(" -Which variant to keep: ",  keep )   
         pre_number =len(sumstats)   
@@ -381,7 +382,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         if check_col(sumstats,chrom,status) is not True:
             if verbose: log.write(".fix_chr: Specified not detected..skipping...")
             return sumstats
-        if verbose: log.write("Start to fix chromosome notation...")
+        if verbose: log.write("Start to fix chromosome notation...{}".format(_get_version()))
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))          
         
         # convert to string datatype
@@ -497,7 +498,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         if check_col(sumstats,pos,status) is not True:
             if verbose: log.write(".fix_pos: Specified not detected..skipping...")
             return sumstats
-        if verbose: log.write("Start to fix basepair positions...")
+        if verbose: log.write("Start to fix basepair positions...{}".format(_get_version()))
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         
         all_var_num = len(sumstats)
@@ -547,7 +548,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         if check_col(sumstats,ea,nea,status) is not True:
             if verbose: log.write("EA and NEA not detected..skipping...")
             return sumstats
-        if verbose: log.write("Start to fix alleles...")
+        if verbose: log.write("Start to fix alleles...{}".format(_get_version()))
         if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
         
         #if (ea not in sumstats.columns) or (nea not in sumstats.columns):
@@ -629,7 +630,7 @@ def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NE
         if verbose: log.write("WARNING:.normalize(): specified columns not detected..skipping...")
         return sumstats
     
-    if verbose: log.write("Start to normalize variants...")
+    if verbose: log.write("Start to normalize variants...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     #variants_to_check = status_match(sumstats[status],5,[4,5]) #
     #r'\w\w\w\w[45]\w\w'
@@ -778,7 +779,7 @@ def sanitycheckstats(sumstats,
     ## add direction
     if coltocheck is None:
         coltocheck = ["P","MLOG10P","INFO","Z","BETA","SE","EAF","CHISQ","F","N","N_CASE","N_CONTROL","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","STATUS"]
-    if verbose: log.write("Start sanity check for statistics ...") 
+    if verbose: log.write("Start sanity check for statistics...{}".format(_get_version())) 
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     cols_to_check=[]
     oringinal_number=len(sumstats)
@@ -1020,7 +1021,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     #matched_index = status_match(sumstats[status],6,[4,5]) #
     matched_index = sumstats[status].str[5].str.match(r"4|5")
     if sum(matched_index)>0:
-        if verbose: log.write("Start to convert alleles to reverse complement for SNPs with status xxxxx[45]x... ") 
+        if verbose: log.write("Start to convert alleles to reverse complement for SNPs with status xxxxx[45]x...{}".format(_get_version())) 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
         if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
             if verbose: log.write(" -Converting to reverse complement : EA and NEA...") 
@@ -1039,7 +1040,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     #matched_index = status_match(sumstats[status],6,[3,5]) #sumstats[status].str.match(pattern)
     matched_index = sumstats[status].str[5].str.match(r"3|5")
     if sum(matched_index)>0:
-        if verbose: log.write("Start to flip allele-specific stats for SNPs with status xxxxx[35]x: alt->ea , ref->nea ... ") 
+        if verbose: log.write("Start to flip allele-specific stats for SNPs with status xxxxx[35]x: alt->ea , ref->nea ...{}".format(_get_version())) 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
         if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
             if verbose: log.write(" -Swapping column: NEA <=> EA...") 
@@ -1086,7 +1087,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     #matched_index = status_match(sumstats[status],6,[1,2,3])|status_match(sumstats[status],6,[6,7])|status_match(sumstats[status],7,6) #sumstats[status].str.match(pattern)
     matched_index = sumstats[status].str[4:].str.match(r"[123][67]6")
     if sum(matched_index)>0:
-        if verbose: log.write("Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: alt->ea , ref->nea ... ") 
+        if verbose: log.write("Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: alt->ea , ref->nea...{}".format(_get_version())) 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
         if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
             if verbose: log.write(" -Swapping column: NEA <=> EA...") 
@@ -1133,7 +1134,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     #matched_index = status_match(sumstats[status],6,[0,1,2]) | status_match(sumstats[status],7,[5])#sumstats[status].str.match(pattern)
     matched_index = sumstats[status].str[5:].str.match(r"05|15|25")
     if sum(matched_index)>0:
-        if verbose: log.write("Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand ... ") 
+        if verbose: log.write("Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand...{}".format(_get_version())) 
         if verbose: log.write(" -Flipping "+ str(sum(matched_index)) +" variants...") 
         if "BETA" in sumstats.columns:
             if verbose: log.write(" -Flipping column: BETA = - BETA...") 
@@ -1214,7 +1215,7 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     if check_col(sumstats,chrom,pos,status) is not True:
         if verbose: log.write("WARNING:.liftover(): specified columns not detected..skipping...")
         return sumstats
-    if verbose: log.write("Start to perform liftover...")
+    if verbose: log.write("Start to perform liftover...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose: log.write(" -CPU Cores to use :",n_cores)
     if verbose: log.write(" -Performing liftover ...")
@@ -1258,7 +1259,7 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
         if verbose: log.write(".liftover(): specified columns not detected..skipping...")
         return sumstats
     
-    if verbose: log.write("Start to sort the genome coordinates...")
+    if verbose: log.write("Start to sort the genome coordinates...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     
     try:
@@ -1281,7 +1282,7 @@ def sortcolumn(sumstats,verbose=True,log=Log(),order = [
         "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "MAF", "BETA", "SE","BETA_95L","BETA_95U", "Z",
         "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U","HR", "HR_95L", "HR_95U","INFO", "N","N_CASE","N_CONTROL","DIRECTION","I2","P_HET","DOF","SNPR2","STATUS"
            ]):
-    if verbose: log.write("Start to reorder the columns...")
+    if verbose: log.write("Start to reorder the columns...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     
     output_columns = []
