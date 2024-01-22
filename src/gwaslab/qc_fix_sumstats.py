@@ -874,7 +874,7 @@ def sanitycheckstats(sumstats,
     if "P" in coltocheck and "P" in sumstats.columns:
         cols_to_check.append("P")
         if verbose: log.write(" -Checking if ",p[0],"< P <",p[1]," ...") 
-        sumstats.loc[:,"P"] = pd.to_numeric(sumstats.loc[:,"P"], errors='coerce')
+        sumstats.loc[:,"P"] = pd.to_numeric(sumstats.loc[:,"P"], errors='coerce').astype("float64")
         sumstats = sumstats.loc[(sumstats["P"]>=p[0]) & (sumstats["P"]<=p[1]),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad P.") 
