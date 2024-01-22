@@ -21,6 +21,7 @@ nav:
     - Home:
        - Home : index.md
        - "Update logs" : UpdateLogs.md
+       - "Known Issues" : KnownIssues.md
     - Tutorial: tutorial_3.4.ipynb
     - Sumstats manipulation:
        - "Sumstats Object": SumstatsObject.md
