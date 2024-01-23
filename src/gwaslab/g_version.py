@@ -15,8 +15,8 @@ def _get_version():
 def gwaslab_info():
     # version meta information
     dic={
-   "version":"3.4.33",
-   "release_date":"20240122"
+   "version":"3.4.35",
+   "release_date":"20240123"
     }
     return dic   
 

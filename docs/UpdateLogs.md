@@ -1,5 +1,8 @@
 # Update Logs
 
+## 3.4.35 20240123
+- fixed version number
+
 ## 3.4.34 20240123
 - get_lead will use MLOG10P first instead of P (`scaled` is deprecated in `get_lead`)
 - added datatype check for fill_data
