@@ -10,7 +10,7 @@ from gwaslab.qc_check_datatype import check_datatype
 
 def filldata( 
     sumstats,
-    to_fill=[],
+    to_fill=None,
     df=None,
     overwrite=False,
     verbose=True,
@@ -38,7 +38,7 @@ def filldata(
         for i in skip_cols:
             to_fill.remove(i)
         if verbose: log.write("  -Skipping columns: ",skip_cols) 
-    if len(set(to_fill) & set(["OR","OR95L","OR95U","BETA","SE","P","Z","CHI2","MLOG10P"]))==0:
+    if len(set(to_fill) & set(["OR","OR_95L","OR_95U","BETA","SE","P","Z","CHISQ","MLOG10P","MAF"]))==0:
         log.write(" -No available columns to fill. Skipping.", verbose=verbose)
         log.write("Finished filling data using existing columns.", verbose=verbose)
         return sumstats
@@ -224,12 +224,12 @@ def fill_extreme_mlog10(sumstats, z):
     return sumstats
 
 ####################################################################################################################
-def fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose,sig_level):
+def fill_iteratively(sumstats,raw_to_fill,log,only_sig,df,extreme,verbose,sig_level):
+    to_fill = raw_to_fill.copy()
     if verbose: log.write("  - Filling Columns iteratively...")
-    filled=[]
-    previous_count=0
+
     filled_count=0
-    for i in range(len(to_fill)):
+    for i in range(len(to_fill)+1):
     # beta to or ####################################################################################################     
         if "OR" in to_fill:
             status, filled_count = fill_or(sumstats,log,verbose=verbose,filled_count=filled_count)
@@ -269,9 +269,8 @@ def fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose,sig_level)
             else:
                 status,filled_count = fill_mlog10p(sumstats,log,verbose=verbose)
             if status == 1 : to_fill.remove("MLOG10P")
-        
-        previous_count+=filled_count
-        if previous_count == filled_count:
+            
+        if filled_count == 0:
             break
          
         
