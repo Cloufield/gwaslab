@@ -73,6 +73,8 @@ def _plot_regional(
     log=Log()
 ):  
 
+    # x axix: use i to plot (there is a gap between i and pos) 
+
     # if regional plot : pinpoint lead , add color bar ##################################################
     if (region is not None) :
         # pinpoint lead
@@ -140,9 +142,10 @@ def _plot_regional(
         # distance between leftmost variant position to region left bound
         gene_track_offset  = sumstats.loc[most_left_snp,pos] - region[1]
         
-        # rebase i to region[1]
+        # rebase i to region[1] : the i value when POS=0
         gene_track_start_i = sumstats.loc[most_left_snp,"i"] - gene_track_offset - region[1]
         
+
         #lead_id            = sumstats["scaled_P"].idxmax()
         lead_snp_y         = sumstats.loc[lead_id,"scaled_P"] 
         #sumstats["scaled_P"].max()
@@ -339,7 +342,10 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ld_colors,position
 def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, rr_header_dict, build,rr_lim,rr_ylabel=True):
     ax4 = ax1.twinx()
     most_left_snp = sumstats["i"].idxmin()
+    
+    # the i value when pos=0
     rc_track_offset = sumstats.loc[most_left_snp,"i"]-sumstats.loc[most_left_snp,pos]
+
     if rr_path=="default":
         if rr_chr_dict is not None:
             rr_chr = rr_chr_dict[region[0]]

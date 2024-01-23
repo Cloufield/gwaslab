@@ -159,63 +159,64 @@ def _quick_assign_i(sumstats, chrom="CHR",pos="POS"):
     return sumstats, chrom_df
 
 def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos="POS",drop_chr_start=False,_posdiccul=None):
-        sumstats = sumstats.sort_values([chrom,pos])
-        if use_rank is True: 
-            sumstats["_POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
-            pos="_POS_RANK"
-        sumstats["_ID"]=range(len(sumstats))
-        sumstats=sumstats.set_index("_ID")
+    # align all variants on a single axis (i)
+    sumstats = sumstats.sort_values([chrom,pos])
+    if use_rank is True: 
+        sumstats["_POS_RANK"] = sumstats.groupby(chrom)[pos].rank("dense", ascending=True)
+        pos="_POS_RANK"
+    sumstats["_ID"]=range(len(sumstats))
+    sumstats=sumstats.set_index("_ID")
 
-        #create a df , groupby by chromosomes , and get the maximum position
-        if use_rank is True: 
-            posdic = sumstats.groupby(chrom)["_POS_RANK"].max()
-        else:
-            posdic = sumstats.groupby(chrom)[pos].max()
+    #create a df , groupby by chromosomes , and get the maximum position
+    if use_rank is True: 
+        posdic = sumstats.groupby(chrom)["_POS_RANK"].max()
+    else:
+        posdic = sumstats.groupby(chrom)[pos].max()
+    
+    if _posdiccul is None:
+        # convert to dictionary
+        posdiccul = dict(posdic)
         
-        if _posdiccul is None:
-            # convert to dictionary
-            posdiccul = dict(posdic)
-            
-            # fill empty chr with 0
+        # fill empty chr with 0
+        for i in range(0,sumstats[chrom].max()+1):
+            if i in posdiccul: 
+                continue
+            else: 
+                posdiccul[i]=0
+
+        # cumulative sum dictionary
+        for i in range(1,sumstats[chrom].max()+1):
+            posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*chrpad
+    else:
+        posdiccul = _posdiccul
+
+    # convert base pair postion to x axis position using the cumulative sum dictionary
+    sumstats["_ADD"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
+    
+    if drop_chr_start==True:
+            posdic_min =  sumstats.groupby(chrom)[pos].min()
+            posdiccul_min= dict(posdic_min)
             for i in range(0,sumstats[chrom].max()+1):
-                if i in posdiccul: 
+                if i in posdiccul_min: 
                     continue
                 else: 
-                    posdiccul[i]=0
-    
-            # cumulative sum dictionary
+                    posdiccul_min[i]=0
             for i in range(1,sumstats[chrom].max()+1):
-                posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*chrpad
-        else:
-            posdiccul = _posdiccul
-
-        # convert base pair postion to x axis position using the cumulative sum dictionary
-        sumstats["_ADD"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
+                posdiccul_min[i]= posdiccul_min[i-1] + posdiccul_min[i]
+            sumstats["_ADD"]=sumstats["_ADD"] - sumstats[chrom].apply(lambda x : posdiccul_min[int(x)])
         
-        if drop_chr_start==True:
-                posdic_min =  sumstats.groupby(chrom)[pos].min()
-                posdiccul_min= dict(posdic_min)
-                for i in range(0,sumstats[chrom].max()+1):
-                    if i in posdiccul_min: 
-                        continue
-                    else: 
-                        posdiccul_min[i]=0
-                for i in range(1,sumstats[chrom].max()+1):
-                    posdiccul_min[i]= posdiccul_min[i-1] + posdiccul_min[i]
-                sumstats["_ADD"]=sumstats["_ADD"] - sumstats[chrom].apply(lambda x : posdiccul_min[int(x)])
-            
-        if use_rank is True: 
-            sumstats["i"]=sumstats["_POS_RANK"]+sumstats["_ADD"]
-        else:
-            sumstats["i"]=sumstats[pos]+sumstats["_ADD"]
-        
+    if use_rank is True: 
+        sumstats["i"]=sumstats["_POS_RANK"]+sumstats["_ADD"]
+    else:
+        sumstats["i"]=sumstats[pos]+sumstats["_ADD"]
+    
 
-        #for plot, get the chr text tick position      
-        chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
-        #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
-        #sumstats["i"] = sumstats["i"].astype("Int64")
-        sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
-        return sumstats, chrom_df
+    #for plot, get the chr text tick position      
+    chrom_df=sumstats.groupby(chrom)['i'].agg(lambda x: (x.min()+x.max())/2)
+    #sumstats["i"] = sumstats["i"]+((sumstats[chrom].map(dict(chrom_df)).astype("int")))*0.02
+    #sumstats["i"] = sumstats["i"].astype("Int64")
+    sumstats["i"] = np.floor(pd.to_numeric(sumstats["i"], errors='coerce')).astype('Int64')
+    return sumstats, chrom_df
 
 def _quick_assign_marker_relative_size(series, sig_level = 5e-8, suggestive_sig_level=5e-6, lower_level=5e-4):
     size_series = series.copy()
