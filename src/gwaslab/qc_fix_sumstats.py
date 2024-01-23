@@ -406,7 +406,8 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         if sum(is_chr_fixed)<len(sumstats):
             
             #extract the CHR number or X Y M MT
-            chr_extracted = sumstats.loc[~is_chr_fixed,chrom].str.extract(r'(chr)?([0-9]{1,3}|[XYM]|MT)$',flags=re.IGNORECASE|re.ASCII)[1]
+            chr_extracted = sumstats.loc[~is_chr_fixed,chrom].str.extract(r'^(chr)?(\d{1,3}|[XYM]|MT)$',flags=re.IGNORECASE|re.ASCII)[1]
+
             is_chr_fixable = ~chr_extracted.isna()
             if verbose: log.write(" -Variants with fixable chromosome notations:",sum(is_chr_fixable))  
 
@@ -419,7 +420,10 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
             is_chr_invalid = (~is_chr_fixable)&(~is_chr_na)
             if sum(is_chr_invalid)>0 and verbose: 
                 log.write(" -Variants with invalid chromosome notations:",sum(is_chr_invalid)) 
-                log.write(" -Invalid chromosome notations converted to NA :" , set(sumstats.loc[~sumstats[chrom].isin(chrom_list),chrom].head()))
+                try:
+                    log.write(" -A look at invalid chromosome notations:" , set(sumstats.loc[~is_chr_fixed,chrom][is_chr_invalid].head()))
+                except:
+                    pass
             elif verbose:
                 log.write(" -No unrecognized chromosome notations...")
             
@@ -464,7 +468,15 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
             unrecognized_num = sum(~sumstats[chrom].isin(chrom_list))
             if (remove is True) and unrecognized_num>0:
                 # remove variants with unrecognized CHR 
-                if verbose: log.write(" -Removed "+ str(unrecognized_num)+ " variants with unrecognized chromosome notations.") 
+                try:
+                    if verbose: log.write(" -Valid CHR list: {} - {}".format(min([int(x) for x in chrom_list if x.isnumeric()]),max([int(x) for x in chrom_list if x.isnumeric()])))
+                except:
+                    pass
+                if verbose: log.write(" -Removed "+ str(unrecognized_num)+ " variants with chromosome notations not in CHR list.") 
+                try:
+                    log.write(" -A look at chromosome notations not in CHR list:" , set(sumstats.loc[~sumstats[chrom].isin(chrom_list),chrom].head()))
+                except:
+                    pass
                 #sumstats = sumstats.loc[sumstats.index[sumstats[chrom].isin(chrom_list)],:]
                 good_chr = sumstats[chrom].isin(chrom_list)
                 sumstats = sumstats.loc[good_chr, :].copy()
@@ -480,21 +492,22 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
             sumstats.loc[:,chrom] = np.floor(pd.to_numeric(sumstats.loc[:,chrom], errors='coerce')).astype('Int64')
         
         # filter out variants with CHR <=0
-        if verbose: log.write(" -Sanity check for CHR...") 
-        
         out_of_range_chr = sumstats[chrom] < minchr
         out_of_range_chr = out_of_range_chr.fillna(False)
-        
-        if verbose:log.write(" -Removed {} variants with CHR < {}...".format(sum(out_of_range_chr),minchr))
-        
-        sumstats = sumstats.loc[~out_of_range_chr,:]
+        if sum(out_of_range_chr)>0:
+            if verbose: log.write(" -Sanity check for CHR...") 
+            if verbose:log.write(" -Removed {} variants with CHR < {}...".format(sum(out_of_range_chr),minchr))
+            sumstats = sumstats.loc[~out_of_range_chr,:]
 
         if verbose: log.write("Finished fixing chromosome notation successfully!")
+        
         return sumstats
 
 ###############################################################################################################    
 # 20230128
-def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=250000000, log=Log()):
+def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_limit=0 , upper_limit=None , limit=250000000, log=Log()):
+        if upper_limit is None:
+            upper_limit = limit
         if check_col(sumstats,pos,status) is not True:
             if verbose: log.write(".fix_pos: Specified not detected..skipping...")
             return sumstats
@@ -505,11 +518,15 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         #convert to numeric
         is_pos_na = sumstats.loc[:,pos].isna()
         
-        # check if POS is string
-        if pd.api.types.is_string_dtype(sumstats[pos]):
-            # if so, remove thousands separator
-            if verbose: log.write(' -Removing thousands separator "," or underbar "_" ...')
-            sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].astype("string").str.replace(",|_", "",regex=True)
+        
+        try:
+            if str(sumstats[pos].dtype) == "string" or str(sumstats[pos].dtype) == "object":
+                sumstats.loc[:,pos] = sumstats.loc[:,pos].astype('string')
+                # if so, remove thousands separator
+                if verbose: log.write(' -Removing thousands separator "," or underbar "_" ...')
+                sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].str.replace(r'[,_]', '' ,regex=True)
+        except:
+            pass
 
         # convert POS to integer
         try:
@@ -526,9 +543,10 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True,limit=2
         sumstats.loc[is_pos_invalid,status] = vchange_status(sumstats.loc[is_pos_invalid,status],4,"975","842")
         
         # remove outlier, limit:250,000,000
-        if verbose: log.write(" -Position upper_bound is: " + "{:,}".format(limit))
-        out_lier=(sumstats[pos]>limit) & (~is_pos_na)
-        if verbose: log.write(" -Remove outliers:",sum(out_lier))
+        if verbose: log.write(" -Position bound:({} , {:,})".format(lower_limit, upper_limit))
+        is_pos_na = sumstats.loc[:,pos].isna()
+        out_lier= ((sumstats[pos]<=lower_limit) | (sumstats[pos]>=upper_limit)) & (~is_pos_na)
+        if verbose: log.write(" -Removed outliers:",sum(out_lier))
         sumstats = sumstats.loc[~out_lier,:]
         
         #remove na
@@ -553,7 +571,22 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         
         #if (ea not in sumstats.columns) or (nea not in sumstats.columns):
         if verbose: log.write(" -Converted all bases to string datatype and UPPERCASE.")
+        
+        #try:
+        #    ea_missing = sum(sumstats[ea].isna())
+        #    nea_missing = sum(sumstats[nea].isna())
+        #    if sum(ea_missing)>0:
+        #        if verbose: log.write(" -Converting {} missing EA to letter N.".format(ea_missing))
+        #        sumstats.loc[:,ea] = sumstats.loc[:,ea].add_categories("N").fillna("N")
+        #    if sum(sumstats[nea].isna())>0:
+        #        if verbose: log.write(" -Converting {} missing NEA to letter N.".format(nea_missing))
+        #        sumstats.loc[:,nea] = sumstats.loc[:,nea].add_categories("N").fillna("N")
+        #except:
+        #    pass
+
         categories = set(sumstats.loc[:,ea].str.upper())|set(sumstats.loc[:,nea].str.upper())|set("N")
+        categories = {x for x in categories if pd.notna(x)}
+
         sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = categories) 
         sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = categories) 
         all_var_num = len(sumstats)
@@ -822,7 +855,7 @@ def sanitycheckstats(sumstats,
     if "N" in coltocheck and "N" in sumstats.columns:
         cols_to_check.append("N")
         if verbose: log.write(" -Checking if ",n[0],"<=N<=",n[1]," ...") 
-        sumstats.loc[:,"N"] = np.floor(pd.to_numeric(sumstats.loc[:,"N"], errors='coerce')).astype("Int32")
+        sumstats.loc[:,"N"] = np.floor(pd.to_numeric(sumstats.loc[:,"N"], errors='coerce')).astype("Int64")
         sumstats = sumstats.loc[(sumstats["N"]>=n[0]) & (sumstats["N"]<=n[1]),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad N.") 
@@ -830,7 +863,7 @@ def sanitycheckstats(sumstats,
     if "N_CASE" in coltocheck and "N_CASE" in sumstats.columns:
         cols_to_check.append("N_CASE")
         if verbose: log.write(" -Checking if ",ncase[0],"<=N_CASE<=",ncase[1]," ...") 
-        sumstats.loc[:,"N_CASE"] = np.floor(pd.to_numeric(sumstats.loc[:,"N_CASE"], errors='coerce')).astype("Int32")
+        sumstats.loc[:,"N_CASE"] = np.floor(pd.to_numeric(sumstats.loc[:,"N_CASE"], errors='coerce')).astype("Int64")
         sumstats = sumstats.loc[(sumstats["N_CASE"]>=ncase[0]) & (sumstats["N_CASE"]<=ncase[1]),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad N_CASE.") 
@@ -838,7 +871,7 @@ def sanitycheckstats(sumstats,
     if "N_CONTROL" in coltocheck and "N_CONTROL" in sumstats.columns:
         cols_to_check.append("N_CONTROL")
         if verbose: log.write(" -Checking if ",ncontrol[0],"<=N_CONTROL<=",ncontrol[1]," ...") 
-        sumstats.loc[:,"N_CONTROL"] = np.floor(pd.to_numeric(sumstats.loc[:,"N_CONTROL"], errors='coerce')).astype("Int32")
+        sumstats.loc[:,"N_CONTROL"] = np.floor(pd.to_numeric(sumstats.loc[:,"N_CONTROL"], errors='coerce')).astype("Int64")
         sumstats = sumstats.loc[(sumstats["N_CONTROL"]>=ncontrol[0]) & (sumstats["N_CONTROL"]<=ncontrol[1]),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad N_CONTROL.") 

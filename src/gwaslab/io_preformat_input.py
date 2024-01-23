@@ -457,13 +457,18 @@ def process_neaf(sumstats,log,verbose):
     return sumstats
 
 def process_allele(sumstats,log,verbose):
+    
     if "EA" in sumstats.columns:
+
         if "REF" in sumstats.columns and "ALT" in sumstats.columns:
+
             if "NEA" not in sumstats.columns:
                 if verbose: log.write(" NEA not available: assigning REF to NEA...") 
                 sumstats["NEA"]=sumstats["REF"]    
+            
             if verbose: log.write(" -EA,REF and ALT columns are available: assigning NEA...") 
             ea_alt = sumstats["EA"]==sumstats["ALT"]
+            
             if verbose: log.write(" -For variants with EA == ALT : assigning REF to NEA ...") 
             sumstats.loc[ea_alt,"NEA"] = sumstats.loc[ea_alt,"REF"]
             
@@ -474,6 +479,7 @@ def process_allele(sumstats,log,verbose):
             #sumstats = sumstats.drop(labels=["REF","ALT"],axis=1)
             sumstats["REF"]=sumstats["REF"].astype("category") 
             sumstats["ALT"]=sumstats["ALT"].astype("category") 
+            
         sumstats["EA"]=sumstats["EA"].astype("category")     
     if "NEA" in sumstats.columns:
         sumstats["NEA"]=sumstats["NEA"].astype("category")  

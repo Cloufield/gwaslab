@@ -237,14 +237,14 @@ class Sumstats():
         ###############################################
         # try to fix data without dropping any information
         self.data = fixID(self.data,verbose=verbose, **fixid_args)
-        if remove_dup is True:
-            self.data = removedup(self.data,log=self.log,verbose=verbose,**removedup_args)
         self.data = fixchr(self.data,log=self.log,remove=remove,verbose=verbose,**fixchr_agrs)
         self.data = fixpos(self.data,log=self.log,remove=remove,verbose=verbose,**fixpos_args)
         self.data = fixallele(self.data,log=self.log,remove=remove,verbose=verbose,**fixallele_args)
         self.data = sanitycheckstats(self.data,log=self.log,verbose=verbose,**sanitycheckstats_args)
         if normalize is True:
             self.data = parallelnormalizeallele(self.data,n_cores=n_cores,verbose=verbose,log=self.log,**normalizeallele_args)
+        if remove_dup is True:
+            self.data = removedup(self.data,log=self.log,verbose=verbose,**removedup_args)
         self.data = sortcoordinate(self.data,verbose=verbose,log=self.log)
         self.data = sortcolumn(self.data,verbose=verbose,log=self.log)
         self.meta["is_sorted"] = True

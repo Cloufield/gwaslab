@@ -146,12 +146,14 @@ def get_number_to_NC(build,inverse=False):
 def get_NC_to_number(build):
     return get_number_to_NC(build=build,inverse=True)
 
-def get_chr_list(add_number=False,n=25):
+def get_chr_list(add_number=False,n=25,only_number=False):
     chrom_list=[str(i) for i in range(1,n+1)]+["X","Y","M","MT"]
     
-    if add_number is True:
+    if add_number == True:
         chrom_list = [str(i) for i in range(1,n+1)] + ["X","Y","M","MT"] + [i for i in range(1,n+1)]
 
+    if only_number ==True:
+        chrom_list = [i for i in range(1,n+1)]
     return chrom_list
 
 def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"],xymt_num=[23,24,25]):
