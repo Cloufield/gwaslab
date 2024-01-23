@@ -6,6 +6,7 @@ from gwaslab.g_Log import Log
 import gc
 from gwaslab.qc_fix_sumstats import sortcolumn
 from gwaslab.g_version import _get_version
+from gwaslab.qc_check_datatype import check_datatype
 
 def filldata( 
     sumstats,
@@ -24,7 +25,9 @@ def filldata(
         to_fill = [to_fill]
 
     if verbose: log.write("Start filling data using existing columns...{}".format(_get_version()))
-    if verbose: log.write(" -Raw input columns: ",list(sumstats.columns))
+    
+    check_datatype(sumstats,verbose=verbose,log=log)
+    
 # check dupication ##############################################################################################
     skip_cols=[]
     if verbose: log.write(" -Overwrite mode: ",overwrite)
@@ -41,40 +44,6 @@ def filldata(
         return sumstats
     if verbose: log.write(" -Filling columns: ",to_fill)
     fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose,sig_level)
-## beta to or ####################################################################################################     
-#    if "OR" in to_fill:
-#        fill_or(sumstats,log,verbose=verbose)
-#            
-## or to beta #################################################################################################### 
-#    if "BETA" in to_fill:
-#        fill_beta(sumstats,log,verbose=verbose)
-#    
-#    if "SE" in to_fill:
-#        fill_se(sumstats,log,verbose=verbose)
-## z/chi2 to p ##################################################################################################
-#    if "P" in to_fill:
-#        fill_p(sumstats,log,only_sig=only_sig,df=df,verbose=verbose)
-#
-## beta/se to z ##################################################################################################            
-#    if "Z" in to_fill:   
-#        fill_z(sumstats,log,verbose=verbose)
-#
-## z/p to chisq ##################################################################################################             
-#    if "CHISQ" in to_fill:
-#        fill_chisq(sumstats,log,verbose=verbose)
-## EAF to MAF ##################################################################################################   
-#    if "MAF" in to_fill:
-#        fill_maf(sumstats,log,verbose=verbose)
-## p to -log10(P)  ###############################################################################################
-#    if "MLOG10P" in to_fill:
-#        if extreme==True:
-#            fill_extreme_mlog10p(sumstats,log,verbose=verbose)
-#        elif "P" not in sumstats.columns:
-#            fill_p(sumstats,log,verbose=verbose)
-#            fill_mlog10p(sumstats,log,verbose=verbose)
-#            sumstats = sumstats.drop(labels=["P"],axis=1)
-#        else:
-#            fill_mlog10p(sumstats,log,verbose=verbose)
        
 # ###################################################################################
     sumstats = sortcolumn(sumstats, verbose=verbose, log=log)

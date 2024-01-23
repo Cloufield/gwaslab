@@ -760,12 +760,12 @@ def sanitycheckstats(sumstats,
                      f=(0,float("Inf")),
                      p=(0,1),
                      mlog10p=(0,9999),
-                     beta=(-10,10),
+                     beta=(-100,100),
                      se=(0,float("Inf")),
-                     OR=(-10,10),
+                     OR=(-100,100),
                      OR_95L=(0,float("Inf")),
                      OR_95U=(0,float("Inf")),
-                     HR=(-10,10),
+                     HR=(-100,100),
                      HR_95L=(0,float("Inf")),
                      HR_95U=(0,float("Inf")),
                      info=(0,1),
@@ -1012,7 +1012,7 @@ def sanitycheckstats(sumstats,
     pre_number=len(sumstats)  
     sumstats = sumstats.dropna(subset=cols_to_check)
     after_number=len(sumstats)
-    if verbose:log.write(" -Dropping {} variants with NAs in the checked columns...".format(pre_number - after_number))
+    if verbose:log.write(" -Removed {} variants with NAs in the checked columns...".format(pre_number - after_number))
 
     if verbose: log.write(" -Removed "+str(oringinal_number - after_number)+" variants with bad statistics in total.") 
     if verbose:

@@ -1,7 +1,12 @@
 # Update Logs
 
-## 3.4.33 20240122
+## 3.4.34 20240123
+- get_lead will use MLOG10P first instead of P (`scaled` is deprecated in `get_lead`)
+- added datatype check for fill_data
+- added datatype verification
+- updated sanity check default values (BETA, OR, HR)
 
+## 3.4.33 20240122
 - fix_allele() now prints out allele information 
 - updated sanity check default values (added tolerance for floats)
 - fixed error in loading pickle created by older versions

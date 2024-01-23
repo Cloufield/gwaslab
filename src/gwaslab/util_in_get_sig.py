@@ -22,10 +22,12 @@ from gwaslab.util_ex_gwascatalog import gwascatalog_trait
 
 def getsig(insumstats,
            id,
-           chrom,
-           pos,
-           p,
+           chrom="CHR",
+           pos="POS",
+           p="P",
+           mlog10p="MLOG10P",
            scaled=False,
+           use_p=False,
            windowsizekb=500,
            sig_level=5e-8,
            log=Log(),
@@ -33,7 +35,6 @@ def getsig(insumstats,
            anno=False,
            build="19",
            source="ensembl",
-           mlog10p="MLOG10P",
            verbose=True):
     """
     Extract the lead variants using a sliding window. P or MLOG10P will be used and converted to SCALEDP for sorting. 
@@ -61,23 +62,17 @@ def getsig(insumstats,
     id = "__ID"
 
     #extract all significant variants
-    if scaled==True:
-        #use MLOG10P 
-        if mlog10p in sumstats.columns:
-            sumstats_sig = sumstats.loc[sumstats[mlog10p]> -np.log10(sig_level),:].copy()
-            sumstats_sig.loc[:,"__SCALEDP"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
+    ## use mlog10p first
+    if use_p==False and (mlog10p in sumstats.columns):
+        log.write(" -Using {} for extracting lead variants...".format(mlog10p),verbose=verbose)
+        sumstats_sig = sumstats.loc[sumstats[mlog10p]> -np.log10(sig_level),:].copy()
+        sumstats_sig.loc[:,"__SCALEDP"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
     else:
-        if p not in sumstats.columns:
-            #use MLOG10P 
-            if mlog10p in sumstats.columns: 
-                fill_p(sumstats,log)
-                sumstats_sig = sumstats.loc[sumstats[mlog10p]> -np.log10(sig_level),:].copy()
-                sumstats_sig.loc[:,"__SCALEDP"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
-        else:
-            #use P         
-            sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
-            sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:].copy()
-            sumstats_sig.loc[:,"__SCALEDP"] = pd.to_numeric(sumstats_sig[p], errors='coerce')
+        #use P
+        log.write(" -Using {} for extracting lead variants...".format(p),verbose=verbose)         
+        sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
+        sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:].copy()
+        sumstats_sig.loc[:,"__SCALEDP"] = pd.to_numeric(sumstats_sig[p], errors='coerce')
     if verbose:log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...")
 
     #sort the coordinates
@@ -319,6 +314,7 @@ def getnovel(insumstats,
            chrom,
            pos,
            p,
+           use_p=False,
            known=False,
            efo=False,
            only_novel=False,
@@ -335,7 +331,7 @@ def getnovel(insumstats,
            verbose=True):
     if verbose: log.write("Start to check if lead variants are known...")
     allsig = getsig(insumstats=insumstats,
-           id=id,chrom=chrom,pos=pos,p=p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
+           id=id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
            xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
     
     big_number = 1000000000
