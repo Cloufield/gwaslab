@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt 
 from scipy import stats, optimize
-from statsmodels.stats.meta_analysis import combine_effects
+#from statsmodels.stats.meta_analysis import combine_effects
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 # plot_forest

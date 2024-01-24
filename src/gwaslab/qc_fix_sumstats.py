@@ -518,7 +518,6 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
         #convert to numeric
         is_pos_na = sumstats.loc[:,pos].isna()
         
-        
         try:
             if str(sumstats[pos].dtype) == "string" or str(sumstats[pos].dtype) == "object":
                 sumstats.loc[:,pos] = sumstats.loc[:,pos].astype('string')
@@ -531,11 +530,10 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
         # convert POS to integer
         try:
             if verbose: log.write(' -Converting to Int64 data type ...')
-            sumstats.loc[:,pos] = sumstats.loc[:,pos].astype('Int64')
+            sumstats[pos] = sumstats[pos].astype('Int64')
         except:
             if verbose: log.write(' -Force converting to Int64 data type ...')
-            sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
-        
+            sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
         is_pos_fixed = ~sumstats.loc[:,pos].isna()
         is_pos_invalid = (~is_pos_na)&(~is_pos_fixed)
         
@@ -548,7 +546,6 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
         out_lier= ((sumstats[pos]<=lower_limit) | (sumstats[pos]>=upper_limit)) & (~is_pos_na)
         if verbose: log.write(" -Removed outliers:",sum(out_lier))
         sumstats = sumstats.loc[~out_lier,:]
-        
         #remove na
         if remove is True: 
             sumstats = sumstats.loc[~sumstats[pos].isna(),:]
@@ -557,6 +554,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
         
         if verbose: log.write(" -Converted all position to datatype Int64.")
         if verbose: log.write("Finished fixing basepair position successfully!")
+        
         return sumstats
 
 ###############################################################################################################    
@@ -653,6 +651,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
             sumstats.loc[is_eanea_fixed&is_normalized,status]     = vchange_status(sumstats.loc[is_eanea_fixed&is_normalized, status],  5,"4","3")
         gc.collect()
         if verbose: log.write("Finished fixing allele successfully!")
+        
         return sumstats
 
 ###############################################################################################################   
@@ -1042,10 +1041,10 @@ def sanitycheckstats(sumstats,
         categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
         sumstats.loc[:,"STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
     
-    pre_number=len(sumstats)  
-    sumstats = sumstats.dropna(subset=cols_to_check)
-    after_number=len(sumstats)
-    if verbose:log.write(" -Removed {} variants with NAs in the checked columns...".format(pre_number - after_number))
+    #pre_number=len(sumstats)  
+    #sumstats = sumstats.dropna(subset=cols_to_check)
+    #after_number=len(sumstats)
+    #if verbose:log.write(" -Removed {} variants with NAs in the checked columns...".format(pre_number - after_number))
 
     if verbose: log.write(" -Removed "+str(oringinal_number - after_number)+" variants with bad statistics in total.") 
     if verbose:
