@@ -6,7 +6,7 @@ import matplotlib.ticker as ticker
 import matplotlib.patches as patches
 import matplotlib
 from gwaslab.g_Log import Log
-from statsmodels.stats.multitest import fdrcorrection
+import scipy.stats as ss
 from gwaslab.viz_aux_save_figure import save_figure
 #################################################################################################
 def convert_p_to_width(p,sig_level):
@@ -49,7 +49,7 @@ def plot_rg(ldscrg,
         fig_args=None,
         xticklabel_args=None,
         yticklabel_args=None,
-        fdr_method="i",
+        fdr_method="bh",
         fontsize=10,
         save=None,
         save_args=None):
@@ -124,9 +124,13 @@ def plot_rg(ldscrg,
     
     #if correction=="fdr":
         # fdr corrected p
-    dfp["fdr_p"]=fdrcorrection(dfp[p],alpha=1,method=fdr_method)[1]
+    #dfp["fdr_p"]=fdrcorrection(dfp[p],alpha=1,method=fdr_method)[1]
         # is fdr < sig_level
-    dfp["fdr"]=fdrcorrection(dfp[p],alpha=0.05,method=fdr_method)[0]
+    #dfp["fdr"]=fdrcorrection(dfp[p],alpha=0.05,method=fdr_method)[0]
+    
+    dfp["fdr_p"]=ss.false_discovery_control(dfp[p],method=fdr_method)
+    dfp["fdr"]  =ss.false_discovery_control(dfp[p],method=fdr_method) < 0.05
+
     if verbose: log.write(" -Significant correlations with FDR <0.05:",sum(dfp["fdr"]))
         # convert to dict for annotation and plotting
     df_rawp = dfp.set_index("p1p2").loc[:,p].to_dict()

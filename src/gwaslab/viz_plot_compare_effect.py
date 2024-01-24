@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as ss
 import seaborn as sns
 import gc
-from statsmodels.stats.multitest import fdrcorrection
+import scipy.stats as ss
 from matplotlib.patches import Rectangle
 from adjustText import adjust_text
 from gwaslab.viz_aux_save_figure import save_figure
@@ -485,8 +485,10 @@ def compare_effect(path1,
             if verbose: log.write(" -No variants with EA not matching...")
     if fdr==True:
         if verbose: log.write(" -Using FDR...")
-        sig_list_merged["P_1"] = fdrcorrection(sig_list_merged["P_1"])[1]
-        sig_list_merged["P_2"] = fdrcorrection(sig_list_merged["P_2"])[1]
+        #sig_list_merged["P_1"] = fdrcorrection(sig_list_merged["P_1"])[1]
+        #sig_list_merged["P_2"] = fdrcorrection(sig_list_merged["P_2"])[1]
+        sig_list_merged["P_1"] =ss.false_discovery_control(sig_list_merged["P_1"])
+        sig_list_merged["P_2"] =ss.false_discovery_control(sig_list_merged["P_2"])
 
     ####################################################################################################################################
     ## winner's curse correction using aligned beta
