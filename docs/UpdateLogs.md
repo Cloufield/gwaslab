@@ -1,5 +1,10 @@
 # Update Logs
 
+## 3.4.36
+- removed statsmodels
+- updated functions in basic_check()
+- added a test example for basic_check()
+
 ## 3.4.35 20240123
 - fixed version number
 
