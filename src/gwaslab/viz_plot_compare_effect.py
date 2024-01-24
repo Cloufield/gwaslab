@@ -36,6 +36,7 @@ def compare_effect(path1,
                    wc_correction=False, 
                    null_beta=0,
                    is_q=False,
+                   is_q_mc = False,
                    include_all=True,
                    q_level=0.05,
                    sig_level=5e-8,
@@ -530,9 +531,10 @@ def compare_effect(path1,
     if (is_q is True):
         if verbose: log.write(" -Calculating Cochran's Q statistics and peform chisq test...")
         if mode=="beta" or mode=="BETA" or mode=="Beta":
-            sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2",q_level=q_level)
+            sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2",q_level=q_level,is_q_mc=is_q_mc, log=log, verbose=verbose)
         else:
-            sig_list_merged = test_q(sig_list_merged,"BETA_1","SE_1","BETA_2_aligned","SE_2",q_level=q_level)
+            sig_list_merged = test_q(sig_list_merged,"BETA_1","SE_1","BETA_2_aligned","SE_2",q_level=q_level,is_q_mc=is_q_mc, log=log, verbose=verbose)
+
     ######################### save ###############################################################
     ## save the merged data
     save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
@@ -806,8 +808,15 @@ def compare_effect(path1,
     if legend_mode == "full" and is_q==True :
         title_proxy = Rectangle((0,0), 0, 0, color='w',label=legend_title)
         title_proxy2 = Rectangle((0,0), 0, 0, color='w',label=legend_title2)
-        het_label_sig = r"$P_{het} < $" + "${}$".format(q_level)
-        het_label_sig2 = r"$P_{het} > $" + "${}$".format(q_level)
+        if is_q_mc=="fdr":
+            het_label_sig = r"$FDR_{het} < $" + "${}$".format(q_level)
+            het_label_sig2 = r"$FDR_{het} > $" + "${}$".format(q_level)
+        elif is_q_mc=="bon":
+            het_label_sig = r"$P_{het,bon} < $" + "${}$".format(q_level)
+            het_label_sig2 = r"$P_{het,bon} > $" + "${}$".format(q_level)
+        else:
+            het_label_sig = r"$P_{het} < $" + "${}$".format(q_level)
+            het_label_sig2 = r"$P_{het} > $" + "${}$".format(q_level)
         het_sig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="black", linewidth=1, label=het_label_sig)
         het_nonsig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="white",linewidth=1, label=het_label_sig2)
         
@@ -876,7 +885,7 @@ def reorderLegend(ax=None, order=None, add=None):
     new_handles = [info[l] for l in order]
     return new_handles, order
 
-def test_q(df,beta1,se1,beta2,se2,q_level=0.05):
+def test_q(df,beta1,se1,beta2,se2,q_level=0.05,is_q_mc=False, log=Log(), verbose=False):
     w1="Weight_1"
     w2="Weight_2"
     beta="BETA_FE"
@@ -891,6 +900,14 @@ def test_q(df,beta1,se1,beta2,se2,q_level=0.05):
     df[q] = df[w1]*(df[beta1]-df[beta])**2 + df[w2]*(df[beta2]-df[beta])**2
     df[pq] = ss.chi2.sf(df[q], 1)
     df["Edge_color"]="white"
+
+    if is_q_mc=="fdr":
+        if verbose: log.write(" -FDR correction applied...")
+        df[pq] = ss.false_discovery_control(df[pq])
+    elif is_q_mc=="bon":
+        if verbose: log.write(" -Bonferroni correction applied...")
+        df[pq] = df[pq] * len(df[pq])
+
     df.loc[df[pq]<q_level,"Edge_color"]="black"
     df.drop(columns=["Weight_1","Weight_2","BETA_FE"],inplace=True)
     # Huedo-Medina, T. B., Sánchez-Meca, J., Marín-Martínez, F., & Botella, J. (2006). Assessing heterogeneity in meta-analysis: Q statistic or I² index?. Psychological methods, 11(2), 193.
