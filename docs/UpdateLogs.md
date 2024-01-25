@@ -4,6 +4,9 @@
 - removed statsmodels
 - updated functions in basic_check()
 - added a test example for basic_check()
+- fixed fontsize and font_family errors in plot_mqq() for ax4
+- added new options for plot_mqq(mode="r"); cbar_fontsize, cbar_font_family, cbar_title
+- added new options for plot_mqq(mode="r"); track_n, track_n_offset, track_fontsize_ratio, track_exon_ratio, track_text_offset, track_font_family 
 
 ## 3.4.35 20240123
 - fixed version number

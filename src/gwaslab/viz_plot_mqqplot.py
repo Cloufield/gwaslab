@@ -104,6 +104,15 @@ def mqqplot(insumstats,
           region_protein_coding = True,
           region_flank_factor = 0.05,
           region_anno_bbox_args = None,
+          cbar_title='LD $r^{2}$',
+          cbar_fontsize = None,
+          cbar_font_family = None,
+          track_n=4,
+          track_n_offset=0,
+          track_fontsize_ratio=0.95,
+          track_exon_ratio=1,
+          track_text_offset=1,
+          track_font_family = None,
           taf = None,
           # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
           tabix=None,
@@ -243,8 +252,14 @@ def mqqplot(insumstats,
         region_ld_colors2 = ["#E4E4E4","#D8E2F2","#AFCBE3","#86B3D4","#5D98C4","#367EB7","#367EB7"]
     if region_title_args is None:
         region_title_args = {"size":10}
+    if cbar_fontsize is None:
+        cbar_fontsize = fontsize
+    if cbar_font_family is None:
+        cbar_font_family = font_family
+    if track_font_family is None:
+        track_font_family = font_family
     if taf is None:
-        taf = [4,0,0.95,1,1]
+        taf = [track_n,track_n_offset,track_fontsize_ratio,track_exon_ratio,track_text_offset]
     if maf_bins is None:
         maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]
     if maf_bin_colors is None:
@@ -289,13 +304,13 @@ def mqqplot(insumstats,
                     scatter_args["rasterized"]=True
                     qq_scatter_args["rasterized"]=True
 
-    if verbose: log.write("Start to plot manhattan/qq plot with the following basic settings {}:".format(_get_version()))
+    if verbose: log.write("Start to create MQQ plot with the following basic settings {}:".format(_get_version()))
     if verbose: log.write(" -Genomic coordinates version: {}...".format(build))
     if build is None or build=="99":
         if verbose: log.write("   -WARNING: Genomic coordinates version is unknown...")
     if verbose: log.write(" -Genome-wide significance level to plot is set to "+str(sig_level_plot)+" ...")
     if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
-    if verbose: log.write(" -Plot layout mode is : "+mode)
+    if verbose: log.write(" -MQQ plot layout mode is : "+mode)
     if len(anno_set)>0 and ("m" in mode):
         if verbose: log.write(" -Variants to annotate : "+",".join(anno_set))    
     if len(highlight)>0 and ("m" in mode):
@@ -340,13 +355,14 @@ def mqqplot(insumstats,
     # ax2 : qq plot 
     # ax3 : gene track
     # ax4 : recombination rate
+    # cbar : color bar
     # ax5 : miami plot lower panel
 
     # "m" : Manhattan plot
     # "qq": QQ plot
     # "r" : regional plot
     
-    fig, ax1, ax2, ax3 = _process_layout(mode=mode, 
+    fig, ax1, ax2, ax3, ax4, cbar = _process_layout(mode=mode, 
                                          figax=figax, 
                                          fig_args=fig_args, 
                                          mqqratio=mqqratio, 
@@ -553,7 +569,7 @@ def mqqplot(insumstats,
         if vcf_path is not None:
             sumstats["chr_hue"]=sumstats["LD"]
 
-        if verbose:log.write("Start to create manhattan plot with "+str(len(sumstats))+" variants:")
+        if verbose:log.write("Start to create MQQ plot with "+str(len(sumstats))+" variants:")
         ## default seetings
         
         palette = sns.color_palette(colors,n_colors=sumstats[chrom].nunique())  
@@ -697,7 +713,7 @@ def mqqplot(insumstats,
         # if regional plot : pinpoint lead , add color bar ##################################################
         if (region is not None) and ("r" in mode):
             
-            ax1, ax3, lead_snp_i, lead_snp_i2 =_plot_regional(
+            ax1, ax3, ax4, cbar, lead_snp_i, lead_snp_i2 =_plot_regional(
                                 sumstats=sumstats,
                                 fig=fig,
                                 ax1=ax1,
@@ -738,6 +754,7 @@ def mqqplot(insumstats,
                                 region_recombination = region_recombination,
                                 region_protein_coding=region_protein_coding,
                                 region_flank_factor =region_flank_factor,
+                                track_font_family=track_font_family,
                                 taf=taf,
                                 tabix=tabix,
                                 chrom=chrom,
@@ -745,44 +762,11 @@ def mqqplot(insumstats,
                                 verbose=verbose,
                                 log=log
                             )
+            
         else:
             lead_snp_i= None
             lead_snp_i2=None
-            
-        if region is None:
-            ax1 = _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family)
         
-        # genomewide significant line
-        ax1 = _process_line(ax1, 
-                            sig_line, 
-                            suggestive_sig_line, 
-                            additional_line, 
-                            lines_to_plot , 
-                            sc_linewidth, 
-                            sig_line_color, 
-                            suggestive_sig_line_color, 
-                            additional_line_color,
-                            mode, 
-                            bmean, 
-                            bmedian )
-        
-        ax1 = _set_yticklabels(cut=cut,
-                     cutfactor=cutfactor,
-                     cut_log=cut_log,
-                     ax1=ax1,
-                     skip=skip,
-                     maxy=maxy,
-                     maxticker=maxticker,
-                     ystep=ystep,
-                     sc_linewidth=sc_linewidth,
-                     cut_line_color=cut_line_color,
-                     fontsize=fontsize,
-                     font_family=font_family,
-                     ytick3=ytick3,
-                     ylabels=ylabels,
-                     ylabels_converted=ylabels_converted
-                     )
-
         # Get top variants for annotation #######################################################
         if (anno and anno!=True) or (len(anno_set)>0):
             if len(anno_set)>0:
@@ -826,11 +810,72 @@ def mqqplot(insumstats,
                                    verbose=verbose).rename(columns={"GENE":"Annotation"})
 
         # Configure X, Y axes #######################################################
-        ax1 = _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family)
-        ax1, ax3 = _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=ax3 )
-        ax1 = _process_spine(ax1, mode)
+        if region is None:
+            # if Manhattan plot 
+            ax1 = _process_xtick(ax1=ax1, 
+                                 chrom_df=chrom_df, 
+                                 xtick_chr_dict=xtick_chr_dict, 
+                                 fontsize = fontsize, 
+                                 font_family=font_family)
         
-        if verbose: log.write("Finished creating Manhattan plot successfully!")
+        ax1, ax3 = _process_xlabel(region=region, 
+                                   xlabel=xlabel, 
+                                   ax1=ax1, 
+                                   gtf_path=gtf_path, 
+                                   mode=mode, 
+                                   fontsize=fontsize, 
+                                   font_family=font_family,  
+                                   ax3=ax3 )
+        
+        ax1, ax4 = _process_ylabel(ylabel=ylabel, 
+                                   ax1=ax1,  
+                                   mode=mode, 
+                                   bwindowsizekb=bwindowsizekb, 
+                                   fontsize=fontsize, 
+                                   font_family=font_family, 
+                                   ax4=ax4)     
+        
+        ax1 = _set_yticklabels(cut=cut,
+                     cutfactor=cutfactor,
+                     cut_log=cut_log,
+                     ax1=ax1,
+                     skip=skip,
+                     maxy=maxy,
+                     maxticker=maxticker,
+                     ystep=ystep,
+                     sc_linewidth=sc_linewidth,
+                     cut_line_color=cut_line_color,
+                     fontsize=fontsize,
+                     font_family=font_family,
+                     ytick3=ytick3,
+                     ylabels=ylabels,
+                     ylabels_converted=ylabels_converted
+                     )
+        
+        ax1, ax4 = _process_ytick(ax1=ax1,  
+                                   fontsize=fontsize, 
+                                   font_family=font_family, 
+                                   ax4=ax4)  
+        
+        if cbar is not None:
+            # regional plot cbar
+            cbar = _process_cbar(cbar, cbar_fontsize=fontsize, cbar_font_family=font_family, cbar_title=cbar_title)        
+        
+        ax1 = _process_spine(ax1, mode)
+        # genomewide significant line
+        ax1 = _process_line(ax1, 
+                            sig_line, 
+                            suggestive_sig_line, 
+                            additional_line, 
+                            lines_to_plot , 
+                            sc_linewidth, 
+                            sig_line_color, 
+                            suggestive_sig_line_color, 
+                            additional_line_color,
+                            mode, 
+                            bmean, 
+                            bmedian )  
+
         
         if mtitle and anno and len(to_annotate)>0: 
             pad=(ax1.transData.transform((skip, title_pad*maxy))[1]-ax1.transData.transform((skip, maxy)))[1]
@@ -872,7 +917,7 @@ def mqqplot(insumstats,
                                 log=log,
                                _invert=_invert
                             )  
-    # Manhatann plot Finished #####################################################################
+    # Manhatann-like plot Finished #####################################################################
 
     # QQ plot #########################################################################################################
     if "qq" in mode:
@@ -943,6 +988,8 @@ def mqqplot(insumstats,
     # Return matplotlib figure object #######################################################################################
     if _get_region_lead==True:
         return fig, log, lead_snp_i, lead_snp_i2
+    
+    if verbose: log.write("Finished creating MQQ plot successfully!")
     return fig, log
 
 ##############################################################################################################################################################################
@@ -1173,10 +1220,33 @@ def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_
         medianline = ax1.axhline(y=bmedian, linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1000)
     return ax1
 
+def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title):
+    if str(type(cbar))=="list":
+        for cbar_single in cbar:
+            cbar_yticklabels = cbar_single.ax.get_yticklabels()
+            cbar_single.ax.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
+            cbar_single.ax.set_title(cbar_title, fontsize=cbar_fontsize, family=cbar_font_family, loc="center",y=-0.2 )
+    else:
+        cbar_yticklabels = cbar.ax.get_yticklabels()
+        cbar.ax.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
+        cbar.ax.set_title(cbar_title, fontsize=cbar_fontsize, family=cbar_font_family, loc="center",y=-0.2 )
+    return cbar
+
 def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family):
     ax1.set_xticks(chrom_df.astype("float64"))
     ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)    
     return ax1
+
+def _process_ytick(ax1, fontsize, font_family, ax4):
+    ax1_yticklabels = ax1.get_yticklabels()
+    #ax1.set_yticklabels(ax1_yticklabels,fontsize=fontsize,family=font_family) 
+    ax1_yticks = ax1.get_yticks()
+    ax1.set_yticks(ax1_yticks,ax1_yticklabels,fontsize=fontsize,family=font_family) 
+    if ax4 is not None:
+        ax4_yticklabels = ax4.get_yticklabels()
+        ax4_yticks = ax4.get_yticks()
+        ax4.set_yticks(ax4_yticks,ax4_yticklabels, fontsize=fontsize,family=font_family) 
+    return ax1, ax4
 
 def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=None ):
     if region is not None:
@@ -1192,7 +1262,7 @@ def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family, 
         ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
     return ax1, ax3
 
-def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family):
+def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family, ax4=None):
     if "b" in mode:
         if ylabel is None:
             ylabel ="Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb"
@@ -1201,7 +1271,10 @@ def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family):
         if ylabel is None:
             ylabel ="$-log_{10}(P)$"
         ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family)
-    return ax1
+    if ax4 is not None:
+        ax4_ylabel = ax4.get_ylabel()
+        ax4.set_ylabel(ax4_ylabel, fontsize=fontsize, family=font_family )
+    return ax1, ax4
 
 def _process_spine(ax1, mode):
     ax1.spines["top"].set_visible(False)
@@ -1218,6 +1291,7 @@ def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
     if  mode=="qqm": 
         fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**fig_args)
         ax3 = None
+
     elif mode=="mqq":
         if figax is not None:
             fig = figax[0]
@@ -1226,6 +1300,7 @@ def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
         else:
             fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**fig_args)
         ax3 = None
+
     elif mode=="m":
         if figax is not None:
             fig = figax[0]
@@ -1234,10 +1309,12 @@ def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
             fig, ax1 = plt.subplots(1, 1,**fig_args)
         ax2 = None
         ax3 = None
+
     elif mode=="qq": 
         fig, ax2 = plt.subplots(1, 1,**fig_args) 
         ax1=None
         ax3=None
+
     elif mode=="r": 
         if figax is not None:
             fig = figax[0]
@@ -1257,4 +1334,6 @@ def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
         ax3 = None
     else:
         raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
-    return fig, ax1, ax2, ax3
+    ax4=None
+    cbar=None
+    return fig, ax1, ax2, ax3, ax4, cbar

@@ -287,9 +287,9 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose,lines_to_plo
     maxy = series.max()
     series = series.copy()
     if "b" not in mode:
-        if verbose: log.write(" -Maximum -log10(P) values is "+str(maxy) +" .")
+        if verbose: log.write(" -Maximum -log10(P) value is "+str(maxy) +" .")
     elif "b" in mode:
-        if verbose: log.write(" -Maximum DENSITY values is "+str(maxy) +" .")
+        if verbose: log.write(" -Maximum DENSITY value is "+str(maxy) +" .")
     
     maxticker=int(np.round(series.max(skipna=True)))
     

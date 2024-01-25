@@ -64,6 +64,7 @@ def _plot_regional(
     region_recombination = True,
     region_protein_coding=True,
     region_flank_factor = 0.05,
+    track_font_family="Arial",
     taf=[4,0,0.95,1,1],
     # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
     tabix=None,
@@ -104,21 +105,23 @@ def _plot_regional(
 
         if (vcf_path is not None) and region_ld_legend:
             if region_ref_second is None:
-                ax1 = _add_ld_legend(sumstats=sumstats, 
+                ax1, cbar = _add_ld_legend(sumstats=sumstats, 
                                 ax1=ax1, 
                                 region_ld_threshold=region_ld_threshold, 
                                 region_ld_colors=region_ld_colors)
             else:
-                ax1 = _add_ld_legend(sumstats=sumstats, 
+                
+                ax1, cbar1 = _add_ld_legend(sumstats=sumstats, 
                                 ax1=ax1, 
                                 region_ld_threshold=region_ld_threshold, 
                                 region_ld_colors=region_ld_colors1,
                                 position=1)
-                ax1 = _add_ld_legend(sumstats=sumstats, 
+                ax1, cbar2 = _add_ld_legend(sumstats=sumstats, 
                                 ax1=ax1, 
                                 region_ld_threshold=region_ld_threshold, 
                                 region_ld_colors=region_ld_colors2,
                                 position=2)
+                cbar = [cbar1, cbar2]
         if region_title is not None:
                 ax1 = _add_region_title(region_title, ax1=ax1,region_title_args=region_title_args )
     ## recombinnation rate ##################################################       
@@ -176,6 +179,7 @@ def _plot_regional(
                         gene_track_start_i=gene_track_start_i,
                         gtf_chr_dict=gtf_chr_dict,
                         gtf_gene_name=gtf_gene_name, 
+                        track_font_family=track_font_family,
                         taf=taf,
                         build=build, 
                         verbose=verbose, 
@@ -231,7 +235,7 @@ def _plot_regional(
                     avoid_points=False,
                     lim =1000)     
     
-    return ax1, ax3, lead_snp_i, lead_snp_i2
+    return ax1, ax3, ax4, cbar, lead_snp_i, lead_snp_i2
 
 # + ###########################################################################################################################################################################
 def _get_lead_id(sumstats=None, region_ref=None, log=None):
@@ -336,7 +340,7 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ld_colors,position
                                 facecolor='white',
                                 zorder=999998)
     ax1.add_patch(rect)
-    return ax1
+    return ax1, cbar
 
 # -############################################################################################################################################################################
 def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, rr_header_dict, build,rr_lim,rr_ylabel=True):
@@ -385,6 +389,7 @@ def _plot_gene_track(
     region_ld_colors2,
     gene_track_start_i,
     gtf_chr_dict,gtf_gene_name, 
+    track_font_family,
     taf,
     build, 
     verbose=True, 
@@ -452,15 +457,15 @@ def _plot_gene_track(
         if row["end"] >= region[2]:
             #right side
             texts_to_adjust_right.append(ax3.text(x=gene_track_start_i+region[2],
-                    y=row["stack"]*2+taf[4],s=gene_anno,ha="right",va="center",color="black",style='italic', size=font_size_in_points))
+                    y=row["stack"]*2+taf[4],s=gene_anno,ha="right",va="center",color="black",style='italic', size=font_size_in_points,family=track_font_family))
             
         elif row["start"] <= region[1] :
             #left side
             texts_to_adjust_left.append(ax3.text(x=gene_track_start_i+region[1],
-                    y=row["stack"]*2+taf[4],s=gene_anno,ha="left",va="center",color="black",style='italic', size=font_size_in_points))
+                    y=row["stack"]*2+taf[4],s=gene_anno,ha="left",va="center",color="black",style='italic', size=font_size_in_points,family=track_font_family))
         else:
             texts_to_adjust_middle.append(ax3.text(x=(gene_track_start_i+row["start"]+gene_track_start_i+row["end"])/2,
-                    y=row["stack"]*2+taf[4],s=gene_anno,ha="center",va="center",color="black",style='italic',size=font_size_in_points))
+                    y=row["stack"]*2+taf[4],s=gene_anno,ha="center",va="center",color="black",style='italic',size=font_size_in_points,family=track_font_family))
     
     # plot exons
     for index,row in exons.iterrows():
