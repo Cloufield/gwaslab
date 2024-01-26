@@ -27,7 +27,7 @@ from gwaslab.g_version import _get_version
 
 ###~!!!!
 def rsidtochrpos(sumstats,
-         path="", snpid="SNPID",
+         path=None, ref_rsid_to_chrpos_tsv=None, snpid="SNPID",
          rsid="rsID", chrom="CHR",pos="POS",ref_rsid="rsID",ref_chr="CHR",ref_pos="POS", build="19",
               overwrite=False,remove=False,chunksize=5000000,verbose=True,log=Log()):
     '''
@@ -38,6 +38,9 @@ def rsidtochrpos(sumstats,
     if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
     if verbose:  log.write(" -rsID dictionary file: "+ path)  
     
+    if ref_rsid_to_chrpos_tsv is not None:
+        path = ref_rsid_to_chrpos_tsv
+
     if snpid in sumstats.columns and sum(sumstats[rsid].isna())>0:
         if verbose:  log.write(" -Filling na in rsID columns with SNPID...")  
         sumstats.loc[sumstats[rsid].isna(),rsid] = sumstats.loc[sumstats[rsid].isna(),snpid]
@@ -96,8 +99,16 @@ def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
     return sumstats_part
 
 
-def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None,build="99",status="STATUS",
+def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None, ref_rsid_to_chrpos_vcf = None, ref_rsid_to_chrpos_hdf5 = None, build="99",status="STATUS",
                          n_cores=4,block_size=20000000,verbose=True,log=Log()):
+    
+    if ref_rsid_to_chrpos_hdf5 is not None:
+        path = ref_rsid_to_chrpos_hdf5
+    elif ref_rsid_to_chrpos_vcf is not None:
+        vcf_file_name = os.path.basename(ref_rsid_to_chrpos_vcf)
+        vcf_dir_path = os.path.dirname(ref_rsid_to_chrpos_vcf)
+        path = "{}/{}.rsID_CHR_POS_groups_{}.h5".format(vcf_dir_path,vcf_file_name,int(block_size))
+
     if verbose:  log.write("Start to assign CHR and POS using rsIDs...{}".format(_get_version()))
     if path is None:
         raise ValueError("Please provide path to hdf5 file.")
@@ -169,8 +180,8 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     gc.collect()
     
     # check
-    sumstats = fixchr(sumstats,verbose=True)
-    sumstats = fixpos(sumstats,verbose=True)
+    sumstats = fixchr(sumstats,verbose=verbose)
+    sumstats = fixpos(sumstats,verbose=verbose)
     pool.close()
     pool.join()
     gc.collect()
@@ -528,8 +539,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
     if "p" in mode:
         # ref_alt_freq INFO in vcf was provided
         if ref_alt_freq is not None:
+            
             if verbose: log.write(" -Alternative allele frequency in INFO:", ref_alt_freq)  
-
             ## checking \w\w\w\w[0]\w\w -> standardized and normalized snp
             good_chrpos =  sumstats[status].str.match(r'\w\w\w[0][0]\w\w', case=False, flags=0, na=False) 
             palindromic = good_chrpos & is_palindromic(sumstats[[ref,alt]],a1=ref,a2=alt)   
@@ -538,22 +549,28 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             ##not palindromic : change status
             sumstats.loc[not_palindromic_snp,status] = vchange_status(sumstats.loc[not_palindromic_snp,status], 7 ,"9","0")  
             if verbose: log.write(" -Identified ", sum(palindromic)," palindromic SNPs...")
-
+            
             #palindromic but can not infer
-            maf_can_infer   = (sumstats.loc[:,eaf] < maf_threshold) | (sumstats.loc[:,eaf] > 1 - maf_threshold) 
+            maf_can_infer   = (sumstats.loc[:,eaf] < maf_threshold) | (sumstats.loc[:,eaf] > 1 - maf_threshold)
+            
             sumstats.loc[palindromic&(~maf_can_infer),status] = vchange_status(sumstats.loc[palindromic&(~maf_can_infer),status],7,"9","7")
+            
+            #palindromic WITH UNKNWON OR UNCHECKED STATUS
+            unknow_palindromic = sumstats[status].str.match(r'\w\w\w\w\w[012][89]', case=False, flags=0, na=False) 
 
+            unknow_palindromic_to_check = palindromic & maf_can_infer & unknow_palindromic
+            
+            if verbose: log.write(" -After filtering by MAF< {} , {} palindromic SNPs with unknown strand will be inferred...".format(maf_threshold, sum(unknow_palindromic_to_check)))
 
-            if verbose: log.write(" -After filtering by MAF< ", maf_threshold ," , the strand of ", sum(palindromic & maf_can_infer)," palindromic SNPs will be inferred...")
             ######################################################################################### 
-            if sum(palindromic & maf_can_infer)>0:
-                if sum(palindromic & maf_can_infer)<10000: 
+            if sum(unknow_palindromic_to_check)>0:
+                if sum(unknow_palindromic_to_check)<10000: 
                     n_cores=1  
-                df_split = np.array_split(sumstats.loc[(palindromic & maf_can_infer),[chr,pos,ref,alt,eaf,status]], n_cores)
+                df_split = np.array_split(sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]], n_cores)
                 pool = Pool(n_cores)
                 map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
                 status_inferred = pd.concat(pool.map(map_func,df_split))
-                sumstats.loc[(palindromic & maf_can_infer),status] = status_inferred.values
+                sumstats.loc[unknow_palindromic_to_check,status] = status_inferred.values
             pool.close()
             pool.join()
             #########################################################################################

@@ -1,6 +1,6 @@
 from gwaslab.g_version import gwaslab_info
 
-def init_meta():
+def _init_meta():
     metadata = {"gwaslab":{
                         "gwaslab_version": gwaslab_info()["version"],
                         "study_name":"Sumstats_1",
@@ -23,7 +23,11 @@ def init_meta():
                             "ref_rsid_tsv":"Unknown",
                             "ref_rsid_vcf":"Unknown",
                             "ref_seq":"Unknown",
-                            "ref_infer":"Unknown"
+                            "ref_infer":"Unknown",
+                            "ref_infer_af":"Unknown",
+                            "ref_infer_daf":"Unknown",
+                            "ref_rsid_to_chrpos_tsv":"Unknown",
+                            "ref_rsid_to_chrpos_vcf":"Unknown"
                         }
                     },
                      "genotyping_technology":"Unknown", 
@@ -46,3 +50,9 @@ def init_meta():
                      "sex": "M|F|combined"
                      }
     return metadata.copy()
+
+def _append_meta_record(old, new):
+    if old == "Unknown" or old== "Unchecked":
+        return new
+    else:
+        return "{}, {}".format(old, new)

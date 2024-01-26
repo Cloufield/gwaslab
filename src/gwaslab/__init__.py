@@ -42,6 +42,6 @@ from gwaslab.util_in_calculate_power import get_power
 from gwaslab.util_in_calculate_power import get_beta
 from gwaslab.viz_plot_trumpetplot import plot_power
 from gwaslab.viz_plot_trumpetplot import plot_power_x
-from gwaslab.util_ex_process_h5 import process_ref_vcf
+from gwaslab.util_ex_process_h5 import process_vcf_to_hfd5
 from gwaslab.util_ex_run_susie import _run_susie_rss as run_susie_rss
 from gwaslab.io_read_tabular import _read_tabular as read_tabular

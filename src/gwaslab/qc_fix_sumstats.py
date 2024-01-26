@@ -15,6 +15,8 @@ from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.qc_check_datatype import check_datatype
 from gwaslab.g_version import _get_version
+
+#process build
 #setbuild
 #fixID
 #rsidtochrpos
@@ -41,7 +43,7 @@ def _process_build(build,log,verbose):
         log.write(" -Genomic coordinates are based on GRCh38/hg38...", verbose=verbose)
         final_build = "38"
     else:
-        log.write(" -Version of genomic coordinates are unknown...", verbose=verbose)
+        log.write(" -WARNING! Version of genomic coordinates is unknown...", verbose=verbose)
         final_build = "99"
     return final_build
 
@@ -49,7 +51,7 @@ def _set_build(sumstats, build="99", status="STATUS",verbose=True,log=Log()):
     build = _process_build(build,log=log,verbose=verbose)
     sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status], 1, "139",build[0]*3)
     sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status], 2, "89",build[1]*3)
-    return sumstats
+    return sumstats, build
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",fixprefix=False,
@@ -67,31 +69,33 @@ def fixID(sumstats,
     
     ############################  checking ###################################################  
     if snpid in sumstats.columns:  
-        if verbose: log.write(" -Checking if SNPID is chr:pos:ref:alt...(separator: - ,: , _)")
-        #is_chrposrefalt = sumstats[snpid].str.match(r'(chr)?([0-9XYMT]+)[:_-]([0-9]+)[:_-]([ATCG]+)[:_-]([ATCG]+)', case=False, flags=0, na=False)
+        log.write(" -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)",verbose=verbose)
+        # check if SNPID is CHR:POS:EA:NEA
         is_chrposrefalt = sumstats[snpid].str.match(r'^\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+$', case=False, flags=0, na=False)
+        # check if SNPID is NA
         is_snpid_na = sumstats[snpid].isna()
+
+        # change STATUS code
         sumstats.loc[ is_chrposrefalt,status] = vchange_status(sumstats.loc[ is_chrposrefalt,status],3 ,"975" ,"630")
         sumstats.loc[(~is_chrposrefalt)&(~is_snpid_na),status] = vchange_status(sumstats.loc[(~is_chrposrefalt)&(~is_snpid_na),status],3 ,"975" ,"842")
         
     if rsid in sumstats.columns: 
-        if verbose: log.write(" -Checking if rsID is rsxxxxxx or RSxxxxxxx...")
-        is_rsid = sumstats[rsid].str.startswith(r'rs',na=False)
+        log.write(" -Checking if rsID is rsxxxxxx...", verbose=verbose)
+        is_rsid = sumstats[rsid].str.match(r'^rs\d+$', case=False, flags=0, na=False)
         
         sumstats.loc[ is_rsid,status] = vchange_status(sumstats.loc[ is_rsid,status], 3, "986","520")
         sumstats.loc[~is_rsid,status] = vchange_status(sumstats.loc[~is_rsid,status], 3, "986","743")
         
-        if verbose: log.write(" -Checking if chr:pos:ref:alt is mixed in rsID column ...")
-        is_rs_chrpos = sumstats[rsid].str.match(r'^\w+[:_-]\w+[:_-]\w+[:_-]\w+$', case=False, flags=0, na=False)
-        #is_rs_chrpos = sumstats[rsid].str.match(r'(chr)?([0-9XYMT]+)[:_-]([0-9]+)[:_-]([ATCG]+)[:_-]([ATCG]+)', case=False, flags=0, na=False)
+        if verbose: log.write(" -Checking if CHR:POS:NEA:EA is mixed in rsID column ...")
+        is_rs_chrpos = sumstats[rsid].str.match(r'^\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+$', case=False, flags=0, na=False)
         
-        if verbose: log.write(" -Number of chr:pos:ref:alt mixed in rsID column :",sum(is_rs_chrpos))
-        if verbose: log.write(" -Number of Unrecognized rsID :",len(sumstats) - sum(is_rs_chrpos) - sum(is_rsid) ) 
-        if verbose: log.write(" -A look at the unrecognized rsID :",set(sumstats.loc[(~is_rsid)&(~is_rs_chrpos),rsid].head()),"...") 
+        log.write(" -Number of CHR:POS:NEA:EA mixed in rsID column :",sum(is_rs_chrpos), verbose=verbose)
+        log.write(" -Number of Unrecognized rsID :",len(sumstats) - sum(is_rs_chrpos) - sum(is_rsid) , verbose=verbose) 
+        log.write(" -A look at the unrecognized rsID :",set(sumstats.loc[(~is_rsid)&(~is_rs_chrpos),rsid].head()),"...", verbose=verbose) 
       
     ############################  fixing chr pos###################################################  
     if fixchrpos == True:
-    # from snpid or rsid, extract chr:pos to fix CHR and POS    
+    # from snpid or rsid, extract CHR:POS to fix CHR and POS    
         if snpid in sumstats.columns: 
             if verbose: log.write(" -Fixing CHR and POS...")
             if overwrite is True: 
@@ -99,8 +103,8 @@ def fixID(sumstats,
                 # fix all
                 to_fix = is_chrposrefalt
                 
-                #fix variants with chr and pos being empty
             elif (chrom in sumstats.columns) and (pos in sumstats.columns) :
+                #fix variants with chr and pos being NA
                 to_fix = is_chrposrefalt & sumstats[chrom].isna() & sumstats[pos].isna()
                 to_fix_num = sum(to_fix)
                 if to_fix_num and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix_num)+" ...")
@@ -121,6 +125,7 @@ def fixID(sumstats,
                 to_fix_num = sum(to_fix)
                 if to_fix_num>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix_num)+" ...")
                 elif verbose: log.write(" -No fixable variants. ...")     
+                
             else:
                 if verbose: log.write(" -Initiating CHR and POS columns...")
                 sumstats.loc[:,chrom]=pd.Series(dtype="string")   
@@ -180,9 +185,9 @@ def fixID(sumstats,
                 
     ############################  fixing chr pos###################################################   
     if fixeanea == True:
-        if verbose: log.write(" -Warning: gwaslab assumes SNPID is in the format of CHR:POS:NEA:EA / CHR:POS:REF:ALT")
+        if verbose: log.write(" -WARNING! gwaslab assumes SNPID is in the format of CHR:POS:NEA:EA / CHR:POS:REF:ALT")
         if overwrite is True:
-            if verbose: log.write(" -Overwrite is applied...")
+            if verbose: log.write(" -Overwrite mode is applied...")
             to_fix = is_chrposrefalt
         elif (nea in sumstats.columns) and (nea in sumstats.columns):
             to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
@@ -666,7 +671,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
 
 def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",n_cores=1,verbose=True,log=Log()):
     if check_col(sumstats,pos,ea,nea,status) is not True:
-        if verbose: log.write("WARNING:.normalize(): specified columns not detected..skipping...")
+        if verbose: log.write("WARNING! .normalize(): specified columns not detected..skipping...")
         return sumstats
     
     if verbose: log.write("Start to normalize variants...{}".format(_get_version()))
@@ -1285,7 +1290,7 @@ def liftover_variant(sumstats,
 
 def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True, verbose=True,log=Log()):
     if check_col(sumstats,chrom,pos,status) is not True:
-        if verbose: log.write("WARNING:.liftover(): specified columns not detected..skipping...")
+        if verbose: log.write("WARNING! .liftover(): specified columns not detected..skipping...")
         return sumstats
     if verbose: log.write("Start to perform liftover...{}".format(_get_version()))
     if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   

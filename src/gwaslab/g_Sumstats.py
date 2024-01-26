@@ -52,7 +52,8 @@ from gwaslab.bd_common_data import get_format_dict
 from gwaslab.bd_common_data import get_formats_list
 from gwaslab.g_version import _show_version
 from gwaslab.g_version import gwaslab_info
-from gwaslab.g_meta import init_meta
+from gwaslab.g_meta import _init_meta
+from gwaslab.g_meta import _append_meta_record
 from gwaslab.util_ex_run_clumping import _clump
 from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
 from gwaslab.util_ex_calculate_prs import _calculate_prs
@@ -119,10 +120,9 @@ class Sumstats():
         self.log = Log()
 
         # meta information
-        self.meta = init_meta() 
+        self.meta = _init_meta() 
         self.build = build
-        self.meta["gwaslab"]["study_name"] = study
-        #self.meta["gwaslab"]["genome_build"] = build
+        self.meta["gwaslab"]["study_name"] =  study
         self.meta["gwaslab"]["species"] = species
         
         # initialize attributes for clumping and finmapping
@@ -217,8 +217,22 @@ class Sumstats():
         return lookupstatus(self.data[status])
     
     def set_build(self, build, verbose=True):
-        self.data = _set_build(self.data, build=build, log=self.log,verbose=verbose)
+        self.data, self.meta["gwaslab"]["genome_build"] = _set_build(self.data, build=build, log=self.log,verbose=verbose)
         gc.collect()
+
+    def infer_build(self,**args):
+        self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**args)
+    
+    def liftover(self,to_build, from_build=None,**args):
+        if from_build is None:
+            if self.meta["gwaslab"]["genome_build"]=="99":
+                self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**args)
+            from_build = self.meta["gwaslab"]["genome_build"]
+        self.data = parallelizeliftovervariant(self.data,from_build=from_build, to_build=to_build, log=self.log,**args)
+        self.meta["is_sorted"] = False
+        self.meta["is_harmonised"] = False
+        self.meta["gwaslab"]["genome_build"]=to_build
+
 # QC ######################################################################################
     #clean the sumstats with one line
     def basic_check(self,
@@ -329,9 +343,9 @@ class Sumstats():
             
             self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=maf_threshold,
                                               n_cores=n_cores,log=self.log,**inferstrand_args)
-            
-            self.meta["gwaslab"]["references"]["ref_infer"] = ref_infer
 
+            self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
+            
             self.data =flipallelestats(self.data,log=self.log,**flipallelestats_args)
             
             gc.collect()
@@ -341,13 +355,18 @@ class Sumstats():
             
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
                                                  n_cores=n_cores,log=self.log,**assignrsid_args)
+            
+            
+
             self.meta["gwaslab"]["references"]["ref_rsid_tsv"] = ref_rsid_tsv
             gc.collect()
+
         if ref_rsid_vcf is not None:
-            
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
                                                  n_cores=n_cores,log=self.log,**assignrsid_args)   
-            self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = ref_rsid_vcf
+
+            self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
+            
             gc.collect()
         ######################################################    
         if remove is True:
@@ -376,17 +395,22 @@ class Sumstats():
         self.data = removedup(self.data,log=self.log,**args)
     def check_sanity(self,**args):
         self.data = sanitycheckstats(self.data,log=self.log,**args)
-    # 
+
     def check_id(self,**args):
         pass
-    def check_ref(self,**args):
-        self.data = checkref(self.data,log=self.log,**args)
-    def infer_strand(self,**args):
-        self.data = parallelinferstrand(self.data,log=self.log,**args)
+    
+    def check_ref(self,ref_seq,**args):
+        self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
+        self.data = checkref(self.data,ref_seq,log=self.log,**args)
+    def infer_strand(self,ref_infer,**args):
+        self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
+        self.data = parallelinferstrand(self.data,ref_infer=ref_infer,log=self.log,**args)
+    
     def flip_allele_stats(self,**args):
         self.data = flipallelestats(self.data,log=self.log,**args)
     def normalize_allele(self,**args):
         self.data = parallelnormalizeallele(self.data,log=self.log,**args)
+    
     def assign_rsid(self,
                     ref_rsid_tsv=None,
                     ref_rsid_vcf=None,
@@ -396,21 +420,15 @@ class Sumstats():
             self.meta["gwaslab"]["references"]["ref_rsid_tsv"] = ref_rsid_tsv
         if ref_rsid_vcf is not None:
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**args)   
-            self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = ref_rsid_vcf
+            self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
+    
     def rsid_to_chrpos(self,**args):
         self.data = rsidtochrpos(self.data,log=self.log,**args)
+        
     def rsid_to_chrpos2(self,**args):
         self.data = parallelrsidtochrpos(self.data,log=self.log,**args)
 
-    def liftover(self,to_build, from_build=None,**args):
-        if from_build is None:
-            if self.meta["gwaslab"]["genome_build"]=="99":
-                self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**args)
-            from_build = self.meta["gwaslab"]["genome_build"]
-        self.data = parallelizeliftovervariant(self.data,from_build=from_build, to_build=to_build, log=self.log,**args)
-        self.meta["is_sorted"] = False
-        self.meta["is_harmonised"] = False
-        self.meta["gwaslab"]["genome_build"]=to_build
+
     ############################################################################################################
     
     def sort_coordinate(self,**sort_args):
@@ -423,8 +441,7 @@ class Sumstats():
     def fill_data(self, **args):
         self.data = filldata(self.data,**args)
     
-    def infer_build(self,**args):
-        self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**args)
+
 # utilities ############################################################################################################
     # filter series ######################################################################
     def get_flanking(self, inplace=False,**args):
@@ -485,11 +502,12 @@ class Sumstats():
     
     def check_af(self,ref_infer,**args):
         self.data = parallelecheckaf(self.data,ref_infer=ref_infer,log=self.log,**args)
-        self.meta["gwaslab"]["references"]["ref_infer_daf"] = ref_infer
-    
+        self.meta["gwaslab"]["references"]["ref_infer_daf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_daf"] , ref_infer)
+        
     def infer_af(self,ref_infer,**args):
         self.data = paralleleinferaf(self.data,ref_infer=ref_infer,log=self.log,**args)
         self.meta["gwaslab"]["references"]["ref_infer_af"] = ref_infer
+        self.meta["gwaslab"]["references"]["ref_infer_af"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_af"] , ref_infer)
       
     def plot_daf(self, **args):
         fig,outliers = plotdaf(self.data, **args)
