@@ -11,6 +11,8 @@ import gc
 from gwaslab.g_Log import Log
 from gwaslab.qc_fix_sumstats import fixchr
 from gwaslab.qc_fix_sumstats import fixpos
+from gwaslab.qc_fix_sumstats import sortcolumn
+from gwaslab.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.bd_common_data import get_chr_to_number
@@ -35,7 +37,7 @@ def rsidtochrpos(sumstats,
     '''
     #########################################################################################################
     if verbose:  log.write("Start to update chromosome and position information based on rsID...{}".format(_get_version()))  
-    if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    check_dataframe_shape(sumstats, log, verbose)
     if verbose:  log.write(" -rsID dictionary file: "+ path)  
     
     if ref_rsid_to_chrpos_tsv is not None:
@@ -78,6 +80,7 @@ def rsidtochrpos(sumstats,
     if verbose:  log.write(" -Updating CHR and POS finished.Start to re-fixing CHR and POS... ")
     sumstats = fixchr(sumstats,verbose=verbose)
     sumstats = fixpos(sumstats,verbose=verbose)
+    sumstats = sortcolumn(sumstats,verbose=verbose)
     return sumstats
     #################################################################################################### 
 
@@ -110,6 +113,8 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
         path = "{}/{}.rsID_CHR_POS_groups_{}.h5".format(vcf_dir_path,vcf_file_name,int(block_size))
 
     if verbose:  log.write("Start to assign CHR and POS using rsIDs...{}".format(_get_version()))
+    check_dataframe_shape(sumstats, log, verbose)
+
     if path is None:
         raise ValueError("Please provide path to hdf5 file.")
     
@@ -175,6 +180,7 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     # merge back
     if verbose:  log.write(" -Append data... ")
     sumstats = pd.concat([sumstats_rs,sumstats_nonrs],ignore_index=True)
+    
     del sumstats_rs
     del sumstats_nonrs
     gc.collect()
@@ -182,6 +188,8 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     # check
     sumstats = fixchr(sumstats,verbose=verbose)
     sumstats = fixpos(sumstats,verbose=verbose)
+    sumstats = sortcolumn(sumstats,verbose=verbose)
+
     pool.close()
     pool.join()
     gc.collect()
@@ -246,7 +254,7 @@ def check_status(row,record):
 
 def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
     if verbose: log.write("Start to check if NEA is aligned with reference sequence...{}".format(_get_version()))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
+    check_dataframe_shape(sumstats, log, verbose)
     if verbose: log.write(" -Reference genome fasta file: "+ ref_path)  
     if verbose: log.write(" -Checking records: ", end="")  
     chromlist = get_chr_list(add_number=True)
@@ -392,7 +400,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
         assign rsID based on chr:pos
         '''
         if verbose:  log.write("Start to annotate rsID based on chromosome and position information...{}".format(_get_version()))  
-        if verbose:  log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+        check_dataframe_shape(sumstats, log, verbose)
         if verbose:  log.write(" -SNPID-rsID text file: "+ path)  
         
         standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234][0126]\w", case=False, flags=0, na=False)
@@ -528,7 +536,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
                        chr_dict=None,verbose=True,log=Log()):
     if verbose: log.write("Start to infer strand for palindromic SNPs...{}".format(_get_version()))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    check_dataframe_shape(sumstats, log, verbose)
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
 
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
@@ -667,7 +675,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,column_name="DAF",suffix="",n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
         
     if verbose: log.write("Start to check the difference between EAF and reference vcf alt frequency ...{}".format(_get_version()))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    check_dataframe_shape(sumstats, log, verbose)  
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
     if verbose: log.write(" -CPU Cores to use :",n_cores)
     
@@ -735,7 +743,7 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
 def paralleleinferaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
         
     if verbose: log.write("Start to infer the AF and reference vcf alt frequency ...{}".format(_get_version()))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    check_dataframe_shape(sumstats, log, verbose)   
     if verbose: log.write(" -Reference vcf file:", ref_infer)   
     if verbose: log.write(" -CPU Cores to use :",n_cores)
     

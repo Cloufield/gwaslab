@@ -14,6 +14,7 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.qc_check_datatype import check_datatype
+from gwaslab.qc_check_datatype import check_dataframe_shape
 from gwaslab.g_version import _get_version
 
 #process build
@@ -63,10 +64,35 @@ def fixID(sumstats,
     3. checking rsid and chr:pos:nea:ea
     '''
     if verbose: log.write("Start to check IDs...{}".format(_get_version()))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
-    
+    check_dataframe_shape(sumstats, log, verbose)
     check_col(sumstats,[snpid,rsid],status)
-    
+
+    ############################  checking datatype ###################################################  
+    if rsid in sumstats.columns:
+        # convert to string datatype
+        try:
+            log.write(" -Checking rsID data type...",verbose=verbose)
+            if sumstats.loc[:,rsid].dtype == "string":
+                pass
+            else:
+                log.write(" -Converting rsID to pd.string data type...",verbose=verbose)
+                sumstats.loc[:,rsid] = sumstats.loc[:,rsid].astype("string")
+        except:
+            log.write(" -Force converting rsID to pd.string data type...",verbose=verbose)
+            sumstats.loc[:,rsid] = sumstats.loc[:,rsid].astype("string")
+    if snpid in sumstats.columns: 
+        # convert to string datatype
+        try:
+            log.write(" -Checking SNPID data type...",verbose=verbose)
+            if sumstats.loc[:,snpid].dtype == "string":
+                pass
+            else:
+                log.write(" -Converting SNPID to pd.string data type...",verbose=verbose)
+                sumstats.loc[:,snpid] = sumstats.loc[:,snpid].astype("string")
+        except:
+            log.write(" -Force converting SNPID to pd.string data type...",verbose=verbose)
+            sumstats.loc[:,snpid] = sumstats.loc[:,snpid].astype("string")
+
     ############################  checking ###################################################  
     if snpid in sumstats.columns:  
         log.write(" -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)",verbose=verbose)
@@ -328,7 +354,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
     # remove by duplicated SNPID
     if (snpid in sumstats.columns) and "d" in mode:
         if verbose: log.write("Start to remove duplicated variants based on snpid...{}".format(_get_version()))
-        if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
+        check_dataframe_shape(sumstats, log, verbose)
         if verbose: log.write(" -Which variant to keep: ",  keep )   
         pre_number =len(sumstats)   
         if snpid in sumstats.columns:
@@ -395,7 +421,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
             if verbose: log.write(".fix_chr: Specified not detected..skipping...")
             return sumstats
         if verbose: log.write("Start to fix chromosome notation...{}".format(_get_version()))
-        if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))          
+        check_dataframe_shape(sumstats, log, verbose)      
         
         # convert to string datatype
         try:
@@ -524,7 +550,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
             if verbose: log.write(".fix_pos: Specified not detected..skipping...")
             return sumstats
         if verbose: log.write("Start to fix basepair positions...{}".format(_get_version()))
-        if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+        check_dataframe_shape(sumstats, log, verbose)  
         
         all_var_num = len(sumstats)
         #convert to numeric
@@ -577,7 +603,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
             if verbose: log.write("EA and NEA not detected..skipping...")
             return sumstats
         if verbose: log.write("Start to fix alleles...{}".format(_get_version()))
-        if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+        check_dataframe_shape(sumstats, log, verbose)  
         
         #if (ea not in sumstats.columns) or (nea not in sumstats.columns):
         if verbose: log.write(" -Converted all bases to string datatype and UPPERCASE.")
@@ -675,7 +701,7 @@ def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NE
         return sumstats
     
     if verbose: log.write("Start to normalize variants...{}".format(_get_version()))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    check_dataframe_shape(sumstats, log, verbose)  
     #variants_to_check = status_match(sumstats[status],5,[4,5]) #
     #r'\w\w\w\w[45]\w\w'
     variants_to_check = sumstats[status].str[4].str.match(r'4|5', case=False, flags=0, na=False)
@@ -856,7 +882,7 @@ def sanitycheckstats(sumstats,
     if coltocheck is None:
         coltocheck = ["P","MLOG10P","INFO","Z","BETA","SE","EAF","CHISQ","F","N","N_CASE","N_CONTROL","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","STATUS"]
     if verbose: log.write("Start sanity check for statistics...{}".format(_get_version())) 
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    check_dataframe_shape(sumstats, log, verbose)
     cols_to_check=[]
     oringinal_number=len(sumstats)
     sumstats = sumstats.copy()
@@ -1091,7 +1117,7 @@ def flip_direction(string):
     
 def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))
+    check_dataframe_shape(sumstats, log, verbose)
     
     ###################get reverse complementary####################
     pattern = r"\w\w\w\w\w[45]\w"  
@@ -1293,7 +1319,7 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         if verbose: log.write("WARNING! .liftover(): specified columns not detected..skipping...")
         return sumstats
     if verbose: log.write("Start to perform liftover...{}".format(_get_version()))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    check_dataframe_shape(sumstats, log, verbose)  
     if verbose: log.write(" -CPU Cores to use :",n_cores)
     if verbose: log.write(" -Performing liftover ...")
     if verbose: log.write(" -Creating converter : hg" + from_build +" to hg"+ to_build)
@@ -1337,7 +1363,7 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
         return sumstats
     
     if verbose: log.write("Start to sort the genome coordinates...{}".format(_get_version()))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    check_dataframe_shape(sumstats, log, verbose)
     
     try:
         if sumstats[pos].dtype == "Int64":
@@ -1356,7 +1382,7 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
 ###############################################################################################################
 # 20230430 added HR HR_95 BETA_95 N_CASE N_CONTROL
 def sortcolumn(sumstats,verbose=True,log=Log(),order = [
-        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "MAF", "BETA", "SE","BETA_95L","BETA_95U", "Z",
+        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "MAF", "BETA", "SE","BETA_95L","BETA_95U", "Z","T","F",
         "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U","HR", "HR_95L", "HR_95U","INFO", "N","N_CASE","N_CONTROL","DIRECTION","I2","P_HET","DOF","SNPR2","STATUS"
            ]):
     if verbose: log.write("Start to reorder the columns...{}".format(_get_version()))
@@ -1393,3 +1419,4 @@ def check_col(df,*args):
         return False
         print(" -Specified columns names was not detected. Please check:"+",".join(not_in_df))
     return True
+

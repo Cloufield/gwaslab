@@ -87,3 +87,17 @@ def verify_datatype(header, dtype):
             return "F"
     else:
         return "NA"
+
+def check_dataframe_shape(sumstats, log, verbose):
+    memory_in_mb = sumstats.memory_usage().sum()/1024/1024
+    try:
+        log.write(" -Current Dataframe shape : {} x {} ; Memory usage: {:.2f} MB".format(len(sumstats),len(sumstats.columns),memory_in_mb), verbose=verbose)
+    except:
+        log.write(" -WARNING! Error: cannot get Dataframe shape...", verbose=verbose)
+    
+def check_dataframe_memory_usage(sumstats, log, verbose):
+    memory_in_mb = sumstats.memory_usage().sum()/1024/1024
+    try:
+        log.write(" -Current Dataframe memory usage: {:.2f} MB".format(memory_in_mb), verbose=verbose)
+    except:
+        log.write(" -WARNING! Error: cannot get Memory usage...", verbose=verbose)
