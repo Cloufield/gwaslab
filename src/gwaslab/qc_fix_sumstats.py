@@ -52,7 +52,7 @@ def _set_build(sumstats, build="99", status="STATUS",verbose=True,log=Log()):
     return sumstats
 
 def fixID(sumstats,
-       snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",
+       snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",fixprefix=False,
        fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,
        overwrite=False,verbose=True,forcefixid=False,log=Log()):  
     '''
@@ -90,7 +90,7 @@ def fixID(sumstats,
         if verbose: log.write(" -A look at the unrecognized rsID :",set(sumstats.loc[(~is_rsid)&(~is_rs_chrpos),rsid].head()),"...") 
       
     ############################  fixing chr pos###################################################  
-    if fixchrpos is True:
+    if fixchrpos == True:
     # from snpid or rsid, extract chr:pos to fix CHR and POS    
         if snpid in sumstats.columns: 
             if verbose: log.write(" -Fixing CHR and POS...")
@@ -134,8 +134,8 @@ def fixID(sumstats,
                 if verbose: log.write(" -Filling CHR and POS columns using valid SNPID's chr:pos...")
                 # format and qc filled chr and pos
                
-                sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,snpid].str.split(':|_|-',n=2).str.get(0)
-                sumstats.loc[to_fix,pos] = sumstats.loc[to_fix,snpid].str.split(':|_|-',n=2).str.get(1)
+                sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[1]
+                sumstats.loc[to_fix,pos] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[2]
                 
                 #sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,snpid].str.split(':|_|-').str[0].str.strip("chrCHR").astype("string")
                 #sumstats.loc[to_fix,pos] =np.floor(pd.to_numeric(sumstats.loc[to_fix,snpid].str.split(':|_|-').str[1], errors='coerce')).astype('Int64')
@@ -179,55 +179,62 @@ def fixID(sumstats,
                 #sumstats.loc[to_fix,status] = vchange_status(sumstats.loc[to_fix,status], 4, "98765432","00000000").astype("string")  
                 
     ############################  fixing chr pos###################################################   
-    #if fixeanea is True:
-    #    if verbose: log.write(" -Warning: Please make sure a1 is ref or not in Chr:pos:a1:a2")
-    #    if overwrite is True:
-    #        if verbose: log.write(" -Overwrite is applied...")
-    #        to_fix = is_chrposrefalt
-    #    elif (nea in sumstats.columns) and (nea in sumstats.columns):
-    #        to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
-    #        if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
-    #    elif (nea in sumstats.columns) and (ea not in sumstats.columns):
-    #        if verbose: log.write(" -Initiating EA columns...")
-    #        sumstats[ea]=pd.Series(dtype="string")
-    #        to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
-    #        if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
-    #    elif (nea not in sumstats.columns) and (ea in sumstats.columns):
-    #        if verbose: log.write(" -Initiating NEA columns...")
-    #        sumstats[nea]=pd.Series(dtype="string")
-    #        to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
-    #        if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
-    #    else:
-    #        if verbose: log.write(" -Initiating EA and NEA columns...")
-    #        sumstats[nea]=pd.Series(dtype="string")
-    #        sumstats[ea]=pd.Series(dtype="string")
-    #        to_fix = is_chrposrefalt
-    #        if sum(to_fix)>0: 
-    #            if verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
+    if fixeanea == True:
+        if verbose: log.write(" -Warning: gwaslab assumes SNPID is in the format of CHR:POS:NEA:EA / CHR:POS:REF:ALT")
+        if overwrite is True:
+            if verbose: log.write(" -Overwrite is applied...")
+            to_fix = is_chrposrefalt
+        elif (nea in sumstats.columns) and (nea in sumstats.columns):
+            to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
+            if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
+        elif (nea in sumstats.columns) and (ea not in sumstats.columns):
+            if verbose: log.write(" -Initiating EA columns...")
+            sumstats.loc[:,ea]=pd.Series(dtype="string")
+            to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
+            if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
+        elif (nea not in sumstats.columns) and (ea in sumstats.columns):
+            if verbose: log.write(" -Initiating NEA columns...")
+            sumstats.loc[:,nea]=pd.Series(dtype="string")
+            to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
+            if sum(to_fix)>0 and verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
+        else:
+            if verbose: log.write(" -Initiating EA and NEA columns...")
+            sumstats[nea]=pd.Series(dtype="string")
+            sumstats[ea]=pd.Series(dtype="string")
+            to_fix = is_chrposrefalt
+            if sum(to_fix)>0: 
+                if verbose: log.write(" -Number of variants could be fixed: "+str(sum(to_fix))+" ...")
     #                
-    #    if sum(to_fix)>0:    
-    #        if verbose: log.write(" -Filling "+str(sum(to_fix))+" EA and NEA columns using SNPID's chr:pos:nea:ea...")
+        if sum(to_fix)>0:    
+            if verbose: log.write(" -Filling "+str(sum(to_fix))+" EA and NEA columns using SNPID's CHR:POS:NEA:EA...")
     #        
-    #        if fixeanea_flip is True:
-    #            if verbose: log.write(" -Flipped : chr:pos:a1:a2...a1->EA , a2->NEA ")
-    #            sumstats.loc[to_fix,ea] = sumstats.loc[to_fix,snpid].apply(lambda x:re.split(':|_|-',x)[2]).astype("string")  
-    #            sumstats.loc[to_fix,nea] = sumstats.loc[to_fix,snpid].apply(lambda x:re.split(':|_|-',x)[3]).astype("string")
-    #        else:
-    #            if verbose: log.write(" -Chr:pos:a1:a2...a1->EA , a2->NEA ")
-    #            sumstats.loc[to_fix,ea] = sumstats.loc[to_fix,snpid].apply(lambda x:re.split(':|_|-',x)[3]).astype("string")  
-    #            sumstats.loc[to_fix,nea] = sumstats.loc[to_fix,snpid].apply(lambda x:re.split(':|_|-',x)[2]).astype("string")
+            if fixeanea_flip == True:
+                if verbose: log.write(" -Flipped : CHR:POS:NEA:EA -> CHR:POS:EA:NEA ")
+                sumstats.loc[to_fix,ea] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[3]
+                sumstats.loc[to_fix,nea] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[4]
+            else:
+                if verbose: log.write(" -Chr:pos:a1:a2...a1->EA , a2->NEA ")
+                sumstats.loc[to_fix,ea] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[4]
+                sumstats.loc[to_fix,nea] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[3]
+    
     #        #to_change_status = sumstats[status].str.match(r"\w\w\w[45]\w\w\w")
     #        #sumstats.loc[to_fix&to_change_status,status] = vchange_status(sumstats.loc[to_fix&to_change_status,status],4,"2")  
     #        #sumstats.loc[to_fix,snpid].apply(lambda x:re.split(':|_|-',x)[1]).astype("string")
     #        #sumstats.loc[to_fix,rsid].apply(lambda x:re.split(':|_|-',x)[1]).astype("Int64")
     
     ############################  fixing id ################################################### 
-    if fixsep is True:
+    if fixsep == True:
         if snpid in sumstats.columns: 
             if verbose: log.write(' -Replacing [_-] in SNPID with ":" ...')
             sumstats.loc[:,snpid] = sumstats.loc[:,snpid].str.replace(r"[_-]",":",regex=True)
+    
+    if fixprefix == True:
+        if snpid in sumstats.columns: 
+            if verbose: log.write(' -Removing /^chr/ in SNPID ...')
+            prefix_removed = sumstats.loc[:,snpid].str.extract(r'^(chr)?(\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[1]
+            sumstats.loc[~prefix_removed.isna(),snpid] = prefix_removed[~prefix_removed.isna()]
 
-    if fixid is True:
+    if fixid == True:
         if snpid not in sumstats.columns: 
         # initiate a SNPID column
             sumstats.loc[:,snpid]=pd.Series(dtype="string")
@@ -1044,7 +1051,7 @@ def sanitycheckstats(sumstats,
     
     #pre_number=len(sumstats)  
     #sumstats = sumstats.dropna(subset=cols_to_check)
-    #after_number=len(sumstats)
+    after_number=len(sumstats)
     #if verbose:log.write(" -Removed {} variants with NAs in the checked columns...".format(pre_number - after_number))
 
     if verbose: log.write(" -Removed "+str(oringinal_number - after_number)+" variants with bad statistics in total.") 
