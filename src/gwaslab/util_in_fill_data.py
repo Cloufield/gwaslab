@@ -4,7 +4,7 @@ import scipy.stats as ss
 from scipy import stats
 from gwaslab.g_Log import Log
 import gc
-from gwaslab.qc_fix_sumstats import sortcolumn
+#from gwaslab.qc_fix_sumstats import sortcolumn
 from gwaslab.g_version import _get_version
 from gwaslab.qc_check_datatype import check_datatype
 
@@ -46,7 +46,7 @@ def filldata(
     fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose,sig_level)
        
 # ###################################################################################
-    sumstats = sortcolumn(sumstats, verbose=verbose, log=log)
+    #sumstats = sortcolumn(sumstats, verbose=verbose, log=log)
     gc.collect()
     if verbose: log.write("Finished filling data using existing columns.")
     return sumstats
@@ -273,4 +273,43 @@ def fill_iteratively(sumstats,raw_to_fill,log,only_sig,df,extreme,verbose,sig_le
         if filled_count == 0:
             break
          
-        
+###Base functions########################################################################################
+
+def _convert_betase_to_z(beta, se):
+    return beta/se 
+
+def _convert_betase_to_p(beta, se):
+    z = _convert_betase_to_z(beta, se)
+    p = _convert_z_to_p(z)
+    return p
+
+def _convert_betase_to_mlog10p(beta, se):
+    z = _convert_betase_to_z(beta, se)
+    mlog10p = _convert_z_to_mlog10p(z)
+    return mlog10p
+
+def _convert_p_to_chisq(p):
+    return ss.chi2.isf(p, 1)
+
+def _convert_z_to_chisq(z):
+    return (z)**2
+
+def _convert_z_to_p(z):
+    return ss.chi2.sf(z**2,1) 
+
+def _convert_z_to_mlog10p(z):
+    log_pvalue = np.log(2) + ss.norm.logsf(np.abs(z)) #two-sided
+    mlog10p = log_pvalue/np.log(10)
+    return -mlog10p 
+
+def _conver_chisq_to_p(chisq):
+    return ss.chi2.sf(chisq,1)
+
+def _convert_mlog10p_to_p(mlog10p):
+    return np.power(10, -mlog10p) 
+
+def _convert_or_to_beta(OR):
+    return np.log(OR)  
+
+def _convert_beta_to_or(beta):
+    return np.exp(beta)   

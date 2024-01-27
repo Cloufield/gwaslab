@@ -61,6 +61,7 @@ from gwaslab.viz_plot_mqqplot import mqqplot
 from gwaslab.viz_plot_trumpetplot import plottrumpet
 from gwaslab.viz_plot_compare_af import plotdaf
 from gwaslab.util_ex_run_susie import _run_susie_rss
+from gwaslab.qc_fix_sumstats import _check_data_consistency
 import gc
 
 #20220309
@@ -245,6 +246,7 @@ class Sumstats():
                     fixpos_args={},
                     fixallele_args={},
                     sanitycheckstats_args={},
+                    consistencycheck_args={},
                     normalize=True,
                     normalizeallele_args={},
                     verbose=True):
@@ -255,6 +257,8 @@ class Sumstats():
         self.data = fixpos(self.data,log=self.log,remove=remove,verbose=verbose,**fixpos_args)
         self.data = fixallele(self.data,log=self.log,remove=remove,verbose=verbose,**fixallele_args)
         self.data = sanitycheckstats(self.data,log=self.log,verbose=verbose,**sanitycheckstats_args)
+        _check_data_consistency(self.data,log=self.log,verbose=verbose,**consistencycheck_args)
+        
         if normalize is True:
             self.data = parallelnormalizeallele(self.data,n_cores=n_cores,verbose=verbose,log=self.log,**normalizeallele_args)
         if remove_dup is True:
@@ -395,7 +399,8 @@ class Sumstats():
         self.data = removedup(self.data,log=self.log,**args)
     def check_sanity(self,**args):
         self.data = sanitycheckstats(self.data,log=self.log,**args)
-
+    def check_data_consistency(self, **args):
+        _check_data_consistency(self.data,log=self.log,**args)
     def check_id(self,**args):
         pass
     
@@ -438,9 +443,9 @@ class Sumstats():
         self.data = sortcolumn(self.data,log=self.log,**args)
     
     ############################################################################################################
-    def fill_data(self, **args):
-        self.data = filldata(self.data,**args)
-    
+    def fill_data(self, verbose=True, **args):
+        self.data = filldata(self.data, verbose=verbose, **args)
+        self.data = sortcolumn(self.data, verbose=verbose, log=self.log)
 
 # utilities ############################################################################################################
     # filter series ######################################################################

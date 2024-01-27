@@ -16,7 +16,9 @@ from gwaslab.bd_common_data import get_chr_list
 from gwaslab.qc_check_datatype import check_datatype
 from gwaslab.qc_check_datatype import check_dataframe_shape
 from gwaslab.g_version import _get_version
-
+from gwaslab.util_in_fill_data import _convert_betase_to_mlog10p
+from gwaslab.util_in_fill_data import _convert_betase_to_p
+from gwaslab.util_in_fill_data import _convert_mlog10p_to_p
 #process build
 #setbuild
 #fixID
@@ -29,6 +31,7 @@ from gwaslab.g_version import _get_version
 #normalizevariant
 #checkref
 #sanitycheckstats
+#_check_data_consistency
 #flipallelestats
 #parallelizeassignrsid
 #sortcoordinate
@@ -913,13 +916,7 @@ def sanitycheckstats(sumstats,
         sumstats = sumstats.loc[(sumstats["N_CONTROL"]>=ncontrol[0]) & (sumstats["N_CONTROL"]<=ncontrol[1]),:]
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad N_CONTROL.") 
-    pre_number=len(sumstats)
-    if "N" in coltocheck and "N" in sumstats.columns and "N_CONTROL" in coltocheck and "N_CONTROL" in sumstats.columns and "N_CASE" in coltocheck and "N_CASE" in sumstats.columns:
-        if verbose: log.write(" -Checking if N = N_CASE + N_CONTROL ...") 
-        matched_n = sumstats.loc[:,"N"] == sumstats.loc[:,"N_CASE"] + sumstats.loc[:,"N_CONTROL"] 
-        sumstats = sumstats.loc[matched_n,:]
-        after_number=len(sumstats)
-        if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with N != N_CASE + N_CONTROL.") 
+
 
     ###ALLELE FREQUENCY################################################################################################################################################
     pre_number=len(sumstats)    
@@ -979,6 +976,11 @@ def sanitycheckstats(sumstats,
         if verbose: log.write(" -Checking if ",p[0],"< P <",p[1]," ...") 
         sumstats.loc[:,"P"] = pd.to_numeric(sumstats.loc[:,"P"], errors='coerce').astype("float64")
         sumstats = sumstats.loc[(sumstats["P"]>p[0]) & (sumstats["P"]<p[1]),:]
+        
+        is_low_p =  sumstats["P"] == 0 
+        if sum(is_low_p) >0:
+            log.write(" -WARNING! Extremely low P detected (P=0 or P < minimum positive value of float64) : {}".format(sum(is_low_p)), verbose=verbose)
+            log.write(" -WARNING! Please consider using MLOG10P instead.", verbose=verbose)
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad P.") 
     
@@ -1079,7 +1081,7 @@ def sanitycheckstats(sumstats,
         if verbose: log.write(" -Checking STATUS and converting STATUS to categories....") 
         categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
         sumstats.loc[:,"STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
-    
+
     #pre_number=len(sumstats)  
     #sumstats = sumstats.dropna(subset=cols_to_check)
     after_number=len(sumstats)
@@ -1092,6 +1094,67 @@ def sanitycheckstats(sumstats,
     if verbose: log.write("Finished sanity check successfully!")
     return sumstats
 
+### check consistency #############################################################################################################################################
+
+def _check_data_consistency(sumstats, rtol=1e-3, atol=1e-3, equal_nan=True, verbose=True,log=Log()):
+    if verbose: log.write("Start to check data consistency across columns...{}".format(_get_version())) 
+    check_dataframe_shape(sumstats, log, verbose)
+    log.write(" -Tolerance: {} (Relative) and {} (Absolute)".format(rtol, atol),verbose=verbose)
+    
+    
+    if "SNPID" not in sumstats.columns:
+        id_to_use = "rsID"
+    else:
+        id_to_use = "SNPID"
+    
+    if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+        if "MLOG10P" in sumstats.columns:
+            log.write(" -Checking if BETA/SE-derived-MLOG10P is consistent with MLOG10P...",verbose=verbose)
+            betase_derived_mlog10p =  _convert_betase_to_mlog10p(sumstats["BETA"], sumstats["SE"])
+            is_close = np.isclose(betase_derived_mlog10p, sumstats["MLOG10P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
+            diff = betase_derived_mlog10p - sumstats["MLOG10P"]
+            if sum(~is_close)>0:
+                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close),verbose=verbose))
+                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
+            else:
+                log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
+        
+        if "P" in sumstats.columns:
+            log.write(" -Checking if BETA/SE-derived-P is consistent with P...",verbose=verbose)
+            betase_derived_p =  _convert_betase_to_p(sumstats["BETA"], sumstats["SE"])
+            is_close = np.isclose(betase_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
+            diff = betase_derived_p - sumstats["P"]
+            if sum(~is_close)>0:
+                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close),verbose=verbose))
+                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
+            else:
+                log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
+    
+    if "MLOG10P" in sumstats.columns and "P" in sumstats.columns:
+        log.write(" -Checking if MLOG10P-derived-P is consistent with P...",verbose=verbose)
+        mlog10p_derived_p = _convert_mlog10p_to_p(sumstats["MLOG10P"])
+        is_close = np.isclose(mlog10p_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
+        diff = mlog10p_derived_p - sumstats["P"]
+        if sum(~is_close)>0:
+            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close),verbose=verbose))
+            log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
+        else:
+            log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
+
+    if "N" in sumstats.columns and "N_CONTROL" in sumstats.columns and "N_CASE" in sumstats.columns:
+        if verbose: log.write(" -Checking if N is consistent with N_CASE + N_CONTROL ...") 
+        is_close = sumstats.loc[:,"N"] == sumstats.loc[:,"N_CASE"] + sumstats.loc[:,"N_CONTROL"] 
+        #is_close = np.isclose(sumstats.loc[:,"N"], sumstats.loc[:,"N_CASE"] + sumstats.loc[:,"N_CONTROL"] , rtol=rtol, atol=atol, equal_nan=equal_nan)
+        diff = abs(sumstats.loc[:,"N"] - (sumstats.loc[:,"N_CASE"] + sumstats.loc[:,"N_CONTROL"] ))
+        if sum(~is_close)>0:
+            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close),verbose=verbose))
+            log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
+        else:
+            log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
+
+    log.write(" -Note: if the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
+
+    if verbose: log.write("Finished checking data consistency across columns.") 
 ###############################################################################################################
 # 20220426
 def get_reverse_complementary_allele(a):
@@ -1386,7 +1449,7 @@ def sortcolumn(sumstats,verbose=True,log=Log(),order = [
         "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U","HR", "HR_95L", "HR_95U","INFO", "N","N_CASE","N_CONTROL","DIRECTION","I2","P_HET","DOF","SNPR2","STATUS"
            ]):
     if verbose: log.write("Start to reorder the columns...{}".format(_get_version()))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
+    check_dataframe_shape(sumstats, log, verbose)   
     
     output_columns = []
     for i in order:
