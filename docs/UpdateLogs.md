@@ -1,5 +1,10 @@
 # Update Logs
 
+## 3.4.38
+- fixed seaborn version
+- replaced array_split
+- fixed warnings due to pandas upgrade 
+
 ## 3.4.37 20240129
 - added data consistency check
 - added "s","r","n" mode for remove_dup()

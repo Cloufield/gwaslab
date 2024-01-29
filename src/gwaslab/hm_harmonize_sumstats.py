@@ -12,12 +12,14 @@ from gwaslab.g_Log import Log
 from gwaslab.qc_fix_sumstats import fixchr
 from gwaslab.qc_fix_sumstats import fixpos
 from gwaslab.qc_fix_sumstats import sortcolumn
+from gwaslab.qc_fix_sumstats import _df_split
 from gwaslab.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.g_version import _get_version
+
 #rsidtochrpos
 #checkref
 #parallelizeassignrsid
@@ -333,7 +335,7 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
     ## single df assignment
     vcf_reader = VariantFile(path)
     def rsid_helper(x,vcf_reader,chr_dict):
-         return chrposref_rsid(x[0],x[1],x[2],x[3],vcf_reader,chr_dict)
+         return chrposref_rsid(x.iloc[0],x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,chr_dict)
     map_func=partial(rsid_helper,vcf_reader=vcf_reader,chr_dict=chr_dict)
     rsID = sumstats.apply(map_func,axis=1)
     return rsID
@@ -380,7 +382,8 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
 
         if sum(to_assign)>0:
             if sum(to_assign)<10000: n_cores=1
-            df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], n_cores)
+            #df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], n_cores)
+            df_split = _df_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], n_cores)
             pool = Pool(n_cores)
             map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,chr_dict=chr_dict) 
             assigned_rsid = pd.concat(pool.map(map_func,df_split))
@@ -522,12 +525,12 @@ def is_palindromic(sumstats,a1="EA",a2="NEA"):
 
 def check_strand(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS"):
     vcf_reader = VariantFile(ref_infer)
-    status_part = sumstats.apply(lambda x:check_strand_status(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,x[5],chr_dict),axis=1) 
+    status_part = sumstats.apply(lambda x:check_strand_status(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,x.iloc[5],chr_dict),axis=1) 
     return status_part
 
 def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=get_number_to_chr(),status="STATUS",daf_tolerance=0.2):
     vcf_reader = VariantFile(ref_infer)
-    status_part = sumstats.apply(lambda x:check_unkonwn_indel(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,x[5],chr_dict,daf_tolerance),axis=1)
+    status_part = sumstats.apply(lambda x:check_unkonwn_indel(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,x.iloc[5],chr_dict,daf_tolerance),axis=1)
     return status_part
 
 ##################################################################################################################################################
@@ -574,7 +577,9 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             if sum(unknow_palindromic_to_check)>0:
                 if sum(unknow_palindromic_to_check)<10000: 
                     n_cores=1  
-                df_split = np.array_split(sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]], n_cores)
+                
+                #df_split = np.array_split(sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]], n_cores)
+                df_split = _df_split(sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]], n_cores)
                 pool = Pool(n_cores)
                 map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
                 status_inferred = pd.concat(pool.map(map_func,df_split))
@@ -630,7 +635,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             if sum(unknow_indel)>0:
                 if sum(unknow_indel)<10000: 
                     n_cores=1    
-                df_split = np.array_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], n_cores)
+                #df_split = np.array_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], n_cores)
+                df_split = _df_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], n_cores)
                 pool = Pool(n_cores)
                 map_func = partial(check_indel,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict,daf_tolerance=daf_tolerance) 
                 status_inferred = pd.concat(pool.map(map_func,df_split))
@@ -697,7 +703,8 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,colu
     ########################  
         if sum(~sumstats[eaf].isna())<10000: 
             n_cores=1       
-        df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], n_cores)
+        #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], n_cores)
+        df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], n_cores)
         pool = Pool(n_cores)
         if sum(~sumstats[eaf].isna())>0:
             map_func = partial(checkaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,column_name=column_name,chr_dict=chr_dict) 
@@ -722,7 +729,7 @@ def checkaf(sumstats,ref_infer,ref_alt_freq=None,column_name="DAF",chr="CHR",pos
     #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
     vcf_reader = VariantFile(ref_infer)
     def afapply(x,vcf,alt_freq,chr_dict):
-            return check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict)
+            return check_daf(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,chr_dict)
     map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
     status_inferred = sumstats.apply(map_func,axis=1)
     sumstats.loc[:,column_name] = status_inferred.values
@@ -767,7 +774,8 @@ def paralleleinferaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",p
     ########################  
         if sum(sumstats[eaf].isna())<10000: 
             n_cores=1       
-        df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
+        #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
+        df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
         pool = Pool(n_cores)
         map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
         sumstats.loc[good_chrpos,[eaf]] = pd.concat(pool.map(map_func,df_split))
@@ -785,7 +793,7 @@ def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",a
     #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
     vcf_reader = VariantFile(ref_infer)
     def afapply(x,vcf,alt_freq,chr_dict):
-            return infer_af(x[0],x[1]-1,x[1],x[2],x[3],vcf_reader,ref_alt_freq,chr_dict)
+            return infer_af(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,ref_alt_freq,chr_dict)
     map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
     status_inferred = sumstats.apply(map_func,axis=1)
     sumstats.loc[:,eaf] = status_inferred.values
@@ -828,3 +836,5 @@ def check_vcf_chr_prefix(vcf_bcf_path):
             return m.group(1)
     else:
         return None
+    
+

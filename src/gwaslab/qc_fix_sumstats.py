@@ -453,13 +453,13 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         # convert to string datatype
         try:
             if verbose: log.write(" -Checking CHR data type...")
-            if sumstats.loc[:,chrom].dtype == "string":
+            if sumstats[chrom].dtype == "string":
                 pass
             else:
-                sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string")
+                sumstats[chrom] = sumstats[chrom].astype("string")
         except:
             if verbose: log.write(" -Force converting to pd string data type...")
-            sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype("string")
+            sumstats[chrom] = sumstats[chrom].astype("string")
         
         # check if CHR is numeric
         is_chr_fixed = sumstats[chrom].str.isnumeric()
@@ -551,10 +551,10 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         
         # Convert string to int
         try:
-            sumstats.loc[:,chrom] = sumstats.loc[:,chrom].astype('Int64')
+            sumstats[chrom] = sumstats[chrom].astype('Int64')
         except:
-            # force convert
-            sumstats.loc[:,chrom] = np.floor(pd.to_numeric(sumstats.loc[:,chrom], errors='coerce')).astype('Int64')
+        #    # force convert
+            sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
         
         # filter out variants with CHR <=0
         out_of_range_chr = sumstats[chrom] < minchr
@@ -650,8 +650,8 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         categories = set(sumstats.loc[:,ea].str.upper())|set(sumstats.loc[:,nea].str.upper())|set("N")
         categories = {x for x in categories if pd.notna(x)}
 
-        sumstats.loc[:,ea]=pd.Categorical(sumstats[ea].str.upper(),categories = categories) 
-        sumstats.loc[:,nea]=pd.Categorical(sumstats[nea].str.upper(),categories = categories) 
+        sumstats[ea]=pd.Categorical(sumstats[ea].str.upper(),categories = categories) 
+        sumstats[nea]=pd.Categorical(sumstats[nea].str.upper(),categories = categories) 
         all_var_num = len(sumstats)
         
         ## check ATCG
@@ -742,7 +742,8 @@ def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NE
             n_cores=1  
         pool = Pool(n_cores)
         map_func = partial(normalizeallele,pos=pos,nea=nea,ea=ea,status=status)
-        df_split = np.array_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
+        #df_split = np.array_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
+        df_split = _df_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
         normalized_pd = pd.concat(pool.map(map_func,df_split))
         pool.close()
         pool.join()
@@ -1426,7 +1427,8 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         if sum(to_lift)<10000:
             n_cores=1
     
-        df_split = np.array_split(sumstats.loc[:,[chrom,pos,status]], n_cores)
+        #df_split = np.array_split(sumstats.loc[:,[chrom,pos,status]], n_cores)
+        df_split = _df_split(sumstats.loc[:,[chrom,pos,status]], n_cores)
         pool = Pool(n_cores)
         #df = pd.concat(pool.starmap(func, df_split))
         func=liftover_variant
@@ -1513,3 +1515,13 @@ def check_col(df,*args):
         print(" -Specified columns names was not detected. Please check:"+",".join(not_in_df))
     return True
 
+def _df_split(dataframe, n):
+    chunks = []
+    chunk_size = int(dataframe.shape[0] // n)+1
+
+    for index in range(0, dataframe.shape[0], chunk_size):
+        chunks.append(
+            dataframe.iloc[index:index + chunk_size]
+        )
+
+    return chunks

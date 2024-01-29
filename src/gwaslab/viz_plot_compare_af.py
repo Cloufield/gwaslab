@@ -121,7 +121,7 @@ def plotdaf(sumstats,
 
     sumstats.loc[:,"ID"] = sumstats.index
     
-    to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele Frequency')
+    to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele Frequency').dropna()
     
     sns.histplot(data=to_plot, x="Allele Frequency", hue="Types", fill=True, ax=ax2, legend = legend2 ,**histplot_args)
     ax2.set_xlabel("Allele Frequency",**font_args)
