@@ -1,6 +1,15 @@
 # Update Logs
 
-## 3.4.36
+## 3.4.37 20240129
+- added data consistency check
+- added "s","r","n" mode for remove_dup()
+- updated fix_id
+- added sample data
+- added datatype check for rsID and SNPID
+- added memory usage check 
+- added extreme P value check
+
+## 3.4.36 20240126
 - removed statsmodels
 - updated functions in basic_check()
 - added a test example for basic_check()
