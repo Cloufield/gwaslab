@@ -211,15 +211,15 @@ def check_status(row,record):
     #8 / -----> not on ref genome
     #9 / ------> unchecked
     
-    status_pre=row[3][:5]
-    status_end=row[3][6:]
+    status_pre=row.iloc[3][:5]
+    status_end=row.iloc[3][6:]
     
     ## nea == ref
-    if row[2] == record[row[0]-1: row[0]+len(row[2])-1].seq.upper():
+    if row.iloc[2] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[2])-1].seq.upper():
         ## ea == ref
-        if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq.upper():
+        if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
             ## len(nea) >len(ea):
-            if len(row[2])!=len(row[1]):
+            if len(row.iloc[2])!=len(row.iloc[1]):
                 # indels both on ref, unable to identify
                 return status_pre+"6"+status_end 
         else:
@@ -228,25 +228,25 @@ def check_status(row,record):
     ## nea!=ref
     else:
         # ea == ref_seq -> need to flip
-        if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq.upper():
+        if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
             return status_pre+"3"+status_end 
         # ea !=ref
         else:
             #_reverse_complementary
-            row[1] = get_reverse_complementary_allele(row[1])
-            row[2] = get_reverse_complementary_allele(row[2])
+            row.iloc[1] = get_reverse_complementary_allele(row.iloc[1])
+            row.iloc[2] = get_reverse_complementary_allele(row.iloc[2])
             ## nea == ref
-            if row[2] == record[row[0]-1: row[0]+len(row[2])-1].seq.upper():
+            if row.iloc[2] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[2])-1].seq.upper():
                 ## ea == ref
-                if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq.upper():
+                if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
                     ## len(nea) >len(ea):
-                    if len(row[2])!=len(row[1]):
+                    if len(row.iloc[2])!=len(row.iloc[1]):
                         return status_pre+"8"+status_end  # indel reverse complementary
                 else:
                     return status_pre+"4"+status_end 
             else:
                 # ea == ref_seq -> need to flip
-                if row[1] == record[row[0]-1: row[0]+len(row[1])-1].seq.upper():
+                if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
                     return status_pre+"5"+status_end 
             # ea !=ref
             return status_pre+"8"+status_end

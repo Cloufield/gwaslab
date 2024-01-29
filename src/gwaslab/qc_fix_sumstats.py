@@ -1120,11 +1120,11 @@ def sanitycheckstats(sumstats,
 
 ### check consistency #############################################################################################################################################
 
-def _check_data_consistency(sumstats, rtol=1e-3, atol=1e-3, equal_nan=True, verbose=True,log=Log()):
+def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG10P",rtol=1e-3, atol=1e-3, equal_nan=True, verbose=True,log=Log()):
     if verbose: log.write("Start to check data consistency across columns...{}".format(_get_version())) 
     check_dataframe_shape(sumstats, log, verbose)
     log.write(" -Tolerance: {} (Relative) and {} (Absolute)".format(rtol, atol),verbose=verbose)
-    
+    check_status = 0
     
     if "SNPID" not in sumstats.columns:
         id_to_use = "rsID"
@@ -1142,6 +1142,7 @@ def _check_data_consistency(sumstats, rtol=1e-3, atol=1e-3, equal_nan=True, verb
                 log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
             else:
                 log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
+            check_status=1
         
         if "P" in sumstats.columns:
             log.write(" -Checking if BETA/SE-derived-P is consistent with P...",verbose=verbose)
@@ -1153,6 +1154,7 @@ def _check_data_consistency(sumstats, rtol=1e-3, atol=1e-3, equal_nan=True, verb
                 log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
             else:
                 log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
+            check_status=1
     
     if "MLOG10P" in sumstats.columns and "P" in sumstats.columns:
         log.write(" -Checking if MLOG10P-derived-P is consistent with P...",verbose=verbose)
@@ -1164,6 +1166,7 @@ def _check_data_consistency(sumstats, rtol=1e-3, atol=1e-3, equal_nan=True, verb
             log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
         else:
             log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
+        check_status=1
 
     if "N" in sumstats.columns and "N_CONTROL" in sumstats.columns and "N_CASE" in sumstats.columns:
         if verbose: log.write(" -Checking if N is consistent with N_CASE + N_CONTROL ...") 
@@ -1175,9 +1178,12 @@ def _check_data_consistency(sumstats, rtol=1e-3, atol=1e-3, equal_nan=True, verb
             log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
         else:
             log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
-
-    log.write(" -Note: if the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
-
+        check_status=1
+        
+    if check_status==1:
+        log.write(" -Note: if the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
+    else:
+        log.write(" -No availalbe columns for data consistency checking...Skipping...",verbose=verbose)
     if verbose: log.write("Finished checking data consistency across columns.") 
 ###############################################################################################################
 # 20220426
