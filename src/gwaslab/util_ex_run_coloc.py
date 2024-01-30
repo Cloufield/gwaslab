@@ -69,7 +69,7 @@ def _run_coloc_susie(filepath, r="Rscript",
         D2 <- list( "LD"=R, "beta"=df[,"BETA_2"],"varbeta"=df[,"SE_2"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type2}","N"={n2}{d2_args})
 
         abf <- coloc.abf(dataset1=D1,dataset2=D2)
-        write.csv(abf$summary, "{output_prefix}.coloc.abf", row.names = FALSE)
+        write.csv(t(data.frame(abf$summary)) , "{output_prefix}.coloc.abf", row.names = FALSE)
 
         S1=runsusie(D1{susie_args})
         S2=runsusie(D2{susie_args})
@@ -91,7 +91,9 @@ def _run_coloc_susie(filepath, r="Rscript",
                     coloc_args = coloc_args,
                     output_prefix = output_prefix)
         
-        log.write("  -coloc script: {}".format("coloc.susie(S1,S2)"), verbose=verbose)
+        log.write("  -coloc abf script: {}".format("coloc.abf(dataset1=D1,dataset2=D2)"), verbose=verbose)
+        log.write("  -coloc susie script: {}".format("coloc.susie(S1,S2)"), verbose=verbose)
+        
         with open("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]),"w") as file:
                 file.write(rscript)
 
@@ -105,21 +107,37 @@ def _run_coloc_susie(filepath, r="Rscript",
             #plink_process.kill()
             log.write(" Running coloc.SuSieR from command line...", verbose=verbose)
             r_log+= output + "\n"
+            
+            pip_cs = pd.read_csv("{}.coloc.abf".format(output_prefix))
+            if len(pip_cs)==0:
+                 log.write("  -SuSieR result for {} is empty. Please check parameters.".format(output_prefix), verbose=verbose)
+            else:
+                pip_cs["Locus"] = row["SNPID"]
+                pip_cs["STUDY"] = row["study"]
+                pip_cs["hit1"] = row["SNPID"]
+                pip_cs["METHOD"] = "abf"
+                locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
+
             pip_cs = pd.read_csv("{}.coloc.susie".format(output_prefix))
             if len(pip_cs)==0:
                  log.write("  -SuSieR result for {} is empty. Please check parameters.".format(output_prefix), verbose=verbose)
             else:
                 pip_cs["Locus"] = row["SNPID"]
                 pip_cs["STUDY"] = row["study"]
+                pip_cs["METHOD"] = "susie"
                 locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
+            
             os.remove("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]))
+            
             if delete == True:
-                os.remove("{}.pipcs".format(output_prefix))
+                os.remove("{}.coloc.susie".format(output_prefix))
+                os.remove("{}.coloc.abf".format(output_prefix))
             else:
-                log.write("  -SuSieR result summary to: {}".format("{}.pipcs".format(output_prefix)), verbose=verbose)
+                log.write("  -coloc-abf result summary to: {}".format("{}.coloc.abf".format(output_prefix)), verbose=verbose)
+                log.write("  -coloc-susie result summary to: {}".format("{}.coloc.susie".format(output_prefix)), verbose=verbose)
                 
         except subprocess.CalledProcessError as e:
             log.write(e.output)
             os.remove("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]))
-    log.write("Finished finemapping using SuSieR.", verbose=verbose)
+    log.write("Finished clocalization using coloc and SuSiE.", verbose=verbose)
     return locus_pip_cs

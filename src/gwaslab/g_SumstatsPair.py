@@ -28,8 +28,10 @@ class SumstatsPair( ):
             raise ValueError("Please provide GWASLab Sumstats Object #1.")
         if not isinstance(sumstatsObject2, Sumstats):
             raise ValueError("Please provide GWASLab Sumstats Object #2.")
-        
-        self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"])
+        if sumstatsObject1.meta["gwaslab"]["study_name"]!=sumstatsObject2.meta["gwaslab"]["study_name"]:
+            self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"])
+        else:
+            self.study_name = "{}_{}".format("STUDY1", "STUDY2")
         self.snp_info_cols = []
         self.stats_cols =[]
         self.other_cols=[]
@@ -42,6 +44,8 @@ class SumstatsPair( ):
         self.clumps ={}
         self.ns = None
 
+        self.log.write( "Start to create SumstatsPair object..." )
+        
         for i in sumstatsObject1.data.columns:
             if i in ["SNPID","rsID","CHR","POS","EA","NEA","STATUS"]:
                 self.snp_info_cols.append(i)

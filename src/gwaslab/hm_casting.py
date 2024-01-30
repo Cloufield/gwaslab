@@ -14,9 +14,11 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
     for i in sumstats.columns:
         if i in ["SNPID","rsID"]:
             cols_to_drop.append(i)
+
+    log.write("Start to merging sumstats...", verbose=verbose)
     
     if len(cols_to_drop)>0:
-        log.write("Dropping old IDs:{}".format(cols_to_drop))
+        log.write("Dropping old IDs:{}".format(cols_to_drop), verbose=verbose)
         sumstats = sumstats.drop(columns=cols_to_drop)
     
     if ref_path is not None :
@@ -30,10 +32,10 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
         mold["_IDENTIFIER_FOR_VARIANT"] = range(len(mold))
 
     mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=suffixes)
-    log.write("After merging by CHR and POS:{}".format(len(mold_sumstats)))
+    log.write("After merging by CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
     
     mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats,suffixes=suffixes)
-    log.write("Matched variants:{}".format(len(mold_sumstats)))
+    log.write("Matched variants:{}".format(len(mold_sumstats)), verbose=verbose)
     
     if ref_path is not None:
         # match removed sumstats
@@ -119,9 +121,9 @@ def _sort_pair_cols(molded_sumstats, verbose=True, log=Log(), order=None, stats_
         if i not in order: 
             output_columns.append(i)
     
-    if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns))
+    if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns), verbose=verbose)
     molded_sumstats = molded_sumstats.loc[:, output_columns]
-    if verbose: log.write("Finished sorting columns successfully!")
+    if verbose: log.write("Finished sorting columns successfully!", verbose=verbose)
     
     return molded_sumstats
 

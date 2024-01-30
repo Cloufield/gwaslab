@@ -13,7 +13,7 @@ from gwaslab.bd_common_data import get_chr_to_NC
 from gwaslab.bd_common_data import gtf_to_protein_coding
 from gwaslab.bd_download import check_and_download
 from gwaslab.util_ex_gwascatalog import gwascatalog_trait
-
+from gwaslab.qc_fix_sumstats import check_dataframe_shape
 
 # getsig
 # closest_gene
@@ -41,6 +41,7 @@ def getsig(insumstats,
     """
 
     if verbose: log.write("Start to extract lead variants...")
+    check_dataframe_shape(insumstats, log=log ,verbose=verbose)
     if verbose: log.write(" -Processing "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Significance threshold :", sig_level)
     if verbose: log.write(" -Sliding window size:", str(windowsizekb) ," kb")
@@ -330,6 +331,9 @@ def getnovel(insumstats,
            output_known=False,
            verbose=True):
     if verbose: log.write("Start to check if lead variants are known...")
+    
+    check_dataframe_shape(insumstats, log=log, verbose=verbose)
+    
     allsig = getsig(insumstats=insumstats,
            id=id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
            xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
