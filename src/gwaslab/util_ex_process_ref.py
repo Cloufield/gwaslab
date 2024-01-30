@@ -89,7 +89,7 @@ def _load_single_bim_to_ref_bims(bpfile_prefix, ref_bims, log):
                              sep="\s+",
                              usecols=[0,1,3,4,5],
                              header=None,
-                             dtype={1:"string",0:"category", 3:"int", 4:"string", 5:"string"}).rename(columns={1:"SNPID",0:"CHR_bim",3:"POS_bim",4:"NEA_bim",5:"EA_bim"})
+                             dtype={1:"string",0:"category", 3:"int", 4:"string", 5:"string"}).rename(columns={1:"SNPID",0:"CHR_bim",3:"POS_bim",4:"EA_bim",5:"NEA_bim"})
     log.write("   -#variants in ref file: {}".format(len(single_bim))) 
     ref_bims.append(single_bim)
     return ref_bims
@@ -104,7 +104,7 @@ def _load_single_pvar_to_ref_bims(bpfile_prefix, ref_bims, log):
                              usecols=[0,1,2,3,4],
                              header=None,
                              comment="#",
-                             dtype={2:"string",0:"category", 1:"int", 3:"string", 4:"string"}).rename(columns={2:"SNPID",0:"CHR_bim",1:"POS_bim",3:"NEA_bim",4:"EA_bim"})
+                             dtype={2:"string",0:"category", 1:"int", 3:"string", 4:"string"}).rename(columns={2:"SNPID",0:"CHR_bim",1:"POS_bim",3:"EA_bim",4:"NEA_bim"})
     log.write("   -#variants in ref file: {}".format(len(single_bim))) 
     ref_bims.append(single_bim)
     return ref_bims
@@ -265,7 +265,7 @@ def _process_vcf(ref_file_prefix,
             except subprocess.CalledProcessError as e:
                 log.write(e.output)    
         else:
-            log.write("  -Plink {} for CHR {} exists. Skipping...".format(convert ,i))
+            log.write("  -Plink {} for CHR {} exists: {}. Skipping...".format(convert ,i, bpfile_prefix))
         
         if load_bim == True:
             if convert == "bfile":

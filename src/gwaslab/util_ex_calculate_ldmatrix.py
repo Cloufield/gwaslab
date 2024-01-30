@@ -12,6 +12,7 @@ def tofinemapping(sumstats,
                   study=None, 
                   bfile=None, 
                   vcf=None, 
+                  loci=None,
                   out="./",
                   windowsizekb=1000,
                   n_cores=1, 
@@ -27,8 +28,13 @@ def tofinemapping(sumstats,
         suffixes=[""]
     if getlead_args is None:
         getlead_args={"windowsizekb":1000}
-    sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
-
+    
+    if loci is None:
+        log.write(" -Loci were not provided. All significant loci will be automatically extracted...")
+        sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
+    else:
+        sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
+    
     # Drop duplicate!!!!
     log.write(" -Dropping duplicated SNPIDs...")
     sumstats = sumstats.drop_duplicates(subset=["SNPID"]).copy()
@@ -170,6 +176,7 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
 def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=None):
     if suffixes is None:
             suffixes=[""]
+    
     log.write("   -#variants in locus ({}): {}".format(row["SNPID"],len(locus_sumstats)))
     # convert category to string
     locus_sumstats["EA"] = locus_sumstats["EA"].astype("string")
@@ -180,28 +187,35 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=No
     combined_df = pd.merge(ref_bim, locus_sumstats, on="SNPID",how="inner")
     
     # match allele
-    allele_match =  ((combined_df["EA"] == combined_df["EA_bim"]) & (combined_df["NEA"] == combined_df["NEA_bim"]) ) | ((combined_df["EA"] == combined_df["NEA_bim"])& (combined_df["NEA"] == combined_df["EA_bim"]))
-    log.write("   -#Variants with matched alleles:{}".format(sum(allele_match)))
+    perfect_match =  ((combined_df["EA"] == combined_df["EA_bim"]) & (combined_df["NEA"] == combined_df["NEA_bim"]) ) 
+    log.write("   -#Variants with perfect matched alleles:{}".format(sum(perfect_match)))
 
     # fliipped allele
-    ea_mis_match = combined_df["EA"] != combined_df["EA_bim"]
-    log.write("   -#Variants with flipped alleles:{}".format(sum(ea_mis_match)))
+    #ea_mis_match = combined_df["EA"] != combined_df["EA_bim"]
+    flipped_match = ((combined_df["EA"] == combined_df["NEA_bim"])& (combined_df["NEA"] == combined_df["EA_bim"]))
+    log.write("   -#Variants with flipped alleles:{}".format(sum(flipped_match)))
     
-    if row["SNPID"] not in combined_df.loc[allele_match,"SNPID"].values:
+    allele_match = perfect_match | flipped_match
+    log.write("   -#Total Variants matched:{}".format(sum(allele_match)))
+
+    if row["SNPID"] not in combined_df.loc[perfect_match,"SNPID"].values:
         log.write("   -Warning: Lead variant was not available in reference!!!!!!!!!!!!!!!")
     
     # adjust statistics
     output_columns=["SNPID","CHR","POS","EA_bim","NEA_bim"]
     for suffix in suffixes:
         if ("BETA"+suffix in locus_sumstats.columns) and ("SE"+suffix in locus_sumstats.columns):
-            combined_df.loc[ea_mis_match,"BETA"+suffix] = - combined_df.loc[ea_mis_match,"BETA"+suffix]
+            log.write("   -Flipping BETA{} for variants with flipped alleles...".format(suffix))
+            combined_df.loc[flipped_match,"BETA"+suffix] = - combined_df.loc[flipped_match,"BETA"+suffix]
             output_columns.append("BETA"+suffix)
             output_columns.append("SE"+suffix)
         if "Z" in locus_sumstats.columns:
-            combined_df.loc[ea_mis_match,"Z"+suffix] = - combined_df.loc[ea_mis_match,"Z"+suffix]
+            log.write("   -Flipping Z{} for variants with flipped alleles...".format(suffix))
+            combined_df.loc[flipped_match,"Z"+suffix] = - combined_df.loc[flipped_match,"Z"+suffix]
             output_columns.append("Z"+suffix)
         if "EAF" in locus_sumstats.columns:
-            combined_df.loc[ea_mis_match,"EAF"+suffix] = 1 - combined_df.loc[ea_mis_match,"EAF"+suffix]
+            log.write("   -Flipping EAF{} for variants with flipped alleles...".format(suffix))
+            combined_df.loc[flipped_match,"EAF"+suffix] = 1 - combined_df.loc[flipped_match,"EAF"+suffix]
             output_columns.append("EAF"+suffix)
         if "N" in locus_sumstats.columns:
             output_columns.append("N"+suffix)
@@ -215,6 +229,7 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
         matched_snp_list_path = "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
         
         matched_sumstats["SNPID"].to_csv(matched_snp_list_path, index=None, header=None)
+        log.write(" -Exporting SNP list of {}  to: {}...".format(len(matched_sumstats) ,matched_snp_list_path))
 
         # create locus-sumstats EA, NEA, (BETA, SE), Z 
         matched_sumstats_path =  "{}/{}_{}_{}.sumstats.gz".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
@@ -230,6 +245,9 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
                 to_export_columns.append("EAF"+suffix)
             if "N"+suffix in matched_sumstats.columns:
                 to_export_columns.append("N"+suffix)
+        
+        log.write(" -Exporting locus sumstats to: {}...".format(matched_sumstats_path))
+        log.write(" -Exported columns: {}...".format(["SNPID"]+to_export_columns))
         matched_sumstats.loc[:, ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path, index=None)
         return matched_snp_list_path, matched_sumstats_path
 

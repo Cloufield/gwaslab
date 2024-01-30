@@ -15,10 +15,10 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
         if i in ["SNPID","rsID"]:
             cols_to_drop.append(i)
 
-    log.write("Start to merging sumstats...", verbose=verbose)
+    log.write("Start to merge sumstats...", verbose=verbose)
     
     if len(cols_to_drop)>0:
-        log.write("Dropping old IDs:{}".format(cols_to_drop), verbose=verbose)
+        log.write(" -Dropping old IDs:{}".format(cols_to_drop), verbose=verbose)
         sumstats = sumstats.drop(columns=cols_to_drop)
     
     if ref_path is not None :
@@ -32,17 +32,18 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
         mold["_IDENTIFIER_FOR_VARIANT"] = range(len(mold))
 
     mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=suffixes)
-    log.write("After merging by CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
+    log.write(" -After merging by CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
     
     mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats,suffixes=suffixes)
-    log.write("Matched variants:{}".format(len(mold_sumstats)), verbose=verbose)
+
+    log.write(" -Matched variants:{}".format(len(mold_sumstats)), verbose=verbose)
     
-    if ref_path is not None:
-        # match removed sumstats
-        mold_removed = mold.loc[~mold[index1].isin(mold_sumstats[index1]),:]
-        iron_removed = sumstats.loc[~sumstats[index2].isin(mold_sumstats[index2]),:]
-        _match_two_sumstats(mold_removed,iron_removed,ref_path,windowsizeb=windowsizeb)
-        mold_sumstats.drop(columns=["_INDEX",""])
+    #if ref_path is not None:
+    #    # match removed sumstats
+    #    mold_removed = mold.loc[~mold[index1].isin(mold_sumstats[index1]),:]
+    #    iron_removed = sumstats.loc[~sumstats[index2].isin(mold_sumstats[index2]),:]
+    #    _match_two_sumstats(mold_removed,iron_removed,ref_path,windowsizeb=windowsizeb)
+    #    mold_sumstats.drop(columns=["_INDEX",""])
     
     if return_not_matched_mold == True:
         sumstats1 = mold.loc[~mold["_IDENTIFIER_FOR_VARIANT"].isin(mold_sumstats["_IDENTIFIER_FOR_VARIANT"]),:]
@@ -67,8 +68,11 @@ def _keep_variants_with_same_allele_set(sumstats, log=Log(),verbose=True,suffixe
     is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])
     is_allele_set_match = is_flipped_match | is_perfect_match
     
-    sumstats.loc[~is_allele_set_match,:]
-
+    log.write(" -Matching alleles and keeping only variants with same allele set: ", verbose=verbose)
+    log.write("  -Perfect match: {}".format(sum(is_perfect_match)), verbose=verbose)
+    log.write("  -Flipped match: {}".format(sum(is_flipped_match)), verbose=verbose)
+    log.write("  -Unmatched : {}".format(sum(~is_allele_set_match)), verbose=verbose)
+    
     return sumstats.loc[is_allele_set_match,:]
 
 def _align_with_mold(sumstats, log=Log(),verbose=True, suffixes=("_MOLD","")):
@@ -79,10 +83,18 @@ def _align_with_mold(sumstats, log=Log(),verbose=True, suffixes=("_MOLD","")):
     nea2="NEA"+suffixes[1]
     status1="STATUS"+suffixes[0]
     status2="STATUS"+suffixes[1]
+
     is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1])
     is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])
     
+    log.write(" -Aligning alleles with reference: ", verbose=verbose)
+    log.write("  -Perfect match: {}".format(sum(is_perfect_match)), verbose=verbose)
+    log.write("  -Flipped match: {}".format(sum(is_flipped_match)), verbose=verbose)
+    
+    log.write("  -For perfect match: copy STATUS from reference...", verbose=verbose)
     sumstats.loc[is_perfect_match,status2] = copy_status(sumstats.loc[is_perfect_match,status1], sumstats.loc[is_perfect_match,status2],6)
+    
+    log.write("  -For Flipped match: convert STATUS xxxxx[456789]x to xxxxx3x...", verbose=verbose)
     sumstats.loc[is_flipped_match,status2] = vchange_status(sumstats.loc[is_flipped_match,status2],6,"456789","333333")
     
     return sumstats
