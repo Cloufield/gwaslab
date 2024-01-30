@@ -774,13 +774,13 @@ def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NE
             log.write(" -All variants are already normalized..")
     ###################################################################################################################
     categories = set(sumstats.loc[:,ea])|set(sumstats.loc[:,nea]) |set(normalized_pd.loc[:,ea]) |set(normalized_pd.loc[:,nea])
-    sumstats.loc[:,ea]  = pd.Categorical(sumstats.loc[:,ea],categories = categories) 
-    sumstats.loc[:,nea] = pd.Categorical(sumstats.loc[:,nea],categories = categories ) 
+    sumstats[ea]  = pd.Categorical(sumstats[ea],categories = categories) 
+    sumstats[nea] = pd.Categorical(sumstats[nea],categories = categories ) 
     sumstats.loc[variants_to_check,[pos,nea,ea,status]] = normalized_pd.values
     try:
-        sumstats.loc[:,pos] = sumstats.loc[:,pos].astype('Int64')
+        sumstats[pos] = sumstats[pos].astype('Int64')
     except:
-        sumstats.loc[:,pos] = np.floor(pd.to_numeric(sumstats.loc[:,pos], errors='coerce')).astype('Int64')
+        sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
   
     if verbose: log.write("Finished normalizing variants successfully!")
     return sumstats
@@ -1127,10 +1127,15 @@ def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG1
     log.write(" -Tolerance: {} (Relative) and {} (Absolute)".format(rtol, atol),verbose=verbose)
     check_status = 0
     
-    if "SNPID" not in sumstats.columns:
+    if "SNPID" in sumstats.columns:
+        id_to_use = "SNPID"
+    elif "rsID" in sumstats.columns:
         id_to_use = "rsID"
     else:
-        id_to_use = "SNPID"
+        log.write(" -SNPID/rsID not available...SKipping",verbose=verbose)
+        log.write("Finished checking data consistency across columns.",verbose=verbose) 
+        return 0
+    
     
     if "BETA" in sumstats.columns and "SE" in sumstats.columns:
         if "MLOG10P" in sumstats.columns:
@@ -1139,8 +1144,8 @@ def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG1
             is_close = np.isclose(betase_derived_mlog10p, sumstats["MLOG10P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
             diff = betase_derived_mlog10p - sumstats["MLOG10P"]
             if sum(~is_close)>0:
-                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close),verbose=verbose))
-                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
+                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
+                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
             else:
                 log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
             check_status=1
@@ -1151,8 +1156,8 @@ def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG1
             is_close = np.isclose(betase_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
             diff = betase_derived_p - sumstats["P"]
             if sum(~is_close)>0:
-                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close),verbose=verbose))
-                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
+                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
+                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
             else:
                 log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
             check_status=1
@@ -1163,8 +1168,8 @@ def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG1
         is_close = np.isclose(mlog10p_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
         diff = mlog10p_derived_p - sumstats["P"]
         if sum(~is_close)>0:
-            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close),verbose=verbose))
-            log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
+            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
+            log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
         else:
             log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
         check_status=1
@@ -1175,8 +1180,8 @@ def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG1
         #is_close = np.isclose(sumstats.loc[:,"N"], sumstats.loc[:,"N_CASE"] + sumstats.loc[:,"N_CONTROL"] , rtol=rtol, atol=atol, equal_nan=equal_nan)
         diff = abs(sumstats.loc[:,"N"] - (sumstats.loc[:,"N_CASE"] + sumstats.loc[:,"N_CONTROL"] ))
         if sum(~is_close)>0:
-            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close),verbose=verbose))
-            log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max(),verbose=verbose))
+            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
+            log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
         else:
             log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
         check_status=1

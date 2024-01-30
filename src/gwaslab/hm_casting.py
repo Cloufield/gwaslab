@@ -59,7 +59,7 @@ def _keep_variants_with_same_allele_set(sumstats, log=Log(),verbose=True,suffixe
 
     all_alleles = set(list(sumstats[ea1].unique())+list(sumstats[nea1].unique())+list(sumstats[ea2].unique())+list(sumstats[nea2].unique()))
     allele_type = CategoricalDtype(categories=all_alleles, ordered=False)
-    sumstats.loc[:, [nea1,ea1,nea2,ea2]] = sumstats.loc[:, [nea1,ea1,nea2,ea2]].astype(allele_type)
+    sumstats[[nea1,ea1,nea2,ea2]] = sumstats[[nea1,ea1,nea2,ea2]].astype(allele_type)
     
     is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1])
     is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])

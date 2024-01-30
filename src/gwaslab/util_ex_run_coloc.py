@@ -68,12 +68,16 @@ def _run_coloc_susie(filepath, r="Rscript",
         D1 <- list( "LD"=R, "beta"=df[,"BETA_1"],"varbeta"=df[,"SE_1"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type1}","N"={n1}{d1_args})
         D2 <- list( "LD"=R, "beta"=df[,"BETA_2"],"varbeta"=df[,"SE_2"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type2}","N"={n2}{d2_args})
 
+        abf <- coloc.abf(dataset1=D1,dataset2=D2)
+        write.csv(abf$summary, "{output_prefix}.coloc.abf", row.names = FALSE)
+
         S1=runsusie(D1{susie_args})
         S2=runsusie(D2{susie_args})
 
         susie.res=coloc.susie(S1,S2{coloc_args})
 
         write.csv(susie.res$summary, "{output_prefix}.coloc.susie", row.names = FALSE)
+
         '''.format(sumstats_path = sumstats, 
                    ld_r_matrix_path = ld_r_matrix,
                     fillna_script = "R[is.na(R)] <- 0" if fillldna==True else "",
