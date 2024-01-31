@@ -547,6 +547,11 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
     # check if the columns are complete
     if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
         raise ValueError("Not enough information: CHR, POS, NEA , EA, ALT, STATUS...")
+    
+    if eaf not in sumstats.columns:
+        log.write(" - WARNING! EAF was not available... Skipping. ", verbose=verbose)  
+        return  sumstats
+
     if "p" in mode:
         # ref_alt_freq INFO in vcf was provided
         if ref_alt_freq is not None:
