@@ -538,6 +538,7 @@ def mqqplot(insumstats,
     if vcf_path is not None:
         if tabix is None:
             tabix = which("tabix")
+            log.write(" -tabix will be used: {}".format(tabix),verbose=verbose)
         sumstats = process_vcf(sumstats=sumstats, 
                                vcf_path=vcf_path,
                                region=region, 
@@ -819,14 +820,15 @@ def mqqplot(insumstats,
         log.write("Start to process figure arts.",verbose=verbose)
         if region is None:
             # if Manhattan plot 
-            log.write(" -Processing X ticks...",verbose=verbose)
+ 
             ax1 = _process_xtick(ax1=ax1, 
                                  chrom_df=chrom_df, 
                                  xtick_chr_dict=xtick_chr_dict, 
                                  fontsize = fontsize, 
-                                 font_family=font_family)
-        
-        log.write(" -Processing X axis labels...",verbose=verbose)
+                                 font_family=font_family,
+                                 log=log, 
+                                 verbose=verbose)   
+
         ax1, ax3 = _process_xlabel(region=region, 
                                    xlabel=xlabel, 
                                    ax1=ax1, 
@@ -834,18 +836,21 @@ def mqqplot(insumstats,
                                    mode=mode, 
                                    fontsize=fontsize, 
                                    font_family=font_family,  
-                                   ax3=ax3 )
+                                   ax3=ax3,
+                                   log=log, 
+                                   verbose=verbose)      
         
-        log.write(" -Processing Y axis labels...",verbose=verbose)
         ax1, ax4 = _process_ylabel(ylabel=ylabel, 
                                    ax1=ax1,  
                                    mode=mode, 
                                    bwindowsizekb=bwindowsizekb, 
                                    fontsize=fontsize, 
                                    font_family=font_family, 
-                                   ax4=ax4)     
+                                   ax4=ax4,
+                                   log=log, 
+                                   verbose=verbose)      
         
-        log.write(" -Processing Y ticks...",verbose=verbose)
+
         ax1 = _set_yticklabels(cut=cut,
                      cutfactor=cutfactor,
                      cut_log=cut_log,
@@ -860,22 +865,29 @@ def mqqplot(insumstats,
                      font_family=font_family,
                      ytick3=ytick3,
                      ylabels=ylabels,
-                     ylabels_converted=ylabels_converted
-                     )
+                     ylabels_converted=ylabels_converted,
+                     log=log, 
+                     verbose=verbose)  
         
         ax1, ax4 = _process_ytick(ax1=ax1,  
                                    fontsize=fontsize, 
                                    font_family=font_family, 
-                                   ax4=ax4)  
+                                   ax4=ax4, 
+                                   log=log, 
+                                   verbose=verbose)  
         
-        if cbar is not None:
-            # regional plot cbar
-            log.write(" -Processing color bar...",verbose=verbose)
-            cbar = _process_cbar(cbar, cbar_fontsize=fontsize, cbar_font_family=font_family, cbar_title=cbar_title)        
+        # regional plot cbar
+        if cbar is not None:    
+            cbar = _process_cbar(cbar, 
+                                 cbar_fontsize=fontsize, 
+                                 cbar_font_family=font_family, 
+                                 cbar_title=cbar_title, 
+                                 log=log, 
+                                 verbose=verbose)         
         
         ax1 = _process_spine(ax1, mode)
+        
         # genomewide significant line
-        log.write(" -Processing lines...",verbose=verbose)
         ax1 = _process_line(ax1, 
                             sig_line, 
                             suggestive_sig_line, 
@@ -887,7 +899,9 @@ def mqqplot(insumstats,
                             additional_line_color,
                             mode, 
                             bmean, 
-                            bmedian )  
+                            bmedian,
+                            log=log,
+                            verbose=verbose )  
 
         
         if mtitle and anno and len(to_annotate)>0: 
@@ -1209,8 +1223,9 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
         if verbose:log.write(" -DENSITY column exists. Skipping calculation...") 
     return   sumstats, bmean, bmedian
 
-def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_plot , sc_linewidth, sig_line_color, suggestive_sig_line_color, additional_line_color, mode, bmean, bmedian ):
+def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_plot , sc_linewidth, sig_line_color, suggestive_sig_line_color, additional_line_color, mode, bmean, bmedian , log=Log(),verbose=True):
     # genomewide significant line
+    log.write(" -Processing lines...",verbose=verbose)
     if sig_line is True:
         sigline = ax1.axhline(y=lines_to_plot[0], 
                                 linewidth = sc_linewidth,
@@ -1236,7 +1251,8 @@ def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_
         medianline = ax1.axhline(y=bmedian, linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1000)
     return ax1
 
-def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title):
+def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title, log=Log(),verbose=True):
+    log.write(" -Processing color bar...",verbose=verbose)
     if str(type(cbar))=="list":
         for cbar_single in cbar:
             cbar_yticklabels = cbar_single.ax.get_yticklabels()
@@ -1248,12 +1264,14 @@ def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title):
         cbar.ax.set_title(cbar_title, fontsize=cbar_fontsize, family=cbar_font_family, loc="center",y=-0.2 )
     return cbar
 
-def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family):
+def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family, log=Log(),verbose=True):
+    log.write(" -Processing X ticks...",verbose=verbose)
     ax1.set_xticks(chrom_df.astype("float64"))
     ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)    
     return ax1
 
-def _process_ytick(ax1, fontsize, font_family, ax4):
+def _process_ytick(ax1, fontsize, font_family, ax4, log=Log(),verbose=True):
+    log.write(" -Processing Y labels...",verbose=verbose)
     ax1_yticklabels = ax1.get_yticklabels()
     #ax1.set_yticklabels(ax1_yticklabels,fontsize=fontsize,family=font_family) 
     ax1_yticks = ax1.get_yticks()
@@ -1264,7 +1282,8 @@ def _process_ytick(ax1, fontsize, font_family, ax4):
         ax4.set_yticks(ax4_yticks,ax4_yticklabels, fontsize=fontsize,family=font_family) 
     return ax1, ax4
 
-def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=None ):
+def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=None , log=Log(),verbose=True):
+    log.write(" -Processing X labels...",verbose=verbose)
     if region is not None:
         if xlabel is None:
             xlabel = "Chromosome "+str(region[0])+" (MB)"
@@ -1278,7 +1297,8 @@ def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family, 
         ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
     return ax1, ax3
 
-def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family, ax4=None):
+def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family, ax4=None, log=Log(),verbose=True):
+    log.write(" -Processing Y labels...",verbose=verbose)
     if "b" in mode:
         if ylabel is None:
             ylabel ="Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb"

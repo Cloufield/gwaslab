@@ -38,6 +38,7 @@ from gwaslab.g_Sumstats import Sumstats
 from gwaslab.viz_aux_save_figure import save_figure
 from gwaslab.viz_plot_mqqplot import mqqplot
 from gwaslab.g_version import _get_version
+
 def plot_miami2( 
           path1=None,
           path2=None,
