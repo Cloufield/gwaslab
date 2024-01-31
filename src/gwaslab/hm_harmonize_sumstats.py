@@ -13,6 +13,10 @@ from gwaslab.qc_fix_sumstats import fixchr
 from gwaslab.qc_fix_sumstats import fixpos
 from gwaslab.qc_fix_sumstats import sortcolumn
 from gwaslab.qc_fix_sumstats import _df_split
+from gwaslab.qc_fix_sumstats import check_col
+from gwaslab.qc_fix_sumstats import start_to
+from gwaslab.qc_fix_sumstats import finished
+from gwaslab.qc_fix_sumstats import skipped
 from gwaslab.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
@@ -37,9 +41,24 @@ def rsidtochrpos(sumstats,
     '''
     assign chr:pos based on rsID
     '''
-    #########################################################################################################
-    if verbose:  log.write("Start to update chromosome and position information based on rsID...{}".format(_get_version()))  
-    check_dataframe_shape(sumstats, log, verbose)
+    ##start function with col checking##########################################################
+    _start_line = "assign CHR and POS using rsIDs"
+    _end_line = "assigning CHR and POS using rsIDs"
+    _start_cols = [rsid,chrom,pos]
+    _start_function = ".rsid_to_chrpos()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                              log=log,
+                              verbose=verbose,
+                              start_line=_start_line,
+                              end_line=_end_line,
+                              start_cols=_start_cols,
+                              start_function=_start_function,
+                              **_must_args)
+    if is_enough_info == False: return sumstats
+    ############################################################################################
+
     if verbose:  log.write(" -rsID dictionary file: "+ path)  
     
     if ref_rsid_to_chrpos_tsv is not None:
@@ -83,6 +102,8 @@ def rsidtochrpos(sumstats,
     sumstats = fixchr(sumstats,verbose=verbose)
     sumstats = fixpos(sumstats,verbose=verbose)
     sumstats = sortcolumn(sumstats,verbose=verbose)
+
+    finished(log,verbose,_end_line)
     return sumstats
     #################################################################################################### 
 
@@ -106,17 +127,32 @@ def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
 
 def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None, ref_rsid_to_chrpos_vcf = None, ref_rsid_to_chrpos_hdf5 = None, build="99",status="STATUS",
                          n_cores=4,block_size=20000000,verbose=True,log=Log()):
-    
+
+    ##start function with col checking##########################################################
+    _start_line = "assign CHR and POS using rsIDs"
+    _end_line = "assigning CHR and POS using rsIDs"
+    _start_cols = [rsid,chrom,pos]
+    _start_function = ".rsid_to_chrpos2()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                              log=log,
+                              verbose=verbose,
+                              start_line=_start_line,
+                              end_line=_end_line,
+                              start_cols=_start_cols,
+                              start_function=_start_function,
+                              **_must_args)
+    if is_enough_info == False: return sumstats
+    ############################################################################################
+
     if ref_rsid_to_chrpos_hdf5 is not None:
         path = ref_rsid_to_chrpos_hdf5
     elif ref_rsid_to_chrpos_vcf is not None:
         vcf_file_name = os.path.basename(ref_rsid_to_chrpos_vcf)
         vcf_dir_path = os.path.dirname(ref_rsid_to_chrpos_vcf)
         path = "{}/{}.rsID_CHR_POS_groups_{}.h5".format(vcf_dir_path,vcf_file_name,int(block_size))
-
-    if verbose:  log.write("Start to assign CHR and POS using rsIDs...{}".format(_get_version()))
-    check_dataframe_shape(sumstats, log, verbose)
-
+    
     if path is None:
         raise ValueError("Please provide path to hdf5 file.")
     
@@ -194,8 +230,8 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
 
     pool.close()
     pool.join()
-    gc.collect()
-    if verbose:  log.write("Finished assigning CHR and POS using rsIDs.")
+
+    finished(log, verbose, _end_line)
     return sumstats
 ####################################################################################################################
 #20220426 check if non-effect allele is aligned with reference genome 
@@ -255,9 +291,24 @@ def check_status(row,record):
         
 
 def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
-    if verbose: log.write("Start to check if NEA is aligned with reference sequence...{}".format(_get_version()))
-    check_dataframe_shape(sumstats, log, verbose)
-    if verbose: log.write(" -Reference genome fasta file: "+ ref_path)  
+    ##start function with col checking##########################################################
+    _start_line = "check if NEA is aligned with reference sequence"
+    _end_line = "checking if NEA is aligned with reference sequence"
+    _start_cols = [chrom,pos,ea,nea,status]
+    _start_function = ".check_ref()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                              log=log,
+                              verbose=verbose,
+                              start_line=_start_line,
+                              end_line=_end_line,
+                              start_cols=_start_cols,
+                              start_function=_start_function,
+                              **_must_args)
+    if is_enough_info == False: return sumstats
+    ############################################################################################
+    if verbose: log.write(" -Reference genome FASTA file: "+ ref_path)  
     if verbose: log.write(" -Checking records: ", end="")  
     chromlist = get_chr_list(add_number=True)
     records = SeqIO.parse(ref_path, "fasta")
@@ -305,7 +356,8 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     if remove is True:
         sumstats = sumstats.loc[~sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w"),:]
         if verbose: log.write(" -Variants not on given reference sequence were removed.")
-    gc.collect()
+    
+    finished(log, verbose, _end_line)
     return sumstats
 
 #######################################################################################################################################
@@ -348,19 +400,31 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
     all ,    overwrite rsid for all availalbe rsid 
     invalid,  only assign rsid for variants with invalid rsid
     empty    only assign rsid for variants with na rsid
-    '''  
+    '''
+
     if ref_mode=="vcf":
         ###################################################################################################################
-        if verbose: log.write("Start to assign rsID using vcf...{}".format(_get_version()))
-        if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns))   
-        if verbose: log.write(" -CPU Cores to use :",n_cores)
-        if verbose: log.write(" -Reference VCF file:", path)
-        
+        ##start function with col checking##########################################################
+        _start_line = "assign rsID using reference VCF"
+        _end_line = "assign rsID using reference file"
+        _start_cols = [chr,pos,ref,alt,status]
+        _start_function = ".assign_rsid()"
+        _must_args ={}
+
+        is_enough_info = start_to(sumstats=sumstats,
+                                log=log,
+                                verbose=verbose,
+                                start_line=_start_line,
+                                end_line=_end_line,
+                                start_cols=_start_cols,
+                                start_function=_start_function,
+                                n_cores=n_cores,
+                                ref_vcf=path,
+                                **_must_args)
+        if is_enough_info == False: return sumstats
+        ############################################################################################
         chr_dict = auto_check_vcf_chr_dict(path, chr_dict, verbose, log)
-        
-        if verbose: log.write(" -Assigning rsID based on chr:pos and ref:alt/alt:ref...")
-
-
+        if verbose: log.write(" -Assigning rsID based on CHR:POS and REF:ALT/ALT:REF...")
         ##############################################
         if rsid not in sumstats.columns:
             sumstats[rsid]=pd.Series(dtype="string")
@@ -402,9 +466,25 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
         '''
         assign rsID based on chr:pos
         '''
-        if verbose:  log.write("Start to annotate rsID based on chromosome and position information...{}".format(_get_version()))  
-        check_dataframe_shape(sumstats, log, verbose)
-        if verbose:  log.write(" -SNPID-rsID text file: "+ path)  
+        ##start function with col checking##########################################################
+        _start_line = "assign rsID by matching SNPID with CHR:POS:REF:ALT in the reference TSV"
+        _end_line = "assign rsID using reference file"
+        _start_cols = [snpid,status]
+        _start_function = ".assign_rsid()"
+        _must_args ={}
+
+        is_enough_info = start_to(sumstats=sumstats,
+                                log=log,
+                                verbose=verbose,
+                                start_line=_start_line,
+                                end_line=_end_line,
+                                start_cols=_start_cols,
+                                start_function=_start_function,
+                                n_cores=n_cores,
+                                ref_tsv=path,
+                                **_must_args)
+        if is_enough_info == False: return sumstats
+        ############################################################################################
         
         standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234][0126]\w", case=False, flags=0, na=False)
         
@@ -441,12 +521,13 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
             sumstats = sumstats.rename(columns = {'index':snpid})
 
             after_number = sum(~sumstats[rsid].isna())
-            if verbose: log.write(" -rsID Annotation for "+str(total_number - after_number) +" need to be fixed!")
+            if verbose: log.write(" -rsID annotation for "+str(total_number - after_number) +" needed to be fixed!")
             if verbose: log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!")
         else:
-            if verbose: log.write(" -No rsID could be fixed...skipping...")
+            if verbose: log.write(" -No rsID can be fixed...skipping...")
         ################################################################################################################
-    gc.collect()
+            
+    finished(log,verbose,_end_line)
     return sumstats
 #################################################################################################################################################
 #single record assignment
@@ -538,92 +619,98 @@ def check_indel(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NE
 def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,daf_tolerance=0.20,remove_snp="",mode="pi",n_cores=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
                        chr_dict=None,verbose=True,log=Log()):
-    if verbose: log.write("Start to infer strand for palindromic SNPs...{}".format(_get_version()))
-    check_dataframe_shape(sumstats, log, verbose)
-    if verbose: log.write(" -Reference vcf file:", ref_infer)   
+    ##start function with col checking##########################################################
+    _start_line = "infer strand for palindromic SNPs/align indistinguishable indels"
+    _end_line = "inferring strand for palindromic SNPs/align indistinguishable indels"
+    _start_cols = [chr,pos,ref,alt,eaf,status]
+    _start_function = ".infer_strand()"
+    _must_args ={"ref_alt_freq":ref_alt_freq}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            n_cores=n_cores,
+                            ref_vcf=ref_infer,
+                            **_must_args)
+    if is_enough_info == False: return sumstats
+    ############################################################################################
 
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
-
-    # check if the columns are complete
-    if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
-        raise ValueError("Not enough information: CHR, POS, NEA , EA, ALT, STATUS...")
     
-    if eaf not in sumstats.columns:
-        log.write(" - WARNING! EAF was not available... Skipping. ", verbose=verbose)  
-        return  sumstats
+    log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)  
 
     if "p" in mode:
-        # ref_alt_freq INFO in vcf was provided
-        if ref_alt_freq is not None:
+        ## checking \w\w\w\w[0]\w\w -> standardized and normalized snp
+        good_chrpos =  sumstats[status].str.match(r'\w\w\w[0][0]\w\w', case=False, flags=0, na=False) 
+        palindromic = good_chrpos & is_palindromic(sumstats[[ref,alt]],a1=ref,a2=alt)   
+        not_palindromic_snp = good_chrpos & (~palindromic)
+
+        ##not palindromic : change status
+        sumstats.loc[not_palindromic_snp,status] = vchange_status(sumstats.loc[not_palindromic_snp,status], 7 ,"9","0")  
+        if verbose: log.write(" -Identified ", sum(palindromic)," palindromic SNPs...")
+        
+        #palindromic but can not infer
+        maf_can_infer   = (sumstats.loc[:,eaf] < maf_threshold) | (sumstats.loc[:,eaf] > 1 - maf_threshold)
+        
+        sumstats.loc[palindromic&(~maf_can_infer),status] = vchange_status(sumstats.loc[palindromic&(~maf_can_infer),status],7,"9","7")
+        
+        #palindromic WITH UNKNWON OR UNCHECKED STATUS
+        unknow_palindromic = sumstats[status].str.match(r'\w\w\w\w\w[012][89]', case=False, flags=0, na=False) 
+
+        unknow_palindromic_to_check = palindromic & maf_can_infer & unknow_palindromic
+        
+        if verbose: log.write(" -After filtering by MAF< {} , {} palindromic SNPs with unknown strand will be inferred...".format(maf_threshold, sum(unknow_palindromic_to_check)))
+
+        ######################################################################################### 
+        if sum(unknow_palindromic_to_check)>0:
+            if sum(unknow_palindromic_to_check)<10000: 
+                n_cores=1  
             
-            if verbose: log.write(" -Alternative allele frequency in INFO:", ref_alt_freq)  
-            ## checking \w\w\w\w[0]\w\w -> standardized and normalized snp
-            good_chrpos =  sumstats[status].str.match(r'\w\w\w[0][0]\w\w', case=False, flags=0, na=False) 
-            palindromic = good_chrpos & is_palindromic(sumstats[[ref,alt]],a1=ref,a2=alt)   
-            not_palindromic_snp = good_chrpos & (~palindromic)
+            #df_split = np.array_split(sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]], n_cores)
+            df_split = _df_split(sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]], n_cores)
+            pool = Pool(n_cores)
+            map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
+            status_inferred = pd.concat(pool.map(map_func,df_split))
+            sumstats.loc[unknow_palindromic_to_check,status] = status_inferred.values
+        pool.close()
+        pool.join()
+        #########################################################################################
+        #0 Not palindromic SNPs
+        #1 Palindromic +strand  -> no need to flip
+        #2 palindromic -strand  -> need to flip -> fixed
+        #3 Indel no need flip
+        #4 Unknown Indel -> fixed
+        #5 Palindromic -strand -> need to flip
+        #6 Indel need flip
+        #7 indistinguishable
+        #8 Not matching or No information
+        #9 Unchecked
 
-            ##not palindromic : change status
-            sumstats.loc[not_palindromic_snp,status] = vchange_status(sumstats.loc[not_palindromic_snp,status], 7 ,"9","0")  
-            if verbose: log.write(" -Identified ", sum(palindromic)," palindromic SNPs...")
-            
-            #palindromic but can not infer
-            maf_can_infer   = (sumstats.loc[:,eaf] < maf_threshold) | (sumstats.loc[:,eaf] > 1 - maf_threshold)
-            
-            sumstats.loc[palindromic&(~maf_can_infer),status] = vchange_status(sumstats.loc[palindromic&(~maf_can_infer),status],7,"9","7")
-            
-            #palindromic WITH UNKNWON OR UNCHECKED STATUS
-            unknow_palindromic = sumstats[status].str.match(r'\w\w\w\w\w[012][89]', case=False, flags=0, na=False) 
+        status0 = sumstats[status].str.match(r'\w\w\w\w\w\w[0]', case=False, flags=0, na=False)  
+        status1 = sumstats[status].str.match(r'\w\w\w\w\w\w[1]', case=False, flags=0, na=False)  
+        status5 = sumstats[status].str.match(r'\w\w\w\w\w\w[5]', case=False, flags=0, na=False)  
+        status7 = sumstats[status].str.match(r'\w\w\w\w\w\w[7]', case=False, flags=0, na=False)  
+        status8 = sumstats[status].str.match(r'\w\w\w\w\w[123][8]', case=False, flags=0, na=False)  
 
-            unknow_palindromic_to_check = palindromic & maf_can_infer & unknow_palindromic
-            
-            if verbose: log.write(" -After filtering by MAF< {} , {} palindromic SNPs with unknown strand will be inferred...".format(maf_threshold, sum(unknow_palindromic_to_check)))
+        if verbose: log.write("  -Non-palindromic : ",sum(status0))
+        if verbose: log.write("  -Palindromic SNPs on + strand: ",sum(status1))
+        if verbose: log.write("  -Palindromic SNPs on - strand and needed to be flipped:",sum(status5))   
+        if verbose: log.write("  -Palindromic SNPs with MAF not available to infer : ",sum(status7))  
+        if verbose: log.write("  -Palindromic SNPs with no macthes or no information : ",sum(status8))  
 
-            ######################################################################################### 
-            if sum(unknow_palindromic_to_check)>0:
-                if sum(unknow_palindromic_to_check)<10000: 
-                    n_cores=1  
-                
-                #df_split = np.array_split(sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]], n_cores)
-                df_split = _df_split(sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]], n_cores)
-                pool = Pool(n_cores)
-                map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
-                status_inferred = pd.concat(pool.map(map_func,df_split))
-                sumstats.loc[unknow_palindromic_to_check,status] = status_inferred.values
-            pool.close()
-            pool.join()
-            #########################################################################################
-            #0 Not palindromic SNPs
-            #1 Palindromic +strand  -> no need to flip
-            #2 palindromic -strand  -> need to flip -> fixed
-            #3 Indel no need flip
-            #4 Unknown Indel -> fixed
-            #5 Palindromic -strand -> need to flip
-            #6 Indel need flip
-            #7 indistinguishable
-            #8 Not matching or No information
-            #9 Unchecked
-
-            status0 = sumstats[status].str.match(r'\w\w\w\w\w\w[0]', case=False, flags=0, na=False)  
-            status1 = sumstats[status].str.match(r'\w\w\w\w\w\w[1]', case=False, flags=0, na=False)  
-            status5 = sumstats[status].str.match(r'\w\w\w\w\w\w[5]', case=False, flags=0, na=False)  
-            status7 = sumstats[status].str.match(r'\w\w\w\w\w\w[7]', case=False, flags=0, na=False)  
-            status8 = sumstats[status].str.match(r'\w\w\w\w\w[123][8]', case=False, flags=0, na=False)  
-
-            if verbose: log.write("  -Non-palindromic : ",sum(status0))
-            if verbose: log.write("  -Palindromic SNPs on + strand: ",sum(status1))
-            if verbose: log.write("  -Palindromic SNPs on - strand and need to be flipped:",sum(status5))   
-            if verbose: log.write("  -Palindromic SNPs with maf not available to infer : ",sum(status7))  
-            if verbose: log.write("  -Palindromic SNPs with no macthes or no information : ",sum(status8))  
-
-            if ("7" in remove_snp) and ("8" in remove_snp) :
-                if verbose: log.write("  -Palindromic SNPs with maf not available to infer and with no macthes or no information will will be removed") 
-                sumstats = sumstats.loc[~(status7 | status8),:].copy()
-            elif "8" in remove_snp:
-                if verbose: log.write("  -Palindromic SNPs with no macthes or no information will be removed")
-                sumstats = sumstats.loc[~status8,:].copy()
-            elif "7" in remove_snp:
-                if verbose: log.write("  -Palindromic SNPs with maf not available to infer will be removed") 
-                sumstats = sumstats.loc[~status7,:].copy()
+        if ("7" in remove_snp) and ("8" in remove_snp) :
+            if verbose: log.write("  -Palindromic SNPs with maf not available to infer and with no macthes or no information will will be removed") 
+            sumstats = sumstats.loc[~(status7 | status8),:].copy()
+        elif "8" in remove_snp:
+            if verbose: log.write("  -Palindromic SNPs with no macthes or no information will be removed")
+            sumstats = sumstats.loc[~status8,:].copy()
+        elif "7" in remove_snp:
+            if verbose: log.write("  -Palindromic SNPs with maf not available to infer will be removed") 
+            sumstats = sumstats.loc[~status7,:].copy()
 
     ### unknow_indel
     if "i" in mode:
@@ -660,7 +747,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             if "8" in remove_indel:
                 if verbose: log.write("  -Indels with no macthes or no information will be removed")
                 sumstats = sumstats.loc[~status8,:].copy()     
-    gc.collect()
+    
+    finished(log,verbose,_end_line)
     return sumstats
 
 
@@ -684,22 +772,35 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
 ################################################################################################################
 def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,column_name="DAF",suffix="",n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
-        
-    if verbose: log.write("Start to check the difference between EAF and reference vcf alt frequency ...{}".format(_get_version()))
-    check_dataframe_shape(sumstats, log, verbose)  
-    if verbose: log.write(" -Reference vcf file:", ref_infer)   
-    if verbose: log.write(" -CPU Cores to use :",n_cores)
-    
+    ##start function with col checking##########################################################
+    _start_line = "check the difference between EAF and reference VCF ALT frequency"
+    _end_line = "checking the difference between EAF and reference VCF ALT frequency"
+    _start_cols = [chr,pos,ref,alt,eaf,status]
+    _start_function = ".check_daf()"
+    _must_args ={"ref_alt_freq":ref_alt_freq}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            n_cores=n_cores,
+                            ref_vcf=ref_infer,
+                            **_must_args)
+    if is_enough_info == False: return sumstats
+    ############################################################################################
+
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
 
     column_name = column_name + suffix
-    # check if the columns are complete
-    if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
-        raise ValueError("Not enough information: CHR, POS, NEA , EA, ALT, STATUS...")
     
+
+
     # ref_alt_freq INFO in vcf was provided
     if ref_alt_freq is not None:
-        if verbose: log.write(" -Alternative allele frequency in INFO:", ref_alt_freq)  
+        log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)  
         if not force:
             good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
         if verbose: log.write(" -Checking variants:", sum(good_chrpos)) 
@@ -753,25 +854,35 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
 ################################################################################################################
 
 def paralleleinferaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
-        
-    if verbose: log.write("Start to infer the AF and reference vcf alt frequency ...{}".format(_get_version()))
-    check_dataframe_shape(sumstats, log, verbose)   
-    if verbose: log.write(" -Reference vcf file:", ref_infer)   
-    if verbose: log.write(" -CPU Cores to use :",n_cores)
-    
-    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
+    ##start function with col checking##########################################################
+    _start_line = "infer EAF using reference VCF ALT frequency"
+    _end_line = "inferring EAF using reference VCF ALT frequency"
+    _start_cols = [chr,pos,ref,alt,eaf,status]
+    _start_function = ".infer_af()"
+    _must_args ={"ref_alt_freq":ref_alt_freq}
 
-    # check if the columns are complete
-    if not ((chr in sumstats.columns) and (pos in sumstats.columns) and (ref in sumstats.columns) and (alt in sumstats.columns) and (status in sumstats.columns)):
-        raise ValueError("Not enough information: CHR, POS, NEA , EA, ALT, STATUS...")
+    is_enough_info = start_to(sumstats=sumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            n_cores=n_cores,
+                            ref_vcf=ref_infer,
+                            **_must_args)
+    if is_enough_info == False: return sumstats
+    ############################################################################################
+    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
     
     if eaf not in sumstats.columns:
         sumstats[eaf]=np.nan
     
     prenumber = sum(sumstats[eaf].isna())
+
     # ref_alt_freq INFO in vcf was provided
     if ref_alt_freq is not None:
-        if verbose: log.write(" -Alternative allele frequency in INFO:", ref_alt_freq)  
+        log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)   
         if not force:
             good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
         if verbose: log.write(" -Checking variants:", sum(good_chrpos)) 
@@ -791,7 +902,8 @@ def paralleleinferaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",p
         afternumber = sum(sumstats[eaf].isna())
         if verbose: log.write(" -Inferred EAF for {} variants.".format(prenumber - afternumber)) 
         if verbose: log.write(" -EAF is still missing for {} variants.".format(afternumber)) 
-        if verbose: log.write("Finished allele frequency inferring!") 
+    
+    finished(log,verbose,_end_line)
     return sumstats
 
 def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):

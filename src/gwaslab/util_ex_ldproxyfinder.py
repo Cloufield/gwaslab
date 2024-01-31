@@ -46,7 +46,7 @@ def _extract_with_ld_proxy(  snplist=None,
                             log=Log(), 
                             verbose=True, 
                             windowsizekb=100,
-                            ld_threshold=0.8,
+                            ld_threshold=0.8
                             ):
     ### Load vcf#######################################################################################
     if verbose: log.write("Start to load reference genotype...")

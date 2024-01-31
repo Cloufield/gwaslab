@@ -8,6 +8,8 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.g_Log import Log
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.qc_fix_sumstats import sortcoordinate
+from gwaslab.qc_fix_sumstats import start_to
+from gwaslab.qc_fix_sumstats import finished
 
 import gc
 def filtervalues(sumstats,expr,remove=False,verbose=True,log=Log()):
@@ -214,6 +216,24 @@ def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, b
     return sumstats
 
 def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True,log=Log()):
+    ##start function with col checking##########################################################
+    _start_line = "infer genome build version using hapmap3 SNPs"
+    _end_line = "inferring genome build version using hapmap3 SNPs"
+    _start_cols = [chrom,pos]
+    _start_function = ".infer_build()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                              log=log,
+                              verbose=verbose,
+                              start_line=_start_line,
+                              end_line=_end_line,
+                              start_cols=_start_cols,
+                              start_function=_start_function,
+                              **_must_args)
+    if is_enough_info == False: return sumstats
+    ############################################################################################
+
     inferred_build="Unknown"
     if verbose:log.write("Start to infer genome build version using hapmap3 SNPs...")    
     data_path_19 =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db150_hg19.snplist.gz'    
@@ -222,42 +242,39 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NE
     hapmap3_ref_19 = pd.read_csv(data_path_19,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})
     hapmap3_ref_38 = pd.read_csv(data_path_38,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})
     
-    if chrom in sumstats.columns and pos in sumstats.columns:
-        if verbose: log.write(" -CHR:POS will be used for matching...")
-        raw_chrpos = sumstats[chrom].astype("string")+":"+sumstats[pos].astype("string")
-        
-        hapmap3_ref_19["chr:pos"] = hapmap3_ref_19["#CHROM"]+":"+hapmap3_ref_19["POS"]
-        hapmap3_ref_38["chr:pos"] = hapmap3_ref_38["#CHROM"]+":"+hapmap3_ref_38["POS"]
-        
-        match_count_for_19 = sum(raw_chrpos.isin(hapmap3_ref_19["chr:pos"].values))
-        match_count_for_38 = sum(raw_chrpos.isin(hapmap3_ref_38["chr:pos"].values))
-        
-        if verbose:log.write(" -Matching variants for hg19: num_hg19 = ",match_count_for_19)        
-        if verbose:log.write(" -Matching variants for hg38: num_hg38 = ",match_count_for_38) 
-        
-        if max(match_count_for_19, match_count_for_38)<10000:
-            if verbose:log.write(" -Warning: please be cautious due to the limited number of variants.") 
-        
-        if match_count_for_19 > match_count_for_38:
-            if verbose:log.write(" -Since num_hg19 >> num_hg38, assigning genome build hg19...") 
-            sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],1,"9","1")
-            sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],2,"9","9")
-            inferred_build="19"
-        elif match_count_for_19 < match_count_for_38:
-            if verbose:log.write(" -Since num_hg19 << num_hg38, assigning genome build hg38...") 
-            sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],1,"9","3")
-            sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],2,"9","8")
-            inferred_build="38"
-        else:
-            if verbose:log.write(" -Since num_hg19 = num_hg38, unable to infer...") 
-        gc.collect()
-        if verbose:log.write("Finished inferring genome build version using hapmap3 SNPs...") 
-        return sumstats, inferred_build
+    if verbose: log.write(" -CHR:POS will be used for matching...")
+    raw_chrpos = sumstats[chrom].astype("string")+":"+sumstats[pos].astype("string")
+    
+    hapmap3_ref_19["chr:pos"] = hapmap3_ref_19["#CHROM"]+":"+hapmap3_ref_19["POS"]
+    hapmap3_ref_38["chr:pos"] = hapmap3_ref_38["#CHROM"]+":"+hapmap3_ref_38["POS"]
+    
+    match_count_for_19 = sum(raw_chrpos.isin(hapmap3_ref_19["chr:pos"].values))
+    match_count_for_38 = sum(raw_chrpos.isin(hapmap3_ref_38["chr:pos"].values))
+    
+    if verbose:log.write(" -Matching variants for hg19: num_hg19 = ",match_count_for_19)        
+    if verbose:log.write(" -Matching variants for hg38: num_hg38 = ",match_count_for_38) 
+    
+    if max(match_count_for_19, match_count_for_38)<10000:
+        if verbose:log.write(" -Warning: please be cautious due to the limited number of variants.") 
+    
+    if match_count_for_19 > match_count_for_38:
+        if verbose:log.write(" -Since num_hg19 >> num_hg38, assigning genome build hg19...") 
+        sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],1,"9","1")
+        sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],2,"9","9")
+        inferred_build="19"
+    elif match_count_for_19 < match_count_for_38:
+        if verbose:log.write(" -Since num_hg19 << num_hg38, assigning genome build hg38...") 
+        sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],1,"9","3")
+        sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],2,"9","8")
+        inferred_build="38"
     else:
-        gc.collect()
-        raise ValueError("Not enough information to match SNPs. Please check if CHR and POS columns are in your sumstats...")
+        if verbose:log.write(" -Since num_hg19 = num_hg38, unable to infer...") 
+        
+    finished(log,verbose,_end_line)
+    return sumstats, inferred_build
 
 def sampling(sumstats,n=1, p=None, verbose=True,log=Log(),**args):
+
     if verbose:log.write("Start to randomly select variants from the sumstats...") 
     if p is None:
         if verbose:log.write(" -Number of variants selected from the sumstats:",n)

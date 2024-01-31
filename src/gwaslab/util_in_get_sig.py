@@ -14,7 +14,8 @@ from gwaslab.bd_common_data import gtf_to_protein_coding
 from gwaslab.bd_download import check_and_download
 from gwaslab.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.qc_fix_sumstats import check_dataframe_shape
-
+from gwaslab.qc_fix_sumstats import start_to
+from gwaslab.qc_fix_sumstats import finished
 # getsig
 # closest_gene
 # annogene
@@ -39,9 +40,24 @@ def getsig(insumstats,
     """
     Extract the lead variants using a sliding window. P or MLOG10P will be used and converted to SCALEDP for sorting. 
     """
+    ##start function with col checking##########################################################
+    _start_line = "extract lead variants"
+    _end_line = "extracting lead variants"
+    _start_cols = [chrom,pos]
+    _start_function = ".get_lead()"
+    _must_args ={}
 
-    if verbose: log.write("Start to extract lead variants...")
-    check_dataframe_shape(insumstats, log=log ,verbose=verbose)
+    is_enough_info = start_to(sumstats=insumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: return None
+    ############################################################################################
+
     if verbose: log.write(" -Processing "+str(len(insumstats))+" variants...")
     if verbose: log.write(" -Significance threshold :", sig_level)
     if verbose: log.write(" -Sliding window size:", str(windowsizekb) ," kb")
@@ -156,11 +172,9 @@ def getsig(insumstats,
                source=source,
                verbose=verbose)
         
-    # Finishing
-    if verbose: log.write("Finished extracting lead variants successfully!")
     # drop internal id
     output = output.drop("__ID",axis=1)
-    gc.collect()
+    finished(log,verbose,_end_line)
     return output.copy()
 
 
@@ -330,9 +344,23 @@ def getnovel(insumstats,
            gwascatalog_source="NCBI",
            output_known=False,
            verbose=True):
-    if verbose: log.write("Start to check if lead variants are known...")
-    
-    check_dataframe_shape(insumstats, log=log, verbose=verbose)
+    ##start function with col checking##########################################################
+    _start_line = "check if lead variants are known"
+    _end_line = "checking if lead variants are known"
+    _start_cols = [chrom,pos]
+    _start_function = ".get_novel()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=insumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: return None
+    ############################################################################################
     
     allsig = getsig(insumstats=insumstats,
            id=id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
@@ -442,8 +470,8 @@ def getnovel(insumstats,
 
     if verbose: log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...")
     if verbose: log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...")
-    if verbose: log.write("Finished checking known or novel successfully!")
-    gc.collect()
+    
+    finished(log,verbose,_end_line)
     
     # how to return
     if only_novel is True:

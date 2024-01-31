@@ -68,7 +68,7 @@ def summarize(insumstats,
         sumstats.drop(columns='uniq_index',inplace=True)
         status_dic = {}
         for index,row in status_summary.iterrows():
-            status_dic[str(index)]=row[0]
+            status_dic[str(index)]=row.iloc[0]
         output["STATUS"]=status_dic
         numeric_cols.append("STATUS")
     df = pd.DataFrame.from_dict({(i,j): output[i][j] 
@@ -84,7 +84,7 @@ def summarize(insumstats,
     return df 
 
 def sum_status(id_to_use, sumstats):
-        results = sumstats.groupby("STATUS").count()
+        results = sumstats.groupby("STATUS",observed=True).count()
         results = results.loc[results[id_to_use]>0,:].sort_values(id_to_use,ascending=False)
         return results
     
