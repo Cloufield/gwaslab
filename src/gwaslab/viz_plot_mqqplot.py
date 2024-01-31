@@ -213,7 +213,6 @@ def mqqplot(insumstats,
         chr_dict = get_chr_to_number()
     if xtick_chr_dict is None:         
         xtick_chr_dict = get_number_to_chr()
-
     if gtf_chr_dict is None:   
         gtf_chr_dict = get_number_to_chr()
     if rr_chr_dict is None:   
@@ -304,7 +303,7 @@ def mqqplot(insumstats,
                     scatter_args["rasterized"]=True
                     qq_scatter_args["rasterized"]=True
 
-    if verbose: log.write("Start to create MQQ plot with the following basic settings {}:".format(_get_version()))
+    if verbose: log.write("Start to create MQQ plot...{}:".format(_get_version()))
     if verbose: log.write(" -Genomic coordinates version: {}...".format(build))
     if build is None or build=="99":
         if verbose: log.write("   -WARNING: Genomic coordinates version is unknown...")
@@ -458,7 +457,7 @@ def mqqplot(insumstats,
 
 
 #sanity check############################################################################################################
-    log.write("Start conversion and sanity check:",verbose=verbose)
+    log.write("Start data conversion and sanity check:",verbose=verbose)
     
     if _if_quick_qc == False:
         log.write(" -Sanity check will be skipped.", verbose=verbose)
@@ -530,7 +529,10 @@ def mqqplot(insumstats,
         log.write(" -Warning : No valid data! Please check the input.")
         return None
     
+    if verbose: log.write("Finished data conversion and sanity check.")
+    
     # Manhattan plot ##########################################################################################################
+    if verbose:log.write("Start to create MQQ plot with "+str(len(sumstats))+" variants...")
     ## regional plot ->rsq
         #calculate rsq]
     if vcf_path is not None:
@@ -568,8 +570,6 @@ def mqqplot(insumstats,
 
         if vcf_path is not None:
             sumstats["chr_hue"]=sumstats["LD"]
-
-        if verbose:log.write("Start to create MQQ plot with "+str(len(sumstats))+" variants:")
         ## default seetings
         
         palette = sns.color_palette(colors,n_colors=sumstats[chrom].nunique())  
@@ -601,6 +601,7 @@ def mqqplot(insumstats,
         ## if highlight 
         highlight_i = pd.DataFrame()
         if len(highlight) >0:
+            log.write(" -Creating background plot...",verbose=verbose)
             plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
                                hue='chr_hue',
                                palette=palette,
@@ -674,6 +675,7 @@ def mqqplot(insumstats,
                 hue = 'chr_hue'
                 hue_norm=None
                 to_plot = sumstats
+                log.write(" -Creating background plot...",verbose=verbose)
                 plot = sns.scatterplot(data=to_plot, x='i', y='scaled_P',
                        hue=hue,
                        palette= palette,
@@ -767,7 +769,10 @@ def mqqplot(insumstats,
             lead_snp_i= None
             lead_snp_i2=None
         
+        if verbose: log.write("Finished creating MQQ plot successfully!")
+
         # Get top variants for annotation #######################################################
+        log.write("Start to extract variants for annotation...",verbose=verbose)
         if (anno and anno!=True) or (len(anno_set)>0):
             if len(anno_set)>0:
                 to_annotate=sumstats.loc[sumstats[snpid].isin(anno_set),:]
@@ -808,16 +813,20 @@ def mqqplot(insumstats,
                                    build=build,
                                    source=anno_source,
                                    verbose=verbose).rename(columns={"GENE":"Annotation"})
+        log.write("Finished extracting variants for annotation...",verbose=verbose)
 
         # Configure X, Y axes #######################################################
+        log.write("Start to process figure arts.",verbose=verbose)
         if region is None:
             # if Manhattan plot 
+            log.write(" -Processing X ticks...",verbose=verbose)
             ax1 = _process_xtick(ax1=ax1, 
                                  chrom_df=chrom_df, 
                                  xtick_chr_dict=xtick_chr_dict, 
                                  fontsize = fontsize, 
                                  font_family=font_family)
         
+        log.write(" -Processing X axis labels...",verbose=verbose)
         ax1, ax3 = _process_xlabel(region=region, 
                                    xlabel=xlabel, 
                                    ax1=ax1, 
@@ -827,6 +836,7 @@ def mqqplot(insumstats,
                                    font_family=font_family,  
                                    ax3=ax3 )
         
+        log.write(" -Processing Y axis labels...",verbose=verbose)
         ax1, ax4 = _process_ylabel(ylabel=ylabel, 
                                    ax1=ax1,  
                                    mode=mode, 
@@ -835,6 +845,7 @@ def mqqplot(insumstats,
                                    font_family=font_family, 
                                    ax4=ax4)     
         
+        log.write(" -Processing Y ticks...",verbose=verbose)
         ax1 = _set_yticklabels(cut=cut,
                      cutfactor=cutfactor,
                      cut_log=cut_log,
@@ -859,10 +870,12 @@ def mqqplot(insumstats,
         
         if cbar is not None:
             # regional plot cbar
+            log.write(" -Processing color bar...",verbose=verbose)
             cbar = _process_cbar(cbar, cbar_fontsize=fontsize, cbar_font_family=font_family, cbar_title=cbar_title)        
         
         ax1 = _process_spine(ax1, mode)
         # genomewide significant line
+        log.write(" -Processing lines...",verbose=verbose)
         ax1 = _process_line(ax1, 
                             sig_line, 
                             suggestive_sig_line, 
@@ -882,8 +895,10 @@ def mqqplot(insumstats,
             ax1.set_title(mtitle,pad=pad,fontsize=title_fontsize,family=font_family)
         elif mtitle:
             ax1.set_title(mtitle,fontsize=title_fontsize,family=font_family)
-            
+        log.write("Finished processing figure arts.",verbose=verbose)
+
         # Add annotation arrows and texts
+        if verbose: log.write("Start to annotate variants...")
         ax1 = annotate_single(
                                 sumstats=sumstats,
                                 anno=anno,
@@ -917,6 +932,7 @@ def mqqplot(insumstats,
                                 log=log,
                                _invert=_invert
                             )  
+        log.write("Finished annotating variants.",verbose=verbose)
     # Manhatann-like plot Finished #####################################################################
 
     # QQ plot #########################################################################################################
@@ -989,7 +1005,7 @@ def mqqplot(insumstats,
     if _get_region_lead==True:
         return fig, log, lead_snp_i, lead_snp_i2
     
-    if verbose: log.write("Finished creating MQQ plot successfully!")
+    if verbose: log.write("Finished creating plot successfully!")
     return fig, log
 
 ##############################################################################################################################################################################

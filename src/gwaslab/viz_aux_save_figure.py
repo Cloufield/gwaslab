@@ -4,10 +4,10 @@ import time
 import os.path
 
 def save_figure(fig, save, keyword, save_args=None, log = Log(), verbose=True):
+    log.write("Start to save figure..." )
     if save_args is None:
         save_args = {}
     if save:
-        if verbose: log.write("Saving plot:")
         if save==True:
             default_path = get_default_path(keyword)
             fig.savefig(default_path, bbox_inches="tight",**save_args)
@@ -20,7 +20,8 @@ def save_figure(fig, save, keyword, save_args=None, log = Log(), verbose=True):
                 fig.savefig(save,bbox_inches="tight",**save_args)
                 log.write(" -Saved to "+ save + " successfully!" )
     else:
-        log.write(" -Skip saving figures!" )
+        log.write(" -Skip saving figure!" )
+    log.write("Finished saving figure..." )
 
 def get_default_path(keyword,fmt="png"):
     path_dictionary = { 

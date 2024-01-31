@@ -340,7 +340,7 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose,lines_to_plo
                 #sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
                 
                 maxy = (maxticker-cut)/cutfactor + cut
-    if verbose: log.write("Finished data conversion and sanity check.")
+    
     return series, maxy, maxticker, cut, cutfactor,ylabels,lines_to_plot
 
 #def _cut_line(level, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):

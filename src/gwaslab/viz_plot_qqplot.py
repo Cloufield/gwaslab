@@ -68,7 +68,7 @@ def _plot_qq(
     
         expected_all = -np.log10(np.linspace(minit,upper_bound_p,len(p_toplot_raw)))[:len(observed)]
 
-        if verbose:log.write("Expected range of P: (0,{})".format(upper_bound_p))
+        if verbose:log.write(" -Expected range of P: (0,{})".format(upper_bound_p))
         #p_toplot = sumstats["scaled_P"]
         ax2.scatter(expected_all,observed,s=marker_size[1],color=colors[0],**qq_scatter_args)
 
