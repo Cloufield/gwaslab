@@ -134,7 +134,7 @@ def _sort_pair_cols(molded_sumstats, verbose=True, log=Log(), order=None, stats_
             output_columns.append(i)
     
     if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns), verbose=verbose)
-    molded_sumstats = molded_sumstats.loc[:, output_columns]
+    molded_sumstats = molded_sumstats[ output_columns]
     if verbose: log.write("Finished sorting columns successfully!", verbose=verbose)
     
     return molded_sumstats

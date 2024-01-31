@@ -259,13 +259,13 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NE
     
     if match_count_for_19 > match_count_for_38:
         if verbose:log.write(" -Since num_hg19 >> num_hg38, assigning genome build hg19...") 
-        sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],1,"9","1")
-        sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],2,"9","9")
+        sumstats[status] = vchange_status(sumstats[status],1,"9","1")
+        sumstats[status] = vchange_status(sumstats[status],2,"9","9")
         inferred_build="19"
     elif match_count_for_19 < match_count_for_38:
         if verbose:log.write(" -Since num_hg19 << num_hg38, assigning genome build hg38...") 
-        sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],1,"9","3")
-        sumstats.loc[:,status] = vchange_status(sumstats.loc[:,status],2,"9","8")
+        sumstats[status] = vchange_status(sumstats[status],1,"9","3")
+        sumstats[status] = vchange_status(sumstats[status],2,"9","8")
         inferred_build="38"
     else:
         if verbose:log.write(" -Since num_hg19 = num_hg38, unable to infer...") 

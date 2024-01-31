@@ -114,7 +114,7 @@ def tofmt(sumstats,
         sumstats["END"] = sumstats["END"].astype("Int64")
         ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"] + cols
 
-        sumstats = sumstats.loc[:,ouput_cols ]
+        sumstats = sumstats[ouput_cols ]
         path = path + "."+suffix
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
@@ -174,7 +174,7 @@ def tofmt(sumstats,
         sumstats["END"] = sumstats["END"].astype("Int64")
         
         ouput_cols=["CHR","START","END","NEA/EA","STRAND","SNPID"]+ cols
-        sumstats = sumstats.loc[:,ouput_cols]
+        sumstats = sumstats[ouput_cols]
         path = path + "."+suffix+".gz"
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
@@ -224,7 +224,7 @@ def tofmt(sumstats,
         sumstats["END"] = sumstats["END"].astype("Int64")
 
         ouput_cols=["CHR","START","END","NEA_out","EA_out","SNPID"]+ cols
-        sumstats = sumstats.loc[:,ouput_cols]
+        sumstats = sumstats[ouput_cols]
         path = path + "."+suffix
         if verbose: log.write(" -Output columns:",sumstats.columns)
         if verbose: log.write(" -Output path:",path) 
@@ -277,7 +277,7 @@ def tofmt(sumstats,
             if i in rename_dictionary.keys():
                 ouput_cols.append(i)  
         ouput_cols = ouput_cols +["STATUS"]+ cols
-        sumstats = sumstats.loc[:,ouput_cols]
+        sumstats = sumstats[ouput_cols]
         sumstats = sumstats.rename(columns=rename_dictionary) 
         
         # calculate meta data
@@ -384,7 +384,7 @@ def tofmt(sumstats,
                 ouput_cols.remove("STATUS")
         except:
             pass
-        sumstats = sumstats.loc[:,ouput_cols]
+        sumstats = sumstats[ouput_cols]
         sumstats = sumstats.rename(columns=rename_dictionary) 
         
 
@@ -410,7 +410,7 @@ def tofmt(sumstats,
                     if i not in meta_data["format_col_order"]:
                         other_col.append(i)
                 
-                sumstats = sumstats.loc[:,fixed_col + other_col]
+                sumstats = sumstats[fixed_col + other_col]
                 if verbose: log.write(" -Reordering columns...") 
 
             if verbose: log.write(" -Output columns:",','.join(sumstats.columns))

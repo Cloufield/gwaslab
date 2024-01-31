@@ -327,7 +327,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     
     if verbose:  log.write("\n",end="",show_time=False) 
         
-    sumstats.loc[:,status] = sumstats.loc[:,status].astype("string")
+    sumstats[status] = sumstats[status].astype("string")
     available_to_check =sum( (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna()))
     status_0=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False))
     status_3=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False))
@@ -654,7 +654,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
         if verbose: log.write(" -Identified ", sum(palindromic)," palindromic SNPs...")
         
         #palindromic but can not infer
-        maf_can_infer   = (sumstats.loc[:,eaf] < maf_threshold) | (sumstats.loc[:,eaf] > 1 - maf_threshold)
+        maf_can_infer   = (sumstats[eaf] < maf_threshold) | (sumstats[eaf] > 1 - maf_threshold)
         
         sumstats.loc[palindromic&(~maf_can_infer),status] = vchange_status(sumstats.loc[palindromic&(~maf_can_infer),status],7,"9","7")
         
@@ -720,7 +720,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             if verbose: log.write(" -Indistinguishable indels will be inferred from reference vcf ref and alt...")
             #########################################################################################  
             #with maf can not infer
-            #maf_can_infer   = (sumstats.loc[:,eaf] < maf_threshold) | (sumstats.loc[:,eaf] > 1 - maf_threshold) 
+            #maf_can_infer   = (sumstats[eaf] < maf_threshold) | (sumstats[eaf] > 1 - maf_threshold) 
             #sumstats.loc[unknow_indel&(~maf_can_infer),status] = vchange_status(sumstats.loc[unknow_indel&(~maf_can_infer),status],7,"9","8") 
             if verbose: log.write(" -DAF tolerance: {}".format(daf_tolerance))
                          
@@ -821,13 +821,13 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,colu
         #status_inferred = sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]].apply(lambda x:check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict),axis=1)
         
         #sumstats.loc[good_chrpos,"DAF"] = status_inferred.values
-        #sumstats.loc[:,"DAF"]=sumstats.loc[:,"DAF"].astype("float")     
-        if verbose: log.write(" - {} max:".format(column_name), np.nanmax(sumstats.loc[:,column_name]))
-        if verbose: log.write(" - {} min:".format(column_name), np.nanmin(sumstats.loc[:,column_name]))
-        if verbose: log.write(" - {} sd:".format(column_name), np.nanstd(sumstats.loc[:,column_name]))
-        if verbose: log.write(" - abs({}) min:".format(column_name), np.nanmin(np.abs(sumstats.loc[:,column_name]))) 
-        if verbose: log.write(" - abs({}) max:".format(column_name), np.nanmax(np.abs(sumstats.loc[:,column_name])))
-        if verbose: log.write(" - abs({}) sd:".format(column_name), np.nanstd(np.abs(sumstats.loc[:,column_name]))) 
+        #sumstats["DAF"]=sumstats["DAF"].astype("float")     
+        if verbose: log.write(" - {} max:".format(column_name), np.nanmax(sumstats[column_name]))
+        if verbose: log.write(" - {} min:".format(column_name), np.nanmin(sumstats[column_name]))
+        if verbose: log.write(" - {} sd:".format(column_name), np.nanstd(sumstats[column_name]))
+        if verbose: log.write(" - abs({}) min:".format(column_name), np.nanmin(np.abs(sumstats[column_name]))) 
+        if verbose: log.write(" - abs({}) max:".format(column_name), np.nanmax(np.abs(sumstats[column_name])))
+        if verbose: log.write(" - abs({}) sd:".format(column_name), np.nanstd(np.abs(sumstats[column_name]))) 
         if verbose: log.write("Finished allele frequency checking!") 
     return sumstats
 
@@ -838,8 +838,8 @@ def checkaf(sumstats,ref_infer,ref_alt_freq=None,column_name="DAF",chr="CHR",pos
             return check_daf(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],x.iloc[4],vcf_reader,ref_alt_freq,chr_dict)
     map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
     status_inferred = sumstats.apply(map_func,axis=1)
-    sumstats.loc[:,column_name] = status_inferred.values
-    sumstats.loc[:,column_name]=sumstats.loc[:,column_name].astype("float") 
+    sumstats[column_name] = status_inferred.values
+    sumstats[column_name]=sumstats[column_name].astype("float") 
     return sumstats
 
 def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
@@ -913,8 +913,8 @@ def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",a
             return infer_af(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,ref_alt_freq,chr_dict)
     map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
     status_inferred = sumstats.apply(map_func,axis=1)
-    sumstats.loc[:,eaf] = status_inferred.values
-    sumstats.loc[:,eaf]=sumstats.loc[:,eaf].astype("float") 
+    sumstats[eaf] = status_inferred.values
+    sumstats[eaf]=sumstats[eaf].astype("float") 
     return sumstats
 
 def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):

@@ -72,11 +72,11 @@ def plotdaf(sumstats,
     
 
     sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[snpid,eaf,daf]+alleles].copy()
-    sumstats.loc[:,daf] = sumstats.loc[:,daf].astype("float")
-    sumstats.loc[:,eaf] = sumstats.loc[:,eaf].astype("float")
+    sumstats[daf] = sumstats[daf].astype("float")
+    sumstats[eaf] = sumstats[eaf].astype("float")
     if verbose: log.write(" -Plotting valriants:" + str(len(sumstats)))
     
-    sumstats.loc[:,"RAF"]=sumstats[eaf] - sumstats[daf]
+    sumstats["RAF"]=sumstats[eaf] - sumstats[daf]
     sns.set_style("ticks")
     fig, (ax1, ax2) = plt.subplots(1, 2,**plt_args)
     ax1.scatter(sumstats["RAF"],sumstats[eaf],label="Non-outlier", **scatter_args)
@@ -119,7 +119,7 @@ def plotdaf(sumstats,
     ax1.set_ylim([0,1])
     
 
-    sumstats.loc[:,"ID"] = sumstats.index
+    sumstats["ID"] = sumstats.index
     
     to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele Frequency').dropna()
     

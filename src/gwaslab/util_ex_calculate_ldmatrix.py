@@ -248,7 +248,7 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
         
         log.write(" -Exporting locus sumstats to: {}...".format(matched_sumstats_path))
         log.write(" -Exported columns: {}...".format(["SNPID"]+to_export_columns))
-        matched_sumstats.loc[:, ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path, index=None)
+        matched_sumstats[ ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path, index=None)
         return matched_snp_list_path, matched_sumstats_path
 
 def _check_snpid_order(snplist_path, matched_sumstats_snpid,log):

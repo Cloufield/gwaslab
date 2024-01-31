@@ -198,8 +198,8 @@ def plot_miami2(
     else:
         cols1[2] += suffixes[0]
         cols2[2] += suffixes[1]
-        sumstats1 = merged_sumstats.loc[:,cols1].copy()
-        sumstats2 = merged_sumstats.loc[:,cols2].copy()
+        sumstats1 = merged_sumstats[cols1].copy()
+        sumstats2 = merged_sumstats[cols2].copy()
 
     ## rename and quick fix ###########################################################################################################
     renaming_dict1 = {cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"}

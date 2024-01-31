@@ -540,7 +540,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
             # no position match
             return None
     if verbose: log.write(" -Matching variants using POS, NEA, EA ...")
-    sumstats["REFINDEX"] = sumstats.loc[:,[pos,nea,ea]].apply(lambda x: match_varaint(x),axis=1)
+    sumstats["REFINDEX"] = sumstats[[pos,nea,ea]].apply(lambda x: match_varaint(x),axis=1)
     #############################################################################################
     #sumstats["REFINDEX"] = sumstats[pos].apply(lambda x: np.where(ref_genotype["variants/POS"] == x )[0][0] if np.any(ref_genotype["variants/POS"] == x) else None)
     

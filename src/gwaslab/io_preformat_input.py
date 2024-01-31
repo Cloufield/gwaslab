@@ -308,7 +308,7 @@ def preformat(sumstats,
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             if verbose: log.write("Start to initiate from pandas DataFrame ...")
-            sumstats = sumstats.loc[:, usecols]
+            sumstats = sumstats[ usecols]
             for key,value in dtype_dictionary.items():
                 if key in usecols:
                     sumstats[key] = sumstats[key].astype(value)
@@ -400,7 +400,7 @@ def parse_vcf_study(sumstats,format_cols,study,vcf_usecols,log,verbose=True):
     if verbose: log.write(" -Parsing vcf study : ", study)
     sumstats[format_cols] = sumstats[study].str.split(":",expand=True).values
     sumstats = sumstats.drop(["FORMAT",study],axis=1)
-    sumstats = sumstats.loc[:, vcf_usecols]
+    sumstats = sumstats[ vcf_usecols]
     gc.collect()
     return sumstats
 
@@ -451,9 +451,9 @@ def process_neaf(sumstats,log,verbose):
     if verbose: log.write(" -NEAF is specified...") 
     pre_number=len(sumstats)
     if verbose: log.write(" -Checking if 0<= NEAF <=1 ...") 
-    sumstats.loc[:,"EAF"] = pd.to_numeric(sumstats.loc[:,"EAF"], errors='coerce')
+    sumstats["EAF"] = pd.to_numeric(sumstats["EAF"], errors='coerce')
     sumstats = sumstats.loc[(sumstats["EAF"]>=0) & (sumstats["EAF"]<=1),:]
-    sumstats.loc[:,"EAF"] = 1- sumstats.loc[:,"EAF"]
+    sumstats["EAF"] = 1- sumstats["EAF"]
     if verbose: log.write(" -Converted NEAF to EAF.") 
     after_number=len(sumstats)
     if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.") 

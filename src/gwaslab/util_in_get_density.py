@@ -6,7 +6,7 @@ import gc
 
 def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizekb=100,log=Log(),verbose=True):    
     if verbose:log.write("Start to calculate signal DENSITY...")
-    sumstats = insumstats.loc[:,[id,chrom,pos]].copy()
+    sumstats = insumstats[[id,chrom,pos]].copy()
     if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
     #stack=[]
 
@@ -81,7 +81,7 @@ def assigndensity(insumstats,
             large_number = int(large_number * 10)
         else:
             break
-    sumstats = insumstats.loc[:,[id,chrom,pos]].copy()
+    sumstats = insumstats[[id,chrom,pos]].copy()
     sumstats["DENSITY"] = 0
     sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
     sig_sumstats["TCHR+POS"] = sig_sumstats[chrom]*large_number +  sig_sumstats[pos]

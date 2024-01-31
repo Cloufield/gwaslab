@@ -135,7 +135,7 @@ def rsID2chrpos(path,
     print("Writing to "+path+".rsid")
     sumstats = sumstats.loc[sumstats["#POS"]!=0]
     
-    sumstats.loc[:,to_round] = sumstats.loc[:,to_round].round(4)
+    sumstats[to_round] = sumstats[to_round].round(4)
     sumstats.sort_values(["#CHROM","#POS"]).to_csv(path+".rsid","\t",na_rep='\.')
     
     return sumstats

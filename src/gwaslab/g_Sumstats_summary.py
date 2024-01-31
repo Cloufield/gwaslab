@@ -15,7 +15,7 @@ def summarize(insumstats,
     for i in [snpid,rsid,eaf,p,n,status]:
         if i in insumstats.columns:
             cols.append(i)
-    sumstats= insumstats.loc[:,cols].copy()
+    sumstats= insumstats[cols].copy()
     ###############################################################################
     numeric_cols=[]
     output = {}

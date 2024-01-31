@@ -399,7 +399,7 @@ def mqqplot(insumstats,
                                      pinpoint=pinpoint,
                                      density_color=density_color)
     
-    sumstats = insumstats.loc[:,usecols].copy()
+    sumstats = insumstats[usecols].copy()
     
     #################################################################################################
     
@@ -408,7 +408,7 @@ def mqqplot(insumstats,
     if (anno == "GENENAME"):
         anno_sig=True
     elif (anno is not None) and (anno is not True):
-        sumstats["Annotation"]=sumstats.loc[:,anno].astype("string")   
+        sumstats["Annotation"]=sumstats[anno].astype("string")   
       
     ## P value
     ## m, qq, r
