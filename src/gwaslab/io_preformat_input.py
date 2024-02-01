@@ -404,9 +404,13 @@ def parse_vcf_study(sumstats,format_cols,study,vcf_usecols,log,verbose=True):
     gc.collect()
     return sumstats
 
-def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=False):
+def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=False, skip_meta_records=None):
     if verbose: log.write(" -"+fmt+" format meta info:")   
+    if skip_meta_records is None:
+        skip_meta_records =[]
     for key,value in meta_data.items():
+        if key in skip_meta_records:
+            continue
         if value is None:
             continue
         if type(value) is str:

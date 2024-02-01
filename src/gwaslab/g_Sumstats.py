@@ -5,7 +5,7 @@ import copy
 from gwaslab.g_Sumstats_summary import summarize
 from gwaslab.g_Sumstats_summary import lookupstatus
 from gwaslab.io_preformat_input import preformat
-from gwaslab.io_to_formats import tofmt
+from gwaslab.io_to_formats import _to_format
 from gwaslab.g_Log import Log
 from gwaslab.qc_fix_sumstats import fixID
 from gwaslab.qc_fix_sumstats import removedup
@@ -670,148 +670,7 @@ class Sumstats():
     
 # to_format ###############################################################################################       
 
-    def to_format(self,
-              path="./sumstats",
-              fmt="gwaslab",   
-              extract=None,
-              exclude=None,
-              cols=None,
-              id_use="rsID",
-              hapmap3=False,
-              exclude_hla=False,
-              hla_range=(25,34),  
-              build=None, 
-              n=None,
-              verbose=True,
-              no_status=False,
-              output_log=True,
-              to_csvargs=None,
-              float_formats=None,
-              xymt_number=False,
-              xymt=None,
-              chr_prefix="",
-              ssfmeta=False,
-              md5sum=False,
-              bgzip=False,
-              tabix=False,
-              tabix_indexargs={}):
+    def to_format(self, path, build=None, **args):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        onetime_log = copy.deepcopy(self.log)
-        if  to_csvargs is None:
-            to_csvargs = {}
-        if  float_formats is None:
-            float_formats={}
-        if cols is None:
-            cols=[]
-        if xymt is None:
-            xymt = ["X","Y","MT"]
-
-        formatlist= get_formats_list() + ["vep","bed","annovar","vcf"]
-        if fmt in formatlist:
-            if verbose: onetime_log.write("Start to format the output sumstats in: ",fmt, " format")
-        else:
-            raise ValueError("Please select a format to output")
-        
-        
-        #######################################################################################################
-        # filter
-        output = self.data.copy()
-        if extract is not None:
-            output = output.loc[output[id_use].isin(extract),:]
-
-        if exclude is not None:
-            output = output.loc[~output[id_use].isin(exclude),:]
-        
-        #hla and hapmap3 #######################################################################################
-        suffix=fmt
-        
-        #exclude hla
-        if exclude_hla is True:
-            if verbose: onetime_log.write(" -Excluding variants in MHC (HLA) region ...")
-            before = len(output)
-            is_hla = (output["CHR"].astype("string") == "6") & (output["POS"].astype("Int64") > hla_range[0]*1000000) & (output["POS"].astype("Int64") < hla_range[1]*1000000)
-            output = output.loc[~is_hla,:]
-            after = len(output)
-            if verbose: onetime_log.write(" -Exclude "+ str(before - after) + " variants in MHC (HLA) region : {}Mb - {}Mb.".format(hla_range[0], hla_range[1]))
-            suffix = "noMHC."+suffix
-        
-        #extract hapmap3 SNPs
-        if hapmap3 is True:
-            output = gethapmap3(output,build=build,verbose=True)
-            after = len(output)
-            if verbose: onetime_log.write(" -Extract "+ str(after) + " variants in Hapmap3 datasets for build "+build+".")
-            suffix = "hapmap3."+suffix
-        
-        # add a n column
-        if n is not None:
-            output["N"] = n
-                
-        #######################################################################################################
-        #formatting float statistics
-        if verbose: onetime_log.write(" -Formatting statistics ...")
-        
-        formats = {'EAF': '{:.4g}', 
-                'BETA': '{:.4f}', 
-                'Z': '{:.4f}',
-                'CHISQ': '{:.4f}',
-                'SE': '{:.4f}',
-                'OR': '{:.4f}',
-                'OR_95U': '{:.4f}',
-                'OR_95L': '{:.4f}',
-                'INFO': '{:.4f}',
-                'P': '{:.4e}',
-                'MLOG10P': '{:.4f}',
-                'DAF': '{:.4f}'
-                  }
-        
-        for col, f in float_formats.items():
-            if col in output.columns: 
-                formats[col]=f
-        for col, f in formats.items():
-            if col in output.columns: 
-                if output[col].dtype in ["float64","float32","float16","float"]:
-                    output[col] = output[col].map(f.format)
-        if verbose: 
-            onetime_log.write(" - Float statistics formats:")  
-            keys=[]
-            values=[]
-            for key,value in formats.items():
-                if key in output.columns: 
-                    keys.append(key)
-                    values.append(value)
-            onetime_log.write("  - Columns:",keys) 
-            onetime_log.write("  - Output formats:",values) 
-            
-        ##########################################################################################################          
-        # output, mapping column names
-        
-        if fmt in get_formats_list() + ["vep","bed","annovar","vcf"]:
-            tofmt(output,
-                  path=path,
-                  fmt=fmt,
-                  cols=cols,
-                  suffix=suffix,
-                  build=build,
-                  verbose=True,
-                  no_status=no_status,
-                  log=onetime_log,
-                  to_csvargs=to_csvargs,
-                  chr_prefix=chr_prefix,
-                  meta = self.meta,
-                  ssfmeta=ssfmeta,
-                  bgzip=bgzip,
-                  tabix=tabix,
-                  tabix_indexargs=tabix_indexargs,
-                  md5sum=md5sum,
-                  xymt_number=xymt_number,
-                  xymt=xymt)
-        if output_log is True:
-            log_path = path + "."+ suffix + ".log"
-            if verbose: onetime_log.write(" -Saving log file to: {}".format(log_path))
-            if verbose: onetime_log.write("Finished outputting successfully!")
-            try:
-                onetime_log.save(log_path, verbose=False)
-            except:
-                pass
-        
+        _to_format(self.data, path, log=self.log, meta=self.meta, build=build, **args)

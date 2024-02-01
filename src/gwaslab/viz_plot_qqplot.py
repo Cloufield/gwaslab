@@ -59,6 +59,7 @@ def _plot_qq(
     upper_bound_p = np.power(10.0, -expected_min_mlog10p)
 
     if stratified is False:
+        log.write(" -Plotting all variants...",verbose=verbose)
         # sort x,y for qq plot
         # high to low
         observed = p_toplot.sort_values(ascending=False)
@@ -74,7 +75,7 @@ def _plot_qq(
 
     else:
         # stratified qq plot
-        
+        log.write(" -Plotting variants stratified by MAF...",verbose=verbose)
         observed = p_toplot.sort_values(ascending=False)
         expected_all = -np.log10(np.linspace(minit,upper_bound_p,len(p_toplot_raw)))[:len(observed)]
 
