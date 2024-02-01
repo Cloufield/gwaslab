@@ -47,7 +47,7 @@ def _process_build(build,log,verbose):
         log.write(" -Genomic coordinates are based on GRCh38/hg38...", verbose=verbose)
         final_build = "38"
     else:
-        log.warning("Version of genomic coordinates is unknown...")
+        log.warning("Version of genomic coordinates is unknown...", verbose=verbose)
         final_build = "99"
     return final_build
 

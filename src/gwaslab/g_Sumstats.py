@@ -566,8 +566,10 @@ class Sumstats():
         
         return plot
     
-    def plot_trumpet(self, **args):
-        fig = plottrumpet(self.data, **args)
+    def plot_trumpet(self, build=None, **args):
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+        fig = plottrumpet(self.data,build = build,  **args)
         return fig
 
     def get_lead(self, build=None, gls=False, **args):

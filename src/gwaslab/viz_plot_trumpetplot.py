@@ -66,7 +66,7 @@ def plottrumpet(mysumstats,
                 anno_source = "ensembl",
                 anno_max_iter=100,
                 arm_scale=1,
-                repel_force=0.05,
+                repel_force=0.01,
                 ylabel="Effect size",
                 xlabel="Minor allele frequency",
                 xticks = None,
@@ -99,7 +99,7 @@ def plottrumpet(mysumstats,
             xticks = [0,0.01,0.05,0.1,0.2,0.5]
             xticklabels = xticks            
     if figargs is None:
-        figargs={"figsize":(10,15)}
+        figargs={"figsize":(10,8)}
     if scatter_args is None:
         scatter_args ={}
     if hue is not None:
@@ -307,6 +307,7 @@ def plottrumpet(mysumstats,
     
     if ylim is not None:
         ax.set_ylim(ylim)
+
     if yticks is not None:
         ax.set_yticks(yticks, yticklabels)
 
@@ -337,8 +338,8 @@ def plottrumpet(mysumstats,
             texts_d=[]
 
             if len(variants_toanno)>0:
-                
-                maxy = max(variants_toanno[beta].abs().max(),1.5)
+                maxy = variants_toanno[beta].abs().max()
+                #maxy = max(variants_toanno[beta].abs().max(),1.5)
                 variants_toanno["ADJUSTED_i"] = np.nan 
                 y_span = 0.5
                 
@@ -348,6 +349,9 @@ def plottrumpet(mysumstats,
                     variants_toanno = variants_toanno.sort_values(by=maf, key= np.abs, ascending = True)
                 
                 if anno_style == "expand":
+
+                    min_factor=None
+                    
                     if len(variants_toanno.loc[variants_toanno[beta]>0, "ADJUSTED_i"])>1:
                         variants_toanno.loc[variants_toanno[beta]>0, "ADJUSTED_i"] = adjust_text_position(variants_toanno.loc[variants_toanno[beta]>0,maf].values.copy(), 
                                                                                 y_span, 
@@ -355,7 +359,7 @@ def plottrumpet(mysumstats,
                                                                                 max_iter=anno_max_iter,
                                                                                 log=log,
                                                                                 amode=xscale,
-                                                                                verbose=verbose)
+                                                                                verbose=verbose,min_factor=min_factor)
 
                     if len(variants_toanno.loc[variants_toanno[beta]<0, "ADJUSTED_i"])>1:
                         variants_toanno.loc[variants_toanno[beta]<0, "ADJUSTED_i"] = adjust_text_position(variants_toanno.loc[variants_toanno[beta]<0,maf].values.copy(), 
@@ -364,10 +368,12 @@ def plottrumpet(mysumstats,
                                                                 max_iter=anno_max_iter,
                                                                 log=log,
                                                                 amode=xscale,
-                                                                verbose=verbose)
+                                                                verbose=verbose,min_factor=min_factor)
 
                 
                 for variants_toanno_half in [variants_toanno.loc[variants_toanno[beta]<0,:], variants_toanno.loc[variants_toanno[beta]>0,:]]:
+                    if len(variants_toanno_half)<1:
+                        continue
                     last_pos = min(variants_toanno_half[maf])/2
                     for index, row in variants_toanno_half.iterrows():
                         
@@ -395,6 +401,7 @@ def plottrumpet(mysumstats,
                         
                         if anno_style=="tight":
                             texts_d.append(ax.text(row[maf], row[beta], row[anno]))
+
                 if anno_style=="tight":
                     adjust_text(texts_d, 
                                 autoalign =True,
@@ -404,6 +411,8 @@ def plottrumpet(mysumstats,
                                 expand_points=(0.5,0.5),
                                 force_objects=(0.5,0.5), 
                                 ax=ax)
+    
+
     ############  Annotation ##################################################################################################
     if mode=="q":
         save_figure(fig, save, keyword="trumpet_q",save_args=save_args, log=log, verbose=verbose)

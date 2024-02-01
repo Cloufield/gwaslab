@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
 
-def adjust_text_position(positions, yspan, repel_force=0.01, max_iter=100,amode="int",log=Log(),verbose=True):
+def adjust_text_position(positions, yspan, repel_force=0.01, max_iter=100,amode="int",log=Log(),verbose=True, min_factor=None):
     # check the number of variants to annotate 
     #if repel_force>0:
     #    if 1/(repel_force*2 +0.01) < len(positions):
@@ -15,10 +15,12 @@ def adjust_text_position(positions, yspan, repel_force=0.01, max_iter=100,amode=
     if amode=="int":
         step = int(yspan*repel_force) 
     elif amode=="log":
-        min_factor = np.min(positions)
+        if min_factor is None:
+            min_factor = np.min(positions)
         #(1, max) -> (0, log(max)))
-        positions = np.log(positions/min_factor)
+        positions = np.log2(positions/min_factor)
         step = max(positions)*repel_force 
+
     else:
         step = yspan*repel_force 
 
@@ -33,7 +35,8 @@ def adjust_text_position(positions, yspan, repel_force=0.01, max_iter=100,amode=
             if amode=="int":
                 return  np.floor(pd.to_numeric(positions, errors='coerce')).astype('Int64').copy()
             elif amode=="log":
-                return  np.exp(pd.to_numeric(positions, errors='coerce')) * min_factor
+                
+                return  np.power(2, pd.to_numeric(positions, errors='coerce'))* min_factor
             else:
                 return  pd.to_numeric(positions, errors='coerce')
         else:

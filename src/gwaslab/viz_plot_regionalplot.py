@@ -122,6 +122,8 @@ def _plot_regional(
                                 region_ld_colors=region_ld_colors2,
                                 position=2)
                 cbar = [cbar1, cbar2]
+        else:
+            cbar=None
         if region_title is not None:
                 ax1 = _add_region_title(region_title, ax1=ax1,region_title_args=region_title_args )
     ## recombinnation rate ##################################################       
