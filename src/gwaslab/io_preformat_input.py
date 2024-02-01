@@ -67,7 +67,7 @@ def preformat(sumstats,
  #######################################################################################################################################################
     if fmt is not None:
         # loading format parameters
-        if verbose: log.write("Start to load format from formatbook....")
+        log.write("Start to load format from formatbook....",verbose=verbose)
         
         # load format data
         meta_data,rename_dictionary = get_format_dict(fmt)
@@ -97,7 +97,7 @@ def preformat(sumstats,
             inpath = sumstats
             ###load sumstats by each chromosome #################################################  
             if "@" in inpath:
-                if verbose: log.write(" -Detected @ in path: load sumstats by each chromosome...")
+                log.write(" -Detected @ in path: load sumstats by each chromosome...",verbose=verbose)
                 inpath_chr_list=[]
                 inpath_chr_num_list=[]
                 for chromosome in list(range(1,26))+["x","y","X","Y","MT","mt","m","M"]:
@@ -105,9 +105,10 @@ def preformat(sumstats,
                     if isfile_casesensitive(inpath_chr):
                         inpath_chr_num_list.append(str(chromosome))
                         inpath_chr_list.append(inpath_chr)        
-                if verbose: log.write(" -Chromosomes detected:",",".join(inpath_chr_num_list))
+                log.write(" -Chromosomes detected:",",".join(inpath_chr_num_list),verbose=verbose)
                 readargs_header = get_readargs_header(inpath = inpath_chr_list[0], readargs = readargs)
                 row_one = pd.read_table(inpath_chr_list[0],**readargs_header)
+                # columns in the sumstats
                 raw_cols = row_one.columns
             else:
             ##### loading data from tabular file#################################################
@@ -173,6 +174,7 @@ def preformat(sumstats,
         usecols.append(eaf)
         rename_dictionary[eaf]= "EAF"
     elif neaf:
+        # neaf will be converted to eaf
         usecols.append(neaf)
         rename_dictionary[neaf]= "EAF"
     if maf:
@@ -281,10 +283,10 @@ def preformat(sumstats,
             ## loading data from path
             inpath = sumstats
             if "@" in inpath:
-                if verbose: log.write("Start to initiate from files with pattern :" + inpath)
+                log.write("Start to initialize gl.Sumstats from files with pattern :" + inpath,verbose=verbose)
                 sumstats_chr_list=[]
                 for i in inpath_chr_list:
-                    if verbose: log.write(" -Loading:" + i)
+                    log.write(" -Loading:" + i)
                     skip_rows = get_skip_rows(i)
                     readargs["skiprows"] = skip_rows
                     sumstats_chr = pd.read_table(i,
@@ -292,14 +294,14 @@ def preformat(sumstats,
                                         dtype=dtype_dictionary,
                                         **readargs)
                     sumstats_chr_list.append(sumstats_chr)
-                if verbose: log.write(" -Merging sumstats for chromosomes:",",".join(inpath_chr_num_list))
+                log.write(" -Merging sumstats for chromosomes:",",".join(inpath_chr_num_list),verbose=verbose)
                 sumstats = pd.concat(sumstats_chr_list, axis=0, ignore_index=True) 
                 del(sumstats_chr_list)
                 gc.collect()
             else:
                 skip_rows = get_skip_rows(inpath)
                 readargs["skiprows"] = skip_rows
-                if verbose: log.write("Start to initiate from file :" + inpath)
+                log.write("Start to initialize gl.Sumstats from file :" + inpath,verbose=verbose)
                 sumstats = pd.read_table(inpath,
                                  usecols=set(usecols),
                                  dtype=dtype_dictionary,
@@ -307,7 +309,7 @@ def preformat(sumstats,
 
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
-            if verbose: log.write("Start to initiate from pandas DataFrame ...")
+            log.write("Start to initialize gl.Sumstats from pandas DataFrame ...",verbose=verbose)
             sumstats = sumstats[ usecols]
             for key,value in dtype_dictionary.items():
                 if key in usecols:
@@ -324,9 +326,9 @@ def preformat(sumstats,
     converted_columns = list(map(lambda x: rename_dictionary[x], set(usecols)))
     
     ## renaming log
-    if verbose: log.write(" -Reading columns          :", ",".join(set(usecols)))
-    if verbose: log.write(" -Renaming columns to      :", ",".join(converted_columns))
-    if verbose: log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns)) 
+    log.write(" -Reading columns          :", ",".join(set(usecols)),verbose=verbose)
+    log.write(" -Renaming columns to      :", ",".join(converted_columns),verbose=verbose)
+    log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns),verbose=verbose) 
     
     ## renaming  #####################################################################################
     sumstats = sumstats.rename(columns=rename_dictionary)
@@ -356,7 +358,7 @@ def preformat(sumstats,
     gc.collect()
     check_dataframe_memory_usage(sumstats,log=log,verbose=verbose)
     
-    if verbose: log.write("Finished loading data successfully!")
+    log.write("Finished loading data successfully!",verbose=verbose)
     return sumstats
 
 
@@ -396,8 +398,8 @@ def get_skip_rows(inpath):
         return 0
 
 def parse_vcf_study(sumstats,format_cols,study,vcf_usecols,log,verbose=True):
-    if verbose: log.write(" -Parsing based on FORMAT: ", format_cols)
-    if verbose: log.write(" -Parsing vcf study : ", study)
+    log.write(" -Parsing based on FORMAT: ", format_cols,verbose=verbose)
+    log.write(" -Parsing vcf study : ", study,verbose=verbose)
     sumstats[format_cols] = sumstats[study].str.split(":",expand=True).values
     sumstats = sumstats.drop(["FORMAT",study],axis=1)
     sumstats = sumstats[ vcf_usecols]
@@ -405,7 +407,7 @@ def parse_vcf_study(sumstats,format_cols,study,vcf_usecols,log,verbose=True):
     return sumstats
 
 def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=False, skip_meta_records=None):
-    if verbose: log.write(" -"+fmt+" format meta info:")   
+    log.write(" -"+fmt+" format meta info:",verbose=verbose)   
     if skip_meta_records is None:
         skip_meta_records =[]
     for key,value in meta_data.items():
@@ -435,32 +437,32 @@ def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=Fals
     if fmt!="gwaslab":
         if output == False:
             if fmt!="auto":
-                if verbose:log.write(" -"+fmt+" to gwaslab format dictionary:")  
-                if verbose:log.write("  - "+fmt+" keys:",",".join(keys)) 
-                if verbose:log.write("  - gwaslab values:",",".join(values)) 
+                if verbose:log.write(" -"+fmt+" to gwaslab format dictionary:",verbose=verbose)  
+                if verbose:log.write("  - "+fmt+" keys:",",".join(keys),verbose=verbose) 
+                if verbose:log.write("  - gwaslab values:",",".join(values),verbose=verbose) 
             else:
-                if verbose:log.write("  - Auto-detection mode. Note: auto-detection assumes A1=EA; Alt=EA and Frq=EAF...")
-                if verbose:log.write("  - Header conversion source: https://github.com/Cloufield/formatbook/blob/main/formats/auto.json")  
+                if verbose:log.write("  - Auto-detection mode. Note: auto-detection assumes A1=EA; Alt=EA and Frq=EAF...",verbose=verbose)
+                if verbose:log.write("  - Header conversion source: https://github.com/Cloufield/formatbook/blob/main/formats/auto.json",verbose=verbose)  
         else:
-            if verbose:log.write(" -gwaslab to "+fmt+" format dictionary:",)  
+            if verbose:log.write(" -gwaslab to "+fmt+" format dictionary:",verbose=verbose)  
             keys=[]
             values=[]
             for key,value in rename_dictionary.items():
                 keys.append(key)
                 values.append(value)
-            if verbose:log.write("  - gwaslab keys:",  ','.join(keys)) 
-            if verbose:log.write("  - "+fmt+" values:"  , ','.join(values))       
+            if verbose:log.write("  - gwaslab keys:",  ','.join(keys),verbose=verbose) 
+            if verbose:log.write("  - "+fmt+" values:"  , ','.join(values),verbose=verbose)       
 
 def process_neaf(sumstats,log,verbose):
-    if verbose: log.write(" -NEAF is specified...") 
+    log.write(" -NEAF is specified...",verbose=verbose) 
     pre_number=len(sumstats)
-    if verbose: log.write(" -Checking if 0<= NEAF <=1 ...") 
+    log.write(" -Checking if 0<= NEAF <=1 ...",verbose=verbose) 
     sumstats["EAF"] = pd.to_numeric(sumstats["EAF"], errors='coerce')
     sumstats = sumstats.loc[(sumstats["EAF"]>=0) & (sumstats["EAF"]<=1),:]
     sumstats["EAF"] = 1- sumstats["EAF"]
-    if verbose: log.write(" -Converted NEAF to EAF.") 
+    log.write(" -Converted NEAF to EAF.",verbose=verbose) 
     after_number=len(sumstats)
-    if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.") 
+    log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.",verbose=verbose) 
     return sumstats
 
 def process_allele(sumstats,log,verbose):
@@ -470,17 +472,17 @@ def process_allele(sumstats,log,verbose):
         if "REF" in sumstats.columns and "ALT" in sumstats.columns:
 
             if "NEA" not in sumstats.columns:
-                if verbose: log.write(" NEA not available: assigning REF to NEA...") 
+                log.write(" NEA not available: assigning REF to NEA...",verbose=verbose) 
                 sumstats["NEA"]=sumstats["REF"]    
             
-            if verbose: log.write(" -EA,REF and ALT columns are available: assigning NEA...") 
+            log.write(" -EA,REF and ALT columns are available: assigning NEA...",verbose=verbose) 
             ea_alt = sumstats["EA"]==sumstats["ALT"]
             
-            if verbose: log.write(" -For variants with EA == ALT : assigning REF to NEA ...") 
+            log.write(" -For variants with EA == ALT : assigning REF to NEA ...",verbose=verbose) 
             sumstats.loc[ea_alt,"NEA"] = sumstats.loc[ea_alt,"REF"]
             
             ea_not_alt = sumstats["EA"]!=sumstats["ALT"]
-            if verbose: log.write(" -For variants with EA != ALT : assigning ALT to NEA ...") 
+            log.write(" -For variants with EA != ALT : assigning ALT to NEA ...",verbose=verbose) 
             sumstats.loc[ea_not_alt,"NEA"] = sumstats.loc[ea_not_alt,"ALT"]
 
             #sumstats = sumstats.drop(labels=["REF","ALT"],axis=1)
@@ -493,7 +495,7 @@ def process_allele(sumstats,log,verbose):
     return sumstats
 
 def process_status(sumstats,build,log,verbose):
-    if verbose: log.write(" -Initiating a status column: STATUS ...")
+    log.write(" -Initiating a status column: STATUS ...",verbose=verbose)
     #sumstats["STATUS"] = int(build)*(10**5) +99999
     build = _process_build(build,log,verbose)
     sumstats["STATUS"] = build +"99999"

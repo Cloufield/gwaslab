@@ -87,7 +87,7 @@ def plot_miami2(
           log=Log(),
           **mqq_args
           ):
-    
+    log.write("Start to create miami plot {}:".format(_get_version()), verbose=verbose)
     ## figuring arguments ###########################################################################################################
     # figure columns to use
     if scaled == True:
@@ -99,6 +99,7 @@ def plot_miami2(
             cols = ["CHR","POS","MLOG10P"]
         else:
             cols = ["CHR","POS","P"]
+
     if cols1 is None:
         cols1 = cols.copy()
     if cols2 is None:
@@ -152,9 +153,8 @@ def plot_miami2(
     fig_args, scatter_args = _figure_args_for_vector_plot(save, fig_args, scatter_args)
 
     # add suffix if ids are the same
-    id1, id2, mqq_args1, mqq_args2 = _solve_id_contradictory(id0, id1, id2, mqq_args1, mqq_args2)
-    
-    if verbose: log.write("Start to plot miami plot {}:".format(_get_version()))
+    id1_1, id2_2, mqq_args1, mqq_args2 = _solve_id_contradictory(id0, id1, id2, mqq_args1, mqq_args2)
+
     if dpi!=100:
         fig_args["dpi"] = dpi
     if xtickpad is None:
@@ -177,6 +177,7 @@ def plot_miami2(
             titles_pad_adjusted[0]= 1 + titles_pad[0]
         if "anno2" in mqq_args.keys():
             titles_pad_adjusted[1]=  - titles_pad[1]
+
     if merged_sumstats is None:
     ## load sumstats1 ###########################################################################################################
         sumstats1 = _figure_type_load_sumstats(name="Sumstats1", 
@@ -218,7 +219,7 @@ def plot_miami2(
     ## create merge index ###########################################################################################################
     sumstats1 = _quick_add_tchrpos(sumstats1,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
     sumstats2 = _quick_add_tchrpos(sumstats2,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
-    if verbose: log.write(" -Merging sumstats using chr and pos...")
+    log.write(" -Merging sumstats using chr and pos...",verbose=verbose)
     
     ###### merge #####################################################################################################
     merged_sumstats = _quick_merge_sumstats(sumstats1=sumstats1,sumstats2=sumstats2)
@@ -232,7 +233,9 @@ def plot_miami2(
                                                           drop_chr_start=False)
     
     # P_1  scaled_P_1  P_2  scaled_P_2  TCHR+POS CHR POS    
-    
+    log.write(" -Columns in merged sumstats: {}".format(",".join(merged_sumstats.columns)), verbose=verbose)
+
+
     del(sumstats1)
     del(sumstats2)
     garbage_collect.collect()
@@ -244,13 +247,14 @@ def plot_miami2(
         plt.subplots_adjust(hspace=region_hspace)    
     else:
         fig, ax1, ax5 = figax
-
+    
+    log.write("Start to create Manhattan plot for sumstats1...", verbose=verbose)
     fig,log = mqqplot(merged_sumstats,
                       chrom="CHR",
                       pos="POS",
                       p="P_1",
                       mlog10p="scaled_P_1",
-                      snpid=id1,
+                      snpid=id1_1,
                       scaled=scaled1,
                       log=log, 
                       mode=mode,
@@ -261,15 +265,16 @@ def plot_miami2(
                       _if_quick_qc=False,
                       **mqq_args1
                      )
+    log.write("Finished creating Manhattan plot for sumstats1".format(_get_version()), verbose=verbose)
 
-
+    log.write("Start to create Manhattan plot for sumstats2...", verbose=verbose)
     fig,log = mqqplot(merged_sumstats,
                       chrom="CHR",
                       pos="POS",
                       p="P_2",
                       mlog10p="scaled_P_2",
                       scaled=scaled2,
-                      snpid=id2,
+                      snpid=id2_2,
                       log=log, 
                       mode=mode,
                       figax=(fig,ax5),
@@ -278,7 +283,8 @@ def plot_miami2(
                        _invert=True,
                       _if_quick_qc=False,
                      **mqq_args2)
-    
+    log.write("Finished creating Manhattan plot for sumstats2".format(_get_version()), verbose=verbose)
+
     if same_ylim==True:
         ylim1_converted = ax1.get_ylim()
         ylim2_converted = ax5.get_ylim()
@@ -286,8 +292,6 @@ def plot_miami2(
             ax5.set_ylim(ylim1_converted)
         else:
             ax1.set_ylim(ylim2_converted)
-    
-    
     #####################################################################################################################    
     
     ax5.set_xlabel("")
@@ -338,24 +342,27 @@ def _sort_args_to_12(mqq_args):
     return mqq_args1, mqq_args2
 
 def _solve_id_contradictory(id0, id1, id2, mqq_args1, mqq_args2):
-    if id1 is not None and id2 is not None:
+    if (id1 is not None) and (id2 is not None):
         if id1 == id2:
             id1_1 = id1 + "_1"
             id2_2 = id2 + "_2"
             if "anno" in mqq_args1.keys():
                 if mqq_args1["anno"] == id1:
                     mqq_args1["anno"] = id1_1
-            if "anno" in mqq_args1.keys():
-                if mqq_args1["anno"] == id2:
-                    mqq_args1["anno"] = id2_2
+            if "anno" in mqq_args2.keys():
+                if mqq_args2["anno"] == id2:
+                    mqq_args2["anno"] = id2_2
         else:
             id1_1 = id1
             id2_2 = id2
+    
     if id1 is None:
         id1_1 = id0
+
     if id2 is None:
         id2_2 = id0
-    return id1_1, id2_2, mqq_args1, mqq_args2
+
+    return (id1_1, id2_2, mqq_args1, mqq_args2)
 
 def _figure_args_for_vector_plot(save, fig_args, scatter_kwargs ):
     if save is not None:

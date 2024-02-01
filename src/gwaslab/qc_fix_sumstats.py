@@ -47,7 +47,7 @@ def _process_build(build,log,verbose):
         log.write(" -Genomic coordinates are based on GRCh38/hg38...", verbose=verbose)
         final_build = "38"
     else:
-        log.write(" -WARNING! Version of genomic coordinates is unknown...", verbose=verbose)
+        log.warning("Version of genomic coordinates is unknown...")
         final_build = "99"
     return final_build
 
@@ -228,7 +228,7 @@ def fixID(sumstats,
                 
     ############################  fixing chr pos###################################################   
     if fixeanea == True:
-        if verbose: log.write(" -WARNING! gwaslab assumes SNPID is in the format of CHR:POS:NEA:EA / CHR:POS:REF:ALT")
+        if verbose: log.warning("gwaslab assumes SNPID is in the format of CHR:POS:NEA:EA / CHR:POS:REF:ALT")
         if overwrite is True:
             if verbose: log.write(" -Overwrite mode is applied...")
             to_fix = is_chrposrefalt
@@ -1097,8 +1097,8 @@ def sanitycheckstats(sumstats,
         
         is_low_p =  sumstats["P"] == 0 
         if sum(is_low_p) >0:
-            log.write(" -WARNING! Extremely low P detected (P=0 or P < minimum positive value of float64) : {}".format(sum(is_low_p)), verbose=verbose)
-            log.write(" -WARNING! Please consider using MLOG10P instead.", verbose=verbose)
+            log.warning("Extremely low P detected (P=0 or P < minimum positive value of float64) : {}".format(sum(is_low_p)))
+            log.warning("Please consider using MLOG10P instead.")
         after_number=len(sumstats)
         if verbose: log.write(" -Removed "+str(pre_number - after_number)+" variants with bad P.") 
     
@@ -1729,7 +1729,7 @@ def skipped(log, verbose, end_line):
 
 def check_arg(log, verbose, key, value, function):
     if value is None:
-        log.write(" -WARNING! Necessary argument {} for {} is not provided!".format(key, function), verbose=verbose)
+        log.warning("Necessary argument {} for {} is not provided!".format(key, function))
         return False
     return True
 
@@ -1755,7 +1755,7 @@ def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
             to_show_title=" "
         else:
             to_show_title = " for {} ".format(function)
-        log.write(" -WARNING! Necessary columns{}were not detected:{}".format(to_show_title, ",".join(not_in_df)),verbose=verbose)
+        log.warning("Necessary columns{}were not detected:{}".format(to_show_title, ",".join(not_in_df)))
         skipped(log, verbose, title=function)
         return False
     

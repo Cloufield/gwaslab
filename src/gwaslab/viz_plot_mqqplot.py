@@ -303,40 +303,42 @@ def mqqplot(insumstats,
                     scatter_args["rasterized"]=True
                     qq_scatter_args["rasterized"]=True
 
-    if verbose: log.write("Start to create MQQ plot...{}:".format(_get_version()))
-    if verbose: log.write(" -Genomic coordinates version: {}...".format(build))
+    log.write("Start to create MQQ plot...{}:".format(_get_version()),verbose=verbose)
+    log.write(" -Genomic coordinates version: {}...".format(build),verbose=verbose)
     if build is None or build=="99":
-        if verbose: log.write("   -WARNING: Genomic coordinates version is unknown...")
-    if verbose: log.write(" -Genome-wide significance level to plot is set to "+str(sig_level_plot)+" ...")
-    if verbose: log.write(" -Raw input contains "+str(len(insumstats))+" variants...")
-    if verbose: log.write(" -MQQ plot layout mode is : "+mode)
+        log.warning("Genomic coordinates version is unknown.")
+    log.write(" -Genome-wide significance level to plot is set to "+str(sig_level_plot)+" ...",verbose=verbose)
+    log.write(" -Raw input contains "+str(len(insumstats))+" variants...",verbose=verbose)
+    log.write(" -MQQ plot layout mode is : "+mode,verbose=verbose)
+    
     if len(anno_set)>0 and ("m" in mode):
-        if verbose: log.write(" -Variants to annotate : "+",".join(anno_set))    
+        log.write(" -Variants to annotate : "+",".join(anno_set),verbose=verbose)    
+    
     if len(highlight)>0 and ("m" in mode):
         if pd.api.types.is_list_like(highlight[0]):
             if highlight_chrpos==False:
-                if len(highlight[0]) == len(highlight_color):
-                    log.write(" -WARNING: number of locus list does not match number of colors !!!")
+                if len(highlight) != len(highlight_color):
+                    log.warning("Number of locus groups in the list does not match number of provided colors.")
                 for i, highlight_set in enumerate(highlight):
-                    if verbose: log.write(" -Set {} loci to highlight ({}) : ".format(i+1, highlight_color[i%len(highlight_color)])+",".join(highlight_set))
+                    log.write(" -Set {} loci to highlight ({}) : ".format(i+1, highlight_color[i%len(highlight_color)])+",".join(highlight_set),verbose=verbose)
             else:
-                if verbose: log.write(" -Loci to highlight ({}): {}".format(highlight_color,highlight))
-            if verbose: log.write("  -Highlight_window is set to: ", highlight_windowkb, " kb") 
+                log.write(" -Loci to highlight ({}): {}".format(highlight_color,highlight),verbose=verbose)
+            log.write("  -highlight_windowkb is set to: ", highlight_windowkb, " kb",verbose=verbose) 
         else:
-            if verbose: log.write(" -Loci to highlight ({}): ".format(highlight_color)+",".join(highlight))    
-            if verbose: log.write("  -Highlight_window is set to: ", highlight_windowkb, " kb") 
+            log.write(" -Loci to highlight ({}): ".format(highlight_color)+",".join(highlight),verbose=verbose)    
+            log.write("  -highlight_windowkb is set to: ", highlight_windowkb, " kb",verbose=verbose) 
     
     if len(pinpoint)>0 :
         if pd.api.types.is_list_like(pinpoint[0]):
-            if len(pinpoint[0]) == len(pinpoint_color):
-                log.write(" -WARNING: number of variant list does not match number of colors !!!")
+            if len(pinpoint) != len(pinpoint_color):
+                log.warning("Number of variant groups in the list does not match number of provided colors.")
             for i, pinpoint_set in enumerate(pinpoint):
-                  if verbose: log.write(" -Set {} variants to pinpoint ({}) : ".format(i+1,pinpoint_color[i%len(pinpoint_color)])+",".join(pinpoint_set))      
+                  log.write(" -Set {} variants to pinpoint ({}) : ".format(i+1,pinpoint_color[i%len(pinpoint_color)])+",".join(pinpoint_set),verbose=verbose)      
         else:
-            if verbose: log.write(" -Variants to pinpoint ({}) : ".format(pinpoint_color)+",".join(pinpoint))   
+            log.write(" -Variants to pinpoint ({}) : ".format(pinpoint_color)+",".join(pinpoint),verbose=verbose)   
     
     if region is not None:
-        if verbose: log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".")  
+        log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".",verbose=verbose)  
     
     # construct line series for coversion
     if additional_line is None:
@@ -431,15 +433,15 @@ def mqqplot(insumstats,
         region_start = region[1]
         region_end = region[2]
         marker_size=(25,45)
-        if verbose:log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region[1], region[2]))
+        log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region[1], region[2]),verbose=verbose)
         
-        in_region_snp = (sumstats[chrom]==region_chr) &(sumstats[pos]<region_end) &(sumstats[pos]>region_start)
+        in_region_snp = (sumstats[chrom]==region_chr) & (sumstats[pos]<region_end) & (sumstats[pos]>region_start)
         
-        if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)))
+        log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)),verbose=verbose)
         sumstats = sumstats.loc[in_region_snp,:]
         
         if len(sumstats)==0:
-            log.write(" -Warning : No valid data! Please check the input.")
+            log.warning("No valid data! Please check the input.")
             return None
     
     ## EAF
@@ -453,7 +455,7 @@ def mqqplot(insumstats,
         sumstats["HUE"] = pd.NA
         sumstats["HUE"] = sumstats["HUE"].astype("Int64")
 
-    if verbose: log.write("Finished loading specified columns from the sumstats.")
+    log.write("Finished loading specified columns from the sumstats.",verbose=verbose)
 
 
 #sanity check############################################################################################################
@@ -526,13 +528,13 @@ def mqqplot(insumstats,
                                                                         lines_to_plot=lines_to_plot,
                                                                         log = log)
     except:
-        log.write(" -Warning : No valid data! Please check the input.")
+        log.warning("No valid data! Please check the input.")
         return None
     
-    if verbose: log.write("Finished data conversion and sanity check.")
+    log.write("Finished data conversion and sanity check.",verbose=verbose)
     
     # Manhattan plot ##########################################################################################################
-    if verbose:log.write("Start to create MQQ plot with "+str(len(sumstats))+" variants...")
+    log.write("Start to create MQQ plot with "+str(len(sumstats))+" variants...",verbose=verbose)
     ## regional plot ->rsq
         #calculate rsq]
     if vcf_path is not None:
@@ -614,8 +616,7 @@ def mqqplot(insumstats,
                                zorder=2,ax=ax1,edgecolor=edgecolor, **scatter_args)   
             if pd.api.types.is_list_like(highlight[0]) and highlight_chrpos==False:
                 for i, highlight_set in enumerate(highlight):
-                    if verbose: log.write(" -Highlighting set {} target loci...".format(i+1))
-                    print(sumstats["HUE"].dtype)
+                    log.write(" -Highlighting set {} target loci...".format(i+1),verbose=verbose)
                     sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==i], x='i', y='scaled_P',
                         hue="HUE",
                         palette={i:highlight_color[i%len(highlight_color)]},
@@ -627,7 +628,7 @@ def mqqplot(insumstats,
                         zorder=3+i,ax=ax1,edgecolor=edgecolor,**scatter_args)  
                 highlight_i = sumstats.loc[~sumstats["HUE"].isna(),"i"].values
             else:
-                if verbose: log.write(" -Highlighting target loci...")
+                log.write(" -Highlighting target loci...",verbose=verbose)
                 sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==0], x='i', y='scaled_P',
                     hue="HUE",
                     palette={0:highlight_color},
@@ -696,17 +697,17 @@ def mqqplot(insumstats,
                 for i, pinpoint_set in enumerate(pinpoint):
                     if sum(sumstats[snpid].isin(pinpoint_set))>0:
                         to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint_set),:]
-                        if verbose: log.write(" -Pinpointing set {} target vairants...".format(i+1))
+                        log.write(" -Pinpointing set {} target vairants...".format(i+1),verbose=verbose)
                         ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color[i%len(pinpoint_color)],zorder=100,s=marker_size[1]+1)
                     else:
-                        if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
+                        log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
             else:
                 if sum(sumstats[snpid].isin(pinpoint))>0:
                     to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
-                    if verbose: log.write(" -Pinpointing target vairants...")
+                    log.write(" -Pinpointing target vairants...",verbose=verbose)
                     ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color,zorder=100,s=marker_size[1]+1)
                 else:
-                    if verbose: log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...")
+                    log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
             
 
         
@@ -770,7 +771,7 @@ def mqqplot(insumstats,
             lead_snp_i= None
             lead_snp_i2=None
         
-        if verbose: log.write("Finished creating MQQ plot successfully!")
+        log.write("Finished creating MQQ plot successfully!",verbose=verbose)
 
         # Get top variants for annotation #######################################################
         log.write("Start to extract variants for annotation...",verbose=verbose)
@@ -778,7 +779,7 @@ def mqqplot(insumstats,
             if len(anno_set)>0:
                 to_annotate=sumstats.loc[sumstats[snpid].isin(anno_set),:]
                 if to_annotate.empty is not True:
-                    if verbose: log.write(" -Found "+str(len(to_annotate))+" specified variants to annotate...")
+                    log.write(" -Found "+str(len(to_annotate))+" specified variants to annotate...",verbose=verbose)
             else:
                 to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level_lead)),:],
                                snpid,
@@ -791,7 +792,7 @@ def mqqplot(insumstats,
                                mlog10p="scaled_P",
                                verbose=False)
                 if (to_annotate.empty is not True) and ("b" not in mode):
-                    if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
+                    log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
         else:
             to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level_lead)),:],
                                "i",
@@ -804,7 +805,7 @@ def mqqplot(insumstats,
                                mlog10p="scaled_P",
                                sig_level=sig_level_lead)
             if (to_annotate.empty is not True) and ("b" not in mode):
-                if verbose: log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...")
+                log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
         if (to_annotate.empty is not True) and anno=="GENENAME":
             to_annotate = annogene(to_annotate,
                                    id=snpid,
@@ -912,7 +913,7 @@ def mqqplot(insumstats,
         log.write("Finished processing figure arts.",verbose=verbose)
 
         # Add annotation arrows and texts
-        if verbose: log.write("Start to annotate variants...")
+        log.write("Start to annotate variants...",verbose=verbose)
         ax1 = annotate_single(
                                 sumstats=sumstats,
                                 anno=anno,
@@ -1019,7 +1020,7 @@ def mqqplot(insumstats,
     if _get_region_lead==True:
         return fig, log, lead_snp_i, lead_snp_i2
     
-    if verbose: log.write("Finished creating plot successfully!")
+    log.write("Finished creating plot successfully!",verbose=verbose)
     return fig, log
 
 ##############################################################################################################################################################################
@@ -1114,22 +1115,22 @@ def _sanity_check(sumstats, mode, chrom, pos, stratified, _if_quick_qc, log, ver
         #sanity check : drop variants with na values in chr and pos df
         sumstats = sumstats.dropna(subset=[chrom,pos])
         after_number=len(sumstats)
-        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...")
+        log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...",verbose=verbose)
         out_of_range_chr = sumstats[chrom]<=0
-        if verbose:log.write(" -Removed {} variants with CHR <=0...".format(sum(out_of_range_chr)))
+        log.write(" -Removed {} variants with CHR <=0...".format(sum(out_of_range_chr)),verbose=verbose)
         sumstats = sumstats.loc[~out_of_range_chr,:]
     
     if stratified is True and _if_quick_qc: 
         pre_number=len(sumstats)
         sumstats = sumstats.dropna(subset=["MAF"])
         after_number=len(sumstats)
-        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in EAF column ...")
+        log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in EAF column ...",verbose=verbose)
     
     if "b" not in mode and _if_quick_qc:
         pre_number=len(sumstats)
         sumstats = sumstats.dropna(subset=["raw_P"])
         after_number=len(sumstats)
-        if verbose:log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...")
+        log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...",verbose=verbose)
     return sumstats
 
 def _process_p_value(sumstats, mode,p, mlog10p, scaled, log, verbose ):
@@ -1138,7 +1139,7 @@ def _process_p_value(sumstats, mode,p, mlog10p, scaled, log, verbose ):
         sumstats["scaled_P"] = sumstats["DENSITY"].copy()
         sumstats["raw_P"] = -np.log10(sumstats["DENSITY"].copy()+2)
     elif scaled is True:
-        if verbose:log.write(" -P values are already converted to -log10(P)!")
+        log.write(" -P values are already converted to -log10(P)!",verbose=verbose)
         sumstats["scaled_P"] = sumstats["raw_P"].copy()
         sumstats["raw_P"] = np.power(10,-sumstats["scaled_P"].astype("float64"))
     else:
@@ -1186,7 +1187,7 @@ def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb
                         sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0                        
         else:
             # highlight for one set
-            # to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
+            to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
             #assign colors: 0 is hightlight color
             for index,row in to_highlight.iterrows():
                 target_chr = int(row[chrom])
@@ -1199,7 +1200,7 @@ def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb
 
 def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     if "b" in mode and "DENSITY" not in sumstats.columns:
-        if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
+        log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb",verbose=verbose)
         large_number = _get_largenumber(sumstats[pos].max(),log=log)
 
         stack=[]
@@ -1220,7 +1221,7 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     elif "b" in mode and "DENSITY" in sumstats.columns:
         bmean=sumstats["DENSITY"].mean()
         bmedian=sumstats["DENSITY"].median()
-        if verbose:log.write(" -DENSITY column exists. Skipping calculation...") 
+        log.write(" -DENSITY column exists. Skipping calculation...",verbose=verbose) 
     return   sumstats, bmean, bmedian
 
 def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_plot , sc_linewidth, sig_line_color, suggestive_sig_line_color, additional_line_color, mode, bmean, bmedian , log=Log(),verbose=True):
