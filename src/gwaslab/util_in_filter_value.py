@@ -318,4 +318,75 @@ def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True,log=Log(),**ar
     log.write("Finished extracting variants in the flanking regions.",verbose=verbose)
 
     return flanking
+
+def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True,log=Log(),**args):
     
+    log.write("Start to extract variants in the flanking regions using rsID or SNPID...",verbose=verbose)
+    log.write(" - Central variants: {}".format(snpid))
+    log.write(" - Flanking windowsize in kb: {}".format(windowsizekb))
+
+    if type(snpid) == str:
+        snpid = [snpid]
+    
+    if "rsID" in sumstats.columns and "SNPID" not in sumstats.columns:
+        is_specified = sumstats["rsID"].isin(snpid)
+    elif "rsID" not in sumstats.columns and "SNPID" in sumstats.columns:
+        is_specified = sumstats["SNPID"].isin(snpid)
+    else:
+        is_specified = sumstats["rsID"].isin(snpid) | sumstats["SNPID"].isin(snpid)
+
+    row = sumstats.loc[is_specified,:]
+    
+    is_flanking = None
+    for index, row in row.iterrows():
+        chrom = row["CHR"]
+        left =  row["POS"] - 1000 * windowsizekb
+        right = row["POS"] + 1000 * windowsizekb
+        is_flancking_in_this_region = (sumstats["CHR"] == chrom) & (sumstats["POS"] >= left) & (sumstats["POS"] <= right)
+        
+        log.write(" - Variants in flanking region {}:{}-{} : {}".format(chrom, left, right, sum(is_flancking_in_this_region) ))
+        
+        if is_flanking is None:
+            is_flanking = is_flancking_in_this_region
+        else:
+            is_flanking = is_flanking | is_flancking_in_this_region
+    
+    flanking = sumstats.loc[is_flanking,:]
+    
+    log.write(" - Extracted {} variants in the regions.".format(len(flanking)),verbose=verbose)
+    log.write("Finished extracting variants in the flanking regions.",verbose=verbose)
+
+    return flanking
+
+def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True,log=Log(),**args):
+    
+    log.write("Start to extract variants in the flanking regions using CHR and POS...",verbose=verbose)
+    log.write(" - Central positions: {}".format(chrpos))
+    log.write(" - Flanking windowsize in kb: {}".format(windowsizekb))
+
+    if type(chrpos) == tuple:
+        chrpos_to_check = [chrpos]
+    else:
+        chrpos_to_check = chrpos
+
+    is_flanking = None
+    
+    for index, row in enumerate(chrpos_to_check):
+        chrom = row[0]
+        left =  row[1] - 1000 * windowsizekb
+        right = row[1] + 1000 * windowsizekb
+        is_flancking_in_this_region = (sumstats["CHR"] == chrom) & (sumstats["POS"] >= left) & (sumstats["POS"] <= right)
+        
+        log.write(" - Variants in flanking region {}:{}-{} : {}".format(chrom, left, right, sum(is_flancking_in_this_region) ))
+        
+        if is_flanking is None:
+            is_flanking = is_flancking_in_this_region
+        else:
+            is_flanking = is_flanking | is_flancking_in_this_region
+    
+    flanking = sumstats.loc[is_flanking,:]
+    
+    log.write(" - Extracted {} variants in the regions.".format(len(flanking)),verbose=verbose)
+    log.write("Finished extracting variants in the flanking regions.",verbose=verbose)
+
+    return flanking

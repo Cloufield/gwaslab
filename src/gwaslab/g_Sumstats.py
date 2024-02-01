@@ -35,6 +35,8 @@ from gwaslab.util_in_filter_value import filterregionout
 from gwaslab.util_in_filter_value import inferbuild
 from gwaslab.util_in_filter_value import sampling
 from gwaslab.util_in_filter_value import _get_flanking
+from gwaslab.util_in_filter_value import _get_flanking_by_chrpos
+from gwaslab.util_in_filter_value import _get_flanking_by_id
 from gwaslab.util_in_calculate_gc import lambdaGC
 from gwaslab.util_in_convert_h2 import _get_per_snp_r2
 from gwaslab.util_in_get_sig import getsig
@@ -456,6 +458,22 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _get_flanking(self.data, **args)
+    
+    def get_flanking_by_chrpos(self, chrpos,  inplace=False,**args):
+        if inplace is False:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = _get_flanking_by_chrpos(new_Sumstats_object.data, chrpos, **args)
+            return new_Sumstats_object
+        else:
+            self.data = _get_flanking_by_chrpos(self.data, chrpos,**args)
+    
+    def get_flanking_by_id(self, snpid, inplace=False,**args):
+        if inplace is False:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = _get_flanking_by_id(new_Sumstats_object.data, snpid, **args)
+            return new_Sumstats_object
+        else:
+            self.data = _get_flanking_by_id(self.data, snpid, **args)
     
     def filter_value(self, expr, inplace=False, **args):
         if inplace is False:
