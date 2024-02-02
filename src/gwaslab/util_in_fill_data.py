@@ -9,7 +9,7 @@ from gwaslab.g_version import _get_version
 from gwaslab.qc_check_datatype import check_datatype
 
 def filldata( 
-    sumstats,
+    insumstats,
     to_fill=None,
     df=None,
     overwrite=False,
@@ -23,7 +23,7 @@ def filldata(
     # if a string is passed to to_fill, convert it to list
     if type(to_fill) is str:
         to_fill = [to_fill]
-
+    sumstats = insumstats.copy()
     if verbose: log.write("Start filling data using existing columns...{}".format(_get_version()))
     
     check_datatype(sumstats,verbose=verbose,log=log)
