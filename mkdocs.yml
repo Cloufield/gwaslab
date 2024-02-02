@@ -57,6 +57,8 @@ nav:
        - "Reference data" : Reference.md
        - "Common data": CommonData.md
     - Examples:
+       - "Standardization": standardization_workflow.ipynb
+       - "Harmonization" : harmonization_workflow.ipynb    
        - "Regional plot" : visualization_regional.ipynb
        - "Miami_plot": visualization_miami2.ipynb
 
