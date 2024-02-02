@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="../standardization_workflow/">
+        <link rel="prev" href="../harmonization_workflow/">
       
       
-        <link rel="next" href="../utility_data_conversion/">
+        <link rel="next" href="../visualization_regional/">
       
       
       <link rel="icon" href="../assets/gwaslab.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Harmonization - GWASLab</title>
+        <title>Data conversion - GWASLab</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#harmonization" class="md-skip">
+        <a href="#data-conversion" class="md-skip">
           Skip to content
         </a>
       
@@ -107,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Harmonization
+              Data conversion
             
           </span>
         </div>
@@ -1348,6 +1348,27 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../harmonization_workflow/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Harmonization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1364,7 +1385,7 @@
           
   
   <span class="md-ellipsis">
-    Harmonization
+    Data conversion
   </span>
   
 
@@ -1375,7 +1396,7 @@
         
   
   <span class="md-ellipsis">
-    Harmonization
+    Data conversion
   </span>
   
 
@@ -1397,36 +1418,90 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#load-test-data" class="md-nav__link">
+  <a href="#loading-sample-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Load test data
+      Loading sample data
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#perform-harmonization" class="md-nav__link">
+  <a href="#beta-or" class="md-nav__link">
     <span class="md-ellipsis">
-      Perform harmonization
+      BETA -&gt; OR
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#check-summary" class="md-nav__link">
+  <a href="#or-beta" class="md-nav__link">
     <span class="md-ellipsis">
-      Check summary
+      OR -&gt; BETA
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#vcf-ncbi-sequence-identifiers" class="md-nav__link">
+  <a href="#betase-z" class="md-nav__link">
     <span class="md-ellipsis">
-      VCF : NCBI Sequence Identifiers
+      BETA/SE -&gt; Z
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p-mlog10p" class="md-nav__link">
+    <span class="md-ellipsis">
+      P -&gt; MLOG10P
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mlog10p-p" class="md-nav__link">
+    <span class="md-ellipsis">
+      MLOG10P -&gt; P
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#eaf-maf" class="md-nav__link">
+    <span class="md-ellipsis">
+      EAF -&gt; MAF
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#simulation-of-extreme-p-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simulation of extreme P values
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limited-precision-of-float64" class="md-nav__link">
+    <span class="md-ellipsis">
+      Limited precision of float64
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recalculate-mlog10p-with-extreme-p-value-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recalculate MLOG10P with extreme P value mode
     </span>
   </a>
   
@@ -1436,27 +1511,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../utility_data_conversion/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Data conversion
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -1538,36 +1592,90 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#load-test-data" class="md-nav__link">
+  <a href="#loading-sample-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Load test data
+      Loading sample data
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#perform-harmonization" class="md-nav__link">
+  <a href="#beta-or" class="md-nav__link">
     <span class="md-ellipsis">
-      Perform harmonization
+      BETA -&gt; OR
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#check-summary" class="md-nav__link">
+  <a href="#or-beta" class="md-nav__link">
     <span class="md-ellipsis">
-      Check summary
+      OR -&gt; BETA
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#vcf-ncbi-sequence-identifiers" class="md-nav__link">
+  <a href="#betase-z" class="md-nav__link">
     <span class="md-ellipsis">
-      VCF : NCBI Sequence Identifiers
+      BETA/SE -&gt; Z
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p-mlog10p" class="md-nav__link">
+    <span class="md-ellipsis">
+      P -&gt; MLOG10P
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mlog10p-p" class="md-nav__link">
+    <span class="md-ellipsis">
+      MLOG10P -&gt; P
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#eaf-maf" class="md-nav__link">
+    <span class="md-ellipsis">
+      EAF -&gt; MAF
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#simulation-of-extreme-p-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simulation of extreme P values
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limited-precision-of-float64" class="md-nav__link">
+    <span class="md-ellipsis">
+      Limited precision of float64
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recalculate-mlog10p-with-extreme-p-value-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recalculate MLOG10P with extreme P value mode
     </span>
   </a>
   
@@ -2625,7 +2733,7 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="harmonization">Harmonization<a class="anchor-link" href="#harmonization">&#182;</a></h1>
+<h1 id="data-conversion">Data conversion<a class="anchor-link" href="#data-conversion">&#182;</a></h1>
 </div>
 </div>
 </div>
@@ -2668,7 +2776,7 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="load-test-data">Load test data<a class="anchor-link" href="#load-test-data">&#182;</a></h2>
+<h2 id="loading-sample-data">Loading sample data<a class="anchor-link" href="#loading-sample-data">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2693,9 +2801,29 @@ Licensed under the Apache License, Version 2.0.
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;/home/yunye/work/gwaslab/examples/toy_data/to_harmonize.tsv&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;gwaslab&quot;</span><span class="p">,</span><span class="n">other</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;NOTE&quot;</span><span class="p">])</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;t2d_bbj.txt.gz&quot;</span><span class="p">,</span>
+             <span class="n">snpid</span><span class="o">=</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span>
+             <span class="n">chrom</span><span class="o">=</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span>
+             <span class="n">pos</span><span class="o">=</span><span class="s2">&quot;POS&quot;</span><span class="p">,</span>
+             <span class="n">ea</span><span class="o">=</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span>
+             <span class="n">nea</span><span class="o">=</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span>
+             <span class="n">neaf</span><span class="o">=</span><span class="s2">&quot;Frq&quot;</span><span class="p">,</span>
+             <span class="n">beta</span><span class="o">=</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span>
+             <span class="n">se</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span><span class="n">nrows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div id="cell-2" class="clipboard-copy-txt">mysumstats = gl.Sumstats("/home/yunye/work/gwaslab/examples/toy_data/to_harmonize.tsv",fmt="gwaslab",other=["NOTE"])</div>
+<div id="cell-2" class="clipboard-copy-txt">mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
+             snpid="SNP",
+             chrom="CHR",
+             pos="POS",
+             ea="ALT",
+             nea="REF",
+             neaf="Frq",
+             beta="BETA",
+             se="SE",nrows=5,verbose=False)
+mysumstats.basic_check(verbose=False)
+mysumstats.data</div>
     
         </div>
     </div>
@@ -2713,35 +2841,106 @@ Licensed under the Apache License, Version 2.0.
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
 
 
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Fri Feb  2 19:36:24 2024 GWASLab v3.4.38 https://cloufield.github.io/gwaslab/
-Fri Feb  2 19:36:24 2024 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
-Fri Feb  2 19:36:24 2024 Start to load format from formatbook....
-Fri Feb  2 19:36:24 2024  -gwaslab format meta info:
-Fri Feb  2 19:36:24 2024   - format_name  : gwaslab
-Fri Feb  2 19:36:24 2024   - format_source  : https://cloufield.github.io/gwaslab/
-Fri Feb  2 19:36:24 2024   - format_version  : 20231220_v4
-Fri Feb  2 19:36:24 2024 Start to initialize gl.Sumstats from file :/home/yunye/work/gwaslab/examples/toy_data/to_harmonize.tsv
-Fri Feb  2 19:36:24 2024  -Reading columns          : CHR,NEA,SE,P,DIRECTION,BETA,SNPID,NOTE,N,EAF,EA,POS
-Fri Feb  2 19:36:24 2024  -Renaming columns to      : CHR,NEA,SE,P,DIRECTION,BETA,SNPID,NOTE,N,EAF,EA,POS
-Fri Feb  2 19:36:24 2024  -Current Dataframe shape : 15  x  12
-Fri Feb  2 19:36:24 2024  -Initiating a status column: STATUS ...
-Fri Feb  2 19:36:24 2024  #WARNING! Version of genomic coordinates is unknown...
-Fri Feb  2 19:36:24 2024 Start to reorder the columns...v3.4.38
-Fri Feb  2 19:36:24 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
-Fri Feb  2 19:36:24 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS,NOTE
-Fri Feb  2 19:36:24 2024 Finished reordering the columns.
-Fri Feb  2 19:36:24 2024  -Column  : SNPID  CHR    POS   EA       NEA      EAF     BETA    SE      P       N     DIRECTION STATUS   NOTE  
-Fri Feb  2 19:36:24 2024  -DType   : object string int64 category category float64 float64 float64 float64 int64 object    category object
-Fri Feb  2 19:36:24 2024  -Verified: T      F      T     T        T        T       T       T       T       T     T         T        NA    
-Fri Feb  2 19:36:24 2024  #WARNING! Columns with possibly incompatable dtypes: CHR
-Fri Feb  2 19:36:24 2024  -Current Dataframe memory usage: 19.94 MB
-Fri Feb  2 19:36:24 2024 Finished loading data successfully!
-</pre>
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SNPID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>EA</th>
+      <th>NEA</th>
+      <th>EAF</th>
+      <th>BETA</th>
+      <th>SE</th>
+      <th>STATUS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1:725932_G_A</td>
+      <td>1</td>
+      <td>725932</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.9960</td>
+      <td>-0.0737</td>
+      <td>0.1394</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1:725933_A_G</td>
+      <td>1</td>
+      <td>725933</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.0040</td>
+      <td>0.0737</td>
+      <td>0.1394</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1:737801_T_C</td>
+      <td>1</td>
+      <td>737801</td>
+      <td>C</td>
+      <td>T</td>
+      <td>0.0051</td>
+      <td>0.0490</td>
+      <td>0.1231</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1:749963_T_TAA</td>
+      <td>1</td>
+      <td>749963</td>
+      <td>TAA</td>
+      <td>T</td>
+      <td>0.8374</td>
+      <td>0.0213</td>
+      <td>0.0199</td>
+      <td>9960399</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1:751343_T_A</td>
+      <td>1</td>
+      <td>751343</td>
+      <td>T</td>
+      <td>A</td>
+      <td>0.8593</td>
+      <td>0.0172</td>
+      <td>0.0156</td>
+      <td>9960099</td>
+    </tr>
+  </tbody>
+</table>
 </div>
+</div>
+
 </div>
 
 </div>
@@ -2756,8 +2955,7 @@ Fri Feb  2 19:36:24 2024 Finished loading data successfully!
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>A list of variants that needs to be harmonized. Issues are described in NOTE column.</p>
-
+<h2 id="beta-or">BETA -&gt; OR<a class="anchor-link" href="#beta-or">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2782,9 +2980,9 @@ Fri Feb  2 19:36:24 2024 Finished loading data successfully!
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;OR&quot;</span><span class="p">])</span>
 </pre></div>
-<div id="cell-3" class="clipboard-copy-txt">mysumstats.data</div>
+<div id="cell-3" class="clipboard-copy-txt">mysumstats.fill_data(to_fill=["OR"])</div>
     
         </div>
     </div>
@@ -2802,287 +3000,26 @@ Fri Feb  2 19:36:24 2024 Finished loading data successfully!
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 
 
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>SNPID</th>
-      <th>CHR</th>
-      <th>POS</th>
-      <th>EA</th>
-      <th>NEA</th>
-      <th>EAF</th>
-      <th>BETA</th>
-      <th>SE</th>
-      <th>P</th>
-      <th>N</th>
-      <th>DIRECTION</th>
-      <th>STATUS</th>
-      <th>NOTE</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1:1066403:T:C</td>
-      <td>1</td>
-      <td>1066403</td>
-      <td>C</td>
-      <td>T</td>
-      <td>0.5276</td>
-      <td>0.0043</td>
-      <td>0.0109</td>
-      <td>0.68910</td>
-      <td>191764</td>
-      <td>++-+</td>
-      <td>9999999</td>
-      <td>Clean</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1:1163266:G:A</td>
-      <td>1</td>
-      <td>1163266</td>
-      <td>G</td>
-      <td>A</td>
-      <td>0.8355</td>
-      <td>0.0122</td>
-      <td>0.0120</td>
-      <td>0.30810</td>
-      <td>191764</td>
-      <td>-+++</td>
-      <td>9999999</td>
-      <td>Flip</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1:1213224:T:A</td>
-      <td>1</td>
-      <td>1213224</td>
-      <td>T</td>
-      <td>A</td>
-      <td>0.3345</td>
-      <td>0.0071</td>
-      <td>0.0095</td>
-      <td>0.45280</td>
-      <td>191764</td>
-      <td>+++-</td>
-      <td>9999999</td>
-      <td>Flip + Palindromic</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>1:3066761:A:T</td>
-      <td>1</td>
-      <td>3066761</td>
-      <td>T</td>
-      <td>A</td>
-      <td>0.1245</td>
-      <td>-0.0066</td>
-      <td>0.0157</td>
-      <td>0.67420</td>
-      <td>191764</td>
-      <td>-+++</td>
-      <td>9999999</td>
-      <td>Palindromic + No flip</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>1:3997271:T:TTTTA</td>
-      <td>1</td>
-      <td>3997271</td>
-      <td>TTTTA</td>
-      <td>T</td>
-      <td>0.3840</td>
-      <td>0.0188</td>
-      <td>0.0135</td>
-      <td>0.16300</td>
-      <td>191764</td>
-      <td>++++</td>
-      <td>9999999</td>
-      <td>Indel + Both on genome + No flip</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>1:4007705:TC:T</td>
-      <td>1</td>
-      <td>4007705</td>
-      <td>TC</td>
-      <td>T</td>
-      <td>0.4368</td>
-      <td>0.0306</td>
-      <td>0.0125</td>
-      <td>0.01421</td>
-      <td>191764</td>
-      <td>++++</td>
-      <td>9999999</td>
-      <td>Indel  + Both on genome + Flip</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>1:5164281:A:AAGAG</td>
-      <td>1</td>
-      <td>5164281</td>
-      <td>AAGAG</td>
-      <td>A</td>
-      <td>0.9871</td>
-      <td>0.0167</td>
-      <td>0.0454</td>
-      <td>0.71200</td>
-      <td>191764</td>
-      <td>-+++</td>
-      <td>9999999</td>
-      <td>Indel</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>1:12799025:C:CCT</td>
-      <td>1</td>
-      <td>12799025</td>
-      <td>C</td>
-      <td>CCT</td>
-      <td>0.1730</td>
-      <td>-0.0186</td>
-      <td>0.0118</td>
-      <td>0.11500</td>
-      <td>191764</td>
-      <td>---+</td>
-      <td>9999999</td>
-      <td>Indel + Flip</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>1:19323015:T:A</td>
-      <td>1</td>
-      <td>19323015</td>
-      <td>T</td>
-      <td>A</td>
-      <td>0.4389</td>
-      <td>-0.0165</td>
-      <td>0.0088</td>
-      <td>0.05949</td>
-      <td>191764</td>
-      <td>----</td>
-      <td>9999999</td>
-      <td>Palindromic + Flip + Indistinguishable</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>1:22841855:A:T</td>
-      <td>1</td>
-      <td>22841855</td>
-      <td>T</td>
-      <td>A</td>
-      <td>0.4527</td>
-      <td>0.0080</td>
-      <td>0.0095</td>
-      <td>0.39980</td>
-      <td>191764</td>
-      <td>-++-</td>
-      <td>9999999</td>
-      <td>Palindromic + Indistinguishable</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>3:183629306:T:TTCTC</td>
-      <td>3</td>
-      <td>183629306</td>
-      <td>TTCTC</td>
-      <td>T</td>
-      <td>0.0082</td>
-      <td>-0.0083</td>
-      <td>0.0555</td>
-      <td>0.88060</td>
-      <td>191764</td>
-      <td>+--+</td>
-      <td>9999999</td>
-      <td>Indel  + Both on genome + No information</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>4:99731866:G:C</td>
-      <td>4</td>
-      <td>99731866</td>
-      <td>G</td>
-      <td>C</td>
-      <td>0.3883</td>
-      <td>0.0052</td>
-      <td>0.0093</td>
-      <td>0.57360</td>
-      <td>191764</td>
-      <td>+-++</td>
-      <td>9999999</td>
-      <td>Palindromic+ Flip + Different strand (REF G, T...</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>8:89935201:C:G</td>
-      <td>8</td>
-      <td>89935201</td>
-      <td>G</td>
-      <td>C</td>
-      <td>0.3533</td>
-      <td>0.0103</td>
-      <td>0.0094</td>
-      <td>0.27560</td>
-      <td>191764</td>
-      <td>++++</td>
-      <td>9999999</td>
-      <td>Palindromic + Different strand (REF A; TOMMO G...</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>X:4206466:G:C</td>
-      <td>X</td>
-      <td>4206466</td>
-      <td>G</td>
-      <td>C</td>
-      <td>0.8727</td>
-      <td>-0.0055</td>
-      <td>0.0104</td>
-      <td>0.59840</td>
-      <td>191764</td>
-      <td>-+--</td>
-      <td>9999999</td>
-      <td>Palindromic + Flip + No information</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>X:5053229:A:T</td>
-      <td>X</td>
-      <td>5053229</td>
-      <td>T</td>
-      <td>A</td>
-      <td>0.9747</td>
-      <td>0.0218</td>
-      <td>0.0225</td>
-      <td>0.33180</td>
-      <td>191764</td>
-      <td>++++</td>
-      <td>9999999</td>
-      <td>Palindromic + No information</td>
-    </tr>
-  </tbody>
-</table>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 00:27:49 2024 Start filling data using existing columns...v3.4.38
+Sat Feb  3 00:27:49 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      STATUS  
+Sat Feb  3 00:27:49 2024  -DType   : string Int64 Int64 category category float32 float64 float64 category
+Sat Feb  3 00:27:49 2024  -Verified: T      T     T     T        T        T       T       T       T       
+Sat Feb  3 00:27:49 2024  -Overwrite mode:  False
+Sat Feb  3 00:27:49 2024   -Skipping columns:  []
+Sat Feb  3 00:27:49 2024  -Filling columns:  [&#39;OR&#39;]
+Sat Feb  3 00:27:49 2024   - Filling Columns iteratively...
+Sat Feb  3 00:27:49 2024   - Filling OR using BETA column...
+Sat Feb  3 00:27:49 2024   - Filling OR_95L/OR_95U using BETA/SE columns...
+Sat Feb  3 00:27:49 2024 Finished filling data using existing columns.
+Sat Feb  3 00:27:49 2024 Start to reorder the columns...v3.4.38
+Sat Feb  3 00:27:49 2024  -Current Dataframe shape : 5 x 12 ; Memory usage: 19.94 MB
+Sat Feb  3 00:27:49 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,OR,OR_95L,OR_95U,STATUS
+Sat Feb  3 00:27:49 2024 Finished reordering the columns.
+</pre>
 </div>
 </div>
 
@@ -3090,35 +3027,6 @@ Fri Feb  2 19:36:24 2024 Finished loading data successfully!
 
 </div>
 
-</div>
-
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="perform-harmonization">Perform harmonization<a class="anchor-link" href="#perform-harmonization">&#182;</a></h2>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<ul>
-<li>ref_seq : reference genome fasta file for allele alignment</li>
-<li>ref_infer : vcf file with allele frequency information for inferring strand and comparing allele frequency </li>
-<li>ref_alt_freq : field in INFO of vcf file for alternative allele frequency</li>
-</ul>
-
-</div>
-</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -3141,17 +3049,9 @@ Fri Feb  2 19:36:24 2024 Finished loading data successfully!
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">harmonize</span><span class="p">(</span>   <span class="n">basic_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                        <span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                        <span class="n">ref_seq</span><span class="o">=</span><span class="n">gl</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;ucsc_genome_hg19&quot;</span><span class="p">),</span>
-                        <span class="n">ref_infer</span><span class="o">=</span><span class="n">gl</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;1kg_eas_hg19&quot;</span><span class="p">),</span>
-                        <span class="n">ref_alt_freq</span><span class="o">=</span><span class="s2">&quot;AF&quot;</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div id="cell-4" class="clipboard-copy-txt">mysumstats.harmonize(   basic_check=True,
-                        n_cores=1,
-                        ref_seq=gl.get_path("ucsc_genome_hg19"),
-                        ref_infer=gl.get_path("1kg_eas_hg19"),
-                        ref_alt_freq="AF")</div>
+<div id="cell-4" class="clipboard-copy-txt">mysumstats.data</div>
     
         </div>
     </div>
@@ -3165,216 +3065,11 @@ Fri Feb  2 19:36:24 2024 Finished loading data successfully!
 
 
 <div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Fri Feb  2 19:36:24 2024 Start to check SNPID/rsID...v3.4.38
-Fri Feb  2 19:36:24 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
-Fri Feb  2 19:36:24 2024  -Checking SNPID data type...
-Fri Feb  2 19:36:24 2024  -Converting SNPID to pd.string data type...
-Fri Feb  2 19:36:24 2024  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
-Fri Feb  2 19:36:25 2024 Finished checking SNPID/rsID.
-Fri Feb  2 19:36:25 2024 Start to fix chromosome notation (CHR)...v3.4.38
-Fri Feb  2 19:36:25 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
-Fri Feb  2 19:36:25 2024  -Checking CHR data type...
-Fri Feb  2 19:36:25 2024  -Variants with standardized chromosome notation: 13
-Fri Feb  2 19:36:25 2024  -Variants with fixable chromosome notations: 2
-Fri Feb  2 19:36:25 2024  -No unrecognized chromosome notations...
-Fri Feb  2 19:36:25 2024  -Identifying non-autosomal chromosomes : X, Y, and MT ...
-Fri Feb  2 19:36:25 2024  -Identified  2  variants on sex chromosomes...
-Fri Feb  2 19:36:25 2024  -Standardizing sex chromosome notations: X to 23...
-Fri Feb  2 19:36:27 2024 Finished fixing chromosome notation (CHR).
-Fri Feb  2 19:36:27 2024 Start to fix basepair positions (POS)...v3.4.38
-Fri Feb  2 19:36:27 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
-Fri Feb  2 19:36:27 2024  -Converting to Int64 data type ...
-Fri Feb  2 19:36:28 2024  -Position bound:(0 , 250,000,000)
-Fri Feb  2 19:36:28 2024  -Removed outliers: 0
-Fri Feb  2 19:36:28 2024 Finished fixing basepair positions (POS).
-Fri Feb  2 19:36:28 2024 Start to fix alleles (EA and NEA)...v3.4.38
-Fri Feb  2 19:36:28 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
-Fri Feb  2 19:36:28 2024  -Converted all bases to string datatype and UPPERCASE.
-Fri Feb  2 19:36:28 2024  -Variants with bad EA  : 0
-Fri Feb  2 19:36:28 2024  -Variants with bad NEA : 0
-Fri Feb  2 19:36:28 2024  -Variants with NA for EA or NEA: 0
-Fri Feb  2 19:36:28 2024  -Variants with same EA and NEA: 0
-Fri Feb  2 19:36:28 2024  -Detected 0 variants with alleles that contain bases other than A/C/T/G .
-Fri Feb  2 19:36:30 2024 Finished fixing alleles (EA and NEA).
-Fri Feb  2 19:36:30 2024 Start to perform sanity check for statistics...v3.4.38
-Fri Feb  2 19:36:30 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
-Fri Feb  2 19:36:30 2024  -Comparison tolerance for floats: 1e-07
-Fri Feb  2 19:36:30 2024  -Checking if 0 &lt;= N &lt;= 2147483647 ...
-Fri Feb  2 19:36:30 2024  -Removed 0 variants with bad/na N.
-Fri Feb  2 19:36:30 2024  -Checking if -1e-07 &lt; EAF &lt; 1.0000001 ...
-Fri Feb  2 19:36:30 2024  -Removed 0 variants with bad/na EAF.
-Fri Feb  2 19:36:30 2024  -Checking if -1e-07 &lt; P &lt; 1.0000001 ...
-Fri Feb  2 19:36:30 2024  -Removed 0 variants with bad/na P.
-Fri Feb  2 19:36:30 2024  -Checking if -100.0000001 &lt; BETA &lt; 100.0000001 ...
-Fri Feb  2 19:36:30 2024  -Removed 0 variants with bad/na BETA.
-Fri Feb  2 19:36:30 2024  -Checking if -1e-07 &lt; SE &lt; inf ...
-Fri Feb  2 19:36:30 2024  -Removed 0 variants with bad/na SE.
-Fri Feb  2 19:36:30 2024  -Checking STATUS and converting STATUS to categories....
-Fri Feb  2 19:36:30 2024  -Removed 0 variants with bad statistics in total.
-Fri Feb  2 19:36:30 2024  -Data types for each column:
-Fri Feb  2 19:36:30 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      P       N     DIRECTION STATUS   NOTE  
-Fri Feb  2 19:36:30 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 Int64 object    category object
-Fri Feb  2 19:36:30 2024  -Verified: T      T     T     T        T        T       T       T       T       T     T         T        NA    
-Fri Feb  2 19:36:30 2024 Finished sanity check for statistics.
-Fri Feb  2 19:36:30 2024 Start to normalize indels...v3.4.38
-Fri Feb  2 19:36:30 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
-Fri Feb  2 19:36:30 2024  -No available variants to normalize..
-Fri Feb  2 19:36:30 2024 Finished normalizing variants successfully!
-Fri Feb  2 19:36:30 2024 Start to reorder the columns...v3.4.38
-Fri Feb  2 19:36:30 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
-Fri Feb  2 19:36:30 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS,NOTE
-Fri Feb  2 19:36:30 2024 Finished reordering the columns.
-Fri Feb  2 19:36:31 2024 Start to check if NEA is aligned with reference sequence...v3.4.38
-Fri Feb  2 19:36:31 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
-Fri Feb  2 19:36:31 2024  -Reference genome FASTA file: /home/yunye/.gwaslab/hg19.fa
-Fri Feb  2 19:36:31 2024  -Checking records: 1  2  3  4  5  6  7  X  8  9  10  11  12  13  14  15  16  17  18  20  Y  19  22  21  M  
-Fri Feb  2 19:36:47 2024  -Variants allele on given reference sequence :  6
-Fri Feb  2 19:36:47 2024  -Variants flipped :  6
-Fri Feb  2 19:36:47 2024   -Raw Matching rate :  80.00%
-Fri Feb  2 19:36:47 2024  -Variants inferred reverse_complement :  0
-Fri Feb  2 19:36:47 2024  -Variants inferred reverse_complement_flipped :  0
-Fri Feb  2 19:36:47 2024  -Both allele on genome + unable to distinguish :  3
-Fri Feb  2 19:36:47 2024  -Variants not on given reference sequence :  0
-Fri Feb  2 19:36:47 2024 Finished checking if NEA is aligned with reference sequence.
-Fri Feb  2 19:36:47 2024 Start to adjust statistics based on STATUS code...v3.4.38
-Fri Feb  2 19:36:47 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 0.00 MB
-Fri Feb  2 19:36:47 2024 Start to flip allele-specific stats for SNPs with status xxxxx[35]x: ALT-&gt;EA , REF-&gt;NEA ...v3.4.38
-Fri Feb  2 19:36:47 2024  -Flipping 6 variants...
-Fri Feb  2 19:36:47 2024  -Swapping column: NEA &lt;=&gt; EA...
-Fri Feb  2 19:36:47 2024  -Flipping column: BETA = - BETA...
-Fri Feb  2 19:36:47 2024  -Flipping column: DIRECTION +-?0 &lt;=&gt; -+?0 ...
-Fri Feb  2 19:36:47 2024  -Flipping column: EAF = 1 - EAF...
-Fri Feb  2 19:36:47 2024  -Changed the status for flipped variants : xxxxx[35]x -&gt; xxxxx[12]x
-Fri Feb  2 19:36:47 2024 Finished adjusting.
-Fri Feb  2 19:36:47 2024 Start to infer strand for palindromic SNPs/align indistinguishable indels...v3.4.38
-Fri Feb  2 19:36:47 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 0.00 MB
-Fri Feb  2 19:36:47 2024  -Number of threads/cores to use: 1
-Fri Feb  2 19:36:47 2024  -Reference VCF: /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
-Fri Feb  2 19:36:47 2024  -Checking prefix for chromosomes in vcf files...
-Fri Feb  2 19:36:47 2024  -No prefix for chromosomes in the VCF files.
-Fri Feb  2 19:36:47 2024  -Field for alternative allele frequency in VCF INFO: AF
-Fri Feb  2 19:36:47 2024  -Identified  8  palindromic SNPs...
-Fri Feb  2 19:36:47 2024  -After filtering by MAF&lt; 0.4 , 6 palindromic SNPs with unknown strand will be inferred...
-Fri Feb  2 19:36:47 2024   -Non-palindromic :  2
-Fri Feb  2 19:36:47 2024   -Palindromic SNPs on + strand:  2
-Fri Feb  2 19:36:47 2024   -Palindromic SNPs on - strand and needed to be flipped: 2
-Fri Feb  2 19:36:47 2024   -Palindromic SNPs with MAF not available to infer :  2
-Fri Feb  2 19:36:47 2024   -Palindromic SNPs with no macthes or no information :  1
-Fri Feb  2 19:36:47 2024  -Identified  3  indistinguishable Indels...
-Fri Feb  2 19:36:47 2024  -Indistinguishable indels will be inferred from reference vcf ref and alt...
-Fri Feb  2 19:36:47 2024  -DAF tolerance: 0.2
-Fri Feb  2 19:36:47 2024   -Indels ea/nea match reference :  1
-Fri Feb  2 19:36:47 2024   -Indels ea/nea need to be flipped :  1
-Fri Feb  2 19:36:47 2024   -Indels with no macthes or no information :  1
-Fri Feb  2 19:36:47 2024 Finished inferring strand for palindromic SNPs/align indistinguishable indels.
-Fri Feb  2 19:36:47 2024 Start to adjust statistics based on STATUS code...v3.4.38
-Fri Feb  2 19:36:47 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 0.00 MB
-Fri Feb  2 19:36:47 2024 Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: ALT-&gt;EA , REF-&gt;NEA...v3.4.38
-Fri Feb  2 19:36:47 2024  -Flipping 1 variants...
-Fri Feb  2 19:36:47 2024  -Swapping column: NEA &lt;=&gt; EA...
-Fri Feb  2 19:36:47 2024  -Flipping column: BETA = - BETA...
-Fri Feb  2 19:36:47 2024  -Flipping column: DIRECTION +-?0 &lt;=&gt; -+?0 ...
-Fri Feb  2 19:36:47 2024  -Flipping column: EAF = 1 - EAF...
-Fri Feb  2 19:36:47 2024  -Changed the status for flipped variants xxxx[123][67]6 -&gt; xxxx[123][67]4
-Fri Feb  2 19:36:47 2024 Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand &lt;=&gt; (+)strand...v3.4.38
-Fri Feb  2 19:36:47 2024  -Flipping 2 variants...
-Fri Feb  2 19:36:47 2024  -Flipping column: BETA = - BETA...
-Fri Feb  2 19:36:47 2024  -Flipping column: DIRECTION +-?0 &lt;=&gt; -+?0 ...
-Fri Feb  2 19:36:47 2024  -Flipping column: EAF = 1 - EAF...
-Fri Feb  2 19:36:47 2024  -Changed the status for flipped variants:  xxxxx[012]5: -&gt;  xxxxx[012]2
-Fri Feb  2 19:36:47 2024 Finished adjusting.
-Fri Feb  2 19:36:48 2024 Start to sort the genome coordinates...v3.4.38
-Fri Feb  2 19:36:48 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 0.00 MB
-Fri Feb  2 19:36:48 2024 Finished sorting coordinates.
-Fri Feb  2 19:36:48 2024 Start to reorder the columns...v3.4.38
-Fri Feb  2 19:36:48 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 0.00 MB
-Fri Feb  2 19:36:48 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION,STATUS,NOTE
-Fri Feb  2 19:36:48 2024 Finished reordering the columns.
-</pre>
-</div>
-</div>
 
 <div class="jp-OutputArea-child">
 
     
     <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&lt;gwaslab.g_Sumstats.Sumstats at 0x7f6c69f86550&gt;</pre>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>All variants were checked and harmonized based on the reference datasets. The manipulations are reflected in STATUS column.</p>
-
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-        <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-5">
-            <div>
-                <span class="notice" hidden>Copied!</span>
-                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
-                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
-                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
-                </svg>
-                </div>
-            </clipboard-copy>
-        </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
-</pre></div>
-<div id="cell-5" class="clipboard-copy-txt">mysumstats.data</div>
-    
-        </div>
-    </div>
-
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
 
 
 
@@ -3405,253 +3100,87 @@ Fri Feb  2 19:36:48 2024 Finished reordering the columns.
       <th>EAF</th>
       <th>BETA</th>
       <th>SE</th>
-      <th>P</th>
-      <th>N</th>
-      <th>DIRECTION</th>
+      <th>OR</th>
+      <th>OR_95L</th>
+      <th>OR_95U</th>
       <th>STATUS</th>
-      <th>NOTE</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>1:1066403:T:C</td>
+      <td>1:725932_G_A</td>
       <td>1</td>
-      <td>1066403</td>
-      <td>C</td>
-      <td>T</td>
-      <td>0.5276</td>
-      <td>0.0043</td>
-      <td>0.0109</td>
-      <td>0.68910</td>
-      <td>191764</td>
-      <td>++-+</td>
-      <td>9960000</td>
-      <td>Clean</td>
+      <td>725932</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.9960</td>
+      <td>-0.0737</td>
+      <td>0.1394</td>
+      <td>0.928950</td>
+      <td>0.706863</td>
+      <td>1.220815</td>
+      <td>9960099</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>1:1163266:G:A</td>
+      <td>1:725933_A_G</td>
       <td>1</td>
-      <td>1163266</td>
-      <td>A</td>
+      <td>725933</td>
       <td>G</td>
-      <td>0.1645</td>
-      <td>-0.0122</td>
-      <td>0.0120</td>
-      <td>0.30810</td>
-      <td>191764</td>
-      <td>+---</td>
-      <td>9960010</td>
-      <td>Flip</td>
+      <td>A</td>
+      <td>0.0040</td>
+      <td>0.0737</td>
+      <td>0.1394</td>
+      <td>1.076484</td>
+      <td>0.819125</td>
+      <td>1.414702</td>
+      <td>9960099</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>1:1213224:T:A</td>
+      <td>1:737801_T_C</td>
       <td>1</td>
-      <td>1213224</td>
-      <td>A</td>
+      <td>737801</td>
+      <td>C</td>
       <td>T</td>
-      <td>0.6655</td>
-      <td>-0.0071</td>
-      <td>0.0095</td>
-      <td>0.45280</td>
-      <td>191764</td>
-      <td>---+</td>
-      <td>9960011</td>
-      <td>Flip + Palindromic</td>
+      <td>0.0051</td>
+      <td>0.0490</td>
+      <td>0.1231</td>
+      <td>1.050220</td>
+      <td>0.825083</td>
+      <td>1.336790</td>
+      <td>9960099</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>1:3066761:A:T</td>
+      <td>1:749963_T_TAA</td>
       <td>1</td>
-      <td>3066761</td>
+      <td>749963</td>
+      <td>TAA</td>
       <td>T</td>
-      <td>A</td>
-      <td>0.1245</td>
-      <td>-0.0066</td>
-      <td>0.0157</td>
-      <td>0.67420</td>
-      <td>191764</td>
-      <td>-+++</td>
-      <td>9960001</td>
-      <td>Palindromic + No flip</td>
+      <td>0.8374</td>
+      <td>0.0213</td>
+      <td>0.0199</td>
+      <td>1.021528</td>
+      <td>0.982452</td>
+      <td>1.062159</td>
+      <td>9960399</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>1:3997271:T:TTTTA</td>
+      <td>1:751343_T_A</td>
       <td>1</td>
-      <td>3997271</td>
-      <td>TTTTA</td>
-      <td>T</td>
-      <td>0.3840</td>
-      <td>0.0188</td>
-      <td>0.0135</td>
-      <td>0.16300</td>
-      <td>191764</td>
-      <td>++++</td>
-      <td>9960363</td>
-      <td>Indel + Both on genome + No flip</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>1:4007705:TC:T</td>
-      <td>1</td>
-      <td>4007705</td>
-      <td>T</td>
-      <td>TC</td>
-      <td>0.5632</td>
-      <td>-0.0306</td>
-      <td>0.0125</td>
-      <td>0.01421</td>
-      <td>191764</td>
-      <td>----</td>
-      <td>9960364</td>
-      <td>Indel  + Both on genome + Flip</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>1:5164281:A:AAGAG</td>
-      <td>1</td>
-      <td>5164281</td>
-      <td>AAGAG</td>
-      <td>A</td>
-      <td>0.9871</td>
-      <td>0.0167</td>
-      <td>0.0454</td>
-      <td>0.71200</td>
-      <td>191764</td>
-      <td>-+++</td>
-      <td>9960309</td>
-      <td>Indel</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>1:12799025:C:CCT</td>
-      <td>1</td>
-      <td>12799025</td>
-      <td>CCT</td>
-      <td>C</td>
-      <td>0.8270</td>
-      <td>0.0186</td>
-      <td>0.0118</td>
-      <td>0.11500</td>
-      <td>191764</td>
-      <td>+++-</td>
-      <td>9960319</td>
-      <td>Indel + Flip</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>1:19323015:T:A</td>
-      <td>1</td>
-      <td>19323015</td>
-      <td>A</td>
-      <td>T</td>
-      <td>0.5611</td>
-      <td>0.0165</td>
-      <td>0.0088</td>
-      <td>0.05949</td>
-      <td>191764</td>
-      <td>++++</td>
-      <td>9960017</td>
-      <td>Palindromic + Flip + Indistinguishable</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>1:22841855:A:T</td>
-      <td>1</td>
-      <td>22841855</td>
+      <td>751343</td>
       <td>T</td>
       <td>A</td>
-      <td>0.4527</td>
-      <td>0.0080</td>
-      <td>0.0095</td>
-      <td>0.39980</td>
-      <td>191764</td>
-      <td>-++-</td>
-      <td>9960007</td>
-      <td>Palindromic + Indistinguishable</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>3:183629306:T:TTCTC</td>
-      <td>3</td>
-      <td>183629306</td>
-      <td>TTCTC</td>
-      <td>T</td>
-      <td>0.0082</td>
-      <td>-0.0083</td>
-      <td>0.0555</td>
-      <td>0.88060</td>
-      <td>191764</td>
-      <td>+--+</td>
-      <td>9960368</td>
-      <td>Indel  + Both on genome + No information</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>4:99731866:G:C</td>
-      <td>4</td>
-      <td>99731866</td>
-      <td>C</td>
-      <td>G</td>
-      <td>0.3883</td>
-      <td>0.0052</td>
-      <td>0.0093</td>
-      <td>0.57360</td>
-      <td>191764</td>
-      <td>+-++</td>
-      <td>9960012</td>
-      <td>Palindromic+ Flip + Different strand (REF G, T...</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>8:89935201:C:G</td>
-      <td>8</td>
-      <td>89935201</td>
-      <td>G</td>
-      <td>C</td>
-      <td>0.6467</td>
-      <td>-0.0103</td>
-      <td>0.0094</td>
-      <td>0.27560</td>
-      <td>191764</td>
-      <td>----</td>
-      <td>9960002</td>
-      <td>Palindromic + Different strand (REF A; TOMMO G...</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>X:4206466:G:C</td>
-      <td>23</td>
-      <td>4206466</td>
-      <td>C</td>
-      <td>G</td>
-      <td>0.1273</td>
-      <td>0.0055</td>
-      <td>0.0104</td>
-      <td>0.59840</td>
-      <td>191764</td>
-      <td>+-++</td>
-      <td>9960018</td>
-      <td>Palindromic + Flip + No information</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>X:5053229:A:T</td>
-      <td>23</td>
-      <td>5053229</td>
-      <td>T</td>
-      <td>A</td>
-      <td>0.9747</td>
-      <td>0.0218</td>
-      <td>0.0225</td>
-      <td>0.33180</td>
-      <td>191764</td>
-      <td>++++</td>
-      <td>9960008</td>
-      <td>Palindromic + No information</td>
+      <td>0.8593</td>
+      <td>0.0172</td>
+      <td>0.0156</td>
+      <td>1.017349</td>
+      <td>0.986714</td>
+      <td>1.048935</td>
+      <td>9960099</td>
     </tr>
   </tbody>
 </table>
@@ -3672,9 +3201,41 @@ Fri Feb  2 19:36:48 2024 Finished reordering the columns.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="check-summary">Check summary<a class="anchor-link" href="#check-summary">&#182;</a></h2>
+<h2 id="or-beta">OR -&gt; BETA<a class="anchor-link" href="#or-beta">&#182;</a></h2>
 </div>
 </div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-5">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span><span class="s2">&quot;SE&quot;</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div id="cell-5" class="clipboard-copy-txt">mysumstats.data.drop(labels=["BETA","SE"],axis=1,inplace=True)</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -3697,9 +3258,9 @@ Fri Feb  2 19:36:48 2024 Finished reordering the columns.
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div id="cell-6" class="clipboard-copy-txt">mysumstats.summary()</div>
+<div id="cell-6" class="clipboard-copy-txt">mysumstats.data</div>
     
         </div>
     </div>
@@ -3740,152 +3301,83 @@ Fri Feb  2 19:36:48 2024 Finished reordering the columns.
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th></th>
-      <th>Values</th>
-      <th>Percentage</th>
-    </tr>
-    <tr>
-      <th>Category</th>
-      <th>Items</th>
-      <th></th>
-      <th></th>
+      <th>SNPID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>EA</th>
+      <th>NEA</th>
+      <th>EAF</th>
+      <th>OR</th>
+      <th>OR_95L</th>
+      <th>OR_95U</th>
+      <th>STATUS</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th rowspan="4" valign="top">META</th>
-      <th>Row_num</th>
-      <td>15</td>
-      <td>&lt;NA&gt;</td>
-    </tr>
-    <tr>
-      <th>Column_num</th>
-      <td>13</td>
-      <td>&lt;NA&gt;</td>
-    </tr>
-    <tr>
-      <th>Column_names</th>
-      <td>SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,P,N,DIRECTION...</td>
-      <td>&lt;NA&gt;</td>
-    </tr>
-    <tr>
-      <th>Last_checked_time</th>
-      <td>Fri Feb  2 19:36:48 2024</td>
-      <td>&lt;NA&gt;</td>
-    </tr>
-    <tr>
-      <th>MISSING</th>
-      <th>Missing_total</th>
-      <td>0</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th rowspan="3" valign="top">MAF</th>
-      <th>Common</th>
-      <td>12</td>
-      <td>80.0</td>
-    </tr>
-    <tr>
-      <th>Low_frequency</th>
-      <td>2</td>
-      <td>13.33</td>
-    </tr>
-    <tr>
-      <th>Rare</th>
+      <th>0</th>
+      <td>1:725932_G_A</td>
       <td>1</td>
-      <td>6.67</td>
+      <td>725932</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.9960</td>
+      <td>0.928950</td>
+      <td>0.706863</td>
+      <td>1.220815</td>
+      <td>9960099</td>
     </tr>
     <tr>
-      <th rowspan="3" valign="top">P</th>
-      <th>Minimum</th>
-      <td>0.01421</td>
-      <td>0.09</td>
-    </tr>
-    <tr>
-      <th>Significant</th>
-      <td>0</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>Suggestive</th>
-      <td>0</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th rowspan="15" valign="top">STATUS</th>
-      <th>9960000</th>
+      <th>1</th>
+      <td>1:725933_A_G</td>
       <td>1</td>
-      <td>6.67</td>
+      <td>725933</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.0040</td>
+      <td>1.076484</td>
+      <td>0.819125</td>
+      <td>1.414702</td>
+      <td>9960099</td>
     </tr>
     <tr>
-      <th>9960001</th>
+      <th>2</th>
+      <td>1:737801_T_C</td>
       <td>1</td>
-      <td>6.67</td>
+      <td>737801</td>
+      <td>C</td>
+      <td>T</td>
+      <td>0.0051</td>
+      <td>1.050220</td>
+      <td>0.825083</td>
+      <td>1.336790</td>
+      <td>9960099</td>
     </tr>
     <tr>
-      <th>9960002</th>
+      <th>3</th>
+      <td>1:749963_T_TAA</td>
       <td>1</td>
-      <td>6.67</td>
+      <td>749963</td>
+      <td>TAA</td>
+      <td>T</td>
+      <td>0.8374</td>
+      <td>1.021528</td>
+      <td>0.982452</td>
+      <td>1.062159</td>
+      <td>9960399</td>
     </tr>
     <tr>
-      <th>9960007</th>
+      <th>4</th>
+      <td>1:751343_T_A</td>
       <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960008</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960010</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960011</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960012</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960017</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960018</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960309</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960319</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960363</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960364</th>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960368</th>
-      <td>1</td>
-      <td>6.67</td>
+      <td>751343</td>
+      <td>T</td>
+      <td>A</td>
+      <td>0.8593</td>
+      <td>1.017349</td>
+      <td>0.986714</td>
+      <td>1.048935</td>
+      <td>9960099</td>
     </tr>
   </tbody>
 </table>
@@ -3920,9 +3412,9 @@ Fri Feb  2 19:36:48 2024 Finished reordering the columns.
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">lookup_status</span><span class="p">()</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span><span class="s2">&quot;SE&quot;</span><span class="p">])</span>
 </pre></div>
-<div id="cell-7" class="clipboard-copy-txt">mysumstats.lookup_status()</div>
+<div id="cell-7" class="clipboard-copy-txt">mysumstats.fill_data(to_fill=["BETA","SE"])</div>
     
         </div>
     </div>
@@ -3940,7 +3432,76 @@ Fri Feb  2 19:36:48 2024 Finished reordering the columns.
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 00:27:49 2024 Start filling data using existing columns...v3.4.38
+Sat Feb  3 00:27:49 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     OR      OR_95L  OR_95U  STATUS  
+Sat Feb  3 00:27:49 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 category
+Sat Feb  3 00:27:49 2024  -Verified: T      T     T     T        T        T       T       T       T       T       
+Sat Feb  3 00:27:49 2024  -Overwrite mode:  False
+Sat Feb  3 00:27:49 2024   -Skipping columns:  []
+Sat Feb  3 00:27:49 2024  -Filling columns:  [&#39;BETA&#39;, &#39;SE&#39;]
+Sat Feb  3 00:27:49 2024   - Filling Columns iteratively...
+Sat Feb  3 00:27:49 2024   - Filling BETA value using OR column...
+Sat Feb  3 00:27:49 2024   - Filling SE value using OR/OR_95U column...
+Sat Feb  3 00:27:49 2024 Finished filling data using existing columns.
+Sat Feb  3 00:27:49 2024 Start to reorder the columns...v3.4.38
+Sat Feb  3 00:27:49 2024  -Current Dataframe shape : 5 x 12 ; Memory usage: 19.94 MB
+Sat Feb  3 00:27:49 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,OR,OR_95L,OR_95U,STATUS
+Sat Feb  3 00:27:49 2024 Finished reordering the columns.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-8">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+<div id="cell-8" class="clipboard-copy-txt">mysumstats.data</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 
 
 
@@ -3963,181 +3524,95 @@ Fri Feb  2 19:36:48 2024 Finished reordering the columns.
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Genome_Build</th>
-      <th>rsID&amp;SNPID</th>
-      <th>CHR&amp;POS</th>
-      <th>Stadardize&amp;Normalize</th>
-      <th>Align</th>
-      <th>Panlidromic_SNP&amp;Indel</th>
-      <th>Count</th>
-      <th>Percentage(%)</th>
+      <th>SNPID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>EA</th>
+      <th>NEA</th>
+      <th>EAF</th>
+      <th>BETA</th>
+      <th>SE</th>
+      <th>OR</th>
+      <th>OR_95L</th>
+      <th>OR_95U</th>
+      <th>STATUS</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>9960000</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Match: NEA=REF</td>
-      <td>Not_palindromic_SNPs</td>
+      <th>0</th>
+      <td>1:725932_G_A</td>
       <td>1</td>
-      <td>6.67</td>
+      <td>725932</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.9960</td>
+      <td>-0.0737</td>
+      <td>0.1394</td>
+      <td>0.928950</td>
+      <td>0.706863</td>
+      <td>1.220815</td>
+      <td>9960099</td>
     </tr>
     <tr>
-      <th>9960001</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Match: NEA=REF</td>
-      <td>Palindromic+strand</td>
+      <th>1</th>
+      <td>1:725933_A_G</td>
       <td>1</td>
-      <td>6.67</td>
+      <td>725933</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.0040</td>
+      <td>0.0737</td>
+      <td>0.1394</td>
+      <td>1.076484</td>
+      <td>0.819125</td>
+      <td>1.414702</td>
+      <td>9960099</td>
     </tr>
     <tr>
-      <th>9960002</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Match: NEA=REF</td>
-      <td>Palindromic-strand_fixed</td>
+      <th>2</th>
+      <td>1:737801_T_C</td>
       <td>1</td>
-      <td>6.67</td>
+      <td>737801</td>
+      <td>C</td>
+      <td>T</td>
+      <td>0.0051</td>
+      <td>0.0490</td>
+      <td>0.1231</td>
+      <td>1.050220</td>
+      <td>0.825083</td>
+      <td>1.336790</td>
+      <td>9960099</td>
     </tr>
     <tr>
-      <th>9960007</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Match: NEA=REF</td>
-      <td>Indistinguishable</td>
+      <th>3</th>
+      <td>1:749963_T_TAA</td>
       <td>1</td>
-      <td>6.67</td>
+      <td>749963</td>
+      <td>TAA</td>
+      <td>T</td>
+      <td>0.8374</td>
+      <td>0.0213</td>
+      <td>0.0199</td>
+      <td>1.021528</td>
+      <td>0.982452</td>
+      <td>1.062159</td>
+      <td>9960399</td>
     </tr>
     <tr>
-      <th>9960008</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Match: NEA=REF</td>
-      <td>No_matching_or_no_info</td>
+      <th>4</th>
+      <td>1:751343_T_A</td>
       <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960010</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Flipped_fixed</td>
-      <td>Not_palindromic_SNPs</td>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960011</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Flipped_fixed</td>
-      <td>Palindromic+strand</td>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960012</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Flipped_fixed</td>
-      <td>Palindromic-strand_fixed</td>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960017</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Flipped_fixed</td>
-      <td>Indistinguishable</td>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960018</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized SNP</td>
-      <td>Flipped_fixed</td>
-      <td>No_matching_or_no_info</td>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960309</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized &amp; normalized indel</td>
-      <td>Match: NEA=REF</td>
-      <td>Unchecked</td>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960319</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized &amp; normalized indel</td>
-      <td>Flipped_fixed</td>
-      <td>Unchecked</td>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960363</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized &amp; normalized indel</td>
-      <td>Both_alleles_on_ref+indistinguishable</td>
-      <td>Indel_match</td>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960364</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized &amp; normalized indel</td>
-      <td>Both_alleles_on_ref+indistinguishable</td>
-      <td>Indel_flipped_fixed</td>
-      <td>1</td>
-      <td>6.67</td>
-    </tr>
-    <tr>
-      <th>9960368</th>
-      <td>Unchecked</td>
-      <td>rsid unknown &amp; SNPID valid</td>
-      <td>CHR valid &amp; POS valid</td>
-      <td>standardized &amp; normalized indel</td>
-      <td>Both_alleles_on_ref+indistinguishable</td>
-      <td>No_matching_or_no_info</td>
-      <td>1</td>
-      <td>6.67</td>
+      <td>751343</td>
+      <td>T</td>
+      <td>A</td>
+      <td>0.8593</td>
+      <td>0.0172</td>
+      <td>0.0156</td>
+      <td>1.017349</td>
+      <td>0.986714</td>
+      <td>1.048935</td>
+      <td>9960099</td>
     </tr>
   </tbody>
 </table>
@@ -4158,103 +3633,17 @@ Fri Feb  2 19:36:48 2024 Finished reordering the columns.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="vcf-ncbi-sequence-identifiers">VCF : NCBI Sequence Identifiers<a class="anchor-link" href="#vcf-ncbi-sequence-identifiers">&#182;</a></h2>
+<h2 id="betase-z">BETA/SE -&gt; Z<a class="anchor-link" href="#betase-z">&#182;</a></h2>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>For some reference file the chromosome notation is not in the form of 1, or chr1, instead, they are using NCBI Sequence Identifiers (for example: NC_000001.11).</p>
-
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>See <a href="https://www.ncbi.nlm.nih.gov/genbank/sequenceids/">https://www.ncbi.nlm.nih.gov/genbank/sequenceids/</a></p>
-
-</div>
-</div>
-</div>
-</div>For example: GCF_000001405.25.vcf.gz
-
-NC_000001.10    10059   rs1570391745    C       G       .       .       RS=1570391745;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9997,0.0003425|dbGaP_PopFreq:1,0
-
-NC_000001.10    10060   rs1639544146    C       CT      .       .       RS=1639544146;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-
-NC_000001.10    10060   rs1639544159    CT      C       .       .       RS=1639544159;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=DEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>In such case, gwaslab provide built-in conversion table.</p>
-
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-        <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-8">
-            <div>
-                <span class="notice" hidden>Copied!</span>
-                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
-                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
-                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
-                </svg>
-                </div>
-            </clipboard-copy>
-        </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">get_number_to_NC</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)</span>
-</pre></div>
-<div id="cell-8" class="clipboard-copy-txt">gl.get_number_to_NC(build="19")</div>
-    
-        </div>
-    </div>
-
-</div>
-</div>
-
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Specify it in assignrsid_args and inferstrand_args for the all-in-one function:</p>
-
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
@@ -4269,20 +3658,1464 @@ NC_000001.10    10060   rs1639544159    CT      C       .       .       RS=16395
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">harmonize</span><span class="p">(</span>   <span class="n">basic_check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                        <span class="n">n_cores</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                        <span class="n">ref_infer</span><span class="o">=</span><span class="s2">&quot;/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz&quot;</span><span class="p">,</span>
-                        <span class="n">inferstrand_args</span><span class="o">=</span> <span class="p">{</span><span class="s2">&quot;chr_dict&quot;</span> <span class="p">:</span> <span class="n">gl</span><span class="o">.</span><span class="n">get_number_to_NC</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)})</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Z&quot;</span><span class="p">])</span>
 </pre></div>
-<div id="cell-9" class="clipboard-copy-txt">mysumstats.harmonize(   basic_check=False,
-                        n_cores=3,
-                        ref_infer="/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
-                        inferstrand_args= {"chr_dict" : gl.get_number_to_NC(build="19")})</div>
+<div id="cell-9" class="clipboard-copy-txt">mysumstats.fill_data(to_fill=["Z"])</div>
     
         </div>
     </div>
 
 </div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 00:27:49 2024 Start filling data using existing columns...v3.4.38
+Sat Feb  3 00:27:49 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      OR      OR_95L  OR_95U  STATUS  
+Sat Feb  3 00:27:49 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 category
+Sat Feb  3 00:27:49 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       
+Sat Feb  3 00:27:49 2024  -Overwrite mode:  False
+Sat Feb  3 00:27:49 2024   -Skipping columns:  []
+Sat Feb  3 00:27:49 2024  -Filling columns:  [&#39;Z&#39;]
+Sat Feb  3 00:27:49 2024   - Filling Columns iteratively...
+Sat Feb  3 00:27:49 2024   - Filling Z using BETA/SE column...
+Sat Feb  3 00:27:49 2024 Finished filling data using existing columns.
+Sat Feb  3 00:27:49 2024 Start to reorder the columns...v3.4.38
+Sat Feb  3 00:27:49 2024  -Current Dataframe shape : 5 x 13 ; Memory usage: 19.94 MB
+Sat Feb  3 00:27:49 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,OR,OR_95L,OR_95U,STATUS
+Sat Feb  3 00:27:49 2024 Finished reordering the columns.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-10">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+<div id="cell-10" class="clipboard-copy-txt">mysumstats.data</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SNPID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>EA</th>
+      <th>NEA</th>
+      <th>EAF</th>
+      <th>BETA</th>
+      <th>SE</th>
+      <th>Z</th>
+      <th>OR</th>
+      <th>OR_95L</th>
+      <th>OR_95U</th>
+      <th>STATUS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1:725932_G_A</td>
+      <td>1</td>
+      <td>725932</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.9960</td>
+      <td>-0.0737</td>
+      <td>0.1394</td>
+      <td>-0.528694</td>
+      <td>0.928950</td>
+      <td>0.706863</td>
+      <td>1.220815</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1:725933_A_G</td>
+      <td>1</td>
+      <td>725933</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.0040</td>
+      <td>0.0737</td>
+      <td>0.1394</td>
+      <td>0.528694</td>
+      <td>1.076484</td>
+      <td>0.819125</td>
+      <td>1.414702</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1:737801_T_C</td>
+      <td>1</td>
+      <td>737801</td>
+      <td>C</td>
+      <td>T</td>
+      <td>0.0051</td>
+      <td>0.0490</td>
+      <td>0.1231</td>
+      <td>0.398050</td>
+      <td>1.050220</td>
+      <td>0.825083</td>
+      <td>1.336790</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1:749963_T_TAA</td>
+      <td>1</td>
+      <td>749963</td>
+      <td>TAA</td>
+      <td>T</td>
+      <td>0.8374</td>
+      <td>0.0213</td>
+      <td>0.0199</td>
+      <td>1.070352</td>
+      <td>1.021528</td>
+      <td>0.982452</td>
+      <td>1.062159</td>
+      <td>9960399</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1:751343_T_A</td>
+      <td>1</td>
+      <td>751343</td>
+      <td>T</td>
+      <td>A</td>
+      <td>0.8593</td>
+      <td>0.0172</td>
+      <td>0.0156</td>
+      <td>1.102564</td>
+      <td>1.017349</td>
+      <td>0.986714</td>
+      <td>1.048935</td>
+      <td>9960099</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="p-mlog10p">P -&gt; MLOG10P<a class="anchor-link" href="#p-mlog10p">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-11">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;MLOG10P&quot;</span><span class="p">])</span>
+</pre></div>
+<div id="cell-11" class="clipboard-copy-txt">mysumstats.fill_data(to_fill=["MLOG10P"])</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 00:27:50 2024 Start filling data using existing columns...v3.4.38
+Sat Feb  3 00:27:50 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       OR      OR_95L  OR_95U  STATUS  
+Sat Feb  3 00:27:50 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 category
+Sat Feb  3 00:27:50 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       
+Sat Feb  3 00:27:50 2024  -Overwrite mode:  False
+Sat Feb  3 00:27:50 2024   -Skipping columns:  []
+Sat Feb  3 00:27:50 2024  -Filling columns:  [&#39;MLOG10P&#39;]
+Sat Feb  3 00:27:50 2024   - Filling Columns iteratively...
+Sat Feb  3 00:27:50 2024   - Filling P value using Z column...
+Sat Feb  3 00:27:50 2024   - Filling MLOG10P using P column...
+Sat Feb  3 00:27:50 2024 Finished filling data using existing columns.
+Sat Feb  3 00:27:50 2024 Start to reorder the columns...v3.4.38
+Sat Feb  3 00:27:50 2024  -Current Dataframe shape : 5 x 15 ; Memory usage: 19.94 MB
+Sat Feb  3 00:27:50 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
+Sat Feb  3 00:27:50 2024 Finished reordering the columns.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="mlog10p-p">MLOG10P -&gt; P<a class="anchor-link" href="#mlog10p-p">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-12">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">])</span>
+</pre></div>
+<div id="cell-12" class="clipboard-copy-txt">mysumstats.fill_data(to_fill=["P"])</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 00:27:50 2024 Start filling data using existing columns...v3.4.38
+Sat Feb  3 00:27:50 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
+Sat Feb  3 00:27:50 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
+Sat Feb  3 00:27:50 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       
+Sat Feb  3 00:27:50 2024  -Overwrite mode:  False
+Sat Feb  3 00:27:50 2024   -Skipping columns:  [&#39;P&#39;]
+Sat Feb  3 00:27:50 2024  -No available columns to fill. Skipping.
+Sat Feb  3 00:27:50 2024 Finished filling data using existing columns.
+Sat Feb  3 00:27:50 2024 Start to reorder the columns...v3.4.38
+Sat Feb  3 00:27:50 2024  -Current Dataframe shape : 5 x 15 ; Memory usage: 19.94 MB
+Sat Feb  3 00:27:50 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
+Sat Feb  3 00:27:50 2024 Finished reordering the columns.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-13">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+<div id="cell-13" class="clipboard-copy-txt">mysumstats.data</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[13]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SNPID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>EA</th>
+      <th>NEA</th>
+      <th>EAF</th>
+      <th>BETA</th>
+      <th>SE</th>
+      <th>Z</th>
+      <th>P</th>
+      <th>MLOG10P</th>
+      <th>OR</th>
+      <th>OR_95L</th>
+      <th>OR_95U</th>
+      <th>STATUS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1:725932_G_A</td>
+      <td>1</td>
+      <td>725932</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.9960</td>
+      <td>-0.0737</td>
+      <td>0.1394</td>
+      <td>-0.528694</td>
+      <td>0.597017</td>
+      <td>0.224013</td>
+      <td>0.928950</td>
+      <td>0.706863</td>
+      <td>1.220815</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1:725933_A_G</td>
+      <td>1</td>
+      <td>725933</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.0040</td>
+      <td>0.0737</td>
+      <td>0.1394</td>
+      <td>0.528694</td>
+      <td>0.597017</td>
+      <td>0.224013</td>
+      <td>1.076484</td>
+      <td>0.819125</td>
+      <td>1.414702</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1:737801_T_C</td>
+      <td>1</td>
+      <td>737801</td>
+      <td>C</td>
+      <td>T</td>
+      <td>0.0051</td>
+      <td>0.0490</td>
+      <td>0.1231</td>
+      <td>0.398050</td>
+      <td>0.690593</td>
+      <td>0.160778</td>
+      <td>1.050220</td>
+      <td>0.825083</td>
+      <td>1.336790</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1:749963_T_TAA</td>
+      <td>1</td>
+      <td>749963</td>
+      <td>TAA</td>
+      <td>T</td>
+      <td>0.8374</td>
+      <td>0.0213</td>
+      <td>0.0199</td>
+      <td>1.070352</td>
+      <td>0.284461</td>
+      <td>0.545977</td>
+      <td>1.021528</td>
+      <td>0.982452</td>
+      <td>1.062159</td>
+      <td>9960399</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1:751343_T_A</td>
+      <td>1</td>
+      <td>751343</td>
+      <td>T</td>
+      <td>A</td>
+      <td>0.8593</td>
+      <td>0.0172</td>
+      <td>0.0156</td>
+      <td>1.102564</td>
+      <td>0.270217</td>
+      <td>0.568288</td>
+      <td>1.017349</td>
+      <td>0.986714</td>
+      <td>1.048935</td>
+      <td>9960099</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="eaf-maf">EAF -&gt; MAF<a class="anchor-link" href="#eaf-maf">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-14">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;MAF&quot;</span><span class="p">])</span>
+</pre></div>
+<div id="cell-14" class="clipboard-copy-txt">mysumstats.fill_data(to_fill=["MAF"])</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 00:27:50 2024 Start filling data using existing columns...v3.4.38
+Sat Feb  3 00:27:50 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
+Sat Feb  3 00:27:50 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
+Sat Feb  3 00:27:50 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       
+Sat Feb  3 00:27:50 2024  -Overwrite mode:  False
+Sat Feb  3 00:27:50 2024   -Skipping columns:  []
+Sat Feb  3 00:27:50 2024  -Filling columns:  [&#39;MAF&#39;]
+Sat Feb  3 00:27:50 2024   - Filling Columns iteratively...
+Sat Feb  3 00:27:50 2024   - Filling MAF using EAF column...
+Sat Feb  3 00:27:50 2024 Finished filling data using existing columns.
+Sat Feb  3 00:27:50 2024 Start to reorder the columns...v3.4.38
+Sat Feb  3 00:27:50 2024  -Current Dataframe shape : 5 x 16 ; Memory usage: 19.94 MB
+Sat Feb  3 00:27:50 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,MAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
+Sat Feb  3 00:27:50 2024 Finished reordering the columns.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-15">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+<div id="cell-15" class="clipboard-copy-txt">mysumstats.data</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SNPID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>EA</th>
+      <th>NEA</th>
+      <th>EAF</th>
+      <th>MAF</th>
+      <th>BETA</th>
+      <th>SE</th>
+      <th>Z</th>
+      <th>P</th>
+      <th>MLOG10P</th>
+      <th>OR</th>
+      <th>OR_95L</th>
+      <th>OR_95U</th>
+      <th>STATUS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1:725932_G_A</td>
+      <td>1</td>
+      <td>725932</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.9960</td>
+      <td>0.0040</td>
+      <td>-0.0737</td>
+      <td>0.1394</td>
+      <td>-0.528694</td>
+      <td>0.597017</td>
+      <td>0.224013</td>
+      <td>0.928950</td>
+      <td>0.706863</td>
+      <td>1.220815</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1:725933_A_G</td>
+      <td>1</td>
+      <td>725933</td>
+      <td>G</td>
+      <td>A</td>
+      <td>0.0040</td>
+      <td>0.0040</td>
+      <td>0.0737</td>
+      <td>0.1394</td>
+      <td>0.528694</td>
+      <td>0.597017</td>
+      <td>0.224013</td>
+      <td>1.076484</td>
+      <td>0.819125</td>
+      <td>1.414702</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1:737801_T_C</td>
+      <td>1</td>
+      <td>737801</td>
+      <td>C</td>
+      <td>T</td>
+      <td>0.0051</td>
+      <td>0.0051</td>
+      <td>0.0490</td>
+      <td>0.1231</td>
+      <td>0.398050</td>
+      <td>0.690593</td>
+      <td>0.160778</td>
+      <td>1.050220</td>
+      <td>0.825083</td>
+      <td>1.336790</td>
+      <td>9960099</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1:749963_T_TAA</td>
+      <td>1</td>
+      <td>749963</td>
+      <td>TAA</td>
+      <td>T</td>
+      <td>0.8374</td>
+      <td>0.1626</td>
+      <td>0.0213</td>
+      <td>0.0199</td>
+      <td>1.070352</td>
+      <td>0.284461</td>
+      <td>0.545977</td>
+      <td>1.021528</td>
+      <td>0.982452</td>
+      <td>1.062159</td>
+      <td>9960399</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1:751343_T_A</td>
+      <td>1</td>
+      <td>751343</td>
+      <td>T</td>
+      <td>A</td>
+      <td>0.8593</td>
+      <td>0.1407</td>
+      <td>0.0172</td>
+      <td>0.0156</td>
+      <td>1.102564</td>
+      <td>0.270217</td>
+      <td>0.568288</td>
+      <td>1.017349</td>
+      <td>0.986714</td>
+      <td>1.048935</td>
+      <td>9960099</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="simulation-of-extreme-p-values">Simulation of extreme P values<a class="anchor-link" href="#simulation-of-extreme-p-values">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-16">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;t2d_bbj.txt.gz&quot;</span><span class="p">,</span>
+             <span class="n">snpid</span><span class="o">=</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span>
+             <span class="n">chrom</span><span class="o">=</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span>
+             <span class="n">pos</span><span class="o">=</span><span class="s2">&quot;POS&quot;</span><span class="p">,</span>
+             <span class="n">beta</span><span class="o">=</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span>
+             <span class="n">se</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span><span class="n">nrows</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># simulate some extreme P values by shrinking the SE</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;SE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;SE&quot;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+<div id="cell-16" class="clipboard-copy-txt">mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
+             snpid="SNP",
+             chrom="CHR",
+             pos="POS",
+             beta="BETA",
+             se="SE",nrows=5, verbose=False)
+# simulate some extreme P values by shrinking the SE
+mysumstats.data["SE"] = mysumstats.data["SE"]/100
+mysumstats.data</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SNPID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>BETA</th>
+      <th>SE</th>
+      <th>STATUS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1:725932_G_A</td>
+      <td>1</td>
+      <td>725932</td>
+      <td>-0.0737</td>
+      <td>0.001394</td>
+      <td>9999999</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1:725933_A_G</td>
+      <td>1</td>
+      <td>725933</td>
+      <td>0.0737</td>
+      <td>0.001394</td>
+      <td>9999999</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1:737801_T_C</td>
+      <td>1</td>
+      <td>737801</td>
+      <td>0.0490</td>
+      <td>0.001231</td>
+      <td>9999999</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1:749963_T_TAA</td>
+      <td>1</td>
+      <td>749963</td>
+      <td>0.0213</td>
+      <td>0.000199</td>
+      <td>9999999</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1:751343_T_A</td>
+      <td>1</td>
+      <td>751343</td>
+      <td>0.0172</td>
+      <td>0.000156</td>
+      <td>9999999</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="limited-precision-of-float64">Limited precision of float64<a class="anchor-link" href="#limited-precision-of-float64">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>For P &lt; 1e-308, they become 0 due to limnited precision of float64</p>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-17">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span><span class="s2">&quot;P&quot;</span><span class="p">])</span>
+</pre></div>
+<div id="cell-17" class="clipboard-copy-txt">mysumstats.fill_data(to_fill=["Z","P"])</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 00:27:50 2024 Start filling data using existing columns...v3.4.38
+Sat Feb  3 00:27:50 2024  -Column  : SNPID  CHR    POS   BETA    SE      STATUS  
+Sat Feb  3 00:27:50 2024  -DType   : object string int64 float64 float64 category
+Sat Feb  3 00:27:50 2024  -Verified: T      F      T     T       T       T       
+Sat Feb  3 00:27:50 2024  #WARNING! Columns with possibly incompatable dtypes: CHR
+Sat Feb  3 00:27:50 2024  -Overwrite mode:  False
+Sat Feb  3 00:27:50 2024   -Skipping columns:  []
+Sat Feb  3 00:27:50 2024  -Filling columns:  [&#39;Z&#39;, &#39;P&#39;]
+Sat Feb  3 00:27:50 2024   - Filling Columns iteratively...
+Sat Feb  3 00:27:50 2024   - Filling Z using BETA/SE column...
+Sat Feb  3 00:27:50 2024   - Filling P value using Z column...
+Sat Feb  3 00:27:50 2024 Finished filling data using existing columns.
+Sat Feb  3 00:27:50 2024 Start to reorder the columns...v3.4.38
+Sat Feb  3 00:27:50 2024  -Current Dataframe shape : 5 x 8 ; Memory usage: 19.94 MB
+Sat Feb  3 00:27:50 2024  -Reordering columns to    : SNPID,CHR,POS,BETA,SE,Z,P,STATUS
+Sat Feb  3 00:27:50 2024 Finished reordering the columns.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-18">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+<div id="cell-18" class="clipboard-copy-txt">mysumstats.data</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[18]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SNPID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>BETA</th>
+      <th>SE</th>
+      <th>Z</th>
+      <th>P</th>
+      <th>STATUS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1:725932_G_A</td>
+      <td>1</td>
+      <td>725932</td>
+      <td>-0.0737</td>
+      <td>0.001394</td>
+      <td>-52.869440</td>
+      <td>0.0</td>
+      <td>9999999</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1:725933_A_G</td>
+      <td>1</td>
+      <td>725933</td>
+      <td>0.0737</td>
+      <td>0.001394</td>
+      <td>52.869440</td>
+      <td>0.0</td>
+      <td>9999999</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1:737801_T_C</td>
+      <td>1</td>
+      <td>737801</td>
+      <td>0.0490</td>
+      <td>0.001231</td>
+      <td>39.805037</td>
+      <td>0.0</td>
+      <td>9999999</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1:749963_T_TAA</td>
+      <td>1</td>
+      <td>749963</td>
+      <td>0.0213</td>
+      <td>0.000199</td>
+      <td>107.035176</td>
+      <td>0.0</td>
+      <td>9999999</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1:751343_T_A</td>
+      <td>1</td>
+      <td>751343</td>
+      <td>0.0172</td>
+      <td>0.000156</td>
+      <td>110.256410</td>
+      <td>0.0</td>
+      <td>9999999</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="recalculate-mlog10p-with-extreme-p-value-mode">Recalculate MLOG10P with extreme P value mode<a class="anchor-link" href="#recalculate-mlog10p-with-extreme-p-value-mode">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[19]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-19">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;MLOG10P&quot;</span><span class="p">],</span><span class="n">extreme</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div id="cell-19" class="clipboard-copy-txt">mysumstats.fill_data(to_fill=["MLOG10P"],extreme=True)</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 00:27:51 2024 Start filling data using existing columns...v3.4.38
+Sat Feb  3 00:27:51 2024  -Column  : SNPID  CHR    POS   BETA    SE      Z       P       STATUS  
+Sat Feb  3 00:27:51 2024  -DType   : object string int64 float64 float64 float64 float64 category
+Sat Feb  3 00:27:51 2024  -Verified: T      F      T     T       T       T       T       T       
+Sat Feb  3 00:27:51 2024  #WARNING! Columns with possibly incompatable dtypes: CHR
+Sat Feb  3 00:27:51 2024  -Overwrite mode:  False
+Sat Feb  3 00:27:51 2024   -Skipping columns:  []
+Sat Feb  3 00:27:51 2024  -Filling columns:  [&#39;MLOG10P&#39;]
+Sat Feb  3 00:27:51 2024   - Filling Columns iteratively...
+Sat Feb  3 00:27:51 2024   - Filling MLOG10P using Z column...
+Sat Feb  3 00:27:51 2024 Finished filling data using existing columns.
+Sat Feb  3 00:27:51 2024 Start to reorder the columns...v3.4.38
+Sat Feb  3 00:27:51 2024  -Current Dataframe shape : 5 x 11 ; Memory usage: 19.94 MB
+Sat Feb  3 00:27:51 2024  -Reordering columns to    : SNPID,CHR,POS,BETA,SE,Z,P,MLOG10P,STATUS,P_MANTISSA,P_EXPONENT
+Sat Feb  3 00:27:51 2024 Finished reordering the columns.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[20]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-20">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+<div id="cell-20" class="clipboard-copy-txt">mysumstats.data</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[20]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>SNPID</th>
+      <th>CHR</th>
+      <th>POS</th>
+      <th>BETA</th>
+      <th>SE</th>
+      <th>Z</th>
+      <th>P</th>
+      <th>MLOG10P</th>
+      <th>STATUS</th>
+      <th>P_MANTISSA</th>
+      <th>P_EXPONENT</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1:725932_G_A</td>
+      <td>1</td>
+      <td>725932</td>
+      <td>-0.0737</td>
+      <td>0.001394</td>
+      <td>-52.869440</td>
+      <td>0.0</td>
+      <td>608.786553</td>
+      <td>9999999</td>
+      <td>1.634734</td>
+      <td>-609.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1:725933_A_G</td>
+      <td>1</td>
+      <td>725933</td>
+      <td>0.0737</td>
+      <td>0.001394</td>
+      <td>52.869440</td>
+      <td>0.0</td>
+      <td>608.786553</td>
+      <td>9999999</td>
+      <td>1.634734</td>
+      <td>-609.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1:737801_T_C</td>
+      <td>1</td>
+      <td>737801</td>
+      <td>0.0490</td>
+      <td>0.001231</td>
+      <td>39.805037</td>
+      <td>0.0</td>
+      <td>345.755249</td>
+      <td>9999999</td>
+      <td>1.756915</td>
+      <td>-346.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1:749963_T_TAA</td>
+      <td>1</td>
+      <td>749963</td>
+      <td>0.0213</td>
+      <td>0.000199</td>
+      <td>107.035176</td>
+      <td>0.0</td>
+      <td>2489.881261</td>
+      <td>9999999</td>
+      <td>1.314436</td>
+      <td>-2490.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1:751343_T_A</td>
+      <td>1</td>
+      <td>751343</td>
+      <td>0.0172</td>
+      <td>0.000156</td>
+      <td>110.256410</td>
+      <td>0.0</td>
+      <td>2641.885723</td>
+      <td>9999999</td>
+      <td>1.300999</td>
+      <td>-2642.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
 </div>
 
 </div>
