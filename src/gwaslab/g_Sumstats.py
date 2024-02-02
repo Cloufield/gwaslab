@@ -451,7 +451,7 @@ class Sumstats():
 
 # utilities ############################################################################################################
     # filter series ######################################################################
-    def get_flanking(self, inplace=False,**args):
+    def filter_flanking(self, inplace=False,**args):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _get_flanking(new_Sumstats_object.data, **args)
@@ -459,7 +459,7 @@ class Sumstats():
         else:
             self.data = _get_flanking(self.data, **args)
     
-    def get_flanking_by_chrpos(self, chrpos,  inplace=False,**args):
+    def filter_flanking_by_chrpos(self, chrpos,  inplace=False,**args):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _get_flanking_by_chrpos(new_Sumstats_object.data, chrpos, **args)
@@ -467,7 +467,7 @@ class Sumstats():
         else:
             self.data = _get_flanking_by_chrpos(self.data, chrpos,**args)
     
-    def get_flanking_by_id(self, snpid, inplace=False,**args):
+    def filter_flanking_by_id(self, snpid, inplace=False,**args):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _get_flanking_by_id(new_Sumstats_object.data, snpid, **args)

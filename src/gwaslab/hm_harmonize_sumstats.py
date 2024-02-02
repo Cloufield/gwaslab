@@ -492,11 +492,12 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
             sumstats[rsid]=pd.Series(dtype="string")
             
         if overwrite == "empty":
-            to_assign = sumstats[rsid].isna()
+            to_assign = sumstats[rsid].isna() & standardized_normalized
         if overwrite=="all":
             to_assign = standardized_normalized
         if overwrite=="invalid":
             to_assign = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) & standardized_normalized
+            
         total_number= len(sumstats)
         pre_number = sum(~sumstats[rsid].isna())
         if verbose: log.write(" -"+str(sum(to_assign)) +" rsID could be possibly fixed...")
