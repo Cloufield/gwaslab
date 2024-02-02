@@ -310,7 +310,7 @@ def preformat(sumstats,
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             log.write("Start to initialize gl.Sumstats from pandas DataFrame ...",verbose=verbose)
-            sumstats = sumstats[ usecols]
+            sumstats = sumstats[usecols].copy()
             for key,value in dtype_dictionary.items():
                 if key in usecols:
                     sumstats[key] = sumstats[key].astype(value)

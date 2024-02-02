@@ -127,7 +127,7 @@ def gwascatalog_trait(efo,source="NCBI",sig_level=5e-8,verbose=True,log=Log()):
             #rsid locations
     gwascatalog_lead_snps = pd.DataFrame(records,columns=["SNPID","CHR","POS","REPORT_GENENAME","CLOSEST_GENENAMES","FUNCTION_CLASS","OR","BETA","SE","P","TRAIT","STUDY","PUBMEDID","AUTHOR"])
     if verbose: log.write(" -Loading retrieved data into gwaslab Sumstats object ...")  
-    sigs = gl.Sumstats(gwascatalog_lead_snps,fmt="gwaslab",other=['REPORT_GENENAME', 'CLOSEST_GENENAMES','TRAIT', 'STUDY', 'PUBMEDID','AUTHOR'],verbose=False)
+    sigs = gl.Sumstats(gwascatalog_lead_snps.copy(),fmt="gwaslab",other=['REPORT_GENENAME', 'CLOSEST_GENENAMES','TRAIT', 'STUDY', 'PUBMEDID','AUTHOR'],verbose=False)
     sigs.fix_pos(verbose=False)
     sigs.fix_chr(verbose=False)
     sigs.sort_coordinate(verbose=False)

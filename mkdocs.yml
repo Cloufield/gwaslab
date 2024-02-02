@@ -60,6 +60,7 @@ nav:
        - "Standardization": standardization_workflow.ipynb
        - "Harmonization" : harmonization_workflow.ipynb
        - "Liftover" : harmonization_liftover.ipynb
+       - "Lead/novel variants" : examples/utility_get_lead_novel.ipynb
        - "Data conversion" : utility_data_conversion.ipynb    
        - "Regional plot" : visualization_regional.ipynb
        - "Miami_plot": visualization_miami2.ipynb
