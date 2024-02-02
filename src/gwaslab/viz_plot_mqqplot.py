@@ -1254,7 +1254,7 @@ def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_
 
 def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title, log=Log(),verbose=True):
     log.write(" -Processing color bar...",verbose=verbose)
-    if str(type(cbar))=="list":
+    if type(cbar) == list:
         for cbar_single in cbar:
             cbar_yticklabels = cbar_single.ax.get_yticklabels()
             cbar_single.ax.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
