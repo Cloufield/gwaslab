@@ -56,6 +56,9 @@ nav:
        - "Download": Download.md 
        - "Reference data" : Reference.md
        - "Common data": CommonData.md
+    - Examples:
+       - "Regional plot" : visualization_regional.ipynb
+       - "Miami_plot": visualization_miami2.ipynb
 
 markdown_extensions:
   - toc:

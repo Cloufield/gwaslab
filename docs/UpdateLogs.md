@@ -4,6 +4,11 @@
 - fixed seaborn version
 - replaced array_split
 - fixed warnings due to pandas upgrade 
+- renamed get_flanking to filter_flanking
+- fixed error in cbar for regional plot
+- restructured log system
+- restructured sanity checking
+- restructured stats flipping
 
 ## 3.4.37 20240129
 - added data consistency check

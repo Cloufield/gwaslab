@@ -3,63 +3,47 @@ GWASLab provides all-in-one functions and customizable functions for sumstats QC
 
 ## 1. Methods Summary
 
-| Sumstats Methods  | Options                  | Description                                                             |
-| ----------------- | ------------------------ | ----------------------------------------------------------------------- |
-| `.check_sanity()` |  `n=(0,2**31 -1)`, <br/> `ncase=(0,2**31-1)`<br/>`ncontrol=(0,2**31-1)` <br/>`eaf=(0,1)`, <br/>`mac=(0,2**31 -1)`, <br/>`chisq=(0,float("Inf"))`, <br/>`p=(5e-300,1.0000011)`, <br/>`mlog10p=(0,float("Inf"))`, <br/>`beta=(-10,10)`, <br/>`z=(-37.5,37.5)`, <br/>`se=(0,float("Inf"))`, <br/>`OR=(-10,10)` , <br/>`OR_95L=(0,float("Inf"))`, <br/>`OR_95U=(0,float("Inf"))`, <br/>`info=(0,1.000001]`   | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
-| `.remove_dup()`   |  `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants |
-| `.filter_value()`    |  expr     |    filter in variants base on expr                                                                    |
-| `.filter_region_in()`   | `path` , <br/> `inplace=True` , <br/>`high_ld=False`, <br/> `build="19"`                         |      filter in variants in the specified region define by a bed file                                                                   |
-| `.filter_region_out()`   | `path` , <br/> `inplace=True` , <br/>`high_ld=False`, <br/> `build="19"`                        |      filter out variants in the specified region define by a bed file                                                                  |
+| Sumstats Methods               | Options                                                                     | Description                                                                           |
+|--------------------------------|-----------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| `.check_sanity()`              | `n`.`ncase`,`ncontrol`,`beta`,`se`,`eaf` ...                                | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N...               |
+| `.check_data_consistency()`    |                                                                             | check if `BETA/SE-drived P/MLOG10P = original P/MLOG10P`, `N = N_CASE + N_CONTROL`... |
+| `.remove_dup()`                | `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants                                        |
+| `.filter_value()`              | `expr` , <br/> `inplace=False`                                              | filter in variants base on expr                                                       |
+| `.filter_flanking_by_id()`     | `snpid` , <br/> `inplace=False`                                             | filter in variants in the specified flacking regions (SNPID/rsID)                     |
+| `.filter_flanking_by_chrpos()` | `chrpos` , <br/> `inplace=False`                                            | filter in variants in the specified flacking regions (CHR POS tuples)                 |
+| `.filter_region_in()`          | `path` , <br/> `inplace=False` , <br/>`high_ld=False`, <br/> `build="19"`   | filter in variants in the specified region define by a bed file                       |
+| `.filter_region_out()`         | `path` , <br/> `inplace=False` , <br/>`high_ld=False`, <br/> `build="19"`   | filter out variants in the specified region define by a bed file                      |
 
 ## 2. Statistics Sanity Check
 
+Note: Default parameters have been updated since v3.3.36
+
 `.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected ranges`.
 
-|Parameters|Type|Range|
-|-|-|-|
-|`n=(0,2**31-1))` | `interger`| 0<N< $2^{31}-1$ |
-|`ncase=(0,2**31-1)` | `interger`| 0<N< $2^{31}-1$ |
-|`ncontrol=(0,2**31-1)` | `interger`| 0<N< $2^{31}-1$ |
-|`eaf=(0,1)` | `float` | 0<=EAF<=1|
-|`mac=(0,float("Inf"))`| `float`| MAC>=0|
-|`chisq=(0,float("Inf"))` | `float` | CHISQ>0|
-|`p=(5e-300,1.000001)` | `float`| 5e-300<P<=1|
-|`mlog10p=(0,float("Inf"))` | `float`| MLOG10>0|
-|`beta=(-10,10)` | `float`| -10<BETA<10|
-|`z=(-37.5,37.5)`| `float`| -37.5<z<37.5|
-|`se=(0,float("Inf"))` | `float`| SE>0|
-|`OR=(-10,10)` | `float`| -10<log(OR)<10|
-|`OR_95L=(0,float("Inf"))` |`float`| OR_95L>0|
-|`OR_95U=(0,float("Inf"))` |`float`| OR_95U>0|
-|`info=(0,1.000001)` | `float`| 1>=INFO>0 |
-|`direction` | `string`| only contains `"+"`,`"-"` ,`"0"`or `"?"`|
+Comparison will be performed with `float_tolerence = 1e-7` for any float type statistics. For example, `eaf=(0, 1)` will be converted to `eaf=(-1e-7, 1 + 1e-7)`.
 
-!!! example
-    ```python
-    sumstats.check_sanity()
-    
-    Sun Jul 16 15:24:39 2023 Start sanity check for statistics ...
-    Sun Jul 16 15:24:39 2023  -Current Dataframe shape : 50000  x  11
-    Sun Jul 16 15:24:39 2023  -Checking if  0 <=N<= 2147483647  ...
-    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad N.
-    Sun Jul 16 15:24:39 2023  -Checking if  0 <EAF< 1  ...
-    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad EAF.
-    Sun Jul 16 15:24:39 2023  -Checking if  0 <=MAC<= 2147483647  ...
-    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad MAC.
-    Sun Jul 16 15:24:39 2023  -Checking if  5e-300 < P < 1.000001  ...
-    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad P.
-    Sun Jul 16 15:24:39 2023  -Checking if  -10 <BETA< 10  ...
-    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad BETA.
-    Sun Jul 16 15:24:39 2023  -Checking if  0 <SE< inf  ...
-    Sun Jul 16 15:24:39 2023  -Removed 0 variants with bad SE.
-    Sun Jul 16 15:24:39 2023  -Checking STATUS and converting STATUS to categories....
-    Sun Jul 16 15:24:40 2023  -Dropping 0 variants with NAs in the checked columns...
-    Sun Jul 16 15:24:40 2023  -Removed 0 variants with bad statistics in total.
-    Sun Jul 16 15:24:40 2023  -Data types for each column:
-    Sun Jul 16 15:24:40 2023  -Column: SNPID  CHR    POS   EA       NEA      EAF     BETA    SE      P       N     STATUS  
-    Sun Jul 16 15:24:40 2023  -DType : object string int64 category category float32 float32 float32 float64 Int32 category
-    Sun Jul 16 15:24:40 2023 Finished sanity check successfully!
-    ```
+| Parameters                | Type       | Range                                    |
+|---------------------------|------------|------------------------------------------|
+| `float_tolerence`         | `float`    | tolerence for comparison                 |
+| `n=(0,2**31-1))`          | `interger` | 0<N< $2^{31}-1$                          |
+| `ncase=(0,2**31-1)`       | `interger` | 0<N< $2^{31}-1$                          |
+| `ncontrol=(0,2**31-1)`    | `interger` | 0<N< $2^{31}-1$                          |
+| `mac=(0,2**31-1)`         | `interger` | MAC>=0                                   |
+| `eaf=(0,1)`               | `float`    | 0<EAF<1                                  |
+| `chisq=(0,float("Inf"))`  | `float`    | CHISQ>0                                  |
+| `p=(0,1)`                 | `float`    | 0<P<1   (Any P=0 will cause a warning)   |
+| `mlog10p=(0,9999)`        | `float`    | 0<MLOG10P<9999                           |
+| `beta=(-100,100)`         | `float`    | -10<BETA<10                              |
+| `z=(-9999,9999)`          | `float`    | -9999<z<9999                             |
+| `se=(0,float("Inf"))`     | `float`    | SE>0                                     |
+| `OR=(-100,100)`           | `float`    | -100<log(OR)<100                         |
+| `OR_95L=(0,float("Inf"))` | `float`    | OR_95L>0                                 |
+| `OR_95U=(0,float("Inf"))` | `float`    | OR_95U>0                                 |
+| `HR=(-100,100)`           | `float`    | -100<log(HR)<100                         |
+| `HR_95L=(0,float("Inf"))` | `float`    | HR_95L>0                                 |
+| `HR_95U=(0,float("Inf"))` | `float`    | HR_95U>0                                 |
+| `info=(0,1)`              | `float`    | 0<INFO<1                                 |
+| `direction`               | `string`   | only contains `"+"`,`"-"` ,`"0"`or `"?"` |
 
 ## 3. Remove duplicated or multiallelic variants
 
@@ -69,9 +53,15 @@ After standardizing and normalizing the sumstats, you can also remove duplicated
 .remove_dup(mode="md")
 ```
 
-- `mode=d` ,remove duplicate.
+- `mode=d` , remove duplicate variants.
     - remove duplicate SNPs based on  1. SNPID, 
     - remove duplicate SNPs based on  2. CHR, POS, EA, and NEA
+    - remove duplicate SNPs based on  3. rsID
+- `mode=s` ,remove duplicate variants.
+    - remove duplicate SNPs based on  1. SNPID
+- `mode=c` ,remove duplicate variants.
+    - remove duplicate SNPs based on  2. CHR, POS, EA, and NEA
+- `mode=r` ,remove duplicate variants.
     - remove duplicate SNPs based on  3. rsID
 - `mode=m`, remove multiallelic variants.
     - remove multiallelic SNPs based on  4. CHR, POS
@@ -121,8 +111,10 @@ Filter the sumstats by `expr` (a wrapper of `pandas.DataFrame.query`), and retur
 .filter_value(expr,inplace=False)
 ```
 
-- `expr`: `string`. the query string used fot filtering. (for example: '1>BETA>0 & N>10000')
-- `inplace`: `boolean`. If False, return a new  Sumstats Object (so chain calling is possible). If true, the current Sumstats Object will be filtered in place.
+| Options   | DataType  | Description                                                                                             | Default |
+|-----------|-----------|---------------------------------------------------------------------------------------------------------|---------|
+| `expr`    | `string`  | the query string used fot filtering. For example: '1>BETA>0 & N>10000'                                  |         |
+| `inplace` | `boolean` | if False, return a new Sumstats object. If true, the current Sumstats object will be filtered in place. | `False` |
 
 !!! quote pd.DataFrame.query()
     Please check https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html
@@ -156,17 +148,39 @@ Filter the sumstats by `expr` (a wrapper of `pandas.DataFrame.query`), and retur
     ```
     ![image](https://user-images.githubusercontent.com/40289485/211584317-6c1583b5-53e4-4aae-9141-af5781e2439b.png)
  
+## 5. Flanking regions
 
-## 5. Filtering regions
+Available since v3.3.37
 
 ```
-.filter_region_in(path="./abc.bed")
-.filter_region_out(high_ld=True)
-```
-filter variants in certain regions defined in bed files.
+.filter_flanking_by_chrpos(snpid)
 
-- `path` : path to the bed files
-- `high_ld` : high-ld region (built-in data, no additional bed needed)
+.filter_flanking_by_id(chrpos)
+```
+
+Extract variants in the specified flacking regions.
+
+| Options        | DataType  | Description                                                                                             | Default |
+|----------------|-----------|---------------------------------------------------------------------------------------------------------|---------|
+| `snpid`        | `list`    | a list of reference SNPID or rsID. `["rs123", "1:123:A:G"]`                                             |         |
+| `snpid`        | `list`    | a list of reference CHR, POS tuples `[(1, 12345), (2, 67891)]`                                          |         |
+| `windonsizekb` | `int`     | flanking window size in kb `["rs123", "1:123:A:G"]`                                                     | `500`   |
+| `inplace`      | `boolean` | if False, return a new Sumstats object. If true, the current Sumstats object will be filtered in place. | `False` |
+
+## 6. Filtering regions
+
+```
+.filter_region_in()
+.filter_region_out()
+```
+
+Filter variants in  predifined regions or regions defined in bed files.
+
+| Options   | DataType  | Description                                                                                             | Default |
+|-----------|-----------|---------------------------------------------------------------------------------------------------------|---------|
+| `path`    | `string`  | path to the bed files                                                                                   | `None`  |
+| `high_ld` | `boolean` | if True, filter high ld regions using built-in data                                                     | `False` |
+| `inplace` | `boolean` | if False, return a new Sumstats object. If true, the current Sumstats object will be filtered in place. | `False` |
 
 !!! example
     ```
@@ -174,8 +188,9 @@ filter variants in certain regions defined in bed files.
 
     mysumstats.filter_region_out(high_ld=True,inplace=False).data
     ```
-   
-## 6. filter_in & filter_out (deprecated)
+
+
+## 7. filter_in & filter_out (deprecated)
 
 ```python
 .filter_in(gt={},lt={},eq={},inplace=False)
