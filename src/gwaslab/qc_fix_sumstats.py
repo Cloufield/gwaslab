@@ -1518,8 +1518,8 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
 # 20220426
 def liftover_snv(row,chrom,converter,to_build):
     status_pre=""
-    status_end=row[1][2]+"9"+row[1][4]+"99"  
-    pos_0_based = int(row[0]) - 1
+    status_end=row.iloc[1][2]+"9"+row.iloc[1][4]+"99"  
+    pos_0_based = int(row.iloc[0]) - 1
     results = converter[chrom][pos_0_based]
     if converter[chrom][pos_0_based]:
         # return chrom, pos_1_based
