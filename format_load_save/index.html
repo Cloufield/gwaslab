@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="../harmonization_liftover/">
+        <link rel="prev" href="../harmonization_workflow/">
       
       
-        <link rel="next" href="../utility_data_conversion/">
+        <link rel="next" href="../harmonization_liftover/">
       
       
       <link rel="icon" href="../assets/gwaslab.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Lead and novel variants - GWASLab</title>
+        <title>Output sumstats - GWASLab</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#lead-and-novel-variants" class="md-skip">
+        <a href="#output-sumstats" class="md-skip">
           Skip to content
         </a>
       
@@ -107,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Lead and novel variants
+              Output sumstats
             
           </span>
         </div>
@@ -1369,10 +1369,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../format_load_save/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Output sumstats
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1381,6 +1401,128 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#loading-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-availble-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Check availble formats
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formatting-and-saving" class="md-nav__link">
+    <span class="md-ellipsis">
+      Formatting and saving
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formatting and saving">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-ready-for-submission-to-gwas-catalog-gwas-ssf-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      get ready for submission to gwas catalog (GWAS-ssf format)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ldsc-default-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      ldsc default format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vcf" class="md-nav__link">
+    <span class="md-ellipsis">
+      vcf
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#for-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      For annotation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="For annotation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#convert-to-bed-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert to bed format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-to-vep-default-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert to vep default format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-to-annovar-default-input-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert to annovar default input format
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1411,30 +1553,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Lead and novel variants
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../utility_get_lead_novel/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1443,89 +1565,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#load-sample-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      Load sample data
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#get-lead-variants" class="md-nav__link">
-    <span class="md-ellipsis">
-      Get lead variants
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#get-lead-variants-with-gene-name-annotation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Get lead variants with gene name annotation
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#different-window-sizes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Different window sizes
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#different-thresholds" class="md-nav__link">
-    <span class="md-ellipsis">
-      Different thresholds
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#check-if-novel-against-a-tabular-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      Check if novel against a tabular file
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ccheck-against-gwas-catalog-using-efo-id" class="md-nav__link">
-    <span class="md-ellipsis">
-      Ccheck against GWAS Catalog using EFO ID
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1628,65 +1667,104 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#load-sample-data" class="md-nav__link">
+  <a href="#loading-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Load sample data
+      Loading data
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#get-lead-variants" class="md-nav__link">
+  <a href="#check-availble-formats" class="md-nav__link">
     <span class="md-ellipsis">
-      Get lead variants
+      Check availble formats
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#get-lead-variants-with-gene-name-annotation" class="md-nav__link">
+  <a href="#formatting-and-saving" class="md-nav__link">
     <span class="md-ellipsis">
-      Get lead variants with gene name annotation
+      Formatting and saving
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Formatting and saving">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-ready-for-submission-to-gwas-catalog-gwas-ssf-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      get ready for submission to gwas catalog (GWAS-ssf format)
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#different-window-sizes" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#ldsc-default-format" class="md-nav__link">
     <span class="md-ellipsis">
-      Different window sizes
+      ldsc default format
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#different-thresholds" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#vcf" class="md-nav__link">
     <span class="md-ellipsis">
-      Different thresholds
+      vcf
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#check-if-novel-against-a-tabular-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      Check if novel against a tabular file
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#ccheck-against-gwas-catalog-using-efo-id" class="md-nav__link">
+  <a href="#for-annotation" class="md-nav__link">
     <span class="md-ellipsis">
-      Ccheck against GWAS Catalog using EFO ID
+      For annotation
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="For annotation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#convert-to-bed-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert to bed format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-to-vep-default-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert to vep default format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-to-annovar-default-input-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert to annovar default input format
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2742,7 +2820,7 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="lead-and-novel-variants">Lead and novel variants<a class="anchor-link" href="#lead-and-novel-variants">&#182;</a></h1>
+<h1 id="output-sumstats">Output sumstats<a class="anchor-link" href="#output-sumstats">&#182;</a></h1>
 </div>
 </div>
 </div>
@@ -2785,19 +2863,7 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="load-sample-data">Load sample data<a class="anchor-link" href="#load-sample-data">&#182;</a></h2>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Use only first 1000000 variants as example</p>
-
+<h2 id="loading-data">Loading data<a class="anchor-link" href="#loading-data">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2827,13 +2893,19 @@ Licensed under the Apache License, Version 2.0.
              <span class="n">chrom</span><span class="o">=</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span>
              <span class="n">pos</span><span class="o">=</span><span class="s2">&quot;POS&quot;</span><span class="p">,</span>
              <span class="n">ea</span><span class="o">=</span><span class="s2">&quot;ALT&quot;</span><span class="p">,</span>
-             <span class="n">nea</span><span class="o">=</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span>            
+             <span class="n">nea</span><span class="o">=</span><span class="s2">&quot;REF&quot;</span><span class="p">,</span>
+             <span class="n">neaf</span><span class="o">=</span><span class="s2">&quot;Frq&quot;</span><span class="p">,</span>
              <span class="n">beta</span><span class="o">=</span><span class="s2">&quot;BETA&quot;</span><span class="p">,</span>
              <span class="n">se</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
-             <span class="n">p</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">,</span> 
+             <span class="n">p</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">,</span>
+             <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;Dir&quot;</span><span class="p">,</span>
              <span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">,</span>
-             <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
-             <span class="n">nrows</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+             <span class="n">n</span><span class="o">=</span><span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># select just 1000 variants for example</span>
+<span class="n">mysumstats</span><span class="o">.</span><span class="n">random_variants</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># basic_check</span>
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 <div id="cell-2" class="clipboard-copy-txt">mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
@@ -2841,13 +2913,19 @@ Licensed under the Apache License, Version 2.0.
              chrom="CHR",
              pos="POS",
              ea="ALT",
-             nea="REF",            
+             nea="REF",
+             neaf="Frq",
              beta="BETA",
              se="SE",
-             p="P", 
+             p="P",
+             direction="Dir",
              build="19",
-             verbose=False, 
-             nrows=1000000)
+             n="N", verbose=False)
+
+# select just 1000 variants for example
+mysumstats.random_variants(n=1000, inplace=True, random_state=123,verbose=False)
+
+# basic_check
 mysumstats.basic_check(verbose=False)</div>
     
         </div>
@@ -2864,7 +2942,7 @@ mysumstats.basic_check(verbose=False)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="get-lead-variants">Get lead variants<a class="anchor-link" href="#get-lead-variants">&#182;</a></h2>
+<h2 id="check-availble-formats">Check availble formats<a class="anchor-link" href="#check-availble-formats">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2875,7 +2953,7 @@ mysumstats.basic_check(verbose=False)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>GWASLab will use MLOG10P first by default. If MLOG10P is not avaiable, it will look for P column.</p>
+<p>List the formats that GWASLab supports</p>
 
 </div>
 </div>
@@ -2901,9 +2979,9 @@ mysumstats.basic_check(verbose=False)</div>
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">()</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">list_formats</span><span class="p">()</span>
 </pre></div>
-<div id="cell-3" class="clipboard-copy-txt">mysumstats.get_lead()</div>
+<div id="cell-3" class="clipboard-copy-txt">gl.list_formats()</div>
     
         </div>
     </div>
@@ -2925,110 +3003,9 @@ mysumstats.basic_check(verbose=False)</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Sat Feb  3 01:27:18 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:27:18 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:27:18 2024  -Processing 1000000 variants...
-Sat Feb  3 01:27:18 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:27:18 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:27:19 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:27:19 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:27:19 2024  -Identified 4 lead variants!
-Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
+<pre>Sat Feb  3 13:29:25 2024 Available formats: auto,bolt_lmm,cojo,fastgwa,gwascatalog,gwascatalog_hm,gwaslab,ldsc,metal,mrmega,mtag,pgscatalog,pgscatalog_hm,pheweb,plink,plink2,plink2_firth,plink2_linear,plink2_logistic,plink_assoc,plink_bim,plink_dosage,plink_fam,plink_fisher,plink_linear,plink_logistic,plink_psam,plink_pvar,popcorn,regenie,regenie_gene,saige,ssf,template,vcf
 </pre>
 </div>
-</div>
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>SNPID</th>
-      <th>CHR</th>
-      <th>POS</th>
-      <th>EA</th>
-      <th>NEA</th>
-      <th>BETA</th>
-      <th>SE</th>
-      <th>P</th>
-      <th>STATUS</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>96739</th>
-      <td>1:22068326_A_G</td>
-      <td>1</td>
-      <td>22068326</td>
-      <td>G</td>
-      <td>A</td>
-      <td>0.0621</td>
-      <td>0.0103</td>
-      <td>1.629000e-09</td>
-      <td>1960099</td>
-    </tr>
-    <tr>
-      <th>213860</th>
-      <td>1:51103268_T_C</td>
-      <td>1</td>
-      <td>51103268</td>
-      <td>C</td>
-      <td>T</td>
-      <td>-0.0802</td>
-      <td>0.0120</td>
-      <td>2.519000e-11</td>
-      <td>1960099</td>
-    </tr>
-    <tr>
-      <th>534095</th>
-      <td>1:154309595_TA_T</td>
-      <td>1</td>
-      <td>154309595</td>
-      <td>TA</td>
-      <td>T</td>
-      <td>-0.0915</td>
-      <td>0.0166</td>
-      <td>3.289000e-08</td>
-      <td>1960399</td>
-    </tr>
-    <tr>
-      <th>969974</th>
-      <td>2:640986_CACAT_C</td>
-      <td>2</td>
-      <td>640986</td>
-      <td>C</td>
-      <td>CACAT</td>
-      <td>-0.0946</td>
-      <td>0.0150</td>
-      <td>2.665000e-10</td>
-      <td>1960399</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
 </div>
 
 </div>
@@ -3043,7 +3020,8 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="get-lead-variants-with-gene-name-annotation">Get lead variants with gene name annotation<a class="anchor-link" href="#get-lead-variants-with-gene-name-annotation">&#182;</a></h2>
+<p>Check the contents of the specified format</p>
+
 </div>
 </div>
 </div>
@@ -3068,9 +3046,9 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">check_format</span><span class="p">(</span><span class="s2">&quot;ssf&quot;</span><span class="p">)</span>
 </pre></div>
-<div id="cell-4" class="clipboard-copy-txt">mysumstats.get_lead(anno=True)</div>
+<div id="cell-4" class="clipboard-copy-txt">gl.check_format("ssf")</div>
     
         </div>
     </div>
@@ -3092,125 +3070,9 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Sat Feb  3 01:27:19 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:27:19 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:27:19 2024  -Processing 1000000 variants...
-Sat Feb  3 01:27:19 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:27:19 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:27:19 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:27:19 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:27:19 2024  -Identified 4 lead variants!
-Sat Feb  3 01:27:19 2024  -Annotating variants using references:ensembl
-Sat Feb  3 01:27:19 2024  -Annotating variants using references based on genome build:19
-Sat Feb  3 01:27:19 2024 Start to annotate variants with nearest gene name(s)...
-Sat Feb  3 01:27:19 2024  -Assigning Gene name using ensembl_hg19_gtf for protein coding genes
-Sat Feb  3 01:27:19 2024 Finished annotating variants with nearest gene name(s) successfully!
-Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
-</pre>
+<pre>Sat Feb  3 13:29:25 2024 Available formats:Sat Feb  3 13:29:25 2024 meta_dataSat Feb  3 13:29:25 2024 format_dictSat Feb  3 13:29:25 2024 
+Sat Feb  3 13:29:25 2024 {&#39;format_name&#39;: &#39;ssf&#39;, &#39;format_source&#39;: &#39;https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full&#39;, &#39;format_cite_name&#39;: &#39;GWAS-SSF v0.1&#39;, &#39;format_separator&#39;: &#39;\t&#39;, &#39;format_na&#39;: &#39;#NA&#39;, &#39;format_comment&#39;: None, &#39;format_col_order&#39;: [&#39;chromosome&#39;, &#39;base_pair_location&#39;, &#39;effect_allele&#39;, &#39;other_allele&#39;, &#39;beta&#39;, &#39;odds_ratio&#39;, &#39;hazard_ratio&#39;, &#39;standard_error&#39;, &#39;effect_allele_frequency&#39;, &#39;p_value&#39;, &#39;neg_log_10_p_value&#39;, &#39;ci_upper&#39;, &#39;ci_lower&#39;, &#39;rsid&#39;, &#39;variant_id&#39;, &#39;info&#39;, &#39;ref_allele&#39;, &#39;n&#39;], &#39;format_version&#39;: 20230328}Sat Feb  3 13:29:25 2024 {&#39;variant_id&#39;: &#39;SNPID&#39;, &#39;rsid&#39;: &#39;rsID&#39;, &#39;chromosome&#39;: &#39;CHR&#39;, &#39;base_pair_location&#39;: &#39;POS&#39;, &#39;other_allele&#39;: &#39;NEA&#39;, &#39;effect_allele&#39;: &#39;EA&#39;, &#39;effect_allele_frequency&#39;: &#39;EAF&#39;, &#39;n&#39;: &#39;N&#39;, &#39;beta&#39;: &#39;BETA&#39;, &#39;standard_error&#39;: &#39;SE&#39;, &#39;p_value&#39;: &#39;P&#39;, &#39;neg_log_10_p_value&#39;: &#39;MLOG10P&#39;, &#39;info&#39;: &#39;INFO&#39;, &#39;odds_ratio&#39;: &#39;OR&#39;, &#39;hazard_ratio&#39;: &#39;HR&#39;, &#39;ci_lower&#39;: &#39;OR_95L&#39;, &#39;ci_upper&#39;: &#39;OR_95U&#39;}</pre>
 </div>
-</div>
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>SNPID</th>
-      <th>CHR</th>
-      <th>POS</th>
-      <th>EA</th>
-      <th>NEA</th>
-      <th>BETA</th>
-      <th>SE</th>
-      <th>P</th>
-      <th>STATUS</th>
-      <th>LOCATION</th>
-      <th>GENE</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>96739</th>
-      <td>1:22068326_A_G</td>
-      <td>1</td>
-      <td>22068326</td>
-      <td>G</td>
-      <td>A</td>
-      <td>0.0621</td>
-      <td>0.0103</td>
-      <td>1.629000e-09</td>
-      <td>1960099</td>
-      <td>0</td>
-      <td>USP48</td>
-    </tr>
-    <tr>
-      <th>213860</th>
-      <td>1:51103268_T_C</td>
-      <td>1</td>
-      <td>51103268</td>
-      <td>C</td>
-      <td>T</td>
-      <td>-0.0802</td>
-      <td>0.0120</td>
-      <td>2.519000e-11</td>
-      <td>1960099</td>
-      <td>0</td>
-      <td>FAF1</td>
-    </tr>
-    <tr>
-      <th>534095</th>
-      <td>1:154309595_TA_T</td>
-      <td>1</td>
-      <td>154309595</td>
-      <td>TA</td>
-      <td>T</td>
-      <td>-0.0915</td>
-      <td>0.0166</td>
-      <td>3.289000e-08</td>
-      <td>1960399</td>
-      <td>0</td>
-      <td>ATP8B2</td>
-    </tr>
-    <tr>
-      <th>969974</th>
-      <td>2:640986_CACAT_C</td>
-      <td>2</td>
-      <td>640986</td>
-      <td>C</td>
-      <td>CACAT</td>
-      <td>-0.0946</td>
-      <td>0.0150</td>
-      <td>2.665000e-10</td>
-      <td>1960399</td>
-      <td>26349</td>
-      <td>TMEM18</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
 </div>
 
 </div>
@@ -3225,7 +3087,34 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="different-window-sizes">Different window sizes<a class="anchor-link" href="#different-window-sizes">&#182;</a></h2>
+<h2 id="formatting-and-saving">Formatting and saving<a class="anchor-link" href="#formatting-and-saving">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="get-ready-for-submission-to-gwas-catalog-gwas-ssf-format">get ready for submission to gwas catalog (GWAS-ssf format)<a class="anchor-link" href="#get-ready-for-submission-to-gwas-catalog-gwas-ssf-format">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<ul>
+<li><code>fmt</code>: specify the output format</li>
+<li><code>ssfmeta</code>: if True, output the meta file</li>
+<li><code>md5sum</code>: if True, create a file with the md5sum of the output sumstats</li>
+</ul>
+
 </div>
 </div>
 </div>
@@ -3250,9 +3139,9 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span><span class="n">windowsizekb</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;ssf&quot;</span><span class="p">,</span> <span class="n">ssfmeta</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">md5sum</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
-<div id="cell-5" class="clipboard-copy-txt">mysumstats.get_lead(windowsizekb=1000)</div>
+<div id="cell-5" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats", fmt="ssf", ssfmeta=True, md5sum=True)</div>
     
         </div>
     </div>
@@ -3274,127 +3163,42 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Sat Feb  3 01:27:19 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:27:19 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:27:19 2024  -Processing 1000000 variants...
-Sat Feb  3 01:27:19 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:27:19 2024  -Sliding window size: 1000  kb
-Sat Feb  3 01:27:19 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:27:19 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:27:19 2024  -Identified 4 lead variants!
-Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
+<pre>Sat Feb  3 13:29:25 2024 Start to convert the output sumstats in:  ssf  format
+Sat Feb  3 13:29:25 2024  -Formatting statistics ...
+Sat Feb  3 13:29:25 2024  -Float statistics formats:
+Sat Feb  3 13:29:25 2024   - Columns       : [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+Sat Feb  3 13:29:25 2024   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+Sat Feb  3 13:29:25 2024  -Replacing SNPID separator from &#34;:&#34; to &#34;_&#34;...
+Sat Feb  3 13:29:25 2024  -Start outputting sumstats in ssf format...
+Sat Feb  3 13:29:25 2024  -ssf format will be loaded...
+Sat Feb  3 13:29:25 2024  -ssf format meta info:
+Sat Feb  3 13:29:25 2024   - format_name  : ssf
+Sat Feb  3 13:29:25 2024   - format_source  : https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full
+Sat Feb  3 13:29:25 2024   - format_cite_name  : GWAS-SSF v0.1
+Sat Feb  3 13:29:25 2024   - format_separator  : \t
+Sat Feb  3 13:29:25 2024   - format_na  : #NA
+Sat Feb  3 13:29:25 2024   - format_col_order  : chromosome,base_pair_location,effect_allele,other_allele,beta,odds_ratio,hazard_ratio,standard_error,effect_allele_frequency,p_value,neg_log_10_p_value,ci_upper,ci_lower,rsid,variant_id,info,ref_allele,n
+Sat Feb  3 13:29:25 2024   - format_version  :  20230328
+Sat Feb  3 13:29:25 2024  -gwaslab to ssf format dictionary:
+Sat Feb  3 13:29:25 2024   - gwaslab keys: SNPID,rsID,CHR,POS,NEA,EA,EAF,N,BETA,SE,P,MLOG10P,INFO,OR,HR,OR_95L,OR_95U
+Sat Feb  3 13:29:25 2024   - ssf values: variant_id,rsid,chromosome,base_pair_location,other_allele,effect_allele,effect_allele_frequency,n,beta,standard_error,p_value,neg_log_10_p_value,info,odds_ratio,hazard_ratio,ci_lower,ci_upper
+Sat Feb  3 13:29:25 2024  -Output path: ./mysumstats.ssf.tsv.gz
+Sat Feb  3 13:29:25 2024  -Output columns: chromosome,base_pair_location,effect_allele,other_allele,beta,standard_error,effect_allele_frequency,p_value,variant_id,n
+Sat Feb  3 13:29:25 2024  -Writing sumstats to: ./mysumstats.ssf.tsv.gz...
+Sat Feb  3 13:29:25 2024  -md5sum hashing for the file: ./mysumstats.ssf.tsv.gz
+Sat Feb  3 13:29:25 2024  -md5sum path: ./mysumstats.ssf.tsv.gz.md5sum
+Sat Feb  3 13:29:25 2024  -md5sum: 2f24217183ce33e1c906a9a7c9d8e2dc
+Sat Feb  3 13:29:25 2024  -Exporting SSF-style meta data to ./mysumstats.ssf.tsv-meta.ymal
+Sat Feb  3 13:29:25 2024  -Saving log file to: ./mysumstats.ssf.log
+Sat Feb  3 13:29:25 2024 Finished outputting successfully!
 </pre>
 </div>
 </div>
 
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>SNPID</th>
-      <th>CHR</th>
-      <th>POS</th>
-      <th>EA</th>
-      <th>NEA</th>
-      <th>BETA</th>
-      <th>SE</th>
-      <th>P</th>
-      <th>STATUS</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>96739</th>
-      <td>1:22068326_A_G</td>
-      <td>1</td>
-      <td>22068326</td>
-      <td>G</td>
-      <td>A</td>
-      <td>0.0621</td>
-      <td>0.0103</td>
-      <td>1.629000e-09</td>
-      <td>1960099</td>
-    </tr>
-    <tr>
-      <th>213860</th>
-      <td>1:51103268_T_C</td>
-      <td>1</td>
-      <td>51103268</td>
-      <td>C</td>
-      <td>T</td>
-      <td>-0.0802</td>
-      <td>0.0120</td>
-      <td>2.519000e-11</td>
-      <td>1960099</td>
-    </tr>
-    <tr>
-      <th>534095</th>
-      <td>1:154309595_TA_T</td>
-      <td>1</td>
-      <td>154309595</td>
-      <td>TA</td>
-      <td>T</td>
-      <td>-0.0915</td>
-      <td>0.0166</td>
-      <td>3.289000e-08</td>
-      <td>1960399</td>
-    </tr>
-    <tr>
-      <th>969974</th>
-      <td>2:640986_CACAT_C</td>
-      <td>2</td>
-      <td>640986</td>
-      <td>C</td>
-      <td>CACAT</td>
-      <td>-0.0946</td>
-      <td>0.0150</td>
-      <td>2.665000e-10</td>
-      <td>1960399</td>
-    </tr>
-  </tbody>
-</table>
-</div>
 </div>
 
 </div>
 
-</div>
-
-</div>
-
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="different-thresholds">Different thresholds<a class="anchor-link" href="#different-thresholds">&#182;</a></h2>
-</div>
-</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -3417,9 +3221,9 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span><span class="n">sig_level</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span><span class="n">zcat</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">ssf</span><span class="o">.</span><span class="n">tsv</span><span class="o">.</span><span class="n">gz</span> <span class="o">|</span> <span class="n">head</span>
 </pre></div>
-<div id="cell-6" class="clipboard-copy-txt">mysumstats.get_lead(sig_level=1e-10)</div>
+<div id="cell-6" class="clipboard-copy-txt">!zcat mysumstats.ssf.tsv.gz | head</div>
     
         </div>
     </div>
@@ -3441,103 +3245,34 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Sat Feb  3 01:27:19 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:27:19 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:27:19 2024  -Processing 1000000 variants...
-Sat Feb  3 01:27:19 2024  -Significance threshold : 1e-10
-Sat Feb  3 01:27:19 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:27:20 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:27:20 2024  -Found 1 significant variants in total...
-Sat Feb  3 01:27:20 2024  -Identified 1 lead variants!
-Sat Feb  3 01:27:20 2024 Finished extracting lead variants.
+<pre>chromosome	base_pair_location	effect_allele	other_allele	beta	standard_error	effect_allele_frequency	p_value	variant_id	n
+1	2005486	C	T	-0.0969	0.0471	0.9863	3.9820e-02	1_2005486_C_T	191764
+1	2247939	AAGG	A	0.0330	0.1249	0.9966	7.9190e-01	1_2247939_AAGG_A	191764
+1	3741853	G	A	-0.0375	0.0142	0.8849	8.2820e-03	1_3741853_G_A	191764
+1	5017526	G	A	0.0126	0.0373	0.9822	7.3620e-01	1_5017526_G_A	191764
+1	5843475	C	T	-0.0011	0.0433	0.9857	9.8010e-01	1_5843475_C_T	191764
+1	9405103	C	T	-0.0729	0.1516	0.0021	6.3050e-01	1_9405103_T_C	191764
+1	9443411	G	A	0.0362	0.0532	0.9916	4.9690e-01	1_9443411_G_A	191764
+1	12866348	G	C	-0.0352	0.0431	0.9728	4.1450e-01	1_12866348_G_C	191764
+1	14466316	G	A	-0.0042	0.0096	0.6942	6.6360e-01	1_14466316_A_G	191764
+
+gzip: stdout: Broken pipe
 </pre>
 </div>
 </div>
 
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>SNPID</th>
-      <th>CHR</th>
-      <th>POS</th>
-      <th>EA</th>
-      <th>NEA</th>
-      <th>BETA</th>
-      <th>SE</th>
-      <th>P</th>
-      <th>STATUS</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>213860</th>
-      <td>1:51103268_T_C</td>
-      <td>1</td>
-      <td>51103268</td>
-      <td>C</td>
-      <td>T</td>
-      <td>-0.0802</td>
-      <td>0.012</td>
-      <td>2.519000e-11</td>
-      <td>1960099</td>
-    </tr>
-  </tbody>
-</table>
-</div>
 </div>
 
 </div>
 
 </div>
-
-</div>
-
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="check-if-novel-against-a-tabular-file">Check if novel against a tabular file<a class="anchor-link" href="#check-if-novel-against-a-tabular-file">&#182;</a></h2>
-</div>
-</div>
-</div>
-</div>known_loci.txt file looks like:
-
-CHR POS
-1 154309595
-1 51103268<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
@@ -3552,9 +3287,9 @@ CHR POS
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">novel</span> <span class="o">=</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">get_novel</span><span class="p">(</span><span class="n">known</span><span class="o">=</span><span class="s2">&quot;./toy_data/known_loci.txt&quot;</span><span class="p">)</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span><span class="n">head</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">ssf</span><span class="o">.</span><span class="n">tsv</span><span class="o">.</span><span class="n">gz</span><span class="o">.</span><span class="n">md5sum</span>
 </pre></div>
-<div id="cell-7" class="clipboard-copy-txt">novel = mysumstats.get_novel(known="./toy_data/known_loci.txt")</div>
+<div id="cell-7" class="clipboard-copy-txt">!head mysumstats.ssf.tsv.gz.md5sum</div>
     
         </div>
     </div>
@@ -3576,22 +3311,7 @@ CHR POS
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Sat Feb  3 01:22:31 2024 Start to check if lead variants are known...v3.4.38
-Sat Feb  3 01:22:31 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:22:31 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:22:31 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:22:31 2024  -Processing 1000000 variants...
-Sat Feb  3 01:22:31 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:22:31 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:22:31 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:22:31 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:22:31 2024  -Identified 4 lead variants!
-Sat Feb  3 01:22:31 2024 Finished extracting lead variants.
-Sat Feb  3 01:22:31 2024  -Lead variants in known loci: 2
-Sat Feb  3 01:22:31 2024  -Checking the minimum distance between identified lead variants and provided known variants...
-Sat Feb  3 01:22:31 2024  -Identified  2  known vairants in current sumstats...
-Sat Feb  3 01:22:31 2024  -Identified  2  novel vairants in current sumstats...
-Sat Feb  3 01:22:31 2024 Finished checking if lead variants are known.
+<pre>2f24217183ce33e1c906a9a7c9d8e2dc
 </pre>
 </div>
 </div>
@@ -3607,7 +3327,7 @@ Sat Feb  3 01:22:31 2024 Finished checking if lead variants are known.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
@@ -3622,178 +3342,9 @@ Sat Feb  3 01:22:31 2024 Finished checking if lead variants are known.
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">novel</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span><span class="n">head</span> <span class="o">./</span><span class="n">mysumstats</span><span class="o">.</span><span class="n">ssf</span><span class="o">.</span><span class="n">tsv</span><span class="o">-</span><span class="n">meta</span><span class="o">.</span><span class="n">ymal</span>
 </pre></div>
-<div id="cell-8" class="clipboard-copy-txt">novel</div>
-    
-        </div>
-    </div>
-
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>SNPID</th>
-      <th>CHR</th>
-      <th>POS</th>
-      <th>EA</th>
-      <th>NEA</th>
-      <th>BETA</th>
-      <th>SE</th>
-      <th>P</th>
-      <th>STATUS</th>
-      <th>DISTANCE_TO_KNOWN</th>
-      <th>KNOWN_ID</th>
-      <th>NOVEL</th>
-      <th>LOCATION_OF_KNOWN</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1:22068326_A_G</td>
-      <td>1</td>
-      <td>22068326</td>
-      <td>G</td>
-      <td>A</td>
-      <td>0.0621</td>
-      <td>0.0103</td>
-      <td>1.629000e-09</td>
-      <td>1960099</td>
-      <td>29034942.0</td>
-      <td>1:51103268</td>
-      <td>True</td>
-      <td>Upstream</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1:51103268_T_C</td>
-      <td>1</td>
-      <td>51103268</td>
-      <td>C</td>
-      <td>T</td>
-      <td>-0.0802</td>
-      <td>0.0120</td>
-      <td>2.519000e-11</td>
-      <td>1960099</td>
-      <td>0.0</td>
-      <td>1:51103268</td>
-      <td>False</td>
-      <td>Same</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1:154309595_TA_T</td>
-      <td>1</td>
-      <td>154309595</td>
-      <td>TA</td>
-      <td>T</td>
-      <td>-0.0915</td>
-      <td>0.0166</td>
-      <td>3.289000e-08</td>
-      <td>1960399</td>
-      <td>0.0</td>
-      <td>1:154309595</td>
-      <td>False</td>
-      <td>Same</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>2:640986_CACAT_C</td>
-      <td>2</td>
-      <td>640986</td>
-      <td>C</td>
-      <td>CACAT</td>
-      <td>-0.0946</td>
-      <td>0.0150</td>
-      <td>2.665000e-10</td>
-      <td>1960399</td>
-      <td>NaN</td>
-      <td>&lt;NA&gt;</td>
-      <td>True</td>
-      <td>NoneOnThisChr</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="ccheck-against-gwas-catalog-using-efo-id">Ccheck against GWAS Catalog using EFO ID<a class="anchor-link" href="#ccheck-against-gwas-catalog-using-efo-id">&#182;</a></h2>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-        
-        
-        <div class="CodeMirror cm-s-jupyter">
-        <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-9">
-            <div>
-                <span class="notice" hidden>Copied!</span>
-                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
-                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
-                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
-                </svg>
-                </div>
-            </clipboard-copy>
-        </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># EFO ID can be found on gwas catalog</span>
-<span class="n">mysumstats</span><span class="o">.</span><span class="n">get_novel</span><span class="p">(</span><span class="n">efo</span><span class="o">=</span><span class="s2">&quot;MONDO_0005148&quot;</span><span class="p">)</span>
-</pre></div>
-<div id="cell-9" class="clipboard-copy-txt"># EFO ID can be found on gwas catalog
-mysumstats.get_novel(efo="MONDO_0005148")</div>
+<div id="cell-8" class="clipboard-copy-txt">!head ./mysumstats.ssf.tsv-meta.ymal</div>
     
         </div>
     </div>
@@ -3815,165 +3366,843 @@ mysumstats.get_novel(efo="MONDO_0005148")</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Sat Feb  3 01:22:31 2024 Start to check if lead variants are known...v3.4.38
-Sat Feb  3 01:22:31 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:22:31 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:22:31 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:22:31 2024  -Processing 1000000 variants...
-Sat Feb  3 01:22:31 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:22:31 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:22:31 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:22:31 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:22:31 2024  -Identified 4 lead variants!
-Sat Feb  3 01:22:31 2024 Finished extracting lead variants.
-Sat Feb  3 01:22:32 2024 Start to retrieve data using EFO: MONDO_0005148...
-Sat Feb  3 01:22:32 2024 Start to retrieve data from GWASCatalog...
-Sat Feb  3 01:22:32 2024  -Please make sure your sumstats is based on GRCh38...
-Sat Feb  3 01:22:32 2024  -Requesting (GET) trait information through the GWASCatalog API...
-Sat Feb  3 01:22:32 2024  -EFO trait api: https://www.ebi.ac.uk/gwas/rest/api/efoTraits/MONDO_0005148
-Sat Feb  3 01:22:33 2024  -Status code: 200
-Sat Feb  3 01:22:33 2024  -Trait Name: type 2 diabetes mellitus
-Sat Feb  3 01:22:33 2024  -Trait URL: http://purl.obolibrary.org/obo/MONDO_0005148
-Sat Feb  3 01:22:33 2024  -Requesting (GET) GWAS associations through the GWASCatalog API...
-Sat Feb  3 01:22:33 2024  -associationsByTraitSummary API: https://www.ebi.ac.uk/gwas/rest/api/efoTraits/MONDO_0005148/associations?projection=associationByEfoTrait
-Sat Feb  3 01:22:33 2024  -Note: this step might take a while...
-Sat Feb  3 01:25:44 2024  -Status code 200 OK: Retrieved data from GWASCatalog successffully ...
-Sat Feb  3 01:25:44 2024  -Loading json ...
-Sat Feb  3 01:25:45 2024  -Parsing json ...
-Sat Feb  3 01:25:45 2024  -Number of reported associations for MONDO_0005148 in GWASCatalog: 5450
-Sat Feb  3 01:25:45 2024  -Loading retrieved data into gwaslab Sumstats object ...
-Sat Feb  3 01:25:50 2024 Finished retrieving data from GWASCatalog...
-Sat Feb  3 01:25:50 2024  -Retrieved 4176 associations from GWAS catalog.
-Sat Feb  3 01:25:50 2024  -Lead variants in known loci: 4176
-Sat Feb  3 01:25:50 2024  -Checking the minimum distance between identified lead variants and provided known variants...
-Sat Feb  3 01:25:50 2024  -Identified  4  known vairants in current sumstats...
-Sat Feb  3 01:25:50 2024  -Identified  0  novel vairants in current sumstats...
-Sat Feb  3 01:25:50 2024 Finished checking if lead variants are known.
+<pre>coordinate_system: 1-based
+data_file_md5sum: 2f24217183ce33e1c906a9a7c9d8e2dc
+data_file_name: ./mysumstats.ssf.tsv.gz
+date_last_modified: 2024-02-03-13:29:25
+file_type: GWAS-SSF v0.1
+genome_assembly: Unknown
+genotyping_technology: Unknown
+gwas_id: Unknown
+gwaslab:
+  genome_build: &#39;19&#39;
 </pre>
 </div>
 </div>
 
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="ldsc-default-format">ldsc default format<a class="anchor-link" href="#ldsc-default-format">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<ul>
+<li><code>hapmap3</code>: if True, only output hapmap3 SNPs</li>
+<li><code>exclude_hla</code>: if True, exclude variants in HLA region from output</li>
+</ul>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-9">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;ldsc&quot;</span><span class="p">,</span><span class="n">hapmap3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">exclude_hla</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div id="cell-9" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True)</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 
 
-
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>SNPID</th>
-      <th>CHR</th>
-      <th>POS</th>
-      <th>EA</th>
-      <th>NEA</th>
-      <th>BETA</th>
-      <th>SE</th>
-      <th>P</th>
-      <th>STATUS</th>
-      <th>DISTANCE_TO_KNOWN</th>
-      <th>KNOWN_ID</th>
-      <th>KNOWN_PUBMED_ID</th>
-      <th>KNOWN_AUTHOR</th>
-      <th>NOVEL</th>
-      <th>LOCATION_OF_KNOWN</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1:22068326_A_G</td>
-      <td>1</td>
-      <td>22068326</td>
-      <td>G</td>
-      <td>A</td>
-      <td>0.0621</td>
-      <td>0.0103</td>
-      <td>1.629000e-09</td>
-      <td>1960099</td>
-      <td>-279528</td>
-      <td>rs34759301</td>
-      <td>34594039</td>
-      <td>Sakaue S</td>
-      <td>False</td>
-      <td>Downstream</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1:51103268_T_C</td>
-      <td>1</td>
-      <td>51103268</td>
-      <td>C</td>
-      <td>T</td>
-      <td>-0.0802</td>
-      <td>0.0120</td>
-      <td>2.519000e-11</td>
-      <td>1960099</td>
-      <td>-62054</td>
-      <td>rs12088739</td>
-      <td>30054458</td>
-      <td>Xue A</td>
-      <td>False</td>
-      <td>Downstream</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1:154309595_TA_T</td>
-      <td>1</td>
-      <td>154309595</td>
-      <td>TA</td>
-      <td>T</td>
-      <td>-0.0915</td>
-      <td>0.0166</td>
-      <td>3.289000e-08</td>
-      <td>1960399</td>
-      <td>12189</td>
-      <td>rs1194606</td>
-      <td>32541925</td>
-      <td>Vujkovic M</td>
-      <td>False</td>
-      <td>Upstream</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>2:640986_CACAT_C</td>
-      <td>2</td>
-      <td>640986</td>
-      <td>C</td>
-      <td>CACAT</td>
-      <td>-0.0946</td>
-      <td>0.0150</td>
-      <td>2.665000e-10</td>
-      <td>1960399</td>
-      <td>1</td>
-      <td>rs72156956</td>
-      <td>30718926</td>
-      <td>Suzuki K</td>
-      <td>False</td>
-      <td>Upstream</td>
-    </tr>
-  </tbody>
-</table>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 13:29:26 2024 Start to convert the output sumstats in:  ldsc  format
+Sat Feb  3 13:29:26 2024  -Excluding variants in MHC (HLA) region ...
+Sat Feb  3 13:29:26 2024  -Exclude 3 variants in MHC (HLA) region : 25Mb - 34Mb.
+Sat Feb  3 13:29:26 2024  -Processing 997 raw variants...
+Sat Feb  3 13:29:26 2024  -Loading Hapmap3 variants data...
+Sat Feb  3 13:29:27 2024  -Since rsID not in sumstats, chr:pos( build 19) will be used for matching...
+Sat Feb  3 13:29:28 2024  -Raw input contains 81 hapmaps variants based on chr:pos...
+Sat Feb  3 13:29:28 2024  -Extract 81 variants in Hapmap3 datasets for build 19.
+Sat Feb  3 13:29:28 2024  -Formatting statistics ...
+Sat Feb  3 13:29:28 2024  -Float statistics formats:
+Sat Feb  3 13:29:28 2024   - Columns       : [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+Sat Feb  3 13:29:28 2024   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+Sat Feb  3 13:29:28 2024  -Start outputting sumstats in ldsc format...
+Sat Feb  3 13:29:28 2024  -ldsc format will be loaded...
+Sat Feb  3 13:29:28 2024  -ldsc format meta info:
+Sat Feb  3 13:29:28 2024   - format_name  : ldsc
+Sat Feb  3 13:29:28 2024   - format_source  : https://github.com/bulik/ldsc/wiki/Summary-Statistics-File-Format
+Sat Feb  3 13:29:28 2024   - format_source2  : https://github.com/bulik/ldsc/blob/master/munge_sumstats.py
+Sat Feb  3 13:29:28 2024   - format_version  :  20150306
+Sat Feb  3 13:29:28 2024  -gwaslab to ldsc format dictionary:
+Sat Feb  3 13:29:28 2024   - gwaslab keys: rsID,NEA,EA,EAF,N,BETA,P,Z,INFO,OR,CHR,POS
+Sat Feb  3 13:29:28 2024   - ldsc values: SNP,A2,A1,Frq,N,Beta,P,Z,INFO,OR,CHR,POS
+Sat Feb  3 13:29:28 2024  -Output path: ./mysumstats.hapmap3.noMHC.ldsc.tsv.gz
+Sat Feb  3 13:29:28 2024  -Output columns: N,POS,CHR,A1,A2,SNP,P,Beta,Frq
+Sat Feb  3 13:29:28 2024  -Writing sumstats to: ./mysumstats.hapmap3.noMHC.ldsc.tsv.gz...
+Sat Feb  3 13:29:28 2024  -Saving log file to: ./mysumstats.hapmap3.noMHC.ldsc.log
+Sat Feb  3 13:29:28 2024 Finished outputting successfully!
+</pre>
 </div>
 </div>
 
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-10">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span><span class="n">zcat</span> <span class="o">./</span><span class="n">mysumstats</span><span class="o">.</span><span class="n">hapmap3</span><span class="o">.</span><span class="n">noMHC</span><span class="o">.</span><span class="n">ldsc</span><span class="o">.</span><span class="n">tsv</span><span class="o">.</span><span class="n">gz</span> <span class="o">|</span> <span class="n">head</span>
+</pre></div>
+<div id="cell-10" class="clipboard-copy-txt">!zcat ./mysumstats.hapmap3.noMHC.ldsc.tsv.gz | head</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>N	POS	CHR	A1	A2	SNP	P	Beta	Frq
+191764	14900419	1	G	A	rs6703840	1.3750e-01	0.0144	0.3952
+191764	19593199	1	C	T	rs7527253	3.2570e-01	-0.0127	0.1323
+191764	35282297	1	G	A	rs1407135	6.4190e-01	0.0041	0.5434
+191764	66001402	1	C	T	rs1171261	1.7720e-01	-0.0148	0.2103
+191764	83510491	1	G	A	rs2022427	6.9800e-01	0.0378	0.0025
+191764	166110693	1	C	T	rs4656480	2.5250e-02	0.0286	0.8627
+191764	175886511	1	G	A	rs6656281	2.2480e-01	-0.0141	0.1828
+191764	181612041	1	C	T	rs199955	5.5050e-01	0.0135	0.9603
+191764	196329362	1	C	T	rs11801881	2.5060e-01	0.0300	0.0301
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="vcf">vcf<a class="anchor-link" href="#vcf">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<ul>
+<li><code>bgzip</code> : if True, bgzip the output vcf/bed</li>
+<li><code>tabix</code> : if True, index the bgzipped file with tabix</li>
+</ul>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-11">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;vcf&quot;</span><span class="p">,</span><span class="n">bgzip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">tabix</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div id="cell-11" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="vcf",bgzip=True,tabix=True)</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 13:29:28 2024 Start to convert the output sumstats in:  vcf  format
+Sat Feb  3 13:29:28 2024  -Formatting statistics ...
+Sat Feb  3 13:29:28 2024  -Float statistics formats:
+Sat Feb  3 13:29:28 2024   - Columns       : [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+Sat Feb  3 13:29:28 2024   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+Sat Feb  3 13:29:28 2024  -Start outputting sumstats in vcf format...
+Sat Feb  3 13:29:28 2024  -vcf format will be loaded...
+Sat Feb  3 13:29:28 2024  -vcf format meta info:
+Sat Feb  3 13:29:28 2024   - format_name  : vcf
+Sat Feb  3 13:29:28 2024   - format_source  : https://github.com/MRCIEU/gwas-vcf-specification/tree/1.0.0
+Sat Feb  3 13:29:28 2024   - format_version  :  20220923
+Sat Feb  3 13:29:28 2024   - format_citation  : Lyon, M.S., Andrews, S.J., Elsworth, B. et al. The variant call format provides efficient and robust storage of GWAS summary statistics. Genome Biol 22, 32 (2021). https://doi.org/10.1186/s13059-020-02248-0
+Sat Feb  3 13:29:28 2024   - format_fixed  : #CHROM,POS,ID,REF,ALT,QUAL,FILTER,INFO,FORMAT
+Sat Feb  3 13:29:28 2024   - format_format  : ID,SS,ES,SE,LP,SI,EZ
+Sat Feb  3 13:29:28 2024  -gwaslab to vcf format dictionary:
+Sat Feb  3 13:29:28 2024   - gwaslab keys: rsID,CHR,POS,NEA,EA,N,EAF,BETA,SE,MLOG10P,INFO,Z
+Sat Feb  3 13:29:28 2024   - vcf values: ID,#CHROM,POS,REF,ALT,SS,AF,ES,SE,LP,SI,EZ
+Sat Feb  3 13:29:28 2024  -Creating VCF file header...
+Sat Feb  3 13:29:28 2024   -VCF header contig build:19
+Sat Feb  3 13:29:28 2024   -ID:Study_1
+Sat Feb  3 13:29:28 2024   -StudyType:Unknown
+Sat Feb  3 13:29:28 2024   -TotalVariants:1000
+Sat Feb  3 13:29:28 2024   -HarmonisedVariants:0
+Sat Feb  3 13:29:28 2024   -VariantsNotHarmonised:1000
+Sat Feb  3 13:29:28 2024   -SwitchedAlleles:0
+Sat Feb  3 13:29:28 2024  -Writing sumstats to: ./mysumstats.vcf...
+Sat Feb  3 13:29:28 2024  -Output columns: #CHROM POS ID REF ALT QUAL FILTER INFO FORMAT Study_1
+Sat Feb  3 13:29:28 2024  -Outputing data...
+Sat Feb  3 13:29:29 2024  -bgzip compressing : ./mysumstats.vcf.gz...
+Sat Feb  3 13:29:29 2024  -tabix indexing : : ./mysumstats.vcf.gz.tbi...
+Sat Feb  3 13:29:29 2024  -Saving log file to: ./mysumstats.vcf.log
+Sat Feb  3 13:29:29 2024 Finished outputting successfully!
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="for-annotation">For annotation<a class="anchor-link" href="#for-annotation">&#182;</a></h2>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="convert-to-bed-format">convert to bed format<a class="anchor-link" href="#convert-to-bed-format">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-12">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;bed&quot;</span><span class="p">)</span>
+</pre></div>
+<div id="cell-12" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="bed")</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 13:29:29 2024 Start to convert the output sumstats in:  bed  format
+Sat Feb  3 13:29:29 2024  -Formatting statistics ...
+Sat Feb  3 13:29:29 2024  -Float statistics formats:
+Sat Feb  3 13:29:29 2024   - Columns       : [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+Sat Feb  3 13:29:29 2024   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+Sat Feb  3 13:29:29 2024  -Start outputting sumstats in bed format...
+Sat Feb  3 13:29:29 2024  -Number of SNPs : 920
+Sat Feb  3 13:29:29 2024  -Number of Insertions : 52
+Sat Feb  3 13:29:29 2024  -Number of Deletions : 28
+Sat Feb  3 13:29:29 2024  -formatting to 0-based bed-like file...
+Sat Feb  3 13:29:29 2024  -format description: https://genome.ucsc.edu/FAQ/FAQformat.html#format1
+Sat Feb  3 13:29:29 2024  -Adjusting positions in format-specific manner..
+Sat Feb  3 13:29:29 2024  -Output columns: CHR,START,END,NEA/EA,STRAND,SNPID
+Sat Feb  3 13:29:29 2024  -Writing sumstats to: ./mysumstats.bed...
+Sat Feb  3 13:29:29 2024  -Saving log file to: ./mysumstats.bed.log
+Sat Feb  3 13:29:29 2024 Finished outputting successfully!
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-13">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span><span class="n">cat</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">bed</span> <span class="o">|</span> <span class="n">head</span>
+</pre></div>
+<div id="cell-13" class="clipboard-copy-txt">!cat mysumstats.bed | head</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>1	2005485	2005486	T/C	+	1:2005486_C_T
+1	2247939	2247939	-/AGG	+	1:2247939_AAGG_A
+1	3741852	3741853	A/G	+	1:3741853_G_A
+1	5017525	5017526	A/G	+	1:5017526_G_A
+1	5843474	5843475	T/C	+	1:5843475_C_T
+1	9405102	9405103	T/C	+	1:9405103_T_C
+1	9443410	9443411	A/G	+	1:9443411_G_A
+1	12866347	12866348	C/G	+	1:12866348_G_C
+1	14466315	14466316	A/G	+	1:14466316_A_G
+1	14900418	14900419	A/G	+	1:14900419_A_G
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="convert-to-vep-default-format">convert to vep default format<a class="anchor-link" href="#convert-to-vep-default-format">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-14">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;vep&quot;</span><span class="p">)</span>
+</pre></div>
+<div id="cell-14" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="vep")</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 13:29:29 2024 Start to convert the output sumstats in:  vep  format
+Sat Feb  3 13:29:29 2024  -Formatting statistics ...
+Sat Feb  3 13:29:29 2024  -Float statistics formats:
+Sat Feb  3 13:29:29 2024   - Columns       : [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+Sat Feb  3 13:29:29 2024   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+Sat Feb  3 13:29:29 2024  -Start outputting sumstats in vep format...
+Sat Feb  3 13:29:29 2024  -Number of SNPs : 920
+Sat Feb  3 13:29:29 2024  -Number of Insertions : 52
+Sat Feb  3 13:29:29 2024  -Number of Deletions : 28
+Sat Feb  3 13:29:29 2024  -formatting to 1-based bed-like file (for vep)...
+Sat Feb  3 13:29:29 2024  -format description: http://asia.ensembl.org/info/docs/tools/vep/vep_formats.html
+Sat Feb  3 13:29:29 2024  -Adjusting positions in format-specific manner..
+Sat Feb  3 13:29:29 2024  -Output columns: CHR,START,END,NEA/EA,STRAND,SNPID
+Sat Feb  3 13:29:29 2024  -Writing sumstats to: ./mysumstats.vep...
+Sat Feb  3 13:29:29 2024  -Saving log file to: ./mysumstats.vep.log
+Sat Feb  3 13:29:29 2024 Finished outputting successfully!
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-15">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span><span class="n">cat</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">vep</span> <span class="o">|</span> <span class="n">head</span>
+</pre></div>
+<div id="cell-15" class="clipboard-copy-txt">!cat mysumstats.vep | head</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>1	2005486	2005486	T/C	+	1:2005486_C_T
+1	2247940	2247939	-/AGG	+	1:2247939_AAGG_A
+1	3741853	3741853	A/G	+	1:3741853_G_A
+1	5017526	5017526	A/G	+	1:5017526_G_A
+1	5843475	5843475	T/C	+	1:5843475_C_T
+1	9405103	9405103	T/C	+	1:9405103_T_C
+1	9443411	9443411	A/G	+	1:9443411_G_A
+1	12866348	12866348	C/G	+	1:12866348_G_C
+1	14466316	14466316	A/G	+	1:14466316_A_G
+1	14900419	14900419	A/G	+	1:14900419_A_G
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="convert-to-annovar-default-input-format">convert to annovar default input format<a class="anchor-link" href="#convert-to-annovar-default-input-format">&#182;</a></h3>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-16">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;annovar&quot;</span><span class="p">)</span>
+</pre></div>
+<div id="cell-16" class="clipboard-copy-txt">mysumstats.to_format("./mysumstats",fmt="annovar")</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 13:29:29 2024 Start to convert the output sumstats in:  annovar  format
+Sat Feb  3 13:29:29 2024  -Formatting statistics ...
+Sat Feb  3 13:29:29 2024  -Float statistics formats:
+Sat Feb  3 13:29:29 2024   - Columns       : [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+Sat Feb  3 13:29:29 2024   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+Sat Feb  3 13:29:29 2024  -Start outputting sumstats in annovar format...
+Sat Feb  3 13:29:29 2024  -Number of SNPs : 920
+Sat Feb  3 13:29:29 2024  -Number of Insertions : 52
+Sat Feb  3 13:29:29 2024  -Number of Deletions : 28
+Sat Feb  3 13:29:29 2024  -formatting to 1-based bed-like file...
+Sat Feb  3 13:29:29 2024  -format description: https://annovar.openbioinformatics.org/en/latest/user-guide/input/
+Sat Feb  3 13:29:29 2024  -Adjusting positions in format-specific manner..
+Sat Feb  3 13:29:29 2024  -Output columns: CHR,START,END,NEA_out,EA_out,SNPID
+Sat Feb  3 13:29:29 2024  -Writing sumstats to: ./mysumstats.annovar...
+Sat Feb  3 13:29:29 2024  -Saving log file to: ./mysumstats.annovar.log
+Sat Feb  3 13:29:29 2024 Finished outputting successfully!
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-17">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="err">!</span><span class="n">cat</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">annovar</span> <span class="o">|</span> <span class="n">head</span>
+</pre></div>
+<div id="cell-17" class="clipboard-copy-txt">!cat mysumstats.annovar | head</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>1	2005486	2005486	T	C	1:2005486_C_T
+1	2247940	2247940	-	AGG	1:2247939_AAGG_A
+1	3741853	3741853	A	G	1:3741853_G_A
+1	5017526	5017526	A	G	1:5017526_G_A
+1	5843475	5843475	T	C	1:5843475_C_T
+1	9405103	9405103	T	C	1:9405103_T_C
+1	9443411	9443411	A	G	1:9443411_G_A
+1	12866348	12866348	C	G	1:12866348_G_C
+1	14466316	14466316	A	G	1:14466316_A_G
+1	14900419	14900419	A	G	1:14900419_A_G
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="filter-and-then-output">Filter and then output<a class="anchor-link" href="#filter-and-then-output">&#182;</a></h1>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-18">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">filter_value</span><span class="p">(</span><span class="s2">&quot;EAF &gt;0.05 and EAF &lt; 0.95&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_format</span><span class="p">(</span><span class="s2">&quot;./mysumstats_maf005&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;ssf&quot;</span><span class="p">,</span> <span class="n">ssfmeta</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">md5sum</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div id="cell-18" class="clipboard-copy-txt">mysumstats.filter_value("EAF >0.05 and EAF < 0.95").to_format("./mysumstats_maf005", fmt="ssf", ssfmeta=True, md5sum=True)</div>
+    
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Sat Feb  3 13:29:29 2024 Start filtering values by condition: EAF &gt;0.05 and EAF &lt; 0.95
+Sat Feb  3 13:29:29 2024  -Removing 483 variants not meeting the conditions: EAF &gt;0.05 and EAF &lt; 0.95
+Sat Feb  3 13:29:29 2024 Finished filtering values.
+Sat Feb  3 13:29:29 2024 Start to convert the output sumstats in:  ssf  format
+Sat Feb  3 13:29:29 2024  -Formatting statistics ...
+Sat Feb  3 13:29:29 2024  -Float statistics formats:
+Sat Feb  3 13:29:29 2024   - Columns       : [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
+Sat Feb  3 13:29:29 2024   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
+Sat Feb  3 13:29:29 2024  -Replacing SNPID separator from &#34;:&#34; to &#34;_&#34;...
+Sat Feb  3 13:29:29 2024  -Start outputting sumstats in ssf format...
+Sat Feb  3 13:29:29 2024  -ssf format will be loaded...
+Sat Feb  3 13:29:29 2024  -ssf format meta info:
+Sat Feb  3 13:29:29 2024   - format_name  : ssf
+Sat Feb  3 13:29:29 2024   - format_source  : https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full
+Sat Feb  3 13:29:29 2024   - format_cite_name  : GWAS-SSF v0.1
+Sat Feb  3 13:29:29 2024   - format_separator  : \t
+Sat Feb  3 13:29:29 2024   - format_na  : #NA
+Sat Feb  3 13:29:29 2024   - format_col_order  : chromosome,base_pair_location,effect_allele,other_allele,beta,odds_ratio,hazard_ratio,standard_error,effect_allele_frequency,p_value,neg_log_10_p_value,ci_upper,ci_lower,rsid,variant_id,info,ref_allele,n
+Sat Feb  3 13:29:29 2024   - format_version  :  20230328
+Sat Feb  3 13:29:29 2024  -gwaslab to ssf format dictionary:
+Sat Feb  3 13:29:29 2024   - gwaslab keys: SNPID,rsID,CHR,POS,NEA,EA,EAF,N,BETA,SE,P,MLOG10P,INFO,OR,HR,OR_95L,OR_95U
+Sat Feb  3 13:29:29 2024   - ssf values: variant_id,rsid,chromosome,base_pair_location,other_allele,effect_allele,effect_allele_frequency,n,beta,standard_error,p_value,neg_log_10_p_value,info,odds_ratio,hazard_ratio,ci_lower,ci_upper
+Sat Feb  3 13:29:29 2024  -Output path: ./mysumstats_maf005.ssf.tsv.gz
+Sat Feb  3 13:29:29 2024  -Output columns: chromosome,base_pair_location,effect_allele,other_allele,beta,standard_error,effect_allele_frequency,p_value,variant_id,n
+Sat Feb  3 13:29:29 2024  -Writing sumstats to: ./mysumstats_maf005.ssf.tsv.gz...
+Sat Feb  3 13:29:29 2024  -md5sum hashing for the file: ./mysumstats_maf005.ssf.tsv.gz
+Sat Feb  3 13:29:29 2024  -md5sum path: ./mysumstats_maf005.ssf.tsv.gz.md5sum
+Sat Feb  3 13:29:29 2024  -md5sum: 0e16770079f2372da46ebc1bb32c188d
+Sat Feb  3 13:29:29 2024  -Exporting SSF-style meta data to ./mysumstats_maf005.ssf.tsv-meta.ymal
+Sat Feb  3 13:29:29 2024  -Saving log file to: ./mysumstats_maf005.ssf.log
+Sat Feb  3 13:29:29 2024 Finished outputting successfully!
+</pre>
+</div>
 </div>
 
 </div>
