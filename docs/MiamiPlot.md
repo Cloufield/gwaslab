@@ -27,9 +27,9 @@ GWASLab creates Miami plot by iteratively calling `.plot_mqq()`.
 
 `gl.plot_miami()` now  supports most options in `plot_mqq()`.
 
-Adding a suffix "1" to the options and it will be passed to the top Manhattan plot.
-Adding a suffix "2" to the options and it will be passed to the bottom Manhattan plot.
-If no suffix is provided, it will be passed to both plots.
+- Add a suffix "1" to the options and it will be passed to the top Manhattan plot.
+- Add a suffix "2" to the options and it will be passed to the bottom Manhattan plot.
+- If no suffix is provided, it will be passed to both plots.
 
 ## Example
 

@@ -3,7 +3,11 @@
 GWASLab can update CHR/POS using a pre-processed SNPID-rsID table to assign CHR and POS based on rsID. Currently, only variants in 1KG phase3v5 are supported.  
 
 
-## 1. Reference data
+
+
+## .rsid_to_chrpos()
+
+### Reference data
 GWASLab provides a download function `gl.download_ref()` and two curated tables which contains ~80M 1KG variants:
 
 - `hg19` : `gl.download_ref("1kg_dbsnp151_hg19_auto")`
@@ -26,7 +30,8 @@ GWASLab provides a download function `gl.download_ref()` and two curated tables 
     1:10616:CCGCCGTTGCAAAGGCGCGCCG:C        rs376342519     1       10616   CCGCCGTTGCAAAGGCGCGCCG  C
     ```
 
-## 2. Usage
+
+### .rsid_to_chrpos()
 
 ```
 # if not downloaded yet :
@@ -37,7 +42,7 @@ mysumstats.rsid_to_chrpos( path = gl.get_path("1kg_dbsnp151_hg19_auto"))
 ```
 
 
-## 3. Example 
+### Example 
 
 !!! example "Assign CHR and POS using rsID"
 
@@ -98,12 +103,13 @@ mysumstats.rsid_to_chrpos( path = gl.get_path("1kg_dbsnp151_hg19_auto"))
     ```
 
 
-## 4. dbSNP reference file / .rsid_to_chrpos2()
+## .rsid_to_chrpos2()
 
 **Available since v3.4.31**
 
 `.rsid_to_chrpos2()` is a function to assign CHR and POS based on rsID using a HDF5 file derived from dbSNP reference VCF files.
 
+### Refernce VCF from dbSNP
 
 First, download reference VCF file from dbSNP ftp site.
 
@@ -115,10 +121,10 @@ GCF_000001405.25.gz.tbi (2.9M)
 
 Process the vcf file and convert it to HDF5 file using `.process_ref_vcf()`. This step may take up to one or two hours.
 
-|Option|DataType|Description|Default|
-|-|-|-|-|
-|`vcf`|`string`|the path to dbSNP VCF file|-|
-|`directory`|`string`|the directory where you want output the converted HDF5 file|`./`|
+| Option      | DataType | Description                                                 | Default |
+|-------------|----------|-------------------------------------------------------------|---------|
+| `vcf`       | `string` | the path to dbSNP VCF file                                  | -       |
+| `directory` | `string` | the directory where you want output the converted HDF5 file | `./`    |
 
 ```
 directory="/home/yunye/work/gwaslab/examples/vcf_hd5/"
@@ -140,13 +146,22 @@ Fri Nov 10 11:27:59 2023  -Processing chunk: 0 1 2 3 4 ...
 
 Assign CHR POS using the HDF5 file. 
 
-`.rsid_to_chrpos2()`
+### .rsid_to_chrpos2()
 
-|Option|DataType|Description|Default|
-|-|-|-|-|
-|`path`|`string`|the path to the HDF5 file|-|
-|`n_cores`|`int`|number of threads to use|`./`|
-|`build`|`string`|genome build version for CHR and POS|`"99"`|
+```
+.rsid_to_chrpos2()
+```
+
+
+### Options
+| Option    | DataType | Description                          | Default |
+|-----------|----------|--------------------------------------|---------|
+| `path`    | `string` | the path to the HDF5 file            | -       |
+| `n_cores` | `int`    | number of threads to use             | `./`    |
+| `build`   | `string` | genome build version for CHR and POS | `"99"`  |
+
+
+### Example
 
 ```
 ...

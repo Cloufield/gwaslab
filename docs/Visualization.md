@@ -1,12 +1,14 @@
-# Manhattan plot and QQ plot : plot_mqq()
+# Manhattan plot and QQ plot 
 
 GWASLab provides a customizable plotting function for Manhattan and Q-Q plots.
+
+## .plot_mqq()
 
 ```
 .plot_mqq()
 ```
 
-## 1. A simple example
+## A simple example
 
 !!! example "Quick Manhattan and Q-Q plot without any options"
     ```python
@@ -15,7 +17,9 @@ GWASLab provides a customizable plotting function for Manhattan and Q-Q plots.
     
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196595098-23ff14eb-5579-4177-8d20-54816a410f48.png">
 
-## 2. Options
+See other examples [here](https://cloufield.github.io/gwaslab/visualization_mqq/).
+
+## Options
 
 - [Using P or MLOG10P](#22-use-mlog10p-for-extreme-p-values)
 - [Adjusting x axis](#23-x-axis-physical-position-or-rank)
@@ -48,7 +52,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
     
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196594621-840217aa-117d-49ac-ab58-15a5fa6675b1.png">
 
-### 2.1 Manhattan and QQ plot layout
+### Plot layout
 
 
 |Option|DataType|Description|Default|
@@ -61,7 +65,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 ----------------------------------------------------------------
 
-### 2.2 Use MLOG10P for extreme P values
+### Use MLOG10P for extreme P values
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
@@ -70,7 +74,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 !!! note "Variant with extreme P values"
     To plot the variant with extreme P values (P < 1e-300), you can use `scaled=False` to create the plot with MLOG10P instead of raw P values. To calculate MLOG10P for extreme P values from BETA/SE or Z scores, you can use `mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)`. For details, please refer to the "Extreme P values" section in [https://cloufield.github.io/gwaslab/Conversion/](https://cloufield.github.io/gwaslab/Conversion/).
 
-### 2.3 X axis: Physical position or rank
+### X axis: Physical position or rank
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
@@ -79,7 +83,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 !!! note
     If using rank, there will be no gap in the plot. If using base-pair positions, certain regions of the chromosome might be reflected in the plot like the heterochromatin.
 
-### 2.4 Y axis: Skip "low" and shrink "high"
+### Y axis: Skip "low" and shrink "high"
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
@@ -98,7 +102,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 ----------------------------------------------------------------
 
-### 2.5 Annotation
+### Annotation
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
@@ -142,9 +146,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
     
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196592136-f2cbc488-e02f-409b-b0ac-2ab16f7b1fd4.png">
 
-### 2.6 Annotation style
-
-Added since 3.3.23
+### Annotation style
 
 GWASLab now support 3 types of annotation styles:
 
@@ -165,7 +167,7 @@ GWASLab now support 3 types of annotation styles:
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/215481722-22c8fdcc-b016-4277-ab5f-eb2924f61e01.png">
 
 
-### 2.7 Adjust arm position
+### Adjust arm positions
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
@@ -205,7 +207,7 @@ GWASLab now support 3 types of annotation styles:
 
 ----------------------------------------------------------------
 
-### 2.8 Highlight specified loci
+### Highlight loci
 
 Highlight specified loci (color all variants in a region by specifying variants and the length of flanking regions). 
 
@@ -215,7 +217,7 @@ Highlight specified loci (color all variants in a region by specifying variants 
 |`highlight_windowkb`|`int`|Specify the span of highlighted region in kbp|`500`|
 |`highlight_color`|`list`|Color for highlighting loci|`"#CB132D"`|
 
-### 2.9 Pinpoint specified variants
+### Pinpoint variants
 
 Pinpoint certain variants in the Manhattan plot.
 
@@ -236,7 +238,7 @@ Pinpoint certain variants in the Manhattan plot.
 
 ----------------------------------------------------------------
 
-### 2.10 Lines
+### Lines
 
 |Line Option|DataType|Description|Default|
 |-|-|-|-|
@@ -273,20 +275,20 @@ Pinpoint certain variants in the Manhattan plot.
 
 
 
-### 2.11 MAF-stratified QQ plot
+### MAF-stratified QQ plot
 
-|QQ plot Option|DataType|Description|Default|
-|-|-|-|-|
-|`stratified`|`boolean`|if True, plot MAF straitified QQ plot. Require EAF in sumstats.|`False`|
-|`maf_bins`|`list`|MAF bins for straitification.|`[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]`|
-|`maf_bin_colors`|`list`|colors used for each MAF bin.|`["#f0ad4e","#5cb85c", "#5bc0de","#000042"]`|
+| QQ plot Option   | DataType  | Description                                                     | Default                                              |
+|------------------|-----------|-----------------------------------------------------------------|------------------------------------------------------|
+| `stratified`     | `boolean` | if True, plot MAF straitified QQ plot. Require EAF in sumstats. | `False`                                              |
+| `maf_bins`       | `list`    | MAF bins for straitification.                                   | `[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]` |
+| `maf_bin_colors` | `list`    | colors used for each MAF bin.                                   | `["#f0ad4e","#5cb85c", "#5bc0de","#000042"]`         |
 
 !!! example "MAF-stratified Q-Q plot"
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196593456-93539e3e-e8c0-476f-ae4e-e5843f970ba6.png">
 
 ----------------------------------------------------------------
 
-### 2.12 Colors and Fontsizes
+### Colors and Fontsizes
 
 ```python
 mysumstats.plot_mqq(
@@ -306,24 +308,24 @@ mysumstats.plot_mqq(
 
 Color-related options
 
-|Color Option|DataType|Description|Default|
-|-|-|-|-|
-|`colors`|`list`|a list of colors for chromsomes in the Manhattan plot; it will be used repetitively.|`["#597FBD","#74BAD3"]`|
-|`cut_line_color`|`string`|color for the cut line.|`"#EBEBEB"`|
-|`sig_line_color`|`string`|color for significance threshold line.|`"grey"`|
-|`highlight_color`|`string`|color for highlighting loci|`"#CB132D"`|
-|`pinpoint_color`|`string`|color for pinpointing variants|`"red"`|
-|`maf_bin_colors`|`list`|a list of colors for maf-stratified Q-Q plot.|`["#f0ad4e","#5cb85c", "#5bc0de","#000042"]`| 
+| Color Option      | DataType | Description                                                                          | Default                                      |
+|-------------------|----------|--------------------------------------------------------------------------------------|----------------------------------------------|
+| `colors`          | `list`   | a list of colors for chromsomes in the Manhattan plot; it will be used repetitively. | `["#597FBD","#74BAD3"]`                      |
+| `cut_line_color`  | `string` | color for the cut line.                                                              | `"#EBEBEB"`                                  |
+| `sig_line_color`  | `string` | color for significance threshold line.                                               | `"grey"`                                     |
+| `highlight_color` | `string` | color for highlighting loci                                                          | `"#CB132D"`                                  |
+| `pinpoint_color`  | `string` | color for pinpointing variants                                                       | `"red"`                                      |
+| `maf_bin_colors`  | `list`   | a list of colors for maf-stratified Q-Q plot.                                        | `["#f0ad4e","#5cb85c", "#5bc0de","#000042"]` |
 
 
 Font-related options
 
-|Font Option|DataType|Description|Default|
-|-|-|-|-|
-|`fontsize`|`list`|fontsize for ticklabels.|`9`|
-|`title_fontsize`|`13`|fontsize for title.|`13`|
-|`anno_fontsize`|`10`|fontsize for annotation.|`9`|
-|`font_family`|`string`|font family|`"Arial"`| 
+| Font Option      | DataType | Description              | Default   |
+|------------------|----------|--------------------------|-----------|
+| `fontsize`       | `list`   | fontsize for ticklabels. | `9`       |
+| `title_fontsize` | `13`     | fontsize for title.      | `13`      |
+| `anno_fontsize`  | `10`     | fontsize for annotation. | `9`       |
+| `font_family`    | `string` | font family              | `"Arial"` |
 
 !!! example
     ```python
@@ -336,7 +338,7 @@ Font-related options
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/217693629-98261192-c521-4466-a9eb-6e9a4d4bd2cb.png">
 
 
-### 2.13 Titles
+### Titles
 
 ```python
 mysumstats.plot_mqq(
@@ -347,26 +349,26 @@ mysumstats.plot_mqq(
         )
 ```
 
-|Title Option|DataType|Description|Default|
-|-|-|-|-|
-|`title`|`string`|title for the figure.|``|
-|`mtitle`|`string`|title for the Manhattan plot|``|
-|`qtitle`|`string`|title for the Q-Q plot|``|
-|`title_pad`|`float`|padding for title|`1.08`|
+| Title Option | DataType | Description                  | Default |
+|--------------|----------|------------------------------|---------|
+| `title`      | `string` | title for the figure.        | ``      |
+| `mtitle`     | `string` | title for the Manhattan plot | ``      |
+| `qtitle`     | `string` | title for the Q-Q plot       | ``      |
+| `title_pad`  | `float`  | padding for title            | `1.08`  |
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197341807-e5fb02da-64ba-4320-b001-bb9f5760fdc5.png">
 
 ----------------------------------------------------------------
 
-### 2.14 Figure settings
+### Figure settings
 
 ```
 figargs= {"figsize":(15,5),"dpi":100}
 ```
 
-|Figure Option|DataType|Description|Default|
-|-|-|-|-|
-|`figargs`|`dict`|key-values pairs that are passed to matplotlib `plt.subplots()`|`{"figsize":(15,5),"dpi":200}`|
+| Figure Option | DataType | Description                                                     | Default                        |
+|---------------|----------|-----------------------------------------------------------------|--------------------------------|
+| `figargs`     | `dict`   | key-values pairs that are passed to matplotlib `plt.subplots()` | `{"figsize":(15,5),"dpi":200}` |
 
 Commonly used ones: 
 
@@ -374,7 +376,7 @@ Commonly used ones:
 - `dpi` : dots per inch. For pulications, dpi>=300 is on of the common criteria.
 
 
-### 2.15 Saving plots
+### Saving plots
 
 ```python
 mysumstats.plot_mqq(save="mymqqplots.png",save_args={"dpi":400,"facecolor":"white"})
@@ -382,10 +384,10 @@ mysumstats.plot_mqq(save="mymqqplots.png",save_args={"dpi":400,"facecolor":"whit
 
 Two options for saving plots in `.plot_mqq`
 
-|Saving Option|DataType|Description|Default|
-|-|-|-|-|
-|`save`|`string` or `boolean`|If `string`, the plot will be saved to the specified path; If `True`, it will be saved to default path|`True`|
-|`save_args`|`dict`|other parameters passed to matplotlib `savefig` function.|`{"dpi":300,"facecolor":"white"}`|
+| Saving Option | DataType              | Description                                                                                            | Default                           |
+|---------------|-----------------------|--------------------------------------------------------------------------------------------------------|-----------------------------------|
+| `save`        | `string` or `boolean` | If `string`, the plot will be saved to the specified path; If `True`, it will be saved to default path | `True`                            |
+| `save_args`   | `dict`                | other parameters passed to matplotlib `savefig` function.                                              | `{"dpi":300,"facecolor":"white"}` |
 
 !!! example
 
