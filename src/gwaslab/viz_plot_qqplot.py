@@ -45,7 +45,7 @@ def _plot_qq(
 
     # QQ plot #########################################################################################################
     # ax2 qqplot
-    if verbose:log.write("Start to create QQ plot with "+str(len(sumstats))+" variants:")
+    log.write("Start to create QQ plot with "+str(len(sumstats))+" variants:",verbose=verbose )
     
     # plotting qq plots using processed data after cut and skip
     
@@ -69,7 +69,7 @@ def _plot_qq(
     
         expected_all = -np.log10(np.linspace(minit,upper_bound_p,len(p_toplot_raw)))[:len(observed)]
 
-        if verbose:log.write(" -Expected range of P: (0,{})".format(upper_bound_p))
+        log.write(" -Expected range of P: (0,{})".format(upper_bound_p),verbose=verbose)
         #p_toplot = sumstats["scaled_P"]
         ax2.scatter(expected_all,observed,s=marker_size[1],color=colors[0],**qq_scatter_args)
 
@@ -116,15 +116,15 @@ def _plot_qq(
 
         if expected_min_mlog10p!=0:
             level = 1 -  np.power(10.0,-np.nanmedian(expected_all))
-            if verbose: log.write(" -Level for calculating lambda GC : {}".format(1 - level))
+            log.write(" -Level for calculating lambda GC : {}".format(1 - level),verbose=verbose)
 
-        if verbose and not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.")
+        if verbose and not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.",verbose=verbose)
         lambdagc = lambdaGC(p_toplot_raw, 
                             mode="MLOG10P", 
                             level=level, 
                             include_chrXYMT=include_chrXYMT,
                             log=log,
-                            verbose=True)
+                            verbose=verbose)
         
         # annotate lambda gc to qq plot
         ax2.text(0.10, 1.03,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
@@ -148,7 +148,9 @@ def _plot_qq(
                         font_family=font_family,
                         ylabels=ylabels,
                         ytick3=ytick3,
-                        ylabels_converted=ylabels_converted
+                        ylabels_converted=ylabels_converted,
+                        log=log,
+                        verbose=verbose
                         )
 
     #if cut == 0: 
@@ -182,7 +184,7 @@ def _plot_qq(
     if qtitle:
         ax2.set_title(qtitle,fontsize=title_fontsize,pad=10,family=font_family)
 
-    if verbose: log.write("Finished creating QQ plot successfully!")
+    log.write("Finished creating QQ plot successfully!",verbose=verbose)
     
     # Creating QQ plot Finished #############################################################################################
     return ax2

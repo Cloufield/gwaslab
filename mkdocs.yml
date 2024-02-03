@@ -62,7 +62,8 @@ nav:
        - "Output sumstats" : format_load_save.ipynb
        - "Liftover" : harmonization_liftover.ipynb
        - "Lead and novel variants" : utility_get_lead_novel.ipynb
-       - "Data conversion" : utility_data_conversion.ipynb    
+       - "Data conversion" : utility_data_conversion.ipynb
+       - "Manhattan and QQ plot": visualization_mqq.ipynb     
        - "Regional plot" : visualization_regional.ipynb
        - "Miami_plot": visualization_miami2.ipynb
        - "Download reference": Download_reference.ipynb
