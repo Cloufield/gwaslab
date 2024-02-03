@@ -1126,57 +1126,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#41-common-tabular-formats" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.1 Common tabular formats
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#42-ldsc-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.2 LDSC format
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#43-gwas-vcf-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.3 GWAS VCF format
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#44-gwas-ssf-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.4 GWAS-SSF format
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#45-bed-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.5 BED format
-    </span>
-  </a>
-  
 </li>
       
     </ul>
@@ -1769,57 +1718,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#41-common-tabular-formats" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.1 Common tabular formats
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#42-ldsc-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.2 LDSC format
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#43-gwas-vcf-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.3 GWAS VCF format
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#44-gwas-ssf-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.4 GWAS-SSF format
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#45-bed-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      4.5 BED format
-    </span>
-  </a>
-  
 </li>
       
     </ul>
@@ -1999,91 +1897,14 @@
 </span></code></pre></div>
 </div>
 <h2 id="4-examples">4. Examples</h2>
-<h3 id="41-common-tabular-formats">4.1 Common tabular formats</h3>
-<p>GWASLab support commonly used tabular formats, which are listed in a companion repository <code>formatbook</code>.</p>
+<p>GWASLab supports commonly used tabular formats, which are listed in a companion repository <code>formatbook</code>.</p>
 <div class="admonition quote">
 <p class="admonition-title">formatbook</p>
-<p>for more details, please check <a href="https://github.com/Cloufield/formatbook">formatbook</a>
-ssf: GWAS-SSF format
-gwascatalog : GWAS Catalog format
-pgscatalog : PGS Catalog format
-plink: PLINK output format
-plink2: PLINK2 output format
-saige: SAIGE output format
-regenie: output format
-fastgwa: output format
-metal: output format
-mrmega: output format
-fuma: input format
-ldsc: input format
-locuszoom: input format
-vcf: gwas-vcf format
-bolt_lmm : output format</p>
+<p>For more details, please check <a href="https://github.com/Cloufield/formatbook">formatbook</a></p>
 </div>
 <div class="admonition example">
-<p class="admonition-title">output metal format</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>import gwaslab as gl
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a># load your raw sumstats
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>mysumstats = gl.Sumstats(...)
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a># basic QC
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>mysumstats.basic_check()
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a># output metal format
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;metal&quot;)
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>Tue Sep 13 18:00:41 2022 Start to format the output sumstats in:  metal  format
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>Tue Sep 13 18:00:41 2022  -Formatting statistics ...
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>Tue Sep 13 18:00:41 2022  - Float statistics formats:
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>Tue Sep 13 18:00:41 2022   - Columns: [&#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;]
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>Tue Sep 13 18:00:41 2022   - Output formats: [&#39;{:.4g}&#39;, &#39;{:.4f}&#39;, &#39;{:.4f}&#39;, &#39;{:.4e}&#39;]
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>Tue Sep 13 18:00:41 2022  - Start outputting sumstats in metal format...
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>Tue Sep 13 18:00:41 2022  -metal format will be loaded...
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>Tue Sep 13 18:00:41 2022  -metal format meta info:
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>Tue Sep 13 18:00:41 2022   - format_name  :  metal
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>Tue Sep 13 18:00:41 2022   - format_source  :  https://genome.sph.umich.edu/wiki/METAL_Documentation
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>Tue Sep 13 18:00:41 2022   - format_version  :  20220726
-</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>Tue Sep 13 18:00:41 2022  -gwaslab to metal format dictionary:
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>Tue Sep 13 18:00:41 2022   - gwaslab keys: [&#39;SNPID&#39;, &#39;EA&#39;, &#39;NEA&#39;, &#39;EAF&#39;, &#39;BETA&#39;, &#39;SE&#39;, &#39;P&#39;, &#39;DIRECTION&#39;]
-</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>Tue Sep 13 18:00:41 2022   - metal values: [&#39;MarkerName&#39;, &#39;Allele1&#39;, &#39;Allele2&#39;, &#39;Freq1&#39;, &#39;Effect&#39;, &#39;StdErr&#39;, &#39;P-value&#39;, &#39;Direction&#39;]
-</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>Tue Sep 13 18:00:41 2022  -Output columns: Index([&#39;MarkerName&#39;, &#39;Allele1&#39;, &#39;Allele2&#39;, &#39;Freq1&#39;, &#39;Effect&#39;, &#39;StdErr&#39;,
-</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>       &#39;P-value&#39;],
-</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>      dtype=&#39;object&#39;)
-</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>Tue Sep 13 18:00:41 2022  -Output path: ./test.metal.tsv.gz
-</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>Tue Sep 13 18:00:41 2022  -Saving log file: ./test.metal.log
-</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>Tue Sep 13 18:00:41 2022 Finished outputting successfully!
-</span></code></pre></div>
-</div>
-<h2 id="42-ldsc-format">4.2 LDSC format</h2>
-<div class="admonition example">
-<p class="admonition-title">LDSC format; extract hapmap3 SNPs and exclude SNPs in HLA region</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>## format the sumstats to ldsc format
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>## extract only hapmap3 SNPs
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>## exclude SNPs in HLA region
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;ldsc&quot;, hapmap3=True, exclude_hla=False, build=&quot;19&quot;)
-</span></code></pre></div>
-</div>
-<h2 id="43-gwas-vcf-format">4.3 GWAS VCF format</h2>
-<div class="admonition example">
-<p class="admonition-title">GWAS-VCF format</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a># output vcf file, and then bgzip and index the file.
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vcf&quot;,bgzip=True,tabix=True)
-</span></code></pre></div>
-</div>
-<h2 id="44-gwas-ssf-format">4.4 GWAS-SSF format</h2>
-<div class="admonition example">
-<p class="admonition-title">GWAS-ssf format</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a># output  GWAS-ssf format
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;ssf&quot;)
-</span></code></pre></div>
-</div>
-<h2 id="45-bed-format">4.5 BED format</h2>
-<div class="admonition example">
-<p class="admonition-title">BED-like format for variant information</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a># output 1-based bed-like files for vep
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;vep&quot;,xymt_number=True,chr_prefix=&quot;Chr&quot;)
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a># output 0-based bed-like file, and then bgzip and index the file.
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>mysumstats.to_format(&quot;./test&quot;,fmt=&quot;bed&quot;,bgzip=True,tabix=True)
-</span></code></pre></div>
+<p class="admonition-title">Example</p>
+<p>See <a href="https://cloufield.github.io/gwaslab/format_load_save/">Output sumstats</a></p>
 </div>
 
 
