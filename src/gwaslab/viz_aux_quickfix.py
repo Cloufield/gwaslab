@@ -45,10 +45,11 @@ def _quick_fix_p_value(sumstats, p="P", mlog10p="MLOG10P", scaled=False,verbose=
     return sumstats
 
 
-def _quick_fix_mlog10p(sumstats,p="P", mlog10p="MLOG10P", scaled=False, log=Log(), verbose=True):
+def _quick_fix_mlog10p(insumstats,p="P", mlog10p="MLOG10P", scaled=False, log=Log(), verbose=True):
     '''
     drop variants with bad -log10(P) values
     '''
+    sumstats = insumstats.copy()
     if scaled != True:
         if verbose:log.write(" -Sumstats P values are being converted to -log10(P)...")
         sumstats["scaled_P"] = -np.log10(sumstats[p].astype("float64"))

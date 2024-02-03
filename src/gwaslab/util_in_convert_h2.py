@@ -121,7 +121,7 @@ def _get_per_snp_r2(sumstats,
         if verbose: log.write(" -For r2, {} is used.".format(snpr2))
         sumstats["F"] = sumstats[snpr2]*(sumstats[n]-1 -k)/((1-sumstats[snpr2]) * k)
         
-    if verbose: log.write("Finished calculating per-SNP heritibility!")
+    if verbose: log.write("Finished calculating per-SNP heritability!")
     return sumstats
 #
 def get_population_allele_frequency(af, prop, odds_ratio, prevalence,eps=1e-15):
