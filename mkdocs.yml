@@ -50,7 +50,7 @@ nav:
        - "Save Sumstats Object": Pickle.md 
        - "Load LDSC log": LoadLDSC.md
        - "Convert Heritability": HeritabilityConversion.md
-       - "Per SNP Heritability and F statistics" : PerSNPh2.md
+       - "Per-SNP R2 and F" : PerSNPh2.md
        - "Infer Genome Build": InferBuild.md
     - References:
        - "Download": Download.md 

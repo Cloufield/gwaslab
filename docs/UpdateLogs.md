@@ -1,6 +1,6 @@
 # Update Logs
 
-## 3.4.38
+## 3.4.38 20240203
 - fixed seaborn version
 - replaced array_split
 - fixed warnings due to pandas upgrade 
@@ -9,6 +9,8 @@
 - restructured log system
 - restructured sanity checking
 - restructured stats flipping
+- updated tutorial and examples
+- fixed error in log
 
 ## 3.4.37 20240129
 - added data consistency check
