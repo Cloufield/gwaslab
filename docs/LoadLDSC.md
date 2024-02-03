@@ -4,9 +4,7 @@ GWASLab provides a standalone function for batch loading ldsc log file into a `p
 
 GWASLab uses regular expression to match the values and fill them into a dataframe.
 
-`gl.read_ldsc()` 
-
-## Usage
+## gl.read_ldsc()
 
 ```
 gl.read_ldsc(filelist, mode="h2")
@@ -54,7 +52,6 @@ gl.read_ldsc(filelist, mode="h2")
     BBJ_HDLC.sumstats.gz	BBJ_LDLC.sumstats.gz	0.1601	0.1821	0.8794	0.3792	0.0543	0.0211	1.0583	0.0335	-0.0198	0.0121
     
     ```
-
 
 ## plot ldsc rg (under construction)
 

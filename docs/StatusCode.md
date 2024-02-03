@@ -1,4 +1,6 @@
 # Status Code
+
+Concept:
 - A 7-digit code:  showing the status of a variant.
 - Reflecting the reliability of the statistics.
 - Design principals:
@@ -6,13 +8,13 @@
     - Higher value -> higher uncertainty 
 
 | Digit | Description               |
-| ----- | ------------------------- |
-| 1,2   | Genome_build              |
-| 3     | rsID & SNPID              |
-| 4     | CHR, POS                  |
-| 5     | EA, NEA                   |
-| 6     | REF-NEA Alignment         |
-| 7     | Palindromic SNPs + Indels |
+|-------|---------------------------|
+| `1,2` | Genome_build              |
+| `3`   | rsID & SNPID              |
+| `4`   | CHR, POS                  |
+| `5`   | EA, NEA                   |
+| `6`   | REF-NEA Alignment         |
+| `7`   | Palindromic SNPs + Indels |
 
 ## Summary
 

@@ -1,11 +1,18 @@
-Scatter & Distribution plot : allele frequency comparison
+# Scatter & Distribution plot : allele frequency comparison
 
-Available from v3.4.15
+!! info "Available from v3.4.15"
+
+
+## .check_af()
 
 ```
 #check the difference between the EAF in the sumstats and the allele frequency in VCF files
 sumstats.check_af()
+```
 
+## .plot_daf()
+
+```
 #allele frequnecy correlation plot
 sumstats.plot_daf()
 ```
@@ -15,6 +22,7 @@ You need to run 'check_af()' first before plotting. For check_af(), see [here](h
 Options for `plot_daf`:
 `threshold`: `float`, the threshold used to determine outliers.
 
+## Examples
 
 !!! example
     ```

@@ -15,7 +15,7 @@ GWASLab can convert Observed-scale heritability to Liability-scale heritability.
     
     Reference: Estimating Missing Heritability for Disease from Genome-wide Association Studies https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059431/
 
-## Usage
+## gl.h2_obs_to_liab()
 
 ```
 gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)

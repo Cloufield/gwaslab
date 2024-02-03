@@ -2,18 +2,18 @@
 
 GWASLab can convert equvalent statistics, including:
 
-|Target stats|Original stats|Implementation|
-|-|-|-|
-|MLOG10P|P|`sumstats["MLOG10P"] = -np.log10(sumstats["P"])` |
-|P|MLOG10P|`sumstats["P"] = np.power(10,-sumstats["MLOG10P"])`|
-|P|Z|`sumstats["P"] = ss.norm.sf(np.abs(sumstats["Z"])) * 2`|
-|P|CHISQ|`sumstats["P"] = ss.chi2.sf(sumstats["CHISQ"], 1)`|
-|OR<br />OR_95L<br />OR_95U|BETA<br />SE|`sumstats["OR"]   = np.exp(sumstats["BETA"])`, <br /> `sumstats["OR_95L"] = np.exp(sumstats["BETA"]-ss.norm.ppf(0.975)*sumstats["SE"])`, <br /> `sumstats["OR_95U"] = np.exp(sumstats["BETA"]+ss.norm.ppf(0.975)*sumstats["SE"])`|
-| BETA <br /> SE|OR <br />OR_95L<br />OR_95U|`sumstats["BETA"]  = np.log(sumstats["OR"])  `, <br /> `sumstats["SE"]=(np.log(sumstats["OR"]) - np.log(sumstats["OR_95L"]))/ss.norm.ppf(0.975)`, <br /> `sumstats["SE"]=(np.log(sumstats["OR_95U"]) - np.log(sumstats["OR"]))/ss.norm.ppf(0.975)`|
-|Z|BETA/SE|`sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]`|
-|CHISQ|P|`sumstats["CHISQ"] = ss.chi2.isf(sumstats["P"], 1)`|
-|CHISQ|Z|`sumstats["CHISQ"] = (sumstats["Z"])**2`|
-|MAF|EAF|` sumstats["MAF"] =  sumstats["EAF"].apply(lambda x: min(x,1-x) if pd.notnull(x) else np.nan)`|
+| Target stats               | Original stats              | Implementation                                                                                                                                                                                                                                     |
+|----------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| MLOG10P                    | P                           | `sumstats["MLOG10P"] = -np.log10(sumstats["P"])`                                                                                                                                                                                                   |
+| P                          | MLOG10P                     | `sumstats["P"] = np.power(10,-sumstats["MLOG10P"])`                                                                                                                                                                                                |
+| P                          | Z                           | `sumstats["P"] = ss.norm.sf(np.abs(sumstats["Z"])) * 2`                                                                                                                                                                                            |
+| P                          | CHISQ                       | `sumstats["P"] = ss.chi2.sf(sumstats["CHISQ"], 1)`                                                                                                                                                                                                 |
+| OR<br />OR_95L<br />OR_95U | BETA<br />SE                | `sumstats["OR"]   = np.exp(sumstats["BETA"])`, <br /> `sumstats["OR_95L"] = np.exp(sumstats["BETA"]-ss.norm.ppf(0.975)*sumstats["SE"])`, <br /> `sumstats["OR_95U"] = np.exp(sumstats["BETA"]+ss.norm.ppf(0.975)*sumstats["SE"])`                  |
+| BETA <br /> SE             | OR <br />OR_95L<br />OR_95U | `sumstats["BETA"]  = np.log(sumstats["OR"])  `, <br /> `sumstats["SE"]=(np.log(sumstats["OR"]) - np.log(sumstats["OR_95L"]))/ss.norm.ppf(0.975)`, <br /> `sumstats["SE"]=(np.log(sumstats["OR_95U"]) - np.log(sumstats["OR"]))/ss.norm.ppf(0.975)` |
+| Z                          | BETA/SE                     | `sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]`                                                                                                                                                                                                  |
+| CHISQ                      | P                           | `sumstats["CHISQ"] = ss.chi2.isf(sumstats["P"], 1)`                                                                                                                                                                                                |
+| CHISQ                      | Z                           | `sumstats["CHISQ"] = (sumstats["Z"])**2`                                                                                                                                                                                                           |
+| MAF                        | EAF                         | ` sumstats["MAF"] =  sumstats["EAF"].apply(lambda x: min(x,1-x) if pd.notnull(x) else np.nan)`                                                                                                                                                     |
 
 
 !!! info "Extreme P values"
