@@ -18,7 +18,7 @@ Note: GWASLab is being updated very frequently for now. I will release the first
 ## Install
 
 ```
-pip install gwaslab==3.4.35
+pip install gwaslab==3.4.38
 ```
 
 
@@ -112,7 +112,7 @@ mysumstats.plot_mqq()
 - Sumstats summary: give you a quick overview of the sumstats. 
 - ...
 
-## Requirements
+## Requirements (deprecated)
 
 environment.yml
 
