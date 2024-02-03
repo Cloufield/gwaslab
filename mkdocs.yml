@@ -59,6 +59,7 @@ nav:
     - Examples:
        - "Standardization": standardization_workflow.ipynb
        - "Harmonization" : harmonization_workflow.ipynb
+       - "Output sumstats" : format_load_save.ipynb
        - "Liftover" : harmonization_liftover.ipynb
        - "Lead and novel variants" : utility_get_lead_novel.ipynb
        - "Data conversion" : utility_data_conversion.ipynb    
