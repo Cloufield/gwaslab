@@ -642,54 +642,63 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-methods-summary" class="md-nav__link">
+  <a href="#methods-summary" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Methods Summary
+      Methods Summary
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-statistics-sanity-check" class="md-nav__link">
+  <a href="#statistics-sanity-check" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Statistics Sanity Check
+      Statistics Sanity Check
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-remove-duplicated-or-multiallelic-variants" class="md-nav__link">
+  <a href="#remove-duplicated-or-multiallelic-variants" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Remove duplicated or multiallelic variants
+      Remove duplicated or multiallelic variants
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-filtering-by-condition" class="md-nav__link">
+  <a href="#check_data-consistency" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Filtering by condition
+      Check_data consistency
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-flanking-regions" class="md-nav__link">
+  <a href="#filtering-variants" class="md-nav__link">
     <span class="md-ellipsis">
-      5. Flanking regions
+      Filtering variants
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-filtering-regions" class="md-nav__link">
+  <a href="#filtering-variants-in-flanking-regions" class="md-nav__link">
     <span class="md-ellipsis">
-      6. Filtering regions
+      Filtering variants in flanking regions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering-variants-in-regions-using-bed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filtering variants in regions using BED
     </span>
   </a>
   
@@ -1238,7 +1247,7 @@
         
   
   <span class="md-ellipsis">
-    Per SNP Heritability and F statistics
+    Per-SNP R2 and F
   </span>
   
 
@@ -1712,54 +1721,63 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-methods-summary" class="md-nav__link">
+  <a href="#methods-summary" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Methods Summary
+      Methods Summary
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-statistics-sanity-check" class="md-nav__link">
+  <a href="#statistics-sanity-check" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Statistics Sanity Check
+      Statistics Sanity Check
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-remove-duplicated-or-multiallelic-variants" class="md-nav__link">
+  <a href="#remove-duplicated-or-multiallelic-variants" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Remove duplicated or multiallelic variants
+      Remove duplicated or multiallelic variants
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-filtering-by-condition" class="md-nav__link">
+  <a href="#check_data-consistency" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Filtering by condition
+      Check_data consistency
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-flanking-regions" class="md-nav__link">
+  <a href="#filtering-variants" class="md-nav__link">
     <span class="md-ellipsis">
-      5. Flanking regions
+      Filtering variants
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-filtering-regions" class="md-nav__link">
+  <a href="#filtering-variants-in-flanking-regions" class="md-nav__link">
     <span class="md-ellipsis">
-      6. Filtering regions
+      Filtering variants in flanking regions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering-variants-in-regions-using-bed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filtering variants in regions using BED
     </span>
   </a>
   
@@ -1791,7 +1809,7 @@
 
 <h1 id="qc-and-filtering">QC and filtering</h1>
 <p>GWASLab provides all-in-one functions and customizable functions for sumstats QC and filtering.</p>
-<h2 id="1-methods-summary">1. Methods Summary</h2>
+<h2 id="methods-summary">Methods Summary</h2>
 <table>
 <thead>
 <tr>
@@ -1809,7 +1827,7 @@
 <tr>
 <td><code>.check_data_consistency()</code></td>
 <td></td>
-<td>check if <code>BETA/SE-drived P/MLOG10P = original P/MLOG10P</code>, <code>N = N_CASE + N_CONTROL</code>...</td>
+<td>check if <code>BETA/SE-derived P/MLOG10P = original P/MLOG10P</code>, <code>N = N_CASE + N_CONTROL</code>...</td>
 </tr>
 <tr>
 <td><code>.remove_dup()</code></td>
@@ -1843,8 +1861,10 @@
 </tr>
 </tbody>
 </table>
-<h2 id="2-statistics-sanity-check">2. Statistics Sanity Check</h2>
-<p>Note: Default parameters have been updated since v3.3.36</p>
+<h2 id="statistics-sanity-check">Statistics Sanity Check</h2>
+<div class="admonition info">
+<p class="admonition-title">Default parameters have been updated since v3.4.36</p>
+</div>
 <p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected ranges</code>.</p>
 <p>Comparison will be performed with <code>float_tolerence = 1e-7</code> for any float type statistics. For example, <code>eaf=(0, 1)</code> will be converted to <code>eaf=(-1e-7, 1 + 1e-7)</code>.</p>
 <table>
@@ -1958,8 +1978,8 @@
 </tr>
 </tbody>
 </table>
-<h2 id="3-remove-duplicated-or-multiallelic-variants">3. Remove duplicated or multiallelic variants</h2>
-<p>After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using</p>
+<h2 id="remove-duplicated-or-multiallelic-variants">Remove duplicated or multiallelic variants</h2>
+<p>After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>.remove_dup(mode=&quot;md&quot;)
 </span></code></pre></div>
 <ul>
@@ -2017,9 +2037,13 @@
 <p>After</p>
 <p><img width="525" alt="image" src="https://user-images.githubusercontent.com/40289485/212274043-fe37a99e-1fed-4340-944a-e731126e51f3.png"></p>
 </div>
-<h2 id="4-filtering-by-condition">4. Filtering by condition</h2>
+<h2 id="check_data-consistency">Check_data consistency</h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>.check_data_consistency()
+</span></code></pre></div>
+<p>GWASLab checks if <code>BETA/SE-derived P/MLOG10P = original P/MLOG10P</code> or <code>N = N_CASE + N_CONTROL</code>.</p>
+<h2 id="filtering-variants">Filtering variants</h2>
 <p>Filter the sumstats by <code>expr</code> (a wrapper of <code>pandas.DataFrame.query</code>), and return a new Sumstats Object by default. This allows method chaining. For example, you can filter certain variants first and then create a Mahanttan plot like <code>mysumstats.filter_value('BETA&lt;0 &amp; CHR==1').plot_mqq()</code>.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>.filter_value(expr,inplace=False)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>.filter_value(expr,inplace=False)
 </span></code></pre></div>
 <table>
 <thead>
@@ -2045,44 +2069,24 @@
 </tr>
 </tbody>
 </table>
-<p>!!! quote pd.DataFrame.query()
-    Please check https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html</p>
+<div class="admonition quote">
+<p class="admonition-title">pd.DataFrame.query()</p>
+<p>Please check https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html</p>
+</div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p><div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mysumstats.filter_value(&#39;BETA&lt;0 &amp; CHR==1&#39;).plot_mqq()
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Wed Dec  7 01:32:06 2022 Start filtering values by condition: BETA&lt;0 &amp; CHR==1
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Wed Dec  7 01:32:06 2022  -Removing 12075769 variants not meeting the conditions: BETA&lt;0 &amp; CHR==1
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>Wed Dec  7 01:32:06 2022 Finished filtering values.
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>Wed Dec  7 01:32:06 2022 Start to plot manhattan/qq plot with the following basic settings:
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>Wed Dec  7 01:32:06 2022  -Genome-wide significance level is set to 5e-08 ...
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>Wed Dec  7 01:32:06 2022  -Raw input contains 481992 variants...
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>Wed Dec  7 01:32:06 2022  -Plot layout mode is : mqq
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>Wed Dec  7 01:32:06 2022 Finished loading specified columns from the sumstats.
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>Wed Dec  7 01:32:06 2022 Start conversion and sanity check:
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>Wed Dec  7 01:32:06 2022  -Removed 0 variants with nan in CHR or POS column ...
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>Wed Dec  7 01:32:06 2022  -Removed 0 variants with nan in P column ...
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>Wed Dec  7 01:32:06 2022  -P values are being converted to -log10(P)...
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>Wed Dec  7 01:32:06 2022  -Sanity check after conversion: 0 variants with P value outside of (0,1] will be removed...
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>Wed Dec  7 01:32:06 2022  -Sanity check: 0 na/inf/-inf variants will be removed...
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>Wed Dec  7 01:32:07 2022  -Maximum -log10(P) values is 10.598771832501887 .
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>Wed Dec  7 01:32:07 2022 Finished data conversion and sanity check.
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>Wed Dec  7 01:32:07 2022 Start to create manhattan plot with 481992 variants:
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>Wed Dec  7 01:32:09 2022  -Found 2 significant variants with a sliding window size of 500 kb...
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>Wed Dec  7 01:32:09 2022 Finished creating Manhattan plot successfully!
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>Wed Dec  7 01:32:09 2022  -Skip annotating
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>Wed Dec  7 01:32:09 2022 Start to create QQ plot with 481992 variants:
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>Wed Dec  7 01:32:09 2022  -Calculating GC using P : 1.2372836632762023
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>Wed Dec  7 01:32:09 2022 Finished creating QQ plot successfully!
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>mysumstats.filter_value(&#39;BETA&lt;0 &amp; CHR==1&#39;).plot_mqq()
 </span></code></pre></div>
-<img alt="image" src="https://user-images.githubusercontent.com/40289485/211584317-6c1583b5-53e4-4aae-9141-af5781e2439b.png" /></p>
 </div>
-<h2 id="5-flanking-regions">5. Flanking regions</h2>
-<p>Available since v3.3.37</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>.filter_flanking_by_chrpos(snpid)
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>.filter_flanking_by_id(chrpos)
+<h2 id="filtering-variants-in-flanking-regions">Filtering variants in flanking regions</h2>
+<div class="admonition info">
+<p class="admonition-title">Available since v3.4.37</p>
+</div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>.filter_flanking_by_chrpos(snpid)
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>.filter_flanking_by_id(chrpos)
 </span></code></pre></div>
-<p>Extract variants in the specified flacking regions.</p>
+<p>Extract variants in the specified flanking regions.</p>
 <table>
 <thead>
 <tr>
@@ -2119,11 +2123,11 @@
 </tr>
 </tbody>
 </table>
-<h2 id="6-filtering-regions">6. Filtering regions</h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>.filter_region_in()
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>.filter_region_out()
+<h2 id="filtering-variants-in-regions-using-bed">Filtering variants in regions using BED</h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>.filter_region_in()
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>.filter_region_out()
 </span></code></pre></div>
-<p>Filter variants in  predifined regions or regions defined in bed files.</p>
+<p>Filter variants in pre-defined regions or regions defined in bed files.</p>
 <table>
 <thead>
 <tr>
@@ -2156,15 +2160,15 @@
 </table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>mysumstats.filter_region_in(high_ld=True,inplace=False).data
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>mysumstats.filter_region_out(high_ld=True,inplace=False).data
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>mysumstats.filter_region_in(high_ld=True,inplace=False).data
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>mysumstats.filter_region_out(high_ld=True,inplace=False).data
 </span></code></pre></div>
 </div>
 <h2 id="7-filter_in-filter_out-deprecated">7. filter_in &amp; filter_out (deprecated)</h2>
-<p><div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="o">.</span><span class="n">filter_in</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="o">.</span><span class="n">filter_out</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="o">.</span><span class="n">filter_in</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="o">.</span><span class="n">filter_out</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="p">{},</span><span class="n">lt</span><span class="o">=</span><span class="p">{},</span><span class="n">eq</span><span class="o">=</span><span class="p">{},</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></code></pre></div>
 - <code>gt</code>: greater than
 - <code>lt</code>: less than

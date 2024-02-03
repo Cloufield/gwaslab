@@ -1114,9 +1114,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#gldump_pickle" class="md-nav__link">
     <span class="md-ellipsis">
-      Usage
+      gl.dump_pickle()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#glload_pickle" class="md-nav__link">
+    <span class="md-ellipsis">
+      gl.load_pickle()
     </span>
   </a>
   
@@ -1202,7 +1211,7 @@
         
   
   <span class="md-ellipsis">
-    Per SNP Heritability and F statistics
+    Per-SNP R2 and F
   </span>
   
 
@@ -1676,9 +1685,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#gldump_pickle" class="md-nav__link">
     <span class="md-ellipsis">
-      Usage
+      gl.dump_pickle()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#glload_pickle" class="md-nav__link">
+    <span class="md-ellipsis">
+      gl.load_pickle()
     </span>
   </a>
   
@@ -1719,12 +1737,13 @@
 
 <h1 id="save-the-sumstats-object">Save the Sumstats Object</h1>
 <p>GWASLab provides functions to save and load unfinished <code>gl.Sumstats</code> Objects.</p>
-<h2 id="usage">Usage</h2>
+<h2 id="gldump_pickle">gl.dump_pickle()</h2>
 <p>Dump gl.Sumstats object.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gl.dump_pickle(SumstatsObject, 
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                path, 
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                overwrite=False)
 </span></code></pre></div>
+<h2 id="glload_pickle">gl.load_pickle()</h2>
 <p>Load gl.Sumstats object.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>gl.load_pickle(path)
 </span></code></pre></div>

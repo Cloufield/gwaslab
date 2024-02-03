@@ -1051,27 +1051,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-get_lead" class="md-nav__link">
+  <a href="#get_lead" class="md-nav__link">
     <span class="md-ellipsis">
-      1. get_lead()
+      .get_lead()
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-options" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Options
+      Options
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-example" class="md-nav__link">
+  <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Example
+      Example
     </span>
   </a>
   
@@ -1202,7 +1202,7 @@
         
   
   <span class="md-ellipsis">
-    Per SNP Heritability and F statistics
+    Per-SNP R2 and F
   </span>
   
 
@@ -1676,27 +1676,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-get_lead" class="md-nav__link">
+  <a href="#get_lead" class="md-nav__link">
     <span class="md-ellipsis">
-      1. get_lead()
+      .get_lead()
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-options" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Options
+      Options
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-example" class="md-nav__link">
+  <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Example
+      Example
     </span>
   </a>
   
@@ -1719,7 +1719,7 @@
 
 <h1 id="extract-lead-variants">Extract lead variants</h1>
 <p>GWASLab can extract the lead variants based on MLOG10P values or P values (By default, GWASLab will use MLOG10P first since v3.3.37) from identified significant loci using a sliding window, and return the result as a pandas.DataFrame or gl.Sumstats Object.</p>
-<h2 id="1-get_lead">1. get_lead()</h2>
+<h2 id="get_lead">.get_lead()</h2>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>           <span class="n">scaled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>           <span class="n">use_p</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1731,7 +1731,7 @@
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>           <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>           <span class="n">gls</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></code></pre></div>
-<h2 id="2-options">2. Options</h2>
+<h2 id="options">Options</h2>
 <table>
 <thead>
 <tr>
@@ -1745,13 +1745,13 @@
 <tr>
 <td><code>scaled</code></td>
 <td><code>boolean</code></td>
-<td>(deprecated since v3.3.37) If True, use MLOG10P for extraction instead of P values</td>
+<td>(deprecated since v3.4.37) If True, use MLOG10P for extraction instead of P values</td>
 <td><code>False</code></td>
 </tr>
 <tr>
 <td><code>use_p</code></td>
 <td><code>boolean</code></td>
-<td>(available since v3.3.37)If True, use P for extraction instead of MLOG10P values</td>
+<td>(available since v3.4.37)If True, use P for extraction instead of MLOG10P values</td>
 <td><code>False</code></td>
 </tr>
 <tr>
@@ -1813,7 +1813,7 @@
 <p>(Details are described in Zhou, W., Kanai, M., Wu, K. H. H., Rasheed, H., Tsuo, K., Hirbo, J. B., ... &amp; Study, C. O. H. (2022). Global Biobank Meta-analysis Initiative: Powering genetic discovery across human disease. Cell Genomics, 2(10), 100192. )</p>
 <p>GWASlab currently iteratively extends ± <code>windowsizekb</code> kb region around the most significant variant and merges overlapping regions until no genome-wide significant variants were detected within ± <code>windowsizekb</code>. (slightly different from the GBMI paper. When <code>windowsizekb=1000</code>, it is equivalent to GBMI's definition.)</p>
 </div>
-<h2 id="3-example">3. Example</h2>
+<h2 id="example">Example</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <p>See <a href="https://cloufield.github.io/gwaslab/utility_get_lead_novel/">Lead and novel variants</a></p>

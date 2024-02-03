@@ -1072,27 +1072,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-get_novel" class="md-nav__link">
+  <a href="#get_novel" class="md-nav__link">
     <span class="md-ellipsis">
-      1. get_novel()
+      .get_novel()
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-options" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Options:
+      Options
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-example-checking-with-gwascatalog-api" class="md-nav__link">
+  <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Example: Checking with GWAScatalog API
+      Example
     </span>
   </a>
   
@@ -1211,7 +1211,7 @@
         
   
   <span class="md-ellipsis">
-    Per SNP Heritability and F statistics
+    Per-SNP R2 and F
   </span>
   
 
@@ -1685,27 +1685,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-get_novel" class="md-nav__link">
+  <a href="#get_novel" class="md-nav__link">
     <span class="md-ellipsis">
-      1. get_novel()
+      .get_novel()
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-options" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Options:
+      Options
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-example-checking-with-gwascatalog-api" class="md-nav__link">
+  <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Example: Checking with GWAScatalog API
+      Example
     </span>
   </a>
   
@@ -1737,7 +1737,7 @@
 
 <h1 id="checking-if-lead-variants-are-novel-or-not">Checking if lead variants are novel or not</h1>
 <p>GWASLab can check if the lead variants of your summary statistics overlap with reported variants or not based on the physical distance.</p>
-<h2 id="1-get_novel">1. get_novel()</h2>
+<h2 id="get_novel">.get_novel()</h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>sumstats.get_novel(
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                    known,
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                    efo,
@@ -1747,16 +1747,16 @@
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                    sig_level=5e-8,
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                    output_known=False)
 </span></code></pre></div>
-<p>GWASLab checks overlap with a local files of variants or records in GWASCatalog.</p>
+<p>GWASLab checks overlap with a local file of variants or records in GWASCatalog.</p>
 <p>Required (either):</p>
 <ul>
-<li><code>known</code> : <code>string</code>, path to local file of reported variants</li>
+<li><code>known</code> : <code>string</code>, path to the local file of reported variants</li>
 </ul>
 <p>or </p>
 <ul>
-<li><code>efo</code> : <code>string</code>, efo id for the target trait, which is used for querying the GWASCatalog.</li>
+<li><code>efo</code> : <code>string</code>, EFO id for the target trait, which is used for querying the GWASCatalog.</li>
 </ul>
-<h2 id="2-options">2. Options:</h2>
+<h2 id="options">Options</h2>
 <table>
 <thead>
 <tr>
@@ -1807,10 +1807,10 @@
 </table>
 <div class="admonition info">
 <p class="admonition-title">EFO ID</p>
-<p>You can find the efo id by simply searching in GWASCatalog. For example, the EFO ID for T2D can be obtained like:</p>
+<p>You can find the efo id by simply searching in GWASCatalog. For example, the EFO ID for T2D can be obtained :</p>
 <p><img width="700" alt="Screenshot 2023-02-03 at 13 36 16" src="https://user-images.githubusercontent.com/40289485/216513724-27f4e742-a03c-4346-a6bc-6b1002e22847.png"></p>
 </div>
-<h2 id="3-example-checking-with-gwascatalog-api">3. Example: Checking with GWAScatalog API</h2>
+<h2 id="example">Example</h2>
 <div class="admonition warning">
 <p class="admonition-title">Only works when your sumstats are based on GRCh38</p>
 </div>

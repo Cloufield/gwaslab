@@ -878,9 +878,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#glplot_miami" class="md-nav__link">
     <span class="md-ellipsis">
-      Usage
+      gl.plot_miami()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Options
     </span>
   </a>
   
@@ -1193,7 +1202,7 @@
         
   
   <span class="md-ellipsis">
-    Per SNP Heritability and F statistics
+    Per-SNP R2 and F
   </span>
   
 
@@ -1667,9 +1676,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#glplot_miami" class="md-nav__link">
     <span class="md-ellipsis">
-      Usage
+      gl.plot_miami()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Options
     </span>
   </a>
   
@@ -1703,17 +1721,19 @@
 <div class="admonition info">
 <p class="admonition-title">Implemented since v3.3.4</p>
 </div>
-<p>As a standalone function, GWASLab can plot miami plot given a pair of sumstats files.</p>
-<h2 id="usage">Usage</h2>
+<p>As a standalone function, GWASLab can plot Miami plot given a pair of sumstats files.</p>
+<h2 id="glplot_miami">gl.plot_miami()</h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gl.plot_miami( 
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>          path1,
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>          path2,
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>          cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>          cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>          sep=[&quot;\t&quot;,&quot;\t&quot;],
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>          anno= None
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>          )
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>          ...
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>          )
 </span></code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Updated since v3.4.38</p>
+</div>
+<p>GWASLab creates Miami plot by iteratively calling <code>.plot_mqq()</code>.</p>
+<h2 id="options">Options</h2>
 <table>
 <thead>
 <tr>
@@ -1726,170 +1746,50 @@
 <tbody>
 <tr>
 <td><code>path1</code></td>
-<td><code>string</code>, <code>pd.DataFrame</code>, or <code>gl.Sumstats</code></td>
-<td>path to sumstats1, or pd.DataFrame object, or gl.Sumstats Object</td>
+<td><code>gl.Sumstats</code></td>
+<td>gl.Sumstats Object</td>
 <td>-</td>
 </tr>
 <tr>
 <td><code>path2</code></td>
-<td><code>string</code>, <code>pd.DataFrame</code>, or <code>gl.Sumstats</code></td>
-<td>path to sumstats2, or pd.DataFrame object, or gl.Sumstats Object</td>
+<td><code>gl.Sumstats</code></td>
+<td>gl.Sumstats Object</td>
 <td>-</td>
-</tr>
-<tr>
-<td><code>cols1</code></td>
-<td><code>list</code></td>
-<td>CHR,POS,P names for sumstats1</td>
-<td><code>["CHR","POS","P"]</code></td>
-</tr>
-<tr>
-<td><code>cols2</code></td>
-<td><code>list</code></td>
-<td>CHR,POS,P names for sumstats2</td>
-<td><code>["CHR","POS","P"]</code></td>
-</tr>
-<tr>
-<td><code>sep</code></td>
-<td><code>list</code></td>
-<td>separator for each sumstats (when path is <code>string</code>)</td>
-<td><code>["\t","\t"]</code></td>
-</tr>
-<tr>
-<td><code>anno</code></td>
-<td><code>boolean</code> or <code>GENENAME</code></td>
-<td>if True, annotate <code>CHR:POS</code>; if <code>GENENAME</code>, annotate gene name</td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>region</code></td>
-<td><code>tuple</code></td>
-<td>only plot a region. For example, <code>region=(2,2153874,21753874)</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>highlight</code></td>
-<td><code>list</code></td>
-<td>list of loci (tuples of CHR and POS) to highlight for both sumstats. For example, <code>highlight=[(2,2153874),(5,124289158)]</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>highlight1</code></td>
-<td><code>list</code></td>
-<td>list of loci (tuples of CHR and POS) to highlight for sumstats1. For example, <code>highlight1=[(2,2153874),(5,124289158)]</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>highlight2</code></td>
-<td><code>list</code></td>
-<td>list of loci (tuples of CHR and POS) to highlight for sumstats2. For example, <code>highlight2=[(2,2153874),(5,124289158)]</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>highlight_windowkb</code></td>
-<td><code>int</code></td>
-<td>window size for highlighting loci</td>
-<td><code>500</code></td>
-</tr>
-<tr>
-<td><code>highlight_color</code></td>
-<td><code>color</code></td>
-<td>color for highlighting loci</td>
-<td><code>"#CB132D"</code></td>
-</tr>
-<tr>
-<td><code>pinpoint</code></td>
-<td><code>list</code></td>
-<td>list of variants (tuples of CHR and POS) to pinpoint for both sumstats.  For example, <code>pinpoint=[(2,2153874),(5,124289158)]</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>pinpoint1</code></td>
-<td><code>list</code></td>
-<td>list of variants (tuples of CHR and POS) to pinpoint for sumstats1.  For example, <code>pinpoint1=[(2,2153874),(5,124289158)]</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>pinpoint2</code></td>
-<td><code>list</code></td>
-<td>list of variants (tuples of CHR and POS) to pinpoint for sumstats2.  For example, <code>pinpoint2=[(2,2153874),(5,124289158)]</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>pinpoint_color</code></td>
-<td><code>color</code></td>
-<td>color for highlighting loci</td>
-<td><code>"red"</code></td>
-</tr>
-<tr>
-<td><code>anno_set</code></td>
-<td><code>list</code></td>
-<td>list of variants (tuples of CHR and POS) to annotate for both sumstats.  For example, <code>anno_set=[(2,2153874),(5,124289158)]</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>anno_set1</code></td>
-<td><code>list</code></td>
-<td>list of variants (tuples of CHR and POS) to annotate for sumstats1.  For example, <code>anno_set1=[(2,2153874),(5,124289158)]</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>anno_set2</code></td>
-<td><code>list</code></td>
-<td>list of variants (tuples of CHR and POS) to annotate for sumstats2.  For example, <code>anno_set2=[(2,2153874),(5,124289158)]</code></td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>titles</code></td>
-<td><code>list</code></td>
-<td>titles for sumstats. For example,<code>titles=["male","female"]</code></td>
-<td><code>["",""]</code></td>
-</tr>
-<tr>
-<td><code>titles_pad</code></td>
-<td><code>list</code></td>
-<td>paddings for titles</td>
-<td><code>[0.2,0.2]</code></td>
-</tr>
-<tr>
-<td><code>build</code></td>
-<td><code>list</code></td>
-<td>genome build for annotate gene names. For example,<code>titles=["male","female"]</code></td>
-<td><code>"19"</code></td>
-</tr>
-<tr>
-<td><code>save</code></td>
-<td><code>boolean</code> or <code>string</code></td>
-<td>if true, save to default path. if string, save to path specified by string</td>
-<td><code>True</code></td>
-</tr>
-<tr>
-<td><code>save_args</code></td>
-<td><code>dict</code></td>
-<td>additional parameters for <code>plt.save_fig</code></td>
-<td><code>{"dpi":100,"facecolor":"white"}</code></td>
 </tr>
 </tbody>
 </table>
+<p><code>gl.plot_miami()</code> now  supports most options in <code>plot_mqq()</code>.</p>
+<p>Adding a suffix "1" to the options and it will be passed to the top Manhattan plot.
+Adding a suffix "2" to the options and it will be passed to the bottom Manhattan plot.
+If no suffix is provided, it will be passed to both plots.</p>
 <h2 id="example">Example</h2>
 <div class="admonition example">
-<p class="admonition-title">Miami plot for male- amd female-specific GWAS on BMI</p>
-<p>Sample datasets are obtained from JENGER:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>!wget -O bmi_male_bbj.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>!wget -O bmi_female_bbj.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
-</span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mysumstats = gl.plot_miami(path1=&quot;bmi_male_bbj.txt.gz&quot; ,
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>                           path2=&quot;bmi_female_bbj.txt.gz&quot;,
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>                           cols1=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>                           cols2=[&quot;CHR&quot;,&quot;POS&quot;,&quot;P&quot;],
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>                           titles=[&quot;bmi male&quot;,&quot;bmi female&quot;],
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>                           titles_pad=[0.15,0.0],
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>                           anno=&quot;GENENAME&quot;,
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>                           highlight1=[(5,124289158)],
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>                           pinpoint2=[(2,653874)]
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>                           )
-</span></code></pre></div>
-<p><img width="700" alt="image" src="https://user-images.githubusercontent.com/40289485/197526569-7850041d-e247-4f69-8505-ef7750a6d4de.png"></p>
+<p class="admonition-title">Example</p>
+<p>```
+gl.plot_miami2(path1= gl1,
+                path2= gl2,
+                skip=2,
+                cut1=20,
+                cut2=15,
+                id1="SNPID",
+                id2="SNPID",
+                anno1=True,
+                anno2="GENENAME",
+                additional_line1=[1e-14],
+                anno_set1=["rs3798519"],
+                pinpoint1=[["rs3798519","rs35560038"],["rs7933262","rs8098510"]],
+                pinpoint_color1=["purple","black"],
+                highlight1=["rs8098510"],
+                highlight2=[["rs8098510","rs3798519"], ["rs1491850"]],
+                highlight_color2=["red","yellow"],
+                jagged=True,
+                verbose1=False,
+                verbose2=False</p>
 </div>
+<p>)
+    ```</p>
+<div class="language-text highlight"><pre><span></span><code>See [Miami plot](https://cloufield.github.io/gwaslab/visualization_miami2/)
+</code></pre></div>
 
 
 
