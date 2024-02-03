@@ -1,12 +1,13 @@
 # QC and filtering
+
 GWASLab provides all-in-one functions and customizable functions for sumstats QC and filtering.
 
-## 1. Methods Summary
+## Methods Summary
 
 | Sumstats Methods               | Options                                                                     | Description                                                                           |
 |--------------------------------|-----------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
 | `.check_sanity()`              | `n`.`ncase`,`ncontrol`,`beta`,`se`,`eaf` ...                                | sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N...               |
-| `.check_data_consistency()`    |                                                                             | check if `BETA/SE-drived P/MLOG10P = original P/MLOG10P`, `N = N_CASE + N_CONTROL`... |
+| `.check_data_consistency()`    |                                                                             | check if `BETA/SE-derived P/MLOG10P = original P/MLOG10P`, `N = N_CASE + N_CONTROL`... |
 | `.remove_dup()`                | `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants                                        |
 | `.filter_value()`              | `expr` , <br/> `inplace=False`                                              | filter in variants base on expr                                                       |
 | `.filter_flanking_by_id()`     | `snpid` , <br/> `inplace=False`                                             | filter in variants in the specified flacking regions (SNPID/rsID)                     |
@@ -14,9 +15,9 @@ GWASLab provides all-in-one functions and customizable functions for sumstats QC
 | `.filter_region_in()`          | `path` , <br/> `inplace=False` , <br/>`high_ld=False`, <br/> `build="19"`   | filter in variants in the specified region define by a bed file                       |
 | `.filter_region_out()`         | `path` , <br/> `inplace=False` , <br/>`high_ld=False`, <br/> `build="19"`   | filter out variants in the specified region define by a bed file                      |
 
-## 2. Statistics Sanity Check
+## Statistics Sanity Check
 
-Note: Default parameters have been updated since v3.3.36
+!!! info "Default parameters have been updated since v3.4.36"
 
 `.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected ranges`.
 
@@ -45,9 +46,9 @@ Comparison will be performed with `float_tolerence = 1e-7` for any float type st
 | `info=(0,1)`              | `float`    | 0<INFO<1                                 |
 | `direction`               | `string`   | only contains `"+"`,`"-"` ,`"0"`or `"?"` |
 
-## 3. Remove duplicated or multiallelic variants
+## Remove duplicated or multiallelic variants
 
-After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using
+After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using:
 
 ```
 .remove_dup(mode="md")
@@ -102,8 +103,15 @@ After standardizing and normalizing the sumstats, you can also remove duplicated
     
     <img width="525" alt="image" src="https://user-images.githubusercontent.com/40289485/212274043-fe37a99e-1fed-4340-944a-e731126e51f3.png">
 
+## Check_data consistency
 
-## 4. Filtering by condition
+```
+.check_data_consistency()
+```
+
+GWASLab checks if `BETA/SE-derived P/MLOG10P = original P/MLOG10P` or `N = N_CASE + N_CONTROL`.
+
+## Filtering variants
 
 Filter the sumstats by `expr` (a wrapper of `pandas.DataFrame.query`), and return a new Sumstats Object by default. This allows method chaining. For example, you can filter certain variants first and then create a Mahanttan plot like `mysumstats.filter_value('BETA<0 & CHR==1').plot_mqq()`.
 
@@ -116,41 +124,18 @@ Filter the sumstats by `expr` (a wrapper of `pandas.DataFrame.query`), and retur
 | `expr`    | `string`  | the query string used fot filtering. For example: '1>BETA>0 & N>10000'                                  |         |
 | `inplace` | `boolean` | if False, return a new Sumstats object. If true, the current Sumstats object will be filtered in place. | `False` |
 
-!!! quote pd.DataFrame.query()
+!!! quote "pd.DataFrame.query()"
     Please check https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html
 
 !!! example
+
     ```
     mysumstats.filter_value('BETA<0 & CHR==1').plot_mqq()
-    Wed Dec  7 01:32:06 2022 Start filtering values by condition: BETA<0 & CHR==1
-    Wed Dec  7 01:32:06 2022  -Removing 12075769 variants not meeting the conditions: BETA<0 & CHR==1
-    Wed Dec  7 01:32:06 2022 Finished filtering values.
-    Wed Dec  7 01:32:06 2022 Start to plot manhattan/qq plot with the following basic settings:
-    Wed Dec  7 01:32:06 2022  -Genome-wide significance level is set to 5e-08 ...
-    Wed Dec  7 01:32:06 2022  -Raw input contains 481992 variants...
-    Wed Dec  7 01:32:06 2022  -Plot layout mode is : mqq
-    Wed Dec  7 01:32:06 2022 Finished loading specified columns from the sumstats.
-    Wed Dec  7 01:32:06 2022 Start conversion and sanity check:
-    Wed Dec  7 01:32:06 2022  -Removed 0 variants with nan in CHR or POS column ...
-    Wed Dec  7 01:32:06 2022  -Removed 0 variants with nan in P column ...
-    Wed Dec  7 01:32:06 2022  -P values are being converted to -log10(P)...
-    Wed Dec  7 01:32:06 2022  -Sanity check after conversion: 0 variants with P value outside of (0,1] will be removed...
-    Wed Dec  7 01:32:06 2022  -Sanity check: 0 na/inf/-inf variants will be removed...
-    Wed Dec  7 01:32:07 2022  -Maximum -log10(P) values is 10.598771832501887 .
-    Wed Dec  7 01:32:07 2022 Finished data conversion and sanity check.
-    Wed Dec  7 01:32:07 2022 Start to create manhattan plot with 481992 variants:
-    Wed Dec  7 01:32:09 2022  -Found 2 significant variants with a sliding window size of 500 kb...
-    Wed Dec  7 01:32:09 2022 Finished creating Manhattan plot successfully!
-    Wed Dec  7 01:32:09 2022  -Skip annotating
-    Wed Dec  7 01:32:09 2022 Start to create QQ plot with 481992 variants:
-    Wed Dec  7 01:32:09 2022  -Calculating GC using P : 1.2372836632762023
-    Wed Dec  7 01:32:09 2022 Finished creating QQ plot successfully!
     ```
-    ![image](https://user-images.githubusercontent.com/40289485/211584317-6c1583b5-53e4-4aae-9141-af5781e2439b.png)
  
-## 5. Flanking regions
+## Filtering variants in flanking regions
 
-Available since v3.3.37
+!!! info "Available since v3.4.37"
 
 ```
 .filter_flanking_by_chrpos(snpid)
@@ -158,7 +143,7 @@ Available since v3.3.37
 .filter_flanking_by_id(chrpos)
 ```
 
-Extract variants in the specified flacking regions.
+Extract variants in the specified flanking regions.
 
 | Options        | DataType  | Description                                                                                             | Default |
 |----------------|-----------|---------------------------------------------------------------------------------------------------------|---------|
@@ -167,14 +152,14 @@ Extract variants in the specified flacking regions.
 | `windonsizekb` | `int`     | flanking window size in kb `["rs123", "1:123:A:G"]`                                                     | `500`   |
 | `inplace`      | `boolean` | if False, return a new Sumstats object. If true, the current Sumstats object will be filtered in place. | `False` |
 
-## 6. Filtering regions
+## Filtering variants in regions using BED
 
 ```
 .filter_region_in()
 .filter_region_out()
 ```
 
-Filter variants in  predifined regions or regions defined in bed files.
+Filter variants in pre-defined regions or regions defined in bed files.
 
 | Options   | DataType  | Description                                                                                             | Default |
 |-----------|-----------|---------------------------------------------------------------------------------------------------------|---------|

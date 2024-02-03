@@ -1,6 +1,6 @@
 # Trumpet plot
 
-Under testing. Will be available since v3.4.20
+!!! info "Available since v3.4.20"
 
 ## Description
 
@@ -8,50 +8,54 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 
 - X axis: MAF
 - Y axis: Effect size
-- additional curves : power
+- additional curves: power
 
-## Usage
+## .plot_trumpet()
+
+```
+.plot_trumpet()
+```
 
 ### "q" mode for quantitative traits
 
-|Option|Type|Description|Default|
-|-|-|-|-|
-|`sig_level`|`float`|signiifcance level for power calculation| `5e-8`| 
-|`n`|`string` or `int`|column name for sample size or an integer for sample size| required |
-|`ts`|`list`|a list of power curve to draw| `[0.2,0.4,0.6,0.8]`|
+| Option      | Type              | Description                                               | Default             |
+|-------------|-------------------|-----------------------------------------------------------|---------------------|
+| `sig_level` | `float`           | signiifcance level for power calculation                  | `5e-8`              |
+| `n`         | `string` or `int` | column name for sample size or an integer for sample size | required            |
+| `ts`        | `list`            | a list of power curve to draw                             | `[0.2,0.4,0.6,0.8]` |
 
 ### "b" mode for binary traits
 
-|Option|Type|Description|Default|
-|-|-|-|-|
-|`sig_level`|`float`|signiifcance level for power calculation| `5e-8`| 
-|`ncase`|`int`|number of cases|required|
-|`ncontrol`|`int`|number of controls|required|
-|`prevalence`|`float`|disease prevalence in general population|required|
-|`or_to_rr`|`boolean`|if estimate RR using OR/beta and prevalence; for prevalence <10%, RR is similar to OR|"False"|
-|`ts`|`list`|a list of power curve to draw| `[0.2,0.4,0.6,0.8]`|
+| Option       | Type      | Description                                                                           | Default             |
+|--------------|-----------|---------------------------------------------------------------------------------------|---------------------|
+| `sig_level`  | `float`   | signiifcance level for power calculation                                              | `5e-8`              |
+| `ncase`      | `int`     | number of cases                                                                       | required            |
+| `ncontrol`   | `int`     | number of controls                                                                    | required            |
+| `prevalence` | `float`   | disease prevalence in general population                                              | required            |
+| `or_to_rr`   | `boolean` | if estimate RR using OR/beta and prevalence; for prevalence <10%, RR is similar to OR | "False"             |
+| `ts`         | `list`    | a list of power curve to draw                                                         | `[0.2,0.4,0.6,0.8]` |
 
 ### other option
 
-|Option|Type|Description|Default|
-|-|-|-|-|
-|`build`|`string`|`19` or `38`, which build to use for annotation|"99"|
-|`p_level`|`float`|upper limit of p values; variants with p values higher than this will be excluded from plotting|`5e-8`|
-|`anno`|`string`|which column in sumstats to use to annotate the variants|None|
-|`anno_style`|`string`|`expand`, `tight` or `right`|`expand`|
-|`anno_args`|`dict`|augurments for annotation |`{"fontsize":12,"fontstyle":"italic"}`|
-|`anno_x`|`float`|upper bound of abs(y) for annotation|`0.05`|
-|`anno_y`|`float`|lower bound of abs(y) for annotation|`1`|
-|`repel_force`|`float`|determine the interval between each annotation|`0.05`|
-|`sort`|`string`|`beta` or `eaf`, which to use to determine the order for annotation|`beta`|
-|`ylim`|`tuple`|ylim|auto|
-|`cmap`|`string`|matplotlib color map for power line|"cool"|
-|`xscale`|`string`| `log` or `nonlog`|`log`|
-|`yscale_factor`|`float`|effect size will be multiplied by a factor|1|
-|`n_matrix`|`int`| The higher the value is, the smoother the power line will be|1000|
-|`markercolor`|`string`|color|"#597FBD"|
-|`ylabel`|`string`|Y axis label|`Effect size`|
-|`xlabel`|`string`|X axis label|`Minor allele frequency`|
+| Option          | Type     | Description                                                                                     | Default                                |
+|-----------------|----------|-------------------------------------------------------------------------------------------------|----------------------------------------|
+| `build`         | `string` | `19` or `38`, which build to use for annotation                                                 | "99"                                   |
+| `p_level`       | `float`  | upper limit of p values; variants with p values higher than this will be excluded from plotting | `5e-8`                                 |
+| `anno`          | `string` | which column in sumstats to use to annotate the variants                                        | None                                   |
+| `anno_style`    | `string` | `expand`, `tight` or `right`                                                                    | `expand`                               |
+| `anno_args`     | `dict`   | arguments for annotation                                                                       | `{"fontsize":12,"fontstyle":"italic"}` |
+| `anno_x`        | `float`  | upper bound of abs(y) for annotation                                                            | `0.05`                                 |
+| `anno_y`        | `float`  | lower bound of abs(y) for annotation                                                            | `1`                                    |
+| `repel_force`   | `float`  | determine the interval between each annotation                                                  | `0.05`                                 |
+| `sort`          | `string` | `beta` or `eaf`, which to use to determine the order for annotation                             | `beta`                                 |
+| `ylim`          | `tuple`  | ylim                                                                                            | auto                                   |
+| `cmap`          | `string` | matplotlib color map for power line                                                             | "cool"                                 |
+| `xscale`        | `string` | `log` or `nonlog`                                                                               | `log`                                  |
+| `yscale_factor` | `float`  | effect size will be multiplied by a factor                                                      | 1                                      |
+| `n_matrix`      | `int`    | The higher the value is, the smoother the power line will be                                    | 1000                                   |
+| `markercolor`   | `string` | color                                                                                           | "#597FBD"                              |
+| `ylabel`        | `string` | Y axis label                                                                                    | `Effect size`                          |
+| `xlabel`        | `string` | X axis label                                                                                    | `Minor allele frequency`               |
 |`xticks`|`list`|X axis ticks|`Effect size`|[0.001,0.01,0.05,0.1,0.2,0.5]|
 |`xticklabels`|`list`|X axis tick labels|`Minor allele frequency`|[0.001,0.01,0.05,0.1,0.2,0.5]|
 

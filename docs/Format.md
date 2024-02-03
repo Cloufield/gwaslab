@@ -2,7 +2,7 @@
 
 GWASLab provides a flexible formatting and saving function.
 
-## 1. Usage
+## .to_format()
 
 ```
 .to_format(
@@ -12,7 +12,7 @@ GWASLab provides a flexible formatting and saving function.
           )
 ```
 
-## 2. Options
+## Options
 
 | `.to_format()` options | DataType          | Description                                                                                                                                                                                                                          | Default          |
 |------------------------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------|
@@ -39,7 +39,7 @@ GWASLab provides a flexible formatting and saving function.
 | `output_log`           | `boolean`         | If True, save the log to a file.                                                                                                                                                                                                     | `True`           |
 | `ssfmeta`              | `boolean`         | If True, output a gwas-ssf-style meta file.                                                                                                                                                                                          | `False`          |
 
-## 3. Format dictionary
+## Format dictionary
 
 Using `float_formats`, you can specify the formats for numbers.
 
@@ -48,7 +48,7 @@ Using `float_formats`, you can specify the formats for numbers.
     {'EAF': '{:.4g}', 'BETA': '{:.4f}', 'Z': '{:.4f}','CHISQ': '{:.4f}','SE': '{:.4f}','OR': '{:.4f}','OR_95U': '{:.4f}','OR_95L': '{:.4f}','INFO': '{:.4f}','P': '{:.4e}','MLOG10P': '{:.4f}','DAF': '{:.4f}'}
     ```
 
-## 4. Examples
+## Examples
 
 GWASLab supports commonly used tabular formats, which are listed in a companion repository `formatbook`.
 

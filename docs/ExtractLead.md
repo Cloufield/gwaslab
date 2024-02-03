@@ -2,7 +2,7 @@
 
 GWASLab can extract the lead variants based on MLOG10P values or P values (By default, GWASLab will use MLOG10P first since v3.3.37) from identified significant loci using a sliding window, and return the result as a pandas.DataFrame or gl.Sumstats Object.
 
-## 1. get_lead()
+## .get_lead()
 
 ```python
 mysumstats.get_lead(
@@ -17,12 +17,12 @@ mysumstats.get_lead(
            gls=False)
 ```
 
-## 2. Options
+## Options
 
 | `.get_lead()` options | DataType              | Description                                                                        | Default   |
 |-----------------------|-----------------------|------------------------------------------------------------------------------------|-----------|
-| `scaled`              | `boolean`             | (deprecated since v3.3.37) If True, use MLOG10P for extraction instead of P values | `False`   |
-| `use_p`               | `boolean`             | (available since v3.3.37)If True, use P for extraction instead of MLOG10P values   | `False`   |
+| `scaled`              | `boolean`             | (deprecated since v3.4.37) If True, use MLOG10P for extraction instead of P values | `False`   |
+| `use_p`               | `boolean`             | (available since v3.4.37)If True, use P for extraction instead of MLOG10P values   | `False`   |
 | `windowsizekb`        | `int`                 | Specify the sliding window size in **kb**                                          | `500`     |
 | `sig_level`           | `float`               | Specify the P value threshold                                                      | `5e-8`    |
 | `anno`                | `boolean`             | If True, annotate the lead variants with nearest gene names.                       | `False`   |
@@ -47,7 +47,7 @@ mysumstats.get_lead(
     GWASlab currently iteratively extends ± `windowsizekb` kb region around the most significant variant and merges overlapping regions until no genome-wide significant variants were detected within ± `windowsizekb`. (slightly different from the GBMI paper. When `windowsizekb=1000`, it is equivalent to GBMI's definition.)
 
 
-## 3. Example
+## Example
 
 !!! example
     See [Lead and novel variants](https://cloufield.github.io/gwaslab/utility_get_lead_novel/)

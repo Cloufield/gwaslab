@@ -3,7 +3,7 @@
 
 GWASLab can check if the lead variants of your summary statistics overlap with reported variants or not based on the physical distance.
 
-## 1. get_novel()
+## .get_novel()
 
 ```
 sumstats.get_novel(
@@ -17,17 +17,17 @@ sumstats.get_novel(
 ```
 
 
-GWASLab checks overlap with a local files of variants or records in GWASCatalog.
+GWASLab checks overlap with a local file of variants or records in GWASCatalog.
 
 Required (either):
 
-- `known` : `string`, path to local file of reported variants
+- `known` : `string`, path to the local file of reported variants
 
 or 
 
-- `efo` : `string`, efo id for the target trait, which is used for querying the GWASCatalog.
+- `efo` : `string`, EFO id for the target trait, which is used for querying the GWASCatalog.
 
-## 2. Options:
+## Options
 
 | `.get_lead()` options    | DataType  | Description                                                                               | Default |
 |--------------------------|-----------|-------------------------------------------------------------------------------------------|---------|
@@ -40,11 +40,11 @@ or
 
 
 !!! info "EFO ID"
-    You can find the efo id by simply searching in GWASCatalog. For example, the EFO ID for T2D can be obtained like:
+    You can find the efo id by simply searching in GWASCatalog. For example, the EFO ID for T2D can be obtained :
     
     <img width="700" alt="Screenshot 2023-02-03 at 13 36 16" src="https://user-images.githubusercontent.com/40289485/216513724-27f4e742-a03c-4346-a6bc-6b1002e22847.png">
 
-## 3. Example: Checking with GWAScatalog API 
+## Example
 
 !!! warning "Only works when your sumstats are based on GRCh38" 
 

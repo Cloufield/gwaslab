@@ -4,7 +4,7 @@ In GWASLab, sumstats were stored in a `Sumstats Object`, which is built on `pand
 
 To load any sumstats into the object, simply specify the column name and load the raw GWAS summary statistics from a pandas DataFrame or specify a file path. All raw data will be loaded as `"string"` datatype. 
 
-## 1. Usage
+## gl.Sumstats()
 
 ```py
 mysumstats = gl.Sumstats(
@@ -20,70 +20,65 @@ mysumstats = gl.Sumstats(
 )
 ```
 
-## 2. Loading options
+## Options
 
 `sumstats`: either a file path `string` or a pandas `DataFrame`
 
 Currently, GWASLab supports the following columns:
 
-|Option|DataType|Description|Header in GWASLab|
-|-|-|-|-|
-|`snpid`|`string`|variant ID column name, preferably in chr:pos:ea:nea format.|`SNPID`|
-|`rsid`|`string`|dbSNP rsID column name|`rsID`|
+| Option  | DataType | Description                                                  | Header in GWASLab |
+|---------|----------|--------------------------------------------------------------|-------------------|
+| `snpid` | `string` | variant ID column name, preferably in chr:pos:ea:nea format. | `SNPID`           |
+| `rsid`  | `string` | dbSNP rsID column name                                       | `rsID`            |
 
 The minimum required columns are just either `rsid `or `snpid`. 
 All other columns and options are optional.
 
-|Option|DataType|Description|Header in GWASLab|
-|-|-|-|-|
-|`fmt`|`string`|input sumstats format. For formats supported by GWASLab, please check [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)|-|
-|`chrom`|`string`|chromosome column name|`CHR`|
-|`pos`|`string`|basepair position column name|`POS`|
-|`ea`|`string`|effect allele column name; BETA, OR, HR, EAF are in reference to EA...|`EA`|
-|`nea`|`string`|non-effect allele column name|`NEA`|
-|`ref`|`string`|reference allele column name; the allele on reference genome|`REF`|
-|`alt`|`string`|alternative allele column name; the allele that is not on reference genome; when `ea`,`ref` and `alt` are specified, `nea` will be inferred.|`ALT`|
-|`eaf`|`string`|effect allele frequency|`EAF`|
-|`neaf`|`string`|non-effect allele frequency. NEAF will be converted to EAF (EAF = 1 - NEAF) while loading.|`EAF`|
-|`n`|`string` or `integer`|sample size column name or just input a single `integer` as sample size for all variants|`N`|
-|`beta`|`string`|effect size beta column name; in reference to EA|`BETA`|
-|`se`|`string`|standard error column name|`SE`|
-|`chisq`|`string`|chi square column name|`CHISQ`|
-|`z`|`string`|z score column name|`Z`|
-|`p`|`string`|p value column name|`P`|
-|`mlog10p`|`string`| -log10(P) column name|`MLOG10P`|
-|`info`|`string`|imputation info or rsq column name|`INFO`|
-|`OR`|`string`|odds ratio column name; in reference to EA|`OR`|
-|`OR_95L`|`string`|odds ratio lower 95% CI column name|`OR_95L`|
-| `OR_95U`|`string`|odds ratio upper 95% CI column name|`OR_95U`|
-|`direction`|`string`|direction column name. GWASLab uses METAL format (e.g. `++--+?+0`)|`DIRECTION`|
-|`other`|`list`|a list  of other column names you want to keep with the core columns (probably some annotations).|-|
-|`status`|`string`|status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.|`STATUS`|
-|`verbose`|`boolean`|if True, print log. |-|
-|`build`|`string`|genome build. `19` for hg19, `38` for hg38 and `99` for unknown.|The first two digits of `STATUS`|
-|`**arg `|`string`|additional parameters for [pd.read_table()](https://pandas.pydata.org/docs/reference/api/pandas.read_table.html) function. Some common options include : `sep`,`nrows`, `skiprows` and `na_values`.|-|
+| Option      | DataType              | Description                                                                                                                                                                                         | Header in GWASLab                |
+|-------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|
+| `fmt`       | `string`              | input sumstats format. For formats supported by GWASLab, please check [https://github.com/Cloufield/formatbook](https://github.com/Cloufield/formatbook)                                            | -                                |
+| `chrom`     | `string`              | chromosome column name                                                                                                                                                                              | `CHR`                            |
+| `pos`       | `string`              | basepair position column name                                                                                                                                                                       | `POS`                            |
+| `ea`        | `string`              | effect allele column name; BETA, OR, HR, EAF are in reference to EA...                                                                                                                              | `EA`                             |
+| `nea`       | `string`              | non-effect allele column name                                                                                                                                                                       | `NEA`                            |
+| `ref`       | `string`              | reference allele column name; the allele on reference genome                                                                                                                                        | `REF`                            |
+| `alt`       | `string`              | alternative allele column name; the allele that is not on reference genome; when `ea`,`ref` and `alt` are specified, `nea` will be inferred.                                                        | `ALT`                            |
+| `eaf`       | `string`              | effect allele frequency                                                                                                                                                                             | `EAF`                            |
+| `neaf`      | `string`              | non-effect allele frequency. NEAF will be converted to EAF (EAF = 1 - NEAF) while loading.                                                                                                          | `EAF`                            |
+| `n`         | `string` or `integer` | sample size column name or just input a single `integer` as sample size for all variants                                                                                                            | `N`                              |
+| `beta`      | `string`              | effect size beta column name; in reference to EA                                                                                                                                                    | `BETA`                           |
+| `se`        | `string`              | standard error column name                                                                                                                                                                          | `SE`                             |
+| `chisq`     | `string`              | chi square column name                                                                                                                                                                              | `CHISQ`                          |
+| `z`         | `string`              | z score column name                                                                                                                                                                                 | `Z`                              |
+| `p`         | `string`              | p value column name                                                                                                                                                                                 | `P`                              |
+| `mlog10p`   | `string`              | -log10(P) column name                                                                                                                                                                               | `MLOG10P`                        |
+| `info`      | `string`              | imputation info or rsq column name                                                                                                                                                                  | `INFO`                           |
+| `OR`        | `string`              | odds ratio column name; in reference to EA                                                                                                                                                          | `OR`                             |
+| `OR_95L`    | `string`              | odds ratio lower 95% CI column name                                                                                                                                                                 | `OR_95L`                         |
+| `OR_95U`    | `string`              | odds ratio upper 95% CI column name                                                                                                                                                                 | `OR_95U`                         |
+| `direction` | `string`              | direction column name. GWASLab uses METAL format (e.g. `++--+?+0`)                                                                                                                                  | `DIRECTION`                      |
+| `other`     | `list`                | a list  of other column names you want to keep with the core columns (probably some annotations).                                                                                                   | -                                |
+| `ncontrol`  | `string` or `integer` | sample size column name for controls or just input a single `integer` as sample size for all variants                                                                                               | `N_CONTROL`                      |
+| `ncase`     | `string` or `integer` | sample size column name for cases or just input a single `integer` as sample size for all variants                                                                                                  | `N_CASE`                         |
+| `HR`        | `string`              | hazrad ratio column name                                                                                                                                                                            | `HR`                             |
+| `HR_95U`    | `string`              | hazrad ratio upper 95% CI column name                                                                                                                                                               | `HR_95U`                         |
+| `HR_95L`    | `string`              | hazrad ratio lower 95% CI column name                                                                                                                                                               | `HR_95L`                         |
+| `beta_95L`  | `string`              | beta upper 95% CI column name                                                                                                                                                                       | `BETA_95L`                       |
+| `beta_95U`  | `string`              | beta upper 95% CI column name                                                                                                                                                                       | `BETA_95U`                       |
+| `i2`        | `string`              | I2 column name                                                                                                                                                                                      | `I2_HET`                         |
+| `phet`      | `string`              | heterogeneity test P value                                                                                                                                                                          | `P_HET`                          |
+| `dof`       | `string` or `integer` | degree of freedom                                                                                                                                                                                   | `DOF`                            |
+| `snpr2`     | `string`              | column name for proportion of phenotypic variance explained by each variant                                                                                                                         | `SNPR2`                          |
+| `maf`       | `string`              | minor allele frequency column header                                                                                                                                                                | `MAF`                            |
+| `f`         | `string`              | F statistics column header                                                                                                                                                                          | `F`                              |
+| `status`    | `string`              | status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.                                                                                    | `STATUS`                         |
+| `verbose`   | `boolean`             | if True, print log.                                                                                                                                                                                 | -                                |
+| `build`     | `string`              | genome build. `19` for hg19, `38` for hg38 and `99` for unknown.                                                                                                                                    | The first two digits of `STATUS` |
+| `**arg `    | `string`              | additional parameters for [pd.read_table()](https://pandas.pydata.org/docs/reference/api/pandas.read_table.html) function. Some common options include : `sep`,`nrows`, `skiprows` and `na_values`. | -                                |
 
-Other columns GWASLab uses (these will be implemented soon)
+## Loading sumstats
 
-|Option|DataType|Description|Header in GWASLab|
-|-|-|-|-|
-|`ncontrol`|`string` or `integer`|sample size column name for controls or just input a single `integer` as sample size for all variants|`N_CONTROL`|
-|`ncase`|`string` or `integer`|sample size column name for cases or just input a single `integer` as sample size for all variants|`N_CASE`|
-|`HR`|`string`|hazrad ratio column name|`HR`|
-|`HR_95U`|`string`|hazrad ratio upper 95% CI column name|`HR_95U`|
-|`HR_95L`|`string`|hazrad ratio lower 95% CI column name|`HR_95L`|
-|`beta_95L`|`string`|beta upper 95% CI column name|`BETA_95L`|
-|`beta_95U`|`string`|beta upper 95% CI column name|`BETA_95U`|
-|`i2`|`string`|I2 column name|`I2_HET`|
-|`phet`|`string`|heterogeneity test P value|`P_HET`|
-|`dof`|`string` or `integer`|degree of freedom|`DOF`|
-|`snpr2`|`string`|column name for proportion of phenotypic variance explained by each variant |`SNPR2`|
-|`maf`|`string`|minor allele frequency column header|`MAF`|
-|`f`|`string`|F statistics column header|`F`|
-
-## 3 Loading sumstats
-
-### 3.1 Loading by specifying columns
+### Load by specifying columns
 
 You can load the sumstats by specifying the columns like:
 
@@ -102,29 +97,29 @@ You can load the sumstats by specifying the columns like:
                  n="N")
     ```
 
-### 3.2 Loading by specifying formats
+### Load by specifying formats
 
 GWASLab supports common sumstats formats and you can load sumstats by specifying `fmt`.  
     
 GWASLab uses a manually curated format conversion dictionary in [https://github.com/Cloufield/formatbook](https:/github.com/Cloufield/formatbook). Currently, it supports the following formats:
 
-|`Keyword`|`Description`|
-|-|-|
-|`ssf`|GWAS-SSF|
-|`gwascatalog`|GWAS Catalog format|
-|`pgscatalog` |PGS Catalog format|
-|`plink`|PLINK output format|
-|`plink2`|PLINK2 output format|
-|`saige`|SAIGE output format|
-|`regenie`|output format|
-|`fastgwa`|output format|
-|`metal`|output format|
-|`mrmega`|output format|
-|`fuma`|input format|
-|`ldsc`|input format|
-|`locuszoom`|input format|
-|`vcf`|gwas-vcf format|
-|`bolt_lmm`|output format|
+| `Keyword`     | `Description`        |
+|---------------|----------------------|
+| `ssf`         | GWAS-SSF             |
+| `gwascatalog` | GWAS Catalog format  |
+| `pgscatalog`  | PGS Catalog format   |
+| `plink`       | PLINK output format  |
+| `plink2`      | PLINK2 output format |
+| `saige`       | SAIGE output format  |
+| `regenie`     | output format        |
+| `fastgwa`     | output format        |
+| `metal`       | output format        |
+| `mrmega`      | output format        |
+| `fuma`        | input format         |
+| `ldsc`        | input format         |
+| `locuszoom`   | input format         |
+| `vcf`         | gwas-vcf format      |
+| `bolt_lmm`    | output format        |
 
 !!! info "Update Formatbook using `gl.update_formaybook()`"
     ```
@@ -140,7 +135,7 @@ GWASLab uses a manually curated format conversion dictionary in [https://github.
     mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="saige")
     ```
 
-### 3.3 Load sumstats with `auto` mode
+### Load sumstats with `auto` mode
 
 GWASLab also provides an auto mode (`fmt="auto"`; available since v3.4.21) which assumes A1 or alternative allele (ALT) is the effect allele (EA) and Frq refers to the allele frequency of effect allele (EAF). Common headers will be detected. You can find the conversion table [here](https://github.com/Cloufield/formatbook/blob/main/formats/auto.json)
 
@@ -149,7 +144,7 @@ GWASLab also provides an auto mode (`fmt="auto"`; available since v3.4.21) which
     mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="auto")
     ```
     
-### 3.4 Loading sumstats from chromosome-separated files
+### Load sumstats from chromosome-separated files
 GWASLab supports loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace the chromosome numbers. 
 
 !!! example
@@ -158,8 +153,8 @@ GWASLab supports loading sumstats from chromosome-separated files (file names ne
     ```
 
 
-## 4. Check and save sumstats
-After loading, the raw data columns will be renamed to new columns without ambiguity and the dataframe is stored in `.data` :
+## Check and save sumstats
+After loading, the raw data columns will be renamed to new columns without ambiguity and the DataFrame is stored in `.data` :
 
 !!! example
     ```python
@@ -182,13 +177,13 @@ or convert the sumstats to other sumstats using GWASLab `to_format()` function (
     
 Please check [GWASLab - Format](https://cloufield.github.io/gwaslab/Format/) for more details.
 
-## 5. Saving half-finished Sumstats Object
+## Saving half-finished Sumstats Object
 
 If the pipeline is very long, and you need to temporarily save the Sumstats Object, you can use the `.dump_pickle()` method to temporarily save the Sumstats Object.
 
 Please check [GWASLab - Pickle](https://cloufield.github.io/gwaslab/Pickle/) for more details.
 
-## 6. Logging
+## Logging
 
 All manipulation conducted to the sumstats will be logged for reproducibility and traceability. 
 
@@ -201,7 +196,7 @@ The log is stored in a `gl.Log()` object. You can check it by `.log.show() `and 
     mysumstats.log.save()
     ```
 
-## 7. Sumstats summary
+## Sumstats summary
 
 You can check the meta information of sumstats by:
 
@@ -210,7 +205,7 @@ You can check the meta information of sumstats by:
     mysumstats.summary()
     ```
 
-## 8. Other functions
+## Other functions
 
 Other functions of GWASLab are implemented as the methods of Sumstats Object.
 

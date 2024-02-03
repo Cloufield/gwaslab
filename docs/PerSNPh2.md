@@ -4,6 +4,9 @@ GWASLab provides a simple function to calculate the variance explained by each S
 
 !!! tip "Available since v3.4.20"
 
+
+## .get_per_snp_r2()
+
 ```
 mysumstats.get_per_snp_r2()
 ```
@@ -45,6 +48,9 @@ For binary traits  (`mode="b"`), `ncase`, `ncontrol` and `prevalence` are needed
     Equation 10 in Lee, S. H., Goddard, M. E., Wray, N. R., & Visscher, P. M. (2012). A better coefficient of determination for genetic profile analysis. Genetic epidemiology, 36(3), 214-224.
     
     - Implementation adopted from TwoSampleMR https://rdrr.io/github/MRCIEU/TwoSampleMR/src/R/add_rsq.r
+
+
+## Examples
 
 !!! example
 
