@@ -929,6 +929,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#glcompare_effect" class="md-nav__link">
+    <span class="md-ellipsis">
+      gl.compare_effect()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
       Options
@@ -957,9 +966,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#snplist" class="md-nav__link">
+  <a href="#snp-list" class="md-nav__link">
     <span class="md-ellipsis">
-      Snplist
+      SNP List
     </span>
   </a>
   
@@ -968,7 +977,7 @@
           <li class="md-nav__item">
   <a href="#filter-by-maf" class="md-nav__link">
     <span class="md-ellipsis">
-      Filter by maf:
+      Filter by MAF
     </span>
   </a>
   
@@ -1010,24 +1019,15 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
-      Example:
+      Examples
     </span>
   </a>
   
@@ -1509,7 +1509,7 @@
         
   
   <span class="md-ellipsis">
-    Workflow
+    Harmonization
   </span>
   
 
@@ -1772,6 +1772,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#glcompare_effect" class="md-nav__link">
+    <span class="md-ellipsis">
+      gl.compare_effect()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
       Options
@@ -1800,9 +1809,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#snplist" class="md-nav__link">
+  <a href="#snp-list" class="md-nav__link">
     <span class="md-ellipsis">
-      Snplist
+      SNP List
     </span>
   </a>
   
@@ -1811,7 +1820,7 @@
           <li class="md-nav__item">
   <a href="#filter-by-maf" class="md-nav__link">
     <span class="md-ellipsis">
-      Filter by maf:
+      Filter by MAF
     </span>
   </a>
   
@@ -1853,24 +1862,15 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
-      Example:
+      Examples
     </span>
   </a>
   
@@ -1893,8 +1893,11 @@
 
 <h1 id="comparing-effect-sizes">Comparing effect sizes</h1>
 <h2 id="scatter-plot-effect-size-comparison">Scatter plot : effect size comparison</h2>
-<p>upgrated since v3.4.17</p>
+<div class="admonition info">
+<p class="admonition-title">Available since v3.4.17</p>
+</div>
 <p><code>gl.compare_effect()</code> will plot effect size comparison plot using two sets of sumstats. Alleles will be aligned to effect alleles in sumstats1.</p>
+<h2 id="glcompare_effect">gl.compare_effect()</h2>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">gl</span><span class="o">.</span><span class="n">compare_effect</span> <span class="p">(</span><span class="n">path1</span><span class="p">,</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                   <span class="n">path2</span><span class="p">,</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                   <span class="n">cols_name_list_1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">effect_cols_list_1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -2042,7 +2045,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="snplist">Snplist</h3>
+<h3 id="snp-list">SNP List</h3>
 <table>
 <thead>
 <tr>
@@ -2061,7 +2064,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="filter-by-maf">Filter by maf:</h3>
+<h3 id="filter-by-maf">Filter by MAF</h3>
 <table>
 <thead>
 <tr>
@@ -2229,8 +2232,7 @@
 </tbody>
 </table>
 <div class="arithmatex">\[ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}_{jack} )^2 } \]</div>
-<h3 id="_1"></h3>
-<h2 id="example">Example:</h2>
+<h2 id="examples">Examples</h2>
 <div class="admonition example">
 <p class="admonition-title">Use gl.Sumstats object</p>
 <p><div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>gl1 = gl.Sumstats(&quot;bbj_bmi_female.txt.gz&quot;,fmt=&quot;gwaslab&quot;,snpid=&quot;SNP&quot;,ea=&quot;REF&quot;,nea=&quot;ALT&quot;,sep=&quot;\t&quot;)

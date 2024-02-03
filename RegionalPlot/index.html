@@ -836,59 +836,32 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-usage" class="md-nav__link">
+  <a href="#plot_mqqmoder" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Usage
+      .plot_mqq(mode="r")
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-examples" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Examples
+      Options
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Examples">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#21-regional-mqq-plot" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.1 Regional mqq plot
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-regional-plot-without-ld" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.2 Regional plot without LD
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-regional-plot" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.3 Regional plot
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#24-two-reference-variant-regional-plot" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.4 Two-reference-variant regional plot
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#faq" class="md-nav__link">
@@ -1464,7 +1437,7 @@
         
   
   <span class="md-ellipsis">
-    Workflow
+    Harmonization
   </span>
   
 
@@ -1718,59 +1691,32 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-usage" class="md-nav__link">
+  <a href="#plot_mqqmoder" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Usage
+      .plot_mqq(mode="r")
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-examples" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Examples
+      Options
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Examples">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#21-regional-mqq-plot" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.1 Regional mqq plot
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-regional-plot-without-ld" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.2 Regional plot without LD
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-regional-plot" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.3 Regional plot
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#24-two-reference-variant-regional-plot" class="md-nav__link">
-    <span class="md-ellipsis">
-      2.4 Two-reference-variant regional plot
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#faq" class="md-nav__link">
@@ -1804,7 +1750,7 @@
 <h1 id="regional-plots">Regional plots</h1>
 <p><img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png"></p>
 <p>GWASLab provides functions for creating regional plots.</p>
-<h2 id="1-usage">1. Usage</h2>
+<h2 id="plot_mqqmoder">.plot_mqq(mode="r")</h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>.plot_mqq(mode=&quot;r&quot;,
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>          region = None,
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>          ...
@@ -1812,6 +1758,7 @@
 </span></code></pre></div>
 <p>GWASLab regional plot function is based on plot_mqq().
 Most options are largely the same as <a href="https://cloufield.github.io/gwaslab/Visualization/">Manhattan plot</a>.</p>
+<h2 id="options">Options</h2>
 <table>
 <thead>
 <tr>
@@ -1942,37 +1889,11 @@ Most options are largely the same as <a href="https://cloufield.github.io/gwasla
 <p class="admonition-title">Calculation of LD r2</p>
 <p>The calculation is based on <a href="https://scikit-allel.readthedocs.io/en/stable/stats/ld.html">Rogers and Huff r implemented in scikit-alle</a>. Variants in refernece vcf file should be biallelic format. Unphased data is acceptable. AF information is not needed. Variant ID is not required. Missing genotype is allowed.</p>
 </div>
-<h2 id="2-examples">2. Examples</h2>
-<h3 id="21-regional-mqq-plot">2.1 Regional mqq plot</h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>!wget -O t2d_bbj.txt.gz http://jenger.riken.jp/14/
-</span></code></pre></div>
-<p><div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mysumstats = gl.Sumstats(&quot;t2d_bbj.txt.gz&quot;,
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>             snpid=&quot;SNP&quot;,
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>             chrom=&quot;CHR&quot;,
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>             pos=&quot;POS&quot;,
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>             neaf=&quot;Frq&quot;,
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>             p=&quot;P&quot;)
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>mysumstats.plot_mqq(region=(7,156538803,157538803))
-</span></code></pre></div>
-<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197125768-89c7fdd0-c80a-4db6-b8fc-9e970b39610e.png"></p>
-<h3 id="22-regional-plot-without-ld">2.2 Regional plot without LD</h3>
-<p><div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mysumstats.plot_mqq(mode=&quot;r&quot;, region=(7,156538803,157538803),region_grid=True)
-</span></code></pre></div>
-<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126849-72439c54-19fe-4fb9-a795-e35f42a9236b.png"></p>
-<h3 id="23-regional-plot">2.3 Regional plot</h3>
-<p><div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>mysumstats.plot_mqq(mode=&quot;r&quot;,region=(7,156538803,157538803),region_grid=True,
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>                    vcf_path=&quot;/home/yunye/mydata/d_disk/eas_1kg_af/EAS.chr7.split_norm_af.vcf.gz&quot;)
-</span></code></pre></div>
-<img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png"></p>
-<h3 id="24-two-reference-variant-regional-plot">2.4 Two-reference-variant regional plot</h3>
-<p><div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>mysumstats.plot_mqq(mode=&quot;r&quot;,region=(7,156538803,157538803),
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>                    region_grid=True,
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>                    region_ref =&quot;7:156994964_C_T&quot;,
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>                    region_ref2=&quot;7:156793713_T_C&quot;,
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>                    vcf_path=gl.get_path(&quot;1kg_eas_hg19&quot;))
-</span></code></pre></div>
-<img width="600" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/930bed00-74ab-4870-947c-06bc11b932c7"></p>
+<h2 id="examples">Examples</h2>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>See <a href="https://cloufield.github.io/gwaslab/visualization_regional/">Regional plot</a></p>
+</div>
 <h3 id="faq">FAQ</h3>
 <ol>
 <li>Why some genes are missing in the gene track?</li>

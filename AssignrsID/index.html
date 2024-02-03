@@ -684,28 +684,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-reference-data" class="md-nav__link">
+  <a href="#reference-data" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Reference data
+      Reference data
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Reference data">
+    <nav class="md-nav" aria-label="Reference data">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-snpid-rsid-table" class="md-nav__link">
+  <a href="#snpid-rsid-table" class="md-nav__link">
     <span class="md-ellipsis">
-      1.1 SNPID-rsID table
+      SNPID-rsID table
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#12-vcf-file" class="md-nav__link">
+  <a href="#vcf-file" class="md-nav__link">
     <span class="md-ellipsis">
-      1.2 VCF file
+      VCF file
     </span>
   </a>
   
@@ -717,27 +717,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-usage" class="md-nav__link">
+  <a href="#assign_rsid" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Usage
+      .assign_rsid()
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-options" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Options
+      Options
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-example" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Example
+      Examples
     </span>
   </a>
   
@@ -1455,7 +1455,7 @@
         
   
   <span class="md-ellipsis">
-    Workflow
+    Harmonization
   </span>
   
 
@@ -1709,28 +1709,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-reference-data" class="md-nav__link">
+  <a href="#reference-data" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Reference data
+      Reference data
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Reference data">
+    <nav class="md-nav" aria-label="Reference data">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-snpid-rsid-table" class="md-nav__link">
+  <a href="#snpid-rsid-table" class="md-nav__link">
     <span class="md-ellipsis">
-      1.1 SNPID-rsID table
+      SNPID-rsID table
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#12-vcf-file" class="md-nav__link">
+  <a href="#vcf-file" class="md-nav__link">
     <span class="md-ellipsis">
-      1.2 VCF file
+      VCF file
     </span>
   </a>
   
@@ -1742,27 +1742,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-usage" class="md-nav__link">
+  <a href="#assign_rsid" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Usage
+      .assign_rsid()
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-options" class="md-nav__link">
+  <a href="#options" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Options
+      Options
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-example" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Example
+      Examples
     </span>
   </a>
   
@@ -1789,14 +1789,14 @@
 <li>For quick annotation, GWASLab iterates over a SNPID-rsID table and assigns rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats. GWASLab provides a curated table  (1KG autosome variants). </li>
 <li>For full annotation, GWASLab will query a large reference VCF file (dbSNP for example, &gt;20GB ) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EN/NEA match.</li>
 </ul>
-<h2 id="1-reference-data">1. Reference data</h2>
-<h3 id="11-snpid-rsid-table">1.1 SNPID-rsID table</h3>
+<h2 id="reference-data">Reference data</h2>
+<h3 id="snpid-rsid-table">SNPID-rsID table</h3>
 <p>GWASLab provides a download function <code>gl.download_ref()</code> and two curated tables which contains ~80M 1KG variants:</p>
 <ul>
 <li><code>hg19</code> : <code>gl.download_ref("1kg_dbsnp151_hg19_auto")</code></li>
 <li><code>hg38</code> : <code>gl.download_ref("1kg_dbsnp151_hg38_auto")</code></li>
 </ul>
-<h3 id="12-vcf-file">1.2 VCF file</h3>
+<h3 id="vcf-file">VCF file</h3>
 <p>You can download this from dbSNP:</p>
 <p><code>hg19</code></p>
 <ul>
@@ -1838,7 +1838,7 @@
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>NC_000001.10    10069   rs1639545200    A       AC      .       .       RS=1639545200;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
 </span></code></pre></div>
 </div>
-<h2 id="2-usage">2. Usage</h2>
+<h2 id="assign_rsid">.assign_rsid()</h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mysumstats.basic_check()
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>mysumstats.assign_rsid( 
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>                        ref_rsid_tsv = gl.get_path(&quot;1kg_dbsnp151_hg19_auto&quot;),
@@ -1850,7 +1850,7 @@
 <p class="admonition-title">Info</p>
 <p>Please always run <code>.basic_check()</code> first. This will convert the data to right data type in most cases, and standardize and normalize the sumstats.</p>
 </div>
-<h2 id="3-options">3. Options</h2>
+<h2 id="options">Options</h2>
 <table>
 <thead>
 <tr>
@@ -1896,7 +1896,7 @@
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>{1: &#39;NC_000001.11&#39;,2: &#39;NC_000002.12&#39;,3: &#39;NC_000003.12&#39;,4: &#39;NC_000004.12&#39;,5: &#39;NC_000005.10&#39;,6: &#39;NC_000006.12&#39;,7: &#39;NC_000007.14&#39;,8: &#39;NC_000008.11&#39;,9: &#39;NC_000009.12&#39;,10: &#39;NC_000010.11&#39;,11: &#39;NC_000011.10&#39;,12: &#39;NC_000012.12&#39;,13: &#39;NC_000013.11&#39;,14: &#39;NC_000014.9&#39;,15: &#39;NC_000015.10&#39;,16: &#39;NC_000016.10&#39;,17: &#39;NC_000017.11&#39;,18: &#39;NC_000018.10&#39;,19: &#39;NC_000019.10&#39;,20: &#39;NC_000020.11&#39;,21: &#39;NC_000021.9&#39;,22: &#39;NC_000022.11&#39;,23: &#39;NC_000023.11&#39;,24: &#39;NC_000024.1&#39;,25: &#39;NC_012920.1&#39;}
 </span></code></pre></div>
 </div>
-<h2 id="4-example">4. Example</h2>
+<h2 id="examples">Examples</h2>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a># download ref SNPID-rsID table first
