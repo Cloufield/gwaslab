@@ -1,6 +1,6 @@
 # Extract lead variants
 
-GWASLab can extract the lead variants based on MLOG10P values or P values (By default, GWASLab will use MLOG10P first since v3.3.37) from identified significant loci using a sliding window, and return the result as a pandas.DataFrame or gl.Sumstats Object.
+GWASLab can extract the lead variants based on MLOG10P values or P values (By default, GWASLab will use MLOG10P first since v3.4.37) from identified significant loci using a sliding window, and return the result as a pandas.DataFrame or gl.Sumstats Object.
 
 ## .get_lead()
 
