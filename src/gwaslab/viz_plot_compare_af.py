@@ -55,7 +55,7 @@ def plotdaf(sumstats,
     if save_args is None:
         save_args =  {}
 
-    if verbose: log.write("Start to plot Reference frequency vs Effect allele frequency plot...")
+    log.write("Start to plot Reference frequency vs Effect allele frequency plot...", verbose=verbose)
     if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
         raise ValueError("EAF and/or DAF columns were not detected.")
     
@@ -74,7 +74,7 @@ def plotdaf(sumstats,
     sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[snpid,eaf,daf]+alleles].copy()
     sumstats[daf] = sumstats[daf].astype("float")
     sumstats[eaf] = sumstats[eaf].astype("float")
-    if verbose: log.write(" -Plotting valriants:" + str(len(sumstats)))
+    log.write(" -Plotting valriants:" + str(len(sumstats)), verbose=verbose)
     
     sumstats["RAF"]=sumstats[eaf] - sumstats[daf]
     sns.set_style("ticks")
@@ -90,20 +90,20 @@ def plotdaf(sumstats,
         ax1.legend()
     
     if is_reg is True:
-        if verbose: log.write(" -Plotting regression line...")
+        log.write(" -Plotting regression line...", verbose=verbose)
         reg = ss.linregress(sumstats["RAF"],sumstats[eaf])
-        if verbose:log.write(" -Beta = ", reg[0])
-        if verbose:log.write(" -Intercept = ", reg[1])
-        if verbose:log.write(" -R2 = ", reg[2])
+        log.write(" -Beta = ", reg[0], verbose=verbose)
+        log.write(" -Intercept = ", reg[1], verbose=verbose)
+        log.write(" -R2 = ", reg[2], verbose=verbose)
         ax1.axline(xy1=(0,reg[1]),slope=reg[0],zorder=1,**reg_line_args)
         if r2 is True:
             ax1.text(0.98,0.02, "$R^2 = {:.3f}$".format(reg[2]), transform=ax1.transAxes, **r2_args)
 
     if is_threshold is True:
-        if verbose: log.write(" -Threshold : " + str(threshold))
+        log.write(" -Threshold : " + str(threshold), verbose=verbose)
         num = sum(np.abs(sumstats[daf])>threshold )
-        if verbose: log.write(" -Variants with relatively large DAF : ",num )
-        if verbose: log.write(" -Percentage for variants with relatively large DAF : ",num/len(sumstats) )
+        log.write(" -Variants with relatively large DAF : ",num , verbose=verbose)
+        log.write(" -Percentage for variants with relatively large DAF : ",num/len(sumstats) , verbose=verbose)
         ax1.axline(xy1=(0,threshold),slope=1,zorder=1,**threshold_line_args)
         ax1.axline(xy1=(threshold,0),slope=1,zorder=1,**threshold_line_args)
     
@@ -131,7 +131,7 @@ def plotdaf(sumstats,
     save_figure(fig, save, keyword="afc",save_args=save_args, log=log, verbose=verbose)
 
     #if save:
-    #    if verbose: log.write("Saving plot:")
+    #    log.write("Saving plot:")
     #    if save==True:
     #        fig.savefig("./allele_frequency_comparison.png",bbox_inches="tight",**save_args)
     #        log.write(" -Saved to "+ "./allele_frequency_comparison.png" + " successfully!" )

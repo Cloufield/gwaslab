@@ -118,7 +118,7 @@ def _plot_qq(
             level = 1 -  np.power(10.0,-np.nanmedian(expected_all))
             log.write(" -Level for calculating lambda GC : {}".format(1 - level),verbose=verbose)
 
-        if verbose and not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.",verbose=verbose)
+        if not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.",verbose=verbose)
         lambdagc = lambdaGC(p_toplot_raw, 
                             mode="MLOG10P", 
                             level=level, 

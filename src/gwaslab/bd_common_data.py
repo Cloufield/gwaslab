@@ -280,17 +280,20 @@ def gtf_to_protein_coding(gtfpath,log=Log(),verbose=True):
     protein_coding_path = gtfpath[:-6]+"protein_coding.gtf.gz"
     # if not existing, extract protein coding records and output to a new file
     if not path.isfile(protein_coding_path):
+        
         # get gene list
-        if verbose: log.write(" - Extracting protein_coding genes from {}".format(gtfpath))
+        log.write(" - Extracting protein_coding genes from {}".format(gtfpath),verbose=verbose)
         gtf = read_gtf(gtfpath,usecols=["feature","gene_biotype","gene_id","gene_name"])
         gene_list = gtf.loc[(gtf["feature"]=="gene") & (gtf["gene_biotype"]=="protein_coding"),"gene_id"].values
-        if verbose: log.write(" - Loaded {} protein_coding genes.".format(len(gene_list)))
+        log.write(" - Loaded {} protein_coding genes.".format(len(gene_list)),verbose=verbose)
+        
         # extract entry using csv
         gtf_raw = pd.read_csv(gtfpath,sep="\t",header=None,comment="#",dtype="string")
         gtf_raw["_gene_id"] = gtf_raw[8].str.extract(r'gene_id "([\w\.-]+)"')
         gtf_raw = gtf_raw.loc[ gtf_raw["_gene_id"].isin(gene_list) ,:]
         gtf_raw = gtf_raw.drop("_gene_id",axis=1)
-        if verbose: log.write(" - Extracted records are saved to : {} ".format(protein_coding_path))
+        
+        log.write(" - Extracted records are saved to : {} ".format(protein_coding_path),verbose=verbose)
         gtf_raw.to_csv(protein_coding_path, header=None, index=None, sep="\t")
 
     return protein_coding_path

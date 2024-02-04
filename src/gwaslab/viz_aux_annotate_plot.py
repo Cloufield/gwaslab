@@ -58,7 +58,7 @@ def annotate_single(
                 annotation_col="CHR:POS"
         elif anno:
                 annotation_col=anno
-        if verbose: log.write(" -Annotating using column "+annotation_col+"...")
+        log.write(" -Annotating using column "+annotation_col+"...", verbose=verbose)
         
         ## calculate y span
         if region is not None:
@@ -66,7 +66,7 @@ def annotate_single(
         else:
             y_span = sumstats["i"].max()-sumstats["i"].min()
         
-        if verbose: log.write(" -Adjusting text positions with repel_force={}...".format(repel_force))
+        log.write(" -Adjusting text positions with repel_force={}...".format(repel_force), verbose=verbose)
         if anno_style == "expand" :
             to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force,max_iter=anno_max_iter,log=log,amode=amode,verbose=verbose)
         ##  iterate through variants to be annotated
@@ -214,7 +214,7 @@ def annotate_single(
             anno_count +=1
         #anno_adjust_keyargs = {"arrowprops":dict(arrowstyle='->', color='grey', linewidth=0.1,relpos=(0.5,0.5))}
         if anno_adjust==True:
-            if verbose: log.write(" -Auto-adjusting text positions...")
+            log.write(" -Auto-adjusting text positions...", verbose=verbose)
             adjust_text(texts = anno_to_adjust_list,
                         autoalign=False, 
                         only_move={'points':'x', 'text':'x', 'objects':'x'},
@@ -232,7 +232,7 @@ def annotate_single(
                         )
         
     else:
-        if verbose: log.write(" -Skip annotating")
+        log.write(" -Skip annotating", verbose=verbose)
     
     return ax1
 
@@ -275,7 +275,7 @@ def annotate_pair(
         for index,ax,to_annotate_df,anno_d, anno_alias in [(0,ax1,to_annotate1,anno_d1,anno_alias1),(1,ax5,to_annotate5,anno_d2,anno_alias2)]:
             ###################### annotate() args
             if to_annotate_df.empty is True:
-                if verbose: log.write(" -Skipping annotation...")
+                log.write(" -Skipping annotation...", verbose=verbose)
                 continue
 
             fontweight = "normal"
@@ -313,7 +313,7 @@ def annotate_pair(
                             annotation_col=anno
                         else:
                             annotation_col=anno+"_"+str(index+1)
-                if verbose: log.write(" -Annotating using column "+annotation_col+"...")
+                log.write(" -Annotating using column "+annotation_col+"...", verbose=verbose)
                 
                 ## calculate y span
                 if region is not None:
@@ -453,7 +453,7 @@ def annotate_pair(
                     anno_count +=1
             
             if anno_adjust==True:
-                if verbose: log.write(" -Auto-adjusting text positions for plot {}...".format(index))
+                log.write(" -Auto-adjusting text positions for plot {}...".format(index), verbose=verbose)
                 if index==0:
                     va="bottom"
                     ha='left'
@@ -476,7 +476,7 @@ def annotate_pair(
                             lim =anno_max_iter
                             )
     else:
-        if verbose: log.write(" -Skip annotating")
+        log.write(" -Skip annotating", verbose=verbose)
     return ax1,ax5
 
 
@@ -521,7 +521,7 @@ def annotate_subtype(
                 annotation_col="CHR:POS"
         elif anno:
                 annotation_col=anno
-        if verbose: log.write(" -Annotating using column "+annotation_col+"...")
+        log.write(" -Annotating using column "+annotation_col+"...", verbose=verbose)
         
         ## calculate y span
         if region is not None:
@@ -529,7 +529,7 @@ def annotate_subtype(
         else:
             y_span = sumstats["i"].max()-sumstats["i"].min()
         
-        if verbose: log.write(" -Adjusting text positions with repel_force={}...".format(repel_force))
+        log.write(" -Adjusting text positions with repel_force={}...".format(repel_force), verbose=verbose)
         if anno_style == "expand" :
             to_annotate.loc[:, "ADJUSTED_i"] = adjust_text_position(to_annotate["i"].values.copy(), y_span, repel_force,max_iter=anno_max_iter,log=log,verbose=verbose)
         ##  iterate through variants to be annotated
@@ -656,7 +656,7 @@ def annotate_subtype(
             anno_count +=1
         #anno_adjust_keyargs = {"arrowprops":dict(arrowstyle='->', color='grey', linewidth=0.1,relpos=(0.5,0.5))}
         if anno_adjust==True:
-            if verbose: log.write(" -Auto-adjusting text positions...")
+            log.write(" -Auto-adjusting text positions...", verbose=verbose)
             adjust_text(texts = anno_to_adjust_list,
                         autoalign=False, 
                         only_move={'points':'x', 'text':'x', 'objects':'x'},
@@ -674,7 +674,7 @@ def annotate_subtype(
                         )
         
     else:
-        if verbose: log.write(" -Skip annotating")
+        log.write(" -Skip annotating", verbose=verbose)
     
     return ax1
 

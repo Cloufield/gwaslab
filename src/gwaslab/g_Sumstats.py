@@ -135,7 +135,7 @@ class Sumstats():
         self.pipcs = pd.DataFrame()
 
         # print gwaslab version information
-        if verbose: _show_version(self.log)
+        _show_version(self.log, verbose=verbose)
 
         #preformat the data
         self.data  = preformat(

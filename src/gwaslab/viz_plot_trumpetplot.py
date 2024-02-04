@@ -108,7 +108,7 @@ def plottrumpet(mysumstats,
         scatter_args["color"]=markercolor
     
     #Checking columns#################################################################################################################
-    if verbose: log.write("Start to create trumpet plot...")
+    log.write("Start to create trumpet plot...", verbose=verbose)
     
     #parameter check##################################################################################################################
     if (beta not in mysumstats.columns) or (eaf not in mysumstats.columns):
@@ -160,17 +160,17 @@ def plottrumpet(mysumstats,
     #filter by p #################################################################################################################
     if p in mysumstats.columns:
         sumstats = mysumstats.loc[mysumstats[p]< p_level,cols_to_use ].copy()
-        if verbose: log.write(" -Excluding variants with P values > {}".format(p_level))
+        log.write(" -Excluding variants with P values > {}".format(p_level), verbose=verbose)
     else:
         cols_to_use.remove(p)
         sumstats = mysumstats[[beta,eaf,n]].copy()
-    if verbose: log.write(" -Plotting {} variants...".format(len(sumstats)))
+    log.write(" -Plotting {} variants...".format(len(sumstats)), verbose=verbose)
     
     #add maf column #################################################################################################################
     if maf not in sumstats.columns:
         sumstats = filldata(sumstats,to_fill=["MAF"],verbose=False)
         is_filpped = (sumstats["MAF"] < sumstats[eaf]) & (sumstats[eaf] > 0.5)& (sumstats["MAF"] < 0.5)
-        if verbose: log.write(" -Flipping {} variants...".format(sum(is_filpped)))
+        log.write(" -Flipping {} variants...".format(sum(is_filpped)), verbose=verbose)
         sumstats.loc[is_filpped, beta] = -sumstats.loc[is_filpped, beta]
     
     #configure n #################################################################################################################
@@ -419,7 +419,7 @@ def plottrumpet(mysumstats,
     elif mode=="b":
         save_figure(fig, save, keyword="trumpet_b",save_args=save_args, log=log, verbose=verbose)
 
-    if verbose: log.write("Finished creating trumpet plot!")
+    log.write("Finished creating trumpet plot!", verbose=verbose)
     return fig
 
 ####################################################################
@@ -469,12 +469,12 @@ def plot_power( ns=1000,
             xticklabels = xticks            
 
     #Checking columns#################################################################################################################
-    if verbose: log.write("Start to create trumpet plot...")
+    log.write("Start to create trumpet plot...", verbose=verbose)
     
     if mode=="b":
         if ncases is None or ncontrols is None:
             if verbose:
-                log.write(" -No scase or scontrol. Skipping...")
+                log.write(" -No scase or scontrol. Skipping...", verbose=verbose)
             return None
         
     #configure beta and maf range ###################################################################################################
@@ -628,7 +628,7 @@ def plot_power( ns=1000,
     elif mode=="b":
         save_figure(fig, save, keyword="power_b",save_args=save_args, log=log, verbose=verbose)
 
-    if verbose: log.write("Finished creating trumpet plot!")
+    log.write("Finished creating trumpet plot!", verbose=verbose)
     return fig
 
 
@@ -667,7 +667,7 @@ def plot_power_x(
                 log=Log()):
     
     #Checking columns#################################################################################################################
-    if verbose: log.write("Start to create power plot...")
+    log.write("Start to create power plot...", verbose=verbose)
     matplotlib.rc('font', family=font_family)
     if verbose:
         log.write(" -Settings:")
@@ -923,5 +923,5 @@ def plot_power_x(
     elif mode=="b":
         save_figure(fig, save, keyword="power_xb",save_args=save_args, log=log, verbose=verbose)
 
-    if verbose: log.write("Finished creating power plot!")
+    log.write("Finished creating power plot!", verbose=verbose)
     return fig

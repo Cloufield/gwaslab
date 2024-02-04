@@ -31,8 +31,8 @@ def _quick_fix_p_value(sumstats, p="P", mlog10p="MLOG10P", scaled=False,verbose=
     '''
     if scaled==True:
         # if scaled, add scaled P and P col 
-        if verbose:log.write(" -P values are already scaled...")
-        if verbose:log.write(" -Sumstats -log10(P) values are being converted to P...")
+        log.write(" -P values are already scaled...", verbose=verbose)
+        log.write(" -Sumstats -log10(P) values are being converted to P...", verbose=verbose)
         sumstats["scaled_P"] = sumstats[mlog10p].copy()
         sumstats[p]= np.power(10,-sumstats[mlog10p].astype("float64"))
         return sumstats
@@ -51,7 +51,7 @@ def _quick_fix_mlog10p(insumstats,p="P", mlog10p="MLOG10P", scaled=False, log=Lo
     '''
     sumstats = insumstats.copy()
     if scaled != True:
-        if verbose:log.write(" -Sumstats P values are being converted to -log10(P)...")
+        log.write(" -Sumstats P values are being converted to -log10(P)...", verbose=verbose)
         sumstats["scaled_P"] = -np.log10(sumstats[p].astype("float64"))
         
     #with pd.option_context('mode.use_inf_as_na', True):
@@ -276,9 +276,9 @@ def _quick_extract_snp_in_region(sumstats, region, chrom="CHR",pos="POS",log=Log
     region_chr = region[0]
     region_start = region[1]
     region_end = region[2]
-    if verbose:log.write(" -Extract SNPs in region : chr"+str(region_chr)+":"+str(region[1])+"-"+str(region[2])+ "...")
+    log.write(" -Extract SNPs in region : chr"+str(region_chr)+":"+str(region[1])+"-"+str(region[2])+ "...", verbose=verbose)
     is_in_region_snp = (sumstats[chrom]==region_chr) &(sumstats[pos]<region_end) &(sumstats[pos]>region_start)
-    if verbose:log.write(" -Extract SNPs in specified regions: "+str(sum(is_in_region_snp)))
+    log.write(" -Extract SNPs in specified regions: "+str(sum(is_in_region_snp)), verbose=verbose)
     sumstats = sumstats.loc[is_in_region_snp,:]
     return sumstats
 
@@ -289,18 +289,18 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, lines_to_pl
     maxy = series.max()
     series = series.copy()
     if "b" not in mode:
-        if verbose: log.write(" -Maximum -log10(P) value is "+str(maxy) +" .")
+        log.write(" -Maximum -log10(P) value is "+str(maxy) +" .", verbose=verbose)
     elif "b" in mode:
-        if verbose: log.write(" -Maximum DENSITY value is "+str(maxy) +" .")
+        log.write(" -Maximum DENSITY value is "+str(maxy) +" .", verbose=verbose)
     
     maxticker=int(np.round(series.max(skipna=True)))
     
     if cut:
         # auto mode : determine curline and cut factor
         if cut==True:
-            if verbose: log.write(" -Cut Auto mode is activated...")
+            log.write(" -Cut Auto mode is activated...", verbose=verbose)
             if maxy<30:
-                if verbose: log.write(" - maxy <30 , no need to cut.")
+                log.write(" - maxy <30 , no need to cut.", verbose=verbose)
                 cut=0
             else:
                 cut = 20
@@ -327,9 +327,9 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, lines_to_pl
             else:
                 # cut linear mode
                 if "b" not in mode:
-                    if verbose: log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+                    log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...", verbose=verbose)
                 else:
-                    if verbose: log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...")
+                    log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...", verbose=verbose)
 
                 maxticker=int(np.round(series.max(skipna=True)))
 

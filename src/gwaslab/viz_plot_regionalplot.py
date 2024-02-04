@@ -398,7 +398,7 @@ def _plot_gene_track(
     log=Log()):
     
     # load gtf
-    if verbose: log.write(" -Loading gtf files from:" + gtf_path)
+    log.write(" -Loading gtf files from:" + gtf_path, verbose=verbose)
     uniq_gene_region,exons = process_gtf(   gtf_path = gtf_path ,
                                             region = region, 
                                             region_flank_factor = region_flank_factor,
@@ -416,7 +416,7 @@ def _plot_gene_track(
     font_size_in_pixels= taf[2] * pixels_per_track
     font_size_in_points =  font_size_in_pixels * pixels_per_point
     linewidth_in_points=   pixels_per_track * pixels_per_point
-    if verbose: log.write(" -plotting gene track..")
+    log.write(" -plotting gene track..", verbose=verbose)
     
     sig_gene_name = "Undefined"
     sig_gene_name2 = "Undefined"
@@ -496,7 +496,7 @@ def _plot_gene_track(
         ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
                     (row["stack"]*2,row["stack"]*2),linewidth=linewidth_in_points*taf[3],color=exon_color,solid_capstyle="butt")
 
-    if verbose: log.write(" -Finished plotting gene track..")
+    log.write(" -Finished plotting gene track..", verbose=verbose)
 
     return ax3,texts_to_adjust_middle
 
@@ -504,19 +504,19 @@ def _plot_gene_track(
 # Helpers    
 # -############################################################################################################################################################################
 def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, verbose, pos ,nea,ea, region_ld_threshold, vcf_chr_dict,tabix):
-    if verbose: log.write("Start to load reference genotype...")
-    if verbose: log.write(" -reference vcf path : "+ vcf_path)
+    log.write("Start to load reference genotype...", verbose=verbose)
+    log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)
 
 
 
     # load genotype data of the targeted region
     ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
     if ref_genotype is None:
-        if verbose: log.write(" -Warning: no data was retrieved. Skipping ...")
+        log.write(" -Warning: no data was retrieved. Skipping ...", verbose=verbose)
         ref_genotype=dict()
         ref_genotype["variants/POS"]=np.array([],dtype="int64")
-    if verbose: log.write(" -Retrieving index...")
-    if verbose: log.write(" -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])))
+    log.write(" -Retrieving index...", verbose=verbose)
+    log.write(" -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])), verbose=verbose)
     # match sumstats pos and ref pos: 
     # get ref index for its first appearance of sumstats pos
      #######################################################################################
@@ -541,7 +541,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
         else:
             # no position match
             return None
-    if verbose: log.write(" -Matching variants using POS, NEA, EA ...")
+    log.write(" -Matching variants using POS, NEA, EA ...", verbose=verbose)
     sumstats["REFINDEX"] = sumstats[[pos,nea,ea]].apply(lambda x: match_varaint(x),axis=1)
     #############################################################################################
     #sumstats["REFINDEX"] = sumstats[pos].apply(lambda x: np.where(ref_genotype["variants/POS"] == x )[0][0] if np.any(ref_genotype["variants/POS"] == x) else None)
@@ -572,7 +572,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
             pass
         other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
         
-        if verbose: log.write(" -Calculating Rsq...")
+        log.write(" -Calculating Rsq...", verbose=verbose)
         
         if len(other_snp_genotype)>1:
             valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0],2)
@@ -580,7 +580,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
             valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype),2)
         sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = valid_r2
     else:
-        if verbose: log.write(" -Lead SNP not found in reference...")
+        log.write(" -Lead SNP not found in reference...", verbose=verbose)
         sumstats["RSQ"]=None
     
     sumstats["RSQ"] = sumstats["RSQ"].astype("float")
@@ -620,7 +620,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
                 pass
             other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
             
-            if verbose: log.write(" -Calculating Rsq...")
+            log.write(" -Calculating Rsq...", verbose=verbose)
             
             if len(other_snp_genotype)>1:
                 valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0],2)
@@ -628,7 +628,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
                 valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype),2)
             sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ2"] = valid_r2
         else:
-            if verbose: log.write(" -Lead SNP not found in reference...")
+            log.write(" -Lead SNP not found in reference...", verbose=verbose)
             sumstats["RSQ2"]=None
 
         sumstats["RSQ2"] = sumstats["RSQ2"].astype("float")
@@ -652,7 +652,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
         #sumstats.loc[lead_id,"LEAD2"]
     ####################################################################################################
 
-    if verbose: log.write("Finished loading reference genotype successfully!")
+    log.write("Finished loading reference genotype successfully!", verbose=verbose)
     return sumstats
 
 # -############################################################################################################################################################################

@@ -133,9 +133,9 @@ def _sort_pair_cols(molded_sumstats, verbose=True, log=Log(), order=None, stats_
         if i not in order: 
             output_columns.append(i)
     
-    if verbose: log.write(" -Reordering columns to    :", ",".join(output_columns), verbose=verbose)
+    log.write(" -Reordering columns to    :", ",".join(output_columns), verbose=verbose)
     molded_sumstats = molded_sumstats[ output_columns]
-    if verbose: log.write("Finished sorting columns successfully!", verbose=verbose)
+    log.write("Finished sorting columns successfully!", verbose=verbose)
     
     return molded_sumstats
 
@@ -168,7 +168,7 @@ def _match_two_sumstats(mold,sumstats,ref_path,windowsizeb=25,verbose=True,log=L
             record_chr = int(str(record.id).strip("chrCHR").upper())
             
             if record_chr in chromlist:
-                if verbose:  log.write(record_chr," ", end="",show_time=False) 
+                log.write(record_chr," ", end="",show_time=False,verbose=verbose) 
                 chromlist.remove(record_chr)
             else:
                 continue
