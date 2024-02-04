@@ -8,6 +8,7 @@ import matplotlib
 from gwaslab.g_Log import Log
 import scipy.stats as ss
 from gwaslab.viz_aux_save_figure import save_figure
+
 #################################################################################################
 def convert_p_to_width(p,sig_level):
     width_factor= -np.log10(sig_level)
@@ -54,7 +55,7 @@ def plot_rg(ldscrg,
         save=None,
         save_args=None):
     
-    if verbose: log.write("Start to create ldsc genetic correlation heatmap...")
+    log.write("Start to create ldsc genetic correlation heatmap..." ,verbose=verbose)
     # configure arguments
     if fig_args is None:
         fig_args = {"dpi":300}
@@ -78,14 +79,14 @@ def plot_rg(ldscrg,
         save_args = {}
     
     #drop na records in P column 
-    if verbose: log.write("Raw dataset records:",len(ldscrg))
+    log.write("Raw dataset records:",len(ldscrg) ,verbose=verbose)
     df=ldscrg.dropna(subset=[p]).copy()
     
-    if verbose: log.write(" -Raw dataset non-NA records:",len(df))
+    log.write(" -Raw dataset non-NA records:",len(df) ,verbose=verbose)
     # create unique pair column
     df["p1p2"]=df.apply(lambda x:"_".join(sorted([x[p1],x[p2]])),axis=1)
     
-    if verbose: log.write("Filling diagnal line and duplicated pair for plotting...")
+    log.write("Filling diagnal line and duplicated pair for plotting..." ,verbose=verbose)
     # fill na
     df_fill_reverse = df.loc[(df[p2].isin(df[p1].values)) & (df[p1].isin(df[p2].values)),:].copy()
     df_fill_reverse = df_fill_reverse.rename(columns={p1:p2,p2:p1})
@@ -96,16 +97,18 @@ def plot_rg(ldscrg,
     p2_dup_list = list(df.loc[(df[p1].isin(df[p2].values)),"p1"].values)
     p_dup_list = p2_dup_list + p1_dup_list
     if len(set(p_dup_list)) > 0:
-        if verbose: log.write(" -Diagnal records:", len(set(p_dup_list)))
+        log.write(" -Diagnal records:", len(set(p_dup_list)) ,verbose=verbose)
     df_fill_dia["p1"] = p_dup_list
     df_fill_dia["p2"] = df_fill_dia["p1"] 
     df_fill_dia["rg"] = 1
 
     df_fill_na = pd.DataFrame(columns=df.columns)
     df_fill_na[[p1,p2]] = [(i,j) for i in df[p1].sort_values(ascending=False).drop_duplicates() for j in df[p2].sort_values(ascending=False).drop_duplicates()]
+    
     # fill diagonal
     df = pd.concat([df,df_fill_reverse,df_fill_dia,df_fill_na],ignore_index=True).sort_values(by=p).drop_duplicates(subset=[p1,p2])
-    #if verbose: log.write(" -Dataset shape match:", len(df)==)
+    
+    #log.write(" -Dataset shape match:", len(df)==)
     #
     ## remove record with p1 = p2, dropna in P column
     dfp=ldscrg.loc[ldscrg[p1]!=ldscrg[p2],:].dropna(subset=[p]).copy()
@@ -116,11 +119,11 @@ def plot_rg(ldscrg,
     ## drop duplicate and keep only unique pairs 
     dfp = dfp.drop_duplicates(subset=["p1p2"]).copy()
     
-    if verbose: log.write("Valid unique trait pairs:",len(dfp))
-    if verbose: log.write(" -Valid unique trait1:",dfp["p1"].nunique())
-    if verbose: log.write(" -Valid unique trait2:",dfp["p2"].nunique())
-    if verbose: log.write(" -Significant correlations with P < 0.05:",sum(dfp[p]<0.05))
-    if verbose: log.write(" -Significant correlations after Bonferroni correction:",sum(dfp[p]<(0.05/len(dfp))))
+    log.write("Valid unique trait pairs:",len(dfp) ,verbose=verbose)
+    log.write(" -Valid unique trait1:",dfp["p1"].nunique() ,verbose=verbose)
+    log.write(" -Valid unique trait2:",dfp["p2"].nunique() ,verbose=verbose)
+    log.write(" -Significant correlations with P < 0.05:",sum(dfp[p]<0.05) ,verbose=verbose)
+    log.write(" -Significant correlations after Bonferroni correction:",sum(dfp[p]<(0.05/len(dfp))) ,verbose=verbose)
     
     #if correction=="fdr":
         # fdr corrected p
@@ -131,7 +134,7 @@ def plot_rg(ldscrg,
     dfp["fdr_p"]=ss.false_discovery_control(dfp[p],method=fdr_method)
     dfp["fdr"]  =ss.false_discovery_control(dfp[p],method=fdr_method) < 0.05
 
-    if verbose: log.write(" -Significant correlations with FDR <0.05:",sum(dfp["fdr"]))
+    log.write(" -Significant correlations with FDR <0.05:",sum(dfp["fdr"]) ,verbose=verbose)
         # convert to dict for annotation and plotting
     df_rawp = dfp.set_index("p1p2").loc[:,p].to_dict()
     dfp = dfp.set_index("p1p2").loc[:,"fdr_p"].to_dict()
@@ -167,7 +170,7 @@ def plot_rg(ldscrg,
     df["x"]=df[p2].map(dic_p2)
     df["x_y"]=df[p2].map(dic_p1)
     
-    if verbose: log.write("Plotting heatmap...")
+    log.write("Plotting heatmap..." ,verbose=verbose)
     ########ticks###############################################
     fig,ax = plt.subplots(**fig_args)
     
@@ -196,7 +199,7 @@ def plot_rg(ldscrg,
     panno_list={1:{},2:{}}
     rgtoanno=[]
     
-    if verbose: log.write("Full cell : {}-corrected P == {}".format(full_cell[0],full_cell[1]))
+    log.write("Full cell : {}-corrected P == {}".format(full_cell[0],full_cell[1]) ,verbose=verbose)
 
     for i,row in df.iterrows():
         xcenter=row["x"]
@@ -298,11 +301,11 @@ def plot_rg(ldscrg,
 
     # annotate p
     if panno is True:
-        if verbose: log.write("P value annotation text : ")
+        log.write("P value annotation text : " ,verbose=verbose)
         for i,correction in enumerate(corrections):
             for j,sig_level in enumerate(sig_levels):
                 index = len(sig_levels)*i + j
-                if verbose: log.write(" -{} : {}-corrected P < {}".format(panno_texts[index], correction, sig_level))
+                log.write(" -{} : {}-corrected P < {}".format(panno_texts[index], correction, sig_level) ,verbose=verbose)
         for panno_set_number in panno_list.keys():
             for key, i in panno_list[panno_set_number].items():
                 if panno_set_number == 1:
@@ -318,14 +321,8 @@ def plot_rg(ldscrg,
         ax.set_aspect('equal', adjustable='box')
     
     save_figure(fig, save, keyword="ldscrg",save_args=save_args, log=log, verbose=verbose)
-    #if save:
-    #    if verbose: log.write("Saving plot:")
-    #    if save==True:
-    #        fig.savefig("./ldscrg_heatmap.png",bbox_inches="tight",**save_args)
-    #        log.write(" -Saved to "+ "./ldscrg_heatmap.png" + " successfully!" )
-    #    else:
-    #        fig.savefig(save,bbox_inches="tight",**save_args)
-    #        log.write(" -Saved to "+ save + " successfully!" )
-    if verbose: log.write("Finished creating ldsc genetic correlation heatmap!")
+
+    log.write("Finished creating ldsc genetic correlation heatmap!" ,verbose=verbose)
+
     return fig,ax,log,df
     

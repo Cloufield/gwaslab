@@ -5,9 +5,9 @@ from gwaslab.g_Log import Log
 import gc
 
 def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizekb=100,log=Log(),verbose=True):    
-    if verbose:log.write("Start to calculate signal DENSITY...")
+    log.write("Start to calculate signal DENSITY..." ,verbose=verbose)
     sumstats = insumstats[[id,chrom,pos]].copy()
-    if verbose:log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb")
+    log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb",verbose=verbose)
     #stack=[]
 
     large_number = 1000000000
@@ -58,13 +58,13 @@ def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizek
     bmax = sumstats["DENSITY"].max()
     bmaxid = sumstats["DENSITY"].idxmax()
 
-    if verbose:log.write(" -Mean : {} signals per {} kb".format(bmean,bwindowsizekb))
-    if verbose:log.write(" -SD : {}".format(bsd))
-    if verbose:log.write(" -Median : {} signals per {} kb".format(bmedian,bwindowsizekb))
-    if verbose:log.write(" -Max : {} signals per {} kb at variant(s) {}".format(bmax,bwindowsizekb,sumstats.loc[bmaxid,id]))
+    log.write(" -Mean : {} signals per {} kb".format(bmean,bwindowsizekb),verbose=verbose)
+    log.write(" -SD : {}".format(bsd),verbose=verbose)
+    log.write(" -Median : {} signals per {} kb".format(bmedian,bwindowsizekb),verbose=verbose)
+    log.write(" -Max : {} signals per {} kb at variant(s) {}".format(bmax,bwindowsizekb,sumstats.loc[bmaxid,id]),verbose=verbose)
     
     sumstats = sumstats.drop("TCHR+POS",axis=1)
-    if verbose:log.write("Finished calculating signal DENSITY successfully!")
+    log.write("Finished calculating signal DENSITY successfully!",verbose=verbose)
     return sumstats["DENSITY"]
 
 def assigndensity(insumstats,
@@ -92,7 +92,7 @@ def assigndensity(insumstats,
         to_add =(sumstats["TCHR+POS"]>=(row["TCHR+POS"]- 1000*bwindowsizekb)) & (sumstats["TCHR+POS"]<=(row["TCHR+POS"]+ 1000*bwindowsizekb))
         sumstats.loc[to_add,"DENSITY"] += 1
         if counter%1000==0:
-            if verbose:log.write(" -Processed {} signals".format(counter//1000))
+            log.write(" -Processed {} signals".format(counter//1000),verbose=verbose)
             gc.collect()
 	
     return sumstats["DENSITY"]

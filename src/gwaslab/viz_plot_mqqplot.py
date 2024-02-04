@@ -174,6 +174,8 @@ def mqqplot(insumstats,
           include_chrXYMT = True,
           ylim=None,
           xpad=None,
+          xpadl=None,
+          xpadr=None,
           chrpad=0.03, 
           drop_chr_start=False,
           title =None,
@@ -1002,8 +1004,7 @@ def mqqplot(insumstats,
         if "qq" in mode:
             ax2.set_ylim(ylim)
     
-    if xpad!=None:
-        ax1.set_xlim([0 - xpad* sumstats["i"].max(),(1+xpad)*sumstats["i"].max()])
+    ax1 = _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats)
 
     # Titles 
     if title and anno and len(to_annotate)>0:
@@ -1028,8 +1029,21 @@ def mqqplot(insumstats,
 
 
 
+def _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats):
+    
+    xmin, xmax = ax1.get_xlim() 
+    
+    if xpad is not None:
+        pad = xpad* sumstats["i"].max()
+        ax1.set_xlim([xmin - pad, xmin + pad])
+    if xpadl is not None:
+        pad = xpadl* sumstats["i"].max()
+        ax1.set_xlim([xmin - pad,xmax])
+    if xpadr is not None:
+        pad = xpadr* sumstats["i"].max()
+        ax1.set_xlim([xmin, xmax + pad])
 
-
+    return ax1
 
 
 

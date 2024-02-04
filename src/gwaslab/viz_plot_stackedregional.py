@@ -59,23 +59,25 @@ def plot_stacked_mqq(objects,
                         log=Log(),
                         **mqq_args
                         ):
+    
     log.write("Start to create stacked mqq plot by iteratively calling plot_mqq:",verbose=verbose)
     # load sumstats
+    
+    ##########################################################################################################################################
     sumstats_list = [] 
     for each_object in objects:
         sumstats_list.append(each_object.data)
-
 
     if fig_args is None:
         fig_args = {"dpi":200}
     if region_lead_grid_line is None:
         region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
     if title_pos is None:
-        title_pos = [0.03,0.97]
+        title_pos = [0.01,0.97]
     if title_args is None:
         title_args = {}
-    # create figure and axes
-
+    
+    # create figure and axes ##################################################################################################################
     if mode=="r":
         if len(vcfs)==1:
             vcfs = vcfs *len(sumstats_list)
@@ -105,27 +107,29 @@ def plot_stacked_mqq(objects,
                                           **fig_args)
         plt.subplots_adjust(hspace=region_hspace)
 
-#
-
-
+    ##########################################################################################################################################
     mqq_args_for_each_plot = _sort_args(mqq_args, n_plot)
-    
-
-
+    ##########################################################################################################################################
+    # get x axis dict
     if mode=="m":
         _posdiccul = _get_chrom_dic(sumstats_list,chrom="CHR",pos="POS",chrpad=0.02)
     else:
         _posdiccul=None
     
+    ##########################################################################################################################################
+    # a dict to store lead variants of each plot
     lead_variants_is={}
+
+    ##########################################################################################################################################
     # plot manhattan plot
     for index,sumstats in enumerate(sumstats_list):
+
+        #################################################################
         if mode=="m" or mode=="r":
             figax = (fig,axes[index],axes[-1])
         elif mode=="mqq":
             figax = (fig,axes[index,0],axes[index,1])
-        
-        
+        #################################################################
         if index==0:
             # plot last m and gene track 
             fig,log,lead_i,lead_i2 = mqqplot(sumstats,
@@ -151,6 +155,7 @@ def plot_stacked_mqq(objects,
                             )  
             lead_variants_is[index] = (lead_i,lead_i2)
         else:
+            # plot only the scatter plot
             fig,log,lead_i,lead_i2 = mqqplot(sumstats,
                             chrom="CHR",
                             pos="POS",
@@ -178,13 +183,32 @@ def plot_stacked_mqq(objects,
     # adjust labels
     # drop labels for each plot 
     # set a common laebl for all plots
-    for index in range(n_plot):
-        axes[index].set_ylabel("")
+
     
     if titles is not None:
         for index,title in enumerate(titles):
             axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',**title_args)
+    ##########################################################################################################################################
+    # draw the line for lead variants
+    _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line)
+    
+    ##########################################################################################################################################  
+    _drop_old_y_labels(axes, n_plot)
+    
+    _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height )
+    
+    ##########################################################################################################################################
+    save_figure(fig = fig, save = save, keyword= "stacked_" + mode, save_args=save_args, log = log, verbose=verbose)
+    
+    log.write("Finished creating stacked mqq plot by iteratively calling plot_mqq.",verbose=verbose)
+    
+    return fig, log
 
+def _drop_old_y_labels(axes, n_plot):
+    for index in range(n_plot):
+        axes[index].set_ylabel("")
+
+def _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line):
     if mode=="r":
         for index, sig_is in lead_variants_is.items():
             for sig_i in sig_is:
@@ -192,19 +216,14 @@ def plot_stacked_mqq(objects,
                     for each_axis_index in range(n_plot + 1):    
                         axes[each_axis_index].axvline(x=sig_i, zorder=2,**region_lead_grid_line)
 
-
+def _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ):
     gene_track_height_ratio = gene_track_height/(gene_track_height + n_plot*subplot_height)
     ylabel_height = (1 - gene_track_height_ratio)*0.5 + gene_track_height_ratio
     if mode=="r":
         fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')
         fig.text(0.93, ylabel_height, "Recombination rate(cM/Mb)", va='center', rotation=-90)
     elif mode=="m":
-        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')
-
-    save_figure(fig = fig, save = save, keyword= "stacked_" + mode, save_args=save_args, log = log, verbose=verbose)
-    log.write("Finished creating stacked mqq plot by iteratively calling plot_mqq.",verbose=verbose)
-    return fig, log
-
+        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')    
 
 def _sort_args(mqq_args, n_plot):
     mqq_args_for_each_plot={i:{} for i in range(n_plot)}

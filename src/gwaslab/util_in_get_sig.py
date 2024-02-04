@@ -58,9 +58,9 @@ def getsig(insumstats,
     if is_enough_info == False: return None
     ############################################################################################
 
-    if verbose: log.write(" -Processing "+str(len(insumstats))+" variants...")
-    if verbose: log.write(" -Significance threshold :", sig_level)
-    if verbose: log.write(" -Sliding window size:", str(windowsizekb) ," kb")
+    log.write(" -Processing "+str(len(insumstats))+" variants...", verbose=verbose)
+    log.write(" -Significance threshold :", sig_level, verbose=verbose)
+    log.write(" -Sliding window size:", str(windowsizekb) ," kb", verbose=verbose)
     
     #load data
     sumstats=insumstats.loc[~insumstats[id].isna(),:].copy()
@@ -90,12 +90,12 @@ def getsig(insumstats,
         sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
         sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:].copy()
         sumstats_sig.loc[:,"__SCALEDP"] = pd.to_numeric(sumstats_sig[p], errors='coerce')
-    if verbose:log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...")
+    log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...", verbose=verbose)
 
     #sort the coordinates
     sumstats_sig = sumstats_sig.sort_values([chrom,pos])
     if sumstats_sig is None:
-        if verbose:log.write(" -No lead snps at given significance threshold!")
+        log.write(" -No lead snps at given significance threshold!", verbose=verbose)
         return None
     
     #init 
@@ -148,7 +148,7 @@ def getsig(insumstats,
             sig_index_list.append(current_sig_index)
             continue
     
-    if verbose:log.write(" -Identified "+str(len(sig_index_list))+" lead variants!")
+    log.write(" -Identified "+str(len(sig_index_list))+" lead variants!", verbose=verbose)
     
     # drop internal __SCALEDP
     sumstats_sig = sumstats_sig.drop("__SCALEDP",axis=1)
@@ -158,8 +158,8 @@ def getsig(insumstats,
 
     # annotate GENENAME
     if anno is True and len(output)>0:
-        if verbose:log.write(" -Annotating variants using references:{}".format(source))
-        if verbose:log.write(" -Annotating variants using references based on genome build:{}".format(build))
+        log.write(" -Annotating variants using references:{}".format(source), verbose=verbose)
+        log.write(" -Annotating variants using references based on genome build:{}".format(build), verbose=verbose)
         
         output = annogene(
                output,
@@ -249,13 +249,13 @@ def annogene(
            source="ensembl",
            verbose=True):
     
-    if verbose: log.write("Start to annotate variants with nearest gene name(s)...")
+    log.write("Start to annotate variants with nearest gene name(s)...", verbose=verbose)
     output = insumstats.copy()
     
     if source == "ensembl":
         if build=="19":
             #data = EnsemblRelease(75)
-            if verbose:log.write(" -Assigning Gene name using ensembl_hg19_gtf for protein coding genes")
+            log.write(" -Assigning Gene name using ensembl_hg19_gtf for protein coding genes", verbose=verbose)
             #zcat Homo_sapiens.GRCh37.75.gtf.gz| 
             #grep -E 'processed_transcript|protein_coding|_gene' 
             #| gzip >Homo_sapiens.GRCh37.75.processed.chr.gtf.gz     
@@ -275,7 +275,7 @@ def annogene(
                 list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source), axis=1)), 
                 index=output.index).values
         elif build=="38":
-            if verbose:log.write(" -Assigning Gene name using ensembl_hg38_gtf for protein coding genes")
+            log.write(" -Assigning Gene name using ensembl_hg38_gtf for protein coding genes", verbose=verbose)
             #gtf_path = check_and_download("ensembl_hg38_gtf_protein_coding")
             gtf_path = check_and_download("ensembl_hg38_gtf")
             gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
@@ -292,7 +292,7 @@ def annogene(
     
     if source == "refseq":
         if build=="19":
-            if verbose:log.write(" -Assigning Gene name using NCBI refseq latest GRCh37 for protein coding genes")
+            log.write(" -Assigning Gene name using NCBI refseq latest GRCh37 for protein coding genes", verbose=verbose)
             #gtf_path = check_and_download("refseq_hg19_gtf_protein_coding")
             gtf_path = check_and_download("refseq_hg19_gtf")
             gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
@@ -307,7 +307,7 @@ def annogene(
                 list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source,build=build), axis=1)), 
                 index=output.index).values
         elif build=="38":
-            if verbose:log.write(" -Assigning Gene name using NCBI refseq latest GRCh38 for protein coding genes")
+            log.write(" -Assigning Gene name using NCBI refseq latest GRCh38 for protein coding genes", verbose=verbose)
             #gtf_path = check_and_download("refseq_hg38_gtf_protein_coding")
             gtf_path = check_and_download("refseq_hg38_gtf")
             gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
@@ -321,7 +321,7 @@ def annogene(
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
                 list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source,build=build), axis=1)), 
                 index=output.index).values
-    if verbose: log.write("Finished annotating variants with nearest gene name(s) successfully!")
+    log.write("Finished annotating variants with nearest gene name(s) successfully!", verbose=verbose)
     return output
 
 def getnovel(insumstats,
@@ -379,19 +379,19 @@ def getnovel(insumstats,
     knownsig = pd.DataFrame()
     if efo != False:
         if type(efo) is not list:
-            if verbose: log.write("Start to retrieve data using EFO: {}...".format(efo))
+            log.write("Start to retrieve data using EFO: {}...".format(efo), verbose=verbose)
             known_Sumstats = gwascatalog_trait(efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
             knownsig = known_Sumstats.data.copy()
         else:
             knownsig=pd.DataFrame()
-            if verbose: log.write("Start to retrieve data using {} EFOs: {}...".format(len(efo),efo))
+            log.write("Start to retrieve data using {} EFOs: {}...".format(len(efo),efo), verbose=verbose)
             for single_efo in efo:
                 known_Sumstats = gwascatalog_trait(single_efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
                 known_Sumstats.data["EFOID"] = single_efo
                 knownsig = pd.concat([known_Sumstats.data, knownsig],ignore_index=True)
         knownsig["CHR"] = knownsig["CHR"].astype("Int64")
         knownsig["POS"] = knownsig["POS"].astype("Int64")
-        if verbose: log.write(" -Retrieved {} associations from GWAS catalog.".format(len(knownsig)))
+        log.write(" -Retrieved {} associations from GWAS catalog.".format(len(knownsig)), verbose=verbose)
     if type(known) is pd.DataFrame:
         knownsig_2 = known.copy()
         knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
@@ -412,8 +412,8 @@ def getnovel(insumstats,
     # create helper column TCHR+POS for knownsig
     knownsig["TCHR+POS"]=knownsig[chrom]*big_number + knownsig[pos]
     
-    if verbose: log.write(" -Lead variants in known loci:",len(knownsig))
-    if verbose: log.write(" -Checking the minimum distance between identified lead variants and provided known variants...")
+    log.write(" -Lead variants in known loci:",len(knownsig), verbose=verbose)
+    log.write(" -Checking the minimum distance between identified lead variants and provided known variants...", verbose=verbose)
     
     #sorting
     allsig = allsig.sort_values(by="TCHR+POS",ignore_index=True)
@@ -468,8 +468,8 @@ def getnovel(insumstats,
     # drop helper column TCHR+POS
     allsig = allsig.drop(["TCHR+POS"], axis=1)
 
-    if verbose: log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...")
-    if verbose: log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...")
+    log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...", verbose=verbose)
+    log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...", verbose=verbose)
     
     finished(log,verbose,_end_line)
     

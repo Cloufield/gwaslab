@@ -86,7 +86,7 @@ def _plot_regional(
                                         region_ld_threshold = region_ld_threshold, 
                                         region_ld_colors = region_ld_colors, 
                                         marker_size= marker_size,
-                                        log=log)
+                                        log=log,verbose=verbose)
         else:
             ax1, lead_id = _pinpoint_lead(sumstats = sumstats,
                                             ax1 = ax1, 
@@ -94,14 +94,14 @@ def _plot_regional(
                                             region_ld_threshold = region_ld_threshold, 
                                             region_ld_colors = region_ld_colors1, 
                                             marker_size= marker_size,
-                                            log=log)
+                                            log=log,verbose=verbose)
             ax1, lead_id2 = _pinpoint_lead(sumstats = sumstats,
                                             ax1 = ax1, 
                                             region_ref=region_ref_second,
                                             region_ld_threshold = region_ld_threshold, 
                                             region_ld_colors = region_ld_colors2, 
                                             marker_size= marker_size,
-                                            log=log)
+                                            log=log,verbose=verbose)
 
         if (vcf_path is not None) and region_ld_legend:
             if region_ref_second is None:
@@ -240,7 +240,7 @@ def _plot_regional(
     return ax1, ax3, ax4, cbar, lead_snp_i, lead_snp_i2
 
 # + ###########################################################################################################################################################################
-def _get_lead_id(sumstats=None, region_ref=None, log=None):
+def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
     region_ref_to_check = copy.copy(region_ref)
     try: 
         if len(region_ref_to_check)>0 and type(region_ref_to_check) is not str:
@@ -260,23 +260,23 @@ def _get_lead_id(sumstats=None, region_ref=None, log=None):
     if region_ref_to_check is not None:
         if type(lead_id) is list:
             if len(lead_id)==0 :
-                log.write(" -WARNING: {} not found. Roll back to lead variant...".format(region_ref_to_check))
+                log.write(" -WARNING: {} not found. Roll back to lead variant...".format(region_ref_to_check), verbose=verbose)
                 lead_id = sumstats["scaled_P"].idxmax()
         else:
             log.write(" -Reference variant ID: {} - {}".format(region_ref_to_check, lead_id))
 
     if lead_id is None:
-        log.write(" -Extracting lead variant...")
+        log.write(" -Extracting lead variant...", verbose=verbose)
         lead_id = sumstats["scaled_P"].idxmax()
 
     return lead_id
 
-def _pinpoint_lead(sumstats,ax1,region_ref, region_ld_threshold, region_ld_colors, marker_size, log):
+def _pinpoint_lead(sumstats,ax1,region_ref, region_ld_threshold, region_ld_colors, marker_size, log, verbose):
     if region_ref is None:
-        log.write(" -Extracting lead variant...")
+        log.write(" -Extracting lead variant..." , verbose=verbose)
         lead_id = sumstats["scaled_P"].idxmax()
     else:
-        lead_id = _get_lead_id(sumstats, region_ref, log)
+        lead_id = _get_lead_id(sumstats, region_ref, log, verbose)
         
     ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],
             color=region_ld_colors[-1],
@@ -551,7 +551,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
     if region_ref is None:
         lead_id = sumstats["scaled_P"].idxmax()
     else:
-        lead_id = _get_lead_id(sumstats, region_ref, log)
+        lead_id = _get_lead_id(sumstats, region_ref, log, verbose)
     lead_pos = sumstats.loc[lead_id,pos]
     
     # if lead pos is available: 
@@ -600,7 +600,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
     #####################################################################################################
     if region_ref_second is not None:
 
-        lead_id2 = _get_lead_id(sumstats, region_ref_second, log)
+        lead_id2 = _get_lead_id(sumstats, region_ref_second, log, verbose)
 
         lead_pos2 = sumstats.loc[lead_id2,pos]
         if lead_pos2 in ref_genotype["variants/POS"]:

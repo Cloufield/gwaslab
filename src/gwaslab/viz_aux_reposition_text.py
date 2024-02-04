@@ -6,10 +6,10 @@ def adjust_text_position(positions, yspan, repel_force=0.01, max_iter=100,amode=
     # check the number of variants to annotate 
     #if repel_force>0:
     #    if 1/(repel_force*2 +0.01) < len(positions):
-    #        if verbose: log.write(" -Too many variants to annotate; maybe it is better to reduce the number of variants")
+    #        log.write(" -Too many variants to annotate; maybe it is better to reduce the number of variants")
     #else:
     if len(positions)>30:
-        if verbose: log.write(" -Too many variants to annotate; maybe it is better to reduce the number of variants")
+        log.write(" -Too many variants to annotate; maybe it is better to reduce the number of variants",verbose=verbose)
 
     # calculate the steps
     if amode=="int":
@@ -47,7 +47,7 @@ def adjust_text_position(positions, yspan, repel_force=0.01, max_iter=100,amode=
                 move_position_from_center_float(positions, index, step)
     
     # when reaching maximum iteration, return anyway
-    if verbose: log.write(" -Reaching maximum iteration: {}; Skipping...".format(max_iter))
+    log.write(" -Reaching maximum iteration: {}; Skipping...".format(max_iter),verbose=verbose)
     if amode=="int":
         return np.floor(pd.to_numeric(positions, errors='coerce')).astype('Int64').copy()
     elif amode=="log":
