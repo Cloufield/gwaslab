@@ -66,9 +66,10 @@ nav:
        - "Manhattan and QQ plot": visualization_mqq.ipynb     
        - "Regional plot" : visualization_regional.ipynb
        - "Miami plot": visualization_miami2.ipynb
-       - "Stacked Manhattan plot": visualization_stacked_mqq.ipynb
+       - "Stacked MQQ plot": visualization_stacked_mqq.ipynb
        - "Brisbane plot" : visualization_brisbane.ipynb
        - "Power and Trumpet plot": visualization_trumpet.ipynb
+       - "Correlation heatmap" : visualization_plot_genetic_correlation.ipynb
        - "Download reference": Download_reference.ipynb
 
 
