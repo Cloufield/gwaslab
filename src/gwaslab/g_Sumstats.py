@@ -405,19 +405,16 @@ class Sumstats():
         _check_data_consistency(self.data,log=self.log,**args)
     def check_id(self,**args):
         pass
-    
     def check_ref(self,ref_seq,**args):
         self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
         self.data = checkref(self.data,ref_seq,log=self.log,**args)
     def infer_strand(self,ref_infer,**args):
         self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
         self.data = parallelinferstrand(self.data,ref_infer=ref_infer,log=self.log,**args)
-    
     def flip_allele_stats(self,**args):
         self.data = flipallelestats(self.data,log=self.log,**args)
     def normalize_allele(self,**args):
         self.data = parallelnormalizeallele(self.data,log=self.log,**args)
-    
     def assign_rsid(self,
                     ref_rsid_tsv=None,
                     ref_rsid_vcf=None,
@@ -428,13 +425,10 @@ class Sumstats():
         if ref_rsid_vcf is not None:
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**args)   
             self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
-    
     def rsid_to_chrpos(self,**args):
         self.data = rsidtochrpos(self.data,log=self.log,**args)
-        
     def rsid_to_chrpos2(self,**args):
         self.data = parallelrsidtochrpos(self.data,log=self.log,**args)
-
 
     ############################################################################################################
     
@@ -458,7 +452,6 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _get_flanking(self.data, **args)
-    
     def filter_flanking_by_chrpos(self, chrpos,  inplace=False,**args):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -466,7 +459,6 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _get_flanking_by_chrpos(self.data, chrpos,**args)
-    
     def filter_flanking_by_id(self, snpid, inplace=False,**args):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -474,7 +466,6 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _get_flanking_by_id(self.data, snpid, **args)
-    
     def filter_value(self, expr, inplace=False, **args):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -482,7 +473,6 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = filtervalues(self.data, expr,log=self.log,**args)
-    
     def filter_out(self, inplace=False, **args):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -490,7 +480,6 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = filterout(self.data,log=self.log,**args)
-            
     def filter_in(self, inplace=False, **args):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -512,7 +501,6 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = filterregionout(self.data,log=self.log,**args)
-    
     def random_variants(self,inplace=False,n=1,p=None,**args):
         if inplace is True:
             self.data = sampling(self.data,n=n,p=p,log=self.log,**args)
@@ -520,18 +508,25 @@ class Sumstats():
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**args)
             return new_Sumstats_object
-    
+        
+    def filter_hapmap3(self, inplace=False, build=None, **args ):
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+        if inplace is True:
+            self.data = gethapmap3(self.data, build=build,log=self.log, **args)
+        else:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = gethapmap3(new_Sumstats_object.data, build=build,log=self.log, **args)
+            return new_Sumstats_object
     ######################################################################
     
     def check_af(self,ref_infer,**args):
         self.data = parallelecheckaf(self.data,ref_infer=ref_infer,log=self.log,**args)
         self.meta["gwaslab"]["references"]["ref_infer_daf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_daf"] , ref_infer)
-        
     def infer_af(self,ref_infer,**args):
         self.data = paralleleinferaf(self.data,ref_infer=ref_infer,log=self.log,**args)
         self.meta["gwaslab"]["references"]["ref_infer_af"] = ref_infer
         self.meta["gwaslab"]["references"]["ref_infer_af"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_af"] , ref_infer)
-      
     def plot_daf(self, **args):
         fig,outliers = plotdaf(self.data, **args)
         return fig, outliers
