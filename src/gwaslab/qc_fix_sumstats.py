@@ -616,7 +616,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
     out_of_range_chr = out_of_range_chr.fillna(False)
     if sum(out_of_range_chr)>0:
         log.write(" -Sanity check for CHR...", verbose=verbose) 
-        if verbose:log.write(" -Removed {} variants with CHR < {}...".format(sum(out_of_range_chr),minchr), verbose=verbose)
+        log.write(" -Removed {} variants with CHR < {}...".format(sum(out_of_range_chr),minchr), verbose=verbose)
         sumstats = sumstats.loc[~out_of_range_chr,:]
 
     finished(log,verbose,_end_line)
@@ -748,11 +748,10 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
     
     exclude  = bad_nea | bad_ea
     
-    if verbose: 
-        if len(set(sumstats.loc[bad_ea,ea].head())) >0:
-            log.write(" -A look at the non-ATCG EA:",set(sumstats.loc[bad_ea,ea].head()),"...", verbose=verbose) 
-        if len(set(sumstats.loc[bad_nea,nea].head())) >0:
-            log.write(" -A look at the non-ATCG NEA:",set(sumstats.loc[bad_nea,nea].head()),"...", verbose=verbose) 
+    if len(set(sumstats.loc[bad_ea,ea].head())) >0:
+        log.write(" -A look at the non-ATCG EA:",set(sumstats.loc[bad_ea,ea].head()),"...", verbose=verbose) 
+    if len(set(sumstats.loc[bad_nea,nea].head())) >0:
+        log.write(" -A look at the non-ATCG NEA:",set(sumstats.loc[bad_nea,nea].head()),"...", verbose=verbose) 
     
     if remove == True:
         sumstats = sumstats.loc[(good_ea & good_nea),:].copy()
@@ -1269,7 +1268,7 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     _start_line = "adjust statistics based on STATUS code"
     _end_line = "adjusting statistics based on STATUS code"
     _start_cols =[]
-    _start_function = ".check_data_consistency()"
+    _start_function = ".flip_allele_stats()"
     _must_args ={}
 
     is_enough_info = start_to(sumstats=sumstats,
@@ -1356,12 +1355,11 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
         sumstats.loc[matched_index,status] = vchange_status(sumstats.loc[matched_index,status], 7, "5","2")
         if_stats_flipped = True
 
-    if if_stats_flipped == True:
-        finished(log, verbose, "adjusting")
-    else:
-        finished(log, verbose, "adjusting with no statistics changed.")
+    if if_stats_flipped != True:
+        log.write(" -No statistics have been changed.")
+
+    finished(log, verbose, _end_line)
     return sumstats
-""
 
 
 ###############################################################################################################

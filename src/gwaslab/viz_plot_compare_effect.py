@@ -478,7 +478,7 @@ def compare_effect(path1,
     nonmatch = np.nansum(sig_list_merged["EA_1"] != sig_list_merged["EA_2_aligned"])
     log.write(" -Aligned all EAs in {} with EAs in {} ...".format(label[1],label[0]), verbose=verbose)
     if nonmatch>0:
-        log.write(" -Warning: Alleles for {} variants do not match...".format(nonmatch), verbose=verbose)
+        log.warning("Alleles for {} variants do not match...".format(nonmatch))
     if allele_match==True:
         if nonmatch>0:
             sig_list_merged = sig_list_merged.loc[sig_list_merged["EA_1"] == sig_list_merged["EA_2_aligned"]]

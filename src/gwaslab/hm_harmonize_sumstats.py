@@ -343,7 +343,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     flip_rate = status_3/available_to_check
     log.write("  -Raw Matching rate : ","{:.2f}%".format(raw_matching_rate*100),verbose=verbose)
     if raw_matching_rate <0.8:
-        log.warning("Matching rate is low, please check if the right reference genome is used.",verbose=verbose)
+        log.warning("Matching rate is low, please check if the right reference genome is used.")
     if flip_rate > 0.85 :
         log.write("  -Flipping variants rate > 0.85, it is likely that the EA is aligned with REF in the original dataset.",verbose=verbose)
     

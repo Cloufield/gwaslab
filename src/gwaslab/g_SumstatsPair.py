@@ -6,23 +6,26 @@ from gwaslab.util_in_filter_value import filtervalues
 from gwaslab.g_Log import Log
 from math import floor
 from gwaslab.g_Sumstats import Sumstats
-from gwaslab.hm_casting import _merge_mold_with_sumstats
+from gwaslab.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.hm_casting import _align_with_mold
 from gwaslab.hm_casting import _fill_missing_columns
 from gwaslab.hm_casting import _check_daf
 from gwaslab.hm_casting import _assign_warning_code
 from gwaslab.qc_fix_sumstats import flipallelestats
+from gwaslab.qc_check_datatype import check_datatype
+from gwaslab.qc_check_datatype import check_dataframe_shape
 from gwaslab.hm_casting import _renaming_cols
 from gwaslab.hm_casting import _sort_pair_cols
 from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
 from gwaslab.util_ex_run_coloc import _run_coloc_susie
 from gwaslab.viz_plot_miamiplot2 import plot_miami2
+from gwaslab.viz_plot_compare_af import  plotdaf
 from gwaslab.util_ex_run_2samplemr import _run_two_sample_mr
 from gwaslab.util_ex_run_clumping import _clump
 from gwaslab.util_ex_ldproxyfinder import _extract_with_ld_proxy
 
 class SumstatsPair( ):
-    def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ):
+    def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ,verbose=True ):
         
         if not isinstance(sumstatsObject1, Sumstats):
             raise ValueError("Please provide GWASLab Sumstats Object #1.")
@@ -34,7 +37,9 @@ class SumstatsPair( ):
             self.study_name = "{}_{}".format("STUDY1", "STUDY2")
         self.snp_info_cols = []
         self.stats_cols =[]
-        self.other_cols=[]
+        self.stats_cols2 =[]
+        self.other_cols =[]
+        self.other_cols2 =[]
         self.log = Log()
         self.suffixes = suffixes
         self.colocalization=pd.DataFrame()
@@ -43,27 +48,52 @@ class SumstatsPair( ):
         self.mr = {}
         self.clumps ={}
         self.ns = None
+        self.to_finemapping_file_path = ""
+        self.plink_log = ""
 
         self.log.write( "Start to create SumstatsPair object..." )
         
+        self.log.write( " -Checking sumstats 1..." , verbose=verbose)
+        check_datatype(sumstatsObject1.data, log=self.log, verbose=verbose)
+        check_dataframe_shape(sumstats=sumstatsObject1.data, 
+                        log=self.log, 
+                        verbose=verbose)
+        
+        self.log.write( " -Checking sumstats 2..." , verbose=verbose)
+        check_datatype(sumstatsObject2.data, log=self.log, verbose=verbose)
+        check_dataframe_shape(sumstats=sumstatsObject2.data, 
+                                log=self.log, 
+                                verbose=verbose)
+
         for i in sumstatsObject1.data.columns:
             if i in ["SNPID","rsID","CHR","POS","EA","NEA","STATUS"]:
                 self.snp_info_cols.append(i)
-            elif i in ["BETA","SE","P","MLOG10P","N","Z","OR","OR95L","OR95U","MAF","EAF"]:
+            elif i in ["BETA","SE","P","MLOG10P","N","N_CASE","N_CONTROL","Z","T","F","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","MAF","EAF","BETA_95L","BETA_95U"]:
                 self.stats_cols.append(i)
             else:
                 self.other_cols.append(i)
-
-        self.data = sumstatsObject1.data.loc[:,self.snp_info_cols + self.stats_cols]
-
+        for i in sumstatsObject2.data.columns:
+            if i in ["SNPID","rsID","CHR","POS","EA","NEA","STATUS"]:
+                continue
+            elif i in ["BETA","SE","P","MLOG10P","N","N_CASE","N_CONTROL","Z","T","F","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","MAF","EAF","BETA_95L","BETA_95U"]:
+                self.stats_cols2.append(i)
+            else:
+                self.other_cols2.append(i)           
+        
+        self.log.write( " -Variant Info columns: {}".format(self.snp_info_cols) , verbose=verbose)
+        self.log.write( " -Variant statistics columns: {}".format(self.stats_cols) , verbose=verbose)
+        self.log.write( " -Sumstats1 other columns: {}".format(self.other_cols) , verbose=verbose)
+        self.log.write( " -Sumstats2 other columns: {}".format(self.other_cols2) , verbose=verbose)
+        
+        # extract only info and stats cols
+        self.data = sumstatsObject1.data
+        
+        #rename with _1
         self.data = self.data.rename(columns={"EA":"EA_1","NEA":"NEA_1"})
-
         self.data = self.data.rename(columns={i:i + suffixes[0] for i in self.stats_cols})
+        self.data = self.data.rename(columns={i:i + suffixes[0] for i in self.other_cols})
 
         self.data, self.sumstats1 = self._merge_two_sumstats(sumstatsObject2, suffixes=suffixes)
-
-        self.to_finemapping_file_path = ""
-        self.plink_log = ""
 
         if "N{}".format(self.suffixes[0]) in self.data.columns and "N{}".format(self.suffixes[1]) in self.data.columns:
             n1 = int(floor(self.data["N{}".format(self.suffixes[0])].mean()))
@@ -74,8 +104,9 @@ class SumstatsPair( ):
 
     def _merge_two_sumstats(self, sumstatsObject2, threshold=0.2, verbose=True,windowsizeb=10, ref_path=None,suffixes=("_1","_2")):
 
-        molded_sumstats, sumstats1 = _merge_mold_with_sumstats(self.data, 
-                                                    sumstatsObject2.data, 
+        # sumstats1 with suffix _1, sumstats2 with no suffix
+        molded_sumstats, sumstats1 = _merge_mold_with_sumstats_by_chrpos(mold=self.data, 
+                                                    sumstats=sumstatsObject2.data, 
                                                     log=self.log,
                                                     verbose=verbose,
                                                     suffixes=(suffixes[0],""),
@@ -83,16 +114,21 @@ class SumstatsPair( ):
 
         molded_sumstats = _align_with_mold(molded_sumstats, log=self.log, verbose=verbose,suffixes=(suffixes[0],""))
         
+        # flip sumstats2 statistics
         molded_sumstats = flipallelestats(molded_sumstats, log=self.log, verbose=verbose)
         
+        # drop sumstats2 EA NEA
         molded_sumstats = molded_sumstats.drop(columns=["EA","NEA"])
+        
+        # rename sumstats1 EA NEA
         molded_sumstats = molded_sumstats.rename(columns={"EA_1":"EA","NEA_1":"NEA"})
         
-        if not len(set(self.stats_cols) & set (sumstatsObject2.data.columns)) == len(self.stats_cols):
-            cols_to_fill = set(self.stats_cols).difference(set(sumstatsObject2.data.columns))
+        if not set(self.stats_cols2) == set(self.stats_cols):
+            cols_to_fill = set(self.stats_cols).difference(set(self.stats_cols2))
             molded_sumstats = _fill_missing_columns(molded_sumstats, cols_to_fill, log=self.log, verbose=verbose)
 
-        molded_sumstats = _renaming_cols(molded_sumstats, self.stats_cols, log=self.log, verbose=verbose, suffixes=suffixes)
+        # rename sumstast2 with _2
+        molded_sumstats = _renaming_cols(molded_sumstats, self.stats_cols + self.other_cols2, log=self.log, verbose=verbose, suffixes=suffixes)
         
         molded_sumstats = _sort_pair_cols(molded_sumstats, verbose=verbose, log=self.log)
         
@@ -108,13 +144,7 @@ class SumstatsPair( ):
     def run_coloc_susie(self,**args):
 
         self.colocalization = _run_coloc_susie(self.to_finemapping_file_path,log=self.log,ncols=self.ns,**args)
-    
-    def plot_miami(self,**args):
 
-        plot_miami2(merged_sumstats=self.data, 
-                    suffixes=self.suffixes,
-                    **args)
-    
     def run_two_sample_mr(self, clump=False, **args):
         exposure1 = self.study_name.split("_")[0]
         outcome2 = self.study_name.split("_")[1]
@@ -131,3 +161,20 @@ class SumstatsPair( ):
         else:
             self.data = filtervalues(self.data, expr,log=self.log,**args)
         gc.collect()
+
+    ## Visualization #############################################################################################################################################
+    def plot_miami(self,**args):
+
+        plot_miami2(merged_sumstats=self.data, 
+                    suffixes=self.suffixes,
+                    **args)
+    
+    def compare_af(self, **args):
+        
+        return plotdaf( self.data,
+                     eaf="EAF_2",
+                     raf="EAF_1",
+                     xlabel="Effect Allele Frequency in Sumstats 1",
+                     ylabel="Effect Allele Frequency in Sumstats 2",
+                     **args)
+                     

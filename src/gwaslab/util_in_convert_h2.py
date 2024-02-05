@@ -65,7 +65,7 @@ def _get_per_snp_r2(sumstats,
            adjuested=False,
            verbose=True):
     # Pierce, B. L., Ahsan, H., & VanderWeele, T. J. (2011). Power and instrument strength requirements for Mendelian randomization studies using multiple genetic variants. International journal of epidemiology, 40(3), 740-752.
-    if verbose: log.write("Start to calculate per-SNP heritibility...")
+    log.write("Start to calculate per-SNP heritibility...", verbose=verbose)
     if type(k) is int or type(k) is float:
        pass 
     elif k =="all":
@@ -81,18 +81,18 @@ def _get_per_snp_r2(sumstats,
             # Var(e) = betase**2 * 2 * N * MAF * (1-MAF)
             # r2 = Var(beta * X) / Var(y)
 
-            if verbose: log.write(" -Calculating per-SNP rsq by 2 * (BETA**2) * AF * (1-AF) / Var(y)...")
+            log.write(" -Calculating per-SNP rsq by 2 * (BETA**2) * AF * (1-AF) / Var(y)...", verbose=verbose)
             sumstats["_VAR(BETAX)"] = 2*(sumstats[beta]**2)*sumstats[af]*(1-sumstats[af])
             
             if type(vary) is int or type(vary) is float:
-                if verbose: log.write(" -Var(y) is provided: {}...".format(vary))
+                log.write(" -Var(y) is provided: {}...".format(vary), verbose=verbose)
                 sumstats["SNPR2"] = sumstats["_VAR(BETAX)"] / vary
             elif vary=="se":
-                if verbose: log.write(" -Var(y) is estimated from VAR(BETA * X), N, MAF, SE: {}...".format(vary))
+                log.write(" -Var(y) is estimated from VAR(BETA * X), N, MAF, SE: {}...".format(vary), verbose=verbose)
                 sumstats["_SIGMA2"] = sumstats[se]**2 * 2*(sumstats[n])*sumstats[af]*(1-sumstats[af])
                 sumstats["SNPR2"] = sumstats["_VAR(BETAX)"] / (sumstats["_SIGMA2"] + sumstats["_VAR(BETAX)"]) 
         else:
-            if verbose: log.write(" -Warning: Not enough informationfor calculation.")
+            log.warning("Not enough information for calculation.")
     
     if mode=="b":
         if ncase not in sumstats.columns:
@@ -117,11 +117,11 @@ def _get_per_snp_r2(sumstats,
     else:
         snpr2 = "SNPR2"
     if n in sumstats.columns:
-        if verbose: log.write(" -Calculating F-statistic: F = [(N-k-1)/k] * (r2/1-r2)... where k = {}".format(k))
-        if verbose: log.write(" -For r2, {} is used.".format(snpr2))
+        log.write(" -Calculating F-statistic: F = [(N-k-1)/k] * (r2/1-r2)... where k = {}".format(k), verbose=verbose)
+        log.write(" -For r2, {} is used.".format(snpr2), verbose=verbose)
         sumstats["F"] = sumstats[snpr2]*(sumstats[n]-1 -k)/((1-sumstats[snpr2]) * k)
         
-    if verbose: log.write("Finished calculating per-SNP heritability!")
+    log.write("Finished calculating per-SNP heritability!", verbose=verbose)
     return sumstats
 #
 def get_population_allele_frequency(af, prop, odds_ratio, prevalence,eps=1e-15):

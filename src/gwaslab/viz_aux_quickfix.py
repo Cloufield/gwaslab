@@ -38,9 +38,9 @@ def _quick_fix_p_value(sumstats, p="P", mlog10p="MLOG10P", scaled=False,verbose=
         return sumstats
     # bad p : na and outside (0,1]
     bad_p_value = (sumstats[p].isna()) | (sumstats[p] > 1) | (sumstats[p] <= 0)
-    if verbose:
-        log.write(" -Sanity check after conversion: " + str(sum(bad_p_value)) +
-                  " variants with P value outside of (0,1] will be removed...")
+
+    log.write(" -Sanity check after conversion: " + str(sum(bad_p_value)) +
+                  " variants with P value outside of (0,1] will be removed...", verbose=verbose)
     sumstats = sumstats.loc[~bad_p_value, :]
     return sumstats
 
@@ -57,9 +57,9 @@ def _quick_fix_mlog10p(insumstats,p="P", mlog10p="MLOG10P", scaled=False, log=Lo
     #with pd.option_context('mode.use_inf_as_na', True):
     #    is_na = sumstats["scaled_P"].isna()
     if_inf_na = np.isinf(sumstats["scaled_P"]) | sumstats["scaled_P"].isna()
-    if verbose:
-        log.write(" -Sanity check: "+str(sum(if_inf_na)) +
-                  " na/inf/-inf variants will be removed...")
+
+    log.write(" -Sanity check: "+str(sum(if_inf_na)) +
+                  " na/inf/-inf variants will be removed...", verbose=verbose)
     sumstats = sumstats.loc[~if_inf_na, :]
     return sumstats
 
@@ -105,7 +105,7 @@ def _get_largenumber(*args,log=Log(), verbose=True):
         else:
             break
         if i == 7:
-            log.write(" -Warning: max POS is too large!")
+            log.warning("Max POS is too large!")
     return large_number
 
 

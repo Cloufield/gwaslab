@@ -10,6 +10,7 @@ from gwaslab.viz_aux_save_figure import save_figure
 def plotdaf(sumstats,
              eaf="EAF",
              daf="DAF",
+             raf="RAF",
              threshold=0.16,
              xlabel="Alternative Allele Frequency in Reference Population (RAF)",
              ylabel="Effect Allele Frequency in Sumstats (EAF)",
@@ -43,7 +44,7 @@ def plotdaf(sumstats,
     if plt_args is None:
         plt_args={"figsize":(8,4),"dpi":300}
     if histplot_args is None:
-        histplot_args={"log_scale":(False,True)}
+        histplot_args={"log_scale":(False,False)}
     if reg_line_args is None:
         reg_line_args={"color":'#cccccc', "linestyle":'--'}
     if threshold_line_args is None:
@@ -55,8 +56,9 @@ def plotdaf(sumstats,
     if save_args is None:
         save_args =  {}
 
-    log.write("Start to plot Reference frequency vs Effect allele frequency plot...", verbose=verbose)
-    if not ((eaf in sumstats.columns) and (daf in sumstats.columns)):
+    log.write("Start to plot allele frequency comparison plot...", verbose=verbose)
+    
+    if not ((eaf in sumstats.columns) and ((daf in sumstats.columns)) or (raf in sumstats.columns)):
         raise ValueError("EAF and/or DAF columns were not detected.")
     
     if "SNPID" in sumstats.columns:
@@ -70,28 +72,30 @@ def plotdaf(sumstats,
     if "NEA" in sumstats.columns:
         alleles.append("NEA")
     
+    if daf not in sumstats.columns:
+        sumstats[daf] = sumstats[eaf] - sumstats[raf]
 
     sumstats = sumstats.loc[(~sumstats[eaf].isna())&(~sumstats[daf].isna()),[snpid,eaf,daf]+alleles].copy()
     sumstats[daf] = sumstats[daf].astype("float")
     sumstats[eaf] = sumstats[eaf].astype("float")
     log.write(" -Plotting valriants:" + str(len(sumstats)), verbose=verbose)
-    
-    sumstats["RAF"]=sumstats[eaf] - sumstats[daf]
+    if raf not in sumstats.columns:
+        sumstats[raf] = sumstats[eaf] - sumstats[daf]
     sns.set_style("ticks")
-    fig, (ax1, ax2) = plt.subplots(1, 2,**plt_args)
-    ax1.scatter(sumstats["RAF"],sumstats[eaf],label="Non-outlier", **scatter_args)
+    fig, [ax1, ax2] = plt.subplots(1, 2,**plt_args)
+    ax1.scatter(sumstats[raf],sumstats[eaf],label="Non-outlier", **scatter_args)
     
     if is_threshold is True:
         is_outliers = sumstats[daf].abs() > threshold 
         if sum(is_outliers)>0:
-            ax1.scatter(sumstats.loc[is_outliers, "RAF"],sumstats.loc[is_outliers, eaf],label="Outlier", **scatter_args_outlier)
+            ax1.scatter(sumstats.loc[is_outliers, raf],sumstats.loc[is_outliers, eaf],label="Outlier", **scatter_args_outlier)
     
     if legend1 ==True:
         ax1.legend()
     
     if is_reg is True:
         log.write(" -Plotting regression line...", verbose=verbose)
-        reg = ss.linregress(sumstats["RAF"],sumstats[eaf])
+        reg = ss.linregress(sumstats[raf],sumstats[eaf])
         log.write(" -Beta = ", reg[0], verbose=verbose)
         log.write(" -Intercept = ", reg[1], verbose=verbose)
         log.write(" -R2 = ", reg[2], verbose=verbose)
@@ -121,23 +125,18 @@ def plotdaf(sumstats,
 
     sumstats["ID"] = sumstats.index
     
-    to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=['EAF',"RAF"], var_name='Types', value_name='Allele Frequency').dropna()
-    
-    sns.histplot(data=to_plot, x="Allele Frequency", hue="Types", fill=True, ax=ax2, legend = legend2 ,**histplot_args)
-    ax2.set_xlabel("Allele Frequency",**font_args)
+    to_plot = pd.melt(sumstats,id_vars=['ID'], value_vars=[eaf,raf], var_name='Types', value_name='Allele Frequency').dropna()
 
+    sns.histplot(data=to_plot, x="Allele Frequency", 
+                 hue="Types", fill=True, 
+                 ax=ax2, legend = legend2,
+                 **histplot_args)
+ 
+    ax2.set_xlabel("Allele Frequency",**font_args)
 
     plt.tight_layout()
     save_figure(fig, save, keyword="afc",save_args=save_args, log=log, verbose=verbose)
-
-    #if save:
-    #    log.write("Saving plot:")
-    #    if save==True:
-    #        fig.savefig("./allele_frequency_comparison.png",bbox_inches="tight",**save_args)
-    #        log.write(" -Saved to "+ "./allele_frequency_comparison.png" + " successfully!" )
-    #    else:
-    #        fig.savefig(save,bbox_inches="tight",**save_args)
-    #        log.write(" -Saved to "+ save + " successfully!" )
     sumstats = sumstats.drop(columns="ID")
+
     return fig, sumstats[is_outliers].copy()
     

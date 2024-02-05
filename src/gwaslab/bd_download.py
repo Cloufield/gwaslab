@@ -106,7 +106,7 @@ def check_available_ref(log=Log(),verbose=True):
     Check available reference files for gwaslab.
     Return a dictionary of available reference files.
     '''
-    if verbose : log.write("Start to check available reference files...")
+    log.write("Start to check available reference files...", verbose=verbose)
     #ref_path = path.dirname(__file__) + '/data/reference.json'
     ref_path = options.paths["reference"]
     if not path.exists(ref_path):
@@ -115,11 +115,11 @@ def check_available_ref(log=Log(),verbose=True):
     dicts = json.load(open(ref_path))
     if dicts is not None:
         for key,value in dicts.items():
-            if verbose :log.write(" -",key," : ",value)
+            log.write(" -",key," : ",value, verbose=verbose)
         return dicts
     else:
-        if verbose :log.write(" -No available reference files.")
-    if verbose :log.write("Finished checking available reference files...")
+        log.write(" -No available reference files.", verbose=verbose)
+    log.write("Finished checking available reference files...", verbose=verbose)
     return {}
 
 def update_available_ref(log=Log()):
@@ -167,8 +167,8 @@ def get_path(name,log=Log(),verbose=True):
     #config_path =  path.dirname(__file__) + '/data/config.json'
     config_path = options.paths["config"]
     if not path.exists(config_path):
-        if verbose : log.write("Config file not exists...")
-        if verbose : log.write("Created new config file...")
+        log.write("Config file not exists...", verbose=verbose)
+        log.write("Created new config file...", verbose=verbose)
         initiate_config()      
     else:
         try:
@@ -176,9 +176,9 @@ def get_path(name,log=Log(),verbose=True):
             if path.exists(dicts[name]):
                 return dicts[name]
             else:
-                if verbose : log.write("File not exist.")
+                log.write("File not exist.", verbose=verbose)
         except:
-            if verbose : log.write("No records in config file. Please download first.")
+            log.write("No records in config file. Please download first.", verbose=verbose)
     return False
 
 ##################################################################################
@@ -277,7 +277,7 @@ def check_file_integrity(local_path, md5sum,log):
         log.write(" -MD5 verified.")
         return 1
     else:
-        log.write("WARNING: -MD5 VERIFICATION FAILED !")
+        log.warning("-MD5 VERIFICATION FAILED!")
         return 0
 
 def remove_file(name,log=Log()):

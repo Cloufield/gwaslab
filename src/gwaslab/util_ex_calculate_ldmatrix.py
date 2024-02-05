@@ -199,7 +199,7 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=No
     log.write("   -#Total Variants matched:{}".format(sum(allele_match)))
 
     if row["SNPID"] not in combined_df.loc[perfect_match,"SNPID"].values:
-        log.write("   -Warning: Lead variant was not available in reference!!!!!!!!!!!!!!!")
+        log.warning("Lead variant was not available in reference!")
     
     # adjust statistics
     output_columns=["SNPID","CHR","POS","EA_bim","NEA_bim"]
@@ -256,4 +256,4 @@ def _check_snpid_order(snplist_path, matched_sumstats_snpid,log):
     if list(matched_sumstats_snpid) == list(snpid_list):
         log.write(" -Sumstats SNPID order and LD matrix SNPID order are matched.")
     else:
-        log.write(" -Warning: Sumstats SNPID order and LD matrix SNPID order are not matched...")
+        log.warning("Sumstats SNPID order and LD matrix SNPID order are not matched!")

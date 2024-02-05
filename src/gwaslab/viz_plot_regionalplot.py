@@ -260,7 +260,7 @@ def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
     if region_ref_to_check is not None:
         if type(lead_id) is list:
             if len(lead_id)==0 :
-                log.write(" -WARNING: {} not found. Roll back to lead variant...".format(region_ref_to_check), verbose=verbose)
+                log.warning("{} not found. Roll back to lead variant...".format(region_ref_to_check))
                 lead_id = sumstats["scaled_P"].idxmax()
         else:
             log.write(" -Reference variant ID: {} - {}".format(region_ref_to_check, lead_id))
@@ -512,7 +512,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
     # load genotype data of the targeted region
     ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
     if ref_genotype is None:
-        log.write(" -Warning: no data was retrieved. Skipping ...", verbose=verbose)
+        log.warning("No data was retrieved. Skipping ...")
         ref_genotype=dict()
         ref_genotype["variants/POS"]=np.array([],dtype="int64")
     log.write(" -Retrieving index...", verbose=verbose)
@@ -567,7 +567,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
         lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
         try:
             if len(set(lead_snp_genotype[0]))==1:
-                log.write(" -WARNING: The variant is mono-allelic in reference VCF. LD can not be calculated.", verbose=verbose)
+                log.warning("The variant is mono-allelic in reference VCF. LD can not be calculated.")
         except:
             pass
         other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
@@ -615,7 +615,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
             lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
             try:
                 if len(set(lead_snp_genotype[0]))==1:
-                    log.write(" -WARNING: The variant is mono-allelic in reference VCF. LD can not be calculated.", verbose=verbose)
+                    log.warning("The variant is mono-allelic in reference VCF. LD can not be calculated.")
             except:
                 pass
             other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()

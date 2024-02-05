@@ -9,26 +9,26 @@ def gwascatalog_trait(efo,source="NCBI",sig_level=5e-8,verbose=True,log=Log()):
     #https://www.ebi.ac.uk/gwas/rest/docs/api
     
     base_url = "https://www.ebi.ac.uk/gwas/rest/api/efoTraits/"+efo
-    if verbose: log.write("Start to retrieve data from GWASCatalog...")
-    if verbose: log.write(" -Please make sure your sumstats is based on GRCh38...")
-    if verbose: log.write(" -Requesting (GET) trait information through the GWASCatalog API...")
-    if verbose: log.write(" -EFO trait api: "+ base_url)
+    log.write("Start to retrieve data from GWASCatalog...", verbose=verbose)
+    log.write(" -Please make sure your sumstats is based on GRCh38...", verbose=verbose)
+    log.write(" -Requesting (GET) trait information through the GWASCatalog API...", verbose=verbose)
+    log.write(" -EFO trait api: "+ base_url, verbose=verbose)
     text = requests.get(base_url)
-    if verbose: 
-        log.write(" -Status code: {}".format(text.status_code)) 
-        if text.status_code!=200:
-            log.write(" -Status code is not 200. Access failed. Please check your internet or the GWAS Catalog sever status.") 
-            log.write(" -Message:{}".format(text.text)) 
-            return 0
+
+    log.write(" -Status code: {}".format(text.status_code), verbose=verbose) 
+    if text.status_code!=200:
+        log.write(" -Status code is not 200. Access failed. Please check your internet or the GWAS Catalog sever status.", verbose=verbose) 
+        log.write(" -Message:{}".format(text.text), verbose=verbose) 
+        return 0
 
     api_response = json.loads(text.text)
-    if verbose: log.write(" -Trait Name:",api_response["trait"])
-    if verbose: log.write(" -Trait URL:",api_response["uri"]) 
+    log.write(" -Trait Name:",api_response["trait"], verbose=verbose)
+    log.write(" -Trait URL:",api_response["uri"], verbose=verbose) 
         
     base_url = "https://www.ebi.ac.uk/gwas/rest/api/efoTraits/"+efo+"/associations?projection=associationByEfoTrait"    
-    if verbose: log.write(" -Requesting (GET) GWAS associations through the GWASCatalog API...")
-    if verbose: log.write(" -associationsByTraitSummary API: "+ base_url)   
-    if verbose: log.write(" -Note: this step might take a while...")   
+    log.write(" -Requesting (GET) GWAS associations through the GWASCatalog API...", verbose=verbose)
+    log.write(" -associationsByTraitSummary API: "+ base_url, verbose=verbose)   
+    log.write(" -Note: this step might take a while...", verbose=verbose)   
     
     # get request and check status code of response
     raw_data = requests.get(base_url)
@@ -37,13 +37,13 @@ def gwascatalog_trait(efo,source="NCBI",sig_level=5e-8,verbose=True,log=Log()):
     is_proceed = check_request_status_code(raw_data.status_code,verbose=verbose,log=log)
     if is_proceed is False: return False
     
-    if verbose: log.write(" -Loading json ...")
+    log.write(" -Loading json ...", verbose=verbose)
     # Transform API response from JSON into Python dictionary
     api_response = json.loads(raw_data.text)
-    if verbose: log.write(" -Parsing json ...")        
+    log.write(" -Parsing json ...", verbose=verbose)        
     # An 
     records=list()
-    if verbose: log.write(" -Number of reported associations for "+ efo +" in GWASCatalog:",len( api_response["_embedded"]["associations"]))
+    log.write(" -Number of reported associations for "+ efo +" in GWASCatalog:",len( api_response["_embedded"]["associations"]), verbose=verbose)
    
     for association in api_response["_embedded"]["associations"]:
         #association statistics:       
@@ -126,12 +126,12 @@ def gwascatalog_trait(efo,source="NCBI",sig_level=5e-8,verbose=True,log=Log()):
                                 records.append(row)
             #rsid locations
     gwascatalog_lead_snps = pd.DataFrame(records,columns=["SNPID","CHR","POS","REPORT_GENENAME","CLOSEST_GENENAMES","FUNCTION_CLASS","OR","BETA","SE","P","TRAIT","STUDY","PUBMEDID","AUTHOR"])
-    if verbose: log.write(" -Loading retrieved data into gwaslab Sumstats object ...")  
+    log.write(" -Loading retrieved data into gwaslab Sumstats object ...", verbose=verbose)  
     sigs = gl.Sumstats(gwascatalog_lead_snps.copy(),fmt="gwaslab",other=['REPORT_GENENAME', 'CLOSEST_GENENAMES','TRAIT', 'STUDY', 'PUBMEDID','AUTHOR'],verbose=False)
     sigs.fix_pos(verbose=False)
     sigs.fix_chr(verbose=False)
     sigs.sort_coordinate(verbose=False)
-    if verbose: log.write("Finished retrieving data from GWASCatalog...")
+    log.write("Finished retrieving data from GWASCatalog...", verbose=verbose)
     #return gwaslab Sumstats object
     return sigs
 
@@ -142,14 +142,14 @@ def check_request_status_code(request_code,verbose=True,log=Log()):
     is_proceed=False
     
     if request_code == 200:
-        if verbose: log.write(" -Status code 200 OK: Retrieved data from GWASCatalog successffully ...")
+        log.write(" -Status code 200 OK: Retrieved data from GWASCatalog successffully ...", verbose=verbose)
         is_proceed=True
     elif request_code == 404:
-        if verbose: log.write(" -Status code 404 Not Found: The requested resource did not exist ...")
+        log.write(" -Status code 404 Not Found: The requested resource did not exist ...", verbose=verbose)
     elif request_code == 301:
-        if verbose: log.write(" -Status code 301 Moved Permanently: The requested resource did not exist ...")
+        log.write(" -Status code 301 Moved Permanently: The requested resource did not exist ...", verbose=verbose)
     elif request_code == 400:
-        if verbose: log.write(" -Status code 400 Bad Request: The requested resource did not exist ...")
+        log.write(" -Status code 400 Bad Request: The requested resource did not exist ...", verbose=verbose)
     
     return is_proceed
 

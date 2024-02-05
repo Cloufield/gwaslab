@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from gwaslab.g_Sumstats import Sumstats
-from gwaslab.hm_casting import _merge_mold_with_sumstats
+from gwaslab.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.hm_casting import _align_with_mold
 from gwaslab.hm_casting import _fill_missing_columns
 from gwaslab.hm_casting import _check_daf
@@ -34,7 +34,7 @@ class SumstatsT( ):
     
     def cast(self, sumstatsObject, threshold=0.2, verbose=True,windowsizeb=10, ref_path=None):
 
-        molded_sumstats = _merge_mold_with_sumstats(self.snp_info, sumstatsObject.data, log=sumstatsObject.log, verbose=verbose, windowsizeb=windowsizeb,ref_path=ref_path)
+        molded_sumstats = _merge_mold_with_sumstats_by_chrpos(self.snp_info, sumstatsObject.data, log=sumstatsObject.log, verbose=verbose, windowsizeb=windowsizeb,ref_path=ref_path)
 
         molded_sumstats = _align_with_mold(molded_sumstats, log=sumstatsObject.log, verbose=verbose)
         

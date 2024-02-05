@@ -49,8 +49,8 @@ def _extract_with_ld_proxy(  snplist=None,
                             ld_threshold=0.8
                             ):
     ### Load vcf#######################################################################################
-    if verbose: log.write("Start to load reference genotype...")
-    if verbose: log.write(" -reference vcf path : "+ vcf_path)
+    log.write("Start to load reference genotype...", verbose=verbose)
+    log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)
     if tabix is None:
         tabix = which("tabix")
     vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path=vcf_path, vcf_chr_dict=vcf_chr_dict, verbose=verbose, log=log)
@@ -122,7 +122,7 @@ def _extract_with_ld_proxy(  snplist=None,
     
     extracted_sumstats = pd.concat([extracted_sumstats, ld_proxies],ignore_index=True)
 
-    if verbose: log.write("Finished loading reference genotype successfully!")
+    log.write("Finished loading reference genotype successfully!", verbose=verbose)
     return extracted_sumstats
 
 
@@ -139,13 +139,13 @@ def _get_rsq(    row,
         ref_genotype = read_vcf(vcf_path,region=vcf_chr_dict[region[0]]+":"+str(region[1])+"-"+str(region[2]),tabix=tabix)
         
         if ref_genotype is None:
-            if verbose: log.write("  -Warning: no data was retrieved. Skipping ...")
+            log.warning("No data was retrieved. Skipping ...", verbose=verbose)
             ref_genotype=dict()
             ref_genotype["variants/POS"]=np.array([],dtype="int64")
             return None
         
-        if verbose: log.write("  -Retrieving index...")
-        if verbose: log.write("  -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])))
+        log.write("  -Retrieving index...", verbose=verbose)
+        log.write("  -Ref variants in the region: {}".format(len(ref_genotype["variants/POS"])), verbose=verbose)
         #  match sumstats pos and ref pos: 
         # get ref index for its first appearance of sumstats pos
         #######################################################################################
@@ -170,7 +170,7 @@ def _get_rsq(    row,
             else:
                 # no position match
                 return None
-        if verbose: log.write("  -Matching variants using POS, NEA, EA ...")
+        log.write("  -Matching variants using POS, NEA, EA ...", verbose=verbose)
 
         sumstats["REFINDEX"] = sumstats.loc[:,["POS","NEA","EA"]].apply(lambda x: match_varaint(x), axis=1)
         log.write("  -Matched variants in sumstats and vcf:{} ".format(sum(~sumstats["REFINDEX"].isna())))
@@ -190,7 +190,7 @@ def _get_rsq(    row,
             lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
             other_snp_genotype = GenotypeArray(ref_genotype["calldata/GT"][other_snps_ref_index]).to_n_alt()
             
-            if verbose: log.write("  -Calculating Rsq...")
+            log.write("  -Calculating Rsq...", verbose=verbose)
             
             if len(other_snp_genotype)>1:
                 valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype)[0],2)
@@ -198,7 +198,7 @@ def _get_rsq(    row,
                 valid_r2= np.power(rogers_huff_r_between(lead_snp_genotype,other_snp_genotype),2)
             sumstats.loc[~sumstats["REFINDEX"].isna(),"RSQ"] = valid_r2
         else:
-            if verbose: log.write("  -Lead SNP not found in reference...")
+            log.write("  -Lead SNP not found in reference...", verbose=verbose)
             sumstats["RSQ"]=None
         
         sumstats["RSQ"] = sumstats["RSQ"].astype("float")

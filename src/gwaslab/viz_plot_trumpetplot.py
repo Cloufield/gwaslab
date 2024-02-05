@@ -112,32 +112,30 @@ def plottrumpet(mysumstats,
     
     #parameter check##################################################################################################################
     if (beta not in mysumstats.columns) or (eaf not in mysumstats.columns):
-        if verbose:
-            log.write(" -No EAF or BETA columns. Skipping...")
+        log.write(" -No EAF or BETA columns. Skipping...", verbose=verbose)
         return None
     if mode=="b":
         if ncase is None or ncontrol is None:
-            if verbose:
-                log.write(" -No scase or scontrol. Skipping...")
+            log.write(" -No scase or scontrol. Skipping...", verbose=verbose)
             return None
         if prevalence is None:
                 prevalence= ncase/(ncase + ncontrol)
-                log.write(" -Prevalence is not given. Estimating based on scase and scontrol :{}...".format(prevalence))
+                log.write(" -Prevalence is not given. Estimating based on scase and scontrol :{}...".format(prevalence), verbose=verbose)
     
     #print settings##################################################################################################################
-    if verbose:
-        log.write(" -Settings:")
-        log.write("  -Mode: {}".format(mode))
-        if mode == "q" :
-            log.write("  -N: {}".format(n))
-        if mode == "b" :
-            log.write("  -N_CASE: {}".format(ncase))
-            log.write("  -N_CONTROL: {}".format(ncontrol))
-            log.write("  -PREVALENCE: {}".format(prevalence))
-        log.write("  -BETA: {}".format(beta))
-        log.write("  -Significance level: {}".format(sig_level))
-        log.write("  -Power thresholds: {}".format(ts))
-        log.write("  -Power line smoothness: {}".format(n_matrix))
+
+    log.write(" -Settings:", verbose=verbose)
+    log.write("  -Mode: {}".format(mode), verbose=verbose)
+    if mode == "q" :
+        log.write("  -N: {}".format(n), verbose=verbose)
+    if mode == "b" :
+        log.write("  -N_CASE: {}".format(ncase), verbose=verbose)
+        log.write("  -N_CONTROL: {}".format(ncontrol), verbose=verbose)
+        log.write("  -PREVALENCE: {}".format(prevalence), verbose=verbose)
+    log.write("  -BETA: {}".format(beta), verbose=verbose)
+    log.write("  -Significance level: {}".format(sig_level), verbose=verbose)
+    log.write("  -Power thresholds: {}".format(ts), verbose=verbose)
+    log.write("  -Power line smoothness: {}".format(n_matrix), verbose=verbose)
     
     #loading columns #################################################################################################################
     cols_to_use = [snpid, beta, eaf, n, p]
@@ -145,7 +143,7 @@ def plottrumpet(mysumstats,
     if anno is not None:
         if anno != "GENENAME":
             if anno!=True:
-                log.write(" -Loading column {} for annotation...".format(anno))
+                log.write(" -Loading column {} for annotation...".format(anno), verbose=verbose)
                 if anno not in cols_to_use:
                     cols_to_use.append(anno)
         else:
@@ -185,8 +183,7 @@ def plottrumpet(mysumstats,
             n = sumstats["N"].median() 
         elif n == "mean":
             n = sumstats["N"].mean() 
-        if verbose:
-            log.write(" -N for power calculation: {}".format(n))
+        log.write(" -N for power calculation: {}".format(n), verbose=verbose)
 
     #configure beta and maf range ###################################################################################################
     if maf_range is None:
@@ -473,8 +470,7 @@ def plot_power( ns=1000,
     
     if mode=="b":
         if ncases is None or ncontrols is None:
-            if verbose:
-                log.write(" -No scase or scontrol. Skipping...", verbose=verbose)
+            log.write(" -No scase or scontrol. Skipping...", verbose=verbose)
             return None
         
     #configure beta and maf range ###################################################################################################
@@ -669,27 +665,27 @@ def plot_power_x(
     #Checking columns#################################################################################################################
     log.write("Start to create power plot...", verbose=verbose)
     matplotlib.rc('font', family=font_family)
-    if verbose:
-        log.write(" -Settings:")
-        log.write("  -Mode: {}".format(mode))
-        if mode == "q" :
-            log.write("  -X axis: {}".format(x))
-            if x!="N":
-                log.write("  -N: {}".format(ns))
-            if x!="MAF":
-                log.write("  -MAF: {}".format(mafs))
-        if mode == "b" :
-            log.write("  -X axis: {}".format(x))
-            if x!="N_CASE":
-                log.write("  -N_CASE: {}".format(ncases))
-            if x!="N_CASE":
-                log.write("  -N_CONTROL: {}".format(ncontrols))
-            if x!="PREVALENCE":
-                log.write("  -PREVALENCE: {}".format(prevalences))
-        if x!="BETA":
-            log.write("  -BETA: {}".format(betas))
 
-        log.write(" -Significance level: {}".format(sig_levels))
+    log.write(" -Settings:", verbose=verbose)
+    log.write("  -Mode: {}".format(mode), verbose=verbose)
+    if mode == "q" :
+        log.write("  -X axis: {}".format(x), verbose=verbose)
+        if x!="N":
+            log.write("  -N: {}".format(ns), verbose=verbose)
+        if x!="MAF":
+            log.write("  -MAF: {}".format(mafs), verbose=verbose)
+    if mode == "b" :
+        log.write("  -X axis: {}".format(x), verbose=verbose)
+        if x!="N_CASE":
+            log.write("  -N_CASE: {}".format(ncases), verbose=verbose)
+        if x!="N_CASE":
+            log.write("  -N_CONTROL: {}".format(ncontrols), verbose=verbose)
+        if x!="PREVALENCE":
+            log.write("  -PREVALENCE: {}".format(prevalences), verbose=verbose)
+    if x!="BETA":
+        log.write("  -BETA: {}".format(betas), verbose=verbose)
+
+    log.write(" -Significance level: {}".format(sig_levels), verbose=verbose)
 
     if x is None:
         if mode=="b":
@@ -707,8 +703,7 @@ def plot_power_x(
     
     if mode=="b":
         if ncases is None or ncontrols is None:
-            if verbose:
-                log.write(" -No scase or scontrol. Skipping...")
+            log.write(" -No scase or scontrol. Skipping...", verbose=verbose)
             return None
 
     #configure beta and maf range ###################################################################################################

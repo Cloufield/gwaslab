@@ -5,11 +5,15 @@ from pandas.api.types import CategoricalDtype
 from gwaslab.g_vchange_status import copy_status
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.qc_fix_sumstats import flipallelestats
+from gwaslab.qc_check_datatype import check_datatype
+from gwaslab.qc_fix_sumstats import start_to
 from gwaslab.util_in_fill_data import filldata
 from Bio import SeqIO
 from itertools import combinations
 
-def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log=Log(),suffixes=("_MOLD",""),verbose=True,return_not_matched_mold =False):
+def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None, windowsizeb=10, log=Log(),suffixes=("_MOLD",""),verbose=True,return_not_matched_mold =False):
+    
+
     cols_to_drop = []
     for i in sumstats.columns:
         if i in ["SNPID","rsID"]:
@@ -31,6 +35,7 @@ def _merge_mold_with_sumstats(mold, sumstats, ref_path=None, windowsizeb=10, log
     if return_not_matched_mold:
         mold["_IDENTIFIER_FOR_VARIANT"] = range(len(mold))
 
+    # mold sumffix + mold 
     mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=suffixes)
     log.write(" -After merging by CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
     

@@ -321,7 +321,7 @@ def plot_miami2(
 
     garbage_collect.collect()
     
-    if verbose: log.write("Finished creating miami plot successfully")
+    log.write("Finished creating miami plot successfully", verbose=verbose)
     #Return matplotlib figure object #######################################################################################
     return fig, log
 
@@ -387,19 +387,19 @@ def _set_spine_visibility(ax1,ax5):
 
 def _figure_type_load_sumstats(name, path, sep, cols, readcsv_args, loadmode, log, verbose):
     if type(path) is str:
-        if verbose: log.write(" -Loading {} ({} mode): {}".format(name, loadmode, path))
-    if verbose: log.write(" -Obtaining {} CHR, POS, P and annotation from: {}".format(name, cols))
+        log.write(" -Loading {} ({} mode): {}".format(name, loadmode, path), verbose=verbose)
+    log.write(" -Obtaining {} CHR, POS, P and annotation from: {}".format(name, cols), verbose=verbose)
     
     if loadmode=="pickle":
         sumstats = load_data_from_pickle(path,usecols=cols) 
     else:
         if type(path) is Sumstats:
-            if verbose: log.write(" -Loading {} from gwaslab.Sumstats Object".format(name))
+            log.write(" -Loading {} from gwaslab.Sumstats Object".format(name), verbose=verbose)
             sumstats = path.data[cols].copy()
         elif type(path) is pd.DataFrame:
-            if verbose: log.write(" -Loading {} from pandas.DataFrame Object".format(name))
+            log.write(" -Loading {} from pandas.DataFrame Object".format(name), verbose=verbose)
             sumstats = path[cols].copy()
         else:
-            if verbose: log.write(" -Loading {} from tabular files".format(name))
+            log.write(" -Loading {} from tabular files".format(name), verbose=verbose)
             sumstats=pd.read_table(path,sep=sep,usecols=cols,dtype={cols[0]:"string",cols[1]:"Int64",cols[2]:"float64"},**readcsv_args)
     return sumstats
