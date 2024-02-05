@@ -18,15 +18,15 @@ GWASLab provides a download function `gl.download_ref()` and two curated tables 
 
 You can download this from dbSNP:
 
-`hg19`
+`hg19` (As of 20240205)
 
 - `vcf`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz
 - `tbi`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz.tbi
 
-`hg38`
+`hg38` (As of 20240205)
 
-- `vcf`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.39.gz
-- `tbi`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.39.gz.tbi
+- `vcf`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz 
+- `tbi`:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz.tbi
 
 
 !!! note "1kg_dbsnp151_hg19_auto"
@@ -74,12 +74,12 @@ mysumstats.assign_rsid(
 
 ## Options
 
-|`.assign_rsid()` options|DataType|Description|Default|
-|-|-|-|-|
-|`ref_rsid_tsv`|`string`|tsv file path for annotation of commonly used variants using SNPID (like 1:725932:G:A) as key.|-|
-| `ref_rsid_vcf`|`string`|vcf file path for annotation of other variants. .tbi file is also needed.|-|
-|`chr_dict`|`dict`|a dictionary for converting 1-25 to CHR in the vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries.   `gl.get_number_to_NC(build="19")` and `gl.get_number_to_NC(build="19")` |-|
-|`n_cores`|`int`|number of cores to use.|`1`|
+| `.assign_rsid()` options | DataType | Description                                                                                                                                                                                                                                                                  | Default |
+|--------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `ref_rsid_tsv`           | `string` | TSV file path for annotation of commonly used variants using SNPID (like 1:725932:G:A) as key.                                                                                                                                                                               | -       |
+| `ref_rsid_vcf`           | `string` | VCF/BCF file path for annotation of variants with rsID not assigned. .tbi/.csi file is  required.                                                                                                                                                                            | -       |
+| `chr_dict`               | `dict`   | a dictionary for converting 1-25 to CHR in the vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries.   `gl.get_number_to_NC(build="19")` and `gl.get_number_to_NC(build="19")` | -       |
+| `n_cores`                | `int`    | number of cores to use.                                                                                                                                                                                                                                                      | `1`     |
 
 !!! note "Conversion for RefSeq sequence"
 

@@ -2,9 +2,6 @@
 
 GWASLab can update CHR/POS using a pre-processed SNPID-rsID table to assign CHR and POS based on rsID. Currently, only variants in 1KG phase3v5 are supported.  
 
-
-
-
 ## .rsid_to_chrpos()
 
 ### Reference data
@@ -34,12 +31,17 @@ GWASLab provides a download function `gl.download_ref()` and two curated tables 
 ### .rsid_to_chrpos()
 
 ```
+
 # if not downloaded yet :
 # gl.download_ref("1kg_dbsnp151_hg19_auto")
 
 # assign chr and pos using rsID
 mysumstats.rsid_to_chrpos( path = gl.get_path("1kg_dbsnp151_hg19_auto"))
 ```
+
+| Option | DataType | Description                        | Default |
+|--------|----------|------------------------------------|---------|
+| `path` | `string` | the path to reference tabular file | -       |
 
 
 ### Example 
@@ -119,12 +121,18 @@ GCF_000001405.25.gz (24G)
 GCF_000001405.25.gz.tbi (2.9M)
 ```
 
+
+### gl.process_ref_vcf()
+```
+gl.process_ref_vcf()
+```
+
 Process the vcf file and convert it to HDF5 file using `.process_ref_vcf()`. This step may take up to one or two hours.
 
-| Option      | DataType | Description                                                 | Default |
-|-------------|----------|-------------------------------------------------------------|---------|
-| `vcf`       | `string` | the path to dbSNP VCF file                                  | -       |
-| `directory` | `string` | the directory where you want output the converted HDF5 file | `./`    |
+| Option      | DataType | Description                                                 | Default              |
+|-------------|----------|-------------------------------------------------------------|----------------------|
+| `vcf`       | `string` | the path to dbSNP VCF file                                  | -                    |
+| `directory` | `string` | the directory where you want output the converted HDF5 file | the same as VCF file |
 
 ```
 directory="/home/yunye/work/gwaslab/examples/vcf_hd5/"
