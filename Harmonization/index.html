@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/gwaslab.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.6">
     
     
       
@@ -1864,37 +1864,61 @@
 <tr>
 <td><code>.check_ref()</code></td>
 <td><code>ref_path</code>,<br /> <code>chr_dict=get_chr_to_number()</code></td>
-<td>Check alignment with a reference sequence</td>
+<td>Check alignment with a reference genome FASTA file</td>
 </tr>
 <tr>
 <td><code>.assign_rsid()</code></td>
 <td><code>ref_rsid_tsv</code>,<br /> <code>ref_rsid_vcf</code>,<br /> <code>n_cores=1</code>, <br /><code>chunksize=5000000</code>, <br /><code>chr_dict=get_number_to_chr()</code>, <br /><code>overwrite="empty"</code></td>
-<td>Annotate rsid using a reference vcf file</td>
+<td>Annotate rsID using a reference tabular file or VCF/BCF file</td>
 </tr>
 <tr>
 <td><code>.infer_strand()</code></td>
-<td><code>ref_infer</code>,<br /><code>ref_alt_freq=None</code>,<br /><code>maf_threshold=0.40</code>,<br /><code>remove_snp=""</code>,<br /><code>mode="pi"</code>,<br /><code>n_cores=1</code>,<br /><code>remove_indel=""</code></td>
-<td>Infer the strand of a variant using reference vcf file with EAF in INFO</td>
+<td><code>ref_infer</code>,<br /><code>ref_alt_freq=None</code>,<br /><code>maf_threshold=0.40</code>,<br /><code>remove_snp=""</code>,<br /><code>daf_tolerance=0.2</code>, ,<br /><code>mode="pi"</code>,<br /><code>n_cores=1</code>,<br /><code>remove_indel=""</code></td>
+<td>Infer the strand of palindromic variants/indistinguishable indels using reference VCF/BCF files based on allele frequency in INFO</td>
 </tr>
 <tr>
 <td><code>.check_daf()</code></td>
 <td><code>ref_infer</code>,<br /><code>ref_alt_freq=None</code>,<br /><code>maf_threshold=0.40</code>,<br /><code>n_cores=1</code></td>
-<td>Calculate difference in allele frequencies</td>
+<td>Calculate difference in allele frequencies  with a reference VCF/BCF file</td>
 </tr>
 <tr>
 <td><code>.flip_allele_stats()</code></td>
 <td></td>
-<td>After alignment and inferring, flip the alleles to harmonise the variants.</td>
+<td>After alignment and inferring, flip the alleles and allele-specific statistics to harmonise the variants.</td>
 </tr>
 <tr>
 <td><code>.harmonize()</code></td>
 <td><code>basic_check=True</code>, <br /> <code>ref_seq=None</code>,<br /><code>ref_rsid_tsv=None</code>,<br /><code>ref_rsid_vcf=None</code>,<br /><code>ref_infer=None</code>,<br /><code>ref_alt_freq=None</code>,<br /><code>maf_threshold=0.40</code>,<br /><code>n_cores=1</code>,<br /><code>remove=False</code>,<br /><code>checkref_args={}</code>,<br /><code>removedup_args={}</code>,<br /><code>assignrsid_args={}</code>,<br /><code>inferstrand_args={}</code>,<br /><code>flipallelestats_args={}</code>,<br /><code>fixid_args={}</code>,<br /><code>fixchr_agrs={}</code>,<br /><code>fixpos_args={}</code>,<br /><code>fixallele_args={}</code>,<br /><code>sanitycheckstats_args={}</code>,<br /><code>normalizeallele_args={}</code></td>
-<td>all-in-one function for harmonization</td>
+<td>All-in-one function for harmonization</td>
 </tr>
 </tbody>
 </table>
 <h2 id="align-nea-with-ref-in-the-reference-genome">Align NEA with REF in the reference genome</h2>
 <p><code>.check_ref()</code>:  Check if NEA is aligned with the reference sequence. After checking, the tracking status code will be changed accordingly. </p>
+<table>
+<thead>
+<tr>
+<th><code>.check_ref()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ref_path</code></td>
+<td><code>string</code></td>
+<td>path to the reference genome FASTA file.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>chr_dict</code></td>
+<td><code>dict</code></td>
+<td>a conversion dictionary for chromosome notations in reference FASTA and those in sumstats</td>
+<td><code>gl.get_chr_to_number()</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_ref</span><span class="p">(</span><span class="n">ref_path</span><span class="o">=</span><span class="s2">&quot;ref_genome.fa&quot;</span><span class="p">)</span>
@@ -1907,21 +1931,94 @@
 </div>
 <h2 id="assign-rsid-according-to-chr-pos-refalt">Assign rsID according to CHR, POS, REF/ALT</h2>
 <p><code>.assign_rsid()</code> : Annotated variants with rsID using a reference tsv file (1KG variants) and reference vcf file (tabix indexed, entire dbSNP).</p>
+<p>See <a href="https://cloufield.github.io/gwaslab/AssignrsID/">https://cloufield.github.io/gwaslab/AssignrsID/</a></p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">assign_rsid</span><span class="p">(</span><span class="n">ref_rsid_tsv</span><span class="p">,</span> <span class="n">ref_rsid_vcf</span><span class="p">,</span> <span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">assign_rsid</span><span class="p">(</span><span class="n">ref_rsid_tsv</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;1kg_dbsnp151_hg19_auto&quot;</span><span class="p">),</span> 
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>                       <span class="n">ref_rsid_vcf</span> <span class="o">=</span> <span class="s2">&quot;/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz&quot;</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>                       <span class="n">chr_dict</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">get_number_to_NC</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)</span> 
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>                       <span class="n">n_cores</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </span></code></pre></div>
 </div>
 <ul>
-<li>For tsv file, variants will be matched using SNPID (CHR:POS:NEA:EA) for quick assigning.</li>
+<li>For TSV file, variants will be matched using SNPID (CHR:POS:NEA:EA) for quick assigning.</li>
 <li>For VCF file, GWASLab will first extract all variants in the reference file with matching CHR and POS. And then compare EA/NEA in sumstats with REF/ALT in reference vcf. When matching, it will annotate the variant in sumstats with the matching rsID in reference vcf.  </li>
 </ul>
 <h2 id="check-palindromic-snps-or-indistinguishable-indels">Check palindromic SNPs or indistinguishable Indels</h2>
 <p><code>.infer_strand()</code>:</p>
 <ul>
-<li>Infer the strand for palindromic SNPs (AT, or CG), the default threshold is 0.40. </li>
-<li>Checking the alignment status of indels with the REF allele in a reference vcf file.</li>
+<li>Infer the strand for palindromic SNPs (AT, or CG) with MAF &lt;<code>maf_threshold</code>. </li>
+<li>Checking the alignment status of indels with the REF allele in a reference VCF/BCF file and check if the allele frequencies are consistent (DAF &lt; <code>daf_tolerance</code>).</li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">DAF : Difference between Effect allele frequency in sumstats and Reference ALT frequency in reference VCF/BCF file</p>
+</div>
+<table>
+<thead>
+<tr>
+<th><code>.infer_strand()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ref_infer</code></td>
+<td><code>string</code></td>
+<td>path to the reference VCF/BCF file (index file is required).</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ref_alt_freq</code></td>
+<td><code>string</code></td>
+<td>the field for alternative allele frequency in INFO</td>
+<td></td>
+</tr>
+<tr>
+<td><code>chr_dict</code></td>
+<td><code>dict</code></td>
+<td>a conversion dictionary for chromosome notations in sumstats and those in reference VCF/BCF</td>
+<td><code>gl.get_number_to_chr()</code></td>
+</tr>
+<tr>
+<td><code>maf_threshold</code></td>
+<td><code>string</code></td>
+<td>only palindromic SNPs with MAF &lt; <code>maf_threshold</code> will be inferrred</td>
+<td><code>0.4</code></td>
+</tr>
+<tr>
+<td><code>daf_tolerance</code></td>
+<td><code>string</code></td>
+<td>only indistinguishable indels with difference in allele frequency &lt; <code>daf_tolerance</code> will be inferrred</td>
+<td><code>0.2</code></td>
+</tr>
+<tr>
+<td><code>remove_snp</code></td>
+<td><code></code>, <code>7</code> or <code>8</code></td>
+<td><code>7</code> remove palindromic SNPs with MAF unable to infer. <code>8</code>: remove palindromic SNPs with No infromation in reference VCF/BCF</td>
+<td>``</td>
+</tr>
+<tr>
+<td><code>remove_indel</code></td>
+<td><code></code> or <code>8</code></td>
+<td><code>8</code>: indistinguishable indels with No infromation in reference VCF/BCF</td>
+<td>``</td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td><code>p</code>, <code>i</code>, or <code>pi</code></td>
+<td><code>p</code>: infer panlindromic SNPs. <code>i</code>: infer indels.</td>
+<td><code>pi</code></td>
+</tr>
+<tr>
+<td><code>n_cores</code></td>
+<td><code>int</code></td>
+<td>number of CPU threads to use</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_strand</span><span class="p">()</span>
@@ -1934,9 +2031,42 @@
 </div>
 <h2 id="check-the-difference-in-allele-frequency">Check the difference in allele frequency</h2>
 <p><code>.check_daf()</code> : check the allele frequency discrepancy with a reference vcf. Please make sure your sumstats are already harmonized, and the variants in reference VCF are also aligned. gwaslab will retrieve information only for matched variants (CHR, POS, EA-ALT, and NEA-REF).</p>
-<p><code>ref_infer</code>: reference VCF file path.
-<code>ref_alt_freq</code>:  allele frequency for ALT in the INFO field of reference VCF file.
-<code>n_cores</code>: number of cores to use.</p>
+<table>
+<thead>
+<tr>
+<th><code>.check_daf()</code> options</th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ref_infer</code></td>
+<td><code>string</code></td>
+<td>path to the reference VCF/BCF file (index file is required).</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ref_alt_freq</code></td>
+<td><code>string</code></td>
+<td>the field for alternative allele frequency in INFO</td>
+<td></td>
+</tr>
+<tr>
+<td><code>chr_dict</code></td>
+<td><code>dict</code></td>
+<td>a conversion dictionary for chromosome notations in sumstats and those in reference VCF/BCF</td>
+<td><code>gl.get_number_to_chr()</code></td>
+</tr>
+<tr>
+<td><code>n_cores</code></td>
+<td><code>int</code></td>
+<td>number of CPU threads to use</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mysumstats.check_af(ref_infer=gl.get_path(&quot;1kg_eas_hg19&quot;), 
@@ -1969,6 +2099,8 @@ RAF: Reference ALT allele frequency</p>
 </div>
 <h2 id="assign-chr-and-pos-according-to-rsid-and-reference-data">Assign CHR and POS according to rsID and reference data</h2>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos</span><span class="p">()</span>  
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">rsid_to_chrpos2</span><span class="p">()</span>  
 </span></code></pre></div>
 
 
@@ -2020,10 +2152,10 @@ RAF: Reference ALT allele frequency</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.e1c3ead8.min.js"></script>
       
         <script src="../javascripts/mathjax.js"></script>
       

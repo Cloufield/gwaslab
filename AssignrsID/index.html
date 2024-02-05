@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/gwaslab.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.6">
     
     
       
@@ -1840,15 +1840,15 @@
 </ul>
 <h3 id="vcf-file">VCF file</h3>
 <p>You can download this from dbSNP:</p>
-<p><code>hg19</code></p>
+<p><code>hg19</code> (As of 20240205)</p>
 <ul>
 <li><code>vcf</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz</li>
 <li><code>tbi</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz.tbi</li>
 </ul>
-<p><code>hg38</code></p>
+<p><code>hg38</code> (As of 20240205)</p>
 <ul>
-<li><code>vcf</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.39.gz</li>
-<li><code>tbi</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.39.gz.tbi</li>
+<li><code>vcf</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz </li>
+<li><code>tbi</code>:https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz.tbi</li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">1kg_dbsnp151_hg19_auto</p>
@@ -1906,13 +1906,13 @@
 <tr>
 <td><code>ref_rsid_tsv</code></td>
 <td><code>string</code></td>
-<td>tsv file path for annotation of commonly used variants using SNPID (like 1:725932:G:A) as key.</td>
+<td>TSV file path for annotation of commonly used variants using SNPID (like 1:725932:G:A) as key.</td>
 <td>-</td>
 </tr>
 <tr>
 <td><code>ref_rsid_vcf</code></td>
 <td><code>string</code></td>
-<td>vcf file path for annotation of other variants. .tbi file is also needed.</td>
+<td>VCF/BCF file path for annotation of variants with rsID not assigned. .tbi/.csi file is  required.</td>
 <td>-</td>
 </tr>
 <tr>
@@ -2043,10 +2043,10 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.e1c3ead8.min.js"></script>
       
         <script src="../javascripts/mathjax.js"></script>
       
