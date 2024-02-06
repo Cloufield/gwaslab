@@ -333,6 +333,8 @@ def getnovel(insumstats,
            known=False,
            efo=False,
            only_novel=False,
+           group_key=None,
+           if_get_lead = True,
            windowsizekb_for_novel=1000,
            windowsizekb=500,
            sig_level=5e-8,
@@ -362,20 +364,14 @@ def getnovel(insumstats,
     if is_enough_info == False: return None
     ############################################################################################
     
-    allsig = getsig(insumstats=insumstats,
-           id=id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
-           xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
-    
-    big_number = 1000000000
-    for i in range(7):
-        if insumstats["POS"].max()*10 >  big_number:
-            big_number = int(big_number * 10)
-        else:
-            break
+    if if_get_lead == True:
+        allsig = getsig(insumstats=insumstats,
+            id=id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
+            xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
+    else:
+        allsig = insumstats.copy()
 
-    # create helper column TCHR+POS for allsig
-    allsig["TCHR+POS"]=allsig[chrom]*big_number + allsig[pos]
-    
+    ############################################################################################
     knownsig = pd.DataFrame()
     if efo != False:
         if type(efo) is not list:
@@ -406,67 +402,86 @@ def getnovel(insumstats,
         knownsig["POS"] = knownsig["POS"].astype("Int64")
         if "SNPID" not in knownsig.columns:
             knownsig["SNPID"] =knownsig["CHR"].astype("string") + ":" + knownsig["POS"].astype("string")
+    
     if len(knownsig)<1:
         raise ValueError("Please input a dataframe of known loci or valid efo code")
+    
+    if group_key is not None:
+        if (group_key not in allsig.columns) or (group_key not in knownsig.columns):
+            raise ValueError("Please check if group_key is in both sumstats and list of known associations.")
 
-    # create helper column TCHR+POS for knownsig
-    knownsig["TCHR+POS"]=knownsig[chrom]*big_number + knownsig[pos]
-    
-    log.write(" -Lead variants in known loci:",len(knownsig), verbose=verbose)
-    log.write(" -Checking the minimum distance between identified lead variants and provided known variants...", verbose=verbose)
-    
+    # create helper column TCHR+POS for knownsig and all sig
+     ############################################################################################
+    maxpos = insumstats["POS"].max()
+    big_number = determine_big_number(maxpos)
+    knownsig = add_tchr_pos(knownsig, chrom, pos, big_number)
+    allsig = add_tchr_pos(allsig, chrom, pos, big_number)
+    ############################################################################################   
     #sorting
     allsig = allsig.sort_values(by="TCHR+POS",ignore_index=True)
     knownsig = knownsig.sort_values(by="TCHR+POS",ignore_index=True)
-    
-    if "SNPID" in knownsig.columns:
-        knownids=knownsig["SNPID"].values
-    if "PUBMEDID" in knownsig.columns:
-        knownpubmedids=knownsig["PUBMEDID"].values
-    if "AUTHOR" in knownsig.columns:
-        knownauthor=knownsig["AUTHOR"].values
-    if "EFOID" in knownsig.columns:
-        knownefo=knownsig["EFOID"].values
-    
-    # get distance
-    lambda x:np.min(np.abs(knownsig["TCHR+POS"]-x))
-    allsig["DISTANCE_TO_KNOWN"] = allsig["TCHR+POS"].apply(lambda x:min(knownsig["TCHR+POS"]-x, key=abs))
-    
-    # get other info 
-    if "SNPID" in knownsig.columns:
-        allsig["KNOWN_ID"] = allsig["TCHR+POS"].apply(lambda x:knownids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])    
-    if "PUBMEDID" in knownsig.columns:
-        allsig["KNOWN_PUBMED_ID"] = allsig["TCHR+POS"].apply(lambda x:knownpubmedids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
-    if "AUTHOR" in knownsig.columns:
-        allsig["KNOWN_AUTHOR"] = allsig["TCHR+POS"].apply(lambda x:knownauthor[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
-    if "EFOID" in knownsig.columns:
-        allsig["KNOWN_EFOID"] = allsig["TCHR+POS"].apply(lambda x:knownefo[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
+    ############################################################################################
+    if group_key is not None:
+        number_of_groups_allsig = allsig[group_key].nunique()
+        number_of_groups_known = knownsig[group_key].nunique()
+        log.write(" -Number of groups in sumstats:{}".format(number_of_groups_allsig), verbose=verbose)
+        log.write(" -Number of groups in reference:{}".format(number_of_groups_known), verbose=verbose)
 
-    # determine if novel
-    allsig["NOVEL"] = allsig["DISTANCE_TO_KNOWN"].abs() > windowsizekb_for_novel*1000
+    log.write(" -Lead variants in known loci:",len(knownsig), verbose=verbose)
+    log.write(" -Checking the minimum distance between identified lead variants and provided known variants...", verbose=verbose)
     
-    # determine location
-    allsig["LOCATION_OF_KNOWN"]="Unknown"
-    allsig.loc[ allsig["DISTANCE_TO_KNOWN"]== 0,"LOCATION_OF_KNOWN"] = "Same"
-    allsig.loc[ allsig["DISTANCE_TO_KNOWN"] > 0 ,"LOCATION_OF_KNOWN"] = "Upstream"
-    allsig.loc[ allsig["DISTANCE_TO_KNOWN"] < 0 ,"LOCATION_OF_KNOWN"] = "Downstream"
+    ############################################################################################
+    if group_key is None:
+        # get distance
+        allsig = determine_distance(allsig, knownsig)
+        # get other info 
+        allsig = fill_meta_info_for_known(allsig, knownsig)
+        ############################################################################################
+        # determine if novel
+        allsig = determine_novel(allsig, windowsizekb_for_novel)
+        # determine location
+        allsig = determine_location(allsig)
+        # if not on same chromosome, distance set to pd.NA
+        allsig = determine_if_same_chromosome(allsig, knownsig, maxpos)
+        ############################################################################################
+    else:
+        #groups1 = set(allsig[group_key].unique())
+        #groups2 = set(knownsig[group_key].unique())
+        #common_group = groups1.intersection(groups2)
+        
+        #allsig_no_group = allsig.loc[~allsig[group_key].isin(common_group),:].copy()
+        allsig_group = pd.DataFrame()
 
-    # if not on same chromosome, distance set to pd.NA
-    if sum(allsig["DISTANCE_TO_KNOWN"].abs() > insumstats["POS"].max())>0:
-        not_on_same_chromosome = allsig["DISTANCE_TO_KNOWN"].abs() > insumstats["POS"].max()
-        allsig.loc[ not_on_same_chromosome ,"DISTANCE_TO_KNOWN"] = pd.NA
-        allsig.loc[ not_on_same_chromosome ,"LOCATION_OF_KNOWN"] = "NoneOnThisChr"
-        if "SNPID" in knownsig.columns:
-            allsig.loc[ not_on_same_chromosome ,"KNOWN_ID"] = pd.NA
-        if "PUBMEDID" in knownsig.columns:
-            allsig.loc[ not_on_same_chromosome ,"KNOWN_PUBMED_ID"] = pd.NA
-        if "AUTHOR" in knownsig.columns:
-            allsig.loc[ not_on_same_chromosome ,"KNOWN_AUTHOR"] = pd.NA
-        if "EFOID" in knownsig.columns:
-            allsig.loc[ not_on_same_chromosome ,"KNOWN_EFOID"] = pd.NA
+        for key in allsig[group_key].unique():
+            allsig_single_group = allsig.loc[allsig[group_key]==key,:].copy()
+            knownsig_single_group = knownsig.loc[knownsig[group_key]==key,:].copy()
 
+            #if len(allsig_single_group) >0 and len(knownsig_single_group) >0:
+            allsig_single_group = determine_distance(allsig_single_group, knownsig_single_group)
+            # get other info 
+            allsig_single_group = fill_meta_info_for_known(allsig_single_group, knownsig_single_group)
+            
+            # determine if novel
+            allsig_single_group = determine_novel(allsig_single_group, windowsizekb_for_novel)
+            
+            # determine location
+            allsig_single_group = determine_location(allsig_single_group)
+            
+            # if not on same chromosome, distance set to pd.NA
+            allsig_single_group = determine_if_same_chromosome(allsig_single_group, knownsig_single_group, maxpos) 
+            
+            allsig_group = pd.concat([allsig_group, allsig_single_group], ignore_index=True)
+        
+        allsig = allsig_group
+        #pd.concat([allsig_no_group, allsig_group], ignore_index=True)
+        
     # drop helper column TCHR+POS
     allsig = allsig.drop(["TCHR+POS"], axis=1)
+    
+    try:
+        allsig = allsig.where(~pd.isna(allsig), pd.NA)
+    except:
+        pass
 
     log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...", verbose=verbose)
     log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...", verbose=verbose)
@@ -484,3 +499,195 @@ def getnovel(insumstats,
             return allsig, knownsig
         else:
             return allsig
+##################################################################################################################################################################################################
+
+
+def _check_cis(insumstats,
+           id,
+           chrom,
+           pos,
+           p,
+           use_p=False,
+           known=False,
+           group_key=None,
+           if_get_lead = True,
+           windowsizekb=500,
+           sig_level=5e-8,
+           log=Log(),
+           xymt=["X","Y","MT"],
+           anno=False,
+           build="19",
+           source="ensembl",
+           verbose=True):
+    ##start function with col checking##########################################################
+    _start_line = "check if variants are in cis or trans regions"
+    _end_line = "checking if variants are in cis or trans regions"
+    _start_cols = [chrom,pos, group_key]
+    _start_function = ".check_cis()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=insumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: return None
+    ############################################################################################
+    
+    if if_get_lead == True:
+        allsig = getsig(insumstats=insumstats,
+            id=id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
+            xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
+    else:
+        allsig = insumstats.copy()
+
+    ############################################################################################
+    knownsig = pd.DataFrame()
+    if type(known) is pd.DataFrame:
+        knownsig_2 = known.copy()
+        knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
+        knownsig["CHR"] = knownsig["CHR"].astype("Int64")
+        knownsig["START"] = knownsig["START"].astype("Int64")
+        knownsig["END"] = knownsig["END"].astype("Int64")
+    elif type(known) is str:
+        knownsig_2 = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
+        knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
+        knownsig["CHR"] = knownsig["CHR"].astype("Int64")
+        knownsig["START"] = knownsig["START"].astype("Int64")
+        knownsig["END"] = knownsig["END"].astype("Int64")
+    
+    if len(knownsig)<1:
+        raise ValueError("Please input a dataframe of gene list with GENE, CHR, START, END.")
+    
+    if group_key is not None:
+        if group_key not in knownsig.columns:
+            raise ValueError("Please check if group_key is in both sumstats and list of known associations.")
+
+    ############################################################################################
+    if group_key is not None:
+        number_of_groups_allsig = allsig[group_key].nunique()
+        number_of_groups_known = knownsig[group_key].nunique()
+        log.write(" -Number of groups in sumstats:{}".format(number_of_groups_allsig), verbose=verbose)
+        log.write(" -Number of groups in reference:{}".format(number_of_groups_known), verbose=verbose)
+
+    log.write(" -Checking if variants in cis/trans regions grouped by {}...".format(group_key), verbose=verbose)
+    
+    ############################################################################################
+    #convert to  a dict
+    reference_dict = {}
+    for index,row in knownsig.iterrows():
+        reference_dict[row[group_key]] = (row["CHR"], row["START"], row["END"] )
+    ############################################################################################
+    try:
+        no_reference_avaialble = allsig.loc[~allsig[group_key].isin(reference_dict.keys()),group_key]
+        if len(no_reference_avaialble)>0:
+            log.write(" -Groups not in reference: {}".format( ",".join(no_reference_avaialble)), verbose=verbose)
+    except:
+        pass
+
+    allsig["CIS/TRANS"] = allsig.apply(lambda x: determine_if_cis(x, group_key,windowsizekb, reference_dict), axis=1)
+    
+    try:
+        allsig = allsig.where(~pd.isna(allsig), pd.NA)
+    except:
+        pass
+    
+    finished(log,verbose,_end_line)
+    
+    return allsig
+
+###################################################################################################################################################################################################
+
+
+def determine_big_number(maxpos, big_number = 1000000000):
+    for i in range(7):
+        if maxpos*10 >  big_number:
+            big_number = int(big_number * 10)
+        else:
+            break
+    return big_number
+
+
+def add_tchr_pos(df, chrom, pos, big_number):
+    df["TCHR+POS"]=df[chrom]*big_number + df[pos]
+    return df
+
+
+def fill_meta_info_for_known(allsig, knownsig):
+    if len(allsig)==0 or len(knownsig)==0: return allsig
+    if "SNPID" in knownsig.columns:
+        knownids=knownsig["SNPID"].values
+    if "PUBMEDID" in knownsig.columns:
+        knownpubmedids=knownsig["PUBMEDID"].values
+    if "AUTHOR" in knownsig.columns:
+        knownauthor=knownsig["AUTHOR"].values
+    if "EFOID" in knownsig.columns:
+        knownefo=knownsig["EFOID"].values
+
+    if "SNPID" in knownsig.columns:
+        allsig["KNOWN_ID"] = allsig["TCHR+POS"].apply(lambda x:knownids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])    
+    if "PUBMEDID" in knownsig.columns:
+        allsig["KNOWN_PUBMED_ID"] = allsig["TCHR+POS"].apply(lambda x:knownpubmedids[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
+    if "AUTHOR" in knownsig.columns:
+        allsig["KNOWN_AUTHOR"] = allsig["TCHR+POS"].apply(lambda x:knownauthor[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])
+    if "EFOID" in knownsig.columns:
+        allsig["KNOWN_EFOID"] = allsig["TCHR+POS"].apply(lambda x:knownefo[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])    
+    return allsig
+
+
+def determine_if_cis(x, group_key,windowsizekb, reference_dict):
+    if x[group_key] in reference_dict.keys():
+        is_same_chr = str(reference_dict[x[group_key]][0]) == str(x["CHR"])
+        is_large_than_start = int(reference_dict[x[group_key]][1]) - windowsizekb <= x["POS"]
+        is_smaller_than_end = int(reference_dict[x[group_key]][2]) + windowsizekb >= x["POS"]               
+        
+        if  is_same_chr and is_large_than_start  and is_smaller_than_end:
+            return "Cis"
+        else: 
+            return "Trans"
+    else:
+        return "NoReference"
+
+
+def determine_distance(allsig, knownsig):
+    if len(allsig)==0: 
+        return allsig
+    if len(knownsig)==0:
+        allsig["DISTANCE_TO_KNOWN"] = pd.NA
+        return allsig
+    allsig["DISTANCE_TO_KNOWN"] = allsig["TCHR+POS"].apply(lambda x:min(knownsig["TCHR+POS"]-x, key=abs))
+    return allsig
+
+def determine_novel(allsig, windowsizekb_for_novel):
+    if len(allsig)==0 or "DISTANCE_TO_KNOWN" not in allsig.columns:
+        return allsig
+    allsig["NOVEL"] = allsig["DISTANCE_TO_KNOWN"].abs() > windowsizekb_for_novel*1000
+    allsig.loc[allsig["DISTANCE_TO_KNOWN"].isna(), "NOVEL"] = True
+    return allsig
+
+def determine_location(allsig):
+    allsig["LOCATION_OF_KNOWN"]="NoReference"
+    allsig.loc[ allsig["DISTANCE_TO_KNOWN"]== 0,"LOCATION_OF_KNOWN"] = "Same"
+    allsig.loc[ allsig["DISTANCE_TO_KNOWN"] > 0 ,"LOCATION_OF_KNOWN"] = "Upstream"
+    allsig.loc[ allsig["DISTANCE_TO_KNOWN"] < 0 ,"LOCATION_OF_KNOWN"] = "Downstream"
+    return allsig
+
+def determine_if_same_chromosome(allsig, knownsig, maxpos):
+    if sum(allsig["DISTANCE_TO_KNOWN"].abs() > maxpos)>0:
+        not_on_same_chromosome = allsig["DISTANCE_TO_KNOWN"].abs() > maxpos
+        allsig.loc[ not_on_same_chromosome ,"DISTANCE_TO_KNOWN"] = pd.NA
+        allsig.loc[ not_on_same_chromosome ,"LOCATION_OF_KNOWN"] = "NoneOnThisChr"
+        if "SNPID" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_ID"] = pd.NA
+        if "PUBMEDID" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_PUBMED_ID"] = pd.NA
+        if "AUTHOR" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_AUTHOR"] = pd.NA
+        if "EFOID" in knownsig.columns:
+            allsig.loc[ not_on_same_chromosome ,"KNOWN_EFOID"] = pd.NA
+    return allsig
+
+

@@ -47,6 +47,7 @@ from gwaslab.util_in_get_density import getsignaldensity
 from gwaslab.util_in_get_density import assigndensity
 from gwaslab.util_in_get_sig import annogene
 from gwaslab.util_in_get_sig import getnovel
+from gwaslab.util_in_get_sig import _check_cis
 from gwaslab.util_in_fill_data import filldata
 from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.bd_common_data import get_chr_list
@@ -657,7 +658,22 @@ class Sumstats():
                            **args)
         # return sumstats object    
         return output
-
+    
+    def check_cis(self, **args):
+        if "SNPID" in self.data.columns:
+            id_to_use = "SNPID"
+        else:
+            id_to_use = "rsID"
+        output = _check_cis(self.data,
+                           id=id_to_use,
+                           chrom="CHR",
+                           pos="POS",
+                           p="P",
+                           log=self.log,
+                           **args)
+        # return sumstats object    
+        return output
+    
     def anno_gene(self, **args):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
