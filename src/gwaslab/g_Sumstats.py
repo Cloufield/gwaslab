@@ -32,6 +32,9 @@ from gwaslab.util_in_filter_value import filterout
 from gwaslab.util_in_filter_value import filterin
 from gwaslab.util_in_filter_value import filterregionin
 from gwaslab.util_in_filter_value import filterregionout
+from gwaslab.util_in_filter_value import _filter_indel
+from gwaslab.util_in_filter_value import _filter_palindromic
+from gwaslab.util_in_filter_value import _filter_snp
 from gwaslab.util_in_filter_value import inferbuild
 from gwaslab.util_in_filter_value import sampling
 from gwaslab.util_in_filter_value import _get_flanking
@@ -501,6 +504,28 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = filterregionout(self.data,log=self.log,**args)
+    def filter_palindromic(self, inplace=False, **args):
+        if inplace is False:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = _filter_palindromic(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            return new_Sumstats_object
+        else:
+            self.data = _filter_palindromic(self.data,log=self.log,**args)
+    def filter_snp(self, inplace=False, **args):
+        if inplace is False:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = _filter_snp(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            return new_Sumstats_object
+        else:
+            self.data = _filter_snp(self.data,log=self.log,**args)
+    def filter_indel(self, inplace=False, **args):
+        if inplace is False:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = _filter_indel(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            return new_Sumstats_object
+        else:
+            self.data = _filter_indel(self.data,log=self.log,**args)
+
     def random_variants(self,inplace=False,n=1,p=None,**args):
         if inplace is True:
             self.data = sampling(self.data,n=n,p=p,log=self.log,**args)

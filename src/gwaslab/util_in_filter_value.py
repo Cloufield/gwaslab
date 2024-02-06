@@ -10,6 +10,7 @@ from gwaslab.g_vchange_status import vchange_status
 from gwaslab.qc_fix_sumstats import sortcoordinate
 from gwaslab.qc_fix_sumstats import start_to
 from gwaslab.qc_fix_sumstats import finished
+from gwaslab.hm_harmonize_sumstats import is_palindromic
 
 import gc
 def filtervalues(sumstats,expr,remove=False,verbose=True,log=Log()):
@@ -390,3 +391,41 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True,log
     log.write("Finished extracting variants in the flanking regions.",verbose=verbose)
 
     return flanking
+
+def _filter_palindromic(sumstats, mode="in", ea="EA",nea="NEA", log=Log(),verbose=True):
+    log.write("Start to filter palindromic variants...",verbose=verbose)
+    is_palindromic_snp = is_palindromic(sumstats[[nea,ea]],a1=nea,a2=ea)   
+    
+    log.write(" -Identified palindromic variants: {}".format(sum(is_palindromic_snp)),verbose=verbose)
+    
+    if mode=="in":
+        palindromic = sumstats.loc[is_palindromic_snp,:]
+    else:
+        palindromic = sumstats.loc[~is_palindromic_snp,:]
+
+    log.write("Finished filtering palindromic variants.",verbose=verbose)
+    return palindromic
+
+def _filter_indel(sumstats, mode="in", ea="EA",nea="NEA", log=Log(),verbose=True):
+    log.write("Start to filter indels...",verbose=verbose)
+    is_indel = (sumstats[ea].str.len()!=sumstats[nea].str.len()) 
+    
+    log.write(" -Identified indels: {}".format(sum(is_indel)),verbose=verbose)
+    if mode=="in":
+        indel = sumstats.loc[is_indel,:]
+    else:
+        indel = sumstats.loc[~is_indel,:]
+    log.write("Finished filtering indels.",verbose=verbose)
+    return indel
+
+def _filter_snp(sumstats, mode="in", ea="EA",nea="NEA", log=Log(),verbose=True):
+    log.write("Start to filter SNPs...",verbose=verbose)
+    is_snp = (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
+    
+    log.write(" -Identified SNPs: {}".format(sum(is_snp)),verbose=verbose)
+    if mode=="in":
+        snp = sumstats.loc[is_snp,:]
+    else:
+        snp = sumstats.loc[~is_snp,:]
+    log.write("Finished filtering SNPs.",verbose=verbose)
+    return snp
