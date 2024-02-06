@@ -1,5 +1,12 @@
 # Update Logs
 
+## 3.4.39 20240207
+- fixed bug when saving plot as pdf with matplotlib>3.6
+- fixed typos
+- added check_novel_set / check_cis 
+- added filter_snp/palindromic/indel and filter_hapmap3
+- updated log system
+
 ## 3.4.38 20240203
 - fixed seaborn version
 - replaced array_split

@@ -33,7 +33,7 @@ def check_datatype(sumstats, verbose=True, log=Log()):
         log.write(" -Verified:", " ".join(verified), verbose=verbose)
 
         if len(raw_verified)>0:
-            log.warning("Columns with possibly incompatable dtypes: {}".format(",".join(raw_verified)), verbose=verbose)
+            log.warning("Columns with possibly incompatible dtypes: {}".format(",".join(raw_verified)), verbose=verbose)
     except:
         pass
 
