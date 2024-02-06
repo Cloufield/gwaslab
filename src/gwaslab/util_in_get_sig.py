@@ -610,11 +610,9 @@ def determine_big_number(maxpos, big_number = 1000000000):
             break
     return big_number
 
-
 def add_tchr_pos(df, chrom, pos, big_number):
     df["TCHR+POS"]=df[chrom]*big_number + df[pos]
     return df
-
 
 def fill_meta_info_for_known(allsig, knownsig):
     if len(allsig)==0 or len(knownsig)==0: return allsig
@@ -637,7 +635,6 @@ def fill_meta_info_for_known(allsig, knownsig):
         allsig["KNOWN_EFOID"] = allsig["TCHR+POS"].apply(lambda x:knownefo[np.argmin(np.abs(knownsig["TCHR+POS"]-x))])    
     return allsig
 
-
 def determine_if_cis(x, group_key,windowsizekb, reference_dict):
     if x[group_key] in reference_dict.keys():
         is_same_chr = str(reference_dict[x[group_key]][0]) == str(x["CHR"])
@@ -650,7 +647,6 @@ def determine_if_cis(x, group_key,windowsizekb, reference_dict):
             return "Trans"
     else:
         return "NoReference"
-
 
 def determine_distance(allsig, knownsig):
     if len(allsig)==0: 
@@ -690,4 +686,131 @@ def determine_if_same_chromosome(allsig, knownsig, maxpos):
             allsig.loc[ not_on_same_chromosome ,"KNOWN_EFOID"] = pd.NA
     return allsig
 
+def _check_novel_set(insumstats,
+           id,
+           chrom,
+           pos,
+           p,
+           use_p=False,
+           known=False,
+           group_key=None,
+           snpset="SNPSET",
+           snpid="SNPID",
+           if_get_lead = True,
+           windowsizekb=500,
+           sig_level=5e-8,
+           log=Log(),
+           xymt=["X","Y","MT"],
+           anno=False,
+           build="19",
+           source="ensembl",
+           verbose=True):
+    ##start function with col checking##########################################################
+    _start_line = "check if variants are in cis or trans regions"
+    _end_line = "checking if variants are in cis or trans regions"
+    _start_cols = [chrom,pos, group_key]
+    _start_function = ".check_cis()"
+    _must_args ={}
 
+    is_enough_info = start_to(sumstats=insumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: return None
+    ############################################################################################
+    
+    if if_get_lead == True:
+        allsig = getsig(insumstats=insumstats,
+            id=id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
+            xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
+    else:
+        allsig = insumstats.copy()
+
+    ############################################################################################
+    knownsig = pd.DataFrame()
+    if type(known) is pd.DataFrame:
+        knownsig_2 = known.copy()
+        knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
+        knownsig[snpid] = knownsig[snpid].astype("string")
+        knownsig[snpset] = knownsig[snpset].astype("string")
+        knownsig[group_key] = knownsig[group_key].astype("string")
+    elif type(known) is str:
+        knownsig_2 = pd.read_csv(known,sep="\s+",dtype={"CHR":"Int64","POS":"Int64"})
+        knownsig = pd.concat([knownsig, knownsig_2],ignore_index=True)
+        knownsig[snpid] = knownsig[snpid].astype("string")
+        knownsig[snpset] = knownsig[snpset].astype("string")
+        knownsig[group_key] = knownsig[group_key].astype("string")
+    
+    if len(knownsig)<1:
+        raise ValueError("Please input a dataframe of gene list with GENE, CHR, START, END.")
+    
+    if group_key is not None:
+        if group_key not in knownsig.columns:
+            raise ValueError("Please check if group_key is in both sumstats and list of known associations.")
+
+    ############################################################################################
+    if group_key is not None:
+        number_of_groups_allsig = allsig[group_key].nunique()
+        number_of_groups_known = knownsig[group_key].nunique()
+        log.write(" -Number of groups in sumstats:{}".format(number_of_groups_allsig), verbose=verbose)
+        log.write(" -Number of groups in reference:{}".format(number_of_groups_known), verbose=verbose)
+
+    log.write(" -Checking if variants in cis/trans regions grouped by {}...".format(group_key), verbose=verbose)
+    
+    ############################################################################################
+    #convert to  a dict
+    reference_dict = {}
+
+    for index,row in knownsig.iterrows():
+        if row[group_key] in reference_dict.keys():
+            if row[snpset] in reference_dict[row[group_key]].keys():
+                reference_dict[row[group_key]][row[snpset]].add(row[snpid])
+            else:
+                reference_dict[row[group_key]][row[snpset]] = set([row[snpid]])
+        else:
+            reference_dict[row[group_key]] = {row[snpset]:set([row[snpid]])}
+    ############################################################################################
+    
+    try:
+        no_reference_avaialble = allsig.loc[~allsig[group_key].isin(reference_dict.keys()),group_key]
+        if len(no_reference_avaialble)>0:
+            log.write(" -Groups not in reference: {}".format( ",".join(no_reference_avaialble)), verbose=verbose)
+    except:
+        pass
+
+    known_list = allsig.apply(lambda x: check_overlap(x,snpid, group_key,reference_dict), axis=1)
+    
+    allsig["KNOWN_SET"] = known_list.str[0]
+    allsig["KNOWN_VARIANT"] = known_list.str[1]
+
+    back_dict={}
+    for i in allsig[group_key].unique():
+        back_dict[i] ={}
+        for j in allsig.loc[allsig[group_key]==i,snpset].unique():
+            back_dict[i][j] =set()
+            for index, row in allsig.loc[(allsig[group_key]==i) & (allsig[snpset]==j) & (~allsig["KNOWN_SET"].isna()),:].iterrows():
+                back_dict[i][j].add("{}-{}".format(row["KNOWN_SET"],row["KNOWN_VARIANT"]))
+
+    allsig["KNOWN_SET_VARIANT"] = allsig.apply(lambda x: assign_set_variant(x,group_key,snpset,back_dict), axis=1)
+    
+    finished(log,verbose,_end_line)
+    
+    return allsig
+
+def check_overlap(x,snpid, group_key,reference_dict):
+    if x[group_key] in reference_dict.keys():
+        for key, value in reference_dict[x[group_key]].items():
+            if x[snpid] in value:
+                return key, x[snpid]
+    return pd.NA, pd.NA, 
+
+def assign_set_variant(x,group_key,snpset,back_dict):
+    if x[group_key] in back_dict.keys():
+        if x[snpset] in back_dict[x[group_key]].keys():
+            if len(back_dict[x[group_key]][x[snpset]]) >0:
+                return back_dict[x[group_key]][x[snpset]]
+    return pd.NA
