@@ -574,7 +574,7 @@ def _check_cis(insumstats,
         log.write(" -Number of groups in reference:{}".format(number_of_groups_known), verbose=verbose)
 
     log.write(" -Checking if variants in cis/trans regions grouped by {}...".format(group_key), verbose=verbose)
-    
+    log.write(" -Window size in kb adding to start and end: {}...".format(windowsizekb), verbose=verbose)
     ############################################################################################
     #convert to  a dict
     reference_dict = {}
@@ -705,9 +705,10 @@ def _check_novel_set(insumstats,
            build="19",
            source="ensembl",
            verbose=True):
+    
     ##start function with col checking##########################################################
-    _start_line = "check if variants are in cis or trans regions"
-    _end_line = "checking if variants are in cis or trans regions"
+    _start_line = "check if variant sets are overlapping with those in reference file"
+    _end_line = "checking if variant sets are overlapping with those in reference file"
     _start_cols = [chrom,pos, group_key]
     _start_function = ".check_cis()"
     _must_args ={}
@@ -782,6 +783,7 @@ def _check_novel_set(insumstats,
     except:
         pass
 
+    log.write(" -Checking if variants are in reference variant sets...", verbose=verbose)    
     known_list = allsig.apply(lambda x: check_overlap(x,snpid, group_key,reference_dict), axis=1)
     
     allsig["KNOWN_SET"] = known_list.str[0]
@@ -793,7 +795,7 @@ def _check_novel_set(insumstats,
         for j in allsig.loc[allsig[group_key]==i,snpset].unique():
             back_dict[i][j] =set()
             for index, row in allsig.loc[(allsig[group_key]==i) & (allsig[snpset]==j) & (~allsig["KNOWN_SET"].isna()),:].iterrows():
-                back_dict[i][j].add("{}-{}".format(row["KNOWN_SET"],row["KNOWN_VARIANT"]))
+                back_dict[i][j].add("{}-{}-{}".format(row[group_key], row["KNOWN_SET"],row["KNOWN_VARIANT"]))
 
     allsig["KNOWN_SET_VARIANT"] = allsig.apply(lambda x: assign_set_variant(x,group_key,snpset,back_dict), axis=1)
     
