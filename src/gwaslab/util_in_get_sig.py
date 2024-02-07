@@ -510,7 +510,7 @@ def _check_cis(insumstats,
            use_p=False,
            known=False,
            group_key=None,
-           if_get_lead = True,
+           if_get_lead = False,
            windowsizekb=500,
            sig_level=5e-8,
            log=Log(),
@@ -584,7 +584,7 @@ def _check_cis(insumstats,
     try:
         no_reference_avaialble = allsig.loc[~allsig[group_key].isin(reference_dict.keys()),group_key]
         if len(no_reference_avaialble)>0:
-            log.write(" -Groups not in reference: {}".format( ",".join(no_reference_avaialble)), verbose=verbose)
+            log.write(" -Groups not in reference: {}".format( ",".join(no_reference_avaialble.unique())), verbose=verbose)
     except:
         pass
 
@@ -638,8 +638,8 @@ def fill_meta_info_for_known(allsig, knownsig):
 def determine_if_cis(x, group_key,windowsizekb, reference_dict):
     if x[group_key] in reference_dict.keys():
         is_same_chr = str(reference_dict[x[group_key]][0]) == str(x["CHR"])
-        is_large_than_start = int(reference_dict[x[group_key]][1]) - windowsizekb <= x["POS"]
-        is_smaller_than_end = int(reference_dict[x[group_key]][2]) + windowsizekb >= x["POS"]               
+        is_large_than_start = int(reference_dict[x[group_key]][1]) - windowsizekb*1000 <= x["POS"]
+        is_smaller_than_end = int(reference_dict[x[group_key]][2]) + windowsizekb*1000 >= x["POS"]               
         
         if  is_same_chr and is_large_than_start  and is_smaller_than_end:
             return "Cis"
@@ -696,7 +696,7 @@ def _check_novel_set(insumstats,
            group_key=None,
            snpset="SNPSET",
            snpid="SNPID",
-           if_get_lead = True,
+           if_get_lead = False,
            windowsizekb=500,
            sig_level=5e-8,
            log=Log(),
