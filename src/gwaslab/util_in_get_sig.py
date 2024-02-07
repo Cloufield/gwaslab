@@ -595,6 +595,16 @@ def _check_cis(insumstats,
     except:
         pass
     
+    try:
+        number_of_cis = sum(allsig["CIS/TRANS"] == "Cis")
+        number_of_trans = sum(allsig["CIS/TRANS"] == "Trans")
+        number_of_noreference = sum(allsig["CIS/TRANS"] == "NoReference")
+        log.write (" -Number of Cis variants: {}".format(number_of_cis),verbose=verbose)
+        log.write (" -Number of Trans variants: {}".format(number_of_trans),verbose=verbose)
+        log.write (" -Number of NoReference variants: {}".format(number_of_noreference),verbose=verbose)
+    except:
+        pass
+
     finished(log,verbose,_end_line)
     
     return allsig
