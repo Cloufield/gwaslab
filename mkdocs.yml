@@ -22,7 +22,7 @@ nav:
        - Home : index.md
        - "Update logs" : UpdateLogs.md
        - "Known Issues" : KnownIssues.md
-       - "Reserved headers": reserved_header.md
+       - "Reserved Headers": reserved_header.md
     - Tutorial: tutorial_3.4.ipynb
     - Sumstats manipulation:
        - "Sumstats Object": SumstatsObject.md
@@ -89,6 +89,7 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - tables
 
 extra_javascript:
   - javascripts/mathjax.js
