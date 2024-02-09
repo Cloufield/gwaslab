@@ -523,6 +523,7 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
     def match_varaint(x):
         # x: "POS,NEA,EA"
         if np.any(ref_genotype["variants/POS"] == x.iloc[0]):
+            # position match
             if len(np.where(ref_genotype["variants/POS"] == x.iloc[0] )[0])>1:  
             # multiple position matches
                 for j in np.where(ref_genotype["variants/POS"] == x.iloc[0])[0]:
@@ -532,9 +533,8 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
                             return j
                     elif x.iloc[1] in ref_genotype["variants/ALT"][j]:
                         if x.iloc[2] == ref_genotype["variants/REF"][j]:
-                            return j
-                    else:
-                        return None
+                            return j    
+                return None
             else: 
                 # single match
                 return np.where(ref_genotype["variants/POS"] == x.iloc[0] )[0][0] 
