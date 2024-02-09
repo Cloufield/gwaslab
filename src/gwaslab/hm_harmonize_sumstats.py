@@ -677,8 +677,10 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
             status_inferred = pd.concat(pool.map(map_func,df_split))
             sumstats.loc[unknow_palindromic_to_check,status] = status_inferred.values
-        pool.close()
-        pool.join()
+            pool.close()
+            pool.join()
+        else:
+            log.warning("No palindromic variants available for checking.")
         #########################################################################################
         #0 Not palindromic SNPs
         #1 Palindromic +strand  -> no need to flip
@@ -734,8 +736,9 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
                 map_func = partial(check_indel,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict,daf_tolerance=daf_tolerance) 
                 status_inferred = pd.concat(pool.map(map_func,df_split))
                 sumstats.loc[unknow_indel,status] = status_inferred.values 
-            pool.close()
-            pool.join()
+                pool.close()
+                pool.join()
+
             #########################################################################################
 
             status3 =  sumstats[status].str.match(r'\w\w\w\w\w\w[3]', case=False, flags=0, na=False)  
@@ -747,7 +750,9 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             log.write("  -Indels with no macthes or no information : ",sum(status8),verbose=verbose)
             if "8" in remove_indel:
                 log.write("  -Indels with no macthes or no information will be removed",verbose=verbose)
-                sumstats = sumstats.loc[~status8,:].copy()     
+                sumstats = sumstats.loc[~status8,:].copy()    
+        else:
+            log.warning("No indistinguishable indels available for checking.") 
     
     finished(log,verbose,_end_line)
     return sumstats
