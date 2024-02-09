@@ -69,6 +69,7 @@ from gwaslab.viz_plot_trumpetplot import plottrumpet
 from gwaslab.viz_plot_compare_af import plotdaf
 from gwaslab.util_ex_run_susie import _run_susie_rss
 from gwaslab.qc_fix_sumstats import _check_data_consistency
+from gwaslab.util_ex_ldsc import _estimate_h2_by_ldsc
 import gc
 
 #20220309
@@ -126,7 +127,7 @@ class Sumstats():
         # basic attributes
         self.data = pd.DataFrame()
         self.log = Log()
-
+        self.ldsc_h2 = None
         # meta information
         self.meta = _init_meta() 
         self.build = build
@@ -725,6 +726,10 @@ class Sumstats():
             output = lambdaGC(self.data[["CHR",mode]],mode=mode,**args)
             self.meta["Genomic inflation factor"] = output
             return output 
+    
+    def estimate_h2_by_ldsc(self,**args):
+        self.ldsc_h2 = _estimate_h2_by_ldsc(insumstats=self.data, log=self.log, **args)
+
 # external ################################################################################################
     
     def to_finemapping(self,**args):

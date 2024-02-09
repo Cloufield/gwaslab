@@ -23,3 +23,12 @@ class Log():
         with open(path,"w") as f:
             if verbose: print(str(time.strftime('%Y/%m/%d %H:%M:%S')) + " " + " -Save log file to : ", path)
             f.write(self.log_text)
+
+
+    def log(self,*message,end="\n",show_time=True, verbose=True):
+        if show_time is True:
+            if verbose: print(str(time.strftime('%Y/%m/%d %H:%M:%S')),*message,end=end)
+            self.log_text = self.log_text + str(time.strftime('%Y/%m/%d %H:%M:%S')) + " " + " ".join(map(str,message)) + end
+        else:
+            if verbose: print(*message,end=end)
+            self.log_text = self.log_text + " ".join(map(str,message)) + end
