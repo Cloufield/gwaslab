@@ -70,6 +70,8 @@ from gwaslab.viz_plot_compare_af import plotdaf
 from gwaslab.util_ex_run_susie import _run_susie_rss
 from gwaslab.qc_fix_sumstats import _check_data_consistency
 from gwaslab.util_ex_ldsc import _estimate_h2_by_ldsc
+from gwaslab.util_ex_ldsc import _estimate_rg_by_ldsc
+from gwaslab.bd_get_hapmap3 import gethapmap3
 import gc
 
 #20220309
@@ -128,6 +130,7 @@ class Sumstats():
         self.data = pd.DataFrame()
         self.log = Log()
         self.ldsc_h2 = None
+        self.ldsc_rg = None
         # meta information
         self.meta = _init_meta() 
         self.build = build
@@ -727,9 +730,17 @@ class Sumstats():
             self.meta["Genomic inflation factor"] = output
             return output 
     
-    def estimate_h2_by_ldsc(self,**args):
-        self.ldsc_h2 = _estimate_h2_by_ldsc(insumstats=self.data, log=self.log, **args)
-
+    def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **args):
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True )
+        self.ldsc_h2 = _estimate_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
+    
+    def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, **args):
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True )
+        self.ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
 # external ################################################################################################
     
     def to_finemapping(self,**args):
