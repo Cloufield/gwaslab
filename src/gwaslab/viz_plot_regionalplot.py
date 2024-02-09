@@ -714,8 +714,9 @@ def process_gtf(gtf_path,
     # extract protein coding gene
     if region_protein_coding is True:
         #genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:].copy()
-        pc_genes_1mb_list = genes_1mb.loc[(genes_1mb["feature"]=="gene")& (genes_1mb["gene_biotype"]=="protein_coding"),"name"].values
-        genes_1mb = genes_1mb.loc[genes_1mb["name"].isin(pc_genes_1mb_list),:]
+        ##pc_genes_1mb_list = genes_1mb.loc[(genes_1mb["feature"]=="gene")& (genes_1mb["gene_biotype"]=="protein_coding"),"name"].values
+        ##genes_1mb = genes_1mb.loc[genes_1mb["name"].isin(pc_genes_1mb_list),:]
+        genes_1mb = genes_1mb.loc[(genes_1mb["feature"]=="gene")& (genes_1mb["gene_biotype"]=="protein_coding"),:]
     # extract exon
     exons = genes_1mb.loc[genes_1mb["feature"]=="exon",:].copy()
     
