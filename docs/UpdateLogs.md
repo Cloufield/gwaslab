@@ -1,11 +1,14 @@
 # Update Logs
 
 ## 3.4.39 20240207
+- integrated LDSC
 - fixed bug when saving plot as pdf with matplotlib>3.6
 - fixed typos
 - added check_novel_set / check_cis 
 - added filter_snp/palindromic/indel and filter_hapmap3
 - updated log system
+- fixed bug when gene name is empty in regional plot
+- fixed error in harmonization when there is no palindromic or indel to check.
 
 ## 3.4.38 20240203
 - fixed seaborn version
