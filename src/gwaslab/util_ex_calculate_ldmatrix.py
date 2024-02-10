@@ -4,6 +4,8 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
+from gwaslab.qc_fix_sumstats import start_to
+from gwaslab.qc_fix_sumstats import finished
 from gwaslab.util_in_get_sig import getsig
 from gwaslab.util_ex_process_ref import _process_plink_input_files
 from gwaslab.g_version import _checking_plink_version
@@ -23,7 +25,25 @@ def tofinemapping(sumstats,
                   overwrite=False,
                   log=Log(),
                   suffixes=None,
+                  verbose=True,
                   **args):
+    ##start function with col checking##########################################################
+    _start_line = "calculate LD matrix"
+    _end_line = "calculating LD matrix"
+    _start_cols =["SNPID","CHR","POS","EA","NEA"]
+    _start_function = ".calculate_ld_matrix()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: raise ValueError("Not enough columns for calculating LD matrix")
+    ############################################################################################
     if suffixes is None:
         suffixes=[""]
     if getlead_args is None:
@@ -40,7 +60,7 @@ def tofinemapping(sumstats,
     sumstats = sumstats.drop_duplicates(subset=["SNPID"]).copy()
 
     # init Filelist DataFrame
-    output_file_list = pd.DataFrame(columns=["SNPID","SNPID_List","LD_r_matrix","Locus_sumstats"])
+    output_file_list = pd.DataFrame(columns=["SNPID","SNPID_LIST","LD_R_MATRIX","LOCUS_SUMSTATS"])
     
     plink_log=""
     raw_len = len(sig_df)
@@ -107,14 +127,14 @@ def tofinemapping(sumstats,
         # print file list
         row_dict={}
         row_dict["SNPID"]=row["SNPID"]
-        row_dict["SNPID_List"] = matched_snp_list_path
-        row_dict["LD_r_matrix"] = matched_ld_matrix_path
-        row_dict["Locus_sumstats"] = matched_sumstats_path
+        row_dict["SNPID_LIST"] = matched_snp_list_path
+        row_dict["LD_R_MATRIX"] = matched_ld_matrix_path
+        row_dict["LOCUS_SUMSTATS"] = matched_sumstats_path
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
     
     if len(output_file_list)>0:
-        output_file_list["study"] = study
+        output_file_list["STUDY"] = study
         nloci = len(output_file_list)
         output_file_list_path =  "{}/{}_{}loci_{}kb.filelist".format(out.rstrip("/"), study,nloci, windowsizekb)
         output_file_list.to_csv(output_file_list_path,index=None,sep="\t")
@@ -124,7 +144,8 @@ def tofinemapping(sumstats,
         output_file_list_path=None
         log.write(" -No avaialable lead variants.")
         log.write(" -Stopped LD matrix calculation.")
-    return output_file_list_path, plink_log
+    finished(log=log, verbose=verbose, end_line=_end_line)
+    return output_file_list_path, output_file_list, plink_log
 
 
 
@@ -177,7 +198,7 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=No
     if suffixes is None:
             suffixes=[""]
     
-    log.write("   -#variants in locus ({}): {}".format(row["SNPID"],len(locus_sumstats)))
+    log.write("   -Variants in locus ({}): {}".format(row["SNPID"],len(locus_sumstats)))
     # convert category to string
     locus_sumstats["EA"] = locus_sumstats["EA"].astype("string")
     locus_sumstats["NEA"] = locus_sumstats["NEA"].astype("string")
@@ -188,17 +209,17 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=No
     
     # match allele
     perfect_match =  ((combined_df["EA"] == combined_df["EA_bim"]) & (combined_df["NEA"] == combined_df["NEA_bim"]) ) 
-    log.write("   -#Variants with perfect matched alleles:{}".format(sum(perfect_match)))
+    log.write("   -Variants with perfect matched alleles:{}".format(sum(perfect_match)))
 
     # fliipped allele
     #ea_mis_match = combined_df["EA"] != combined_df["EA_bim"]
     flipped_match = ((combined_df["EA"] == combined_df["NEA_bim"])& (combined_df["NEA"] == combined_df["EA_bim"]))
-    log.write("   -#Variants with flipped alleles:{}".format(sum(flipped_match)))
+    log.write("   -Variants with flipped alleles:{}".format(sum(flipped_match)))
     
     allele_match = perfect_match | flipped_match
-    log.write("   -#Total Variants matched:{}".format(sum(allele_match)))
+    log.write("   -Total Variants matched:{}".format(sum(allele_match)))
 
-    if row["SNPID"] not in combined_df.loc[perfect_match,"SNPID"].values:
+    if row["SNPID"] not in combined_df.loc[allele_match,"SNPID"].values:
         log.warning("Lead variant was not available in reference!")
     
     # adjust statistics

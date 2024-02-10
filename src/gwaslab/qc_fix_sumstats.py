@@ -1537,35 +1537,35 @@ def start_to(sumstats,
     
     log.write("Start to {}...{}".format(start_line,_get_version()), verbose=verbose)
     
-    check_dataframe_shape(sumstats=sumstats, 
-                          log=log, 
-                          verbose=verbose)  
-    
-    is_enough_col = check_col(sumstats.columns, 
-                              verbose=verbose, 
-                              log=log, 
-                              cols=start_cols, 
-                              function=start_function)
-    
-    if is_enough_col==True:
-        if n_cores is not None:
-            log.write(" -Number of threads/cores to use: {}".format(n_cores))
-        if ref_vcf is not None:
-            log.write(" -Reference VCF: {}".format(ref_vcf))
-        if ref_fasta is not None:
-            log.write(" -Reference FASTA: {}".format(ref_fasta))
-        if ref_tsv is not None:
-            log.write(" -Reference TSV: {}".format(ref_tsv))
-        
-        is_args_valid = True
-        for key, value in args.items():
-            is_args_valid = is_args_valid & check_arg(log, verbose, key, value, start_function)
-        is_enough_col = is_args_valid & is_enough_col
+    if sumstats is not None:
+        check_dataframe_shape(sumstats=sumstats, 
+                            log=log, 
+                            verbose=verbose)  
+        is_enough_col = check_col(sumstats.columns, 
+                                verbose=verbose, 
+                                log=log, 
+                                cols=start_cols, 
+                                function=start_function)
+        if is_enough_col==True:
+            if n_cores is not None:
+                log.write(" -Number of threads/cores to use: {}".format(n_cores))
+            if ref_vcf is not None:
+                log.write(" -Reference VCF: {}".format(ref_vcf))
+            if ref_fasta is not None:
+                log.write(" -Reference FASTA: {}".format(ref_fasta))
+            if ref_tsv is not None:
+                log.write(" -Reference TSV: {}".format(ref_tsv))
+            
+            is_args_valid = True
+            for key, value in args.items():
+                is_args_valid = is_args_valid & check_arg(log, verbose, key, value, start_function)
+            is_enough_col = is_args_valid & is_enough_col
 
-    if  is_enough_col == False:
-        skipped(log, verbose, end_line)
-
-    return is_enough_col
+        if  is_enough_col == False:
+            skipped(log, verbose, end_line)
+        return is_enough_col
+    else:
+        return None
 
 def finished(log, verbose, end_line):
     log.write("Finished {}.".format(end_line), verbose=verbose)

@@ -6,6 +6,8 @@ import numpy as np
 from gwaslab.g_Log import Log
 from gwaslab.g_version import _checking_r_version
 from gwaslab.g_version import _check_susie_version
+from gwaslab.qc_fix_sumstats import start_to
+from gwaslab.qc_fix_sumstats import finished
 
 def _run_coloc_susie(filepath, r="Rscript",
                      types=None, ns=None, 
@@ -44,11 +46,11 @@ def _run_coloc_susie(filepath, r="Rscript",
 
     for index, row in filelist.iterrows(): 
         gc.collect()
-        study = row["study"]
-        ld_r_matrix = row["LD_r_matrix"]
-        sumstats = row["Locus_sumstats"]
+        study = row["STUDY"]
+        ld_r_matrix = row["LD_R_MATRIX"]
+        sumstats = row["LOCUS_SUMSTATS"]
         output_prefix = sumstats.replace(".sumstats.gz","")
-        log.write(" -Running for: {} - {}".format(row["SNPID"],row["study"] ), verbose=verbose)
+        log.write(" -Running for: {} - {}".format(row["SNPID"],row["STUDY"] ), verbose=verbose)
         log.write("  -Locus sumstats:{}".format(sumstats), verbose=verbose)
         log.write("  -LD r matrix:{}".format(ld_r_matrix), verbose=verbose)
         log.write("  -output_prefix:{}".format(output_prefix), verbose=verbose)
@@ -112,9 +114,9 @@ def _run_coloc_susie(filepath, r="Rscript",
             if len(pip_cs)==0:
                  log.write("  -SuSieR result for {} is empty. Please check parameters.".format(output_prefix), verbose=verbose)
             else:
-                pip_cs["Locus"] = row["SNPID"]
-                pip_cs["STUDY"] = row["study"]
-                pip_cs["hit1"] = row["SNPID"]
+                pip_cs["LOCUS"] = row["SNPID"]
+                pip_cs["STUDY"] = row["STUDY"]
+                pip_cs["HIT1"] = row["SNPID"]
                 pip_cs["METHOD"] = "abf"
                 locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
 
@@ -122,8 +124,8 @@ def _run_coloc_susie(filepath, r="Rscript",
             if len(pip_cs)==0:
                  log.write("  -SuSieR result for {} is empty. Please check parameters.".format(output_prefix), verbose=verbose)
             else:
-                pip_cs["Locus"] = row["SNPID"]
-                pip_cs["STUDY"] = row["study"]
+                pip_cs["LOCUS"] = row["SNPID"]
+                pip_cs["STUDY"] = row["STUDY"]
                 pip_cs["METHOD"] = "susie"
                 locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
             

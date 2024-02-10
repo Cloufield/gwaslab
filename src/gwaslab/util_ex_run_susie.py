@@ -6,9 +6,27 @@ import numpy as np
 from gwaslab.g_Log import Log
 from gwaslab.g_version import _checking_r_version
 from gwaslab.g_version import _check_susie_version
+from gwaslab.qc_fix_sumstats import start_to
+from gwaslab.qc_fix_sumstats import finished
 
-def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, fillldna=True, n=None, delete=False, susie_args="", log=Log()):
-    log.write(" Start to run finemapping using SuSieR from command line:")
+def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, fillldna=True, n=None, delete=False, susie_args="", log=Log(),verbose=True):
+    ##start function with col checking##########################################################
+    _start_line = "run finemapping using SuSieR from command line"
+    _end_line = "running finemapping using SuSieR from command line"
+    _start_cols =[]
+    _start_function = ".run_susie_rss()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=None,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: raise ValueError("Not enough columns for calculating LD matrix")
+    ############################################################################################
     if filepath is None:
         log.write(" -File path is None.")
         log.write("Finished finemapping using SuSieR.")
@@ -24,11 +42,11 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
 
     for index, row in filelist.iterrows(): 
         gc.collect()
-        study = row["study"]
-        ld_r_matrix = row["LD_r_matrix"]
-        sumstats = row["Locus_sumstats"]
+        study = row["STUDY"]
+        ld_r_matrix = row["LD_R_MATRIX"]
+        sumstats = row["LOCUS_SUMSTATS"]
         output_prefix = sumstats.replace(".sumstats.gz","")
-        log.write(" -Running for: {} - {}".format(row["SNPID"],row["study"] ))
+        log.write(" -Running for: {} - {}".format(row["SNPID"],row["STUDY"] ))
         log.write("  -Locus sumstats:{}".format(sumstats))
         log.write("  -LD r matrix:{}".format(ld_r_matrix))
         log.write("  -output_prefix:{}".format(output_prefix))
@@ -84,9 +102,10 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
             log.write(" Running SuSieR from command line...")
             r_log+= output + "\n"
             pip_cs = pd.read_csv("{}.pipcs".format(output_prefix))
-            pip_cs["Locus"] = row["SNPID"]
-            pip_cs["STUDY"] = row["study"]
+            pip_cs["LOCUS"] = row["SNPID"]
+            pip_cs["STUDY"] = row["STUDY"]
             locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
+            	
             os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))
             if delete == True:
                 os.remove("{}.pipcs".format(output_prefix))
@@ -95,6 +114,8 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
         except subprocess.CalledProcessError as e:
             log.write(e.output)
             os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))
-    log.write("Finished finemapping using SuSieR.")
+    
+    locus_pip_cs = locus_pip_cs.rename(columns={"variable":"N_SNP","variable_prob":"PIP","cs":"CREDIBLE_SET_INDEX"})	
+    finished(log=log, verbose=verbose, end_line=_end_line)
     return locus_pip_cs
 

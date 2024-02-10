@@ -3,6 +3,8 @@ import numpy as np
 import os
 import pandas as pd
 from gwaslab.g_Log import Log
+from gwaslab.qc_fix_sumstats import start_to
+from gwaslab.qc_fix_sumstats import finished
 from gwaslab.util_ex_process_ref import _process_plink_input_files
 from gwaslab.g_version import _checking_plink_version
 
@@ -10,6 +12,23 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
            p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, 
            n_cores=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
            log=Log(),verbose=True):
+    ##start function with col checking##########################################################
+    _start_line = "perfrom clumping"
+    _end_line = "clumping"
+    _start_cols =["SNPID","CHR","POS","EA","NEA"]
+    _start_function = ".clump()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: raise ValueError("Not enough columns for clumping")
+    ############################################################################################
     ## process reference
     log.write("Start to perform clumping...",verbose=verbose)
     log.write(" -Clumping parameters for PLINK2:",verbose=verbose)
@@ -56,16 +75,21 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
                 bim = pd.read_csv(bfile_to_use + ".bim",usecols=[1],header=None,sep="\s+")[1]
             else:
                 bim = pd.read_csv(bfile_to_use + ".pvar",usecols=[2],header=None,comment="#",sep="\s+")[2]
+            
             snplist = sumstats.loc[sumstats["CHR"]==i,"SNPID"]
-            is_on_both = snplist.isin(bim)
-            log.write(" -#variants in reference file: {}...".format(len(bim)),verbose=verbose)
-            log.write(" -#variants in sumstats: {}...".format(len(snplist)),verbose=verbose)
-            log.write(" -#variants available in both reference and sumstats: {}...".format(sum(is_on_both)),verbose=verbose)
+            
+            is_on_both = sumstats["SNPID"].isin(bim)
+
+            log.write(" -Variants in reference file: {}...".format(len(bim)),verbose=verbose)
+            log.write(" -Variants in sumstats: {}...".format(len(snplist)),verbose=verbose)
+            log.write(" -Variants available in both reference and sumstats: {}...".format(sum(is_on_both)),verbose=verbose)
+
+            is_avaialable_variant = (sumstats["CHR"]==i) & (is_on_both)
 
             if scaled == True:
-                sumstats.loc[(sumstats["CHR"]==i) &(is_on_both),["SNPID",mlog10p]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=None,sep="\t")
+                sumstats.loc[is_avaialable_variant,["SNPID",mlog10p]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=False,sep="\t")
             else:
-                sumstats.loc[(sumstats["CHR"]==i) & (is_on_both),["SNPID",p]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=None,sep="\t")
+                sumstats.loc[is_avaialable_variant,["SNPID",p]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=False,sep="\t")
         except:
             log.write(" -Not available for: {}...".format(i),verbose=verbose)
         
@@ -147,6 +171,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
     results = results.sort_values(by=["#CHROM","POS"]).rename(columns={"#CHROM":"CHR","ID":"SNPID"})
     log.write("Finished clumping.",verbose=verbose)
     results_sumstats = insumstats.loc[insumstats["SNPID"].isin(results["SNPID"]),:].copy()
+    finished(log=log, verbose=verbose, end_line=_end_line)
     return results_sumstats, plink_log
 
 

@@ -8,8 +8,10 @@ from gwaslab.g_Log import Log
 from gwaslab.g_version import _checking_r_version
 from gwaslab.g_version import _check_susie_version
 from gwaslab.util_in_convert_h2 import _get_per_snp_r2
+from gwaslab.qc_fix_sumstats import start_to
+from gwaslab.qc_fix_sumstats import finished
 
-#  
+
 def _run_two_sample_mr(sumstatspair_object,
                        r,
                        clump=False,

@@ -139,6 +139,7 @@ class Sumstats():
         
         # initialize attributes for clumping and finmapping
         self.to_finemapping_file_path = ""
+        self.to_finemapping_file  = pd.DataFrame()
         self.plink_log = ""
         self.clumps = pd.DataFrame()
         self.pipcs = pd.DataFrame()
@@ -743,8 +744,8 @@ class Sumstats():
         self.ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
 # external ################################################################################################
     
-    def to_finemapping(self,**args):
-        self.to_finemapping_file_path, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**args)
+    def calculate_ld_matrix(self,**args):
+        self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**args)
     
     def run_susie_rss(self,**args):
         self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**args)
