@@ -105,8 +105,13 @@ def plot_rg(ldscrg,
     df_fill_na = pd.DataFrame(columns=df.columns)
     df_fill_na[[p1,p2]] = [(i,j) for i in df[p1].sort_values(ascending=False).drop_duplicates() for j in df[p2].sort_values(ascending=False).drop_duplicates()]
     
+    to_concate=[]
+    for i in [df,df_fill_reverse,df_fill_dia,df_fill_na]:
+        if len(i)>0:
+            to_concate.append(i.dropna(axis=1))
+    
     # fill diagonal
-    df = pd.concat([df,df_fill_reverse,df_fill_dia,df_fill_na],ignore_index=True).sort_values(by=p).drop_duplicates(subset=[p1,p2])
+    df = pd.concat(to_concate,ignore_index=True).sort_values(by=p).drop_duplicates(subset=[p1,p2])
     
     #log.write(" -Dataset shape match:", len(df)==)
     #
@@ -301,11 +306,11 @@ def plot_rg(ldscrg,
 
     # annotate p
     if panno is True:
-        log.write("P value annotation text : " ,verbose=verbose)
+        log.write("P value annotation text (Order: Bon -> FDR -> Pnom): " ,verbose=verbose)
         for i,correction in enumerate(corrections):
             for j,sig_level in enumerate(sig_levels):
                 index = len(sig_levels)*i + j
-                log.write(" -{} : {}-corrected P < {}".format(panno_texts[index], correction, sig_level) ,verbose=verbose)
+                log.write(" -{} : {}-corrected P < {} ".format(panno_texts[index], correction, sig_level) ,verbose=verbose)
         for panno_set_number in panno_list.keys():
             for key, i in panno_list[panno_set_number].items():
                 if panno_set_number == 1:
