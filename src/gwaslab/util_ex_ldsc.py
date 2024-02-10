@@ -167,7 +167,7 @@ def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **args):
     sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
     
     other_traits_to_use = []
-    alias = default_args.rg.split(",")
+    alias = default_args.rg.split(",")[1:]
 
     for index, each_other_sumstats in enumerate(other_traits):
         log.write(" -Processing sumstats with alias {} ({})".format(alias[index], each_other_sumstats.meta["gwaslab"]["study_name"]))
