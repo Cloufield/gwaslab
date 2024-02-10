@@ -53,6 +53,8 @@ nav:
        - "Convert Heritability": HeritabilityConversion.md
        - "Per-SNP R2 and F" : PerSNPh2.md
        - "Infer Genome Build": InferBuild.md
+    - Downstream:
+       - "LDSC in GWASLab": LDSCinGWASLab.md
     - References:
        - "Download": Download.md 
        - "Reference data" : Reference.md

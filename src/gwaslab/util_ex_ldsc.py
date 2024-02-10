@@ -153,7 +153,7 @@ def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **args):
     ############################################################################################
     log.write(" -Run cross-trait LD score regression:", verbose=verbose)
     log.write("  -Adopted from LDSC source code: https://github.com/bulik/ldsc", verbose=verbose)
-    log.write("  -Please cite LDSC: Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.", verbose=verbose)
+    log.write("  -Please cite LDSC: Bulik-Sullivan, B., et al. An Atlas of Genetic Correlations across Human Diseases and Traits. Nature Genetics, 2015.", verbose=verbose)
     log.write(" -Arguments:", verbose=verbose)
     
     for key, value in args.items():
