@@ -80,8 +80,16 @@ class ARGS():
         self.not_M_5_50 = False
         self.no_check_alleles = False
         self.return_silly_things = False
-        self.samp_prev =None
-        self.pop_prev =None
+
+        if "samp_prev" in args.keys():
+            self.samp_prev = args["samp_prev"]
+        else:
+            self.samp_prev = None 
+        
+        if "pop_prev" in args.keys():
+            self.pop_prev = args["pop_prev"]
+        else:
+            self.pop_prev = None 
 
 def _estimate_h2_by_ldsc(insumstats, log, verbose=True, **args):
     sumstats = insumstats.copy()
@@ -159,9 +167,10 @@ def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **args):
     sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
     
     other_traits_to_use = []
-    
-    for each_other_sumstats in other_traits:
-        log.write("Processing {}".format(each_other_sumstats.meta["gwaslab"]["study_name"]))
+    alias = default_args.rg.split(",")
+
+    for index, each_other_sumstats in enumerate(other_traits):
+        log.write(" -Processing sumstats with alias {} ({})".format(alias[index], each_other_sumstats.meta["gwaslab"]["study_name"]))
         if "rsID" not in each_other_sumstats.data.columns:
             to_append = each_other_sumstats.filter_hapmap3(verbose=False).data.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
         else:        

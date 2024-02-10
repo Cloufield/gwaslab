@@ -18,6 +18,8 @@ import copy
 import os
 import glob
 
+log_prefix  = '                       -'
+log_prefix_short = '  -'
 def xrange(*args):
     return range(*args)
 
@@ -383,15 +385,28 @@ def estimate_h2(sumstats, args, log):
 def estimate_rg(sumstats, other_sumstats, args, log):
     '''Estimate rg between trait 1 and a list of other traits.'''
     args = copy.deepcopy(args)
+    
     rg_paths, rg_files = _parse_rg(args.rg)
+    
     n_pheno = len(rg_paths)
+    
     f = lambda x: _split_or_none(x, n_pheno)
+    
     args.intercept_h2, args.intercept_gencov, args.samp_prev, args.pop_prev = map(f,
         (args.intercept_h2, args.intercept_gencov, args.samp_prev, args.pop_prev))
+    
+    ##map behaviour changed since python3##############################################
+    args.intercept_h2 = list(args.intercept_h2)
+    args.intercept_gencov = list(args.intercept_gencov)
+    args.samp_prev = list(args.samp_prev)
+    args.pop_prev = list(args.pop_prev)
+    ################################################
+
     map(lambda x: _check_arg_len(x, n_pheno), ((args.intercept_h2, '--intercept-h2'),
                                                (args.intercept_gencov, '--intercept-gencov'),
                                                (args.samp_prev, '--samp-prev'),
                                                (args.pop_prev, '--pop-prev')))
+    
     if args.no_intercept:
         args.intercept_h2 = [1 for _ in xrange(n_pheno)]
         args.intercept_gencov = [0 for _ in xrange(n_pheno)]
@@ -412,27 +427,27 @@ def estimate_rg(sumstats, other_sumstats, args, log):
     for i, p2 in enumerate(other_sumstats):
         log.log(
             '  -Computing rg for phenotype {I}/{N}'.format(I=i + 2, N=len(rg_paths)))
-        #try:
-        loop = _read_other_sumstats(args, log, p2, sumstats, ref_ld_cnames)
-        rghat = _rg(loop, args, log, M_annot, ref_ld_cnames, w_ld_cname, i)
-        RG.append(rghat)
-        _print_gencor(args, log, rghat, ref_ld_cnames, i, rg_paths, i == 0)
-        out_prefix_loop = out_prefix + '_' + rg_files[i + 1]
-        if args.print_cov:
-            _print_rg_cov(rghat, out_prefix_loop, log)
-        if args.print_delete_vals:
-            _print_rg_delete_values(rghat, out_prefix_loop, log)
+        try:
+            loop = _read_other_sumstats(args, log, p2, sumstats, ref_ld_cnames)
+            rghat = _rg(loop, args, log, M_annot, ref_ld_cnames, w_ld_cname, i)
+            RG.append(rghat)
+            _print_gencor(args, log, rghat, ref_ld_cnames, i, rg_paths, i == 0)
+            out_prefix_loop = out_prefix + '_' + rg_files[i + 1]
+            if args.print_cov:
+                _print_rg_cov(rghat, out_prefix_loop, log)
+            if args.print_delete_vals:
+                _print_rg_delete_values(rghat, out_prefix_loop, log)
 
-        #except Exception:  # keep going if phenotype 50/100 causes an error
+        except Exception:  # keep going if phenotype 50/100 causes an error
 
-        #    msg = 'ERROR computing rg for phenotype {I}/{N}, from file {F}.'
-        #    log.log(msg.format(I=i + 2, N=len(rg_paths), F=rg_paths[i + 1]))
-        #    ex_type, ex, tb = sys.exc_info()
-        #    log.log(traceback.format_exc(ex) + '\n')
-        #    if len(RG) <= i:  # if exception raised before appending to RG
-        #        RG.append(None)
+            msg = 'ERROR computing rg for phenotype {I}/{N}, from file {F}.'
+            log.log(msg.format(I=i + 2, N=len(rg_paths), F=rg_paths[i + 1]))
+            ex_type, ex, tb = sys.exc_info()
+            log.log(traceback.format_exc(ex) + '\n')
+            if len(RG) <= i:  # if exception raised before appending to RG
+                RG.append(None)
 
-    log.log('\nSummary of Genetic Correlation Results\n' +
+    log.log('Summary of Genetic Correlation Results\n' +
             _get_rg_table(rg_paths, RG, args)[0])
     return RG, _get_rg_table(rg_paths, RG, args)[1]
 
@@ -456,35 +471,47 @@ def _read_other_sumstats(args, log, p2, sumstats, ref_ld_cnames):
 
 def _get_rg_table(rg_paths, RG, args):
     '''Print a table of genetic correlations.'''
+    # fix error caused by behaviour change for map
     t = lambda attr: lambda obj: getattr(obj, attr, 'NA')
     x = pd.DataFrame()
     x['p1'] = [rg_paths[0] for i in xrange(1, len(rg_paths))]
     x['p2'] = rg_paths[1:len(rg_paths)]
+    
     #x['rg'] = map(t('rg_ratio'), RG) 
     #x['se'] = map(t('rg_se'), RG)
     #x['z'] = map(t('z'), RG)
     #x['p'] = map(t('p'), RG)
+    
     x['rg'] = [getattr(i, 'rg_ratio', 'NA') for i in RG]
     x['se'] = [getattr(i, 'rg_se', 'NA') for i in RG]
     x['z'] = [getattr(i, 'z', 'NA') for i in RG]
     x['p'] = [getattr(i, 'p', 'NA') for i in RG]
+    ## i -> it
     if args.samp_prev is not None and \
             args.pop_prev is not None and \
             all((i is not None for i in args.samp_prev)) and \
-            all((i is not None for it in args.pop_prev)):
-
-        c = map(lambda x, y: reg.h2_obs_to_liab(1, x, y), args.samp_prev[1:], args.pop_prev[1:])
-        x['h2_liab'] = map(lambda x, y: x * y, c, map(t('tot'), map(t('hsq2'), RG)))
-        x['h2_liab_se'] = map(lambda x, y: x * y, c, map(t('tot_se'), map(t('hsq2'), RG)))
+            all((it is not None for it in args.pop_prev)):
+        
+        #c = map(lambda x, y: reg.h2_obs_to_liab(1, x, y), args.samp_prev[1:], args.pop_prev[1:])
+        c = list(map(lambda x, y: reg.h2_obs_to_liab(1, x, y), args.samp_prev[1:], args.pop_prev[1:]))
+        
+        #x['h2_liab'] = map(lambda x, y: x * y, c, map(t('tot'), map(t('hsq2'), RG)))
+        #x['h2_liab_se'] = map(lambda x, y: x * y, c, map(t('tot_se'), map(t('hsq2'), RG)))
+        
+        x['h2_liab'] = [getattr(getattr(i, 'hsq2', 'NA'), 'tot', 'NA') * c[index]  for index,i in enumerate(RG)]
+        x['h2_liab_se'] =[getattr(getattr(i, 'hsq2', 'NA'), 'tot_se', 'NA') *  c[index] for index,i in enumerate(RG)]
     else:
         #x['h2_obs'] = map(t('tot'), map(t('hsq2'), RG))
         #x['h2_obs_se'] = map(t('tot_se'), map(t('hsq2'), RG))
+        
         x['h2_obs'] = [getattr(getattr(i, 'hsq2', 'NA'), 'tot', 'NA')  for i in RG]
         x['h2_obs_se'] = [getattr(getattr(i, 'hsq2', 'NA'), 'tot_se', 'NA') for i in RG]
+    
     #x['h2_int'] = map(t('intercept'), map(t('hsq2'), RG))
     #x['h2_int_se'] = map(t('intercept_se'), map(t('hsq2'), RG))
     #x['gcov_int'] = map(t('intercept'), map(t('gencov'), RG))
     #x['gcov_int_se'] = map(t('intercept_se'), map(t('gencov'), RG))
+    
     x['h2_int'] = [getattr(getattr(i, 'hsq2', 'NA'), 'intercept', 'NA') for i in RG]
     x['h2_int_se'] = [getattr(getattr(i, 'hsq2', 'NA'), 'intercept_se', 'NA') for i in RG]
     x['gcov_int'] = [getattr(getattr(i, 'gencov', 'NA'), 'intercept', 'NA') for i in RG]
@@ -493,23 +520,24 @@ def _get_rg_table(rg_paths, RG, args):
 
 
 def _print_gencor(args, log, rghat, ref_ld_cnames, i, rg_paths, print_hsq1):
-    l = lambda x: x + ''.join(['-' for i in range(len(x.replace('\n', '')))])
+    #l = lambda x: x + ''.join(['-' for i in range(len(x.replace('\n', '')))])
+    l = lambda x: x
     P = [args.samp_prev[0], args.samp_prev[i + 1]]
     K = [args.pop_prev[0], args.pop_prev[i + 1]]
     if args.samp_prev is None and args.pop_prev is None:
         args.samp_prev = [None, None]
         args.pop_prev = [None, None]
     if print_hsq1:
-        log.log(l('\nHeritability of phenotype 1\n'))
-        log.log(rghat.hsq1.summary(ref_ld_cnames, P=P[0], K=K[0]))
+        log.log(l(log_prefix_short+'Heritability of phenotype 1'))
+        log.log(log_prefix_short+rghat.hsq1.summary(ref_ld_cnames, P=P[0], K=K[0]))
 
     log.log(
-        l('\nHeritability of phenotype {I}/{N}\n'.format(I=i + 2, N=len(rg_paths))))
-    log.log(rghat.hsq2.summary(ref_ld_cnames, P=P[1], K=K[1]))
-    log.log(l('\nGenetic Covariance\n'))
-    log.log(rghat.gencov.summary(ref_ld_cnames, P=P, K=K))
-    log.log(l('\nGenetic Correlation\n'))
-    log.log(rghat.summary() + '\n')
+        l(log_prefix_short+'Heritability of phenotype {I}/{N}'.format(I=i + 2, N=len(rg_paths))))
+    log.log(log_prefix_short+rghat.hsq2.summary(ref_ld_cnames, P=P[1], K=K[1]))
+    log.log(l(log_prefix_short+'Genetic Covariance'))
+    log.log(log_prefix_short+rghat.gencov.summary(ref_ld_cnames, P=P, K=K))
+    log.log(l(log_prefix_short+'Genetic Correlation'))
+    log.log(log_prefix_short+rghat.summary() + '\n')
 
 
 def _merge_sumstats_sumstats(args, sumstats1, sumstats2, log):

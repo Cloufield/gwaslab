@@ -17,6 +17,8 @@ from scipy.stats import t as tdist
 from collections import namedtuple
 np.seterr(divide='raise', invalid='raise')
 
+log_prefix = '                       -'
+log_prefix_short = '  -'
 s = lambda x: remove_brackets(str(np.matrix(x)))
 
 def xrange(*args):
@@ -459,34 +461,34 @@ class Hsq(LD_Score_Regression):
                 ref_ld_colnames = ['CAT_' + str(i)
                                    for i in xrange(self.n_annot)]
 
-            out.append('Categories: ' + ' '.join(ref_ld_colnames))
+            out.append(log_prefix_short+'Categories: ' + ' '.join(ref_ld_colnames))
 
             if not overlap:
-                out.append(T + ' scale h2: ' + s(c * self.cat))
-                out.append(T + ' scale h2 SE: ' + s(c * self.cat_se))
-                out.append('Proportion of SNPs: ' + s(self.M_prop))
-                out.append('Proportion of h2g: ' + s(self.prop))
-                out.append('Enrichment: ' + s(self.enrichment))
-                out.append('Coefficients: ' + s(self.coef))
-                out.append('Coefficient SE: ' + s(self.coef_se))
+                out.append(log_prefix+T + ' scale h2: ' + s(c * self.cat))
+                out.append(log_prefix+T + ' scale h2 SE: ' + s(c * self.cat_se))
+                out.append(log_prefix+'Proportion of SNPs: ' + s(self.M_prop))
+                out.append(log_prefix+'Proportion of h2g: ' + s(self.prop))
+                out.append(log_prefix+'Enrichment: ' + s(self.enrichment))
+                out.append(log_prefix+'Coefficients: ' + s(self.coef))
+                out.append(log_prefix+'Coefficient SE: ' + s(self.coef_se))
 
-        out.append('Lambda GC: ' + s(self.lambda_gc))
-        out.append('Mean Chi^2: ' + s(self.mean_chisq))
+        out.append(log_prefix+'Lambda GC: ' + s(self.lambda_gc))
+        out.append(log_prefix+'Mean Chi^2: ' + s(self.mean_chisq))
         if self.constrain_intercept:
             out.append(
-                'Intercept: constrained to {C}'.format(C=s(self.intercept)))
+                log_prefix+'Intercept: constrained to {C}'.format(C=s(self.intercept)))
         else:
             out.append(
-                'Intercept: ' + s(self.intercept) + ' (' + s(self.intercept_se) + ')')
+                log_prefix+ 'Intercept: ' + s(self.intercept) + ' (' + s(self.intercept_se) + ')')
             if self.mean_chisq > 1:
                 if self.ratio < 0:
                     out.append(
-                      'Ratio < 0 (usually indicates GC correction).')
+                      log_prefix+'Ratio < 0 (usually indicates GC correction).')
                 else:
                     out.append(
-                      'Ratio: ' + s(self.ratio) + ' (' + s(self.ratio_se) + ')')
+                      log_prefix+'Ratio: ' + s(self.ratio) + ' (' + s(self.ratio_se) + ')')
             else:
-                out.append('Ratio: NA (mean chi^2 < 1)')
+                out.append(log_prefix+'Ratio: NA (mean chi^2 < 1)')
 
         return remove_brackets('\n'.join(out))
 
@@ -572,20 +574,20 @@ class Gencov(LD_Score_Regression):
         out.append('Total ' + T + ' scale gencov: ' +
                    s(c * self.tot) + ' (' + s(c * self.tot_se) + ')')
         if self.n_annot > 1:
-            out.append('Categories: ' + str(' '.join(ref_ld_colnames)))
-            out.append(T + ' scale gencov: ' + s(c * self.cat))
-            out.append(T + ' scale gencov SE: ' + s(c * self.cat_se))
-            out.append('Proportion of SNPs: ' + s(self.M_prop))
-            out.append('Proportion of gencov: ' + s(self.prop))
-            out.append('Enrichment: ' + s(self.enrichment))
+            out.append(log_prefix+'Categories: ' + str(' '.join(ref_ld_colnames)))
+            out.append(log_prefix+T + ' scale gencov: ' + s(c * self.cat))
+            out.append(log_prefix+T + ' scale gencov SE: ' + s(c * self.cat_se))
+            out.append(log_prefix+'Proportion of SNPs: ' + s(self.M_prop))
+            out.append(log_prefix+'Proportion of gencov: ' + s(self.prop))
+            out.append(log_prefix+'Enrichment: ' + s(self.enrichment))
 
-        out.append('Mean z1*z2: ' + s(self.mean_z1z2))
+        out.append(log_prefix+'Mean z1*z2: ' + s(self.mean_z1z2))
         if self.constrain_intercept:
             out.append(
-                'Intercept: constrained to {C}'.format(C=s(self.intercept)))
+                log_prefix+'Intercept: constrained to {C}'.format(C=s(self.intercept)))
         else:
             out.append(
-                'Intercept: ' + s(self.intercept) + ' (' + s(self.intercept_se) + ')')
+                log_prefix+'Intercept: ' + s(self.intercept) + ' (' + s(self.intercept_se) + ')')
 
         return remove_brackets('\n'.join(out))
 
@@ -716,30 +718,30 @@ class RG(object):
         '''Print output of Gencor object.'''
         out = []
         if self._negative_hsq:
-            out.append('Genetic Correlation: nan (nan) (h2  out of bounds) ')
-            out.append('Z-score: nan (nan) (h2  out of bounds)')
-            out.append('P: nan (nan) (h2  out of bounds)')
-            out.append('WARNING: One of the h2\'s was out of bounds.')
+            out.append(log_prefix_short+'Genetic Correlation: nan (nan) (h2  out of bounds) ')
+            out.append(log_prefix+'Z-score: nan (nan) (h2  out of bounds)')
+            out.append(log_prefix+'P: nan (nan) (h2  out of bounds)')
+            out.append(log_prefix+'WARNING: One of the h2\'s was out of bounds.')
             out.append(
-                'This usually indicates a data-munging error ' +
+                log_prefix+'This usually indicates a data-munging error ' +
                 'or that h2 or N is low.')
         elif (self.rg_ratio > 1.2 or self.rg_ratio < -1.2) and not silly:
-            out.append('Genetic Correlation: nan (nan) (rg out of bounds) ')
-            out.append('Z-score: nan (nan) (rg out of bounds)')
-            out.append('P: nan (nan) (rg out of bounds)')
-            out.append('WARNING: rg was out of bounds.')
+            out.append(log_prefix_short+'Genetic Correlation: nan (nan) (rg out of bounds) ')
+            out.append(log_prefix+'Z-score: nan (nan) (rg out of bounds)')
+            out.append(log_prefix+'P: nan (nan) (rg out of bounds)')
+            out.append(log_prefix+'WARNING: rg was out of bounds.')
             if self.intercept_gencov is None:
                 out.append(
-                    'This often means that h2 is not significantly ' +
+                    log_prefix+'This often means that h2 is not significantly ' +
                     'different from zero.')
             else:
                 out.append(
-                           'This often means that you have constrained' +
+                           log_prefix+'This often means that you have constrained' +
                            ' the intercepts to the wrong values.')
         else:
             out.append(
                 'Genetic Correlation: ' + s(self.rg_ratio) +
                 ' (' + s(self.rg_se) + ')')
-            out.append('Z-score: ' + s(self.z))
-            out.append('P: ' + s(self.p))
+            out.append(log_prefix+'Z-score: ' + s(self.z))
+            out.append(log_prefix+'P: ' + s(self.p))
         return remove_brackets('\n'.join(out))
