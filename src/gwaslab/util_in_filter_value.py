@@ -429,3 +429,16 @@ def _filter_snp(sumstats, mode="in", ea="EA",nea="NEA", log=Log(),verbose=True):
         snp = sumstats.loc[~is_snp,:]
     log.write("Finished filtering SNPs.",verbose=verbose)
     return snp
+
+def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=25000000 ,upper=34000000 ,log=Log(), verbose=True):
+    raw_len = len(sumstats)
+    
+    is_in_hla = (sumstats["CHR"]==6)&(sumstats["POS"]>lower)&(sumstats["POS"]<upper)
+    
+    sumstats = sumstats.loc[~is_in_hla, : ]
+    
+    after_len = len(sumstats)
+    
+    log.write(" -Leads variants in HLA region: {}...".format(raw_len - after_len),verbose=verbose)
+    
+    return sumstats

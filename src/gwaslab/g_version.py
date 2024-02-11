@@ -26,7 +26,7 @@ def _checking_plink_version(v=2,log=Log(), verbose=True):
     elif v==2:
         which_plink_script = "plink2 --version" 
     output = subprocess.check_output(which_plink_script, stderr=subprocess.STDOUT, shell=True,text=True)
-    log.write("   -PLINK version: {}".format(output.strip()))
+    log.write(" -PLINK version: {}".format(output.strip()))
     return log
 
 def _checking_r_version(r, log=Log(), verbose=True):

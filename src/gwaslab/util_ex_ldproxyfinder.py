@@ -108,7 +108,7 @@ def _extract_with_ld_proxy(  snplist=None,
             continue
         flanking_sumstats = flanking_sumstats.loc[flanking_sumstats["RSQ"]>ld_threshold,:]
         
-        log.write("  -#variants in LD with {} (RSQ > {}): {}".format(snpid, ld_threshold,len(flanking_sumstats)), verbose=verbose)
+        log.write("  -Variants in LD with {} (RSQ > {}): {}".format(snpid, ld_threshold,len(flanking_sumstats)), verbose=verbose)
         
         if len(flanking_sumstats)>0:
             flanking_sumstats["LD_REF_VARIANT"]= snpid

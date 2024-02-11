@@ -9,6 +9,7 @@ from gwaslab.qc_fix_sumstats import finished
 from gwaslab.util_in_get_sig import getsig
 from gwaslab.util_ex_process_ref import _process_plink_input_files
 from gwaslab.g_version import _checking_plink_version
+from gwaslab.util_in_filter_value import _exclude_hla
 
 def tofinemapping(sumstats, 
                   study=None, 
@@ -50,26 +51,22 @@ def tofinemapping(sumstats,
         getlead_args={"windowsizekb":1000}
     
     if loci is None:
-        log.write(" -Loci were not provided. All significant loci will be automatically extracted...")
+        log.write(" -Loci were not provided. All significant loci will be automatically extracted...",verbose=verbose)
         sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
     else:
         sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
     
     # Drop duplicate!!!!
-    log.write(" -Dropping duplicated SNPIDs...")
+    log.write(" -Dropping duplicated SNPIDs...",verbose=verbose)
     sumstats = sumstats.drop_duplicates(subset=["SNPID"]).copy()
 
     # init Filelist DataFrame
     output_file_list = pd.DataFrame(columns=["SNPID","SNPID_LIST","LD_R_MATRIX","LOCUS_SUMSTATS"])
     
     plink_log=""
-    raw_len = len(sig_df)
 
     if exclude_hla==True:
-        is_in_hla = (sig_df["CHR"]==6)&(sig_df["POS"]>25000000)&(sig_df["POS"]<34000000)
-        sig_df = sig_df.loc[~is_in_hla, : ]
-        after_len = len(sig_df)
-        log.write(" -Leads variants in HLA region: {}...".format(raw_len - after_len))
+        sig_df = _exclude_hla(sig_df, log=log, verbose=verbose)
     
     ## for each lead variant 
     for index, row in sig_df.iterrows():
@@ -77,11 +74,7 @@ def tofinemapping(sumstats,
         gc.collect()
 
         log.write(" -Processing locus with lead variant {} at CHR {} POS {} ...".format(row["SNPID"],row["CHR"],row["POS"]))
-        
-        is_in_locus = (sumstats["CHR"] == row["CHR"]) & (sumstats["POS"] >= row["POS"] - windowsizekb*1000) & (sumstats["POS"] < row["POS"] + windowsizekb*1000)
-        ## extract snp list from sumstats
-        locus_sumstats = sumstats.loc[is_in_locus,:].copy()
-        
+        locus_sumstats = _extract_variants_in_locus(sumstats, windowsizekb, locus = (row["CHR"],row["POS"]))
         
         #process reference file
         bfile_prefix, plink_log, ref_bim, filetype = _process_plink_input_files(  chrlist=[row["CHR"]],
@@ -113,15 +106,16 @@ def tofinemapping(sumstats,
         ## Calculate ld matrix using PLINK
         matched_ld_matrix_path,plink_log = _calculate_ld_r(study=study,
                                                            mode=mode,
-                                                memory=memory,
-                                                matched_sumstats_snpid= matched_sumstats["SNPID"],
-                                                row=row, 
-                                                bfile_prefix=bfile_prefix, 
-                                                n_cores=n_cores, 
-                                                windowsizekb=windowsizekb,
-                                                out=out,
-                                                plink_log=plink_log,
-                                                log=log,filetype=filetype)
+                                                            memory=memory,
+                                                            matched_sumstats_snpid= matched_sumstats["SNPID"],
+                                                            row=row, 
+                                                            bfile_prefix=bfile_prefix, 
+                                                            n_cores=n_cores, 
+                                                            windowsizekb=windowsizekb,
+                                                            out=out,
+                                                            plink_log=plink_log,
+                                                            log=log,filetype=filetype,
+                                                            verbose=verbose)
     
     
         # print file list
@@ -138,19 +132,22 @@ def tofinemapping(sumstats,
         nloci = len(output_file_list)
         output_file_list_path =  "{}/{}_{}loci_{}kb.filelist".format(out.rstrip("/"), study,nloci, windowsizekb)
         output_file_list.to_csv(output_file_list_path,index=None,sep="\t")
-        log.write(" -File list is saved to: {}".format(output_file_list_path))
-        log.write(" -Finished LD matrix calculation.")
+        log.write(" -File list is saved to: {}".format(output_file_list_path),verbose=verbose)
+        log.write(" -Finished LD matrix calculation.",verbose=verbose)
     else:
         output_file_list_path=None
-        log.write(" -No avaialable lead variants.")
-        log.write(" -Stopped LD matrix calculation.")
+        log.write(" -No avaialable lead variants.",verbose=verbose)
+        log.write(" -Stopped LD matrix calculation.",verbose=verbose)
     finished(log=log, verbose=verbose, end_line=_end_line)
     return output_file_list_path, output_file_list, plink_log
 
 
 
-def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype):
-    log.write(" -Start to calculate LD r matrix...")
+def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype,verbose=True):
+    '''
+    Calculate LD r matrix by calling PLINK; return file name and log
+    '''
+    log.write(" -Start to calculate LD r matrix...",verbose=verbose)
     log = _checking_plink_version(v=1, log=log)
     if "@" in bfile_prefix:
         bfile_to_use = bfile_prefix.replace("@",str(row["CHR"]))
@@ -195,6 +192,9 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
         return output_prefix+".ld.gz",plink_log
 
 def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=None):
+    '''
+    align sumstats with bim
+    '''
     if suffixes is None:
             suffixes=[""]
     
@@ -278,3 +278,10 @@ def _check_snpid_order(snplist_path, matched_sumstats_snpid,log):
         log.write(" -Sumstats SNPID order and LD matrix SNPID order are matched.")
     else:
         log.warning("Sumstats SNPID order and LD matrix SNPID order are not matched!")
+
+def _extract_variants_in_locus(sumstats, windowsizekb, locus, chrom = "CHR", pos="POS"):
+    
+    is_in_locus = (sumstats["CHR"] == locus[0]) & (sumstats["POS"] >= locus[1] - windowsizekb*1000) & (sumstats["POS"] < locus[1] + windowsizekb*1000)
+    ## extract snp list from sumstats
+    locus_sumstats = sumstats.loc[is_in_locus,:].copy()
+    return locus_sumstats

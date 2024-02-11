@@ -16,6 +16,7 @@ from gwaslab.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.qc_fix_sumstats import check_dataframe_shape
 from gwaslab.qc_fix_sumstats import start_to
 from gwaslab.qc_fix_sumstats import finished
+from gwaslab.util_in_correct_winnerscurse import wc_correct
 # getsig
 # closest_gene
 # annogene
@@ -34,6 +35,7 @@ def getsig(insumstats,
            log=Log(),
            xymt=["X","Y","MT"],
            anno=False,
+           wc_correction=False,
            build="19",
            source="ensembl",
            verbose=True):
@@ -174,6 +176,10 @@ def getsig(insumstats,
         
     # drop internal id
     output = output.drop("__ID",axis=1)
+    if wc_correction==True:
+        log.write(" -Conducting Winner's Curse correction for BETA...", verbose=verbose)
+        log.write(" -Referece: Zhong, H., & Prentice, R. L. (2008). Bias-reduced estimators and confidence intervals for odds ratios in genome-wide association studies. Biostatistics, 9(4), 621-634.")
+        output["BETA_WC"] = output[["BETA","SE"]].apply(lambda x: wc_correct(x["BETA"],x["SE"],sig_level),axis=1)
     finished(log,verbose,_end_line)
     return output.copy()
 
@@ -341,6 +347,7 @@ def getnovel(insumstats,
            log=Log(),
            xymt=["X","Y","MT"],
            anno=False,
+           wc_correction=False,
            build="19",
            source="ensembl",
            gwascatalog_source="NCBI",
@@ -367,7 +374,7 @@ def getnovel(insumstats,
     if if_get_lead == True:
         allsig = getsig(insumstats=insumstats,
             id=id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,
-            xymt=xymt,anno=anno,build=build, source=source,verbose=verbose)
+            xymt=xymt,anno=anno,build=build,wc_correction=wc_correction, source=source,verbose=verbose)
     else:
         allsig = insumstats.copy()
 

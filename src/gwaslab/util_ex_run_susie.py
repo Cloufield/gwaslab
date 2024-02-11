@@ -99,7 +99,7 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
             #output1,output2 = plink_process.communicate()
             #output= output1 + output2+ "\n"
             #plink_process.kill()
-            log.write(" Running SuSieR from command line...")
+            log.write("  -Running SuSieR from command line...")
             r_log+= output + "\n"
             pip_cs = pd.read_csv("{}.pipcs".format(output_prefix))
             pip_cs["LOCUS"] = row["SNPID"]

@@ -1,7 +1,8 @@
 import scipy as sp
 import numpy as np
+from gwaslab.g_Log import Log
 
-def wc_correct(beta, se, sig_level=5e-8):
+def wc_correct(beta, se, sig_level=5e-8, log=Log(), verbose=True):
     """winner's curse correction
     Args:
 		beta (float): observed beta
@@ -13,7 +14,7 @@ def wc_correct(beta, se, sig_level=5e-8):
     Reference:
     	Zhong, H., & Prentice, R. L. (2008). Bias-reduced estimators and confidence intervals for odds ratios in genome-wide association studies. Biostatistics, 9(4), 621-634.
     """
-
+    
     #calculate c
     c2 = sp.stats.chi2.ppf(1-sig_level,df=1)
     c = np.sqrt(c2)
