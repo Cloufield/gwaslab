@@ -431,14 +431,32 @@ def _filter_snp(sumstats, mode="in", ea="EA",nea="NEA", log=Log(),verbose=True):
     return snp
 
 def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=25000000 ,upper=34000000 ,log=Log(), verbose=True):
+    
     raw_len = len(sumstats)
     
-    is_in_hla = (sumstats["CHR"]==6)&(sumstats["POS"]>lower)&(sumstats["POS"]<upper)
+    if str(sumstats[chrom].dtype) == "string":
+        is_in_hla = (sumstats[chrom].astype("string")=="6")&(sumstats[pos]>lower)&(sumstats[pos]<upper)
+    else:
+        is_in_hla = (sumstats[chrom]==6)&(sumstats[pos]>lower)&(sumstats[pos]<upper)
     
     sumstats = sumstats.loc[~is_in_hla, : ]
     
     after_len = len(sumstats)
     
-    log.write(" -Leads variants in HLA region: {}...".format(raw_len - after_len),verbose=verbose)
+    log.write(" -Excluded {} variants in HLA region (chr6: {}-{} )...".format(raw_len - after_len,lower,upper),verbose=verbose)
     
+    return sumstats
+
+def _extract(sumstats, extract=None, id_use="SNPID", log=Log(), verbose=True ):
+    if extract is not None:
+        log.write(" -Extracting {} variants from sumstats...".format(len(extract)),verbose=verbose)
+        sumstats = sumstats.loc[sumstats[id_use].isin(extract),:]
+        log.write(" -Extracted {} variants from sumstats...".format(len(sumstats)),verbose=verbose)
+    return sumstats
+
+def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
+    if exclude is not None:
+        log.write(" -Excluding {} variants from sumstats...".format(len(exclude)),verbose=verbose)
+        sumstats = sumstats.loc[~sumstats[id_use].isin(exclude),:]
+        log.write(" -Excluded {} variants from sumstats...".format(len(sumstats)),verbose=verbose)
     return sumstats

@@ -13,7 +13,9 @@ from gwaslab.bd_common_data import get_format_dict
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.g_version import gwaslab_info
 from gwaslab.bd_get_hapmap3 import gethapmap3
-
+from gwaslab.util_in_filter_value import _exclude_hla
+from gwaslab.util_in_filter_value import _exclude
+from gwaslab.util_in_filter_value import _extract
 # to vcf
 # to fmt
     ## vcf
@@ -73,26 +75,19 @@ def _to_format(sumstats,
     # filter
     output = sumstats.copy()
     
+    #######################################################################################################
+
     if extract is not None:
-        onetime_log.write(" -Extracting {} variants from the main DataFrame...".format(len(extract)),verbose=verbose)
-        output = output.loc[output[id_use].isin(extract),:]
-        onetime_log.write(" -Extracted {} variants from the main DataFrame...".format(len(output)),verbose=verbose)
+        output = _extract(output, extract, id_use=id_use, log=onetime_log, verbose=verbose)
     
     if exclude is not None:
-        onetime_log.write(" -Excluding {} variants from the main DataFrame...".format(len(exclude)),verbose=verbose)
-        output = output.loc[~output[id_use].isin(exclude),:]
-        onetime_log.write(" -Excluded {} variants from the main DataFrame...".format(len(output)),verbose=verbose)
+        output = _exclude(output, exclude, id_use=id_use, log=onetime_log, verbose=verbose)
     
     #hla and hapmap3 #######################################################################################
     
     #exclude hla
     if exclude_hla==True:
-        onetime_log.write(" -Excluding variants in MHC (HLA) region ...",verbose=verbose)
-        before = len(output)
-        is_hla = (output["CHR"].astype("string") == "6") & (output["POS"].astype("Int64") > hla_range[0]*1000000) & (output["POS"].astype("Int64") < hla_range[1]*1000000)
-        output = output.loc[~is_hla,:]
-        after = len(output)
-        onetime_log.write(" -Exclude "+ str(before - after) + " variants in MHC (HLA) region : {}Mb - {}Mb.".format(hla_range[0], hla_range[1]),verbose=verbose)
+        output = _exclude_hla(output, lower=hla_range[0]*1000000 ,upper=hla_range[1]*1000000 ,log=onetime_log, verbose=verbose)
         suffix = "noMHC."+suffix
     
     #extract hapmap3 SNPs
