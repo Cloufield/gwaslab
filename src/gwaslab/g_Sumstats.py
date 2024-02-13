@@ -71,6 +71,8 @@ from gwaslab.util_ex_run_susie import _run_susie_rss
 from gwaslab.qc_fix_sumstats import _check_data_consistency
 from gwaslab.util_ex_ldsc import _estimate_h2_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_rg_by_ldsc
+from gwaslab.util_ex_ldsc import _estimate_h2_cts_by_ldsc
+from gwaslab.util_ex_ldsc import _estimate_partitioned_h2_by_ldsc 
 from gwaslab.bd_get_hapmap3 import gethapmap3
 import gc
 
@@ -131,6 +133,9 @@ class Sumstats():
         self.log = Log()
         self.ldsc_h2 = None
         self.ldsc_rg = None
+        self.ldsc_h2_cts = None
+        self.ldsc_partitioned_h2_summary = None
+        self.ldsc_partitioned_h2_results = None
         # meta information
         self.meta = _init_meta() 
         self.build = build
@@ -730,7 +735,7 @@ class Sumstats():
             output = lambdaGC(self.data[["CHR",mode]],mode=mode,**args)
             self.meta["Genomic inflation factor"] = output
             return output 
-    
+## LDSC ##############################################################################################
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **args):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
@@ -742,6 +747,18 @@ class Sumstats():
             build = self.meta["gwaslab"]["genome_build"]
         insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True )
         self.ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
+
+    def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, **args):
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True )
+        self.ldsc_h2_cts  = _estimate_h2_cts_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
+    
+    def estimate_partitioned_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **args):
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True )
+        self.ldsc_partitioned_h2_summary, self.ldsc_partitioned_h2_results  = _estimate_partitioned_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
 # external ################################################################################################
     
     def calculate_ld_matrix(self,**args):

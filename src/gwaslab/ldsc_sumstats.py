@@ -257,7 +257,7 @@ def _read_ld_sumstats(sumstats, args, log, fh, alleles=False, dropna=True):
     ref_ld_cnames = ref_ld.columns[1:len(ref_ld.columns)]
     return M_annot, w_ld_cname, ref_ld_cnames, sumstats, novar_cols
 
-def cell_type_specific(args, log):
+def cell_type_specific(sumstats, args, log):
     '''Cell type specific analysis'''
     args = copy.deepcopy(args)
     if args.intercept_h2 is not None:
@@ -266,7 +266,7 @@ def cell_type_specific(args, log):
         args.intercept_h2 = 1
 
     M_annot_all_regr, w_ld_cname, ref_ld_cnames_all_regr, sumstats, novar_cols = \
-            _read_ld_sumstats(args, log, args.h2_cts)
+            _read_ld_sumstats(sumstats, args, log, args.h2_cts)
     M_tot = np.sum(M_annot_all_regr)
     _check_ld_condnum(args, log, ref_ld_cnames_all_regr)
     _warn_length(log, sumstats)
@@ -314,9 +314,9 @@ def cell_type_specific(args, log):
 
     df_results = pd.DataFrame(data = results_data, columns = results_columns)
     df_results.sort_values(by = 'Coefficient_P_value', inplace=True)
-    df_results.to_csv(args.out+'.cell_type_results.txt', sep='\t', index=False)
-    log.log('  -Results printed to '+args.out+'.cell_type_results.txt')
-
+    #df_results.to_csv(args.out+'.cell_type_results.txt', sep='\t', index=False)
+    #log.log('  -Results printed to '+args.out+'.cell_type_results.txt')
+    return df_results
 
 def estimate_h2(sumstats, args, log):
     '''Estimate h2 and partitioned h2.'''
@@ -376,9 +376,10 @@ def estimate_h2(sumstats, args, log):
 
         # overlap_matrix = overlap_matrix[np.array(~novar_cols), np.array(~novar_cols)]#np.logical_not
         df_results = hsqhat._overlap_output(ref_ld_cnames, overlap_matrix, M_annot, M_tot, args.print_coefficients)
-        df_results.to_csv(args.out+'.results', sep="\t", index=False)
-        log.log('  -Results printed to '+args.out+'.results')
-
+        #df_results.to_csv(args.out+'.results', sep="\t", index=False)
+        #log.log('  -Results printed to '+args.out+'.results')
+        return hsqhat.summary(ref_ld_cnames, P=args.samp_prev, K=args.pop_prev, overlap = args.overlap_annot), df_results
+    
     return hsqhat.summary(ref_ld_cnames, P=args.samp_prev, K=args.pop_prev, overlap = args.overlap_annot)
 
 

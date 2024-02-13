@@ -1,7 +1,12 @@
 # Update Logs
 
+## 3.4.40
+- integrated LDSC (partitioned h2/h2-cts)
+- added wc_correction for get_lead()
+- updated log
+
 ## 3.4.39 20240207
-- integrated LDSC
+- integrated LDSC h2/rg
 - updated LICENSE from MIT to GPL-3.0 license
 - added check_novel_set / check_cis 
 - added filter_snp/palindromic/indel and filter_hapmap3
