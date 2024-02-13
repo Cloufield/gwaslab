@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/gwaslab.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.6">
     
     
       
@@ -512,6 +512,15 @@
   <a href="#p-value-conversion-during-extracting-lead-variants" class="md-nav__link">
     <span class="md-ellipsis">
       P value conversion during extracting lead variants
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#skipped-lead-variant-in-extracting-lead-variants" class="md-nav__link">
+    <span class="md-ellipsis">
+      Skipped lead variant in extracting lead variants
     </span>
   </a>
   
@@ -1836,6 +1845,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#skipped-lead-variant-in-extracting-lead-variants" class="md-nav__link">
+    <span class="md-ellipsis">
+      Skipped lead variant in extracting lead variants
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1856,6 +1874,11 @@
 <ul>
 <li>gwaslab&lt;=3.4.18 : In older versions, gwaslab converts MLOG10P to P (if P column is not available) and then uses P to extract lead variants using <code>.get_lead()</code>. But during conversion, since MLOG10P was set as float32, and then P was accordingly set as float32. The minimum of float32 is around 1e-38, below which P values will become 0. This could cause error when extracting lead variants. </li>
 <li>Solution: simply use scaled=True to directly use MLOG10P instead of P values.</li>
+</ul>
+<h2 id="skipped-lead-variant-in-extracting-lead-variants">Skipped lead variant in extracting lead variants</h2>
+<ul>
+<li>gwaslab&lt;=3.4.22 : When extracting lead variants using <code>.get_lead()</code>, if the lead variant is the last variant in all significant variants, it will be mistakenly skipped.</li>
+<li>Solution: Update to new version of gwaslab.</li>
 </ul>
 
 
@@ -1907,10 +1930,10 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.e1c3ead8.min.js"></script>
       
         <script src="../javascripts/mathjax.js"></script>
       
