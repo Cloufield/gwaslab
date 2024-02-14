@@ -863,7 +863,7 @@ def paralleleinferaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",p
     ##start function with col checking##########################################################
     _start_line = "infer EAF using reference VCF ALT frequency"
     _end_line = "inferring EAF using reference VCF ALT frequency"
-    _start_cols = [chr,pos,ref,alt,eaf,status]
+    _start_cols = [chr,pos,ref,alt,status]
     _start_function = ".infer_af()"
     _must_args ={"ref_alt_freq":ref_alt_freq}
 
