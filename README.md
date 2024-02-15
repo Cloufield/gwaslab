@@ -20,6 +20,8 @@ Warning: Known issues of GWASLab are summarized in [https://cloufield.github.io/
 
 ## Install
 
+### install via pip
+
 ```
 pip install gwaslab==3.4.40
 ```
@@ -53,6 +55,9 @@ mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
 mysumstats.plot_mqq()
 ...
 ```
+### install using docker
+
+A docker filer is available [here](https://github.com/Cloufield/gwaslab/blob/main/docker/Dockerfile) for building images.
 
 ## Functions
 
