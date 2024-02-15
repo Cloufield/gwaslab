@@ -526,6 +526,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#regional-plots-color-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      Regional plots : color issue
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1854,6 +1863,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#regional-plots-color-issue" class="md-nav__link">
+    <span class="md-ellipsis">
+      Regional plots : color issue
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1878,6 +1896,11 @@
 <h2 id="skipped-lead-variant-in-extracting-lead-variants">Skipped lead variant in extracting lead variants</h2>
 <ul>
 <li>gwaslab&lt;=3.4.22 : When extracting lead variants using <code>.get_lead()</code>, if the lead variant is the last variant in all significant variants, it will be mistakenly skipped.</li>
+<li>Solution: Update to new version of gwaslab.</li>
+</ul>
+<h2 id="regional-plots-color-issue">Regional plots : color issue</h2>
+<ul>
+<li>gwaslab&lt;=3.4.39 : the color assigned to each variant is actually the color for the lower LD r2 category. For example, variants with LD&gt;0.8 will be colored with the color for 0.8&gt;LD&gt;0.6.</li>
 <li>Solution: Update to new version of gwaslab.</li>
 </ul>
 
