@@ -2,6 +2,10 @@
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png">
 
+!!! warning "Color issue"
+    - gwaslab<=3.4.39 : the color assigned to each variant is actually the color for the lower LD r2 category. For example, variants with LD>0.8 will be colored with the color for 0.8>LD>0.6.
+    - Solution: Update to new version (>=3.4.40) of gwaslab.
+
 GWASLab provides functions for creating regional plots.
 
 ## .plot_mqq(mode="r")
