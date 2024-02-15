@@ -588,12 +588,20 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
     sumstats["LD"] = 0
     
     for index,ld_threshold in enumerate(region_ld_threshold):
+        # No data,LD = 0
+        # 0, 0.2  LD = 1
+        # 1, 0.4  LD = 2
+        # 2, 0.6  LD = 3
+        # 3, 0.8  LD = 4
+        # 4, 1.0  LD = 5
+        # lead    LD = 6
+
         if index==0:
             to_change_color = sumstats["RSQ"]>-1
             sumstats.loc[to_change_color,"LD"] = 1
-        else:
-            to_change_color = sumstats["RSQ"]>ld_threshold
-            sumstats.loc[to_change_color,"LD"] = index+1
+        to_change_color = sumstats["RSQ"]>ld_threshold
+        sumstats.loc[to_change_color,"LD"] = index+2
+
     sumstats.loc[lead_id,"LD"] = len(region_ld_threshold)+2
     sumstats["LEAD"]="Other variants"
     sumstats.loc[lead_id,"LEAD"] = "Lead variants"
@@ -639,9 +647,11 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
             if index==0:
                 to_change_color = sumstats["RSQ2"]>-1
                 sumstats.loc[to_change_color,"LD2"] = 1
-            else:
-                to_change_color = sumstats["RSQ2"]>ld_threshold
-                sumstats.loc[to_change_color,"LD2"] = index+1
+            #else:
+            #    to_change_color = sumstats["RSQ2"]>ld_threshold
+            #    sumstats.loc[to_change_color,"LD2"] = index+1
+            to_change_color = sumstats["RSQ"]>ld_threshold
+            sumstats.loc[to_change_color,"LD"] = index+2
             
         sumstats.loc[lead_id,"LD2"] = len(region_ld_threshold)+2
         sumstats["LEAD2"]="Other variants"
