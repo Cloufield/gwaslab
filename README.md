@@ -26,7 +26,6 @@ Warning: Known issues of GWASLab are summarized in [https://cloufield.github.io/
 pip install gwaslab==3.4.40
 ```
 
-
 ```python
 import gwaslab as gl
 # load plink2 output
@@ -55,9 +54,27 @@ mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
 mysumstats.plot_mqq()
 ...
 ```
+
+### install in conda environment
+
+Create a Python 3.9 environment and install gwaslab using pip:
+
+```
+conda env create -n gwaslab_test -c conda-forge python=3.9
+conda activate gwaslab
+pip install gwaslab==3.4.40
+```
+
+or create a new environment using yml file [environment_3.4.40.yml](https://github.com/Cloufield/gwaslab/blob/main/environment_3.4.40.yml)
+
+```
+conda env create -n gwaslab -f environment_3.4.40.yml
+```
+
+
 ### install using docker
 
-A docker filer is available [here](https://github.com/Cloufield/gwaslab/blob/main/docker/Dockerfile) for building images.
+A docker filer is available [here](https://github.com/Cloufield/gwaslab/blob/main/docker/Dockerfile) for building local images.
 
 ## Functions
 
