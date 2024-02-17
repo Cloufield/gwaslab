@@ -74,7 +74,7 @@ conda env create -n gwaslab -f environment_3.4.40.yml
 
 ### install using docker
 
-A docker filer is available [here](https://github.com/Cloufield/gwaslab/blob/main/docker/Dockerfile) for building local images.
+A docker file is available [here](https://github.com/Cloufield/gwaslab/blob/main/docker/Dockerfile) for building local images.
 
 ## Functions
 
