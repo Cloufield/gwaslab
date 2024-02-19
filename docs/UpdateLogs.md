@@ -1,5 +1,8 @@
 # Update Logs
 
+## 3.4.41 20240219
+- fixed error in region_ref_second
+
 ## 3.4.40 20240215
 - fixed color issue for regional plots. The color assigned to each variants is actually the color for the lower LD r2 category. For example, variants with LD>0.8 will be colored with the color for 0.8>LD>0.6.
 - integrated LDSC (partitioned h2/h2-cts)
