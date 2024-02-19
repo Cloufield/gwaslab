@@ -650,8 +650,8 @@ def process_vcf(sumstats, vcf_path, region,region_ref, region_ref_second, log, v
             #else:
             #    to_change_color = sumstats["RSQ2"]>ld_threshold
             #    sumstats.loc[to_change_color,"LD2"] = index+1
-            to_change_color = sumstats["RSQ"]>ld_threshold
-            sumstats.loc[to_change_color,"LD"] = index+2
+            to_change_color = sumstats["RSQ2"]>ld_threshold
+            sumstats.loc[to_change_color,"LD2"] = index+2
             
         sumstats.loc[lead_id,"LD2"] = len(region_ld_threshold)+2
         sumstats["LEAD2"]="Other variants"
