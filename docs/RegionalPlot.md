@@ -4,7 +4,8 @@
 
 !!! warning "Color issue"
     - gwaslab<=3.4.39 : the color assigned to each variant is actually the color for the lower LD r2 category. For example, variants with LD>0.8 will be colored with the color for 0.8>LD>0.6.
-    - Solution: Update to new version (>=3.4.40) of gwaslab.
+    - gwaslab v3.4.40 : the color for regeion_ref_second was assigned based on region_ref LD.
+    - Solution: Update to new version (>=3.4.41) of gwaslab.
 
 GWASLab provides functions for creating regional plots.
 
