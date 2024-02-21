@@ -15,11 +15,11 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
     ##start function with col checking##########################################################
     _start_line = "perfrom clumping"
     _end_line = "clumping"
-    _start_cols =["SNPID","CHR","POS","EA","NEA"]
+    _start_cols =["SNPID","CHR","POS"]
     _start_function = ".clump()"
     _must_args ={}
 
-    is_enough_info = start_to(sumstats=sumstats,
+    is_enough_info = start_to(sumstats=insumstats,
                             log=log,
                             verbose=verbose,
                             start_line=_start_line,
