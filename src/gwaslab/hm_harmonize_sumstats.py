@@ -207,7 +207,7 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
 
     # update CHR and POS using rsID with multiple threads
     sumstats_rs = pd.concat(pool.map(partial(merge_chrpos,all_groups_max=all_groups_max,path=path,build=build,status=status),df_split),ignore_index=True)
-    sumstats_rs.loc[:,["CHR","POS"]] = sumstats_rs.loc[:,["CHR","POS"]].astype("Int64")
+    sumstats_rs[["CHR","POS"]] = sumstats_rs[["CHR","POS"]].astype("Int64")
     del df_split
     gc.collect()
     log.write(" -Merging group data... ",verbose=verbose)
