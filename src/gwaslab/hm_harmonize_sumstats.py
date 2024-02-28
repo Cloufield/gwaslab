@@ -44,7 +44,7 @@ def rsidtochrpos(sumstats,
     ##start function with col checking##########################################################
     _start_line = "assign CHR and POS using rsIDs"
     _end_line = "assigning CHR and POS using rsIDs"
-    _start_cols = [rsid,chrom,pos]
+    _start_cols = [rsid]
     _start_function = ".rsid_to_chrpos()"
     _must_args ={}
 
@@ -131,7 +131,7 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     ##start function with col checking##########################################################
     _start_line = "assign CHR and POS using rsIDs"
     _end_line = "assigning CHR and POS using rsIDs"
-    _start_cols = [rsid,chrom,pos]
+    _start_cols = [rsid]
     _start_function = ".rsid_to_chrpos2()"
     _must_args ={}
 
@@ -186,7 +186,7 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     pool = Pool(n_cores)
     if chrom not in input_columns:
         log.write(" -Initiating CHR ... ",verbose=verbose)
-        sumstats_rs[chrom]=pd.Series(dtype="Int32") 
+        sumstats_rs[chrom]=pd.Series(dtype="Int64") 
         
     if pos not in input_columns:
         log.write(" -Initiating POS ... ",verbose=verbose)

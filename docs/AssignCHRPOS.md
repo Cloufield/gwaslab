@@ -122,12 +122,15 @@ GCF_000001405.25.gz.tbi (2.9M)
 ```
 
 
-### gl.process_ref_vcf()
+### gl.process_vcf_to_hfd5()
+
+**From gwaslab v3.4.42,  `process_ref_vcf()` was renamed to `process_vcf_to_hfd5()`**
+
 ```
-gl.process_ref_vcf()
+gl.process_vcf_to_hfd5()
 ```
 
-Process the vcf file and convert it to HDF5 file using `.process_ref_vcf()`. This step may take up to one or two hours.
+Process the vcf file and convert it to HDF5 file using `.process_vcf_to_hfd5()`. This step may take up to one or two hours.
 
 | Option      | DataType | Description                                                 | Default              |
 |-------------|----------|-------------------------------------------------------------|----------------------|
@@ -138,7 +141,7 @@ Process the vcf file and convert it to HDF5 file using `.process_ref_vcf()`. Thi
 directory="/home/yunye/work/gwaslab/examples/vcf_hd5/"
 vcf = "/home/yunye/CommonData/Reference/ncbi_dbsnp/ncbi_dbsnp/db155/GCF_000001405.25.gz"
 
-gl.process_ref_vcf(vcf=vcf,
+gl.process_vcf_to_hfd5(vcf=vcf,
                    directory=directory,
                    chr_dict=gl.get_NC_to_number(build="19"))
 
