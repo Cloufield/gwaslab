@@ -7,6 +7,9 @@ from gwaslab.qc_fix_sumstats import finished
 from gwaslab.qc_fix_sumstats import skipped
 from gwaslab.io_read_ldsc import parse_ldsc_summary
 from gwaslab.io_read_ldsc import parse_partitioned_ldsc_summary
+from gwaslab.util_in_filter_value import filtervalues
+from gwaslab.util_in_filter_value import _filter_palindromic
+
 class ARGS():
     def __init__(self, **args):
         
@@ -252,8 +255,14 @@ class ARGS():
 ####################################################################################################################
 
 
-def _estimate_h2_by_ldsc(insumstats, log, verbose=True, **args):
+def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, **args):
     sumstats = insumstats.copy()
+    
+    if munge:
+        log.write("Start to munge sumstats.")
+        sumstats = _munge_sumstats(sumstats, log=log, verbose=verbose)
+        log.write("Finished munging sumstats.")
+
     ##start function with col checking##########################################################
     _start_line = "run LD score regression"
     _end_line = "running LD score regression"
@@ -274,11 +283,13 @@ def _estimate_h2_by_ldsc(insumstats, log, verbose=True, **args):
     log.write(" -Run single variate LD score regression:", verbose=verbose)
     log.write("  -Adopted from LDSC source code: https://github.com/bulik/ldsc", verbose=verbose)
     log.write("  -Please cite LDSC: Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.", verbose=verbose)
-    log.write(" -Arguments:", verbose=verbose)
     
+
+
+
+    log.write(" -Arguments:", verbose=verbose)
     for key, value in args.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
-    
     default_args = ARGS(**args)
 
     if "Z" not in sumstats.columns:
@@ -442,3 +453,19 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **args):
     log.write(" -Results have been stored in .ldsc_partitioned_h2", verbose=verbose)
     finished(log=log,verbose=verbose,end_line=_end_line)
     return summary
+
+
+
+def _munge_sumstats(sumstats, log, verbose=True, **args):
+
+    # filter_info
+    sumstats = filtervalues(sumstats, 'INFO >=0.9' ,verbose=verbose, log=log)
+    # frequency
+    sumstats = filtervalues(sumstats,'EAF>=0.01 and EAF<=0.99',verbose=verbose, log=log)
+    # N
+    min_n = sumstats.N.quantile(0.9) / 1.5
+    sumstats = filtervalues(sumstats,'N>={}'.format(min_n),verbose=verbose, log=log)
+    # remove strand-unambiguous SNPs
+    sumstats = _filter_palindromic(sumstats, mode="out", verbose=verbose, log=log)
+    
+    return sumstats

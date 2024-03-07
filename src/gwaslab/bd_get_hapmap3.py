@@ -12,7 +12,7 @@ from gwaslab.qc_fix_sumstats import finished
 #A P-value
 #A signed summary statistic (beta, OR, log odds, Z-score, etc)
 
-def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, log=Log()):
+def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
     ##start function with col checking##########################################################
     _start_line = "extract HapMap3 SNPs"
     _end_line = "extracting HapMap3 SNPs"
@@ -47,7 +47,7 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
     #rsid    A1      A2      #CHROM  POS
     #rs3094315       G       A       1       752566
     
-    if rsid in sumstats.columns:
+    if rsid in sumstats.columns and how=="inner":
         output = sumstats.loc[sumstats[rsid].isin(hapmap3_ref["rsid"].values),:].copy()
         return output
     
@@ -56,11 +56,15 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
         sumstats   ["chr:pos"] = sumstats[chrom].astype("string")+":"+sumstats[pos].astype("string")
         hapmap3_ref["chr:pos"] = hapmap3_ref["#CHROM"]+":"+hapmap3_ref["POS"]
         hapmap3_ref = hapmap3_ref.rename(columns={"rsid":"rsID"})
-        output = pd.merge(sumstats,hapmap3_ref.loc[:,["chr:pos","rsID"]+additional_cols],left_on="chr:pos",right_on="chr:pos",how="inner",suffixes=('', '_hapmap3')).copy()
+        output = pd.merge(sumstats,hapmap3_ref.loc[:,["chr:pos","rsID"]+additional_cols],left_on="chr:pos",right_on="chr:pos",how=how,suffixes=('', '_hapmap3')).copy()
         if match_allele:
             log.write(" -Checking if alleles are same...")
             is_matched = ((output[ea].astype("string") == output["A1"]) & (output[nea].astype("string") == output["A2"])) \
                             | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"]))
+            if how=="right":
+                is_matched = ((output[ea].astype("string") == output["A1"]) & (output[nea].astype("string") == output["A2"])) \
+                            | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"])) | output[ea].isna()
+
             log.write(" -Variants with macthed alleles: {}".format(sum(is_matched)))
             output = output.loc[is_matched,:]
         output = output.drop(columns=["chr:pos"]+additional_cols)
