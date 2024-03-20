@@ -263,7 +263,7 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     finished(log, verbose, _end_line)
     return sumstats
 ####################################################################################################################
-#20220426 check if non-effect allele is aligned with reference genome         
+#20240320 check if non-effect allele is aligned with reference genome         
 def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array):
     # status 
     #0 /  ----->  match
@@ -454,23 +454,29 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
 
 def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=True):
 
+    chrom,pos,ea,nea,status = sumstats.columns
+
     # First, convert the fasta records to a single numpy array of integers
-    record, starting_positions = build_fasta_records(fasta_records_dict, log=log, verbose=verbose)
+    record, starting_positions_dict = build_fasta_records(fasta_records_dict, pos_as_dict=True, log=log, verbose=verbose)
 
     # In _fast_check_status(), several 2D numpy arrays are created and they are padded to have shape[1] == max_len_nea or max_len_ea
     # Since most of the NEA and EA strings are short, we perform the check first on the records having short NEA and EA strings,
     # and then we perform the check on the records having long NEA and EA strings. In this way we can speed up the process (since the 
     # arrays are smaller) and save memory.
     max_len = 4 # this is a chosen value, we could compute it using some stats about the length and count of NEA and EA strings
-    condition = (sumstats['NEA'].str.len() <= max_len) * (sumstats['EA'].str.len() <= max_len)
+    condition = (sumstats[nea].str.len() <= max_len) * (sumstats[ea].str.len() <= max_len)
 
     log.write(f"   -Checking records for ( len(NEA) <= {max_len} and len(EA) <= {max_len} )", verbose=verbose)
-    sumstats.loc[condition, 'STATUS'] = _fast_check_status(sumstats[condition], record=record, starting_positions=starting_positions)
+    sumstats_cond = sumstats[condition]
+    starting_pos_cond = np.array([starting_positions_dict[k] for k in sumstats_cond[chrom].unique()])
+    sumstats.loc[condition, status] = _fast_check_status(sumstats_cond, record=record, starting_positions=starting_pos_cond)
 
     log.write(f"   -Checking records for ( len(NEA) > {max_len} or len(EA) > {max_len} )", verbose=verbose)
-    sumstats.loc[~condition, 'STATUS'] = _fast_check_status(sumstats[~condition], record=record, starting_positions=starting_positions)
+    sumstats_not_cond = sumstats[~condition]
+    starting_not_pos_cond = np.array([starting_positions_dict[k] for k in sumstats_not_cond[chrom].unique()])
+    sumstats.loc[~condition, status] = _fast_check_status(sumstats_not_cond, record=record, starting_positions=starting_not_pos_cond)
 
-    return sumstats['STATUS'].values
+    return sumstats[status].values
         
 
 def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
@@ -497,6 +503,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     records = SeqIO.parse(ref_path, "fasta")
 
     all_records_dict = {}
+    chroms_in_sumstats = sumstats[chrom].unique() # load records from Fasta file only for the chromosomes present in the sumstats
     for record in records:
         #record = next(records)
         if record is not None:
@@ -505,7 +512,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
                 i = chr_dict[record_chr]
             else:
                 i = record_chr
-            if i in chromlist:
+            if (i in chromlist) and (i in chroms_in_sumstats):
                 all_records_dict.update({i: record})
 
     if len(all_records_dict) > 0:
@@ -551,7 +558,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     finished(log, verbose, _end_line)
     return sumstats
 
-def build_fasta_records(fasta_records_dict, log=Log(), verbose=True):
+def build_fasta_records(fasta_records_dict, pos_as_dict=True, log=Log(), verbose=True):
     log.write("   -Building numpy fasta records from dict", verbose=verbose)
 
     # Let's do some magic to convert the fasta record to a numpy array of integers in a very fast way.
@@ -574,6 +581,8 @@ def build_fasta_records(fasta_records_dict, log=Log(), verbose=True):
     # to index the record array depending on the position of the variant and the chromosome
     records_len = np.array([len(r) for r in all_r])
     starting_positions = np.cumsum(records_len) - records_len
+    if pos_as_dict:
+        starting_positions = {k: v for k, v in zip(fasta_records_dict.keys(), starting_positions)}
     record = np.concatenate(all_r)
     del all_r # free memory
 
