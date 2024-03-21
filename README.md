@@ -174,6 +174,9 @@ dependencies:
 ## Sample Data
 - Sample GWAS data used in GWASLab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
 
+## Acknowledgement
+
+Thanks to @sup3rgiu, @soumickmj and @gmauro for their contributions to the source codes.
 
 ## Contacts
 * Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
