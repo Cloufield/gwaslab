@@ -2,6 +2,7 @@ import pandas as pd
 import yaml
 import hashlib
 import copy
+import gzip
 from pysam import tabix_compress 
 from pysam import tabix_index
 from datetime import datetime
@@ -306,26 +307,30 @@ def tofmt(sumstats,
         vcf_header =  _process_vcf_header(sumstats, meta, meta_data, build, log, verbose)
 
         log.write(" -Writing sumstats to: {}...".format(path),verbose=verbose)
-        # output header
-        with open(path,"w") as file:
-            file.write(vcf_header)
-        
-        with open(path,"a") as file:
-            log.write(" -Output columns:"," ".join(meta_data["format_fixed"]+[meta["gwaslab"]["study_name"]]))
-            file.write("\t".join(meta_data["format_fixed"]+[meta["gwaslab"]["study_name"]])+"\n")
-            log.write(" -Outputing data...")
-            QUAL="."
-            FILTER="PASS"
-            for index,row in sumstats.iterrows():
-                CHROM=str(row["#CHROM"])
-                POS=str(row["POS"])
-                ID=str(row["ID"])
-                REF=str(row["REF"])
-                ALT=str(row["ALT"])
-                INFO=str(row["INFO"])
-                FORMAT=":".join(output_format)
-                DATA=":".join(row[output_format].astype("string"))
-                file.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT, DATA))
+        try:
+            fast_to_vcf(sumstats, path, vcf_header, output_format, meta_data, meta)
+        except:
+            log.write(f"Error in using fast_to_vcf. Falling back to original implementation.",verbose=verbose)
+            # output header
+            with open(path,"w") as file:
+                file.write(vcf_header)
+            
+            with open(path,"a") as file:
+                log.write(" -Output columns:"," ".join(meta_data["format_fixed"]+[meta["gwaslab"]["study_name"]]))
+                file.write("\t".join(meta_data["format_fixed"]+[meta["gwaslab"]["study_name"]])+"\n")
+                log.write(" -Outputing data...")
+                QUAL="."
+                FILTER="PASS"
+                for index,row in sumstats.iterrows():
+                    CHROM=str(row["#CHROM"])
+                    POS=str(row["POS"])
+                    ID=str(row["ID"])
+                    REF=str(row["REF"])
+                    ALT=str(row["ALT"])
+                    INFO=str(row["INFO"])
+                    FORMAT=":".join(output_format)
+                    DATA=":".join(row[output_format].astype("string"))
+                    file.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT, DATA))
         _bgzip_tabix_md5sum(path, fmt, bgzip, md5sum, tabix, tabix_indexargs, log, verbose)
     
     ####################################################################################################################
@@ -342,7 +347,11 @@ def tofmt(sumstats,
         sumstats,to_csvargs = _configure_output_cols_and_args(sumstats, rename_dictionary, cols, no_status, path, meta_data, to_csvargs, log, verbose)
         
         log.write(" -Writing sumstats to: {}...".format(path),verbose=verbose)
-        sumstats.to_csv(path, index=None,**to_csvargs)
+        try:
+            fast_to_csv(sumstats, path, to_csvargs=to_csvargs, compress=True, write_in_chunks=True)
+        except:
+            log.write(f"Error in using fast_to_csv. Falling back to original implementation.",verbose=verbose)
+            sumstats.to_csv(path, index=None, **to_csvargs)
 
         if md5sum == True: 
             md5_value = md5sum_file(path,log,verbose)
@@ -353,6 +362,72 @@ def tofmt(sumstats,
         _configure_ssf_meta(sumstats, fmt, ssfmeta, meta, meta_data, path, md5_value, ymal_path, log, verbose)
         
         return sumstats  
+    
+####################################################################################################################
+def fast_to_csv(dataframe, path, to_csvargs=None, compress=True, write_in_chunks=True):
+        df_numpy = dataframe.to_numpy()
+
+        if path.endswith(".gz"):
+            path = path[:-3]
+
+        if to_csvargs is None:
+            to_csvargs = {}
+
+        if 'sep' in to_csvargs:
+            sep = to_csvargs['sep']
+        else:
+            sep = '\t'
+
+        # this operation slows down a bit the process, but it is necessary to be consistent with the pandas.to_csv() behavior
+        if 'na_rep' in to_csvargs:
+            df_numpy[pd.isna(df_numpy)] = to_csvargs['na_rep'] # replace NaNs. We have to use pd.isna because np.isnan does not work with 'object' and 'string' dtypes
+
+        # np.savetext() is faster than df.to_csv, however it loops through the rows of X and formats each row individually:
+        # https://github.com/numpy/numpy/blob/d35cd07ea997f033b2d89d349734c61f5de54b0d/numpy/lib/npyio.py#L1613
+        # We can speed up the process building the whole format string and then appling the formatting in one single call
+        out_string = sep.join(dataframe.columns) + '\n'
+        fmt = sep.join(['%s']*dataframe.shape[1]) # build formatting for one single row
+        fmt = '\n'.join([fmt]*dataframe.shape[0]) # add newline and replicate the formatting for all rows
+        out_string += fmt % tuple(df_numpy.ravel()) # flatten the array and then apply formatting
+        out_string += '\n'
+
+        if write_in_chunks:
+            chunk_size = 50000000
+            lines = [out_string[i:i+chunk_size] for i in range(0, len(out_string), chunk_size)]
+        else:
+            lines = [out_string]
+
+        if compress:
+            lines = [line.encode() for line in lines]
+            with gzip.open(path+".gz", 'wb', compresslevel=1) as f:
+                f.writelines(lines)
+        else:
+            with open(path, 'w') as f:
+                f.writelines(lines)
+
+
+def fast_to_vcf(dataframe, path, vcf_header, output_format, meta_data, meta):
+    # Get the columns in the right order and convert to numpy
+    df_numpy = dataframe[['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'INFO'] + output_format].to_numpy()
+
+    sep = '\t'
+    QUAL = "."
+    FILTER = "PASS"
+    FORMAT = ":".join(output_format)
+    format_format = ':'.join(['%s']*len(output_format))
+
+    single_row_format = f'%s %s %s %s %s {QUAL} {FILTER} %s {FORMAT} {format_format}'
+
+    out_string = vcf_header
+    out_string += sep.join(meta_data["format_fixed"]+[meta["gwaslab"]["study_name"]]) + "\n"
+    fmt = sep.join(single_row_format.split(' ')) # build formatting for one single row
+    fmt = '\n'.join([fmt]*dataframe.shape[0]) # add newline and replicate the formatting for all rows
+    out_string += fmt % tuple(df_numpy.ravel()) # flatten the array and then apply formatting
+    out_string += '\n'
+
+    with open(path, 'w') as f:
+        f.write(out_string)
+
 ####################################################################################################################
 def _configure_output_cols_and_args(sumstats, rename_dictionary, cols, no_status, path, meta_data, to_csvargs, log, verbose):
     # grab format cols that exist in sumstats
