@@ -23,6 +23,7 @@ from gwaslab.qc_fix_sumstats import _process_build
 from gwaslab.hm_harmonize_sumstats import parallelecheckaf
 from gwaslab.hm_harmonize_sumstats import paralleleinferaf
 from gwaslab.hm_harmonize_sumstats import checkref
+from gwaslab.hm_harmonize_sumstats import oldcheckref
 from gwaslab.hm_harmonize_sumstats import rsidtochrpos
 from gwaslab.hm_harmonize_sumstats import parallelizeassignrsid
 from gwaslab.hm_harmonize_sumstats import parallelinferstrand
@@ -295,6 +296,7 @@ class Sumstats():
               ref_infer=None,
               ref_alt_freq=None,
               maf_threshold=0.40,
+              ref_seq_mode="v",
               n_cores=1,
               remove=False,
               checkref_args={},
@@ -352,8 +354,10 @@ class Sumstats():
         #   3.2 infer strand for palindromic SNP (target build)
         #####################################################
         if ref_seq is not None:
-            
-            self.data = checkref(self.data,ref_seq,log=self.log,**checkref_args)
+            if ref_seq_mode=="v":
+                self.data = checkref(self.data,ref_seq,log=self.log,**checkref_args)
+            else:
+                self.data = oldcheckref(self.data,ref_seq,log=self.log,**checkref_args)
             
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
             
@@ -421,9 +425,13 @@ class Sumstats():
         _check_data_consistency(self.data,log=self.log,**args)
     def check_id(self,**args):
         pass
-    def check_ref(self,ref_seq,**args):
-        self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
-        self.data = checkref(self.data,ref_seq,log=self.log,**args)
+    def check_ref(self,ref_seq,ref_seq_mode="v",**args):
+        if ref_seq_mode=="v":
+            self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
+            self.data = checkref(self.data,ref_seq,log=self.log,**args)
+        else:
+            self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
+            self.data = oldcheckref(self.data,ref_seq,log=self.log,**args)            
     def infer_strand(self,ref_infer,**args):
         self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
         self.data = parallelinferstrand(self.data,ref_infer=ref_infer,log=self.log,**args)

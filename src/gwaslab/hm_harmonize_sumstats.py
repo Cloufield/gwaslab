@@ -263,6 +263,130 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     finished(log, verbose, _end_line)
     return sumstats
 ####################################################################################################################
+# old version
+def _old_check_status(row,record):
+    #pos,ea,nea
+    # status 
+    #0 /  ----->  match
+    #1 /  ----->  Flipped Fixed
+    #2 /  ----->  Reverse_complementary Fixed
+    #3 /  ----->  flipped
+    #4 /  ----->  reverse_complementary 
+    #5 / ------>  reverse_complementary + flipped
+    #6 /  ----->  both allele on genome + unable to distinguish
+    #7 /  ----> reverse_complementary + both allele on genome + unable to distinguish
+    #8 / -----> not on ref genome
+    #9 / ------> unchecked
+    
+    status_pre=row.iloc[3][:5]
+    status_end=row.iloc[3][6:]
+    
+    ## nea == ref
+    if row.iloc[2] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[2])-1].seq.upper():
+        ## ea == ref
+        if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
+            ## len(nea) >len(ea):
+            if len(row.iloc[2])!=len(row.iloc[1]):
+                # indels both on ref, unable to identify
+                return status_pre+"6"+status_end 
+        else:
+            #nea == ref & ea != ref
+            return status_pre+"0"+status_end 
+    ## nea!=ref
+    else:
+        # ea == ref_seq -> need to flip
+        if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
+            return status_pre+"3"+status_end 
+        # ea !=ref
+        else:
+            #_reverse_complementary
+            row.iloc[1] = get_reverse_complementary_allele(row.iloc[1])
+            row.iloc[2] = get_reverse_complementary_allele(row.iloc[2])
+            ## nea == ref
+            if row.iloc[2] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[2])-1].seq.upper():
+                ## ea == ref
+                if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
+                    ## len(nea) >len(ea):
+                    if len(row.iloc[2])!=len(row.iloc[1]):
+                        return status_pre+"8"+status_end  # indel reverse complementary
+                else:
+                    return status_pre+"4"+status_end 
+            else:
+                # ea == ref_seq -> need to flip
+                if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
+                    return status_pre+"5"+status_end 
+            # ea !=ref
+            return status_pre+"8"+status_end
+
+def oldcheckref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
+    ##start function with col checking##########################################################
+    _start_line = "check if NEA is aligned with reference sequence"
+    _end_line = "checking if NEA is aligned with reference sequence"
+    _start_cols = [chrom,pos,ea,nea,status]
+    _start_function = ".check_ref()"
+    _must_args ={}
+    is_enough_info = start_to(sumstats=sumstats,
+                              log=log,
+                              verbose=verbose,
+                              start_line=_start_line,
+                              end_line=_end_line,
+                              start_cols=_start_cols,
+                              start_function=_start_function,
+                              **_must_args)
+    if is_enough_info == False: return sumstats
+    ############################################################################################
+    log.write(" -Reference genome FASTA file: "+ ref_path,verbose=verbose)  
+    log.write(" -Checking records: ", end="",verbose=verbose)  
+    chromlist = get_chr_list(add_number=True)
+    records = SeqIO.parse(ref_path, "fasta")
+    for record in records:
+        #record = next(records)
+        if record is not None:
+            record_chr = str(record.id).strip("chrCHR").upper()
+            if record_chr in chr_dict.keys():
+                i = chr_dict[record_chr]
+            else:
+                i = record_chr
+            if i in chromlist:
+                log.write(record_chr," ", end="",show_time=False,verbose=verbose) 
+                to_check_ref = (sumstats[chrom]==i) & (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())
+                sumstats.loc[to_check_ref,status] = sumstats.loc[to_check_ref,[pos,ea,nea,status]].apply(lambda x:_old_check_status(x,record),axis=1)
+    
+    log.write("\n",end="",show_time=False,verbose=verbose) 
+        
+    sumstats[status] = sumstats[status].astype("string")
+    available_to_check =sum( (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna()))
+    status_0=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False))
+    status_3=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False))
+    status_4=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[4]\w", case=False, flags=0, na=False))
+    status_5=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[5]\w", case=False, flags=0, na=False))
+    status_6=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[6]\w", case=False, flags=0, na=False))
+    #status_7=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[7]\w", case=False, flags=0, na=False))
+    status_8=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w", case=False, flags=0, na=False))
+    
+    log.write(" -Variants allele on given reference sequence : ",status_0,verbose=verbose)
+    log.write(" -Variants flipped : ",status_3,verbose=verbose)
+    raw_matching_rate = (status_3+status_0)/available_to_check
+    flip_rate = status_3/available_to_check
+    log.write("  -Raw Matching rate : ","{:.2f}%".format(raw_matching_rate*100),verbose=verbose)
+    if raw_matching_rate <0.8:
+        log.warning("Matching rate is low, please check if the right reference genome is used.")
+    if flip_rate > 0.85 :
+        log.write("  -Flipping variants rate > 0.85, it is likely that the EA is aligned with REF in the original dataset.",verbose=verbose)
+    
+    log.write(" -Variants inferred reverse_complement : ",status_4,verbose=verbose)
+    log.write(" -Variants inferred reverse_complement_flipped : ",status_5,verbose=verbose)
+    log.write(" -Both allele on genome + unable to distinguish : ",status_6,verbose=verbose)
+    #log.write(" -Reverse_complementary + both allele on genome + unable to distinguish: ",status_7)
+    log.write(" -Variants not on given reference sequence : ",status_8,verbose=verbose)
+    
+    if remove is True:
+        sumstats = sumstats.loc[~sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w"),:]
+        log.write(" -Variants not on given reference sequence were removed.",verbose=verbose)
+    
+    finished(log, verbose, _end_line)
+    return sumstats
+
 #20240320 check if non-effect allele is aligned with reference genome         
 def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array):
     # status 
@@ -498,7 +622,7 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
     if is_enough_info == False: return sumstats
     ############################################################################################
     log.write(" -Reference genome FASTA file: "+ ref_path,verbose=verbose)  
-    log.write(" -Loading fasta records", verbose=verbose)
+    log.write(" -Loading fasta records:",end="", verbose=verbose)
     chromlist = get_chr_list(add_number=True)
     records = SeqIO.parse(ref_path, "fasta")
 
@@ -513,7 +637,9 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
             else:
                 i = record_chr
             if (i in chromlist) and (i in chroms_in_sumstats):
+                log.write(record_chr," ", end="",show_time=False,verbose=verbose)
                 all_records_dict.update({i: record})
+    log.write("",show_time=False,verbose=verbose)
 
     if len(all_records_dict) > 0:
         log.write(" -Checking records", verbose=verbose)
@@ -525,7 +651,6 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
  
     sumstats[status] = sumstats[status].astype("string")
         
-    sumstats[status] = sumstats[status].astype("string")
     available_to_check =sum( (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna()))
     status_0=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False))
     status_3=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False))

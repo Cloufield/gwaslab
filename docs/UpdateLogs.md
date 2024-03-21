@@ -1,5 +1,9 @@
 # Update Logs
 
+
+## 3.4.42 20240321
+- fast implementation of check_ref and to_format. (credit to @sup3rgiu Mr. Andrea)
+
 ## 3.4.41 20240219
 - fixed error in region_ref_second
 
