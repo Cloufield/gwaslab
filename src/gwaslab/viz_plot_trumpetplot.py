@@ -13,6 +13,7 @@ from gwaslab.util_in_get_sig import annogene
 from gwaslab.viz_aux_annotate_plot import annotate_single
 from gwaslab.viz_aux_reposition_text import adjust_text_position
 from gwaslab.viz_aux_save_figure import save_figure
+from gwaslab.viz_plot_mqqplot import _process_highlight
 from gwaslab.g_Log import Log
 from gwaslab.util_in_calculate_power import get_beta
 from gwaslab.util_in_calculate_power import get_power
@@ -49,6 +50,13 @@ def plottrumpet(mysumstats,
                 xlim=None,
                 markercolor="#597FBD",
                 hue=None,
+                highlight = None,
+                highlight_chrpos = False,
+                highlight_color="#CB132D",
+                highlight_windowkb = 500,
+                highlight_anno_args = None,
+                pinpoint= None,
+                pinpoint_color ="red",
                 scatter_args=None,
                 fontsize=15,
                 font_family="Arial",
@@ -106,7 +114,10 @@ def plottrumpet(mysumstats,
         scatter_args["hue"]=hue
     if markercolor is not None:
         scatter_args["color"]=markercolor
-    
+    if highlight is None:
+        highlight = list()
+    if pinpoint is None:
+        pinpoint = list()  
     #Checking columns#################################################################################################################
     log.write("Start to create trumpet plot...", verbose=verbose)
     
@@ -140,6 +151,10 @@ def plottrumpet(mysumstats,
     #loading columns #################################################################################################################
     cols_to_use = [snpid, beta, eaf, n, p]
     
+    if len(highlight)>0: 
+        cols_to_use.append(pos)
+        cols_to_use.append(chrom)
+    
     if anno is not None:
         if anno != "GENENAME":
             if anno!=True:
@@ -147,8 +162,8 @@ def plottrumpet(mysumstats,
                 if anno not in cols_to_use:
                     cols_to_use.append(anno)
         else:
-            cols_to_use.append(pos)
-            cols_to_use.append(chrom)
+            cols_to_use.append(pos) if pos not in cols_to_use else cols_to_use
+            cols_to_use.append(chrom) if chrom not in cols_to_use else cols_to_use
 
     if size != "ABS_BETA":
         if size not in cols_to_use:
@@ -211,6 +226,16 @@ def plottrumpet(mysumstats,
         output_hex_colors.append(mc.to_hex(rgba[i]))
     output_hex_colors
 
+    if len(highlight)>0:
+        sumstats["HUE"] = pd.NA
+        sumstats["HUE"] = sumstats["HUE"].astype("Int64")
+        sumstats = _process_highlight(sumstats=sumstats, 
+                                                    highlight=highlight, 
+                                                    highlight_chrpos=highlight_chrpos, 
+                                                    highlight_windowkb=highlight_windowkb, 
+                                                    snpid=snpid, 
+                                                    chrom=chrom, 
+                                                    pos=pos)
     ##################################################################################################
     fig, ax = plt.subplots(**figargs)
     
@@ -256,17 +281,103 @@ def plottrumpet(mysumstats,
     sumstats["ABS_BETA"] = sumstats[beta].abs()
 
     ##################################################################################################
-    
+    size_norm = (sumstats["ABS_BETA"].min(), sumstats["ABS_BETA"].max())
+    ## if highlight  ##################################################################################################
     dots = sns.scatterplot(data=sumstats,
                     x=maf,
                     y=beta,
                     size=size, 
                     ax=ax, 
                     sizes=sizes,
+                    size_norm=size_norm,
                     legend=True, 
                     edgecolor="black",
                     alpha=0.8,
+                    zorder=2,
                     **scatter_args)
+    
+    if len(highlight) >0:
+        
+        legend = None
+        style=None
+        linewidth=0
+        edgecolor="black"
+
+        if pd.api.types.is_list_like(highlight[0]) and highlight_chrpos==False:
+            for i, highlight_set in enumerate(highlight):
+                scatter_args["color"]=highlight_color[i%len(highlight_color)]
+                log.write(" -Highlighting set {} target loci...".format(i+1),verbose=verbose)
+                sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==i], x=maf,
+                    y=beta,
+                    legend=legend,
+                    style=style,
+                    size=size,
+                    sizes=sizes,
+                    size_norm=size_norm,
+                    linewidth=linewidth,
+                    zorder=3+i,
+                    ax=ax,edgecolor=edgecolor,**scatter_args)  
+
+        else:
+            log.write(" -Highlighting target loci...",verbose=verbose)
+            scatter_args["color"]=highlight_color
+            sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==0], x=maf,
+                    y=beta,
+                legend=legend,
+                size=size,
+                sizes=sizes,
+                size_norm=size_norm,
+                zorder=3,
+                ax=ax,
+                edgecolor="black",
+                **scatter_args)  
+    ####################################################################################################################
+    if len(pinpoint)>0:
+        legend = None
+        style=None
+        linewidth=0
+        edgecolor="black"
+        if pd.api.types.is_list_like(pinpoint[0]):
+
+            for i, pinpoint_set in enumerate(pinpoint):
+                scatter_args["color"]=pinpoint_color[i%len(pinpoint_color)]
+                if sum(sumstats[snpid].isin(pinpoint_set))>0:
+                    to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint_set),:]
+                    log.write(" -Pinpointing set {} target vairants...".format(i+1),verbose=verbose)
+                    sns.scatterplot(data=to_pinpoint, 
+                    x=maf,
+                    y=beta,
+                    legend=legend,
+                    size=size,
+                    sizes=sizes,
+                    size_norm=size_norm,
+                    zorder=3,
+                    ax=ax,
+                    edgecolor="black",
+                    **scatter_args)  
+                    #ax.scatter(to_pinpoint[maf],to_pinpoint[beta],color=pinpoint_color[i%len(pinpoint_color)],zorder=100,s=to_pinpoint[size])
+                else:
+                    log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
+        else:
+            scatter_args["color"]=pinpoint_color
+            if sum(sumstats[snpid].isin(pinpoint))>0:
+                to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
+                log.write(" -Pinpointing target vairants...",verbose=verbose)
+                sns.scatterplot(data=to_pinpoint, x=maf,
+                    y=beta,
+                    legend=legend,
+                    size=size,
+                    sizes=sizes,
+                    size_norm=size_norm,
+                    zorder=3,
+                    ax=ax,
+                    edgecolor="black",
+                    **scatter_args)  
+                #ax.scatter(to_pinpoint[maf],to_pinpoint[beta],color=pinpoint_color[i%len(pinpoint_color)],zorder=100,s=to_pinpoint[size])
+            else:
+                log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
+    
+    ####################################################################################################################
     
     #second_legend = ax.legend(title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
     

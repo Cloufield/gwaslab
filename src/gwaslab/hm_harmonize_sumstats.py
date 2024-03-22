@@ -318,7 +318,7 @@ def _old_check_status(row,record):
             # ea !=ref
             return status_pre+"8"+status_end
 
-def oldcheckref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
+def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
     ##start function with col checking##########################################################
     _start_line = "check if NEA is aligned with reference sequence"
     _end_line = "checking if NEA is aligned with reference sequence"
@@ -335,10 +335,10 @@ def oldcheckref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status
                               **_must_args)
     if is_enough_info == False: return sumstats
     ############################################################################################
-    log.write(" -Reference genome FASTA file: "+ ref_path,verbose=verbose)  
+    log.write(" -Reference genome FASTA file: "+ ref_seq,verbose=verbose)  
     log.write(" -Checking records: ", end="",verbose=verbose)  
     chromlist = get_chr_list(add_number=True)
-    records = SeqIO.parse(ref_path, "fasta")
+    records = SeqIO.parse(ref_seq, "fasta")
     for record in records:
         #record = next(records)
         if record is not None:
@@ -603,7 +603,7 @@ def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=
     return sumstats[status].values
         
 
-def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
+def checkref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
     ##start function with col checking##########################################################
     _start_line = "check if NEA is aligned with reference sequence"
     _end_line = "checking if NEA is aligned with reference sequence"
@@ -621,10 +621,10 @@ def checkref(sumstats,ref_path,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="S
                               **_must_args)
     if is_enough_info == False: return sumstats
     ############################################################################################
-    log.write(" -Reference genome FASTA file: "+ ref_path,verbose=verbose)  
+    log.write(" -Reference genome FASTA file: "+ ref_seq,verbose=verbose)  
     log.write(" -Loading fasta records:",end="", verbose=verbose)
     chromlist = get_chr_list(add_number=True)
-    records = SeqIO.parse(ref_path, "fasta")
+    records = SeqIO.parse(ref_seq, "fasta")
 
     all_records_dict = {}
     chroms_in_sumstats = sumstats[chrom].unique() # load records from Fasta file only for the chromosomes present in the sumstats
