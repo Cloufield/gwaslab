@@ -1611,12 +1611,5 @@ def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
 
 ###############################################################################################################
 def _df_split(dataframe, n):
-    chunks = []
-    chunk_size = int(dataframe.shape[0] // n)+1
-
-    for index in range(0, dataframe.shape[0], chunk_size):
-        chunks.append(
-            dataframe.iloc[index:index + chunk_size]
-        )
-
-    return chunks
+    k, m = divmod(len(dataframe), n)
+    return [dataframe.iloc[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n)]
