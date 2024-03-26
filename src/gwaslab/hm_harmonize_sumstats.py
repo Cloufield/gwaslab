@@ -1091,6 +1091,20 @@ def check_indel_cache(sumstats,cache,ref_infer,ref_alt_freq=None,chr_dict=get_nu
 def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,daf_tolerance=0.20,remove_snp="",mode="pi",n_cores=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
                        chr_dict=None,cache_options={},verbose=True,log=Log()):
+    '''
+    Args:
+    cache_options : A dictionary with the following keys:
+        - cache_manager: CacheManager object or None. If any between cache_loader and cache_process is not None, or use_cache is True, a CacheManager object will be created automatically.
+        - trust_cache: bool (optional, default: True). Whether to completely trust the cache or not. Trusting the cache means that any key not found inside the cache will be considered as a missing value even in the VCF file.
+        - cache_loader: Object with a get_cache() method or None.
+        - cache_process: Object with an apply_fn() method or None.
+        - use_cache: bool (optional, default: False). If any of the cache_manager, cache_loader or cache_process is not None, this will be set to True automatically.
+                     If set to True and all between cache_manager, cache_loader and cache_process are None, the cache will be loaded (or built) on the spot.
+
+        The usefulness of a cache_loader or cache_process object is to pass a custom object which already has the cache loaded. This can be useful if the cache is loaded in background in another thread/process while other operations are performed.
+        The cache_manager is a CacheManager object is used to expose the API to interact with the cache.
+    '''
+
     ##start function with col checking##########################################################
     _start_line = "infer strand for palindromic SNPs/align indistinguishable indels"
     _end_line = "inferring strand for palindromic SNPs/align indistinguishable indels"
@@ -1114,13 +1128,13 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
     
     # Setup cache variables
-    cache_manager = cache_options.get("cache_manager", False)
+    cache_manager = cache_options.get("cache_manager", None)
     if cache_manager is not None:
         assert isinstance(cache_manager, CacheManager), "cache_manager must be a CacheManager object"
-    use_cache = cache_options.get("use_cache", False)
-    trust_cache = cache_options.get("trust_cache", False)
+    trust_cache = cache_options.get("trust_cache", True)
     cache_loader = cache_options.get("cache_loader", None)
     cache_process = cache_options.get("cache_process", None)
+    use_cache = any(c is not None for c in [cache_manager, cache_loader, cache_process]) or cache_options.get('use_cache', False)
     _n_cores = n_cores # backup n_cores
     
     log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)  

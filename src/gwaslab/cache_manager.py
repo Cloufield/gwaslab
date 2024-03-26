@@ -14,9 +14,11 @@ from pysam import VariantFile
 APPNAME = "gwaspipe"
 APPAUTHOR = "ht_diva"
 
+CACHE_EXT = '.cache'
+
 
 def get_cache_path(base_path):
-    cache_filename = str(Path(base_path).stem) + '.pickle'
+    cache_filename = str(Path(base_path).stem) + CACHE_EXT
     cache_path = os.path.join(os.path.dirname(base_path), cache_filename)
     if os.path.exists(cache_path):
         return cache_path
@@ -29,7 +31,7 @@ def get_cache_path(base_path):
     return None
 
 def get_write_path(base_path):
-    cache_filename = str(Path(base_path).stem) + '.pickle'
+    cache_filename = str(Path(base_path).stem) + CACHE_EXT
     if os.access(os.path.dirname(base_path), os.W_OK):
         # if we have write access to the directory where the original input file is located
         return os.path.join(os.path.dirname(base_path), cache_filename)
@@ -41,6 +43,15 @@ def get_write_path(base_path):
         
     raise Exception('No write access to any cache directory')
 
+def build_cache(base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True, return_cache=False):
+    cache_builder = CacheBuilder(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
+    cache_builder.start_building()
+    cache_builder.save_cache(get_write_path(base_path)) # save_cache will wait for all threads to finish building cache
+    if return_cache:
+        return cache_builder.get_cache(complete=True) # wait for all threads to finish building cache
+    
+
+################################################# CACHE MANAGERs #################################################
 
 class CacheMainManager:
     def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
@@ -70,14 +81,11 @@ class CacheMainManager:
         return self._cache
 
     def build_cache(self):
-        cache_builder = CacheBuilder(self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores, log=self.log, verbose=self.verbose)
-        cache_builder.start_building()
-        cache_builder.save_cache(self._get_write_path())
-        self._cache = cache_builder.get_cache(complete=True) # wait for all threads to finish building cache
+        self._cache = build_cache(self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores, log=self.log, verbose=self.verbose, return_cache=True)
 
     def load_cache(self, cache_path):
-        if os.path.exists(cache_path):
-            with open(self.cache_dir, 'rb') as f:
+        if cache_path and os.path.exists(cache_path):
+            with open(cache_path, 'rb') as f:
                 self._cache = pickle.load(f)
         else:
             raise Exception('Cache file not found')
@@ -85,25 +93,29 @@ class CacheMainManager:
 
 class CacheManager(CacheMainManager):
     def __init__(self, base_path=None, cache_loader=None, cache_process=None, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
-        assert sum([base_path is not None, cache_loader is not None, cache_process is not None]) == 1, 'Only one between base_path, cache_loader and cache_process should be provided'
+        none_value = sum([cache_loader is not None, cache_process is not None])
+        assert none_value in [0, 1], 'Only one between cache_loader and cache_process should be provided'
         super().__init__(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
+        if none_value == 1:
+            self.base_path = None # unset base_path if cache_loader or cache_process is provided
+
         self.cache_loader = cache_loader
         self.cache_process = cache_process
 
         if cache_loader is not None:
             assert callable(getattr(cache_loader, 'get_cache', None)), 'cache_loader must have a get_cache method'
         elif cache_process is not None:
-            assert isinstance(cache_process, CacheProcess), 'cache_process must be an instance of CacheManagerProcess'
+            assert isinstance(cache_process, CacheProcess), 'cache_process must be an instance of CacheProcess'
         else:
             cache_path = self._get_cache_path()
             if cache_path is not None:
-                self.log(f'Start to load cache from {cache_path}...', verbose=self.verbose)
+                self.log.write(f'Start loading cache from {cache_path}...', verbose=self.verbose)
                 self.load_cache(cache_path)
-                self.log('Finshed loading cache.', verbose=self.verbose)
+                self.log.write('Finshed loading cache.', verbose=self.verbose)
             else:
-                self.log(f'Start to build cache from {base_path}...', verbose=self.verbose)
+                self.log.write(f'Start building cache from {base_path}...', verbose=self.verbose)
                 self.build_cache()
-                self.log('Finished building cache.', verbose=self.verbose)
+                self.log.write('Finished building cache.', verbose=self.verbose)
 
     @property
     def cache_len(self):
@@ -118,7 +130,7 @@ class CacheManager(CacheMainManager):
             return self.cache_loader.get_cache()
         else:
             if not hasattr(self, '_cache'):
-                raise Exception('Cache not loaded')
+                raise Exception('Cache not loaded or class not exposing cache')
             return self._cache
         
     def apply_fn(self, fn, *args, **kwargs):
@@ -135,6 +147,15 @@ class CacheManager(CacheMainManager):
 
 
 class CacheProcess(multiprocessing.Process):
+    '''
+    A class for managing a cache in a separate process. It is used to reduce memory consumption when the cache is very large.
+    This class will load the cache in a separate process and provide methods to perform operations on the cache directly on the subprocess.
+    In this way, the cache is not copied to the main process, but the operations are performed on the cache in the subprocess and only the
+    input and output of the operations are communicated (i.e. copied) between the main and the subprocess.
+    
+    This is very useful when the cache is huge (e.g. 40GB in memory) and we want to perform operations on it based on a relatively small input
+    (e.g. a "small" dataframe, where small is relative to the cache size) and the output is also relatively small.
+    '''
     def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
         super().__init__()
         self.base_path = base_path
@@ -148,23 +169,25 @@ class CacheProcess(multiprocessing.Process):
         self.result_queue = multiprocessing.Queue()
         self.result_produced = multiprocessing.Value('b', True)
 
-        if not os.path.exists(self._get_cache_path()):
+        cache_path = self._get_cache_path()
+        if cache_path is None or not os.path.exists(cache_path):
             self.build_cache()
+        else:
+            if n_cores > 1:
+                self.log.warning('[Since the cache already exists, n_cores could be set to 1 without any performance loss]', verbose=self.verbose)
 
     def _get_cache_path(self):
         return get_cache_path(self.base_path)
     
     def build_cache(self):
-        cache_builder = CacheBuilder(self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores, log=self.log, verbose=self.verbose)
-        cache_builder.start_building()
-        cache_builder.save_cache(self._get_write_path())
+        build_cache(self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores, log=self.log, verbose=self.verbose, return_cache=False)
 
     def run(self):
-        print("Start loading")
-        start = time.time()
-        with open(self._get_cache_path, 'rb') as handle:
+        cache_path = self._get_cache_path()
+        self.log.write(f'[Start loading cache from {cache_path}...]', verbose=self.verbose)   
+        with open(cache_path, 'rb') as handle:
             cache = pickle.load(handle)
-        print(f"Done loading in {time.time() - start} seconds")
+        self.log.write('[Finshed loading cache.]', verbose=self.verbose)       
         
         # Continuously listen for method calls
         while True:
@@ -211,10 +234,11 @@ class CacheProcess(multiprocessing.Process):
         self._call_method("terminate")
 
 
+################################################# CACHE BUILDER #################################################
+
 class CacheBuilder:
-    def __init__(self, ref_infer, save_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, ref_infer, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
         self.ref_infer = ref_infer
-        self.save_path = save_path
         self.ref_alt_freq = ref_alt_freq
         self.n_cores = n_cores
         self.log = log
@@ -238,7 +262,7 @@ class CacheBuilder:
         self.cancelled = False
         self.running = True
 
-        self.log(f" -Building cache on {n_cores} cores...", verbose=self.verbose)
+        self.log.write(f" -Building cache on {n_cores} cores...", verbose=self.verbose)
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=n_cores)
         self.futures = [self.executor.submit(self.build_cache, chrom) for chrom in chroms]
 
@@ -289,9 +313,139 @@ class CacheBuilder:
         self.cache = {}
         self.lock.release()
 
-    def save_cache(self):
+    def save_cache(self, save_path):
         cache = self.get_cache(complete=True)
-        self.log(f' -Saving cache to {self.save_path}', verbose=self.verbose)
-        with open(self.save_path, 'wb') as f:
+        self.log.write(f' -Saving cache to {save_path}', verbose=self.verbose)
+        with open(save_path, 'wb') as f:
             pickle.dump(cache, f, protocol=pickle.HIGHEST_PROTOCOL)
-        self.log(' -Cache saved', verbose=self.verbose)
+        self.log.write(' -Cache saved', verbose=self.verbose)
+
+
+################################################# CACHE LOADERs #################################################
+# Classes for loading the cache in a separate thread or process in the background while the main process is running.
+# However, right now, the most efficient way to load the cache and perform operations on it is to use the CacheProcess class.
+
+class CacheLoader:
+    def __new__(cls, *args, **kwargs):
+        if cls is CacheLoader:
+            raise TypeError(f"You are trying to instantiate an abstract class {cls.__name__}. Please use a concrete subclass.")
+        return super().__new__(cls)
+    
+    def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+        self.base_path = base_path
+        self.ref_alt_freq = ref_alt_freq
+        self.n_cores = n_cores
+        self.log = log
+        self.verbose = verbose
+
+    def _get_cache_path(self):
+        return get_cache_path(self.base_path)
+    
+    def build_cache(self):
+        self.cache = build_cache(self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores, log=self.log, verbose=self.verbose, return_cache=True)
+
+    def add_to_cache(self, key, value):
+        self.cache[key] = value
+
+    def get_cache(self):
+        return self.cache
+    
+    def reset_cache(self):
+        self.cache = {}
+
+
+class CacheLoaderThread(CacheLoader):
+    '''
+    A class for loading a cache in a separate thread. It is used to load the cache in the background while the main process is running.
+    
+    In theory, this should be the best and simplest approach to directly load the cache in the same process as the main process, without further 
+    copying the cache to the main process. However, due to the GIL (Global Interpreter Lock) in Python, this approach is not efficient and
+    it slows down the main process.
+    '''
+    def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+        super().__init__(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
+
+        self.cache = {}
+        self.lock = threading.Lock()  # For thread-safe cache access
+        self.running = False
+        self.executor = None  # Thread pool executor
+        self.future = None  # Stores Future objects
+
+    def start_loading(self):
+        if self.running:
+            print("Cache loading is already running. If you want to restart, please stop the current process first.")
+            return
+        
+        cache_path = self._get_cache_path()
+        
+        if cache_path and os.path.exists(cache_path) is False:
+            self.log.write("No cache file found. Start building (and loading) cache...", verbose=self.verbose)
+            self.build_cache() # this will also load the cache
+        else:
+            self.running = True
+            self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+            self.future = self.executor.submit(self.load_cache)
+
+    def load_cache(self):
+        cache_path = self._get_cache_path()
+        self.log.write(f'[Start loading cache from {cache_path}...]', verbose=self.verbose)     
+        with open(cache_path, 'rb') as handle:
+            self.cache = pickle.load(handle)
+        self.log.write('[Finshed loading cache.]', verbose=self.verbose)
+
+        self.future.cancel()
+        self.executor.shutdown(wait=False)
+        self.executor = None
+        self.future = None
+        self.running = False     
+
+    def get_cache(self):
+        if self.future is not None:
+            self.future.result()  # Ensure loading is finished before accessing the cache
+        return self.cache
+
+
+def _load_cache_process(path, cache):
+    #start = time.time()
+    with open(path, 'rb') as handle:
+        local_cache = pickle.load(handle)
+    #print(f" ********* DONE LOADING local in {time.time() - start} seconds *********")
+
+    #start = time.time()
+    cache.update(local_cache)
+    #print(f" ********* DONE COPYING shared in {time.time() - start} seconds *********")
+    del local_cache
+
+class CacheLoaderProcess(CacheLoader):
+    '''
+    A class for loading a cache in a separate process. It is used to load the cache in the background while the main process is running.
+
+    Unlike CacheLoaderThread, this class is more efficient because it loads the cache in a separate process, which is not affected by the GIL.
+    However, a lot of memory and time is wasted in copying the cache from the subprocess to the main process.
+    '''
+    def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+        super().__init__(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
+        self.manager = multiprocessing.Manager()
+        self.cache = self.manager.dict()
+        self.running = False
+        self.process = None
+
+    def start_loading(self):
+        if self.running:
+            print("Cache loading is already running. If you want to restart, please stop the current process first.")
+            return
+        
+        cache_path = self._get_cache_path()
+        
+        if cache_path and os.path.exists(cache_path) is False:
+            self.build_cache() # this will also load the cache
+        else:
+            self.running = True
+            self.process = multiprocessing.Process(target=_load_cache_process, args=(cache_path, self.cache))
+            self.process.start()
+        
+    def get_cache(self):
+        if self.running:
+            self.process.join()  # Wait for cache loading process to finish
+            self.running = False
+        return self.cache
