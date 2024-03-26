@@ -164,6 +164,8 @@ class CacheProcess(multiprocessing.Process):
         self.log = log
         self.verbose = verbose
 
+        self.daemon = True # When parent process exits, it will attempt to terminate all of its daemonic child processes.
+
         self.manager = multiprocessing.Manager()
         self.input_queue = multiprocessing.Queue()  # Queue for communication between processes
         self.result_queue = multiprocessing.Queue()
@@ -174,7 +176,7 @@ class CacheProcess(multiprocessing.Process):
             self.build_cache()
         else:
             if n_cores > 1:
-                self.log.warning('[Since the cache already exists, n_cores could be set to 1 without any performance loss]', verbose=self.verbose)
+                self.log.warning('[CacheProcess: since the cache already exists, the parameter n_cores could be set to 1 without any performance loss]', verbose=self.verbose)
 
     def _get_cache_path(self):
         return get_cache_path(self.base_path)
@@ -184,10 +186,10 @@ class CacheProcess(multiprocessing.Process):
 
     def run(self):
         cache_path = self._get_cache_path()
-        self.log.write(f'[Start loading cache from {cache_path}...]', verbose=self.verbose)   
+        self.log.write(f'[CacheProcess: Start loading cache from {cache_path}...]', verbose=self.verbose)   
         with open(cache_path, 'rb') as handle:
             cache = pickle.load(handle)
-        self.log.write('[Finshed loading cache.]', verbose=self.verbose)       
+        self.log.write('[CacheProcess: Finshed loading cache.]', verbose=self.verbose)       
         
         # Continuously listen for method calls
         while True:
