@@ -18,7 +18,7 @@ def _calculate_prs(sumstats,
           memory=None, 
           overwrite=False,
           mode=None,delete=True,
-          log=Log(),**args):
+          log=Log(),**kwargs):
     
     #matching_alleles
         #read_bim
@@ -37,7 +37,7 @@ def _calculate_prs(sumstats,
                                                                     n_cores=n_cores, 
                                                                     log=log,
                                                                     load_bim=False,
-                                                                    overwrite=overwrite,**args)
+                                                                    overwrite=overwrite,**kwargs)
         score_file_path_list =[]
         for index, chrom in enumerate(chrlist): 
             chr_sumstats = sumstats.loc[sumstats["CHR"]==chrom,:].copy()

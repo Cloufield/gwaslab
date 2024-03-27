@@ -135,46 +135,46 @@ class SumstatsPair( ):
         return molded_sumstats, sumstats1
 
 
-    def clump(self,**args):
-        self.clumps["clumps"], self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.study_name, **args)
+    def clump(self,**kwargs):
+        self.clumps["clumps"], self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.study_name, **kwargs)
 
-    def to_coloc(self,**args):
-        self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**args)
+    def to_coloc(self,**kwargs):
+        self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
 
-    def run_coloc_susie(self,**args):
+    def run_coloc_susie(self,**kwargs):
 
-        self.colocalization = _run_coloc_susie(self.to_finemapping_file_path,log=self.log,ncols=self.ns,**args)
+        self.colocalization = _run_coloc_susie(self.to_finemapping_file_path,log=self.log,ncols=self.ns,**kwargs)
 
-    def run_two_sample_mr(self, clump=False, **args):
+    def run_two_sample_mr(self, clump=False, **kwargs):
         exposure1 = self.study_name.split("_")[0]
         outcome2 = self.study_name.split("_")[1]
-        _run_two_sample_mr(self,exposure1=exposure1,outcome2=outcome2, clump=clump,**args)
+        _run_two_sample_mr(self,exposure1=exposure1,outcome2=outcome2, clump=clump,**kwargs)
 
     def extract_with_ld_proxy(self,**arg):
         return _extract_with_ld_proxy(common_sumstats = self.data, sumstats1=self.sumstats1,  **arg)
 
-    def filter_value(self, expr, inplace=False, **args):
+    def filter_value(self, expr, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filtervalues(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **args)
+            new_Sumstats_object.data = filtervalues(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **kwargs)
             return new_Sumstats_object
         else:
-            self.data = filtervalues(self.data, expr,log=self.log,**args)
+            self.data = filtervalues(self.data, expr,log=self.log,**kwargs)
         gc.collect()
 
     ## Visualization #############################################################################################################################################
-    def plot_miami(self,**args):
+    def plot_miami(self,**kwargs):
 
         plot_miami2(merged_sumstats=self.data, 
                     suffixes=self.suffixes,
-                    **args)
+                    **kwargs)
     
-    def compare_af(self, **args):
+    def compare_af(self, **kwargs):
         
         return plotdaf( self.data,
                      eaf="EAF_2",
                      raf="EAF_1",
                      xlabel="Effect Allele Frequency in Sumstats 1",
                      ylabel="Effect Allele Frequency in Sumstats 2",
-                     **args)
+                     **kwargs)
                      

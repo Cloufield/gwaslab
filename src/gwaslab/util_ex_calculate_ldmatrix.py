@@ -27,7 +27,7 @@ def tofinemapping(sumstats,
                   log=Log(),
                   suffixes=None,
                   verbose=True,
-                  **args):
+                  **kwargs):
     ##start function with col checking##########################################################
     _start_line = "calculate LD matrix"
     _end_line = "calculating LD matrix"
@@ -84,7 +84,7 @@ def tofinemapping(sumstats,
                                                                     n_cores=n_cores, 
                                                                     log=log,
                                                                     load_bim=True,
-                                                                    overwrite=overwrite,**args)
+                                                                    overwrite=overwrite,**kwargs)
 
         ## check available snps with reference file
         matched_sumstats = _align_sumstats_with_bim(row=row, 
