@@ -12,7 +12,7 @@ from platformdirs import user_cache_dir
 from pysam import VariantFile
 
 APPNAME = "gwaspipe"
-APPAUTHOR = "ht_diva"
+APPAUTHOR = "cloufield"
 
 CACHE_EXT = '.cache'
 
