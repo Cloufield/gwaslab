@@ -447,6 +447,24 @@ def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=25000000 ,upper=3400000
     
     return sumstats
 
+def _exclude_sexchr(sumstats, chrom="CHR", pos="POS", sexchrs=[23,24,25], log=Log(), verbose=True):
+    
+    raw_len = len(sumstats)
+    
+    if str(sumstats[chrom].dtype) == "string":
+        sexchrs_string = [str(i) for i in sexchrs]
+        is_in_sexchr = sumstats[chrom].astype("string").isin(sexchrs_string)
+    else:
+        is_in_sexchr = sumstats[chrom].isin(sexchrs)
+    
+    sumstats = sumstats.loc[~is_in_sexchr, : ]
+    
+    after_len = len(sumstats)
+    
+    log.write(" -Excluded {} variants on sex chromosomes ({})...".format(raw_len - after_len,sexchrs),verbose=verbose)
+    
+    return sumstats
+
 def _extract(sumstats, extract=None, id_use="SNPID", log=Log(), verbose=True ):
     if extract is not None:
         log.write(" -Extracting {} variants from sumstats...".format(len(extract)),verbose=verbose)

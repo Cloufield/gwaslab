@@ -9,6 +9,8 @@ from gwaslab.io_read_ldsc import parse_ldsc_summary
 from gwaslab.io_read_ldsc import parse_partitioned_ldsc_summary
 from gwaslab.util_in_filter_value import filtervalues
 from gwaslab.util_in_filter_value import _filter_palindromic
+from gwaslab.util_in_filter_value import _exclude_hla
+from gwaslab.util_in_filter_value import _exclude_sexchr
 
 class ARGS():
     def __init__(self, **kwargs):
@@ -255,12 +257,14 @@ class ARGS():
 ####################################################################################################################
 
 
-def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, **kwargs):
+def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, munge_args=None, **kwargs):
     sumstats = insumstats.copy()
     
     if munge:
+        if munge_args is None:
+            munge_args={}
         log.write("Start to munge sumstats.")
-        sumstats = _munge_sumstats(sumstats, log=log, verbose=verbose)
+        sumstats = _munge_sumstats(sumstats, log=log, verbose=verbose,**munge_args)
         log.write("Finished munging sumstats.")
 
     ##start function with col checking##########################################################
@@ -456,16 +460,38 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **kwargs):
 
 
 
-def _munge_sumstats(sumstats, log, verbose=True, **kwargs):
-
+def _munge_sumstats(sumstats, log, 
+                    info=0.9, maf=0.01, 
+                    n=None, nopalindromic=True,
+                    exclude_hla=True, exclude_sexchr=True,  
+                    verbose=True, **kwargs):
+    if "CHR" in sumstats.columns and "POS" in sumstats.columns:
+        if exclude_hla == True:
+            sumstats = _exclude_hla(sumstats, verbose=verbose, log=log)
+    
+    if "CHR" in sumstats.columns:
+        if exclude_sexchr == True:
+            sumstats = _exclude_sexchr(sumstats, verbose=verbose, log=log)
+    
     # filter_info
-    sumstats = filtervalues(sumstats, 'INFO >=0.9' ,verbose=verbose, log=log)
+    if "INFO" in sumstats.columns:
+        sumstats = filtervalues(sumstats, 'INFO >={}'.format(info) ,verbose=verbose, log=log)
+    
     # frequency
-    sumstats = filtervalues(sumstats,'EAF>=0.01 and EAF<=0.99',verbose=verbose, log=log)
+    if "EAF" in sumstats.columns:
+        sumstats = filtervalues(sumstats,'EAF>={} and EAF<={}'.format(maf, 1-maf),verbose=verbose, log=log)
+    
     # N
-    min_n = sumstats.N.quantile(0.9) / 1.5
-    sumstats = filtervalues(sumstats,'N>={}'.format(min_n),verbose=verbose, log=log)
+    if "N" in sumstats.columns:
+        if n is None:
+            min_n = sumstats.N.quantile(0.9) / 1.5
+        else:
+            min_n = n
+        sumstats = filtervalues(sumstats,'N>={}'.format(min_n),verbose=verbose, log=log)
+    
     # remove strand-unambiguous SNPs
-    sumstats = _filter_palindromic(sumstats, mode="out", verbose=verbose, log=log)
+    if "EA" in sumstats.columns and "NEA" in sumstats.columns:
+        if nopalindromic==True:
+            sumstats = _filter_palindromic(sumstats, mode="out", verbose=verbose, log=log)
     
     return sumstats
