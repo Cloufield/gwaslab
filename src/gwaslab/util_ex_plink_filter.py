@@ -16,10 +16,10 @@ def _run_plink_filter(filter_flag, out_prefix):
     --out {}
     '''.format(filter_flag, out_prefix)
 
-def _plink2_filter_to_flag(tmpdir="./",**args):
+def _plink2_filter_to_flag(tmpdir="./",**kwargs):
     combined_flag=""
     temp_file_list=[]
-    for flag_with_underbar,value in args.items():
+    for flag_with_underbar,value in kwargs.items():
         if isinstance(value, pd.DataFrame) or isinstance(value, pd.Series):
             formated_flag, temp_file = _process_df_to_file(flag_with_underbar=flag_with_underbar,
                                                            df=value,

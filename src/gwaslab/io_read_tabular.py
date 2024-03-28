@@ -3,30 +3,30 @@ from gwaslab.bd_common_data import get_formats_list
 from gwaslab.g_Log import Log
 from gwaslab.bd_common_data import get_format_dict
 
-def _read_tabular(path, fmt, **args):
+def _read_tabular(path, fmt, **kwargs):
     
     # default
     load_args_dict = {"sep":"\t",
                       "header":None}
     
     # if specified by user
-    if len(args)>0:
-        load_args_dict = args
+    if len(kwargs)>0:
+        load_args_dict = kwargs
     
     # load format
     meta_data, rename_dictionary = get_format_dict(fmt)
     
-    if "format_separator" in meta_data and "sep" not in args:
+    if "format_separator" in meta_data and "sep" not in kwargs:
         load_args_dict["sep"] = meta_data["format_separator"]
     
-    if "format_comment" in meta_data and "comment" not in args:
+    if "format_comment" in meta_data and "comment" not in kwargs:
         if  meta_data["format_comment"] is not None:    
             load_args_dict["comment"] = meta_data["format_comment"]
 
-    if "format_header" in meta_data and "header" not in args:
+    if "format_header" in meta_data and "header" not in kwargs:
         load_args_dict["header"] = meta_data["format_header"]
 
-    if "format_na" in meta_data and "na_values" not in args:
+    if "format_na" in meta_data and "na_values" not in kwargs:
         if  meta_data["format_na"] is not None:    
             load_args_dict["na_values"] = meta_data["format_na"]
 

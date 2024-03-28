@@ -240,15 +240,15 @@ class Sumstats():
         self.data, self.meta["gwaslab"]["genome_build"] = _set_build(self.data, build=build, log=self.log,verbose=verbose)
         gc.collect()
 
-    def infer_build(self,**args):
-        self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**args)
+    def infer_build(self,verbose=True,**kwargs):
+        self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,log=self.log,verbose=verbose,**kwargs)
     
-    def liftover(self,to_build, from_build=None,**args):
+    def liftover(self,to_build, from_build=None,**kwargs):
         if from_build is None:
             if self.meta["gwaslab"]["genome_build"]=="99":
-                self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**args)
+                self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**kwargs)
             from_build = self.meta["gwaslab"]["genome_build"]
-        self.data = parallelizeliftovervariant(self.data,from_build=from_build, to_build=to_build, log=self.log,**args)
+        self.data = parallelizeliftovervariant(self.data,from_build=from_build, to_build=to_build, log=self.log,**kwargs)
         self.meta["is_sorted"] = False
         self.meta["is_harmonised"] = False
         self.meta["gwaslab"]["genome_build"]=to_build
@@ -261,7 +261,7 @@ class Sumstats():
                     n_cores=1,
                     fixid_args={},
                     removedup_args={},
-                    fixchr_agrs={},
+                    fixchr_args={},
                     fixpos_args={},
                     fixallele_args={},
                     sanitycheckstats_args={},
@@ -271,8 +271,8 @@ class Sumstats():
                     verbose=True):
         ###############################################
         # try to fix data without dropping any information
-        self.data = fixID(self.data,verbose=verbose, **fixid_args)
-        self.data = fixchr(self.data,log=self.log,remove=remove,verbose=verbose,**fixchr_agrs)
+        self.data = fixID(self.data,log=self.log,verbose=verbose, **fixid_args)
+        self.data = fixchr(self.data,log=self.log,remove=remove,verbose=verbose,**fixchr_args)
         self.data = fixpos(self.data,log=self.log,remove=remove,verbose=verbose,**fixpos_args)
         self.data = fixallele(self.data,log=self.log,remove=remove,verbose=verbose,**fixallele_args)
         self.data = sanitycheckstats(self.data,log=self.log,verbose=verbose,**sanitycheckstats_args)
@@ -306,7 +306,7 @@ class Sumstats():
               flipallelestats_args={},
               liftover_args={},
               fixid_args={},
-              fixchr_agrs={},
+              fixchr_args={},
               fixpos_args={},
               fixallele_args={},
               sanitycheckstats_args={},
@@ -324,9 +324,9 @@ class Sumstats():
         #    1.6 sorting genomic coordinates and column order 
         if basic_check is True:
             
-            self.data = fixID(self.data,**fixid_args)
+            self.data = fixID(self.data,log=self.log,**fixid_args)
             
-            self.data = fixchr(self.data,remove=remove,log=self.log,**fixchr_agrs)
+            self.data = fixchr(self.data,remove=remove,log=self.log,**fixchr_args)
             
             self.data = fixpos(self.data,remove=remove,log=self.log,**fixpos_args)
             
@@ -409,183 +409,183 @@ class Sumstats():
         return self
     ############################################################################################################
     #customizable API to build your own QC pipeline
-    def fix_id(self,**args):
-        self.data = fixID(self.data,log=self.log,**args)
-    def fix_chr(self,**args):
-        self.data = fixchr(self.data,log=self.log,**args)
-    def fix_pos(self,**args):
-        self.data = fixpos(self.data,log=self.log,**args)
-    def fix_allele(self,**args):
-        self.data = fixallele(self.data,log=self.log,**args)
-    def remove_dup(self,**args):
-        self.data = removedup(self.data,log=self.log,**args)
-    def check_sanity(self,**args):
-        self.data = sanitycheckstats(self.data,log=self.log,**args)
-    def check_data_consistency(self, **args):
-        _check_data_consistency(self.data,log=self.log,**args)
-    def check_id(self,**args):
+    def fix_id(self,**kwargs):
+        self.data = fixID(self.data,log=self.log,**kwargs)
+    def fix_chr(self,**kwargs):
+        self.data = fixchr(self.data,log=self.log,**kwargs)
+    def fix_pos(self,**kwargs):
+        self.data = fixpos(self.data,log=self.log,**kwargs)
+    def fix_allele(self,**kwargs):
+        self.data = fixallele(self.data,log=self.log,**kwargs)
+    def remove_dup(self,**kwargs):
+        self.data = removedup(self.data,log=self.log,**kwargs)
+    def check_sanity(self,**kwargs):
+        self.data = sanitycheckstats(self.data,log=self.log,**kwargs)
+    def check_data_consistency(self, **kwargs):
+        _check_data_consistency(self.data,log=self.log,**kwargs)
+    def check_id(self,**kwargs):
         pass
-    def check_ref(self,ref_seq,ref_seq_mode="v",**args):
+    def check_ref(self,ref_seq,ref_seq_mode="v",**kwargs):
         if ref_seq_mode=="v":
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
-            self.data = checkref(self.data,ref_seq,log=self.log,**args)
+            self.data = checkref(self.data,ref_seq,log=self.log,**kwargs)
         else:
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
-            self.data = oldcheckref(self.data,ref_seq,log=self.log,**args)            
-    def infer_strand(self,ref_infer,**args):
+            self.data = oldcheckref(self.data,ref_seq,log=self.log,**kwargs)            
+    def infer_strand(self,ref_infer,**kwargs):
         self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
-        self.data = parallelinferstrand(self.data,ref_infer=ref_infer,log=self.log,**args)
-    def flip_allele_stats(self,**args):
-        self.data = flipallelestats(self.data,log=self.log,**args)
-    def normalize_allele(self,**args):
-        self.data = parallelnormalizeallele(self.data,log=self.log,**args)
+        self.data = parallelinferstrand(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+    def flip_allele_stats(self,**kwargs):
+        self.data = flipallelestats(self.data,log=self.log,**kwargs)
+    def normalize_allele(self,**kwargs):
+        self.data = parallelnormalizeallele(self.data,log=self.log,**kwargs)
     def assign_rsid(self,
                     ref_rsid_tsv=None,
                     ref_rsid_vcf=None,
-                    **args):
+                    **kwargs):
         if ref_rsid_tsv is not None:
-            self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**args)
+            self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**kwargs)
             self.meta["gwaslab"]["references"]["ref_rsid_tsv"] = ref_rsid_tsv
         if ref_rsid_vcf is not None:
-            self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**args)   
+            self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**kwargs)   
             self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
-    def rsid_to_chrpos(self,**args):
-        self.data = rsidtochrpos(self.data,log=self.log,**args)
-    def rsid_to_chrpos2(self,**args):
-        self.data = parallelrsidtochrpos(self.data,log=self.log,**args)
+    def rsid_to_chrpos(self,**kwargs):
+        self.data = rsidtochrpos(self.data,log=self.log,**kwargs)
+    def rsid_to_chrpos2(self,**kwargs):
+        self.data = parallelrsidtochrpos(self.data,log=self.log,**kwargs)
 
     ############################################################################################################
     
     def sort_coordinate(self,**sort_args):
         self.data = sortcoordinate(self.data,log=self.log,**sort_args)
         self.meta["is_sorted"] = True
-    def sort_column(self,**args):
-        self.data = sortcolumn(self.data,log=self.log,**args)
+    def sort_column(self,**kwargs):
+        self.data = sortcolumn(self.data,log=self.log,**kwargs)
     
     ############################################################################################################
-    def fill_data(self, verbose=True, **args):
-        self.data = filldata(self.data, verbose=verbose, **args)
+    def fill_data(self, verbose=True, **kwargs):
+        self.data = filldata(self.data, verbose=verbose, log=self.log, **kwargs)
         self.data = sortcolumn(self.data, verbose=verbose, log=self.log)
 
 # utilities ############################################################################################################
     # filter series ######################################################################
-    def filter_flanking(self, inplace=False,**args):
+    def filter_flanking(self, inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _get_flanking(new_Sumstats_object.data, **args)
+            new_Sumstats_object.data = _get_flanking(new_Sumstats_object.data, **kwargs)
             return new_Sumstats_object
         else:
-            self.data = _get_flanking(self.data, **args)
-    def filter_flanking_by_chrpos(self, chrpos,  inplace=False,**args):
+            self.data = _get_flanking(self.data, **kwargs)
+    def filter_flanking_by_chrpos(self, chrpos,  inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _get_flanking_by_chrpos(new_Sumstats_object.data, chrpos, **args)
+            new_Sumstats_object.data = _get_flanking_by_chrpos(new_Sumstats_object.data, chrpos, **kwargs)
             return new_Sumstats_object
         else:
-            self.data = _get_flanking_by_chrpos(self.data, chrpos,**args)
-    def filter_flanking_by_id(self, snpid, inplace=False,**args):
+            self.data = _get_flanking_by_chrpos(self.data, chrpos,**kwargs)
+    def filter_flanking_by_id(self, snpid, inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _get_flanking_by_id(new_Sumstats_object.data, snpid, **args)
+            new_Sumstats_object.data = _get_flanking_by_id(new_Sumstats_object.data, snpid, **kwargs)
             return new_Sumstats_object
         else:
-            self.data = _get_flanking_by_id(self.data, snpid, **args)
-    def filter_value(self, expr, inplace=False, **args):
+            self.data = _get_flanking_by_id(self.data, snpid, **kwargs)
+    def filter_value(self, expr, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filtervalues(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **args)
+            new_Sumstats_object.data = filtervalues(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **kwargs)
             return new_Sumstats_object
         else:
-            self.data = filtervalues(self.data, expr,log=self.log,**args)
-    def filter_out(self, inplace=False, **args):
+            self.data = filtervalues(self.data, expr,log=self.log,**kwargs)
+    def filter_out(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filterout(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = filterout(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = filterout(self.data,log=self.log,**args)
-    def filter_in(self, inplace=False, **args):
+            self.data = filterout(self.data,log=self.log,**kwargs)
+    def filter_in(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filterin(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = filterin(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = filterin(self.data,log=self.log,**args)
-    def filter_region_in(self, inplace=False, **args):
+            self.data = filterin(self.data,log=self.log,**kwargs)
+    def filter_region_in(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filterregionin(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = filterregionin(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = filterregionin(self.data,log=self.log,**args)
-    def filter_region_out(self, inplace=False, **args):
+            self.data = filterregionin(self.data,log=self.log,**kwargs)
+    def filter_region_out(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filterregionout(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = filterregionout(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = filterregionout(self.data,log=self.log,**args)
-    def filter_palindromic(self, inplace=False, **args):
+            self.data = filterregionout(self.data,log=self.log,**kwargs)
+    def filter_palindromic(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _filter_palindromic(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = _filter_palindromic(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = _filter_palindromic(self.data,log=self.log,**args)
-    def filter_snp(self, inplace=False, **args):
+            self.data = _filter_palindromic(self.data,log=self.log,**kwargs)
+    def filter_snp(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _filter_snp(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = _filter_snp(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = _filter_snp(self.data,log=self.log,**args)
-    def filter_indel(self, inplace=False, **args):
+            self.data = _filter_snp(self.data,log=self.log,**kwargs)
+    def filter_indel(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _filter_indel(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = _filter_indel(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = _filter_indel(self.data,log=self.log,**args)
+            self.data = _filter_indel(self.data,log=self.log,**kwargs)
     
-    def exclude_hla(self, inplace=False, **args):
+    def exclude_hla(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _exclude_hla(new_Sumstats_object.data,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = _exclude_hla(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = _exclude_hla(self.data,log=self.log,**args)
+            self.data = _exclude_hla(self.data,log=self.log,**kwargs)
 
 
-    def random_variants(self,inplace=False,n=1,p=None,**args):
+    def random_variants(self,inplace=False,n=1,p=None,**kwargs):
         if inplace is True:
-            self.data = sampling(self.data,n=n,p=p,log=self.log,**args)
+            self.data = sampling(self.data,n=n,p=p,log=self.log,**kwargs)
         else:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**args)
+            new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         
-    def filter_hapmap3(self, inplace=False, build=None, **args ):
+    def filter_hapmap3(self, inplace=False, build=None, **kwargs ):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         if inplace is True:
-            self.data = gethapmap3(self.data, build=build,log=self.log, **args)
+            self.data = gethapmap3(self.data, build=build,log=self.log, **kwargs)
         else:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = gethapmap3(new_Sumstats_object.data, build=build,log=self.log, **args)
+            new_Sumstats_object.data = gethapmap3(new_Sumstats_object.data, build=build,log=self.log, **kwargs)
             return new_Sumstats_object
     ######################################################################
     
-    def check_af(self,ref_infer,**args):
-        self.data = parallelecheckaf(self.data,ref_infer=ref_infer,log=self.log,**args)
+    def check_af(self,ref_infer,**kwargs):
+        self.data = parallelecheckaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_daf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_daf"] , ref_infer)
-    def infer_af(self,ref_infer,**args):
-        self.data = paralleleinferaf(self.data,ref_infer=ref_infer,log=self.log,**args)
+    def infer_af(self,ref_infer,**kwargs):
+        self.data = paralleleinferaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_af"] = ref_infer
         self.meta["gwaslab"]["references"]["ref_infer_af"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_af"] , ref_infer)
-    def plot_daf(self, **args):
-        fig,outliers = plotdaf(self.data, **args)
+    def plot_daf(self, **kwargs):
+        fig,outliers = plotdaf(self.data, **kwargs)
         return fig, outliers
-    def plot_mqq(self, build=None, **args):
+    def plot_mqq(self, build=None, **kwargs):
 
         chrom="CHR"
         pos="POS"
@@ -612,17 +612,17 @@ class Sumstats():
                        p=p, 
                        eaf=eaf,
                        build = build, 
-                       **args)
+                       **kwargs)
         
         return plot
     
-    def plot_trumpet(self, build=None, **args):
+    def plot_trumpet(self, build=None, **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        fig = plottrumpet(self.data,build = build,  **args)
+        fig = plottrumpet(self.data,build = build,  **kwargs)
         return fig
 
-    def get_lead(self, build=None, gls=False, **args):
+    def get_lead(self, build=None, gls=False, **kwargs):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
@@ -639,7 +639,7 @@ class Sumstats():
                            p="P",
                            log=self.log,
                            build=build,
-                           **args)
+                           **kwargs)
         # return sumstats object    
         if gls == True:
             new_Sumstats_object = copy.deepcopy(self)
@@ -648,7 +648,7 @@ class Sumstats():
             return new_Sumstats_object
         return output
 
-    def get_density(self, sig_list=None, windowsizekb=100,**args):
+    def get_density(self, sig_list=None, windowsizekb=100,**kwargs):
         
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
@@ -673,7 +673,7 @@ class Sumstats():
                                                     log=self.log)
 
         
-    def get_novel(self, **args):
+    def get_novel(self, **kwargs):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
@@ -684,11 +684,11 @@ class Sumstats():
                            pos="POS",
                            p="P",
                            log=self.log,
-                           **args)
+                           **kwargs)
         # return sumstats object    
         return output
     
-    def check_cis(self, **args):
+    def check_cis(self, **kwargs):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
@@ -699,11 +699,11 @@ class Sumstats():
                            pos="POS",
                            p="P",
                            log=self.log,
-                           **args)
+                           **kwargs)
         # return sumstats object    
         return output
     
-    def check_novel_set(self, **args):
+    def check_novel_set(self, **kwargs):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
@@ -714,11 +714,11 @@ class Sumstats():
                            pos="POS",
                            p="P",
                            log=self.log,
-                           **args)
+                           **kwargs)
         # return sumstats object    
         return output
     
-    def anno_gene(self, **args):
+    def anno_gene(self, **kwargs):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
@@ -728,73 +728,73 @@ class Sumstats():
                            chrom="CHR",
                            pos="POS",
                            log=self.log,
-                           **args)
+                           **kwargs)
         return output
         
-    def get_per_snp_r2(self,**args):
-        self.data = _get_per_snp_r2(self.data, beta="BETA", af="EAF", n="N", log=self.log, **args)
+    def get_per_snp_r2(self,**kwargs):
+        self.data = _get_per_snp_r2(self.data, beta="BETA", af="EAF", n="N", log=self.log, **kwargs)
         #add data inplace
 
-    def get_gc(self, mode=None, **args):
+    def get_gc(self, mode=None, **kwargs):
         if mode is None:
             if "P" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","P"]],mode="P",**args)
+                output = lambdaGC(self.data[["CHR","P"]],mode="P",**kwargs)
             elif "Z" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","Z"]],mode="Z",**args)
+                output = lambdaGC(self.data[["CHR","Z"]],mode="Z",**kwargs)
             elif "CHISQ" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","CHISQ"]],mode="CHISQ",**args)
+                output = lambdaGC(self.data[["CHR","CHISQ"]],mode="CHISQ",**kwargs)
             elif "MLOG10P" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","MLOG10P"]],mode="MLOG10P",**args)
+                output = lambdaGC(self.data[["CHR","MLOG10P"]],mode="MLOG10P",**kwargs)
             
             #return scalar
             self.meta["Genomic inflation factor"] = output
             return output    
         else:
-            output = lambdaGC(self.data[["CHR",mode]],mode=mode,**args)
+            output = lambdaGC(self.data[["CHR",mode]],mode=mode,**kwargs)
             self.meta["Genomic inflation factor"] = output
             return output 
 ## LDSC ##############################################################################################
-    def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **args):
+    def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True, how="right" )
-        self.ldsc_h2 = _estimate_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
+        self.ldsc_h2 = _estimate_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
     
-    def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, **args):
+    def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True, how="right" )
-        self.ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
+        self.ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
 
-    def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, **args):
+    def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True, how="right" )
-        self.ldsc_h2_cts  = _estimate_h2_cts_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
+        self.ldsc_h2_cts  = _estimate_h2_cts_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
     
-    def estimate_partitioned_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **args):
+    def estimate_partitioned_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True, how="right" )
-        self.ldsc_partitioned_h2_summary, self.ldsc_partitioned_h2_results  = _estimate_partitioned_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **args)
+        self.ldsc_partitioned_h2_summary, self.ldsc_partitioned_h2_results  = _estimate_partitioned_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
 # external ################################################################################################
     
-    def calculate_ld_matrix(self,**args):
-        self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**args)
+    def calculate_ld_matrix(self,**kwargs):
+        self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
     
-    def run_susie_rss(self,**args):
-        self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**args)
+    def run_susie_rss(self,**kwargs):
+        self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**kwargs)
     
-    def clump(self,**args):
-        self.clumps,self.plink_log = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **args)
+    def clump(self,**kwargs):
+        self.clumps,self.plink_log = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
 
-    def calculate_prs(self,**args):
-        combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **args)
+    def calculate_prs(self,**kwargs):
+        combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
         return combined_results_summary
     
 # to_format ###############################################################################################       
 
-    def to_format(self, path, build=None, **args):
+    def to_format(self, path, build=None, verbose=True, **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        _to_format(self.data, path, log=self.log, meta=self.meta, build=build, **args)
+        _to_format(self.data, path, log=self.log, verbose=verbose, meta=self.meta, build=build, **kwargs)

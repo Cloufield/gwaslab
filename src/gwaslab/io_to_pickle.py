@@ -13,7 +13,7 @@ def dump_pickle(glsumstats,path="~/mysumstats.pickle",overwrite=False):
         with open(path, 'wb') as file:
             glsumstats.log.write(" -Dump the Sumstats Object to : ", path)
             pickle.dump(glsumstats, file)
-    Log().write("Finished dumping.")
+    glsumstats.log.write("Finished dumping.")
 
 def load_pickle(path):
     if os.path.exists(path):
