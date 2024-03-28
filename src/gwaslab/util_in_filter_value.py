@@ -274,7 +274,7 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NE
     finished(log,verbose,_end_line)
     return sumstats, inferred_build
 
-def sampling(sumstats,n=1, p=None, verbose=True,log=Log(),**args):
+def sampling(sumstats,n=1, p=None, verbose=True,log=Log(),**kwargs):
 
     log.write("Start to randomly select variants from the sumstats...", verbose=verbose) 
     if p is None:
@@ -289,17 +289,17 @@ def sampling(sumstats,n=1, p=None, verbose=True,log=Log(),**args):
         else:
             raise ValueError("Please input a number in (0,1)")
     
-    if "random_state" in args.keys():
-        log.write(" -Random state (seed): {}".format(args["random_state"]), verbose=verbose)
+    if "random_state" in kwargs.keys():
+        log.write(" -Random state (seed): {}".format(kwargs["random_state"]), verbose=verbose)
     else:
-        args["random_state"] = np.random.randint(0,4294967295)
-        log.write(" -Random state (seed): {}".format(args["random_state"]), verbose=verbose)
-    sampled = sumstats.sample(n=n,**args)
+        kwargs["random_state"] = np.random.randint(0,4294967295)
+        log.write(" -Random state (seed): {}".format(kwargs["random_state"]), verbose=verbose)
+    sampled = sumstats.sample(n=n,**kwargs)
     log.write("Finished sampling...", verbose=verbose)
     gc.collect()
     return sampled
 
-def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True,log=Log(),**args):
+def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True,log=Log(),**kwargs):
     
     log.write("Start to extract variants in the flanking regions:",verbose=verbose)
     log.write(" - Central variant: {}".format(snpid))
@@ -320,7 +320,7 @@ def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True,log=Log(),**ar
 
     return flanking
 
-def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True,log=Log(),**args):
+def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True,log=Log(),**kwargs):
     
     log.write("Start to extract variants in the flanking regions using rsID or SNPID...",verbose=verbose)
     log.write(" - Central variants: {}".format(snpid), verbose=verbose)
@@ -359,7 +359,7 @@ def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True,log=Log(
 
     return flanking
 
-def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True,log=Log(),**args):
+def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True,log=Log(),**kwargs):
     
     log.write("Start to extract variants in the flanking regions using CHR and POS...",verbose=verbose)
     log.write(" - Central positions: {}".format(chrpos), verbose=verbose)
@@ -444,6 +444,24 @@ def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=25000000 ,upper=3400000
     after_len = len(sumstats)
     
     log.write(" -Excluded {} variants in HLA region (chr6: {}-{} )...".format(raw_len - after_len,lower,upper),verbose=verbose)
+    
+    return sumstats
+
+def _exclude_sexchr(sumstats, chrom="CHR", pos="POS", sexchrs=[23,24,25], log=Log(), verbose=True):
+    
+    raw_len = len(sumstats)
+    
+    if str(sumstats[chrom].dtype) == "string":
+        sexchrs_string = [str(i) for i in sexchrs]
+        is_in_sexchr = sumstats[chrom].astype("string").isin(sexchrs_string)
+    else:
+        is_in_sexchr = sumstats[chrom].isin(sexchrs)
+    
+    sumstats = sumstats.loc[~is_in_sexchr, : ]
+    
+    after_len = len(sumstats)
+    
+    log.write(" -Excluded {} variants on sex chromosomes ({})...".format(raw_len - after_len,sexchrs),verbose=verbose)
     
     return sumstats
 

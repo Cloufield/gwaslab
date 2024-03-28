@@ -9,245 +9,247 @@ from gwaslab.io_read_ldsc import parse_ldsc_summary
 from gwaslab.io_read_ldsc import parse_partitioned_ldsc_summary
 from gwaslab.util_in_filter_value import filtervalues
 from gwaslab.util_in_filter_value import _filter_palindromic
+from gwaslab.util_in_filter_value import _exclude_hla
+from gwaslab.util_in_filter_value import _exclude_sexchr
 
 class ARGS():
-    def __init__(self, **args):
+    def __init__(self, **kwargs):
         
         self.out = "ldsc"
 
-        if "bfile" in args.keys():
-            self.bfile = args["bfile"]
+        if "bfile" in kwargs.keys():
+            self.bfile = kwargs["bfile"]
         else:
             self.bfile = None 
         
-        if "l2" in args.keys():
-            self.l2 = args["l2"]
+        if "l2" in kwargs.keys():
+            self.l2 = kwargs["l2"]
         else:
             self.l2 = None 
 
-        if "extract" in args.keys():
-            self.extract = args["extract"]
+        if "extract" in kwargs.keys():
+            self.extract = kwargs["extract"]
         else:
             self.extract = None 
 
-        if "keep" in args.keys():
-            self.keep = args["keep"]
+        if "keep" in kwargs.keys():
+            self.keep = kwargs["keep"]
         else:
             self.keep = None 
 
-        if "ld_wind_snps" in args.keys():
-            self.ld_wind_snps = args["ld_wind_snps"]
+        if "ld_wind_snps" in kwargs.keys():
+            self.ld_wind_snps = kwargs["ld_wind_snps"]
         else:
             self.ld_wind_snps = None 
 
-        if "ld_wind_kb" in args.keys():
-            self.ld_wind_kb = args["ld_wind_kb"]
+        if "ld_wind_kb" in kwargs.keys():
+            self.ld_wind_kb = kwargs["ld_wind_kb"]
         else:
             self.ld_wind_kb = None 
 
-        if "ld_wind_cm" in args.keys():
-            self.ld_wind_cm = args["ld_wind_cm"]
+        if "ld_wind_cm" in kwargs.keys():
+            self.ld_wind_cm = kwargs["ld_wind_cm"]
         else:
             self.ld_wind_cm = None 
 
-        if "print_snps" in args.keys():
-            self.print_snps = args["print_snps"]
+        if "print_snps" in kwargs.keys():
+            self.print_snps = kwargs["print_snps"]
         else:
             self.print_snps = None 
 
-        if "annot" in args.keys():
-            self.annot = args["annot"]
+        if "annot" in kwargs.keys():
+            self.annot = kwargs["annot"]
         else:
             self.annot = None 
 
-        if "thin_annot" in args.keys():
-            self.thin_annot = args["thin_annot"]
+        if "thin_annot" in kwargs.keys():
+            self.thin_annot = kwargs["thin_annot"]
         else:
             self.thin_annot = None 
 
-        if "cts_bin" in args.keys():
-            self.cts_bin = args["cts_bin"]
+        if "cts_bin" in kwargs.keys():
+            self.cts_bin = kwargs["cts_bin"]
         else:
             self.cts_bin = None 
 
-        if "cts_breaks" in args.keys():
-            self.cts_breaks = args["cts_breaks"]
+        if "cts_breaks" in kwargs.keys():
+            self.cts_breaks = kwargs["cts_breaks"]
         else:
             self.cts_breaks = None 
 
-        if "cts_names" in args.keys():
-            self.cts_names = args["cts_names"]
+        if "cts_names" in kwargs.keys():
+            self.cts_names = kwargs["cts_names"]
         else:
             self.cts_names = None 
 
-        if "per_allele" in args.keys():
-            self.per_allele = args["per_allele"]
+        if "per_allele" in kwargs.keys():
+            self.per_allele = kwargs["per_allele"]
         else:
             self.per_allele = None 
 
-        if "pq_exp" in args.keys():
-            self.pq_exp = args["pq_exp"]
+        if "pq_exp" in kwargs.keys():
+            self.pq_exp = kwargs["pq_exp"]
         else:
             self.pq_exp = None 
 
-        if "no_print_annot" in args.keys():
-            self.no_print_annot = args["no_print_annot"]
+        if "no_print_annot" in kwargs.keys():
+            self.no_print_annot = kwargs["no_print_annot"]
         else:
             self.no_print_annot = None 
 
-        if "h2" in args.keys():
-            self.h2 = args["h2"]
+        if "h2" in kwargs.keys():
+            self.h2 = kwargs["h2"]
         else:
             self.h2 = None
 
-        if "h2_cts" in args.keys():
-            self.h2_cts = args["h2_cts"]
+        if "h2_cts" in kwargs.keys():
+            self.h2_cts = kwargs["h2_cts"]
         else:
             self.h2_cts = None
 
-        if "rg" in args.keys():
-            self.rg = args["rg"]
+        if "rg" in kwargs.keys():
+            self.rg = kwargs["rg"]
         else:
             self.rg = None
 
-        if "ref_ld" in args.keys():
-            self.ref_ld = args["ref_ld"]
+        if "ref_ld" in kwargs.keys():
+            self.ref_ld = kwargs["ref_ld"]
         else:
             self.ref_ld = None
 
-        if "ref_ld_chr" in args.keys():
-            self.ref_ld_chr = args["ref_ld_chr"]
+        if "ref_ld_chr" in kwargs.keys():
+            self.ref_ld_chr = kwargs["ref_ld_chr"]
         else:
             self.ref_ld_chr = None
 
-        if "w_ld" in args.keys():
-            self.w_ld = args["w_ld"]
+        if "w_ld" in kwargs.keys():
+            self.w_ld = kwargs["w_ld"]
         else:
             self.w_ld = None
         
-        if "w_ld_chr" in args.keys():
-            self.w_ld_chr = args["w_ld_chr"]
+        if "w_ld_chr" in kwargs.keys():
+            self.w_ld_chr = kwargs["w_ld_chr"]
         else:
             self.w_ld_chr = None     
 
-        if "overlap_annot" in args.keys():
-            self.overlap_annot = args["overlap_annot"]
+        if "overlap_annot" in kwargs.keys():
+            self.overlap_annot = kwargs["overlap_annot"]
         else:
             self.overlap_annot = None 
 
-        if "print_coefficients" in args.keys():
-            self.print_coefficients = args["print_coefficients"]
+        if "print_coefficients" in kwargs.keys():
+            self.print_coefficients = kwargs["print_coefficients"]
         else:
             self.print_coefficients = "ldsc" 
 
-        if "frqfile" in args.keys():
-            self.frqfile = args["frqfile"]
+        if "frqfile" in kwargs.keys():
+            self.frqfile = kwargs["frqfile"]
         else:
             self.frqfile = None 
 
-        if "frqfile_chr" in args.keys():
-            self.frqfile_chr = args["frqfile_chr"]
+        if "frqfile_chr" in kwargs.keys():
+            self.frqfile_chr = kwargs["frqfile_chr"]
         else:
             self.frqfile_chr = None 
 
-        if "no_intercept" in args.keys():
-            self.no_intercept = args["no_intercept"]
+        if "no_intercept" in kwargs.keys():
+            self.no_intercept = kwargs["no_intercept"]
         else:
             self.no_intercept = None 
 
-        if "intercept_h2" in args.keys():
-            self.intercept_h2 = args["intercept_h2"]
+        if "intercept_h2" in kwargs.keys():
+            self.intercept_h2 = kwargs["intercept_h2"]
         else:
             self.intercept_h2 = None 
 
-        if "intercept_gencov" in args.keys():
-            self.intercept_gencov = args["intercept_gencov"]
+        if "intercept_gencov" in kwargs.keys():
+            self.intercept_gencov = kwargs["intercept_gencov"]
         else:
             self.intercept_gencov = None 
 
-        if "M" in args.keys():
-            self.M = args["M"]
+        if "M" in kwargs.keys():
+            self.M = kwargs["M"]
         else:
             self.M = None 
 
-        if "two_step" in args.keys():
-            self.two_step = args["two_step"]
+        if "two_step" in kwargs.keys():
+            self.two_step = kwargs["two_step"]
         else:
             self.two_step = None 
 
-        if "chisq_max" in args.keys():
-            self.chisq_max = args["chisq_max"]
+        if "chisq_max" in kwargs.keys():
+            self.chisq_max = kwargs["chisq_max"]
         else:
             self.chisq_max= None 
 
-        if "ref_ld_chr_cts" in args.keys():
-            self.ref_ld_chr_cts = args["ref_ld_chr_cts"]
+        if "ref_ld_chr_cts" in kwargs.keys():
+            self.ref_ld_chr_cts = kwargs["ref_ld_chr_cts"]
         else:
             self.ref_ld_chr_cts = None
 
-        if "print_all_cts" in args.keys():
-            self.print_all_cts = args["print_all_cts"]
+        if "print_all_cts" in kwargs.keys():
+            self.print_all_cts = kwargs["print_all_cts"]
         else:
             self.print_all_cts = False 
 
-        if "print_cov" in args.keys():
-            self.print_cov = args["print_cov"]
+        if "print_cov" in kwargs.keys():
+            self.print_cov = kwargs["print_cov"]
         else:
             self.print_cov = None 
 
         self.print_delete_vals = False
-        if "print_delete_vals" in args.keys():
-            self.print_delete_vals = args["print_delete_vals"]
+        if "print_delete_vals" in kwargs.keys():
+            self.print_delete_vals = kwargs["print_delete_vals"]
         else:
             self.print_delete_vals = False 
 
-        if "chunk_size" in args.keys():
-            self.chunk_size = args["chunk_size"]
+        if "chunk_size" in kwargs.keys():
+            self.chunk_size = kwargs["chunk_size"]
         else:
             self.chunk_size = 50 
 
-        if "pickle" in args.keys():
-            self.pickle = args["pickle"]
+        if "pickle" in kwargs.keys():
+            self.pickle = kwargs["pickle"]
         else:
             self.pickle = False 
 
-        if "yes_really" in args.keys():
-            self.yes_really = args["yes_really"]
+        if "yes_really" in kwargs.keys():
+            self.yes_really = kwargs["yes_really"]
         else:
             self.yes_really = False 
 
-        if "invert_anyway" in args.keys():
-            self.invert_anyway = args["invert_anyway"]
+        if "invert_anyway" in kwargs.keys():
+            self.invert_anyway = kwargs["invert_anyway"]
         else:
             self.invert_anyway = False 
 
-        if "n_blocks" in args.keys():
-            self.n_blocks = args["n_blocks"]
+        if "n_blocks" in kwargs.keys():
+            self.n_blocks = kwargs["n_blocks"]
         else:
             self.n_blocks = 200 
 
-        if "not_M_5_50" in args.keys():
-            self.not_M_5_50 = args["not_M_5_50"]
+        if "not_M_5_50" in kwargs.keys():
+            self.not_M_5_50 = kwargs["not_M_5_50"]
         else:
             self.not_M_5_50 = False 
 
-        if "no_check_alleles" in args.keys():
-            self.no_check_alleles = args["no_check_alleles"]
+        if "no_check_alleles" in kwargs.keys():
+            self.no_check_alleles = kwargs["no_check_alleles"]
         else:
             self.no_check_alleles = False 
         
-        if "return_silly_things" in args.keys():
-            self.return_silly_things = args["return_silly_things"]
+        if "return_silly_things" in kwargs.keys():
+            self.return_silly_things = kwargs["return_silly_things"]
         else:
             self.return_silly_things = False 
 
-        if "samp_prev" in args.keys():
-            self.samp_prev = args["samp_prev"]
+        if "samp_prev" in kwargs.keys():
+            self.samp_prev = kwargs["samp_prev"]
         else:
             self.samp_prev = None 
         
-        if "pop_prev" in args.keys():
-            self.pop_prev = args["pop_prev"]
+        if "pop_prev" in kwargs.keys():
+            self.pop_prev = kwargs["pop_prev"]
         else:
             self.pop_prev = None 
 
@@ -255,12 +257,14 @@ class ARGS():
 ####################################################################################################################
 
 
-def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, **args):
+def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, munge_args=None, **kwargs):
     sumstats = insumstats.copy()
     
     if munge:
+        if munge_args is None:
+            munge_args={}
         log.write("Start to munge sumstats.")
-        sumstats = _munge_sumstats(sumstats, log=log, verbose=verbose)
+        sumstats = _munge_sumstats(sumstats, log=log, verbose=verbose,**munge_args)
         log.write("Finished munging sumstats.")
 
     ##start function with col checking##########################################################
@@ -288,9 +292,9 @@ def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, **args):
 
 
     log.write(" -Arguments:", verbose=verbose)
-    for key, value in args.items():
+    for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
-    default_args = ARGS(**args)
+    default_args = ARGS(**kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -307,7 +311,7 @@ def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, **args):
 
 ####################################################################################################################
 
-def _estimate_partitioned_h2_by_ldsc(insumstats, log, verbose=True, **args):
+def _estimate_partitioned_h2_by_ldsc(insumstats, log, verbose=True, **kwargs):
     sumstats = insumstats.copy()
     ##start function with col checking##########################################################
     _start_line = "run LD score regression"
@@ -331,10 +335,10 @@ def _estimate_partitioned_h2_by_ldsc(insumstats, log, verbose=True, **args):
     log.write("  -Please cite LDSC: Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.", verbose=verbose)
     log.write(" -Arguments:", verbose=verbose)
     
-    for key, value in args.items():
+    for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
     
-    default_args = ARGS(**args)
+    default_args = ARGS(**kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -353,7 +357,7 @@ def _estimate_partitioned_h2_by_ldsc(insumstats, log, verbose=True, **args):
 
 
 
-def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **args):
+def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **kwargs):
     sumstats = insumstats.copy()
     ##start function with col checking##########################################################
     _start_line = "run LD score regression for genetic correlation"
@@ -377,10 +381,10 @@ def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **args):
     log.write("  -Please cite LDSC: Bulik-Sullivan, B., et al. An Atlas of Genetic Correlations across Human Diseases and Traits. Nature Genetics, 2015.", verbose=verbose)
     log.write(" -Arguments:", verbose=verbose)
     
-    for key, value in args.items():
+    for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
     
-    default_args = ARGS(**args)
+    default_args = ARGS(**kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -413,7 +417,7 @@ def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **args):
 ####################################################################################################################
 
 
-def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **args):
+def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **kwargs):
     sumstats = insumstats.copy()
     ##start function with col checking##########################################################
     _start_line = "run LD score regression"
@@ -437,10 +441,10 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **args):
     log.write("  -Please cite LDSC: Finucane, H. K., Reshef, Y. A., Anttila, V., Slowikowski, K., Gusev, A., Byrnes, A., ... & Price, A. L. (2018). Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types. Nature genetics, 50(4), 621-629.", verbose=verbose)
     log.write(" -Arguments:", verbose=verbose)
     
-    for key, value in args.items():
+    for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
     
-    default_args = ARGS(**args)
+    default_args = ARGS(**kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -456,16 +460,38 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **args):
 
 
 
-def _munge_sumstats(sumstats, log, verbose=True, **args):
-
+def _munge_sumstats(sumstats, log, 
+                    info=0.9, maf=0.01, 
+                    n=None, nopalindromic=True,
+                    exclude_hla=True, exclude_sexchr=True,  
+                    verbose=True, **kwargs):
+    if "CHR" in sumstats.columns and "POS" in sumstats.columns:
+        if exclude_hla == True:
+            sumstats = _exclude_hla(sumstats, verbose=verbose, log=log)
+    
+    if "CHR" in sumstats.columns:
+        if exclude_sexchr == True:
+            sumstats = _exclude_sexchr(sumstats, verbose=verbose, log=log)
+    
     # filter_info
-    sumstats = filtervalues(sumstats, 'INFO >=0.9' ,verbose=verbose, log=log)
+    if "INFO" in sumstats.columns:
+        sumstats = filtervalues(sumstats, 'INFO >={}'.format(info) ,verbose=verbose, log=log)
+    
     # frequency
-    sumstats = filtervalues(sumstats,'EAF>=0.01 and EAF<=0.99',verbose=verbose, log=log)
+    if "EAF" in sumstats.columns:
+        sumstats = filtervalues(sumstats,'EAF>={} and EAF<={}'.format(maf, 1-maf),verbose=verbose, log=log)
+    
     # N
-    min_n = sumstats.N.quantile(0.9) / 1.5
-    sumstats = filtervalues(sumstats,'N>={}'.format(min_n),verbose=verbose, log=log)
+    if "N" in sumstats.columns:
+        if n is None:
+            min_n = sumstats.N.quantile(0.9) / 1.5
+        else:
+            min_n = n
+        sumstats = filtervalues(sumstats,'N>={}'.format(min_n),verbose=verbose, log=log)
+    
     # remove strand-unambiguous SNPs
-    sumstats = _filter_palindromic(sumstats, mode="out", verbose=verbose, log=log)
+    if "EA" in sumstats.columns and "NEA" in sumstats.columns:
+        if nopalindromic==True:
+            sumstats = _filter_palindromic(sumstats, mode="out", verbose=verbose, log=log)
     
     return sumstats

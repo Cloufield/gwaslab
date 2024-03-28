@@ -1,8 +1,11 @@
 # Update Logs
 
-
-## 3.4.42 20240321
+## 3.4.42 20240328
 - fast implementation of check_ref and to_format. (credit to @sup3rgiu Mr. Andrea)
+- added highligh and pinpoint for plot_trumpet()
+- fixed typo (credit to @sup3rgiu Mr. Andrea)
+- changed `**args` to `**kwargs` (credit to @sup3rgiu Mr. Andrea)
+- implemented munge-like filters `munge=True`  for ldsc in gwaslab
 
 ## 3.4.41 20240219
 - fixed error in region_ref_second

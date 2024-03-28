@@ -1532,7 +1532,7 @@ def start_to(sumstats,
              ref_fasta=None,
              n_cores=None,
              ref_tsv=None,
-             **args
+             **kwargs
              ):
     
     log.write("Start to {}...{}".format(start_line,_get_version()), verbose=verbose)
@@ -1557,7 +1557,7 @@ def start_to(sumstats,
                 log.write(" -Reference TSV: {}".format(ref_tsv))
             
             is_args_valid = True
-            for key, value in args.items():
+            for key, value in kwargs.items():
                 is_args_valid = is_args_valid & check_arg(log, verbose, key, value, start_function)
             is_enough_col = is_args_valid & is_enough_col
 
