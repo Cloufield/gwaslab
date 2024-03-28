@@ -259,20 +259,31 @@ class CacheBuilder:
             return
         
         n_cores = self.n_cores
-        chroms = [str(i) for i in range(1, 23, 1)]
-
+        contigs = self.get_contigs()
+        
         self.cancelled = False
         self.running = True
 
         self.log.write(f" -Building cache on {n_cores} cores...", verbose=self.verbose)
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=n_cores)
-        self.futures = [self.executor.submit(self.build_cache, chrom) for chrom in chroms]
+        self.futures = [self.executor.submit(self.build_cache, chrom) for chrom in contigs]
+
+    def get_contigs(self):
+        vcf_reader = VariantFile(self.ref_infer, drop_samples=True)
+        contigs = [v.name for v in vcf_reader.header.contigs.values()]
+        vcf_reader.close()
+        return contigs
 
     def build_cache(self, chrom):
         vcf_reader = VariantFile(self.ref_infer, drop_samples=True)
+        #self.log.write(f"   -Fetching contig '{chrom}'...")
         seq = vcf_reader.fetch(chrom)
-
+        
+        first = True
         for record in seq:
+            if first:
+                #self.log.write(f"   -Found at least one record for contig '{chrom}'...")
+                first = False
             chrom = record.chrom
             start = record.pos - 1
             end = record.pos
