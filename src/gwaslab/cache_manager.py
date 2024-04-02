@@ -3,8 +3,9 @@ import os
 import pickle
 import concurrent.futures
 import threading
-import multiprocessing
+import multiprocessing as mp
 import time
+import h5py
 
 from gwaslab.g_Log import Log
 
@@ -16,6 +17,8 @@ APPAUTHOR = "cloufield"
 
 CACHE_EXT = '.cache'
 
+
+################################################# UTILS #################################################
 
 def get_cache_path(base_path):
     cache_filename = str(Path(base_path).stem) + CACHE_EXT
@@ -43,20 +46,87 @@ def get_write_path(base_path):
         
     raise Exception('No write access to any cache directory')
 
-def build_cache(base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True, return_cache=False):
-    cache_builder = CacheBuilder(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
-    cache_builder.start_building()
-    cache_builder.save_cache(get_write_path(base_path)) # save_cache will wait for all threads to finish building cache
-    if return_cache:
-        return cache_builder.get_cache(complete=True) # wait for all threads to finish building cache
+def cache_exists(path, ref_alt_freq, category='all'):
+    ''' Check if the cache file exists and contains the required data '''
+    found = False
+    try:
+        found = is_in_h5py(path, ref_alt_freq, category)
+    except Exception as e:
+        pass
+    return found
+
+def is_in_h5py(path, ref_alt_freq, category='all'):
+    '''
+    Check if the cache file exists and contains the required data.
+    Raise an exception if the cache file does not exist.
+    '''
+    if not path or not os.path.exists(path):
+        raise Exception('Cache file not found')
     
+    with h5py.File(path, 'r') as f:
+        if ref_alt_freq in f.keys():
+            if category in f[ref_alt_freq].keys():
+                if len(f[ref_alt_freq][category].keys()) > 0:
+                    return True
+    return False
+
+def load_h5py_cache(path, ref_alt_freq, category='all'):
+    if not path or not os.path.exists(path):
+        raise Exception('Cache file not found')
+    
+    if not is_in_h5py(path, ref_alt_freq, category):
+        raise Exception('Cache file does not contain the required data')
+
+    _cache = {}
+    with h5py.File(path, 'r') as f:
+        for v in f[ref_alt_freq][category].values():
+            # iterate over chromosomes
+            keys = list(v['keys'].asstr()[:])
+            values = list(v['values'][:])
+            chrom_cache = dict(zip(keys, values)) # Combine keys and values into a dictionary
+            _cache.update(chrom_cache)
+    return _cache
+
+def build_cache(base_path, ref_alt_freq=None, n_cores=1, return_cache=False, filter_fn=None, category='all', log=Log(), verbose=True):
+    cache_builder = CacheBuilder(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
+    cache_builder.start_building(filter_fn=filter_fn, category=category, set_cache=return_cache) # start_building will wait for all processes to finish building cache
+    if return_cache:
+        return cache_builder.get_cache()
+
+def is_palindromic(ref, alt):
+    gc = (ref=="G") & (alt=="C")
+    cg = (ref=="C") & (alt=="G")
+    at = (ref=="A") & (alt=="T")
+    ta = (ref=="T") & (alt=="A")
+    palindromic = gc | cg | at | ta 
+    return palindromic
+
+def is_indel(ref, alt):
+    return len(ref) != len(alt)
+
+def filter_fn_pi(*, ref, alt):
+    return is_palindromic(ref, alt) or is_indel(ref, alt)
+
+def filter_fn_np(*, ref, alt):
+    return not is_palindromic(ref, alt)
+
+PALINDROMIC_INDEL = 'pi' # palindromic + indel
+NON_PALINDROMIC = 'np' # non-palindromic
+
+FILTER_FN = {
+    PALINDROMIC_INDEL: filter_fn_pi,
+    NON_PALINDROMIC: filter_fn_np
+}
+
 
 ################################################# CACHE MANAGERs #################################################
 
 class CacheMainManager:
-    def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
         self.base_path = base_path
         self.ref_alt_freq = ref_alt_freq
+        self.category = category
+        self.filter_fn = filter_fn
         self.n_cores = n_cores
         self.log = log
         self.verbose = verbose
@@ -81,21 +151,25 @@ class CacheMainManager:
         return self._cache
 
     def build_cache(self):
-        self._cache = build_cache(self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores, log=self.log, verbose=self.verbose, return_cache=True)
+        ''' Build and load the cache'''    
+        self._cache = build_cache(
+            self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores,
+            filter_fn=self.filter_fn, category=self.category,
+            return_cache=True, log=self.log, verbose=self.verbose
+        )
 
-    def load_cache(self, cache_path):
-        if cache_path and os.path.exists(cache_path):
-            with open(cache_path, 'rb') as f:
-                self._cache = pickle.load(f)
-        else:
-            raise Exception('Cache file not found')
+    def load_cache(self, category=None):
+        if category is None:
+            category = self.category
+        cache_path = self._get_cache_path()
+        self._cache = load_h5py_cache(cache_path, ref_alt_freq=self.ref_alt_freq, category=category)
 
 
 class CacheManager(CacheMainManager):
-    def __init__(self, base_path=None, cache_loader=None, cache_process=None, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, base_path=None, cache_loader=None, cache_process=None, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
         none_value = sum([cache_loader is not None, cache_process is not None])
         assert none_value in [0, 1], 'Only one between cache_loader and cache_process should be provided'
-        super().__init__(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
+        super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, n_cores=n_cores, log=log, verbose=verbose)
         if none_value == 1:
             self.base_path = None # unset base_path if cache_loader or cache_process is provided
 
@@ -110,12 +184,12 @@ class CacheManager(CacheMainManager):
             cache_path = self._get_cache_path()
             if cache_path is not None:
                 self.log.write(f'Start loading cache from {cache_path}...', verbose=self.verbose)
-                self.load_cache(cache_path)
+                self.load_cache()
                 self.log.write('Finshed loading cache.', verbose=self.verbose)
             else:
                 self.log.write(f'Start building cache from {base_path}...', verbose=self.verbose)
                 self.build_cache()
-                self.log.write('Finished building cache.', verbose=self.verbose)
+                self.log.write('Finished building (and loading) cache.', verbose=self.verbose)
 
     @property
     def cache_len(self):
@@ -146,7 +220,7 @@ class CacheManager(CacheMainManager):
         return None
 
 
-class CacheProcess(multiprocessing.Process):
+class CacheProcess(mp.Process):
     '''
     A class for managing a cache in a separate process. It is used to reduce memory consumption when the cache is very large.
     This class will load the cache in a separate process and provide methods to perform operations on the cache directly on the subprocess.
@@ -156,23 +230,25 @@ class CacheProcess(multiprocessing.Process):
     This is very useful when the cache is huge (e.g. 40GB in memory) and we want to perform operations on it based on a relatively small input
     (e.g. a "small" dataframe, where small is relative to the cache size) and the output is also relatively small.
     '''
-    def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
         super().__init__()
         self.base_path = base_path
         self.ref_alt_freq = ref_alt_freq
+        self.filter_fn = filter_fn
+        self.category = category
         self.n_cores = n_cores
         self.log = log
         self.verbose = verbose
 
         self.daemon = True # When parent process exits, it will attempt to terminate all of its daemonic child processes.
 
-        self.manager = multiprocessing.Manager()
-        self.input_queue = multiprocessing.Queue()  # Queue for communication between processes
-        self.result_queue = multiprocessing.Queue()
-        self.result_produced = multiprocessing.Value('b', True)
+        self.manager = mp.Manager()
+        self.input_queue = mp.Queue()  # Queue for communication between processes
+        self.result_queue = mp.Queue()
+        self.result_produced = mp.Value('b', True)
 
         cache_path = self._get_cache_path()
-        if cache_path is None or not os.path.exists(cache_path):
+        if not cache_exists(cache_path, ref_alt_freq, category):
             self.build_cache()
         else:
             if n_cores > 1:
@@ -182,13 +258,16 @@ class CacheProcess(multiprocessing.Process):
         return get_cache_path(self.base_path)
     
     def build_cache(self):
-        build_cache(self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores, log=self.log, verbose=self.verbose, return_cache=False)
+        build_cache(
+            self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores,
+            filter_fn=self.filter_fn, category=self.category,
+            return_cache=False, log=self.log, verbose=self.verbose
+        )
 
     def run(self):
         cache_path = self._get_cache_path()
         self.log.write(f'[CacheProcess: Start loading cache from {cache_path}...]', verbose=self.verbose)   
-        with open(cache_path, 'rb') as handle:
-            cache = pickle.load(handle)
+        cache = load_h5py_cache(cache_path, ref_alt_freq=self.ref_alt_freq, category=self.category)
         self.log.write('[CacheProcess: Finshed loading cache.]', verbose=self.verbose)       
         
         # Continuously listen for method calls
@@ -223,9 +302,12 @@ class CacheProcess(multiprocessing.Process):
         self._call_method('get_from_cache', key)
         return self.result_queue.get()
     
-    def apply_fn(self, fn, *args, **kwargs):
-        ''' Apply an arbitrary function to the cache. The function should take the cache as an argument.'''
-        self._call_method('apply_fn', fn, *args, **kwargs)
+    def apply_fn(self, fn, **kwargs):
+        '''
+        Apply an arbitrary function to the cache. The function should take the cache as an argument,
+        and all the arguments should be passed as named arguments.
+        '''
+        self._call_method('apply_fn', fn, **kwargs)
         return self.result_queue.get()
     
     def cache_len(self):
@@ -238,7 +320,7 @@ class CacheProcess(multiprocessing.Process):
 
 ################################################# CACHE BUILDER #################################################
 
-class CacheBuilder:
+class CacheBuilderOld:
     def __init__(self, ref_infer, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
         self.ref_infer = ref_infer
         self.ref_alt_freq = ref_alt_freq
@@ -334,6 +416,143 @@ class CacheBuilder:
         self.log.write(' -Cache saved', verbose=self.verbose)
 
 
+class CacheBuilder:
+    def __init__(self, ref_infer, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+        self.ref_infer = ref_infer
+        self.ref_alt_freq = ref_alt_freq
+        self.n_cores = n_cores
+        self.log = log
+        self.verbose = verbose
+        
+        self.running = False
+        self.cache = None
+        
+    def get_contigs(self):
+        vcf_reader = VariantFile(self.ref_infer, drop_samples=True)
+        contigs = [v.name for v in vcf_reader.header.contigs.values()]
+        vcf_reader.close()
+        return contigs
+    
+    def already_built(self, category):
+        cache_path = get_cache_path(self.ref_infer)
+        return cache_exists(cache_path, self.ref_alt_freq, category)
+
+    def start_building(self, filter_fn=None, category='all', set_cache=True):        
+        if self.running:
+            print("Cache building is already running. If you want to restart, please stop the current process first.")
+            return
+        
+        if isinstance(filter_fn, str) and filter_fn in FILTER_FN:
+            filter_fn = FILTER_FN[filter_fn]
+            category = filter_fn
+        elif category in FILTER_FN:
+            self.log.write(f" -Using the built-in filter function for category '{category}'. filter_fn will be ignored if provided.", verbose=self.verbose)
+            filter_fn = FILTER_FN[category]
+        
+        assert filter_fn is None or category != 'all', "If filter_fn is not None, category cannot be 'all'"
+        assert filter_fn is not None or category == 'all', "If category is not 'all', filter_fn must be provided"
+
+        if self.already_built(category=category):
+            # TODO: we should probably improve the checking logic, and maybe also allows to overwrite the cache
+            self.log.write(f"Cache for category '{category}' and ref_alt_freq {self.ref_alt_freq} already exists. Skipping cache building", verbose=self.verbose)
+            return
+        
+        n_cores = max(self.n_cores-1, 1) # leave one core for the watcher process
+        contigs = self.get_contigs()
+        
+        self.running = True
+
+        self.log.write(f" -Building cache for category '{category}' on {n_cores} cores...", verbose=self.verbose)
+
+        pool = mp.Pool(n_cores)
+        manager = mp.Manager()
+        queue = manager.Queue()
+        jobs = []
+        
+        # Start a watcher process to handle the output of each subprocess.
+        # The watcher will write the cache to the file as soon as it receives the output from the subprocess, in a safe way.
+        watcher = mp.Process(target=self.handle_output, args=(queue,))
+        watcher.daemon = True
+        watcher.start()
+        
+        for chrom in contigs:
+            job = pool.apply_async(self.build_cache, args=(chrom, queue), kwds={'filter_fn': filter_fn, 'category': category})
+            jobs.append(job)
+
+        pool.close()
+        pool.join() # wait for all processes to finish
+
+        queue.put('kill') # send a signal to the watcher process to stop
+        watcher.join()
+
+        if set_cache:
+            self.cache = {}
+            for job in jobs:
+                self.cache.update(job.get()['cache'])
+    
+        self.running = False
+    
+    def build_cache(self, chrom, queue, filter_fn=None, category='all'):       
+        assert filter_fn is None or category != 'all', "If filter_fn is not None, category cannot be 'all'"
+
+        inner_cache = {}
+        ref_alt_freq = self.ref_alt_freq
+
+        vcf_reader = VariantFile(self.ref_infer, drop_samples=True)
+        #self.log.write(f"   -Fetching contig '{chrom}'...", verbose=self.verbose)
+        seq = vcf_reader.fetch(chrom)
+
+        for record in seq:
+            for alt in record.alts:
+                if filter_fn is None or filter_fn(ref=record.ref, alt=alt):
+                    key = f"{record.chrom}:{record.pos}:{record.ref}:{alt}"
+                    value = record.info[ref_alt_freq][0]
+                    inner_cache[key] = value
+
+        vcf_reader.close()
+        
+        result = {}
+        result['chrom'] = chrom
+        result['ref_alt_freq'] = ref_alt_freq
+        result['category'] = category
+        result['cache'] = inner_cache
+        queue.put(result)
+        return result
+    
+    def handle_output(self, queue):
+        ''' Function that monitors a queue and writes the cache to a file as soon as it receives the output from the subprocess.'''
+        first = True
+        m = queue.get() # wait for the first message, to avoid creating an empty cache file
+        
+        if m != 'kill':
+            cache_path = get_write_path(self.ref_infer)
+            with h5py.File(cache_path, mode='a') as f:
+                while True:
+                    if first:
+                        first = False
+                    else:
+                        m = queue.get()
+                        
+                    if m == 'kill':
+                        break
+
+                    result = m
+                    cache = result['cache']
+                    if cache is not None and len(cache) > 0:
+                        main_group = f.require_group(result['ref_alt_freq'])
+                        sub_group = main_group.require_group(result['category'])
+                        chrom_group = sub_group.require_group(str(result['chrom']))
+
+                        keys_list = list(cache.keys())
+                        max_len = len(max(keys_list, key=len))
+                        #self.log.write(f"Writing {result['ref_alt_freq']}, {result['category']}, {str(result['chrom'])}\n")
+                        keys_dataset = chrom_group.create_dataset('keys', data=keys_list, dtype=f'S{max_len}', compression="gzip", compression_opts=4)
+                        values_dataset = chrom_group.create_dataset('values', data=list(cache.values()), dtype='f', compression="gzip", compression_opts=4)
+
+    def get_cache(self):
+        return self.cache
+
+
 ################################################# CACHE LOADERs #################################################
 # Classes for loading the cache in a separate thread or process in the background while the main process is running.
 # However, right now, the most efficient way to load the cache and perform operations on it is to use the CacheProcess class.
@@ -344,9 +563,11 @@ class CacheLoader:
             raise TypeError(f"You are trying to instantiate an abstract class {cls.__name__}. Please use a concrete subclass.")
         return super().__new__(cls)
     
-    def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
         self.base_path = base_path
         self.ref_alt_freq = ref_alt_freq
+        self.category = category
+        self.filter_fn = filter_fn
         self.n_cores = n_cores
         self.log = log
         self.verbose = verbose
@@ -354,8 +575,12 @@ class CacheLoader:
     def _get_cache_path(self):
         return get_cache_path(self.base_path)
     
-    def build_cache(self):
-        self.cache = build_cache(self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores, log=self.log, verbose=self.verbose, return_cache=True)
+    def build_cache(self):       
+        self.cache = build_cache(
+            self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores,
+            filter_fn=self.filter_fn, category=self.category,
+            return_cache=True, log=self.log, verbose=self.verbose
+        )
 
     def add_to_cache(self, key, value):
         self.cache[key] = value
@@ -375,9 +600,8 @@ class CacheLoaderThread(CacheLoader):
     copying the cache to the main process. However, due to the GIL (Global Interpreter Lock) in Python, this approach is not efficient and
     it slows down the main process.
     '''
-    def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
-        super().__init__(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
-
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
+        super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, n_cores=n_cores, log=log, verbose=verbose)
         self.cache = {}
         self.lock = threading.Lock()  # For thread-safe cache access
         self.running = False
@@ -391,8 +615,8 @@ class CacheLoaderThread(CacheLoader):
         
         cache_path = self._get_cache_path()
         
-        if cache_path and os.path.exists(cache_path) is False:
-            self.log.write("No cache file found. Start building (and loading) cache...", verbose=self.verbose)
+        if not cache_exists(cache_path, self.ref_alt_freq, self.category):
+            self.log.write("Cache does not exist. Start building (and loading) cache...", verbose=self.verbose)
             self.build_cache() # this will also load the cache
         else:
             self.running = True
@@ -402,8 +626,7 @@ class CacheLoaderThread(CacheLoader):
     def load_cache(self):
         cache_path = self._get_cache_path()
         self.log.write(f'[Start loading cache from {cache_path}...]', verbose=self.verbose)     
-        with open(cache_path, 'rb') as handle:
-            self.cache = pickle.load(handle)
+        self.cache = load_h5py_cache(cache_path, ref_alt_freq=self.ref_alt_freq, category=self.category)
         self.log.write('[Finshed loading cache.]', verbose=self.verbose)
 
         self.future.cancel()
@@ -418,10 +641,9 @@ class CacheLoaderThread(CacheLoader):
         return self.cache
 
 
-def _load_cache_process(path, cache):
+def _load_cache_process(path, ref_alt_freq, category, cache):
     #start = time.time()
-    with open(path, 'rb') as handle:
-        local_cache = pickle.load(handle)
+    local_cache = load_h5py_cache(path, ref_alt_freq=ref_alt_freq, category=category)
     #print(f" ********* DONE LOADING local in {time.time() - start} seconds *********")
 
     #start = time.time()
@@ -436,9 +658,9 @@ class CacheLoaderProcess(CacheLoader):
     Unlike CacheLoaderThread, this class is more efficient because it loads the cache in a separate process, which is not affected by the GIL.
     However, a lot of memory and time is wasted in copying the cache from the subprocess to the main process.
     '''
-    def __init__(self, base_path, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
-        super().__init__(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
-        self.manager = multiprocessing.Manager()
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
+        super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, n_cores=n_cores, log=log, verbose=verbose)
+        self.manager = mp.Manager()
         self.cache = self.manager.dict()
         self.running = False
         self.process = None
@@ -450,11 +672,12 @@ class CacheLoaderProcess(CacheLoader):
         
         cache_path = self._get_cache_path()
         
-        if cache_path and os.path.exists(cache_path) is False:
+        if not cache_exists(cache_path, self.ref_alt_freq, self.category):
+            self.log.write("Cache does not exist. Start building (and loading) cache...", verbose=self.verbose)
             self.build_cache() # this will also load the cache
         else:
             self.running = True
-            self.process = multiprocessing.Process(target=_load_cache_process, args=(cache_path, self.cache))
+            self.process = mp.Process(target=_load_cache_process, args=(cache_path, self.ref_alt_freq, self.filter_fn, self.cache))
             self.process.start()
         
     def get_cache(self):

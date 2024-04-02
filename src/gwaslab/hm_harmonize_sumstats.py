@@ -24,7 +24,7 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import _maketrans
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.g_version import _get_version
-from gwaslab.cache_manager import CacheManager
+from gwaslab.cache_manager import CacheManager, PALINDROMIC_INDEL, NON_PALINDROMIC
 
 #rsidtochrpos
 #checkref
@@ -918,7 +918,7 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,chr_di
         assert ref_infer is not None, "If trust_cache is False, ref_infer must be provided"
         log.warning("You are not trusting the cache, this will slow down the process. Please consider building a complete cache.")
 
-    if ref_infer is not None:
+    if ref_infer is not None and not trust_cache:
         vcf_reader = VariantFile(ref_infer)
 
     if isinstance(data, pd.DataFrame):
@@ -930,32 +930,29 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,chr_di
     for i in range(data.shape[0]):
         _chrom, pos, ref, alt, eaf, status = data[i]
         chrom = _chrom
-        
-        if chr_dict is not None: chrom=chr_dict[chrom]
         start = pos - 1
         end = pos
+        
+        if chr_dict is not None: chrom=chr_dict[chrom]
         
         status_pre=status[:6]
         status_end=""
         
         new_status = status_pre+"8"+status_end # default value
         
-        cache_key = f"{chrom}:{start}:{end}"
+        cache_key = f"{chrom}:{pos}:{ref}:{alt}"
         if cache_key in cache:
             in_cache += 1
-            records = cache[cache_key]
-            if records is None:
+            record = cache[cache_key]
+            if record is None:
                 new_status = status_pre+"8"+status_end
             else:
-                for record in records:
-                    record_pos, record_ref, record_alts, record_info = record
-                    if record_pos==end and record_ref==ref and (alt in record_alts):
-                        if  (record_info<0.5) and (eaf<0.5):
-                            new_status = status_pre+"1"+status_end
-                        elif (record_info>0.5) and (eaf>0.5):
-                            new_status = status_pre+"1"+status_end
-                        else:
-                            new_status = status_pre+"5"+status_end
+                if (record<0.5) and (eaf<0.5):
+                    new_status = status_pre+"1"+status_end
+                elif (record>0.5) and (eaf>0.5):
+                    new_status = status_pre+"1"+status_end
+                else:
+                    new_status = status_pre+"5"+status_end
         else:
             if not trust_cache:
                 # If we don't trust the cache as a not complete cache, we should perform the check reading from the VCF file
@@ -1021,22 +1018,27 @@ def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None,chr_di
         
         new_status = status_pre+"8"+status_end # default value
         
-        cache_key = f"{chrom}:{start}:{end}"
-        if cache_key in cache:
+        cache_key_ref_alt = f"{chrom}:{pos}:{ref}:{alt}"
+        cache_key_alt_ref = f"{chrom}:{pos}:{alt}:{ref}"
+
+        if cache_key_ref_alt in cache:
             in_cache += 1
-            records = cache[cache_key]
-            if records is None:
+            record = cache[cache_key_ref_alt]
+            if record is None:
                 new_status = status_pre+"8"+status_end
             else:
-                for record in records:
-                    record_pos, record_ref, record_alts, record_info = record
-                    if record_pos==end and record_ref==ref and (alt in record_alts):
-                        if  abs(record_info - eaf)<daf_tolerance:
-                            new_status = status_pre+"3"+status_end
-            
-                    elif record_pos==end and record_ref==alt and (ref in record_alts):
-                        if  abs(record_info - (1 - eaf))<daf_tolerance:
-                            new_status = status_pre+"6"+status_end
+                if  abs(record - eaf)<daf_tolerance:
+                    new_status = status_pre+"3"+status_end
+
+        elif cache_key_alt_ref in cache:
+            in_cache += 1
+            record = cache[cache_key_alt_ref]
+            if record is None:
+                new_status = status_pre+"8"+status_end
+            else:
+                if  abs(record - (1 - eaf))<daf_tolerance:
+                    new_status = status_pre+"6"+status_end
+
         else:
             if not trust_cache:
                 # If we don't trust the cache as a not complete cache, we should perform the check reading from the VCF file
@@ -1167,14 +1169,16 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
                 n_cores=1
 
             if use_cache and cache_manager is None:
-                cache_manager = CacheManager(base_path=ref_infer, cache_loader=cache_loader, cache_process=cache_process, ref_alt_freq=ref_alt_freq, n_cores=_n_cores, log=log, verbose=verbose)
+                cache_manager = CacheManager(base_path=ref_infer, cache_loader=cache_loader, cache_process=cache_process,
+                                             ref_alt_freq=ref_alt_freq, category=PALINDROMIC_INDEL,
+                                             n_cores=_n_cores, log=log, verbose=verbose)
 
             log.write(" -Starting strand inference for palindromic SNPs...",verbose=verbose)
             df_to_check = sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]]
            
             if use_cache and cache_manager.cache_len > 0:
                 log.write("  -Using cache for strand inference",verbose=verbose)
-                status_inferred = cache_manager.apply_fn(check_strand_cache, df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq, chr_dict=chr_dict, trust_cache=trust_cache, log=log, verbose=verbose)
+                status_inferred = cache_manager.apply_fn(check_strand_cache, sumstats=df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq, chr_dict=chr_dict, trust_cache=trust_cache, log=log, verbose=verbose)
                 sumstats.loc[unknow_palindromic_to_check,status] = status_inferred
             else:
                 #df_split = np.array_split(df_to_check, n_cores)
@@ -1239,14 +1243,16 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
                     n_cores=1
 
                 if use_cache and cache_manager is None:
-                    cache_manager = CacheManager(base_path=ref_infer, cache_loader=cache_loader, cache_process=cache_process, ref_alt_freq=ref_alt_freq, n_cores=_n_cores, log=log, verbose=verbose)
+                    cache_manager = CacheManager(base_path=ref_infer, cache_loader=cache_loader, cache_process=cache_process,
+                                                ref_alt_freq=ref_alt_freq, category=PALINDROMIC_INDEL,
+                                                n_cores=_n_cores, log=log, verbose=verbose)
 
                 log.write(" -Starting indistinguishable indel inference...",verbose=verbose)
                 df_to_check = sumstats.loc[unknow_indel,[chr,pos,ref,alt,eaf,status]]
             
                 if use_cache and cache_manager.cache_len > 0:
                     log.write("  -Using cache for indel inference",verbose=verbose)
-                    status_inferred = cache_manager.apply_fn(check_indel_cache, df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq, chr_dict=chr_dict, daf_tolerance=daf_tolerance, trust_cache=trust_cache, log=log, verbose=verbose)
+                    status_inferred = cache_manager.apply_fn(check_indel_cache, sumstats=df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq, chr_dict=chr_dict, daf_tolerance=daf_tolerance, trust_cache=trust_cache, log=log, verbose=verbose)
                     sumstats.loc[unknow_indel,status] = status_inferred
                 else:
                     #df_split = np.array_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], n_cores)

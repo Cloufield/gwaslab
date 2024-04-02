@@ -166,6 +166,7 @@ dependencies:
       - adjustText==0.8
       - pysam==0.19
       - pyensembl==2.2.3
+      - h5py==3.10.0
 ```
 
 ## How to cite
