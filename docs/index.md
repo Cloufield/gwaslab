@@ -23,7 +23,7 @@ Warning: Known issues of GWASLab are summarized in [https://cloufield.github.io/
 ### install via pip
 
 ```
-pip install gwaslab==3.4.42
+pip install gwaslab==3.4.43
 ```
 
 ```python
@@ -62,7 +62,7 @@ Create a Python 3.9 environment and install gwaslab using pip:
 ```
 conda env create -n gwaslab_test -c conda-forge python=3.9
 conda activate gwaslab
-pip install gwaslab==3.4.42
+pip install gwaslab==3.4.43
 ```
 
 or create a new environment using yml file [environment_3.4.40.yml](https://github.com/Cloufield/gwaslab/blob/main/environment_3.4.40.yml)

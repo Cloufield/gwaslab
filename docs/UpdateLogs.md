@@ -1,5 +1,10 @@
 # Update Logs
 
+## 3.4.43 20240403
+- [Added cache to speedup strand inference](https://github.com/Cloufield/gwaslab/pull/86) (credit to @sup3rgiu Mr. Andrea)
+- fixed error for .plot_mqq(m="qq")
+- Added h5py==3.10.0 to dependencies.
+
 ## 3.4.42 20240328
 - fast implementation of check_ref and to_format. (credit to @sup3rgiu Mr. Andrea)
 - added highligh and pinpoint for plot_trumpet()
