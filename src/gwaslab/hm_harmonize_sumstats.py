@@ -389,7 +389,7 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
     return sumstats
 
 #20240320 check if non-effect allele is aligned with reference genome         
-def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array):
+def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array, records_len_dict: dict):
     # status 
     #0 /  ----->  match
     #1 /  ----->  Flipped Fixed
@@ -434,13 +434,9 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     ########################################## mask for variants with out of range POS
     number_of_chrom = len(np.unique(chrom))
     mask_outlier =  _pos != _pos
-    for i in range(number_of_chrom):
-        
-        if  i== number_of_chrom-1:
-            break
-        else:
-            mask_on_this_chrom = _chrom == unique_values[i]
-            mask_outlier_single = _pos > starting_positions[i+1] - starting_positions[i]
+    for i in unique_values:
+            mask_on_this_chrom = _chrom == i
+            mask_outlier_single = _pos > records_len_dict[i]
             mask_outlier[mask_on_this_chrom & mask_outlier_single] = True 
     #########################################
 
@@ -454,7 +450,9 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     nea = _nea.str.translate(TRANSLATE_TABLE).to_numpy().astype(f'<U{max_len_nea}')
     nea = nea.view('<u4').reshape(-1, max_len_nea).astype(np.uint8)
     nea[nea == 0] = PADDING_VALUE # padding value
-
+    ###########################################
+    
+    ###########################################
     # Create a mask holding True at the position of non-padding values
     mask_nea = nea != PADDING_VALUE
 
@@ -470,7 +468,9 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     ea = _ea.str.translate(TRANSLATE_TABLE).to_numpy().astype(f'<U{max_len_ea}')
     ea = ea.view('<u4').reshape(-1, max_len_ea).astype(np.uint8)
     ea[ea == 0] = PADDING_VALUE # padding value
-
+    ###########################################
+    
+    ###########################################
     mask_ea = ea != PADDING_VALUE
 
     rev_ea = _ea.str.translate(TRANSLATE_TABLE_COMPL).str.pad(max_len_ea, 'left', chr(PADDING_VALUE)).to_numpy().astype(f'<U{max_len_ea}')
@@ -516,10 +516,9 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     # Since we use np.take, indices must all have the same length, and this is why we added the padding to NEA
     # and we create the indices using max_len_nea (long story short, we can't obtain a scattered/ragged array)
     output_nea = np.take(record, indices, mode="clip")
-    #########################################
+    ##################################################################
     output_nea[mask_outlier] = PADDING_VALUE
-    #########################################
-    
+    ##################################################################
     # Check if the NEA is equal to the reference sequence at the given position
     # In a non-matrix way, this is equivalent (for one single element) to:
     # nea == record[pos-1: pos+len(nea)-1]
@@ -543,9 +542,9 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     indices = pos + indices_range
     indices = indices + modified_indices
     output_ea = np.take(record, indices, mode="clip")
-    #########################################
+    ##################################################################
     output_ea[mask_outlier] = PADDING_VALUE
-    #########################################
+    ##################################################################
 
     ea_eq_ref = np.all((ea == output_ea) + ~mask_ea, 1)
     rev_ea_eq_ref = np.all((rev_ea == output_ea) + ~mask_ea, 1)
@@ -600,7 +599,7 @@ def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=
     chrom,pos,ea,nea,status = sumstats.columns
 
     # First, convert the fasta records to a single numpy array of integers
-    record, starting_positions_dict = build_fasta_records(fasta_records_dict, pos_as_dict=True, log=log, verbose=verbose)
+    record, starting_positions_dict, records_len_dict = build_fasta_records(fasta_records_dict, pos_as_dict=True, log=log, verbose=verbose)
 
     # In _fast_check_status(), several 2D numpy arrays are created and they are padded to have shape[1] == max_len_nea or max_len_ea
     # Since most of the NEA and EA strings are short, we perform the check first on the records having short NEA and EA strings,
@@ -612,12 +611,12 @@ def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=
     log.write(f"   -Checking records for ( len(NEA) <= {max_len} and len(EA) <= {max_len} )", verbose=verbose)
     sumstats_cond = sumstats[condition]
     starting_pos_cond = np.array([starting_positions_dict[k] for k in sumstats_cond[chrom].unique()])
-    sumstats.loc[condition, status] = _fast_check_status(sumstats_cond, record=record, starting_positions=starting_pos_cond)
+    sumstats.loc[condition, status] = _fast_check_status(sumstats_cond, record=record, starting_positions=starting_pos_cond,records_len_dict=records_len_dict)
 
     log.write(f"   -Checking records for ( len(NEA) > {max_len} or len(EA) > {max_len} )", verbose=verbose)
     sumstats_not_cond = sumstats[~condition]
     starting_not_pos_cond = np.array([starting_positions_dict[k] for k in sumstats_not_cond[chrom].unique()])
-    sumstats.loc[~condition, status] = _fast_check_status(sumstats_not_cond, record=record, starting_positions=starting_not_pos_cond)
+    sumstats.loc[~condition, status] = _fast_check_status(sumstats_not_cond, record=record, starting_positions=starting_not_pos_cond,records_len_dict=records_len_dict)
 
     return sumstats[status].values
         
@@ -727,10 +726,11 @@ def build_fasta_records(fasta_records_dict, pos_as_dict=True, log=Log(), verbose
     starting_positions = np.cumsum(records_len) - records_len
     if pos_as_dict:
         starting_positions = {k: v for k, v in zip(fasta_records_dict.keys(), starting_positions)}
+        records_len_dict =  {k: v for k, v in zip(fasta_records_dict.keys(), records_len)}
     record = np.concatenate(all_r)
     del all_r # free memory
 
-    return record, starting_positions
+    return record, starting_positions,records_len_dict
 
 #######################################################################################################################################
 
