@@ -503,7 +503,7 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     # Index the record array using the computed indices.
     # Since we use np.take, indices must all have the same length, and this is why we added the padding to NEA
     # and we create the indices using max_len_nea (long story short, we can't obtain a scattered/ragged array)
-    output_nea = np.take(record, indices)
+    output_nea = np.take(record, indices, mode="clip")
 
     # Check if the NEA is equal to the reference sequence at the given position
     # In a non-matrix way, this is equivalent (for one single element) to:
@@ -527,7 +527,7 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     indices_range = np.arange(max_len_ea)
     indices = pos + indices_range
     indices = indices + modified_indices
-    output_ea = np.take(record, indices)
+    output_ea = np.take(record, indices, mode="clip")
 
     ea_eq_ref = np.all((ea == output_ea) + ~mask_ea, 1)
     rev_ea_eq_ref = np.all((rev_ea == output_ea) + ~mask_ea, 1)
