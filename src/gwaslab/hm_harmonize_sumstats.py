@@ -431,6 +431,18 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     max_len_nea = _nea.str.len().max()
     max_len_ea = _ea.str.len().max()
 
+    ########################################## mask for variants with out of range POS
+    number_of_chrom = len(np.unique(chrom))
+    mask_outlier =  _pos != _pos
+    for i in range(number_of_chrom):
+        
+        if  i== number_of_chrom-1:
+            break
+        else:
+            mask_on_this_chrom = _chrom == unique_values[i]
+            mask_outlier_single = _pos > starting_positions[i+1] - starting_positions[i]
+            mask_outlier[mask_on_this_chrom & mask_outlier_single] = True 
+    #########################################
 
     # Let's apply the same magic used for the fasta records (check build_fasta_records() for details) to convert the NEA and EA to
     # a numpy array of integers in a very fast way.
@@ -504,7 +516,10 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     # Since we use np.take, indices must all have the same length, and this is why we added the padding to NEA
     # and we create the indices using max_len_nea (long story short, we can't obtain a scattered/ragged array)
     output_nea = np.take(record, indices, mode="clip")
-
+    #########################################
+    output_nea[mask_outlier] = PADDING_VALUE
+    #########################################
+    
     # Check if the NEA is equal to the reference sequence at the given position
     # In a non-matrix way, this is equivalent (for one single element) to:
     # nea == record[pos-1: pos+len(nea)-1]
@@ -528,6 +543,9 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     indices = pos + indices_range
     indices = indices + modified_indices
     output_ea = np.take(record, indices, mode="clip")
+    #########################################
+    output_ea[mask_outlier] = PADDING_VALUE
+    #########################################
 
     ea_eq_ref = np.all((ea == output_ea) + ~mask_ea, 1)
     rev_ea_eq_ref = np.all((rev_ea == output_ea) + ~mask_ea, 1)
