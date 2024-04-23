@@ -2040,6 +2040,12 @@
 <td></td>
 </tr>
 <tr>
+<td><code>ref_seq_mode</code> (avaiable since v3.4.42)</td>
+<td><code>v</code> or <code>s</code></td>
+<td><code>v</code> for vectorized implementation (faster); <code>s</code> for single row iteration mode</td>
+<td><code>v</code> since v3.4.42 (except v3.4.43)</td>
+</tr>
+<tr>
 <td><code>chr_dict</code></td>
 <td><code>dict</code></td>
 <td>a conversion dictionary for chromosome notations in reference FASTA and those in sumstats</td>
@@ -2145,12 +2151,70 @@
 <td>number of CPU threads to use</td>
 <td><code>1</code></td>
 </tr>
+<tr>
+<td><code>n_cores</code></td>
+<td><code>int</code></td>
+<td>number of CPU threads to use</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>cache_options</code> (available since v3.4.42)</td>
+<td><code>dict</code></td>
+<td>options for using cache to speed up this step</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><code>cache_options</code></th>
+<th>DataType</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cache_manager</code></td>
+<td>CacheManager object or <code>None</code></td>
+<td>If any between cache_loader and cache_process is not None, or use_cache is True, a CacheManager object will be created automatically.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>trust_cache</code></td>
+<td><code>bool</code></td>
+<td>Whether to completely trust the cache or not. Trusting the cache means that any key not found inside the cache will be considered as a missing value even in the VCF file.</td>
+<td>True</td>
+</tr>
+<tr>
+<td><code>cache_loader</code></td>
+<td>Object with a get_cache() method or <code>None</code></td>
+<td>Object with a get_cache() method or None.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>cache_process</code></td>
+<td>Object with an apply_fn() method or <code>None</code></td>
+<td>Object with an apply_fn() method or None.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>use_cache</code></td>
+<td><code>bool</code></td>
+<td>If any of the cache_manager, cache_loader or cache_process is not None, this will be set to True automatically. If set to True and all between cache_manager, cache_loader and cache_process are None, the cache will be loaded (or built) on the spot.</td>
+<td>False</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_strand</span><span class="p">()</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># using cache to speed up this method</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">infer_strand</span><span class="p">(</span><span class="n">cache_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;use_cache&quot;</span><span class="p">:</span><span class="kc">True</span><span class="p">})</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">mysumstats</span><span class="o">.</span><span class="n">flip_allele_stats</span><span class="p">()</span>
 </span></code></pre></div>
 </div>
 <div class="admonition note">
