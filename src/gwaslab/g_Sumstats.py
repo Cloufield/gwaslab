@@ -358,6 +358,8 @@ class Sumstats():
                 self.data = checkref(self.data,ref_seq,log=self.log,**checkref_args)
             elif ref_seq_mode=="s":
                 self.data = oldcheckref(self.data,ref_seq,log=self.log,**checkref_args)
+            else:
+                raise ValueError("ref_seq_mode should be 'v' (vectorized, faster) or 's' (sequential, slower)")
             
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
             

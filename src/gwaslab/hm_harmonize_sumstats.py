@@ -389,7 +389,10 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
     return sumstats
 
 #20240320 check if non-effect allele is aligned with reference genome         
-def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array, records_len_dict: dict):
+def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array, records_len: np.array):
+    # starting_positions and records_len must be 1D arrays containing data only for the chromosomes contained in x,
+    # and these arrays must be ordered in the same way as the chromosomes in np.unique(x['CHR'].values).
+
     # status 
     #0 /  ----->  match
     #1 /  ----->  Flipped Fixed
@@ -432,12 +435,7 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     max_len_ea = _ea.str.len().max()
 
     ########################################## mask for variants with out of range POS
-    number_of_chrom = len(np.unique(chrom))
-    mask_outlier =  _pos != _pos
-    for i in unique_values:
-            mask_on_this_chrom = _chrom == i
-            mask_outlier_single = _pos > records_len_dict[i]
-            mask_outlier[mask_on_this_chrom & mask_outlier_single] = True 
+    mask_outlier = pos > records_len[chrom]
     #########################################
 
     # Let's apply the same magic used for the fasta records (check build_fasta_records() for details) to convert the NEA and EA to
@@ -519,6 +517,7 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     ##################################################################
     output_nea[mask_outlier] = PADDING_VALUE
     ##################################################################
+    
     # Check if the NEA is equal to the reference sequence at the given position
     # In a non-matrix way, this is equivalent (for one single element) to:
     # nea == record[pos-1: pos+len(nea)-1]
@@ -610,13 +609,17 @@ def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=
 
     log.write(f"   -Checking records for ( len(NEA) <= {max_len} and len(EA) <= {max_len} )", verbose=verbose)
     sumstats_cond = sumstats[condition]
-    starting_pos_cond = np.array([starting_positions_dict[k] for k in sumstats_cond[chrom].unique()])
-    sumstats.loc[condition, status] = _fast_check_status(sumstats_cond, record=record, starting_positions=starting_pos_cond,records_len_dict=records_len_dict)
+    unique_chrom_cond = sumstats_cond[chrom].unique()
+    starting_pos_cond = np.array([starting_positions_dict[k] for k in unique_chrom_cond])
+    records_len_cond = np.array([records_len_dict[k] for k in unique_chrom_cond])
+    sumstats.loc[condition, status] = _fast_check_status(sumstats_cond, record=record, starting_positions=starting_pos_cond, records_len=records_len_cond)
 
     log.write(f"   -Checking records for ( len(NEA) > {max_len} or len(EA) > {max_len} )", verbose=verbose)
     sumstats_not_cond = sumstats[~condition]
-    starting_not_pos_cond = np.array([starting_positions_dict[k] for k in sumstats_not_cond[chrom].unique()])
-    sumstats.loc[~condition, status] = _fast_check_status(sumstats_not_cond, record=record, starting_positions=starting_not_pos_cond,records_len_dict=records_len_dict)
+    unique_chrom_not_cond = sumstats_not_cond[chrom].unique()
+    starting_not_pos_cond = np.array([starting_positions_dict[k] for k in unique_chrom_not_cond])
+    records_len_not_cond = np.array([records_len_dict[k] for k in unique_chrom_not_cond])
+    sumstats.loc[~condition, status] = _fast_check_status(sumstats_not_cond, record=record, starting_positions=starting_not_pos_cond, records_len=records_len_not_cond)
 
     return sumstats[status].values
         
