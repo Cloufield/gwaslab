@@ -792,7 +792,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
 ###############################################################################################################   
 # 20220721
 
-def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",n_cores=1,verbose=True,log=Log()):
+def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",chunk=3000000,n_cores=1,verbose=True,log=Log()):
     ##start function with col checking##########################################################
     _start_line = "normalize indels"
     _end_line = "normalizing indels"
@@ -819,11 +819,54 @@ def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NE
         log.write("Finished normalizing variants successfully!", verbose=verbose)
         return sumstats
     ###############################################################################################################
-    if sum(variants_to_check)>0:
+    if mode=="v":
+        if sum(variants_to_check)>0:
+            if sum(variants_to_check)<100000: 
+                n_cores=1  
+            if n_cores==1:
+                normalized_pd, changed_index = fastnormalizeallele(sumstats.loc[variants_to_check,[pos,nea,ea,status]],pos=pos ,nea=nea,ea=ea,status=status,chunk=chunk, log=log, verbose=verbose)
+            else:
+                pool = Pool(n_cores)
+                map_func = partial(fastnormalizeallele,pos=pos,nea=nea,ea=ea,status=status)
+                df_split = _df_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
+                results = pool.map(map_func,df_split)
+                normalized_pd = pd.concat([i[0] for i in results])
+                changed_index = np.concatenate([i[1] for i in results])
+                del results
+                pool.close()
+                pool.join()
+                gc.collect()
+        ###############################################################################################################
+        try:
+            example_sumstats = sumstats.loc[changed_index,[ea,nea]].head()
+            changed_num = len(changed_index)
+            if changed_num>0:
+                if snpid in example_sumstats.columns:
+                    before_normalize_id = example_sumstats.loc[variants_to_check,snpid]
+                elif rsid in example_sumstats.columns:
+                    before_normalize_id = example_sumstats.loc[variants_to_check,rsid]
+                else:
+                    before_normalize_id = example_sumstats.index
+                
+                log.write(" -Not normalized allele IDs:",end="", verbose=verbose)
+                for i in before_normalize_id.values:
+                    log.write(i,end=" ",show_time=False)
+                log.write("... \n",end="",show_time=False, verbose=verbose) 
+            
+                log.write(" -Not normalized allele:",end="", verbose=verbose)
+                for i in example_sumstats[[ea,nea]].values:
+                    log.write(i,end="",show_time=False, verbose=verbose)
+                log.write("... \n",end="",show_time=False, verbose=verbose)     
+                log.write(" -Modified "+str(changed_num) +" variants according to parsimony and left alignment principal.", verbose=verbose)
+            else:
+                log.write(" -All variants are already normalized..", verbose=verbose)
+        except:
+            pass
+
+    ##########################################################################################################################################################
+    elif mode=="s":
         if sum(variants_to_check)<10000: 
             n_cores=1  
-
-        #normalized_pd, changed_index = fastnormalizeallele(sumstats.loc[variants_to_check,[pos,nea,ea,status]],pos=pos ,nea=nea,ea=ea,status=status)
         pool = Pool(n_cores)
         map_func = partial(normalizeallele,pos=pos,nea=nea,ea=ea,status=status)
         #df_split = np.array_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
@@ -831,34 +874,36 @@ def parallelnormalizeallele(sumstats,snpid="SNPID",rsid="rsID",pos="POS",nea="NE
         normalized_pd = pd.concat(pool.map(map_func,df_split))
         pool.close()
         pool.join()
-    ###############################################################################################################
-    before_normalize = sumstats.loc[variants_to_check,[ea,nea]]
-    changed_num = len(normalized_pd.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea]),:])
-    if changed_num>0:
-        if snpid in sumstats.columns:
-            before_normalize_id = sumstats.loc[variants_to_check,snpid]
-        elif rsid in sumstats.columns:
-            before_normalize_id = sumstats.loc[variants_to_check,rsid]
-        else:
-            before_normalize_id = pd.DataFrame(sumstats.index[variants_to_check],index=sumstats.index[variants_to_check])
+
+        before_normalize = sumstats.loc[variants_to_check,[ea,nea]]
+        changed_num = len(normalized_pd.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea]),:])
+        if changed_num>0:
+            if snpid in sumstats.columns:
+                before_normalize_id = sumstats.loc[variants_to_check,snpid]
+            elif rsid in sumstats.columns:
+                before_normalize_id = sumstats.loc[variants_to_check,rsid]
+            else:
+                before_normalize_id = pd.DataFrame(sumstats.index[variants_to_check],index=sumstats.index[variants_to_check])
+            
+            log.write(" -Not normalized allele IDs:",end="", verbose=verbose)
+            for i in before_normalize_id.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea])].head().values:
+                log.write(i,end=" ",show_time=False)
+            log.write("... \n",end="",show_time=False, verbose=verbose) 
         
-        log.write(" -Not normalized allele IDs:",end="", verbose=verbose)
-        for i in before_normalize_id.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea])].head().values:
-            log.write(i,end=" ",show_time=False)
-        log.write("... \n",end="",show_time=False, verbose=verbose) 
+            log.write(" -Not normalized allele:",end="", verbose=verbose)
+            for i in before_normalize.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea]),[ea,nea]].head().values:
+                log.write(i,end="",show_time=False, verbose=verbose)
+            log.write("... \n",end="",show_time=False, verbose=verbose)     
+            log.write(" -Modified "+str(changed_num) +" variants according to parsimony and left alignment principal.", verbose=verbose)
+        else:
+            log.write(" -All variants are already normalized..", verbose=verbose)
+        ###################################################################################################################
     
-        log.write(" -Not normalized allele:",end="", verbose=verbose)
-        for i in before_normalize.loc[(before_normalize[ea]!=normalized_pd[ea]) | (before_normalize[nea]!=normalized_pd[nea]),[ea,nea]].head().values:
-            log.write(i,end="",show_time=False, verbose=verbose)
-        log.write("... \n",end="",show_time=False, verbose=verbose)     
-        log.write(" -Modified "+str(changed_num) +" variants according to parsimony and left alignment principal.", verbose=verbose)
-    else:
-        log.write(" -All variants are already normalized..", verbose=verbose)
-    ###################################################################################################################
     categories = set(sumstats[ea])|set(sumstats[nea]) |set(normalized_pd.loc[:,ea]) |set(normalized_pd.loc[:,nea])
     sumstats[ea]  = pd.Categorical(sumstats[ea],categories = categories) 
     sumstats[nea] = pd.Categorical(sumstats[nea],categories = categories ) 
     sumstats.loc[variants_to_check,[pos,nea,ea,status]] = normalized_pd.values
+    
     try:
         sumstats[pos] = sumstats[pos].astype('Int64')
     except:
@@ -874,43 +919,66 @@ def normalizeallele(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
     sumstats = pd.DataFrame(normalized.to_list(), columns=[pos,nea,ea,status],index=sumstats.index)
     return sumstats
 
-def fastnormalizeallele(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
+def fastnormalizeallele(insumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS",chunk=3000000,log=Log(),verbose=False):
+    log.write(" -Number of variants to check:{}".format(len(insumstats)), verbose=verbose)
+    log.write(" -Chunk size:{}".format(chunk), verbose=verbose)
+    log.write(" -Processing in chunks:",end="", verbose=verbose)
+    changed_index = np.array([])
+    for part_n in range(len(insumstats)//chunk+1):
+        log.write(part_n, end=" ",show_time=False, verbose=verbose)
+        insumstats["NEA"] = insumstats["NEA"].astype("string")
+        insumstats["EA"] = insumstats["EA"].astype("string")
+        insumstats.iloc[part_n*chunk:(part_n+1)*chunk,:],changed_index_single  = normalizae_chunk(insumstats.iloc[part_n*chunk:(part_n+1)*chunk,:].copy())
+        changed_index = np.concatenate([changed_index,changed_index_single])
+        gc.collect()
+    log.write("\n",end="",show_time=False, verbose=verbose)   
+    return insumstats, changed_index
+
+def normalizae_chunk(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
     # already normalized
-    sumstats["NEA"] = sumstats["NEA"].astype("string")
-    sumstats["EA"] = sumstats["EA"].astype("string")
-    
+
     is_same = sumstats["NEA"] == sumstats["EA"]
     is_normalized = ((sumstats["NEA"].str.len()==1) | (sumstats["EA"].str.len()==1) ) & (~is_same)
     
-    # right side
-    max_length=max(sumstats["NEA"].str.len().max(), sumstats["EA"].str.len().max())
-    
+    # a series to keep tracking of variants that are modified
     changed = sumstats["NEA"] != sumstats["NEA"]
+    
+    # right side
+    ea_len = sumstats["NEA"].str.len()
+    nea_len = sumstats["EA"].str.len()
+    max_length=max(ea_len.max(), nea_len.max())
 
-    for i in range(max_length):
+    for i in range(1, max_length):
         is_pop = (sumstats["NEA"].str[-1] == sumstats["EA"].str[-1]) & (~is_normalized)
-        if i ==0:
+        if sum(is_pop)==0:
+            break
+        if i ==1:
             changed = changed | is_pop
+        nea_len[is_pop] = nea_len[is_pop] -1 
+        ea_len[is_pop] = ea_len[is_pop] -1
         sumstats.loc[is_pop, "NEA"] = sumstats.loc[is_pop,"NEA"].str[:-1]
         sumstats.loc[is_pop, "EA"] = sumstats.loc[is_pop,"EA"].str[:-1]
-        is_normalized =((sumstats["NEA"].str.len()==1) | (sumstats["EA"].str.len()==1) ) & (~is_same)
+        is_normalized = ((sumstats["NEA"].str.len()==1) | (sumstats["EA"].str.len()==1) ) & (~is_same)
         gc.collect()
+    
     # left side 
     max_length=max(sumstats["NEA"].str.len().max(), sumstats["EA"].str.len().max())
-    for i in range(max_length):
+    for i in range(1, max_length):
         is_pop = (sumstats["NEA"].str[0] == sumstats["EA"].str[0]) & (~is_normalized)
-        if i ==0:
+        if sum(is_pop)==0:
+            break
+        if i ==1:
             changed = changed | is_pop
         sumstats.loc[is_pop, "NEA"] = sumstats.loc[is_pop,"NEA"].str[1:]
         sumstats.loc[is_pop, "EA"] = sumstats.loc[is_pop,"EA"].str[1:]
         sumstats.loc[is_pop, "POS"] = sumstats.loc[is_pop,"POS"] + 1
         is_normalized = ((sumstats["NEA"].str.len()==1) | (sumstats["EA"].str.len()==1) ) & (~is_same)
         gc.collect()
+    
     sumstats.loc[is_normalized,status]     = vchange_status(sumstats.loc[is_normalized, status],  5,"4","0")
     sumstats.loc[is_same,status]     = vchange_status(sumstats.loc[is_same, status],  5,"4","3") 
     changed_index = sumstats[changed].index
-    return sumstats, changed_index
-
+    return sumstats, changed_index.values
 
 def normalizevariant(pos,a,b,status):
     # single record

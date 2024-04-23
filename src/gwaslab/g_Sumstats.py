@@ -296,7 +296,7 @@ class Sumstats():
               ref_infer=None,
               ref_alt_freq=None,
               maf_threshold=0.40,
-              ref_seq_mode="s",
+              ref_seq_mode="v",
               n_cores=1,
               remove=False,
               checkref_args={},
@@ -427,7 +427,7 @@ class Sumstats():
         _check_data_consistency(self.data,log=self.log,**kwargs)
     def check_id(self,**kwargs):
         pass
-    def check_ref(self,ref_seq,ref_seq_mode="s",**kwargs):
+    def check_ref(self,ref_seq,ref_seq_mode="v",**kwargs):
         if ref_seq_mode=="v":
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
             self.data = checkref(self.data,ref_seq,log=self.log,**kwargs)
