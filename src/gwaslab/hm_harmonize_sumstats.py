@@ -605,7 +605,7 @@ def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=
     # and then we perform the check on the records having long NEA and EA strings. In this way we can speed up the process (since the 
     # arrays are smaller) and save memory.
     max_len = 4 # this is a chosen value, we could compute it using some stats about the length and count of NEA and EA strings
-    condition = (sumstats[nea].str.len() <= max_len) * (sumstats[ea].str.len() <= max_len)
+    condition = (sumstats[nea].str.len() <= max_len) & (sumstats[ea].str.len() <= max_len)
 
     log.write(f"   -Checking records for ( len(NEA) <= {max_len} and len(EA) <= {max_len} )", verbose=verbose)
     sumstats_cond = sumstats[condition]

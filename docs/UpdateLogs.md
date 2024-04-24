@@ -1,5 +1,9 @@
 # Update Logs
 
+## 3.4.44 20240424
+- fixed bug when POS > sequence length for check_ref()
+- vectorized normalize_allele() 
+
 ## 3.4.43 20240403
 - [Added cache to speedup strand inference](https://github.com/Cloufield/gwaslab/pull/86) (credit to @sup3rgiu Mr. Andrea)
 - fixed error for .plot_mqq(m="qq")

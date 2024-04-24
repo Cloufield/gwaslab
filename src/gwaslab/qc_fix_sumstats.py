@@ -820,25 +820,24 @@ def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS
         return sumstats
     ###############################################################################################################
     if mode=="v":
-        if sum(variants_to_check)>0:
-            if sum(variants_to_check)<100000: 
-                n_cores=1  
-            if n_cores==1:
-                normalized_pd, changed_index = fastnormalizeallele(sumstats.loc[variants_to_check,[pos,nea,ea,status]],pos=pos ,nea=nea,ea=ea,status=status,chunk=chunk, log=log, verbose=verbose)
-            else:
-                pool = Pool(n_cores)
-                map_func = partial(fastnormalizeallele,pos=pos,nea=nea,ea=ea,status=status)
-                df_split = _df_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
-                results = pool.map(map_func,df_split)
-                normalized_pd = pd.concat([i[0] for i in results])
-                changed_index = np.concatenate([i[1] for i in results])
-                del results
-                pool.close()
-                pool.join()
-                gc.collect()
+        if sum(variants_to_check)<100000: 
+            n_cores=1  
+        if n_cores==1:
+            normalized_pd, changed_index = fastnormalizeallele(sumstats.loc[variants_to_check,[pos,nea,ea,status]],pos=pos ,nea=nea,ea=ea,status=status,chunk=chunk, log=log, verbose=verbose)
+        else:
+            pool = Pool(n_cores)
+            map_func = partial(fastnormalizeallele,pos=pos,nea=nea,ea=ea,status=status)
+            df_split = _df_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
+            results = pool.map(map_func,df_split)
+            normalized_pd = pd.concat([i[0] for i in results])
+            changed_index = np.concatenate([i[1] for i in results])
+            del results
+            pool.close()
+            pool.join()
+            gc.collect()
         ###############################################################################################################
         try:
-            example_sumstats = sumstats.loc[changed_index,[ea,nea]].head()
+            example_sumstats = sumstats.loc[changed_index,:].head()
             changed_num = len(changed_index)
             if changed_num>0:
                 if snpid in example_sumstats.columns:
