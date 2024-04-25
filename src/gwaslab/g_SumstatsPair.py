@@ -139,7 +139,7 @@ class SumstatsPair( ):
         self.clumps["clumps"], self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.study_name, **kwargs)
 
     def to_coloc(self,**kwargs):
-        self.to_finemapping_file_path, self.plink_log = tofinemapping(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
+        self.to_finemapping_file_path, output_file_list, self.plink_log = tofinemapping(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
 
     def run_coloc_susie(self,**kwargs):
 
