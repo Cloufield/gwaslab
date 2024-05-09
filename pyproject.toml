@@ -21,7 +21,7 @@ dependencies = [
     "matplotlib>=3.5,!=3.7.2",
     "seaborn>=0.12",
     "scipy>=1.12",
-    "pySAM>=0.22",
+    "pySAM==0.22.1",
     "Biopython>=1.79",
     "adjustText>=0.7.3, <=0.8",
     "liftover>=1.1.13",
@@ -31,7 +31,7 @@ dependencies = [
     "h5py>=3.10.0"
 ]
 
-requires-python = ">=3.9,<=3.10"
+requires-python = ">=3.9,<3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
