@@ -1,5 +1,11 @@
 # Update Logs
 
+## 3.4.45 20240509
+- changed python version requiremnents to >=3.9, <3.11
+- updated the version of pysam to v0.22.1
+- fixed bug for status code when flipping statistics
+
+
 ## 3.4.44 20240424
 - fixed bug when POS > sequence length for check_ref()
 - vectorized normalize_allele() 
