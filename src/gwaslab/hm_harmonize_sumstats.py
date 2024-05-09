@@ -355,7 +355,11 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
     
     log.write("\n",end="",show_time=False,verbose=verbose) 
         
-    sumstats[status] = sumstats[status].astype("string")
+    CATEGORIES = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+    sumstats[status] = pd.Categorical(sumstats[status],categories=CATEGORIES)
+    #sumstats[status] = sumstats[status].astype("string")
+
+
     available_to_check =sum( (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna()))
     status_0=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False))
     status_3=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False))
@@ -669,9 +673,11 @@ def checkref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="ST
         sumstats_to_check = sumstats.loc[to_check_ref,[chrom,pos,ea,nea,status]]
         sumstats.loc[to_check_ref,status] = check_status(sumstats_to_check, all_records_dict, log=log, verbose=verbose)
         log.write(" -Finished checking records", verbose=verbose) 
- 
-    sumstats[status] = sumstats[status].astype("string")
-        
+    
+    CATEGORIES = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+    sumstats[status] = pd.Categorical(sumstats[status],categories=CATEGORIES)
+    #sumstats[status] = sumstats[status].astype("string")
+
     available_to_check =sum( (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna()))
     status_0=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False))
     status_3=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False))
@@ -700,6 +706,7 @@ def checkref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="ST
     if remove is True:
         sumstats = sumstats.loc[~sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w"),:]
         log.write(" -Variants not on given reference sequence were removed.",verbose=verbose)
+
     
     finished(log, verbose, _end_line)
     return sumstats

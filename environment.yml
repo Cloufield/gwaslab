@@ -20,6 +20,6 @@ dependencies:
       - seaborn==0.11.2
       - statsmodels==0.13
       - adjustText==0.8
-      - pysam==0.19
+      - pysam==0.22.1
       - pyensembl==2.2.3
       - h5py==3.10.0
