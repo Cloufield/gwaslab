@@ -1061,6 +1061,13 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
             if sum(is_low_p) >0:
                 log.warning("Extremely low P detected (P=0 or P < minimum positive value of float64) : {}".format(sum(is_low_p)))
                 log.warning("Please consider using MLOG10P instead.")
+        
+        if header=="INFO":
+            is_high_info =  sumstats["INFO"]>1 
+            if sum(is_high_info) >0:
+                log.warning("High INFO detected (INFO>1) : {}".format(sum(is_high_info)))
+                log.warning("max(INFO): {}".format(sumstats["INFO"].max()))
+                log.warning("Please check if this is as expected.")
 
         if sum(~is_valid)>0:
             try:
@@ -1102,7 +1109,7 @@ def sanitycheckstats(sumstats,
                      HR=(-100,100),
                      HR_95L=(0,float("Inf")),
                      HR_95U=(0,float("Inf")),
-                     info=(0,1),
+                     info=(0,2),
                      float_tolerence = 1e-7,
                      verbose=True,
                      log=Log()):

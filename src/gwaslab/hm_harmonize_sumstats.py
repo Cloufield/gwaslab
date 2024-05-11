@@ -868,8 +868,9 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsI
         if is_enough_info == False: return sumstats
         ############################################################################################
         
-        standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
-        
+        #standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
+        standardized_normalized = sumstats["STATUS"] == sumstats["STATUS"]
+
         if rsid not in sumstats.columns:
             sumstats[rsid]=pd.Series(dtype="string")
             
