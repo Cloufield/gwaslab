@@ -10,6 +10,7 @@ from gwaslab.g_vchange_status import vchange_status
 from gwaslab.qc_fix_sumstats import sortcoordinate
 from gwaslab.qc_fix_sumstats import start_to
 from gwaslab.qc_fix_sumstats import finished
+from gwaslab.qc_fix_sumstats import _process_build
 from gwaslab.hm_harmonize_sumstats import is_palindromic
 
 import gc
@@ -430,8 +431,24 @@ def _filter_snp(sumstats, mode="in", ea="EA",nea="NEA", log=Log(),verbose=True):
     log.write("Finished filtering SNPs.",verbose=verbose)
     return snp
 
-def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=25000000 ,upper=34000000 ,log=Log(), verbose=True):
-    
+def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None ,upper=None, build=None, log=Log(), verbose=True):
+    if build is not None:
+        build = _process_build(build = build,log = log,verbose = verbose)
+        # xMHC : HIST1H2AA ~ 7.6mb ~ RPL12P1
+        # reference: Horton, R., Wilming, L., Rand, V., Lovering, R. C., Bruford, E. A., Khodiyar, V. K., ... & Beck, S. (2004). Gene map of the extended human MHC. Nature Reviews Genetics, 5(12), 889-899.
+        # hg38:  25,726,063 ~ 33,400,644
+        # hg19 : 25,726,291 ~ 33,368,421
+        if build == "19":
+            lower=25000000
+            upper=34000000
+        if build == "38":
+            lower=25000000
+            upper=34000000
+    else:
+        # -> 25,000,000 ~ 34,000,000
+        lower=25000000
+        upper=34000000
+        
     raw_len = len(sumstats)
     
     if str(sumstats[chrom].dtype) == "string":
