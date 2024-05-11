@@ -431,23 +431,42 @@ def _filter_snp(sumstats, mode="in", ea="EA",nea="NEA", log=Log(),verbose=True):
     log.write("Finished filtering SNPs.",verbose=verbose)
     return snp
 
-def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None ,upper=None, build=None, log=Log(), verbose=True):
+def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None ,upper=None, build=None, mode="xmhc", log=Log(), verbose=True):
+    
     if build is not None:
         build = _process_build(build = build,log = log,verbose = verbose)
         # xMHC : HIST1H2AA ~ 7.6mb ~ RPL12P1
         # reference: Horton, R., Wilming, L., Rand, V., Lovering, R. C., Bruford, E. A., Khodiyar, V. K., ... & Beck, S. (2004). Gene map of the extended human MHC. Nature Reviews Genetics, 5(12), 889-899.
         # hg38:  25,726,063 ~ 33,400,644
         # hg19 : 25,726,291 ~ 33,368,421
+
+        # HLA : GABBR1 ~ 3.78mb ~ KIFC1
+        # reference: Shiina, T., Hosomichi, K., Inoko, H., & Kulski, J. K. (2009). The HLA genomic loci map: expression, interaction, diversity and disease. Journal of human genetics, 54(1), 15-39. 
+        # hg38:  29,602,238 ~ 33,409,896
+        # hg19:  29,570,015 ~ 33,377,673
+
         if build == "19":
-            lower=25000000
-            upper=34000000
+            if mode =="xmhc":
+                lower=25000000
+                upper=34000000
+            if mode =="hla" or mode =="mhc":
+                lower=29500000
+                upper=33500000
         if build == "38":
-            lower=25000000
-            upper=34000000
+            if mode =="xmhc":
+                lower=25000000
+                upper=34000000
+            if mode =="hla" or mode =="mhc":
+                lower=29500000
+                upper=33500000
     else:
         # -> 25,000,000 ~ 34,000,000
-        lower=25000000
-        upper=34000000
+        if mode =="xmhc":
+            lower=25000000
+            upper=34000000
+        if mode =="hla" or mode =="mhc":
+            lower=29500000
+            upper=33500000
         
     raw_len = len(sumstats)
     
