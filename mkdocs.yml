@@ -59,6 +59,8 @@ nav:
        - "Download": Download.md 
        - "Reference data" : Reference.md
        - "Common data": CommonData.md
+       - "Hapmap3": Hapmap3.md
+       - "HLA region": HLA.md
     - Examples:
        - "Standardization": standardization_workflow.ipynb
        - "Harmonization" : harmonization_workflow.ipynb
