@@ -11,6 +11,7 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_to_NC
 from gwaslab.bd_common_data import gtf_to_protein_coding
+from gwaslab.bd_common_data import gtf_to_all_gene
 from gwaslab.bd_download import check_and_download
 from gwaslab.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.qc_fix_sumstats import check_dataframe_shape
@@ -38,6 +39,7 @@ def getsig(insumstats,
            wc_correction=False,
            build="19",
            source="ensembl",
+           gtf_path=None,
            verbose=True):
     """
     Extract the lead variants using a sliding window. P or MLOG10P will be used and converted to SCALEDP for sorting. 
@@ -172,6 +174,7 @@ def getsig(insumstats,
                xymt=xymt,
                build=build,
                source=source,
+               gtf_path=gtf_path,
                verbose=verbose)
         
     # drop internal id
@@ -253,6 +256,7 @@ def annogene(
            xymt=["X","Y","MT"],
            build="19",
            source="ensembl",
+           gtf_path=None,
            verbose=True):
     
     log.write("Start to annotate variants with nearest gene name(s)...", verbose=verbose)
@@ -267,8 +271,13 @@ def annogene(
             #| gzip >Homo_sapiens.GRCh37.75.processed.chr.gtf.gz     
             
             #gtf_path = check_and_download("ensembl_hg19_gtf_protein_coding")
-            gtf_path = check_and_download("ensembl_hg19_gtf")
-            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            if gtf_path is None:
+                gtf_path = check_and_download("ensembl_hg19_gtf")
+                gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            else:
+                log.write(" -Using user-provided gtf:{}".format(gtf_path))
+                gtf_path = gtf_to_all_gene(gtf_path,log=log,verbose=verbose)
+
             gtf_db_path = gtf_path[:-2]+"db"
             
             data = Genome(
@@ -283,8 +292,13 @@ def annogene(
         elif build=="38":
             log.write(" -Assigning Gene name using ensembl_hg38_gtf for protein coding genes", verbose=verbose)
             #gtf_path = check_and_download("ensembl_hg38_gtf_protein_coding")
-            gtf_path = check_and_download("ensembl_hg38_gtf")
-            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            if gtf_path is None:
+                gtf_path = check_and_download("ensembl_hg38_gtf")
+                gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            else:
+                log.write(" -Using user-provided gtf:{}".format(gtf_path))
+                gtf_path = gtf_to_all_gene(gtf_path,log=log,verbose=verbose)
+            
             gtf_db_path = gtf_path[:-2]+"db"
             data = Genome(
                 reference_name='GRCh38',
@@ -300,8 +314,13 @@ def annogene(
         if build=="19":
             log.write(" -Assigning Gene name using NCBI refseq latest GRCh37 for protein coding genes", verbose=verbose)
             #gtf_path = check_and_download("refseq_hg19_gtf_protein_coding")
-            gtf_path = check_and_download("refseq_hg19_gtf")
-            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            if gtf_path is None:
+                gtf_path = check_and_download("refseq_hg19_gtf")
+                gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            else:
+                log.write(" -Using user-provided gtf:{}".format(gtf_path))
+                gtf_path = gtf_to_all_gene(gtf_path,log=log,verbose=verbose)
+            
             gtf_db_path = gtf_path[:-2]+"db"
             data = Genome(
                 reference_name='GRCh37',
@@ -315,8 +334,13 @@ def annogene(
         elif build=="38":
             log.write(" -Assigning Gene name using NCBI refseq latest GRCh38 for protein coding genes", verbose=verbose)
             #gtf_path = check_and_download("refseq_hg38_gtf_protein_coding")
-            gtf_path = check_and_download("refseq_hg38_gtf")
-            gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            if gtf_path is None:
+                gtf_path = check_and_download("refseq_hg38_gtf")
+                gtf_path = gtf_to_protein_coding(gtf_path,log=log,verbose=verbose)
+            else:
+                log.write(" -Using user-provided gtf:{}".format(gtf_path))
+                gtf_path = gtf_to_all_gene(gtf_path,log=log,verbose=verbose)
+            
             gtf_db_path = gtf_path[:-2]+"db"
             data = Genome(
                 reference_name='GRCh38',

@@ -298,6 +298,28 @@ def gtf_to_protein_coding(gtfpath,log=Log(),verbose=True):
 
     return protein_coding_path
 
+def gtf_to_all_gene(gtfpath,log=Log(),verbose=True):
+    all_gene_path = gtfpath[:-6]+"all_genes.gtf.gz"
+    # if not existing, extract protein coding records and output to a new file
+    if not path.isfile(all_gene_path):
+        
+        # get gene list
+        log.write(" - Extracting genes from {}".format(gtfpath),verbose=verbose)
+        gtf = read_gtf(gtfpath,usecols=["feature","gene_biotype","gene_id","gene_name"])
+        gene_list = gtf.loc[gtf["feature"]=="gene","gene_id"].values
+        log.write(" - Loaded {} genes.".format(len(gene_list)),verbose=verbose)
+        
+        # extract entry using csv
+        gtf_raw = pd.read_csv(gtfpath,sep="\t",header=None,comment="#",dtype="string")
+        gtf_raw["_gene_id"] = gtf_raw[8].str.extract(r'gene_id "([\w\.-]+)"')
+        gtf_raw = gtf_raw.loc[ gtf_raw["_gene_id"].isin(gene_list) ,:]
+        gtf_raw = gtf_raw.drop("_gene_id",axis=1)
+        
+        log.write(" - Extracted records are saved to : {} ".format(all_gene_path),verbose=verbose)
+        gtf_raw.to_csv(all_gene_path, header=None, index=None, sep="\t")
+
+    return all_gene_path
+
 ####################################################################################################################   
 # From BioPython: https://github.com/biopython/biopython/blob/c5a6b1374267d769b19c1022b4b45472316e78b4/Bio/Seq.py#L36
 def _maketrans(complement_mapping):

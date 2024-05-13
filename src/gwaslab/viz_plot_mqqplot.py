@@ -133,6 +133,7 @@ def mqqplot(insumstats,
           anno_style="right",
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
+          anno_gtf_path=None,
           anno_adjust=False,
           anno_max_iter=100,
           arm_offset=50,
@@ -816,6 +817,7 @@ def mqqplot(insumstats,
                                    log=log,
                                    build=build,
                                    source=anno_source,
+                                   gtf_path=anno_gtf_path,
                                    verbose=verbose).rename(columns={"GENE":"Annotation"})
         log.write("Finished extracting variants for annotation...",verbose=verbose)
 
