@@ -7,7 +7,7 @@ For post-GWAS analyses, we often exclude HLA region due to its complexity of LD.
 
 In gwaslab, `exclude_hla` is designed to remove variants in the extended MHC (xMHC) region.
 
-From a practical point of view, by default, `exclude_hla` will remove variants in chr6:25mb~34mb (for both hg18 and hg19).
+From a practical point of view, by default, `exclude_hla` will remove variants in chr6:25mb~34mb (for both hg38 and hg19).
 
 ## xMHC region : HIST1H2AA ~ 7.6mb ~ RPL12P1
 
