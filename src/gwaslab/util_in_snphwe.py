@@ -55,4 +55,4 @@ def snphwe(obs_hets, obs_hom1, obs_hom2):
         if p <= target :
             p_hwe += p / sum_p  
     
-    return p_hwe
+    return min(p_hwe,1)
