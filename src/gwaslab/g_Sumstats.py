@@ -121,6 +121,7 @@ class Sumstats():
              snpr2=None,
              status=None,
              other=[],
+             usekeys=None,
              direction=None,
              verbose=True,
              study="Study_1",
@@ -200,6 +201,7 @@ class Sumstats():
           trait=trait,
           status=status,
           other=other,
+          usekeys=usekeys,
           verbose=verbose,
           readargs=readargs,
           log=self.log)

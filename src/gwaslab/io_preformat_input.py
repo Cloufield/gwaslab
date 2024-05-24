@@ -55,6 +55,7 @@ def preformat(sumstats,
           trait=None,
           build=None,
           other=[],
+          usekeys=None,
           verbose=False,
           readargs=None,
           log=None):
@@ -276,6 +277,22 @@ def preformat(sumstats,
         else:
             study = raw_cols[9]
             usecols =  usecols + [study]
+
+    if usekeys is not None:
+        
+        usecols_new =[]
+        
+        for i in usekeys:
+            for k, v in rename_dictionary.items():
+                if i == v:
+                    usecols_new.append(k)
+        
+        usecols_valid =[]
+        
+        for i in usecols_new:
+            if i in usecols:
+                usecols_valid.append(i)
+        usecols = usecols_valid
  #loading data ##########################################################################################################
     
     try:
