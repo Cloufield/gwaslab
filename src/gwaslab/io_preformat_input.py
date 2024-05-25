@@ -66,6 +66,11 @@ def preformat(sumstats,
     dtype_dictionary ={}    
     
  #######################################################################################################################################################
+    # workflow: 
+    # 1. formatbook
+    # 2. user specified header
+    # 3. usekeys
+    
     if fmt is not None:
         # loading format parameters
         log.write("Start to load format from formatbook....",verbose=verbose)
@@ -130,6 +135,8 @@ def preformat(sumstats,
         
         ################################################
         for key,value in rename_dictionary.items():
+            # check avaiable keys  key->raw header
+            # usecols : a list of raw headers to load from file/DataFrame 
             if key in raw_cols:
                 usecols.append(key)
             if value in ["EA","NEA"]:
@@ -138,7 +145,7 @@ def preformat(sumstats,
                 dtype_dictionary[value]="string"     
     
     except ValueError:
-        raise ValueError("Please input a path or a pd.DataFrame, and make sure the columns you specified are in the file.")
+        raise ValueError("Please input a path or a pd.DataFrame, and make sure the separator is correct and the columns you specified are in the file.")
         
     ###################################################################################################################################################
     ## check columns/datatype to use 
@@ -279,16 +286,13 @@ def preformat(sumstats,
             usecols =  usecols + [study]
 
     if usekeys is not None:
-        
+    # extract only specified keys
         usecols_new =[]
-        
         for i in usekeys:
             for k, v in rename_dictionary.items():
                 if i == v:
                     usecols_new.append(k)
-        
         usecols_valid =[]
-        
         for i in usecols_new:
             if i in usecols:
                 usecols_valid.append(i)
