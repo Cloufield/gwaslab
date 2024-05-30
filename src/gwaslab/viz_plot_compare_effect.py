@@ -75,7 +75,10 @@ def compare_effect(path1,
     if scaled == True:
         scaled1 = True
         scaled2 = True
-    
+    if is_q_mc=="fdr" or is_q_mc=="bon":
+        is_q = True
+    else:
+        raise ValueError("Please select either fdr or bon for is_q_mc.")
     if save_args is None:
         save_args = {"dpi":300,"facecolor":"white"}
     if reg_box is None:
