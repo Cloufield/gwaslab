@@ -37,6 +37,7 @@ from gwaslab.io_to_pickle import load_data_from_pickle
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.viz_aux_save_figure import save_figure
 from gwaslab.viz_plot_mqqplot import mqqplot
+import matplotlib.patches as patches
 
 def plot_stacked_mqq(objects,
                         vcfs=None,
@@ -46,6 +47,7 @@ def plot_stacked_mqq(objects,
                         titles= None,
                         title_pos=None,
                         title_args=None,
+                        #title_box = None,
                         gtf=None,
                         gene_track_height=0.5,
                         fig_args=None,
@@ -72,10 +74,7 @@ def plot_stacked_mqq(objects,
         fig_args = {"dpi":200}
     if region_lead_grid_line is None:
         region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
-    if title_pos is None:
-        title_pos = [0.01,0.97]
-    if title_args is None:
-        title_args = {}
+
     
     # create figure and axes ##################################################################################################################
     if mode=="r":
@@ -184,10 +183,40 @@ def plot_stacked_mqq(objects,
     # drop labels for each plot 
     # set a common laebl for all plots
 
-    
-    if titles is not None:
+    #if title_box is None:
+    #    title_box = dict(boxstyle='square', facecolor='white', alpha=1.0, edgecolor="black")
+    #    title_box = {}
+
+    if title_args is None:
+        title_args = {}   
+    if titles is not None and mode=="r":    
+        if title_pos is None:
+            title_pos = [0.01,0.01]
         for index,title in enumerate(titles):
-            axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',**title_args)
+            
+            current_text = axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='bottom',zorder=999999, **title_args)
+            r = fig.canvas.get_renderer()
+            bb = current_text.get_window_extent(renderer=r).transformed(axes[index].transAxes.inverted())
+            width = bb.width
+            height = bb.height
+
+            rect = patches.Rectangle((0.0,0.0),
+                            height=height + 0.02*2,
+                            width=width + 0.01*2, 
+                            transform=axes[index].transAxes,
+                            linewidth=1, 
+                            edgecolor='black', 
+                            facecolor='white',
+                            alpha=1.0,
+                            zorder=99998)
+            axes[index].add_patch(rect)
+            rect.set(zorder=99998) 
+    else:
+        if title_pos is None:
+            title_pos = [0.01,0.97]
+        for index,title in enumerate(titles):
+            axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_args)
+    
     ##########################################################################################################################################
     # draw the line for lead variants
     _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line)

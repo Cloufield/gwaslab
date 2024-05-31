@@ -365,6 +365,10 @@ def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, r
 
     rc = rc.loc[(rc["Position(bp)"]<region[2]) & (rc["Position(bp)"]>region[1]),:]
     ax4.plot(rc_track_offset+rc["Position(bp)"],rc["Rate(cM/Mb)"],color="#5858FF",zorder=1)
+    
+    ax1.set_zorder(ax4.get_zorder()+1)
+    ax1.patch.set_visible(False)
+    
     if rr_ylabel:
         ax4.set_ylabel("Recombination rate(cM/Mb)")
     if rr_lim!="max":
