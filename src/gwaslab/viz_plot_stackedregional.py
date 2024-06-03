@@ -178,7 +178,12 @@ def plot_stacked_mqq(objects,
                             **mqq_args_for_each_plot[index]
                             )
             lead_variants_is[index] = (lead_i,lead_i2)
-    
+
+    if region_chromatin == True and mode=="r":
+        fig = _plot_chromatin_state(region_chromatin_files = region_chromatin_files, 
+                                         region = region, 
+                                         fig = fig, 
+                                         ax = axes[-2])    
     # adjust labels
     # drop labels for each plot 
     # set a common laebl for all plots
@@ -237,7 +242,9 @@ def _drop_old_y_labels(axes, n_plot):
     for index in range(n_plot):
         axes[index].set_ylabel("")
 
-def _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line):
+def _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line,region_chromatin=False):
+    if region_chromatin == True:
+        n_plot +=1
     if mode=="r":
         for index, sig_is in lead_variants_is.items():
             for sig_i in sig_is:
