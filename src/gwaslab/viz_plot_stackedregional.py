@@ -22,6 +22,7 @@ from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_recombination_rate
 from gwaslab.bd_common_data import get_gtf
 from gwaslab.viz_aux_reposition_text import adjust_text_position
+from gwaslab.viz_aux_chromatin import _plot_chromatin_state
 from gwaslab.viz_aux_quickfix import _quick_fix
 from gwaslab.viz_aux_quickfix import _get_largenumber
 from gwaslab.viz_aux_quickfix import _quick_add_tchrpos
@@ -44,6 +45,9 @@ def plot_stacked_mqq(objects,
                         mode="r",
                         mqqratio=3,
                         region=None,
+                        region_chromatin_height=0.1,
+                        region_chromatin_files = None,
+                        region_chromatin_labels= None,
                         titles= None,
                         title_pos=None,
                         title_args=None,
@@ -74,8 +78,11 @@ def plot_stacked_mqq(objects,
         fig_args = {"dpi":200}
     if region_lead_grid_line is None:
         region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
-
-    
+    if region_chromatin_files is None:
+        region_chromatin_files = []
+        region_chromatin_height = len(region_chromatin_files) * region_chromatin_height
+    if region_chromatin_labels is None:
+        region_chromatin_labels = []
     # create figure and axes ##################################################################################################################
     if mode=="r":
         if len(vcfs)==1:
@@ -83,9 +90,15 @@ def plot_stacked_mqq(objects,
         n_plot = len(sumstats_list)
         n_plot_plus_gene_track = n_plot + 1
 
+        if len(region_chromatin_files)>0 and mode=="r":
+            height_ratios = [1 for i in range(n_plot_plus_gene_track-1)]+[region_chromatin_height]+[gene_track_height]
+            n_plot_plus_gene_track +=1
+        else:
+            height_ratios = [1 for i in range(n_plot_plus_gene_track-1)]+[gene_track_height]
+        
         fig_args["figsize"] = [16,subplot_height*n_plot_plus_gene_track]
         fig, axes = plt.subplots(n_plot_plus_gene_track, 1, sharex=True, 
-                             gridspec_kw={'height_ratios': [1 for i in range(n_plot_plus_gene_track-1)]+[gene_track_height]},
+                             gridspec_kw={'height_ratios': height_ratios},
                              **fig_args)
         plt.subplots_adjust(hspace=region_hspace)
     elif mode=="m":
@@ -179,11 +192,16 @@ def plot_stacked_mqq(objects,
                             )
             lead_variants_is[index] = (lead_i,lead_i2)
 
-    if region_chromatin == True and mode=="r":
-        fig = _plot_chromatin_state(region_chromatin_files = region_chromatin_files, 
+    if len(region_chromatin_files)>0 and mode=="r":
+        xlim_i = axes[-1].get_xlim()
+        fig = _plot_chromatin_state(     region_chromatin_files = region_chromatin_files, 
+                                         region_chromatin_labels = region_chromatin_labels,
                                          region = region, 
                                          fig = fig, 
-                                         ax = axes[-2])    
+                                         ax = axes[-2],
+                                         xlim_i=xlim_i,
+                                         log=log,
+                                         verbose=verbose)    
     # adjust labels
     # drop labels for each plot 
     # set a common laebl for all plots
@@ -224,7 +242,7 @@ def plot_stacked_mqq(objects,
     
     ##########################################################################################################################################
     # draw the line for lead variants
-    _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line)
+    _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line,region_chromatin_files)
     
     ##########################################################################################################################################  
     _drop_old_y_labels(axes, n_plot)
@@ -242,14 +260,16 @@ def _drop_old_y_labels(axes, n_plot):
     for index in range(n_plot):
         axes[index].set_ylabel("")
 
-def _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line,region_chromatin=False):
-    if region_chromatin == True:
-        n_plot +=1
+def _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line,region_chromatin_files):
+    if len(region_chromatin_files)>0:
+        n_plot_and_track = n_plot+2
+    else:
+        n_plot_and_track = n_plot+1
     if mode=="r":
         for index, sig_is in lead_variants_is.items():
             for sig_i in sig_is:
                 if sig_i is not None:
-                    for each_axis_index in range(n_plot + 1):    
+                    for each_axis_index in range(n_plot_and_track):    
                         axes[each_axis_index].axvline(x=sig_i, zorder=2,**region_lead_grid_line)
 
 def _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ):
