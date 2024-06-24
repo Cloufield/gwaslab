@@ -1,23 +1,25 @@
 # Update Logs
 
+## 3.4.6 20240624
+- added version requirements for numpy (<2) and matplotlib (<3.9)
+
 ## 3.4.45 20240509
-- changed python version requiremnents to >=3.9, <3.11
+- changed python version requirements to >=3.9, <3.11
 - updated the version of pysam to v0.22.1
 - fixed bug for status code when flipping statistics
-
 
 ## 3.4.44 20240424
 - fixed bug when POS > sequence length for check_ref()
 - vectorized normalize_allele() 
 
 ## 3.4.43 20240403
-- [Added cache to speedup strand inference](https://github.com/Cloufield/gwaslab/pull/86) (credit to @sup3rgiu Mr. Andrea)
+- [Added cache to speed up strand inference](https://github.com/Cloufield/gwaslab/pull/86) (credit to @sup3rgiu Mr. Andrea)
 - fixed error for .plot_mqq(m="qq")
 - Added h5py==3.10.0 to dependencies.
 
 ## 3.4.42 20240328
 - fast implementation of check_ref and to_format. (credit to @sup3rgiu Mr. Andrea)
-- added highligh and pinpoint for plot_trumpet()
+- added highlight and pinpoint for plot_trumpet()
 - fixed typo (credit to @sup3rgiu Mr. Andrea)
 - changed `**args` to `**kwargs` (credit to @sup3rgiu Mr. Andrea)
 - implemented munge-like filters `munge=True`  for ldsc in gwaslab
@@ -26,7 +28,7 @@
 - fixed error in region_ref_second
 
 ## 3.4.40 20240215
-- fixed color issue for regional plots. The color assigned to each variants is actually the color for the lower LD r2 category. For example, variants with LD>0.8 will be colored with the color for 0.8>LD>0.6.
+- fixed color issue for regional plots. The color assigned to each variant is actually the color for the lower LD r2 category. For example, variants with LD>0.8 will be colored with the color for 0.8>LD>0.6.
 - integrated LDSC (partitioned h2/h2-cts)
 - added wc_correction for get_lead()
 - updated log
