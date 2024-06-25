@@ -17,6 +17,8 @@ def tofinemapping(sumstats,
                   vcf=None, 
                   loci=None,
                   out="./",
+                  plink="plink",
+                  plink2="plink2",
                   windowsizekb=1000,
                   n_cores=1, 
                   mode="r",
@@ -56,6 +58,9 @@ def tofinemapping(sumstats,
     else:
         sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
     
+    log.write(" -plink1.9 path: {}".format(plink),verbose=verbose)
+    log.write(" -plink2 path: {}".format(plink2),verbose=verbose)
+
     # Drop duplicate!!!!
     log.write(" -Dropping duplicated SNPIDs...",verbose=verbose)
     sumstats = sumstats.drop_duplicates(subset=["SNPID"]).copy()
@@ -68,11 +73,13 @@ def tofinemapping(sumstats,
     if exclude_hla==True:
         sig_df = _exclude_hla(sig_df, log=log, verbose=verbose)
     
+    sig_df = sig_df.reset_index()
+    
     ## for each lead variant 
     for index, row in sig_df.iterrows():
         # extract snplist in each locus
         gc.collect()
-
+        log.write(" -Locus #{}---------------------------------------------------------------".format(index+1))
         log.write(" -Processing locus with lead variant {} at CHR {} POS {} ...".format(row["SNPID"],row["CHR"],row["POS"]))
         locus_sumstats = _extract_variants_in_locus(sumstats, windowsizekb, locus = (row["CHR"],row["POS"]))
         
@@ -84,7 +91,10 @@ def tofinemapping(sumstats,
                                                                     n_cores=n_cores, 
                                                                     log=log,
                                                                     load_bim=True,
-                                                                    overwrite=overwrite,**kwargs)
+                                                                    overwrite=overwrite,
+                                                                    plink=plink,
+                                                                    plink2=plink2,
+                                                                    **kwargs)
 
         ## check available snps with reference file
         matched_sumstats = _align_sumstats_with_bim(row=row, 
@@ -114,7 +124,10 @@ def tofinemapping(sumstats,
                                                             windowsizekb=windowsizekb,
                                                             out=out,
                                                             plink_log=plink_log,
-                                                            log=log,filetype=filetype,
+                                                            log=log,
+                                                            filetype=filetype,
+                                                            plink=plink,
+                                                            plink2=plink2,
                                                             verbose=verbose)
     
     
@@ -143,12 +156,12 @@ def tofinemapping(sumstats,
 
 
 
-def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype,verbose=True):
+def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype,plink,plink2,verbose=True):
     '''
     Calculate LD r matrix by calling PLINK; return file name and log
     '''
     log.write(" -Start to calculate LD r matrix...",verbose=verbose)
-    log = _checking_plink_version(v=1, log=log)
+    log = _checking_plink_version(plink=plink, log=log)
     if "@" in bfile_prefix:
         bfile_to_use = bfile_prefix.replace("@",str(row["CHR"]))
     else:
@@ -165,7 +178,7 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
             raise ValueError("Please use bfile instead of pfile for PLINK1.")
         
         script_vcf_to_bfile = """
-        plink \
+        {} \
             --bfile {} \
             --keep-allele-order \
             --extract {} \
@@ -175,7 +188,7 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
             --threads {} {}\
             --write-snplist \
             --out {}
-        """.format(bfile_to_use, snplist_path , row["CHR"], mode, n_cores, memory_flag if memory is not None else "", output_prefix)
+        """.format(plink, bfile_to_use, snplist_path , row["CHR"], mode, n_cores, memory_flag if memory is not None else "", output_prefix)
 
         try:
             output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)

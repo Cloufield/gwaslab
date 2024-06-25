@@ -20,7 +20,9 @@ def _process_plink_input_files(chrlist,
                                bgen_mode="ref-first", 
                                convert="bfile", 
                                memory=None, 
-                               load_bim=False):
+                               load_bim=False,
+                               plink="plink",
+                               plink2="plink2"):
     """
     Process input files (bfile,pfile,vcf,bgen) to either PLINK1 bed/bim/fam or PLINK2 pgen/psam/pvar. 
     
@@ -66,7 +68,9 @@ def _process_plink_input_files(chrlist,
                                                             convert=convert, 
                                                             memory=memory, 
                                                             overwrite=overwrite, 
-                                                            load_bim=load_bim)
+                                                            load_bim=load_bim,
+                                                            plink=plink,
+                                                            plink2=plink2)
         filetype = convert
     elif filetype == "bgen": 
         ref_file_prefix, plink_log, ref_bims = _process_bgen(ref_file_prefix=ref_file_prefix, 
@@ -81,7 +85,9 @@ def _process_plink_input_files(chrlist,
                                                             convert=convert, 
                                                             memory=memory, 
                                                             overwrite=overwrite, 
-                                                            load_bim=load_bim)
+                                                            load_bim=load_bim,
+                                                            plink=plink,
+                                                            plink2=plink2)
         filetype = convert
     return ref_file_prefix, plink_log, ref_bims, filetype
 
@@ -199,11 +205,13 @@ def _process_vcf(ref_file_prefix,
                  convert="bfile", 
                  memory=None, 
                  overwrite=False, 
-                 load_bim=False):
+                 load_bim=False,
+                 plink="plink",
+                 plink2="plink2"):
     log.write(" -Processing VCF : {}...".format(ref_file_prefix))
     
     #check plink version
-    log = _checking_plink_version(v=2,log=log)
+    log = _checking_plink_version(plink2=plink2,log=log)
     
     # file path prefix to return
     if is_wild_card==True:
@@ -243,14 +251,15 @@ def _process_vcf(ref_file_prefix,
         #if not existing or overwrite is True
         if (not is_file_exist) or overwrite:
             script_vcf_to_bfile = """
-            plink2 \
+            {} \
                 --vcf {} \
                 --chr {} \
                 {} \
                 --rm-dup force-first \
                 --threads {}{}\
                 --out {}
-            """.format(vcf_to_load, 
+            """.format(plink2,
+                        vcf_to_load, 
                        i, 
                        make_flag,
                        n_cores, memory_flag,
@@ -288,11 +297,13 @@ def _process_bgen(ref_file_prefix,
                   convert="bfile", 
                   memory=None, 
                   overwrite=False, 
-                  load_bim=False):
+                  load_bim=False,
+                  plink="plink",
+                 plink2="plink2"):
     log.write(" -Processing BGEN files : {}...".format(ref_file_prefix))
     
     #check plink version
-    log = _checking_plink_version(v=2,log=log)
+    log = _checking_plink_version(log=log,plink2=plink2)
     
     # file path prefix to return
     if is_wild_card==True:
@@ -338,14 +349,14 @@ def _process_bgen(ref_file_prefix,
         #if not existing or overwrite is True
         if (not is_file_exist) or overwrite:
             script_vcf_to_bfile = """
-            plink2 \
+            {} \
                 --bgen {} {} {}\
                 --chr {} \
                 {} \
                 --rm-dup force-first \
                 --threads {}{}\
                 --out {}
-            """.format(bgen_to_load, bgen_mode, sample_flag,
+            """.format(plink2,bgen_to_load, bgen_mode, sample_flag,
                        i, 
                        make_flag,
                        n_cores, memory_flag,

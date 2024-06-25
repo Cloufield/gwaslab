@@ -20,11 +20,11 @@ def gwaslab_info():
     }
     return dic   
 
-def _checking_plink_version(v=2,log=Log(), verbose=True):
-    if v==1:
-        which_plink_script = "plink --version"
-    elif v==2:
-        which_plink_script = "plink2 --version" 
+def _checking_plink_version(plink=None,plink2=None,log=Log(), verbose=True):
+    if plink is not None:
+        which_plink_script = "{} --version".format(plink)
+    elif plink2 is not None:
+        which_plink_script = "{}  --version".format(plink2)
     output = subprocess.check_output(which_plink_script, stderr=subprocess.STDOUT, shell=True,text=True)
     log.write(" -PLINK version: {}".format(output.strip()))
     return log

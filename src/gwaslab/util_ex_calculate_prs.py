@@ -18,6 +18,8 @@ def _calculate_prs(sumstats,
           memory=None, 
           overwrite=False,
           mode=None,delete=True,
+          plink="plink",
+          plink2="plink2",
           log=Log(),**kwargs):
     
     #matching_alleles
@@ -30,14 +32,18 @@ def _calculate_prs(sumstats,
         chrlist.sort()
         plink_log = ""
         #process reference fileWWW
-        bfile_prefix, plink_log, ref_bim, filetype = _process_plink_input_files(  chrlist=chrlist,
+        bfile_prefix, plink_log, ref_bim, filetype = _process_plink_input_files(  
+                                                                    chrlist=chrlist,
                                                                     bfile=bfile, 
                                                                     vcf=vcf, 
                                                                     plink_log=plink_log,
                                                                     n_cores=n_cores, 
                                                                     log=log,
                                                                     load_bim=False,
-                                                                    overwrite=overwrite,**kwargs)
+                                                                    overwrite=overwrite,
+                                                                    plink=plink,
+                                                                    plink2=plink2,
+                                                                    **kwargs)
         score_file_path_list =[]
         for index, chrom in enumerate(chrlist): 
             chr_sumstats = sumstats.loc[sumstats["CHR"]==chrom,:].copy()
@@ -61,7 +67,7 @@ def _calculate_prs(sumstats,
                                plink_log=plink_log, 
                                log=log, 
                                memory=memory, 
-                               mode=mode,filetype=filetype)
+                               mode=mode,filetype=filetype,plink2=plink2)
             score_file_path_list.append(score_file_path)
             if delete == True:
                 os.remove(model_path)
@@ -71,10 +77,10 @@ def _calculate_prs(sumstats,
 
 
 
-def _run_calculate_prs(study, chrom , model_path, bfile_prefix, n_cores, out, plink_log, log, memory,filetype, mode=None):
+def _run_calculate_prs(study, chrom , model_path, bfile_prefix, n_cores, out, plink_log, log, memory,filetype, plink2,mode=None):
     
     log.write(" -Start to calculate PRS for Chr {}...".format(chrom))
-    _checking_plink_version(v=2, log=log)
+    _checking_plink_version(plink2=plink2, log=log)
     
     if "@" in bfile_prefix:
         bpfile_to_use = bfile_prefix.replace("@",str(chrom))
@@ -92,13 +98,13 @@ def _run_calculate_prs(study, chrom , model_path, bfile_prefix, n_cores, out, pl
         memory_flag = "--memory {}".format(memory)
     
     script_vcf_to_bfile = """
-    plink2 \
+    {} \
         {} \
         --score {} 1 2 3 header {} cols=+scoresums,+denom ignore-dup-ids \
         --chr {} \
         --threads {} {}\
         --out {}
-    """.format(file_flag, model_path ,  mode if mode is not None else "", chrom, n_cores, memory_flag if memory is not None else "", output_prefix)
+    """.format(plink2, file_flag, model_path ,  mode if mode is not None else "", chrom, n_cores, memory_flag if memory is not None else "", output_prefix)
 
     try:
         output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
