@@ -212,8 +212,10 @@ def tofmt(sumstats,
     log.write(" -Start outputting sumstats in "+fmt+" format...")
     
     if "CHR" in sumstats.columns:
+        # output X,Y,MT instead of 23,24,25
         if xymt_number is False and pd.api.types.is_integer_dtype(sumstats["CHR"]):
             sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt,prefix=chr_prefix))
+        # add prefix to CHR
         elif chr_prefix is not None:
             sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
 
@@ -437,17 +439,20 @@ def _configure_output_cols_and_args(sumstats, rename_dictionary, cols, no_status
             ouput_cols.append(i)  
     
     # + additional cols and remove duplicated
-    ouput_cols = list(set(ouput_cols + cols)) 
+    ouput_cols_final = []
+    for i in ouput_cols + cols:
+        if i not in ouput_cols_final:
+            ouput_cols_final.append(i)
     
     # remove STATUS
     try:
         if no_status == True:
-            ouput_cols.remove("STATUS")
+            ouput_cols_final.remove("STATUS")
     except:
         pass
     
     #filter and rename to target fromat headers
-    sumstats = sumstats[ouput_cols]
+    sumstats = sumstats[ouput_cols_final]
     sumstats = sumstats.rename(columns=rename_dictionary) 
 
     # configure target format args and reorder columns
