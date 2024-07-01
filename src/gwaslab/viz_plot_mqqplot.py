@@ -242,7 +242,8 @@ def mqqplot(insumstats,
     if colors is None:
         colors=["#597FBD","#74BAD3"]
     if region is not None:
-        marker_size=(35,55)
+        if marker_size == (5,20):
+            marker_size=(45,65)
     # make region_ref a list of ref variants
     if pd.api.types.is_list_like(region_ref):
         if len(region_ref) == 0 :
