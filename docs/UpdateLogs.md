@@ -1,6 +1,9 @@
 # Update Logs
 
-## 3.4.6 20240624
+## 3.4.47 202407
+- updated stacked regional plot
+
+## 3.4.46 20240624
 - added version requirements for numpy (<2) and matplotlib (<3.9)
 
 ## 3.4.45 20240509

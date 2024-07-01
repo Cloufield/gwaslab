@@ -241,23 +241,25 @@ def mqqplot(insumstats,
         anno_args=dict()
     if colors is None:
         colors=["#597FBD","#74BAD3"]
+    
     if region is not None:
         if marker_size == (5,20):
             marker_size=(45,65)
+    
     # make region_ref a list of ref variants
     if pd.api.types.is_list_like(region_ref):
         if len(region_ref) == 0 :
             region_ref.append(None)
             if region_ref_second is not None:
-                region_ref.append(regiion_ref_second)
+                region_ref.append(region_ref_second)
     else:
         region_ref = [region_ref]
         if region_ref_second is not None:
-            region_ref.append(regiion_ref_second)
+            region_ref.append(region_ref_second)
     region_ref_index_dic = {value: index for index,value in enumerate(region_ref)}
         
     if region_marker_shapes is None:
-        region_marker_shapes = ['o', 's','^','D','*']
+        region_marker_shapes = ['o', 's','^','D','*','P','X','h','8']
     if region_grid_line is None:
         region_grid_line = {"linewidth": 2,"linestyle":"--"}
     if region_lead_grid_line is None:
@@ -267,7 +269,7 @@ def mqqplot(insumstats,
 
     if region_ld_colors is None:     
         region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
-    region_ld_colors_m = ["#E51819","#367EB7","green"]
+    region_ld_colors_m = ["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]
     
     if region_title_args is None:
         region_title_args = {"size":10}
