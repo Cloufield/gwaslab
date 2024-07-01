@@ -913,8 +913,8 @@ def mqqplot(insumstats,
         # regional plot cbar
         if cbar is not None:    
             cbar = _process_cbar(cbar, 
-                                 cbar_fontsize=fontsize, 
-                                 cbar_font_family=font_family, 
+                                 cbar_fontsize=cbar_fontsize, 
+                                 cbar_font_family=cbar_font_family, 
                                  cbar_title=cbar_title, 
                                  log=log, 
                                  verbose=verbose)         
