@@ -23,8 +23,8 @@ from gwaslab.viz_aux_reposition_text import adjust_text_position
 from gwaslab.viz_aux_annotate_plot import annotate_single
 from gwaslab.viz_plot_qqplot import _plot_qq
 from gwaslab.hm_harmonize_sumstats import auto_check_vcf_chr_dict
-from gwaslab.viz_plot_regionalplot import _plot_regional
-from gwaslab.viz_plot_regionalplot import process_vcf
+from gwaslab.viz_plot_regional2 import _plot_regional
+from gwaslab.viz_plot_regional2 import process_vcf
 from gwaslab.viz_aux_quickfix import _get_largenumber
 from gwaslab.viz_aux_quickfix import _quick_fix_p_value
 from gwaslab.viz_aux_quickfix import _quick_fix_pos
@@ -51,6 +51,9 @@ from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_recombination_rate
 from gwaslab.bd_common_data import get_gtf
 from gwaslab.g_version import _get_version
+from matplotlib.colors import ListedColormap
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import to_hex
 # 20230202 ######################################################################################################
 
 def mqqplot(insumstats,            
@@ -98,13 +101,13 @@ def mqqplot(insumstats,
           region_ld_threshold = None,
           region_ld_legend = True,
           region_ld_colors = None,
-          region_ld_colors1 = None,
-          region_ld_colors2 = None,
+          region_ld_colors_m = None,
           region_recombination = True,
           region_protein_coding = True,
           region_flank_factor = 0.05,
           region_anno_bbox_args = None,
-          cbar_title='LD $r^{2}$',
+          region_marker_shapes=None,
+          cbar_title='LD $r^{2}$ with variant',
           cbar_fontsize = None,
           cbar_font_family = None,
           track_n=4,
@@ -238,20 +241,33 @@ def mqqplot(insumstats,
         anno_args=dict()
     if colors is None:
         colors=["#597FBD","#74BAD3"]
-    if region_ref2 is not None:
-        region_ref_second = copy.copy(region_ref2),
+    if region is not None:
+        marker_size=(35,55)
+    # make region_ref a list of ref variants
+    if pd.api.types.is_list_like(region_ref):
+        if len(region_ref) == 0 :
+            region_ref.append(None)
+            if region_ref_second is not None:
+                region_ref.append(regiion_ref_second)
+    else:
+        region_ref = [region_ref]
+        if region_ref_second is not None:
+            region_ref.append(regiion_ref_second)
+    region_ref_index_dic = {value: index for index,value in enumerate(region_ref)}
+        
+    if region_marker_shapes is None:
+        region_marker_shapes = ['o', 's','^','D','*']
     if region_grid_line is None:
         region_grid_line = {"linewidth": 2,"linestyle":"--"}
     if region_lead_grid_line is None:
         region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
     if region_ld_threshold is None:
         region_ld_threshold = [0.2,0.4,0.6,0.8]
+
     if region_ld_colors is None:     
         region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
-    if region_ld_colors1 is None:
-        region_ld_colors1 = ["#E4E4E4","#F8CFCF","#F5A2A5","#F17474","#EB4445","#E51819","#E51819"]
-    if region_ld_colors2 is None:
-        region_ld_colors2 = ["#E4E4E4","#D8E2F2","#AFCBE3","#86B3D4","#5D98C4","#367EB7","#367EB7"]
+    region_ld_colors_m = ["#E51819","#367EB7","green"]
+    
     if region_title_args is None:
         region_title_args = {"size":10}
     if cbar_fontsize is None:
@@ -353,6 +369,7 @@ def mqqplot(insumstats,
     lines_to_plot = -np.log10(lines_to_plot)
 
     vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log)
+    
 
 # Plotting mode selection : layout ####################################################################
     # ax1 : manhattanplot / brisbane plot
@@ -435,7 +452,7 @@ def mqqplot(insumstats,
         region_chr = region[0]
         region_start = region[1]
         region_end = region[2]
-        marker_size=(25,45)
+        
         log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region[1], region[2]),verbose=verbose)
         
         in_region_snp = (sumstats[chrom]==region_chr) & (sumstats[pos]<region_end) & (sumstats[pos]>region_start)
@@ -548,7 +565,6 @@ def mqqplot(insumstats,
                                vcf_path=vcf_path,
                                region=region, 
                                region_ref=region_ref, 
-                               region_ref_second=region_ref_second,
                                log=log ,
                                pos=pos,
                                ea=ea,
@@ -589,17 +605,27 @@ def mqqplot(insumstats,
         if vcf_path is not None:
             legend=None
             linewidth=1
-            palette = { i:region_ld_colors[i] for i in range(len(region_ld_colors))}
-            if region_ref_second is not None:
-                palette = {} 
-                for i in range(len(region_ld_colors)):
-                    palette[i]=region_ld_colors1[i]
-                    palette[100+i]=region_ld_colors2[i]
+            if len(region_ref) == 1:
+                palette = {100+i:region_ld_colors[i] for i in range(len(region_ld_colors))}
+            else:
+                palette = {}
+                region_color_maps = []
+                for group_index, colorgroup in enumerate(region_ld_colors_m):
+                    color_map_len = len(region_ld_threshold)+2   # default 6
+                    rgba = LinearSegmentedColormap.from_list("custom", ["white",colorgroup], color_map_len)(range(1,color_map_len)) # skip white
+                    output_hex_colors=[]
+                    for i in range(len(rgba)):
+                        output_hex_colors.append(to_hex(rgba[i]))
+                        # 1 + 5 + 1
+                        region_ld_colors_single = [region_ld_colors[0]] + output_hex_colors + [output_hex_colors[-1]]
+                    region_color_maps.append(region_ld_colors_single)
+                # gradient colors
+                for i, hex_colors in enumerate(region_color_maps):
+                    for j, hex_color in enumerate(hex_colors):
+                        palette[(i+1)*100 + j ] = hex_color
+
                 edgecolor="none"
-                if sumstats["SHAPE"].nunique() >1:
-                    scatter_args["markers"]=['o', 's']
-                else:
-                    scatter_args["markers"]=['o']
+                scatter_args["markers"]= region_marker_shapes[:len(region_ref)]
                 style="SHAPE"
                 
             
@@ -649,6 +675,7 @@ def mqqplot(insumstats,
         
         ## if not highlight    
         else:
+            ## density plot
             if density_color == True:
                 hue = "DENSITY_hue"
                 s = "DENSITY"
@@ -676,6 +703,7 @@ def mqqplot(insumstats,
                    linewidth=linewidth,
                    zorder=2,ax=ax1,edgecolor=edgecolor,**scatter_args)   
             else:
+                # major / regional
                 s = "s"
                 hue = 'chr_hue'
                 hue_norm=None
@@ -720,7 +748,7 @@ def mqqplot(insumstats,
         # if regional plot : pinpoint lead , add color bar ##################################################
         if (region is not None) and ("r" in mode):
             
-            ax1, ax3, ax4, cbar, lead_snp_i, lead_snp_i2 =_plot_regional(
+            ax1, ax3, ax4, cbar, lead_snp_is, lead_snp_is_color =_plot_regional(
                                 sumstats=sumstats,
                                 fig=fig,
                                 ax1=ax1,
@@ -744,8 +772,8 @@ def mqqplot(insumstats,
                                 rr_ylabel=rr_ylabel,
                                 mode=mode,
                                 region_step = region_step,
-                                region_ref=region_ref,
-                                region_ref_second=region_ref_second,
+                                region_ref = region_ref,
+                                region_ref_index_dic = region_ref_index_dic,
                                 region_grid = region_grid,
                                 region_grid_line = region_grid_line,
                                 region_lead_grid = region_lead_grid,
@@ -756,8 +784,8 @@ def mqqplot(insumstats,
                                 region_ld_legend = region_ld_legend,
                                 region_ld_threshold = region_ld_threshold,
                                 region_ld_colors = region_ld_colors,
-                                region_ld_colors1=region_ld_colors1,
-                                region_ld_colors2=region_ld_colors2,
+                                palette = palette,
+                                region_marker_shapes = region_marker_shapes,
                                 region_recombination = region_recombination,
                                 region_protein_coding=region_protein_coding,
                                 region_flank_factor =region_flank_factor,
@@ -771,8 +799,8 @@ def mqqplot(insumstats,
                             )
             
         else:
-            lead_snp_i= None
-            lead_snp_i2=None
+            lead_snp_is =[]
+            lead_snp_is_color = []
         
         log.write("Finished creating MQQ plot successfully!",verbose=verbose)
 
@@ -1021,7 +1049,7 @@ def mqqplot(insumstats,
     garbage_collect.collect()
     # Return matplotlib figure object #######################################################################################
     if _get_region_lead==True:
-        return fig, log, lead_snp_i, lead_snp_i2
+        return fig, log, lead_snp_is, lead_snp_is_color
     
     log.write("Finished creating plot successfully!",verbose=verbose)
     return fig, log
@@ -1271,15 +1299,19 @@ def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_
 
 def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title, log=Log(),verbose=True):
     log.write(" -Processing color bar...",verbose=verbose)
-    if type(cbar) == list:
-        for cbar_single in cbar:
-            cbar_yticklabels = cbar_single.ax.get_yticklabels()
-            cbar_single.ax.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
-            cbar_single.ax.set_title(cbar_title, fontsize=cbar_fontsize, family=cbar_font_family, loc="center",y=-0.2 )
-    else:
-        cbar_yticklabels = cbar.ax.get_yticklabels()
-        cbar.ax.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
-        cbar.ax.set_title(cbar_title, fontsize=cbar_fontsize, family=cbar_font_family, loc="center",y=-0.2 )
+    #if type(cbar) == list:
+    #    for cbar_single in cbar:
+    #        cbar_yticklabels = cbar_single.ax.get_yticklabels()
+    #        cbar_single.ax.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
+    #        cbar_single.ax.set_title(cbar_title, fontsize=cbar_fontsize, family=cbar_font_family, loc="center",y=-0.2 )
+    #else:
+    
+    cbar_yticklabels = cbar.get_yticklabels()
+    cbar.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
+    cbar_xticklabels = cbar.get_xticklabels()
+    cbar.set_xticklabels(cbar_xticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
+
+    cbar.set_title(cbar_title, fontsize=cbar_fontsize, family=cbar_font_family, loc="center", y=1.00 )
     return cbar
 
 def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family, log=Log(),verbose=True):

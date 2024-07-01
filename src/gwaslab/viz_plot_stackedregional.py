@@ -83,6 +83,11 @@ def plot_stacked_mqq(objects,
         region_chromatin_height = len(region_chromatin_files) * region_chromatin_height
     if region_chromatin_labels is None:
         region_chromatin_labels = []
+    if title_args is None:
+        title_args = {"family":"Arial"}
+    else:
+        if "family" not in title_args.keys():
+            title_args["family"] = "Arial"
     # create figure and axes ##################################################################################################################
     if mode=="r":
         if len(vcfs)==1:
@@ -131,6 +136,7 @@ def plot_stacked_mqq(objects,
     ##########################################################################################################################################
     # a dict to store lead variants of each plot
     lead_variants_is={}
+    lead_variants_is_color ={}
 
     ##########################################################################################################################################
     # plot manhattan plot
@@ -144,7 +150,7 @@ def plot_stacked_mqq(objects,
         #################################################################
         if index==0:
             # plot last m and gene track 
-            fig,log,lead_i,lead_i2 = mqqplot(sumstats,
+            fig,log,lead_snp_is,lead_snp_is_color = mqqplot(sumstats,
                             chrom="CHR",
                             pos="POS",
                             p="P",
@@ -165,10 +171,11 @@ def plot_stacked_mqq(objects,
                             log=log,
                             **mqq_args_for_each_plot[index]
                             )  
-            lead_variants_is[index] = (lead_i,lead_i2)
+            lead_variants_is[index] = lead_snp_is
+            lead_variants_is_color[index] = lead_snp_is_color
         else:
             # plot only the scatter plot
-            fig,log,lead_i,lead_i2 = mqqplot(sumstats,
+            fig,log,lead_snp_is,lead_snp_is_color = mqqplot(sumstats,
                             chrom="CHR",
                             pos="POS",
                             p="P",
@@ -190,8 +197,8 @@ def plot_stacked_mqq(objects,
                             log=log,
                             **mqq_args_for_each_plot[index]
                             )
-            lead_variants_is[index] = (lead_i,lead_i2)
-
+            lead_variants_is[index] = lead_snp_is
+            lead_variants_is_color[index] = lead_snp_is_color
     if len(region_chromatin_files)>0 and mode=="r":
         xlim_i = axes[-1].get_xlim()
         fig = _plot_chromatin_state(     region_chromatin_files = region_chromatin_files, 
@@ -210,39 +217,39 @@ def plot_stacked_mqq(objects,
     #    title_box = dict(boxstyle='square', facecolor='white', alpha=1.0, edgecolor="black")
     #    title_box = {}
 
-    if title_args is None:
-        title_args = {}   
-    if titles is not None and mode=="r":    
-        if title_pos is None:
-            title_pos = [0.01,0.01]
-        for index,title in enumerate(titles):
-            
-            current_text = axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='bottom',zorder=999999, **title_args)
-            r = fig.canvas.get_renderer()
-            bb = current_text.get_window_extent(renderer=r).transformed(axes[index].transAxes.inverted())
-            width = bb.width
-            height = bb.height
-
-            rect = patches.Rectangle((0.0,0.0),
-                            height=height + 0.02*2,
-                            width=width + 0.01*2, 
-                            transform=axes[index].transAxes,
-                            linewidth=1, 
-                            edgecolor='black', 
-                            facecolor='white',
-                            alpha=1.0,
-                            zorder=99998)
-            axes[index].add_patch(rect)
-            rect.set(zorder=99998) 
-    else:
-        if title_pos is None:
-            title_pos = [0.01,0.97]
-        for index,title in enumerate(titles):
-            axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_args)
+    #if title_args is None:
+    #    title_args = {}   
+    #if titles is not None and mode=="r":    
+    #    if title_pos is None:
+    #        title_pos = [0.01,0.99]
+    #    for index,title in enumerate(titles):
+    #        
+    #        current_text = axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_args)
+    #        r = fig.canvas.get_renderer()
+    #        bb = current_text.get_window_extent(renderer=r).transformed(axes[index].transAxes.inverted())
+    #        width = bb.width
+    #        height = bb.height
+#
+    #        rect = patches.Rectangle((0.0,1.0 - height),
+    #                        height=height + 0.02*2,
+    #                        width=width + 0.01*2, 
+    #                        transform=axes[index].transAxes,
+    #                        linewidth=1, 
+    #                        edgecolor='black', 
+    #                        facecolor='white',
+    #                        alpha=1.0,
+    #                        zorder=99998)
+    #        axes[index].add_patch(rect)
+    #        rect.set(zorder=99998) 
+    #else:
+    if title_pos is None:
+        title_pos = [0.01,0.97]
+    for index,title in enumerate(titles):
+        axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_args)
     
     ##########################################################################################################################################
     # draw the line for lead variants
-    _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line,region_chromatin_files)
+    _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_color, n_plot, axes, region_lead_grid_line,region_chromatin_files)
     
     ##########################################################################################################################################  
     _drop_old_y_labels(axes, n_plot)
@@ -260,14 +267,18 @@ def _drop_old_y_labels(axes, n_plot):
     for index in range(n_plot):
         axes[index].set_ylabel("")
 
-def _draw_grid_line_for_lead_variants(mode, lead_variants_is, n_plot, axes, region_lead_grid_line,region_chromatin_files):
+def _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_color, n_plot, axes, region_lead_grid_line,region_chromatin_files):
     if len(region_chromatin_files)>0:
         n_plot_and_track = n_plot+2
     else:
         n_plot_and_track = n_plot+1
     if mode=="r":
         for index, sig_is in lead_variants_is.items():
-            for sig_i in sig_is:
+            for j, sig_i in enumerate(sig_is):
+                try:
+                    region_lead_grid_line["color"]=lead_variants_is_color[index][j]
+                except:
+                    pass
                 if sig_i is not None:
                     for each_axis_index in range(n_plot_and_track):    
                         axes[each_axis_index].axvline(x=sig_i, zorder=2,**region_lead_grid_line)
