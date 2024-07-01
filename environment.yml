@@ -1,7 +1,6 @@
 name: gwaslab
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.8.16=h7a1cb2a_3
   - jupyter==1.0.0

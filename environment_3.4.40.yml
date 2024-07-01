@@ -1,7 +1,6 @@
 name: gwaslab_3.4.40
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - pip=24.0
   - python=3.9.18
