@@ -1,7 +1,9 @@
 # Update Logs
 
-## 3.4.47 202407
+## 3.4.47 20240703
 - updated stacked regional plot
+- supported user-provided plink path
+- fixed a bug in column order for `to_format()`
 
 ## 3.4.46 20240624
 - added version requirements for numpy (<2) and matplotlib (<3.9)

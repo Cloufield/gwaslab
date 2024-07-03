@@ -58,6 +58,8 @@ def plot_stacked_mqq(objects,
                         region_hspace=0.05,
                         subplot_height=4,
                         region_lead_grid_line=None,
+                        fontsize=9,
+                        font_family="Arial",
                         build="99", 
                         save=None,
                         save_args=None,
@@ -159,6 +161,8 @@ def plot_stacked_mqq(objects,
                             snpid="SNPID",
                             vcf_path=vcfs[index],
                             mode=mode,
+                            fontsize=fontsize,
+                            font_family=font_family,
                             region_lead_grid=False,
                             gtf_path="default",
                             rr_ylabel=False,
@@ -184,6 +188,8 @@ def plot_stacked_mqq(objects,
                             snpid="SNPID",
                             vcf_path=vcfs[index],
                             region_lead_grid=False,
+                            fontsize=fontsize,
+                            font_family=font_family,
                             mode=mode,
                             rr_ylabel=False,
                             region_ld_legend=False,
@@ -208,7 +214,9 @@ def plot_stacked_mqq(objects,
                                          ax = axes[-2],
                                          xlim_i=xlim_i,
                                          log=log,
-                                         verbose=verbose)    
+                                         verbose=verbose,
+                                         fontsize = fontsize,
+                                         font_family = font_family)    
     # adjust labels
     # drop labels for each plot 
     # set a common laebl for all plots
@@ -254,7 +262,7 @@ def plot_stacked_mqq(objects,
     ##########################################################################################################################################  
     _drop_old_y_labels(axes, n_plot)
     
-    _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height )
+    _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsize,font_family)
     
     ##########################################################################################################################################
     save_figure(fig = fig, save = save, keyword= "stacked_" + mode, save_args=save_args, log = log, verbose=verbose)
@@ -283,14 +291,14 @@ def _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_co
                     for each_axis_index in range(n_plot_and_track):    
                         axes[each_axis_index].axvline(x=sig_i, zorder=2,**region_lead_grid_line)
 
-def _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ):
+def _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsize,font_family):
     gene_track_height_ratio = gene_track_height/(gene_track_height + n_plot*subplot_height)
     ylabel_height = (1 - gene_track_height_ratio)*0.5 + gene_track_height_ratio
     if mode=="r":
-        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')
-        fig.text(0.93, ylabel_height, "Recombination rate(cM/Mb)", va='center', rotation=-90)
+        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical',fontsize=fontsize,family=font_family)
+        fig.text(0.93, ylabel_height, "Recombination rate(cM/Mb)", va='center', rotation=-90,fontsize=fontsize,family=font_family)
     elif mode=="m":
-        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical')    
+        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical',fontsize=fontsize,family=font_family)    
 
 def _sort_args(mqq_args, n_plot):
     mqq_args_for_each_plot={i:{} for i in range(n_plot)}

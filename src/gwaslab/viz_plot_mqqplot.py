@@ -259,6 +259,7 @@ def mqqplot(insumstats,
     region_ref_index_dic = {value: index for index,value in enumerate(region_ref)}
         
     if region_marker_shapes is None:
+        # 9 shapes
         region_marker_shapes = ['o', 's','^','D','*','P','X','h','8']
     if region_grid_line is None:
         region_grid_line = {"linewidth": 2,"linestyle":"--"}
@@ -269,6 +270,8 @@ def mqqplot(insumstats,
 
     if region_ld_colors is None:     
         region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
+    
+    # 7 colors    
     region_ld_colors_m = ["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]
     
     if region_title_args is None:

@@ -63,6 +63,8 @@ def _plot_chromatin_state(region_chromatin_files,
                           fig, 
                           ax,
                           xlim_i,
+                          fontsize = 12,
+                          font_family = "Arial",
                           log=Log(),
                           verbose=True):
     '''
@@ -101,11 +103,10 @@ def _plot_chromatin_state(region_chromatin_files,
     
     ## add stripe label
     if len(region_chromatin_labels) == len(region_chromatin_files):
-        ax.set_yticks([i*0.1 for i in range(len(region_chromatin_labels))], 
-                      region_chromatin_labels)
+        ax.set_yticks([i*0.1 for i in range(len(region_chromatin_labels))], region_chromatin_labels, fontsize=fontsize, family=font_family)
     else:
         ax.set_yticks(ticks=[])
     
-    ax.set_xticks(ticks=[])
+    #ax.set_xticks(ticks=[])
     ax.invert_yaxis()
     return fig
