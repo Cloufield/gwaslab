@@ -488,6 +488,24 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#3447-20240703" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.47 20240703
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3446-20240624" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.46 20240624
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#3445-20240509" class="md-nav__link">
     <span class="md-ellipsis">
       3.4.45 20240509
@@ -2518,6 +2536,24 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#3447-20240703" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.47 20240703
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3446-20240624" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.46 20240624
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#3445-20240509" class="md-nav__link">
     <span class="md-ellipsis">
       3.4.45 20240509
@@ -3190,9 +3226,19 @@
 
 
 <h1 id="update-logs">Update Logs</h1>
+<h2 id="3447-20240703">3.4.47 20240703</h2>
+<ul>
+<li>updated stacked regional plot</li>
+<li>supported user-provided plink path</li>
+<li>fixed a bug in column order for <code>to_format()</code></li>
+</ul>
+<h2 id="3446-20240624">3.4.46 20240624</h2>
+<ul>
+<li>added version requirements for numpy (&lt;2) and matplotlib (&lt;3.9)</li>
+</ul>
 <h2 id="3445-20240509">3.4.45 20240509</h2>
 <ul>
-<li>changed python version requiremnents to &gt;=3.9, &lt;3.11</li>
+<li>changed python version requirements to &gt;=3.9, &lt;3.11</li>
 <li>updated the version of pysam to v0.22.1</li>
 <li>fixed bug for status code when flipping statistics</li>
 </ul>
@@ -3203,14 +3249,14 @@
 </ul>
 <h2 id="3443-20240403">3.4.43 20240403</h2>
 <ul>
-<li><a href="https://github.com/Cloufield/gwaslab/pull/86">Added cache to speedup strand inference</a> (credit to @sup3rgiu Mr. Andrea)</li>
+<li><a href="https://github.com/Cloufield/gwaslab/pull/86">Added cache to speed up strand inference</a> (credit to @sup3rgiu Mr. Andrea)</li>
 <li>fixed error for .plot_mqq(m="qq")</li>
 <li>Added h5py==3.10.0 to dependencies.</li>
 </ul>
 <h2 id="3442-20240328">3.4.42 20240328</h2>
 <ul>
 <li>fast implementation of check_ref and to_format. (credit to @sup3rgiu Mr. Andrea)</li>
-<li>added highligh and pinpoint for plot_trumpet()</li>
+<li>added highlight and pinpoint for plot_trumpet()</li>
 <li>fixed typo (credit to @sup3rgiu Mr. Andrea)</li>
 <li>changed <code>**args</code> to <code>**kwargs</code> (credit to @sup3rgiu Mr. Andrea)</li>
 <li>implemented munge-like filters <code>munge=True</code>  for ldsc in gwaslab</li>
@@ -3221,7 +3267,7 @@
 </ul>
 <h2 id="3440-20240215">3.4.40 20240215</h2>
 <ul>
-<li>fixed color issue for regional plots. The color assigned to each variants is actually the color for the lower LD r2 category. For example, variants with LD&gt;0.8 will be colored with the color for 0.8&gt;LD&gt;0.6.</li>
+<li>fixed color issue for regional plots. The color assigned to each variant is actually the color for the lower LD r2 category. For example, variants with LD&gt;0.8 will be colored with the color for 0.8&gt;LD&gt;0.6.</li>
 <li>integrated LDSC (partitioned h2/h2-cts)</li>
 <li>added wc_correction for get_lead()</li>
 <li>updated log</li>

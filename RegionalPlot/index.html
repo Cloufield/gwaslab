@@ -2009,15 +2009,9 @@ Most options are largely the same as <a href="https://cloufield.github.io/gwasla
 </tr>
 <tr>
 <td><code>region_ref</code></td>
-<td><code>boolean</code></td>
-<td>the SNPID or rsID (if SNPID is not available) for reference variant; if None, lead variants will be selected</td>
-<td><code>None</code></td>
-</tr>
-<tr>
-<td><code>region_ref2</code></td>
-<td><code>boolean</code></td>
-<td>the SNPID or rsID for the second reference variant</td>
-<td><code>None</code></td>
+<td><code>list</code></td>
+<td>the SNPID or rsID for reference variants; if None, lead variants will be selected; support up to 7 reference markers (since v3.4.47)</td>
+<td>[<code>None</code>]</td>
 </tr>
 <tr>
 <td><code>region_grid</code></td>
@@ -2052,20 +2046,32 @@ Most options are largely the same as <a href="https://cloufield.github.io/gwasla
 <tr>
 <td><code>region_ld_colors</code></td>
 <td><code>list</code></td>
-<td>LD r2 categories colors</td>
+<td>LD r2 categories colors for single reference marker</td>
 <td><code>["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]</code></td>
 </tr>
 <tr>
-<td><code>region_ld_colors1</code></td>
+<td><code>region_ld_colors_m</code></td>
 <td><code>list</code></td>
-<td>LD r2 categories colors for the first reference varaint (when region_ref2 is specified)</td>
-<td><code>["#E4E4E4","#F8CFCF","#F5A2A5","#F17474","#EB4445","#E51819","#E51819"]</code></td>
+<td>list of colors used for multiple reference markers (since v3.4.47)</td>
+<td><code>["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]</code></td>
 </tr>
 <tr>
-<td><code>region_ld_colors2</code></td>
+<td><code>region_marker_shapes</code></td>
 <td><code>list</code></td>
-<td>LD r2 categories colors for the second reference varaint (when region_ref2 is specified)</td>
-<td><code>["#E4E4E4","#D8E2F2","#AFCBE3","#86B3D4","#5D98C4","#367EB7","#367EB7"]</code></td>
+<td>list of shapes used for multiple reference markers (since v3.4.47)</td>
+<td><code>['o', 's','^','D','*','P','X','h','8']</code></td>
+</tr>
+<tr>
+<td><code>region_chromatin_files</code></td>
+<td><code>list</code></td>
+<td>list of paths of Roadmap <code>15_coreMarks_mnemonics.bed.gz</code> files</td>
+<td>[]</td>
+</tr>
+<tr>
+<td><code>region_chromatin_labels</code></td>
+<td><code>list</code></td>
+<td>list of labels for region_chromatin_files</td>
+<td>[]</td>
 </tr>
 <tr>
 <td><code>region_hspace</code></td>
