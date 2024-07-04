@@ -5,6 +5,7 @@ import matplotlib.patches as patches
 import seaborn as sns
 import numpy as np
 import copy
+import re
 import scipy as sp
 from pyensembl import EnsemblRelease
 from allel import GenotypeArray
@@ -259,11 +260,35 @@ def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
     if type(lead_id) is list:
         if len(lead_id)>0:
             lead_id = int(lead_id[0])
-    
+
     if region_ref_to_check is not None:
         if type(lead_id) is list:
             if len(lead_id)==0 :
-                log.warning("{} not found.. Skipping..".format(region_ref_to_check))
+                #try:
+                matched_snpid = re.match("(chr)?[0-9]+:[0-9]+:[ATCG]+:[ATCG]+", region_ref_to_check,  re.IGNORECASE)    
+                if matched_snpid is None:
+                    pass
+                else:
+                    lead_snpid = matched_snpid.group(0).split(":")
+                    if len(lead_snpid)==4:
+                        lead_chr= int(lead_snpid[0])
+                        lead_pos= int(lead_snpid[1])
+                        lead_ea= lead_snpid[2]
+                        lead_nea= lead_snpid[3]
+                        chrpos_match = (sumstats["CHR"] == lead_chr) & (sumstats["POS"] == lead_pos)
+                        eanea_match = ((sumstats["EA"] == lead_ea) & (sumstats["NEA"] == lead_nea)) | ((sumstats["EA"] == lead_nea) & (sumstats["NEA"] == lead_ea)) 
+                        if "rsID" in sumstats.columns:
+                            lead_id = sumstats.index[chrpos_match&eanea_match].to_list()
+                        if "SNPID" in sumstats.columns:
+                            lead_id = sumstats.index[chrpos_match&eanea_match].to_list()     
+                if type(lead_id) is list:
+                    if len(lead_id)>0:
+                        lead_id = int(lead_id[0])   
+                        log.warning("Trying matching variant {} using CHR:POS:EA:NEA to {}... ".format(region_ref_to_check,lead_id))
+
+        if type(lead_id) is list:
+            if len(lead_id)==0 :
+                log.warning("Extracting variant: {} not found in sumstats.. Skipping..".format(region_ref_to_check))
                 #lead_id = sumstats["scaled_P"].idxmax()
                 lead_id = None
                 return lead_id
@@ -551,24 +576,42 @@ def process_vcf(sumstats,
             # figure out lead variant
             lead_id = _get_lead_id(sumstats, region_ref_single, log, verbose)
         
+
+        lead_series = None
         if lead_id is None:
-            sumstats[rsq] = None
-            sumstats[rsq] = sumstats[rsq].astype("float")
-            sumstats[ld_single] = 0             
-            continue
+            
+            matched_snpid = re.match("(chr)?[0-9]+:[0-9]+:[ATCG]+:[ATCG]+",region_ref_single,  re.IGNORECASE)
+            
+            if matched_snpid is None:
+                sumstats[rsq] = None
+                sumstats[rsq] = sumstats[rsq].astype("float")
+                sumstats[ld_single] = 0    
+                continue    
+            else:
+                
+                lead_snpid = matched_snpid.group(0).split(":")[1:]
+                lead_pos = int(lead_snpid[0])
+                lead_snpid[0]= int(lead_snpid[0])
+                lead_series = pd.Series(lead_snpid)
+        else:
+            lead_pos = sumstats.loc[lead_id,pos]
 
-        lead_pos = sumstats.loc[lead_id,pos]
-
+        
         # if lead pos is available: 
         if lead_pos in ref_genotype["variants/POS"]:
             
             # get ref index for lead snp
-            lead_snp_ref_index = match_varaint(sumstats.loc[lead_id,[pos,nea,ea]])
-            #lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
+            if lead_series is None:
+                lead_snp_ref_index = match_varaint(sumstats.loc[lead_id,[pos,nea,ea]])
+                #lead_snp_ref_index = np.where(ref_genotype["variants/POS"] == lead_pos)[0][0]
+            else:
+                log.warning("Computing LD: {} not found in sumstats but found in reference...Still Computing...".format(region_ref_single))
+                lead_snp_ref_index = match_varaint(lead_series)
 
             # non-na other snp index
             other_snps_ref_index = sumstats["REFINDEX"].dropna().astype("int").values
             # get genotype 
+            
             lead_snp_genotype = GenotypeArray([ref_genotype["calldata/GT"][lead_snp_ref_index]]).to_n_alt()
             try:
                 if len(set(lead_snp_genotype[0]))==1:
@@ -605,10 +648,10 @@ def process_vcf(sumstats,
                 sumstats.loc[to_change_color,ld_single] = 1
             to_change_color = sumstats[rsq]>ld_threshold
             sumstats.loc[to_change_color,ld_single] = index+2
-
-        sumstats.loc[lead_id,ld_single] = len(region_ld_threshold)+2
         
-        sumstats.loc[lead_id,lead] = 1
+        if lead_series is None:
+            sumstats.loc[lead_id,ld_single] = len(region_ld_threshold)+2
+            sumstats.loc[lead_id,lead] = 1
 
     ####################################################################################################    
     final_shape_col = "SHAPE"
