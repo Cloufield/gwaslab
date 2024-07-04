@@ -96,13 +96,14 @@ def _plot_regional(
                                         marker_size= marker_size,
                                         region_marker_shapes=region_marker_shapes,
                                         log=log,verbose=verbose)
-            if lead_id_single is not None:
-                lead_ids.append(lead_id_single)       
+            #if lead_id_single is not None:
+            lead_ids.append(lead_id_single)       
         
         # update region_ref to variant rsID or variantID / skip NAs
         new_region_ref = []
         for i in range(len(lead_ids)):
             if lead_ids[i] is None:
+                new_region_ref.append(region_ref[i])
                 continue
             if region_ref[i] is None:
                 if "rsID" in sumstats.columns:

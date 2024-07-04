@@ -291,15 +291,17 @@ def _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_co
         n_plot_and_track = n_plot+2
     else:
         n_plot_and_track = n_plot+1
+    
+    plotted=[None]
     if mode=="r":
         for index, sig_is in lead_variants_is.items():
             if index in region_lead_grids:
                 for j, sig_i in enumerate(sig_is):
                     try:
-                        region_lead_grid_line["color"]=lead_variants_is_color[index][j]
+                        region_lead_grid_line["color"] = lead_variants_is_color[index][j]
                     except:
                         pass
-                    if sig_i is not None:
+                    if sig_i not in plotted:
                         for each_axis_index in range(n_plot_and_track):  
                             axes[each_axis_index].axvline(x=sig_i, zorder=2,**region_lead_grid_line)
 
