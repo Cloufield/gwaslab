@@ -631,7 +631,7 @@ def mqqplot(insumstats,
                         palette[(i+1)*100 + j ] = hex_color
 
                 edgecolor="none"
-                scatter_args["markers"]= region_marker_shapes[:len(region_ref)]
+                scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:len(region_ref)])}
                 style="SHAPE"
                 
             

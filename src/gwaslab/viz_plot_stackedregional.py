@@ -57,7 +57,9 @@ def plot_stacked_mqq(objects,
                         fig_args=None,
                         region_hspace=0.05,
                         subplot_height=4,
+                        region_lead_grids = None,
                         region_lead_grid_line=None,
+                        region_ld_legends = None,
                         fontsize=9,
                         font_family="Arial",
                         build="99", 
@@ -85,6 +87,8 @@ def plot_stacked_mqq(objects,
         region_chromatin_height = len(region_chromatin_files) * region_chromatin_height
     if region_chromatin_labels is None:
         region_chromatin_labels = []
+    if region_ld_legends is None:
+        region_ld_legends = [0]
     if title_args is None:
         title_args = {"family":"Arial"}
     else:
@@ -125,7 +129,9 @@ def plot_stacked_mqq(objects,
                                           'width_ratios':[mqqratio,1]},
                                           **fig_args)
         plt.subplots_adjust(hspace=region_hspace)
-
+    
+    if region_lead_grids is None:
+        region_lead_grids = [i for i in range(len(axes))]
     ##########################################################################################################################################
     mqq_args_for_each_plot = _sort_args(mqq_args, n_plot)
     ##########################################################################################################################################
@@ -149,6 +155,10 @@ def plot_stacked_mqq(objects,
             figax = (fig,axes[index],axes[-1])
         elif mode=="mqq":
             figax = (fig,axes[index,0],axes[index,1])
+        if index in region_ld_legends:
+            region_ld_legend = True
+        else:
+            region_ld_legend = False
         #################################################################
         if index==0:
             # plot last m and gene track 
@@ -164,6 +174,7 @@ def plot_stacked_mqq(objects,
                             fontsize=fontsize,
                             font_family=font_family,
                             region_lead_grid=False,
+                            region_ld_legend=region_ld_legend,
                             gtf_path="default",
                             rr_ylabel=False,
                             figax=figax,
@@ -192,7 +203,7 @@ def plot_stacked_mqq(objects,
                             font_family=font_family,
                             mode=mode,
                             rr_ylabel=False,
-                            region_ld_legend=False,
+                            region_ld_legend=region_ld_legend,
                             gtf_path=None,
                             figax=figax,
                             _get_region_lead=True,
@@ -257,7 +268,7 @@ def plot_stacked_mqq(objects,
     
     ##########################################################################################################################################
     # draw the line for lead variants
-    _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_color, n_plot, axes, region_lead_grid_line,region_chromatin_files)
+    _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_color, n_plot, axes, region_lead_grid_line,region_chromatin_files,region_lead_grids)
     
     ##########################################################################################################################################  
     _drop_old_y_labels(axes, n_plot)
@@ -275,21 +286,22 @@ def _drop_old_y_labels(axes, n_plot):
     for index in range(n_plot):
         axes[index].set_ylabel("")
 
-def _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_color, n_plot, axes, region_lead_grid_line,region_chromatin_files):
+def _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_color, n_plot, axes, region_lead_grid_line,region_chromatin_files,region_lead_grids):
     if len(region_chromatin_files)>0:
         n_plot_and_track = n_plot+2
     else:
         n_plot_and_track = n_plot+1
     if mode=="r":
         for index, sig_is in lead_variants_is.items():
-            for j, sig_i in enumerate(sig_is):
-                try:
-                    region_lead_grid_line["color"]=lead_variants_is_color[index][j]
-                except:
-                    pass
-                if sig_i is not None:
-                    for each_axis_index in range(n_plot_and_track):    
-                        axes[each_axis_index].axvline(x=sig_i, zorder=2,**region_lead_grid_line)
+            if index in region_lead_grids:
+                for j, sig_i in enumerate(sig_is):
+                    try:
+                        region_lead_grid_line["color"]=lead_variants_is_color[index][j]
+                    except:
+                        pass
+                    if sig_i is not None:
+                        for each_axis_index in range(n_plot_and_track):  
+                            axes[each_axis_index].axvline(x=sig_i, zorder=2,**region_lead_grid_line)
 
 def _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsize,font_family):
     gene_track_height_ratio = gene_track_height/(gene_track_height + n_plot*subplot_height)
