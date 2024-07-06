@@ -11,7 +11,7 @@ from gwaslab.g_version import _checking_plink_version
 def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", 
            p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, 
            n_cores=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
-           log=Log(),verbose=True):
+           log=Log(),verbose=True,plink="plink",plink2="plink2"):
     ##start function with col checking##########################################################
     _start_line = "perfrom clumping"
     _end_line = "clumping"
@@ -111,7 +111,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
             bfile_to_use = bfile
 
         log.write(" -Performing clumping for CHR {}...".format(i),verbose=verbose)
-        log = _checking_plink_version(v=2, log=log)
+        log = _checking_plink_version(plink2=plink2, log=log)
         if memory is not None:
             memory_flag = "--memory {}".format(memory)
         
@@ -123,7 +123,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
         if scaled == True:
             # clumping using LOG10P
             script = """
-            plink2 \
+            {} \
                 {}\
                 --chr {} \
                 --clump {} \
@@ -136,11 +136,11 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
                 --clump-kb {} \
                 --threads {} {}\
                 --out {}
-            """.format(file_flag, chrom, clump, mlog10p,clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, memory_flag if memory is not None else "", out_single_chr)    
+            """.format(plink2, file_flag, chrom, clump, mlog10p,clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, memory_flag if memory is not None else "", out_single_chr)    
         else:
             # clumping using P
             script = """
-            plink2 \
+            {} \
                 {}\
                 --chr {} \
                 --clump {} \
@@ -152,7 +152,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
                 --clump-kb {} \
                 --threads {} {}\
                 --out {}
-            """.format(file_flag, chrom, clump, p, clump_p1, clump_p2, clump_r2, clump_kb, n_cores,memory_flag if memory is not None else "", out_single_chr)
+            """.format(plink2,file_flag, chrom, clump, p, clump_p1, clump_p2, clump_r2, clump_kb, n_cores,memory_flag if memory is not None else "", out_single_chr)
         
         try:
             output = subprocess.check_output(script, stderr=subprocess.STDOUT, shell=True,text=True)
