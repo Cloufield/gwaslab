@@ -76,6 +76,7 @@ from gwaslab.util_ex_ldsc import _estimate_rg_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_h2_cts_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_partitioned_h2_by_ldsc 
 from gwaslab.bd_get_hapmap3 import gethapmap3
+from gwaslab.util_abf_finemapping import abf_finemapping
 import gc
 
 #20220309
@@ -756,7 +757,11 @@ class Sumstats():
         else:
             output = lambdaGC(self.data[["CHR",mode]],mode=mode,**kwargs)
             self.meta["Genomic inflation factor"] = output
-            return output 
+            return output
+        
+    def abf(self):
+        output = abf_finemapping(self.data)
+        return output
 ## LDSC ##############################################################################################
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
         if build is None:
