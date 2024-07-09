@@ -10,6 +10,7 @@ def calc_abf(df,omega=0.04):
     se = df["SE"]
     beta = df["BETA"]
     df["log_ABF"] = 1/2*np.log(((se*se)/(se*se+omega))) + (omega*beta*beta)/(2*se*se*(se*se+omega))
+    print(list(df["log_ABF"]))
     return df
 
 def calc_PIP_log(df):
