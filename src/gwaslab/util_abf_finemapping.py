@@ -9,12 +9,14 @@ from gwaslab.g_Log import Log
 def calc_abf(df,omega=0.04):
     se = df["SE"]
     beta = df["BETA"]
+    df = df.copy()
     df.loc[:, "log_ABF"] = 1/2*np.log(((se*se)/(se*se+omega))) + (omega*beta*beta)/(2*se*se*(se*se+omega))
     return df
 
 def calc_PIP(df):
     # Calculate the logarithmic sum of each ABF to find the logarithm of total_abf
     log_total_abf = np.log(np.sum(np.exp(df["log_ABF"] - np.max(df["log_ABF"])))) + np.max(df["log_ABF"])
+    df = df.copy()
     # Calculate PIP on a logarithmic scale by subtracting log_total_abf from each log_abf
     df.loc[:, "log_PIP"] = df['log_ABF'] - log_total_abf
     # Convert PIP on logarithmic scale to exponential and back to normal scale
