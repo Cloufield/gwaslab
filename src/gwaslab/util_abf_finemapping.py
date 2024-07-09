@@ -14,7 +14,6 @@ def calc_abf(insumstats,omega=0.04,log=Log(),verbose=True):
     beta = insumstats["BETA"]
     z = beta/se
     insumstats = insumstats.copy()
-    # insumstats.loc[:, "log_ABF"] = 1/2*np.log(((se*se)/(se*se+omega))) + (omega*beta*beta)/(2*se*se*(se*se+omega))
     insumstats.loc[:, "log_ABF"] = 1/2* (np.log(1-r) + (r * z**2))
     return insumstats
 
