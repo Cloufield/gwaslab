@@ -767,7 +767,7 @@ class Sumstats():
     
     def out_cs(self,chrom,start_pos,end_pos):
         region_data = self.data[(self.data["CHR"] == str(chrom)) & (self.data["POS"] >= start_pos) & (self.data["POS"] <= end_pos)]
-        cs = make_cs(region_data, **kwargs):
+        cs = make_cs(region_data,threshold=0.95)
         return cs
     
 ## LDSC ##############################################################################################
