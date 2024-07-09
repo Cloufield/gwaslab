@@ -760,15 +760,12 @@ class Sumstats():
             self.meta["Genomic inflation factor"] = output
             return output
         
-    def abf(self,chrom,start_pos,end_pos):
+    def abf_finemapping(self,chrom,start_pos,end_pos):
         region_data = self.data[(self.data["CHR"] == str(chrom)) & (self.data["POS"] >= start_pos) & (self.data["POS"] <= end_pos)]
-        output = abf_finemapping(region_data)
-        return output
+        region_data = abf_finemapping(region_data)
+        credible_sets = make_cs(region_data,threshold=0.95)
+        return region_data, credible_sets
     
-    def out_cs(self,chrom,start_pos,end_pos):
-        region_data = self.data[(self.data["CHR"] == str(chrom)) & (self.data["POS"] >= start_pos) & (self.data["POS"] <= end_pos)]
-        cs = make_cs(region_data,threshold=0.95)
-        return cs
     
 ## LDSC ##############################################################################################
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
