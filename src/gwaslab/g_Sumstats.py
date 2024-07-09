@@ -760,7 +760,7 @@ class Sumstats():
             return output
         
     def abf(self,chrom,start_pos,end_pos):
-        region_data = selt.data[(self.data["CHR"] == chrom) & (self.data["POS"] >= start_pos) & (self.data["POS"] <= end_pos)]
+        region_data = self.data[(self.data["CHR"] == chrom) & (self.data["POS"] >= start_pos) & (self.data["POS"] <= end_pos)]
         output = abf_finemapping(region_data)
         return output
 ## LDSC ##############################################################################################
