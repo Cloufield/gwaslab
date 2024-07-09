@@ -35,7 +35,7 @@ def make_cs(df,threshold=0.95):
     pip_sum = 0
     cs = pd.DataFrame()
     for index, row in df.iterrows():
-        cs = pd.concat([cs,pd.DataFrame(row)])
+        cs = pd.concat([cs,pd.DataFrame(row).T])
         pip_sum += row["PIP"]
         if pip_sum > threshold:
             break
