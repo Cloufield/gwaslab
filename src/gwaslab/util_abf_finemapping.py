@@ -41,5 +41,5 @@ def make_cs(insumstats,threshold=0.95,log=Log(),verbose=True):
         pip_sum += row["PIP"]
         if pip_sum > threshold:
             break
-    log.write("Finish constructing a {}% credible set with {} variant(s)".format(str(threshold * 100),str(len(cs))),verbose=verbose)
+    log.write("Finished constructing a {}% credible set with {} variant(s)".format(str(threshold * 100),str(len(cs))),verbose=verbose)
     return cs
