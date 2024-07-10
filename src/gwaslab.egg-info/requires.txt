@@ -1,0 +1,13 @@
+pandas!=1.5,>=1.3
+numpy<2,>=1.21.2
+matplotlib!=3.7.2,<3.9,>=3.5
+seaborn>=0.12
+scipy>=1.12
+pySAM==0.22.1
+Biopython>=1.79
+adjustText<=0.8,>=0.7.3
+liftover>=1.1.13
+scikit-allel>=1.3.5
+pyensembl==2.2.3
+gtfparse==1.3.0
+h5py>=3.10.0

@@ -107,10 +107,10 @@ def _plot_regional(
                 new_region_ref.append(region_ref[i])
                 continue
             if region_ref[i] is None:
-                if "rsID" in sumstats.columns:
-                    new_name = sumstats.loc[lead_ids[i],"rsID"]
-                elif "SNPID" in sumstats.columns:
+                if "SNPID" in sumstats.columns:
                     new_name = sumstats.loc[lead_ids[i],"SNPID"]
+                elif "rsID" in sumstats.columns:
+                    new_name = sumstats.loc[lead_ids[i],"rsID"]
                 else:
                     new_name = "chr{}:{}".format(sumstats.loc[lead_ids[i],"CHR"] , sumstats.loc[lead_ids[i],"POS"])
                 new_region_ref.append(new_name)
@@ -164,7 +164,6 @@ def _plot_regional(
         lead_snp_ys = []
         lead_snp_is = []
         lead_snp_is_colors = []
-        
         for i,lead_id_single in enumerate(lead_ids):
             if lead_id_single is not None:
                 lead_snp_ys.append(sumstats.loc[lead_id_single,"scaled_P"] )
@@ -301,7 +300,7 @@ def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
 
     return lead_id
 
-def _pinpoint_lead(sumstats,ax1,region_ref, lead_color, marker_size, log, verbose,region_marker_shapes):
+def _pinpoint_lead(sumstats,ax1,region_ref, lead_color, marker_size, log, verbose, region_marker_shapes):
     
     if region_ref is None:
         log.write(" -Extracting lead variant..." , verbose=verbose)
@@ -442,6 +441,11 @@ def _plot_gene_track(
     texts_to_adjust_left = []
     texts_to_adjust_middle = []
     texts_to_adjust_right = []
+
+    
+    sig_gene_names=[]
+    sig_gene_lefts=[]
+    sig_gene_rights=[]
     for index,row in uniq_gene_region.iterrows():
 
         gene_color="#020080"
@@ -452,20 +456,17 @@ def _plot_gene_track(
             gene_anno = "<-" + row["name"] 
         
 
-        sig_gene_names=[]
-        sig_gene_lefts=[]
-        sig_gene_rights=[]
+
         for lead_snp_i in lead_snp_is:
             if region_lead_grid is True and lead_snp_i > gene_track_start_i+row["start"] and lead_snp_i < gene_track_start_i+row["end"] :
-                    gene_color=region_lead_grid_line["color"]
-                    sig_gene_names.append(row["name"])
-                    sig_gene_lefts.append(gene_track_start_i+row["start"])
-                    sig_gene_rights.append(gene_track_start_i+row["end"])
+                gene_color=region_lead_grid_line["color"]
+                sig_gene_names.append(row["name"])
+                sig_gene_lefts.append(gene_track_start_i+row["start"])
+                sig_gene_rights.append(gene_track_start_i+row["end"])
 
             # plot gene line
             ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
                         (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=linewidth_in_points/10)
-        
         
         # plot gene name
         if row["end"] >= region[2]:
@@ -485,6 +486,7 @@ def _plot_gene_track(
     for index,row in exons.iterrows():
         exon_color="#020080" 
         for sig_gene_name, sig_gene_left, sig_gene_right in zip(sig_gene_names,sig_gene_lefts,sig_gene_rights):
+            
             if not pd.isnull(row["name"]):
                 if (region_lead_grid is True) and row["name"]==sig_gene_name:
                     exon_color = region_lead_grid_line["color"]  
@@ -494,7 +496,7 @@ def _plot_gene_track(
                 exon_color = region_lead_grid_line["color"]  
             else:
                 exon_color="#020080"
-
+        
         ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
                     (row["stack"]*2,row["stack"]*2),linewidth=linewidth_in_points*taf[3],color=exon_color,solid_capstyle="butt")
 

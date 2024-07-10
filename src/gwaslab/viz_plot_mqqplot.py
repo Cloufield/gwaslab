@@ -596,19 +596,23 @@ def mqqplot(insumstats,
             sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level_plot),"s"]=4
         sumstats["chr_hue"]=sumstats[chrom].astype("string")
 
-        if vcf_path is not None:
+        if "r" in mode:
+            if vcf_path is None:
+                sumstats["LD"]=100
+                sumstats["SHAPE"]=1
             sumstats["chr_hue"]=sumstats["LD"]
+                
         ## default seetings
         
         palette = sns.color_palette(colors,n_colors=sumstats[chrom].nunique())  
-        
 
         legend = None
         style=None
         linewidth=0
         edgecolor="black"
         # if regional plot assign colors
-        if vcf_path is not None:
+        if "r" in mode:
+            #if vcf_path is not None: 
             legend=None
             linewidth=1
             if len(region_ref) == 1:
@@ -633,8 +637,7 @@ def mqqplot(insumstats,
                 edgecolor="none"
                 scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:len(region_ref)])}
                 style="SHAPE"
-                
-            
+
             
         ## if highlight 
         highlight_i = pd.DataFrame()
