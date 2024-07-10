@@ -760,10 +760,9 @@ class Sumstats():
             self.meta["Genomic inflation factor"] = output
             return output
         
-    def abf_finemapping(self,chrom,start_pos,end_pos):
-        region_data = self.data[(self.data["CHR"] == str(chrom)) & (self.data["POS"] >= start_pos) & (self.data["POS"] <= end_pos)]
-        region_data = abf_finemapping(region_data)
-        credible_sets = make_cs(region_data,threshold=0.95)
+    def abf_finemapping(self, region=None, chrpos=None, snpid=None,**kwargs):        
+        region_data = abf_finemapping(self.data.copy(),region=region,chrpos=chrpos,snpid=snpid,log=self.log, **kwargs)
+        credible_sets = make_cs(region_data,threshold=0.95,log=self.log)
         return region_data, credible_sets
     
     
