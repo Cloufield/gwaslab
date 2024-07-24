@@ -1,5 +1,8 @@
 # Update Logs
 
+## 3.4.48 2024
+- fixed bug for is_q_mc in compare_effect()
+
 ## 3.4.47 20240703
 - updated stacked regional plot
 - supported user-provided plink path

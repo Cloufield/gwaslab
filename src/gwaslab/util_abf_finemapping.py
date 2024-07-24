@@ -8,13 +8,16 @@ from gwaslab.util_in_filter_value import _get_flanking_by_id
 # Wakefield, J. A bayesian measure of the probability of false discovery in genetic epidemiology studies. Am J Hum Genet 81, 208–227 (2007).
 
 
-def calc_abf(insumstats,omega=0.04,log=Log(),verbose=True,**kwargs):
+def calc_abf(insumstats,w=0.2,log=Log(),verbose=True,**kwargs):
 
 
 
     log.write("Start to calculate approximate Bayesian factor for {} variants".format(len(insumstats)),verbose=verbose)
     log.write(" - Reference: akefield, J. A bayesian measure of the probability of false discovery in genetic epidemiology studies. Am J Hum Genet 81, 208–227 (2007).",verbose=verbose)
-    
+    log.write(" - Priors for the standard deviation W of the effect size parameter β : {} ".format(w),verbose=verbose)
+    # binary -> w=0.2
+    # quant  -> w=0.15
+    omega = w**2
     se = insumstats["SE"]
     v = se**2
     r = omega / (omega+v)
