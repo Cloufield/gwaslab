@@ -198,16 +198,29 @@ def read_greml(filelist=[]):
     return summary
 
 def parse_ldsc_summary(ldsc_summary):
-    summary = pd.DataFrame(columns = ['h2_obs', 'h2_se','Lambda_gc','Mean_chi2','Intercept','Intercept_se',"Ratio","Ratio_se"])
+    
     lines = ldsc_summary.split("\n")
+    
+    columns = ['h2_obs', 'h2_se','Lambda_gc','Mean_chi2','Intercept','Intercept_se',"Ratio","Ratio_se","Catagories"]
+    
+    summary = pd.DataFrame(columns = columns)
+    
     row={}
+    
     try:
         objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[0])
         row["h2_obs"]=objects[1]
         row["h2_se"]=objects[2]
 
-        ##next line lambda gc
+        ##check categories
+        if len(lines) == 6:
+            objects = re.compile('  -Categories:(.+)').findall(lines[1])
+            row["Catagories"] = objects[0].strip()
+            lines.pop(1)
+        else:
+            row["Catagories"] = "NA"
 
+        ##next line lambda gc
         objects = re.compile('[a-zA-Z\s\d]+:|[-0-9.]+[e]?[-0-9.]+|NA').findall(lines[1])
         row["Lambda_gc"] = objects[1]
         ##next line Mean_chi2
@@ -240,6 +253,7 @@ def parse_ldsc_summary(ldsc_summary):
         row["Intercept_se"]="NA"
         row["Ratio"]="NA"
         row["Ratio_se"]="NA"
+        row["Catagories"] = "NA"
 
     #summary = summary.append(row,ignore_index=True)
     row = pd.DataFrame([row], columns = summary.columns)

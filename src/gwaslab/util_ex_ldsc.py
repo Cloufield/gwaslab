@@ -304,9 +304,16 @@ def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, munge_args=
     log.write(" -LDSC log:", verbose=verbose)
     summary = estimate_h2(sumstats, default_args, log)
     
+    results_table = None
+    if type(summary) is tuple:
+        results_table = summary[1]
+        summary = summary[0]
+        log.write(" -Coefficient results have been stored in .ldsc_h2_results", verbose=verbose)
+        
+
     log.write(" -Results have been stored in .ldsc_h2", verbose=verbose)
     finished(log=log,verbose=verbose,end_line=_end_line)
-    return parse_ldsc_summary(summary)
+    return parse_ldsc_summary(summary), results_table
 
 
 ####################################################################################################################
