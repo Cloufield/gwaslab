@@ -1497,7 +1497,11 @@ def liftover_variant(sumstats,
              status="STATUS",
              from_build="19", 
              to_build="38"):
-    converter = get_lifter("hg"+from_build,"hg"+to_build)
+    try:
+        converter = get_lifter("hg"+from_build,"hg"+to_build,one_based=True)
+    except:
+        converter = get_lifter("hg"+from_build,"hg"+to_build)
+
     dic= get_number_to_chr(in_chr=False,xymt=["X","Y","M"])
     dic2= get_chr_to_number(out_chr=False)
     for i in sumstats[chrom].unique():
@@ -1549,7 +1553,6 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         pool.close()
         pool.join()
     ############################################################################
-   
     unmap_num = len(sumstats.loc[sumstats[pos].isna(),:])    
     
     if remove is True:
