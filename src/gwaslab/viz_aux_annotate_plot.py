@@ -38,6 +38,7 @@ def annotate_single(
     region,
     region_anno_bbox_args,
     skip,
+    anno_height=1,
     amode="int",
     snpid="SNPID",
     chrom="CHR",
@@ -131,7 +132,7 @@ def annotate_single(
             
             #xy=(row["i"],row["scaled_P"]+0.2)
             xy=(row["i"],row["scaled_P"]+0.01*maxy)
-            xytext=(last_pos,1.15*maxy*arm_scale)
+            xytext=(last_pos,1.15*maxy*arm_scale*anno_height)
             
             if anno_fixed_arm_length is not None:
                 armB_length_in_point = anno_fixed_arm_length

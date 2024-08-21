@@ -141,6 +141,7 @@ def mqqplot(insumstats,
           anno_max_iter=100,
           arm_offset=50,
           arm_scale=1,
+          anno_height=1,
           arm_scale_d=None,
           cut=0,
           skip=0,
@@ -980,6 +981,7 @@ def mqqplot(insumstats,
                                 region=region,
                                 region_anno_bbox_args=region_anno_bbox_args,
                                 skip=skip,
+                                anno_height=anno_height,
                                 snpid=snpid,
                                 chrom=chrom,
                                 pos=pos,
@@ -1072,15 +1074,15 @@ def _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats):
     
     if ax1 is not None:
         xmin, xmax = ax1.get_xlim() 
-        
+        length = xmax - xmin
         if xpad is not None:
-            pad = xpad* sumstats["i"].max()
-            ax1.set_xlim([xmin - pad, xmin + pad])
+            pad = xpad* length #sumstats["i"].max()
+            ax1.set_xlim([xmin - pad, xmax + pad])
         if xpadl is not None:
-            pad = xpadl* sumstats["i"].max()
+            pad = xpadl*length # sumstats["i"].max()
             ax1.set_xlim([xmin - pad,xmax])
         if xpadr is not None:
-            pad = xpadr* sumstats["i"].max()
+            pad = xpadr*length # sumstats["i"].max()
             ax1.set_xlim([xmin, xmax + pad])
 
     return ax1
