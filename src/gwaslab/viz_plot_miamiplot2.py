@@ -247,7 +247,10 @@ def plot_miami2(
         plt.subplots_adjust(hspace=region_hspace)    
     else:
         fig, ax1, ax5 = figax
-    
+
+    #if same_ylim==True:
+        #maxy = merged_sumstats[["scaled_P_1","scaled_P_2"]].max().max()
+
     log.write("Start to create Manhattan plot for sumstats1...", verbose=verbose)
     fig,log = mqqplot(merged_sumstats,
                       chrom="CHR",
@@ -284,14 +287,8 @@ def plot_miami2(
                       _if_quick_qc=False,
                      **mqq_args2)
     log.write("Finished creating Manhattan plot for sumstats2".format(_get_version()), verbose=verbose)
+    
 
-    if same_ylim==True:
-        ylim1_converted = ax1.get_ylim()
-        ylim2_converted = ax5.get_ylim()
-        if ylim1_converted > ylim2_converted:
-            ax5.set_ylim(ylim1_converted)
-        else:
-            ax1.set_ylim(ylim2_converted)
     #####################################################################################################################    
     
     ax5.set_xlabel("")

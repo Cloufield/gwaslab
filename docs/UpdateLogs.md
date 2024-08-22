@@ -1,7 +1,11 @@
 # Update Logs
 
-## 3.4.48 2024
-- fixed bug for is_q_mc in compare_effect()
+## 3.4.48 20240822
+- fixed bug for `is_q_mc` in `compare_effect()`
+- added `anno_height` for `plot_mqq()`
+- added `xtight` for `plot_mqq()`
+- fixed bug for `xpad` in `plot_mqq()`
+- supported baseline model for ldsc outputs 
 
 ## 3.4.47 20240703
 - updated stacked regional plot

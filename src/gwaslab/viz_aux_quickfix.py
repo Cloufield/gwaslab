@@ -286,8 +286,9 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, lines_to_pl
     log.write(" -Converting data above cut line...",verbose=verbose)
     if ylabels is not None:
         ylabels = pd.Series(ylabels)
-    maxy = series.max()
     series = series.copy()
+    
+    maxy = series.max()
     if "b" not in mode:
         log.write(" -Maximum -log10(P) value is "+str(maxy) +" .", verbose=verbose)
     elif "b" in mode:

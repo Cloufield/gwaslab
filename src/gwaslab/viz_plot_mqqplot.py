@@ -181,6 +181,7 @@ def mqqplot(insumstats,
           xpad=None,
           xpadl=None,
           xpadr=None,
+          xtight=False,
           chrpad=0.03, 
           drop_chr_start=False,
           title =None,
@@ -553,7 +554,8 @@ def mqqplot(insumstats,
                                                                         cut_log = cut_log,
                                                                         verbose =verbose, 
                                                                         lines_to_plot=lines_to_plot,
-                                                                        log = log)
+                                                                        log = log
+                                                                        )
     except:
         log.warning("No valid data! Please check the input.")
         return None
@@ -1045,7 +1047,7 @@ def mqqplot(insumstats,
         if "qq" in mode:
             ax2.set_ylim(ylim)
     
-    ax1 = _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats)
+    ax1 = _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, log = log, verbose=verbose)
 
     # Titles 
     if title and anno and len(to_annotate)>0:
@@ -1070,20 +1072,34 @@ def mqqplot(insumstats,
 
 
 
-def _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats):
+def _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, log, verbose):
     
-    if ax1 is not None:
-        xmin, xmax = ax1.get_xlim() 
-        length = xmax - xmin
-        if xpad is not None:
-            pad = xpad* length #sumstats["i"].max()
-            ax1.set_xlim([xmin - pad, xmax + pad])
-        if xpadl is not None:
-            pad = xpadl*length # sumstats["i"].max()
-            ax1.set_xlim([xmin - pad,xmax])
-        if xpadr is not None:
-            pad = xpadr*length # sumstats["i"].max()
-            ax1.set_xlim([xmin, xmax + pad])
+    if xtight==True:
+        log.write(" -Adjusting X padding on both side : tight mode", verbose=verbose)
+        xmax = sumstats["i"].max()
+        xmin=  sumstats["i"].min()
+        ax1.set_xlim([xmin, xmax])
+    
+    else:
+        chrpad_to_remove = sumstats[pos].max()*chrpad
+        if ax1 is not None:
+            xmin, xmax = ax1.get_xlim() 
+            length = xmax - xmin
+            
+            if xpad is not None:
+                log.write(" -Adjusting X padding on both side: {}".format(xpad), verbose=verbose)
+                pad = xpad* length #sumstats["i"].max()
+                ax1.set_xlim([xmin - pad + chrpad_to_remove, xmax + pad - chrpad_to_remove])
+            if xpad is None and xpadl is not None:
+                log.write(" -Adjusting X padding on left side: {}".format(xpadl), verbose=verbose)
+                xmin, xmax = ax1.get_xlim() 
+                pad = xpadl*length # sumstats["i"].max()
+                ax1.set_xlim([xmin - pad + chrpad_to_remove ,xmax])
+            if xpad is None and xpadr is not None:
+                log.write(" -Adjusting X padding on right side: {}".format(xpadr), verbose=verbose)
+                xmin, xmax = ax1.get_xlim() 
+                pad = xpadr*length # sumstats["i"].max()
+                ax1.set_xlim([xmin, xmax + pad - chrpad_to_remove])
 
     return ax1
 
