@@ -1,5 +1,8 @@
 # Update Logs
 
+# 3.4.49 20240903
+- fixed the suffix for yaml in `to_format()`
+
 ## 3.4.48 20240822
 - fixed bug for `is_q_mc` in `compare_effect()`
 - added `anno_height` for `plot_mqq()`
