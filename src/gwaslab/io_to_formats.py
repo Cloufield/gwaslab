@@ -342,7 +342,7 @@ def tofmt(sumstats,
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
         print_format_info(fmt=fmt, meta_data=meta_data,rename_dictionary=rename_dictionary,verbose=verbose, log=log, output=True)
         
-        ymal_path = path + "."+suffix+".tsv-meta.ymal"
+        yaml_path = path + "."+suffix+".tsv-meta.yaml"
         path = path + "."+suffix+".tsv.gz"
         log.write(" -Output path:",path, verbose=verbose) 
         
@@ -361,7 +361,7 @@ def tofmt(sumstats,
             md5_value = calculate_md5sum_file(path)
         
         ## update ssf-style meta data and export to yaml file
-        _configure_ssf_meta(sumstats, fmt, ssfmeta, meta, meta_data, path, md5_value, ymal_path, log, verbose)
+        _configure_ssf_meta(sumstats, fmt, ssfmeta, meta, meta_data, path, md5_value, yaml_path, log, verbose)
         
         return sumstats  
     
@@ -476,7 +476,7 @@ def _configure_output_cols_and_args(sumstats, rename_dictionary, cols, no_status
     return sumstats, to_csvargs
 
 
-def _configure_ssf_meta(sumstats, fmt, ssfmeta, meta, meta_data, path, md5_value, ymal_path, log, verbose):
+def _configure_ssf_meta(sumstats, fmt, ssfmeta, meta, meta_data, path, md5_value, yaml_path, log, verbose):
     ### calculate meta data
     if "EAF" in sumstats.columns:
         min_maf = sumstats["EAF"].min()
@@ -506,8 +506,8 @@ def _configure_ssf_meta(sumstats, fmt, ssfmeta, meta, meta_data, path, md5_value
         sumstats_meta_copy["gwaslab"]["samples"]["sample_size_min"] = n_min
         sumstats_meta_copy["gwaslab"]["samples"]["sample_size_median"] = n_median
         sumstats_meta_copy["gwaslab"]["variants"]["variant_number"] = len(sumstats)
-        log.write(" -Exporting SSF-style meta data to {}".format(ymal_path),verbose=verbose) 
-        with open(ymal_path, 'w') as outfile:
+        log.write(" -Exporting SSF-style meta data to {}".format(yaml_path),verbose=verbose) 
+        with open(yaml_path, 'w') as outfile:
             yaml.dump(sumstats_meta_copy, outfile)
 
 
