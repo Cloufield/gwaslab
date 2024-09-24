@@ -358,6 +358,76 @@ def fixID(sumstats,
 
 ""
 
+def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
+    '''
+    flip EA and NEA SNPid   CHR:POS:EA:NEA -> CHR:POS:NEA:EA
+    '''
+    ##start function with col checking##########################################################
+    _start_line = "strip SNPID"
+    _end_line = "stripping SNPID"
+    _start_cols =["SNPID"]
+    _start_function = ".strip_snpid()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: return sumstats
+    log.write(" -Checking if SNPID is (xxx:)CHR:POS:ATCG_Allele:ATCG_Allele(:xxx)...(separator: - ,: , _)",verbose=verbose)
+    is_chrposrefalt = sumstats[snpid].str.contains(r'[:_-]?\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+[:_-]?', case=False, flags=0, na=False)
+    # check if SNPID is NA
+    is_snpid_na = sumstats[snpid].isna()
+    
+    log.write(" -Stripping {} non-NA fixable SNPIDs...".format(sum(is_chrposrefalt)),verbose=verbose)
+
+    # flip 
+    sumstats.loc[is_chrposrefalt,snpid] = \
+        sumstats.loc[is_chrposrefalt,snpid].str.extract(r'[:_-]?(chr)?(\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+)[:_-]?',flags=re.IGNORECASE|re.ASCII)[1].astype("string")  
+
+    finished(log,verbose,_end_line)
+    return sumstats
+
+def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
+    '''
+    flip EA and NEA SNPid   CHR:POS:EA:NEA -> CHR:POS:NEA:EA
+    '''
+    ##start function with col checking##########################################################
+    _start_line = "flip SNPID"
+    _end_line = "flipping SNPID"
+    _start_cols =["SNPID"]
+    _start_function = ".flip_snpid()"
+    _must_args ={}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: return sumstats
+    log.warning("This function only flips alleles in SNPID without changing EA, NEA, STATUS or any statistics.")
+    log.write(" -Checking if SNPID is CHR:POS:ATCG_Allele:ATCG_Allele...(separator: - ,: , _)",verbose=verbose)
+    is_chrposrefalt = sumstats[snpid].str.match(r'^\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+$', case=False, flags=0, na=False)
+    # check if SNPID is NA
+    is_snpid_na = sumstats[snpid].isna()
+    
+    log.write(" -Flipping {} non-NA fixable SNPIDs...".format(sum(is_chrposrefalt)),verbose=verbose)
+
+    # flip 
+    sumstats.loc[is_chrposrefalt,snpid] = \
+        sumstats.loc[is_chrposrefalt,snpid].str.extract(r'^(chr)?(\w+[:_-]\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[1].astype("string")  \
+        + ":"+sumstats.loc[is_chrposrefalt,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[4].astype("string") \
+        + ":"+sumstats.loc[is_chrposrefalt,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[3].astype("string")
+
+    finished(log,verbose,_end_line)
+    return sumstats
 
 ###############################################################################################################
 # 20230128 

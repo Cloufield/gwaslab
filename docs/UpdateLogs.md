@@ -1,7 +1,8 @@
 # Update Logs
 
-# 3.4.49 20240903
+# 3.4.49 2024
 - fixed the suffix for yaml in `to_format()`
+- implemented `.flip_snpid` and `.strip_snpid`
 
 ## 3.4.48 20240822
 - fixed bug for `is_q_mc` in `compare_effect()`

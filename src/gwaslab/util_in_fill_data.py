@@ -184,7 +184,8 @@ def fill_mlog10p(sumstats,log,verbose=True,filled_count=0):
     else:
         return 0,filled_count
     return 1,filled_count
-def fill_extreme_mlog10p(sumstats,log,verbose=True,filled_count=0):
+
+def fill_extreme_mlog10p(sumstats,df,log,verbose=True,filled_count=0):
     # ref: https://stackoverflow.com/questions/46416027/how-to-compute-p-values-from-z-scores-in-r-when-the-z-score-is-large-pvalue-muc/46416222#46416222
     if "Z" in sumstats.columns:
         # P -> MLOG10P
@@ -197,6 +198,10 @@ def fill_extreme_mlog10p(sumstats,log,verbose=True,filled_count=0):
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
         log.write("  - Filling MLOG10P using Z column...", verbose=verbose)
         sumstats = fill_extreme_mlog10(sumstats, "Z")
+        filled_count +=1
+    elif "CHISQ" in sumstats.columns and "DOF" in sumstats.columns:
+        log.write("  - Filling MLOG10P using CHISQ and DOF column...", verbose=verbose)
+        sumstats = fill_extreme_mlog10_chisq(sumstats, "CHISQ", df)
         filled_count +=1
     else:
         return 0,filled_count
@@ -217,6 +222,19 @@ def fill_extreme_mlog10(sumstats, z):
     log_pvalue = np.log(2) + ss.norm.logsf(np.abs(sumstats[z])) #two-sided
     log10_pvalue = log_pvalue/np.log(10)
     mantissa = 10**(log10_pvalue %1 )
+    exponent = log10_pvalue // 1
+    sumstats["MLOG10P"] = -log10_pvalue
+    sumstats["P_MANTISSA"]= mantissa
+    sumstats["P_EXPONENT"]= exponent
+    return sumstats
+
+def fill_extreme_mlog10_chisq(sumstats, chisq, df):
+    #https://stackoverflow.com/a/46416222/199475
+    log_pvalue = ss.chi2.logsf(sumstats[chisq], sumstats[df])
+
+    log10_pvalue = log_pvalue/np.log(10)
+    
+    mantissa = 10**(log10_pvalue %1)
     exponent = log10_pvalue // 1
     sumstats["MLOG10P"] = -log10_pvalue
     sumstats["P_MANTISSA"]= mantissa
@@ -260,7 +278,7 @@ def fill_iteratively(sumstats,raw_to_fill,log,only_sig,df,extreme,verbose,sig_le
     # p to -log10(P)  ###############################################################################################
         if "MLOG10P" in to_fill:
             if extreme==True:
-                status,filled_count = fill_extreme_mlog10p(sumstats,log,verbose=verbose,filled_count=filled_count)
+                status,filled_count = fill_extreme_mlog10p(sumstats,df, log,verbose=verbose,filled_count=filled_count)
                 filled_count +=1
             elif "P" not in sumstats.columns:
                 fill_p(sumstats,log,verbose=verbose)

@@ -8,6 +8,8 @@ from gwaslab.io_preformat_input import preformat
 from gwaslab.io_to_formats import _to_format
 from gwaslab.g_Log import Log
 from gwaslab.qc_fix_sumstats import fixID
+from gwaslab.qc_fix_sumstats import flipSNPID
+from gwaslab.qc_fix_sumstats import stripSNPID
 from gwaslab.qc_fix_sumstats import removedup
 from gwaslab.qc_fix_sumstats import fixchr
 from gwaslab.qc_fix_sumstats import fixpos
@@ -418,6 +420,10 @@ class Sumstats():
     #customizable API to build your own QC pipeline
     def fix_id(self,**kwargs):
         self.data = fixID(self.data,log=self.log,**kwargs)
+    def flip_snpid(self,**kwargs):
+        self.data = flipSNPID(self.data,log=self.log,**kwargs)
+    def strip_snpid(self,**kwargs):
+        self.data = stripSNPID(self.data,log=self.log,**kwargs)
     def fix_chr(self,**kwargs):
         self.data = fixchr(self.data,log=self.log,**kwargs)
     def fix_pos(self,**kwargs):
