@@ -21,6 +21,7 @@ from gwaslab.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
 from gwaslab.bd_common_data import get_chr_to_number
+from gwaslab.bd_common_data import get_number_to_NC
 from gwaslab.bd_common_data import _maketrans
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.g_version import _get_version
@@ -1496,17 +1497,21 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
 def auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log):    
     if vcf_path is not None:
         if vcf_chr_dict is None:
-            log.write(" -Checking prefix for chromosomes in vcf files..." ,verbose=verbose)  
-            prefix = check_vcf_chr_prefix(vcf_path) 
+            log.write(" -Checking chromosome notations in VCF/BCF files..." ,verbose=verbose)  
+            vcf_chr_dict = check_vcf_chr_NC(vcf_path, log, verbose)
+            if vcf_chr_dict is not None:
+                return vcf_chr_dict
+            log.write(" -Checking prefix for chromosomes in VCF/BCF files..." ,verbose=verbose)  
+            prefix = check_vcf_chr_prefix(vcf_path, log,verbose) 
             if prefix is not None:
                 log.write(" -Prefix for chromosomes: ",prefix) 
                 vcf_chr_dict = get_number_to_chr(prefix=prefix)
             else:
-                log.write(" -No prefix for chromosomes in the VCF files." ,verbose=verbose)  
+                log.write(" -No prefix for chromosomes in the VCF/BCF files." ,verbose=verbose)  
                 vcf_chr_dict = get_number_to_chr()
     return vcf_chr_dict
 
-def check_vcf_chr_prefix(vcf_bcf_path):
+def check_vcf_chr_prefix(vcf_bcf_path,log,verbose):
     vcf_bcf = VariantFile(vcf_bcf_path)
     for i in list(vcf_bcf.header.contigs):
         m = re.search('(chr|Chr|CHR)([0-9xXyYmM]+)', i)
@@ -1514,5 +1519,16 @@ def check_vcf_chr_prefix(vcf_bcf_path):
             return m.group(1)
     else:
         return None
-    
+
+def check_vcf_chr_NC(vcf_bcf_path,log,verbose):
+    vcf_bcf = VariantFile(vcf_bcf_path)
+    for i in list(vcf_bcf.header.contigs):
+        if i in get_number_to_NC(build="19").values():
+            log.write("  -RefSeq ID detected (hg19) in VCF/BCF...",verbose=verbose) 
+            return get_number_to_NC(build="19")
+        elif i in get_number_to_NC(build="38").values():
+            log.write("  -RefSeq ID detected (hg38) in VCF/BCF...",verbose=verbose) 
+            return get_number_to_NC(build="38")
+    else:
+        return None
 

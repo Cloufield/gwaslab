@@ -5,6 +5,7 @@ import numpy as np
 from itertools import repeat
 from multiprocessing import  Pool
 from liftover import get_lifter
+from liftover import ChainFile
 from functools import partial
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.g_vchange_status import status_match
@@ -19,6 +20,7 @@ from gwaslab.g_version import _get_version
 from gwaslab.util_in_fill_data import _convert_betase_to_mlog10p
 from gwaslab.util_in_fill_data import _convert_betase_to_p
 from gwaslab.util_in_fill_data import _convert_mlog10p_to_p
+from gwaslab.bd_common_data import get_chain
 #process build
 #setbuild
 #fixID
@@ -46,6 +48,9 @@ def _process_build(build,log,verbose):
     elif str(build).lower() in ["hg38","38","b38","grch38"]:
         log.write(" -Genomic coordinates are based on GRCh38/hg38...", verbose=verbose)
         final_build = "38"
+    elif str(build).lower() in ["t2t","hs1","chm13","13"]:
+        log.write(" -Genomic coordinates are based on T2T-CHM13...", verbose=verbose)
+        final_build = "13"
     else:
         log.warning("Version of genomic coordinates is unknown...", verbose=verbose)
         final_build = "99"
@@ -1566,11 +1571,19 @@ def liftover_variant(sumstats,
              pos="POS", 
              status="STATUS",
              from_build="19", 
-             to_build="38"):
+             to_build="38",
+             chain=None):
+    
     try:
-        converter = get_lifter("hg"+from_build,"hg"+to_build,one_based=True)
+        if chain is None:
+            converter = get_lifter(from_build,to_build,one_based=True)
+        else:
+            converter = ChainFile(chain, one_based=True)
     except:
-        converter = get_lifter("hg"+from_build,"hg"+to_build)
+        if chain is None:
+            converter = get_lifter(from_build,to_build)
+        else:
+            converter = ChainFile(chain)
 
     dic= get_number_to_chr(in_chr=False,xymt=["X","Y","M"])
     dic2= get_chr_to_number(out_chr=False)
@@ -1583,7 +1596,7 @@ def liftover_variant(sumstats,
         sumstats.loc[variants_on_chrom_to_convert,chrom]    =  lifted.str[0].map(dic2).astype("Int64")
     return sumstats
 
-def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True, verbose=True,log=Log()):
+def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True,chain=None, verbose=True,log=Log()):
     ##start function with col checking##########################################################
     _start_line = "perform liftover"
     _end_line = "liftover"
@@ -1602,8 +1615,21 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
                             **_must_args)
     if is_enough_info == False: return sumstats
     ############################################################################################
+    
+    lifter_from_build = _process_build(from_build,log=log,verbose=False)
+    lifter_to_build = _process_build(to_build,log=log,verbose=False)
 
-    log.write(" -Creating converter : hg" + from_build +" to hg"+ to_build, verbose=verbose)
+    if chain is not None:
+        log.write(" -Creating converter using ChainFile: {}".format(chain), verbose=verbose)
+    else:
+        try:
+            chain = get_chain(from_build=from_build, to_build=to_build)
+            log.write(" -Creating converter using ChainFile: {}".format(chain), verbose=verbose)
+        except:
+            chain = None
+            lifter_from_build=from_build
+            lifter_to_build=to_build
+    log.write(" -Creating converter : {} -> {}".format(lifter_from_build, lifter_to_build), verbose=verbose)
     # valid chr and pos
     pattern = r"\w\w\w0\w\w\w"  
     to_lift = sumstats[status].str.match(pattern)
@@ -1619,7 +1645,7 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         pool = Pool(n_cores)
         #df = pd.concat(pool.starmap(func, df_split))
         func=liftover_variant
-        sumstats[[chrom,pos,status]] = pd.concat(pool.map(partial(func,chrom=chrom,pos=pos,from_build=from_build,to_build=to_build,status=status),df_split))
+        sumstats[[chrom,pos,status]] = pd.concat(pool.map(partial(func,chrom=chrom,pos=pos,from_build=from_build,to_build=to_build,status=status,chain=chain),df_split))
         pool.close()
         pool.join()
     ############################################################################

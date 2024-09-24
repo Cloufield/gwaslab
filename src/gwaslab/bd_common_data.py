@@ -274,7 +274,9 @@ def get_gtf(chrom, build="19",source="ensembl"):
         gtf = pd.DataFrame(columns=["seqname","start","end","strand","feature","gene_biotype","gene_id","gene_name"])
     return gtf
 
-
+def get_chain(from_build="19", to_build="38"):    
+    chain_path = check_and_download("{}to{}".format(from_build, to_build))
+    return chain_path
 ####################################################################################################################
 def gtf_to_protein_coding(gtfpath,log=Log(),verbose=True):
     protein_coding_path = gtfpath[:-6]+"protein_coding.gtf.gz"
