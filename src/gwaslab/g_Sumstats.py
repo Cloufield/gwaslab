@@ -125,6 +125,8 @@ class Sumstats():
              snpr2=None,
              status=None,
              other=[],
+             chrom_pat=None,
+             snpid_pat=None,
              usekeys=None,
              direction=None,
              verbose=True,
@@ -207,6 +209,8 @@ class Sumstats():
           status=status,
           other=other,
           usekeys=usekeys,
+          chrom_pat=chrom_pat,
+          snpid_pat=snpid_pat,
           verbose=verbose,
           readargs=readargs,
           log=self.log)

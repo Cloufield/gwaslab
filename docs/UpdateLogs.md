@@ -5,6 +5,7 @@
 - implemented `.flip_snpid` and `.strip_snpid`
 - implemented support for chm13 `13` in `.liftover`
 - updated reference url list (added chain files)
+- implemented `chrom_pat` and `snpid_pat` filters for `gl.Sumstats()` 
 
 ## 3.4.48 20240822
 - fixed bug for `is_q_mc` in `compare_effect()`

@@ -95,6 +95,10 @@ def plot_stacked_mqq(objects,
         if "family" not in title_args.keys():
             title_args["family"] = "Arial"
     # create figure and axes ##################################################################################################################
+    #
+    # subplot_height : subplot height
+    # figsize : Width, height in inches
+
     if mode=="r":
         if len(vcfs)==1:
             vcfs = vcfs *len(sumstats_list)
@@ -107,14 +111,17 @@ def plot_stacked_mqq(objects,
         else:
             height_ratios = [1 for i in range(n_plot_plus_gene_track-1)]+[gene_track_height]
         
-        fig_args["figsize"] = [16,subplot_height*n_plot_plus_gene_track]
+        if "figsize" not in fig_args.keys():
+            fig_args["figsize"] = [16,subplot_height*n_plot_plus_gene_track]
+
         fig, axes = plt.subplots(n_plot_plus_gene_track, 1, sharex=True, 
                              gridspec_kw={'height_ratios': height_ratios},
                              **fig_args)
         plt.subplots_adjust(hspace=region_hspace)
     elif mode=="m":
         n_plot = len(sumstats_list)
-        fig_args["figsize"] = [10,subplot_height*n_plot]
+        if "figsize" not in fig_args.keys():
+            fig_args["figsize"] = [10,subplot_height*n_plot]
         fig, axes = plt.subplots(n_plot, 1, sharex=True, 
                              gridspec_kw={'height_ratios': [1 for i in range(n_plot)]},
                              **fig_args)
@@ -122,8 +129,8 @@ def plot_stacked_mqq(objects,
         vcfs = [None for i in range(n_plot)]
     elif mode=="mqq":
         n_plot = len(objects)
-#
-        fig_args["figsize"] = [10,subplot_height*n_plot]
+        if "figsize" not in fig_args.keys():
+            fig_args["figsize"] = [10,subplot_height*n_plot]
         fig, axes = plt.subplots(n_plot, 2, sharex=True, 
                              gridspec_kw={'height_ratios': [1 for i in range(n_plot-1)],
                                           'width_ratios':[mqqratio,1]},

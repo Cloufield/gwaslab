@@ -56,6 +56,8 @@ def preformat(sumstats,
           build=None,
           other=[],
           usekeys=None,
+          chrom_pat=None,
+          snpid_pat=None,
           verbose=False,
           readargs=None,
           log=None):
@@ -323,10 +325,30 @@ def preformat(sumstats,
                 skip_rows = get_skip_rows(inpath)
                 readargs["skiprows"] = skip_rows
                 log.write("Start to initialize gl.Sumstats from file :" + inpath,verbose=verbose)
-                sumstats = pd.read_table(inpath,
-                                 usecols=set(usecols),
-                                 dtype=dtype_dictionary,
-                                 **readargs)
+                if chrom_pat is not None:
+                    sumstats = _load_single_chr(inpath,
+                                                usecols,
+                                                dtype_dictionary,
+                                                readargs=readargs,
+                                                rename_dictionary=rename_dictionary,
+                                                chrom_pat=chrom_pat,
+                                                log=log,
+                                                verbose=verbose)
+                elif snpid_pat is not None: 
+                                
+                    sumstats = _load_variants_with_pattern(inpath,
+                                                usecols,
+                                                dtype_dictionary,
+                                                readargs=readargs,
+                                                rename_dictionary=rename_dictionary,
+                                                snpid_pat=snpid_pat,
+                                                log=log,
+                                                verbose=verbose)
+                else:
+                    sumstats = pd.read_table(inpath,
+                                    usecols=set(usecols),
+                                    dtype=dtype_dictionary,
+                                    **readargs)
 
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
@@ -520,9 +542,45 @@ def process_status(sumstats,build,log,verbose):
     #sumstats["STATUS"] = int(build)*(10**5) +99999
     build = _process_build(build,log,verbose)
     sumstats["STATUS"] = build +"99999"
-    categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+    categories = {str(j+i) for j in [1300000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
     sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
     return sumstats
 
 
+def _load_single_chr(inpath,usecols,dtype_dictionary,readargs,rename_dictionary,chrom_pat,log,verbose):
     
+    sumstats_iter = pd.read_table(inpath,
+                usecols=set(usecols),
+                dtype=dtype_dictionary, 
+                iterator=True, 
+                chunksize=500000,
+                **readargs)
+    # get chr 
+    for k,v in rename_dictionary.items():
+        if v=="CHR":
+            chunk_chrom = k
+            break
+
+    log.write(" -Loading only variants on chromosome with pattern : {} ...".format(chrom_pat),verbose=verbose)
+    sumstats_filtered = pd.concat([chunk[chunk[chunk_chrom].str.match(chrom_pat, case=False,na=False) ] for chunk in sumstats_iter])
+    log.write(" -Loaded {} variants on chromosome with pattern :{} ...".format(len(sumstats_filtered), chrom_pat),verbose=verbose)
+    return sumstats_filtered
+
+def _load_variants_with_pattern(inpath,usecols,dtype_dictionary,readargs,rename_dictionary,snpid_pat,log,verbose):
+    
+    sumstats_iter = pd.read_table(inpath,
+                usecols=set(usecols),
+                dtype=dtype_dictionary, 
+                iterator=True, 
+                chunksize=500000,
+                **readargs)
+    # get chr 
+    for k,v in rename_dictionary.items():
+        if v=="SNPID":
+            chunk_snpid = k
+            break
+
+    log.write(" -Loading only variants with pattern :  {} ...".format(snpid_pat),verbose=verbose)
+    sumstats_filtered = pd.concat([chunk[chunk[chunk_snpid].str.match(snpid_pat, case=False,na=False) ] for chunk in sumstats_iter])
+    log.write(" -Loaded {} variants with pattern : {} ...".format(len(sumstats_filtered), snpid_pat),verbose=verbose)
+    return sumstats_filtered
