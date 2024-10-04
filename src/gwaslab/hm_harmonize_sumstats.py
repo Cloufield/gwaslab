@@ -356,7 +356,7 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
     
     log.write("\n",end="",show_time=False,verbose=verbose) 
         
-    CATEGORIES = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+    CATEGORIES = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
     sumstats[status] = pd.Categorical(sumstats[status],categories=CATEGORIES)
     #sumstats[status] = sumstats[status].astype("string")
 
@@ -675,7 +675,7 @@ def checkref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="ST
         sumstats.loc[to_check_ref,status] = check_status(sumstats_to_check, all_records_dict, log=log, verbose=verbose)
         log.write(" -Finished checking records", verbose=verbose) 
     
-    CATEGORIES = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+    CATEGORIES = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
     sumstats[status] = pd.Categorical(sumstats[status],categories=CATEGORIES)
     #sumstats[status] = sumstats[status].astype("string")
 
