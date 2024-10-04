@@ -45,7 +45,7 @@ def _process_build(build,log,verbose):
     if str(build).lower() in ["hg19","19","37","b37","grch37"]:
         log.write(" -Genomic coordinates are based on GRCh37/hg19...", verbose=verbose)
         final_build = "19"
-    elif str(build).lower() in ["hg18","36","b36","grch36"]:
+    elif str(build).lower() in ["hg18","18","36","b36","grch36"]:
         log.write(" -Genomic coordinates are based on GRCh36/hg18...", verbose=verbose)
         final_build = "18"
     elif str(build).lower() in ["hg38","38","b38","grch38"]:
@@ -1119,7 +1119,7 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
         cols_to_check.append(header)
         if header=="STATUS": 
             log.write(" -Checking STATUS and converting STATUS to categories....", verbose=verbose) 
-            categories = {str(j+i) for j in [1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+            categories = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
             sumstats[header] = pd.Categorical(sumstats[header],categories=categories)
             return sumstats
         
