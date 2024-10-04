@@ -542,7 +542,7 @@ def process_status(sumstats,build,log,verbose):
     #sumstats["STATUS"] = int(build)*(10**5) +99999
     build = _process_build(build,log,verbose)
     sumstats["STATUS"] = build +"99999"
-    categories = {str(j+i) for j in [1300000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+    categories = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
     sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
     return sumstats
 

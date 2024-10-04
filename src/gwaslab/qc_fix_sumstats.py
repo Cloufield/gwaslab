@@ -45,6 +45,9 @@ def _process_build(build,log,verbose):
     if str(build).lower() in ["hg19","19","37","b37","grch37"]:
         log.write(" -Genomic coordinates are based on GRCh37/hg19...", verbose=verbose)
         final_build = "19"
+    elif str(build).lower() in ["hg18","36","b36","grch36"]:
+        log.write(" -Genomic coordinates are based on GRCh36/hg18...", verbose=verbose)
+        final_build = "18"
     elif str(build).lower() in ["hg38","38","b38","grch38"]:
         log.write(" -Genomic coordinates are based on GRCh38/hg38...", verbose=verbose)
         final_build = "38"

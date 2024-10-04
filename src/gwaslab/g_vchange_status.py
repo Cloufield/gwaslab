@@ -1,6 +1,6 @@
 import pandas as pd
 
-CATEGORIES = {str(j+i) for j in [1300000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+CATEGORIES = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
 
 def vchange_status(status,digit,before,after):
     dic={}
