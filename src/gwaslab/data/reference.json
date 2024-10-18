@@ -90,7 +90,7 @@
     "1kg_dbsnp151_hg38_x_md5":"48c05eeb1454c0dd4cbee3cb26382e8e",
     "recombination_hg19":"https://www.dropbox.com/s/wbesl8haxknonuc/recombination_hg19.tar.gz?dl=1",
     "recombination_hg38":"https://www.dropbox.com/s/vuo8mvqx0fpibzj/recombination_hg38.tar.gz?dl=1",
-    "ensembl_hg19_gtf":"https://ftp.ensembl.org/pub/grch37/current/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.chr.gtf.gz",
+    "ensembl_hg19_gtf":"https://ftp.ensembl.org/pub/grch37/release-87/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.chr.gtf.gz",
     "ensembl_hg38_gtf":"https://ftp.ensembl.org/pub/release-109/gtf/homo_sapiens//Homo_sapiens.GRCh38.109.chr.gtf.gz",
     "refseq_hg19_gtf":"https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh37_latest/refseq_identifiers/GRCh37_latest_genomic.gtf.gz",
     "refseq_hg38_gtf":"https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz",
