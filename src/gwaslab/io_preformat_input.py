@@ -86,7 +86,10 @@ def preformat(sumstats,
         if "format_separator" in meta_data.keys():
             if "sep" not in readargs.keys():
                 readargs["sep"] = meta_data["format_separator"]
-        
+            else:
+                if readargs["sep"] != meta_data["format_separator"]:
+                    log.write('  - format_separator will be changed to: "{}"'.format(readargs["sep"]),verbose=verbose)
+
         if "format_na" in meta_data.keys():
             readargs["na_values"] = meta_data["format_na"]
         
@@ -94,7 +97,7 @@ def preformat(sumstats,
             readargs["comment"] = meta_data["format_comment"]
         
         if "sep" not in readargs.keys():
-             readargs["sep"] = "\t"
+            readargs["sep"] = "\t"
         
 #########################################################################################################################################################      
     
@@ -558,8 +561,10 @@ def _load_single_chr(inpath,usecols,dtype_dictionary,readargs,rename_dictionary,
     # get chr 
     for k,v in rename_dictionary.items():
         if v=="CHR":
-            chunk_chrom = k
-            break
+            if k in usecols:
+                log.write(" -Columns used to filter variants: {}".format(k),verbose=verbose)
+                chunk_chrom = k
+                break
 
     log.write(" -Loading only variants on chromosome with pattern : {} ...".format(chrom_pat),verbose=verbose)
     sumstats_filtered = pd.concat([chunk[chunk[chunk_chrom].str.match(chrom_pat, case=False,na=False) ] for chunk in sumstats_iter])
@@ -577,8 +582,10 @@ def _load_variants_with_pattern(inpath,usecols,dtype_dictionary,readargs,rename_
     # get chr 
     for k,v in rename_dictionary.items():
         if v=="SNPID":
-            chunk_snpid = k
-            break
+            if k in usecols:
+                log.write(" -Columns used to filter variants: {}".format(k),verbose=verbose)
+                chunk_snpid = k
+                break
 
     log.write(" -Loading only variants with pattern :  {} ...".format(snpid_pat),verbose=verbose)
     sumstats_filtered = pd.concat([chunk[chunk[chunk_snpid].str.match(snpid_pat, case=False,na=False) ] for chunk in sumstats_iter])
