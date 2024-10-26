@@ -81,6 +81,7 @@ from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.util_abf_finemapping import abf_finemapping
 from gwaslab.util_abf_finemapping import make_cs
 import gc
+from gwaslab.viz_plot_phe_heatmap import _gwheatmap
 
 #20220309
 class Sumstats():
@@ -602,6 +603,11 @@ class Sumstats():
     def plot_daf(self, **kwargs):
         fig,outliers = plotdaf(self.data, **kwargs)
         return fig, outliers
+    
+    def plot_gwheatmap(self, **kwargs):
+        fig = _gwheatmap(self.data, **kwargs)
+        return fig
+    
     def plot_mqq(self, build=None, **kwargs):
 
         chrom="CHR"
@@ -705,7 +711,7 @@ class Sumstats():
         # return sumstats object    
         return output
     
-    def check_cis(self, **kwargs):
+    def check_cis(self, gls=False, **kwargs):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
@@ -717,7 +723,13 @@ class Sumstats():
                            p="P",
                            log=self.log,
                            **kwargs)
-        # return sumstats object    
+        
+        # return sumstats object   
+        if gls == True:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = output
+            gc.collect()
+            return new_Sumstats_object
         return output
     
     def check_novel_set(self, **kwargs):

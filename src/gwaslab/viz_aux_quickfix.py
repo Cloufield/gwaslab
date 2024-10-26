@@ -330,7 +330,7 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, lines_to_pl
                 if "b" not in mode:
                     log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...", verbose=verbose)
                 else:
-                    log.write(" -Minus DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...", verbose=verbose)
+                    log.write(" -DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...", verbose=verbose)
 
                 maxticker=int(np.round(series.max(skipna=True)))
 

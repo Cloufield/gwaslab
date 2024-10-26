@@ -619,8 +619,10 @@ def _check_cis(insumstats,
     except:
         pass
 
-    allsig["CIS/TRANS"] = allsig.apply(lambda x: determine_if_cis(x, group_key,windowsizekb, reference_dict), axis=1)
-    
+    #allsig["CIS/TRANS"] = allsig.apply(lambda x: determine_if_cis(x, group_key,windowsizekb, reference_dict), axis=1)
+    cis_tuples = allsig.apply(lambda x: determine_if_cis2(x, group_key,windowsizekb, reference_dict), axis=1)
+    allsig[["CIS/TRANS","REF_CHR","REF_START","REF_END"]] = pd.DataFrame(cis_tuples.tolist(), index=allsig.index)
+
     try:
         allsig = allsig.where(~pd.isna(allsig), pd.NA)
     except:
@@ -688,6 +690,20 @@ def determine_if_cis(x, group_key,windowsizekb, reference_dict):
             return "Trans"
     else:
         return "NoReference"
+
+def determine_if_cis2(x, group_key,windowsizekb, reference_dict):
+    if x[group_key] in reference_dict.keys():
+        is_same_chr = str(reference_dict[x[group_key]][0]) == str(x["CHR"])
+        is_large_than_start = int(reference_dict[x[group_key]][1]) - windowsizekb*1000 <= x["POS"]
+        is_smaller_than_end = int(reference_dict[x[group_key]][2]) + windowsizekb*1000 >= x["POS"]               
+        
+        if  is_same_chr and is_large_than_start  and is_smaller_than_end:
+            return "Cis", int(reference_dict[x[group_key]][0]), int(reference_dict[x[group_key]][1]), int(reference_dict[x[group_key]][2])
+        else: 
+            return "Trans", int(reference_dict[x[group_key]][0]), int(reference_dict[x[group_key]][1]), int(reference_dict[x[group_key]][2])
+    else:
+        return "NoReference", pd.NA, pd.NA, pd.NA
+
 
 def determine_distance(allsig, knownsig):
     if len(allsig)==0: 

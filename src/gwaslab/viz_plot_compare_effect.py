@@ -9,6 +9,7 @@ from matplotlib.patches import Rectangle
 from adjustText import adjust_text
 from gwaslab.viz_aux_save_figure import save_figure
 from gwaslab.util_in_get_sig import getsig
+from gwaslab.util_in_get_sig import annogene
 from gwaslab.g_Log import Log
 from gwaslab.util_in_correct_winnerscurse import wc_correct
 from gwaslab.util_in_correct_winnerscurse import wc_correct_test
@@ -59,6 +60,7 @@ def compare_effect(path1,
                    xylabel_prefix="Per-allele effect size in ",
                    helper_line_args=None,
                    fontargs=None,
+                   build="19",
                    r_or_r2="r",
                    # 
                    errargs=None,
@@ -80,7 +82,7 @@ def compare_effect(path1,
     
     if is_q == True:
         if is_q_mc not in [False,"fdr","bon","non"]:
-            raise ValueError("Please select either fdr or bon or non for is_q_mc.")
+            raise ValueError('Please select either "fdr" or "bon" or "non"/False for is_q_mc.')
     if save_args is None:
         save_args = {"dpi":300,"facecolor":"white"}
     if reg_box is None:
@@ -89,6 +91,8 @@ def compare_effect(path1,
         sep = ["\t","\t"]
     if get_lead_args is None:
         get_lead_args = {}
+    if anno=="GENENAME":
+        get_lead_args["anno"]=True
     if errargs is None:
         errargs={"ecolor":"#cccccc","elinewidth":1}
     if fontargs is None:
@@ -191,10 +195,12 @@ def compare_effect(path1,
         ######### 8.1 if a snplist is provided, use the snp list
         log.write(" -Extract variants in the given list from "+label[0]+"...")
         sig_list_1 = sumstats.loc[sumstats["SNPID"].isin(snplist),:].copy()
+        if anno=="GENENAME":
+            sig_list_1 = annogene(sumstats,"SNPID","CHR","POS", build=build, verbose=verbose,**get_lead_args)
     else:
-        ######### 8,2 otherwise use the sutomatically detected lead SNPs
+        ######### 8,2 otherwise use the automatically detected lead SNPs
         log.write(" -Extract lead variants from "+label[0]+"...")
-        sig_list_1 = getsig(sumstats,"SNPID","CHR","POS","P", verbose=verbose,sig_level=sig_level,**get_lead_args)
+        sig_list_1 = getsig(sumstats,"SNPID","CHR","POS","P", build=build, verbose=verbose,sig_level=sig_level,**get_lead_args)
     
     if drop==True:
         sig_list_1 = drop_duplicate_and_na(sig_list_1, sort_by="P", log=log ,verbose=verbose)
@@ -235,10 +241,12 @@ def compare_effect(path1,
         ######### 12.1 if a snplist is provided, use the snp list
         log.write(" -Extract snps in the given list from "+label[1]+"...")
         sig_list_2 = sumstats.loc[sumstats["SNPID"].isin(snplist),:].copy()
+        if anno=="GENENAME":
+            sig_list_2 = annogene(sumstats,"SNPID","CHR","POS", build=build, verbose=verbose,**get_lead_args)
     else: 
         log.write(" -Extract lead snps from "+label[1]+"...")
         ######### 12.2 otherwise use the sutomatically detected lead SNPs
-        sig_list_2 = getsig(sumstats,"SNPID","CHR","POS","P",
+        sig_list_2 = getsig(sumstats,"SNPID","CHR","POS","P",build=build,
                                  verbose=verbose,sig_level=sig_level,**get_lead_args)
     if drop==True:
         sig_list_2 = drop_duplicate_and_na(sig_list_2, sort_by="P", log=log ,verbose=verbose)
@@ -248,6 +256,10 @@ def compare_effect(path1,
     log.write("Merging snps from "+label[0]+" and "+label[1]+"...")
     
     sig_list_merged = pd.merge(sig_list_1,sig_list_2,left_on="SNPID",right_on="SNPID",how="outer",suffixes=('_1', '_2'))
+    if anno == "GENENAME":
+        sig_list_merged.loc[sig_list_merged["SNPID"].isin((sig_list_1["SNPID"])),"GENENAME"] = sig_list_merged.loc[sig_list_merged["SNPID"].isin((sig_list_1["SNPID"])),"GENE_1"]
+        sig_list_merged.loc[~sig_list_merged["SNPID"].isin((sig_list_1["SNPID"])),"GENENAME"] = sig_list_merged.loc[~sig_list_merged["SNPID"].isin((sig_list_1["SNPID"])),"GENE_2"]
+        sig_list_merged = sig_list_merged.drop(columns=["GENE_1","GENE_2","LOCATION_1","LOCATION_2"])
     #     SNPID       P_1       P_2
     #0   rs117986209  0.142569  0.394455
     #1     rs6704312  0.652104  0.143750
@@ -633,11 +645,11 @@ def compare_effect(path1,
             ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label[2],zorder=2,color="#205be6",edgecolors=both["Edge_color"],marker="s",**scatterargs)
             legend_elements.append(label[2])
     ## annotation #################################################################################################################
-    if anno==True:
+    if anno==True or anno=="GENENAME":
         sig_list_toanno = sig_list_merged.dropna(axis=0)
         if is_q==True and anno_het == True:
             sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["Edge_color"]=="black",:]
-        
+
         if mode=="beta":
             sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
             sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
@@ -651,22 +663,38 @@ def compare_effect(path1,
 
         texts_l=[]
         texts_r=[]
+        
+        if anno==True:
+            log.write("Annotating variants using {}".format("SNPID"), verbose=verbose)
+        elif anno=="GENENAME":
+            log.write("Annotating variants using {}".format("GENENAME"), verbose=verbose)
+        
         for index, row in sig_list_toanno.iterrows():
+            log.write("Annotating {}...".format(row), verbose=verbose)
+            if anno==True:
+                to_anno_text = index
+            elif type(anno) is str:
+                if not pd.isna(row[anno]):
+                    to_anno_text = row[anno]
+                else:
+                    to_anno_text = index
+
             if mode=="beta" or mode=="BETA" or mode=="Beta":
                 if row["EFFECT_1"] <  row["EFFECT_2_aligned"]:
-                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],index,ha="right",va="bottom"))
+                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="right",va="bottom"))
                 else:
-                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],index,ha="left",va="top"))
+                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="left",va="top"))
             else:
                 if row["OR_1"] <  row["OR_2_aligned"]:
-                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],index, ha='right', va='bottom')) 
+                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='right', va='bottom')) 
                 else:
-                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],index, ha='left', va='top')) 
-
-        adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
-        adjust_text(texts_r,autoalign =False,precision =0.001,lim=1000, ha="left",va="top", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects =(0.8,0.8),arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
-    
+                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='left', va='top')) 
+        if len(texts_l)>0:
+            adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
+        if len(texts_r)>0:
+            adjust_text(texts_r,autoalign =False,precision =0.001,lim=1000, ha="left",va="top", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects =(0.8,0.8),arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
     elif type(anno) is dict:
+        sig_list_toanno = sig_list_merged.dropna(axis=0)
         # if input is a dict
         sig_list_toanno = sig_list_toanno.loc[sig_list_toanno.index.isin(list(anno.keys())),:]
         if is_q==True and anno_het == True:
@@ -696,9 +724,10 @@ def compare_effect(path1,
                     texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='right', va='bottom')) 
                 else:
                     texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='left', va='top')) 
-
-        adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
-        adjust_text(texts_r,autoalign =False,precision =0.001,lim=1000, ha="left",va="top", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects =(0.8,0.8),arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
+        if len(texts_l)>0:
+            adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
+        if len(texts_r)>0:
+            adjust_text(texts_r,autoalign =False,precision =0.001,lim=1000, ha="left",va="top", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects =(0.8,0.8),arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
     #################################################################################################################################
     
     # plot x=0,y=0, and a 45 degree line

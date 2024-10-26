@@ -401,7 +401,7 @@ def mqqplot(insumstats,
     if mode=="b":
         sig_level=1,
         sig_line=False,
-        windowsizekb = 100000000   
+        #windowsizekb = 100000000   
         mode="mb"
         scatter_args={"marker":"s"}
         marker_size= (marker_size[1],marker_size[1])
@@ -522,8 +522,12 @@ def mqqplot(insumstats,
                                                     pos=pos, 
                                                     verbose=verbose, 
                                                     log=log)
+        
+        lines_to_plot = pd.Series(lines_to_plot.to_list() + [bmean, bmedian])
+    
     else:
         bmean, bmedian=0,0 
+    
 # P value conversion #####################################################################################################  
     
     # add raw_P and scaled_P
@@ -1104,12 +1108,6 @@ def _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, l
     return ax1
 
 
-
-
-
-
-
-
 ##############################################################################################################################################################################
 def _configure_cols_to_use(insumstats, snpid,  chrom, pos, ea, nea, eaf, p, mlog10p,scaled, mode,stratified,anno, anno_set, anno_alias,_chrom_df_for_i,highlight ,pinpoint,density_color):
     usecols=[]
@@ -1287,9 +1285,10 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
                 else:
                     break
         df = pd.DataFrame(stack,columns=["SNPID","TCHR+POS","DENSITY"])
-        sumstats["DENSITY"] = df["DENSITY"].values
-        bmean=sumstats["DENSITY"].mean()
-        bmedian=sumstats["DENSITY"].median()
+        sumstats["DENSITY"] = df["DENSITY"].astype("Float64").values
+
+        bmean=sumstats.drop_duplicates(subset="SNPID")["DENSITY"].mean()
+        bmedian=sumstats.drop_duplicates(subset="SNPID")["DENSITY"].median()
     elif "b" in mode and "DENSITY" in sumstats.columns:
         bmean=sumstats["DENSITY"].mean()
         bmedian=sumstats["DENSITY"].median()
@@ -1305,6 +1304,7 @@ def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_
                                 linestyle="--",
                                 color=sig_line_color,
                                 zorder=1)
+        
     if suggestive_sig_line is True:
         suggestive_sig_line = ax1.axhline(y=lines_to_plot[1], 
                                             linewidth = sc_linewidth, 
@@ -1312,15 +1312,20 @@ def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_
                                             color=suggestive_sig_line_color,
                                             zorder=1)
     if additional_line is not None:
-        for index, level in enumerate(lines_to_plot[2:].values):
+        for index, level in enumerate(lines_to_plot[2:2+len(additional_line)].values):
             ax1.axhline(y=level, 
                         linewidth = sc_linewidth, 
                         linestyle="--", 
                         color=additional_line_color[index%len(additional_line_color)],
                         zorder=1)
-    if "b" in mode:   
+    if "b" in mode: 
+        bmean = lines_to_plot.iat[-2]
+        bmedian = lines_to_plot.iat[-1]
         # for brisbane plot, add median and mean line 
+        log.write(" -Plotting horizontal line (  mean DENISTY): y = {}".format(bmean),verbose=verbose) 
         meanline = ax1.axhline(y=bmean, linewidth = sc_linewidth,linestyle="-",color=sig_line_color,zorder=1000)
+
+        log.write(" -Plotting horizontal line ( median DENISTY): y = {}".format(bmedian),verbose=verbose) 
         medianline = ax1.axhline(y=bmedian, linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1000)
     return ax1
 
@@ -1441,10 +1446,16 @@ def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
             ax2 = None
             plt.subplots_adjust(hspace=region_hspace)
     elif mode =="b" :
-        fig_args["figsize"] = (15,5)
-        fig, ax1 = plt.subplots(1, 1,**fig_args)
-        ax2 = None
-        ax3 = None
+        if figax is not None:
+            fig = figax[0]
+            ax1 = figax[1]
+            ax3 = None
+            ax2 = None
+        else:
+            fig_args["figsize"] = (15,5)
+            fig, ax1 = plt.subplots(1, 1,**fig_args)
+            ax2 = None
+            ax3 = None
     else:
         raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
     ax4=None
