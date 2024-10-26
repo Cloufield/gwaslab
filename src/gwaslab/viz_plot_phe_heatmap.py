@@ -80,7 +80,12 @@ def _gwheatmap(
     sumstats = sumstats.loc[~sumstats[ref_pos].isna(),:]
     
     sumstats = sumstats.sort_values(by=group)
-        
+
+    if scaled is True:
+        sumstats["raw_P"] = pd.to_numeric(sumstats[mlog10p], errors='coerce')
+    else:
+        sumstats["raw_P"] = sumstats[p].astype("float64")
+
     sumstats =  _process_p_value(sumstats=sumstats, 
                                 mode="m",
                                 p=p, 
@@ -123,11 +128,11 @@ def _gwheatmap(
     if add_b == True:
         sumstats["i"] = sumstats["i_x"]
         fig,log = mqqplot(sumstats,
-                        chrom="CHR",
-                        pos="POS",
-                        p="P",
-                        mlog10p="scaled_P",
-                        snpid="SNPID",
+                        chrom=chrom,
+                        pos=pos,
+                        p=p,
+                        mlog10p=mlog10p,
+                        snpid=snpid,
                         scaled=scaled,
                         log=log, 
                         mode="b",
@@ -142,7 +147,7 @@ def _gwheatmap(
     ## determine dot size
 
     ## plot  
-    legend = None
+    legend = True
     style=None
     linewidth=0
     edgecolor="black"
@@ -161,6 +166,20 @@ def _gwheatmap(
             zorder=2,
             ax=ax1)   
     
+    handles, labels = ax1.get_legend_handles_labels()
+    new_labels = []
+    ncol = len(labels)
+    for i in labels:
+        if i==group:
+            new_labels.append("Group")
+        elif i=="scaled_P":
+            new_labels.append("$-log_{10}(P)$")
+        else:
+            new_labels.append(i)
+    
+    ax1.legend(labels = new_labels,  handles=handles, loc="lower center", bbox_to_anchor=(.45, -0.17), 
+                    ncol=ncol, scatterpoints=2, title=None, frameon=False)
+
     ## add vertical line
     for i in add_x_unique:
         ax1.axvline(x = i+0.5, linewidth = grid_linewidth,color=grid_linecolor,zorder=1000 )
