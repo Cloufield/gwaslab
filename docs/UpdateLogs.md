@@ -1,5 +1,9 @@
 # Update Logs
 
+$ 3.5.0 2024
+- added `plot_gwheatmap()`
+- fixed error in `compare_effect()`
+
 # 3.4.49 2024
 - fixed the suffix for yaml in `to_format()`
 - implemented `.flip_snpid` and `.strip_snpid`
