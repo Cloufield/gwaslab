@@ -50,6 +50,8 @@ def _gwheatmap(
     hspace = 0.1,
     font_family="Arial",
     verbose=True,
+    save=True,
+    save_kwargs=None,
     grid_linewidth=1,
     grid_linecolor="grey",
     **mqq_kwargs
@@ -66,6 +68,8 @@ def _gwheatmap(
         colors=["#CB132D","#597FBD"]
     if fig_kwargs is None:
         fig_kwargs= dict(figsize=(15,15))
+    if save_kwargs is None:
+        save_kwargs = {"dpi":300,"facecolor":"white"}
 
     sumstats = insumstats.copy()
     
@@ -202,8 +206,12 @@ def _gwheatmap(
     ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
     ylabel = "location of the gene encoding the target protein"
     ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family)
+    
+    save_figure(fig = fig, save = save, keyword="gwheatmap",  save_args=save_kwargs, log = log, verbose=verbose)
+
     #return fig
 
+################################################################################################################
 def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family, log=Log(),verbose=True):
     log.write(" -Processing X ticks...",verbose=verbose)
     ax1.set_xticks(chrom_df.astype("float64"))
