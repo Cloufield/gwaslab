@@ -139,7 +139,7 @@ def mqqplot(insumstats,
           anno_gtf_path=None,
           anno_adjust=False,
           anno_max_iter=100,
-          arm_offset=50,
+          arm_offset=None,
           arm_scale=1,
           anno_height=1,
           arm_scale_d=None,
@@ -291,7 +291,7 @@ def mqqplot(insumstats,
     if maf_bin_colors is None:
         maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]
     if save_args is None:
-        save_args = {"dpi":300,"facecolor":"white"}
+        save_args = {"dpi":400,"facecolor":"white"}
     if highlight is None:
         highlight = list()
     if highlight_anno_args is None:
@@ -329,6 +329,12 @@ def mqqplot(insumstats,
                     fig_args["dpi"]=72
                     scatter_args["rasterized"]=True
                     qq_scatter_args["rasterized"]=True
+                else:
+                    fig_args["dpi"] = save_args["dpi"]
+    
+    if len(anno_d) > 0 and arm_offset is None:
+        # in pixels
+        arm_offset = fig_args["dpi"] * repel_force * fig_args["figsize"][0]*0.5
 
     log.write("Start to create MQQ plot...{}:".format(_get_version()),verbose=verbose)
     log.write(" -Genomic coordinates version: {}...".format(build),verbose=verbose)
@@ -960,7 +966,7 @@ def mqqplot(insumstats,
             ax1.set_title(mtitle,fontsize=title_fontsize,family=font_family)
         log.write("Finished processing figure arts.",verbose=verbose)
 
-        # Add annotation arrows and texts
+        ## Add annotation arrows and texts
         log.write("Start to annotate variants...",verbose=verbose)
         ax1 = annotate_single(
                                 sumstats=sumstats,
@@ -1059,7 +1065,8 @@ def mqqplot(insumstats,
         fig.suptitle(title , fontsize = title_fontsize ,x=0.5, y=1.05)
     else:
         fig.suptitle(title , fontsize = title_fontsize, x=0.5,y=1)
-
+        ## Add annotation arrows and texts
+    
     # Saving figure
     save_figure(fig = fig, save = save, keyword=mode, save_args=save_args, log = log, verbose=verbose)
 
