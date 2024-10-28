@@ -2,7 +2,11 @@
 
 $ 3.5.0 2024
 - added `plot_gwheatmap()`
-- fixed error in `compare_effect()`
+- added genename annotation in `compare_effect()`
+- fixed annotation error in `compare_effect()`
+- fixed is_q error in `compare_effect()`
+- fixed error for calculating arm length for annotation.
+- removed some outdated code
 
 # 3.4.49 2024
 - fixed the suffix for yaml in `to_format()`

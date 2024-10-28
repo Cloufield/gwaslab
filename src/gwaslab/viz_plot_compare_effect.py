@@ -79,7 +79,6 @@ def compare_effect(path1,
         scaled2 = True
     if is_q_mc=="fdr" or is_q_mc=="bon":
         is_q = True
-    
     if is_q == True:
         if is_q_mc not in [False,"fdr","bon","non"]:
             raise ValueError('Please select either "fdr" or "bon" or "non"/False for is_q_mc.')
@@ -545,7 +544,7 @@ def compare_effect(path1,
 
     ########################## Het test############################################################
     ## heterogeneity test
-    if (is_q is True):
+    if (is_q == True):
         log.write(" -Calculating Cochran's Q statistics and peform chisq test...", verbose=verbose)
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             sig_list_merged = test_q(sig_list_merged,"EFFECT_1","SE_1","EFFECT_2_aligned","SE_2",q_level=q_level,is_q_mc=is_q_mc, log=log, verbose=verbose)
@@ -564,7 +563,7 @@ def compare_effect(path1,
         log.write(" -Exclude "+str(len(sig_list_merged) -sum(both_eaf_clear))+ " variants with maf <",maf_level, verbose=verbose)
         sig_list_merged = sig_list_merged.loc[both_eaf_clear,:]
     # heterogeneity summary
-    if (is_q is True):
+    if (is_q == True):
         log.write(" -Significant het:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:]), verbose=verbose)
         log.write(" -All sig:" ,len(sig_list_merged), verbose=verbose)
         log.write(" -Het rate:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:])/len(sig_list_merged), verbose=verbose)   
