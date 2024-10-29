@@ -15,6 +15,7 @@ from gwaslab.util_in_correct_winnerscurse import wc_correct
 from gwaslab.util_in_correct_winnerscurse import wc_correct_test
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.io_process_args import _merge_and_sync_dic
+from gwaslab.io_process_args import _extract_kwargs
 #20220422
 def compare_effect(path1,
                    path2,
@@ -70,8 +71,9 @@ def compare_effect(path1,
                    log = Log(),
                    save=False,
                    save_args=None,
-                   verbose=False):
-    
+                   verbose=False,
+                   **kwargs):
+
     #[snpid,p,ea,nea]      ,[effect,se]
     #[snpid,p,ea,nea,chr,pos],[effect,se]
     #[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
@@ -99,7 +101,6 @@ def compare_effect(path1,
         errargs={"ecolor":"#cccccc","elinewidth":1}
     if fontargs is None:
         fontargs={'fontsize':12,'family':'sans','fontname':'Arial'}
-        fontargs = _merge_and_sync_dic(fontargs, font_args)
     if helper_line_args is None:
         helper_line_args={"color":'black', "linestyle":'-',"lw":1}
     if plt_args is None:
@@ -110,6 +111,13 @@ def compare_effect(path1,
         label = ["Sumstats_1","Sumstats_2","Both","None"]
     if anno_het ==True:
         is_q=True
+
+    save_args =        _extract_kwargs("font", save_args, locals())
+    anno_args =        _extract_kwargs("anno", anno_args, locals())
+    err_kwargs =       _extract_kwargs("err", errargs, locals())
+    plt_kwargs =       _extract_kwargs("plt", plt_args,  locals())
+    scatter_kwargs =   _extract_kwargs("scatter", scatterargs, locals())
+    fontargs =         _extract_kwargs("font",fontargs, locals())
 
     log.write("Start to process the raw sumstats for plotting...", verbose=verbose)
     
@@ -559,7 +567,7 @@ def compare_effect(path1,
     ## save the merged data
     save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
     log.write(" -Saving the merged data to:",save_path, verbose=verbose)
-    sig_list_merged.to_csv(save_path,"\t")
+    sig_list_merged.to_csv(save_path,sep="\t")
     
     ########################## maf_threshold#############################################################
     if (len(eaf)>0) and (maf_level is not None):
@@ -597,55 +605,55 @@ def compare_effect(path1,
     log.write("Creating the scatter plot for effect sizes comparison...", verbose=verbose)
     #plt.style.use("ggplot")
     sns.set_style("ticks")
-    fig,ax = plt.subplots(**plt_args) 
+    fig,ax = plt.subplots(**plt_kwargs) 
     legend_elements=[]
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         if len(sum0)>0:
             ax.errorbar(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"], xerr=sum0["SE_1"],yerr=sum0["SE_2"],
-                        linewidth=0,zorder=1,**errargs)
+                        linewidth=0,zorder=1,**err_kwargs)
             
-            ax.scatter(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"],label=label[3],zorder=2,color="#cccccc",edgecolors=sum0["Edge_color"],marker=".",**scatterargs)
+            ax.scatter(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"],label=label[3],zorder=2,color="#cccccc",edgecolors=sum0["Edge_color"],marker=".",**scatter_kwargs)
             #legend_elements.append(mpatches.Circle(facecolor='#cccccc', edgecolor='white', label=label[3]))
             legend_elements.append(label[3])
         if len(sum1only)>0:
             ax.errorbar(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"], xerr=sum1only["SE_1"],yerr=sum1only["SE_2"],
-                        linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"],label=label[0],zorder=2,color="#e6320e",edgecolors=sum1only["Edge_color"],marker="^",**scatterargs)
+                        linewidth=0,zorder=1,**err_kwargs)
+            ax.scatter(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"],label=label[0],zorder=2,color="#e6320e",edgecolors=sum1only["Edge_color"],marker="^",**scatter_kwargs)
             #legend_elements.append(mpatches.Patch(facecolor='#e6320e', edgecolor='white', label=label[0]))
             legend_elements.append(label[0])
         if len(sum2only)>0:
             ax.errorbar(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"], xerr=sum2only["SE_1"],yerr=sum2only["SE_2"],
-                        linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"],label=label[1],zorder=2,color="#41e620",edgecolors=sum2only["Edge_color"],marker="o",**scatterargs)
+                        linewidth=0,zorder=1,**err_kwargs)
+            ax.scatter(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"],label=label[1],zorder=2,color="#41e620",edgecolors=sum2only["Edge_color"],marker="o",**scatter_kwargs)
             #legend_elements.append(mpatches.Circle(facecolor='#41e620', edgecolor='white', label=label[1]))
             legend_elements.append(label[1])
         if len(both)>0:
             ax.errorbar(both["EFFECT_1"],both["EFFECT_2_aligned"], xerr=both["SE_1"],yerr=both["SE_2"],
-                        linewidth=0,zorder=1,**errargs)
-            ax.scatter(both["EFFECT_1"],both["EFFECT_2_aligned"],label=label[2],zorder=2,color="#205be6",edgecolors=both["Edge_color"],marker="s",**scatterargs)  
+                        linewidth=0,zorder=1,**err_kwargs)
+            ax.scatter(both["EFFECT_1"],both["EFFECT_2_aligned"],label=label[2],zorder=2,color="#205be6",edgecolors=both["Edge_color"],marker="s",**scatter_kwargs)  
             #legend_elements.append(mpatches.Patch(facecolor='#205be6', edgecolor='white', label=label[2]))
             legend_elements.append(label[2])
     else:
         ## if OR
         if len(sum0)>0:
             ax.errorbar(sum0["OR_1"],sum0["OR_2_aligned"], xerr=sum0[["OR_L_1_err","OR_H_1_err"]].T,yerr=sum0[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
-                        linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum0["OR_1"],sum0["OR_2_aligned"],label=label[3],zorder=2,color="#cccccc",edgecolors=sum0["Edge_color"],marker=".",**scatterargs)
+                        linewidth=0,zorder=1,**err_kwargs)
+            ax.scatter(sum0["OR_1"],sum0["OR_2_aligned"],label=label[3],zorder=2,color="#cccccc",edgecolors=sum0["Edge_color"],marker=".",**scatter_kwargs)
             legend_elements.append(label[3])
         if len(sum1only)>0:
             ax.errorbar(sum1only["OR_1"],sum1only["OR_2_aligned"], xerr=sum1only[["OR_L_1_err","OR_H_1_err"]].T,yerr=sum1only[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
-                        linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum1only["OR_1"],sum1only["OR_2_aligned"],label=label[0],zorder=2,color="#e6320e",edgecolors=sum1only["Edge_color"],marker="^",**scatterargs)
+                        linewidth=0,zorder=1,**err_kwargs)
+            ax.scatter(sum1only["OR_1"],sum1only["OR_2_aligned"],label=label[0],zorder=2,color="#e6320e",edgecolors=sum1only["Edge_color"],marker="^",**scatter_kwargs)
             legend_elements.append(label[0])
         if len(sum2only)>0:
             ax.errorbar(sum2only["OR_1"],sum2only["OR_2_aligned"], xerr=sum2only[["OR_L_1_err","OR_H_1_err"]].T,yerr=sum2only[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
-                        linewidth=0,zorder=1,**errargs)
-            ax.scatter(sum2only["OR_1"],sum2only["OR_2_aligned"],label=label[1],zorder=2,color="#41e620",edgecolors=sum2only["Edge_color"],marker="o",**scatterargs)
+                        linewidth=0,zorder=1,**err_kwargs)
+            ax.scatter(sum2only["OR_1"],sum2only["OR_2_aligned"],label=label[1],zorder=2,color="#41e620",edgecolors=sum2only["Edge_color"],marker="o",**scatter_kwargs)
             legend_elements.append(label[1])
         if len(both)>0:
             ax.errorbar(both["OR_1"],both["OR_2_aligned"], xerr=both[["OR_L_1_err","OR_H_1_err"]].T,yerr=both[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
-                        linewidth=0,zorder=1,**errargs)
-            ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label[2],zorder=2,color="#205be6",edgecolors=both["Edge_color"],marker="s",**scatterargs)
+                        linewidth=0,zorder=1,**err_kwargs)
+            ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label[2],zorder=2,color="#205be6",edgecolors=both["Edge_color"],marker="s",**scatter_kwargs)
             legend_elements.append(label[2])
     ## annotation #################################################################################################################
     if anno==True or anno=="GENENAME":
