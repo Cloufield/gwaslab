@@ -14,7 +14,7 @@ from gwaslab.g_Log import Log
 from gwaslab.util_in_correct_winnerscurse import wc_correct
 from gwaslab.util_in_correct_winnerscurse import wc_correct_test
 from gwaslab.g_Sumstats import Sumstats
-
+from gwaslab.io_process_args import _merge_and_sync_dic
 #20220422
 def compare_effect(path1,
                    path2,
@@ -31,6 +31,7 @@ def compare_effect(path1,
                    anno_min1=0,
                    anno_min2=0,
                    anno_diff=0,
+                   anno_args=None,
                    scaled=False,
                    scaled1=False,
                    scaled2=False,
@@ -59,10 +60,10 @@ def compare_effect(path1,
                    plt_args=None,
                    xylabel_prefix="Per-allele effect size in ",
                    helper_line_args=None,
+                   font_args=None,
                    fontargs=None,
                    build="19",
                    r_or_r2="r",
-                   # 
                    errargs=None,
                    legend_args=None,
                    sep=["\t","\t"],
@@ -92,10 +93,13 @@ def compare_effect(path1,
         get_lead_args = {}
     if anno=="GENENAME":
         get_lead_args["anno"]=True
+    if anno_args is None:
+        anno_args = {}
     if errargs is None:
         errargs={"ecolor":"#cccccc","elinewidth":1}
     if fontargs is None:
         fontargs={'fontsize':12,'family':'sans','fontname':'Arial'}
+        fontargs = _merge_and_sync_dic(fontargs, font_args)
     if helper_line_args is None:
         helper_line_args={"color":'black', "linestyle":'-',"lw":1}
     if plt_args is None:
@@ -107,14 +111,14 @@ def compare_effect(path1,
     if anno_het ==True:
         is_q=True
 
-    log.write("Start to process the raw sumstats for plotting...")
+    log.write("Start to process the raw sumstats for plotting...", verbose=verbose)
     
     ######### 1 check the value used to plot
     if mode not in ["Beta","beta","BETA","OR","or"]:
         raise ValueError("Please input Beta or OR")
     
     if type(path1) is Sumstats:
-        log.write("Path1 is gwaslab Sumstats object...")
+        log.write("Path1 is gwaslab Sumstats object...", verbose=verbose)
         if cols_name_list_1 is None:
             cols_name_list_1 = ["SNPID","P","EA","NEA","CHR","POS"]
         if effect_cols_list_1 is None:
@@ -123,10 +127,10 @@ def compare_effect(path1,
             else:
                 effect_cols_list_1 = ["OR","OR_95L","OR_95U"]
     elif type(path1) is pd.DataFrame:
-        log.write("Path1 is pandas DataFrame object...")
+        log.write("Path1 is pandas DataFrame object...", verbose=verbose)
 
     if type(path2) is Sumstats:
-        log.write("Path2 is gwaslab Sumstats object...")
+        log.write("Path2 is gwaslab Sumstats object...", verbose=verbose)
         if cols_name_list_2 is None:
             cols_name_list_2 = ["SNPID","P","EA","NEA","CHR","POS"]
         if effect_cols_list_2 is None:
@@ -135,10 +139,10 @@ def compare_effect(path1,
             else:
                 effect_cols_list_2 = ["OR","OR_95L","OR_95U"]
     elif type(path2) is pd.DataFrame:
-        log.write("Path2 is pandas DataFrame object...")
+        log.write("Path2 is pandas DataFrame object...", verbose=verbose)
     
     ######### 2 extract snplist2
-    log.write(" -Loading "+label[1]+" SNP list in memory...")    
+    log.write(" -Loading "+label[1]+" SNP list in memory...", verbose=verbose)    
     
     if type(path2) is Sumstats:
         sumstats = path2.data[[cols_name_list_2[0]]].copy()
@@ -156,7 +160,7 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[1],cols_name_list_1[4],cols_name_list_1[5]]
  
     ######### 4 load sumstats1
-    log.write(" -Loading sumstats for "+label[0]+":",",".join(cols_to_extract))
+    log.write(" -Loading sumstats for "+label[0]+":",",".join(cols_to_extract), verbose=verbose)
     
     if type(path1) is Sumstats:
         sumstats = path1.data[cols_to_extract].copy()
@@ -171,7 +175,7 @@ def compare_effect(path1,
         sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
     ######### 5 extract the common set
     common_snp_set = common_snp_set.intersection(sumstats[cols_name_list_1[0]].values)
-    log.write(" -Counting  variants available for both datasets:",len(common_snp_set)," variants...")
+    log.write(" -Counting  variants available for both datasets:",len(common_snp_set)," variants...", verbose=verbose)
     
     ######### 6 rename the sumstats
     rename_dict = { cols_name_list_1[0]:"SNPID",
@@ -187,7 +191,7 @@ def compare_effect(path1,
     ######### 7 exctract only available variants from sumstats1 
     sumstats = sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
     
-    log.write(" -Using only variants available for both datasets...")
+    log.write(" -Using only variants available for both datasets...", verbose=verbose)
     ######### 8 extact SNPs for comparison 
     
     if snplist is not None: 
@@ -198,7 +202,7 @@ def compare_effect(path1,
             sig_list_1 = annogene(sumstats,"SNPID","CHR","POS", build=build, verbose=verbose,**get_lead_args)
     else:
         ######### 8,2 otherwise use the automatically detected lead SNPs
-        log.write(" -Extract lead variants from "+label[0]+"...")
+        log.write(" -Extract lead variants from "+label[0]+"...", verbose=verbose)
         sig_list_1 = getsig(sumstats,"SNPID","CHR","POS","P", build=build, verbose=verbose,sig_level=sig_level,**get_lead_args)
     
     if drop==True:
@@ -210,7 +214,7 @@ def compare_effect(path1,
     else:
         cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1],cols_name_list_2[4],cols_name_list_2[5]]
     
-    log.write(" -Loading sumstats for "+label[1]+":",",".join(cols_to_extract))
+    log.write(" -Loading sumstats for "+label[1]+":",",".join(cols_to_extract), verbose=verbose)
     
     if type(path2) is Sumstats:
         sumstats = path2.data[cols_to_extract].copy()
@@ -238,12 +242,12 @@ def compare_effect(path1,
     ######## 12 extact SNPs for comparison 
     if snplist is not None: 
         ######### 12.1 if a snplist is provided, use the snp list
-        log.write(" -Extract snps in the given list from "+label[1]+"...")
+        log.write(" -Extract snps in the given list from "+label[1]+"...", verbose=verbose)
         sig_list_2 = sumstats.loc[sumstats["SNPID"].isin(snplist),:].copy()
         if anno=="GENENAME":
             sig_list_2 = annogene(sumstats,"SNPID","CHR","POS", build=build, verbose=verbose,**get_lead_args)
     else: 
-        log.write(" -Extract lead snps from "+label[1]+"...")
+        log.write(" -Extract lead snps from "+label[1]+"...", verbose=verbose)
         ######### 12.2 otherwise use the sutomatically detected lead SNPs
         sig_list_2 = getsig(sumstats,"SNPID","CHR","POS","P",build=build,
                                  verbose=verbose,sig_level=sig_level,**get_lead_args)
@@ -252,7 +256,7 @@ def compare_effect(path1,
 
     ######### 13 Merge two list using SNPID
     ##############################################################################
-    log.write("Merging snps from "+label[0]+" and "+label[1]+"...")
+    log.write("Merging snps from "+label[0]+" and "+label[1]+"...", verbose=verbose)
     
     sig_list_merged = pd.merge(sig_list_1,sig_list_2,left_on="SNPID",right_on="SNPID",how="outer",suffixes=('_1', '_2'))
     if anno == "GENENAME":
@@ -276,7 +280,7 @@ def compare_effect(path1,
         cols_to_extract = [cols_name_list_1[0],cols_name_list_1[1], cols_name_list_1[2],cols_name_list_1[3], effect_cols_list_1[0], effect_cols_list_1[1], effect_cols_list_1[2]]
     
     if len(eaf)>0: cols_to_extract.append(eaf[0])   
-    log.write(" -Extract statistics of selected variants from "+label[0]+" : ",",".join(cols_to_extract) )
+    log.write(" -Extract statistics of selected variants from "+label[0]+" : ",",".join(cols_to_extract), verbose=verbose )
     
     if type(path1) is Sumstats:
         sumstats = path1.data[cols_to_extract].copy()
@@ -680,14 +684,14 @@ def compare_effect(path1,
 
             if mode=="beta" or mode=="BETA" or mode=="Beta":
                 if row["EFFECT_1"] <  row["EFFECT_2_aligned"]:
-                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="right",va="bottom"))
+                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="right",va="bottom", **anno_args))
                 else:
-                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="left",va="top"))
+                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="left",va="top", **anno_args))
             else:
                 if row["OR_1"] <  row["OR_2_aligned"]:
-                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='right', va='bottom')) 
+                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='right', va='bottom', **anno_args)) 
                 else:
-                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='left', va='top')) 
+                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='left', va='top', **anno_args)) 
         if len(texts_l)>0:
             adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
         if len(texts_r)>0:
@@ -715,14 +719,14 @@ def compare_effect(path1,
         for index, row in sig_list_toanno.iterrows():
             if mode=="beta" or mode=="BETA" or mode=="Beta":
                 if row["EFFECT_1"] <  row["EFFECT_2_aligned"]:
-                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="right",va="bottom"))
+                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="right",va="bottom", **anno_args))
                 else:
-                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="left",va="top"))
+                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="left",va="top", **anno_args))
             else:
                 if row["OR_1"] <  row["OR_2_aligned"]:
-                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='right', va='bottom')) 
+                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='right', va='bottom', **anno_args)) 
                 else:
-                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='left', va='top')) 
+                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='left', va='top', **anno_args)) 
         if len(texts_l)>0:
             adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
         if len(texts_r)>0:
