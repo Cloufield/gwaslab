@@ -332,6 +332,14 @@ def mqqplot(insumstats,
                 else:
                     fig_args["dpi"] = save_args["dpi"]
     
+    # configure dpi if saving the plot
+    fig_args, scatter_args, qq_scatter_args, save_args = _configure_fig_save_kwargs(save = save, 
+                                                                                    fig_args = fig_args, 
+                                                                                    scatter_args = scatter_args, 
+                                                                                    qq_scatter_args = qq_scatter_args, 
+                                                                                    save_args = save_args)
+
+
     if len(anno_d) > 0 and arm_offset is None:
         # in pixels
         arm_offset = fig_args["dpi"] * repel_force * fig_args["figsize"][0]*0.5
@@ -1080,7 +1088,31 @@ def mqqplot(insumstats,
 
 ##############################################################################################################################################################################
 
+def _configure_fig_save_kwargs(save=None, 
+                               fig_args=None, 
+                               scatter_args=None, 
+                               qq_scatter_args=None, 
+                               save_args=None):
+    if fig_args is None:
+        fig_args = dict()
+    if scatter_args is None:
+        scatter_args = dict()
+    if qq_scatter_args is None:
+        qq_scatter_args = dict()
+    if save_args is None:
+        save_args = dict()
 
+    if save is not None:
+        if type(save) is not bool:
+            if len(save)>3:
+                if save[-3:]=="pdf" or save[-3:]=="svg":
+                    # to save as vectorized plot
+                    fig_args["dpi"]=72
+                    scatter_args["rasterized"]=True
+                    qq_scatter_args["rasterized"]=True
+                else:
+                    fig_args["dpi"] = save_args["dpi"]
+    return fig_args, scatter_args, qq_scatter_args, save_args
 
 
 def _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, log, verbose):

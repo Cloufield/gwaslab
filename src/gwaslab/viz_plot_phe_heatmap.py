@@ -10,13 +10,16 @@ from gwaslab.viz_aux_quickfix import _quick_fix_pos
 from gwaslab.viz_aux_quickfix import _quick_fix_chr
 from gwaslab.viz_aux_quickfix import _quick_fix_eaf
 from gwaslab.viz_aux_quickfix import _quick_fix_mlog10p
+from gwaslab.viz_aux_quickfix import _dropna_in_cols
 from gwaslab.viz_plot_mqqplot import _process_p_value
+from gwaslab.viz_plot_mqqplot import _configure_fig_save_kwargs
 from gwaslab.viz_plot_mqqplot import mqqplot
 from gwaslab.viz_aux_save_figure import save_figure
 from gwaslab.g_Log import Log
 import copy
 from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_number_to_chr
+from gwaslab.g_version import _get_version
 
 def _gwheatmap(
     insumstats,    
@@ -27,7 +30,7 @@ def _gwheatmap(
     p="P",
     scaled=False,
     sizes = (10,50),
-    alpha=0.7,
+    alpha=0.5,
     mlog10p="MLOG10P",
     snpid="SNPID",
     eaf=None,
@@ -46,9 +49,11 @@ def _gwheatmap(
     add_b =False,
     log=Log(),
     fig_kwargs=None,
+    scatter_kwargs=None,
     height_ratios=None,
     hspace = 0.1,
     font_family="Arial",
+    cis_windowsizekb=100,
     verbose=True,
     save=True,
     save_kwargs=None,
@@ -56,6 +61,7 @@ def _gwheatmap(
     grid_linecolor="grey",
     **mqq_kwargs
 ):
+    log.write("Start to create genome-wide scatter plot...{}:".format(_get_version()),verbose=verbose)
     if height_ratios is None:
         height_ratios = [1, 2]
     if xtick_chr_dict is None:         
@@ -70,6 +76,14 @@ def _gwheatmap(
         fig_kwargs= dict(figsize=(15,15))
     if save_kwargs is None:
         save_kwargs = {"dpi":300,"facecolor":"white"}
+    if scatter_kwargs is None:
+        scatter_kwargs = {}
+
+    fig_kwargs, scatter_kwargs, qq_scatter_args, save_kwargs = _configure_fig_save_kwargs(save=save, 
+                                                                                    fig_args = fig_kwargs, 
+                                                                                    scatter_args = scatter_kwargs, 
+                                                                                    qq_scatter_args = dict(), 
+                                                                                    save_args = save_kwargs)
 
     sumstats = insumstats.copy()
     
@@ -79,10 +93,9 @@ def _gwheatmap(
         sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict)
         sumstats[ref_pos] = _quick_fix_pos(sumstats[ref_pos])
         sumstats[ref_chrom] = _quick_fix_chr(sumstats[ref_chrom], chr_dict=chr_dict)
+        sumstats = _dropna_in_cols(sumstats, [pos, chrom, ref_pos, ref_chrom], log=log, verbose=verbose)
     
     # dropna
-    sumstats = sumstats.loc[~sumstats[ref_pos].isna(),:]
-    
     sumstats = sumstats.sort_values(by=group)
 
     if scaled is True:
@@ -146,6 +159,10 @@ def _gwheatmap(
                         _if_quick_qc=False,
                         **mqq_kwargs
                         )
+    ## 
+    #min_xy = min(min(sumstats["i_x"]),min(sumstats["i_y"]))
+    #max_xy = max(max(sumstats["i_x"]),max(sumstats["i_y"]))
+    
     ## determine color 
 
     ## determine dot size
@@ -157,6 +174,24 @@ def _gwheatmap(
     edgecolor="black"
 
     palette = sns.color_palette(colors,n_colors=sumstats[group].nunique()) 
+    
+    #for index,g in enumerate(sumstats[group].unique()):
+    #    
+    #    palette = sns.color_palette("dark:{}".format(colors[index]), as_cmap=True)
+    #    
+    #    plot = sns.scatterplot(data=sumstats.loc[sumstats[group]==g,:], x='i_x', y='i_y',
+    #            hue="scaled_P",
+    #            palette=palette,
+    #            size="scaled_P",
+    #            alpha=alpha,
+    #            sizes=sizes,
+    #            legend=legend,
+    #            style=style,
+    #            linewidth=linewidth,
+    #            edgecolor = edgecolor,
+    #            zorder=2,
+    #            ax=ax1)   
+    
     plot = sns.scatterplot(data=sumstats, x='i_x', y='i_y',
             hue=group,
             palette=palette,
@@ -209,7 +244,7 @@ def _gwheatmap(
     
     save_figure(fig = fig, save = save, keyword="gwheatmap",  save_args=save_kwargs, log = log, verbose=verbose)
 
-    #return fig
+    return fig, log
 
 ################################################################################################################
 def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family, log=Log(),verbose=True):

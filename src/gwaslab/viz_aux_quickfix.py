@@ -80,6 +80,7 @@ def _quick_fix_chr(seires, chr_dict,log=Log(), verbose=True):
     '''
     if pd.api.types.is_string_dtype(seires) == True:
         # if chr is string dtype: convert using chr_dict
+        seires = seires.astype("string")
         seires = seires.map(chr_dict, na_action="ignore")
     seires = np.floor(pd.to_numeric(seires, errors='coerce')).astype('Int64')
     return seires
@@ -91,6 +92,12 @@ def _quick_fix_pos(seires,log=Log(), verbose=True):
     '''
     seires = np.floor(pd.to_numeric(seires, errors='coerce')).astype('Int64')
     return seires
+
+
+def _dropna_in_cols(sumstats, cols, log=Log(), verbose=True):
+    to_drop = sumstats[cols].isna().any(axis=1)
+    log.write(" -Dropping {} variants due to missing values in {}.".format(sum(to_drop),cols))
+    return sumstats.loc[~to_drop,:]
 
 
 def _get_largenumber(*args,log=Log(), verbose=True):

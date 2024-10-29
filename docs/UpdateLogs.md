@@ -1,6 +1,6 @@
 # Update Logs
 
-$ 3.5.0 2024
+$ 3.5.0 20241029
 - added `plot_gwheatmap()`
 - added genename annotation in `compare_effect()`
 - fixed annotation error in `compare_effect()`
