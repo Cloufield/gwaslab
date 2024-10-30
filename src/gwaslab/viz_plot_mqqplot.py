@@ -139,6 +139,7 @@ def mqqplot(insumstats,
           anno_gtf_path=None,
           anno_adjust=False,
           anno_max_iter=100,
+          arrow_kwargs=None,
           arm_offset=None,
           arm_scale=1,
           anno_height=1,
@@ -243,7 +244,8 @@ def mqqplot(insumstats,
         anno_args=dict()
     if colors is None:
         colors=["#597FBD","#74BAD3"]
-    
+    if arrow_kwargs is None:
+        arrow_kwargs=dict()
     if region is not None:
         if marker_size == (5,20):
             marker_size=(45,65)
@@ -1002,6 +1004,7 @@ def mqqplot(insumstats,
                                 region_anno_bbox_args=region_anno_bbox_args,
                                 skip=skip,
                                 anno_height=anno_height,
+                                arrow_kwargs=arrow_kwargs,
                                 snpid=snpid,
                                 chrom=chrom,
                                 pos=pos,

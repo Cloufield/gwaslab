@@ -38,6 +38,7 @@ def annotate_single(
     region,
     region_anno_bbox_args,
     skip,
+    arrow_kwargs=None,
     anno_height=1,
     amode="int",
     snpid="SNPID",
@@ -48,6 +49,9 @@ def annotate_single(
     _invert=False,
     log=Log()
 ):
+    if arrow_kwargs is None:
+        arrow_kwargs=dict()
+        
     if anno and (to_annotate.empty is not True):
         #initiate a list for text and a starting position
         text = []
@@ -223,6 +227,8 @@ def annotate_single(
                 else:
                     arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(1,0.5))
             ################################################################################################################################
+            for key,value in arrow_kwargs.items():
+                arrowargs[key]=value
 
             anno_to_adjust = ax1.annotate(annotation_text,
                         xy=xy,
@@ -293,6 +299,7 @@ def annotate_pair(
     pos="POS",
     repel_force=0.02,
     verbose=True,
+    arrow_kwargs=None,
     log=Log()
 ):
     if anno is not None:
@@ -474,6 +481,7 @@ def annotate_pair(
                             arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(0,0.5))
                         else:
                             arrowargs=dict(arrowstyle='-|>', color='grey', shrinkA=10, linewidth=0.1, relpos=(1,0.5))
+
                     
                     anno_to_adjust = ax.annotate(annotation_text,
                             xy=xy,

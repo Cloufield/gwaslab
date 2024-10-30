@@ -112,12 +112,12 @@ def compare_effect(path1,
     if anno_het ==True:
         is_q=True
 
-    save_args =        _extract_kwargs("font", save_args, locals())
-    anno_args =        _extract_kwargs("anno", anno_args, locals())
+    save_kwargs =        _extract_kwargs("font", save_args, locals())
+    anno_kwargs =        _extract_kwargs("anno", anno_args, locals())
     err_kwargs =       _extract_kwargs("err", errargs, locals())
     plt_kwargs =       _extract_kwargs("plt", plt_args,  locals())
     scatter_kwargs =   _extract_kwargs("scatter", scatterargs, locals())
-    fontargs =         _extract_kwargs("font",fontargs, locals())
+    font_kwargs =         _extract_kwargs("font",fontargs, locals())
 
     log.write("Start to process the raw sumstats for plotting...", verbose=verbose)
     
@@ -692,14 +692,14 @@ def compare_effect(path1,
 
             if mode=="beta" or mode=="BETA" or mode=="Beta":
                 if row["EFFECT_1"] <  row["EFFECT_2_aligned"]:
-                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="right",va="bottom", **anno_args))
+                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="right",va="bottom", **anno_kwargs))
                 else:
-                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="left",va="top", **anno_args))
+                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="left",va="top", **anno_kwargs))
             else:
                 if row["OR_1"] <  row["OR_2_aligned"]:
-                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='right', va='bottom', **anno_args)) 
+                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='right', va='bottom', **anno_kwargs)) 
                 else:
-                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='left', va='top', **anno_args)) 
+                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='left', va='top', **anno_kwargs)) 
         if len(texts_l)>0:
             adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
         if len(texts_r)>0:
@@ -727,14 +727,14 @@ def compare_effect(path1,
         for index, row in sig_list_toanno.iterrows():
             if mode=="beta" or mode=="BETA" or mode=="Beta":
                 if row["EFFECT_1"] <  row["EFFECT_2_aligned"]:
-                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="right",va="bottom", **anno_args))
+                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="right",va="bottom", **anno_kwargs))
                 else:
-                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="left",va="top", **anno_args))
+                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="left",va="top", **anno_kwargs))
             else:
                 if row["OR_1"] <  row["OR_2_aligned"]:
-                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='right', va='bottom', **anno_args)) 
+                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='right', va='bottom', **anno_kwargs)) 
                 else:
-                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='left', va='top', **anno_args)) 
+                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='left', va='top', **anno_kwargs)) 
         if len(texts_l)>0:
             adjust_text(texts_l,autoalign =False,precision =0.001,lim=1000, ha="right",va="bottom", expand_text=(1,1.8) , expand_objects=(0.1,0.1), expand_points=(1.8,1.8) ,force_objects=(0.8,0.8) ,arrowprops=dict(arrowstyle='-|>', color='grey'),ax=ax)
         if len(texts_r)>0:
@@ -804,7 +804,7 @@ def compare_effect(path1,
                 pe="0"
             p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
             p_latex= f'{p_text}'
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, "+ p_latex + ", $r =$" +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **fontargs)
+            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, "+ p_latex + ", $r =$" +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
         else:
             #if regression coeeficient <0 : auxiliary line slope = -1
             if is_45_helper_line is True:
@@ -821,7 +821,7 @@ def compare_effect(path1,
                 pe="0"
             p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
             p_latex= f'{p_text}'
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r =$" +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**fontargs)
+            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r =$" +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**font_kwargs)
             
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             middle = sig_list_merged["EFFECT_1"].mean()
@@ -834,8 +834,8 @@ def compare_effect(path1,
             ax.axline(xy1=(1,reg[0]+reg[1]),slope=reg[0],color="#cccccc",linestyle='--',zorder=1)
         
     
-    ax.set_xlabel(xylabel_prefix+label[0],**fontargs)
-    ax.set_ylabel(xylabel_prefix+label[1],**fontargs)
+    ax.set_xlabel(xylabel_prefix+label[0],**font_kwargs)
+    ax.set_ylabel(xylabel_prefix+label[1],**font_kwargs)
     
     legend_args_to_use ={
             "framealpha":1,
@@ -904,13 +904,13 @@ def compare_effect(path1,
                 label.set_ha('left')
                 label.set_position((-8*width,0))
 
-    ax.tick_params(axis='both', labelsize=fontargs["fontsize"])
-    plt.setp(L.texts,**fontargs)
-    plt.setp(L.get_title(),**fontargs)
+    ax.tick_params(axis='both', labelsize=font_kwargs["fontsize"])
+    plt.setp(L.texts,**font_kwargs)
+    plt.setp(L.get_title(),**font_kwargs)
     ##plot finished########################################################################################
     gc.collect()
 
-    save_figure(fig, save, keyword="esc",save_args=save_args, log=log, verbose=verbose)
+    save_figure(fig, save, keyword="esc",save_args=save_kwargs, log=log, verbose=verbose)
 
     
     return [sig_list_merged, fig,log]
