@@ -1579,14 +1579,14 @@ def liftover_variant(sumstats,
     
     try:
         if chain is None:
-            converter = get_lifter(from_build,to_build,one_based=True)
+            converter = get_lifter("hg{}".format(from_build),"hg{}".format(to_build),one_based=True)
         else:
-            converter = ChainFile(chain, one_based=True)
+            converter = ChainFile(chain,target="",query="", one_based=True)
     except:
         if chain is None:
-            converter = get_lifter(from_build,to_build)
+            converter = get_lifter("hg{}".format(from_build),"hg{}".format(to_build))
         else:
-            converter = ChainFile(chain)
+            converter = ChainFile(chain, target="",query="")
 
     dic= get_number_to_chr(in_chr=False,xymt=["X","Y","M"])
     dic2= get_chr_to_number(out_chr=False)
@@ -1627,11 +1627,15 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     else:
         try:
             chain = get_chain(from_build=from_build, to_build=to_build)
-            log.write(" -Creating converter using ChainFile: {}".format(chain), verbose=verbose)
+            if chain is None or chain==False:
+                raise ValueError("")
+            log.write(" -Creating converter using provided ChainFile: {}".format(chain), verbose=verbose)
         except:
             chain = None
             lifter_from_build=from_build
             lifter_to_build=to_build
+            log.write(" -Try creating converter using liftover package", verbose=verbose)
+
     log.write(" -Creating converter : {} -> {}".format(lifter_from_build, lifter_to_build), verbose=verbose)
     # valid chr and pos
     pattern = r"\w\w\w0\w\w\w"  

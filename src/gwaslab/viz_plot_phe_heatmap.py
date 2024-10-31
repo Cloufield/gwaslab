@@ -203,7 +203,7 @@ def _gwheatmap(
             linewidth=linewidth,
             edgecolor = edgecolor,
             zorder=2,
-            ax=ax1)   
+            ax=ax1, **scatter_kwargs)   
     
     handles, labels = ax1.get_legend_handles_labels()
     new_labels = []
