@@ -143,7 +143,7 @@ def plot_stacked_mqq(objects,
     mqq_args_for_each_plot = _sort_args(mqq_args, n_plot)
     ##########################################################################################################################################
     # get x axis dict
-    if mode=="m":
+    if mode=="m" or mode=="r":
         _posdiccul = _get_chrom_dic(sumstats_list,chrom="CHR",pos="POS",chrpad=0.02)
     else:
         _posdiccul=None
