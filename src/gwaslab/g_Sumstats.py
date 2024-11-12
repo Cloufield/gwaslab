@@ -790,28 +790,28 @@ class Sumstats():
     
     
 ## LDSC ##############################################################################################
-    def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
+    def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True, how="right" )
+        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_h2, self.ldsc_h2_results = _estimate_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
     
-    def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
+    def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True, how="right" )
+        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
 
-    def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
+    def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True, how="right" )
+        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_h2_cts  = _estimate_h2_cts_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
     
-    def estimate_partitioned_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, **kwargs):
+    def estimate_partitioned_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=True, how="right" )
+        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_partitioned_h2_summary, self.ldsc_partitioned_h2_results  = _estimate_partitioned_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
 # external ################################################################################################
     

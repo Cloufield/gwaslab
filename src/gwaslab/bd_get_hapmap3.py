@@ -47,8 +47,10 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
     #rsid    A1      A2      #CHROM  POS
     #rs3094315       G       A       1       752566
     
-    if rsid in sumstats.columns and how=="inner":
+    if rsid in sumstats.columns:
+        log.write(" -rsID will be used for matching...", verbose=verbose)
         output = sumstats.loc[sumstats[rsid].isin(hapmap3_ref["rsid"].values),:].copy()
+        log.write(" -Raw input contains "+str(len(output))+" Hapmap3 variants based on rsID...", verbose=verbose)
         return output
     
     elif chrom in sumstats.columns and pos in sumstats.columns:
