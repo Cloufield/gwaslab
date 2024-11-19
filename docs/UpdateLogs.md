@@ -1,9 +1,10 @@
 # Update Logs
 
-$ 3.5.1 2024
+# 3.5.1 2024
 - fixed errors due to liftover version change 
+- restructured `compare_effect()`
 
-$ 3.5.0 20241029
+# 3.5.0 20241029
 - added `plot_gwheatmap()`
 - added genename annotation in `compare_effect()`
 - fixed annotation error in `compare_effect()`
