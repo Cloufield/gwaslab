@@ -1,8 +1,9 @@
 # Update Logs
 
-# 3.5.1 2024
+# 3.5.1 20241120
 - fixed errors due to liftover version change 
 - restructured `compare_effect()`
+- fixed error when getting hapmap3 variants
 
 # 3.5.0 20241029
 - added `plot_gwheatmap()`
