@@ -358,23 +358,23 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     axins1.set_xticks(ticks=ld_ticks) 
     axins1.set_xticklabels([str(i) for i in ld_ticks]) 
 
-    xmin, xmax = 0, 1.2
-    #axins1.set_xlim(xmin,xmax)    
+    xmin, xmax = 0, 1
+    axins1.set_xlim(xmin,xmax)    
 
     ############### ##############plot marker ############## ##############
-    #for group_index, ref in enumerate(region_ref):
-    #    x= 1.1
-    #    y= 0.1 + 0.2 * group_index
-    #    marker = region_marker_shapes[group_index]
-    #    # ([x0,y0][x1,y1])
-    #    data_to_point =axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0] / 72 / (xmax - xmin)
-    #    s =  data_to_point * 0.1
-    #    c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(region_ref) +1]
-    #    print(palette)
-    #    print(x,y, c)
-    #    axins1.scatter(x, y, s=s, marker=marker,c=c, edgecolors="black", linewidths = 1,  clip_on=False, zorder=100)
-    axins1.set_xlim(xmin,1)   
+    for group_index, ref in enumerate(region_ref):
+        x= -0.1
+        y= 0.1 + 0.2 * group_index
+        marker = region_marker_shapes[group_index]
+        # ([x0,y0][x1,y1])
+        data_to_point =(axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0]) / (xmax - xmin)
+        s =  data_to_point * 0.075
+        c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(ld_ticks)-1]
+        axins1.scatter(x, y, s=s, marker=marker,c=c, edgecolors="black", linewidths = 1,  clip_on=False, zorder=100)
+    
+    axins1.set_xlim(0,1)   
     axins1.set_aspect('equal', adjustable='box')
+    axins1.tick_params(axis="y", pad=np.sqrt(data_to_point * 0.11))
     axins1.set_title('LD $r^{2}$ with variant',loc="center",y=-0.2)
     cbar = axins1
     return ax1, cbar
