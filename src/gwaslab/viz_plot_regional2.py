@@ -130,7 +130,9 @@ def _plot_regional(
                             region_ref=region_ref,
                             region_ld_threshold=region_ld_threshold, 
                             region_ref_index_dic=region_ref_index_dic,
-                            palette=palette)
+                            region_marker_shapes=region_marker_shapes,
+                            palette=palette,
+                            fig=fig)
         else:
             cbar=None
 
@@ -322,14 +324,15 @@ def _add_region_title(region_title, ax1,region_title_args):
     ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", region_ref=None, **region_title_args )
     return ax1
 
-def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,palette =None, position=1):
+def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, palette =None, position=1):
     
     width_pct = "11%"
     height_pct = "{}%".format( 14 + 7 * len(region_ref))
     axins1 = inset_axes(ax1,
             width=width_pct,  # width = 50% of parent_bbox width
             height=height_pct,  # height : 5%
-            loc='upper right',axes_kwargs={"frameon":True,"facecolor":"white","zorder":999999})
+            loc='upper right',
+            axes_kwargs={"frameon":True,"facecolor":"white","zorder":999999})
     
     ld_ticks = [0]+region_ld_threshold+[1]
 
@@ -345,7 +348,7 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
                 a = Rectangle((x,y),width, height, fill = True, color = hex_color , linewidth = 2)
                 #patches.append(a)
                 axins1.add_patch(a)
-
+    
     # y snpid
     yticks_position = 0.1 + 0.2 *np.arange(0,len(region_ref))
     axins1.set_yticks(yticks_position, ["{}".format(x) for x in region_ref])
@@ -354,8 +357,23 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     # x ld thresholds
     axins1.set_xticks(ticks=ld_ticks) 
     axins1.set_xticklabels([str(i) for i in ld_ticks]) 
-    axins1.set_xlim(0,1)    
 
+    xmin, xmax = 0, 1.2
+    #axins1.set_xlim(xmin,xmax)    
+
+    ############### ##############plot marker ############## ##############
+    #for group_index, ref in enumerate(region_ref):
+    #    x= 1.1
+    #    y= 0.1 + 0.2 * group_index
+    #    marker = region_marker_shapes[group_index]
+    #    # ([x0,y0][x1,y1])
+    #    data_to_point =axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0] / 72 / (xmax - xmin)
+    #    s =  data_to_point * 0.1
+    #    c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(region_ref) +1]
+    #    print(palette)
+    #    print(x,y, c)
+    #    axins1.scatter(x, y, s=s, marker=marker,c=c, edgecolors="black", linewidths = 1,  clip_on=False, zorder=100)
+    axins1.set_xlim(xmin,1)   
     axins1.set_aspect('equal', adjustable='box')
     axins1.set_title('LD $r^{2}$ with variant',loc="center",y=-0.2)
     cbar = axins1
