@@ -51,7 +51,8 @@ def get_default_path(keyword,fmt="png"):
                         "miami":"miami",
                         "esc":"effect_size_comparision",
                         "afc":"allele_frequency_comparision",
-                        "gwheatmap":"genome_wide_heatmap"
+                        "gwheatmap":"genome_wide_heatmap",
+                        "scatter":"scatter"
                         }
     prefix = path_dictionary[keyword]
     count = 1
