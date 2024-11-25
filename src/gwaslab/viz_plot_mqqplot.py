@@ -1397,6 +1397,7 @@ def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family, log=Log
 def _process_ytick(ax1, fontsize, font_family, ax4, log=Log(),verbose=True):
     log.write(" -Processing Y labels...",verbose=verbose)
     ax1_yticklabels = ax1.get_yticklabels()
+    plt.draw()
     #ax1.set_yticklabels(ax1_yticklabels,fontsize=fontsize,family=font_family) 
     ax1_yticks = ax1.get_yticks()
     ax1.set_yticks(ax1_yticks,ax1_yticklabels,fontsize=fontsize,family=font_family) 
