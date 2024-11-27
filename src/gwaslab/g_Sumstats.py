@@ -389,6 +389,12 @@ class Sumstats():
             self.data =flipallelestats(self.data,log=self.log,**flipallelestats_args)
             
             gc.collect()
+            
+        if ref_seq is not None or ref_infer is not None:
+
+            self.data = fixID(self.data, log=self.log, **{"fixid":True, "fixsep":True, "overwrite":True})
+
+            gc.collect()
         
         #####################################################
         if ref_rsid_tsv is not None:
