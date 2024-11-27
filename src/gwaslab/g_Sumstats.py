@@ -390,7 +390,7 @@ class Sumstats():
             
             gc.collect()
             
-        if ref_seq is not None or ref_infer is not None:
+        if (ref_seq is not None or ref_infer is not None) and (ref_rsid_tsv is not None or ref_rsid_vcf is not None):
 
             self.data = fixID(self.data, log=self.log, **{"fixid":True, "fixsep":True, "overwrite":True})
 
