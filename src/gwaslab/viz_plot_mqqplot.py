@@ -264,7 +264,7 @@ def mqqplot(insumstats,
         
     if region_marker_shapes is None:
         # 9 shapes
-        region_marker_shapes = ['o', 's','^','D','*','P','X','h','8']
+        region_marker_shapes = ['o', '^','s','D','*','P','X','h','8']
     if region_grid_line is None:
         region_grid_line = {"linewidth": 2,"linestyle":"--"}
     if region_lead_grid_line is None:
@@ -640,6 +640,14 @@ def mqqplot(insumstats,
             linewidth=1
             if len(region_ref) == 1:
                 palette = {100+i:region_ld_colors[i] for i in range(len(region_ld_colors))}
+                scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:2])}
+                if region_ref[0] is None:
+                    id_to_hide = sumstats["scaled_P"].idxmax()
+                    sumstats.loc[id_to_hide,"s"] = -100
+                else:
+                    sumstats.loc[sumstats["SNPID"]==region_ref[0],"s"] = -100
+                marker_size=(0,marker_size[1])
+                style="SHAPE"
             else:
                 palette = {}
                 region_color_maps = []
@@ -652,12 +660,14 @@ def mqqplot(insumstats,
                         # 1 + 5 + 1
                         region_ld_colors_single = [region_ld_colors[0]] + output_hex_colors + [output_hex_colors[-1]]
                     region_color_maps.append(region_ld_colors_single)
-                # gradient colors
+                
+                # gradient color dict
                 for i, hex_colors in enumerate(region_color_maps):
                     for j, hex_color in enumerate(hex_colors):
                         palette[(i+1)*100 + j ] = hex_color
 
                 edgecolor="none"
+                # create a marker shape dict
                 scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:len(region_ref)])}
                 style="SHAPE"
 
@@ -1396,15 +1406,19 @@ def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family, log=Log
 
 def _process_ytick(ax1, fontsize, font_family, ax4, log=Log(),verbose=True):
     log.write(" -Processing Y labels...",verbose=verbose)
-    ax1_yticklabels = ax1.get_yticklabels()
-    plt.draw()
+    #ax1_yticklabels = ax1.get_yticklabels()
+    #print(ax1_yticklabels)
+    #plt.draw()
+    #ax1_yticks = ax1.get_yticks()
+    #print(ax1_yticks)
     #ax1.set_yticklabels(ax1_yticklabels,fontsize=fontsize,family=font_family) 
-    ax1_yticks = ax1.get_yticks()
-    ax1.set_yticks(ax1_yticks,ax1_yticklabels,fontsize=fontsize,family=font_family) 
+    ax1.tick_params(axis='y', labelsize=fontsize,labelfontfamily=font_family)
+    #ax1.set_yticks(ax1_yticks,ax1_yticklabels,fontsize=fontsize,family=font_family) 
     if ax4 is not None:
-        ax4_yticklabels = ax4.get_yticklabels()
-        ax4_yticks = ax4.get_yticks()
-        ax4.set_yticks(ax4_yticks,ax4_yticklabels, fontsize=fontsize,family=font_family) 
+        #ax4_yticklabels = ax4.get_yticklabels()
+        #ax4_yticks = ax4.get_yticks()
+        ax4.tick_params(axis='y', labelsize=fontsize,labelfontfamily=font_family)
+        #ax4.set_yticks(ax4_yticks,ax4_yticklabels, fontsize=fontsize,family=font_family) 
     return ax1, ax4
 
 def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=None , log=Log(),verbose=True):

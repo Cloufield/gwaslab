@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
+from matplotlib import ticker
+import matplotlib.pyplot as plt
 from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_number_to_chr
 from math import ceil
@@ -350,7 +352,7 @@ def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, lines_to_pl
                 #sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
                 
                 maxy = (maxticker-cut)/cutfactor + cut
-    
+
     return series, maxy, maxticker, cut, cutfactor,ylabels,lines_to_plot
 
 #def _cut_line(level, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
@@ -379,10 +381,9 @@ def _set_yticklabels(cut,
     log.write(" -Processing Y tick lables...",verbose=verbose)
     # if no cut
     if cut == 0: 
-            ax1.set_ylim(skip, ceil(maxy*1.2) )
-
+            ax1.set_ylim((skip, ceil(maxy*1.2)) )
     # if cut     
-    if cut:
+    if cut!=0:
         # add cut line
         
         cutline = ax1.axhline(y=cut, linewidth = sc_linewidth,linestyle="--",color=cut_line_color,zorder=1)
@@ -432,14 +433,15 @@ def _set_yticklabels(cut,
         else:
             ax1.set_yticks(ticks1+ticks2)
             ax1.set_yticklabels(tickslabel1+tickslabel2,fontsize=fontsize,family=font_family)
-        ax1.set_ylim(bottom = skip)
     
     if ylabels is not None:  
         ax1.set_yticks(ylabels_converted)
         ax1.set_yticklabels(ylabels,fontsize=fontsize,family=font_family)
     
+    ylim_top = ax1.get_ylim()[1]
+    ax1.set_ybound(lower=skip,upper=ylim_top)
     ax1.tick_params(axis='y', labelsize=fontsize)
-    
+
     return ax1
 
 def _jagged_y(cut,skip,ax1,mode,mqqratio,jagged_len,jagged_wid, log=Log(), verbose=True):

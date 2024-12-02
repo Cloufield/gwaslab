@@ -93,6 +93,7 @@ def _plot_regional(
             ax1, lead_id_single = _pinpoint_lead(sumstats = sumstats,
                                         ax1 = ax1, 
                                         region_ref=region_ref_single,
+                                        region_ref_total_n = len(region_ref), 
                                         lead_color = palette[(index+1)*100 + len(region_ld_threshold)+2], 
                                         marker_size= marker_size,
                                         region_marker_shapes=region_marker_shapes,
@@ -302,7 +303,7 @@ def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
 
     return lead_id
 
-def _pinpoint_lead(sumstats,ax1,region_ref, lead_color, marker_size, log, verbose, region_marker_shapes):
+def _pinpoint_lead(sumstats,ax1,region_ref, region_ref_total_n, lead_color, marker_size, log, verbose, region_marker_shapes):
     
     if region_ref is None:
         log.write(" -Extracting lead variant..." , verbose=verbose)
@@ -310,12 +311,19 @@ def _pinpoint_lead(sumstats,ax1,region_ref, lead_color, marker_size, log, verbos
     else:
         lead_id = _get_lead_id(sumstats, region_ref, log, verbose)
     
+    if region_ref_total_n <2:
+        # single-ref mode
+        marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]]
+    else:
+        # multi-ref mode
+        marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]-1]
+
     if lead_id is not None:
         ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],
                 color=lead_color,
                 zorder=3,
-                marker= region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]-1],
-                s=marker_size[1]+2,
+                marker= marker_shape,
+                s=marker_size[1]*1.5,
                 edgecolor="black")
 
     return ax1, lead_id
@@ -365,7 +373,14 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     for group_index, ref in enumerate(region_ref):
         x= -0.1
         y= 0.1 + 0.2 * group_index
-        marker = region_marker_shapes[group_index]
+        
+        if len(region_ref) <2:
+            # single-ref mode
+            marker = region_marker_shapes[group_index+1]
+        else:
+            # multi-ref mode
+            marker = region_marker_shapes[group_index]
+        
         # ([x0,y0][x1,y1])
         data_to_point =(axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0]) / (xmax - xmin)
         s =  data_to_point * 0.075
@@ -682,6 +697,9 @@ def process_vcf(sumstats,
     sumstats[final_shape_col] = 1
     sumstats[final_rsq_col] = 0.0
     
+    if len(region_ref)==1:
+        sumstats.loc[lead_id, final_shape_col] +=1 
+
     for i in range(len(region_ref)):
         ld_single = "LD_{}".format(i)
         current_rsq = "RSQ_{}".format(i)
@@ -690,7 +708,6 @@ def process_vcf(sumstats,
         sumstats.loc[a_ngt_b, final_ld_col] = 100 * (i+1) + sumstats.loc[a_ngt_b, ld_single]
         sumstats.loc[a_ngt_b, final_rsq_col] = sumstats.loc[a_ngt_b, current_rsq]
         sumstats.loc[a_ngt_b, final_shape_col] = i + 1
-
     ####################################################################################################
     log.write("Finished loading reference genotype successfully!", verbose=verbose)
     return sumstats
