@@ -281,7 +281,7 @@ def plottrumpet(mysumstats,
     sumstats["ABS_BETA"] = sumstats[beta].abs()
 
     ##################################################################################################
-    size_norm = (sumstats["ABS_BETA"].min(), sumstats["ABS_BETA"].max())
+    size_norm = (sumstats[size].min(), sumstats[size].max())
     ## if highlight  ##################################################################################################
     dots = sns.scatterplot(data=sumstats,
                     x=maf,

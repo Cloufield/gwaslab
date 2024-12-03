@@ -1,5 +1,10 @@
 # Update Logs
 
+# 3.5.2 20241203
+- added marker to indicate reference variant to LD colorbar in regional plots
+- fixed errors when plotting y ticks in `plot_mqq()`
+- added additional fix_id() in harmonization workflow (credit to @joshchiou)
+
 # 3.5.1 20241120
 - fixed errors due to liftover version change 
 - restructured `compare_effect()`
