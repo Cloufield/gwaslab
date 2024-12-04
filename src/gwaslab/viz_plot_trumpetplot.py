@@ -387,7 +387,7 @@ def plottrumpet(mysumstats,
         for line in l1.get_lines():
             line.set_linewidth(5.0)
     if hue is None:
-        l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=size, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
+        l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=None, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
     else:
         l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=None, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
     if len(ts)>0:
