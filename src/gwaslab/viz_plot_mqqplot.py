@@ -646,7 +646,7 @@ def mqqplot(insumstats,
                     sumstats.loc[id_to_hide,"s"] = -100
                 else:
                     sumstats.loc[sumstats["SNPID"]==region_ref[0],"s"] = -100
-                marker_size=(0,marker_size[1])
+                marker_size=(marker_size[0],marker_size[1])
                 style="SHAPE"
             else:
                 palette = {}
