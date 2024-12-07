@@ -311,12 +311,13 @@ def _pinpoint_lead(sumstats,ax1,region_ref, region_ref_total_n, lead_color, mark
     else:
         lead_id = _get_lead_id(sumstats, region_ref, log, verbose)
     
-    if region_ref_total_n <2:
-        # single-ref mode
-        marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]]
-    else:
-        # multi-ref mode
-        marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]-1]
+    if lead_id is not None:
+        if region_ref_total_n <2:
+            # single-ref mode
+            marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]]
+        else:
+            # multi-ref mode
+            marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]-1]
 
     if lead_id is not None:
         ax1.scatter(sumstats.loc[lead_id,"i"],sumstats.loc[lead_id,"scaled_P"],
