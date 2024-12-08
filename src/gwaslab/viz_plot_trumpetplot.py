@@ -283,6 +283,8 @@ def plottrumpet(mysumstats,
     ##################################################################################################
     size_norm = (sumstats[size].min(), sumstats[size].max())
     ## if highlight  ##################################################################################################
+
+    log.write(" -Creating scatter plot...", verbose=verbose)
     dots = sns.scatterplot(data=sumstats,
                     x=maf,
                     y=beta,
@@ -295,7 +297,7 @@ def plottrumpet(mysumstats,
                     alpha=0.8,
                     zorder=2,
                     **scatter_args)
-    
+    log.write(" -Finished screating scatter plot...", verbose=verbose)
     if len(highlight) >0:
         
         legend = None
@@ -380,15 +382,13 @@ def plottrumpet(mysumstats,
     ####################################################################################################################
     
     #second_legend = ax.legend(title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
-    
+    log.write(" -Creating legends...")
     h,l = ax.get_legend_handles_labels()
     if len(ts)>0:
         l1 = ax.legend(h[:int(len(ts))],l[:int(len(ts))], title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
         for line in l1.get_lines():
             line.set_linewidth(5.0)
     if hue is None:
-        l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=None, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
-    else:
         l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=None, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
     if len(ts)>0:
         ax.add_artist(l1)
