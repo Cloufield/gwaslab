@@ -626,7 +626,8 @@ def mqqplot(insumstats,
             sumstats["chr_hue"]=sumstats["LD"]
                 
         ## default seetings
-        
+        # assign to_plot for scatter plot
+        to_plot = None
         palette = sns.color_palette(colors,n_colors=sumstats[chrom].nunique())  
 
         legend = None
@@ -639,14 +640,15 @@ def mqqplot(insumstats,
             legend=None
             linewidth=1
             if len(region_ref) == 1:
+                # hide lead variants -> add back in region plot 
                 palette = {100+i:region_ld_colors[i] for i in range(len(region_ld_colors))}
                 scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:2])}
                 if region_ref[0] is None:
                     id_to_hide = sumstats["scaled_P"].idxmax()
-                    sumstats.loc[id_to_hide,"s"] = -100
+                    to_plot = sumstats.drop(id_to_hide, axis=0)
                 else:
-                    sumstats.loc[sumstats["SNPID"]==region_ref[0],"s"] = -100
-                marker_size=(marker_size[0],marker_size[1])
+                    id_to_hide = sumstats[sumstats["SNPID"]==region_ref[0],"scaled_P"].idxmax()
+                    to_plot = sumstats.drop(id_to_hide, axis=0)
                 style="SHAPE"
             else:
                 palette = {}
@@ -671,12 +673,13 @@ def mqqplot(insumstats,
                 scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:len(region_ref)])}
                 style="SHAPE"
 
-            
+        
         ## if highlight 
         highlight_i = pd.DataFrame()
         if len(highlight) >0:
+            to_plot = sumstats
             log.write(" -Creating background plot...",verbose=verbose)
-            plot = sns.scatterplot(data=sumstats, x='i', y='scaled_P',
+            plot = sns.scatterplot(data=to_plot, x='i', y='scaled_P',
                                hue='chr_hue',
                                palette=palette,
                                legend=legend,
@@ -688,7 +691,7 @@ def mqqplot(insumstats,
             if pd.api.types.is_list_like(highlight[0]) and highlight_chrpos==False:
                 for i, highlight_set in enumerate(highlight):
                     log.write(" -Highlighting set {} target loci...".format(i+1),verbose=verbose)
-                    sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==i], x='i', y='scaled_P',
+                    sns.scatterplot(data=to_plot.loc[to_plot["HUE"]==i], x='i', y='scaled_P',
                         hue="HUE",
                         palette={i:highlight_color[i%len(highlight_color)]},
                         legend=legend,
@@ -697,10 +700,10 @@ def mqqplot(insumstats,
                         sizes=(marker_size[0]+1,marker_size[1]+1),
                         linewidth=linewidth,
                         zorder=3+i,ax=ax1,edgecolor=edgecolor,**scatter_args)  
-                highlight_i = sumstats.loc[~sumstats["HUE"].isna(),"i"].values
+                highlight_i = to_plot.loc[~to_plot["HUE"].isna(),"i"].values
             else:
                 log.write(" -Highlighting target loci...",verbose=verbose)
-                sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==0], x='i', y='scaled_P',
+                sns.scatterplot(data=to_plot.loc[to_plot["HUE"]==0], x='i', y='scaled_P',
                     hue="HUE",
                     palette={0:highlight_color},
                     legend=legend,
@@ -711,7 +714,7 @@ def mqqplot(insumstats,
                     zorder=3,ax=ax1,edgecolor=edgecolor,**scatter_args)  
                 # for annotate
                 if highlight_chrpos==False:
-                    highlight_i = sumstats.loc[sumstats[snpid].isin(highlight),"i"].values
+                    highlight_i = to_plot.loc[to_plot[snpid].isin(highlight),"i"].values
                 else:
                     highlight_i = []
         
@@ -749,7 +752,8 @@ def mqqplot(insumstats,
                 s = "s"
                 hue = 'chr_hue'
                 hue_norm=None
-                to_plot = sumstats
+                if to_plot is None:
+                    to_plot = sumstats
                 log.write(" -Creating background plot...",verbose=verbose)
                 plot = sns.scatterplot(data=to_plot, x='i', y='scaled_P',
                        hue=hue,

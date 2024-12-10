@@ -238,7 +238,6 @@ def plot_stacked_mqq(objects,
     # adjust labels
     # drop labels for each plot 
     # set a common laebl for all plots
-
     #if title_box is None:
     #    title_box = dict(boxstyle='square', facecolor='white', alpha=1.0, edgecolor="black")
     #    title_box = {}

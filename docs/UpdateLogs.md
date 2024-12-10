@@ -1,5 +1,12 @@
 # Update Logs
 
+
+# 3.5.2 2024
+- fixed size error for variants with very low MLOG10P when plotting region plots.
+- fixed error when lead variant was not available in stacked regional plot.
+- fixed legend title error in trumpet plot.
+- updated functions for automatically extracting kwargs.
+
 # 3.5.2 20241203
 - added marker to indicate reference variant to LD colorbar in regional plots
 - fixed errors when plotting y ticks in `plot_mqq()`
