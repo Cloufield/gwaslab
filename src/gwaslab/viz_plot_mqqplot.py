@@ -25,6 +25,7 @@ from gwaslab.viz_plot_qqplot import _plot_qq
 from gwaslab.hm_harmonize_sumstats import auto_check_vcf_chr_dict
 from gwaslab.viz_plot_regional2 import _plot_regional
 from gwaslab.viz_plot_regional2 import process_vcf
+from gwaslab.viz_plot_regional2 import _get_lead_id
 from gwaslab.viz_aux_quickfix import _get_largenumber
 from gwaslab.viz_aux_quickfix import _quick_fix_p_value
 from gwaslab.viz_aux_quickfix import _quick_fix_pos
@@ -647,7 +648,8 @@ def mqqplot(insumstats,
                     id_to_hide = sumstats["scaled_P"].idxmax()
                     to_plot = sumstats.drop(id_to_hide, axis=0)
                 else:
-                    id_to_hide = sumstats[sumstats["SNPID"]==region_ref[0],"scaled_P"].idxmax()
+                    #id_to_hide = sumstats[sumstats["SNPID"]==region_ref[0],"scaled_P"].idxmax()
+                    id_to_hide = _get_lead_id(sumstats, region_ref, log=log, verbose=verbose)
                     to_plot = sumstats.drop(id_to_hide, axis=0)
                 style="SHAPE"
             else:
