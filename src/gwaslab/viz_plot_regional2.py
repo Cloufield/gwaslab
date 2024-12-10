@@ -244,6 +244,10 @@ def _plot_regional(
 
 # + ###########################################################################################################################################################################
 def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
+    # region_ref_single (not none) -> specified variant ID
+    # convert region_ref_single -> lead_id(index)
+    
+    #
     region_ref_to_check = copy.copy(region_ref)
     try: 
         if len(region_ref_to_check)>0 and type(region_ref_to_check) is not str:
@@ -253,24 +257,30 @@ def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
     
     lead_id=None
     
+    # match by rsID 
     if "rsID" in sumstats.columns:
         lead_id = sumstats.index[sumstats["rsID"] == region_ref_to_check].to_list()
-
+    # match by SNPID
     if lead_id is None and "SNPID" in sumstats.columns:
         lead_id = sumstats.index[sumstats["SNPID"] == region_ref_to_check].to_list()
 
+    # if duplicated, select the first one
     if type(lead_id) is list:
         if len(lead_id)>0:
             lead_id = int(lead_id[0])
+
 
     if region_ref_to_check is not None:
         if type(lead_id) is list:
             if len(lead_id)==0 :
                 #try:
+                # if region_ref_to_check is in CHR:POS:NEA:EA format
                 matched_snpid = re.match("(chr)?[0-9]+:[0-9]+:[ATCG]+:[ATCG]+", region_ref_to_check,  re.IGNORECASE)    
                 if matched_snpid is None:
+                    # if not, pass
                     pass
                 else:
+                    # if region_ref_to_check is in CHR:POS:NEA:EA format, match by CHR:POS:NEA:EA
                     lead_snpid = matched_snpid.group(0).split(":")
                     if len(lead_snpid)==4:
                         lead_chr= int(lead_snpid[0])
@@ -699,7 +709,8 @@ def process_vcf(sumstats,
     sumstats[final_rsq_col] = 0.0
     
     if len(region_ref)==1:
-        sumstats.loc[lead_id, final_shape_col] +=1 
+        if lead_id is not None:
+            sumstats.loc[lead_id, final_shape_col] +=1 
 
     for i in range(len(region_ref)):
         ld_single = "LD_{}".format(i)
