@@ -650,7 +650,8 @@ def mqqplot(insumstats,
                 else:
                     #id_to_hide = sumstats[sumstats["SNPID"]==region_ref[0],"scaled_P"].idxmax()
                     id_to_hide = _get_lead_id(sumstats, region_ref, log=log, verbose=verbose)
-                    to_plot = sumstats.drop(id_to_hide, axis=0)
+                    if id_to_hide is not None:
+                        to_plot = sumstats.drop(id_to_hide, axis=0)
                 style="SHAPE"
             else:
                 palette = {}
