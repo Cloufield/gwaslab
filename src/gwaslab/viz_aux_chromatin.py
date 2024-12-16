@@ -99,7 +99,7 @@ def _plot_chromatin_state(region_chromatin_files,
             color=color_dict_i[row["STATE_i"]]
             ax.plot([offset_i + row["START"] ,offset_i + row["END"]],
                     [i*0.1,i*0.1],
-                    c=color/255,linewidth=points_for_01,solid_capstyle="butt")
+                    c=color/255,linewidth=points_for_01,solid_capstyle="butt",rasterized=True)
     
     ## add stripe label
     if len(region_chromatin_labels) == len(region_chromatin_files):

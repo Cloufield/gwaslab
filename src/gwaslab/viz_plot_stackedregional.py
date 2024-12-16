@@ -80,6 +80,8 @@ def plot_stacked_mqq(objects,
 
     if fig_args is None:
         fig_args = {"dpi":200}
+    if save_args is None:
+        save_args = {"dpi":400,"facecolor":"white"}
     if region_lead_grid_line is None:
         region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
     if region_chromatin_files is None:
@@ -94,6 +96,19 @@ def plot_stacked_mqq(objects,
     else:
         if "family" not in title_args.keys():
             title_args["family"] = "Arial"
+
+    if save is not None:
+        if type(save) is not bool:
+            if len(save)>3:
+                if save[-3:]=="pdf" or save[-3:]=="svg":
+                    log.write(" -Adjusting options for saving as pdf/svg...")
+                    fig_args["dpi"]=72
+                    if "scatter_args" not in  mqq_args.keys():
+                        mqq_args["scatter_args"]={"rasterized":True}
+                    else:
+                        mqq_args["scatter_args"]["rasterized"] = True
+                else:
+                    fig_args["dpi"] = save_args["dpi"]
     # create figure and axes ##################################################################################################################
     #
     # subplot_height : subplot height
@@ -141,6 +156,8 @@ def plot_stacked_mqq(objects,
         region_lead_grids = [i for i in range(len(axes))]
     ##########################################################################################################################################
     mqq_args_for_each_plot = _sort_args(mqq_args, n_plot)
+
+
     ##########################################################################################################################################
     # get x axis dict
     if mode=="m" or mode=="r":
@@ -269,8 +286,9 @@ def plot_stacked_mqq(objects,
     #else:
     if title_pos is None:
         title_pos = [0.01,0.97]
-    for index,title in enumerate(titles):
-        axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_args)
+    if titles is not None:
+        for index,title in enumerate(titles):
+            axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_args)
     
     ##########################################################################################################################################
     # draw the line for lead variants
