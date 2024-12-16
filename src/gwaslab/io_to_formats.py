@@ -28,6 +28,7 @@ from gwaslab.util_in_filter_value import _extract
 def _to_format(sumstats,
               path="./sumstats",
               fmt="gwaslab",   
+              tab_fmt="tsv",
               extract=None,
               exclude=None,
               cols=None,
@@ -39,7 +40,6 @@ def _to_format(sumstats,
               n=None,
               no_status=False,
               output_log=True,
-              to_csvargs=None,
               float_formats=None,
               xymt_number=False,
               xymt=None,
@@ -47,20 +47,30 @@ def _to_format(sumstats,
               meta=None,
               ssfmeta=False,
               md5sum=False,
+              gzip=True,
               bgzip=False,
               tabix=False,
               tabix_indexargs={},
+              to_csvargs=None,
+              to_tabular_kwargs=None,
               log=Log(),
               verbose=True):
     
-    if  to_csvargs is None:
-        to_csvargs = {}
+    if to_csvargs is None:
+        to_csvargs=dict()
+    if tabix_indexargs is None:
+        tabix_indexargs=dict()
+    if to_tabular_kwargs is None:
+        to_tabular_kwargs=dict()
     if  float_formats is None:
-        float_formats={}
+        float_formats=dict()
     if cols is None:
         cols=[]
     if xymt is None:
         xymt = ["X","Y","MT"]
+    non_gzip_tab_fmt = ["parquet"]
+    non_md5sum_tab_fmt = ["parquet"]
+
     onetime_log = copy.deepcopy(log)
 
     #######################################################################################################
@@ -154,6 +164,7 @@ def _to_format(sumstats,
         tofmt(output,
               path=path,
               fmt=fmt,
+              tab_fmt=tab_fmt,
               cols=cols,
               suffix=suffix,
               build=build,
@@ -164,9 +175,13 @@ def _to_format(sumstats,
                 chr_prefix=chr_prefix,
                 meta=meta,
                 ssfmeta=ssfmeta,
+                gzip=gzip,
                 bgzip=bgzip,
+                non_gzip_tab_fmt=non_gzip_tab_fmt,
+                non_md5sum_tab_fmt=non_md5sum_tab_fmt,
                 tabix=tabix,
                 tabix_indexargs=tabix_indexargs,
+                to_tabular_kwargs=to_tabular_kwargs,
                 md5sum=md5sum,
                 xymt_number=xymt_number,
                 xymt=xymt)
@@ -186,6 +201,7 @@ def tofmt(sumstats,
           path=None,
           suffix=None,
           fmt=None,
+          tab_fmt="csv",
           cols=[],
           xymt_number=False,
           xymt=["X","Y","MT"],
@@ -194,15 +210,16 @@ def tofmt(sumstats,
           ssfmeta=False,
           md5sum=False,
           bgzip=False,
+          gzip=True,
+          non_gzip_tab_fmt=None,
+          non_md5sum_tab_fmt=None,
           tabix=False,
-          tabix_indexargs={},
+          tabix_indexargs=None,
           verbose=True,
           no_status=False,
           log=Log(),
-          to_csvargs=None):
-    
-    if to_csvargs is None:
-        to_csvargs=dict()
+          to_csvargs=None,
+          to_tabular_kwargs=None):
     
     if fmt in ["ssf"]: 
         xymt_number=True
@@ -336,36 +353,86 @@ def tofmt(sumstats,
         _bgzip_tabix_md5sum(path, fmt, bgzip, md5sum, tabix, tabix_indexargs, log, verbose)
     
     ####################################################################################################################
-    elif fmt in get_formats_list():      
+    elif fmt in get_formats_list() :      
         # tabular 
         log.write(" -"+fmt+" format will be loaded...",verbose=verbose)
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
         print_format_info(fmt=fmt, meta_data=meta_data,rename_dictionary=rename_dictionary,verbose=verbose, log=log, output=True)
         
-        yaml_path = path + "."+suffix+".tsv-meta.yaml"
-        path = path + "."+suffix+".tsv.gz"
+        # determine if gzip or not / create path for output
+        if gzip ==True and tab_fmt not in non_gzip_tab_fmt:
+            path = path + "."+suffix+".{}.gz".format(tab_fmt)
+        else:
+            path = path + "."+suffix+".{}".format(tab_fmt)
+
+        yaml_path = path + "."+suffix+".{}-meta.yaml".format(tab_fmt)
         log.write(" -Output path:",path, verbose=verbose) 
-        
+
         sumstats,to_csvargs = _configure_output_cols_and_args(sumstats, rename_dictionary, cols, no_status, path, meta_data, to_csvargs, log, verbose)
         
         log.write(" -Writing sumstats to: {}...".format(path),verbose=verbose)
-        try:
-            fast_to_csv(sumstats, path, to_csvargs=to_csvargs, compress=True, write_in_chunks=True)
-        except:
-            log.write(f"Error in using fast_to_csv. Falling back to original implementation.",verbose=verbose)
-            sumstats.to_csv(path, index=None, **to_csvargs)
-
-        if md5sum == True: 
-            md5_value = md5sum_file(path,log,verbose)
-        else:
-            md5_value = calculate_md5sum_file(path)
         
+        #if tab_fmt=="tsv" or tab_fmt=="csv":
+        #    try:
+        #        log.write(f"  -Fast to csv mode...",verbose=verbose)
+        #        fast_to_csv(sumstats, path, to_csvargs=to_csvargs, compress=True, write_in_chunks=True)
+        #    except:
+        #        log.write(f"Error in using fast_to_csv. Falling back to original implementation.",verbose=verbose)
+        #        sumstats.to_csv(path, index=None, **to_csvargs)
+#
+        #elif tab_fmt=="parquet":
+        #    sumstats.to_parquet(path, index=None, **to_tabular_kwargs)
+        _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose)
+        
+        if tab_fmt not in non_md5sum_tab_fmt and "@" not in path:
+            if md5sum == True: 
+                # write a md5sum file
+                md5_value = md5sum_file(path,log,verbose)
+            else:
+                # calculate md5sum without saveing a file
+                md5_value = calculate_md5sum_file(path)
+        else:
+            md5_value = "NA"
+
         ## update ssf-style meta data and export to yaml file
         _configure_ssf_meta(sumstats, fmt, ssfmeta, meta, meta_data, path, md5_value, yaml_path, log, verbose)
         
         return sumstats  
     
 ####################################################################################################################
+def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose):
+    chr_header = rename_dictionary["CHR"]
+    if tab_fmt=="tsv" or tab_fmt=="csv":
+        try:
+            log.write(f"  -Fast to csv mode...",verbose=verbose)
+            if "@" in path:
+                log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)
+                log.write("  -Chromosomes:{}...".format(list(sumstats["CHR"].unique())),verbose=verbose)
+                for single_chr in list(sumstats["CHR"].unique()):
+                    single_path = path.replace("@",single_chr)
+
+                    fast_to_csv(sumstats.loc[sumstats[chr_header]==single_chr,:],
+                                 single_path, 
+                                 to_csvargs=to_csvargs, compress=True, write_in_chunks=True)
+            else:
+                fast_to_csv(sumstats, path, to_csvargs=to_csvargs, compress=True, write_in_chunks=True)
+        except:
+            log.write(f"Error in using fast_to_csv. Falling back to original implementation.",verbose=verbose)
+            if "@" in path:
+                log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)
+                log.write("  -Chromosomes:{}...".format(list(sumstats["CHR"].unique())),verbose=verbose)
+                for single_chr in list(sumstats["CHR"].unique()):
+                    single_path = path.replace("@",single_chr)
+
+                    sumstats.loc[sumstats[chr_header]==single_chr,:].to_csv(path, index=None, **to_csvargs)
+            else:
+                sumstats.to_csv(path, index=None, **to_csvargs)
+
+    elif tab_fmt=="parquet":
+        sumstats.to_parquet(path, index=None, **to_tabular_kwargs)
+
+
+
 def fast_to_csv(dataframe, path, to_csvargs=None, compress=True, write_in_chunks=True):
         df_numpy = dataframe.to_numpy()
 

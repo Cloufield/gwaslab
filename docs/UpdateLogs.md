@@ -1,7 +1,11 @@
 # Update Logs
 
+# 3.5.3 2024
+-`to_format()`: added parquet format. 
+-`to_format()`: added separate output for each chromosome  
+-`to_format()`: updated log
 
-# 3.5.2 2024
+# 3.5.2 20241203
 - fixed size error for variants with very low MLOG10P when plotting region plots.
 - fixed error when lead variant was not available in stacked regional plot.
 - fixed legend title error in trumpet plot.
