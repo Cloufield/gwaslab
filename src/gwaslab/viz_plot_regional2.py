@@ -394,13 +394,13 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
         
         # ([x0,y0][x1,y1])
         data_to_point =(axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0]) / (xmax - xmin)
-        s =  (data_to_point * 0.18*0.11/(fig.dpi/72))**2 
+        s =  (data_to_point * 0.15*0.11/(fig.dpi/72))**2 
         c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(ld_ticks)-1]
         axins1.scatter(x, y, s=s, marker=marker,c=c, edgecolors="black", linewidths = 1,  clip_on=False, zorder=100)
     
     axins1.set_xlim(0,1)   
     axins1.set_aspect('equal', adjustable='box')
-    axins1.tick_params(axis="y", pad=data_to_point* 0.11* 0.22/(fig.dpi/72))
+    axins1.tick_params(axis="y", pad=data_to_point* 0.11* 0.19/(fig.dpi/72))
     axins1.set_title('LD $r^{2}$ with variant',loc="center",y=-0.2)
     cbar = axins1
     return ax1, cbar
@@ -478,6 +478,7 @@ def _plot_gene_track(
     font_size_in_pixels= taf[2] * pixels_per_track
     font_size_in_points =  font_size_in_pixels * pixels_per_point
     linewidth_in_points=   pixels_per_track * pixels_per_point
+
     log.write(" -plotting gene track..", verbose=verbose)
     
     sig_gene_name = "Undefined"
@@ -490,6 +491,7 @@ def _plot_gene_track(
     sig_gene_names=[]
     sig_gene_lefts=[]
     sig_gene_rights=[]
+    log.write(" -plotting genes: {}..".format(len(uniq_gene_region)), verbose=verbose)
     for index,row in uniq_gene_region.iterrows():
 
         gene_color="#020080"
@@ -508,9 +510,9 @@ def _plot_gene_track(
                 sig_gene_lefts.append(gene_track_start_i+row["start"])
                 sig_gene_rights.append(gene_track_start_i+row["end"])
 
-            # plot gene line
-            ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
-                        (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=linewidth_in_points/10)
+        # plot gene line
+        ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
+                    (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=linewidth_in_points/10,solid_capstyle="butt")
         
         # plot gene name
         if row["end"] >= region[2]:
@@ -527,6 +529,7 @@ def _plot_gene_track(
                     y=row["stack"]*2+taf[4],s=gene_anno,ha="center",va="center",color="black",style='italic',size=font_size_in_points,family=track_font_family))
     
     # plot exons
+    log.write(" -plotting exons: {}..".format(len(exons)), verbose=verbose)
     for index,row in exons.iterrows():
         exon_color="#020080" 
         for sig_gene_name, sig_gene_left, sig_gene_right in zip(sig_gene_names,sig_gene_lefts,sig_gene_rights):

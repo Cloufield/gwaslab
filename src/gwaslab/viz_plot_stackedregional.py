@@ -101,7 +101,7 @@ def plot_stacked_mqq(objects,
         if type(save) is not bool:
             if len(save)>3:
                 if save[-3:]=="pdf" or save[-3:]=="svg":
-                    log.write(" -Adjusting options for saving as pdf/svg...")
+                    log.write(" -Adjusting options for saving as pdf/svg...",verbose=verbose)
                     fig_args["dpi"]=72
                     if "scatter_args" not in  mqq_args.keys():
                         mqq_args["scatter_args"]={"rasterized":True}
