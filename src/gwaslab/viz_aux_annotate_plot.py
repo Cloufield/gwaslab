@@ -31,6 +31,7 @@ def annotate_single(
     arm_scale_d,
     arm_offset,
     anno_adjust,
+    anno_xshift,
     anno_fixed_arm_length,
     maxy,
     anno_fontsize,
@@ -158,6 +159,8 @@ def annotate_single(
             if anno_fixed_arm_length is not None:
                 xytext=(row["i"],row["scaled_P"] + 0.2 + anno_fixed_arm_length)
 
+            if anno_xshift is not None:
+                xytext = (xytext[0] +(anno_xshift*y_span), xytext[1])
             ################################################################################################################################
             # if not changing the directions of some annotation arror arms 
             if anno_count not in anno_d.keys():

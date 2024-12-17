@@ -70,6 +70,7 @@ def _plot_regional(
     palette=None,
     region_recombination = True,
     region_protein_coding=True,
+    region_legend_marker=True,
     region_flank_factor = 0.05,
     track_font_family="Arial",
     taf=[4,0,0.95,1,1],
@@ -133,6 +134,7 @@ def _plot_regional(
                             region_ref_index_dic=region_ref_index_dic,
                             region_marker_shapes=region_marker_shapes,
                             palette=palette,
+                            region_legend_marker=region_legend_marker,
                             fig=fig)
         else:
             cbar=None
@@ -343,7 +345,7 @@ def _add_region_title(region_title, ax1,region_title_args):
     ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", region_ref=None, **region_title_args )
     return ax1
 
-def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, palette =None, position=1):
+def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,palette =None, position=1):
     
     width_pct = "11%"
     height_pct = "{}%".format( 14 + 7 * len(region_ref))
@@ -381,26 +383,30 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     axins1.set_xlim(xmin,xmax)    
 
     ############### ##############plot marker ############## ##############
-    for group_index, ref in enumerate(region_ref):
-        x= -0.1
-        y= 0.1 + 0.2 * group_index
-        
-        if len(region_ref) <2:
-            # single-ref mode
-            marker = region_marker_shapes[group_index+1]
-        else:
-            # multi-ref mode
-            marker = region_marker_shapes[group_index]
-        
-        # ([x0,y0][x1,y1])
-        data_to_point =(axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0]) / (xmax - xmin)
-        s =  (data_to_point * 0.15*0.11/(fig.dpi/72))**2 
-        c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(ld_ticks)-1]
-        axins1.scatter(x, y, s=s, marker=marker,c=c, edgecolors="black", linewidths = 1,  clip_on=False, zorder=100)
+    if region_legend_marker==True:
+        for group_index, ref in enumerate(region_ref):
+            x= -0.1
+            y= 0.1 + 0.2 * group_index
+            
+            if len(region_ref) <2:
+                # single-ref mode
+                marker = region_marker_shapes[group_index+1]
+                c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(ld_ticks)]
+            else:
+                # multi-ref mode
+                marker = region_marker_shapes[group_index]
+                c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(ld_ticks)-1]
+            
+            # ([x0,y0][x1,y1])
+            data_to_point =(axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0]) / (xmax - xmin)
+            s =  (data_to_point * 0.15*0.11/(fig.dpi/72))**2 
+            
+            axins1.scatter(x, y, s=s, marker=marker,c=c, edgecolors="black", linewidths = 1,  clip_on=False, zorder=100)
+            axins1.tick_params(axis="y", pad=data_to_point* 0.11* 0.19/(fig.dpi/72))
     
     axins1.set_xlim(0,1)   
     axins1.set_aspect('equal', adjustable='box')
-    axins1.tick_params(axis="y", pad=data_to_point* 0.11* 0.19/(fig.dpi/72))
+    #axins1.tick_params(axis="y", pad=data_to_point* 0.11* 0.19/(fig.dpi/72))
     axins1.set_title('LD $r^{2}$ with variant',loc="center",y=-0.2)
     cbar = axins1
     return ax1, cbar

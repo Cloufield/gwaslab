@@ -108,6 +108,7 @@ def mqqplot(insumstats,
           region_flank_factor = 0.05,
           region_anno_bbox_args = None,
           region_marker_shapes=None,
+          region_legend_marker=True,
           cbar_title='LD $r^{2}$ with variant',
           cbar_fontsize = None,
           cbar_font_family = None,
@@ -139,6 +140,7 @@ def mqqplot(insumstats,
           anno_source = "ensembl",
           anno_gtf_path=None,
           anno_adjust=False,
+          anno_xshift=None,
           anno_max_iter=100,
           arrow_kwargs=None,
           arm_offset=None,
@@ -234,7 +236,7 @@ def mqqplot(insumstats,
     if "dpi" not in fig_args.keys():
         fig_args["dpi"] = dpi
     if region_anno_bbox_args is None:
-        region_anno_bbox_args = dict()
+        region_anno_bbox_args = {"ec":"None","fc":"None"}
     if anno_set is None:
         anno_set=list()
     if anno_alias is None:
@@ -831,6 +833,7 @@ def mqqplot(insumstats,
                                 region_title=region_title,
                                 region_title_args=region_title_args,
                                 region_ld_legend = region_ld_legend,
+                                region_legend_marker=region_legend_marker,
                                 region_ld_threshold = region_ld_threshold,
                                 region_ld_colors = region_ld_colors,
                                 palette = palette,
@@ -1013,6 +1016,7 @@ def mqqplot(insumstats,
                                 arm_scale_d=arm_scale_d,
                                 arm_offset=arm_offset,
                                 anno_adjust=anno_adjust,
+                                anno_xshift=anno_xshift,
                                 anno_fixed_arm_length=anno_fixed_arm_length,
                                 maxy=maxy,
                                 anno_fontsize= anno_fontsize,
