@@ -1,9 +1,14 @@
 # Update Logs
 
-# 3.5.3 2024
+# 3.5.3 20241217
 -`to_format()`: added parquet format. 
 -`to_format()`: added separate output for each chromosome  
 -`to_format()`: updated log
+-`plot_mqq(mode="r")`: added `region_legend_marker=True`
+-`plot_mqq(mode="r")`: fixed legend maker size 
+-`plot_mqq(mode="r")`: fixed coloring for single reference variant
+-`plot_mqq()`: added `anno_xshift=0`
+-`plot_stacked_mqq()`: fixed error when saving as pdf
 
 # 3.5.2 20241203
 - fixed size error for variants with very low MLOG10P when plotting region plots.
