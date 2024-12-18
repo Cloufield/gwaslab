@@ -168,15 +168,22 @@ def plot_miami2(
     
     if titles is None:
         titles=["",""]
+    
+    
+    titles_pad_adjusted=[1,0]
     if titles_pad is None:
         titles_pad=[0.2,0.2]
-        titles_pad_adjusted=[1 + titles_pad[0], - titles_pad[1]]
         if "anno" in mqq_args.keys():
-            titles_pad_adjusted= [1 + titles_pad[0], -titles_pad[1]]
+            if mqq_args["anno"] is not None:
+                titles_pad_adjusted= [1 + titles_pad[0], -titles_pad[1]]
         if "anno1" in mqq_args.keys():
-            titles_pad_adjusted[0]= 1 + titles_pad[0]
+            if mqq_args["anno1"] is not None:
+                titles_pad_adjusted[0]= 1 + titles_pad[0]
         if "anno2" in mqq_args.keys():
-            titles_pad_adjusted[1]=  - titles_pad[1]
+            if mqq_args["anno2"] is not None:
+                titles_pad_adjusted[1]=  - titles_pad[1]
+    else:
+        titles_pad_adjusted=[1 + titles_pad[0], -titles_pad[1]]
 
     if merged_sumstats is None:
     ## load sumstats1 ###########################################################################################################

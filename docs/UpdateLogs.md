@@ -1,5 +1,8 @@
 # Update Logs
 
+# 3.5.4 20241218
+-`gl.plot_miami2`: fixed error for `titles_pad`
+
 # 3.5.3 20241217
 -`to_format()`: added parquet format. 
 -`to_format()`: added separate output for each chromosome  
