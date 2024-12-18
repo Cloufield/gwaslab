@@ -1838,15 +1838,45 @@
 
 
 <h1 id="update-logs">Update Logs</h1>
-<p>$ 3.5.1 2024
-- fixed errors due to liftover version change </p>
-<p>$ 3.5.0 20241029
-- added <code>plot_gwheatmap()</code>
-- added genename annotation in <code>compare_effect()</code>
-- fixed annotation error in <code>compare_effect()</code>
-- fixed is_q error in <code>compare_effect()</code>
-- fixed error for calculating arm length for annotation.
-- removed some outdated code</p>
+<h1 id="354-20241218">3.5.4 20241218</h1>
+<p>-<code>gl.plot_miami2</code>: fixed error for <code>titles_pad</code></p>
+<h1 id="353-20241217">3.5.3 20241217</h1>
+<p>-<code>to_format()</code>: added parquet format. 
+-<code>to_format()</code>: added separate output for each chromosome<br />
+-<code>to_format()</code>: updated log
+-<code>plot_mqq(mode="r")</code>: added <code>region_legend_marker=True</code>
+-<code>plot_mqq(mode="r")</code>: fixed legend maker size 
+-<code>plot_mqq(mode="r")</code>: fixed coloring for single reference variant
+-<code>plot_mqq()</code>: added <code>anno_xshift=0</code>
+-<code>plot_stacked_mqq()</code>: fixed error when saving as pdf</p>
+<h1 id="352-20241203">3.5.2 20241203</h1>
+<ul>
+<li>fixed size error for variants with very low MLOG10P when plotting region plots.</li>
+<li>fixed error when lead variant was not available in stacked regional plot.</li>
+<li>fixed legend title error in trumpet plot.</li>
+<li>updated functions for automatically extracting kwargs.</li>
+</ul>
+<h1 id="352-20241203_1">3.5.2 20241203</h1>
+<ul>
+<li>added marker to indicate reference variant to LD colorbar in regional plots</li>
+<li>fixed errors when plotting y ticks in <code>plot_mqq()</code></li>
+<li>added additional fix_id() in harmonization workflow (credit to @joshchiou)</li>
+</ul>
+<h1 id="351-20241120">3.5.1 20241120</h1>
+<ul>
+<li>fixed errors due to liftover version change </li>
+<li>restructured <code>compare_effect()</code></li>
+<li>fixed error when getting hapmap3 variants</li>
+</ul>
+<h1 id="350-20241029">3.5.0 20241029</h1>
+<ul>
+<li>added <code>plot_gwheatmap()</code></li>
+<li>added genename annotation in <code>compare_effect()</code></li>
+<li>fixed annotation error in <code>compare_effect()</code></li>
+<li>fixed is_q error in <code>compare_effect()</code></li>
+<li>fixed error for calculating arm length for annotation.</li>
+<li>removed some outdated code</li>
+</ul>
 <h1 id="3449-2024">3.4.49 2024</h1>
 <ul>
 <li>fixed the suffix for yaml in <code>to_format()</code></li>
