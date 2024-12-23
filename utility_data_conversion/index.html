@@ -1483,7 +1483,7 @@
         
   
   <span class="md-ellipsis">
-    Standardization
+    Standardization Workflow
   </span>
   
 
@@ -1525,7 +1525,7 @@
         
   
   <span class="md-ellipsis">
-    Output sumstats
+    Input and output sumstats
   </span>
   
 
@@ -1811,7 +1811,7 @@
         
   
   <span class="md-ellipsis">
-    Miami plot
+    Most options in plot_mqq() are available for plot_miami2()
   </span>
   
 
@@ -1854,27 +1854,6 @@
   
   <span class="md-ellipsis">
     Brisbane plot
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../visualization_trumpet/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Power and Trumpet plot
   </span>
   
 
@@ -2504,13 +2483,50 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">"/home/yunye/work/gwaslab/src"</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">gwaslab</span> <span class="k">as</span> <span class="nn">gl</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">gwaslab</span> <span class="k">as</span> <span class="nn">gl</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import sys
-sys.path.insert(0,"/home/yunye/work/gwaslab/src")
-import gwaslab as gl</div>
+<div class="clipboard-copy-txt" id="cell-1">import gwaslab as gl</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=77772826">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-2">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">show_version</span><span class="p">()</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-2">gl.show_version()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:33:17 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
+2024/12/22 22:33:17 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+</pre>
 </div>
 </div>
 </div>
@@ -2533,10 +2549,10 @@ import gwaslab as gl</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-2">
+<clipboard-copy for="cell-3">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2546,7 +2562,7 @@ import gwaslab as gl</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"t2d_bbj.txt.gz"</span><span class="p">,</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"../0_sample_data/t2d_bbj.txt.gz"</span><span class="p">,</span>
              <span class="n">snpid</span><span class="o">=</span><span class="s2">"SNP"</span><span class="p">,</span>
              <span class="n">chrom</span><span class="o">=</span><span class="s2">"CHR"</span><span class="p">,</span>
              <span class="n">pos</span><span class="o">=</span><span class="s2">"POS"</span><span class="p">,</span>
@@ -2558,7 +2574,7 @@ import gwaslab as gl</div>
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
+<div class="clipboard-copy-txt" id="cell-3">mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
              snpid="SNP",
              chrom="CHR",
              pos="POS",
@@ -2578,7 +2594,7 @@ mysumstats.data</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -2695,60 +2711,6 @@ mysumstats.data</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-3">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"OR"</span><span class="p">])</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-3">mysumstats.fill_data(to_fill=["OR"])</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 20:36:12 2024 Start filling data using existing columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      STATUS  
-Sat Feb  3 20:36:12 2024  -DType   : string Int64 Int64 category category float32 float64 float64 category
-Sat Feb  3 20:36:12 2024  -Verified: T      T     T     T        T        T       T       T       T       
-Sat Feb  3 20:36:12 2024  -Overwrite mode:  False
-Sat Feb  3 20:36:12 2024   -Skipping columns:  []
-Sat Feb  3 20:36:12 2024  -Filling columns:  ['OR']
-Sat Feb  3 20:36:12 2024   - Filling Columns iteratively...
-Sat Feb  3 20:36:12 2024   - Filling OR using BETA column...
-Sat Feb  3 20:36:12 2024   - Filling OR_95L/OR_95U using BETA/SE columns...
-Sat Feb  3 20:36:12 2024 Finished filling data using existing columns.
-Sat Feb  3 20:36:12 2024 Start to reorder the columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Current Dataframe shape : 5 x 12 ; Memory usage: 19.94 MB
-Sat Feb  3 20:36:12 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,OR,OR_95L,OR_95U,STATUS
-Sat Feb  3 20:36:12 2024 Finished reordering the columns.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=85acea12">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -2762,9 +2724,63 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"OR"</span><span class="p">])</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-4">mysumstats.fill_data(to_fill=["OR"])</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
+2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      STATUS  
+2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 category
+2024/12/22 22:33:32  -Verified: T      T     T     T        T        T       T       T       T       
+2024/12/22 22:33:32  -Overwrite mode:  False
+2024/12/22 22:33:32   -Skipping columns:  []
+2024/12/22 22:33:32  -Filling columns:  ['OR']
+2024/12/22 22:33:32   - Filling Columns iteratively...
+2024/12/22 22:33:32   - Filling OR using BETA column...
+2024/12/22 22:33:32   - Filling OR_95L/OR_95U using BETA/SE columns...
+2024/12/22 22:33:32 Finished filling data using existing columns.
+2024/12/22 22:33:32 Start to reorder the columns...v3.5.4
+2024/12/22 22:33:32  -Current Dataframe shape : 5 x 12 ; Memory usage: 21.47 MB
+2024/12/22 22:33:32  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,OR,OR_95L,OR_95U,STATUS
+2024/12/22 22:33:32 Finished reordering the columns.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=85acea12">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-5">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-5">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -2774,7 +2790,7 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -2909,33 +2925,6 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-5">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"BETA"</span><span class="p">,</span><span class="s2">"SE"</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-5">mysumstats.data.drop(labels=["BETA","SE"],axis=1,inplace=True)</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=42471841">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -2949,9 +2938,36 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"BETA"</span><span class="p">,</span><span class="s2">"SE"</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-6">mysumstats.data.drop(labels=["BETA","SE"],axis=1,inplace=True)</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=42471841">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-7">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-7">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -2961,7 +2977,7 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -3073,60 +3089,6 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-7">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"BETA"</span><span class="p">,</span><span class="s2">"SE"</span><span class="p">])</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-7">mysumstats.fill_data(to_fill=["BETA","SE"])</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 20:36:12 2024 Start filling data using existing columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     OR      OR_95L  OR_95U  STATUS  
-Sat Feb  3 20:36:12 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 category
-Sat Feb  3 20:36:12 2024  -Verified: T      T     T     T        T        T       T       T       T       T       
-Sat Feb  3 20:36:12 2024  -Overwrite mode:  False
-Sat Feb  3 20:36:12 2024   -Skipping columns:  []
-Sat Feb  3 20:36:12 2024  -Filling columns:  ['BETA', 'SE']
-Sat Feb  3 20:36:12 2024   - Filling Columns iteratively...
-Sat Feb  3 20:36:12 2024   - Filling BETA value using OR column...
-Sat Feb  3 20:36:12 2024   - Filling SE value using OR/OR_95U column...
-Sat Feb  3 20:36:12 2024 Finished filling data using existing columns.
-Sat Feb  3 20:36:12 2024 Start to reorder the columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Current Dataframe shape : 5 x 12 ; Memory usage: 19.94 MB
-Sat Feb  3 20:36:12 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,OR,OR_95L,OR_95U,STATUS
-Sat Feb  3 20:36:12 2024 Finished reordering the columns.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=6e4f75c6">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -3140,9 +3102,63 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"BETA"</span><span class="p">,</span><span class="s2">"SE"</span><span class="p">])</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-8">mysumstats.fill_data(to_fill=["BETA","SE"])</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
+2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     OR      OR_95L  OR_95U  STATUS  
+2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 float64 category
+2024/12/22 22:33:32  -Verified: T      T     T     T        T        T       T       T       T       T       
+2024/12/22 22:33:32  -Overwrite mode:  False
+2024/12/22 22:33:32   -Skipping columns:  []
+2024/12/22 22:33:32  -Filling columns:  ['BETA', 'SE']
+2024/12/22 22:33:32   - Filling Columns iteratively...
+2024/12/22 22:33:32   - Filling BETA value using OR column...
+2024/12/22 22:33:32   - Filling SE value using OR/OR_95U column...
+2024/12/22 22:33:32 Finished filling data using existing columns.
+2024/12/22 22:33:32 Start to reorder the columns...v3.5.4
+2024/12/22 22:33:32  -Current Dataframe shape : 5 x 12 ; Memory usage: 21.47 MB
+2024/12/22 22:33:32  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,OR,OR_95L,OR_95U,STATUS
+2024/12/22 22:33:32 Finished reordering the columns.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=6e4f75c6">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-9">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-9">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -3152,7 +3168,7 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -3287,59 +3303,6 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-9">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"Z"</span><span class="p">])</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-9">mysumstats.fill_data(to_fill=["Z"])</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 20:36:12 2024 Start filling data using existing columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      OR      OR_95L  OR_95U  STATUS  
-Sat Feb  3 20:36:12 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 category
-Sat Feb  3 20:36:12 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       
-Sat Feb  3 20:36:12 2024  -Overwrite mode:  False
-Sat Feb  3 20:36:12 2024   -Skipping columns:  []
-Sat Feb  3 20:36:12 2024  -Filling columns:  ['Z']
-Sat Feb  3 20:36:12 2024   - Filling Columns iteratively...
-Sat Feb  3 20:36:12 2024   - Filling Z using BETA/SE column...
-Sat Feb  3 20:36:12 2024 Finished filling data using existing columns.
-Sat Feb  3 20:36:12 2024 Start to reorder the columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Current Dataframe shape : 5 x 13 ; Memory usage: 19.94 MB
-Sat Feb  3 20:36:12 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,OR,OR_95L,OR_95U,STATUS
-Sat Feb  3 20:36:12 2024 Finished reordering the columns.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7ee52839">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -3353,9 +3316,62 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"Z"</span><span class="p">])</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-10">mysumstats.fill_data(to_fill=["Z"])</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
+2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      OR      OR_95L  OR_95U  STATUS  
+2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 category
+2024/12/22 22:33:32  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       
+2024/12/22 22:33:32  -Overwrite mode:  False
+2024/12/22 22:33:32   -Skipping columns:  []
+2024/12/22 22:33:32  -Filling columns:  ['Z']
+2024/12/22 22:33:32   - Filling Columns iteratively...
+2024/12/22 22:33:32   - Filling Z using BETA/SE column...
+2024/12/22 22:33:32 Finished filling data using existing columns.
+2024/12/22 22:33:32 Start to reorder the columns...v3.5.4
+2024/12/22 22:33:32  -Current Dataframe shape : 5 x 13 ; Memory usage: 21.47 MB
+2024/12/22 22:33:32  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,OR,OR_95L,OR_95U,STATUS
+2024/12/22 22:33:32 Finished reordering the columns.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7ee52839">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-11">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-11">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -3365,7 +3381,7 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -3506,10 +3522,10 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-11">
+<clipboard-copy for="cell-12">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3521,7 +3537,7 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"MLOG10P"</span><span class="p">])</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-11">mysumstats.fill_data(to_fill=["MLOG10P"])</div>
+<div class="clipboard-copy-txt" id="cell-12">mysumstats.fill_data(to_fill=["MLOG10P"])</div>
 </div>
 </div>
 </div>
@@ -3533,21 +3549,21 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 20:36:12 2024 Start filling data using existing columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       OR      OR_95L  OR_95U  STATUS  
-Sat Feb  3 20:36:12 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 category
-Sat Feb  3 20:36:12 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       
-Sat Feb  3 20:36:12 2024  -Overwrite mode:  False
-Sat Feb  3 20:36:12 2024   -Skipping columns:  []
-Sat Feb  3 20:36:12 2024  -Filling columns:  ['MLOG10P']
-Sat Feb  3 20:36:12 2024   - Filling Columns iteratively...
-Sat Feb  3 20:36:12 2024   - Filling P value using Z column...
-Sat Feb  3 20:36:12 2024   - Filling MLOG10P using P column...
-Sat Feb  3 20:36:12 2024 Finished filling data using existing columns.
-Sat Feb  3 20:36:12 2024 Start to reorder the columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Current Dataframe shape : 5 x 15 ; Memory usage: 19.94 MB
-Sat Feb  3 20:36:12 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
-Sat Feb  3 20:36:12 2024 Finished reordering the columns.
+<pre>2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
+2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       OR      OR_95L  OR_95U  STATUS  
+2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 category
+2024/12/22 22:33:32  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       
+2024/12/22 22:33:32  -Overwrite mode:  False
+2024/12/22 22:33:32   -Skipping columns:  []
+2024/12/22 22:33:32  -Filling columns:  ['MLOG10P']
+2024/12/22 22:33:32   - Filling Columns iteratively...
+2024/12/22 22:33:32   - Filling P value using Z column...
+2024/12/22 22:33:32   - Filling MLOG10P using P column...
+2024/12/22 22:33:32 Finished filling data using existing columns.
+2024/12/22 22:33:32 Start to reorder the columns...v3.5.4
+2024/12/22 22:33:32  -Current Dataframe shape : 5 x 15 ; Memory usage: 21.47 MB
+2024/12/22 22:33:32  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
+2024/12/22 22:33:32 Finished reordering the columns.
 </pre>
 </div>
 </div>
@@ -3571,57 +3587,6 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-12">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"P"</span><span class="p">])</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-12">mysumstats.fill_data(to_fill=["P"])</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 20:36:12 2024 Start filling data using existing columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
-Sat Feb  3 20:36:12 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
-Sat Feb  3 20:36:12 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       
-Sat Feb  3 20:36:12 2024  -Overwrite mode:  False
-Sat Feb  3 20:36:12 2024   -Skipping columns:  ['P']
-Sat Feb  3 20:36:12 2024  -No available columns to fill. Skipping.
-Sat Feb  3 20:36:12 2024 Finished filling data using existing columns.
-Sat Feb  3 20:36:12 2024 Start to reorder the columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Current Dataframe shape : 5 x 15 ; Memory usage: 19.94 MB
-Sat Feb  3 20:36:12 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
-Sat Feb  3 20:36:12 2024 Finished reordering the columns.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7d6f0ebc">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -3635,9 +3600,60 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"P"</span><span class="p">])</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-13">mysumstats.fill_data(to_fill=["P"])</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:33:33 Start filling data using existing columns...v3.5.4
+2024/12/22 22:33:33  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
+2024/12/22 22:33:33  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
+2024/12/22 22:33:33  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       
+2024/12/22 22:33:33  -Overwrite mode:  False
+2024/12/22 22:33:33   -Skipping columns:  ['P']
+2024/12/22 22:33:33  -No available columns to fill. Skipping.
+2024/12/22 22:33:33 Finished filling data using existing columns.
+2024/12/22 22:33:33 Start to reorder the columns...v3.5.4
+2024/12/22 22:33:33  -Current Dataframe shape : 5 x 15 ; Memory usage: 21.47 MB
+2024/12/22 22:33:33  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
+2024/12/22 22:33:33 Finished reordering the columns.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7d6f0ebc">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-14">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-13">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-14">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -3647,7 +3663,7 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[13]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -3800,59 +3816,6 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-14">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"MAF"</span><span class="p">])</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-14">mysumstats.fill_data(to_fill=["MAF"])</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 20:36:12 2024 Start filling data using existing columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
-Sat Feb  3 20:36:12 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
-Sat Feb  3 20:36:12 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       
-Sat Feb  3 20:36:12 2024  -Overwrite mode:  False
-Sat Feb  3 20:36:12 2024   -Skipping columns:  []
-Sat Feb  3 20:36:12 2024  -Filling columns:  ['MAF']
-Sat Feb  3 20:36:12 2024   - Filling Columns iteratively...
-Sat Feb  3 20:36:12 2024   - Filling MAF using EAF column...
-Sat Feb  3 20:36:12 2024 Finished filling data using existing columns.
-Sat Feb  3 20:36:12 2024 Start to reorder the columns...v3.4.38
-Sat Feb  3 20:36:12 2024  -Current Dataframe shape : 5 x 16 ; Memory usage: 19.94 MB
-Sat Feb  3 20:36:12 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,MAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
-Sat Feb  3 20:36:12 2024 Finished reordering the columns.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c8e9dc6a">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -3866,9 +3829,62 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"MAF"</span><span class="p">])</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-15">mysumstats.fill_data(to_fill=["MAF"])</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:33:33 Start filling data using existing columns...v3.5.4
+2024/12/22 22:33:33  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
+2024/12/22 22:33:33  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
+2024/12/22 22:33:33  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       
+2024/12/22 22:33:33  -Overwrite mode:  False
+2024/12/22 22:33:33   -Skipping columns:  []
+2024/12/22 22:33:33  -Filling columns:  ['MAF']
+2024/12/22 22:33:33   - Filling Columns iteratively...
+2024/12/22 22:33:33   - Filling MAF using EAF column...
+2024/12/22 22:33:33 Finished filling data using existing columns.
+2024/12/22 22:33:33 Start to reorder the columns...v3.5.4
+2024/12/22 22:33:33  -Current Dataframe shape : 5 x 16 ; Memory usage: 21.47 MB
+2024/12/22 22:33:33  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,MAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
+2024/12/22 22:33:33 Finished reordering the columns.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c8e9dc6a">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-16">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-15">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-16">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -3878,7 +3894,7 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -4037,10 +4053,10 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-16">
+<clipboard-copy for="cell-17">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -4050,7 +4066,7 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"t2d_bbj.txt.gz"</span><span class="p">,</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"../0_sample_data/t2d_bbj.txt.gz"</span><span class="p">,</span>
              <span class="n">snpid</span><span class="o">=</span><span class="s2">"SNP"</span><span class="p">,</span>
              <span class="n">chrom</span><span class="o">=</span><span class="s2">"CHR"</span><span class="p">,</span>
              <span class="n">pos</span><span class="o">=</span><span class="s2">"POS"</span><span class="p">,</span>
@@ -4060,7 +4076,7 @@ Sat Feb  3 20:36:12 2024 Finished reordering the columns.
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"SE"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"SE"</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span>
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-16">mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
+<div class="clipboard-copy-txt" id="cell-17">mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
              snpid="SNP",
              chrom="CHR",
              pos="POS",
@@ -4078,7 +4094,7 @@ mysumstats.data</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -4188,61 +4204,6 @@ mysumstats.data</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-17">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"Z"</span><span class="p">,</span><span class="s2">"P"</span><span class="p">])</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-17">mysumstats.fill_data(to_fill=["Z","P"])</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 20:36:13 2024 Start filling data using existing columns...v3.4.38
-Sat Feb  3 20:36:13 2024  -Column  : SNPID  CHR    POS   BETA    SE      STATUS  
-Sat Feb  3 20:36:13 2024  -DType   : object string int64 float64 float64 category
-Sat Feb  3 20:36:13 2024  -Verified: T      F      T     T       T       T       
-Sat Feb  3 20:36:13 2024  #WARNING! Columns with possibly incompatable dtypes: CHR
-Sat Feb  3 20:36:13 2024  -Overwrite mode:  False
-Sat Feb  3 20:36:13 2024   -Skipping columns:  []
-Sat Feb  3 20:36:13 2024  -Filling columns:  ['Z', 'P']
-Sat Feb  3 20:36:13 2024   - Filling Columns iteratively...
-Sat Feb  3 20:36:13 2024   - Filling Z using BETA/SE column...
-Sat Feb  3 20:36:13 2024   - Filling P value using Z column...
-Sat Feb  3 20:36:13 2024 Finished filling data using existing columns.
-Sat Feb  3 20:36:13 2024 Start to reorder the columns...v3.4.38
-Sat Feb  3 20:36:13 2024  -Current Dataframe shape : 5 x 8 ; Memory usage: 19.94 MB
-Sat Feb  3 20:36:13 2024  -Reordering columns to    : SNPID,CHR,POS,BETA,SE,Z,P,STATUS
-Sat Feb  3 20:36:13 2024 Finished reordering the columns.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=988ef94f">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -4256,9 +4217,64 @@ Sat Feb  3 20:36:13 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"Z"</span><span class="p">,</span><span class="s2">"P"</span><span class="p">])</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-18">mysumstats.fill_data(to_fill=["Z","P"])</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:33:34 Start filling data using existing columns...v3.5.4
+2024/12/22 22:33:34  -Column  : SNPID  CHR    POS   BETA    SE      STATUS  
+2024/12/22 22:33:34  -DType   : object string int64 float64 float64 category
+2024/12/22 22:33:34  -Verified: T      F      T     T       T       T       
+2024/12/22 22:33:34  #WARNING! Columns with possibly incompatible dtypes: CHR
+2024/12/22 22:33:34  -Overwrite mode:  False
+2024/12/22 22:33:34   -Skipping columns:  []
+2024/12/22 22:33:34  -Filling columns:  ['Z', 'P']
+2024/12/22 22:33:34   - Filling Columns iteratively...
+2024/12/22 22:33:34   - Filling Z using BETA/SE column...
+2024/12/22 22:33:34   - Filling P value using Z column...
+2024/12/22 22:33:34 Finished filling data using existing columns.
+2024/12/22 22:33:34 Start to reorder the columns...v3.5.4
+2024/12/22 22:33:34  -Current Dataframe shape : 5 x 8 ; Memory usage: 21.47 MB
+2024/12/22 22:33:34  -Reordering columns to    : SNPID,CHR,POS,BETA,SE,Z,P,STATUS
+2024/12/22 22:33:34 Finished reordering the columns.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=988ef94f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-19">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-18">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-19">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -4268,7 +4284,7 @@ Sat Feb  3 20:36:13 2024 Finished reordering the columns.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[18]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[19]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -4379,60 +4395,6 @@ Sat Feb  3 20:36:13 2024 Finished reordering the columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-19">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"MLOG10P"</span><span class="p">],</span><span class="n">extreme</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-19">mysumstats.fill_data(to_fill=["MLOG10P"],extreme=True)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 20:36:13 2024 Start filling data using existing columns...v3.4.38
-Sat Feb  3 20:36:13 2024  -Column  : SNPID  CHR    POS   BETA    SE      Z       P       STATUS  
-Sat Feb  3 20:36:13 2024  -DType   : object string int64 float64 float64 float64 float64 category
-Sat Feb  3 20:36:13 2024  -Verified: T      F      T     T       T       T       T       T       
-Sat Feb  3 20:36:13 2024  #WARNING! Columns with possibly incompatable dtypes: CHR
-Sat Feb  3 20:36:13 2024  -Overwrite mode:  False
-Sat Feb  3 20:36:13 2024   -Skipping columns:  []
-Sat Feb  3 20:36:13 2024  -Filling columns:  ['MLOG10P']
-Sat Feb  3 20:36:13 2024   - Filling Columns iteratively...
-Sat Feb  3 20:36:13 2024   - Filling MLOG10P using Z column...
-Sat Feb  3 20:36:13 2024 Finished filling data using existing columns.
-Sat Feb  3 20:36:13 2024 Start to reorder the columns...v3.4.38
-Sat Feb  3 20:36:13 2024  -Current Dataframe shape : 5 x 11 ; Memory usage: 19.94 MB
-Sat Feb  3 20:36:13 2024  -Reordering columns to    : SNPID,CHR,POS,BETA,SE,Z,P,MLOG10P,STATUS,P_MANTISSA,P_EXPONENT
-Sat Feb  3 20:36:13 2024 Finished reordering the columns.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=30bd0e57">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -4446,9 +4408,63 @@ Sat Feb  3 20:36:13 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fill_data</span><span class="p">(</span><span class="n">to_fill</span><span class="o">=</span><span class="p">[</span><span class="s2">"MLOG10P"</span><span class="p">],</span><span class="n">extreme</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-20">mysumstats.fill_data(to_fill=["MLOG10P"],extreme=True)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:33:34 Start filling data using existing columns...v3.5.4
+2024/12/22 22:33:34  -Column  : SNPID  CHR    POS   BETA    SE      Z       P       STATUS  
+2024/12/22 22:33:34  -DType   : object string int64 float64 float64 float64 float64 category
+2024/12/22 22:33:34  -Verified: T      F      T     T       T       T       T       T       
+2024/12/22 22:33:34  #WARNING! Columns with possibly incompatible dtypes: CHR
+2024/12/22 22:33:34  -Overwrite mode:  False
+2024/12/22 22:33:34   -Skipping columns:  []
+2024/12/22 22:33:34  -Filling columns:  ['MLOG10P']
+2024/12/22 22:33:34   - Filling Columns iteratively...
+2024/12/22 22:33:34   - Filling MLOG10P using Z column...
+2024/12/22 22:33:34 Finished filling data using existing columns.
+2024/12/22 22:33:34 Start to reorder the columns...v3.5.4
+2024/12/22 22:33:34  -Current Dataframe shape : 5 x 11 ; Memory usage: 21.47 MB
+2024/12/22 22:33:34  -Reordering columns to    : SNPID,CHR,POS,BETA,SE,Z,P,MLOG10P,STATUS,P_MANTISSA,P_EXPONENT
+2024/12/22 22:33:34 Finished reordering the columns.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=30bd0e57">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-21">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-20">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-21">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -4458,7 +4474,7 @@ Sat Feb  3 20:36:13 2024 Finished reordering the columns.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[20]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[21]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -4587,10 +4603,10 @@ Sat Feb  3 20:36:13 2024 Finished reordering the columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-21">
+<clipboard-copy for="cell-22">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -4600,7 +4616,7 @@ Sat Feb  3 20:36:13 2024 Finished reordering the columns.
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"t2d_bbj.txt.gz"</span><span class="p">,</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"../0_sample_data/t2d_bbj.txt.gz"</span><span class="p">,</span>
              <span class="n">snpid</span><span class="o">=</span><span class="s2">"SNP"</span><span class="p">,</span>
              <span class="n">chrom</span><span class="o">=</span><span class="s2">"CHR"</span><span class="p">,</span>
              <span class="n">pos</span><span class="o">=</span><span class="s2">"POS"</span><span class="p">,</span>
@@ -4612,7 +4628,7 @@ Sat Feb  3 20:36:13 2024 Finished reordering the columns.
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-21">mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
+<div class="clipboard-copy-txt" id="cell-22">mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
              snpid="SNP",
              chrom="CHR",
              pos="POS",
@@ -4632,7 +4648,7 @@ mysumstats.data</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[21]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[22]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -4744,51 +4760,6 @@ mysumstats.data</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-22">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_per_snp_r2</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-22">mysumstats.get_per_snp_r2()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 20:36:19 2024 Start to calculate per-SNP heritibility...
-Sat Feb  3 20:36:19 2024  -Calculating per-SNP rsq by 2 * (BETA**2) * AF * (1-AF) / Var(y)...
-Sat Feb  3 20:36:19 2024  -Var(y) is provided: 1...
-Sat Feb  3 20:36:19 2024  -Calculating F-statistic: F = [(N-k-1)/k] * (r2/1-r2)... where k = 1
-Sat Feb  3 20:36:19 2024  -For r2, SNPR2 is used.
-Sat Feb  3 20:36:19 2024 Finished calculating per-SNP heritability!
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f64ee8c7">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [23]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -4802,9 +4773,54 @@ Sat Feb  3 20:36:19 2024 Finished calculating per-SNP heritability!
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_per_snp_r2</span><span class="p">()</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-23">mysumstats.get_per_snp_r2()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:33:49 Start to calculate per-SNP heritibility...
+2024/12/22 22:33:49  -Calculating per-SNP rsq by 2 * (BETA**2) * AF * (1-AF) / Var(y)...
+2024/12/22 22:33:49  -Var(y) is provided: 1...
+2024/12/22 22:33:49  -Calculating F-statistic: F = [(N-k-1)/k] * (r2/1-r2)... where k = 1
+2024/12/22 22:33:49  -For r2, SNPR2 is used.
+2024/12/22 22:33:49 Finished calculating per-SNP heritability!
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=f64ee8c7">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [24]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-24">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-23">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-24">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -4814,7 +4830,7 @@ Sat Feb  3 20:36:19 2024 Finished calculating per-SNP heritability!
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[23]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[24]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">

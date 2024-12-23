@@ -22,7 +22,7 @@
     
     
       
-        <title>Standardization - GWASLab</title>
+        <title>Standardization Workflow - GWASLab</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#standardization" class="md-skip">
+        <a href="#standardization-workflow" class="md-skip">
           Skip to content
         </a>
       
@@ -107,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Standardization
+              Standardization Workflow
             
           </span>
         </div>
@@ -1492,7 +1492,7 @@
           
   
   <span class="md-ellipsis">
-    Standardization
+    Standardization Workflow
   </span>
   
 
@@ -1503,7 +1503,7 @@
         
   
   <span class="md-ellipsis">
-    Standardization
+    Standardization Workflow
   </span>
   
 
@@ -1688,7 +1688,7 @@
         
   
   <span class="md-ellipsis">
-    Output sumstats
+    Input and output sumstats
   </span>
   
 
@@ -1835,7 +1835,7 @@
         
   
   <span class="md-ellipsis">
-    Miami plot
+    Most options in plot_mqq() are available for plot_miami2()
   </span>
   
 
@@ -1878,27 +1878,6 @@
   
   <span class="md-ellipsis">
     Brisbane plot
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../visualization_trumpet/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Power and Trumpet plot
   </span>
   
 
@@ -2529,7 +2508,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="standardization">Standardization<a class="anchor-link" href="#standardization">¶</a></h1>
+<h1 id="standardization-workflow">Standardization Workflow<a class="anchor-link" href="#standardization-workflow">¶</a></h1>
 </div>
 </div>
 </div>
@@ -2560,19 +2539,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f9553c53">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="load-sample-data">Load sample data<a class="anchor-link" href="#load-sample-data">¶</a></h2>
-</div>
-</div>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=73f7b157">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=e871a16a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2590,9 +2558,9 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"/home/yunye/work/gwaslab/examples/toy_data/dirty_sumstats.tsv"</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">"gwaslab"</span><span class="p">,</span><span class="n">other</span><span class="o">=</span><span class="p">[</span><span class="s2">"NOTE"</span><span class="p">])</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">show_version</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">mysumstats = gl.Sumstats("/home/yunye/work/gwaslab/examples/toy_data/dirty_sumstats.tsv",fmt="gwaslab",other=["NOTE"])</div>
+<div class="clipboard-copy-txt" id="cell-2">gl.show_version()</div>
 </div>
 </div>
 </div>
@@ -2604,29 +2572,81 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:01 2024 GWASLab v3.4.38 https://cloufield.github.io/gwaslab/
-Fri Feb  2 19:46:01 2024 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
-Fri Feb  2 19:46:01 2024 Start to load format from formatbook....
-Fri Feb  2 19:46:01 2024  -gwaslab format meta info:
-Fri Feb  2 19:46:01 2024   - format_name  : gwaslab
-Fri Feb  2 19:46:01 2024   - format_source  : https://cloufield.github.io/gwaslab/
-Fri Feb  2 19:46:01 2024   - format_version  : 20231220_v4
-Fri Feb  2 19:46:01 2024 Start to initialize gl.Sumstats from file :/home/yunye/work/gwaslab/examples/toy_data/dirty_sumstats.tsv
-Fri Feb  2 19:46:01 2024  -Reading columns          : BETA,DIRECTION,EA,P,N,NOTE,NEA,CHISQ,EAF,POS,MLOG10P,Z,N_CONTROL,OR_95L,SNPID,CHR,OR_95U,SE,N_CASE,OR
-Fri Feb  2 19:46:01 2024  -Renaming columns to      : BETA,DIRECTION,EA,P,N,NOTE,NEA,CHISQ,EAF,POS,MLOG10P,Z,N_CONTROL,OR_95L,SNPID,CHR,OR_95U,SE,N_CASE,OR
-Fri Feb  2 19:46:01 2024  -Current Dataframe shape : 63  x  20
-Fri Feb  2 19:46:01 2024  -Initiating a status column: STATUS ...
-Fri Feb  2 19:46:01 2024  #WARNING! Version of genomic coordinates is unknown...
-Fri Feb  2 19:46:01 2024 Start to reorder the columns...v3.4.38
-Fri Feb  2 19:46:01 2024  -Current Dataframe shape : 63 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:01 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,CHISQ,P,MLOG10P,OR,OR_95L,OR_95U,N,N_CASE,N_CONTROL,DIRECTION,STATUS,NOTE
-Fri Feb  2 19:46:01 2024 Finished reordering the columns.
-Fri Feb  2 19:46:01 2024  -Column  : SNPID  CHR    POS    EA       NEA      EAF     BETA    SE      Z       CHISQ   P       MLOG10P OR      OR_95L  OR_95U  N       N_CASE N_CONTROL DIRECTION STATUS   NOTE  
-Fri Feb  2 19:46:01 2024  -DType   : object string object category category float64 float64 float64 float64 float64 float64 float64 float64 float64 float64 float64 int64  int64     object    category object
-Fri Feb  2 19:46:01 2024  -Verified: T      F      F      T        T        T       T       T       T       T       T       T       T       T       T       F       T      T         T         T        NA    
-Fri Feb  2 19:46:01 2024  #WARNING! Columns with possibly incompatable dtypes: CHR,POS,N
-Fri Feb  2 19:46:02 2024  -Current Dataframe memory usage: 19.95 MB
-Fri Feb  2 19:46:02 2024 Finished loading data successfully!
+<pre>2024/12/20 13:17:13 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
+2024/12/20 13:17:13 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f9553c53">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="load-sample-data">Load sample data<a class="anchor-link" href="#load-sample-data">¶</a></h2>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=73f7b157">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-3">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"../0_sample_data/toy_data/dirty_sumstats.tsv"</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">"gwaslab"</span><span class="p">,</span><span class="n">other</span><span class="o">=</span><span class="p">[</span><span class="s2">"NOTE"</span><span class="p">])</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-3">mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwaslab",other=["NOTE"])</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/20 13:17:15 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
+2024/12/20 13:17:15 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+2024/12/20 13:17:15 Start to load format from formatbook....
+2024/12/20 13:17:15  -gwaslab format meta info:
+2024/12/20 13:17:15   - format_name  : gwaslab
+2024/12/20 13:17:15   - format_source  : https://cloufield.github.io/gwaslab/
+2024/12/20 13:17:15   - format_version  : 20231220_v4
+2024/12/20 13:17:15 Start to initialize gl.Sumstats from file :../0_sample_data/toy_data/dirty_sumstats.tsv
+2024/12/20 13:17:15  -Reading columns          : OR_95L,NEA,BETA,DIRECTION,OR_95U,P,N_CASE,CHISQ,MLOG10P,NOTE,EAF,N_CONTROL,Z,SE,SNPID,N,EA,OR,POS,CHR
+2024/12/20 13:17:15  -Renaming columns to      : OR_95L,NEA,BETA,DIRECTION,OR_95U,P,N_CASE,CHISQ,MLOG10P,NOTE,EAF,N_CONTROL,Z,SE,SNPID,N,EA,OR,POS,CHR
+2024/12/20 13:17:15  -Current Dataframe shape : 63  x  20
+2024/12/20 13:17:15  -Initiating a status column: STATUS ...
+2024/12/20 13:17:15  #WARNING! Version of genomic coordinates is unknown...
+2024/12/20 13:17:16 Start to reorder the columns...v3.5.4
+2024/12/20 13:17:16  -Current Dataframe shape : 63 x 21 ; Memory usage: 21.48 MB
+2024/12/20 13:17:16  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,CHISQ,P,MLOG10P,OR,OR_95L,OR_95U,N,N_CASE,N_CONTROL,DIRECTION,STATUS,NOTE
+2024/12/20 13:17:16 Finished reordering the columns.
+2024/12/20 13:17:16  -Column  : SNPID  CHR    POS    EA       NEA      EAF     BETA    SE      Z       CHISQ   P       MLOG10P OR      OR_95L  OR_95U  N       N_CASE N_CONTROL DIRECTION STATUS   NOTE  
+2024/12/20 13:17:16  -DType   : object string object category category float64 float64 float64 float64 float64 float64 float64 float64 float64 float64 float64 int64  int64     object    category object
+2024/12/20 13:17:16  -Verified: T      F      F      T        T        T       T       T       T       T       T       T       T       T       T       F       T      T         T         T        NA    
+2024/12/20 13:17:16  #WARNING! Columns with possibly incompatible dtypes: CHR,POS,N
+2024/12/20 13:17:16  -Current Dataframe memory usage: 21.48 MB
+2024/12/20 13:17:16 Finished loading data successfully!
 </pre>
 </div>
 </div>
@@ -2650,10 +2670,10 @@ Fri Feb  2 19:46:02 2024 Finished loading data successfully!
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-3">
+<clipboard-copy for="cell-4">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2665,7 +2685,7 @@ Fri Feb  2 19:46:02 2024 Finished loading data successfully!
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-4">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -2675,7 +2695,7 @@ Fri Feb  2 19:46:02 2024 Finished loading data successfully!
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -3009,10 +3029,10 @@ Fri Feb  2 19:46:02 2024 Finished loading data successfully!
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-4">
+<clipboard-copy for="cell-5">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3024,7 +3044,7 @@ Fri Feb  2 19:46:02 2024 Finished loading data successfully!
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">remove_dup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">mysumstats.basic_check(remove=True,remove_dup=True)</div>
+<div class="clipboard-copy-txt" id="cell-5">mysumstats.basic_check(remove=True,remove_dup=True)</div>
 </div>
 </div>
 </div>
@@ -3036,162 +3056,162 @@ Fri Feb  2 19:46:02 2024 Finished loading data successfully!
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:02 2024 Start to check SNPID/rsID...v3.4.38
-Fri Feb  2 19:46:02 2024  -Current Dataframe shape : 63 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:02 2024  -Checking SNPID data type...
-Fri Feb  2 19:46:02 2024  -Converting SNPID to pd.string data type...
-Fri Feb  2 19:46:02 2024  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
-Fri Feb  2 19:46:03 2024 Finished checking SNPID/rsID.
-Fri Feb  2 19:46:03 2024 Start to fix chromosome notation (CHR)...v3.4.38
-Fri Feb  2 19:46:03 2024  -Current Dataframe shape : 63 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:03 2024  -Checking CHR data type...
-Fri Feb  2 19:46:03 2024  -Variants with standardized chromosome notation: 56
-Fri Feb  2 19:46:03 2024  -Variants with fixable chromosome notations: 4
-Fri Feb  2 19:46:03 2024  -Variants with NA chromosome notations: 1
-Fri Feb  2 19:46:03 2024  -Variants with invalid chromosome notations: 2
-Fri Feb  2 19:46:03 2024  -A look at invalid chromosome notations: {'1.0001', '-1'}
-Fri Feb  2 19:46:03 2024  -Identifying non-autosomal chromosomes : X, Y, and MT ...
-Fri Feb  2 19:46:03 2024  -Identified  1  variants on sex chromosomes...
-Fri Feb  2 19:46:03 2024  -Standardizing sex chromosome notations: X to 23...
-Fri Feb  2 19:46:04 2024  -Valid CHR list: 1 - 25
-Fri Feb  2 19:46:04 2024  -Removed 5 variants with chromosome notations not in CHR list.
-Fri Feb  2 19:46:04 2024  -A look at chromosome notations not in CHR list: {'0', '300', &lt;NA&gt;}
-Fri Feb  2 19:46:04 2024 Finished fixing chromosome notation (CHR).
-Fri Feb  2 19:46:04 2024 Start to fix basepair positions (POS)...v3.4.38
-Fri Feb  2 19:46:04 2024  -Current Dataframe shape : 58 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:04 2024  -Removing thousands separator "," or underbar "_" ...
-Fri Feb  2 19:46:04 2024  -Converting to Int64 data type ...
-Fri Feb  2 19:46:04 2024  -Force converting to Int64 data type ...
-Fri Feb  2 19:46:05 2024  -Position bound:(0 , 250,000,000)
-Fri Feb  2 19:46:05 2024  -Removed outliers: 2
-Fri Feb  2 19:46:05 2024  -Removed 4 variants with bad positions.
-Fri Feb  2 19:46:05 2024 Finished fixing basepair positions (POS).
-Fri Feb  2 19:46:05 2024 Start to fix alleles (EA and NEA)...v3.4.38
-Fri Feb  2 19:46:05 2024  -Current Dataframe shape : 54 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:05 2024  -Converted all bases to string datatype and UPPERCASE.
-Fri Feb  2 19:46:05 2024  -Variants with bad EA  : 1
-Fri Feb  2 19:46:05 2024  -Variants with bad NEA : 5
-Fri Feb  2 19:46:05 2024  -Variants with NA for EA or NEA: 1
-Fri Feb  2 19:46:05 2024  -Variants with same EA and NEA: 1
-Fri Feb  2 19:46:05 2024  -A look at the non-ATCG EA: {'&lt;CN0&gt;'} ...
-Fri Feb  2 19:46:05 2024  -A look at the non-ATCG NEA: {nan, '*', '&lt;CN1&gt;', 'N'} ...
-Fri Feb  2 19:46:05 2024  -Removed 5 variants with NA alleles or alleles that contain bases other than A/C/T/G.
-Fri Feb  2 19:46:05 2024  -Removed 1 variants with same allele for EA and NEA.
-Fri Feb  2 19:46:09 2024 Finished fixing alleles (EA and NEA).
-Fri Feb  2 19:46:09 2024 Start to perform sanity check for statistics...v3.4.38
-Fri Feb  2 19:46:09 2024  -Current Dataframe shape : 48 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:09 2024  -Comparison tolerance for floats: 1e-07
-Fri Feb  2 19:46:09 2024  -Checking if 0 &lt;= N &lt;= 2147483647 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 25,26,27 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (N): 12345700000000000,NA,-1 ...
-Fri Feb  2 19:46:09 2024  -Removed 3 variants with bad/na N.
-Fri Feb  2 19:46:09 2024  -Checking if 0 &lt;= N_CASE &lt;= 2147483647 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 29 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (N_CASE): -1 ...
-Fri Feb  2 19:46:09 2024  -Removed 1 variants with bad/na N_CASE.
-Fri Feb  2 19:46:09 2024  -Checking if 0 &lt;= N_CONTROL &lt;= 2147483647 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 28 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (N_CONTROL): -1 ...
-Fri Feb  2 19:46:09 2024  -Removed 1 variants with bad/na N_CONTROL.
-Fri Feb  2 19:46:09 2024  -Checking if -1e-07 &lt; EAF &lt; 1.0000001 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 31,32,33 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (EAF): 1.02,-0.01,NA ...
-Fri Feb  2 19:46:09 2024  -Removed 3 variants with bad/na EAF.
-Fri Feb  2 19:46:09 2024  -Checking if -1e-07 &lt; CHISQ &lt; inf ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 38,39 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (CHISQ): -0.01,NA ...
-Fri Feb  2 19:46:09 2024  -Removed 2 variants with bad/na CHISQ.
-Fri Feb  2 19:46:09 2024  -Checking if -9999.0000001 &lt; Z &lt; 9999.0000001 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 40,41 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (Z): NA,999999.0 ...
-Fri Feb  2 19:46:09 2024  -Removed 2 variants with bad/na Z.
-Fri Feb  2 19:46:09 2024  -Checking if -1e-07 &lt; P &lt; 1.0000001 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 48,49,50 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (P): 1.1,-0.01,NA ...
-Fri Feb  2 19:46:09 2024  -Removed 3 variants with bad/na P.
-Fri Feb  2 19:46:09 2024  -Checking if -1e-07 &lt; MLOG10P &lt; 9999.0000001 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 51,52,53 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (MLOG10P): 12345.0,-0.1,NA ...
-Fri Feb  2 19:46:09 2024  -Removed 3 variants with bad/na MLOG10P.
-Fri Feb  2 19:46:09 2024  -Checking if -100.0000001 &lt; BETA &lt; 100.0000001 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 34,35 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (BETA): 99999.0,NA ...
-Fri Feb  2 19:46:09 2024  -Removed 2 variants with bad/na BETA.
-Fri Feb  2 19:46:09 2024  -Checking if -1e-07 &lt; SE &lt; inf ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 37 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (SE): NA ...
-Fri Feb  2 19:46:09 2024  -Removed 1 variants with bad/na SE.
-Fri Feb  2 19:46:09 2024  -Checking if -100.0000001 &lt; OR &lt; 100.0000001 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 42,43 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (OR): 999999.0,NA ...
-Fri Feb  2 19:46:09 2024  -Removed 2 variants with bad/na OR.
-Fri Feb  2 19:46:09 2024  -Checking if -1e-07 &lt; OR_95L &lt; inf ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 44,45 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (OR_95L): -0.01,NA ...
-Fri Feb  2 19:46:09 2024  -Removed 2 variants with bad/na OR_95L.
-Fri Feb  2 19:46:09 2024  -Checking if -1e-07 &lt; OR_95U &lt; inf ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid variants(SNPID): 46,47 ...
-Fri Feb  2 19:46:09 2024   -Examples of invalid values (OR_95U): -0.01,NA ...
-Fri Feb  2 19:46:09 2024  -Removed 2 variants with bad/na OR_95U.
-Fri Feb  2 19:46:09 2024  -Checking STATUS and converting STATUS to categories....
-Fri Feb  2 19:46:09 2024  -Removed 27 variants with bad statistics in total.
-Fri Feb  2 19:46:09 2024  -Data types for each column:
-Fri Feb  2 19:46:09 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       CHISQ   P       MLOG10P OR      OR_95L  OR_95U  N     N_CASE N_CONTROL DIRECTION STATUS   NOTE  
-Fri Feb  2 19:46:09 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 float64 Int64 Int64  Int64     object    category object
-Fri Feb  2 19:46:09 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       T     T      T         T         T        NA    
-Fri Feb  2 19:46:09 2024 Finished sanity check for statistics.
-Fri Feb  2 19:46:09 2024 Start to check data consistency across columns...v3.4.38
-Fri Feb  2 19:46:09 2024  -Current Dataframe shape : 21 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:09 2024  -Tolerance: 0.001 (Relative) and 0.001 (Absolute)
-Fri Feb  2 19:46:09 2024  -Checking if BETA/SE-derived-MLOG10P is consistent with MLOG10P...
-Fri Feb  2 19:46:09 2024   -Variants with inconsistent values were not detected.
-Fri Feb  2 19:46:09 2024  -Checking if BETA/SE-derived-P is consistent with P...
-Fri Feb  2 19:46:09 2024   -Variants with inconsistent values were not detected.
-Fri Feb  2 19:46:09 2024  -Checking if MLOG10P-derived-P is consistent with P...
-Fri Feb  2 19:46:09 2024   -Variants with inconsistent values were not detected.
-Fri Feb  2 19:46:09 2024  -Checking if N is consistent with N_CASE + N_CONTROL ...
-Fri Feb  2 19:46:09 2024   -Not consistent: 1 variant(s)
-Fri Feb  2 19:46:09 2024   -Variant SNPID with max difference: 30 with 10000
-Fri Feb  2 19:46:09 2024  -Note: if the max difference is greater than expected, please check your original sumstats.
-Fri Feb  2 19:46:09 2024 Finished checking data consistency across columns.
-Fri Feb  2 19:46:09 2024 Start to normalize indels...v3.4.38
-Fri Feb  2 19:46:09 2024  -Current Dataframe shape : 21 x 21 ; Memory usage: 19.94 MB
+<pre>2024/12/20 13:17:27 Start to check SNPID/rsID...v3.5.4
+2024/12/20 13:17:27  -Current Dataframe shape : 63 x 21 ; Memory usage: 21.48 MB
+2024/12/20 13:17:27  -Checking SNPID data type...
+2024/12/20 13:17:27  -Converting SNPID to pd.string data type...
+2024/12/20 13:17:27  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
+2024/12/20 13:17:29 Finished checking SNPID/rsID.
+2024/12/20 13:17:29 Start to fix chromosome notation (CHR)...v3.5.4
+2024/12/20 13:17:29  -Current Dataframe shape : 63 x 21 ; Memory usage: 21.48 MB
+2024/12/20 13:17:29  -Checking CHR data type...
+2024/12/20 13:17:29  -Variants with standardized chromosome notation: 56
+2024/12/20 13:17:29  -Variants with fixable chromosome notations: 4
+2024/12/20 13:17:29  -Variants with NA chromosome notations: 1
+2024/12/20 13:17:29  -Variants with invalid chromosome notations: 2
+2024/12/20 13:17:29  -A look at invalid chromosome notations: {'1.0001', '-1'}
+2024/12/20 13:17:29  -Identifying non-autosomal chromosomes : X, Y, and MT ...
+2024/12/20 13:17:29  -Identified  1  variants on sex chromosomes...
+2024/12/20 13:17:29  -Standardizing sex chromosome notations: X to 23...
+2024/12/20 13:17:31  -Valid CHR list: 1 - 25
+2024/12/20 13:17:31  -Removed 5 variants with chromosome notations not in CHR list.
+2024/12/20 13:17:31  -A look at chromosome notations not in CHR list: {'0', '300', &lt;NA&gt;}
+2024/12/20 13:17:31 Finished fixing chromosome notation (CHR).
+2024/12/20 13:17:31 Start to fix basepair positions (POS)...v3.5.4
+2024/12/20 13:17:31  -Current Dataframe shape : 58 x 21 ; Memory usage: 21.48 MB
+2024/12/20 13:17:31  -Removing thousands separator "," or underbar "_" ...
+2024/12/20 13:17:31  -Converting to Int64 data type ...
+2024/12/20 13:17:31  -Force converting to Int64 data type ...
+2024/12/20 13:17:33  -Position bound:(0 , 250,000,000)
+2024/12/20 13:17:33  -Removed outliers: 2
+2024/12/20 13:17:33  -Removed 4 variants with bad positions.
+2024/12/20 13:17:33 Finished fixing basepair positions (POS).
+2024/12/20 13:17:33 Start to fix alleles (EA and NEA)...v3.5.4
+2024/12/20 13:17:33  -Current Dataframe shape : 54 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:17:33  -Converted all bases to string datatype and UPPERCASE.
+2024/12/20 13:17:33  -Variants with bad EA  : 1
+2024/12/20 13:17:33  -Variants with bad NEA : 5
+2024/12/20 13:17:33  -Variants with NA for EA or NEA: 1
+2024/12/20 13:17:33  -Variants with same EA and NEA: 1
+2024/12/20 13:17:33  -A look at the non-ATCG EA: {'&lt;CN0&gt;'} ...
+2024/12/20 13:17:33  -A look at the non-ATCG NEA: {nan, '*', 'N', '&lt;CN1&gt;'} ...
+2024/12/20 13:17:33  -Removed 5 variants with NA alleles or alleles that contain bases other than A/C/T/G.
+2024/12/20 13:17:33  -Removed 1 variants with same allele for EA and NEA.
+2024/12/20 13:17:38 Finished fixing alleles (EA and NEA).
+2024/12/20 13:17:38 Start to perform sanity check for statistics...v3.5.4
+2024/12/20 13:17:38  -Current Dataframe shape : 48 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:17:38  -Comparison tolerance for floats: 1e-07
+2024/12/20 13:17:38  -Checking if 0 &lt;= N &lt;= 2147483647 ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 25,26,27 ...
+2024/12/20 13:17:38   -Examples of invalid values (N): 12345700000000000,NA,-1 ...
+2024/12/20 13:17:38  -Removed 3 variants with bad/na N.
+2024/12/20 13:17:38  -Checking if 0 &lt;= N_CASE &lt;= 2147483647 ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 29 ...
+2024/12/20 13:17:38   -Examples of invalid values (N_CASE): -1 ...
+2024/12/20 13:17:38  -Removed 1 variants with bad/na N_CASE.
+2024/12/20 13:17:38  -Checking if 0 &lt;= N_CONTROL &lt;= 2147483647 ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 28 ...
+2024/12/20 13:17:38   -Examples of invalid values (N_CONTROL): -1 ...
+2024/12/20 13:17:38  -Removed 1 variants with bad/na N_CONTROL.
+2024/12/20 13:17:38  -Checking if -1e-07 &lt; EAF &lt; 1.0000001 ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 31,32,33 ...
+2024/12/20 13:17:38   -Examples of invalid values (EAF): 1.02,-0.01,NA ...
+2024/12/20 13:17:38  -Removed 3 variants with bad/na EAF.
+2024/12/20 13:17:38  -Checking if -1e-07 &lt; CHISQ &lt; inf ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 38,39 ...
+2024/12/20 13:17:38   -Examples of invalid values (CHISQ): -0.01,NA ...
+2024/12/20 13:17:38  -Removed 2 variants with bad/na CHISQ.
+2024/12/20 13:17:38  -Checking if -9999.0000001 &lt; Z &lt; 9999.0000001 ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 40,41 ...
+2024/12/20 13:17:38   -Examples of invalid values (Z): NA,999999.0 ...
+2024/12/20 13:17:38  -Removed 2 variants with bad/na Z.
+2024/12/20 13:17:38  -Checking if -1e-07 &lt; P &lt; 1.0000001 ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 48,49,50 ...
+2024/12/20 13:17:38   -Examples of invalid values (P): 1.1,-0.01,NA ...
+2024/12/20 13:17:38  -Removed 3 variants with bad/na P.
+2024/12/20 13:17:38  -Checking if -1e-07 &lt; MLOG10P &lt; 9999.0000001 ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 51,52,53 ...
+2024/12/20 13:17:38   -Examples of invalid values (MLOG10P): 12345.0,-0.1,NA ...
+2024/12/20 13:17:38  -Removed 3 variants with bad/na MLOG10P.
+2024/12/20 13:17:38  -Checking if -100.0000001 &lt; BETA &lt; 100.0000001 ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 34,35 ...
+2024/12/20 13:17:38   -Examples of invalid values (BETA): 99999.0,NA ...
+2024/12/20 13:17:38  -Removed 2 variants with bad/na BETA.
+2024/12/20 13:17:38  -Checking if -1e-07 &lt; SE &lt; inf ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 37 ...
+2024/12/20 13:17:38   -Examples of invalid values (SE): NA ...
+2024/12/20 13:17:38  -Removed 1 variants with bad/na SE.
+2024/12/20 13:17:38  -Checking if -100.0000001 &lt; OR &lt; 100.0000001 ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 42,43 ...
+2024/12/20 13:17:38   -Examples of invalid values (OR): 999999.0,NA ...
+2024/12/20 13:17:38  -Removed 2 variants with bad/na OR.
+2024/12/20 13:17:38  -Checking if -1e-07 &lt; OR_95L &lt; inf ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 44,45 ...
+2024/12/20 13:17:38   -Examples of invalid values (OR_95L): -0.01,NA ...
+2024/12/20 13:17:38  -Removed 2 variants with bad/na OR_95L.
+2024/12/20 13:17:38  -Checking if -1e-07 &lt; OR_95U &lt; inf ...
+2024/12/20 13:17:38   -Examples of invalid variants(SNPID): 46,47 ...
+2024/12/20 13:17:38   -Examples of invalid values (OR_95U): -0.01,NA ...
+2024/12/20 13:17:38  -Removed 2 variants with bad/na OR_95U.
+2024/12/20 13:17:38  -Checking STATUS and converting STATUS to categories....
+2024/12/20 13:17:38  -Removed 27 variants with bad statistics in total.
+2024/12/20 13:17:38  -Data types for each column:
+2024/12/20 13:17:38  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       CHISQ   P       MLOG10P OR      OR_95L  OR_95U  N     N_CASE N_CONTROL DIRECTION STATUS   NOTE  
+2024/12/20 13:17:38  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 float64 Int64 Int64  Int64     object    category object
+2024/12/20 13:17:38  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       T     T      T         T         T        NA    
+2024/12/20 13:17:38 Finished sanity check for statistics.
+2024/12/20 13:17:38 Start to check data consistency across columns...v3.5.4
+2024/12/20 13:17:38  -Current Dataframe shape : 21 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:17:38  -Tolerance: 0.001 (Relative) and 0.001 (Absolute)
+2024/12/20 13:17:38  -Checking if BETA/SE-derived-MLOG10P is consistent with MLOG10P...
+2024/12/20 13:17:38   -Variants with inconsistent values were not detected.
+2024/12/20 13:17:38  -Checking if BETA/SE-derived-P is consistent with P...
+2024/12/20 13:17:38   -Variants with inconsistent values were not detected.
+2024/12/20 13:17:38  -Checking if MLOG10P-derived-P is consistent with P...
+2024/12/20 13:17:38   -Variants with inconsistent values were not detected.
+2024/12/20 13:17:38  -Checking if N is consistent with N_CASE + N_CONTROL ...
+2024/12/20 13:17:38   -Not consistent: 1 variant(s)
+2024/12/20 13:17:38   -Variant SNPID with max difference: 30 with 10000
+2024/12/20 13:17:38  -Note: if the max difference is greater than expected, please check your original sumstats.
+2024/12/20 13:17:38 Finished checking data consistency across columns.
+2024/12/20 13:17:38 Start to normalize indels...v3.5.4
+2024/12/20 13:17:38  -Current Dataframe shape : 21 x 21 ; Memory usage: 21.47 MB
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:10 2024  -Not normalized allele IDs:22 ... 
-Fri Feb  2 19:46:10 2024  -Not normalized allele:['AT' 'GT']... 
-Fri Feb  2 19:46:10 2024  -Modified 1 variants according to parsimony and left alignment principal.
-Fri Feb  2 19:46:10 2024 Finished normalizing indels.
-Fri Feb  2 19:46:10 2024 Start to remove duplicated/multiallelic variants...v3.4.38
-Fri Feb  2 19:46:10 2024  -Current Dataframe shape : 21 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:10 2024  -Removing mode:dm
-Fri Feb  2 19:46:10 2024 Start to sort the sumstats using P...
-Fri Feb  2 19:46:10 2024 Start to remove duplicated variants based on snpid...v3.4.38
-Fri Feb  2 19:46:10 2024  -Current Dataframe shape : 21 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:10 2024  -Which variant to keep:  first
-Fri Feb  2 19:46:10 2024  -Removed  2  based on SNPID...
-Fri Feb  2 19:46:10 2024 Start to remove duplicated variants based on CHR,POS,EA and NEA...
-Fri Feb  2 19:46:10 2024  -Current Dataframe shape : 19 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:10 2024  -Which variant to keep:  first
-Fri Feb  2 19:46:10 2024  -Removed  1  based on CHR,POS,EA and NEA...
-Fri Feb  2 19:46:10 2024 Start to remove multiallelic variants based on chr:pos...
-Fri Feb  2 19:46:10 2024  -Current Dataframe shape : 18 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:10 2024  -Which variant to keep:  first
-Fri Feb  2 19:46:10 2024  -Removed  1  multiallelic variants...
-Fri Feb  2 19:46:10 2024  -Removed  4  variants in total.
-Fri Feb  2 19:46:10 2024  -Sort the coordinates based on CHR and POS...
-Fri Feb  2 19:46:10 2024 Finished removing duplicated/multiallelic variants.
-Fri Feb  2 19:46:10 2024 Start to sort the genome coordinates...v3.4.38
-Fri Feb  2 19:46:10 2024  -Current Dataframe shape : 17 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:10 2024 Finished sorting coordinates.
-Fri Feb  2 19:46:10 2024 Start to reorder the columns...v3.4.38
-Fri Feb  2 19:46:10 2024  -Current Dataframe shape : 17 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:10 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,CHISQ,P,MLOG10P,OR,OR_95L,OR_95U,N,N_CASE,N_CONTROL,DIRECTION,STATUS,NOTE
-Fri Feb  2 19:46:10 2024 Finished reordering the columns.
+<pre>2024/12/20 13:17:39  -Not normalized allele IDs:22 ... 
+2024/12/20 13:17:39  -Not normalized allele:['AT' 'GT']... 
+2024/12/20 13:17:39  -Modified 1 variants according to parsimony and left alignment principal.
+2024/12/20 13:17:39 Finished normalizing indels.
+2024/12/20 13:17:39 Start to remove duplicated/multiallelic variants...v3.5.4
+2024/12/20 13:17:39  -Current Dataframe shape : 21 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:17:39  -Removing mode:dm
+2024/12/20 13:17:39 Start to sort the sumstats using P...
+2024/12/20 13:17:39 Start to remove duplicated variants based on snpid...v3.5.4
+2024/12/20 13:17:39  -Current Dataframe shape : 21 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:17:39  -Which variant to keep:  first
+2024/12/20 13:17:39  -Removed  2  based on SNPID...
+2024/12/20 13:17:39 Start to remove duplicated variants based on CHR,POS,EA and NEA...
+2024/12/20 13:17:39  -Current Dataframe shape : 19 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:17:39  -Which variant to keep:  first
+2024/12/20 13:17:39  -Removed  1  based on CHR,POS,EA and NEA...
+2024/12/20 13:17:39 Start to remove multiallelic variants based on chr:pos...
+2024/12/20 13:17:39  -Current Dataframe shape : 18 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:17:39  -Which variant to keep:  first
+2024/12/20 13:17:39  -Removed  1  multiallelic variants...
+2024/12/20 13:17:39  -Removed  4  variants in total.
+2024/12/20 13:17:39  -Sort the coordinates based on CHR and POS...
+2024/12/20 13:17:39 Finished removing duplicated/multiallelic variants.
+2024/12/20 13:17:39 Start to sort the genome coordinates...v3.5.4
+2024/12/20 13:17:39  -Current Dataframe shape : 17 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:17:39 Finished sorting coordinates.
+2024/12/20 13:17:39 Start to reorder the columns...v3.5.4
+2024/12/20 13:17:39  -Current Dataframe shape : 17 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:17:39  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,CHISQ,P,MLOG10P,OR,OR_95L,OR_95U,N,N_CASE,N_CONTROL,DIRECTION,STATUS,NOTE
+2024/12/20 13:17:39 Finished reordering the columns.
 </pre>
 </div>
 </div>
@@ -3207,7 +3227,7 @@ Fri Feb  2 19:46:10 2024 Finished reordering the columns.
 <div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-5">
+<clipboard-copy for="cell-6">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3219,7 +3239,7 @@ Fri Feb  2 19:46:10 2024 Finished reordering the columns.
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-6">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -3701,16 +3721,16 @@ Fri Feb  2 19:46:10 2024 Finished reordering the columns.
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=8a9695fb">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=8a9695fb">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-6">
+<clipboard-copy for="cell-7">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3721,10 +3741,45 @@ Fri Feb  2 19:46:10 2024 Finished reordering the columns.
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1">#reload</span>
-<span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"/home/yunye/work/gwaslab/examples/toy_data/dirty_sumstats.tsv"</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">"gwaslab"</span><span class="p">,</span><span class="n">other</span><span class="o">=</span><span class="p">[</span><span class="s2">"NOTE"</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"../0_sample_data/toy_data/dirty_sumstats.tsv"</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">"gwaslab"</span><span class="p">,</span><span class="n">other</span><span class="o">=</span><span class="p">[</span><span class="s2">"NOTE"</span><span class="p">])</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">#reload
-mysumstats = gl.Sumstats("/home/yunye/work/gwaslab/examples/toy_data/dirty_sumstats.tsv",fmt="gwaslab",other=["NOTE"], verbose=False)</div>
+<div class="clipboard-copy-txt" id="cell-7">#reload
+mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwaslab",other=["NOTE"])</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/20 13:18:36 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
+2024/12/20 13:18:36 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+2024/12/20 13:18:36 Start to load format from formatbook....
+2024/12/20 13:18:36  -gwaslab format meta info:
+2024/12/20 13:18:36   - format_name  : gwaslab
+2024/12/20 13:18:36   - format_source  : https://cloufield.github.io/gwaslab/
+2024/12/20 13:18:36   - format_version  : 20231220_v4
+2024/12/20 13:18:36 Start to initialize gl.Sumstats from file :../0_sample_data/toy_data/dirty_sumstats.tsv
+2024/12/20 13:18:36  -Reading columns          : OR_95L,NEA,BETA,DIRECTION,OR_95U,P,N_CASE,CHISQ,MLOG10P,NOTE,EAF,N_CONTROL,Z,SE,SNPID,N,EA,OR,POS,CHR
+2024/12/20 13:18:36  -Renaming columns to      : OR_95L,NEA,BETA,DIRECTION,OR_95U,P,N_CASE,CHISQ,MLOG10P,NOTE,EAF,N_CONTROL,Z,SE,SNPID,N,EA,OR,POS,CHR
+2024/12/20 13:18:36  -Current Dataframe shape : 63  x  20
+2024/12/20 13:18:36  -Initiating a status column: STATUS ...
+2024/12/20 13:18:36  #WARNING! Version of genomic coordinates is unknown...
+2024/12/20 13:18:36 Start to reorder the columns...v3.5.4
+2024/12/20 13:18:36  -Current Dataframe shape : 63 x 21 ; Memory usage: 21.48 MB
+2024/12/20 13:18:36  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,CHISQ,P,MLOG10P,OR,OR_95L,OR_95U,N,N_CASE,N_CONTROL,DIRECTION,STATUS,NOTE
+2024/12/20 13:18:36 Finished reordering the columns.
+2024/12/20 13:18:36  -Column  : SNPID  CHR    POS    EA       NEA      EAF     BETA    SE      Z       CHISQ   P       MLOG10P OR      OR_95L  OR_95U  N       N_CASE N_CONTROL DIRECTION STATUS   NOTE  
+2024/12/20 13:18:36  -DType   : object string object category category float64 float64 float64 float64 float64 float64 float64 float64 float64 float64 float64 int64  int64     object    category object
+2024/12/20 13:18:36  -Verified: T      F      F      T        T        T       T       T       T       T       T       T       T       T       T       F       T      T         T         T        NA    
+2024/12/20 13:18:36  #WARNING! Columns with possibly incompatible dtypes: CHR,POS,N
+2024/12/20 13:18:36  -Current Dataframe memory usage: 21.48 MB
+2024/12/20 13:18:36 Finished loading data successfully!
+</pre>
 </div>
 </div>
 </div>
@@ -3747,52 +3802,6 @@ mysumstats = gl.Sumstats("/home/yunye/work/gwaslab/examples/toy_data/dirty_sumst
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-7">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fix_id</span><span class="p">(</span><span class="n">fixsep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-7">mysumstats.fix_id(fixsep=True)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:11 2024 Start to check SNPID/rsID...v3.4.38
-Fri Feb  2 19:46:11 2024  -Current Dataframe shape : 63 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:11 2024  -Checking SNPID data type...
-Fri Feb  2 19:46:11 2024  -Converting SNPID to pd.string data type...
-Fri Feb  2 19:46:11 2024  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
-Fri Feb  2 19:46:12 2024  -Replacing [_-] in SNPID with ":" ...
-Fri Feb  2 19:46:12 2024 Finished checking SNPID/rsID.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=90ca2f0e">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -3806,9 +3815,55 @@ Fri Feb  2 19:46:12 2024 Finished checking SNPID/rsID.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fix_id</span><span class="p">(</span><span class="n">fixsep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-8">mysumstats.fix_id(fixsep=True)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/20 13:18:38 Start to check SNPID/rsID...v3.5.4
+2024/12/20 13:18:38  -Current Dataframe shape : 63 x 21 ; Memory usage: 21.48 MB
+2024/12/20 13:18:38  -Checking SNPID data type...
+2024/12/20 13:18:38  -Converting SNPID to pd.string data type...
+2024/12/20 13:18:38  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
+2024/12/20 13:18:40  -Replacing [_-] in SNPID with ":" ...
+2024/12/20 13:18:40 Finished checking SNPID/rsID.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=90ca2f0e">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-9">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-9">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -3818,7 +3873,7 @@ Fri Feb  2 19:46:12 2024 Finished checking SNPID/rsID.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -4152,60 +4207,6 @@ Fri Feb  2 19:46:12 2024 Finished checking SNPID/rsID.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-9">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fix_chr</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-9">mysumstats.fix_chr(remove=True)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:12 2024 Start to fix chromosome notation (CHR)...v3.4.38
-Fri Feb  2 19:46:12 2024  -Current Dataframe shape : 63 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:12 2024  -Checking CHR data type...
-Fri Feb  2 19:46:12 2024  -Variants with standardized chromosome notation: 56
-Fri Feb  2 19:46:12 2024  -Variants with fixable chromosome notations: 4
-Fri Feb  2 19:46:12 2024  -Variants with NA chromosome notations: 1
-Fri Feb  2 19:46:12 2024  -Variants with invalid chromosome notations: 2
-Fri Feb  2 19:46:12 2024  -A look at invalid chromosome notations: {'1.0001', '-1'}
-Fri Feb  2 19:46:12 2024  -Identifying non-autosomal chromosomes : X, Y, and MT ...
-Fri Feb  2 19:46:12 2024  -Identified  1  variants on sex chromosomes...
-Fri Feb  2 19:46:12 2024  -Standardizing sex chromosome notations: X to 23...
-Fri Feb  2 19:46:13 2024  -Valid CHR list: 1 - 25
-Fri Feb  2 19:46:13 2024  -Removed 5 variants with chromosome notations not in CHR list.
-Fri Feb  2 19:46:13 2024  -A look at chromosome notations not in CHR list: {'0', '300', &lt;NA&gt;}
-Fri Feb  2 19:46:13 2024 Finished fixing chromosome notation (CHR).
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=0ebd3b0e">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -4219,9 +4220,63 @@ Fri Feb  2 19:46:13 2024 Finished fixing chromosome notation (CHR).
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fix_chr</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-10">mysumstats.fix_chr(remove=True)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/20 13:18:40 Start to fix chromosome notation (CHR)...v3.5.4
+2024/12/20 13:18:40  -Current Dataframe shape : 63 x 21 ; Memory usage: 21.48 MB
+2024/12/20 13:18:40  -Checking CHR data type...
+2024/12/20 13:18:40  -Variants with standardized chromosome notation: 56
+2024/12/20 13:18:40  -Variants with fixable chromosome notations: 4
+2024/12/20 13:18:40  -Variants with NA chromosome notations: 1
+2024/12/20 13:18:40  -Variants with invalid chromosome notations: 2
+2024/12/20 13:18:40  -A look at invalid chromosome notations: {'1.0001', '-1'}
+2024/12/20 13:18:40  -Identifying non-autosomal chromosomes : X, Y, and MT ...
+2024/12/20 13:18:40  -Identified  1  variants on sex chromosomes...
+2024/12/20 13:18:40  -Standardizing sex chromosome notations: X to 23...
+2024/12/20 13:18:42  -Valid CHR list: 1 - 25
+2024/12/20 13:18:42  -Removed 5 variants with chromosome notations not in CHR list.
+2024/12/20 13:18:42  -A look at chromosome notations not in CHR list: {'0', '300', &lt;NA&gt;}
+2024/12/20 13:18:42 Finished fixing chromosome notation (CHR).
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=0ebd3b0e">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-11">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-11">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -4231,7 +4286,7 @@ Fri Feb  2 19:46:13 2024 Finished fixing chromosome notation (CHR).
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -5693,54 +5748,6 @@ Fri Feb  2 19:46:13 2024 Finished fixing chromosome notation (CHR).
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-11">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fix_pos</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-11">mysumstats.fix_pos(remove=True)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:13 2024 Start to fix basepair positions (POS)...v3.4.38
-Fri Feb  2 19:46:13 2024  -Current Dataframe shape : 58 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:13 2024  -Removing thousands separator "," or underbar "_" ...
-Fri Feb  2 19:46:13 2024  -Converting to Int64 data type ...
-Fri Feb  2 19:46:13 2024  -Force converting to Int64 data type ...
-Fri Feb  2 19:46:15 2024  -Position bound:(0 , 250,000,000)
-Fri Feb  2 19:46:15 2024  -Removed outliers: 2
-Fri Feb  2 19:46:15 2024  -Removed 4 variants with bad positions.
-Fri Feb  2 19:46:15 2024 Finished fixing basepair positions (POS).
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=96c5a234">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -5754,9 +5761,57 @@ Fri Feb  2 19:46:15 2024 Finished fixing basepair positions (POS).
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fix_pos</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-12">mysumstats.fix_pos(remove=True)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/20 13:18:42 Start to fix basepair positions (POS)...v3.5.4
+2024/12/20 13:18:42  -Current Dataframe shape : 58 x 21 ; Memory usage: 21.48 MB
+2024/12/20 13:18:42  -Removing thousands separator "," or underbar "_" ...
+2024/12/20 13:18:42  -Converting to Int64 data type ...
+2024/12/20 13:18:42  -Force converting to Int64 data type ...
+2024/12/20 13:18:44  -Position bound:(0 , 250,000,000)
+2024/12/20 13:18:44  -Removed outliers: 2
+2024/12/20 13:18:44  -Removed 4 variants with bad positions.
+2024/12/20 13:18:44 Finished fixing basepair positions (POS).
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=96c5a234">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-13">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-12">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-13">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -5766,7 +5821,7 @@ Fri Feb  2 19:46:15 2024 Finished fixing basepair positions (POS).
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[13]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -7132,57 +7187,6 @@ Fri Feb  2 19:46:15 2024 Finished fixing basepair positions (POS).
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-13">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fix_allele</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-13">mysumstats.fix_allele(remove=True)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:15 2024 Start to fix alleles (EA and NEA)...v3.4.38
-Fri Feb  2 19:46:15 2024  -Current Dataframe shape : 54 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:15 2024  -Converted all bases to string datatype and UPPERCASE.
-Fri Feb  2 19:46:15 2024  -Variants with bad EA  : 1
-Fri Feb  2 19:46:15 2024  -Variants with bad NEA : 5
-Fri Feb  2 19:46:15 2024  -Variants with NA for EA or NEA: 1
-Fri Feb  2 19:46:15 2024  -Variants with same EA and NEA: 1
-Fri Feb  2 19:46:15 2024  -A look at the non-ATCG EA: {'&lt;CN0&gt;'} ...
-Fri Feb  2 19:46:15 2024  -A look at the non-ATCG NEA: {nan, '*', '&lt;CN1&gt;', 'N'} ...
-Fri Feb  2 19:46:15 2024  -Removed 5 variants with NA alleles or alleles that contain bases other than A/C/T/G.
-Fri Feb  2 19:46:15 2024  -Removed 1 variants with same allele for EA and NEA.
-Fri Feb  2 19:46:18 2024 Finished fixing alleles (EA and NEA).
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=d7e0cafe">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -7196,9 +7200,60 @@ Fri Feb  2 19:46:18 2024 Finished fixing alleles (EA and NEA).
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">fix_allele</span><span class="p">(</span><span class="n">remove</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-14">mysumstats.fix_allele(remove=True)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/20 13:18:44 Start to fix alleles (EA and NEA)...v3.5.4
+2024/12/20 13:18:44  -Current Dataframe shape : 54 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:44  -Converted all bases to string datatype and UPPERCASE.
+2024/12/20 13:18:44  -Variants with bad EA  : 1
+2024/12/20 13:18:44  -Variants with bad NEA : 5
+2024/12/20 13:18:44  -Variants with NA for EA or NEA: 1
+2024/12/20 13:18:44  -Variants with same EA and NEA: 1
+2024/12/20 13:18:44  -A look at the non-ATCG EA: {'&lt;CN0&gt;'} ...
+2024/12/20 13:18:44  -A look at the non-ATCG NEA: {nan, '*', 'N', '&lt;CN1&gt;'} ...
+2024/12/20 13:18:44  -Removed 5 variants with NA alleles or alleles that contain bases other than A/C/T/G.
+2024/12/20 13:18:44  -Removed 1 variants with same allele for EA and NEA.
+2024/12/20 13:18:49 Finished fixing alleles (EA and NEA).
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=d7e0cafe">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-15">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-14">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-15">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -7208,7 +7263,7 @@ Fri Feb  2 19:46:18 2024 Finished fixing alleles (EA and NEA).
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[14]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[15]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8430,107 +8485,6 @@ Fri Feb  2 19:46:18 2024 Finished fixing alleles (EA and NEA).
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-15">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-15">mysumstats.check_sanity()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:18 2024 Start to perform sanity check for statistics...v3.4.38
-Fri Feb  2 19:46:18 2024  -Current Dataframe shape : 48 x 21 ; Memory usage: 19.95 MB
-Fri Feb  2 19:46:18 2024  -Comparison tolerance for floats: 1e-07
-Fri Feb  2 19:46:18 2024  -Checking if 0 &lt;= N &lt;= 2147483647 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 25,26,27 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (N): 12345700000000000,NA,-1 ...
-Fri Feb  2 19:46:18 2024  -Removed 3 variants with bad/na N.
-Fri Feb  2 19:46:18 2024  -Checking if 0 &lt;= N_CASE &lt;= 2147483647 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 29 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (N_CASE): -1 ...
-Fri Feb  2 19:46:18 2024  -Removed 1 variants with bad/na N_CASE.
-Fri Feb  2 19:46:18 2024  -Checking if 0 &lt;= N_CONTROL &lt;= 2147483647 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 28 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (N_CONTROL): -1 ...
-Fri Feb  2 19:46:18 2024  -Removed 1 variants with bad/na N_CONTROL.
-Fri Feb  2 19:46:18 2024  -Checking if -1e-07 &lt; EAF &lt; 1.0000001 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 31,32,33 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (EAF): 1.02,-0.01,NA ...
-Fri Feb  2 19:46:18 2024  -Removed 3 variants with bad/na EAF.
-Fri Feb  2 19:46:18 2024  -Checking if -1e-07 &lt; CHISQ &lt; inf ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 38,39 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (CHISQ): -0.01,NA ...
-Fri Feb  2 19:46:18 2024  -Removed 2 variants with bad/na CHISQ.
-Fri Feb  2 19:46:18 2024  -Checking if -9999.0000001 &lt; Z &lt; 9999.0000001 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 40,41 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (Z): NA,999999.0 ...
-Fri Feb  2 19:46:18 2024  -Removed 2 variants with bad/na Z.
-Fri Feb  2 19:46:18 2024  -Checking if -1e-07 &lt; P &lt; 1.0000001 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 48,49,50 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (P): 1.1,-0.01,NA ...
-Fri Feb  2 19:46:18 2024  -Removed 3 variants with bad/na P.
-Fri Feb  2 19:46:18 2024  -Checking if -1e-07 &lt; MLOG10P &lt; 9999.0000001 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 51,52,53 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (MLOG10P): 12345.0,-0.1,NA ...
-Fri Feb  2 19:46:18 2024  -Removed 3 variants with bad/na MLOG10P.
-Fri Feb  2 19:46:18 2024  -Checking if -100.0000001 &lt; BETA &lt; 100.0000001 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 34,35 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (BETA): 99999.0,NA ...
-Fri Feb  2 19:46:18 2024  -Removed 2 variants with bad/na BETA.
-Fri Feb  2 19:46:18 2024  -Checking if -1e-07 &lt; SE &lt; inf ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 37 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (SE): NA ...
-Fri Feb  2 19:46:18 2024  -Removed 1 variants with bad/na SE.
-Fri Feb  2 19:46:18 2024  -Checking if -100.0000001 &lt; OR &lt; 100.0000001 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 42,43 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (OR): 999999.0,NA ...
-Fri Feb  2 19:46:18 2024  -Removed 2 variants with bad/na OR.
-Fri Feb  2 19:46:18 2024  -Checking if -1e-07 &lt; OR_95L &lt; inf ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 44,45 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (OR_95L): -0.01,NA ...
-Fri Feb  2 19:46:18 2024  -Removed 2 variants with bad/na OR_95L.
-Fri Feb  2 19:46:18 2024  -Checking if -1e-07 &lt; OR_95U &lt; inf ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid variants(SNPID): 46,47 ...
-Fri Feb  2 19:46:18 2024   -Examples of invalid values (OR_95U): -0.01,NA ...
-Fri Feb  2 19:46:18 2024  -Removed 2 variants with bad/na OR_95U.
-Fri Feb  2 19:46:18 2024  -Checking STATUS and converting STATUS to categories....
-Fri Feb  2 19:46:18 2024  -Removed 27 variants with bad statistics in total.
-Fri Feb  2 19:46:18 2024  -Data types for each column:
-Fri Feb  2 19:46:18 2024  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       CHISQ   P       MLOG10P OR      OR_95L  OR_95U  N     N_CASE N_CONTROL DIRECTION STATUS   NOTE  
-Fri Feb  2 19:46:18 2024  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 float64 Int64 Int64  Int64     object    category object
-Fri Feb  2 19:46:18 2024  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       T     T      T         T         T        NA    
-Fri Feb  2 19:46:18 2024 Finished sanity check for statistics.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=4518a81d">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -8544,9 +8498,110 @@ Fri Feb  2 19:46:18 2024 Finished sanity check for statistics.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">()</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-16">mysumstats.check_sanity()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/20 13:18:49 Start to perform sanity check for statistics...v3.5.4
+2024/12/20 13:18:49  -Current Dataframe shape : 48 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:49  -Comparison tolerance for floats: 1e-07
+2024/12/20 13:18:49  -Checking if 0 &lt;= N &lt;= 2147483647 ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 25,26,27 ...
+2024/12/20 13:18:49   -Examples of invalid values (N): 12345700000000000,NA,-1 ...
+2024/12/20 13:18:49  -Removed 3 variants with bad/na N.
+2024/12/20 13:18:49  -Checking if 0 &lt;= N_CASE &lt;= 2147483647 ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 29 ...
+2024/12/20 13:18:49   -Examples of invalid values (N_CASE): -1 ...
+2024/12/20 13:18:49  -Removed 1 variants with bad/na N_CASE.
+2024/12/20 13:18:49  -Checking if 0 &lt;= N_CONTROL &lt;= 2147483647 ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 28 ...
+2024/12/20 13:18:49   -Examples of invalid values (N_CONTROL): -1 ...
+2024/12/20 13:18:49  -Removed 1 variants with bad/na N_CONTROL.
+2024/12/20 13:18:49  -Checking if -1e-07 &lt; EAF &lt; 1.0000001 ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 31,32,33 ...
+2024/12/20 13:18:49   -Examples of invalid values (EAF): 1.02,-0.01,NA ...
+2024/12/20 13:18:49  -Removed 3 variants with bad/na EAF.
+2024/12/20 13:18:49  -Checking if -1e-07 &lt; CHISQ &lt; inf ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 38,39 ...
+2024/12/20 13:18:49   -Examples of invalid values (CHISQ): -0.01,NA ...
+2024/12/20 13:18:49  -Removed 2 variants with bad/na CHISQ.
+2024/12/20 13:18:49  -Checking if -9999.0000001 &lt; Z &lt; 9999.0000001 ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 40,41 ...
+2024/12/20 13:18:49   -Examples of invalid values (Z): NA,999999.0 ...
+2024/12/20 13:18:49  -Removed 2 variants with bad/na Z.
+2024/12/20 13:18:49  -Checking if -1e-07 &lt; P &lt; 1.0000001 ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 48,49,50 ...
+2024/12/20 13:18:49   -Examples of invalid values (P): 1.1,-0.01,NA ...
+2024/12/20 13:18:49  -Removed 3 variants with bad/na P.
+2024/12/20 13:18:49  -Checking if -1e-07 &lt; MLOG10P &lt; 9999.0000001 ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 51,52,53 ...
+2024/12/20 13:18:49   -Examples of invalid values (MLOG10P): 12345.0,-0.1,NA ...
+2024/12/20 13:18:49  -Removed 3 variants with bad/na MLOG10P.
+2024/12/20 13:18:49  -Checking if -100.0000001 &lt; BETA &lt; 100.0000001 ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 34,35 ...
+2024/12/20 13:18:49   -Examples of invalid values (BETA): 99999.0,NA ...
+2024/12/20 13:18:49  -Removed 2 variants with bad/na BETA.
+2024/12/20 13:18:49  -Checking if -1e-07 &lt; SE &lt; inf ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 37 ...
+2024/12/20 13:18:49   -Examples of invalid values (SE): NA ...
+2024/12/20 13:18:49  -Removed 1 variants with bad/na SE.
+2024/12/20 13:18:49  -Checking if -100.0000001 &lt; OR &lt; 100.0000001 ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 42,43 ...
+2024/12/20 13:18:49   -Examples of invalid values (OR): 999999.0,NA ...
+2024/12/20 13:18:49  -Removed 2 variants with bad/na OR.
+2024/12/20 13:18:49  -Checking if -1e-07 &lt; OR_95L &lt; inf ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 44,45 ...
+2024/12/20 13:18:49   -Examples of invalid values (OR_95L): -0.01,NA ...
+2024/12/20 13:18:49  -Removed 2 variants with bad/na OR_95L.
+2024/12/20 13:18:49  -Checking if -1e-07 &lt; OR_95U &lt; inf ...
+2024/12/20 13:18:49   -Examples of invalid variants(SNPID): 46,47 ...
+2024/12/20 13:18:49   -Examples of invalid values (OR_95U): -0.01,NA ...
+2024/12/20 13:18:49  -Removed 2 variants with bad/na OR_95U.
+2024/12/20 13:18:49  -Checking STATUS and converting STATUS to categories....
+2024/12/20 13:18:50  -Removed 27 variants with bad statistics in total.
+2024/12/20 13:18:50  -Data types for each column:
+2024/12/20 13:18:50  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       CHISQ   P       MLOG10P OR      OR_95L  OR_95U  N     N_CASE N_CONTROL DIRECTION STATUS   NOTE  
+2024/12/20 13:18:50  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 float64 Int64 Int64  Int64     object    category object
+2024/12/20 13:18:50  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       T     T      T         T         T        NA    
+2024/12/20 13:18:50 Finished sanity check for statistics.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=4518a81d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-17">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-16">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-17">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -8556,7 +8611,7 @@ Fri Feb  2 19:46:18 2024 Finished sanity check for statistics.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -9130,10 +9185,10 @@ Fri Feb  2 19:46:18 2024 Finished sanity check for statistics.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-17">
+<clipboard-copy for="cell-18">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -9145,7 +9200,7 @@ Fri Feb  2 19:46:18 2024 Finished sanity check for statistics.
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">check_data_consistency</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-17">mysumstats.check_data_consistency()</div>
+<div class="clipboard-copy-txt" id="cell-18">mysumstats.check_data_consistency()</div>
 </div>
 </div>
 </div>
@@ -9157,20 +9212,20 @@ Fri Feb  2 19:46:18 2024 Finished sanity check for statistics.
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:19 2024 Start to check data consistency across columns...v3.4.38
-Fri Feb  2 19:46:19 2024  -Current Dataframe shape : 21 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:19 2024  -Tolerance: 0.001 (Relative) and 0.001 (Absolute)
-Fri Feb  2 19:46:19 2024  -Checking if BETA/SE-derived-MLOG10P is consistent with MLOG10P...
-Fri Feb  2 19:46:19 2024   -Variants with inconsistent values were not detected.
-Fri Feb  2 19:46:19 2024  -Checking if BETA/SE-derived-P is consistent with P...
-Fri Feb  2 19:46:19 2024   -Variants with inconsistent values were not detected.
-Fri Feb  2 19:46:19 2024  -Checking if MLOG10P-derived-P is consistent with P...
-Fri Feb  2 19:46:19 2024   -Variants with inconsistent values were not detected.
-Fri Feb  2 19:46:19 2024  -Checking if N is consistent with N_CASE + N_CONTROL ...
-Fri Feb  2 19:46:19 2024   -Not consistent: 1 variant(s)
-Fri Feb  2 19:46:19 2024   -Variant SNPID with max difference: 30 with 10000
-Fri Feb  2 19:46:19 2024  -Note: if the max difference is greater than expected, please check your original sumstats.
-Fri Feb  2 19:46:19 2024 Finished checking data consistency across columns.
+<pre>2024/12/20 13:18:50 Start to check data consistency across columns...v3.5.4
+2024/12/20 13:18:50  -Current Dataframe shape : 21 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:50  -Tolerance: 0.001 (Relative) and 0.001 (Absolute)
+2024/12/20 13:18:50  -Checking if BETA/SE-derived-MLOG10P is consistent with MLOG10P...
+2024/12/20 13:18:50   -Variants with inconsistent values were not detected.
+2024/12/20 13:18:50  -Checking if BETA/SE-derived-P is consistent with P...
+2024/12/20 13:18:50   -Variants with inconsistent values were not detected.
+2024/12/20 13:18:50  -Checking if MLOG10P-derived-P is consistent with P...
+2024/12/20 13:18:50   -Variants with inconsistent values were not detected.
+2024/12/20 13:18:50  -Checking if N is consistent with N_CASE + N_CONTROL ...
+2024/12/20 13:18:50   -Not consistent: 1 variant(s)
+2024/12/20 13:18:50   -Variant SNPID with max difference: 30 with 10000
+2024/12/20 13:18:50  -Note: if the max difference is greater than expected, please check your original sumstats.
+2024/12/20 13:18:50 Finished checking data consistency across columns.
 </pre>
 </div>
 </div>
@@ -9194,51 +9249,6 @@ Fri Feb  2 19:46:19 2024 Finished checking data consistency across columns.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-18">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">normalize_allele</span><span class="p">()</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-18">mysumstats.normalize_allele()</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:19 2024 Start to normalize indels...v3.4.38
-Fri Feb  2 19:46:19 2024  -Current Dataframe shape : 21 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:19 2024  -Not normalized allele IDs:22 ... 
-Fri Feb  2 19:46:19 2024  -Not normalized allele:['AT' 'GT']... 
-Fri Feb  2 19:46:19 2024  -Modified 1 variants according to parsimony and left alignment principal.
-Fri Feb  2 19:46:19 2024 Finished normalizing indels.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=bea1ddbb">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -9252,9 +9262,54 @@ Fri Feb  2 19:46:19 2024 Finished normalizing indels.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">normalize_allele</span><span class="p">()</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-19">mysumstats.normalize_allele()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/20 13:18:50 Start to normalize indels...v3.5.4
+2024/12/20 13:18:50  -Current Dataframe shape : 21 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:50  -Not normalized allele IDs:22 ... 
+2024/12/20 13:18:50  -Not normalized allele:['AT' 'GT']... 
+2024/12/20 13:18:50  -Modified 1 variants according to parsimony and left alignment principal.
+2024/12/20 13:18:50 Finished normalizing indels.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=bea1ddbb">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-20">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-19">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-20">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -9264,7 +9319,7 @@ Fri Feb  2 19:46:19 2024 Finished normalizing indels.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[19]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[20]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -9838,64 +9893,6 @@ Fri Feb  2 19:46:19 2024 Finished normalizing indels.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-20">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">remove_dup</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"md"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-20">mysumstats.remove_dup(mode="md")</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:19 2024 Start to remove duplicated/multiallelic variants...v3.4.38
-Fri Feb  2 19:46:19 2024  -Current Dataframe shape : 21 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:19 2024  -Removing mode:md
-Fri Feb  2 19:46:19 2024 Start to sort the sumstats using P...
-Fri Feb  2 19:46:19 2024 Start to remove duplicated variants based on snpid...v3.4.38
-Fri Feb  2 19:46:19 2024  -Current Dataframe shape : 21 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:19 2024  -Which variant to keep:  first
-Fri Feb  2 19:46:19 2024  -Removed  2  based on SNPID...
-Fri Feb  2 19:46:19 2024 Start to remove duplicated variants based on CHR,POS,EA and NEA...
-Fri Feb  2 19:46:19 2024  -Current Dataframe shape : 19 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:19 2024  -Which variant to keep:  first
-Fri Feb  2 19:46:19 2024  -Removed  1  based on CHR,POS,EA and NEA...
-Fri Feb  2 19:46:19 2024 Start to remove multiallelic variants based on chr:pos...
-Fri Feb  2 19:46:19 2024  -Current Dataframe shape : 18 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:19 2024  -Which variant to keep:  first
-Fri Feb  2 19:46:19 2024  -Removed  1  multiallelic variants...
-Fri Feb  2 19:46:19 2024  -Removed  4  variants in total.
-Fri Feb  2 19:46:19 2024  -Sort the coordinates based on CHR and POS...
-Fri Feb  2 19:46:19 2024 Finished removing duplicated/multiallelic variants.
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9f2a4fe1">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
@@ -9909,9 +9906,67 @@ Fri Feb  2 19:46:19 2024 Finished removing duplicated/multiallelic variants.
 </div>
 </clipboard-copy>
 </div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">remove_dup</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">"md"</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-21">mysumstats.remove_dup(mode="md")</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/20 13:18:50 Start to remove duplicated/multiallelic variants...v3.5.4
+2024/12/20 13:18:50  -Current Dataframe shape : 21 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:50  -Removing mode:md
+2024/12/20 13:18:50 Start to sort the sumstats using P...
+2024/12/20 13:18:50 Start to remove duplicated variants based on snpid...v3.5.4
+2024/12/20 13:18:50  -Current Dataframe shape : 21 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:50  -Which variant to keep:  first
+2024/12/20 13:18:50  -Removed  2  based on SNPID...
+2024/12/20 13:18:50 Start to remove duplicated variants based on CHR,POS,EA and NEA...
+2024/12/20 13:18:50  -Current Dataframe shape : 19 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:50  -Which variant to keep:  first
+2024/12/20 13:18:50  -Removed  1  based on CHR,POS,EA and NEA...
+2024/12/20 13:18:50 Start to remove multiallelic variants based on chr:pos...
+2024/12/20 13:18:50  -Current Dataframe shape : 18 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:50  -Which variant to keep:  first
+2024/12/20 13:18:50  -Removed  1  multiallelic variants...
+2024/12/20 13:18:50  -Removed  4  variants in total.
+2024/12/20 13:18:50  -Sort the coordinates based on CHR and POS...
+2024/12/20 13:18:50 Finished removing duplicated/multiallelic variants.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9f2a4fe1">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-22">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">data</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-21">mysumstats.data</div>
+<div class="clipboard-copy-txt" id="cell-22">mysumstats.data</div>
 </div>
 </div>
 </div>
@@ -9921,7 +9976,7 @@ Fri Feb  2 19:46:19 2024 Finished removing duplicated/multiallelic variants.
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[21]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[22]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -10399,10 +10454,10 @@ Fri Feb  2 19:46:19 2024 Finished removing duplicated/multiallelic variants.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [23]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-22">
+<clipboard-copy for="cell-23">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -10414,7 +10469,7 @@ Fri Feb  2 19:46:19 2024 Finished removing duplicated/multiallelic variants.
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">sort_coordinate</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-22">mysumstats.sort_coordinate()</div>
+<div class="clipboard-copy-txt" id="cell-23">mysumstats.sort_coordinate()</div>
 </div>
 </div>
 </div>
@@ -10426,9 +10481,9 @@ Fri Feb  2 19:46:19 2024 Finished removing duplicated/multiallelic variants.
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:19 2024 Start to sort the genome coordinates...v3.4.38
-Fri Feb  2 19:46:19 2024  -Current Dataframe shape : 17 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:19 2024 Finished sorting coordinates.
+<pre>2024/12/20 13:18:51 Start to sort the genome coordinates...v3.5.4
+2024/12/20 13:18:51  -Current Dataframe shape : 17 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:51 Finished sorting coordinates.
 </pre>
 </div>
 </div>
@@ -10452,10 +10507,10 @@ Fri Feb  2 19:46:19 2024 Finished sorting coordinates.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [23]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [24]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-23">
+<clipboard-copy for="cell-24">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -10467,7 +10522,7 @@ Fri Feb  2 19:46:19 2024 Finished sorting coordinates.
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">sort_column</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-23">mysumstats.sort_column()</div>
+<div class="clipboard-copy-txt" id="cell-24">mysumstats.sort_column()</div>
 </div>
 </div>
 </div>
@@ -10479,10 +10534,10 @@ Fri Feb  2 19:46:19 2024 Finished sorting coordinates.
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Fri Feb  2 19:46:20 2024 Start to reorder the columns...v3.4.38
-Fri Feb  2 19:46:20 2024  -Current Dataframe shape : 17 x 21 ; Memory usage: 19.94 MB
-Fri Feb  2 19:46:20 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,CHISQ,P,MLOG10P,OR,OR_95L,OR_95U,N,N_CASE,N_CONTROL,DIRECTION,STATUS,NOTE
-Fri Feb  2 19:46:20 2024 Finished reordering the columns.
+<pre>2024/12/20 13:18:51 Start to reorder the columns...v3.5.4
+2024/12/20 13:18:51  -Current Dataframe shape : 17 x 21 ; Memory usage: 21.47 MB
+2024/12/20 13:18:51  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,CHISQ,P,MLOG10P,OR,OR_95L,OR_95U,N,N_CASE,N_CONTROL,DIRECTION,STATUS,NOTE
+2024/12/20 13:18:51 Finished reordering the columns.
 </pre>
 </div>
 </div>

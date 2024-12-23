@@ -1483,7 +1483,7 @@
         
   
   <span class="md-ellipsis">
-    Standardization
+    Standardization Workflow
   </span>
   
 
@@ -1525,7 +1525,7 @@
         
   
   <span class="md-ellipsis">
-    Output sumstats
+    Input and output sumstats
   </span>
   
 
@@ -1775,7 +1775,7 @@
         
   
   <span class="md-ellipsis">
-    Miami plot
+    Most options in plot_mqq() are available for plot_miami2()
   </span>
   
 
@@ -1818,27 +1818,6 @@
   
   <span class="md-ellipsis">
     Brisbane plot
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../visualization_trumpet/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Power and Trumpet plot
   </span>
   
 
@@ -2440,6 +2419,47 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy for="cell-2">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gl</span><span class="o">.</span><span class="n">show_version</span><span class="p">()</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-2">gl.show_version()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>2024/12/22 22:40:34 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
+2024/12/22 22:40:34 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
@@ -2468,10 +2488,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-2">
+<clipboard-copy for="cell-3">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2481,7 +2501,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"t2d_bbj.txt.gz"</span><span class="p">,</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">"../0_sample_data/t2d_bbj.txt.gz"</span><span class="p">,</span>
              <span class="n">snpid</span><span class="o">=</span><span class="s2">"SNP"</span><span class="p">,</span>
              <span class="n">chrom</span><span class="o">=</span><span class="s2">"CHR"</span><span class="p">,</span>
              <span class="n">pos</span><span class="o">=</span><span class="s2">"POS"</span><span class="p">,</span>
@@ -2495,7 +2515,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
              <span class="n">nrows</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
+<div class="clipboard-copy-txt" id="cell-3">mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
              snpid="SNP",
              chrom="CHR",
              pos="POS",
@@ -2541,10 +2561,10 @@ mysumstats.basic_check(verbose=False)</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-3">
+<clipboard-copy for="cell-4">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2556,7 +2576,7 @@ mysumstats.basic_check(verbose=False)</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">mysumstats.get_lead()</div>
+<div class="clipboard-copy-txt" id="cell-4">mysumstats.get_lead()</div>
 </div>
 </div>
 </div>
@@ -2568,20 +2588,20 @@ mysumstats.basic_check(verbose=False)</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 01:27:18 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:27:18 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:27:18 2024  -Processing 1000000 variants...
-Sat Feb  3 01:27:18 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:27:18 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:27:19 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:27:19 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:27:19 2024  -Identified 4 lead variants!
-Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
+<pre>2024/12/22 22:40:58 Start to extract lead variants...v3.5.4
+2024/12/22 22:40:58  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
+2024/12/22 22:40:58  -Processing 1000000 variants...
+2024/12/22 22:40:58  -Significance threshold : 5e-08
+2024/12/22 22:40:58  -Sliding window size: 500  kb
+2024/12/22 22:40:58  -Using P for extracting lead variants...
+2024/12/22 22:40:58  -Found 543 significant variants in total...
+2024/12/22 22:40:58  -Identified 4 lead variants!
+2024/12/22 22:40:58 Finished extracting lead variants.
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -2686,10 +2706,10 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-4">
+<clipboard-copy for="cell-5">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2701,7 +2721,7 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span><span class="n">anno</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">mysumstats.get_lead(anno=True)</div>
+<div class="clipboard-copy-txt" id="cell-5">mysumstats.get_lead(anno=True)</div>
 </div>
 </div>
 </div>
@@ -2713,25 +2733,25 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 01:27:19 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:27:19 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:27:19 2024  -Processing 1000000 variants...
-Sat Feb  3 01:27:19 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:27:19 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:27:19 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:27:19 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:27:19 2024  -Identified 4 lead variants!
-Sat Feb  3 01:27:19 2024  -Annotating variants using references:ensembl
-Sat Feb  3 01:27:19 2024  -Annotating variants using references based on genome build:19
-Sat Feb  3 01:27:19 2024 Start to annotate variants with nearest gene name(s)...
-Sat Feb  3 01:27:19 2024  -Assigning Gene name using ensembl_hg19_gtf for protein coding genes
-Sat Feb  3 01:27:19 2024 Finished annotating variants with nearest gene name(s) successfully!
-Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
+<pre>2024/12/22 22:40:58 Start to extract lead variants...v3.5.4
+2024/12/22 22:40:58  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
+2024/12/22 22:40:58  -Processing 1000000 variants...
+2024/12/22 22:40:58  -Significance threshold : 5e-08
+2024/12/22 22:40:58  -Sliding window size: 500  kb
+2024/12/22 22:40:58  -Using P for extracting lead variants...
+2024/12/22 22:40:58  -Found 543 significant variants in total...
+2024/12/22 22:40:58  -Identified 4 lead variants!
+2024/12/22 22:40:58  -Annotating variants using references:ensembl
+2024/12/22 22:40:58  -Annotating variants using references based on genome build:19
+2024/12/22 22:40:58 Start to annotate variants with nearest gene name(s)...
+2024/12/22 22:40:58  -Assigning Gene name using ensembl_hg19_gtf for protein coding genes
+2024/12/22 22:40:58 Finished annotating variants with nearest gene name(s) successfully!
+2024/12/22 22:40:58 Finished extracting lead variants.
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -2846,10 +2866,10 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-5">
+<clipboard-copy for="cell-6">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2861,7 +2881,7 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span><span class="n">windowsizekb</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">mysumstats.get_lead(windowsizekb=1000)</div>
+<div class="clipboard-copy-txt" id="cell-6">mysumstats.get_lead(windowsizekb=1000)</div>
 </div>
 </div>
 </div>
@@ -2873,20 +2893,20 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 01:27:19 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:27:19 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:27:19 2024  -Processing 1000000 variants...
-Sat Feb  3 01:27:19 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:27:19 2024  -Sliding window size: 1000  kb
-Sat Feb  3 01:27:19 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:27:19 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:27:19 2024  -Identified 4 lead variants!
-Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
+<pre>2024/12/22 22:40:59 Start to extract lead variants...v3.5.4
+2024/12/22 22:40:59  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
+2024/12/22 22:40:59  -Processing 1000000 variants...
+2024/12/22 22:40:59  -Significance threshold : 5e-08
+2024/12/22 22:40:59  -Sliding window size: 1000  kb
+2024/12/22 22:40:59  -Using P for extracting lead variants...
+2024/12/22 22:40:59  -Found 543 significant variants in total...
+2024/12/22 22:40:59  -Identified 4 lead variants!
+2024/12/22 22:40:59 Finished extracting lead variants.
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -2991,10 +3011,10 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-6">
+<clipboard-copy for="cell-7">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3006,7 +3026,7 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">get_lead</span><span class="p">(</span><span class="n">sig_level</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">mysumstats.get_lead(sig_level=1e-10)</div>
+<div class="clipboard-copy-txt" id="cell-7">mysumstats.get_lead(sig_level=1e-10)</div>
 </div>
 </div>
 </div>
@@ -3018,20 +3038,20 @@ Sat Feb  3 01:27:19 2024 Finished extracting lead variants.
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 01:27:19 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:27:19 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:27:19 2024  -Processing 1000000 variants...
-Sat Feb  3 01:27:19 2024  -Significance threshold : 1e-10
-Sat Feb  3 01:27:19 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:27:20 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:27:20 2024  -Found 1 significant variants in total...
-Sat Feb  3 01:27:20 2024  -Identified 1 lead variants!
-Sat Feb  3 01:27:20 2024 Finished extracting lead variants.
+<pre>2024/12/22 22:40:59 Start to extract lead variants...v3.5.4
+2024/12/22 22:40:59  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
+2024/12/22 22:40:59  -Processing 1000000 variants...
+2024/12/22 22:40:59  -Significance threshold : 1e-10
+2024/12/22 22:40:59  -Sliding window size: 500  kb
+2024/12/22 22:40:59  -Using P for extracting lead variants...
+2024/12/22 22:40:59  -Found 1 significant variants in total...
+2024/12/22 22:40:59  -Identified 1 lead variants!
+2024/12/22 22:40:59 Finished extracting lead variants.
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -3107,7 +3127,7 @@ CHR POS
 <div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-7">
+<clipboard-copy for="cell-8">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3117,9 +3137,9 @@ CHR POS
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">novel</span> <span class="o">=</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">get_novel</span><span class="p">(</span><span class="n">known</span><span class="o">=</span><span class="s2">"./toy_data/known_loci.txt"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">novel</span> <span class="o">=</span> <span class="n">mysumstats</span><span class="o">.</span><span class="n">get_novel</span><span class="p">(</span><span class="n">known</span><span class="o">=</span><span class="s2">"../0_sample_data//toy_data/known_loci.txt"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">novel = mysumstats.get_novel(known="./toy_data/known_loci.txt")</div>
+<div class="clipboard-copy-txt" id="cell-8">novel = mysumstats.get_novel(known="../0_sample_data//toy_data/known_loci.txt")</div>
 </div>
 </div>
 </div>
@@ -3131,22 +3151,22 @@ CHR POS
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 01:22:31 2024 Start to check if lead variants are known...v3.4.38
-Sat Feb  3 01:22:31 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:22:31 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:22:31 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:22:31 2024  -Processing 1000000 variants...
-Sat Feb  3 01:22:31 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:22:31 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:22:31 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:22:31 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:22:31 2024  -Identified 4 lead variants!
-Sat Feb  3 01:22:31 2024 Finished extracting lead variants.
-Sat Feb  3 01:22:31 2024  -Lead variants in known loci: 2
-Sat Feb  3 01:22:31 2024  -Checking the minimum distance between identified lead variants and provided known variants...
-Sat Feb  3 01:22:31 2024  -Identified  2  known vairants in current sumstats...
-Sat Feb  3 01:22:31 2024  -Identified  2  novel vairants in current sumstats...
-Sat Feb  3 01:22:31 2024 Finished checking if lead variants are known.
+<pre>2024/12/22 22:40:59 Start to check if lead variants are known...v3.5.4
+2024/12/22 22:40:59  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
+2024/12/22 22:40:59 Start to extract lead variants...v3.5.4
+2024/12/22 22:40:59  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
+2024/12/22 22:40:59  -Processing 1000000 variants...
+2024/12/22 22:40:59  -Significance threshold : 5e-08
+2024/12/22 22:40:59  -Sliding window size: 500  kb
+2024/12/22 22:40:59  -Using P for extracting lead variants...
+2024/12/22 22:40:59  -Found 543 significant variants in total...
+2024/12/22 22:40:59  -Identified 4 lead variants!
+2024/12/22 22:40:59 Finished extracting lead variants.
+2024/12/22 22:40:59  -Lead variants in known loci: 2
+2024/12/22 22:40:59  -Checking the minimum distance between identified lead variants and provided known variants...
+2024/12/22 22:40:59  -Identified  2  known vairants in current sumstats...
+2024/12/22 22:40:59  -Identified  2  novel vairants in current sumstats...
+2024/12/22 22:40:59 Finished checking if lead variants are known.
 </pre>
 </div>
 </div>
@@ -3162,7 +3182,7 @@ Sat Feb  3 01:22:31 2024 Finished checking if lead variants are known.
 <div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-8">
+<clipboard-copy for="cell-9">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3174,7 +3194,7 @@ Sat Feb  3 01:22:31 2024 Finished checking if lead variants are known.
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">novel</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">novel</div>
+<div class="clipboard-copy-txt" id="cell-9">novel</div>
 </div>
 </div>
 </div>
@@ -3312,7 +3332,7 @@ Sat Feb  3 01:22:31 2024 Finished checking if lead variants are known.
 <div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-9">
+<clipboard-copy for="cell-10">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3325,7 +3345,7 @@ Sat Feb  3 01:22:31 2024 Finished checking if lead variants are known.
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># EFO ID can be found on gwas catalog</span>
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">get_novel</span><span class="p">(</span><span class="n">efo</span><span class="o">=</span><span class="s2">"MONDO_0005148"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9"># EFO ID can be found on gwas catalog
+<div class="clipboard-copy-txt" id="cell-10"># EFO ID can be found on gwas catalog
 mysumstats.get_novel(efo="MONDO_0005148")</div>
 </div>
 </div>
@@ -3338,40 +3358,40 @@ mysumstats.get_novel(efo="MONDO_0005148")</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sat Feb  3 01:22:31 2024 Start to check if lead variants are known...v3.4.38
-Sat Feb  3 01:22:31 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:22:31 2024 Start to extract lead variants...v3.4.38
-Sat Feb  3 01:22:31 2024  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 75.89 MB
-Sat Feb  3 01:22:31 2024  -Processing 1000000 variants...
-Sat Feb  3 01:22:31 2024  -Significance threshold : 5e-08
-Sat Feb  3 01:22:31 2024  -Sliding window size: 500  kb
-Sat Feb  3 01:22:31 2024  -Using P for extracting lead variants...
-Sat Feb  3 01:22:31 2024  -Found 543 significant variants in total...
-Sat Feb  3 01:22:31 2024  -Identified 4 lead variants!
-Sat Feb  3 01:22:31 2024 Finished extracting lead variants.
-Sat Feb  3 01:22:32 2024 Start to retrieve data using EFO: MONDO_0005148...
-Sat Feb  3 01:22:32 2024 Start to retrieve data from GWASCatalog...
-Sat Feb  3 01:22:32 2024  -Please make sure your sumstats is based on GRCh38...
-Sat Feb  3 01:22:32 2024  -Requesting (GET) trait information through the GWASCatalog API...
-Sat Feb  3 01:22:32 2024  -EFO trait api: https://www.ebi.ac.uk/gwas/rest/api/efoTraits/MONDO_0005148
-Sat Feb  3 01:22:33 2024  -Status code: 200
-Sat Feb  3 01:22:33 2024  -Trait Name: type 2 diabetes mellitus
-Sat Feb  3 01:22:33 2024  -Trait URL: http://purl.obolibrary.org/obo/MONDO_0005148
-Sat Feb  3 01:22:33 2024  -Requesting (GET) GWAS associations through the GWASCatalog API...
-Sat Feb  3 01:22:33 2024  -associationsByTraitSummary API: https://www.ebi.ac.uk/gwas/rest/api/efoTraits/MONDO_0005148/associations?projection=associationByEfoTrait
-Sat Feb  3 01:22:33 2024  -Note: this step might take a while...
-Sat Feb  3 01:25:44 2024  -Status code 200 OK: Retrieved data from GWASCatalog successffully ...
-Sat Feb  3 01:25:44 2024  -Loading json ...
-Sat Feb  3 01:25:45 2024  -Parsing json ...
-Sat Feb  3 01:25:45 2024  -Number of reported associations for MONDO_0005148 in GWASCatalog: 5450
-Sat Feb  3 01:25:45 2024  -Loading retrieved data into gwaslab Sumstats object ...
-Sat Feb  3 01:25:50 2024 Finished retrieving data from GWASCatalog...
-Sat Feb  3 01:25:50 2024  -Retrieved 4176 associations from GWAS catalog.
-Sat Feb  3 01:25:50 2024  -Lead variants in known loci: 4176
-Sat Feb  3 01:25:50 2024  -Checking the minimum distance between identified lead variants and provided known variants...
-Sat Feb  3 01:25:50 2024  -Identified  4  known vairants in current sumstats...
-Sat Feb  3 01:25:50 2024  -Identified  0  novel vairants in current sumstats...
-Sat Feb  3 01:25:50 2024 Finished checking if lead variants are known.
+<pre>2024/12/22 22:41:00 Start to check if lead variants are known...v3.5.4
+2024/12/22 22:41:00  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
+2024/12/22 22:41:00 Start to extract lead variants...v3.5.4
+2024/12/22 22:41:00  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
+2024/12/22 22:41:00  -Processing 1000000 variants...
+2024/12/22 22:41:00  -Significance threshold : 5e-08
+2024/12/22 22:41:00  -Sliding window size: 500  kb
+2024/12/22 22:41:00  -Using P for extracting lead variants...
+2024/12/22 22:41:00  -Found 543 significant variants in total...
+2024/12/22 22:41:00  -Identified 4 lead variants!
+2024/12/22 22:41:00 Finished extracting lead variants.
+2024/12/22 22:41:00 Start to retrieve data using EFO: MONDO_0005148...
+2024/12/22 22:41:00 Start to retrieve data from GWASCatalog...
+2024/12/22 22:41:00  -Please make sure your sumstats is based on GRCh38...
+2024/12/22 22:41:00  -Requesting (GET) trait information through the GWASCatalog API...
+2024/12/22 22:41:00  -EFO trait api: https://www.ebi.ac.uk/gwas/rest/api/efoTraits/MONDO_0005148
+2024/12/22 22:41:01  -Status code: 200
+2024/12/22 22:41:01  -Trait Name: type 2 diabetes mellitus
+2024/12/22 22:41:01  -Trait URL: http://purl.obolibrary.org/obo/MONDO_0005148
+2024/12/22 22:41:01  -Requesting (GET) GWAS associations through the GWASCatalog API...
+2024/12/22 22:41:01  -associationsByTraitSummary API: https://www.ebi.ac.uk/gwas/rest/api/efoTraits/MONDO_0005148/associations?projection=associationByEfoTrait
+2024/12/22 22:41:01  -Note: this step might take a while...
+2024/12/22 22:50:50  -Status code 200 OK: Retrieved data from GWASCatalog successffully ...
+2024/12/22 22:50:50  -Loading json ...
+2024/12/22 22:50:52  -Parsing json ...
+2024/12/22 22:50:52  -Number of reported associations for MONDO_0005148 in GWASCatalog: 5911
+2024/12/22 22:50:52  -Loading retrieved data into gwaslab Sumstats object ...
+2024/12/22 22:51:03 Finished retrieving data from GWASCatalog...
+2024/12/22 22:51:03  -Retrieved 4593 associations from GWAS catalog.
+2024/12/22 22:51:03  -Lead variants in known loci: 4593
+2024/12/22 22:51:03  -Checking the minimum distance between identified lead variants and provided known variants...
+2024/12/22 22:51:03  -Identified  4  known vairants in current sumstats...
+2024/12/22 22:51:03  -Identified  0  novel vairants in current sumstats...
+2024/12/22 22:51:03 Finished checking if lead variants are known.
 </pre>
 </div>
 </div>
@@ -3479,12 +3499,12 @@ Sat Feb  3 01:25:50 2024 Finished checking if lead variants are known.
 <td>0.0150</td>
 <td>2.665000e-10</td>
 <td>1960399</td>
-<td>1</td>
-<td>rs72156956</td>
-<td>30718926</td>
-<td>Suzuki K</td>
+<td>-1931</td>
+<td>rs7564708</td>
+<td>34594039</td>
+<td>Sakaue S</td>
 <td>False</td>
-<td>Upstream</td>
+<td>Downstream</td>
 </tr>
 </tbody>
 </table>
