@@ -11,6 +11,10 @@
       
       
       
+        <link rel="prev" href="../reserved_header/">
+      
+      
+        <link rel="next" href="../SumstatsObject/">
       
       
       <link rel="icon" href="../assets/gwaslab.png">
@@ -200,14 +204,16 @@
         
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../tutorial_3.4/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
     
   
-  Tutorial for gwaslab
+  Tutorial: gwaslab
 
       </a>
     </li>
@@ -501,18 +507,250 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../tutorial_3.4/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Tutorial: gwaslab
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Tutorial for gwaslab
+    Tutorial: gwaslab
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#download-sample-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Download sample data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-gwaslab-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import gwaslab package
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-data-into-gwaslab-sumstats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading data into gwaslab Sumstats
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infer-genome-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      Infer genome build
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-manhattan-plots-and-q-q-plots" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create Manhattan plots and Q-Q plots
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#standardization-qc-basic_check" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standardization &amp; QC : .basic_check()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extract-lead-variants-get_lead" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extract lead variants : get_lead()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-the-snpid-to-create-some-highly-customized-mqq-plot" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use the SNPID to create some highly customized mqq plot
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-regional-plot-without-ld-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick regional plot without LD-information
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-file-downloading" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference file downloading
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference file downloading">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-available-reference-from-gwaslab" class="md-nav__link">
+    <span class="md-ellipsis">
+      check available reference from gwaslab
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#download-reference-using-gwaslab" class="md-nav__link">
+    <span class="md-ellipsis">
+      download reference using gwaslab
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sampling
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fix-snpid" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix SNPID
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#annotate-rsid" class="md-nav__link">
+    <span class="md-ellipsis">
+      Annotate rsID
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Annotate rsID">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maximize-the-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Maximize the annotation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#harmonization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Harmonization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sumstats-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sumstats Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#formatting-and-saving-to_format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Formatting and saving : to_format()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#liftover" class="md-nav__link">
+    <span class="md-ellipsis">
+      Liftover
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1664,7 +1902,7 @@
         
   
   <span class="md-ellipsis">
-    Most options in plot_mqq() are available for plot_miami2()
+    Miami plot
   </span>
   
 
