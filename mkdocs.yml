@@ -23,7 +23,7 @@ nav:
        - "Update logs" : UpdateLogs.md
        - "Known Issues" : KnownIssues.md
        - "Reserved Headers": reserved_header.md
-    - Tutorial: tutorial_3.4.ipynb
+    - Tutorial: tutorial.ipynb
     - Sumstats manipulation:
        - "Sumstats Object": SumstatsObject.md
        - "Status Code": StatusCode.md
