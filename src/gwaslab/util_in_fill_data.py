@@ -1,12 +1,14 @@
 import pandas as pd
 import numpy as np
 import scipy.stats as ss
+from scipy.stats import norm
 from scipy import stats
 from gwaslab.g_Log import Log
 import gc
 #from gwaslab.qc_fix_sumstats import sortcolumn
 from gwaslab.g_version import _get_version
 from gwaslab.qc_check_datatype import check_datatype
+
 
 def filldata( 
     insumstats,
@@ -331,3 +333,9 @@ def _convert_or_to_beta(OR):
 
 def _convert_beta_to_or(beta):
     return np.exp(beta)   
+
+def rank_based_int(series, c=3/8):
+    #https://onlinelibrary.wiley.com/doi/10.1111/biom.13214
+    n=sum(~series.isna())
+    normalized_value = norm.ppf((series.rank()-c)/(n+1-2*c))
+    return normalized_value

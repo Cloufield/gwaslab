@@ -47,3 +47,4 @@ from gwaslab.util_ex_run_susie import _run_susie_rss as run_susie_rss
 from gwaslab.io_read_tabular import _read_tabular as read_tabular
 from gwaslab.util_in_meta import meta_analyze
 from gwaslab.viz_plot_scatter_with_reg import scatter
+from gwaslab.util_in_fill_data import rank_based_int

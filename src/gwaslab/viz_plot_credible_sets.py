@@ -8,7 +8,7 @@ from gwaslab.viz_plot_mqqplot import _process_xtick
 from gwaslab.viz_plot_mqqplot import _process_xlabel
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.util_in_filter_value import _filter_region
-
+from gwaslab.io_process_args import _extract_kwargs
 
 def _plot_cs(pipcs,
             region, 
@@ -17,7 +17,7 @@ def _plot_cs(pipcs,
             xtick_chr_dict=None,
             pip="PIP",
             cs="CREDIBLE_SET_INDEX",
-            marker_size=(45,65),
+            marker_size=(45,85),
             fontsize = 12,
             font_family = "Arial",
             log=Log(),
@@ -30,10 +30,13 @@ def _plot_cs(pipcs,
         ## parameters ############################# 
         if xtick_chr_dict is None:         
                 xtick_chr_dict = get_number_to_chr()
-        
-        scatter_args=dict()
+
+        scatter_kwargs =   _extract_kwargs("scatter", dict(), locals())
+
         region_marker_shapes = ['o', '^','s','D','*','P','X','h','8']
+        region_ld_colors_m = ["grey","#E51819","green","#F07818","#AD5691","yellow","purple"]
         
+
         ## filter data #############################
         pipcs = _filter_region(pipcs, region)
         pipcs[cs] = pipcs[cs].astype("string")
@@ -54,15 +57,22 @@ def _plot_cs(pipcs,
         pipcs = pipcs.sort_values(by=cs,ascending=True)
 
         ## plot ##########################################
-        scatter_args["markers"]= {m:region_marker_shapes[i] for i,m in enumerate(pipcs[cs].unique())}
+        scatter_kwargs["markers"]= {m:region_marker_shapes[i] for i,m in enumerate(pipcs[cs].unique())}
+        palette = sns.color_palette(region_ld_colors_m,n_colors=pipcs[cs].nunique()) 
+        edgecolor="none"
 
+        print(marker_size)
         sns.scatterplot(data=pipcs,
                         x="i",
                         y=pip,
                         hue=cs,
+                        edgecolor=edgecolor,
+                        palette=palette, 
                         style=cs,
-                        sizes=marker_size,
+                        s=marker_size[1],
                         ax=ax,
-                        **scatter_args)
+                        **scatter_kwargs)
+
+        # process legend
 
         return fig, log
