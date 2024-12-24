@@ -23,6 +23,7 @@ from gwaslab.viz_plot_compare_af import  plotdaf
 from gwaslab.util_ex_run_2samplemr import _run_two_sample_mr
 from gwaslab.util_ex_run_clumping import _clump
 from gwaslab.util_ex_ldproxyfinder import _extract_with_ld_proxy
+from gwaslab.g_headers import _get_headers
 
 class SumstatsPair( ):
     def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ,verbose=True ):
@@ -35,6 +36,7 @@ class SumstatsPair( ):
             self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"])
         else:
             self.study_name = "{}_{}".format("STUDY1", "STUDY2")
+        
         self.snp_info_cols = []
         self.stats_cols =[]
         self.stats_cols2 =[]
@@ -45,11 +47,13 @@ class SumstatsPair( ):
         self.colocalization=pd.DataFrame()
         self.sumstats1 = pd.DataFrame()
         self.sumstats2 = pd.DataFrame()
-        self.mr = {}
-        self.clumps ={}
+        
+        self.mr =dict()
+        self.clumps =dict()
         self.ns = None
-        self.to_finemapping_file_path = ""
-        self.plink_log = ""
+        self.finemapping = dict()
+        #self.to_finemapping_file_path = ""
+        #self.plink_log = ""
 
         self.log.write( "Start to create SumstatsPair object..." )
         
@@ -66,16 +70,17 @@ class SumstatsPair( ):
                                 verbose=verbose)
 
         for i in sumstatsObject1.data.columns:
-            if i in ["SNPID","rsID","CHR","POS","EA","NEA","STATUS"]:
+            if i in _get_headers(mode="info"):
+                # extract SNP info columns from sumstats1
                 self.snp_info_cols.append(i)
-            elif i in ["BETA","SE","P","MLOG10P","N","N_CASE","N_CONTROL","Z","T","F","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","MAF","EAF","BETA_95L","BETA_95U"]:
+            elif i in _get_headers(mode="stats"):
                 self.stats_cols.append(i)
             else:
                 self.other_cols.append(i)
         for i in sumstatsObject2.data.columns:
-            if i in ["SNPID","rsID","CHR","POS","EA","NEA","STATUS"]:
+            if i in _get_headers(mode="info"):
                 continue
-            elif i in ["BETA","SE","P","MLOG10P","N","N_CASE","N_CONTROL","Z","T","F","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","MAF","EAF","BETA_95L","BETA_95U"]:
+            elif i in _get_headers(mode="stats"):
                 self.stats_cols2.append(i)
             else:
                 self.other_cols2.append(i)           
@@ -136,14 +141,13 @@ class SumstatsPair( ):
 
 
     def clump(self,**kwargs):
-        self.clumps["clumps"], self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.study_name, **kwargs)
+        self.clumps["clumps"],self.clumps["clumps_raw"],self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.study_name, **kwargs)
 
     def to_coloc(self,**kwargs):
-        self.to_finemapping_file_path, output_file_list, self.plink_log = tofinemapping(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
+        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"] = tofinemapping(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
 
     def run_coloc_susie(self,**kwargs):
-
-        self.colocalization = _run_coloc_susie(self.to_finemapping_file_path,log=self.log,ncols=self.ns,**kwargs)
+        self.colocalization = _run_coloc_susie(self.finemapping["path"],log=self.log,ncols=self.ns,**kwargs)
 
     def run_two_sample_mr(self, clump=False, **kwargs):
         exposure1 = self.study_name.split("_")[0]

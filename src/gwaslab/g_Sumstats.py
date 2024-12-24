@@ -154,10 +154,17 @@ class Sumstats():
         self.meta["gwaslab"]["species"] = species
         
         # initialize attributes for clumping and finmapping
-        self.to_finemapping_file_path = ""
-        self.to_finemapping_file  = pd.DataFrame()
-        self.plink_log = ""
-        self.clumps = pd.DataFrame()
+        #self.to_finemapping_file_path = ""
+        #self.to_finemapping_file  = pd.DataFrame()
+        #self.plink_log = ""
+
+        # path / file / plink_log
+        self.finemapping = dict()
+
+        # clumps / clumps_raw / plink_log
+        self.clumps = dict()
+        
+        #
         self.pipcs = pd.DataFrame()
 
         # print gwaslab version information
@@ -822,13 +829,15 @@ class Sumstats():
 # external ################################################################################################
     
     def calculate_ld_matrix(self,**kwargs):
-        self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
+        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
+        #self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
     
     def run_susie_rss(self,**kwargs):
-        self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**kwargs)
+        self.pipcs=_run_susie_rss(self.finemapping["path"],**kwargs)
+        #self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**kwargs)
     
     def clump(self,**kwargs):
-        self.clumps,self.plink_log = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
+        self.clumps["clumps"], self.clumps["clumps_raw"], self.clumps["plink_log"] = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
 
     def calculate_prs(self,**kwargs):
         combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)

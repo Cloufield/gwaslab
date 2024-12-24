@@ -162,7 +162,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
             log.write(e.output)
         #os.system(script)
         
-        clumped = pd.read_csv("{}.clumps".format(out_single_chr),usecols=[2,0,1,3],sep="\s+")
+        clumped = pd.read_csv("{}.clumps".format(out_single_chr),sep="\s+")
         results = pd.concat([results,clumped],ignore_index=True)
         
         # remove temp SNPIDP file 
@@ -172,7 +172,9 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
     log.write("Finished clumping.",verbose=verbose)
     results_sumstats = insumstats.loc[insumstats["SNPID"].isin(results["SNPID"]),:].copy()
     finished(log=log, verbose=verbose, end_line=_end_line)
-    return results_sumstats, plink_log
+
+    return results_sumstats, results, plink_log
+
 
 
        

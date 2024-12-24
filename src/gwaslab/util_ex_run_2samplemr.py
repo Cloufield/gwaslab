@@ -21,6 +21,8 @@ def _run_two_sample_mr(sumstatspair_object,
                        n1=None,
                        n2=None,
                        binary1=False,
+                       cck1=None,
+                       cck2=None,
                        ncase1=None,
                        ncontrol1=None,
                        prevalence1=None,
@@ -35,6 +37,22 @@ def _run_two_sample_mr(sumstatspair_object,
     if methods is None:
         methods = ["mr_ivw","mr_simple_mode","mr_weighted_median","mr_egger_regression","mr_ivw_mre", "mr_weighted_mode"]
         methods_string = '"{}"'.format('","'.join(methods))
+    
+    if cck1 is not None:
+        log.write(" - ncase1, ncontrol1, prevalence1:{}".format(cck1))
+        binary1 = True
+        ncase1 = cck1[0]
+        ncontrol1 = cck1[1]
+        prevalence1 =  cck1[2]
+        n1 = ncase1 + ncontrol1
+    if cck2 is not None:
+        log.write(" - ncase2, ncontrol2, prevalence2:{}".format(cck2))
+        binary2 = True
+        ncase2 = cck2[0]
+        ncontrol2 = cck2[1]
+        prevalence2 =  cck2[2]
+        n2 = ncase2 + ncontrol2
+
     if clump==True:
         sumstatspair = sumstatspair_object.clumps["clumps"]
     else: 
@@ -64,10 +82,16 @@ def _run_two_sample_mr(sumstatspair_object,
     
     ###
     calculate_r_script = ""
+    
     if binary1==True:
         calculate_r_script+= _make_script_for_calculating_r("exposure", ncase1, ncontrol1, prevalence1)
+    else:
+        calculate_r_script+= _make_script_for_calculating_r_quant("exposure")
+    
     if binary2==True:
         calculate_r_script+= _make_script_for_calculating_r("outcome", ncase2, ncontrol2, prevalence2)
+    else:
+        calculate_r_script+= _make_script_for_calculating_r_quant("outcome")
     
     # create scripts
     directionality_test_script='''
@@ -218,6 +242,16 @@ def _make_script_for_calculating_r(exposure_or_outcome, ncase, ncontrol, prevale
         return script
 
 
+def _make_script_for_calculating_r_quant(exposure_or_outcome):
+        script = """
+        harmonized_data$"r.{exposure_or_outcome}" <- get_r_from_bsen(  harmonized_data$"beta.{exposure_or_outcome}",
+                                                        harmonized_data$"se.{exposure_or_outcome}",
+                                                        harmonized_data$"samplesize.{exposure_or_outcome}"
+                                                        )
+        """.format(
+             exposure_or_outcome = exposure_or_outcome
+        )
+        return script
 
 
 def _filter_by_f(sumstatspair, f_check, n1, binary1=None, ncase1=None, ncontrol1=None, prevalence1=None, log=Log() ):
