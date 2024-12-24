@@ -514,3 +514,17 @@ def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
         sumstats = sumstats.loc[~sumstats[id_use].isin(exclude),:]
         log.write(" -Excluded {} variants from sumstats...".format(len(sumstats)),verbose=verbose)
     return sumstats
+
+def _filter_region(sumstats, region, chrom="CHR",pos="POS",log=Log(),verbose=True):
+    if region is not None:
+        region_chr = region[0]
+        region_start = region[1]
+        region_end = region[2]
+        
+        log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region[1], region[2]),verbose=verbose)
+        
+        in_region_snp = (sumstats[chrom]==region_chr) & (sumstats[pos]<region_end) & (sumstats[pos]>region_start)
+        
+        log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)),verbose=verbose)
+        sumstats = sumstats.loc[in_region_snp,:]
+        return sumstats

@@ -51,6 +51,7 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_recombination_rate
 from gwaslab.bd_common_data import get_gtf
+from gwaslab.util_in_filter_value import _filter_region
 from gwaslab.g_version import _get_version
 from matplotlib.colors import ListedColormap
 from matplotlib.colors import LinearSegmentedColormap
@@ -475,18 +476,20 @@ def mqqplot(insumstats,
         sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict)
 
     ## r
+    
     if region is not None:
-        region_chr = region[0]
-        region_start = region[1]
-        region_end = region[2]
-        
-        log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region[1], region[2]),verbose=verbose)
-        
-        in_region_snp = (sumstats[chrom]==region_chr) & (sumstats[pos]<region_end) & (sumstats[pos]>region_start)
-        
-        log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)),verbose=verbose)
-        sumstats = sumstats.loc[in_region_snp,:]
-        
+        sumstats = _filter_region(sumstats, region)
+    #    region_chr = region[0]
+    #    region_start = region[1]
+    #    region_end = region[2]
+    #    
+    #    log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region[1], region[2]),verbose=verbose)
+    #    
+    #    in_region_snp = (sumstats[chrom]==region_chr) & (sumstats[pos]<region_end) & (sumstats[pos]>region_start)
+    #    
+    #    log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)),verbose=verbose)
+    #    sumstats = sumstats.loc[in_region_snp,:]
+    #    
         if len(sumstats)==0:
             log.warning("No valid data! Please check the input.")
             return None

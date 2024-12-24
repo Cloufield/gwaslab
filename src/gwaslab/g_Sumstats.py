@@ -80,6 +80,8 @@ from gwaslab.util_ex_ldsc import _estimate_partitioned_h2_by_ldsc
 from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.util_abf_finemapping import abf_finemapping
 from gwaslab.util_abf_finemapping import make_cs
+from gwaslab.io_read_pipcs import _read_pipcs
+from gwaslab.vis_plot_credible_sets import _plot_cs
 import gc
 from gwaslab.viz_plot_phe_heatmap import _gwheatmap
 
@@ -842,10 +844,18 @@ class Sumstats():
     def calculate_prs(self,**kwargs):
         combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
         return combined_results_summary
-    
+
+# loading aux data
+    def read_pipcs(self,prefix,**kwargs):
+        self.pipcs = _read_pipcs(self.data[["SNPID","CHR","POS"]],prefix, **kwargs)
+
+    def plot_pipcs(self, region,**kwargs):
+        _plot_cs(self.pipcs, region, **kwargs)
 # to_format ###############################################################################################       
 
     def to_format(self, path, build=None, verbose=True, **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         _to_format(self.data, path, log=self.log, verbose=verbose, meta=self.meta, build=build, **kwargs)
+
+ 
