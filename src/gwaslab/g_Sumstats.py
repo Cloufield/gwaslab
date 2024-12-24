@@ -81,7 +81,7 @@ from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.util_abf_finemapping import abf_finemapping
 from gwaslab.util_abf_finemapping import make_cs
 from gwaslab.io_read_pipcs import _read_pipcs
-from gwaslab.vis_plot_credible_sets import _plot_cs
+from gwaslab.viz_plot_credible_sets import _plot_cs
 import gc
 from gwaslab.viz_plot_phe_heatmap import _gwheatmap
 

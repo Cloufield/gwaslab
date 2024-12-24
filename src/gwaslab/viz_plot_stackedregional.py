@@ -38,9 +38,10 @@ from gwaslab.io_to_pickle import load_data_from_pickle
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.viz_aux_save_figure import save_figure
 from gwaslab.viz_plot_mqqplot import mqqplot
+from gwaslab.viz_plot_credible_sets import _plot_cs
 import matplotlib.patches as patches
 
-def plot_stacked_mqq(objects,
+def plot_stacked_mqq(   objects,
                         vcfs=None,
                         mode="r",
                         mqqratio=3,
@@ -62,10 +63,12 @@ def plot_stacked_mqq(objects,
                         region_ld_legends = None,
                         fontsize=9,
                         font_family="Arial",
+                        common_ylabel=True,
                         build="99", 
                         save=None,
                         save_args=None,
                         verbose=True,
+                        pm=None,
                         log=Log(),
                         **mqq_args
                         ):
@@ -74,10 +77,23 @@ def plot_stacked_mqq(objects,
     # load sumstats
     
     ##########################################################################################################################################
+    if pm is None:
+        pm=[]
+
     sumstats_list = [] 
     for each_object in objects:
-        sumstats_list.append(each_object.data)
+        if type(each_object) is Sumstats:
+            if "P" in each_object.data.columns or "MLOG10P" in each_object.data.columns:
+                sumstats_list.append(each_object.data)
+                pm.append("m")
+        else:
+            if "PIP" in each_object.columns:
+                sumstats_list.append(each_object)
+                pm.append("pip")
+                common_ylabel=False
 
+    log.write(" -Panel mode:{}...".format(pm),verbose=verbose)
+    
     if fig_args is None:
         fig_args = {"dpi":200}
     if save_args is None:
@@ -213,33 +229,42 @@ def plot_stacked_mqq(objects,
             lead_variants_is[index] = lead_snp_is
             lead_variants_is_color[index] = lead_snp_is_color
         else:
-            # plot only the scatter plot
-            fig,log,lead_snp_is,lead_snp_is_color = mqqplot(sumstats,
-                            chrom="CHR",
-                            pos="POS",
-                            p="P",
-                            region=region,
-                            mlog10p="MLOG10P",
-                            snpid="SNPID",
-                            vcf_path=vcfs[index],
-                            region_lead_grid=False,
-                            fontsize=fontsize,
-                            font_family=font_family,
-                            mode=mode,
-                            rr_ylabel=False,
-                            region_ld_legend=region_ld_legend,
-                            gtf_path=None,
-                            figax=figax,
-                            _get_region_lead=True,
-                            _if_quick_qc=False,
-                            _posdiccul=_posdiccul,
-                            build=build,
-                            verbose=verbose,
-                            log=log,
-                            **mqq_args_for_each_plot[index]
-                            )
-            lead_variants_is[index] = lead_snp_is
-            lead_variants_is_color[index] = lead_snp_is_color
+            if pm[index]=="m":
+                # plot only the scatter plot
+                fig,log,lead_snp_is,lead_snp_is_color = mqqplot(sumstats,
+                                chrom="CHR",
+                                pos="POS",
+                                p="P",
+                                region=region,
+                                mlog10p="MLOG10P",
+                                snpid="SNPID",
+                                vcf_path=vcfs[index],
+                                region_lead_grid=False,
+                                fontsize=fontsize,
+                                font_family=font_family,
+                                mode=mode,
+                                rr_ylabel=False,
+                                region_ld_legend=region_ld_legend,
+                                gtf_path=None,
+                                figax=figax,
+                                _get_region_lead=True,
+                                _if_quick_qc=False,
+                                _posdiccul=_posdiccul,
+                                build=build,
+                                verbose=verbose,
+                                log=log,
+                                **mqq_args_for_each_plot[index]
+                                )
+                lead_variants_is[index] = lead_snp_is
+                lead_variants_is_color[index] = lead_snp_is_color
+            elif pm[index]=="pip":
+                fig,log =_plot_cs(sumstats,
+                                  region=region,
+                                  _posdiccul=_posdiccul,
+                                  figax=figax,
+                                  log=log,
+                                  verbose=verbose,
+                                  **mqq_args_for_each_plot[index])
     if len(region_chromatin_files)>0 and mode=="r":
         xlim_i = axes[-1].get_xlim()
         fig = _plot_chromatin_state(     region_chromatin_files = region_chromatin_files, 
@@ -295,9 +320,10 @@ def plot_stacked_mqq(objects,
     _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_color, n_plot, axes, region_lead_grid_line,region_chromatin_files,region_lead_grids)
     
     ##########################################################################################################################################  
-    _drop_old_y_labels(axes, n_plot)
-    
-    _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsize,font_family)
+    if common_ylabel==True:
+        _drop_old_y_labels(axes, n_plot)
+        
+        _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsize,font_family)
     
     ##########################################################################################################################################
     save_figure(fig = fig, save = save, keyword= "stacked_" + mode, save_args=save_args, log = log, verbose=verbose)

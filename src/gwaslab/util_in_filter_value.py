@@ -527,4 +527,4 @@ def _filter_region(sumstats, region, chrom="CHR",pos="POS",log=Log(),verbose=Tru
         
         log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)),verbose=verbose)
         sumstats = sumstats.loc[in_region_snp,:]
-        return sumstats
+        return sumstats.copy()
