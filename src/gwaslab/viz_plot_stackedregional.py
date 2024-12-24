@@ -91,6 +91,11 @@ def plot_stacked_mqq(   objects,
                 sumstats_list.append(each_object)
                 pm.append("pip")
                 common_ylabel=False
+    
+    if common_ylabel==True:
+        rr_ylabel=False
+    else:
+        rr_ylabel=True
 
     log.write(" -Panel mode:{}...".format(pm),verbose=verbose)
     
@@ -216,7 +221,7 @@ def plot_stacked_mqq(   objects,
                             region_lead_grid=False,
                             region_ld_legend=region_ld_legend,
                             gtf_path="default",
-                            rr_ylabel=False,
+                            rr_ylabel=rr_ylabel,
                             figax=figax,
                             _get_region_lead=True,
                             _if_quick_qc=False,
@@ -243,7 +248,7 @@ def plot_stacked_mqq(   objects,
                                 fontsize=fontsize,
                                 font_family=font_family,
                                 mode=mode,
-                                rr_ylabel=False,
+                                rr_ylabel=rr_ylabel,
                                 region_ld_legend=region_ld_legend,
                                 gtf_path=None,
                                 figax=figax,
