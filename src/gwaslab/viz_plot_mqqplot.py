@@ -478,7 +478,7 @@ def mqqplot(insumstats,
     ## r
     
     if region is not None:
-        sumstats = _filter_region(sumstats, region)
+        sumstats = _filter_region(sumstats, region, log=log, verbose=verbose)
     #    region_chr = region[0]
     #    region_start = region[1]
     #    region_end = region[2]

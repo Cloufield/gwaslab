@@ -78,6 +78,11 @@ def verify_datatype(header, dtype):
     "DOF":["int","Int32","Int64","int32","int64"],   
     "STATUS":"category",  
     "DIRECTION":["object","string"], 
+    'PIP'               :["float","float32","float64"],
+    'CREDIBLE_SET_INDEX':["int","Int32","Int64","int32","int64"],   
+    'N_SNP'             :["int","Int32","Int64","int32","int64"],   
+    'LOCUS'             :["object","string","category"],
+    'STUDY'             :["object","string","category"],
     }
 
     if header in dtype_dict.keys():

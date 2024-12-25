@@ -48,7 +48,12 @@ dtype_dic={
  'KNOWN_SET_VARIANT' : 'string'   ,
  'KNOWN_VARIANT'     : 'string'   ,
  'KNOWN_SET'         : 'string'   ,
- 'NOVEL'             : 'string'   
+ 'NOVEL'             : 'string'   ,
+ 'PIP'               :' float64   ',
+ 'CREDIBLE_SET_INDEX': 'Int64'    ,
+ 'N_SNP'             : 'Int64'    ,
+ 'LOCUS'             : 'string'   ,
+ 'STUDY'             : 'string'   ,
 }
 
 
@@ -102,7 +107,11 @@ description_dic={
  'KNOWN_SET_VARIANT' :' known set and overlapping variant              ',
  'KNOWN_VARIANT'     :' known variant overlapping with the variant     ',
  'KNOWN_SET'         :' variant set of the known variant               ',
- 'NOVEL'             :' if the identified variants are novel           '}
+ 'PIP'               :' Posterior Inclusion Probability                ',
+ 'CREDIBLE_SET_INDEX':' credible sets index           ',
+ 'N_SNP'             :' number of variants included in this locus for finemapping           ',
+ 'LOCUS'             :' locus name, usually the lead variant of the locus           ',
+ 'STUDY'             :' study name           '}
 
 def _get_headers(mode="all"):
     if mode=="info":
@@ -112,5 +121,11 @@ def _get_headers(mode="all"):
     else:
         return description_dic.keys()
 
+def _check_overlap_with_reserved_keys(other):
+    overlapped=[]
+    for i in other:
+        if i in _get_headers():
+            overlapped.append(i)
+    return overlapped
 
 

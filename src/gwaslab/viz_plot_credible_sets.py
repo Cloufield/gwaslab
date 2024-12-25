@@ -16,13 +16,14 @@ def _plot_cs(pipcs,
             _posdiccul=None,
             xtick_chr_dict=None,
             pip="PIP",
+            onlycs=False,
             cs="CREDIBLE_SET_INDEX",
             marker_size=(45,85),
             fontsize = 12,
             font_family = "Arial",
+            legend_title="Credible sets",
             log=Log(),
             verbose=True,
-            region_step=10,
             **kwargs):
         '''
         pipcs : a DataFrame of finemapping results
@@ -39,6 +40,9 @@ def _plot_cs(pipcs,
 
         ## filter data #############################
         pipcs = _filter_region(pipcs, region)
+        if onlycs ==True:
+                pipcs = pipcs.loc[pipcs[cs]>0,:]
+
         pipcs[cs] = pipcs[cs].astype("string")
 
         ## figure and ax ############################# 
@@ -61,8 +65,7 @@ def _plot_cs(pipcs,
         palette = sns.color_palette(region_ld_colors_m,n_colors=pipcs[cs].nunique()) 
         edgecolor="none"
 
-        print(marker_size)
-        sns.scatterplot(data=pipcs,
+        plot = sns.scatterplot(data=pipcs,
                         x="i",
                         y=pip,
                         hue=cs,
@@ -74,5 +77,23 @@ def _plot_cs(pipcs,
                         **scatter_kwargs)
 
         # process legend
+        handles, labels = ax.get_legend_handles_labels()
+        new_labels = []
+        new_handles = []
+        ncol = len(labels)
+
+        for i,label in enumerate(labels):
+                if label in [str(j) for j in range(1,10)]:
+                        new_labels.append(labels[i])
+                        new_handles.append(handles[i])
+        
+        ax.legend(labels =new_labels,  
+                  handles=new_handles, 
+                  loc="upper right", 
+                  bbox_to_anchor=(0.995, 0.995), 
+                  ncol=1, 
+                  scatterpoints=2, 
+                  title=legend_title, 
+                  frameon=True)
 
         return fig, log

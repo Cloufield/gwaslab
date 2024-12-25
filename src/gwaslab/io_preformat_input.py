@@ -9,7 +9,7 @@ from gwaslab.qc_fix_sumstats import sortcolumn
 from gwaslab.qc_fix_sumstats import _process_build
 from gwaslab.qc_check_datatype import check_datatype
 from gwaslab.qc_check_datatype import check_dataframe_memory_usage
-
+from gwaslab.g_headers import _check_overlap_with_reserved_keys
 #20221030
 def preformat(sumstats,
           fmt=None,
@@ -276,6 +276,8 @@ def preformat(sumstats,
         rename_dictionary[status]="STATUS"
         dtype_dictionary[status]="string"
     if other:
+        overlapped = _check_overlap_with_reserved_keys(other)
+        log.warning("Columns with headers overlapping with GWASLab reserved keywords:{}".format(overlapped),verbose=verbose)
         usecols = usecols + other
         for i in other:
             rename_dictionary[i] = i      
