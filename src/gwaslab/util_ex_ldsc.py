@@ -260,6 +260,9 @@ class ARGS():
 def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, munge_args=None, **kwargs):
     sumstats = insumstats.copy()
     
+    if "N" in sumstats.columns:
+        sumstats["N"] = sumstats["N"].astype("int64")
+
     if munge:
         if munge_args is None:
             munge_args={}
@@ -320,6 +323,8 @@ def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, munge_args=
 
 def _estimate_partitioned_h2_by_ldsc(insumstats, log, verbose=True, **kwargs):
     sumstats = insumstats.copy()
+    if "N" in sumstats.columns:
+        sumstats["N"] = sumstats["N"].astype("int64")
     ##start function with col checking##########################################################
     _start_line = "run LD score regression"
     _end_line = "running LD score regression"
@@ -366,6 +371,8 @@ def _estimate_partitioned_h2_by_ldsc(insumstats, log, verbose=True, **kwargs):
 
 def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **kwargs):
     sumstats = insumstats.copy()
+    if "N" in sumstats.columns:
+        sumstats["N"] = sumstats["N"].astype("int64")
     ##start function with col checking##########################################################
     _start_line = "run LD score regression for genetic correlation"
     _end_line = "running LD score regression for genetic correlation"
@@ -426,6 +433,8 @@ def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **kwargs):
 
 def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **kwargs):
     sumstats = insumstats.copy()
+    if "N" in sumstats.columns:
+        sumstats["N"] = sumstats["N"].astype("int64")
     ##start function with col checking##########################################################
     _start_line = "run LD score regression"
     _end_line = "running LD score regression"
