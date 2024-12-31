@@ -114,48 +114,49 @@ def _to_format(sumstats,
             
     #######################################################################################################
     #formatting float statistics
-    onetime_log.write(" -Formatting statistics ...",verbose=verbose)
     
-    formats = {
-            'EAF': '{:.4g}', 
-            'MAF': '{:.4g}', 
-            'BETA': '{:.4f}', 
-            'SE': '{:.4f}',
-            'BETA_95U': '{:.4f}',
-            'BETA_95L': '{:.4f}',
-            'Z': '{:.4f}',
-            'CHISQ': '{:.4f}',
-            'F': '{:.4f}',
-            'OR': '{:.4f}',
-            'OR_95U': '{:.4f}',
-            'OR_95L': '{:.4f}',
-            'HR': '{:.4f}',
-            'HR_95U': '{:.4f}',
-            'HR_95L': '{:.4f}',
-            'INFO': '{:.4f}',
-            'P': '{:.4e}',
-            'MLOG10P': '{:.4f}',
-            'DAF': '{:.4f}'}
-    
-    for col, f in float_formats.items():
-        if col in output.columns: 
-            formats[col]=f
-    
-    for col, f in formats.items():
-        if col in output.columns: 
-            if str(output[col].dtype) in ["Float32","Float64","float64","float32","float16","float"]:
-                output[col] = output[col].map(f.format)
-    
-    onetime_log.write(" -Float statistics formats:",verbose=verbose)  
-    keys=[]
-    values=[]
-    for key,value in formats.items():
-        if key in output.columns: 
-            keys.append(key)
-            values.append(value)
-    
-    onetime_log.write("  - Columns       :",keys,verbose=verbose) 
-    onetime_log.write("  - Output formats:",values,verbose=verbose) 
+    if tab_fmt!="parquet":
+        onetime_log.write(" -Formatting statistics ...",verbose=verbose)
+        formats = {
+                'EAF': '{:.4g}', 
+                'MAF': '{:.4g}', 
+                'BETA': '{:.4f}', 
+                'SE': '{:.4f}',
+                'BETA_95U': '{:.4f}',
+                'BETA_95L': '{:.4f}',
+                'Z': '{:.4f}',
+                'CHISQ': '{:.4f}',
+                'F': '{:.4f}',
+                'OR': '{:.4f}',
+                'OR_95U': '{:.4f}',
+                'OR_95L': '{:.4f}',
+                'HR': '{:.4f}',
+                'HR_95U': '{:.4f}',
+                'HR_95L': '{:.4f}',
+                'INFO': '{:.4f}',
+                'P': '{:.4e}',
+                'MLOG10P': '{:.4f}',
+                'DAF': '{:.4f}'}
+        
+        for col, f in float_formats.items():
+            if col in output.columns: 
+                formats[col]=f
+        
+        for col, f in formats.items():
+            if col in output.columns: 
+                if str(output[col].dtype) in ["Float32","Float64","float64","float32","float16","float"]:
+                    output[col] = output[col].map(f.format)
+        
+        onetime_log.write(" -Float statistics formats:",verbose=verbose)  
+        keys=[]
+        values=[]
+        for key,value in formats.items():
+            if key in output.columns: 
+                keys.append(key)
+                values.append(value)
+        
+        onetime_log.write("  - Columns       :",keys,verbose=verbose) 
+        onetime_log.write("  - Output formats:",values,verbose=verbose) 
         
     ##########################################################################################################          
     # output, mapping column names
