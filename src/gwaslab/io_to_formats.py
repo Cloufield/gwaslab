@@ -234,7 +234,7 @@ def tofmt(sumstats,
         if xymt_number is False and pd.api.types.is_integer_dtype(sumstats["CHR"]):
             sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt,prefix=chr_prefix))
         # add prefix to CHR
-        elif chr_prefix is not None:
+        elif len(chr_prefix)>0:
             sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")
 
     ####################################################################################################################
@@ -410,7 +410,7 @@ def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tab
                 log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)
                 log.write("  -Chromosomes:{}...".format(list(sumstats["CHR"].unique())),verbose=verbose)
                 for single_chr in list(sumstats["CHR"].unique()):
-                    single_path = path.replace("@",single_chr)
+                    single_path = path.replace("@","{}".format(single_chr))
 
                     fast_to_csv(sumstats.loc[sumstats[chr_header]==single_chr,:],
                                  single_path, 
@@ -423,7 +423,7 @@ def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tab
                 log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)
                 log.write("  -Chromosomes:{}...".format(list(sumstats["CHR"].unique())),verbose=verbose)
                 for single_chr in list(sumstats["CHR"].unique()):
-                    single_path = path.replace("@",single_chr)
+                    single_path = path.replace("@","{}".format(single_chr))
 
                     sumstats.loc[sumstats[chr_header]==single_chr,:].to_csv(path, index=None, **to_csvargs)
             else:

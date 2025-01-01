@@ -13,6 +13,7 @@ from gwaslab.g_headers import _check_overlap_with_reserved_keys
 #20221030
 def preformat(sumstats,
           fmt=None,
+          tab_fmt="tsv",
           snpid=None,
           rsid=None,
           chrom=None,
@@ -66,12 +67,21 @@ def preformat(sumstats,
     rename_dictionary = {}
     usecols = []
     dtype_dictionary ={}    
-    
+    if readargs is None:
+        readargs={}
  #######################################################################################################################################################
     # workflow: 
     # 1. formatbook
     # 2. user specified header
     # 3. usekeys
+    if tab_fmt=="parquet":
+        if type(sumstats) is str:
+            log.write("Start to load data from parquet file....",verbose=verbose)
+            log.write(" -path: {}".format(sumstats),verbose=verbose)
+            sumstats = pd.read_parquet(sumstats,**readargs) 
+            log.write("Finished loading parquet file into pd.DataFrame....",verbose=verbose)
+        else:
+            raise ValueError("Please input a path for parquet file.")
     
     if fmt is not None:
         # loading format parameters
@@ -145,9 +155,11 @@ def preformat(sumstats,
             if key in raw_cols:
                 usecols.append(key)
             if value in ["EA","NEA"]:
-                dtype_dictionary[value]="category"
-            if value in ["CHR","STATUS"]:
-                dtype_dictionary[value]="string"     
+                dtype_dictionary[key]="category"
+            if value in ["STATUS"]:
+                dtype_dictionary[key]="string"     
+            if value in ["CHR"]:
+                dtype_dictionary[key]="string"  
     
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure the separator is correct and the columns you specified are in the file.")
@@ -361,8 +373,13 @@ def preformat(sumstats,
             sumstats = sumstats[usecols].copy()
             for key,value in dtype_dictionary.items():
                 if key in usecols:
-                    sumstats[key] = sumstats[key].astype(value)
-
+                    astype = value
+                    if rename_dictionary[key]=="CHR":
+                        astype ="Int64"  
+                    try:
+                        sumstats[key] = sumstats[key].astype(astype)
+                    except:
+                        sumstats[key] = sumstats[key].astype("string")
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contain the columns.")
 

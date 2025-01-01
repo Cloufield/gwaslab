@@ -90,6 +90,7 @@ class Sumstats():
     def __init__(self,
              sumstats,
              fmt=None,
+             tab_fmt="tsv",
              snpid=None,
              rsid=None,
              chrom=None,
@@ -176,6 +177,7 @@ class Sumstats():
         self.data  = preformat(
           sumstats=sumstats,
           fmt=fmt,
+          tab_fmt = tab_fmt,
           snpid=snpid,
           rsid=rsid,
           chrom=chrom,
