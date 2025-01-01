@@ -6,7 +6,7 @@ import numpy as np
 def _show_version(log=Log(), verbose=True):
     # show version when loading sumstats
     log.write("GWASLab v{} https://cloufield.github.io/gwaslab/".format(gwaslab_info()["version"]),verbose=verbose)
-    log.write("(C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com",verbose=verbose)
+    log.write("(C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com",verbose=verbose)
 
 def _get_version():
     # return short version string like v3.4.33

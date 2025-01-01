@@ -8,6 +8,7 @@ from gwaslab.bd_common_data import get_format_dict
 from gwaslab.qc_fix_sumstats import sortcolumn
 from gwaslab.qc_fix_sumstats import _process_build
 from gwaslab.qc_check_datatype import check_datatype
+from gwaslab.qc_check_datatype import quick_convert_datatype
 from gwaslab.qc_check_datatype import check_dataframe_memory_usage
 from gwaslab.g_headers import _check_overlap_with_reserved_keys
 #20221030
@@ -419,6 +420,8 @@ def preformat(sumstats,
 
     ## reodering ###################################################################################################  
     sumstats = sortcolumn(sumstats=sumstats,log=log,verbose=verbose)    
+    sumstats = quick_convert_datatype(sumstats,log=log,verbose=verbose)
+    
     check_datatype(sumstats,log=log,verbose=verbose)
     gc.collect()
     check_dataframe_memory_usage(sumstats,log=log,verbose=verbose)
