@@ -1,5 +1,14 @@
 # Update Logs
 
+# 3.5.5 20250102
+- update 2025 footer
+- added support for parquet
+- added quick datatype conversion when loading sumstats
+- fixed N datatype to np.int64 instad of pd.Int64 for ldsc
+- updated requirement for matplotlib version
+- organized examples
+- added plot pipcs (under development)
+
 # 3.5.4 20241218
 -`gl.plot_miami2`: fixed error for `titles_pad`
 
