@@ -57,6 +57,7 @@ def _plot_regional(
     region_step = 21,
     region_ref=None,
     region_ref_index_dic = None,
+    region_ref_name_dic = None,
     #region_ref_second=None,
     region_grid = False,
     region_grid_line = {"linewidth": 2,"linestyle":"--"},
@@ -132,6 +133,7 @@ def _plot_regional(
                             region_ref=region_ref,
                             region_ld_threshold=region_ld_threshold, 
                             region_ref_index_dic=region_ref_index_dic,
+                            region_ref_name_dic=region_ref_name_dic, 
                             region_marker_shapes=region_marker_shapes,
                             palette=palette,
                             region_legend_marker=region_legend_marker,
@@ -345,7 +347,7 @@ def _add_region_title(region_title, ax1,region_title_args):
     ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", region_ref=None, **region_title_args )
     return ax1
 
-def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,palette =None, position=1):
+def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,palette =None, position=1,region_ref_name_dic=None):
     
     width_pct = "11%"
     height_pct = "{}%".format( 14 + 7 * len(region_ref))
@@ -371,9 +373,13 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
                 axins1.add_patch(a)
     
     # y snpid
-    yticks_position = 0.1 + 0.2 *np.arange(0,len(region_ref))
-    axins1.set_yticks(yticks_position, ["{}".format(x) for x in region_ref])
-    axins1.set_ylim(0,0.2*len(region_ref))    
+    if region_ref_name_dic is None:
+        region_ref_name = region_ref
+    else:
+        region_ref_name = [region_ref_name_dic[i] for i in region_ref]
+    yticks_position = 0.1 + 0.2 *np.arange(0,len(region_ref_name))
+    axins1.set_yticks(yticks_position, ["{}".format(x) for x in region_ref_name])
+    axins1.set_ylim(0,0.2*len(region_ref_name))    
     
     # x ld thresholds
     axins1.set_xticks(ticks=ld_ticks) 
