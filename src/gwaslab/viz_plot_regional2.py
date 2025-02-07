@@ -685,6 +685,9 @@ def process_vcf(sumstats,
         else:
             log.write(" -Lead SNP not found in reference...", verbose=verbose)
             sumstats[rsq]=None
+            
+            # 
+            sumstats.loc[lead_id,rsq]=1
         
         sumstats[rsq] = sumstats[rsq].astype("float")
         sumstats[ld_single] = 0
@@ -716,7 +719,7 @@ def process_vcf(sumstats,
     sumstats[final_ld_col]  = 0
     sumstats[final_shape_col] = 1
     sumstats[final_rsq_col] = 0.0
-    
+
     if len(region_ref)==1:
         if lead_id is not None:
             sumstats.loc[lead_id, final_shape_col] +=1 
@@ -729,6 +732,7 @@ def process_vcf(sumstats,
         sumstats.loc[a_ngt_b, final_ld_col] = 100 * (i+1) + sumstats.loc[a_ngt_b, ld_single]
         sumstats.loc[a_ngt_b, final_rsq_col] = sumstats.loc[a_ngt_b, current_rsq]
         sumstats.loc[a_ngt_b, final_shape_col] = i + 1
+
     ####################################################################################################
     log.write("Finished loading reference genotype successfully!", verbose=verbose)
     return sumstats
