@@ -33,7 +33,7 @@ Comparison will be performed with `float_tolerence = 1e-7` for any float type st
 | `eaf=(0,1)`               | `float`    | 0<EAF<1                                  |
 | `chisq=(0,float("Inf"))`  | `float`    | CHISQ>0                                  |
 | `p=(0,1)`                 | `float`    | 0<P<1   (Any P=0 will cause a warning)   |
-| `mlog10p=(0,9999)`        | `float`    | 0<MLOG10P<9999                           |
+| `mlog10p=(0,99999)`        | `float`    | 0<MLOG10P<99999                           |
 | `beta=(-100,100)`         | `float`    | -10<BETA<10                              |
 | `z=(-9999,9999)`          | `float`    | -9999<z<9999                             |
 | `se=(0,float("Inf"))`     | `float`    | SE>0                                     |
