@@ -349,8 +349,14 @@ def _add_region_title(region_title, ax1,region_title_args):
 
 def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,palette =None, position=1,region_ref_alias=None):
     
-    width_pct = "11%"
-    height_pct = "{}%".format( 14 + 7 * len(region_ref))
+    base_fontsize = 9
+    fontsize = matplotlib.rcParams["font.size"]
+    scale = fontsize / base_fontsize
+    # width_pct = "11%"
+    # height_pct = "{}%".format( 14 + 7 * len(region_ref))
+
+    width_pct = "{}%".format(11*scale)
+    height_pct = "{}%".format( (14 + 7 * len(region_ref))* scale)
     axins1 = inset_axes(ax1,
             width=width_pct,  # width = 50% of parent_bbox width
             height=height_pct,  # height : 5%
