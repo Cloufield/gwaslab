@@ -666,6 +666,7 @@ def process_vcf(sumstats,
 
         
         # if lead pos is available: 
+        print("lead_pos:",lead_pos)
         if lead_pos in ref_genotype["variants/POS"]:
             
             # get ref index for lead snp
