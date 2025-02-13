@@ -351,6 +351,7 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     
     base_fontsize = 9
     fontsize = matplotlib.rcParams["font.size"]
+    print("fontsize:" , fontsize)
     scale = fontsize / base_fontsize
     # width_pct = "11%"
     # height_pct = "{}%".format( 14 + 7 * len(region_ref))
