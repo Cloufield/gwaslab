@@ -68,6 +68,8 @@ def _plot_regional(
     region_ld_threshold = [0.2,0.4,0.6,0.8],
     region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
     region_marker_shapes=None,
+    cbar_fontsize=None,
+    cbar_scale=False,
     palette=None,
     region_recombination = True,
     region_protein_coding=True,
@@ -135,6 +137,8 @@ def _plot_regional(
                             region_ref_index_dic=region_ref_index_dic,
                             region_ref_alias=region_ref_alias, 
                             region_marker_shapes=region_marker_shapes,
+                            cbar_fontsize= cbar_fontsize,
+                            cbar_scale=cbar_scale,
                             palette=palette,
                             region_legend_marker=region_legend_marker,
                             fig=fig)
@@ -347,10 +351,16 @@ def _add_region_title(region_title, ax1,region_title_args):
     ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", region_ref=None, **region_title_args )
     return ax1
 
-def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,palette =None, position=1,region_ref_alias=None):
-    
-    width_pct = "11%"
-    height_pct = "{}%".format( 14 + 7 * len(region_ref))
+def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,cbar_fontsize= None,cbar_scale=False,palette =None, position=1,region_ref_alias=None):
+    scale = 1
+    if cbar_scale:
+        base_fontsize = 9
+        scale = cbar_fontsize / base_fontsize
+    else:
+        scale = 1
+    width_pct = "{}%".format(11*scale)
+    height_pct = "{}%".format( 14* scale + 7 * len(region_ref))
+
     axins1 = inset_axes(ax1,
             width=width_pct,  # width = 50% of parent_bbox width
             height=height_pct,  # height : 5%
@@ -363,9 +373,9 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
         for group_index in range(len(region_ref)):
             if index < len(ld_ticks)-1:            
                 x=ld_threshold
-                y=0.2*group_index
+                y=0.2*group_index / scale
                 width=0.2
-                height=ld_ticks[index+1]-ld_ticks[index]
+                height=(ld_ticks[index+1]-ld_ticks[index]) / scale
                 hex_color = palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + index+1] # consistent color
                 
                 a = Rectangle((x,y),width, height, fill = True, color = hex_color , linewidth = 2)
@@ -377,9 +387,9 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
         region_ref_name = region_ref
     else:
         region_ref_name = [region_ref_alias[i] for i in region_ref]
-    yticks_position = 0.1 + 0.2 *np.arange(0,len(region_ref_name))
+    yticks_position = (0.1 + 0.2 *np.arange(0,len(region_ref_name)))/scale
     axins1.set_yticks(yticks_position, ["{}".format(x) for x in region_ref_name])
-    axins1.set_ylim(0,0.2*len(region_ref_name))    
+    axins1.set_ylim(0,0.2*len(region_ref_name)/scale)    
     
     # x ld thresholds
     axins1.set_xticks(ticks=ld_ticks) 
@@ -391,8 +401,8 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     ############### ##############plot marker ############## ##############
     if region_legend_marker==True:
         for group_index, ref in enumerate(region_ref):
-            x= -0.1
-            y= 0.1 + 0.2 * group_index
+            x= -0.1/scale
+            y= (0.1 + 0.2 * group_index)/scale
             
             if len(region_ref) <2:
                 # single-ref mode
@@ -405,15 +415,14 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
             
             # ([x0,y0][x1,y1])
             data_to_point =(axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0]) / (xmax - xmin)
-            s =  (data_to_point * 0.15*0.11/(fig.dpi/72))**2 
+            s =  (data_to_point * 0.15*0.11/(fig.dpi/72))**2 /scale
             
             axins1.scatter(x, y, s=s, marker=marker,c=c, edgecolors="black", linewidths = 1,  clip_on=False, zorder=100)
             axins1.tick_params(axis="y", pad=data_to_point* 0.11* 0.19/(fig.dpi/72))
     
     axins1.set_xlim(0,1)   
     axins1.set_aspect('equal', adjustable='box')
-    #axins1.tick_params(axis="y", pad=data_to_point* 0.11* 0.19/(fig.dpi/72))
-    axins1.set_title('LD $r^{2}$ with variant',loc="center",y=-0.2)
+    # axins1.set_title('LD $r^{2}$ with variant',loc="center",y=1,fontsize=cbar_fontsize)
     cbar = axins1
     return ax1, cbar
 
@@ -579,7 +588,6 @@ def process_vcf(sumstats,
                 region_ld_threshold, 
                 vcf_chr_dict,
                 tabix):
-
     log.write("Start to load reference genotype...", verbose=verbose)
     log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)
 
@@ -637,7 +645,6 @@ def process_vcf(sumstats,
             # figure out lead variant
             lead_id = _get_lead_id(sumstats, region_ref_single, log, verbose)
         
-
         lead_series = None
         if lead_id is None:
             
@@ -693,7 +700,10 @@ def process_vcf(sumstats,
             sumstats[rsq]=None
             
             # 
-            sumstats.loc[lead_id,rsq]=1
+            try:
+                sumstats.loc[lead_id,rsq]=1
+            except KeyError:
+                pass
         
         sumstats[rsq] = sumstats[rsq].astype("float")
         sumstats[ld_single] = 0
@@ -738,7 +748,8 @@ def process_vcf(sumstats,
         sumstats.loc[a_ngt_b, final_ld_col] = 100 * (i+1) + sumstats.loc[a_ngt_b, ld_single]
         sumstats.loc[a_ngt_b, final_rsq_col] = sumstats.loc[a_ngt_b, current_rsq]
         sumstats.loc[a_ngt_b, final_shape_col] = i + 1
-
+    
+    sumstats = sumstats.dropna(subset=[pos,nea,ea])
     ####################################################################################################
     log.write("Finished loading reference genotype successfully!", verbose=verbose)
     return sumstats
