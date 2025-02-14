@@ -70,6 +70,10 @@ def _plot_regional(
     region_marker_shapes=None,
     cbar_fontsize=None,
     cbar_scale=False,
+    cbar_bbox_to_anchor=None,
+    cbar_w_scale=1,
+    cbar_h_scale=1,
+    cbar_equal_aspect=False,
     palette=None,
     region_recombination = True,
     region_protein_coding=True,
@@ -139,6 +143,10 @@ def _plot_regional(
                             region_marker_shapes=region_marker_shapes,
                             cbar_fontsize= cbar_fontsize,
                             cbar_scale=cbar_scale,
+                            cbar_equal_aspect=cbar_equal_aspect,
+                            cbar_bbox_to_anchor=cbar_bbox_to_anchor,
+                            cbar_w_scale=cbar_w_scale,
+                            cbar_h_scale=cbar_h_scale,
                             palette=palette,
                             region_legend_marker=region_legend_marker,
                             fig=fig)
@@ -351,31 +359,45 @@ def _add_region_title(region_title, ax1,region_title_args):
     ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", region_ref=None, **region_title_args )
     return ax1
 
-def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,cbar_fontsize= None,cbar_scale=False,palette =None, position=1,region_ref_alias=None):
+def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,cbar_fontsize= None,cbar_scale=False,cbar_equal_aspect=True,cbar_w_scale=1,cbar_h_scale=1,palette =None, cbar_bbox_to_anchor=(0, 0, 1, 1),region_ref_alias=None):
+
     scale = 1
     if cbar_scale:
         base_fontsize = 9
         scale = cbar_fontsize / base_fontsize
+        scale = max(1,scale)
     else:
         scale = 1
-    width_pct = "{}%".format(11*scale)
-    height_pct = "{}%".format( 14* scale + 7 * len(region_ref))
+    
+    width_raw= 11 * (scale)*cbar_w_scale
+    height_raw=(7 + 7 * len(region_ref))*(scale)*cbar_h_scale
+
+    width_pct = "{}%".format(width_raw)
+    height_pct = "{}%".format( height_raw)
+
+    total_y_pixels =(ax1.bbox.get_points()[1][1]-ax1.bbox.get_points()[0][1]) 
+    downwards_offset = cbar_fontsize / (total_y_pixels/ fig.dpi * 72)
+    bbox_to_anchor = (cbar_bbox_to_anchor[0],cbar_bbox_to_anchor[1]-downwards_offset*1.2,cbar_bbox_to_anchor[2],cbar_bbox_to_anchor[3])
+    borderpad=0.5*(scale)
 
     axins1 = inset_axes(ax1,
             width=width_pct,  # width = 50% of parent_bbox width
             height=height_pct,  # height : 5%
+            bbox_to_anchor=bbox_to_anchor,
+            bbox_transform=ax1.transAxes,
+            borderpad=borderpad,
             loc='upper right',
-            axes_kwargs={"frameon":True,"facecolor":"white","zorder":999999})
-    
+            axes_kwargs={"frameon":True,"facecolor":"white","zorder":999999,"anchor":"NE"})
+
     ld_ticks = [0]+region_ld_threshold+[1]
 
     for index, ld_threshold in enumerate(ld_ticks):
         for group_index in range(len(region_ref)):
             if index < len(ld_ticks)-1:            
                 x=ld_threshold
-                y=0.2*group_index / scale
+                y=0.2*group_index 
                 width=0.2
-                height=(ld_ticks[index+1]-ld_ticks[index]) / scale
+                height=(ld_ticks[index+1]-ld_ticks[index]) 
                 hex_color = palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + index+1] # consistent color
                 
                 a = Rectangle((x,y),width, height, fill = True, color = hex_color , linewidth = 2)
@@ -387,22 +409,44 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
         region_ref_name = region_ref
     else:
         region_ref_name = [region_ref_alias[i] for i in region_ref]
-    yticks_position = (0.1 + 0.2 *np.arange(0,len(region_ref_name)))/scale
+
+
+
+    yticks_position = (0.1 + 0.2 *np.arange(0,len(region_ref_name)))
     axins1.set_yticks(yticks_position, ["{}".format(x) for x in region_ref_name])
-    axins1.set_ylim(0,0.2*len(region_ref_name)/scale)    
-    
+    axins1.set_ylim(0,0.2*len(region_ref_name))    
+    ymin, ymax=0,0.2*len(region_ref_name)
     # x ld thresholds
+    
     axins1.set_xticks(ticks=ld_ticks) 
     axins1.set_xticklabels([str(i) for i in ld_ticks]) 
-
     xmin, xmax = 0, 1
-    axins1.set_xlim(xmin,xmax)    
+    axins1.set_xlim(xmin,xmax)       
 
+    if cbar_equal_aspect==True:
+        axins1.set_aspect('equal', adjustable='box',anchor="NE")
+    #print(axins1.get_points())
     ############### ##############plot marker ############## ##############
     if region_legend_marker==True:
         for group_index, ref in enumerate(region_ref):
-            x= -0.1/scale
-            y= (0.1 + 0.2 * group_index)/scale
+
+            data_to_point_y =((axins1.bbox.get_points()[1][1]-axins1.bbox.get_points()[0][1])*height_raw/(ymax -ymin))
+            data_to_point_x =((axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0])*width_raw/(xmax -xmin))
+            y_to_x = data_to_point_y/data_to_point_x
+            x_to_y = 1/y_to_x
+            xyratio = min(y_to_x, x_to_y)
+            
+            marker_side_in_data = 0.075
+            if cbar_equal_aspect==True:
+                xyratio=1
+            
+            ## change markersize
+
+            if xyratio <1 :
+                x = 0 - (marker_side_in_data +0.03) * xyratio
+            else:
+                x = 0 - (marker_side_in_data +0.03)
+            y= (0.1 + 0.2 * group_index)
             
             if len(region_ref) <2:
                 # single-ref mode
@@ -414,15 +458,31 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
                 c =  palette[(region_ref_index_dic[region_ref[group_index]]+1)*100 + len(ld_ticks)-1]
             
             # ([x0,y0][x1,y1])
-            data_to_point =(axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0]) / (xmax - xmin)
-            s =  (data_to_point * 0.15*0.11/(fig.dpi/72))**2 /scale
+            #  y pixels / per data 1
+            
+            data_to_point_y =((axins1.bbox.get_points()[1][1]-axins1.bbox.get_points()[0][1])*height_raw/(ymax -ymin))
+            data_to_point_x =((axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0])*width_raw/(xmax -xmin))
+            
+            if data_to_point_y < data_to_point_x:
+                length_raw = 1 #height_raw
+                data_to_point = data_to_point_y
+            else:
+                length_raw = 1 #width_raw
+                data_to_point = data_to_point_x
+
+            # pixels/data 1 -> font points/data 1  
+            #  (dpi / 72) = point_per_pixel
+            # y pixels / per data 1 / (dpi / 72)  -> y font points/data 1  
+            
+            font_points_per_data_1 = data_to_point/(fig.dpi/72)
+            s =  ((marker_side_in_data*2)* font_points_per_data_1 * length_raw/100 )**2     
             
             axins1.scatter(x, y, s=s, marker=marker,c=c, edgecolors="black", linewidths = 1,  clip_on=False, zorder=100)
-            axins1.tick_params(axis="y", pad=data_to_point* 0.11* 0.19/(fig.dpi/72))
-    
-    axins1.set_xlim(0,1)   
-    axins1.set_aspect('equal', adjustable='box')
-    # axins1.set_title('LD $r^{2}$ with variant',loc="center",y=1,fontsize=cbar_fontsize)
+
+            pad = ((marker_side_in_data*2+0.02)* font_points_per_data_1 * length_raw/100)
+            tick_length=(abs(x)* font_points_per_data_1 * length_raw/100)
+            axins1.tick_params(axis="y", pad=pad-0.5*tick_length, length=tick_length) 
+
     cbar = axins1
     return ax1, cbar
 
