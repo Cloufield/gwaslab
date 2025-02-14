@@ -356,12 +356,10 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     if cbar_scale:
         base_fontsize = 9
         scale = cbar_fontsize / base_fontsize
-        width_pct = "{}%".format(11*scale)
-        height_pct = "{}%".format( 14* scale + 7 * len(region_ref))
-
     else:
-        width_pct = "11%"
-        height_pct = "{}%".format( 14 + 7 * len(region_ref))
+        scale = 1
+    width_pct = "{}%".format(11*scale)
+    height_pct = "{}%".format( 14* scale + 7 * len(region_ref))
 
     axins1 = inset_axes(ax1,
             width=width_pct,  # width = 50% of parent_bbox width
