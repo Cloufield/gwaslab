@@ -73,6 +73,8 @@ def _plot_regional(
     cbar_bbox_to_anchor=None,
     cbar_w_scale=1,
     cbar_h_scale=1,
+    cbar_downward_offset =1.3, 
+    cbar_borderpad=None,
     cbar_equal_aspect=False,
     palette=None,
     region_recombination = True,
@@ -147,6 +149,8 @@ def _plot_regional(
                             cbar_bbox_to_anchor=cbar_bbox_to_anchor,
                             cbar_w_scale=cbar_w_scale,
                             cbar_h_scale=cbar_h_scale,
+                            cbar_downward_offset =cbar_downward_offset, 
+                            cbar_borderpad=cbar_borderpad,
                             palette=palette,
                             region_legend_marker=region_legend_marker,
                             fig=fig)
@@ -359,7 +363,10 @@ def _add_region_title(region_title, ax1,region_title_args):
     ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", region_ref=None, **region_title_args )
     return ax1
 
-def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,cbar_fontsize= None,cbar_scale=False,cbar_equal_aspect=True,cbar_w_scale=1,cbar_h_scale=1,palette =None, cbar_bbox_to_anchor=(0, 0, 1, 1),region_ref_alias=None):
+def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,
+                   cbar_fontsize= None,cbar_scale=False,cbar_equal_aspect=True,cbar_w_scale=1,cbar_h_scale=1,palette =None, 
+                   cbar_downward_offset =1.2, cbar_borderpad=None,
+                   cbar_bbox_to_anchor=(0, 0, 1, 1),region_ref_alias=None):
 
     scale = 1
     if cbar_scale:
@@ -376,9 +383,13 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     height_pct = "{}%".format( height_raw)
 
     total_y_pixels =(ax1.bbox.get_points()[1][1]-ax1.bbox.get_points()[0][1]) 
-    downwards_offset = cbar_fontsize / (total_y_pixels/ fig.dpi * 72)
-    bbox_to_anchor = (cbar_bbox_to_anchor[0],cbar_bbox_to_anchor[1]-downwards_offset*1.2,cbar_bbox_to_anchor[2],cbar_bbox_to_anchor[3])
-    borderpad=0.5*(scale)
+    downwards_offset = cbar_fontsize / (total_y_pixels/ fig.dpi * 72) * cbar_downward_offset
+    bbox_to_anchor = (cbar_bbox_to_anchor[0],cbar_bbox_to_anchor[1]-downwards_offset,cbar_bbox_to_anchor[2],cbar_bbox_to_anchor[3])
+    
+    if cbar_borderpad is None:
+        borderpad=0.5*(scale)
+    else:
+        borderpad=cbar_borderpad
 
     axins1 = inset_axes(ax1,
             width=width_pct,  # width = 50% of parent_bbox width
@@ -410,8 +421,6 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     else:
         region_ref_name = [region_ref_alias[i] for i in region_ref]
 
-
-
     yticks_position = (0.1 + 0.2 *np.arange(0,len(region_ref_name)))
     axins1.set_yticks(yticks_position, ["{}".format(x) for x in region_ref_name])
     axins1.set_ylim(0,0.2*len(region_ref_name))    
@@ -425,7 +434,7 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
 
     if cbar_equal_aspect==True:
         axins1.set_aspect('equal', adjustable='box',anchor="NE")
-    #print(axins1.get_points())
+
     ############### ##############plot marker ############## ##############
     if region_legend_marker==True:
         for group_index, ref in enumerate(region_ref):
