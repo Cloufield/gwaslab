@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import time
+import re
 import copy
 from gwaslab.g_Sumstats_summary import summarize
 from gwaslab.g_Sumstats_summary import lookupstatus
@@ -85,177 +86,41 @@ from gwaslab.io_read_pipcs import _read_pipcs
 from gwaslab.viz_plot_credible_sets import _plot_cs
 import gc
 from gwaslab.viz_plot_phe_heatmap import _gwheatmap
+from gwaslab.viz_plot_effect import _plot_effect
+from gwaslab.util_in_merge import _extract_variant
 
-#20220309
-class Sumstats():
+#20250215
+class SumstatsSet():
     def __init__(self,
-             sumstats,
-             fmt=None,
-             tab_fmt="tsv",
-             snpid=None,
-             rsid=None,
-             chrom=None,
-             pos=None,
-             ea=None,
-             nea=None,
-             ref=None,
-             alt=None,
-             eaf=None,
-             neaf=None,
-             maf=None,
-             n=None,
-             beta=None,
-             se=None,
-             chisq=None,
-             z=None,
-             f=None,
-             t=None,
-             p=None,
-             mlog10p=None,
-             test=None,
-             info=None,
-             OR=None,
-             OR_95L=None,
-             OR_95U=None,
-             beta_95L=None,
-             beta_95U=None,
-             HR=None,
-             HR_95L=None,
-             HR_95U=None,
-             ncase=None,
-             ncontrol=None,
-             i2=None,
-             phet=None,
-             dof=None,
-             snpr2=None,
-             status=None,
-             other=[],
-             chrom_pat=None,
-             snpid_pat=None,
-             usekeys=None,
-             direction=None,
-             verbose=True,
-             study="Study_1",
-             trait="Trait_1",
+             sumstats_dic,
+             variant_set=None,
              build="99",
              species="homo sapiens",
              build_infer=False,
+             set="set1",
+             verbose=True,
              **readargs):
 
         # basic attributes
         self.data = pd.DataFrame()
         self.log = Log()
-        self.ldsc_h2 = None
-        self.ldsc_h2_results = None
-        self.ldsc_rg = None
-        self.ldsc_h2_cts = None
-        self.ldsc_partitioned_h2_summary = None
-        self.ldsc_partitioned_h2_results = None
         # meta information
+
         self.meta = _init_meta() 
         self.build = build
-        self.meta["gwaslab"]["study_name"] =  study
+        self.meta["gwaslab"]["set_name"] =  set
         self.meta["gwaslab"]["species"] = species
-        
-        # initialize attributes for clumping and finmapping
-        #self.to_finemapping_file_path = ""
-        #self.to_finemapping_file  = pd.DataFrame()
-        #self.plink_log = ""
-
-        # path / file / plink_log
-        self.finemapping = dict()
-
-        # clumps / clumps_raw / plink_log
-        self.clumps = dict()
-        
-        #
-        self.pipcs = pd.DataFrame()
 
         # print gwaslab version information
-        _show_version(self.log, verbose=verbose)
+        _show_version(self.log,  verbose=verbose)
 
-        #preformat the data
-        self.data  = preformat(
-          sumstats=sumstats,
-          fmt=fmt,
-          tab_fmt = tab_fmt,
-          snpid=snpid,
-          rsid=rsid,
-          chrom=chrom,
-          pos=pos,
-          ea=ea,
-          nea=nea,
-          ref=ref,
-          alt=alt,
-          eaf=eaf,
-          neaf=neaf,
-          maf=maf,
-          n=n,
-          beta=beta,
-          se=se,
-          chisq=chisq,
-          z=z,
-          f=f,
-          t=t,
-          p=p,
-          mlog10p=mlog10p,
-          test=test,
-          info=info,
-          OR=OR,
-          OR_95L=OR_95L,
-          OR_95U=OR_95U,
-          beta_95L=beta_95L,
-          beta_95U=beta_95U,
-          HR=HR,
-          HR_95L=HR_95L,
-          HR_95U=HR_95U,
-          i2=i2,
-          phet=phet,
-          dof=dof,
-          snpr2=snpr2,
-          ncase=ncase,
-          ncontrol=ncontrol,
-          direction=direction,
-          study=study,
-          build=build,
-          trait=trait,
-          status=status,
-          other=other,
-          usekeys=usekeys,
-          chrom_pat=chrom_pat,
-          snpid_pat=snpid_pat,
-          verbose=verbose,
-          readargs=readargs,
-          log=self.log)
-        
+        self.data = _extract_variant(variant_set, sumstats_dic,log=self.log, verbose=verbose)
+ 
+    def plot_effect(self,**args):
+        _plot_effect(self.data,**args)
 
-        # checking genome build
-        self.meta["gwaslab"]["genome_build"] = _process_build(build, log=self.log, verbose=False)
-
-        # if build is unknown and build_infer is True, infer the build
-        if species=="homo sapiens" and self.meta["gwaslab"]["genome_build"]=="99" and build_infer is True:
-            try:
-                self.infer_build()
-            except:
-                pass
-        gc.collect()   
 
 #### healper #################################################################################
-    def update_meta(self):
-        self.meta["gwaslab"]["variants"]["variant_number"]=len(self.data)
-        if "CHR" in self.data.columns:
-            self.meta["gwaslab"]["variants"]["number_of_chromosomes"]=len(self.data["CHR"].unique())
-        if "P" in self.data.columns:
-            self.meta["gwaslab"]["variants"]["min_P"]=np.min(self.data["P"])
-        if "EAF" in self.data.columns:
-            self.meta["gwaslab"]["variants"]["min_minor_allele_freq"]=min (np.min(self.data["EAF"]) , 1- np.max(self.data["EAF"]))
-        if "N" in self.data.columns:
-            self.meta["gwaslab"]["samples"]["sample_size"] = int(self.data["N"].max())
-            self.meta["gwaslab"]["samples"]["sample_size_median"] = self.data["N"].median()
-            self.meta["gwaslab"]["samples"]["sample_size_min"] = int(self.data["N"].min())
-
-    def summary(self):
-        return summarize(self.data)
 
     def lookup_status(self,status="STATUS"):
         return lookupstatus(self.data[status])
@@ -614,6 +479,7 @@ class Sumstats():
     def check_af(self,ref_infer,**kwargs):
         self.data = parallelecheckaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_daf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_daf"] , ref_infer)
+    
     def infer_af(self,ref_infer,**kwargs):
         self.data = paralleleinferaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_af"] = ref_infer
@@ -622,7 +488,6 @@ class Sumstats():
         self.data = _paralleleinferafwithmaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_maf"] = ref_infer
         self.meta["gwaslab"]["references"]["ref_infer_maf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_af"] , ref_infer)    
-    
     def plot_daf(self, **kwargs):
         fig,outliers = plotdaf(self.data, **kwargs)
         return fig, outliers
@@ -787,78 +652,7 @@ class Sumstats():
         self.data = _get_per_snp_r2(self.data, beta="BETA", af="EAF", n="N", log=self.log, **kwargs)
         #add data inplace
 
-    def get_gc(self, mode=None, **kwargs):
-        if mode is None:
-            if "P" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","P"]],mode="P",**kwargs)
-            elif "Z" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","Z"]],mode="Z",**kwargs)
-            elif "CHISQ" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","CHISQ"]],mode="CHISQ",**kwargs)
-            elif "MLOG10P" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","MLOG10P"]],mode="MLOG10P",**kwargs)
-            
-            #return scalar
-            self.meta["Genomic inflation factor"] = output
-            return output    
-        else:
-            output = lambdaGC(self.data[["CHR",mode]],mode=mode,**kwargs)
-            self.meta["Genomic inflation factor"] = output
-            return output
-        
-    def abf_finemapping(self, region=None, chrpos=None, snpid=None,**kwargs):        
-        region_data = abf_finemapping(self.data.copy(),region=region,chrpos=chrpos,snpid=snpid,log=self.log, **kwargs)
-        credible_sets = make_cs(region_data,threshold=0.95,log=self.log)
-        return region_data, credible_sets
-    
-    
-## LDSC ##############################################################################################
-    def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", **kwargs):
-        if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
-        self.ldsc_h2, self.ldsc_h2_results = _estimate_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
-    
-    def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
-        if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
-        self.ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
 
-    def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
-        if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
-        self.ldsc_h2_cts  = _estimate_h2_cts_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
-    
-    def estimate_partitioned_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
-        if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
-        self.ldsc_partitioned_h2_summary, self.ldsc_partitioned_h2_results  = _estimate_partitioned_h2_by_ldsc(insumstats=insumstats, log=self.log, verbose=verbose, **kwargs)
-# external ################################################################################################
-    
-    def calculate_ld_matrix(self,**kwargs):
-        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
-        #self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
-    
-    def run_susie_rss(self,**kwargs):
-        self.pipcs=_run_susie_rss(self.finemapping["path"],**kwargs)
-        #self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**kwargs)
-    
-    def clump(self,**kwargs):
-        self.clumps["clumps"], self.clumps["clumps_raw"], self.clumps["plink_log"] = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
-
-    def calculate_prs(self,**kwargs):
-        combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
-        return combined_results_summary
-
-# loading aux data
-    def read_pipcs(self,prefix,**kwargs):
-        self.pipcs = _read_pipcs(self.data[["SNPID","CHR","POS"]],prefix, **kwargs)
-
-    def plot_pipcs(self, region,**kwargs):
-        _plot_cs(self.pipcs, region, **kwargs)
 # to_format ###############################################################################################       
 
     def to_format(self, path, build=None, verbose=True, **kwargs):

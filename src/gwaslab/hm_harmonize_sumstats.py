@@ -1490,10 +1490,100 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
             elif record.ref==alt and (ref in record.alts):
                 return 1 - record.info[alt_freq][0]
     return np.nan
-
-
+##############################################################################################################################################################################################
 
 ################################################################################################################
+
+def _paralleleinferafwithmaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",
+                            eaf="EAF",maf="MAF",ref_eaf="_REF_EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
+    ##start function with col checking##########################################################
+    _start_line = "infer sumstats EAF from sumstats MAF using reference VCF ALT frequency"
+    _end_line = "inferring sumstats EAF from sumstats MAF using reference VCF ALT frequency"
+    _start_cols = [chr,pos,ref,alt,status]
+    _start_function = ".infer_af()"
+    _must_args ={"ref_alt_freq":ref_alt_freq}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            n_cores=n_cores,
+                            ref_vcf=ref_infer,
+                            **_must_args)
+    if is_enough_info == False: return sumstats
+    ############################################################################################
+    chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
+    
+    if eaf not in sumstats.columns:
+        sumstats[eaf]=np.nan
+    if ref_eaf not in sumstats.columns:
+        sumstats[ref_eaf]=np.nan
+
+    prenumber = sum(sumstats[eaf].isna())
+
+    # ref_alt_freq INFO in vcf was provided
+    if ref_alt_freq is not None:
+        log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)   
+        if not force:
+            good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
+        log.write(" -Checking variants:", sum(good_chrpos),verbose=verbose) 
+    
+        ########################  
+        #extract ref af
+        if sum(sumstats[eaf].isna())<10000: 
+            n_cores=1       
+        #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
+        df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
+        pool = Pool(n_cores)
+        map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=ref_eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
+        sumstats.loc[good_chrpos,[ref_eaf]] = pd.concat(pool.map(map_func,df_split))
+        pool.close()
+        pool.join()
+        
+        ###########################
+        # infer sumstats EAF 
+        # based on sumstats MAF and reference EAF
+        is_filpped = ((sumstats[ref_eaf]>=0.5)&(sumstats[maf]<=0.5)) |((sumstats[ref_eaf]<0.5)&(sumstats[maf]>0.5)) 
+        sumstats[eaf] = sumstats[maf]
+        log.write(" -Flipping MAF to obtain EAF for {} variants".format(sum(is_filpped)),verbose=verbose) 
+        sumstats.loc[is_filpped,eaf] = 1 - sumstats.loc[is_filpped,maf]
+
+        ###########################    
+        afternumber = sum(sumstats[eaf].isna())
+        log.write(" -Inferred EAF for {} variants.".format(prenumber - afternumber),verbose=verbose) 
+        log.write(" -EAF is still missing for {} variants.".format(afternumber),verbose=verbose) 
+        sumstats = sumstats.drop(columns=[ref_eaf])
+    
+    finished(log,verbose,_end_line)
+    return sumstats
+
+def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):
+    #vcf_reader = vcf.Reader(open(ref_infer, 'rb'))
+    vcf_reader = VariantFile(ref_infer)
+    def afapply(x,vcf,alt_freq,chr_dict):
+            return infer_af(x.iloc[0],x.iloc[1]-1,x.iloc[1],x.iloc[2],x.iloc[3],vcf_reader,ref_alt_freq,chr_dict)
+    map_func = partial(afapply,vcf=vcf_reader,alt_freq=ref_alt_freq,chr_dict=chr_dict)
+    status_inferred = sumstats.apply(map_func,axis=1)
+    sumstats[eaf] = status_inferred.values
+    sumstats[eaf]=sumstats[eaf].astype("float") 
+    return sumstats
+
+def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
+    if chr_dict is not None: chr=chr_dict[chr]
+    chr_seq = vcf_reader.fetch(chr,start,end)
+    
+    for record in chr_seq:
+        if record.pos==end:
+            if record.ref==ref and (alt in record.alts):
+                return record.info[alt_freq][0]
+            elif record.ref==alt and (ref in record.alts):
+                return 1 - record.info[alt_freq][0]
+    return np.nan
+
+##############################################################################################################################################################################################
 def auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log):    
     if vcf_path is not None:
         if vcf_chr_dict is None:

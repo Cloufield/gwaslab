@@ -48,3 +48,4 @@ from gwaslab.io_read_tabular import _read_tabular as read_tabular
 from gwaslab.util_in_meta import meta_analyze
 from gwaslab.viz_plot_scatter_with_reg import scatter
 from gwaslab.util_in_fill_data import rank_based_int
+from gwaslab.g_SumstatsSet import SumstatsSet

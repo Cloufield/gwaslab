@@ -52,7 +52,8 @@ def get_default_path(keyword,fmt="png"):
                         "esc":"effect_size_comparision",
                         "afc":"allele_frequency_comparision",
                         "gwheatmap":"genome_wide_heatmap",
-                        "scatter":"scatter"
+                        "scatter":"scatter",
+                        "forest":"forest"
                         }
     prefix = path_dictionary[keyword]
     count = 1
