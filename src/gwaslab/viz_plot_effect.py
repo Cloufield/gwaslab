@@ -79,6 +79,9 @@ def _plot_effect(to_plot,
                  snpr2_args=None,
                  fig_args=None,
                  scatter_args=None,
+                 effect_label=None,
+                 eaf_label=None,
+                 snpr2_label=None,
                  log=Log(),
                  verbose=True,
                  **args):
@@ -149,8 +152,7 @@ def _plot_effect(to_plot,
     else:
         fig,(ax1,ax2,ax3) = plt.subplots(ncols=ncols, dpi=400,sharey=True)
 
-    sns.scatterplot(data=to_plot, x=x, y=y, ax=ax1, zorder=100, 
-                    **args)
+    sns.scatterplot(data=to_plot, x=x, y=y, ax=ax1, zorder=100, **args)
 
     ax1.errorbar(y=to_plot[y], x=to_plot[x], xerr=to_plot[se], 
                   **err_kwargs)
@@ -183,7 +185,14 @@ def _plot_effect(to_plot,
             )
     except:
         pass
-    
+
+    if effect_label is not None:
+        ax1.set_xlabel(effect_label)
+    if eaf_label is not None:
+        ax2.set_xlabel(eaf_label)
+    if snpr2_label is not None:
+        ax3.set_xlabel(snpr2_label)
+
     save_figure(fig, save, keyword="forest",save_args=save_kwargs, log=log, verbose=verbose)   
     
     return fig
