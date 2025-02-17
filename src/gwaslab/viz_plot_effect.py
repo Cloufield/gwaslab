@@ -84,6 +84,8 @@ def _plot_effect(to_plot,
                  snpr2_label=None,
                  log=Log(),
                  verbose=True,
+                 legend_mode=1,
+                 ncol=2,
                  **args):
 
     if err_args is None:
@@ -175,17 +177,23 @@ def _plot_effect(to_plot,
         ax3.barh(y=to_plot[y], width=to_plot[snpr2], zorder=100,**snpr2_args)
         ax3.set_xlabel(snpr2)
     try:
-        if ncols==1:
-            sns.move_legend(
-                ax1, "upper left",
-                bbox_to_anchor=(1, 1), title=None, frameon=False,
-            )
-        else:
+        if legend_mode==1:
+            if ncols==1:
+                sns.move_legend(
+                    ax1, "upper left",
+                    bbox_to_anchor=(1, 1), title=None, frameon=False,
+                )
+            else:
 
+                sns.move_legend(
+                    ax1, "lower left",
+                    bbox_to_anchor=(0,1), title=None, frameon=False,
+                )
+        elif legend_mode==2:
             sns.move_legend(
-                ax1, "lower left",
-                bbox_to_anchor=(0,1), title=None, frameon=False,
-            )
+                ax1, "lower center",
+                bbox_to_anchor=(0, 1), ncol=ncol, title=None, frameon=False,
+                )
     except:
         pass
 
