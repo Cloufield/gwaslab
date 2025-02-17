@@ -121,9 +121,12 @@ def _plot_effect(to_plot,
         y_sort = ["CHR","POS","STUDY"]
     
     to_plot = to_plot.sort_values(by=y_sort)
+
     if group is None:
         group = ["CHR","POS"]
+        to_plot = to_plot.sort_values(by=group)
     # Assign group IDs based on the sorted 'score'
+        
     to_plot['_VAR_GROUP'] = to_plot.groupby(group).ngroup() + 1
 
     to_plot["_VAR_INDEX"] = range(len(to_plot))

@@ -40,7 +40,7 @@ def filldata(
         for i in skip_cols:
             to_fill.remove(i)
         log.write("  -Skipping columns: ",skip_cols, verbose=verbose) 
-    if len(set(to_fill) & set(["OR","OR_95L","OR_95U","BETA","SE","P","Z","CHISQ","MLOG10P","MAF"]))==0:
+    if len(set(to_fill) & set(["OR","OR_95L","OR_95U","BETA","SE","P","Z","CHISQ","MLOG10P","MAF","SIG"]))==0:
         log.write(" -No available columns to fill. Skipping.", verbose=verbose)
         log.write("Finished filling data using existing columns.", verbose=verbose)
         return sumstats
@@ -219,6 +219,20 @@ def fill_maf(sumstats,log,verbose=True,filled_count=0):
         return 0,filled_count
     return 1,filled_count
 
+def fill_sig(sumstats,log,sig_level=5e-8, verbose=True,filled_count=0):
+    if "P" in sumstats.columns or "MLOG10P" in sumstats.columns:
+        log.write("  - Determining significant using P and MLOG10P with threshold:{}".format(sig_level), verbose=verbose)
+        if "P" in sumstats.columns:
+            is_sig = sumstats["P"]<sig_level 
+        elif "MLOG10P" in sumstats.columns:
+            is_sig = sumstats["MLOG10P"]>np.log10(sig_level) 
+        sumstats["SIGNIFICANT"] = False
+        sumstats.loc[is_sig, "SIGNIFICANT"] = True
+        filled_count +=1
+    else:
+        return 0,filled_count
+    return 1,filled_count
+
 ####################################################################################################################
 def fill_extreme_mlog10(sumstats, z):
     log_pvalue = np.log(2) + ss.norm.logsf(np.abs(sumstats[z])) #two-sided
@@ -289,7 +303,10 @@ def fill_iteratively(sumstats,raw_to_fill,log,only_sig,df,extreme,verbose,sig_le
             else:
                 status,filled_count = fill_mlog10p(sumstats,log,verbose=verbose)
             if status == 1 : to_fill.remove("MLOG10P")
-            
+
+        if "SIG" in to_fill:
+            status,filled_count = fill_sig(sumstats,sig_level=sig_level ,log=log,verbose=verbose,filled_count=filled_count)
+            if status == 1 : to_fill.remove("SIG")
         if filled_count == 0:
             break
          
