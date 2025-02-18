@@ -86,6 +86,9 @@ def _plot_effect(to_plot,
                  verbose=True,
                  legend_mode=1,
                  ncol=2,
+                 size=None,
+                 hue=None,
+                 style=None,
                  **args):
 
     if err_args is None:
@@ -103,7 +106,22 @@ def _plot_effect(to_plot,
         fig_args={"figsize":(8,8),"dpi":300}
     if scatter_args is None:
         scatter_args={"s":20}
+    
 
+    legend_titles=[]
+    if hue is not None:
+        args["hue"] = hue
+        legend_titles.append(hue)
+
+    if size is not None:
+        args["size"] = size
+        legend_titles.append(size)
+
+    if style is not None:
+        args["style"] = style
+        legend_titles.append(style)
+
+        
     save_kwargs =      _extract_kwargs("save", save_args, locals())
     err_kwargs =       _extract_kwargs("err", err_args, locals())
     scatter_kwargs =   _extract_kwargs("scatter", scatter_args, locals())
@@ -151,11 +169,18 @@ def _plot_effect(to_plot,
         fig,ax1 = plt.subplots(ncols=ncols, **fig_args)
     elif ncols==2:
         if eaf_panel==True:
-            fig,(ax1,ax2) = plt.subplots(ncols=ncols, dpi=400,sharey=True)
+            fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True)
+            ax1=axes[0]
+            ax2=axes[1]
         else:
-            fig,(ax1,ax3) = plt.subplots(ncols=ncols, dpi=400,sharey=True)
+            fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True)
+            ax1=axes[0]
+            ax3=axes[1]
     else:
-        fig,(ax1,ax2,ax3) = plt.subplots(ncols=ncols, dpi=400,sharey=True)
+        fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True)
+        ax1=axes[0]
+        ax2=axes[1]
+        ax3=axes[2]
 
     sns.scatterplot(data=to_plot, x=x, y=y, ax=ax1, zorder=100, **args)
 
@@ -176,26 +201,75 @@ def _plot_effect(to_plot,
     if snpvar_panel==True:
         ax3.barh(y=to_plot[y], width=to_plot[snpr2], zorder=100,**snpr2_args)
         ax3.set_xlabel(snpr2)
-    try:
-        if legend_mode==1:
-            if ncols==1:
-                sns.move_legend(
-                    ax1, "upper left",
-                    bbox_to_anchor=(1, 1), title=None, frameon=False,
-                )
-            else:
+    
+    #try:
+    if legend_mode==1:
+        #if ncols==1:
+        sns.move_legend(
+            ax1, "upper left",
+            bbox_to_anchor=(1, 1), title=None, frameon=False, bbox_transform = axes[-1].transAxes
+            )
+            #else:
+##
+            #    sns.move_legend(
+            #        ax1, "lower left",
+            #        bbox_to_anchor=(0, ncols), title=None, frameon=False,
+            #    )
+        #elif legend_mode==2:
+        #    sns.move_legend(
+        #        ax1, "lower center",
+        #        bbox_to_anchor=(0, 1), ncol=ncol, title=None, frameon=False,
+        #        )
+    #except:
+    #    pass
 
-                sns.move_legend(
-                    ax1, "lower left",
-                    bbox_to_anchor=(0,1), title=None, frameon=False,
-                )
-        elif legend_mode==2:
-            sns.move_legend(
-                ax1, "lower center",
-                bbox_to_anchor=(0, 1), ncol=ncol, title=None, frameon=False,
-                )
-    except:
-        pass
+
+    #handles, labels = ax1.get_legend_handles_labels()
+    #if len(labels)>0:
+    #    #new_labels = []
+    #    #ncol = len(labels)
+    #    max_col=0
+    #    new_labels=[]
+    #    new_labels_i = []
+    #    previous_i = 0
+    #    max_string_len=0
+    #    for i in range(len(labels)):
+    #        if len(labels[i]) > max_string_len:
+    #            max_string_len = len(labels[i])
+    #        if labels[i] in legend_titles:
+    #            new_labels_i.append(i)
+    #            col_number = i - previous_i
+    #            if col_number > max_col:
+    #                max_col = col_number
+    #            previous_i = i
+    #    for i in labels:
+    #        new_labels.append(str(i).ljust(max_string_len))
+    #    print(new_labels)
+    #    new_labels_i.append(len(labels))
+#
+    #    legend_rows = []
+    #    #new_labels_i[index+1] - i
+    #    for index, i in enumerate(new_labels_i):
+    #        if index<len(new_labels_i)-1:
+    #            legend_row = ax1.legend(labels = new_labels[i:new_labels_i[index+1]],  
+    #                                    handles= handles[i:new_labels_i[index+1]],
+    #                                    loc="lower left", 
+    #                                    bbox_to_anchor=(-0.2, 1.02 + 0.05*index), 
+    #                                    ncol=max_col, 
+    #                                    scatterpoints=1, 
+    #                                    title=None, 
+    #                                    borderpad=0,
+    #                                    handletextpad=0.1,
+    #                                    handlelength=0.7,
+    #                                    borderaxespad =0,
+    #                                    alignment = "left",
+    #                                    fontsize=8,
+    #                                    frameon=False)
+    #            legend_rows.append(legend_row)
+    #    for legend_row in legend_rows[:-1]:
+    #        ax1.add_artist(legend_row)
+
+
 
     if effect_label is not None:
         ax1.set_xlabel(effect_label)
