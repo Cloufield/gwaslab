@@ -528,3 +528,54 @@ def _filter_region(sumstats, region, chrom="CHR",pos="POS",log=Log(),verbose=Tru
         log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)),verbose=verbose)
         sumstats = sumstats.loc[in_region_snp,:]
         return sumstats.copy()
+    
+def _search_variants( sumstats, snplist=None, 
+                     snpid="SNPID" ,rsid="rsID",
+                     chrom="CHR",pos="POS",ea="EA",nea="NEA",
+                     log=Log(),verbose=True):
+    log.write("Start to search for variants...", verbose=verbose)
+    # create a boolean col with FALSE 
+    if snpid in sumstats.columns:
+        is_extract = sumstats[snpid]!=sumstats[snpid]
+    else:
+        is_extract = sumstats[rsid]!=sumstats[rsid]
+    
+    # search each variant
+    for variant in snplist:
+        
+        if pd.api.types.is_list_like(variant):
+            # (1:1234)
+            single_chrom=variant[0]
+            single_pos=variant[1]
+            is_extract = is_extract | ((sumstats[pos] == single_pos ) &(sumstats[chrom] == single_chrom))
+        
+        elif pd.api.types.is_string_dtype(type(variant)):
+            # rs123
+            if "rsID" in sumstats.columns:
+                is_extract = is_extract | (sumstats["rsID"] == variant)
+
+            # 1:123:A:D
+            if "SNPID" in sumstats.columns:
+                is_extract = is_extract | (sumstats["SNPID"] == variant)
+
+            # 1:123:A:D -> (1:1234)
+            a= re.match(r'^(chr|Chr|CHR)?(\d+)[:_-](\d+)([:_-]([ATCG]+)[:_-]([ATCG]+))?$', variant, flags=0)
+            
+            if a is not None:
+                if a[4] is None:
+                    single_chrom=int(a[2])
+                    single_pos=int(a[3])
+                    is_extract = is_extract | ((sumstats[pos] == single_pos ) &(sumstats[chrom] == single_chrom))
+                else:
+                    single_chrom = int(a[2])
+                    single_pos = int(a[3])
+                    single_ea = a[5]
+                    single_nea = a[6]
+                    a_match = ((sumstats[nea] == single_nea) & (sumstats[ea] == single_ea)) | ((sumstats[nea] == single_ea) & (sumstats[ea] == single_nea))
+                    is_extract = is_extract | ((sumstats[pos] == single_pos ) &(sumstats[chrom] == single_chrom)  & a_match)
+                        
+    to_search =  sumstats.loc[is_extract,:].copy()
+    log.write(" -Found {} variants...".format(len(to_search)),verbose=verbose)
+
+    log.write("Finished searching variants.", verbose=verbose)
+    return to_search

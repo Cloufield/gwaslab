@@ -40,6 +40,7 @@ from gwaslab.util_in_filter_value import _filter_indel
 from gwaslab.util_in_filter_value import _filter_palindromic
 from gwaslab.util_in_filter_value import _filter_snp
 from gwaslab.util_in_filter_value import _exclude_hla
+from gwaslab.util_in_filter_value import _search_variants
 from gwaslab.util_in_filter_value import inferbuild
 from gwaslab.util_in_filter_value import sampling
 from gwaslab.util_in_filter_value import _get_flanking
@@ -78,6 +79,7 @@ from gwaslab.util_ex_ldsc import _estimate_h2_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_rg_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_h2_cts_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_partitioned_h2_by_ldsc 
+from gwaslab.util_ex_ldproxyfinder import _extract_ld_proxy
 from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.util_abf_finemapping import abf_finemapping
 from gwaslab.util_abf_finemapping import make_cs
@@ -591,6 +593,24 @@ class Sumstats():
         else:
             self.data = _exclude_hla(self.data,log=self.log,**kwargs)
 
+    def search(self, inplace=False, **kwargs):
+        if inplace is False:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = _search_variants(new_Sumstats_object.data,
+                                                        log=new_Sumstats_object.log,
+                                                        **kwargs)
+            return new_Sumstats_object
+        else:
+            self.data = _search_variants(self.data,log=self.log,**kwargs)
+    
+    def get_proxy(self,snplist, inplace=False, **kwargs):
+        if inplace is False:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = _extract_ld_proxy(common_sumstats = new_Sumstats_object.data,
+                                                         snplist=snplist,
+                                                        log=new_Sumstats_object.log,
+                                                        **kwargs)
+            return new_Sumstats_object
 
     def random_variants(self,inplace=False,n=1,p=None,**kwargs):
         if inplace is True:
@@ -811,7 +831,7 @@ class Sumstats():
         credible_sets = make_cs(region_data,threshold=0.95,log=self.log)
         return region_data, credible_sets
     
-    
+
 ## LDSC ##############################################################################################
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", **kwargs):
         if build is None:
