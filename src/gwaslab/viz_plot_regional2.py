@@ -563,12 +563,15 @@ def _plot_gene_track(
     stack_num_to_plot = max(taf[0],n_uniq_stack)
     ax3.set_ylim((-stack_num_to_plot*2-taf[1]*2,2+taf[1]*2))
     ax3.set_yticks([])
-    pixels_per_point = 72/fig.dpi
+    point_per_pixels = 72/fig.dpi
+    pixels_per_point = fig.dpi/72
+
     pixels_per_track = np.abs(ax3.transData.transform([0,0])[1] - ax3.transData.transform([0,1])[1])                   
     font_size_in_pixels= taf[2] * pixels_per_track
-    font_size_in_points =  font_size_in_pixels * pixels_per_point
-    linewidth_in_points=   pixels_per_track * pixels_per_point
+    font_size_in_points =  font_size_in_pixels * point_per_pixels
 
+    linewidth_in_points_per_track=   pixels_per_track * point_per_pixels
+    
     log.write(" -plotting gene track..", verbose=verbose)
     
     sig_gene_name = "Undefined"
@@ -601,8 +604,11 @@ def _plot_gene_track(
                 sig_gene_rights.append(gene_track_start_i+row["end"])
 
         # plot gene line
+        ## minimum width = 2 pixel 
+        gene_line_width = max(linewidth_in_points_per_track/10, 2/pixels_per_point)
+        
         ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
-                    (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=linewidth_in_points/10,solid_capstyle="butt")
+                    (row["stack"]*2,row["stack"]*2),color=gene_color,linewidth=gene_line_width,solid_capstyle="butt")
         
         # plot gene name
         if row["end"] >= region[2]:
@@ -633,9 +639,12 @@ def _plot_gene_track(
                 exon_color = region_lead_grid_line["color"]  
             else:
                 exon_color="#020080"
-        
+
+        ## minimum width = 8 pixel 
+        exon_line_width = max(linewidth_in_points_per_track * taf[3],  8/pixels_per_point) 
+
         ax3.plot((gene_track_start_i+row["start"],gene_track_start_i+row["end"]),
-                    (row["stack"]*2,row["stack"]*2),linewidth=linewidth_in_points*taf[3],color=exon_color,solid_capstyle="butt")
+                    (row["stack"]*2,row["stack"]*2),linewidth=exon_line_width,color=exon_color,solid_capstyle="butt")
 
     log.write(" -Finished plotting gene track..", verbose=verbose)
 
