@@ -249,7 +249,7 @@ def plot_miami2(
     #####################################################################################################################
     ##plotting
     if figax is None:
-        fig_args["figsize"] = (15,10)
+        #fig_args["figsize"] = (15,10)
         fig, (ax1, ax5) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 1]},**fig_args)
         plt.subplots_adjust(hspace=region_hspace)    
     else:
