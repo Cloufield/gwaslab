@@ -37,7 +37,7 @@ def plot_rg(ldscrg,
         corrections=None,
         panno_texts=None,
         equal_aspect=True,
-        cmap = matplotlib.cm.get_cmap('RdBu'),
+        cmap = None,
         full_cell =None,
         log=Log(),
         panno_args=None,
@@ -57,6 +57,11 @@ def plot_rg(ldscrg,
     
     log.write("Start to create ldsc genetic correlation heatmap..." ,verbose=verbose)
     # configure arguments
+    if cmap is None:
+        try: #matplotlib <3.9
+            cmap = matplotlib.cm.get_cmap('RdBu')
+        except:
+            cmap = matplotlib.colormaps.get_cmap('RdBu')
     if fig_args is None:
         fig_args = {"dpi":300}
     if colorbar_args is None:
