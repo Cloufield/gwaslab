@@ -82,6 +82,7 @@ def _plot_regional(
     region_legend_marker=True,
     region_flank_factor = 0.05,
     track_font_family="Arial",
+    font_family="Arial",
     taf=[4,0,0.95,1,1],
     # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
     tabix=None,
@@ -171,6 +172,7 @@ def _plot_regional(
                                         rr_header_dict =rr_header_dict, 
                                         build= build,
                                         rr_lim=rr_lim,
+                                        font_family=font_family,
                                         rr_ylabel=rr_ylabel)
     else:
         ax4 = None
@@ -225,7 +227,7 @@ def _plot_regional(
         if "r" in mode:
             if gtf_path is not None: 
                 ax3.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
-                ax3.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
+                ax3.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family=track_font_family)
             
             if region_grid==True:
                 for i in np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step):
@@ -241,7 +243,7 @@ def _plot_regional(
         else:
             # set x ticks m plot
             ax1.set_xticks(np.linspace(gene_track_start_i+region[1], gene_track_start_i+region[2], num=region_step))
-            ax1.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family="sans-serif")
+            ax1.set_xticklabels(region_ticks,rotation=45,fontsize=fontsize,family=track_font_family)
     
         ax1.set_xlim([gene_track_start_i+region[1], gene_track_start_i+region[2]])
 
@@ -498,7 +500,7 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     return ax1, cbar
 
 # -############################################################################################################################################################################
-def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, rr_header_dict, build,rr_lim,rr_ylabel=True):
+def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, rr_header_dict, build,rr_lim,font_family=None, rr_ylabel=True):
     ax4 = ax1.twinx()
     most_left_snp = sumstats["i"].idxmin()
     
@@ -523,7 +525,7 @@ def  _plot_recombination_rate(sumstats,pos, region, ax1, rr_path, rr_chr_dict, r
     ax1.patch.set_visible(False)
     
     if rr_ylabel:
-        ax4.set_ylabel("Recombination rate(cM/Mb)")
+        ax4.set_ylabel("Recombination rate(cM/Mb)", fontfamily=font_family)
     if rr_lim!="max":
         ax4.set_ylim(rr_lim[0],rr_lim[1])
     else:

@@ -206,6 +206,7 @@ def mqqplot(insumstats,
           title_fontsize=13,
           fontsize = 9,
           font_family="Arial",
+          math_fontfamily="dejavusans",
           anno_fontsize = 9,
           figargs=None,
           fig_args= None,
@@ -862,6 +863,7 @@ def mqqplot(insumstats,
                                 region_protein_coding=region_protein_coding,
                                 region_flank_factor =region_flank_factor,
                                 track_font_family=track_font_family,
+                                font_family=font_family,
                                 taf=taf,
                                 tabix=tabix,
                                 chrom=chrom,
@@ -950,7 +952,8 @@ def mqqplot(insumstats,
                                    mode=mode, 
                                    bwindowsizekb=bwindowsizekb, 
                                    fontsize=fontsize, 
-                                   font_family=font_family, 
+                                   font_family=font_family,
+                                   math_fontfamily=math_fontfamily, 
                                    ax4=ax4,
                                    log=log, 
                                    verbose=verbose)      
@@ -1467,7 +1470,7 @@ def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family, 
         ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
     return ax1, ax3
 
-def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family, ax4=None, log=Log(),verbose=True):
+def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family,math_fontfamily, ax4=None, log=Log(),verbose=True):
     log.write(" -Processing Y labels...",verbose=verbose)
     if "b" in mode:
         if ylabel is None:
@@ -1476,7 +1479,7 @@ def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family, ax
     else:
         if ylabel is None:
             ylabel ="$-log_{10}(P)$"
-        ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family)
+        ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family, math_fontfamily=math_fontfamily)
     if ax4 is not None:
         ax4_ylabel = ax4.get_ylabel()
         ax4.set_ylabel(ax4_ylabel, fontsize=fontsize, family=font_family )
