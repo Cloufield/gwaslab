@@ -172,6 +172,8 @@ def _plot_regional(
                                         build= build,
                                         rr_lim=rr_lim,
                                         rr_ylabel=rr_ylabel)
+    else:
+        ax4 = None
      
     ## regional plot : gene track ######################################################################
                 # calculate offset
