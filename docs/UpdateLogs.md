@@ -1,5 +1,13 @@
 # Update Logs
 
+# 3.5.6 20250306
+- fixed error when region_recombination=False in regional plots
+- updated cbar legends in regional plots
+- fixed bugs for fig_args in `plot_miami2()`
+- optimized gene track plotting
+- added search and get_proxy
+- increased mlog10p upper bound to 99999
+
 # 3.5.5 20250102
 - update 2025 footer
 - added support for parquet
