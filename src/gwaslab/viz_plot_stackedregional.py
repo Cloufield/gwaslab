@@ -128,6 +128,11 @@ def plot_stacked_mqq(   objects,
                         mqq_args["scatter_args"]={"rasterized":True}
                     else:
                         mqq_args["scatter_args"]["rasterized"] = True
+                    if mode=="r":
+                        if "scatter_args" not in  mqq_args.keys():
+                            mqq_args["scatter_args"]={"rasterized":False}
+                        else:
+                            mqq_args["scatter_args"]["rasterized"] = False
                 else:
                     fig_args["dpi"] = save_args["dpi"]
     # create figure and axes ##################################################################################################################
@@ -363,10 +368,10 @@ def _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsiz
     gene_track_height_ratio = gene_track_height/(gene_track_height + n_plot*subplot_height)
     ylabel_height = (1 - gene_track_height_ratio)*0.5 + gene_track_height_ratio
     if mode=="r":
-        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical',fontsize=fontsize,family=font_family)
+        fig.text(0.08, ylabel_height , "$\mathregular{-log_{10}(P)}$", va='center', rotation='vertical',fontsize=fontsize,family=font_family)
         fig.text(0.93, ylabel_height, "Recombination rate(cM/Mb)", va='center', rotation=-90,fontsize=fontsize,family=font_family)
     elif mode=="m":
-        fig.text(0.08, ylabel_height , "$-log_{10}(P)$", va='center', rotation='vertical',fontsize=fontsize,family=font_family)    
+        fig.text(0.08, ylabel_height , "$\mathregular{-log_{10}(P)}$", va='center', rotation='vertical',fontsize=fontsize,family=font_family)    
 
 def _sort_args(mqq_args, n_plot):
     mqq_args_for_each_plot={i:{} for i in range(n_plot)}

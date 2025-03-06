@@ -111,7 +111,7 @@ def mqqplot(insumstats,
           region_marker_shapes=None,
           region_legend_marker=True,
           region_ref_alias = None,
-          cbar_title='LD $r^{2}$ with variant',
+          cbar_title='LD $\mathregular{r^2}$ with variant',
           cbar_fontsize = None,
           cbar_scale=True,
           cbar_font_family = None,
@@ -342,13 +342,15 @@ def mqqplot(insumstats,
             if len(save)>3:
                 if save[-3:]=="pdf" or save[-3:]=="svg":
                     fig_args["dpi"]=72
-                    scatter_args["rasterized"]=True
+                    if mode!="r":
+                        scatter_args["rasterized"]=True
                     qq_scatter_args["rasterized"]=True
                 else:
                     fig_args["dpi"] = save_args["dpi"]
     
     # configure dpi if saving the plot
-    fig_args, scatter_args, qq_scatter_args, save_args = _configure_fig_save_kwargs(save = save, 
+    fig_args, scatter_args, qq_scatter_args, save_args = _configure_fig_save_kwargs(mode=mode,
+                                                                                    save = save, 
                                                                                     fig_args = fig_args, 
                                                                                     scatter_args = scatter_args, 
                                                                                     qq_scatter_args = qq_scatter_args, 
@@ -1135,7 +1137,8 @@ def mqqplot(insumstats,
 
 ##############################################################################################################################################################################
 
-def _configure_fig_save_kwargs(save=None, 
+def _configure_fig_save_kwargs(mode="m",
+                                save=None, 
                                fig_args=None, 
                                scatter_args=None, 
                                qq_scatter_args=None, 
@@ -1155,6 +1158,10 @@ def _configure_fig_save_kwargs(save=None,
                 if save[-3:]=="pdf" or save[-3:]=="svg":
                     # to save as vectorized plot
                     fig_args["dpi"]=72
+                    if mode!="r":
+                        scatter_args["rasterized"]=True
+                    else:
+                        scatter_args["rasterized"]=False
                     scatter_args["rasterized"]=True
                     qq_scatter_args["rasterized"]=True
                 else:
@@ -1478,7 +1485,7 @@ def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family,mat
         ax1.set_ylabel(ylabel,ha="center",va="bottom",fontsize=fontsize,family=font_family)
     else:
         if ylabel is None:
-            ylabel ="$-log_{10}(P)$"
+            ylabel ="$\mathregular{-log_{10}(P)}$"
         ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family, math_fontfamily=math_fontfamily)
     if ax4 is not None:
         ax4_ylabel = ax4.get_ylabel()
