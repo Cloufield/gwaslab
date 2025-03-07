@@ -1,5 +1,10 @@
 # Update Logs
 
+# 3.5.7 20250307
+- updated Python version requirements (3.9 - 3.12)
+- updated font family for mqq-related functions (default: Arial)
+- adjusted default region_hspace for plot_stacked_mqq
+
 # 3.5.6 20250306
 - fixed error when region_recombination=False in regional plots
 - updated cbar legends in regional plots

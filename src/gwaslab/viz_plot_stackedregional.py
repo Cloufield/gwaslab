@@ -56,7 +56,7 @@ def plot_stacked_mqq(   objects,
                         gtf=None,
                         gene_track_height=0.5,
                         fig_args=None,
-                        region_hspace=0.05,
+                        region_hspace=0.07,
                         subplot_height=4,
                         region_lead_grids = None,
                         region_lead_grid_line=None,
@@ -113,10 +113,10 @@ def plot_stacked_mqq(   objects,
     if region_ld_legends is None:
         region_ld_legends = [0]
     if title_args is None:
-        title_args = {"family":"Arial"}
+        title_args = {"family":font_family}
     else:
         if "family" not in title_args.keys():
-            title_args["family"] = "Arial"
+            title_args["family"] = font_family
 
     if save is not None:
         if type(save) is not bool:
@@ -124,10 +124,12 @@ def plot_stacked_mqq(   objects,
                 if save[-3:]=="pdf" or save[-3:]=="svg":
                     log.write(" -Adjusting options for saving as pdf/svg...",verbose=verbose)
                     fig_args["dpi"]=72
+                    
                     if "scatter_args" not in  mqq_args.keys():
                         mqq_args["scatter_args"]={"rasterized":True}
                     else:
                         mqq_args["scatter_args"]["rasterized"] = True
+
                     if mode=="r":
                         if "scatter_args" not in  mqq_args.keys():
                             mqq_args["scatter_args"]={"rasterized":False}
@@ -368,10 +370,15 @@ def _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsiz
     gene_track_height_ratio = gene_track_height/(gene_track_height + n_plot*subplot_height)
     ylabel_height = (1 - gene_track_height_ratio)*0.5 + gene_track_height_ratio
     if mode=="r":
-        fig.text(0.08, ylabel_height , "$\mathregular{-log_{10}(P)}$", va='center', rotation='vertical',fontsize=fontsize,family=font_family)
+        fig.text(0.08, ylabel_height , "$\mathregular{-log_{10}(P)}$", va='center', rotation='vertical',
+                 fontsize=fontsize,
+                 family=font_family)
+        
         fig.text(0.93, ylabel_height, "Recombination rate(cM/Mb)", va='center', rotation=-90,fontsize=fontsize,family=font_family)
     elif mode=="m":
-        fig.text(0.08, ylabel_height , "$\mathregular{-log_{10}(P)}$", va='center', rotation='vertical',fontsize=fontsize,family=font_family)    
+        fig.text(0.08, ylabel_height , "$\mathregular{-log_{10}(P)}$", va='center', rotation='vertical',
+                 fontsize=fontsize,
+                 family=font_family)    
 
 def _sort_args(mqq_args, n_plot):
     mqq_args_for_each_plot={i:{} for i in range(n_plot)}

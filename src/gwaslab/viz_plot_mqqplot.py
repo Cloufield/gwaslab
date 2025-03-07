@@ -205,7 +205,8 @@ def mqqplot(insumstats,
           title_pad=1.08, 
           title_fontsize=13,
           fontsize = 9,
-          font_family="Arial",
+          font_family=None,
+          fontfamily="Arial",
           math_fontfamily="dejavusans",
           anno_fontsize = 9,
           figargs=None,
@@ -231,6 +232,7 @@ def mqqplot(insumstats,
           ):
 
 # log.writeing meta info #######################################################################################
+    
     if chr_dict is None:          
         chr_dict = get_chr_to_number()
     if xtick_chr_dict is None:         
@@ -290,7 +292,8 @@ def mqqplot(insumstats,
     
     # 7 colors    
     region_ld_colors_m = ["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]
-    
+    if font_family is None:
+        font_family = fontfamily
     if region_title_args is None:
         region_title_args = {"size":10}
     if cbar_fontsize is None:
@@ -306,7 +309,7 @@ def mqqplot(insumstats,
     if maf_bin_colors is None:
         maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]
     if save_args is None:
-        save_args = {"dpi":400,"facecolor":"white"}
+        save_args = {"dpi":600,"facecolor":"none"}
     if highlight is None:
         highlight = list()
     if highlight_anno_args is None:
@@ -337,24 +340,15 @@ def mqqplot(insumstats,
     else:
         _if_quick_qc = False
 
-    if save is not None:
-        if type(save) is not bool:
-            if len(save)>3:
-                if save[-3:]=="pdf" or save[-3:]=="svg":
-                    fig_args["dpi"]=72
-                    if mode!="r":
-                        scatter_args["rasterized"]=True
-                    qq_scatter_args["rasterized"]=True
-                else:
-                    fig_args["dpi"] = save_args["dpi"]
-    
     # configure dpi if saving the plot
     fig_args, scatter_args, qq_scatter_args, save_args = _configure_fig_save_kwargs(mode=mode,
                                                                                     save = save, 
                                                                                     fig_args = fig_args, 
                                                                                     scatter_args = scatter_args, 
                                                                                     qq_scatter_args = qq_scatter_args, 
-                                                                                    save_args = save_args)
+                                                                                    save_args = save_args,
+                                                                                    log=log,
+                                                                                    verbose=verbose)
 
 
     if len(anno_d) > 0 and arm_offset is None:
@@ -821,9 +815,7 @@ def mqqplot(insumstats,
                                 region=region,
                                 vcf_path=vcf_path,
                                 marker_size=marker_size,
-                                fontsize=fontsize,
                                 build=build,
-                                chrom_df=chrom_df,
                                 cbar_scale=cbar_scale,
                                 cbar_fontsize=cbar_fontsize,
                                 cbar_bbox_to_anchor=cbar_bbox_to_anchor,
@@ -832,9 +824,7 @@ def mqqplot(insumstats,
                                 cbar_equal_aspect=cbar_equal_aspect,
                                 cbar_downward_offset =cbar_downward_offset, 
                                 cbar_borderpad=cbar_borderpad,
-                                xtick_chr_dict=xtick_chr_dict,
                                 cut_line_color=cut_line_color,
-                                vcf_chr_dict =vcf_chr_dict,
                                 gtf_path=gtf_path,
                                 gtf_chr_dict = gtf_chr_dict,
                                 gtf_gene_name=gtf_gene_name,
@@ -852,23 +842,18 @@ def mqqplot(insumstats,
                                 region_grid_line = region_grid_line,
                                 region_lead_grid = region_lead_grid,
                                 region_lead_grid_line = region_lead_grid_line,
-                                region_hspace=region_hspace,
                                 region_title=region_title,
                                 region_title_args=region_title_args,
                                 region_ld_legend = region_ld_legend,
                                 region_legend_marker=region_legend_marker,
                                 region_ld_threshold = region_ld_threshold,
-                                region_ld_colors = region_ld_colors,
                                 palette = palette,
                                 region_marker_shapes = region_marker_shapes,
                                 region_recombination = region_recombination,
                                 region_protein_coding=region_protein_coding,
                                 region_flank_factor =region_flank_factor,
                                 track_font_family=track_font_family,
-                                font_family=font_family,
                                 taf=taf,
-                                tabix=tabix,
-                                chrom=chrom,
                                 pos=pos,
                                 verbose=verbose,
                                 log=log
@@ -927,10 +912,10 @@ def mqqplot(insumstats,
 
         # Configure X, Y axes #######################################################
         log.write("Start to process figure arts.",verbose=verbose)
-        if region is None:
-            # if Manhattan plot 
- 
-            ax1 = _process_xtick(ax1=ax1, 
+
+        ax1, ax3 = _process_xtick(ax1=ax1, 
+                                  ax3=ax3,
+                                  mode=mode,
                                  chrom_df=chrom_df, 
                                  xtick_chr_dict=xtick_chr_dict, 
                                  fontsize = fontsize, 
@@ -1142,7 +1127,9 @@ def _configure_fig_save_kwargs(mode="m",
                                fig_args=None, 
                                scatter_args=None, 
                                qq_scatter_args=None, 
-                               save_args=None):
+                               save_args=None,
+                               log=Log(),
+                               verbose=True):
     if fig_args is None:
         fig_args = dict()
     if scatter_args is None:
@@ -1158,12 +1145,14 @@ def _configure_fig_save_kwargs(mode="m",
                 if save[-3:]=="pdf" or save[-3:]=="svg":
                     # to save as vectorized plot
                     fig_args["dpi"]=72
+                    
                     if mode!="r":
                         scatter_args["rasterized"]=True
+                        qq_scatter_args["rasterized"]=True
+                        log.write("Saving as pdf/svg: scatter plot will be rasterized for mqq...", verbose=verbose)
                     else:
                         scatter_args["rasterized"]=False
-                    scatter_args["rasterized"]=True
-                    qq_scatter_args["rasterized"]=True
+                        qq_scatter_args["rasterized"]=False
                 else:
                     fig_args["dpi"] = save_args["dpi"]
     return fig_args, scatter_args, qq_scatter_args, save_args
@@ -1424,45 +1413,52 @@ def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_
 
 def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title, log=Log(),verbose=True):
     log.write(" -Processing color bar...",verbose=verbose)
-    #if type(cbar) == list:
-    #    for cbar_single in cbar:
-    #        cbar_yticklabels = cbar_single.ax.get_yticklabels()
-    #        cbar_single.ax.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
-    #        cbar_single.ax.set_title(cbar_title, fontsize=cbar_fontsize, family=cbar_font_family, loc="center",y=-0.2 )
-    #else:
-    
-    cbar_yticklabels = cbar.get_yticklabels()
-    cbar.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
-    cbar_xticklabels = cbar.get_xticklabels()
-    cbar.set_xticklabels(cbar_xticklabels, fontsize=cbar_fontsize, family=cbar_font_family )
 
-    cbar.set_title(cbar_title, fontsize=cbar_fontsize, family=cbar_font_family, loc="center", y=1.00 )
+    cbar_yticklabels = cbar.get_yticklabels()
+    cbar.set_yticklabels(cbar_yticklabels, 
+                         fontsize=cbar_fontsize, 
+                         family=cbar_font_family )
+    cbar_xticklabels = cbar.get_xticklabels()
+    cbar.set_xticklabels(cbar_xticklabels, 
+                         fontsize=cbar_fontsize, 
+                         family=cbar_font_family )
+
+    cbar.set_title(cbar_title, fontsize=cbar_fontsize, 
+                               family=cbar_font_family, 
+                               loc="center", y=1.00 )
     return cbar
 
-def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family, log=Log(),verbose=True):
+def _process_xtick(ax1, mode, chrom_df, xtick_chr_dict, fontsize, font_family="Arial", ax3=None , log=Log(),verbose=True):
+    
     log.write(" -Processing X ticks...",verbose=verbose)
-    ax1.set_xticks(chrom_df.astype("float64"))
-    ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)    
-    return ax1
+    
+    if mode!="r":
+        ax1.set_xticks(chrom_df.astype("float64"))
+        ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),
+                            fontsize=fontsize,
+                            family=font_family)    
+    
+    if ax3 is not None:
+        ax3.tick_params(axis='x', 
+                        labelsize=fontsize,
+                        labelfontfamily=font_family) 
+    
+    return ax1, ax3
 
 def _process_ytick(ax1, fontsize, font_family, ax4, log=Log(),verbose=True):
     log.write(" -Processing Y labels...",verbose=verbose)
-    #ax1_yticklabels = ax1.get_yticklabels()
-    #print(ax1_yticklabels)
-    #plt.draw()
-    #ax1_yticks = ax1.get_yticks()
-    #print(ax1_yticks)
-    #ax1.set_yticklabels(ax1_yticklabels,fontsize=fontsize,family=font_family) 
-    ax1.tick_params(axis='y', labelsize=fontsize,labelfontfamily=font_family)
-    #ax1.set_yticks(ax1_yticks,ax1_yticklabels,fontsize=fontsize,family=font_family) 
+    
+    ax1.tick_params(axis='y', 
+                    labelsize=fontsize,
+                    labelfontfamily=font_family)
+    
     if ax4 is not None:
-        #ax4_yticklabels = ax4.get_yticklabels()
-        #ax4_yticks = ax4.get_yticks()
-        ax4.tick_params(axis='y', labelsize=fontsize,labelfontfamily=font_family)
-        #ax4.set_yticks(ax4_yticks,ax4_yticklabels, fontsize=fontsize,family=font_family) 
+        ax4.tick_params(axis='y', 
+                        labelsize=fontsize,
+                        labelfontfamily=font_family)
     return ax1, ax4
 
-def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family,  ax3=None , log=Log(),verbose=True):
+def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family="Arial",  ax3=None , log=Log(),verbose=True):
     log.write(" -Processing X labels...",verbose=verbose)
     if region is not None:
         if xlabel is None:
@@ -1477,19 +1473,29 @@ def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family, 
         ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
     return ax1, ax3
 
-def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family,math_fontfamily, ax4=None, log=Log(),verbose=True):
+def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family, math_fontfamily, ax4=None, log=Log(),verbose=True):
     log.write(" -Processing Y labels...",verbose=verbose)
     if "b" in mode:
         if ylabel is None:
             ylabel ="Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb"
-        ax1.set_ylabel(ylabel,ha="center",va="bottom",fontsize=fontsize,family=font_family)
+        ax1.set_ylabel(ylabel,ha="center",va="bottom",
+                       fontsize=fontsize,
+                       family=font_family,
+                       math_fontfamily=math_fontfamily)
     else:
         if ylabel is None:
             ylabel ="$\mathregular{-log_{10}(P)}$"
-        ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family, math_fontfamily=math_fontfamily)
+        ax1.set_ylabel(ylabel,
+                       fontsize=fontsize,
+                       family=font_family, 
+                       math_fontfamily=math_fontfamily)
+    
     if ax4 is not None:
         ax4_ylabel = ax4.get_ylabel()
-        ax4.set_ylabel(ax4_ylabel, fontsize=fontsize, family=font_family )
+        ax4.set_ylabel(ax4_ylabel, 
+                       fontsize=fontsize, 
+                       family=font_family,
+                       math_fontfamily=math_fontfamily )
     return ax1, ax4
 
 def _process_spine(ax1, mode):
@@ -1504,6 +1510,11 @@ def _process_spine(ax1, mode):
 
 
 def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
+    #ax1 m / r
+    #ax2 qq
+    #ax3 gene track
+    #ax4 recombination
+
     if  mode=="qqm": 
         fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**fig_args)
         ax3 = None
