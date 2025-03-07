@@ -51,11 +51,12 @@ def compare_effect(path1,
                    reg_box=None,
                    is_reg=True,
                    fdr=False,
+                   reg_text="full",
                    allele_match=False,
                    r_se=False,
                    is_45_helper_line=True,
                    legend_mode="full",
-                   legend_title=r'$ P < 5 x 10^{-8}$ in:',
+                   legend_title=r'$\mathregular{ P < 5 x 10^{-8}}$ in:',
                    legend_title2=r'Heterogeneity test:',
                    legend_pos='upper left',
                    scatterargs=None,
@@ -85,12 +86,12 @@ def compare_effect(path1,
         scaled1 = True
         scaled2 = True
 
-    if legend_title== r'$ P < 5 x 10^{-8}$ in:' and sig_level!=5e-8:
+    if legend_title== r'$\mathregular{ P < 5 x 10^{-8}}$ in:' and sig_level!=5e-8:
         
         exponent = math.floor(math.log10(sig_level))
         mantissa = sig_level / 10**exponent
 
-        legend_title =  '$ P < {} x 10^{{{}}}$ in:'.format(mantissa, exponent)
+        legend_title =  '$\mathregular{ P < {} x 10^{{{}}}}$ in:'.format(mantissa, exponent)
 
     if is_q_mc=="fdr" or is_q_mc=="bon":
         is_q = True
@@ -100,6 +101,8 @@ def compare_effect(path1,
     if save_args is None:
         save_args = {"dpi":300,"facecolor":"white"}
     if reg_box is None:
+        reg_box= None
+    elif reg_box==True:
         reg_box = dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey")
     if sep is None:
         sep = ["\t","\t"]
@@ -116,7 +119,7 @@ def compare_effect(path1,
     if helper_line_args is None:
         helper_line_args={"color":'black', "linestyle":'-',"lw":1}
     if plt_args is None:
-        plt_args={"figsize":(8,8),"dpi":300}
+        plt_args={"figsize":(7,7),"dpi":300}
     if scatterargs is None:
         scatterargs={"s":20}
     if label is None:
@@ -487,9 +490,23 @@ def compare_effect(path1,
         ax.spines[spine].set_visible(False)
     
     ###regression line##############################################################################################################################
-    ax = confire_regression_line(is_reg,reg_box, sig_list_merged, ax, mode,xl,yl,xh,yh, null_beta, r_se, 
-                            is_45_helper_line,helper_line_args, font_kwargs,
-                            log, verbose)
+    ax = configure_regression_line(is_reg=is_reg,
+                                 reg_text=reg_text,
+                                 reg_box=reg_box, 
+                                 sig_list_merged=sig_list_merged, 
+                                 ax=ax, 
+                                 mode=mode,
+                                 xl=xl,
+                                 yl=yl,
+                                 xh=xh,
+                                 yh=yh, 
+                                 null_beta=null_beta, 
+                                 r_se=r_se, 
+                                 is_45_helper_line=is_45_helper_line,
+                                 helper_line_args=helper_line_args, 
+                                 font_kwargs=font_kwargs,
+                                 log=log, 
+                                 verbose=verbose)
         
     
     ax.set_xlabel(xylabel_prefix+label[0],**font_kwargs)
@@ -1128,9 +1145,23 @@ def scatter_annotation(ax, sig_list_merged,anno, anno_het, is_q, mode,
     return ax
 
 
-def confire_regression_line(is_reg, reg_box, sig_list_merged,  ax, mode,xl,yl,xh,yh, null_beta, r_se, 
-                            is_45_helper_line,helper_line_args, font_kwargs,
-                            log, verbose):
+def configure_regression_line(is_reg, 
+                              reg_box, 
+                              reg_text,
+                              sig_list_merged,  
+                              ax, 
+                              mode,
+                              xl,
+                              yl,
+                              xh,
+                              yh, 
+                              null_beta, 
+                              r_se, 
+                            is_45_helper_line,
+                            helper_line_args, 
+                            font_kwargs,
+                            log, 
+                            verbose):
     if len(sig_list_merged)<3: is_reg=False
     if is_reg is True:
         if mode=="beta" or mode=="BETA" or mode=="Beta":
@@ -1174,9 +1205,14 @@ def confire_regression_line(is_reg, reg_box, sig_list_merged,  ax, mode,xl,yl,xh
             except:
                 p12="0"
                 pe="0"
-            p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
+            p_text="$\mathregular{p = " + p12 + " \\times  10^{"+pe+"}}$"
             p_latex= f'{p_text}'
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $+$ "+ "{:.2f}".format(reg[0])+" $x$, "+ p_latex + ", $r =$" +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
+            if reg_text=="full":
+                ax.text(0.98,0.02,"y = "+"{:.2f}".format(reg[1]) +" + "+ "{:.2f}".format(reg[0])+" x, "+ p_latex + ", r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
+            elif reg_text=="r":
+                ax.text(0.98,0.02,"r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
+            elif reg_text=="r2":
+                ax.text(0.98,0.02,"$\mathregular{r^{2}} = " +"{:.2f}".format(reg[2]**2), va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
         else:
             #if regression coeeficient <0 : auxiliary line slope = -1
             if is_45_helper_line is True:
@@ -1191,9 +1227,14 @@ def confire_regression_line(is_reg, reg_box, sig_list_merged,  ax, mode,xl,yl,xh
             except:
                 p12="0"
                 pe="0"
-            p_text="$p = " + p12 + " \\times  10^{"+pe+"}$"
+            p_text="$\mathregular{p = " + p12 + " \\times  10^{"+pe+"}}$"
             p_latex= f'{p_text}'
-            ax.text(0.98,0.02,"$y =$ "+"{:.2f}".format(reg[1]) +" $-$ "+ "{:.2f}".format(abs(reg[0]))+" $x$, "+ p_latex + ", $r =$" +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**font_kwargs)
+            if reg_text=="full":
+                ax.text(0.98,0.02,"y = "+"{:.2f}".format(reg[1]) +" - "+ "{:.2f}".format(abs(reg[0]))+" x, "+ p_latex + ", r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**font_kwargs)
+            elif reg_text=="r":
+                ax.text(0.98,0.02,"r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
+            elif reg_text=="r2":
+                ax.text(0.98,0.02,"$\mathregular{r^{2}} = " +"{:.2f}".format(reg[2]**2), va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
             
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             middle = sig_list_merged["EFFECT_1"].mean()
@@ -1216,7 +1257,8 @@ def configure_legend(fig, ax, legend_mode, is_q, is_q_mc, legend_elements, legen
             "handletextpad":0.8,
             "edgecolor":"grey",
             "borderpad":0.3,
-            "alignment":"left"
+            "alignment":"left",
+            "frameon":False
         }
 
     if legend_args is not None:
@@ -1227,14 +1269,14 @@ def configure_legend(fig, ax, legend_mode, is_q, is_q_mc, legend_elements, legen
         title_proxy = Rectangle((0,0), 0, 0, color='w',label=legend_title)
         title_proxy2 = Rectangle((0,0), 0, 0, color='w',label=legend_title2)
         if is_q_mc=="fdr":
-            het_label_sig = r"$FDR_{het} < $" + "${}$".format(q_level)
-            het_label_sig2 = r"$FDR_{het} > $" + "${}$".format(q_level)
+            het_label_sig = r"$\mathregular{FDR_{het} < }$" + "{}".format(q_level)
+            het_label_sig2 = r"$\mathregular{FDR_{het} > }$" + "{}".format(q_level)
         elif is_q_mc=="bon":
-            het_label_sig = r"$P_{het,bon} < $" + "${}$".format(q_level)
-            het_label_sig2 = r"$P_{het,bon} > $" + "${}$".format(q_level)
+            het_label_sig = r"$\mathregular{P_{het,bon} < }$" + "{}".format(q_level)
+            het_label_sig2 = r"$\mathregular{P_{het,bon} > }$" + "{}".format(q_level)
         else:
-            het_label_sig = r"$P_{het} < $" + "${}$".format(q_level)
-            het_label_sig2 = r"$P_{het} > $" + "${}$".format(q_level)
+            het_label_sig = r"$\mathregular{P_{het} < }$" + "{}".format(q_level)
+            het_label_sig2 = r"$\mathregular{P_{het} > }$" + "{}".format(q_level)
         het_sig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="black", linewidth=1, label=het_label_sig)
         het_nonsig = Rectangle((0,0), 0, 0, facecolor='#cccccc',edgecolor="white",linewidth=1, label=het_label_sig2)
         
