@@ -94,15 +94,15 @@ def _plot_qq(
             
             expected = -np.log10(np.linspace(minit,upper_bound_p,max(len(databin_raw),len(databin))))[:len(observed)]
 
-            label ="("+str(lower)+","+str(upper) +"]"
+            label ="( "+str(lower)+","+str(upper) +" ]"
             ax2.scatter(expected,observed,s=marker_size[1],color=maf_bin_colors[i],label=label,**qq_scatter_args)
-            ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=3,frameon=False)
+            ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=1.5,frameon=False, handletextpad=0.4, borderaxespad=0.4)
             plt.setp(ax2_legend.texts, family=font_family)
 
     qq_x = max(skip, expected_min_mlog10p)
     ax2.plot([qq_x,-np.log10(minit)],[qq_x,-np.log10(minit)],linestyle="--",color=qq_line_color)
-    ax2.set_xlabel("Expected $-log_{10}(P)$",fontsize=fontsize,family=font_family)
-    ax2.set_ylabel("Observed $-log_{10}(P)$",fontsize=fontsize,family=font_family)
+    ax2.set_xlabel("Expected $\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
+    ax2.set_ylabel("Observed $\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
     ax2.spines["top"].set_visible(False)
     ax2.spines["right"].set_visible(False)
     ax2.spines["left"].set_visible(True)
@@ -127,7 +127,7 @@ def _plot_qq(
                             verbose=verbose)
         
         # annotate lambda gc to qq plot
-        ax2.text(0.10, 1.03,"$\\lambda_{GC}$ = "+"{:.4f}".format(lambdagc),
+        ax2.text(0.10, 1.03,"$\mathregular{\\lambda_{GC}}$ = "+"{:.4f}".format(lambdagc),
                     horizontalalignment='left',
                     verticalalignment='top',
                     transform=ax2.transAxes,
@@ -179,7 +179,7 @@ def _plot_qq(
     #        ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut],fontsize=fontsize,family=font_family)
     #    ax2.set_ylim(bottom = skip)
 
-    ax2.tick_params(axis='both', which='both', labelsize=fontsize)
+    ax2.tick_params(axis='both', which='both', labelsize=fontsize,labelfontfamily=font_family)
     #
     if qtitle:
         ax2.set_title(qtitle,fontsize=title_fontsize,pad=10,family=font_family)
