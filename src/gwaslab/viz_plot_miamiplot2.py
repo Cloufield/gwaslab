@@ -301,6 +301,7 @@ def plot_miami2(
     ax5l, ax5r = ax1.get_xlim()
     ax1.set_xlim([min(ax1l,ax5l), max(ax1r,ax5r)])
     ax5.set_xlim([min(ax1l,ax5l), max(ax1r,ax5r)])
+    
     #####################################################################################################################
     ax5.set_xlabel("")
     #ax5.set_xticks(chrom_df)
@@ -317,8 +318,8 @@ def plot_miami2(
     
     ax1.tick_params(axis='x', which='major', pad=xtick_label_pad)
     
-    ax1.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family=font_family)
-    ax5.set_ylabel("$-log_{10}(P)$",fontsize=fontsize,family=font_family)
+    ax1.set_ylabel("$\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
+    ax5.set_ylabel("$\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
     
     ax1.set_title(titles[0],y=titles_pad_adjusted[0],family=font_family)
     ax5.set_title(titles[1],y=titles_pad_adjusted[1],family=font_family)

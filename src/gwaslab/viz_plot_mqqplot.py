@@ -309,7 +309,7 @@ def mqqplot(insumstats,
     if maf_bin_colors is None:
         maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]
     if save_args is None:
-        save_args = {"dpi":600,"facecolor":"none"}
+        save_args = {"dpi":600,"transparent":True}
     if highlight is None:
         highlight = list()
     if highlight_anno_args is None:
@@ -777,9 +777,10 @@ def mqqplot(insumstats,
                        sizes=marker_size,
                        hue_norm=hue_norm,
                        linewidth=linewidth,
-                       edgecolor = edgecolor,
+                       edgecolor = edgecolor, 
                        zorder=2,ax=ax1,**scatter_args)   
         
+        ax1.set_rasterization_zorder(0)
         
         ## if pinpoint variants
         if (len(pinpoint)>0):
@@ -1149,6 +1150,7 @@ def _configure_fig_save_kwargs(mode="m",
                     if mode!="r":
                         scatter_args["rasterized"]=True
                         qq_scatter_args["rasterized"]=True
+                        qq_scatter_args["antialiased"]=False,
                         log.write("Saving as pdf/svg: scatter plot will be rasterized for mqq...", verbose=verbose)
                     else:
                         scatter_args["rasterized"]=False

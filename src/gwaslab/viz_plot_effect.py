@@ -86,6 +86,8 @@ def _plot_effect(to_plot,
                  verbose=True,
                  legend_mode=1,
                  ncol=2,
+                 fontsize=12,
+                 font_family="Arial",
                  size=None,
                  hue=None,
                  style=None,
@@ -188,26 +190,28 @@ def _plot_effect(to_plot,
                   **err_kwargs)
     
     ax1.axvline(x=0,linestyle="dashed",c="grey")
-    ax1.set_yticks(to_plot[y], labels = to_plot[y_name])
-    ax1.set_ylabel(ylabel) 
+    ax1.set_yticks(to_plot[y], labels = to_plot[y_name], fontsize=fontsize, family=font_family)
+    ax1.set_ylabel(ylabel, fontsize=fontsize, family=font_family) 
 
     if title is not None:
-        ax1.set_title(title)
+        ax1.set_title(title,fontsize=fontsize, family=font_family)
 
     if eaf_panel==True:
         ax2.barh(y=to_plot[y], width=to_plot[eaf], zorder=100, **eaf_args)
-        ax2.set_xlabel(eaf)
+        ax2.set_xlabel(eaf, fontsize=fontsize, family=font_family)
 
     if snpvar_panel==True:
         ax3.barh(y=to_plot[y], width=to_plot[snpr2], zorder=100,**snpr2_args)
-        ax3.set_xlabel(snpr2)
+        ax3.set_xlabel(snpr2, fontsize=fontsize, family=font_family)
     
     #try:
     if legend_mode==1:
         #if ncols==1:
         sns.move_legend(
             ax1, "upper left",
-            bbox_to_anchor=(1, 1), title=None, frameon=False, bbox_transform = axes[-1].transAxes
+            bbox_to_anchor=(1, 1), title=None, frameon=False, bbox_transform = axes[-1].transAxes, 
+            title_fontproperties={"size":fontsize,"family":font_family},
+            prop={"size":fontsize,"family":font_family}
             )
             #else:
 ##
@@ -269,14 +273,12 @@ def _plot_effect(to_plot,
     #    for legend_row in legend_rows[:-1]:
     #        ax1.add_artist(legend_row)
 
-
-
     if effect_label is not None:
-        ax1.set_xlabel(effect_label)
+        ax1.set_xlabel(effect_label, fontsize=fontsize, family=font_family)
     if eaf_label is not None:
-        ax2.set_xlabel(eaf_label)
+        ax2.set_xlabel(eaf_label, fontsize=fontsize, family=font_family)
     if snpr2_label is not None:
-        ax3.set_xlabel(snpr2_label)
+        ax3.set_xlabel(snpr2_label, fontsize=fontsize, family=font_family)
 
     save_figure(fig, save, keyword="forest",save_args=save_kwargs, log=log, verbose=verbose)   
     

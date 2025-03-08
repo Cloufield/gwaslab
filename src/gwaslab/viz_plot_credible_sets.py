@@ -17,11 +17,13 @@ def _plot_cs(pipcs,
             xtick_chr_dict=None,
             pip="PIP",
             onlycs=False,
+            pos="POS",
             cs="CREDIBLE_SET_INDEX",
             marker_size=(45,85),
             fontsize = 12,
             font_family = "Arial",
-            legend_title="Credible sets",
+            legend_title="Credible set",
+            fig_args=None,
             log=Log(),
             verbose=True,
             **kwargs):
@@ -31,7 +33,8 @@ def _plot_cs(pipcs,
         ## parameters ############################# 
         if xtick_chr_dict is None:         
                 xtick_chr_dict = get_number_to_chr()
-
+        if fig_args is None:
+                fig_args={"figsize":(15,5),"dpi":400}
         scatter_kwargs =   _extract_kwargs("scatter", dict(), locals())
 
         region_marker_shapes = ['o', '^','s','D','*','P','X','h','8']
@@ -50,7 +53,7 @@ def _plot_cs(pipcs,
                 ax=figax[1]
                 fig=figax[0]
         else:
-                fig, ax = plt.subplots()
+                fig, ax = plt.subplots(**fig_args)
 
         # assign i
         pipcs,chrom_df=_quick_assign_i_with_rank(pipcs,  chrpad=0.00, 
@@ -58,6 +61,7 @@ def _plot_cs(pipcs,
                                                 chrom="CHR",pos="POS",
                                                 drop_chr_start=False,
                                                 _posdiccul=_posdiccul)
+        
         pipcs = pipcs.sort_values(by=cs,ascending=True)
 
         ## plot ##########################################
@@ -75,6 +79,17 @@ def _plot_cs(pipcs,
                         s=marker_size[1],
                         ax=ax,
                         **scatter_kwargs)
+        
+        region_step=21
+        region_ticks = list(map('{:.3f}'.format,np.linspace(region[1], region[2], num=region_step).astype("int")/1000000)) 
+        
+        most_left_snp      = pipcs["i"].idxmin()
+        # distance between leftmost variant position to region left bound
+        i_pos_offset = pipcs.loc[most_left_snp,"i"] - pipcs.loc[most_left_snp,pos]
+        ax.set_xticks(np.linspace(i_pos_offset+region[1], i_pos_offset+region[2], num=region_step))
+        ax.set_xticklabels(region_ticks,rotation=45)
+        xlabel = "Chromosome "+str(region[0])+" (MB)"
+        ax.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
 
         # process legend
         handles, labels = ax.get_legend_handles_labels()
@@ -82,9 +97,13 @@ def _plot_cs(pipcs,
         new_handles = []
         ncol = len(labels)
 
+        ax.tick_params(axis='y', 
+                        labelsize=fontsize,
+                        labelfontfamily=font_family) 
+        
         for i,label in enumerate(labels):
                 if label in [str(j) for j in range(1,10)]:
-                        new_labels.append(labels[i])
+                        new_labels.append("#"+labels[i])
                         new_handles.append(handles[i])
         
         ax.legend(labels =new_labels,  
@@ -92,8 +111,11 @@ def _plot_cs(pipcs,
                   loc="upper right", 
                   bbox_to_anchor=(0.995, 0.995), 
                   ncol=1, 
+                  markerfirst=False,
                   scatterpoints=2, 
                   title=legend_title, 
-                  frameon=True)
+                  title_fontproperties={"size":fontsize,"family":font_family},
+                  prop={"size":fontsize,"family":font_family},
+                  frameon=False)
 
         return fig, log
