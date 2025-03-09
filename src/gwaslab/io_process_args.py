@@ -38,3 +38,27 @@ def _merge_and_sync_dic(list_of_dics:list, default:dict) -> dict:
         if isinstance(dic, dict):
             temp.update(dic)
     return temp
+
+def _update_args(args=None, default_args=None):
+    
+    if default_args is None:
+        default_args={}
+
+    if args is None:
+        # if None, return default dict
+        return default_args
+    else:
+        # if not None, update default dict
+        for key,value in args.items():
+            default_args[key] = value
+        return default_args
+
+    
+
+def _update_arg(arg=None, default_arg=None):
+    if arg is None:
+        # if None, return default
+        return default_arg
+    else:
+        # if not None, return arg  
+        return arg

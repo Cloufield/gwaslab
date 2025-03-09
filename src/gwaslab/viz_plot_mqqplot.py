@@ -42,6 +42,8 @@ from gwaslab.viz_aux_quickfix import _quick_assign_marker_relative_size
 from gwaslab.viz_aux_quickfix import _cut
 from gwaslab.viz_aux_quickfix import _set_yticklabels
 from gwaslab.viz_aux_quickfix import _jagged_y
+from gwaslab.io_process_args import _update_args
+from gwaslab.io_process_args import _update_arg
 from gwaslab.viz_aux_save_figure import save_figure
 from gwaslab.g_Log import Log
 from gwaslab.util_in_calculate_gc import lambdaGC
@@ -232,35 +234,24 @@ def mqqplot(insumstats,
           ):
 
 # log.writeing meta info #######################################################################################
-    
-    if chr_dict is None:          
-        chr_dict = get_chr_to_number()
-    if xtick_chr_dict is None:         
-        xtick_chr_dict = get_number_to_chr()
-    if gtf_chr_dict is None:   
-        gtf_chr_dict = get_number_to_chr()
-    if rr_chr_dict is None:   
-        rr_chr_dict = get_number_to_chr()
-    if fig_args is None:
-        fig_args= dict(figsize=(15,5))
-    if figargs is not None:
-        fig_args = figargs
+    chr_dict = _update_args(chr_dict, get_chr_to_number())
+    xtick_chr_dict = _update_args(xtick_chr_dict, get_number_to_chr())
+    gtf_chr_dict = _update_args(gtf_chr_dict, get_number_to_chr())
+    rr_chr_dict = _update_args(rr_chr_dict, get_number_to_chr())
+
+    fig_args = _update_args(fig_args, dict(figsize=(15,5)))
+    fig_args = _update_args(figargs, fig_args)
     if "dpi" not in fig_args.keys():
         fig_args["dpi"] = dpi
-    if region_anno_bbox_args is None:
-        region_anno_bbox_args = {"ec":"None","fc":"None"}
-    if anno_set is None:
-        anno_set=list()
-    if anno_alias is None:
-        anno_alias=dict()
-    if anno_d is None:
-        anno_d=dict()
-    if anno_args is None:
-        anno_args=dict()
-    if colors is None:
-        colors=["#597FBD","#74BAD3"]
-    if arrow_kwargs is None:
-        arrow_kwargs=dict()
+
+    anno_set = _update_arg(anno_set, list())
+    anno_alias = _update_args(anno_alias, dict())
+    anno_d = _update_args(anno_d,dict())
+    anno_args = _update_args(anno_args,dict())
+    arrow_kwargs = _update_args(arrow_kwargs,dict())
+
+    colors = _update_arg(colors, ["#597FBD","#74BAD3"])
+
     if region is not None:
         if marker_size == (5,20):
             marker_size=(45,65)
@@ -277,64 +268,45 @@ def mqqplot(insumstats,
             region_ref.append(region_ref_second)
     region_ref_index_dic = {value: index for index,value in enumerate(region_ref)}
         
-    if region_marker_shapes is None:
-        # 9 shapes
-        region_marker_shapes = ['o', '^','s','D','*','P','X','h','8']
-    if region_grid_line is None:
-        region_grid_line = {"linewidth": 2,"linestyle":"--"}
-    if region_lead_grid_line is None:
-        region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
-    if region_ld_threshold is None:
-        region_ld_threshold = [0.2,0.4,0.6,0.8]
+    taf = _update_args(taf, [track_n,track_n_offset,track_fontsize_ratio,track_exon_ratio,track_text_offset])
+    region_marker_shapes = _update_arg(region_marker_shapes, ['o', '^','s','D','*','P','X','h','8'])
+    region_grid_line = _update_args(region_grid_line,  {"linewidth": 2,"linestyle":"--"})
+    region_lead_grid_line = _update_args(region_lead_grid_line, {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"})
+    region_ld_threshold = _update_arg(region_ld_threshold, [0.2,0.4,0.6,0.8])
+    region_anno_bbox_args = _update_args(region_anno_bbox_args, {"ec":"None","fc":"None"})
+    region_ld_colors = _update_arg(region_ld_colors, ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"])
+    region_ld_colors_m = _update_arg(region_ld_colors_m,  ["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"])
+    region_title_args = _update_args(region_title_args,  {"size":fontsize})
 
-    if region_ld_colors is None:     
-        region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
+    font_family = _update_arg(font_family, fontfamily)
+    cbar_fontsize = _update_arg(cbar_fontsize, fontsize)
+    cbar_font_family = _update_arg(cbar_font_family, font_family)
+    track_font_family = _update_arg(track_font_family, font_family)
     
-    # 7 colors    
-    region_ld_colors_m = ["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]
-    if font_family is None:
-        font_family = fontfamily
-    if region_title_args is None:
-        region_title_args = {"size":10}
-    if cbar_fontsize is None:
-        cbar_fontsize = fontsize
-    if cbar_font_family is None:
-        cbar_font_family = font_family
-    if track_font_family is None:
-        track_font_family = font_family
-    if taf is None:
-        taf = [track_n,track_n_offset,track_fontsize_ratio,track_exon_ratio,track_text_offset]
-    if maf_bins is None:
-        maf_bins=[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]
-    if maf_bin_colors is None:
-        maf_bin_colors = ["#f0ad4e","#5cb85c", "#5bc0de","#000042"]
-    if save_args is None:
-        save_args = {"dpi":600,"transparent":True}
-    if highlight is None:
-        highlight = list()
-    if highlight_anno_args is None:
-        highlight_anno_args = {}
-    if pinpoint is None:
-        pinpoint = list()  
-    if build is None:
-        build = "19"
-    if scatter_args is None:
-        scatter_args={}
-    if scatterargs is not None:
-        scatter_args = scatterargs
-    if qq_scatter_args is None:
-        qq_scatter_args={}
-    if qqscatterargs is not None:
-        qq_scatter_args = qqscatterargs
-    if saveargs is not None:
-        save_args = saveargs
+    build = _update_arg(build,"19")
+
+    save_args = _update_args(save_args, {"dpi":600,"transparent":True})
+    save_args = _update_args(saveargs , save_args)
+
+    pinpoint = _update_arg(pinpoint,list())
+    highlight = _update_arg(highlight,list())
+    highlight_anno_args = _update_args(highlight_anno_args)
+    
+    maf_bins = _update_arg(maf_bins,[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)])
+    maf_bin_colors = _update_arg(maf_bin_colors,["#f0ad4e","#5cb85c", "#5bc0de","#000042"])
+    qq_scatter_args = _update_args(qq_scatter_args)
+    qq_scatter_args = _update_args(qqscatterargs, qq_scatter_args)
+
+    scatter_args = _update_args(scatter_args)
+    scatter_args = _update_args(scatter_args, scatterargs)
+
     if sig_level is None:
         sig_level_plot=sig_level_plot
         sig_level_lead=sig_level_lead 
     else:
         sig_level_plot = sig_level
         sig_level_lead = sig_level     
-
+    
     if check==True and _if_quick_qc==True:
         _if_quick_qc = True
     else:
