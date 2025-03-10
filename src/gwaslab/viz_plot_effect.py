@@ -275,11 +275,19 @@ def _plot_effect(to_plot,
 
     if effect_label is not None:
         ax1.set_xlabel(effect_label, fontsize=fontsize, family=font_family)
+        ax1.tick_params(axis='x', 
+                        labelsize=fontsize,
+                        labelfontfamily=font_family)
     if eaf_label is not None:
         ax2.set_xlabel(eaf_label, fontsize=fontsize, family=font_family)
+        ax2.tick_params(axis='x', 
+                        labelsize=fontsize,
+                        labelfontfamily=font_family)
     if snpr2_label is not None:
         ax3.set_xlabel(snpr2_label, fontsize=fontsize, family=font_family)
-
+        ax3.tick_params(axis='x', 
+                        labelsize=fontsize,
+                        labelfontfamily=font_family)
     save_figure(fig, save, keyword="forest",save_args=save_kwargs, log=log, verbose=verbose)   
     
     return fig
