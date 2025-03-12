@@ -9,8 +9,9 @@ def _read_pipcs(data, output_prefix, log=Log(),verbose=True):
 
     pipcs = pd.read_csv("{}.pipcs".format(output_prefix))
     
-    log.write(" -Merging CHR and POS from main dataframe...",verbose=verbose)
-    pipcs = _merge_chrpos(data,pipcs)
+    if "CHR" not in pipcs.columns:
+        log.write(" -Merging CHR and POS from main dataframe...",verbose=verbose)
+        pipcs = _merge_chrpos(data,pipcs)
 
     log.write(" -Current pipcs Dataframe shape :",len(pipcs)," x ", len(pipcs.columns),verbose=verbose) 
     check_datatype(pipcs,log=log,verbose=verbose)

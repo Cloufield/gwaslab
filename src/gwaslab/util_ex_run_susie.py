@@ -9,7 +9,20 @@ from gwaslab.g_version import _check_susie_version
 from gwaslab.qc_fix_sumstats import start_to
 from gwaslab.qc_fix_sumstats import finished
 
-def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr=0.1,refine="TRUE",L=10, fillldna=True, n=None, delete=False, susie_args="", log=Log(),verbose=True):
+def _run_susie_rss(filepath, 
+                   r="Rscript", 
+                   mode="bs",
+                   max_iter=100000,
+                   min_abs_corr=0.1,
+                   refine="TRUE",
+                   L=10,
+                   fillldna=True, 
+                   n=None, 
+                   delete=False,  #if delete output file
+                   susie_args="", 
+                   log=Log(),
+                   main_sumstats=None,
+                   verbose=True):
     ##start function with col checking##########################################################
     _start_line = "run finemapping using SuSieR from command line"
     _end_line = "running finemapping using SuSieR from command line"
@@ -43,8 +56,8 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
     for index, row in filelist.iterrows(): 
         gc.collect()
         study = row["STUDY"]
-        ld_r_matrix = row["LD_R_MATRIX"]
-        sumstats = row["LOCUS_SUMSTATS"]
+        ld_r_matrix = row["LD_R_MATRIX"] #ld matrix path
+        sumstats = row["LOCUS_SUMSTATS"] #sumsttas path
         output_prefix = sumstats.replace(".sumstats.gz","")
         log.write(" -Running for: {} - {}".format(row["SNPID"],row["STUDY"] ))
         log.write("  -Locus sumstats:{}".format(sumstats))
@@ -88,34 +101,48 @@ def _run_susie_rss(filepath, r="Rscript", mode="bs",max_iter=100000,min_abs_corr
                     L, 
                     susie_args)
         log.write("  -SuSieR script: {}".format(susier_line))
-        with open("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]),"w") as file:
+        
+        temp_r_path = "_{}_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"],id(sumstats))
+        log.write("  -Createing temp R script: {}".format(temp_r_path))
+        with open(temp_r_path,"w") as file:
                 file.write(rscript)
 
-        script_run_r = "{} _{}_{}_gwaslab_susie_temp.R".format(r, study,row["SNPID"])
+        script_run_r = "{} {}".format(r, temp_r_path)
         
         try:
+            log.write("  -Running SuSieR from command line...")
             output = subprocess.check_output(script_run_r, stderr=subprocess.STDOUT, shell=True,text=True)
             #plink_process = subprocess.Popen("exec "+script_run_r, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,text=True)
             #output1,output2 = plink_process.communicate()
             #output= output1 + output2+ "\n"
             #plink_process.kill()
-            log.write("  -Running SuSieR from command line...")
+            
             r_log+= output + "\n"
             pip_cs = pd.read_csv("{}.pipcs".format(output_prefix))
             pip_cs["LOCUS"] = row["SNPID"]
             pip_cs["STUDY"] = row["STUDY"]
             locus_pip_cs = pd.concat([locus_pip_cs,pip_cs],ignore_index=True)
             	
-            os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))
+            os.remove(temp_r_path)
+            log.write("  -Removing temp R script: {}".format(temp_r_path))
+
             if delete == True:
                 os.remove("{}.pipcs".format(output_prefix))
+                log.write("  -Removing output file: {}".format(temp_r_path))
             else:
                 log.write("  -SuSieR result summary to: {}".format("{}.pipcs".format(output_prefix)))
         except subprocess.CalledProcessError as e:
             log.write(e.output)
-            os.remove("_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"]))
+            os.remove(temp_r_path)
+            log.write("  -Removing temp R script: {}".format(temp_r_path))
     
     locus_pip_cs = locus_pip_cs.rename(columns={"variable":"N_SNP","variable_prob":"PIP","cs":"CREDIBLE_SET_INDEX"})	
+    locus_pip_cs = pd.merge(locus_pip_cs, main_sumstats, on="SNPID",how="left")
+    
     finished(log=log, verbose=verbose, end_line=_end_line)
     return locus_pip_cs
 
+def _get_cs_lead(pipcs):
+    leads = pipcs.loc[pipcs["CREDIBLE_SET_INDEX"]>0,:]
+    leads = leads.sort_values(by="PIP",ascending=False).drop_duplicates(subset=["STUDY","LOCUS","CREDIBLE_SET_INDEX"])
+    return leads

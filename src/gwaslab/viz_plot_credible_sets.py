@@ -9,15 +9,18 @@ from gwaslab.viz_plot_mqqplot import _process_xlabel
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.util_in_filter_value import _filter_region
 from gwaslab.io_process_args import _extract_kwargs
+import copy
 
-def _plot_cs(pipcs,
-            region, 
+def _plot_cs(pipcs_raw,
+            region=None, 
+            locus=None,
             figax=None, 
             _posdiccul=None,
             xtick_chr_dict=None,
             pip="PIP",
             onlycs=False,
             pos="POS",
+            chrom="CHR",
             cs="CREDIBLE_SET_INDEX",
             marker_size=(45,85),
             fontsize = 12,
@@ -30,6 +33,7 @@ def _plot_cs(pipcs,
         '''
         pipcs : a DataFrame of finemapping results
         '''   
+        pipcs = pipcs_raw.copy()
         ## parameters ############################# 
         if xtick_chr_dict is None:         
                 xtick_chr_dict = get_number_to_chr()
@@ -40,11 +44,20 @@ def _plot_cs(pipcs,
         region_marker_shapes = ['o', '^','s','D','*','P','X','h','8']
         region_ld_colors_m = ["grey","#E51819","green","#F07818","#AD5691","yellow","purple"]
         
-
-        ## filter data #############################
-        pipcs = _filter_region(pipcs, region)
+        if region is not None:
+                ## filter data #############################
+                pipcs = _filter_region(pipcs, region)
+                log.write(" -Loading PIP and CS for variants in the region :{}".format(region))
+        
+        if locus is not None:
+                pipcs = pipcs.loc[pipcs["LOCUS"] == locus,:].copy()
+                log.write(" -Loading PIP and CS for variants in the locus :{}".format(region))
+                if region is None:
+                        region = (pipcs[chrom].iloc[0],pipcs[pos].min(),pipcs[pos].max())
+                        log.write(" -Extracted region:{}".format(region))
         if onlycs ==True:
                 pipcs = pipcs.loc[pipcs[cs]>0,:]
+                log.write(" -Loading only variants in CS...")
 
         pipcs[cs] = pipcs[cs].astype("string")
 

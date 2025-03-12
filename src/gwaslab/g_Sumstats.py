@@ -74,6 +74,7 @@ from gwaslab.viz_plot_mqqplot import mqqplot
 from gwaslab.viz_plot_trumpetplot import plottrumpet
 from gwaslab.viz_plot_compare_af import plotdaf
 from gwaslab.util_ex_run_susie import _run_susie_rss
+from gwaslab.util_ex_run_susie import _get_cs_lead
 from gwaslab.qc_fix_sumstats import _check_data_consistency
 from gwaslab.util_ex_ldsc import _estimate_h2_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_rg_by_ldsc
@@ -863,8 +864,11 @@ class Sumstats():
         #self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
     
     def run_susie_rss(self,**kwargs):
-        self.pipcs=_run_susie_rss(self.finemapping["path"],**kwargs)
+        self.pipcs=_run_susie_rss(self.finemapping["path"], main_sumstats = self.data[["SNPID","CHR","POS"]], **kwargs)
+        self.finemapping["pipcs"] = self.pipcs
         #self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**kwargs)
+    def get_cs_lead(self,**kwargs):
+        return _get_cs_lead(self.pipcs,**kwargs)
     
     def clump(self,**kwargs):
         self.clumps["clumps"], self.clumps["clumps_raw"], self.clumps["plink_log"] = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
@@ -876,9 +880,10 @@ class Sumstats():
 # loading aux data
     def read_pipcs(self,prefix,**kwargs):
         self.pipcs = _read_pipcs(self.data[["SNPID","CHR","POS"]],prefix, **kwargs)
+        self.finemapping["pipcs"] = self.pipcs
 
-    def plot_pipcs(self, region,**kwargs):
-        _plot_cs(self.pipcs, region, **kwargs)
+    def plot_pipcs(self, region=None, locus=None, **kwargs):
+        _plot_cs(self.pipcs, region=region,locus=locus, **kwargs)
 # to_format ###############################################################################################       
 
     def to_format(self, path, build=None, verbose=True, **kwargs):
