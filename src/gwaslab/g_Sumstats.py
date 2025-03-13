@@ -69,6 +69,7 @@ from gwaslab.g_meta import _init_meta
 from gwaslab.g_meta import _append_meta_record
 from gwaslab.util_ex_run_clumping import _clump
 from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
+from gwaslab.io_load_ld import tofinemapping_using_ld
 from gwaslab.util_ex_calculate_prs import _calculate_prs
 from gwaslab.viz_plot_mqqplot import mqqplot
 from gwaslab.viz_plot_trumpetplot import plottrumpet
@@ -862,7 +863,9 @@ class Sumstats():
     def calculate_ld_matrix(self,**kwargs):
         self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
         #self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
-    
+    def extract_ld_matrix(self,**kwargs):
+        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping_using_ld(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
+
     def run_susie_rss(self,**kwargs):
         self.pipcs=_run_susie_rss(self.finemapping["path"], main_sumstats = self.data[["SNPID","CHR","POS"]], **kwargs)
         self.finemapping["pipcs"] = self.pipcs
