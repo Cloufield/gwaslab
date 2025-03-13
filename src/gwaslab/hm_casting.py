@@ -11,7 +11,7 @@ from gwaslab.util_in_fill_data import filldata
 from Bio import SeqIO
 from itertools import combinations
 
-def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None, windowsizeb=10, log=Log(),suffixes=("_MOLD",""),verbose=True,return_not_matched_mold =False):
+def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None,add_raw_index=False, windowsizeb=10, log=Log(),suffixes=("_MOLD",""),verbose=True,return_not_matched_mold =False):
     
 
     cols_to_drop = []
@@ -24,7 +24,13 @@ def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None, windowsiz
     if len(cols_to_drop)>0:
         log.write(" -Dropping old IDs:{}".format(cols_to_drop), verbose=verbose)
         sumstats = sumstats.drop(columns=cols_to_drop)
-    
+    if add_raw_index==True:
+        index1= "_INDEX" + suffixes[0]
+        index2= "_INDEX" + suffixes[1]
+        mold[index1] = mold.index
+        sumstats[index2] =  sumstats.index
+        
+
     if ref_path is not None :
         # index for checking removed variants
         index1= "_INDEX" + suffixes[0]
