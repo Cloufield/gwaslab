@@ -28,10 +28,13 @@ def _load_ld_matrix(path,
     
     if fmt == "npz":
         r_matrix = sparse.load_npz(path).toarray()
-        if if_add_T==True:
-            r_matrix += r_matrix.T
-        if if_square==True:
-            r_matrix = np.power(r_matrix,2)
+    if fmt == "txt":
+        r_matrix = np.loadtxt(path,)
+
+    if if_add_T==True:
+        r_matrix += r_matrix.T
+    if if_square==True:
+        r_matrix = np.power(r_matrix,2)
     return r_matrix
     
 def _load_ld_map(path, 
@@ -40,19 +43,44 @@ def _load_ld_map(path,
                  pos="position", 
                  ref="allele1", 
                  alt="allele2",
-                 **args):
+                 ld_map_rename_dic = None,
+                 **ld_map_kwargs):
+    
+    if ld_map_rename_dic is not None:
+        ld_map_rename_dic_to_use={ld_map_rename_dic["EA"]:'EA_bim', 
+                                    ld_map_rename_dic["NEA"]:'NEA_bim', 
+                                    ld_map_rename_dic["POS"]:'POS', 
+                                    ld_map_rename_dic["CHR"]:'CHR',
+                                    ld_map_rename_dic["SNPID"]:'SNPID_bim'
+                                    }
+        ld_map_kwargs["usecols"]=list(ld_map_rename_dic.values())
+    else:
+        ld_map_rename_dic_to_use={alt:'EA_bim', 
+                                  ref:'NEA_bim', 
+                                  pos:'POS', 
+                                  chrom:'CHR',
+                                  snpid:"SNPID_bim"
+                                    }
+        ld_map_kwargs["usecols"]=[chrom, pos, ref, alt, snpid]
     #rsid    chromosome      position        allele1 allele2
-    ld_map = pd.read_csv(path,sep="\s+",**args)
-    ld_map = ld_map.rename(columns={alt:'EA_bim', ref:'NEA_bim', pos:'POS', chrom:'CHR', snpid:'SNPID_bim'}, errors='ignore')
+    if "sep" not in ld_map_kwargs:
+        ld_map_kwargs["sep"] = "\s+"
+    
+    ld_map = pd.read_csv(path,**ld_map_kwargs)
+    ld_map = ld_map.rename(columns=ld_map_rename_dic_to_use, errors='ignore')
     # "SNPID",0:"CHR_bim",3:"POS_bim",4:"EA_bim",5:"NEA_bim"
     return ld_map
 
 def _extract_variants(merged_sumstats, r_matrix, out, study, row, windowsizekb):
+    
     avaiable_index= merged_sumstats["_INDEX_BIM"].values 
+    
     reduced_r_matrix = r_matrix[np.ix_(avaiable_index, avaiable_index)]
+    
     snplist_path =   "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
     output_prefix =  "{}/{}_{}_{}".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
     output_path = "{}.ld.gz".format(output_prefix)
+    
     pd.DataFrame(reduced_r_matrix).to_csv(output_path,sep="\t",index=None,header=None)
     #reduced_r_matrix.to_csv("{}.ld.gz".format(output_prefix),se="\t")
     return output_path
@@ -127,6 +155,8 @@ def tofinemapping_using_ld(sumstats,
                   ld_fmt = "npz",
                   ld_if_square =  False,
                   ld_if_add_T = False,
+                  ld_map_rename_dic = None,
+                  ld_map_kwargs = None,
                   loci=None,
                   out="./",
                   windowsizekb=1000,
@@ -190,7 +220,7 @@ def tofinemapping_using_ld(sumstats,
         log.write(" -Processing locus with lead variant {} at CHR {} POS {} ...".format(row["SNPID"],row["CHR"],row["POS"]))
         locus_sumstats = _extract_variants_in_locus(sumstats, windowsizekb, locus = (row["CHR"],row["POS"]))
         
-        ld_map = _load_ld_map(ld_map_path)
+        ld_map = _load_ld_map(ld_map_path, ld_map_rename_dic = ld_map_rename_dic, **ld_map_kwargs )
 
         ## check available snps with reference file
         matched_sumstats = _merge_ld_map_with_sumstats(row=row, 
@@ -215,8 +245,6 @@ def tofinemapping_using_ld(sumstats,
         ## Calculate ld matrix using PLINK
         r_matrix = _load_ld_matrix(ld_path, fmt=ld_fmt, if_square=ld_if_square, if_add_T=ld_if_add_T)
         
-        snplist_path =   "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
-        output_prefix =  "{}/{}_{}_{}".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
         matched_ld_matrix_path = _extract_variants(matched_sumstats, r_matrix, out, study, row, windowsizekb)
 
         # print file list
