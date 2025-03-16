@@ -2,16 +2,47 @@ import pandas as pd
 from gwaslab.g_Log import Log
 from gwaslab.qc_check_datatype import check_datatype
 from gwaslab.qc_check_datatype import check_dataframe_memory_usage
+import re
+import os
 
 def _read_pipcs(data, output_prefix, log=Log(),verbose=True):
     log.write("Start to load PIP and CREDIBLE_SET_INDEX from file...",verbose=verbose)
-    log.write(" -File:{}.pipcs".format(output_prefix),verbose=verbose)
+    log.write(" -File:{}".format(output_prefix),verbose=verbose)
+    
+    if "@" in output_prefix:
+        log.write(" -Detected @ in path: load all matching pipcs files ...",verbose=verbose)
+        pipcs_path_list = []
+        pipcs_loci_list = []
 
-    pipcs = pd.read_csv("{}.pipcs".format(output_prefix))
+        dirname = os.path.dirname(output_prefix)
+        files = os.listdir(dirname)
+        target_file_name = os.path.basename(output_prefix).replace('@','([\w:_]+)')
+        for file in files:
+            if re.search(target_file_name, file) is not None:
+                pipcs_path_list.append(dirname+"/"+file)
+                pipcs_loci_list.append(re.search(target_file_name, file)[1])
+
+        pipcs_single_list=[]
+        for index,pipcs_path in enumerate(pipcs_path_list):
+            log.write(" -Loading {}:".format(pipcs_loci_list[index]) + pipcs_path)
+            pipcs_single = pd.read_csv(pipcs_path)
+            if "LOCUS" not in pipcs_single.columns:
+                pipcs_single["LOCUS"]=pipcs_loci_list[index]
+            pipcs_single_list.append(pipcs_single)
+
+        pipcs = pd.concat(pipcs_single_list, axis=0, ignore_index=True) 
+    else:
+        pipcs = pd.read_csv("{}".format(output_prefix))
     
     if "CHR" not in pipcs.columns:
         log.write(" -Merging CHR and POS from main dataframe...",verbose=verbose)
         pipcs = _merge_chrpos(data,pipcs)
+
+    pipcs = pipcs.rename(columns={
+        "cs":"CREDIBLE_SET_INDEX",
+        "variable_prob":"PIP",
+        "variable":"N_SNP"
+    })
 
     log.write(" -Current pipcs Dataframe shape :",len(pipcs)," x ", len(pipcs.columns),verbose=verbose) 
     check_datatype(pipcs,log=log,verbose=verbose)

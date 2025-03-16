@@ -43,7 +43,6 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
     else:
         additional_cols=[]
     hapmap3_ref = pd.read_csv(data_path,sep="\s+",usecols=["#CHROM","POS","rsid"]+additional_cols, dtype={"#CHROM":"string","POS":"string"})
-
     #rsid    A1      A2      #CHROM  POS
     #rs3094315       G       A       1       752566
     

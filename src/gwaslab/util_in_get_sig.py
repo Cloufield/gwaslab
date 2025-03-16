@@ -832,44 +832,88 @@ def _check_novel_set(insumstats,
         else:
             reference_dict[row[group_key]] = {row[snpset]:set([row[snpid]])}
     ############################################################################################
-    
+    #match group/trait
     try:
         no_reference_avaialble = allsig.loc[~allsig[group_key].isin(reference_dict.keys()),group_key]
         if len(no_reference_avaialble)>0:
             log.write(" -Groups not in reference: {}".format( ",".join(no_reference_avaialble)), verbose=verbose)
     except:
         pass
+    ############################################################################################
 
     log.write(" -Checking if variants are in reference variant sets...", verbose=verbose)    
-    known_list = allsig.apply(lambda x: check_overlap(x,snpid, group_key,reference_dict), axis=1)
+    #known_list = allsig.apply(lambda x: check_overlap(x,snpid, group_key,reference_dict), axis=1)
+    new_row_list = []
+    for index, row in allsig.iterrows():
+        
+        row = check_overlap(row, snpset, snpid, group_key,reference_dict)
+        new_row_list = new_row_list+row
+        known_df = pd.DataFrame(new_row_list,
+                                columns=[snpid,group_key, snpset,"KNOWN_SET","OVERLAP_VARIANT","KNOWN_SET_VARIANT"])   
     
-    allsig["KNOWN_SET"] = known_list.str[0]
-    allsig["KNOWN_VARIANT"] = known_list.str[1]
+    allsig = pd.merge(allsig,known_df, on=[snpid, group_key, snpset],how="left")
 
+    #allsig["KNOWN_SET"] = known_list.str[0]
+    #allsig["OVERLAP_VARIANT"] = known_list.str[1]
+    #allsig["KNOWN_SET_VARIANT"] = known_list.str[2]
+
+    ##
+    is_overlapped = ~allsig["KNOWN_SET"].isna()
+    allsig["KNOWN_SET_SIZE"] = 0
+    allsig.loc[is_overlapped, "KNOWN_SET_SIZE"] = allsig.loc[is_overlapped, "KNOWN_SET_VARIANT"].str.len()
+
+    # sumstats set dic
     back_dict={}
     for i in allsig[group_key].unique():
+        # for each trait in sumstats
         back_dict[i] ={}
         for j in allsig.loc[allsig[group_key]==i,snpset].unique():
+            #for each locus in each trait
             back_dict[i][j] =set()
-            for index, row in allsig.loc[(allsig[group_key]==i) & (allsig[snpset]==j) & (~allsig["KNOWN_SET"].isna()),:].iterrows():
-                back_dict[i][j].add("{}-{}-{}".format(row[group_key], row["KNOWN_SET"],row["KNOWN_VARIANT"]))
+            for index, row in allsig.loc[(allsig[group_key]==i) & (allsig[snpset]==j),:].iterrows():
+                #for each variant in each locus
+                back_dict[i][j].add("{}".format(row["SNPID"]))
 
-    allsig["KNOWN_SET_VARIANT"] = allsig.apply(lambda x: assign_set_variant(x,group_key,snpset,back_dict), axis=1)
+    allsig["SUMSTATS_SET_VARIANT"] = allsig.apply(lambda x: assign_set_variant(x,group_key,snpset,back_dict), axis=1)
+    allsig["SUMSTATS_SET_SIZE"] = 0
+    allsig["SUMSTATS_SET_SIZE"] = allsig[ "SUMSTATS_SET_VARIANT"].str.len()
     
     finished(log,verbose,_end_line)
     
     return allsig
 
-def check_overlap(x,snpid, group_key,reference_dict):
+def check_overlap(x,snpset, snpid, group_key,reference_dict):
+    
+    matched=[]
     if x[group_key] in reference_dict.keys():
+        # if trait match
         for key, value in reference_dict[x[group_key]].items():
+            # locus and snplist
             if x[snpid] in value:
-                return key, x[snpid]
-    return pd.NA, pd.NA, 
+                # if sumstats snp in reference snplist for locus
+                # return locus and snsumstats snppid
+                matched.append( (x[snpid], x[group_key],  x[snpset],  key,  x[snpid],  value))
+    if len(matched)==0:
+        matched = [(x[snpid], x[group_key],  x[snpset], pd.NA, pd.NA, pd.NA)]
+    return matched
+
+#def check_overlap(x,snpid, group_key,reference_dict):
+#    if x[group_key] in reference_dict.keys():
+#        # if trait match
+#        for key, value in reference_dict[x[group_key]].items():
+#            # locus and snplist
+#            if x[snpid] in value:
+#                # if sumstats snp in reference snplist for locus
+#                # return locus and snsumstats snppid
+#                return key, x[snpid], value
+#    return pd.NA, pd.NA, pd.NA
 
 def assign_set_variant(x,group_key,snpset,back_dict):
     if x[group_key] in back_dict.keys():
+        # if trait match
         if x[snpset] in back_dict[x[group_key]].keys():
+            #if locus match
             if len(back_dict[x[group_key]][x[snpset]]) >0:
+                # return sumstats snplist for locus
                 return back_dict[x[group_key]][x[snpset]]
     return pd.NA

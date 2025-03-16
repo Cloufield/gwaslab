@@ -191,6 +191,8 @@ def tofinemapping_using_ld(sumstats,
         suffixes=[""]
     if getlead_args is None:
         getlead_args={"windowsizekb":1000}
+    if ld_map_kwargs is None:
+        ld_map_kwargs={}
     
     if loci is None:
         log.write(" -Loci were not provided. All significant loci will be automatically extracted...",verbose=verbose)

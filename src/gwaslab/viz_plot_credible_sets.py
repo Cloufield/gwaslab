@@ -116,8 +116,10 @@ def _plot_cs(pipcs_raw,
         
         for i,label in enumerate(labels):
                 if label in [str(j) for j in range(1,10)]:
+
                         new_labels.append("#"+labels[i])
                         new_handles.append(handles[i])
+        
         
         ax.legend(labels =new_labels,  
                   handles=new_handles, 
@@ -125,7 +127,7 @@ def _plot_cs(pipcs_raw,
                   bbox_to_anchor=(0.995, 0.995), 
                   ncol=1, 
                   markerfirst=False,
-                  scatterpoints=2, 
+                  scatterpoints=1, 
                   title=legend_title, 
                   title_fontproperties={"size":fontsize,"family":font_family},
                   prop={"size":fontsize,"family":font_family},

@@ -791,7 +791,22 @@ class Sumstats():
                            **kwargs)
         # return sumstats object    
         return output
-    
+
+    def check_cs_overlap(self, **kwargs):
+        if "SNPID" in self.pipcs.columns:
+            id_to_use = "SNPID"
+        else:
+            id_to_use = "rsID"
+        output = _check_novel_set(self.pipcs,
+                           id=id_to_use,
+                           chrom="CHR",
+                           pos="POS",
+                           p="P",
+                           log=self.log,
+                           **kwargs)
+        # return sumstats object    
+        return output
+
     def anno_gene(self, **kwargs):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
