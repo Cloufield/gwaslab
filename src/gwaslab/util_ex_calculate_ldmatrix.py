@@ -28,6 +28,7 @@ def tofinemapping(sumstats,
                   overwrite=False,
                   log=Log(),
                   suffixes=None,
+                  extra_plink_option="",
                   verbose=True,
                   **kwargs):
     ##start function with col checking##########################################################
@@ -128,6 +129,7 @@ def tofinemapping(sumstats,
                                                             filetype=filetype,
                                                             plink=plink,
                                                             plink2=plink2,
+                                                            extra_plink_option=extra_plink_option,
                                                             verbose=verbose)
     
     
@@ -156,7 +158,7 @@ def tofinemapping(sumstats,
 
 
 
-def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype,plink,plink2,verbose=True):
+def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype,plink,plink2,extra_plink_option="",verbose=True):
     '''
     Calculate LD r matrix by calling PLINK; return file name and log
     '''
@@ -187,8 +189,8 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
             --allow-no-sex \
             --threads {} {}\
             --write-snplist \
-            --out {}
-        """.format(plink, bfile_to_use, snplist_path , row["CHR"], mode, n_cores, memory_flag if memory is not None else "", output_prefix)
+            --out {} {}
+        """.format(plink, bfile_to_use, snplist_path , row["CHR"], mode, n_cores, memory_flag if memory is not None else "", output_prefix, extra_plink_option)
 
         try:
             output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
