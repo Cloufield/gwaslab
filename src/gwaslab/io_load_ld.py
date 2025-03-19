@@ -171,19 +171,18 @@ def process_ld(sumstats,
 
 
     log.write(" -Retrieving index...", verbose=verbose)
-    log.write(" -Ref variants in the region: {}".format( sumstats ), verbose=verbose)
+    
     # match sumstats pos and ref pos: 
     # get ref index for its first appearance of sumstats pos
      #######################################################################################
-    if ld_map_rename_dic is None:
-        ld_map_rename_dic={}
     if ld_map_kwargs is None:
         ld_map_kwargs={}
 
     ld_map = _load_ld_map(ld_map_path, 
                           ld_map_rename_dic = ld_map_rename_dic, 
                           **ld_map_kwargs )
-
+    
+    log.write(" -Ref variants: {}".format( len(ld_map) ), verbose=verbose)
 
     ## check available snps with reference file
     sumstats = _merge_ld_map_with_sumstats_for_regional(
@@ -238,8 +237,10 @@ def process_ld(sumstats,
             lead_snp_ref_index = sumstats.loc[lead_id, "REFINDEX"]
 
             is_matched = ~sumstats["REFINDEX"].isna()
-            ref_index = sumstats.loc[is_matched,"REFINDEX"]
-            sumstats.loc[is_matched, rsq] = r_matrix[lead_snp_ref_index, ref_index]
+
+            ref_index = sumstats.loc[is_matched,"REFINDEX"].astype("Int64")
+            
+            sumstats.loc[is_matched, rsq] = r_matrix[int(lead_snp_ref_index), list(ref_index.values)]
 
         else:
             log.write(" -Lead SNP not found in reference...", verbose=verbose)
@@ -359,13 +360,22 @@ def _load_ld_map(path,
                  **ld_map_kwargs):
     
     if ld_map_rename_dic is not None:
-        ld_map_rename_dic_to_use={ld_map_rename_dic["EA"]:'EA_bim', 
-                                    ld_map_rename_dic["NEA"]:'NEA_bim', 
-                                    ld_map_rename_dic["POS"]:'POS', 
-                                    ld_map_rename_dic["CHR"]:'CHR',
-                                    ld_map_rename_dic["SNPID"]:'SNPID_bim'
-                                    }
-        ld_map_kwargs["usecols"]=list(ld_map_rename_dic.values())
+        if type(ld_map_rename_dic) is dict:
+            ld_map_rename_dic_to_use={ld_map_rename_dic["EA"]:'EA_bim', 
+                                        ld_map_rename_dic["NEA"]:'NEA_bim', 
+                                        ld_map_rename_dic["POS"]:'POS', 
+                                        ld_map_rename_dic["CHR"]:'CHR',
+                                        ld_map_rename_dic["SNPID"]:'SNPID_bim'
+                                        }
+            ld_map_kwargs["usecols"]=list(ld_map_rename_dic.values())
+        else:
+            ld_map_rename_dic_to_use={ld_map_rename_dic[4]:'EA_bim', 
+                                        ld_map_rename_dic[3]:'NEA_bim', 
+                                        ld_map_rename_dic[2]:'POS', 
+                                        ld_map_rename_dic[1]:'CHR',
+                                        ld_map_rename_dic[0]:'SNPID_bim'
+                                        }
+            ld_map_kwargs["usecols"]=ld_map_rename_dic
     else:
         ld_map_rename_dic_to_use={alt:'EA_bim', 
                                   ref:'NEA_bim', 
@@ -483,8 +493,8 @@ def _merge_ld_map_with_sumstats_for_regional(
     
     # matching by SNPID
     # preserve bim keys (use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.)
-    combined_df = pd.merge(ld_map, locus_sumstats, on=["CHR","POS"],how="inner")
-    
+    combined_df = pd.merge(locus_sumstats, ld_map, on=["CHR","POS"],how="left")
+    combined_df[["EA_bim","NEA_bim"]] = combined_df[["EA_bim","NEA_bim"]].fillna("N")
     # match allele
     perfect_match =  ((combined_df["EA"] == combined_df["EA_bim"]) & (combined_df["NEA"] == combined_df["NEA_bim"]) ) 
 
@@ -492,7 +502,11 @@ def _merge_ld_map_with_sumstats_for_regional(
     #ea_mis_match = combined_df["EA"] != combined_df["EA_bim"]
     flipped_match = ((combined_df["EA"] == combined_df["NEA_bim"])& (combined_df["NEA"] == combined_df["EA_bim"]))
     
-    allele_match = perfect_match | flipped_match
-    log.write("   -Total Variants matched:{}".format(sum(allele_match)),verbose=verbose)
+    not_matched = combined_df[index2].isna() 
+
+    allele_match = perfect_match | flipped_match 
+
+    log.write("   -Total Variants matched:{}".format( sum(allele_match) ),verbose=verbose)
+    log.write("   -Total Variants not in reference:{}".format(sum(not_matched)),verbose=verbose)
     
-    return combined_df.loc[allele_match,:]
+    return combined_df.loc[allele_match | not_matched,:]

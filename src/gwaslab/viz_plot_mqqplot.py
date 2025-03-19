@@ -260,7 +260,6 @@ def mqqplot(insumstats,
 
     colors = _update_arg(colors, ["#597FBD","#74BAD3"])
 
-    ld_map_rename_dic = _update_args(ld_map_rename_dic,dict())
     ld_map_kwargs = _update_args(ld_map_kwargs,dict())
 
     if region is not None:
