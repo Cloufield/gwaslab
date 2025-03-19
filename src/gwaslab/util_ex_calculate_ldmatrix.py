@@ -16,6 +16,7 @@ def tofinemapping(sumstats,
                   bfile=None, 
                   vcf=None, 
                   loci=None,
+                  loci_chrpos=None,
                   out="./",
                   plink="plink",
                   plink2="plink2",
@@ -53,11 +54,21 @@ def tofinemapping(sumstats,
     if getlead_args is None:
         getlead_args={"windowsizekb":1000}
     
-    if loci is None:
-        log.write(" -Loci were not provided. All significant loci will be automatically extracted...",verbose=verbose)
-        sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
+    if loci_chrpos is None:
+        if loci is None:
+            log.write(" -Loci were not provided. All significant loci will be automatically extracted...",verbose=verbose)
+            sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
+        else:
+            sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
     else:
-        sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
+        sig_df = pd.DataFrame()
+        for chrpos in loci_chrpos:
+            chrpos_row_dict={}
+            chrpos_row_dict["SNPID"]="{}:{}".format(chrpos[0], chrpos[1])
+            chrpos_row_dict["CHR"] = chrpos[0]
+            chrpos_row_dict["POS"] = chrpos[1]
+            chrpos_row = pd.Series(chrpos_row_dict).to_frame().T
+            sig_df = pd.concat([sig_df, chrpos_row],ignore_index=True)        
     
     log.write(" -plink1.9 path: {}".format(plink),verbose=verbose)
     log.write(" -plink2 path: {}".format(plink2),verbose=verbose)

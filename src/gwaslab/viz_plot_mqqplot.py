@@ -25,6 +25,7 @@ from gwaslab.viz_plot_qqplot import _plot_qq
 from gwaslab.hm_harmonize_sumstats import auto_check_vcf_chr_dict
 from gwaslab.viz_plot_regional2 import _plot_regional
 from gwaslab.viz_plot_regional2 import process_vcf
+from gwaslab.io_load_ld import process_ld
 from gwaslab.viz_plot_regional2 import _get_lead_id
 from gwaslab.viz_aux_quickfix import _get_largenumber
 from gwaslab.viz_aux_quickfix import _quick_fix_p_value
@@ -113,6 +114,13 @@ def mqqplot(insumstats,
           region_marker_shapes=None,
           region_legend_marker=True,
           region_ref_alias = None,
+          ld_path=None,
+          ld_map_path=None,
+          ld_fmt = "npz",
+          ld_if_square =  False,
+          ld_if_add_T = False,
+          ld_map_rename_dic = None,
+          ld_map_kwargs = None,
           cbar_title='LD $\mathregular{r^2}$ with variant',
           cbar_fontsize = None,
           cbar_scale=True,
@@ -251,6 +259,9 @@ def mqqplot(insumstats,
     arrow_kwargs = _update_args(arrow_kwargs,dict())
 
     colors = _update_arg(colors, ["#597FBD","#74BAD3"])
+
+    ld_map_rename_dic = _update_args(ld_map_rename_dic,dict())
+    ld_map_kwargs = _update_args(ld_map_kwargs,dict())
 
     if region is not None:
         if marker_size == (5,20):
@@ -585,7 +596,25 @@ def mqqplot(insumstats,
                                verbose=verbose,
                                vcf_chr_dict=vcf_chr_dict,
                                tabix=tabix)
-
+    elif ld_path is not None:
+        sumstats = process_ld(
+            ld_path=ld_path,
+            ld_map_path = ld_map_path, 
+            sumstats=sumstats, 
+            region=region, 
+            region_ref=region_ref, 
+            log=log ,
+            pos=pos,
+            ea=ea,
+            nea=nea,
+            region_ld_threshold=region_ld_threshold,
+            verbose=verbose,
+            ld_fmt = ld_fmt,
+            ld_if_square =  ld_if_square,
+            ld_if_add_T = ld_if_add_T,
+            ld_map_rename_dic = ld_map_rename_dic,
+            ld_map_kwargs = ld_map_kwargs
+        )
     #sort & add id
     ## Manhatann plot ###################################################
     if ("m" in mode) or ("r" in mode): 
@@ -603,7 +632,7 @@ def mqqplot(insumstats,
         sumstats["chr_hue"]=sumstats[chrom].astype("string")
 
         if "r" in mode:
-            if vcf_path is None:
+            if vcf_path is None and ld_path is None:
                 sumstats["LD"]=100
                 sumstats["SHAPE"]=1
             sumstats["chr_hue"]=sumstats["LD"]
@@ -787,6 +816,7 @@ def mqqplot(insumstats,
                                 ax3=ax3,
                                 region=region,
                                 vcf_path=vcf_path,
+                                ld_path=ld_path,
                                 marker_size=marker_size,
                                 build=build,
                                 cbar_scale=cbar_scale,

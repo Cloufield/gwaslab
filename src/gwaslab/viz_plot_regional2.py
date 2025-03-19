@@ -35,6 +35,7 @@ def _plot_regional(
     ax3,
     region,
     vcf_path,
+    ld_path,
     marker_size,
     build,
     cut_line_color,
@@ -125,7 +126,7 @@ def _plot_regional(
 
         ##########################################################################################################
 
-        if (vcf_path is not None) and region_ld_legend:
+        if ((vcf_path is not None) or (ld_path is not None)) and region_ld_legend:
             ## plot cbar
             ax1, cbar = _add_ld_legend(sumstats=sumstats, 
                             ax1=ax1, 
