@@ -118,7 +118,7 @@ def tofinemapping_using_ld(sumstats,
         #########################################################################################################
 
         ## Calculate ld matrix using PLINK
-        r_matrix = _load_ld_matrix(ld_path, fmt=ld_fmt, if_square=ld_if_square, if_add_T=ld_if_add_T)
+        r_matrix = _load_ld_matrix(ld_path, fmt=ld_fmt, if_square=ld_if_square, if_add_T=ld_if_add_T, log=log, verbose=verbose)
         
         matched_ld_matrix_path = _extract_variants(matched_sumstats, r_matrix, out, study, row, windowsizekb)
 
@@ -197,7 +197,9 @@ def process_ld(sumstats,
     r_matrix = _load_ld_matrix(ld_path, 
                                fmt=ld_fmt, 
                                if_square=ld_if_square, 
-                               if_add_T=ld_if_add_T)
+                               if_add_T=ld_if_add_T, 
+                               log=log, 
+                               verbose=verbose)
 
     #for loop to add LD information
     #############################################################################################
@@ -337,16 +339,22 @@ def process_ld(sumstats,
 def _load_ld_matrix(path, 
                     fmt="npz", 
                     if_square=False, 
-                    if_add_T=False):
+                    if_add_T=False,
+                    log=Log(),
+                    verbose=True):
     
     if fmt == "npz":
+        log.write("   -Loading LD matrix from npz file...",verbose=verbose)
         r_matrix = sparse.load_npz(path).toarray()
     if fmt == "txt":
-        r_matrix = np.loadtxt(path,)
+        log.write("   -Loading LD matrix from text file...",verbose=verbose)
+        r_matrix = np.loadtxt(path)
 
     if if_add_T==True:
+        log.write("   -Transforming LD matrix by adding its transpose...",verbose=verbose)
         r_matrix += r_matrix.T
     if if_square==True:
+        log.write("   -Transforming LD matrix by squaring all elements...",verbose=verbose)
         r_matrix = np.power(r_matrix,2)
     return r_matrix
     

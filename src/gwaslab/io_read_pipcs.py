@@ -5,7 +5,7 @@ from gwaslab.qc_check_datatype import check_dataframe_memory_usage
 import re
 import os
 
-def _read_pipcs(data, output_prefix, log=Log(),verbose=True):
+def _read_pipcs(data, output_prefix, study=None, log=Log(),verbose=True):
     log.write("Start to load PIP and CREDIBLE_SET_INDEX from file...",verbose=verbose)
     log.write(" -File:{}".format(output_prefix),verbose=verbose)
     
@@ -45,6 +45,9 @@ def _read_pipcs(data, output_prefix, log=Log(),verbose=True):
     })
 
     log.write(" -Current pipcs Dataframe shape :",len(pipcs)," x ", len(pipcs.columns),verbose=verbose) 
+    
+    pipcs["STUDY"] = study
+
     check_datatype(pipcs,log=log,verbose=verbose)
     check_dataframe_memory_usage(pipcs,log=log,verbose=verbose)
     log.write("Finished loading PIP and CREDIBLE_SET_INDEX from file!",verbose=verbose)

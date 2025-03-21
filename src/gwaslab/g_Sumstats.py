@@ -897,7 +897,7 @@ class Sumstats():
 
 # loading aux data
     def read_pipcs(self,prefix,**kwargs):
-        self.pipcs = _read_pipcs(self.data[["SNPID","CHR","POS"]],prefix, **kwargs)
+        self.pipcs = _read_pipcs(self.data[["SNPID","CHR","POS"]],prefix, study= self.meta["gwaslab"]["study_name"], **kwargs)
         self.finemapping["pipcs"] = self.pipcs
 
     def plot_pipcs(self, region=None, locus=None, **kwargs):

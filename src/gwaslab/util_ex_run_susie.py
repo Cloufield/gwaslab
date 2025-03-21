@@ -80,6 +80,8 @@ def _run_susie_rss(filepath,
 
         output <- susie_fitted_summary$vars
         output$SNPID <- sumstats$SNPID[susie_fitted_summary$vars$variable]
+        output$LOCUS <- "{}"
+        output$STUDY <- "{}"
 
         write.csv(output, "{}.pipcs", row.names = FALSE)
         '''.format(sumstats, 
@@ -92,6 +94,8 @@ def _run_susie_rss(filepath,
                     refine, 
                     L, 
                     susie_args, 
+                    row["SNPID"],
+                    row["STUDY"],
                     output_prefix)
         susier_line = "susie_rss({}, n = {}, R = R, max_iter = {}, min_abs_corr={}, refine = {}, L = {}{})".format("z= sumstats$Z," if mode=="z" else "bhat = sumstats$BETA,shat = sumstats$SE,",
                     n if n is not None else "n", 
