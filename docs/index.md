@@ -23,7 +23,7 @@ Warning: Known issues of GWASLab are summarized in [https://cloufield.github.io/
 ### install via pip
 
 ```
-pip install gwaslab==3.5.5
+pip install gwaslab==3.5.7
 ```
 
 ```python
