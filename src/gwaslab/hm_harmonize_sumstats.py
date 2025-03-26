@@ -1335,8 +1335,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 ################################################################################################################
 def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,column_name="DAF",suffix="",n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
     ##start function with col checking##########################################################
-    _start_line = "check the difference between EAF and reference VCF ALT frequency"
-    _end_line = "checking the difference between EAF and reference VCF ALT frequency"
+    _start_line = "check the difference between EAF (sumstats) and ALT frequency (reference VCF)"
+    _end_line = "checking the difference between EAF (sumstats) and ALT frequency (reference VCF)"
     _start_cols = [chr,pos,ref,alt,eaf,status]
     _start_function = ".check_daf()"
     _must_args ={"ref_alt_freq":ref_alt_freq}
@@ -1381,7 +1381,8 @@ def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,colu
         pool.join()
     ###########################
         #status_inferred = sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]].apply(lambda x:check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict),axis=1)
-        
+        log.write(" -Difference in allele frequency (DAF) = EAF (sumstats) - ALT_AF (reference VCF)", verbose=verbose)  
+        log.write(" -Note: this DAF is not the derived allele frequency.", verbose=verbose)  
         #sumstats.loc[good_chrpos,"DAF"] = status_inferred.values
         #sumstats["DAF"]=sumstats["DAF"].astype("float")     
         log.write(" - {} max:".format(column_name), np.nanmax(sumstats[column_name]),verbose=verbose)
@@ -1417,8 +1418,8 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
 
 def paralleleinferaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
     ##start function with col checking##########################################################
-    _start_line = "infer EAF using reference VCF ALT frequency"
-    _end_line = "inferring EAF using reference VCF ALT frequency"
+    _start_line = "infer sumstats EAF using reference VCF ALT frequency"
+    _end_line = "inferring sumstats EAF using reference VCF ALT frequency"
     _start_cols = [chr,pos,ref,alt,status]
     _start_function = ".infer_af()"
     _must_args ={"ref_alt_freq":ref_alt_freq}
