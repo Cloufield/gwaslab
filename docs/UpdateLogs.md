@@ -1,5 +1,9 @@
 # Update Logs
 
+# 3.5.8 202504
+- added build check for `get_novel` when using efo ids.
+- added auto-saving for API responses from GWASCatalog.
+
 # 3.5.7 20250307
 - updated Python version requirements (3.9 - 3.12)
 - updated font family for mqq-related functions (default: Arial)

@@ -3,43 +3,86 @@ import json
 import pandas as pd
 import gwaslab as gl
 from gwaslab.g_Log import Log
+from datetime import datetime
+import os
 
-def gwascatalog_trait(efo,source="NCBI",sig_level=5e-8,verbose=True,log=Log()):
+def find_efo_cache(efo, path):
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if efo in file:
+                return os.path.join(root, file)
+    return False
+
+def gwascatalog_trait(efo,
+                      source="NCBI",
+                      sig_level=5e-8,
+                      use_cache=True,
+                      cache_dir="./",
+                      verbose=True,
+                      log=Log()):
     
     #https://www.ebi.ac.uk/gwas/rest/docs/api
     
     base_url = "https://www.ebi.ac.uk/gwas/rest/api/efoTraits/"+efo
     log.write("Start to retrieve data from GWASCatalog...", verbose=verbose)
-    log.write(" -Please make sure your sumstats is based on GRCh38...", verbose=verbose)
-    log.write(" -Requesting (GET) trait information through the GWASCatalog API...", verbose=verbose)
-    log.write(" -EFO trait api: "+ base_url, verbose=verbose)
-    text = requests.get(base_url)
+    
+    
+    if use_cache==True:
+        log.write("searching cache in : {}".format(cache_dir))
+        cache = find_efo_cache(efo, cache_dir)
+        if cache==False:
+            log.write(" -Cache not found for {}... Downloading from GWASCatalog...".format(cache), verbose=verbose)
+    else:
+        cache = False
 
-    log.write(" -Status code: {}".format(text.status_code), verbose=verbose) 
-    if text.status_code!=200:
-        log.write(" -Status code is not 200. Access failed. Please check your internet or the GWAS Catalog sever status.", verbose=verbose) 
-        log.write(" -Message:{}".format(text.text), verbose=verbose) 
-        return 0
+    if cache==False:
+        #log.write(" -Please make sure your sumstats is based on GRCh38...", verbose=verbose)
+        log.write(" -Requesting (GET) trait information through the GWASCatalog API...", verbose=verbose)
+        log.write(" -EFO trait api: "+ base_url, verbose=verbose)
+        text = requests.get(base_url)
 
-    api_response = json.loads(text.text)
-    log.write(" -Trait Name:",api_response["trait"], verbose=verbose)
-    log.write(" -Trait URL:",api_response["uri"], verbose=verbose) 
+        log.write(" -Status code: {}".format(text.status_code), verbose=verbose) 
+        if text.status_code!=200:
+            log.write(" -Status code is not 200. Access failed. Please check your internet or the GWAS Catalog sever status.", verbose=verbose) 
+            log.write(" -Message:{}".format(text.text), verbose=verbose) 
+            return 0
+
+        api_response = json.loads(text.text)
+        log.write(" -Trait Name:",api_response["trait"], verbose=verbose)
+        log.write(" -Trait URL:",api_response["uri"], verbose=verbose) 
+            
+        base_url = "https://www.ebi.ac.uk/gwas/rest/api/efoTraits/"+efo+"/associations?projection=associationByEfoTrait"    
+        log.write(" -Requesting (GET) GWAS associations through the GWASCatalog API...", verbose=verbose)
+        log.write(" -associationsByTraitSummary API: "+ base_url, verbose=verbose)   
+        log.write(" -Note: this step might take a while...", verbose=verbose)   
         
-    base_url = "https://www.ebi.ac.uk/gwas/rest/api/efoTraits/"+efo+"/associations?projection=associationByEfoTrait"    
-    log.write(" -Requesting (GET) GWAS associations through the GWASCatalog API...", verbose=verbose)
-    log.write(" -associationsByTraitSummary API: "+ base_url, verbose=verbose)   
-    log.write(" -Note: this step might take a while...", verbose=verbose)   
-    
-    # get request and check status code of response
-    raw_data = requests.get(base_url)
-    
-    # whether to proceed based on status code
-    is_proceed = check_request_status_code(raw_data.status_code,verbose=verbose,log=log)
-    if is_proceed is False: return False
-    
-    log.write(" -Loading json ...", verbose=verbose)
-    # Transform API response from JSON into Python dictionary
-    api_response = json.loads(raw_data.text)
+        # get request and check status code of response
+        raw_data = requests.get(base_url)
+        
+        # whether to proceed based on status code
+        is_proceed = check_request_status_code(raw_data.status_code,verbose=verbose,log=log)
+        if is_proceed is False: return False
+        
+
+        log.write(" -Loading json ...", verbose=verbose)
+        # Transform API response from JSON into Python dictionary
+        api_response = json.loads(raw_data.text)
+
+        now = datetime.now() # current date and time
+        datestring = now.strftime("%Y%m%d")
+        json_path = cache_dir + "GWASCatalog_{}_associationsByTraitSummary_text_{}.json".format(efo, datestring)
+        
+        try:
+            log.write(" -Saving json to: {} ...".format(json_path), verbose=verbose) 
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(api_response, f, ensure_ascii=False, indent=4)
+        except:
+            pass
+    else:
+        log.write(" -Loading cache for {}: {} ...".format(efo, cache), verbose=verbose) 
+        with open(cache) as f:
+            api_response = json.load(f)
+        
     log.write(" -Parsing json ...", verbose=verbose)        
     # An 
     records=list()

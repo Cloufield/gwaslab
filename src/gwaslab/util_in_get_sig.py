@@ -17,6 +17,7 @@ from gwaslab.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.qc_fix_sumstats import check_dataframe_shape
 from gwaslab.qc_fix_sumstats import start_to
 from gwaslab.qc_fix_sumstats import finished
+from gwaslab.qc_build import _check_build
 from gwaslab.util_in_correct_winnerscurse import wc_correct
 # getsig
 # closest_gene
@@ -372,6 +373,8 @@ def getnovel(insumstats,
            xymt=["X","Y","MT"],
            anno=False,
            wc_correction=False,
+           use_cache=True,
+           cache_dir="./",
            build="19",
            source="ensembl",
            gwascatalog_source="NCBI",
@@ -405,15 +408,26 @@ def getnovel(insumstats,
     ############################################################################################
     knownsig = pd.DataFrame()
     if efo != False:
+        # For GWAS catalog, checking if sumstats build is hg38
+        _check_build(target_build="38" ,build=build ,log=log,verbose=verbose)
+        
         if type(efo) is not list:
             log.write("Start to retrieve data using EFO: {}...".format(efo), verbose=verbose)
-            known_Sumstats = gwascatalog_trait(efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
+            known_Sumstats = gwascatalog_trait(efo,source=gwascatalog_source,
+                                               sig_level=sig_level,
+                                               use_cache=use_cache,
+                                               cache_dir=cache_dir,
+                                               verbose=verbose,log=log)
             knownsig = known_Sumstats.data.copy()
-        else:
+        else:            
             knownsig=pd.DataFrame()
             log.write("Start to retrieve data using {} EFOs: {}...".format(len(efo),efo), verbose=verbose)
+
             for single_efo in efo:
-                known_Sumstats = gwascatalog_trait(single_efo,source=gwascatalog_source,sig_level=sig_level,verbose=verbose,log=log)
+                known_Sumstats = gwascatalog_trait(single_efo,source=gwascatalog_source,
+                                                   use_cache=use_cache,
+                                                   cache_dir=cache_dir,
+                                                   sig_level=sig_level,verbose=verbose,log=log)
                 known_Sumstats.data["EFOID"] = single_efo
                 knownsig = pd.concat([known_Sumstats.data, knownsig],ignore_index=True)
         knownsig["CHR"] = knownsig["CHR"].astype("Int64")

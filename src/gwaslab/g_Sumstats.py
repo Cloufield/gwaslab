@@ -751,6 +751,7 @@ class Sumstats():
                            chrom="CHR",
                            pos="POS",
                            p="P",
+                           build=self.meta["gwaslab"]["genome_build"],
                            log=self.log,
                            **kwargs)
         # return sumstats object    
