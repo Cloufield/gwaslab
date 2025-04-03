@@ -99,8 +99,6 @@ def _run_two_sample_mr(sumstatspair_object,
     write.csv(results_directionality, "{prefix}.directionality", row.names = FALSE)
     '''.format(prefix = prefix)
     
-
-    
     # Two Sample MR
     # Tests
     ## Pleiotropy

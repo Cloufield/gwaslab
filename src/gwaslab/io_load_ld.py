@@ -120,7 +120,7 @@ def tofinemapping_using_ld(sumstats,
         ## Calculate ld matrix using PLINK
         r_matrix = _load_ld_matrix(ld_path, fmt=ld_fmt, if_square=ld_if_square, if_add_T=ld_if_add_T, log=log, verbose=verbose)
         
-        matched_ld_matrix_path = _extract_variants(matched_sumstats, r_matrix, out, study, row, windowsizekb)
+        matched_ld_matrix_path = _extract_variants(matched_sumstats, r_matrix, out, study, row, windowsizekb, log=log, verbose=verbose)
 
         # print file list
         row_dict={}
@@ -401,12 +401,18 @@ def _load_ld_map(path,
     # "SNPID",0:"CHR_bim",3:"POS_bim",4:"EA_bim",5:"NEA_bim"
     return ld_map
 
-def _extract_variants(merged_sumstats, r_matrix, out, study, row, windowsizekb):
+def _extract_variants(merged_sumstats, r_matrix, out, study, row, windowsizekb, log, verbose):
     
-    avaiable_index= merged_sumstats["_INDEX_BIM"].values 
-    
+    avaiable_index = merged_sumstats["_INDEX_BIM"].values 
+
+    flipped = merged_sumstats["_FLIPPED"].values 
+
     reduced_r_matrix = r_matrix[np.ix_(avaiable_index, avaiable_index)]
     
+    log.write(" -Flipping LD matrix for {} variants...".format(sum(flipped)),verbose=verbose)
+    reduced_r_matrix[flipped,:] = -1 * reduced_r_matrix[flipped,:]
+    reduced_r_matrix[:,flipped] = -1 * reduced_r_matrix[:,flipped]
+
     snplist_path =   "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
     output_prefix =  "{}/{}_{}_{}".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
     output_path = "{}.ld.gz".format(output_prefix)
@@ -428,7 +434,8 @@ def _merge_ld_map_with_sumstats(row,
     index2= "_INDEX_BIM"
     locus_sumstats[index1] = locus_sumstats.index
     ld_map[index2] =  ld_map.index
-
+    locus_sumstats["_FLIPPED"] = False
+    
     if suffixes is None:
             suffixes=[""]
     
@@ -457,24 +464,24 @@ def _merge_ld_map_with_sumstats(row,
         log.warning("Lead variant was not available in reference!")
     
     # adjust statistics
-    output_columns=["SNPID","CHR","POS","EA_bim","NEA_bim","_INDEX_BIM"]
+    output_columns=["SNPID","CHR","POS","EA","NEA","_INDEX_BIM","_FLIPPED"]
     for suffix in suffixes:
         if ("BETA"+suffix in locus_sumstats.columns) and ("SE"+suffix in locus_sumstats.columns):
-            log.write("   -Flipping BETA{} for variants with flipped alleles...".format(suffix))
-            combined_df.loc[flipped_match,"BETA"+suffix] = - combined_df.loc[flipped_match,"BETA"+suffix]
+            #log.write("   -Flipping BETA{} for variants with flipped alleles...".format(suffix))
+            #combined_df.loc[flipped_match,"BETA"+suffix] = - combined_df.loc[flipped_match,"BETA"+suffix]
             output_columns.append("BETA"+suffix)
             output_columns.append("SE"+suffix)
         if "Z" in locus_sumstats.columns:
-            log.write("   -Flipping Z{} for variants with flipped alleles...".format(suffix))
-            combined_df.loc[flipped_match,"Z"+suffix] = - combined_df.loc[flipped_match,"Z"+suffix]
+            #log.write("   -Flipping Z{} for variants with flipped alleles...".format(suffix))
+            #combined_df.loc[flipped_match,"Z"+suffix] = - combined_df.loc[flipped_match,"Z"+suffix]
             output_columns.append("Z"+suffix)
         if "EAF" in locus_sumstats.columns:
-            log.write("   -Flipping EAF{} for variants with flipped alleles...".format(suffix))
-            combined_df.loc[flipped_match,"EAF"+suffix] = 1 - combined_df.loc[flipped_match,"EAF"+suffix]
+            #log.write("   -Flipping EAF{} for variants with flipped alleles...".format(suffix))
+            #combined_df.loc[flipped_match,"EAF"+suffix] = 1 - combined_df.loc[flipped_match,"EAF"+suffix]
             output_columns.append("EAF"+suffix)
         if "N" in locus_sumstats.columns:
             output_columns.append("N"+suffix)
-    
+    combined_df.loc[flipped_match,"_FLIPPED"] = True
     return combined_df.loc[allele_match,output_columns]
 
 def _merge_ld_map_with_sumstats_for_regional(
@@ -518,3 +525,5 @@ def _merge_ld_map_with_sumstats_for_regional(
     log.write("   -Total Variants not in reference:{}".format(sum(not_matched)),verbose=verbose)
     
     return combined_df.loc[allele_match | not_matched,:]
+
+############################################################################################################################################################################################################################################################

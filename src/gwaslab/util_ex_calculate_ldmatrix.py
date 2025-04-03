@@ -32,6 +32,7 @@ def tofinemapping(sumstats,
                   extra_plink_option="",
                   verbose=True,
                   **kwargs):
+    
     ##start function with col checking##########################################################
     _start_line = "calculate LD matrix"
     _end_line = "calculating LD matrix"
@@ -141,6 +142,7 @@ def tofinemapping(sumstats,
                                                             plink=plink,
                                                             plink2=plink2,
                                                             extra_plink_option=extra_plink_option,
+                                                            ref_allele_path = matched_sumstats_path,
                                                             verbose=verbose)
     
     
@@ -149,7 +151,7 @@ def tofinemapping(sumstats,
         row_dict["SNPID"]=row["SNPID"]
         row_dict["SNPID_LIST"] = matched_snp_list_path
         row_dict["LD_R_MATRIX"] = matched_ld_matrix_path
-        row_dict["LOCUS_SUMSTATS"] = matched_sumstats_path
+        row_dict["LOCUS_SUMSTATS"] = matched_sumstats_path+".gz"
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
     
@@ -169,7 +171,7 @@ def tofinemapping(sumstats,
 
 
 
-def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype,plink,plink2,extra_plink_option="",verbose=True):
+def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype,plink,plink2,ref_allele_path, extra_plink_option="",verbose=True):
     '''
     Calculate LD r matrix by calling PLINK; return file name and log
     '''
@@ -190,10 +192,24 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
         if filetype=="pfile":
             raise ValueError("Please use bfile instead of pfile for PLINK1.")
         
+        #log.write(" -Flipping plink file ref allele to match...",verbose=verbose)
+        #script_vcf_to_bfile = """
+        #{} \
+        #    --bfile {} \
+        #    --extract {} \
+        #    --chr {} \
+        #    --ref-allele 'force' {} 4 1 \
+        #    --threads {} {} \
+        #    --make-bed \
+        #    --out {}
+
+        #""".format(plink2, bfile_to_use, snplist_path,  row["CHR"],ref_allele_path, n_cores, memory_flag if memory is not None else "", output_prefix+"_gwaslab_tmp")
+
+        log.write(" -Calculating r matrix...",verbose=verbose)
         script_vcf_to_bfile = """
         {} \
             --bfile {} \
-            --keep-allele-order \
+            --a2-allele {} 4 1 \
             --extract {} \
             --chr {} \
             --{} square gz \
@@ -201,7 +217,7 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
             --threads {} {}\
             --write-snplist \
             --out {} {}
-        """.format(plink, bfile_to_use, snplist_path , row["CHR"], mode, n_cores, memory_flag if memory is not None else "", output_prefix, extra_plink_option)
+        """.format(plink, bfile_to_use, ref_allele_path,  snplist_path , row["CHR"], mode, n_cores, memory_flag if memory is not None else "", output_prefix, extra_plink_option)
 
         try:
             output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
@@ -249,20 +265,20 @@ def _align_sumstats_with_bim(row, locus_sumstats, ref_bim, log=Log(),suffixes=No
         log.warning("Lead variant was not available in reference!")
     
     # adjust statistics
-    output_columns=["SNPID","CHR","POS","EA_bim","NEA_bim"]
+    output_columns=["SNPID","CHR","POS","EA","NEA"]
     for suffix in suffixes:
         if ("BETA"+suffix in locus_sumstats.columns) and ("SE"+suffix in locus_sumstats.columns):
-            log.write("   -Flipping BETA{} for variants with flipped alleles...".format(suffix))
-            combined_df.loc[flipped_match,"BETA"+suffix] = - combined_df.loc[flipped_match,"BETA"+suffix]
+            #log.write("   -Flipping BETA{} for variants with flipped alleles...".format(suffix))
+            #combined_df.loc[flipped_match,"BETA"+suffix] = - combined_df.loc[flipped_match,"BETA"+suffix]
             output_columns.append("BETA"+suffix)
             output_columns.append("SE"+suffix)
         if "Z" in locus_sumstats.columns:
-            log.write("   -Flipping Z{} for variants with flipped alleles...".format(suffix))
-            combined_df.loc[flipped_match,"Z"+suffix] = - combined_df.loc[flipped_match,"Z"+suffix]
+            #log.write("   -Flipping Z{} for variants with flipped alleles...".format(suffix))
+            #combined_df.loc[flipped_match,"Z"+suffix] = - combined_df.loc[flipped_match,"Z"+suffix]
             output_columns.append("Z"+suffix)
         if "EAF" in locus_sumstats.columns:
-            log.write("   -Flipping EAF{} for variants with flipped alleles...".format(suffix))
-            combined_df.loc[flipped_match,"EAF"+suffix] = 1 - combined_df.loc[flipped_match,"EAF"+suffix]
+            #log.write("   -Flipping EAF{} for variants with flipped alleles...".format(suffix))
+            #combined_df.loc[flipped_match,"EAF"+suffix] = 1 - combined_df.loc[flipped_match,"EAF"+suffix]
             output_columns.append("EAF"+suffix)
         if "N" in locus_sumstats.columns:
             output_columns.append("N"+suffix)
@@ -279,9 +295,9 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
         log.write(" -Exporting SNP list of {}  to: {}...".format(len(matched_sumstats) ,matched_snp_list_path))
 
         # create locus-sumstats EA, NEA, (BETA, SE), Z 
-        matched_sumstats_path =  "{}/{}_{}_{}.sumstats.gz".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
+        matched_sumstats_path =  "{}/{}_{}_{}.sumstats".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
         
-        to_export_columns=["CHR","POS","EA_bim","NEA_bim"]
+        to_export_columns=["CHR","POS","EA","NEA"]
         for suffix in suffixes:
             if "Z"+suffix in matched_sumstats.columns :
                 to_export_columns.append("Z"+suffix)
@@ -295,7 +311,8 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
         
         log.write(" -Exporting locus sumstats to: {}...".format(matched_sumstats_path))
         log.write(" -Exported columns: {}...".format(["SNPID"]+to_export_columns))
-        matched_sumstats[ ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path, index=None)
+        matched_sumstats[ ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path, sep="\t",index=None)
+        matched_sumstats[ ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path+".gz", sep="\t",index=None)
         return matched_snp_list_path, matched_sumstats_path
 
 def _check_snpid_order(snplist_path, matched_sumstats_snpid,log):

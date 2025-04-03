@@ -87,6 +87,8 @@ from gwaslab.util_abf_finemapping import abf_finemapping
 from gwaslab.util_abf_finemapping import make_cs
 from gwaslab.io_read_pipcs import _read_pipcs
 from gwaslab.viz_plot_credible_sets import _plot_cs
+from gwaslab.hm_casting import _align_with_mold
+from gwaslab.hm_casting  import _merge_mold_with_sumstats_by_chrpos
 import gc
 from gwaslab.viz_plot_phe_heatmap import _gwheatmap
 
@@ -443,6 +445,20 @@ class Sumstats():
         self.meta["is_sorted"] = True
         self.meta["is_harmonised"] = True
         return self
+    
+    def align_with_template(self, template, **kwargs):
+        ## merge
+        molded_sumstats, sumstats1 = _merge_mold_with_sumstats_by_chrpos(mold=template, 
+                                            sumstats=self.data,
+                                            log=self.log,
+                                            suffixes=("_MOLD",""),
+                                            return_not_matched_mold = True)
+        ## align
+        aligned_data = _align_with_mold(molded_sumstats)
+
+        ## flip
+        self.data =flipallelestats(aligned_data, log=self.log)
+        
     ############################################################################################################
     #customizable API to build your own QC pipeline
     def fix_id(self,**kwargs):

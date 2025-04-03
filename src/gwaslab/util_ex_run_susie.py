@@ -67,7 +67,7 @@ def _run_susie_rss(filepath,
         rscript='''
         library(susieR)
         
-        sumstats <- read.csv("{}")
+        sumstats <- read.csv("{}",sep="\t")
         
         R <- as.matrix(read.csv("{}",sep="\t",header=FALSE))
         {}
