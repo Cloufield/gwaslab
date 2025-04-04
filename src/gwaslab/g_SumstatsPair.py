@@ -25,6 +25,7 @@ from gwaslab.util_ex_run_clumping import _clump
 from gwaslab.util_ex_ldproxyfinder import _extract_with_ld_proxy
 from gwaslab.g_headers import _get_headers
 from gwaslab.util_ex_match_ldmatrix import tofinemapping_m
+from gwaslab.util_ex_run_mesusie import _run_mesusie
 
 class SumstatsPair( ):
     def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ,verbose=True ):
@@ -154,9 +155,10 @@ class SumstatsPair( ):
         self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"] = tofinemapping(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
 
     def to_mesusie(self,**kwargs):
+        self.finemapping["mpath"],self.finemapping["mfile"],self.finemapping["mplink_log"] = tofinemapping_m(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
         
-        matched_sumstat = tofinemapping_m(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
-        return matched_sumstat
+    def run_mesusie(self,**kwargs):
+        _run_mesusie(self.finemapping["mpath"],log=self.log,ncols=self.ns,**kwargs)
 
     def run_coloc_susie(self,**kwargs):
         self.colocalization = _run_coloc_susie(self.finemapping["path"],log=self.log,ncols=self.ns,**kwargs)

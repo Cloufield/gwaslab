@@ -105,7 +105,9 @@ def tofinemapping_m(sumstats,
         gc.collect()
         log.write(" -Processing locus with lead variant {} at CHR {} POS {} ...".format(row["SNPID"],row["CHR"],row["POS"]))
         
-        ld_map = _load_ld_map(ld_map_path, ld_map_rename_dic = ld_map_rename_dic, **ld_map_kwargs )
+        ld_map = _load_ld_map(ld_map_path, 
+                              ld_map_rename_dic = ld_map_rename_dic, 
+                              **ld_map_kwargs )
 
         ## check available snps with reference file
         matched_sumstats = _merge_ld_map_with_sumstats(row=row, 
@@ -121,6 +123,7 @@ def tofinemapping_m(sumstats,
     # drop na
     matched_sumstats = matched_sumstats.dropna()
 
+    # export common variants list
     matched_snp_list_path, matched_sumstats_paths=_export_snplist_and_locus_sumstats(matched_sumstats=matched_sumstats, 
                                                                                     out=out, 
                                                                                     study=study, 
@@ -131,9 +134,20 @@ def tofinemapping_m(sumstats,
     for i in range(2):
         ld_path = ld_paths[i]
 
-        r_matrix = _load_ld_matrix(ld_path, fmt="txt", if_square=False, if_add_T=False, log=log, verbose=verbose)
+        r_matrix = _load_ld_matrix(ld_path, 
+                                   fmt="txt", 
+                                   if_square=False, 
+                                   if_add_T=False, 
+                                   log=log, 
+                                   verbose=verbose)
         
-        matched_ld_matrix_path = _extract_variants(matched_sumstats, r_matrix, out, study, row, windowsizekb, index=i,
+        matched_ld_matrix_path = _extract_variants(merged_sumstats = matched_sumstats, 
+                                                   r_matrix = r_matrix, 
+                                                   out = out, 
+                                                   study = study, 
+                                                   row = row, 
+                                                   windowsizekb = windowsizekb, 
+                                                   index=i,
                                                    log=log, verbose=verbose)
 #     #########################################################################################################
 
@@ -141,14 +155,26 @@ def tofinemapping_m(sumstats,
         row_dict["SNPID"]=row["SNPID"]
         row_dict["SNPID_LIST"] = matched_snp_list_path
         row_dict["LD_R_MATRIX"] = matched_ld_matrix_path
-        row_dict["LOCUS_SUMSTATS"] = matched_sumstats_paths[i]
+        row_dict["LOCUS_SUMSTATS"] = matched_sumstats_paths[i] + ".gz"
+        row_dict["SUBSTUDY"]= i+1
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
 
+    if len(output_file_list)>0:
+        output_file_list["STUDY"] = study
+        nloci = len(output_file_list)
+        output_file_list_path =  "{}/{}_{}study_{}_{}kb.filelist".format(out.rstrip("/"), study,nloci, loci[0], windowsizekb)
+        output_file_list.to_csv(output_file_list_path,index=None,sep="\t")
+        log.write(" -File list is saved to: {}".format(output_file_list_path),verbose=verbose)
+        log.write(" -Finished LD matrix calculation.",verbose=verbose)
+    else:
+        output_file_list_path=None
+        log.write(" -No avaialable lead variants.",verbose=verbose)
+        log.write(" -Stopped LD matrix calculation.",verbose=verbose)
 
-    return matched_sumstats, output_file_list
+    finished(log=log, verbose=verbose, end_line=_end_line)
 
-
+    return output_file_list_path, output_file_list,  plink_log
 
 
 def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, windowsizekb,log):
@@ -184,16 +210,15 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
             log.write(" -Exporting locus sumstats to: {}...".format(matched_sumstats_path))
             log.write(" -Exported columns: {}...".format(["SNPID"]+to_export_columns))
             #matched_sumstats[ ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path, sep="\t",index=None)
-            matched_sumstats[ ["SNPID"]+to_export_columns].to_csv(matched_sumstats_path+".gz", sep="\t",index=None)
+            rename_dic={
+                "BETA"+suffix:"Beta",
+                "SE"+suffix:"Se",
+                "SNPID":"SNP"
+            }
+            matched_sumstats[ ["SNPID"]+to_export_columns].rename(columns=rename_dic).to_csv(matched_sumstats_path, sep="\t",index=None)
+            matched_sumstats[ ["SNPID"]+to_export_columns].rename(columns=rename_dic).to_csv(matched_sumstats_path+".gz", sep="\t",index=None)
         
         return matched_snp_list_path, matched_sumstats_paths
-
-
-
-
-
-
-
 
 ###################################################################################################################################################################
 ####################################################################################################
