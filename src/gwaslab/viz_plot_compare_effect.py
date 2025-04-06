@@ -1180,8 +1180,8 @@ def configure_regression_line(is_reg,
 
         #### calculate p values based on selected value , default = 0 
         log.write(" -Calculating p values based on given null slope :",null_beta, verbose=verbose)
-        t_score = (reg[0]-null_beta) / reg[4]
-        degree = len(sig_list_merged.dropna())-2
+        #t_score = (reg[0]-null_beta) / reg[4]
+        #degree = len(sig_list_merged.dropna())-2
         p =  reg[3]
         #ss.t.sf(abs(t_score), df=degree)*2
         log.write(" -Beta = ", reg[0], verbose=verbose)
@@ -1205,14 +1205,25 @@ def configure_regression_line(is_reg,
             except:
                 p12="0"
                 pe="0"
-            p_text="$\mathregular{p = " + p12 + " \\times  10^{"+pe+"}}$"
+            if p > 1e-300:
+                p_text="$\mathregular{p = " + p12 + " \\times  10^{"+pe+"}}$"
+            else:
+                p_text="$\mathregular{p < 1 \\times 10^{-300}}$"
             p_latex= f'{p_text}'
+
             if reg_text=="full":
-                ax.text(0.98,0.02,"y = "+"{:.2f}".format(reg[1]) +" + "+ "{:.2f}".format(reg[0])+" x, "+ p_latex + ", r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
+                reg_string = "y = "+"{:.2f}".format(reg[1]) +" + "+ "{:.2f}".format(reg[0])+" x, "+ p_latex + ", r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string
+                ax.text(0.98,0.02,
+                        reg_string,
+                        va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
             elif reg_text=="r":
-                ax.text(0.98,0.02,"r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
+                reg_string ="r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string
+                ax.text(0.98,0.02,
+                        reg_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
             elif reg_text=="r2":
-                ax.text(0.98,0.02,"$\mathregular{r^{2}} = " +"{:.2f}".format(reg[2]**2), va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
+                reg_string = "$\mathregular{r^{2}} = " +"{:.2f}".format(reg[2]**2)
+                ax.text(0.98,0.02,
+                        reg_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
         else:
             #if regression coeeficient <0 : auxiliary line slope = -1
             if is_45_helper_line is True:
@@ -1227,14 +1238,25 @@ def configure_regression_line(is_reg,
             except:
                 p12="0"
                 pe="0"
-            p_text="$\mathregular{p = " + p12 + " \\times  10^{"+pe+"}}$"
+
+            if p > 1e-300:
+                p_text="$\mathregular{p = " + p12 + " \\times  10^{"+pe+"}}$"
+            else:
+                p_text="$\mathregular{p < 1 \\times  10^{-300}$"
             p_latex= f'{p_text}'
+
             if reg_text=="full":
-                ax.text(0.98,0.02,"y = "+"{:.2f}".format(reg[1]) +" - "+ "{:.2f}".format(abs(reg[0]))+" x, "+ p_latex + ", r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**font_kwargs)
+                ax.text(0.98,0.02,
+                    "y = "+"{:.2f}".format(reg[1]) +" - "+ "{:.2f}".format(abs(reg[0]))+" x, "+ p_latex + ", r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, 
+                    va="bottom",ha="right",transform=ax.transAxes,bbox=reg_box,**font_kwargs)
             elif reg_text=="r":
-                ax.text(0.98,0.02,"r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
+                ax.text(0.98,0.02,
+                        "r = " +"{:.2f}".format(reg[2])+r_se_jackknife_string, 
+                        va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
             elif reg_text=="r2":
-                ax.text(0.98,0.02,"$\mathregular{r^{2}} = " +"{:.2f}".format(reg[2]**2), va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
+                ax.text(0.98,0.02,
+                        "$\mathregular{r^{2}} = " +"{:.2f}".format(reg[2]**2), 
+                        va="bottom",ha="right",transform=ax.transAxes, bbox=reg_box, **font_kwargs)
             
         if mode=="beta" or mode=="BETA" or mode=="Beta":
             middle = sig_list_merged["EFFECT_1"].mean()
