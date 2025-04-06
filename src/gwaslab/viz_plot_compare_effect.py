@@ -1242,7 +1242,7 @@ def configure_regression_line(is_reg,
             if p > 1e-300:
                 p_text="$\mathregular{p = " + p12 + " \\times  10^{"+pe+"}}$"
             else:
-                p_text="$\mathregular{p < 1 \\times  10^{-300}$"
+                p_text="$\mathregular{p < 1 \\times 10^{-300}}$"
             p_latex= f'{p_text}'
 
             if reg_text=="full":
