@@ -97,20 +97,20 @@ def tofinemapping_m(sumstats,
     matched_sumstats = _extract_variants_in_locus(sumstats, windowsizekb, locus = (row["CHR"],row["POS"]))
 
     for i in range(2):
-        
+    # for each study
+        gc.collect()
+        # get ld path and dic
         ld_map_path = ld_maps[i]
         ld_map_rename_dic =  ld_map_dics[i]
-
-        # extract snplist in each locus
-        gc.collect()
-        log.write(" -Processing locus with lead variant {} at CHR {} POS {} ...".format(row["SNPID"],row["CHR"],row["POS"]))
         
+        
+        log.write(" -Processing locus with lead variant {} at CHR {} POS {} ...".format(row["SNPID"],row["CHR"],row["POS"]))
         ld_map = _load_ld_map(ld_map_path, 
                               ld_map_rename_dic = ld_map_rename_dic, 
                               **ld_map_kwargs )
 
         ## check available snps with reference file
-        matched_sumstats = _merge_ld_map_with_sumstats(row=row, 
+        matched_sumstats = _merge_ld_map_with_sumstats_m(row=row, 
                                                         locus_sumstats=matched_sumstats, 
                                                         ld_map=ld_map,
                                                         log=log,
@@ -124,7 +124,7 @@ def tofinemapping_m(sumstats,
     matched_sumstats = matched_sumstats.dropna()
 
     # export common variants list
-    matched_snp_list_path, matched_sumstats_paths=_export_snplist_and_locus_sumstats(matched_sumstats=matched_sumstats, 
+    matched_snp_list_path, matched_sumstats_paths=_export_snplist_and_locus_sumstats_m(matched_sumstats=matched_sumstats, 
                                                                                     out=out, 
                                                                                     study=study, 
                                                                                     row=row, 
@@ -141,7 +141,7 @@ def tofinemapping_m(sumstats,
                                    log=log, 
                                    verbose=verbose)
         
-        matched_ld_matrix_path = _extract_variants(merged_sumstats = matched_sumstats, 
+        matched_ld_matrix_path = _extract_variants_from_ld_matrix_m(merged_sumstats = matched_sumstats, 
                                                    r_matrix = r_matrix, 
                                                    out = out, 
                                                    study = study, 
@@ -156,6 +156,7 @@ def tofinemapping_m(sumstats,
         row_dict["SNPID_LIST"] = matched_snp_list_path
         row_dict["LD_R_MATRIX"] = matched_ld_matrix_path
         row_dict["LOCUS_SUMSTATS"] = matched_sumstats_paths[i] + ".gz"
+        row_dict["LOCUS"] = loci[0]
         row_dict["SUBSTUDY"]= i+1
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
@@ -177,8 +178,8 @@ def tofinemapping_m(sumstats,
     return output_file_list_path, output_file_list,  plink_log
 
 
-def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, windowsizekb,log):
-        
+def _export_snplist_and_locus_sumstats_m(matched_sumstats, out, study, row, windowsizekb,log):
+        # study suffixes starting from 1
         suffixes=["_{}".format(i+1) for i in range(2)]
         
         matched_snp_list_path = "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
@@ -191,6 +192,7 @@ def _export_snplist_and_locus_sumstats(matched_sumstats, out, study, row, window
 
         
         for i in range(2):
+            # export sumstats for each study
             suffix = suffixes[i]
             
             matched_sumstats_path =  "{}/{}_{}_{}_{}.sumstats".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb, i + 1)
@@ -255,6 +257,8 @@ def _load_ld_map(path,
                  **ld_map_kwargs):
     
     if ld_map_rename_dic is not None:
+        # ld map format
+        # SNPID_bim,CHR，POS, NEA_bim, EA_bim 
         if type(ld_map_rename_dic) is dict:
             ld_map_rename_dic_to_use={ld_map_rename_dic["EA"]:'EA_bim', 
                                         ld_map_rename_dic["NEA"]:'NEA_bim', 
@@ -288,24 +292,24 @@ def _load_ld_map(path,
     # "SNPID",0:"CHR_bim",3:"POS_bim",4:"EA_bim",5:"NEA_bim"
     return ld_map
 
-def _extract_variants(merged_sumstats, r_matrix, out, study, row, windowsizekb, log, verbose, index):
-    
+def _extract_variants_from_ld_matrix_m(merged_sumstats, r_matrix, out, study, row, windowsizekb, log, verbose, index):
+    # study suffixes starting from 1
     index_bim_header = "_INDEX_BIM_{}".format(index + 1) 
     flipped_header = "_FLIPPED_{}".format(index + 1) 
     
-    
-
+    # a series of int to indicate if the variant index in raw ld matrix
     avaiable_index = merged_sumstats[index_bim_header].values 
 
+    # a series of boolean values to indicate if the variants is flipped
     flipped = merged_sumstats[flipped_header].values 
 
+    # extract the sub-matrix
     reduced_r_matrix = r_matrix[np.ix_(avaiable_index, avaiable_index)]
     
     log.write(" -Flipping LD matrix for {} variants...".format(sum(flipped)),verbose=verbose)
     reduced_r_matrix[flipped,:] = -1 * reduced_r_matrix[flipped,:]
     reduced_r_matrix[:,flipped] = -1 * reduced_r_matrix[:,flipped]
 
-    snplist_path =   "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"),study,row["SNPID"],windowsizekb)
     output_prefix =  "{}/{}_{}_{}_{}".format(out.rstrip("/"),study,row["SNPID"],windowsizekb, index + 1)
     output_path = "{}.ld.gz".format(output_prefix)
     
@@ -313,23 +317,27 @@ def _extract_variants(merged_sumstats, r_matrix, out, study, row, windowsizekb, 
     #reduced_r_matrix.to_csv("{}.ld.gz".format(output_prefix),se="\t")
     return output_path
 
-def _merge_ld_map_with_sumstats(row, 
+def _merge_ld_map_with_sumstats_m(row, 
                              locus_sumstats, 
                              ld_map, 
                              log=Log(),
                              index=None):
     '''
-    align sumstats with bim
+    align sumstats with ld map
     '''
+    # study suffixes starting from 1
     index_suffix = "_{}".format(index+1)
     
     index1= "_INDEX_SUMSTATS" 
     index2= "_INDEX_BIM" +index_suffix
     
+    # Sumstats index
     locus_sumstats[index1] = locus_sumstats.index
     
+    # ld map index
     ld_map[index2] =  ld_map.index
     
+    # init a column to show if the variants in LD map are flipped or not
     locus_sumstats["_FLIPPED"+index_suffix] = False
     
     
@@ -340,6 +348,7 @@ def _merge_ld_map_with_sumstats(row,
     
     # matching by SNPID
     # preserve bim keys (use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.)
+    # vairants without a match were removed
     combined_df = pd.merge(ld_map, locus_sumstats, on=["CHR","POS"],how="inner")
 
     # match allele
@@ -359,7 +368,7 @@ def _merge_ld_map_with_sumstats(row,
     if row["SNPID"] not in combined_df.loc[allele_match,"SNPID"].values:
         log.warning("Lead variant was not available in reference!")
     
-    # adjust statistics
+    # adjust output columns
     output_columns=["SNPID","CHR","POS","EA","NEA"]
     for i in combined_df.columns:
         if "_INDEX_BIM" in i:
@@ -368,19 +377,14 @@ def _merge_ld_map_with_sumstats(row,
             output_columns.append(i)
     
     for i in range(2):
+        # study suffixes starting from 1
         index_suffix = "_{}".format(i+1)
         if ("BETA"+index_suffix in combined_df.columns) and ("SE"+index_suffix in combined_df.columns):
-            #log.write("   -Flipping BETA{} for variants with flipped alleles...".format(suffix))
-            #combined_df.loc[flipped_match,"BETA"+suffix] = - combined_df.loc[flipped_match,"BETA"+suffix]
             output_columns.append("BETA"+index_suffix)
             output_columns.append("SE"+index_suffix)
         if "Z"+index_suffix in combined_df.columns:
-            #log.write("   -Flipping Z{} for variants with flipped alleles...".format(suffix))
-            #combined_df.loc[flipped_match,"Z"+suffix] = - combined_df.loc[flipped_match,"Z"+suffix]
             output_columns.append("Z"+index_suffix)
         if "EAF"+index_suffix in combined_df.columns:
-            #log.write("   -Flipping EAF{} for variants with flipped alleles...".format(suffix))
-            #combined_df.loc[flipped_match,"EAF"+suffix] = 1 - combined_df.loc[flipped_match,"EAF"+suffix]
             output_columns.append("EAF"+index_suffix)
         if "N"+index_suffix in combined_df.columns:
             output_columns.append("N"+index_suffix)

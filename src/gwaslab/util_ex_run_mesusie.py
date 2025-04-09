@@ -68,8 +68,14 @@ ld{index}[is.na(ld{index})]  <- 0
 names(ld{index}) <- sum{index}$SNP
 ld_list$study{index} <-  as.matrix(ld{index})
 summ_stat_list$study{index} <- sum{index}
+
+png(filename="./diagnostic_{study}_{index}.png")
+diagnostic <- kriging_rss(summ_stat_list$study{index}$Z, ld_list$study{index})
+diagnostic$plot
+dev.off()
         '''.format(
              index = index,
+             study = study,
              n = ns[index],
              sumstats = sumstats,
              ld_r_matrix = ld_r_matrix
@@ -77,17 +83,28 @@ summ_stat_list$study{index} <- sum{index}
         r_scripts_for_loading.append(rscript)
     
     rscript_loading = "".join(r_scripts_for_loading)
+    
 
     rscript_computing='''
 MESuSiE_res<-meSuSie_core(ld_list, summ_stat_list, L=10)'''
     
     rscript_output = '''
-write.csv(MESuSiE_res$cs, "{study}.cs", row.names = TRUE)
-write.csv(MESuSiE_res$cs_category, "{study}.cs_category", row.names = TRUE)
-write.csv(MESuSiE_res$pip_config, "{study}.pipcs", row.names = TRUE)
+pips <- cbind(summ_stat_list$study0$SNP, MESuSiE_res$pip_config)
+colnames(pips)[1] <-"SNPID"
+write.csv(pips, "{study}.pipcs", row.names = FALSE)
+
+write.csv(MESuSiE_res$cs, "{study}.cs", row.names = FALSE)
+write.csv(MESuSiE_res$cs_category, "{study}.cs_category", row.names = FALSE)
+write.csv(MESuSiE_res$cs$cs, "{study}.cscs", row.names = FALSE) 
     '''.format(study=study)
     
-    rscript = rscript_loading + rscript_computing + rscript_output
+    rscript_plotting='''
+png(filename="./{study}_stacked_regions.png")
+MESuSiE_Plot(MESuSiE_res, ld_list ,summ_stat_list)
+dev.off()
+'''.format(study=study)
+    
+    rscript = rscript_loading + rscript_computing + rscript_output + rscript_plotting
 
     log.write("  -MESuSie script: {}".format(rscript_computing), verbose=verbose)
     
