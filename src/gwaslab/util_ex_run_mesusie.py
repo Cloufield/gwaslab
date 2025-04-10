@@ -54,6 +54,7 @@ summ_stat_list <- list()
         study = row["STUDY"]
         ld_r_matrix = row["LD_R_MATRIX"]
         sumstats = row["LOCUS_SUMSTATS"]
+        locus=row["LOCUS"]
 
         log.write(" -Running for: {} - {}".format(row["SNPID"],row["STUDY"] ), verbose=verbose)
         log.write("  -Locus sumstats:{}".format(sumstats), verbose=verbose)
@@ -69,13 +70,14 @@ names(ld{index}) <- sum{index}$SNP
 ld_list$study{index} <-  as.matrix(ld{index})
 summ_stat_list$study{index} <- sum{index}
 
-png(filename="./diagnostic_{study}_{index}.png")
+png(filename="./diagnostic_{study}_{locus}_{index}.png")
 diagnostic <- kriging_rss(summ_stat_list$study{index}$Z, ld_list$study{index})
 diagnostic$plot
 dev.off()
         '''.format(
              index = index,
              study = study,
+             locus = locus,
              n = ns[index],
              sumstats = sumstats,
              ld_r_matrix = ld_r_matrix
@@ -87,22 +89,24 @@ dev.off()
 
     rscript_computing='''
 MESuSiE_res<-meSuSie_core(ld_list, summ_stat_list, L=10)'''
-    
+
     rscript_output = '''
+saveRDS(MESuSiE_res, file = "{study}_{locus}.rds")
 pips <- cbind(summ_stat_list$study0$SNP, MESuSiE_res$pip_config)
 colnames(pips)[1] <-"SNPID"
-write.csv(pips, "{study}.pipcs", row.names = FALSE)
+write.csv(pips, "{study}_{locus}.pipcs", row.names = FALSE)
 
-write.csv(MESuSiE_res$cs, "{study}.cs", row.names = FALSE)
-write.csv(MESuSiE_res$cs_category, "{study}.cs_category", row.names = FALSE)
-write.csv(MESuSiE_res$cs$cs, "{study}.cscs", row.names = FALSE) 
-    '''.format(study=study)
+write.csv(MESuSiE_res$cs$cs_index, "{study}_{locus}.cscs_index", row.names = FALSE)
+write.csv(MESuSiE_res$cs$purity, "{study}_{locus}.cspurity", row.names = FALSE)
+write.csv(MESuSiE_res$cs_category, "{study}_{locus}.cs_category", row.names = FALSE)
+write.csv(MESuSiE_res$cs$cs, "{study}_{locus}.cscs", row.names = FALSE) 
+    '''.format(study=study,locus=locus)
     
     rscript_plotting='''
-png(filename="./{study}_stacked_regions.png")
+png(filename="./{study}_{locus}_stacked_regions.png")
 MESuSiE_Plot(MESuSiE_res, ld_list ,summ_stat_list)
 dev.off()
-'''.format(study=study)
+'''.format(study=study,locus=locus)
     
     rscript = rscript_loading + rscript_computing + rscript_output + rscript_plotting
 

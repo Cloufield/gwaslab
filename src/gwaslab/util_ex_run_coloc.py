@@ -58,7 +58,7 @@ def _run_coloc_susie(filepath, r="Rscript",
         rscript='''
         library(coloc)
         
-        df = read.csv("{sumstats_path}",header=TRUE)
+        df = read.csv("{sumstats_path}",sep="\t",header=TRUE)
 
         R <- as.matrix(read.csv("{ld_r_matrix_path}",sep="\t",header=FALSE))
 

@@ -79,6 +79,7 @@ class SumstatsPair( ):
                 self.stats_cols.append(i)
             else:
                 self.other_cols.append(i)
+
         for i in sumstatsObject2.data.columns:
             if i in _get_headers(mode="info"):
                 continue
@@ -92,6 +93,8 @@ class SumstatsPair( ):
         self.log.write( " -Sumstats1 other columns: {}".format(self.other_cols) , verbose=verbose)
         self.log.write( " -Sumstats2 other columns: {}".format(self.other_cols2) , verbose=verbose)
         
+        sumstatsObject1.data["_RAW_INDEX_1"] = range(len(sumstatsObject1.data))
+        sumstatsObject2.data["_RAW_INDEX_2"] = range(len(sumstatsObject2.data))
         # extract only info and stats cols
         self.data = sumstatsObject1.data
         
@@ -100,7 +103,7 @@ class SumstatsPair( ):
         self.data = self.data.rename(columns={i:i + suffixes[0] for i in self.stats_cols})
         self.data = self.data.rename(columns={i:i + suffixes[0] for i in self.other_cols})
 
-        self.data, self.sumstats1 = self._merge_two_sumstats(sumstatsObject2, suffixes=suffixes)
+        self.data, self.sumstats1, self.sumstats2 = self._merge_two_sumstats(sumstatsObject2, suffixes=suffixes)
 
         if "N{}".format(self.suffixes[0]) in self.data.columns and "N{}".format(self.suffixes[1]) in self.data.columns:
             n1 = int(floor(self.data["N{}".format(self.suffixes[0])].mean()))
@@ -108,6 +111,8 @@ class SumstatsPair( ):
             self.ns=(n1, n2)
         else:
             self.ns = None
+        sumstatsObject1.data = sumstatsObject1.data.drop(columns=["_RAW_INDEX_1"])
+        sumstatsObject2.data = sumstatsObject2.data.drop(columns=["_RAW_INDEX_2"])
 
     def _merge_two_sumstats(self, 
                             sumstatsObject2, 
@@ -118,10 +123,12 @@ class SumstatsPair( ):
                             suffixes=("_1","_2")):
 
         # sumstats1 with suffix _1, sumstats2 with no suffix
-        molded_sumstats, sumstats1 = _merge_mold_with_sumstats_by_chrpos(mold=self.data, 
+        molded_sumstats, sumstats1, sumstats2 = _merge_mold_with_sumstats_by_chrpos(mold=self.data, 
                                                     sumstats=sumstatsObject2.data, 
                                                     log=self.log,
                                                     verbose=verbose,
+                                                    stats_cols1 = self.stats_cols,
+                                                    stats_cols2 = self.stats_cols2,
                                                     suffixes=(suffixes[0],""),
                                                     return_not_matched_mold = True)
 
@@ -145,7 +152,7 @@ class SumstatsPair( ):
         
         molded_sumstats = _sort_pair_cols(molded_sumstats, verbose=verbose, log=self.log)
         
-        return molded_sumstats, sumstats1
+        return molded_sumstats, sumstats1, sumstats2
 
 
     def clump(self,**kwargs):

@@ -11,19 +11,28 @@ from gwaslab.util_in_fill_data import filldata
 from Bio import SeqIO
 from itertools import combinations
 
-def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None,add_raw_index=False, windowsizeb=10, log=Log(),suffixes=("_MOLD",""),verbose=True,return_not_matched_mold =False):
+def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None,add_raw_index=False, stats_cols1=None, stats_cols2=None,
+                                        windowsizeb=10, 
+                                        log=Log(),
+                                        suffixes=("_MOLD",""),
+                                        merge_mode="inner",
+                                        verbose=True,
+                                        return_not_matched_mold =False):
     
-
+    log.write("Start to merge sumstats...", verbose=verbose)
+    if merge_mode=="outer":
+        sumstats = sumstats.rename(columns={"SNPID":"_SNPID_TMP"})
+    
+    # drop old ids
     cols_to_drop = []
     for i in sumstats.columns:
         if i in ["SNPID","rsID"]:
-            cols_to_drop.append(i)
-
-    log.write("Start to merge sumstats...", verbose=verbose)
-    
+            cols_to_drop.append(i)    
     if len(cols_to_drop)>0:
         log.write(" -Dropping old IDs:{}".format(cols_to_drop), verbose=verbose)
         sumstats = sumstats.drop(columns=cols_to_drop)
+
+
     if add_raw_index==True:
         index1= "_INDEX" + suffixes[0]
         index2= "_INDEX" + suffixes[1]
@@ -38,11 +47,27 @@ def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None,add_raw_in
         mold[index1] = range(len(mold))
         sumstats[index2] = range(len(sumstats))
     
-    if return_not_matched_mold:
-        mold["_IDENTIFIER_FOR_VARIANT"] = range(len(mold))
+    #if return_not_matched_mold:
+    #   mold["_IDENTIFIER_FOR_VARIANT"] = range(len(mold))
+    #   sumstats["_IDENTIFIER_FOR_VARIANT2"] = range(len(sumstats))
 
     # mold sumffix + mold 
-    mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how="inner",suffixes=suffixes)
+    mold_sumstats = pd.merge(mold, sumstats, on=["CHR","POS"], how=merge_mode,suffixes=suffixes)
+
+    if merge_mode=="outer":
+        is_temp_na = mold_sumstats["EA_1"].isna()
+        log.write(" -Detected {} variants not in the template...".format(sum(is_temp_na)), verbose=verbose)
+        
+        mold_sumstats["EA_1"] = mold_sumstats["EA_1"].astype("string")
+        mold_sumstats["NEA_1"] = mold_sumstats["NEA_1"].astype("string")
+        mold_sumstats["EA"] = mold_sumstats["EA"].astype("string")
+        mold_sumstats["NEA"] = mold_sumstats["NEA"].astype("string")
+
+        mold_sumstats.loc[is_temp_na, ["SNPID","EA_1","NEA_1","STATUS_1"]] = mold_sumstats.loc[is_temp_na, ["_SNPID_TMP","EA","NEA","STATUS"]].values
+        is_temp_na_2 = mold_sumstats["EA"].isna()
+        mold_sumstats.loc[is_temp_na_2, ["EA","NEA"]] = mold_sumstats.loc[is_temp_na_2, ["EA_1","NEA_1"]].values
+        mold_sumstats = mold_sumstats.drop(columns=["_SNPID_TMP"])
+
     log.write(" -After merging by CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
     
     mold_sumstats = _keep_variants_with_same_allele_set(mold_sumstats,suffixes=suffixes)
@@ -57,10 +82,17 @@ def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None,add_raw_in
     #    mold_sumstats.drop(columns=["_INDEX",""])
     
     if return_not_matched_mold == True:
-        sumstats1 = mold.loc[~mold["_IDENTIFIER_FOR_VARIANT"].isin(mold_sumstats["_IDENTIFIER_FOR_VARIANT"]),:]
-        sumstats1= sumstats1.drop(columns=["_IDENTIFIER_FOR_VARIANT"])
-        mold_sumstats= mold_sumstats.drop(columns=["_IDENTIFIER_FOR_VARIANT"])
-        return mold_sumstats, sumstats1
+
+        sumstats1 = mold.loc[~mold["_RAW_INDEX_1"].isin(mold_sumstats["_RAW_INDEX_1"]),:]
+        sumstats1 = sumstats1.drop(columns=["_RAW_INDEX_1"])
+        sumstats1 = _renaming_cols_r(sumstats1, stats_cols1 +["EA","NEA"],suffix="_1", verbose=False)
+        
+        sumstats2 = sumstats.loc[~sumstats["_RAW_INDEX_2"].isin(mold_sumstats["_RAW_INDEX_2"]),:]
+        sumstats2 = sumstats2.drop(columns=["_RAW_INDEX_2"])
+
+        mold_sumstats= mold_sumstats.drop(columns=["_RAW_INDEX_1","_RAW_INDEX_2"])
+        
+        return mold_sumstats, sumstats1, sumstats2
     
     return mold_sumstats
 
@@ -121,6 +153,16 @@ def _renaming_cols(sumstats, columns, log=Log(),verbose=True, suffixes=("_1","_2
             to_rename.append(col)
     sumstats = sumstats.rename(columns={i:i + suffixes[1] for i in to_rename})
     log.write(" -Renaming sumstats2 columns by adding suffix {}".format(suffixes[1]),verbose=verbose)
+    return sumstats
+
+def _renaming_cols_r(sumstats, columns, log=Log(),verbose=True, suffix=""):
+    # columns: name without suffix
+    to_rename =[]
+    for col in columns:
+        if col + suffix in sumstats.columns:
+            to_rename.append(col)
+    sumstats = sumstats.rename(columns={i + suffix:i for i in to_rename})
+    log.write(" -Renaming sumstats columns by removing suffix {}".format(suffix),verbose=verbose)
     return sumstats
 
 def _sort_pair_cols(molded_sumstats, verbose=True, log=Log(), order=None, stats_order=None,suffixes=("_1","_2")):
