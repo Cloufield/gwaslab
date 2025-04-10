@@ -26,6 +26,7 @@ from gwaslab.util_ex_ldproxyfinder import _extract_with_ld_proxy
 from gwaslab.g_headers import _get_headers
 from gwaslab.util_ex_match_ldmatrix import tofinemapping_m
 from gwaslab.util_ex_run_mesusie import _run_mesusie
+from gwaslab.util_in_meta import meta_analyze_multi
 
 class SumstatsMulti( ):
     def __init__(self, 
@@ -37,9 +38,8 @@ class SumstatsMulti( ):
             if not isinstance(sumstatsObject, Sumstats):
                 raise ValueError("Please provide GWASLab Sumstats Object #{}.".format(i+1))
         
-
+        self.nstudy = len(sumstatsObjects)
         self.study_name = "Group1" 
-
         
         self.snp_info_cols = dict()
         self.stats_cols =  dict()
@@ -55,6 +55,7 @@ class SumstatsMulti( ):
             check_dataframe_shape(sumstats=sumstatsObject.data, 
                             log=self.log, 
                             verbose=verbose)
+            
             self.snp_info_cols[i] = list()
             self.stats_cols[i] = list()
             self.other_cols[i] = list()
@@ -71,9 +72,9 @@ class SumstatsMulti( ):
 
 
         self.log.write( " -Variant Info columns: {}".format(self.snp_info_cols[0]) , verbose=verbose)
-        
-        #self.log.write( " -Variant statistics columns: {}".format(self.stats_cols) , verbose=verbose)
-        #self.log.write( " -Sumstats1 other columns: {}".format(self.other_cols) , verbose=verbose)
+        for i in range(len(sumstatsObjects)):
+            self.log.write( " -Sumstats #{} variant statistics columns: {}".format(i+1, self.stats_cols[i]) , verbose=verbose)
+            self.log.write( " -Sumstats #{} other columns: {}".format(i+1, self.other_cols[i]) , verbose=verbose)
         
         #for i,sumstatsObject in enumerate(sumstatsObjects):
         #    sumstatsObject.data["_RAW_INDEX_{}".format(i+1)] = range(len(sumstatsObject.data))
@@ -102,7 +103,7 @@ class SumstatsMulti( ):
         # _1 _2 
         # add suffix
         self.data = self.data.rename(columns={"EA":"EA_1","NEA":"NEA_1"})
-        # sumstats1 with suffix _1, sumstats2 with no suffix
+        #sumstats1 with suffix _1, sumstats2 with no suffix
         molded_sumstats = _merge_mold_with_sumstats_by_chrpos(mold=self.data, 
                                                     sumstats=sumstatsObject2.data, 
                                                     log=self.log,
@@ -139,3 +140,5 @@ class SumstatsMulti( ):
         molded_sumstats = _sort_pair_cols(molded_sumstats, verbose=verbose, log=self.log, suffixes=["_{}".format(j) for j in range(1,i+2)])
         
         return molded_sumstats
+    def run_meta_analysis(self,**kwargs):
+        return meta_analyze_multi(self.data,nstudy = self.nstudy,**kwargs)
