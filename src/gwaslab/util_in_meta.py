@@ -8,6 +8,7 @@ from gwaslab.io_to_pickle import load_data_from_pickle
 from gwaslab.g_Sumstats import Sumstats
 import gc
 
+
 def meta_analyze(sumstats_list,random_effects=False, match_allele=True, log=Log()):
     
     ###########################################################################
@@ -41,8 +42,6 @@ def meta_analyze(sumstats_list,random_effects=False, match_allele=True, log=Log(
         del sumstats
         del new_rows
         gc.collect()
-    
-    
     
     ###########################################################################
     log.write(" -Initiating result DataFrame...")
@@ -236,7 +235,11 @@ def get_sumstats(input_path,usekeys=None):
 
 ############################################################################################################################################################################
 
-def meta_analyze_multi(sumstats_multi,random_effects=False,nstudy=1, match_allele=True, log=Log()):
+def meta_analyze_multi(sumstats_multi,
+                       random_effects=False,
+                       nstudy=1, 
+                       match_allele=True, 
+                       log=Log()):
     log.write("Start to perform meta-analysis...")
     ###########################################################################
     log.write(" -Initiating result DataFrame...")
@@ -298,52 +301,59 @@ def meta_analyze_multi(sumstats_multi,random_effects=False,nstudy=1, match_allel
         results_df.loc[results_df_dof_index,"P_HET"] = chi2.sf(results_df.loc[results_df_dof_index, "Q"].values,dof)
         gc.collect()
     
-    results_df["I2_HET"] = (results_df["Q"] - results_df["DOF"])/results_df["Q"]
-    results_df.loc[results_df["I2_HET"]<0, "I2_HET"] = 0
+    results_df["I2"] = (results_df["Q"] - results_df["DOF"])/results_df["Q"]
+    results_df.loc[results_df["I2"]<0, "I2"] = 0
     
     results_df=results_df.drop(columns=["_EA_N","_NEA_N"])
     gc.collect()
 
     ###########################################################################
-    #if random_effects==True:        
-    #    log.write(" -Iterating through {} datasets to compute statistics for random-effects model...".format(len(sumstats_list)))
-    #    results_df["_R2"] = (results_df["Q"] - results_df["DOF"])/(results_df["_W_SUM"] - (results_df["_W2_SUM"]/results_df["_W_SUM"]))
-    #    results_df.loc[results_df["_R2"]<0, "_R2"] = 0
-    #    variant_index_random = results_df[results_df["_R2"]>0].index
-#
-    #    results_df["_BETAW_SUM_R"] = 0.0  
-    #    results_df["_W_SUM_R"] = 0.0
-    #    results_df["BETA_RANDOM"] = results_df["BETA"]
-    #    results_df["SE_RANDOM"] = results_df["SE"]
-#
-    #    for index,sumstats_path in enumerate(sumstats_list):
-    #        to_use_sumstats = process_sumstats(sumstats_path, 
-    #                                           results_df.loc[variant_index_random, ["EA","NEA"]], 
-    #                                           index=index,
-    #                                           match_allele=match_allele,
-    #                                           extract_index=variant_index_random)
-    #        
-    #        sumstats_index = to_use_sumstats.index
-    #        
-    #        # BEAT and SE
-    #        results_df.loc[sumstats_index,"_BETAW_SUM_R"]  += to_use_sumstats["BETA"]*(1/(to_use_sumstats["SE"]**2 + results_df.loc[sumstats_index,"_R2"]))
-    #        results_df.loc[sumstats_index,"_W_SUM_R"]      += 1/(to_use_sumstats["SE"]**2 + results_df.loc[sumstats_index,"_R2"])
-    #        
-    #        del to_use_sumstats
-    #        del sumstats_index
-    #        gc.collect()
-    #        
-    #    results_df.loc[variant_index_random,"BETA_RANDOM"] = results_df.loc[variant_index_random,"_BETAW_SUM_R"] / results_df.loc[variant_index_random,"_W_SUM_R"]
-    #    results_df.loc[variant_index_random,"SE_RANDOM"] = np.sqrt(1/results_df.loc[variant_index_random,"_W_SUM_R"])
-    #    results_df["Z_RANDOM"] = results_df["BETA_RANDOM"] / results_df["SE_RANDOM"]
-    #    results_df["P_RANDOM"] = norm.sf(abs(results_df["Z_RANDOM"]))*2
-    #    results_df = results_df.drop(columns=["_BETAW_SUM_R","_W_SUM_R"])
-#
-    #    gc.collect()
+    if random_effects==True:        
+        log.write(" -Iterating through {} datasets to compute statistics for random-effects model...".format(nstudy))
+        results_df["_R2"] = (results_df["Q"] - results_df["DOF"])/(results_df["_W_SUM"] - (results_df["_W2_SUM"]/results_df["_W_SUM"]))
+        results_df.loc[results_df["_R2"]<0, "_R2"] = 0
+        variant_index_random = results_df[results_df["_R2"]>0].index
+
+        results_df["_BETAW_SUM_R"] = 0.0  
+        results_df["_W_SUM_R"] = 0.0
+        results_df["BETA_RANDOM"] = results_df["BETA"]
+        results_df["SE_RANDOM"] = results_df["SE"]
+
+        for i in range(nstudy):
+            n="N_{}".format(i+1)
+            beta="BETA_{}".format(i+1)
+            se="SE_{}".format(i+1)
+            eaf="EAF_{}".format(i+1)
+            single_study_cols=[n,beta,se,eaf,"SNPID"]
+            to_use_sumstats = sumstats_multi.loc[~sumstats_multi["BETA_{}".format(i+1)].isna(),single_study_cols].drop_duplicates(subset="SNPID").set_index("SNPID")
+            sumstats_index = to_use_sumstats.index
+            
+            # BEAT and SE
+            results_df.loc[sumstats_index,"_BETAW_SUM_R"]  += to_use_sumstats[beta]*(1/(to_use_sumstats[se]**2 + results_df.loc[sumstats_index,"_R2"]))
+            results_df.loc[sumstats_index,"_W_SUM_R"]      += 1/(to_use_sumstats[se]**2 + results_df.loc[sumstats_index,"_R2"])
+            
+            del to_use_sumstats
+            del sumstats_index
+            gc.collect()
+            
+        results_df.loc[variant_index_random,"BETA_RANDOM"] = results_df.loc[variant_index_random,"_BETAW_SUM_R"] / results_df.loc[variant_index_random,"_W_SUM_R"]
+        results_df.loc[variant_index_random,"SE_RANDOM"] = np.sqrt(1/results_df.loc[variant_index_random,"_W_SUM_R"])
+        results_df["Z_RANDOM"] = results_df["BETA_RANDOM"] / results_df["SE_RANDOM"]
+        results_df["P_RANDOM"] = norm.sf(abs(results_df["Z_RANDOM"]))*2
+        results_df = results_df.drop(columns=["_BETAW_SUM_R","_W_SUM_R"])
+
+        gc.collect()
     ###########################################################################
-    results_df = results_df.drop(columns=["_BETAW_SUM","_BETA2W_SUM","_W_SUM","_R2","_W2_SUM"]).sort_values(by=["CHR","POS"])
+    results_df = results_df.drop(columns=["_BETAW_SUM","_BETA2W_SUM","_W_SUM","_R2","_W2_SUM"]).sort_values(by=["CHR","POS"]).reset_index()
     gc.collect()
     log.write("Finished meta-analysis successfully!")
+
+    if random_effects==True:
+        other_cols = ["BETA_RANDOM","SE_RANDOM","Z_RANDOM","P_RANDOM"]
+    else:
+        other_cols = []
+
+    results_df = Sumstats(results_df, fmt="gwaslab", other = other_cols)
     
     return results_df
 

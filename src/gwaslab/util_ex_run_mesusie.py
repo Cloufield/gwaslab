@@ -98,7 +98,7 @@ write.csv(pips, "{study}_{locus}.pipcs", row.names = FALSE)
 
 write.csv(MESuSiE_res$cs$cs_index, "{study}_{locus}.cscs_index", row.names = FALSE)
 write.csv(MESuSiE_res$cs$purity, "{study}_{locus}.cspurity", row.names = FALSE)
-write.csv(MESuSiE_res$cs_category, "{study}_{locus}.cs_category", row.names = FALSE)
+write.csv(MESuSiE_res$cs$cs_category, "{study}_{locus}.cscs_category", row.names = FALSE)
 write.csv(MESuSiE_res$cs$cs, "{study}_{locus}.cscs", row.names = FALSE) 
     '''.format(study=study,locus=locus)
     

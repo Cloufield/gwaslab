@@ -34,6 +34,7 @@ def preformat(sumstats,
           f=None,
           t=None,
           p=None,
+          q=None,
           mlog10p=None,
           test=None,
           info=None,
@@ -233,6 +234,9 @@ def preformat(sumstats,
     if z:
         usecols.append(z)
         rename_dictionary[z]= "Z"
+    if q:
+        usecols.append(q)
+        rename_dictionary[q]= "Q"
     if p:
         usecols.append(p)
         rename_dictionary[p]= "P"

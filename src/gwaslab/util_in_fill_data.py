@@ -356,3 +356,22 @@ def rank_based_int(series, c=3/8):
     n=sum(~series.isna())
     normalized_value = norm.ppf((series.rank()-c)/(n+1-2*c))
     return normalized_value
+
+
+################################################################################################################################################################################
+
+def _get_multi_min(sumstats_multi, col, nstudy,log=Log(), verbose=True):
+    cols =[]
+    for i in range(nstudy):
+        single_header = "{}_{}".format(col, i + 1)
+        if single_header in sumstats_multi.columns:
+            cols.append(single_header)
+
+    combined_header = "{}_{}".format(col, "MIN")
+    log.write("  -Filling {} using {}".format(combined_header,",".join(cols)), verbose=verbose)
+    sumstats_multi[combined_header] = sumstats_multi[cols].min(axis=1)
+    
+    combined_header_index = "{}_{}_COL".format(col, "MIN")
+    sumstats_multi[combined_header_index] = sumstats_multi[cols].idxmin(axis=1)
+    return sumstats_multi
+        

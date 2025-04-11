@@ -27,26 +27,41 @@ from gwaslab.g_headers import _get_headers
 from gwaslab.util_ex_match_ldmatrix import tofinemapping_m
 from gwaslab.util_ex_run_mesusie import _run_mesusie
 from gwaslab.util_in_meta import meta_analyze_multi
+from gwaslab.util_ex_run_hyprcoloc import _run_hyprcoloc
+from gwaslab.util_in_get_sig import getsig
+from gwaslab.util_in_fill_data import _get_multi_min
+from gwaslab.g_meta import _init_meta
+from gwaslab.qc_fix_sumstats import _process_build
 
 class SumstatsMulti( ):
     def __init__(self, 
                  sumstatsObjects, 
-                 study=None, 
+                 group_name=None, 
+                 build="99",
                  verbose=True ):
         
         for i,sumstatsObject in enumerate(sumstatsObjects):
             if not isinstance(sumstatsObject, Sumstats):
                 raise ValueError("Please provide GWASLab Sumstats Object #{}.".format(i+1))
         
+        self.log = Log()
+        self.meta = _init_meta() 
         self.nstudy = len(sumstatsObjects)
-        self.study_name = "Group1" 
+        self.meta["gwaslab"]["genome_build"] = _process_build(build, log=self.log, verbose=False)
+
+        if group_name is None:
+            self.group_name = "Group1" 
+        else:
+            self.group_name = group_name
         
+        self.names=[]
+        self.hyprcoloc = {}
+
         self.snp_info_cols = dict()
         self.stats_cols =  dict()
         self.other_cols= dict()
 
-        self.log = Log()
-
+        
         self.log.write( "Start to create SumstatsMulti object..." )
 
         for i,sumstatsObject in enumerate(sumstatsObjects):
@@ -55,7 +70,14 @@ class SumstatsMulti( ):
             check_dataframe_shape(sumstats=sumstatsObject.data, 
                             log=self.log, 
                             verbose=verbose)
-            
+            if sumstatsObject.meta["gwaslab"]["study_name"] in self.names:
+                new_study_name = "{}_{}".format(sumstatsObject.meta["gwaslab"]["study_name"],i+1)
+                self.log.write( "  -Sumstats Object #{} name: {}".format(i+1,new_study_name), verbose=verbose)
+                self.names.append(new_study_name)
+            else:
+                self.log.write( "  -Sumstats Object #{} name: {}".format(i+1, sumstatsObject.meta["gwaslab"]["study_name"]), verbose=verbose)
+                self.names.append(sumstatsObject.meta["gwaslab"]["study_name"])
+
             self.snp_info_cols[i] = list()
             self.stats_cols[i] = list()
             self.other_cols[i] = list()
@@ -140,5 +162,47 @@ class SumstatsMulti( ):
         molded_sumstats = _sort_pair_cols(molded_sumstats, verbose=verbose, log=self.log, suffixes=["_{}".format(j) for j in range(1,i+2)])
         
         return molded_sumstats
+    
     def run_meta_analysis(self,**kwargs):
         return meta_analyze_multi(self.data,nstudy = self.nstudy,**kwargs)
+    
+    def run_hyprcoloc(self,**kwargs):
+        hyprcoloc_res_combined = _run_hyprcoloc(self.data,
+                       nstudy = self.nstudy, 
+                       study= self.group_name, 
+                       traits=self.names, **kwargs)
+        self.hyprcoloc = hyprcoloc_res_combined
+    
+    def get_lead(self, build=None, gls=False, **kwargs):
+        
+        if "SNPID" in self.data.columns:
+            id_to_use = "SNPID"
+        else:
+            id_to_use = "rsID"
+        
+        # extract build information from meta data
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+
+        self.data = _get_multi_min(self.data,
+                                   col="P", 
+                                   nstudy=self.nstudy)
+
+        output = getsig(self.data,
+                            id=id_to_use,
+                            chrom="CHR",
+                            pos="POS",
+                            p="P_MIN",
+                            log=self.log,
+                            build=build,
+                            **kwargs)
+        # return sumstats object    
+
+        if gls == True:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = output
+            gc.collect()
+            return new_Sumstats_object
+        
+        return output
+    
