@@ -31,6 +31,7 @@ from gwaslab.util_ex_run_hyprcoloc import _run_hyprcoloc
 from gwaslab.util_in_get_sig import getsig
 from gwaslab.util_in_fill_data import _get_multi_min
 from gwaslab.g_meta import _init_meta
+from gwaslab.g_meta_update import _update_meta
 from gwaslab.qc_fix_sumstats import _process_build
 
 class SumstatsMulti( ):
@@ -45,15 +46,20 @@ class SumstatsMulti( ):
                 raise ValueError("Please provide GWASLab Sumstats Object #{}.".format(i+1))
         
         self.log = Log()
-        self.meta = _init_meta() 
-        self.nstudy = len(sumstatsObjects)
+        self.meta = _init_meta(object="SumstatsMulti") 
+
+        self.meta["gwaslab"]["number_of_studies"] = len(sumstatsObjects)
         self.meta["gwaslab"]["genome_build"] = _process_build(build, log=self.log, verbose=False)
+        self.meta["gwaslab"]["objects"] =  dict()
+        self.meta["gwaslab"]["study_index"] =  dict()
 
         if group_name is None:
             self.group_name = "Group1" 
+            self.meta["gwaslab"]["group_name"] =  "Group1" 
         else:
             self.group_name = group_name
-        
+            self.meta["gwaslab"]["group_name"] =  group_name
+
         self.names=[]
         self.hyprcoloc = {}
 
@@ -70,6 +76,7 @@ class SumstatsMulti( ):
             check_dataframe_shape(sumstats=sumstatsObject.data, 
                             log=self.log, 
                             verbose=verbose)
+            
             if sumstatsObject.meta["gwaslab"]["study_name"] in self.names:
                 new_study_name = "{}_{}".format(sumstatsObject.meta["gwaslab"]["study_name"],i+1)
                 self.log.write( "  -Sumstats Object #{} name: {}".format(i+1,new_study_name), verbose=verbose)
@@ -77,6 +84,8 @@ class SumstatsMulti( ):
             else:
                 self.log.write( "  -Sumstats Object #{} name: {}".format(i+1, sumstatsObject.meta["gwaslab"]["study_name"]), verbose=verbose)
                 self.names.append(sumstatsObject.meta["gwaslab"]["study_name"])
+            self.meta["gwaslab"]["objects"][self.names[-1]] = sumstatsObject.meta
+            self.meta["gwaslab"]["study_index"][i+1] = self.names[-1]
 
             self.snp_info_cols[i] = list()
             self.stats_cols[i] = list()
@@ -91,6 +100,9 @@ class SumstatsMulti( ):
                     self.stats_cols[i].append(col)
                 else:
                     self.other_cols[i].append(col)
+
+        self.meta["gwaslab"]["study_names_in_group"] = ",".join(self.names)
+        
 
 
         self.log.write( " -Variant Info columns: {}".format(self.snp_info_cols[0]) , verbose=verbose)
@@ -163,13 +175,16 @@ class SumstatsMulti( ):
         
         return molded_sumstats
     
+    def update_meta(self,**kwargs):
+        self.meta = _update_meta(self.meta, self.data, log = self.log, **kwargs)
+
     def run_meta_analysis(self,**kwargs):
-        return meta_analyze_multi(self.data,nstudy = self.nstudy,**kwargs)
+        return meta_analyze_multi(self.data,nstudy = self.meta["gwaslab"]["number_of_studies"] ,**kwargs)
     
     def run_hyprcoloc(self,**kwargs):
         hyprcoloc_res_combined = _run_hyprcoloc(self.data,
-                       nstudy = self.nstudy, 
-                       study= self.group_name, 
+                       nstudy = self.meta["gwaslab"]["number_of_studies"], 
+                       study= self.meta["gwaslab"]["group_name"], 
                        traits=self.names, **kwargs)
         self.hyprcoloc = hyprcoloc_res_combined
     
@@ -186,7 +201,7 @@ class SumstatsMulti( ):
 
         self.data = _get_multi_min(self.data,
                                    col="P", 
-                                   nstudy=self.nstudy)
+                                   nstudy=self.meta["gwaslab"]["number_of_studies"])
 
         output = getsig(self.data,
                             id=id_to_use,

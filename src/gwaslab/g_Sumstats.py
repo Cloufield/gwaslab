@@ -67,6 +67,7 @@ from gwaslab.g_version import _show_version
 from gwaslab.g_version import gwaslab_info
 from gwaslab.g_meta import _init_meta
 from gwaslab.g_meta import _append_meta_record
+from gwaslab.g_meta_update import _update_meta
 from gwaslab.util_ex_run_clumping import _clump
 from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
 from gwaslab.io_load_ld import tofinemapping_using_ld
@@ -249,18 +250,8 @@ class Sumstats():
         gc.collect()   
 
 #### healper #################################################################################
-    def update_meta(self):
-        self.meta["gwaslab"]["variants"]["variant_number"]=len(self.data)
-        if "CHR" in self.data.columns:
-            self.meta["gwaslab"]["variants"]["number_of_chromosomes"]=len(self.data["CHR"].unique())
-        if "P" in self.data.columns:
-            self.meta["gwaslab"]["variants"]["min_P"]=np.min(self.data["P"])
-        if "EAF" in self.data.columns:
-            self.meta["gwaslab"]["variants"]["min_minor_allele_freq"]=min (np.min(self.data["EAF"]) , 1- np.max(self.data["EAF"]))
-        if "N" in self.data.columns:
-            self.meta["gwaslab"]["samples"]["sample_size"] = int(self.data["N"].max())
-            self.meta["gwaslab"]["samples"]["sample_size_median"] = self.data["N"].median()
-            self.meta["gwaslab"]["samples"]["sample_size_min"] = int(self.data["N"].min())
+    def update_meta(self, **kwargs):
+        self.meta = _update_meta(self.meta, self.data,log = self.log, **kwargs)
 
     def summary(self):
         return summarize(self.data)

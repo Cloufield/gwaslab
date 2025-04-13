@@ -217,7 +217,10 @@ def filterregionout(sumstats, path=None, chrom="CHR",pos="POS", high_ld=False, b
     gc.collect()
     return sumstats
 
-def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True,log=Log()):
+def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", 
+               ea="EA", nea="NEA",build="19",
+               change_status=True, 
+               verbose=True,log=Log()):
     ##start function with col checking##########################################################
     _start_line = "infer genome build version using hapmap3 SNPs"
     _end_line = "inferring genome build version using hapmap3 SNPs"
@@ -261,13 +264,15 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS", ea="EA", nea="NE
     
     if match_count_for_19 > match_count_for_38:
         log.write(" -Since num_hg19 >> num_hg38, assigning genome build hg19...", verbose=verbose) 
-        sumstats[status] = vchange_status(sumstats[status],1,"9","1")
-        sumstats[status] = vchange_status(sumstats[status],2,"9","9")
+        if change_status==True:
+            sumstats[status] = vchange_status(sumstats[status],1,"9","1")
+            sumstats[status] = vchange_status(sumstats[status],2,"9","9")
         inferred_build="19"
     elif match_count_for_19 < match_count_for_38:
         log.write(" -Since num_hg19 << num_hg38, assigning genome build hg38...", verbose=verbose) 
-        sumstats[status] = vchange_status(sumstats[status],1,"9","3")
-        sumstats[status] = vchange_status(sumstats[status],2,"9","8")
+        if change_status==True:
+            sumstats[status] = vchange_status(sumstats[status],1,"9","3")
+            sumstats[status] = vchange_status(sumstats[status],2,"9","8")
         inferred_build="38"
     else:
         log.write(" -Since num_hg19 = num_hg38, unable to infer...", verbose=verbose) 
