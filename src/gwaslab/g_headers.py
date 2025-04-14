@@ -36,6 +36,7 @@ dtype_dic={
  'I2_HET'            : 'float64'  ,
  'DENSITY'           : 'Int64'    ,
  'N'                 : 'Int64'    ,
+ 'N_EFF'             : 'float64'  ,
  'N_CASE'            : 'Int64'    ,
  'N_CONTROL'         : 'Int64'    ,
  'GENENAME'          : 'string'   ,
@@ -95,6 +96,7 @@ description_dic={
  'I2_HET'            :' heterogeneity I2                               ',
  'DENSITY'           :' signal density                                 ',
  'N'                 :' total sample size                              ',
+ 'N_EFF'             :' Effective sample size                          ',
  'N_CASE'            :' number of cases                                ',
  'N_CONTROL'         :' number of controls                             ',
  'GENENAME'          :' nearest gene symbol                            ',
@@ -117,7 +119,7 @@ def _get_headers(mode="all"):
     if mode=="info":
         return ["SNPID","rsID","CHR","POS","EA","NEA","STATUS"]
     elif mode=="stats":
-        return ["BETA","SE","P","MLOG10P","N","N_CASE","N_CONTROL","Z","T","F","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","MAF","EAF","BETA_95L","BETA_95U"]
+        return ["BETA","SE","P","MLOG10P","N","N_CASE","N_CONTROL","N_EFF","Z","T","F","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","MAF","EAF","BETA_95L","BETA_95U"]
     else:
         return description_dic.keys()
 

@@ -87,6 +87,7 @@ from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.util_abf_finemapping import abf_finemapping
 from gwaslab.util_abf_finemapping import make_cs
 from gwaslab.io_read_pipcs import _read_pipcs
+from gwaslab.util_in_estimate_ess import _get_ess
 from gwaslab.viz_plot_credible_sets import _plot_cs
 from gwaslab.hm_casting import _align_with_mold
 from gwaslab.hm_casting  import _merge_mold_with_sumstats_by_chrpos
@@ -833,6 +834,9 @@ class Sumstats():
     def get_per_snp_r2(self,**kwargs):
         self.data = _get_per_snp_r2(self.data, beta="BETA", af="EAF", n="N", log=self.log, **kwargs)
         #add data inplace
+        
+    def get_ess(self, **kwargs):
+        self.data = _get_ess(self.data, log=self.log, **kwargs)
 
     def get_gc(self, mode=None, **kwargs):
         if mode is None:
