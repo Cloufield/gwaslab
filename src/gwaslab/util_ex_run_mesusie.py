@@ -92,14 +92,29 @@ MESuSiE_res<-meSuSie_core(ld_list, summ_stat_list, L=10)'''
 
     rscript_output = '''
 saveRDS(MESuSiE_res, file = "{study}_{locus}.rds")
-pips <- cbind(summ_stat_list$study0$SNP, MESuSiE_res$pip_config)
+pips <- cbind(summ_stat_list$study0$SNP, summ_stat_list$study0$CHR, summ_stat_list$study0$POS, MESuSiE_res$pip_config)
 colnames(pips)[1] <-"SNPID"
+colnames(pips)[2] <-"CHR"
+colnames(pips)[3] <-"POS"
+pips <- data.frame(pips)
+pips[c("CREDIBLE_SET_INDEX")] <- 0 
+pips[c("CS_CATEGORY")] <- NA
+for (i in 1:length(MESuSiE_res$cs$cs)) {{
+    pips[MESuSiE_res$cs$cs[[i]],c("CREDIBLE_SET_INDEX")]<-i
+    pips[MESuSiE_res$cs$cs[[i]],c("CS_CATEGORY")] <- MESuSiE_res$cs$cs_category[[i]]
+}}
 write.csv(pips, "{study}_{locus}.pipcs", row.names = FALSE)
 
 write.csv(MESuSiE_res$cs$cs_index, "{study}_{locus}.cscs_index", row.names = FALSE)
 write.csv(MESuSiE_res$cs$purity, "{study}_{locus}.cspurity", row.names = FALSE)
 write.csv(MESuSiE_res$cs$cs_category, "{study}_{locus}.cscs_category", row.names = FALSE)
-write.csv(MESuSiE_res$cs$cs, "{study}_{locus}.cscs", row.names = FALSE) 
+
+
+for (p in MESuSiE_res$cs$cs) {{
+  write(p,"{study}_{locus}.cscs_i", append=TRUE, sep="\t", ncolumns=10000000)
+  write(summ_stat_list$study0$SNP[p],"{study}_{locus}.cscs_snpid", append=TRUE, sep="\t", ncolumns=10000000)
+}}
+
     '''.format(study=study,locus=locus)
     
     rscript_plotting='''
