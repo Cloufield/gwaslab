@@ -26,6 +26,9 @@ from gwaslab.util_ex_ldproxyfinder import _extract_with_ld_proxy
 from gwaslab.g_headers import _get_headers
 from gwaslab.util_ex_match_ldmatrix import tofinemapping_m
 from gwaslab.util_ex_run_mesusie import _run_mesusie
+from gwaslab.io_read_pipcs import _read_pipcs
+from gwaslab.g_meta import _init_meta
+from gwaslab.viz_plot_stackedregional import plot_stacked_mqq
 
 class SumstatsPair( ):
     def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ,verbose=True ):
@@ -34,10 +37,15 @@ class SumstatsPair( ):
             raise ValueError("Please provide GWASLab Sumstats Object #1.")
         if not isinstance(sumstatsObject2, Sumstats):
             raise ValueError("Please provide GWASLab Sumstats Object #2.")
+        
+        self.meta = _init_meta(object="SumstatsPair") 
+
         if sumstatsObject1.meta["gwaslab"]["study_name"]!=sumstatsObject2.meta["gwaslab"]["study_name"]:
             self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"])
         else:
             self.study_name = "{}_{}".format("STUDY1", "STUDY2")
+
+        self.meta["gwaslab"]["study_name"] = self.study_name
         
         self.snp_info_cols = []
         self.stats_cols =[]
@@ -165,8 +173,12 @@ class SumstatsPair( ):
         self.finemapping["mpath"],self.finemapping["mfile"],self.finemapping["mplink_log"] = tofinemapping_m(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
         
     def run_mesusie(self,**kwargs):
-        _run_mesusie(self.finemapping["mpath"],log=self.log,ncols=self.ns,**kwargs)
+        prefix = _run_mesusie(self.finemapping["mpath"],log=self.log,ncols=self.ns,**kwargs)
+        self.mesusie = _read_pipcs(self.data[["SNPID","CHR","POS"]], prefix, study= self.meta["gwaslab"]["study_name"])
 
+    def read_pipcs(self,prefix,**kwargs):
+        self.mesusie = _read_pipcs(self.data[["SNPID","CHR","POS"]], prefix, study= self.meta["gwaslab"]["study_name"], **kwargs)
+         
     def run_coloc_susie(self,**kwargs):
         self.colocalization = _run_coloc_susie(self.finemapping["path"],log=self.log,ncols=self.ns,**kwargs)
 
@@ -186,6 +198,15 @@ class SumstatsPair( ):
         else:
             self.data = filtervalues(self.data, expr,log=self.log,**kwargs)
         gc.collect()
+
+    def stacked_mqq(self, **kwargs):
+        
+        objects=[self.data[["SNPID","CHR","POS","EA","NEA","P_1"]].rename(columns={"P_1":"P"}), 
+                 self.data[["SNPID","CHR","POS","EA","NEA","P_2"]].rename(columns={"P_2":"P"}), 
+                 self.mesusie.rename(columns={"study0_study1":"PIP"})]
+
+        plot_stacked_mqq(objects=objects, 
+                         **kwargs)
 
     ## Visualization #############################################################################################################################################
     def plot_miami(self,**kwargs):

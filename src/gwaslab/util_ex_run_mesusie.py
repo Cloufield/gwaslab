@@ -147,4 +147,4 @@ dev.off()
         log.write(e.output)
         #os.remove("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]))
     log.write("Finished cross ancestry finemapping using MESuSie.", verbose=verbose)
-    return locus_pip_cs
+    return "./{}_@.pipcs".format(study)

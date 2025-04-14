@@ -22,6 +22,7 @@ def _plot_cs(pipcs_raw,
             pos="POS",
             chrom="CHR",
             cs="CREDIBLE_SET_INDEX",
+            cs_category = "CS_CATEGORY",
             marker_size=(45,85),
             fontsize = 12,
             font_family = "Arial",
@@ -81,6 +82,10 @@ def _plot_cs(pipcs_raw,
         scatter_kwargs["markers"]= {m:region_marker_shapes[i] for i,m in enumerate(pipcs[cs].unique())}
         palette = sns.color_palette(region_ld_colors_m,n_colors=pipcs[cs].nunique()) 
         edgecolor="none"
+        
+        if cs_category in pipcs.columns:
+                cs_category_dic = pipcs.loc[~pipcs[cs_category].isna(), [cs, cs_category]].drop_duplicates().set_index(cs).to_dict()
+                
 
         plot = sns.scatterplot(data=pipcs,
                         x="i",
@@ -116,8 +121,10 @@ def _plot_cs(pipcs_raw,
         
         for i,label in enumerate(labels):
                 if label in [str(j) for j in range(1,10)]:
-
-                        new_labels.append("#"+labels[i])
+                        if cs_category in pipcs.columns:
+                                new_labels.append("#{} - {}".format(labels[i],cs_category_dic[cs_category][label]) ) 
+                        else:
+                                new_labels.append("#"+labels[i])
                         new_handles.append(handles[i])
         
         

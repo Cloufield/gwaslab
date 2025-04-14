@@ -86,11 +86,14 @@ def plot_stacked_mqq(   objects,
             if "P" in each_object.data.columns or "MLOG10P" in each_object.data.columns:
                 sumstats_list.append(each_object.data)
                 pm.append("m")
-        else:
+        if type(each_object) is pd.DataFrame:
             if "PIP" in each_object.columns:
                 sumstats_list.append(each_object)
                 pm.append("pip")
                 common_ylabel=False
+            else:
+                sumstats_list.append(each_object)
+                pm.append("m")
     
     if common_ylabel==True:
         rr_ylabel=False

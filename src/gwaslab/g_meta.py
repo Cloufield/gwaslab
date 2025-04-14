@@ -61,7 +61,7 @@ def _init_meta(object="Sumstats"):
         metadata = {"gwaslab":{
                                     "gwaslab_version": gwaslab_info()["version"],
                                     "gwaslab_object":"gwaslab.SumstatsPair",
-                                    "group_name":"Group_1",
+                                    "study_name":"Group_1",
                                     "species":"homo sapiens",
                                     "genome_build":"99",
                                     "variants":{
