@@ -5,6 +5,7 @@ import numpy as np
 def read_ldsc(filelist=[],mode="h2"):
 #h2 mode
 #####################################################################    
+    is_liab = False
     if mode=="h2":
         summary = pd.DataFrame(columns = ['Filename', 'h2_obs', 'h2_se','Lambda_gc','Mean_chi2','Intercept','Intercept_se',"Ratio","Ratio_se"])
         
@@ -18,6 +19,8 @@ def read_ldsc(filelist=[],mode="h2"):
                 line=""
                 while not re.compile('^Total Observed scale h2').match(line):
                     line = file.readline()
+                    if "h2_liab" in line:
+                        is_liab = True
                     if not line: break
                         
                 try:
@@ -65,6 +68,11 @@ def read_ldsc(filelist=[],mode="h2"):
             #summary = summary.append(row,ignore_index=True)
             row = pd.DataFrame([row], columns = summary.columns)
             summary = pd.concat([summary, row], ignore_index=True)
+            if is_liab == True:
+                summary = summary.rename(columns={
+                    "h2_obs":"h2_liab",
+                    "h2_se":"h2_liab_se"
+                })
 ###############################################################################
     if mode=="rg":
         summary = pd.DataFrame(columns = ['p1',
@@ -76,7 +84,7 @@ def read_ldsc(filelist=[],mode="h2"):
                                           'h2_int','h2_int_se',
                                           'gcov_int','gcov_int_se']
                                )
-        
+
         for index, ldscfile in enumerate(filelist):
             print("Loading file "+str(index+1)+" :" + ldscfile +" ...")
             
@@ -87,6 +95,9 @@ def read_ldsc(filelist=[],mode="h2"):
                     if not line: break
                 line = file.readline() # header        
                 
+                if "h2_liab" in line:
+                        is_liab = True
+
                 line = file.readline() #line1
                 
                 ## first line h2 se
@@ -97,7 +108,12 @@ def read_ldsc(filelist=[],mode="h2"):
                     summary = pd.concat([summary, row_series], ignore_index=True)
                     line = file.readline()
         summary = summary.loc[summary["rg"]!="NA",:].copy() 
-        summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']]  = summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']].astype("float32")            
+        summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']]  = summary[['rg','se' ,'z','p','h2_obs','h2_obs_se','h2_int','h2_int_se','gcov_int','gcov_int_se']].astype("float32")  
+    if is_liab == True:
+            summary = summary.rename(columns={
+                "h2_obs":"h2_liab",
+                "h2_se":"h2_liab_se"
+            })          
     return summary   
 
 
@@ -198,7 +214,9 @@ def read_greml(filelist=[]):
     return summary
 
 def parse_ldsc_summary(ldsc_summary):
-    
+    is_liab = False
+    if "Liability" in ldsc_summary:
+        is_liab = True
     lines = ldsc_summary.split("\n")
     
     columns = ['h2_obs', 'h2_se','Lambda_gc','Mean_chi2','Intercept','Intercept_se',"Ratio","Ratio_se","Catagories"]
@@ -257,9 +275,17 @@ def parse_ldsc_summary(ldsc_summary):
 
     #summary = summary.append(row,ignore_index=True)
     row = pd.DataFrame([row], columns = summary.columns)
+    if is_liab == True:
+        row = row.rename(columns={
+            "h2_obs":"h2_liab",
+            "h2_se":"h2_liab_se"
+        })
     return row
 
 def parse_partitioned_ldsc_summary(ldsc_summary):
+    is_liab = False
+    if "Liability" in ldsc_summary:
+        is_liab = True
     summary = pd.DataFrame(columns = ['h2_obs', 'h2_se','Lambda_gc','Mean_chi2','Intercept','Intercept_se',"Ratio","Ratio_se"])
     lines = ldsc_summary.split("\n")
     row={}
@@ -306,4 +332,9 @@ def parse_partitioned_ldsc_summary(ldsc_summary):
 
     #summary = summary.append(row,ignore_index=True)
     row = pd.DataFrame([row], columns = summary.columns)
+    if is_liab == True:
+        row = row.rename(columns={
+            "h2_obs":"h2_liab",
+            "h2_se":"h2_liab_se"
+        })
     return row

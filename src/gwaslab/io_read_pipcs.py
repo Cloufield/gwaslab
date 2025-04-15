@@ -8,6 +8,8 @@ import os
 def _read_pipcs(data, 
                 output_prefix, 
                 study=None, 
+                group=None,
+                studie_names=None,
                 log=Log(),
                 verbose=True):
     
@@ -51,7 +53,12 @@ def _read_pipcs(data,
 
     log.write(" -Current pipcs Dataframe shape :",len(pipcs)," x ", len(pipcs.columns),verbose=verbose) 
     
-    pipcs["STUDY"] = study
+    if group is not None:
+        pipcs["GROUP"] = group
+    if study is not None:
+        pipcs["STUDY"] = study
+
+    pipcs = _process_pip(pipcs, group, studie_names)
 
     check_datatype(pipcs,log=log,verbose=verbose)
     check_dataframe_memory_usage(pipcs,log=log,verbose=verbose)
@@ -61,3 +68,12 @@ def _read_pipcs(data,
 def _merge_chrpos(data,pipcs):
     df = pd.merge(pipcs, data,on="SNPID",how="left")
     return df
+
+def _process_pip(pipcs, group, studie_names):
+    if group is not None and "PIP" not in pipcs.columns:
+        pipcs["PIP"] = pipcs[studie_names]
+
+    for i in pipcs["CS_CATEGORY"].dropna().unique():
+        print(i)
+        pipcs.loc[pipcs["CS_CATEGORY"]==i,"PIP"] = pipcs.loc[pipcs["CS_CATEGORY"]==i,i]
+    return pipcs

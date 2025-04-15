@@ -11,9 +11,10 @@ from gwaslab.util_in_filter_value import filtervalues
 from gwaslab.util_in_filter_value import _filter_palindromic
 from gwaslab.util_in_filter_value import _exclude_hla
 from gwaslab.util_in_filter_value import _exclude_sexchr
+import copy
 
 class ARGS():
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs=None):
         
         self.out = "ldsc"
 
@@ -257,9 +258,9 @@ class ARGS():
 ####################################################################################################################
 
 
-def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, munge_args=None, **kwargs):
+def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False, munge_args=None, **raw_kwargs):
     sumstats = insumstats.copy()
-    
+    kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
         sumstats["N"] = sumstats["N"].astype("int64")
 
@@ -291,21 +292,25 @@ def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, munge_args=
     log.write("  -Adopted from LDSC source code: https://github.com/bulik/ldsc", verbose=verbose)
     log.write("  -Please cite LDSC: Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.", verbose=verbose)
     
-
-
+    if meta["gwaslab"]["sample_prevalence"]!="Unknown" and meta["gwaslab"]["population_prevalence"]!="Unknown" :
+        if "samp_prev" not in kwargs.keys():
+            kwargs["samp_prev"] = "{}".format(meta["gwaslab"]["sample_prevalence"])
+        if "pop_prev" not in kwargs.keys():
+            kwargs["pop_prev"] =  "{}".format(meta["gwaslab"]["population_prevalence"])
 
     log.write(" -Arguments:", verbose=verbose)
     for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
-    default_args = ARGS(**kwargs)
+    
+    default_args = ARGS(kwargs = kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
 
     sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
-    
+
     log.write(" -LDSC log:", verbose=verbose)
-    summary = estimate_h2(sumstats, default_args, log)
+    summary = estimate_h2(sumstats, args = default_args, log = log)
     
     results_table = None
     if type(summary) is tuple:
@@ -321,8 +326,9 @@ def _estimate_h2_by_ldsc(insumstats, log, verbose=True, munge=False, munge_args=
 
 ####################################################################################################################
 
-def _estimate_partitioned_h2_by_ldsc(insumstats, log, verbose=True, **kwargs):
+def _estimate_partitioned_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, **raw_kwargs):
     sumstats = insumstats.copy()
+    kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
         sumstats["N"] = sumstats["N"].astype("int64")
     ##start function with col checking##########################################################
@@ -347,10 +353,16 @@ def _estimate_partitioned_h2_by_ldsc(insumstats, log, verbose=True, **kwargs):
     log.write("  -Please cite LDSC: Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.", verbose=verbose)
     log.write(" -Arguments:", verbose=verbose)
     
+    if meta["gwaslab"]["sample_prevalence"]!="Unknown" and meta["gwaslab"]["population_prevalence"]!="Unknown" :
+        if "samp_prev" not in kwargs.keys():
+            kwargs["samp_prev"] = "{}".format(meta["gwaslab"]["sample_prevalence"])
+        if "pop_prev" not in kwargs.keys():
+            kwargs["pop_prev"] =  "{}".format(meta["gwaslab"]["population_prevalence"])
+
     for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
     
-    default_args = ARGS(**kwargs)
+    default_args = ARGS(kwargs = kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -369,8 +381,9 @@ def _estimate_partitioned_h2_by_ldsc(insumstats, log, verbose=True, **kwargs):
 
 
 
-def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **kwargs):
+def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True, **raw_kwargs):
     sumstats = insumstats.copy()
+    kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
         sumstats["N"] = sumstats["N"].astype("int64")
     ##start function with col checking##########################################################
@@ -398,7 +411,17 @@ def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **kwargs):
     for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
     
-    default_args = ARGS(**kwargs)
+    samp_prev_string=""
+    pop_prev_string=""
+
+    if meta["gwaslab"]["sample_prevalence"]!="Unknown" and meta["gwaslab"]["population_prevalence"]!="Unknown" :
+
+        if "samp_prev" not in kwargs.keys():
+            samp_prev_string =  "{}".format(meta["gwaslab"]["sample_prevalence"])
+        if "pop_prev" not in kwargs.keys():
+            pop_prev_string =  "{}".format(meta["gwaslab"]["population_prevalence"])
+
+    default_args = ARGS(kwargs = kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -419,7 +442,20 @@ def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **kwargs):
             to_append["Z"] = to_append["BETA"]/to_append["SE"]
 
         other_traits_to_use.append(to_append[["SNP","A1","A2","Z","N"]])    
+        
+        if each_other_sumstats.meta["gwaslab"]["sample_prevalence"]!="Unknown" and each_other_sumstats.meta["gwaslab"]["population_prevalence"]!="Unknown" :
+                samp_prev_string +=  ",{}".format(meta["gwaslab"]["sample_prevalence"])
+                pop_prev_string += ",{}".format(meta["gwaslab"]["population_prevalence"])
 
+    if len(pop_prev_string.split(",")) == len(other_traits)+1 and len(samp_prev_string.split(",")) == len(other_traits)+1:
+        if "samp_prev" not in kwargs.keys():
+            log.write("  -{}:{}".format("samp_prev", samp_prev_string), verbose=verbose)
+            default_args.samp_prev = samp_prev_string
+        if "pop_prev" not in kwargs.keys():
+            log.write("  -{}:{}".format("pop_prev", pop_prev_string), verbose=verbose)
+            default_args.pop_prev =  pop_prev_string
+        
+    
     log.write(" -LDSC log:", verbose=verbose)
     summary = estimate_rg(sumstats[["SNP","A1","A2","Z","N"]], other_traits_to_use, default_args, log)[1]
     
@@ -431,8 +467,9 @@ def _estimate_rg_by_ldsc(insumstats, other_traits ,log, verbose=True, **kwargs):
 ####################################################################################################################
 
 
-def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **kwargs):
+def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **raw_kwargs):
     sumstats = insumstats.copy()
+    kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
         sumstats["N"] = sumstats["N"].astype("int64")
     ##start function with col checking##########################################################
@@ -460,7 +497,7 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **kwargs):
     for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
     
-    default_args = ARGS(**kwargs)
+    default_args = ARGS(kwargs = kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]

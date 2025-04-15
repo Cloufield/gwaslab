@@ -26,14 +26,18 @@ def _init_meta(object="Sumstats"):
                         "date_last_modified":"Unknown", 
                         "coordinate_system":"1-based"
                     }
+   
+    # Sumstats
     if object=="Sumstats":
         metadata = {"gwaslab":{
                     "gwaslab_version": gwaslab_info()["version"],
                     "gwaslab_object":"gwaslab.Sumstats",
-                    "study_name":"Sumstats_1",
+                    "study_name":"Sumstats1",
                     "study_type":"Unknown",
                     "species":"homo sapiens",
                     "genome_build":"99",
+                    "sample_prevalence":"Unknown",
+                    "population_prevalence":"Unknown",
                     "variants":{
                         "variant_number":"Unknown",
                         "min_P":"Unknown",
@@ -57,11 +61,13 @@ def _init_meta(object="Sumstats"):
                         "ref_rsid_to_chrpos_vcf":"Unknown"
                     }}}
         metadata |= metadata_ssf
+    
+    # SumstatsPair
     elif object=="SumstatsPair":
         metadata = {"gwaslab":{
                                     "gwaslab_version": gwaslab_info()["version"],
                                     "gwaslab_object":"gwaslab.SumstatsPair",
-                                    "study_name":"Group_1",
+                                    "group_name":"Group1",
                                     "species":"homo sapiens",
                                     "genome_build":"99",
                                     "variants":{
@@ -87,11 +93,13 @@ def _init_meta(object="Sumstats"):
                                         "ref_rsid_to_chrpos_vcf":"Unknown"
                                     }}}
         metadata |= metadata_multi
+    
+    # SumstatsMulti
     elif object=="SumstatsMulti":
         metadata = {"gwaslab":{
                             "gwaslab_version": gwaslab_info()["version"],
                             "gwaslab_object":"gwaslab.SumstatsMulti",
-                            "group_name":"Group_1",
+                            "group_name":"Group1",
                             "species":"homo sapiens",
                             "genome_build":"99",
                             "variants":{

@@ -21,13 +21,15 @@ from gwaslab.util_ex_calculate_ldmatrix import _extract_variants_in_locus
 
 
 def tofinemapping_m(sumstats, 
-                    study=None, 
+                    studies=None, 
+                    group=None,
                     ld_paths = None,
                     ld_types = None, 
                     ld_maps = None,
                     ld_map_dics = None,
                     bfile=None, 
                     vcf=None, 
+                    locus=None,
                     loci=None,
                     loci_chrpos=None,
                     out="./",
@@ -126,7 +128,7 @@ def tofinemapping_m(sumstats,
     # export common variants list
     matched_snp_list_path, matched_sumstats_paths=_export_snplist_and_locus_sumstats_m(matched_sumstats=matched_sumstats, 
                                                                                     out=out, 
-                                                                                    study=study, 
+                                                                                    group=group, 
                                                                                     row=row, 
                                                                                     windowsizekb=windowsizekb,
                                                                                     log=log)  
@@ -144,7 +146,7 @@ def tofinemapping_m(sumstats,
         matched_ld_matrix_path = _extract_variants_from_ld_matrix_m(merged_sumstats = matched_sumstats, 
                                                    r_matrix = r_matrix, 
                                                    out = out, 
-                                                   study = study, 
+                                                   group = group, 
                                                    row = row, 
                                                    windowsizekb = windowsizekb, 
                                                    index=i,
@@ -156,15 +158,17 @@ def tofinemapping_m(sumstats,
         row_dict["SNPID_LIST"] = matched_snp_list_path
         row_dict["LD_R_MATRIX"] = matched_ld_matrix_path
         row_dict["LOCUS_SUMSTATS"] = matched_sumstats_paths[i] + ".gz"
-        row_dict["LOCUS"] = loci[0]
+        row_dict["LOCUS"] = row["SNPID"]
         row_dict["SUBSTUDY"]= i+1
+        row_dict["STUDY"] = studies[i]
         file_row = pd.Series(row_dict).to_frame().T
         output_file_list = pd.concat([output_file_list, file_row],ignore_index=True)
 
     if len(output_file_list)>0:
-        output_file_list["STUDY"] = study
+        
+        output_file_list["GROUP"] = group
         nloci = len(output_file_list)
-        output_file_list_path =  "{}/{}_{}study_{}_{}kb.filelist".format(out.rstrip("/"), study,nloci, loci[0], windowsizekb)
+        output_file_list_path =  "{}/{}_{}study_{}_{}kb.filelist".format(out.rstrip("/"), group,nloci, row["SNPID"], windowsizekb)
         output_file_list.to_csv(output_file_list_path,index=None,sep="\t")
         log.write(" -File list is saved to: {}".format(output_file_list_path),verbose=verbose)
         log.write(" -Finished LD matrix calculation.",verbose=verbose)
@@ -178,11 +182,11 @@ def tofinemapping_m(sumstats,
     return output_file_list_path, output_file_list,  plink_log
 
 
-def _export_snplist_and_locus_sumstats_m(matched_sumstats, out, study, row, windowsizekb,log):
+def _export_snplist_and_locus_sumstats_m(matched_sumstats, out, group, row, windowsizekb,log):
         # study suffixes starting from 1
         suffixes=["_{}".format(i+1) for i in range(2)]
         
-        matched_snp_list_path = "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb)
+        matched_snp_list_path = "{}/{}_{}_{}.snplist.raw".format(out.rstrip("/"), group, row["SNPID"] ,windowsizekb)
         
         matched_sumstats["SNPID"].to_csv(matched_snp_list_path, index=None, header=None)
         log.write(" -Exporting SNP list of {}  to: {}...".format(len(matched_sumstats) ,matched_snp_list_path))
@@ -195,7 +199,7 @@ def _export_snplist_and_locus_sumstats_m(matched_sumstats, out, study, row, wind
             # export sumstats for each study
             suffix = suffixes[i]
             
-            matched_sumstats_path =  "{}/{}_{}_{}_{}.sumstats".format(out.rstrip("/"), study, row["SNPID"] ,windowsizekb, i + 1)
+            matched_sumstats_path =  "{}/{}_{}_{}_{}.sumstats".format(out.rstrip("/"), group, row["SNPID"] ,windowsizekb, i + 1)
             matched_sumstats_paths.append(matched_sumstats_path)
             to_export_columns=["CHR","POS","EA","NEA"]
 
@@ -292,7 +296,7 @@ def _load_ld_map(path,
     # "SNPID",0:"CHR_bim",3:"POS_bim",4:"EA_bim",5:"NEA_bim"
     return ld_map
 
-def _extract_variants_from_ld_matrix_m(merged_sumstats, r_matrix, out, study, row, windowsizekb, log, verbose, index):
+def _extract_variants_from_ld_matrix_m(merged_sumstats, r_matrix, out, group, row, windowsizekb, log, verbose, index):
     # study suffixes starting from 1
     index_bim_header = "_INDEX_BIM_{}".format(index + 1) 
     flipped_header = "_FLIPPED_{}".format(index + 1) 
@@ -310,7 +314,7 @@ def _extract_variants_from_ld_matrix_m(merged_sumstats, r_matrix, out, study, ro
     reduced_r_matrix[flipped,:] = -1 * reduced_r_matrix[flipped,:]
     reduced_r_matrix[:,flipped] = -1 * reduced_r_matrix[:,flipped]
 
-    output_prefix =  "{}/{}_{}_{}_{}".format(out.rstrip("/"),study,row["SNPID"],windowsizekb, index + 1)
+    output_prefix =  "{}/{}_{}_{}_{}".format(out.rstrip("/"),group,row["SNPID"],windowsizekb, index + 1)
     output_path = "{}.ld.gz".format(output_prefix)
     
     pd.DataFrame(reduced_r_matrix).to_csv(output_path,sep="\t",index=None,header=None)

@@ -48,10 +48,14 @@ ld_list <- list()
 summ_stat_list <- list()
     '''
     r_scripts_for_loading =[r_script_init]
+
     
     for index, row in filelist.iterrows(): 
         gc.collect()
+        if index==0:
+            study0 = row["STUDY"]
         study = row["STUDY"]
+        group = row["GROUP"]
         ld_r_matrix = row["LD_R_MATRIX"]
         sumstats = row["LOCUS_SUMSTATS"]
         locus=row["LOCUS"]
@@ -67,16 +71,17 @@ sum{index}$N <- {n}
 ld{index} <- read.csv("{ld_r_matrix}",sep="\\t",header=FALSE)
 ld{index}[is.na(ld{index})]  <- 0
 names(ld{index}) <- sum{index}$SNP
-ld_list$study{index} <-  as.matrix(ld{index})
-summ_stat_list$study{index} <- sum{index}
+ld_list${study} <-  as.matrix(ld{index})
+summ_stat_list${study} <- sum{index}
 
-png(filename="./diagnostic_{study}_{locus}_{index}.png")
-diagnostic <- kriging_rss(summ_stat_list$study{index}$Z, ld_list$study{index})
+png(filename="./diagnostic_{group}_{locus}_{index}.png")
+diagnostic <- kriging_rss(summ_stat_list${study}$Z, ld_list${study})
 diagnostic$plot
 dev.off()
         '''.format(
              index = index,
              study = study,
+             group=group,
              locus = locus,
              n = ns[index],
              sumstats = sumstats,
@@ -91,8 +96,8 @@ dev.off()
 MESuSiE_res<-meSuSie_core(ld_list, summ_stat_list, L=10)'''
 
     rscript_output = '''
-saveRDS(MESuSiE_res, file = "{study}_{locus}.rds")
-pips <- cbind(summ_stat_list$study0$SNP, summ_stat_list$study0$CHR, summ_stat_list$study0$POS, MESuSiE_res$pip_config)
+saveRDS(MESuSiE_res, file = "{group}_{locus}.rds")
+pips <- cbind(summ_stat_list${study0}$SNP, summ_stat_list${study0}$CHR, summ_stat_list${study0}$POS, MESuSiE_res$pip_config)
 colnames(pips)[1] <-"SNPID"
 colnames(pips)[2] <-"CHR"
 colnames(pips)[3] <-"POS"
@@ -103,34 +108,34 @@ for (i in 1:length(MESuSiE_res$cs$cs)) {{
     pips[MESuSiE_res$cs$cs[[i]],c("CREDIBLE_SET_INDEX")]<-i
     pips[MESuSiE_res$cs$cs[[i]],c("CS_CATEGORY")] <- MESuSiE_res$cs$cs_category[[i]]
 }}
-write.csv(pips, "{study}_{locus}.pipcs", row.names = FALSE)
+write.csv(pips, "{group}_{locus}.pipcs", row.names = FALSE)
 
-write.csv(MESuSiE_res$cs$cs_index, "{study}_{locus}.cscs_index", row.names = FALSE)
-write.csv(MESuSiE_res$cs$purity, "{study}_{locus}.cspurity", row.names = FALSE)
-write.csv(MESuSiE_res$cs$cs_category, "{study}_{locus}.cscs_category", row.names = FALSE)
+write.csv(MESuSiE_res$cs$cs_index, "{group}_{locus}.cscs_index", row.names = FALSE)
+write.csv(MESuSiE_res$cs$purity, "{group}_{locus}.cspurity", row.names = FALSE)
+write.csv(MESuSiE_res$cs$cs_category, "{group}_{locus}.cscs_category", row.names = FALSE)
 
 
 for (p in MESuSiE_res$cs$cs) {{
-  write(p,"{study}_{locus}.cscs_i", append=TRUE, sep="\t", ncolumns=10000000)
-  write(summ_stat_list$study0$SNP[p],"{study}_{locus}.cscs_snpid", append=TRUE, sep="\t", ncolumns=10000000)
+  write(p,"{group}_{locus}.cscs_i", append=TRUE, sep="\t", ncolumns=10000000)
+  write(summ_stat_list${study0}$SNP[p],"{group}_{locus}.cscs_snpid", append=TRUE, sep="\t", ncolumns=10000000)
 }}
 
-    '''.format(study=study,locus=locus)
+    '''.format(group=group,locus=locus,study0=study0)
     
     rscript_plotting='''
-png(filename="./{study}_{locus}_stacked_regions.png")
+png(filename="./{group}_{locus}_stacked_regions.png")
 MESuSiE_Plot(MESuSiE_res, ld_list ,summ_stat_list)
 dev.off()
-'''.format(study=study,locus=locus)
+'''.format(group=group,locus=locus)
     
     rscript = rscript_loading + rscript_computing + rscript_output + rscript_plotting
 
     log.write("  -MESuSie script: {}".format(rscript_computing), verbose=verbose)
     
-    with open("_{}_{}_gwaslab_mesusie_temp.R".format(study,row["SNPID"]),"w") as file:
+    with open("_{}_{}_gwaslab_mesusie_temp.R".format(group,row["SNPID"]),"w") as file:
             file.write(rscript)
 
-    script_run_r = "{} _{}_{}_gwaslab_mesusie_temp.R".format(r, study,row["SNPID"])
+    script_run_r = "{} _{}_{}_gwaslab_mesusie_temp.R".format(r, group,row["SNPID"])
     
     try:
         output = subprocess.check_output(script_run_r, stderr=subprocess.STDOUT, shell=True,text=True)
@@ -147,4 +152,4 @@ dev.off()
         log.write(e.output)
         #os.remove("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]))
     log.write("Finished cross ancestry finemapping using MESuSie.", verbose=verbose)
-    return "./{}_@.pipcs".format(study)
+    return "./{}_@.pipcs".format(group)

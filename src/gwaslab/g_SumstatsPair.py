@@ -42,10 +42,13 @@ class SumstatsPair( ):
 
         if sumstatsObject1.meta["gwaslab"]["study_name"]!=sumstatsObject2.meta["gwaslab"]["study_name"]:
             self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"])
+            self.study_names = [sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"]]
         else:
-            self.study_name = "{}_{}".format("STUDY1", "STUDY2")
+            self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"]+"1", sumstatsObject2.meta["gwaslab"]["study_name"]+"2")
+            self.study_names = [sumstatsObject1.meta["gwaslab"]["study_name"]+"1", sumstatsObject2.meta["gwaslab"]["study_name"]+"2"]
 
-        self.meta["gwaslab"]["study_name"] = self.study_name
+        #self.meta["gwaslab"]["study_name"] = self.study_name
+        self.meta["gwaslab"]["group_name"] = self.study_name
         
         self.snp_info_cols = []
         self.stats_cols =[]
@@ -55,18 +58,26 @@ class SumstatsPair( ):
         self.log = Log()
         self.suffixes = suffixes
         self.colocalization=pd.DataFrame()
+        
         self.sumstats1 = pd.DataFrame()
         self.sumstats2 = pd.DataFrame()
-        
-        self.mr =dict()
-        self.clumps =dict()
         self.ns = None
-        self.finemapping = dict()
-        #self.to_finemapping_file_path = ""
-        #self.plink_log = ""
+        
+        # TwosampleMR
+        self.mr =dict()
+        
+        # clumping
+        self.clumps =dict()
+        
+        # MESuSiE
+        self.mesusie = dict()
+        self.mesusie_res = pd.DataFrame()
+        
+        # Coloc and Coloc SuSiE 
+        self.coloc = dict()
+        self.coloc_susie_res = pd.DataFrame()
 
         self.log.write( "Start to create SumstatsPair object..." )
-        
         self.log.write( " -Checking sumstats 1..." , verbose=verbose)
         check_datatype(sumstatsObject1.data, log=self.log, verbose=verbose)
         check_dataframe_shape(sumstats=sumstatsObject1.data, 
@@ -164,27 +175,39 @@ class SumstatsPair( ):
 
 
     def clump(self,**kwargs):
-        self.clumps["clumps"],self.clumps["clumps_raw"],self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.study_name, **kwargs)
+        self.clumps["clumps"],self.clumps["clumps_raw"],self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.meta["gwaslab"]["group_name"], **kwargs)
 
     def to_coloc(self,**kwargs):
-        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"] = tofinemapping(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
+        self.coloc["path"],self.coloc["file"],self.coloc["plink_log"] = tofinemapping(self.data,study=self.meta["gwaslab"]["group_name"],suffixes=self.suffixes,log=self.log,**kwargs)
 
     def to_mesusie(self,**kwargs):
-        self.finemapping["mpath"],self.finemapping["mfile"],self.finemapping["mplink_log"] = tofinemapping_m(self.data,study=self.study_name,suffixes=self.suffixes,log=self.log,**kwargs)
+        self.mesusie["path"],self.mesusie["file"],self.mesusie["plink_log"] = tofinemapping_m(self.data,
+                                                                                                             studies = self.study_names,
+                                                                                                             group = self.meta["gwaslab"]["group_name"],
+                                                                                                             suffixes=self.suffixes,
+                                                                                                             log=self.log,
+                                                                                                             **kwargs)
         
     def run_mesusie(self,**kwargs):
-        prefix = _run_mesusie(self.finemapping["mpath"],log=self.log,ncols=self.ns,**kwargs)
-        self.mesusie = _read_pipcs(self.data[["SNPID","CHR","POS"]], prefix, study= self.meta["gwaslab"]["study_name"])
+        prefix = _run_mesusie(self.mesusie["path"],log=self.log,ncols=self.ns,**kwargs)
+        self.mesusie_res = _read_pipcs(self.data[["SNPID","CHR","POS"]], 
+                                   prefix, 
+                                   studie_names = self.study_name,
+                                   group=self.meta["gwaslab"]["group_name"])
 
     def read_pipcs(self,prefix,**kwargs):
-        self.mesusie = _read_pipcs(self.data[["SNPID","CHR","POS"]], prefix, study= self.meta["gwaslab"]["study_name"], **kwargs)
+        self.mesusie_res = _read_pipcs(self.data[["SNPID","CHR","POS"]], 
+                                   prefix, 
+                                   group=self.meta["gwaslab"]["group_name"], 
+                                   studie_names = self.study_name,
+                                   **kwargs)
          
     def run_coloc_susie(self,**kwargs):
-        self.colocalization = _run_coloc_susie(self.finemapping["path"],log=self.log,ncols=self.ns,**kwargs)
+        self.coloc_susie_res = _run_coloc_susie(self.coloc["path"],log=self.log,ncols=self.ns,**kwargs)
 
     def run_two_sample_mr(self, clump=False, **kwargs):
-        exposure1 = self.study_name.split("_")[0]
-        outcome2 = self.study_name.split("_")[1]
+        exposure1 = self.meta["gwaslab"]["group_name"].split("_")[0]
+        outcome2 = self.meta["gwaslab"]["group_name"].split("_")[1]
         _run_two_sample_mr(self,exposure1=exposure1,outcome2=outcome2, clump=clump,**kwargs)
 
     def extract_with_ld_proxy(self,**arg):
@@ -203,14 +226,13 @@ class SumstatsPair( ):
         
         objects=[self.data[["SNPID","CHR","POS","EA","NEA","P_1"]].rename(columns={"P_1":"P"}), 
                  self.data[["SNPID","CHR","POS","EA","NEA","P_2"]].rename(columns={"P_2":"P"}), 
-                 self.mesusie.rename(columns={"study0_study1":"PIP"})]
+                 self.mesusie_res]
 
         plot_stacked_mqq(objects=objects, 
                          **kwargs)
 
     ## Visualization #############################################################################################################################################
     def plot_miami(self,**kwargs):
-
         plot_miami2(merged_sumstats=self.data, 
                     suffixes=self.suffixes,
                     **kwargs)

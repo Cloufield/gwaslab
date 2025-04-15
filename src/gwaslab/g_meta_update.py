@@ -20,7 +20,7 @@ def _update_meta(meta, sumstats, object="Sumstats",log=Log(), verbose=True):
             meta["gwaslab"]["samples"]["sample_size_median"] = sumstats["N"].median()
             meta["gwaslab"]["samples"]["sample_size_min"] = int(sumstats["N"].min())
     
-    if  meta["gwaslab"]["gwaslab_object"]=="gwaslab.SumstatsMulti":   
+    if  meta["gwaslab"]["gwaslab_object"]=="gwaslab.SumstatsMulti" or meta["gwaslab"]["gwaslab_object"]=="gwaslab.SumstatsPair":   
         nstudy = meta["gwaslab"]['number_of_studies']
         for i in range(nstudy):
             i_form_1 = i + 1

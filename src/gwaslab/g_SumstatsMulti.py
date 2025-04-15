@@ -84,7 +84,7 @@ class SumstatsMulti( ):
             else:
                 self.log.write( "  -Sumstats Object #{} name: {}".format(i+1, sumstatsObject.meta["gwaslab"]["study_name"]), verbose=verbose)
                 self.names.append(sumstatsObject.meta["gwaslab"]["study_name"])
-            self.meta["gwaslab"]["objects"][self.names[-1]] = sumstatsObject.meta
+            self.meta["gwaslab"]["objects"][i+1] = sumstatsObject.meta
             self.meta["gwaslab"]["study_index"][i+1] = self.names[-1]
 
             self.snp_info_cols[i] = list()
