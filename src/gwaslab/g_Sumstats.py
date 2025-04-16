@@ -93,6 +93,7 @@ from gwaslab.hm_casting import _align_with_mold
 from gwaslab.hm_casting  import _merge_mold_with_sumstats_by_chrpos
 import gc
 from gwaslab.viz_plot_phe_heatmap import _gwheatmap
+from gwaslab.util_ex_run_prscs import _run_prscs
 
 #20220309
 class Sumstats():
@@ -864,6 +865,12 @@ class Sumstats():
         credible_sets = make_cs(region_data,threshold=0.95,log=self.log)
         return region_data, credible_sets
     
+######################################################################################################
+    def run_prscs(self, build=None, verbose=True, match_allele=True, how="inner", **kwargs):
+        if build is None:
+            build = self.meta["gwaslab"]["genome_build"]
+        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+        _run_prscs(sst_file = insumstats[["rsID","CHR","POS","EA","NEA","BETA","SE"]], **kwargs)
 
 ## LDSC ##############################################################################################
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", **kwargs):
