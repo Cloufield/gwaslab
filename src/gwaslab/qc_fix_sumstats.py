@@ -18,7 +18,6 @@ from gwaslab.qc_check_datatype import check_datatype
 from gwaslab.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc_build import _process_build
 from gwaslab.qc_build import _set_build
-
 from gwaslab.g_version import _get_version
 from gwaslab.util_in_fill_data import _convert_betase_to_mlog10p
 from gwaslab.util_in_fill_data import _convert_betase_to_p

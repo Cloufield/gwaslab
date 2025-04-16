@@ -259,10 +259,11 @@ class ARGS():
 
 
 def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False, munge_args=None, **raw_kwargs):
-    sumstats = insumstats.copy()
+    sumstats = insumstats
     kwargs = copy.deepcopy(raw_kwargs)
+    
     if "N" in sumstats.columns:
-        sumstats["N"] = sumstats["N"].astype("int64")
+        sumstats["N"] = sumstats["N"].fillna(sumstats["N"].median()).apply("int64")
 
     if munge:
         if munge_args is None:
@@ -330,7 +331,7 @@ def _estimate_partitioned_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, 
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
-        sumstats["N"] = sumstats["N"].astype("int64")
+        sumstats["N"] = sumstats["N"].fillna(sumstats["N"].median()).apply("int64")
     ##start function with col checking##########################################################
     _start_line = "run LD score regression"
     _end_line = "running LD score regression"
@@ -385,7 +386,7 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
-        sumstats["N"] = sumstats["N"].astype("int64")
+        sumstats["N"] = sumstats["N"].fillna(sumstats["N"].median()).apply("int64")
     ##start function with col checking##########################################################
     _start_line = "run LD score regression for genetic correlation"
     _end_line = "running LD score regression for genetic correlation"
@@ -408,8 +409,7 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
     log.write("  -Please cite LDSC: Bulik-Sullivan, B., et al. An Atlas of Genetic Correlations across Human Diseases and Traits. Nature Genetics, 2015.", verbose=verbose)
     log.write(" -Arguments:", verbose=verbose)
     
-    for key, value in kwargs.items():
-        log.write("  -{}:{}".format(key, value), verbose=verbose)
+
     
     samp_prev_string=""
     pop_prev_string=""
@@ -420,6 +420,17 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
             samp_prev_string =  "{}".format(meta["gwaslab"]["sample_prevalence"])
         if "pop_prev" not in kwargs.keys():
             pop_prev_string =  "{}".format(meta["gwaslab"]["population_prevalence"])
+    
+    if "rg" in kwargs.keys():
+        alias = kwargs["rg"].split(",")[1:]
+    else:
+        alias=[]
+        for index, each_other_sumstats in enumerate(other_traits):
+            alias.append(each_other_sumstats.meta["gwaslab"]["study_name"])
+        kwargs["rg"]=",".join([meta["gwaslab"]["study_name"]]+alias)
+    
+    for key, value in kwargs.items():
+        log.write("  -{}:{}".format(key, value), verbose=verbose)
 
     default_args = ARGS(kwargs = kwargs)
 
@@ -427,9 +438,8 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
 
     sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
-    
+
     other_traits_to_use = []
-    alias = default_args.rg.split(",")[1:]
 
     for index, each_other_sumstats in enumerate(other_traits):
         log.write(" -Processing sumstats with alias {} ({})".format(alias[index], each_other_sumstats.meta["gwaslab"]["study_name"]))
@@ -449,13 +459,12 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
 
     if len(pop_prev_string.split(",")) == len(other_traits)+1 and len(samp_prev_string.split(",")) == len(other_traits)+1:
         if "samp_prev" not in kwargs.keys():
-            log.write("  -{}:{}".format("samp_prev", samp_prev_string), verbose=verbose)
+            log.write(" -{}:{}".format("samp_prev", samp_prev_string), verbose=verbose)
             default_args.samp_prev = samp_prev_string
         if "pop_prev" not in kwargs.keys():
-            log.write("  -{}:{}".format("pop_prev", pop_prev_string), verbose=verbose)
-            default_args.pop_prev =  pop_prev_string
-        
-    
+            log.write(" -{}:{}".format("pop_prev", pop_prev_string), verbose=verbose)
+            default_args.pop_prev =  pop_prev_string    
+
     log.write(" -LDSC log:", verbose=verbose)
     summary = estimate_rg(sumstats[["SNP","A1","A2","Z","N"]], other_traits_to_use, default_args, log)[1]
     
@@ -471,7 +480,7 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **raw_kwargs):
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
-        sumstats["N"] = sumstats["N"].astype("int64")
+        sumstats["N"] = sumstats["N"].fillna(sumstats["N"].median()).apply("int64")
     ##start function with col checking##########################################################
     _start_line = "run LD score regression"
     _end_line = "running LD score regression"

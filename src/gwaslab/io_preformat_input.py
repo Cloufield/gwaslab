@@ -52,6 +52,7 @@ def preformat(sumstats,
           dof=None,
           ncase=None,
           ncontrol=None,
+          neff=None,
           direction=None,
           status=None,
           study=None,
@@ -107,6 +108,9 @@ def preformat(sumstats,
         
         if "format_comment" in meta_data.keys():
             readargs["comment"] = meta_data["format_comment"]
+        
+        if "format_other_cols" in meta_data.keys():
+            other += meta_data["format_other_cols"]
         
         if "sep" not in readargs.keys():
             readargs["sep"] = "\t"
@@ -216,6 +220,9 @@ def preformat(sumstats,
     if ncontrol and (type(ncontrol) is str):
         usecols.append(ncontrol)
         rename_dictionary[ncontrol]= "N_CONTROL"    
+    if neff and (type(neff) is str):
+        usecols.append(neff)
+        rename_dictionary[neff]= "N_EFF" 
     if beta:
         usecols.append(beta)
         rename_dictionary[beta]= "BETA"

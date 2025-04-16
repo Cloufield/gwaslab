@@ -237,6 +237,16 @@
             "TotalSampleSize": "N",
             "Nsample": "N",
             "num_samples": "N",
+            "Neff": "N_EFF",
+            "N_EFF": "N_EFF",
+            "N_CASE": "N_CASE",
+            "Ncase": "N_CASE",
+            "ncase": "N_CASE",
+            "n_case": "N_CASE",
+            "Ncontrol": "N_CONTROL",
+            "N_control": "N_CONTROL",
+            "N_Control": "N_CONTROL",
+            "NCONTROL": "N_CONTROL",
             "beta": "BETA",
             "BETA": "BETA",
             "Beta": "BETA",
@@ -459,6 +469,31 @@
             "StdErr": "SE",
             "P-value": "P",
             "Direction": "DIRECTION"
+        }
+    },
+    "genomicsem": {
+        "meta_data": {
+            "format_name": "genomicSEM",
+            "format_source": "https://github.com/GenomicSEM/GenomicSEM/wiki/4.-Common-Factor-GWAS",
+            "format_source2": "https://github.com/GenomicSEM/GenomicSEM/wiki/5.-Multivariate-GWAS",
+            "format_version": 20241210
+        },
+        "format_dict": {
+            "SNP": "rsID",
+            "A2": "NEA",
+            "A1": "EA",
+            "Frq": "EAF",
+            "MAF": "MAF",
+            "N": "N",
+            "est": "BETA",
+            "se_c": "SE",
+            "Pval_Estimate": "P",
+            "Z_Estimate": "Z",
+            "Q": "Q",
+            "Q_df": "DOF",
+            "Q_pval": "P_HET",
+            "CHR": "CHR",
+            "BP": "POS"
         }
     },
     "plink_fam": {
@@ -880,6 +915,21 @@
             "POS": "POS"
         }
     },
+    "mesusie": {
+        "meta_data": {
+            "format_name": "MESuSiE",
+            "format_source": "https://borangao.github.io/meSuSie_Analysis/installation.html",
+            "format_version": 20221109
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "N": "N",
+            "Beta": "BETA",
+            "Se": "SE",
+            "Z": "Z",
+            "POS": "POS"
+        }
+    },
     "plink2_linear": {
         "meta_data": {
             "format_name": "PLINK2 .glm.linear",
@@ -1030,6 +1080,34 @@
             "hazard_ratio": "HR",
             "ci_lower": "OR_95L",
             "ci_upper": "OR_95U"
+        }
+    },
+    "ccgwas": {
+        "meta_data": {
+            "format_name": "CCGWAS",
+            "format_source": "https://github.com/wouterpeyrot/CCGWAS",
+            "format_version": "20220901",
+            "last_check_date": "20250416",
+            "format_separator": "\t",
+            "format_citation": "Peyrot, W. J., & Price, A. L. (2021). Identifying loci with different allele frequencies among cases of eight psychiatric disorders using CC-GWAS. Nature genetics, 53(4), 445-454.",
+            "format_comment": null,
+            "format_na": null,
+            "format_other_cols": [
+                "Exact_beta",
+                "Exact_se",
+                "Exact_pval",
+                "CCGWAS_signif"
+            ]
+        },
+        "format_dict": {
+            "SNP": "SNPID",
+            "CHR": "CHR",
+            "BP": "POS",
+            "A2": "NEA",
+            "A1": "EA",
+            "OLS_beta": "BETA",
+            "OLS_se": "SE",
+            "OLS_pval": "P"
         }
     },
     "fastgwa": {

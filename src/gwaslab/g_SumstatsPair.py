@@ -29,6 +29,7 @@ from gwaslab.util_ex_run_mesusie import _run_mesusie
 from gwaslab.io_read_pipcs import _read_pipcs
 from gwaslab.g_meta import _init_meta
 from gwaslab.viz_plot_stackedregional import plot_stacked_mqq
+from gwaslab.util_ex_run_ccgwas import _run_ccgwas
 
 class SumstatsPair( ):
     def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ,verbose=True ):
@@ -46,10 +47,20 @@ class SumstatsPair( ):
         else:
             self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"]+"1", sumstatsObject2.meta["gwaslab"]["study_name"]+"2")
             self.study_names = [sumstatsObject1.meta["gwaslab"]["study_name"]+"1", sumstatsObject2.meta["gwaslab"]["study_name"]+"2"]
+        
+        self.meta["gwaslab"]["objects"] =  dict()
+        self.meta["gwaslab"]["objects"][0] = sumstatsObject1.meta
+        self.meta["gwaslab"]["objects"][1] = sumstatsObject2.meta
 
         #self.meta["gwaslab"]["study_name"] = self.study_name
         self.meta["gwaslab"]["group_name"] = self.study_name
         
+        self.ldsc =  dict()
+        self.ldsc[0] = sumstatsObject1.ldsc_h2
+        self.ldsc[1] = sumstatsObject2.ldsc_h2
+        self.ldsc_rg = sumstatsObject1.ldsc_rg
+
+
         self.snp_info_cols = []
         self.stats_cols =[]
         self.stats_cols2 =[]
@@ -194,6 +205,16 @@ class SumstatsPair( ):
                                    prefix, 
                                    studie_names = self.study_name,
                                    group=self.meta["gwaslab"]["group_name"])
+    
+    def run_ccgwas(self,**kwargs):
+         _run_ccgwas(self.data, 
+                      meta = self.meta,
+                      ldsc = self.ldsc,
+                      ldsc_rg = self.ldsc_rg,
+                      group=self.meta["gwaslab"]["group_name"],
+                      studies = self.study_names,
+                      log=self.log,
+                      **kwargs)
 
     def read_pipcs(self,prefix,**kwargs):
         self.mesusie_res = _read_pipcs(self.data[["SNPID","CHR","POS"]], 
