@@ -13,7 +13,7 @@ import h5py
 import pandas as pd
 
 
-def parse_ref(ref_file, chrom):
+def parse_ref(ref_file, chrom, log):
     # ref_dict = {'CHR':[], 'SNP':[], 'BP':[], 'A1':[], 'A2':[], 'MAF':[]}
     ref_dict = pd.read_csv(ref_file ,sep="\t")
     ref_dict = ref_dict.loc[ref_dict["CHR"]==chrom,:]
@@ -27,7 +27,7 @@ def parse_bim(bim_file, chrom):
     return vld_dict
 
 
-def parse_sumstats(ref_dict, vld_dict, sst_file, n_subj):
+def parse_sumstats(ref_dict, vld_dict, sst_file, n_subj, log):
     
     n_sqrt = np.sqrt(n_subj)
 
@@ -53,14 +53,14 @@ def parse_sumstats(ref_dict, vld_dict, sst_file, n_subj):
 
     sst_file["FLP"] = 1
     sst_file.loc[is_flipped, "FLP"] = -1
-    
+    log.write(" -Number of common SNPs:{}".format(len(sst_file)))
     sst_dict= sst_file[['CHR', 'SNP', 'BP', 'A1', 'A2', 'MAF', 'BETA', 'FLP']].to_dict("list")
-
+    
     return sst_dict
 
 
-def parse_ldblk(ldblk_dir, sst_dict, chrom):
-    print('... parse reference LD on chromosome %d ...' % chrom)
+def parse_ldblk(ldblk_dir, sst_dict, chrom, log):
+    log.write('... parse reference LD on chromosome %d ...' % chrom)
 
     if '1kg' in os.path.basename(ldblk_dir):
         chr_name = ldblk_dir + '/ldblk_1kg_chr' + str(chrom) + '.hdf5'

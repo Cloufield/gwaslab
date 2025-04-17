@@ -870,7 +870,7 @@ class Sumstats():
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
-        _run_prscs(sst_file = insumstats[["rsID","CHR","POS","EA","NEA","BETA","SE"]], **kwargs)
+        _run_prscs(sst_file = insumstats[["rsID","CHR","POS","EA","NEA","BETA","SE"]], log=self.log, **kwargs)
 
 ## LDSC ##############################################################################################
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", **kwargs):

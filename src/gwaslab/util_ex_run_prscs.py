@@ -42,10 +42,11 @@ def _run_prscs(
             write_psi= 'FALSE', 
             write_pst= 'FALSE', 
             seed= None,
+            log=None,
          **kwargs):
     ## T Ge, CY Chen, Y Ni, YCA Feng, JW Smoller. Polygenic Prediction via Bayesian Regression and Continuous Shrinkage Priors.Nature Communications, 10:1776, 2019.
     sst_file = sst_file.rename(columns={"rsID":"SNP","POS":"BP"})
-    
+    log.write("Start to runnig PRScs...")
     param_dict = {'ref_dir': ref_dir, 
                     'bim_prefix': bim_prefix, 
                     'a': a, 
@@ -63,22 +64,22 @@ def _run_prscs(
                     'seed': seed}
     
     for chrom in param_dict['chrom']:
-        print('##### process chromosome %d #####' % int(chrom))
+        log.write('##### process chromosome %d #####' % int(chrom))
 
         if '1kg' in os.path.basename(param_dict['ref_dir']):
-            ref_dict = parse_genet.parse_ref(param_dict['ref_dir'] + '/snpinfo_1kg_hm3', int(chrom))
+            ref_dict = parse_genet.parse_ref(param_dict['ref_dir'] + '/snpinfo_1kg_hm3', int(chrom), log)
         elif 'ukbb' in os.path.basename(param_dict['ref_dir']):
-            ref_dict = parse_genet.parse_ref(param_dict['ref_dir'] + '/snpinfo_ukbb_hm3', int(chrom))
+            ref_dict = parse_genet.parse_ref(param_dict['ref_dir'] + '/snpinfo_ukbb_hm3', int(chrom), log)
 
         vld_dict = parse_genet.parse_bim(param_dict['bim_prefix'], int(chrom))
 
-        sst_dict = parse_genet.parse_sumstats(ref_dict, vld_dict, sst_file, param_dict['n_gwas'])
+        sst_dict = parse_genet.parse_sumstats(ref_dict, vld_dict, sst_file, param_dict['n_gwas'], log)
 
-        ld_blk, blk_size = parse_genet.parse_ldblk(param_dict['ref_dir'], sst_dict, int(chrom))
+        ld_blk, blk_size = parse_genet.parse_ldblk(param_dict['ref_dir'], sst_dict, int(chrom), log)
 
         mcmc_gtb.mcmc(param_dict['a'], param_dict['b'], param_dict['phi'], sst_dict, param_dict['n_gwas'], ld_blk, blk_size,
             param_dict['n_iter'], param_dict['n_burnin'], param_dict['thin'], int(chrom), param_dict['out_dir'], param_dict['beta_std'],
-	    param_dict['write_psi'], param_dict['write_pst'], param_dict['seed'])
+	    param_dict['write_psi'], param_dict['write_pst'], param_dict['seed'], log)
 
-
+    log.write("Finished!")
 

@@ -4,16 +4,15 @@
 Markov Chain Monte Carlo (MCMC) sampler for polygenic prediction with continuous shrinkage (CS) priors.
 
 """
-
-
 import numpy as np
 from scipy import linalg 
 from numpy import random
 from gwaslab.prscs_gigrnd import gigrnd
+from gwaslab.g_Log import Log
+import time
 
-
-def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom, out_dir, beta_std, write_psi, write_pst, seed):
-    print('... MCMC ...')
+def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom, out_dir, beta_std, write_psi, write_pst, seed, log):
+    log.write('... MCMC ...')
 
     # seed
     if seed != None:
@@ -46,11 +45,21 @@ def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom
 
     # MCMC
     pp = 0
+    start_time = time.time() 
     for itr in range(1,n_iter+1):
-        if itr % 1 == 0:
-            print('--- iter-' + str(itr) + ' ---')
+        if itr ==2:
+            loop_time = time.time() - start_time 
+            log.write(" -Estimated time: {} mins".format((loop_time*n_iter)/60))
+        
+        if itr % 100 == 0:
+            log.write('--- iter-' + str(itr) + ' ---')
+        elif itr % 100 > 2:
+            log.write('-', end="", show_time=False)
+        elif itr % 100 ==2:
+            log.write('-', end="")
 
         mm = 0; quad = 0.0
+
         for kk in range(n_blk):
             if blk_size[kk] == 0:
                 continue
@@ -64,10 +73,10 @@ def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom
                 mm += blk_size[kk]
 
         err = max(n/2.0*(1.0-2.0*sum(beta*beta_mrg)+quad), n/2.0*sum(beta**2/psi))
+
         sigma = 1.0/random.gamma((n+p)/2.0, 1.0/err)
-
         delta = random.gamma(a+b, 1.0/(psi+phi))
-
+   
         for jj in range(p):
             psi[jj] = gigrnd(a-0.5, 2.0*delta[jj], n*beta[jj]**2/sigma)
         psi[psi>1] = 1.0
@@ -122,8 +131,8 @@ def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom
 
     # print estimated phi
     if phi_updt == True:
-        print('... Estimated global shrinkage parameter: %1.2e ...' % phi_est )
+        log.write('... Estimated global shrinkage parameter: %1.2e ...' % phi_est )
 
-    print('... Done ...')
+    log.write('... Done ...')
 
 
