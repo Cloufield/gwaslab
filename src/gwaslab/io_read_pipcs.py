@@ -73,7 +73,7 @@ def _process_pip(pipcs, group, studie_names):
     if group is not None and "PIP" not in pipcs.columns:
         pipcs["PIP"] = pipcs[studie_names]
 
-    for i in pipcs["CS_CATEGORY"].dropna().unique():
-        print(i)
-        pipcs.loc[pipcs["CS_CATEGORY"]==i,"PIP"] = pipcs.loc[pipcs["CS_CATEGORY"]==i,i]
+        for i in pipcs["CS_CATEGORY"].dropna().unique():
+            print(i)
+            pipcs.loc[pipcs["CS_CATEGORY"]==i,"PIP"] = pipcs.loc[pipcs["CS_CATEGORY"]==i,i]
     return pipcs
