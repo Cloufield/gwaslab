@@ -33,6 +33,7 @@ from gwaslab.util_in_fill_data import _get_multi_min
 from gwaslab.g_meta import _init_meta
 from gwaslab.g_meta_update import _update_meta
 from gwaslab.qc_fix_sumstats import _process_build
+from gwaslab.util_ex_run_mtag import _run_mtag
 
 class SumstatsMulti( ):
     def __init__(self, 
@@ -123,7 +124,9 @@ class SumstatsMulti( ):
 
         for i, sumstatsObject in enumerate(sumstatsObjects):
             if i >0:
+                self.log.write("Merging Sumstats #{} to main DataFrame...".format(i+1))
                 self.data = self._merge_two_sumstats(sumstatsObject,i=i)
+                self.log.write("Finished merging Sumstats #{} to main DataFrame.".format(i+1))
 
     def _merge_two_sumstats(self, 
                             sumstatsObject2, 
@@ -187,7 +190,14 @@ class SumstatsMulti( ):
                        study= self.meta["gwaslab"]["group_name"], 
                        traits=self.names, **kwargs)
         self.hyprcoloc = hyprcoloc_res_combined
-    
+
+    def run_mtag(self,**kwargs):
+        _run_mtag(     self.data,
+                       nstudy = self.meta["gwaslab"]["number_of_studies"], 
+                       study= self.meta["gwaslab"]["group_name"], 
+                       traits=self.names, 
+                       **kwargs)
+
     def get_lead(self, build=None, gls=False, **kwargs):
         
         if "SNPID" in self.data.columns:

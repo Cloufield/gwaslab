@@ -14,13 +14,13 @@ def _run_mesusie(filepath,
                  r="Rscript",
                  types=None, ns=None, 
                  fillldna=True, delete=False, 
-                coloc_args="", 
-                susie_args="", 
-                ncols=None,
-                d1_args="",
-                d2_args="",
-                log=Log(), 
-                verbose=True):
+                 coloc_args="", 
+                 susie_args="", 
+                 ncols=None,
+                 d1_args="",
+                 d2_args="",
+                 log=Log(), 
+                 verbose=True):
     
     log.write(" Start to run mesusie from command line:", verbose=verbose)
     pass

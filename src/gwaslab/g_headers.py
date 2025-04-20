@@ -33,7 +33,7 @@ dtype_dic={
  'SNPR2'             : 'float64'  ,
  'DOF'               : 'Int64'    ,
  'P_HET'             : 'float64'  ,
- 'I2_HET'            : 'float64'  ,
+ 'I2'            : 'float64'  ,
  'DENSITY'           : 'Int64'    ,
  'N'                 : 'Int64'    ,
  'N_EFF'             : 'float64'  ,
@@ -93,7 +93,7 @@ description_dic={
  'SNPR2'             :' per variant R2                                 ',
  'DOF'               :' degree of freedom                              ',
  'P_HET'             :' heterogeneity test P value                     ',
- 'I2_HET'            :' heterogeneity I2                               ',
+ 'I2'            :' heterogeneity I2                               ',
  'DENSITY'           :' signal density                                 ',
  'N'                 :' total sample size                              ',
  'N_EFF'             :' Effective sample size                          ',
@@ -119,7 +119,14 @@ def _get_headers(mode="all"):
     if mode=="info":
         return ["SNPID","rsID","CHR","POS","EA","NEA","STATUS"]
     elif mode=="stats":
-        return ["BETA","SE","P","MLOG10P","N","N_CASE","N_CONTROL","N_EFF","Z","T","F","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","MAF","EAF","BETA_95L","BETA_95U"]
+        return ["BETA","SE","P","MLOG10P",
+                "N","N_CASE","N_CONTROL","N_EFF",
+                "Z","T","F",
+                "OR","OR_95L","OR_95U",
+                "HR","HR_95L","HR_95U",
+                "MAF","EAF",
+                "BETA_95L","BETA_95U",
+                "P_HET","I2"]
     else:
         return description_dic.keys()
 

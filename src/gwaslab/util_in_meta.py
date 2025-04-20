@@ -9,7 +9,10 @@ from gwaslab.g_Sumstats import Sumstats
 import gc
 
 
-def meta_analyze(sumstats_list,random_effects=False, match_allele=True, log=Log()):
+def meta_analyze(sumstats_list,
+                 random_effects=False, 
+                 match_allele=True, 
+                 log=Log()):
     
     ###########################################################################
     columns=["SNPID","CHR","POS","EA","NEA"]
@@ -17,6 +20,7 @@ def meta_analyze(sumstats_list,random_effects=False, match_allele=True, log=Log(
 
     log.write("Start to perform meta-analysis...")
     log.write(" -Datasets:")
+
     for index,sumstats_path in enumerate(sumstats_list):
         if isinstance(sumstats_path, pd.DataFrame):
             log.write("  -Sumstats #{}: {} ".format(index, sumstats_path))
@@ -243,18 +247,18 @@ def meta_analyze_multi(sumstats_multi,
     log.write("Start to perform meta-analysis...")
     ###########################################################################
     log.write(" -Initiating result DataFrame...")
-
+    sumstats_multi["_INDEX"] = range(len(sumstats_multi))
     results_df = _init_result_df(sumstats_multi)
-    ###########################################################################
-    
+    ##########################################################################
+
     log.write(" -Iterating through {} datasets to compute statistics for fixed-effect model...".format(nstudy))
     for i in range(nstudy):
         n="N_{}".format(i+1)
         beta="BETA_{}".format(i+1)
         se="SE_{}".format(i+1)
         eaf="EAF_{}".format(i+1)
-        single_study_cols=[n,beta,se,eaf,"SNPID"]
-        to_use_sumstats = sumstats_multi.loc[~sumstats_multi["BETA_{}".format(i+1)].isna(),single_study_cols].drop_duplicates(subset="SNPID").set_index("SNPID")
+        single_study_cols=[n,beta,se,eaf,"SNPID","_INDEX"]
+        to_use_sumstats = sumstats_multi.loc[~sumstats_multi["BETA_{}".format(i+1)].isna(),single_study_cols].drop_duplicates(subset="_INDEX").set_index("_INDEX")
 
 
         sumstats_index = to_use_sumstats.index
@@ -262,7 +266,7 @@ def meta_analyze_multi(sumstats_multi,
         results_df_not_in_sumstat_index = results_df.index[~results_df.index.isin(to_use_sumstats.index)]
         
         # N and DOF
-        results_df.loc[sumstats_index, "N"]         += to_use_sumstats[n]
+        results_df.loc[sumstats_index, "N"]         += to_use_sumstats[n].fillna(0)
         results_df.loc[sumstats_index, "DOF"]       += 1        
         
         # BEAT and SE
@@ -324,8 +328,8 @@ def meta_analyze_multi(sumstats_multi,
             beta="BETA_{}".format(i+1)
             se="SE_{}".format(i+1)
             eaf="EAF_{}".format(i+1)
-            single_study_cols=[n,beta,se,eaf,"SNPID"]
-            to_use_sumstats = sumstats_multi.loc[~sumstats_multi["BETA_{}".format(i+1)].isna(),single_study_cols].drop_duplicates(subset="SNPID").set_index("SNPID")
+            single_study_cols=[n,beta,se,eaf,"SNPID","_INDEX"]
+            to_use_sumstats = sumstats_multi.loc[~sumstats_multi["BETA_{}".format(i+1)].isna(),single_study_cols].drop_duplicates(subset="_INDEX").set_index("_INDEX")
             sumstats_index = to_use_sumstats.index
             
             # BEAT and SE
@@ -352,6 +356,8 @@ def meta_analyze_multi(sumstats_multi,
         other_cols = ["BETA_RANDOM","SE_RANDOM","Z_RANDOM","P_RANDOM"]
     else:
         other_cols = []
+    
+    results_df = results_df.drop(columns=["_INDEX"])
 
     results_df = Sumstats(results_df, fmt="gwaslab", other = other_cols)
     
@@ -359,8 +365,9 @@ def meta_analyze_multi(sumstats_multi,
 
 def _init_result_df(sumstats):
     
-    results_df = sumstats[["SNPID","CHR","POS","EA","NEA"]]
-    results_df = results_df.drop_duplicates(subset="SNPID").set_index("SNPID")
+    results_df = sumstats[["_INDEX","SNPID","CHR","POS","EA","NEA"]]
+    results_df = results_df.drop_duplicates(subset="_INDEX").set_index("_INDEX")
+
     results_df["N"] = 0 
     results_df["_BETAW_SUM"] = 0.0  
     results_df["_BETA2W_SUM"] = 0.0  

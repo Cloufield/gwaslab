@@ -21,7 +21,10 @@ def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None,add_raw_in
     
     log.write("Start to merge sumstats...", verbose=verbose)
     if merge_mode=="outer":
-        sumstats = sumstats.rename(columns={"SNPID":"_SNPID_TMP"})
+        sumstats = sumstats.rename(columns={
+                                            "SNPID":"_SNPID_RIGHT",
+                                            "rsID":"_rsID_RIGHT"
+                                            })
     
     # drop old ids
     cols_to_drop = []
@@ -63,10 +66,18 @@ def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None,add_raw_in
         mold_sumstats["EA"] = mold_sumstats["EA"].astype("string")
         mold_sumstats["NEA"] = mold_sumstats["NEA"].astype("string")
 
-        mold_sumstats.loc[is_temp_na, ["SNPID","EA_1","NEA_1","STATUS_1"]] = mold_sumstats.loc[is_temp_na, ["_SNPID_TMP","EA","NEA","STATUS"]].values
+        # for variants not in template, copy snp info
+        mold_sumstats.loc[is_temp_na, ["SNPID","EA_1","NEA_1","STATUS_1"]] = mold_sumstats.loc[is_temp_na, ["_SNPID_RIGHT","EA","NEA","STATUS"]].values
+        
+        # 
+        if "_rsID_RIGHT" in mold_sumstats.columns:
+            mold_sumstats.loc[is_temp_na, "rsID"] = mold_sumstats.loc[is_temp_na, "_rsID_RIGHT"].values
+        
+        
+        # for variants not in right sumstats, copy snp info
         is_temp_na_2 = mold_sumstats["EA"].isna()
         mold_sumstats.loc[is_temp_na_2, ["EA","NEA"]] = mold_sumstats.loc[is_temp_na_2, ["EA_1","NEA_1"]].values
-        mold_sumstats = mold_sumstats.drop(columns=["_SNPID_TMP"])
+        mold_sumstats = mold_sumstats.drop(columns=["_SNPID_RIGHT"])
 
     log.write(" -After merging by CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
     

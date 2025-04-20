@@ -7,10 +7,10 @@ from gwaslab.g_Log import Log
 
 dtype_dict ={
     "SNPID":["string","object"],
-    "rsID":["string","object"],
-    "CHR":["Int64","int64","int32","Int32","int"],
-    "POS":["int64","Int64"],
-    "EA":["category"],  
+    "rsID": ["string","object"],
+    "CHR":  ["Int64","int64","int32","Int32","int"],
+    "POS":  ["int64","Int64"],
+    "EA":   ["category"],  
     "NEA":["category"],  
     "REF":["category"],  
     "ALT":["category"],  
@@ -35,7 +35,7 @@ dtype_dict ={
     "TEST":["string","object","category"],
     "CHISQ":["float64"],
     "I2":["float64"],
-    "PHET":["float64"],
+    "P_HET":["float64"],
     "SNPR2":["float64"],
     "EAF":["float64","float","float32"],
     "NEAF":["float64","float","float32"],
@@ -48,7 +48,11 @@ dtype_dict ={
     'CREDIBLE_SET_INDEX':["Int64","int64","int32","Int32","int"],
     'N_SNP'             :["Int64","int64","int32","Int32","int"],
     'LOCUS'             :["string","object","category"],
-    'STUDY'             :["string","object","category"]
+    'STUDY'             :["string","object","category"],
+    'BETA_RANDOM' :["float64"],
+    'SE_RANDOM' :["float64"],
+    'Z_RANDOM' :["float64"],
+    'P_RANDOM' :["float64"]
     }
 
 def check_datatype(sumstats, verbose=True, log=Log()):
