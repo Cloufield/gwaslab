@@ -39,6 +39,7 @@ from gwaslab.util_in_filter_value import filterregionout
 from gwaslab.util_in_filter_value import _filter_indel
 from gwaslab.util_in_filter_value import _filter_palindromic
 from gwaslab.util_in_filter_value import _filter_snp
+from gwaslab.util_in_filter_value import _filter_region
 from gwaslab.util_in_filter_value import _exclude_hla
 from gwaslab.util_in_filter_value import _search_variants
 from gwaslab.util_in_filter_value import inferbuild
@@ -522,6 +523,15 @@ class Sumstats():
 
 # utilities ############################################################################################################
     # filter series ######################################################################
+    
+    def filter_region(self, inplace=False,**kwargs):
+        if inplace is False:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = _filter_region(new_Sumstats_object.data, **kwargs)
+            return new_Sumstats_object
+        else:
+            self.data = _filter_region(self.data, **kwargs)
+
     def filter_flanking(self, inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
