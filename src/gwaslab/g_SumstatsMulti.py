@@ -35,11 +35,14 @@ from gwaslab.g_meta_update import _update_meta
 from gwaslab.qc_fix_sumstats import _process_build
 from gwaslab.util_ex_run_mtag import _run_mtag
 
+
+
 class SumstatsMulti( ):
     def __init__(self, 
                  sumstatsObjects, 
                  group_name=None, 
                  build="99",
+                 engine="pandas",
                  verbose=True ):
         
         for i,sumstatsObject in enumerate(sumstatsObjects):
@@ -48,7 +51,13 @@ class SumstatsMulti( ):
         
         self.log = Log()
         self.meta = _init_meta(object="SumstatsMulti") 
+        
+        if engine=="polars":
+            import polars as pl
 
+
+        self.engine=engine
+            
         self.meta["gwaslab"]["number_of_studies"] = len(sumstatsObjects)
         self.meta["gwaslab"]["genome_build"] = _process_build(build, log=self.log, verbose=False)
         self.meta["gwaslab"]["objects"] =  dict()
@@ -68,7 +77,6 @@ class SumstatsMulti( ):
         self.stats_cols =  dict()
         self.other_cols= dict()
 
-        
         self.log.write( "Start to create SumstatsMulti object..." )
 
         for i,sumstatsObject in enumerate(sumstatsObjects):
@@ -127,6 +135,8 @@ class SumstatsMulti( ):
                 self.log.write("Merging Sumstats #{} to main DataFrame...".format(i+1))
                 self.data = self._merge_two_sumstats(sumstatsObject,i=i)
                 self.log.write("Finished merging Sumstats #{} to main DataFrame.".format(i+1))
+        if engine=="polars":
+            self.data = pl.DataFrame(self.data)
 
     def _merge_two_sumstats(self, 
                             sumstatsObject2, 
@@ -181,8 +191,12 @@ class SumstatsMulti( ):
     def update_meta(self,**kwargs):
         self.meta = _update_meta(self.meta, self.data, log = self.log, **kwargs)
 
-    def run_meta_analysis(self,**kwargs):
-        return meta_analyze_multi(self.data,nstudy = self.meta["gwaslab"]["number_of_studies"] ,**kwargs)
+    def run_meta_analysis(self, **kwargs):
+        if self.engine == "polars":
+            from gwaslab.util_in_meta_polars import meta_analyze_polars
+            return meta_analyze_polars(self.data,nstudy = self.meta["gwaslab"]["number_of_studies"] ,**kwargs)
+        else:
+            return meta_analyze_multi(self.data,nstudy = self.meta["gwaslab"]["number_of_studies"] ,**kwargs)
     
     def run_hyprcoloc(self,**kwargs):
         hyprcoloc_res_combined = _run_hyprcoloc(self.data,
