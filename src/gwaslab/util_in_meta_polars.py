@@ -8,7 +8,7 @@ from gwaslab.io_to_pickle import load_data_from_pickle
 from gwaslab.g_Sumstats import Sumstats
 import gc
 import polars as pl
-
+import statsmodels.api as sm
 ########################################################################################################################################################################################################################################################################################################################################################
 ########################################################################################################################################################################################################################################################################################################################################################
 ########################################################################################################################################################################################################################################################################################################################################################
@@ -158,23 +158,18 @@ def meta_analyze_polars(sumstats_multi,
                 .alias("_W_SUM_R")
             )
 
-
         sumstats_multi = sumstats_multi.with_columns(
-            pl.when( pl.col("_R2")>0 )  
-            .then(pl.col("BETA_RANDOM"))  
-            .otherwise(pl.col("_BETAW_SUM_R") / pl.col("_W_SUM_R"))
-            .alias("BETA_RANDOM")
+            BETA_RANDOM = (pl.col("_BETAW_SUM_R") / pl.col("_W_SUM_R"))
         ).with_columns(
-            pl.when( pl.col("_R2")>0  )  
-            .then(pl.col("SE_RANDOM") )  
-            .otherwise( (1/pl.col("_W_SUM_R")).sqrt() )
-            .alias("SE_RANDOM")
+            SE_RANDOM = ( (1/pl.col("_W_SUM_R")).sqrt() )
         ).with_columns(
             Z_RANDOM = pl.col("BETA_RANDOM") /  pl.col("SE_RANDOM")
         ).with_columns(
-        P_RANDOM = pl.col("Z").map_batches(lambda x: pl.Series(2*norm.sf(x.abs())))
+            P_RANDOM = pl.col("Z_RANDOM").map_batches(lambda x: pl.Series(2*norm.sf(x.abs()))
+        )
     )
-        
-    sumstats_multi = sumstats_multi.select(pl.all().exclude("^_.*$"))
+    
 
+    sumstats_multi = sumstats_multi.select(pl.all().exclude("^_.*$"))
+    log.write("Finished performing meta-analysis.")
     return sumstats_multi

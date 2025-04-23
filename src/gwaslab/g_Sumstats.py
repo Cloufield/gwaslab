@@ -159,7 +159,7 @@ class Sumstats():
         self.log = Log()
         self.ldsc_h2 = None
         self.ldsc_h2_results = None
-        self.ldsc_rg = None
+        self.ldsc_rg = pd.DataFrame()
         self.ldsc_h2_cts = None
         self.ldsc_partitioned_h2_summary = None
         self.ldsc_partitioned_h2_results = None
@@ -897,11 +897,12 @@ class Sumstats():
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
-        self.ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats,
+        ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats,
                                              meta=self.meta,
                                              log=self.log, 
                                              verbose=verbose, 
                                              **kwargs)
+        self.ldsc_rg = pd.concat([self.ldsc_rg, ldsc_rg],ignore_index=True)
 
     def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         if build is None:

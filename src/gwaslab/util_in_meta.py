@@ -7,7 +7,7 @@ from gwaslab.g_Log import Log
 from gwaslab.io_to_pickle import load_data_from_pickle
 from gwaslab.g_Sumstats import Sumstats
 import gc
-
+import statsmodels.api as sm
 
 def meta_analyze(sumstats_list,
                  random_effects=False, 
@@ -251,6 +251,7 @@ def meta_analyze_multi(sumstats_multi,
     results_df = _init_result_df(sumstats_multi)
     ##########################################################################
 
+
     log.write(" -Iterating through {} datasets to compute statistics for fixed-effect model...".format(nstudy))
     for i in range(nstudy):
         n="N_{}".format(i+1)
@@ -357,14 +358,14 @@ def meta_analyze_multi(sumstats_multi,
     else:
         other_cols = []
     
-    results_df = results_df.drop(columns=["_INDEX"])
+    results_df = results_df.drop(columns=["_INDEX"])    
 
     results_df = Sumstats(results_df, fmt="gwaslab", other = other_cols)
     
     return results_df
 
 def _init_result_df(sumstats):
-    
+
     results_df = sumstats[["_INDEX","SNPID","CHR","POS","EA","NEA"]]
     results_df = results_df.drop_duplicates(subset="_INDEX").set_index("_INDEX")
 

@@ -43,6 +43,7 @@ class SumstatsMulti( ):
                  group_name=None, 
                  build="99",
                  engine="pandas",
+                 merge_mode="outer",
                  verbose=True ):
         
         for i,sumstatsObject in enumerate(sumstatsObjects):
@@ -133,7 +134,7 @@ class SumstatsMulti( ):
         for i, sumstatsObject in enumerate(sumstatsObjects):
             if i >0:
                 self.log.write("Merging Sumstats #{} to main DataFrame...".format(i+1))
-                self.data = self._merge_two_sumstats(sumstatsObject,i=i)
+                self.data = self._merge_two_sumstats(sumstatsObject,i=i,merge_mode=merge_mode)
                 self.log.write("Finished merging Sumstats #{} to main DataFrame.".format(i+1))
         if engine=="polars":
             self.data = pl.DataFrame(self.data)
@@ -142,6 +143,7 @@ class SumstatsMulti( ):
                             sumstatsObject2, 
                             threshold=0.2, 
                             verbose=True,
+                            merge_mode="outer",
                             windowsizeb=10, 
                             ref_path=None,
                             i=0,
@@ -155,7 +157,7 @@ class SumstatsMulti( ):
                                                     sumstats=sumstatsObject2.data, 
                                                     log=self.log,
                                                     verbose=verbose,
-                                                    merge_mode="outer",
+                                                    merge_mode=merge_mode,
                                                     stats_cols1 = self.other_cols[0],
                                                     stats_cols2 = self.other_cols[i],
                                                     suffixes=("_1",""),
