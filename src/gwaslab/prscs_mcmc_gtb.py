@@ -10,7 +10,6 @@ from numpy import random
 from gwaslab.prscs_gigrnd import gigrnd
 from gwaslab.g_Log import Log
 import time
-
 def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom, out_dir, beta_std, write_psi, write_pst, seed, log):
     log.write('... MCMC ...')
 
@@ -65,7 +64,7 @@ def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom
                 continue
             else:
                 idx_blk = range(mm,mm+blk_size[kk])
-                dinvt = ld_blk[kk]+np.diag(1.0/psi[idx_blk].T[0])
+                dinvt = ld_blk[kk]+np.diag(1.0/psi[idx_blk].to_series())
                 dinvt_chol = linalg.cholesky(dinvt)
                 beta_tmp = linalg.solve_triangular(dinvt_chol, beta_mrg[idx_blk], trans='T') + np.sqrt(sigma/n)*random.randn(len(idx_blk),1)
                 beta[idx_blk] = linalg.solve_triangular(dinvt_chol, beta_tmp, trans='N')
@@ -76,11 +75,10 @@ def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom
 
         sigma = 1.0/random.gamma((n+p)/2.0, 1.0/err)
         delta = random.gamma(a+b, 1.0/(psi+phi))
-   
         for jj in range(p):
             psi[jj] = gigrnd(a-0.5, 2.0*delta[jj], n*beta[jj]**2/sigma)
         psi[psi>1] = 1.0
-
+        
         if phi_updt == True:
             w = random.gamma(1.0, 1.0/(phi+1.0))
             phi = random.gamma(p*b+0.5, 1.0/(sum(delta)+w))
