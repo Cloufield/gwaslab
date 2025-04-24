@@ -24,7 +24,7 @@ Warning: Known issues of GWASLab are summarized in [https://cloufield.github.io/
 The latest version of GWASLab now supports Python 3.9, 3.10, 3.11, and 3.12.
 
 ```
-pip install gwaslab==3.5.7
+pip install gwaslab==3.5.8
 ```
 
 ```python
@@ -58,22 +58,22 @@ mysumstats.plot_mqq()
 
 ### install in conda environment
 
-Create a Python 3.9 environment and install gwaslab using pip:
+Create a Python 3.9, 3.10, 3.11 or 3.12 environment and install gwaslab using pip:
 
 ```
-conda env create -n gwaslab_test -c conda-forge python=3.9
+conda env create -n gwaslab -c conda-forge python=3.12
 conda activate gwaslab
-pip install gwaslab==3.4.45
+pip install gwaslab
 ```
 
-or create a new environment using yml file [environment_3.4.40.yml](https://github.com/Cloufield/gwaslab/blob/main/environment_3.4.40.yml)
+or create a new environment using yml file [environment.yml](https://github.com/Cloufield/gwaslab/blob/main/environment.yml)
 
 ```
-conda env create -n gwaslab -f environment_3.4.40.yml
+conda env create -n gwaslab -f environment.yml
 ```
 
 
-### install using docker
+### install using docker (old)
 
 A docker file is available [here](https://github.com/Cloufield/gwaslab/blob/main/docker/Dockerfile) for building local images.
 
@@ -138,37 +138,6 @@ A docker file is available [here](https://github.com/Cloufield/gwaslab/blob/main
 - Sumstats summary: give you a quick overview of the sumstats. 
 - ...
 
-## Requirements (deprecated)
-
-environment.yml
-
-```
-name: gwaslab
-channels:
-  - conda-forge
-  - defaults
-dependencies:
-  - python=3.8.16=h7a1cb2a_3
-  - jupyter==1.0.0
-  - pip==23.1.2
-  - pip:
-      - adjusttext==0.8
-      - biopython==1.81
-      - gwaslab==3.4.16
-      - liftover==1.1.16
-      - matplotlib==3.7.1
-      - numpy==1.24.2
-      - pandas==1.4.4
-      - scikit-allel==1.3.5
-      - scikit-learn==1.2.2
-      - scipy==1.10.1
-      - seaborn==0.11.2
-      - statsmodels==0.13
-      - adjustText==0.8
-      - pysam==0.19
-      - pyensembl==2.2.3
-      - h5py==3.10.0
-```
 
 ## How to cite
 - GWASLab preprint: He, Y., Koido, M., Shimmori, Y., Kamatani, Y. (2023). GWASLab: a Python package for processing and visualizing GWAS summary statistics. Preprint at Jxiv, 2023-5. https://doi.org/10.51094/jxiv.370

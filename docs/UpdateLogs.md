@@ -1,6 +1,7 @@
 # Update Logs
 
-# 3.5.8 202504
+# 3.5.8 20250424
+- fixed bug for align when sumstats were not sorted
 - added build check for `get_novel` when using efo ids.
 - added auto-saving for API responses from GWASCatalog.
 
