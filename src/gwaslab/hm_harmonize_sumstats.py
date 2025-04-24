@@ -17,6 +17,7 @@ from gwaslab.qc_fix_sumstats import check_col
 from gwaslab.qc_fix_sumstats import start_to
 from gwaslab.qc_fix_sumstats import finished
 from gwaslab.qc_fix_sumstats import skipped
+from gwaslab.qc_fix_sumstats import sortcoordinate
 from gwaslab.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd_common_data import get_number_to_chr
 from gwaslab.bd_common_data import get_chr_list
@@ -654,6 +655,8 @@ def checkref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="ST
     log.write(" -Loading fasta records:",end="", verbose=verbose)
     chromlist = get_chr_list(add_number=True)
     records = SeqIO.parse(ref_seq, "fasta")
+    
+    sumstats = sortcoordinate(sumstats,verbose=False)
 
     all_records_dict = {}
     chroms_in_sumstats = sumstats[chrom].unique() # load records from Fasta file only for the chromosomes present in the sumstats

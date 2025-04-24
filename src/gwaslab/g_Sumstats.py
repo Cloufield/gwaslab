@@ -383,6 +383,7 @@ class Sumstats():
         #   3.2 infer strand for palindromic SNP (target build)
         #####################################################
         if ref_seq is not None:
+
             if ref_seq_mode=="v":
                 self.data = checkref(self.data,ref_seq,log=self.log,**checkref_args)
             elif ref_seq_mode=="s":
