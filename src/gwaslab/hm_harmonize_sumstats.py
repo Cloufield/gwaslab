@@ -397,7 +397,6 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
 def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array, records_len: np.array):
     # starting_positions and records_len must be 1D arrays containing data only for the chromosomes contained in x,
     # and these arrays must be ordered in the same way as the chromosomes in np.unique(x['CHR'].values).
-
     # status 
     #0 /  ----->  match
     #1 /  ----->  Flipped Fixed
@@ -435,12 +434,13 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     _chrom = _chrom.values
     unique_values, _ = np.unique(_chrom, return_inverse=True) # Get the sorted unique values and their indices
     chrom = np.searchsorted(unique_values, _chrom) # Replace each value in '_chrom' with its corresponding index in the sorted unique values
-
+ 
     max_len_nea = _nea.str.len().max()
     max_len_ea = _ea.str.len().max()
 
     ########################################## mask for variants with out of range POS
     mask_outlier = pos > records_len[chrom]
+
     #########################################
 
     # Let's apply the same magic used for the fasta records (check build_fasta_records() for details) to convert the NEA and EA to
@@ -538,6 +538,7 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     #  -> nea == output_nea: [[True, True], [True, False]], mask: [[True, True], [True, False]]
     #  -> nea == output_nea + ~mask: [[True, True], [True, True]]
     #  -> np.all(nea == output_nea + ~mask, 1): [True, True]
+
     nea_eq_ref = np.all((nea == output_nea) + ~mask_nea, 1)
     rev_nea_eq_ref = np.all((rev_nea == output_nea) + ~mask_nea, 1)
 
@@ -549,6 +550,7 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     ##################################################################
     output_ea[mask_outlier] = PADDING_VALUE
     ##################################################################
+
 
     ea_eq_ref = np.all((ea == output_ea) + ~mask_ea, 1)
     rev_ea_eq_ref = np.all((rev_ea == output_ea) + ~mask_ea, 1)
@@ -617,6 +619,7 @@ def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=
     unique_chrom_cond = sumstats_cond[chrom].unique()
     starting_pos_cond = np.array([starting_positions_dict[k] for k in unique_chrom_cond])
     records_len_cond = np.array([records_len_dict[k] for k in unique_chrom_cond])
+
     sumstats.loc[condition, status] = _fast_check_status(sumstats_cond, record=record, starting_positions=starting_pos_cond, records_len=records_len_cond)
 
     log.write(f"   -Checking records for ( len(NEA) > {max_len} or len(EA) > {max_len} )", verbose=verbose)
@@ -729,17 +732,21 @@ def build_fasta_records(fasta_records_dict, pos_as_dict=True, log=Log(), verbose
         r = r.seq._data.translate(TRANSLATE_TABLE)
         r = np.array([r], dtype=f'<U{len(r)}').view('<u4').astype(np.uint8)
         all_r.append(r)
-
+    
     # We've just created a list of numpy arrays, so we can concatenate them to obtain a single numpy array
     # Then we keep track of the starting position of each record in the concatenated array. This will be useful later
     # to index the record array depending on the position of the variant and the chromosome
     records_len = np.array([len(r) for r in all_r])
+
     starting_positions = np.cumsum(records_len) - records_len
+
+    
     if pos_as_dict:
         starting_positions = {k: v for k, v in zip(fasta_records_dict.keys(), starting_positions)}
         records_len_dict =  {k: v for k, v in zip(fasta_records_dict.keys(), records_len)}
     record = np.concatenate(all_r)
     del all_r # free memory
+    
 
     return record, starting_positions,records_len_dict
 

@@ -6,6 +6,7 @@ from gwaslab.util_in_filter_value import filtervalues
 from gwaslab.g_Log import Log
 from math import floor
 from gwaslab.g_Sumstats import Sumstats
+from gwaslab.g_Sumstats_polars import Sumstatsp
 from gwaslab.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.hm_casting import _align_with_mold
 from gwaslab.hm_casting import _fill_missing_columns
@@ -22,9 +23,8 @@ from gwaslab.hm_casting_polars import _sort_pair_colsp
 
 from gwaslab.qc_fix_sumstats import flipallelestats
 from gwaslab.qc_fix_sumstats_polars import flipallelestatsp
-from gwaslab.qc_check_datatype import check_datatype
-from gwaslab.qc_check_datatype import check_dataframe_shape
-
+from gwaslab.qc_check_datatype_polars import check_datatype
+from gwaslab.qc_check_datatype_polars import check_dataframe_shape
 from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
 from gwaslab.util_ex_run_coloc import _run_coloc_susie
 from gwaslab.viz_plot_miamiplot2 import plot_miami2
@@ -57,7 +57,8 @@ class SumstatsMulti( ):
         
         for i,sumstatsObject in enumerate(sumstatsObjects):
             if not isinstance(sumstatsObject, Sumstats):
-                raise ValueError("Please provide GWASLab Sumstats Object #{}.".format(i+1))
+                if not isinstance(sumstatsObject, Sumstatsp):
+                    raise ValueError("Please provide GWASLab Sumstats Object #{}.".format(i+1))
         
         self.log = Log()
         self.meta = _init_meta(object="SumstatsMulti") 
@@ -65,6 +66,7 @@ class SumstatsMulti( ):
         if engine=="polars":
             import polars as pl
             merge_mode="full"
+
 
         self.engine=engine
             
@@ -136,16 +138,21 @@ class SumstatsMulti( ):
         self.data = sumstatsObjects[0].data
         
         #rename with _1
-        self.data = self.data.rename(columns={"EA":"EA_1","NEA":"NEA_1","STATUS":"STATUS_1"})
-        self.data = self.data.rename(columns={i:i + "_1" for i in self.stats_cols[0]})
-        self.data = self.data.rename(columns={i:i + "_1" for i in self.other_cols[0]})
-        
+        if engine=="polars":
+            self.data = self.data.rename({"EA":"EA_1","NEA":"NEA_1","STATUS":"STATUS_1"})
+            self.data = self.data.rename({i:i + "_1" for i in self.stats_cols[0]})
+            self.data = self.data.rename({i:i + "_1" for i in self.other_cols[0]})
+        else:
+            self.data = self.data.rename(columns={"EA":"EA_1","NEA":"NEA_1","STATUS":"STATUS_1"})
+            self.data = self.data.rename(columns={i:i + "_1" for i in self.stats_cols[0]})
+            self.data = self.data.rename(columns={i:i + "_1" for i in self.other_cols[0]})        
+
         if engine=="polars":
             self.data = pl.DataFrame(self.data)
             for i, sumstatsObject in enumerate(sumstatsObjects):
                 if i >0:
                     self.log.write("Merging Sumstats #{} to main DataFrame...".format(i+1))
-                    self.data = self._merge_two_sumstats(pl.DataFrame(sumstatsObject.data),i=i,merge_mode=merge_mode,engine=engine)
+                    self.data = self._merge_two_sumstats(sumstatsObject.data,i=i,merge_mode=merge_mode,engine=engine)
                     self.log.write("Finished merging Sumstats #{} to main DataFrame.".format(i+1))
         else:
             for i, sumstatsObject in enumerate(sumstatsObjects):
@@ -219,7 +226,6 @@ class SumstatsMulti( ):
                                             suffixes=("_1","_{}".format(i+1)))   
                      
         molded_sumstats = _sort_pair_cols(molded_sumstats, verbose=verbose, log=self.log, suffixes=["_{}".format(j) for j in range(1,i+2)])
-        
         return molded_sumstats
     
     def update_meta(self,**kwargs):

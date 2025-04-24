@@ -112,8 +112,6 @@ def quick_convert_datatype(sumstats, log, verbose):
                     pass
     return sumstats
 
-
-
 def check_dataframe_shape(sumstats, log, verbose):
     memory_in_mb = sumstats.memory_usage().sum()/1024/1024
     try:

@@ -49,51 +49,64 @@ def flip_direction(string):
 
 def flip_by_swap(sumstats, matched_index, log, verbose):
     if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
-        log.write(" -Swapping column: NEA <=> EA...", verbose=verbose) 
-        sumstats = sumstats.filter(matched_index).with_columns(EA = pl.col("EA"),
-                                                               NEA= pl.col("NEA"))
+        log.write(" -Swapping column: NEA <=> EA...", verbose=verbose)
+
+        sumstats = sumstats.with_columns(
+                pl.when( matched_index )  
+                .then(  pl.col("EA")  )  
+                .otherwise( pl.col("NEA") )
+                .alias("NEA"),
+
+                pl.when( matched_index )  
+                .then(   pl.col("NEA")  )  
+                .otherwise( pl.col("EA") )
+                .alias("EA"),
+                )
+
     return sumstats
 
 def flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1):
-    if "OR" in sumstats.columns:
-        log.write(" -Flipping column: OR = 1 / OR...", verbose=verbose) 
-        sumstats = sumstats.filter(matched_index).with_columns(OR =  factor / pl.col("OR"))
-    if "OR_95L" in sumstats.columns:
-        log.write(" -Flipping column: OR_95U = 1 / OR_95L...", verbose=verbose) 
-        sumstats = sumstats.filter(matched_index).with_columns(OR_95L =  factor / pl.col("OR_95L"))
-    if "OR_95U" in sumstats.columns:
-        log.write(" -Flipping column: OR_95L = 1 / OR_95U...", verbose=verbose) 
-        sumstats = sumstats.filter(matched_index).with_columns(OR_95U =  factor / pl.col("OR_95U"))
-    if "HR" in sumstats.columns:
-        log.write(" -Flipping column: HR = 1 / HR...", verbose=verbose) 
-        sumstats = sumstats.filter(matched_index).with_columns(HR =  factor / pl.col("HR"))
-    if "HR_95L" in sumstats.columns:
-        log.write(" -Flipping column: HR_95U = 1 / HR_95L...", verbose=verbose) 
-        sumstats = sumstats.filter(matched_index).with_columns(HR_95L =  factor / pl.col("HR_95L"))
-    if "HR_95U" in sumstats.columns:
-        log.write(" -Flipping column: HR_95L = 1 / HR_95U...", verbose=verbose) 
-        sumstats = sumstats.filter(matched_index).with_columns(HR_95U =  factor / pl.col("HR_95U"))
+    for header in ["OR","OR_95L","OR_95U","HR","HR_95L","HR_95U"]:
+        if header in sumstats.columns:
+                log.write(" -Flipping column: {header} = 1 / {header}...".format(header = header), verbose=verbose) 
+                sumstats = sumstats.with_columns(
+                pl.when( matched_index )  
+                .then(  1/ pl.col(header) )  
+                .otherwise( pl.col(header) )
+                .alias(header)
+                )
     return sumstats
 
 def flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1):
-    if "BETA" in sumstats.columns:
+    header="EAF"
+    if header in sumstats.columns:
         log.write(" -Flipping column: EAF = 1 - EAF...", verbose=verbose) 
-        sumstats = sumstats.filter(matched_index).with_columns(EAF = 1 - pl.col("EAF"))
+        sumstats = sumstats.with_columns(
+                pl.when( matched_index )  
+                .then(  1 - pl.col(header) )  
+                .otherwise( pl.col(header) )
+                .alias(header)
+                )
     return sumstats
 
 def flip_by_sign(sumstats, matched_index, log, verbose, cols=None):
-    if "BETA" in sumstats.columns:
-        sumstats = sumstats.filter(matched_index).with_columns(BETA = - pl.col("BETA"))
-    if "BETA_95L" in sumstats.columns:
-        sumstats = sumstats.filter(matched_index).with_columns(BETA_95L = - pl.col("BETA_95L"))
-    if "BETA_95U" in sumstats.columns:
-        sumstats = sumstats.filter(matched_index).with_columns(BETA_95U = - pl.col("BETA_95U"))
-    if "T" in sumstats.columns:
-        sumstats = sumstats.filter(matched_index).with_columns(T = - pl.col("T"))
-    if "Z" in sumstats.columns:
-        sumstats = sumstats.filter(matched_index).with_columns(Z = - pl.col("Z"))
+    for header in ["BETA","BETA_95L","BETA_95U","T","Z"]:
+        if header in sumstats.columns:
+                log.write(" -Flipping column: {header} = - {header}...".format(header = header), verbose=verbose) 
+                sumstats = sumstats.with_columns(
+                pl.when( matched_index )  
+                .then(  - pl.col(header) )  
+                .otherwise( pl.col(header) )
+                .alias(header)
+                )
+    
     if "DIRECTION" in sumstats.columns:
-        sumstats = sumstats.filter(matched_index).with_columns(BETA = - pl.col("DIRECTION").map_batches(lambda x: pl.Series(flip_direction(x))))
+        sumstats = sumstats.with_columns(
+                pl.when( matched_index )  
+                .then(  pl.col("DIRECTION").map_batches(lambda x: pl.Series(flip_direction(x))) )  
+                .otherwise( pl.col("DIRECTION") )
+                .alias("DIRECTION")
+                )
     return sumstats
 
 def flipallelestatsp(sumstats,status="STATUS",verbose=True,log=Log()):
@@ -125,15 +138,15 @@ def flipallelestatsp(sumstats,status="STATUS",verbose=True,log=Log()):
     ###################flip ref####################
     pattern = r"\w\w\w\w\w[35]\w"  
     #matched_index = status_match(sumstats[status],6,[3,5]) #sumstats[status].str.match(pattern)
-    matched_index = pl.col(status).cast(pl.String).str.contains("^\w\w\w\w[35]\w\w")
+    matched_index = pl.col(status).cast(pl.String).str.contains("^\w\w\w\w\w[35]\w")
     if len(sumstats.filter(matched_index))>0:
         log.write("Start to flip allele-specific stats for SNPs with status xxxxx[35]x: ALT->EA , REF->NEA ...{}".format(_get_version()), verbose=verbose) 
         log.write(" -Flipping "+ str(len(sumstats.filter(matched_index))) +" variants...", verbose=verbose) 
         
-        flip_by_swap(sumstats, matched_index, log, verbose)
-        flip_by_sign(sumstats, matched_index, log, verbose, cols=None)
-        flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1)
-        flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1)
+        sumstats = flip_by_swap(sumstats, matched_index, log, verbose)
+        sumstats = flip_by_sign(sumstats, matched_index, log, verbose, cols=None)
+        sumstats = flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1)
+        sumstats = flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1)
         
         #change status    
         log.write(" -Changed the status for flipped variants : xxxxx[35]x -> xxxxx[12]x", verbose=verbose) 
@@ -148,10 +161,10 @@ def flipallelestatsp(sumstats,status="STATUS",verbose=True,log=Log()):
         log.write("Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: ALT->EA , REF->NEA...{}".format(_get_version()), verbose=verbose) 
         log.write(" -Flipping "+ str(len(sumstats.filter(matched_index))) +" variants...", verbose=verbose) 
         
-        flip_by_swap(sumstats, matched_index, log, verbose)
-        flip_by_sign(sumstats, matched_index, log, verbose, cols=None)
-        flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1)
-        flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1)
+        sumstats = flip_by_swap(sumstats, matched_index, log, verbose)
+        sumstats = flip_by_sign(sumstats, matched_index, log, verbose, cols=None)
+        sumstats = flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1)
+        sumstats = flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1)
         
         #change status    
         log.write(" -Changed the status for flipped variants xxxx[123][67]6 -> xxxx[123][67]4", verbose=verbose) 
@@ -161,14 +174,14 @@ def flipallelestatsp(sumstats,status="STATUS",verbose=True,log=Log()):
     ###################flip statistics for reverse strand panlindromic variants####################
     pattern = r"\w\w\w\w\w[012]5"  
     #matched_index = status_match(sumstats[status],6,[0,1,2]) | status_match(sumstats[status],7,[5])#sumstats[status].str.match(pattern)
-    matched_index = pl.col(status).cast(pl.String).str.contains("^\w\w\w\w[05|15|25]")
+    matched_index = pl.col(status).cast(pl.String).str.contains("^\w\w\w\w\w[012]5")
     if len(sumstats.filter(matched_index))>0:
         log.write("Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand...{}".format(_get_version()), verbose=verbose) 
         log.write(" -Flipping "+ str(len(sumstats.filter(matched_index))) +" variants...", verbose=verbose) 
 
-        flip_by_sign(sumstats, matched_index, log, verbose, cols=None)
-        flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1)
-        flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1)
+        sumstats = flip_by_sign(sumstats, matched_index, log, verbose, cols=None)
+        sumstats = flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1)
+        sumstats = flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1)
         
         #change status    
         log.write(" -Changed the status for flipped variants:  xxxxx[012]5: ->  xxxxx[012]2", verbose=verbose) 

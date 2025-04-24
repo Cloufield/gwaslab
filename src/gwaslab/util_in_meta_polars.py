@@ -168,8 +168,7 @@ def meta_analyze_polars(sumstats_multi,
             P_RANDOM = pl.col("Z_RANDOM").map_batches(lambda x: pl.Series(2*norm.sf(x.abs()))
         )
     )
-    
 
-    sumstats_multi = sumstats_multi.select(pl.all().exclude("^_.*$"))
+    sumstats_multi = sumstats_multi.select(pl.all().exclude("^_.*$|\w+_[\d]+$")        )
     log.write("Finished performing meta-analysis.")
     return sumstats_multi

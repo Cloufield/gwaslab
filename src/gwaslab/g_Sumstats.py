@@ -365,7 +365,8 @@ class Sumstats():
             self.data = parallelnormalizeallele(self.data,log=self.log,n_cores=n_cores,**normalizeallele_args)
             
             self.data = sortcolumn(self.data,log=self.log)
-            
+
+            self.data = sortcoordinate(self.data,log=self.log)
             gc.collect()
         
         #####################################################

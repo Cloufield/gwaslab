@@ -1,4 +1,5 @@
 from gwaslab.g_Sumstats import Sumstats
+from gwaslab.g_Sumstats_polars import Sumstatsp
 from gwaslab.g_SumstatsT import SumstatsT
 from gwaslab.g_SumstatsPair import SumstatsPair
 from gwaslab.g_SumstatsMulti import SumstatsMulti

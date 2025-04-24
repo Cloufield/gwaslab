@@ -26,7 +26,7 @@ def _merge_mold_with_sumstats_by_chrposp(mold, sumstats, ref_path=None,add_raw_i
         sumstats = sumstats.rename({
                                             "SNPID":"_SNPID_RIGHT",
                                             "rsID":"_rsID_RIGHT"
-                                            },strict=False)
+                                            }, strict=False) #,
     
     # drop old ids
     cols_to_drop = []

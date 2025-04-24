@@ -337,6 +337,7 @@ def _maketrans(complement_mapping):
     """
     keys = "".join(complement_mapping.keys()).encode("ASCII")
     values = "".join(complement_mapping.values()).encode("ASCII")
+
     return bytes.maketrans(keys + keys.lower(), values + values.lower())
         
 ####################################################################################################################   
