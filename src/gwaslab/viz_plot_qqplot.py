@@ -30,6 +30,7 @@ def _plot_qq(
     fontsize,
     font_family,
     qtitle,
+    qtitle_pad,
     title_fontsize,
     include_chrXYMT,
     cut_line_color,
@@ -182,7 +183,8 @@ def _plot_qq(
     ax2.tick_params(axis='both', which='both', labelsize=fontsize,labelfontfamily=font_family)
     #
     if qtitle:
-        ax2.set_title(qtitle,fontsize=title_fontsize,pad=10,family=font_family)
+        pad=(ax2.transData.transform((skip, qtitle_pad*maxy))[1]-ax2.transData.transform((skip, maxy)))[1]
+        ax2.set_title(qtitle,fontsize=title_fontsize,pad=pad,family=font_family)
 
     log.write("Finished creating QQ plot successfully!",verbose=verbose)
     

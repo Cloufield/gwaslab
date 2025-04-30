@@ -26,6 +26,7 @@ def annotate_single(
     anno_alias,
     anno_style,
     anno_args,
+    anno_args_single,
     arm_scale,
     anno_max_iter,
     arm_scale_d,
@@ -216,13 +217,23 @@ def annotate_single(
             if anno_style == "tight" :
                 anno_default["rotation"] = 90
             ################################################################################################################################
-
+            # anno args for all
             for key,value in anno_args.items():
                 anno_default[key]=value
-            if len(highlight_i) >0 and highlight_chrpos==True:
+            
+            # anno args for highlight group
+            if len(highlight_i) >0:
                 if row["i"] in highlight_i:
                     for key,value in highlight_anno_args.items():
                         anno_default[key]=value
+            
+            # anno args for specifc
+            #try:
+            if row[snpid] in anno_args_single.keys():
+                for key,value in anno_args_single[row[snpid]].items():
+                    anno_default[key]=value
+            #except:
+            #    pass
             ################################################################################################################################
             if anno_adjust==True:
                 if  _invert==False:

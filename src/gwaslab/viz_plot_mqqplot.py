@@ -154,6 +154,7 @@ def mqqplot(insumstats,
           anno_alias=None,
           anno_d=None,
           anno_args=None,
+          anno_args_single=None,
           anno_style="right",
           anno_fixed_arm_length=None,
           anno_source = "ensembl",
@@ -209,7 +210,9 @@ def mqqplot(insumstats,
           drop_chr_start=False,
           title =None,
           mtitle=None,
+          mtitle_pad=1.08,
           qtitle=None,
+          qtitle_pad=1.08,
           ylabel=None,
           xlabel=None,
           title_pad=1.08, 
@@ -256,6 +259,7 @@ def mqqplot(insumstats,
     anno_alias = _update_args(anno_alias, dict())
     anno_d = _update_args(anno_d,dict())
     anno_args = _update_args(anno_args,dict())
+    anno_args_single = _update_args(anno_args_single,dict())
     arrow_kwargs = _update_args(arrow_kwargs,dict())
 
     colors = _update_arg(colors, ["#597FBD","#74BAD3"])
@@ -1002,7 +1006,7 @@ def mqqplot(insumstats,
 
         
         if mtitle and anno and len(to_annotate)>0: 
-            pad=(ax1.transData.transform((skip, title_pad*maxy))[1]-ax1.transData.transform((skip, maxy)))[1]
+            pad=(ax1.transData.transform((skip, mtitle_pad*maxy))[1]-ax1.transData.transform((skip, maxy)))[1]
             ax1.set_title(mtitle,pad=pad,fontsize=title_fontsize,family=font_family)
         elif mtitle:
             ax1.set_title(mtitle,fontsize=title_fontsize,family=font_family)
@@ -1023,6 +1027,7 @@ def mqqplot(insumstats,
                                 anno_alias=anno_alias,
                                 anno_style=anno_style,
                                 anno_args=anno_args,
+                                anno_args_single=anno_args_single,
                                 arm_scale=arm_scale,
                                 anno_max_iter=anno_max_iter,
                                 arm_scale_d=arm_scale_d,
@@ -1074,6 +1079,7 @@ def mqqplot(insumstats,
                     fontsize=fontsize,
                     font_family=font_family,
                     qtitle=qtitle,
+                    qtitle_pad=qtitle_pad,
                     title_fontsize=title_fontsize,
                     include_chrXYMT=include_chrXYMT,
                     cut_line_color=cut_line_color,
@@ -1106,9 +1112,10 @@ def mqqplot(insumstats,
     # Titles 
     if title and anno and len(to_annotate)>0:
         # increase height if annotation 
-        fig.suptitle(title , fontsize = title_fontsize ,x=0.5, y=1.05)
+        fig.suptitle(title , fontsize = title_fontsize ,x=0.5, y=title_pad)
     else:
-        fig.suptitle(title , fontsize = title_fontsize, x=0.5,y=1)
+        title_pad = title_pad -0.05
+        fig.suptitle(title , fontsize = title_fontsize, x=0.5,y=title_pad)
         ## Add annotation arrows and texts
     
     # Saving figure
