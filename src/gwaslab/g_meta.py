@@ -6,7 +6,7 @@ def _init_meta(object="Sumstats"):
                         "gwas_id":"Unknown", 
                         "samples":{
                             "sample_size":"Unknown", 
-                            "sample_ancestry":"European", 
+                            "sample_ancestry":"Unknown", 
                             "ancestry_method":"self-reported|genetically determined", 
                         } ,
                         "trait_description":"Unknown", 
@@ -37,6 +37,7 @@ def _init_meta(object="Sumstats"):
                     "species":"homo sapiens",
                     "genome_build":"99",
                     "sample_prevalence":"Unknown",
+                    "inferred_ancestry":"Unknown",
                     "population_prevalence":"Unknown",
                     "variants":{
                         "variant_number":"Unknown",

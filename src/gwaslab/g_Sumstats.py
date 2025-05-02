@@ -84,6 +84,8 @@ from gwaslab.util_ex_ldsc import _estimate_rg_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_h2_cts_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_partitioned_h2_by_ldsc 
 from gwaslab.util_ex_ldproxyfinder import _extract_ld_proxy
+from gwaslab.util_ex_run_magma import _run_magma
+from gwaslab.util_ex_infer_ancestry import _infer_ancestry
 from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.util_abf_finemapping import abf_finemapping
 from gwaslab.util_abf_finemapping import make_cs
@@ -674,6 +676,9 @@ class Sumstats():
         fig,outliers = plotdaf(self.data, **kwargs)
         return fig, outliers
     
+    def infer_ancestry(self, **kwargs):
+        self.meta["gwaslab"]["inferred_ancestry"] = _infer_ancestry(self.data, **kwargs)
+
     def plot_gwheatmap(self, **kwargs):
         fig = _gwheatmap(self.data, **kwargs)
         return fig
@@ -882,8 +887,14 @@ class Sumstats():
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
-        _run_prscs(sst_file = insumstats[["rsID","CHR","POS","EA","NEA","BETA","SE"]], log=self.log, **kwargs)
-
+        _run_prscs(sst_file = insumstats[["rsID","CHR","POS","EA","NEA","BETA","SE"]], 
+                   log=self.log, 
+                   **kwargs)
+    
+    def run_magma(self, build=None, verbose=True, **kwargs):
+        _run_magma(self.data, 
+                   study=self.meta["gwaslab"]["study_name"], 
+                   build=build, verbose=verbose, log=self.log, **kwargs)
 ## LDSC ##############################################################################################
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", **kwargs):
         if build is None:

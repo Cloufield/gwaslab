@@ -103,7 +103,9 @@
     "13to19":"https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/chain/v1_nflo/chm13v2-hg19.chain",
     "13to38":"https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/chain/v1_nflo/chm13v2-grch38.chain",
     "18to19":"https://hgdownload.soe.ucsc.edu/goldenPath/hg18/liftOver/hg18ToHg19.over.chain.gz",
-    "18to38":"https://hgdownload.soe.ucsc.edu/goldenPath/hg18/liftOver/hg18ToHg38.over.chain.gz"
+    "18to38":"https://hgdownload.soe.ucsc.edu/goldenPath/hg18/liftOver/hg18ToHg38.over.chain.gz",
+    "1kg_hm3_hg38_eaf":"https://www.dropbox.com/scl/fi/ymkqfsaec6mwjzlvxsm45/PAN.hapmap3.hg38.EAF.tsv.gz?rlkey=p1auef5y1kk7ui41k6j3s8b0z&dl=1",
+    "1kg_hm3_hg19_eaf":"https://www.dropbox.com/scl/fi/dmv9wtfchv6ahim86d49r/PAN.hapmap3.hg19.EAF.tsv.gz?rlkey=ywne2gj1rlm2nj42q9lt2d99n&dl=1"
 }
 
 
