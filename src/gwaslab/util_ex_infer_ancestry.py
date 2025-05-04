@@ -31,7 +31,7 @@ def _infer_ancestry(sumstats,
         
         closest_ancestry = data_af[headers].mean().sort_values().idxmin()
 
-    log.write(f"  -Closest Ancestry: {closest_ancestry.split("_")[1]}", verbose=verbose)
+    log.write(f"  -Closest Ancestry: {closest_ancestry.split('_')[1]}", verbose=verbose)
     log.write("Finished inferring ancestry.", verbose=verbose)
     return closest_ancestry.split("_")[1]
 

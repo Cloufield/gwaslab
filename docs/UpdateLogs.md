@@ -1,5 +1,10 @@
 # Update Logs
 
+# 3.6.0 20250504
+- fixed title_pad and add anno_args_single for specific labels for '.plot_mqq()'
+- added infer ancesry
+- updated main tutorial
+
 # 3.5.8 20250424
 - fixed bug for align when sumstats were not sorted
 - added build check for `get_novel` when using efo ids.

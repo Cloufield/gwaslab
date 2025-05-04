@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gwaslab"
-version = "3.5.7"
+version = "3.6.0"
 authors = [
   { name="Yunye", email="yunye@gwaslab.com" },
 ]
@@ -34,7 +34,7 @@ dependencies = [
 requires-python = ">=3.9,<3.13"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GPL-3.0 license",
     "Operating System :: OS Independent",
 ]
 

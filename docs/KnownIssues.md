@@ -14,3 +14,8 @@
 
 - gwaslab<=3.4.39 : the color assigned to each variant is actually the color for the lower LD r2 category. For example, variants with LD>0.8 will be colored with the color for 0.8>LD>0.6.
 - Solution: Update to new version of gwaslab.
+
+## Alignment for unsorted sumstats
+
+-  3.4.43 <= gwaslab <= 3.5.7 : If the coordinates in sumstats are not unsorted, the alignment may fail. 
+- Solution: Update to new version of gwaslab.
