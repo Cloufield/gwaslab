@@ -7,43 +7,63 @@
 ![badge_pip](https://img.shields.io/pypi/dm/gwaslab)
 ![badge_commit_m](https://img.shields.io/github/commit-activity/m/Cloufield/gwaslab)
 
-* A handy Python toolkit for handling GWAS summary statistics (sumstats).
+* A handy Python-based toolkit for handling GWAS summary statistics (sumstats).
 * Each process is modularized and can be customized to your needs.
 * Sumstats-specific manipulations are designed as methods of a Python object, `gwaslab.Sumstats`.
 
-Please check GWASLab documentation at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/)
-
-Note: GWASLab is being updated very frequently for now. We will release the first stable version soon! Please stay tuned.
-
-Warning: Known issues of GWASLab are summarized in [https://cloufield.github.io/gwaslab/KnownIssues/](https://cloufield.github.io/gwaslab/KnownIssues/) .
-
-## Install
+## Installation
 
 ### install via pip
 
 The latest version of GWASLab now supports Python 3.9, 3.10, 3.11, and 3.12.
 
+```bash
+pip install gwaslab
 ```
-pip install gwaslab==3.5.7
+
+### install in conda environment
+
+Create a Python 3.9, 3.10, 3.11 or 3.12 environment and install gwaslab using pip:
+
+```bash
+conda env create -n gwaslab -c conda-forge python=3.12
+
+conda activate gwaslab
+
+pip install gwaslab
 ```
+
+or create a new environment using yml file [environment.yml](https://github.com/Cloufield/gwaslab/blob/main/environment.yml)
+
+```bash
+conda env create -n gwaslab -f environment.yml
+```
+
+### install using docker (deprecated)
+
+A docker file is available [here](https://github.com/Cloufield/gwaslab/blob/main/docker/Dockerfile) for building local images.
+
+## Quick start
 
 ```python
-import gwaslab as gl
-# load plink2 output
-mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="plink2")
 
-# load sumstats with auto mode (auto-detecting common headers) 
+import gwaslab as gl
+
+# load plink2 output
+mysumstats = gl.Sumstats("sumstats.txt.gz", fmt="plink2")
+
+# or load sumstats with auto mode (auto-detecting commonly used headers) 
 # assuming ALT/A1 is EA, and frq is EAF
-mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="auto")
+mysumstats = gl.Sumstats("sumstats.txt.gz", fmt="auto")
 
 # or you can specify the columns:
-mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
+mysumstats = gl.Sumstats("sumstats.txt.gz",
              snpid="SNP",
              chrom="CHR",
              pos="POS",
              ea="ALT",
              nea="REF",
-             neaf="Frq",
+             eaf="Frq",
              beta="BETA",
              se="SE",
              p="P",
@@ -56,26 +76,9 @@ mysumstats.plot_mqq()
 ...
 ```
 
-### install in conda environment
+## Documentation and tutorials
 
-Create a Python 3.9 environment and install gwaslab using pip:
-
-```
-conda env create -n gwaslab_test -c conda-forge python=3.9
-conda activate gwaslab
-pip install gwaslab==3.4.45
-```
-
-or create a new environment using yml file [environment_3.4.40.yml](https://github.com/Cloufield/gwaslab/blob/main/environment_3.4.40.yml)
-
-```
-conda env create -n gwaslab -f environment_3.4.40.yml
-```
-
-
-### install using docker
-
-A docker file is available [here](https://github.com/Cloufield/gwaslab/blob/main/docker/Dockerfile) for building local images.
+Documentation and tutorials for GWASLab are avaiable at [here](https://cloufield.github.io/gwaslab/).
 
 ## Functions
 
@@ -122,7 +125,7 @@ A docker file is available [here](https://github.com/Cloufield/gwaslab/blob/main
 - Scatter plot: allele frequency comparison 
 - Scatter plot: trumpet plot (plot of MAF and effect size with power lines)
 
-### Visualization Examples
+#### Visualization Examples
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/233836639-34b03c47-5a59-4fd4-9677-5e13b02aab15.png">
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197393168-e3e7076f-2801-4d66-9526-80778d44f3da.png">
@@ -138,42 +141,15 @@ A docker file is available [here](https://github.com/Cloufield/gwaslab/blob/main
 - Sumstats summary: give you a quick overview of the sumstats. 
 - ...
 
-## Requirements (deprecated)
+## Issues
 
-environment.yml
-
-```
-name: gwaslab
-channels:
-  - conda-forge
-  - defaults
-dependencies:
-  - python=3.8.16=h7a1cb2a_3
-  - jupyter==1.0.0
-  - pip==23.1.2
-  - pip:
-      - adjusttext==0.8
-      - biopython==1.81
-      - gwaslab==3.4.16
-      - liftover==1.1.16
-      - matplotlib==3.7.1
-      - numpy==1.24.2
-      - pandas==1.4.4
-      - scikit-allel==1.3.5
-      - scikit-learn==1.2.2
-      - scipy==1.10.1
-      - seaborn==0.11.2
-      - statsmodels==0.13
-      - adjustText==0.8
-      - pysam==0.19
-      - pyensembl==2.2.3
-      - h5py==3.10.0
-```
+- GWASLab is currently under active development, with frequent updates.
+- Note: Known issues are documented at https://cloufield.github.io/gwaslab/KnownIssues/.
 
 ## How to cite
 - GWASLab preprint: He, Y., Koido, M., Shimmori, Y., Kamatani, Y. (2023). GWASLab: a Python package for processing and visualizing GWAS summary statistics. Preprint at Jxiv, 2023-5. https://doi.org/10.51094/jxiv.370
 
-## Sample Data
+## Sample data used for tutorial
 - Sample GWAS data used in GWASLab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
 
 ## Acknowledgement
