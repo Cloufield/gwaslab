@@ -7,7 +7,6 @@ from gwaslab.g_Log import Log
 from gwaslab.io_to_pickle import load_data_from_pickle
 from gwaslab.g_Sumstats import Sumstats
 import gc
-import statsmodels.api as sm
 
 def meta_analyze(sumstats_list,
                  random_effects=False, 

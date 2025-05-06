@@ -1,5 +1,8 @@
 # Update Logs
 
+# 3.6.1 20250506
+- updated dependencies
+
 # 3.6.0 20250504
 - fixed title_pad and add anno_args_single for specific labels for '.plot_mqq()'
 - added infer ancesry

@@ -20,3 +20,4 @@ dependencies:
       - scipy>=1.12
       - seaborn>=0.12
       - h5py>=3.10.0
+      - pyarrow
