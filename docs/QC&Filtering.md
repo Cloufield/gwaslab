@@ -10,8 +10,8 @@ GWASLab provides all-in-one functions and customizable functions for sumstats QC
 | `.check_data_consistency()`    |                                                                             | check if `BETA/SE-derived P/MLOG10P = original P/MLOG10P`, `N = N_CASE + N_CONTROL`... |
 | `.remove_dup()`                | `mode="md"`, <br/>` keep='first'`, <br/>`keep_col="P"`, <br/>`remove=False` | remove duplicated, multiallelic or NA variants                                        |
 | `.filter_value()`              | `expr` , <br/> `inplace=False`                                              | filter in variants base on expr                                                       |
-| `.filter_flanking_by_id()`     | `snpid` , <br/> `inplace=False`                                             | filter in variants in the specified flacking regions (SNPID/rsID)                     |
-| `.filter_flanking_by_chrpos()` | `chrpos` , <br/> `inplace=False`                                            | filter in variants in the specified flacking regions (CHR POS tuples)                 |
+| `.filter_flanking_by_id()`     | `snpid` , <br/> `inplace=False`                                             | filter in variants in the specified flanking regions (SNPID/rsID)                     |
+| `.filter_flanking_by_chrpos()` | `chrpos` , <br/> `inplace=False`                                            | filter in variants in the specified flanking regions (CHR POS tuples)                 |
 | `.filter_region_in()`          | `path` , <br/> `inplace=False` , <br/>`high_ld=False`, <br/> `build="19"`   | filter in variants in the specified region define by a bed file                       |
 | `.filter_region_out()`         | `path` , <br/> `inplace=False` , <br/>`high_ld=False`, <br/> `build="19"`   | filter out variants in the specified region define by a bed file                      |
 
@@ -37,10 +37,10 @@ Comparison will be performed with `float_tolerance = 1e-7` for any float type st
 | `beta=(-100,100)`         | `float`    | -100<BETA<100                            |
 | `z=(-9999,9999)`          | `float`    | -9999<z<9999                             |
 | `se=(0,float("Inf"))`     | `float`    | SE>0                                     |
-| `OR=(exp(-100),exp(100))`           | `float`    | exp(-100)< log(OR) < exp(100)  |
+| `OR=(exp(-100),exp(100))`           | `float`    | exp(-100)< OR < exp(100)  |
 | `OR_95L=(0,float("Inf"))` | `float`    | OR_95L>0                                 |
 | `OR_95U=(0,float("Inf"))` | `float`    | OR_95U>0                                 |
-| `HR=(exp(-100),exp(100))`           | `float`    | exp(-100)< log(HR) <exp(100)   |
+| `HR=(exp(-100),exp(100))`           | `float`    | exp(-100)< HR <exp(100)   |
 | `HR_95L=(0,float("Inf"))` | `float`    | HR_95L>0                                 |
 | `HR_95U=(0,float("Inf"))` | `float`    | HR_95U>0                                 |
 | `info=(0,2)`              | `float`    | 0<INFO<2                                 |
@@ -121,7 +121,7 @@ Filter the sumstats by `expr` (a wrapper of `pandas.DataFrame.query`), and retur
 
 | Options   | DataType  | Description                                                                                             | Default |
 |-----------|-----------|---------------------------------------------------------------------------------------------------------|---------|
-| `expr`    | `string`  | the query string used fot filtering. For example: '1>BETA>0 & N>10000'                                  |         |
+| `expr`    | `string`  | the query string used for filtering. For example: '1>BETA>0 & N>10000'                                  |         |
 | `inplace` | `boolean` | if False, return a new Sumstats object. If true, the current Sumstats object will be filtered in place. | `False` |
 
 !!! quote "pd.DataFrame.query()"
