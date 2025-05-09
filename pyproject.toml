@@ -7,9 +7,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gwaslab"
-version = "3.6.1"
+version = "3.6.2"
 authors = [
-  { name="Yunye", email="yunye@gwaslab.com" },
+  { name="Yunye", email="gwaslab@gmail.com" },
 ]
 description = "A collection of handy tools for GWAS SumStats"
 

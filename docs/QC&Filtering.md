@@ -21,11 +21,11 @@ GWASLab provides all-in-one functions and customizable functions for sumstats QC
 
 `.check_sanity()`: Basic sanity check will. be performed on statistics to check if there are any `extreme values` or `values out of expected ranges`.
 
-Comparison will be performed with `float_tolerence = 1e-7` for any float type statistics. For example, `eaf=(0, 1)` will be converted to `eaf=(-1e-7, 1 + 1e-7)`.
+Comparison will be performed with `float_tolerance = 1e-7` for any float type statistics. For example, `eaf=(0, 1)` will be converted to `eaf=(-1e-7, 1 + 1e-7)`.
 
 | Parameters                | Type       | Range                                    |
 |---------------------------|------------|------------------------------------------|
-| `float_tolerence`         | `float`    | tolerence for comparison                 |
+| `float_tolerance`         | `float`    | tolerance  for comparison                 |
 | `n=(0,2**31-1))`          | `interger` | 0<N< $2^{31}-1$                          |
 | `ncase=(0,2**31-1)`       | `interger` | 0<N< $2^{31}-1$                          |
 | `ncontrol=(0,2**31-1)`    | `interger` | 0<N< $2^{31}-1$                          |
@@ -33,17 +33,17 @@ Comparison will be performed with `float_tolerence = 1e-7` for any float type st
 | `eaf=(0,1)`               | `float`    | 0<EAF<1                                  |
 | `chisq=(0,float("Inf"))`  | `float`    | CHISQ>0                                  |
 | `p=(0,1)`                 | `float`    | 0<P<1   (Any P=0 will cause a warning)   |
-| `mlog10p=(0,99999)`        | `float`    | 0<MLOG10P<99999                           |
-| `beta=(-100,100)`         | `float`    | -10<BETA<10                              |
+| `mlog10p=(0,99999)`        | `float`    | 0<MLOG10P<99999                         |
+| `beta=(-100,100)`         | `float`    | -100<BETA<100                            |
 | `z=(-9999,9999)`          | `float`    | -9999<z<9999                             |
 | `se=(0,float("Inf"))`     | `float`    | SE>0                                     |
-| `OR=(-100,100)`           | `float`    | -100<log(OR)<100                         |
+| `OR=(exp(-100),exp(100))`           | `float`    | exp(-100)< log(OR) < exp(100)  |
 | `OR_95L=(0,float("Inf"))` | `float`    | OR_95L>0                                 |
 | `OR_95U=(0,float("Inf"))` | `float`    | OR_95U>0                                 |
-| `HR=(-100,100)`           | `float`    | -100<log(HR)<100                         |
+| `HR=(exp(-100),exp(100))`           | `float`    | exp(-100)< log(HR) <exp(100)   |
 | `HR_95L=(0,float("Inf"))` | `float`    | HR_95L>0                                 |
 | `HR_95U=(0,float("Inf"))` | `float`    | HR_95U>0                                 |
-| `info=(0,1)`              | `float`    | 0<INFO<1                                 |
+| `info=(0,2)`              | `float`    | 0<INFO<2                                 |
 | `direction`               | `string`   | only contains `"+"`,`"-"` ,`"0"`or `"?"` |
 
 ## Remove duplicated or multiallelic variants

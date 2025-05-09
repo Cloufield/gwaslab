@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import time
 import copy
+import gc
 from gwaslab.g_Sumstats_summary import summarize
 from gwaslab.g_Sumstats_summary import lookupstatus
 from gwaslab.io_preformat_input import preformat
@@ -69,16 +70,24 @@ from gwaslab.g_version import gwaslab_info
 from gwaslab.g_meta import _init_meta
 from gwaslab.g_meta import _append_meta_record
 from gwaslab.g_meta_update import _update_meta
-from gwaslab.util_ex_run_clumping import _clump
-from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
 from gwaslab.io_load_ld import tofinemapping_using_ld
-from gwaslab.util_ex_calculate_prs import _calculate_prs
+from gwaslab.qc_fix_sumstats import _check_data_consistency
+from gwaslab.bd_get_hapmap3 import gethapmap3
+from gwaslab.util_abf_finemapping import abf_finemapping
+from gwaslab.util_abf_finemapping import make_cs
+from gwaslab.io_read_pipcs import _read_pipcs
+from gwaslab.util_in_estimate_ess import _get_ess
+from gwaslab.hm_casting import _align_with_mold
+from gwaslab.hm_casting  import _merge_mold_with_sumstats_by_chrpos
+from gwaslab.viz_plot_phe_heatmap import _gwheatmap
 from gwaslab.viz_plot_mqqplot import mqqplot
 from gwaslab.viz_plot_trumpetplot import plottrumpet
 from gwaslab.viz_plot_compare_af import plotdaf
+from gwaslab.viz_plot_credible_sets import _plot_cs
+from gwaslab.util_ex_run_clumping import _clump
+from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
 from gwaslab.util_ex_run_susie import _run_susie_rss
 from gwaslab.util_ex_run_susie import _get_cs_lead
-from gwaslab.qc_fix_sumstats import _check_data_consistency
 from gwaslab.util_ex_ldsc import _estimate_h2_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_rg_by_ldsc
 from gwaslab.util_ex_ldsc import _estimate_h2_cts_by_ldsc
@@ -86,17 +95,9 @@ from gwaslab.util_ex_ldsc import _estimate_partitioned_h2_by_ldsc
 from gwaslab.util_ex_ldproxyfinder import _extract_ld_proxy
 from gwaslab.util_ex_run_magma import _run_magma
 from gwaslab.util_ex_infer_ancestry import _infer_ancestry
-from gwaslab.bd_get_hapmap3 import gethapmap3
-from gwaslab.util_abf_finemapping import abf_finemapping
-from gwaslab.util_abf_finemapping import make_cs
-from gwaslab.io_read_pipcs import _read_pipcs
-from gwaslab.util_in_estimate_ess import _get_ess
-from gwaslab.viz_plot_credible_sets import _plot_cs
-from gwaslab.hm_casting import _align_with_mold
-from gwaslab.hm_casting  import _merge_mold_with_sumstats_by_chrpos
-import gc
-from gwaslab.viz_plot_phe_heatmap import _gwheatmap
 from gwaslab.util_ex_run_prscs import _run_prscs
+from gwaslab.util_ex_calculate_prs import _calculate_prs
+from gwaslab.util_ex_run_scdrs import _run_scdrs
 
 #20220309
 class Sumstats():
@@ -893,6 +894,11 @@ class Sumstats():
     
     def run_magma(self, build=None, verbose=True, **kwargs):
         _run_magma(self.data, 
+                   study=self.meta["gwaslab"]["study_name"], 
+                   build=build, verbose=verbose, log=self.log, **kwargs)
+        
+    def run_scdrs(self, build=None, verbose=True, **kwargs):
+        _run_scdrs(
                    study=self.meta["gwaslab"]["study_name"], 
                    build=build, verbose=verbose, log=self.log, **kwargs)
 ## LDSC ##############################################################################################

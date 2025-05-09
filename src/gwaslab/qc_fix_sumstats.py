@@ -1107,11 +1107,11 @@ def normalizevariant(pos,a,b,status):
 
 ###############################################################################################################
 # 20220426
-def add_tolerence(stats, float_tolerence, mode):
+def add_tolerence(stats, float_tolerance, mode):
     if "l" in mode:
-        stats = (stats[0] - float_tolerence if stats[0]!=float("Inf") else float("Inf"), stats[1])
+        stats = (stats[0] - float_tolerance if stats[0]!=float("Inf") else float("Inf"), stats[1])
     if "r" in mode:
-        stats = (stats[0] , stats[1] + float_tolerence if stats[0]!=float("Inf") else float("Inf"))
+        stats = (stats[0] , stats[1] + float_tolerance if stats[0]!=float("Inf") else float("Inf"))
     return stats
 
 
@@ -1183,27 +1183,27 @@ def sanitycheckstats(sumstats,
                      mlog10p=(0,99999),
                      beta=(-100,100),
                      se=(0,float("Inf")),
-                     OR=(-100,100),
+                     OR=(np.exp(-100),np.exp(100)),
                      OR_95L=(0,float("Inf")),
                      OR_95U=(0,float("Inf")),
-                     HR=(-100,100),
+                     HR=(np.exp(-100),np.exp(100)),
                      HR_95L=(0,float("Inf")),
                      HR_95U=(0,float("Inf")),
                      info=(0,2),
-                     float_tolerence = 1e-7,
+                     float_tolerance = 1e-7,
                      verbose=True,
                      log=Log()):
     '''
     Sanity check (default; v3.4.33):
         N:      Int32    , N>0 , 
-        EAF:    float32  , 0<= EAF <=1, 
-        P:      float64  , 0< P < 1, 
-        BETA:   float64  , abs(BETA) <10
+        EAF:    float32  , 0 <= EAF <=1, 
+        P:      float64  , 0 <= P <= 1, 
+        BETA:   float64  , abs(BETA) <100
         SE:     float64  , SE > 0
-        OR:     float64  , -10 <log(OR) <10
+        OR:     float64  , np.exp(-100) <OR < np.exp(100)
         OR_95L: float64  , OR_95L >0
         OR_95U: float64  , OR_95L >0
-        HR:     float64  , -10 <log(HR) <10
+        HR:     float64  , np.exp(-100) <log(HR) <np.exp(100)
         HR_95L: float64  , HR_95L >0
         HR_95U: float64  , HR_95L >0
         INFO:   float32  , 1>=INFO>0
@@ -1229,23 +1229,23 @@ def sanitycheckstats(sumstats,
     if is_enough_info == False: return sumstats
     ############################################################################################
 
-    log.write(" -Comparison tolerance for floats: {}".format(float_tolerence), verbose=verbose) 
-    eaf = add_tolerence(eaf, float_tolerence, "lr")
-    maf = add_tolerence(maf, float_tolerence, "lr")
-    beta = add_tolerence(beta, float_tolerence, "lr")
-    se = add_tolerence(se, float_tolerence, "lr")
-    mlog10p = add_tolerence(mlog10p, float_tolerence, "lr")
-    OR = add_tolerence(OR, float_tolerence, "lr")
-    OR_95L = add_tolerence(OR_95L, float_tolerence, "lr")
-    OR_95U = add_tolerence(OR_95U, float_tolerence, "lr")
-    HR = add_tolerence(HR, float_tolerence, "lr")
-    HR_95L = add_tolerence(HR_95L, float_tolerence, "lr")
-    HR_95U = add_tolerence(HR_95U, float_tolerence, "lr")
-    info = add_tolerence(info, float_tolerence, "lr")
-    z = add_tolerence(z, float_tolerence, "lr")
-    p = add_tolerence(p, float_tolerence, "lr")
-    f = add_tolerence(f, float_tolerence, "lr")
-    chisq = add_tolerence(chisq, float_tolerence, "lr")
+    log.write(" -Comparison tolerance for floats: {}".format(float_tolerance), verbose=verbose) 
+    eaf = add_tolerence(eaf, float_tolerance, "lr")
+    maf = add_tolerence(maf, float_tolerance, "lr")
+    beta = add_tolerence(beta, float_tolerance, "lr")
+    se = add_tolerence(se, float_tolerance, "lr")
+    mlog10p = add_tolerence(mlog10p, float_tolerance, "lr")
+    OR = add_tolerence(OR, float_tolerance, "lr")
+    OR_95L = add_tolerence(OR_95L, float_tolerance, "lr")
+    OR_95U = add_tolerence(OR_95U, float_tolerance, "lr")
+    HR = add_tolerence(HR, float_tolerance, "lr")
+    HR_95L = add_tolerence(HR_95L, float_tolerance, "lr")
+    HR_95U = add_tolerence(HR_95U, float_tolerance, "lr")
+    info = add_tolerence(info, float_tolerance, "lr")
+    z = add_tolerence(z, float_tolerance, "lr")
+    p = add_tolerence(p, float_tolerance, "lr")
+    f = add_tolerence(f, float_tolerance, "lr")
+    chisq = add_tolerence(chisq, float_tolerance, "lr")
     ############################################################################################
     ## add direction
     if coltocheck is None:

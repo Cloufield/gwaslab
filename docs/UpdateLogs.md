@@ -1,5 +1,9 @@
 # Update Logs
 
+# 3.6.1 20250509
+- updated range for filtering OR and HR `(exp(-100), exp(100))`
+- fixed typos
+
 # 3.6.1 20250506
 - updated dependencies
 

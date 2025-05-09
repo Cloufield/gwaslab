@@ -41,14 +41,11 @@ def _run_magma(sumstats,
     log.write(f" --bfile: {ref}", verbose=verbose)
     log.write(f" Output prefix: {out}", verbose=verbose)
 
-    bash_script=f'''
-
-#!/bin/bash
+    bash_script=f'''#!/bin/bash
 
 {magma} --annotate window={window}  --snp-loc {snploc} --gene-loc {ncbi} --out {study}
 
 {magma} --bfile {ref} --pval {pval} ncol={ncol} --gene-annot {study}.genes.annot --out {study}
-
 '''
     
     if set_annot is not None:
