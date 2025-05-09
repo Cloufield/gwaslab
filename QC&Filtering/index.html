@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/gwaslab.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.6">
     
     
       
@@ -2057,7 +2057,7 @@
 <p class="admonition-title">Default parameters have been updated since v3.4.36</p>
 </div>
 <p><code>.check_sanity()</code>: Basic sanity check will. be performed on statistics to check if there are any <code>extreme values</code> or <code>values out of expected ranges</code>.</p>
-<p>Comparison will be performed with <code>float_tolerence = 1e-7</code> for any float type statistics. For example, <code>eaf=(0, 1)</code> will be converted to <code>eaf=(-1e-7, 1 + 1e-7)</code>.</p>
+<p>Comparison will be performed with <code>float_tolerance = 1e-7</code> for any float type statistics. For example, <code>eaf=(0, 1)</code> will be converted to <code>eaf=(-1e-7, 1 + 1e-7)</code>.</p>
 <table>
 <thead>
 <tr>
@@ -2068,9 +2068,9 @@
 </thead>
 <tbody>
 <tr>
-<td><code>float_tolerence</code></td>
+<td><code>float_tolerance</code></td>
 <td><code>float</code></td>
-<td>tolerence for comparison</td>
+<td>tolerance  for comparison</td>
 </tr>
 <tr>
 <td><code>n=(0,2**31-1))</code></td>
@@ -2115,7 +2115,7 @@
 <tr>
 <td><code>beta=(-100,100)</code></td>
 <td><code>float</code></td>
-<td>-10&lt;BETA&lt;10</td>
+<td>-100&lt;BETA&lt;100</td>
 </tr>
 <tr>
 <td><code>z=(-9999,9999)</code></td>
@@ -2128,9 +2128,9 @@
 <td>SE&gt;0</td>
 </tr>
 <tr>
-<td><code>OR=(-100,100)</code></td>
+<td><code>OR=(exp(-100),exp(100))</code></td>
 <td><code>float</code></td>
-<td>-100&lt;log(OR)&lt;100</td>
+<td>exp(-100)&lt; log(OR) &lt; exp(100)</td>
 </tr>
 <tr>
 <td><code>OR_95L=(0,float("Inf"))</code></td>
@@ -2143,9 +2143,9 @@
 <td>OR_95U&gt;0</td>
 </tr>
 <tr>
-<td><code>HR=(-100,100)</code></td>
+<td><code>HR=(exp(-100),exp(100))</code></td>
 <td><code>float</code></td>
-<td>-100&lt;log(HR)&lt;100</td>
+<td>exp(-100)&lt; log(HR) &lt;exp(100)</td>
 </tr>
 <tr>
 <td><code>HR_95L=(0,float("Inf"))</code></td>
@@ -2158,9 +2158,9 @@
 <td>HR_95U&gt;0</td>
 </tr>
 <tr>
-<td><code>info=(0,1)</code></td>
+<td><code>info=(0,2)</code></td>
 <td><code>float</code></td>
-<td>0&lt;INFO&lt;1</td>
+<td>0&lt;INFO&lt;2</td>
 </tr>
 <tr>
 <td><code>direction</code></td>
@@ -2415,10 +2415,10 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.e1c3ead8.min.js"></script>
       
         <script src="../javascripts/mathjax.js"></script>
       
