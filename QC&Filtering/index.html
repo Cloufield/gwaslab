@@ -2033,12 +2033,12 @@
 <tr>
 <td><code>.filter_flanking_by_id()</code></td>
 <td><code>snpid</code> , <br/> <code>inplace=False</code></td>
-<td>filter in variants in the specified flacking regions (SNPID/rsID)</td>
+<td>filter in variants in the specified flanking regions (SNPID/rsID)</td>
 </tr>
 <tr>
 <td><code>.filter_flanking_by_chrpos()</code></td>
 <td><code>chrpos</code> , <br/> <code>inplace=False</code></td>
-<td>filter in variants in the specified flacking regions (CHR POS tuples)</td>
+<td>filter in variants in the specified flanking regions (CHR POS tuples)</td>
 </tr>
 <tr>
 <td><code>.filter_region_in()</code></td>
@@ -2130,7 +2130,7 @@
 <tr>
 <td><code>OR=(exp(-100),exp(100))</code></td>
 <td><code>float</code></td>
-<td>exp(-100)&lt; log(OR) &lt; exp(100)</td>
+<td>exp(-100)&lt; OR &lt; exp(100)</td>
 </tr>
 <tr>
 <td><code>OR_95L=(0,float("Inf"))</code></td>
@@ -2145,7 +2145,7 @@
 <tr>
 <td><code>HR=(exp(-100),exp(100))</code></td>
 <td><code>float</code></td>
-<td>exp(-100)&lt; log(HR) &lt;exp(100)</td>
+<td>exp(-100)&lt; HR &lt;exp(100)</td>
 </tr>
 <tr>
 <td><code>HR_95L=(0,float("Inf"))</code></td>
@@ -2249,7 +2249,7 @@
 <tr>
 <td><code>expr</code></td>
 <td><code>string</code></td>
-<td>the query string used fot filtering. For example: '1&gt;BETA&gt;0 &amp; N&gt;10000'</td>
+<td>the query string used for filtering. For example: '1&gt;BETA&gt;0 &amp; N&gt;10000'</td>
 <td></td>
 </tr>
 <tr>
