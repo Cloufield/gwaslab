@@ -149,7 +149,7 @@ Extract variants in the specified flanking regions.
 |----------------|-----------|---------------------------------------------------------------------------------------------------------|---------|
 | `snpid`        | `list`    | a list of reference SNPID or rsID. `["rs123", "1:123:A:G"]`                                             |         |
 | `snpid`        | `list`    | a list of reference CHR, POS tuples `[(1, 12345), (2, 67891)]`                                          |         |
-| `windonsizekb` | `int`     | flanking window size in kb `["rs123", "1:123:A:G"]`                                                     | `500`   |
+| `windowsizekb` | `int`     | flanking window size in kb `["rs123", "1:123:A:G"]`                                                     | `500`   |
 | `inplace`      | `boolean` | if False, return a new Sumstats object. If true, the current Sumstats object will be filtered in place. | `False` |
 
 ## Filtering variants in regions using BED
