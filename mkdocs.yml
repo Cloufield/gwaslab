@@ -67,6 +67,7 @@ nav:
        - "Output sumstats" : format_load_save.ipynb
        - "Liftover" : harmonization_liftover.ipynb
        - "LD score regression" : ldsc_in_gwaslab.ipynb
+       - "Clumping" : util_ex_clumping.ipynb
        - "Lead and novel variants" : utility_get_lead_novel.ipynb
        - "Data conversion" : utility_data_conversion.ipynb
        - "Manhattan and QQ plot": visualization_mqq.ipynb     
