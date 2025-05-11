@@ -1271,6 +1271,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Clumping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Clumping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1593,6 +1614,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Clumping by calling PLINK
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -1602,6 +1634,58 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#load-sample-data-and-perform-qc" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load sample data and perform QC
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-clumping-by-calling-plink2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run clumping by calling plink2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run clumping by calling plink2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clump-results-are-stored-in-mysumstatsclumps" class="md-nav__link">
+    <span class="md-ellipsis">
+      clump results are stored in mysumstats.clumps
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1823,6 +1907,47 @@
   
     
   
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#load-sample-data-and-perform-qc" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load sample data and perform QC
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-clumping-by-calling-plink2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run clumping by calling plink2
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run clumping by calling plink2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clump-results-are-stored-in-mysumstatsclumps" class="md-nav__link">
+    <span class="md-ellipsis">
+      clump results are stored in mysumstats.clumps
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -2955,8 +3080,9 @@ Licensed under the Apache License, Version 2.0.
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>2025/05/11 12:26:30 GWASLab v3.6.2 https://cloufield.github.io/gwaslab/
-2025/05/11 12:26:30 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
+<pre>2025/05/11 19:15:52 GWASLab v3.6.3 https://cloufield.github.io/gwaslab/
+2025/05/11 19:15:52 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
+2025/05/11 19:15:52 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
 </pre>
 </div>
 </div>
@@ -2973,7 +3099,7 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="load-sample-data-and-perform-qc">Load sample data and perform QC<a class="anchor-link" href="#load-sample-data-and-perform-qc">&#182;</a></h1>
+<h2 id="load-sample-data-and-perform-qc">Load sample data and perform QC<a class="anchor-link" href="#load-sample-data-and-perform-qc">&#182;</a></h2>
 </div>
 </div>
 </div>
@@ -2998,7 +3124,7 @@ Licensed under the Apache License, Version 2.0.
                 </div>
             </clipboard-copy>
         </div>
-            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;../../0_sample_data/t2d_bbj.txt.gz&quot;</span><span class="p">,</span>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">Sumstats</span><span class="p">(</span><span class="s2">&quot;../0_sample_data/t2d_bbj.txt.gz&quot;</span><span class="p">,</span>
              <span class="n">snpid</span><span class="o">=</span><span class="s2">&quot;SNP&quot;</span><span class="p">,</span>
              <span class="n">chrom</span><span class="o">=</span><span class="s2">&quot;CHR&quot;</span><span class="p">,</span>
              <span class="n">pos</span><span class="o">=</span><span class="s2">&quot;POS&quot;</span><span class="p">,</span>
@@ -3009,7 +3135,7 @@ Licensed under the Apache License, Version 2.0.
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">basic_check</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">mysumstats</span><span class="o">.</span><span class="n">fix_id</span><span class="p">(</span><span class="n">fixsep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
-<div id="cell-3" class="clipboard-copy-txt">mysumstats = gl.Sumstats("../../0_sample_data/t2d_bbj.txt.gz",
+<div id="cell-3" class="clipboard-copy-txt">mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
              snpid="SNP",
              chrom="CHR",
              pos="POS",
@@ -3040,32 +3166,33 @@ mysumstats.fix_id(fixsep=True)</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>2025/05/11 12:26:30 GWASLab v3.6.2 https://cloufield.github.io/gwaslab/
-2025/05/11 12:26:30 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
-2025/05/11 12:26:30 Start to initialize gl.Sumstats from file :../../0_sample_data/t2d_bbj.txt.gz
-2025/05/11 12:26:31  -Reading columns          : CHR,POS,SE,SNP,P
-2025/05/11 12:26:31  -Renaming columns to      : CHR,POS,SE,SNPID,P
-2025/05/11 12:26:31  -Current Dataframe shape : 1000000  x  5
-2025/05/11 12:26:31  -Initiating a status column: STATUS ...
-2025/05/11 12:26:31  #WARNING! Version of genomic coordinates is unknown...
-2025/05/11 12:26:32 Start to reorder the columns...v3.6.2
-2025/05/11 12:26:32  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 63.43 MB
-2025/05/11 12:26:32  -Reordering columns to    : SNPID,CHR,POS,SE,P,STATUS
-2025/05/11 12:26:32 Finished reordering the columns.
-2025/05/11 12:26:32  -Trying to convert datatype for CHR: string -&gt; Int64...Int64
-2025/05/11 12:26:32  -Column  : SNPID  CHR   POS   SE      P       STATUS  
-2025/05/11 12:26:32  -DType   : object Int64 int64 float64 float64 category
-2025/05/11 12:26:32  -Verified: T      T     T     T       T       T       
-2025/05/11 12:26:32  -Current Dataframe memory usage: 64.38 MB
-2025/05/11 12:26:32 Finished loading data successfully!
-2025/05/11 12:26:41  #WARNING! Necessary columns for .fix_allele() were not detected:EA,NEA
-2025/05/11 12:26:42  #WARNING! Necessary columns for .normalize() were not detected:EA,NEA
-2025/05/11 12:26:43 Start to check SNPID/rsID...v3.6.2
-2025/05/11 12:26:43  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 65.33 MB
-2025/05/11 12:26:43  -Checking SNPID data type...
-2025/05/11 12:26:43  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
-2025/05/11 12:26:46  -Replacing [_-] in SNPID with &#34;:&#34; ...
-2025/05/11 12:26:47 Finished checking SNPID/rsID.
+<pre>2025/05/11 19:13:45 GWASLab v3.6.2 https://cloufield.github.io/gwaslab/
+2025/05/11 19:13:45 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
+2025/05/11 19:13:45 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
+2025/05/11 19:13:45 Start to initialize gl.Sumstats from file :../0_sample_data/t2d_bbj.txt.gz
+2025/05/11 19:13:46  -Reading columns          : SE,SNP,P,CHR,POS
+2025/05/11 19:13:46  -Renaming columns to      : SE,SNPID,P,CHR,POS
+2025/05/11 19:13:46  -Current Dataframe shape : 1000000  x  5
+2025/05/11 19:13:46  -Initiating a status column: STATUS ...
+2025/05/11 19:13:46  #WARNING! Version of genomic coordinates is unknown...
+2025/05/11 19:13:47 Start to reorder the columns...v3.6.2
+2025/05/11 19:13:47  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 63.43 MB
+2025/05/11 19:13:47  -Reordering columns to    : SNPID,CHR,POS,SE,P,STATUS
+2025/05/11 19:13:47 Finished reordering the columns.
+2025/05/11 19:13:47  -Trying to convert datatype for CHR: string -&gt; Int64...Int64
+2025/05/11 19:13:47  -Column  : SNPID  CHR   POS   SE      P       STATUS  
+2025/05/11 19:13:47  -DType   : object Int64 int64 float64 float64 category
+2025/05/11 19:13:47  -Verified: T      T     T     T       T       T       
+2025/05/11 19:13:47  -Current Dataframe memory usage: 64.38 MB
+2025/05/11 19:13:47 Finished loading data successfully!
+2025/05/11 19:13:58  #WARNING! Necessary columns for .fix_allele() were not detected:EA,NEA
+2025/05/11 19:14:00  #WARNING! Necessary columns for .normalize() were not detected:EA,NEA
+2025/05/11 19:14:01 Start to check SNPID/rsID...v3.6.2
+2025/05/11 19:14:01  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 65.33 MB
+2025/05/11 19:14:01  -Checking SNPID data type...
+2025/05/11 19:14:01  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
+2025/05/11 19:14:04  -Replacing [_-] in SNPID with &#34;:&#34; ...
+2025/05/11 19:14:05 Finished checking SNPID/rsID.
 </pre>
 </div>
 </div>
@@ -3383,44 +3510,94 @@ mysumstats.fix_id(fixsep=True)</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>2025/05/11 12:26:47 Start to perfrom clumping...v3.6.2
-2025/05/11 12:26:47  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 65.33 MB
-2025/05/11 12:26:47 Start to perform clumping...
-2025/05/11 12:26:47  -Clumping parameters for PLINK2:
-2025/05/11 12:26:47   -clump_p1 : 5e-08...
-2025/05/11 12:26:47   -clump_p2 : 1e-06...
-2025/05/11 12:26:47   -clump_kb : 250...
-2025/05/11 12:26:47   -clump_r2 : 0.1...
-2025/05/11 12:26:47  -Clumping will be performed using P
-2025/05/11 12:26:47  -Significant variants on CHR:  [1, 2]
-2025/05/11 12:26:47  -Processing VCF : /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz...
-2025/05/11 12:26:47  -PLINK version: PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)
-2025/05/11 12:26:47   -Processing VCF for CHR 1...
-2025/05/11 12:26:47   -Plink bfile for CHR 1 exists: /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.1. Skipping...
-2025/05/11 12:26:47   -Processing VCF for CHR 2...
-2025/05/11 12:26:47   -Plink bfile for CHR 2 exists: /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.2. Skipping...
-2025/05/11 12:26:47  -Processing sumstats for CHR 1...
-2025/05/11 12:26:52  -Variants in reference file: 6471908...
-2025/05/11 12:26:52  -Variants in sumstats: 624...
-2025/05/11 12:26:52  -Variants available in both reference and sumstats: 624...
-2025/05/11 12:26:52  -Processing sumstats for CHR 2...
-2025/05/11 12:26:58  -Variants in reference file: 7085910...
-2025/05/11 12:26:58  -Variants in sumstats: 233...
-2025/05/11 12:26:58  -Variants available in both reference and sumstats: 233...
-2025/05/11 12:26:58  -Performing clumping for CHR 1...
-2025/05/11 12:26:58  -PLINK version: PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)
-2025/05/11 12:27:00  -Saved results for CHR 1 to : clumping_plink2.1.clumps
-2025/05/11 12:27:00  -Performing clumping for CHR 2...
-2025/05/11 12:27:00  -PLINK version: PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)
-2025/05/11 12:27:01  -Saved results for CHR 2 to : clumping_plink2.2.clumps
-2025/05/11 12:27:01 Finished clumping.
-2025/05/11 12:27:02 Finished clumping.
+<pre>2025/05/11 19:14:05 Start to perfrom clumping...v3.6.2
+2025/05/11 19:14:05  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 65.33 MB
+2025/05/11 19:14:05 Start to perform clumping...
+2025/05/11 19:14:05  -Clumping parameters for PLINK2:
+2025/05/11 19:14:05   -clump_p1 : 5e-08...
+2025/05/11 19:14:05   -clump_p2 : 1e-06...
+2025/05/11 19:14:05   -clump_kb : 250...
+2025/05/11 19:14:05   -clump_r2 : 0.1...
+2025/05/11 19:14:05  -Clumping will be performed using P
+2025/05/11 19:14:05  -Significant variants on CHR:  [1, 2]
+2025/05/11 19:14:05  -Processing VCF : /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz...
+2025/05/11 19:14:05  -PLINK version: PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)
+2025/05/11 19:14:05   -Processing VCF for CHR 1...
+2025/05/11 19:14:05   -Plink bfile for CHR 1 exists: /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.1. Skipping...
+2025/05/11 19:14:05   -Processing VCF for CHR 2...
+2025/05/11 19:14:05   -Plink bfile for CHR 2 exists: /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.2. Skipping...
+2025/05/11 19:14:05  -Processing sumstats for CHR 1...
+2025/05/11 19:14:12  -Variants in reference file: 6471908...
+2025/05/11 19:14:12  -Variants in sumstats: 624...
+2025/05/11 19:14:12  -Variants available in both reference and sumstats: 624...
+2025/05/11 19:14:12  -Processing sumstats for CHR 2...
+2025/05/11 19:14:20  -Variants in reference file: 7085910...
+2025/05/11 19:14:20  -Variants in sumstats: 233...
+2025/05/11 19:14:20  -Variants available in both reference and sumstats: 233...
+2025/05/11 19:14:20  -Performing clumping for CHR 1...
+2025/05/11 19:14:20  -PLINK version: PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)
+2025/05/11 19:14:21  -Saved results for CHR 1 to : clumping_plink2.1.clumps
+2025/05/11 19:14:21  -Performing clumping for CHR 2...
+2025/05/11 19:14:21  -PLINK version: PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)
+2025/05/11 19:14:23  -Saved results for CHR 2 to : clumping_plink2.2.clumps
+2025/05/11 19:14:23 Finished clumping.
+2025/05/11 19:14:23 Finished clumping.
 </pre>
 </div>
 </div>
 
 </div>
 
+</div>
+
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>if using multiple bfile or pfile, @ can be used to indicate each chromosome.</p>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+        
+        
+        <div class="CodeMirror cm-s-jupyter">
+        <div class="zeroclipboard-container">
+            <clipboard-copy for="cell-6">
+            <div>
+                <span class="notice" hidden>Copied!</span>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
+                    <path fill="currentColor" fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path>
+                    <path fill="currentColor" fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
+                </svg>
+                </div>
+            </clipboard-copy>
+        </div>
+            <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1">#mysumstats.clump(   plink2=&quot;plink2&quot;, # default</span>
+<span class="c1">#                    clump_r2=0.1,</span>
+<span class="c1">#                    clump_p2=1e-6,</span>
+<span class="c1">#                    bfile=&quot;/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.@&quot;)</span>
+</pre></div>
+<div id="cell-6" class="clipboard-copy-txt">#mysumstats.clump(   plink2="plink2", # default
+#                    clump_r2=0.1,
+#                    clump_p2=1e-6,
+#                    bfile="/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.@")</div>
+    
+        </div>
+    </div>
+
+</div>
 </div>
 
 </div>
@@ -3441,12 +3618,12 @@ mysumstats.fix_id(fixsep=True)</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-6">
+            <clipboard-copy for="cell-7">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -3458,7 +3635,7 @@ mysumstats.fix_id(fixsep=True)</div>
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">clumps</span><span class="p">[</span><span class="s2">&quot;clumps&quot;</span><span class="p">]</span>
 </pre></div>
-<div id="cell-6" class="clipboard-copy-txt">mysumstats.clumps["clumps"]</div>
+<div id="cell-7" class="clipboard-copy-txt">mysumstats.clumps["clumps"]</div>
     
         </div>
     </div>
@@ -3476,7 +3653,7 @@ mysumstats.fix_id(fixsep=True)</div>
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 
 
 
@@ -3571,12 +3748,12 @@ mysumstats.fix_id(fixsep=True)</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-7">
+            <clipboard-copy for="cell-8">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -3588,7 +3765,7 @@ mysumstats.fix_id(fixsep=True)</div>
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mysumstats</span><span class="o">.</span><span class="n">clumps</span><span class="p">[</span><span class="s2">&quot;clumps_raw&quot;</span><span class="p">]</span>
 </pre></div>
-<div id="cell-7" class="clipboard-copy-txt">mysumstats.clumps["clumps_raw"]</div>
+<div id="cell-8" class="clipboard-copy-txt">mysumstats.clumps["clumps_raw"]</div>
     
         </div>
     </div>
@@ -3606,7 +3783,7 @@ mysumstats.fix_id(fixsep=True)</div>
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 
 
 
@@ -3731,12 +3908,12 @@ mysumstats.fix_id(fixsep=True)</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
         
         
         <div class="CodeMirror cm-s-jupyter">
         <div class="zeroclipboard-container">
-            <clipboard-copy for="cell-8">
+            <clipboard-copy for="cell-9">
             <div>
                 <span class="notice" hidden>Copied!</span>
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 16 16" version="1.1"  data-view-component="true" class="clipboard-copy-icon">
@@ -3748,7 +3925,7 @@ mysumstats.fix_id(fixsep=True)</div>
         </div>
             <div class="highlight-ipynb hl-python"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">mysumstats</span><span class="o">.</span><span class="n">clumps</span><span class="p">[</span><span class="s2">&quot;plink_log&quot;</span><span class="p">])</span>
 </pre></div>
-<div id="cell-8" class="clipboard-copy-txt">print(mysumstats.clumps["plink_log"])</div>
+<div id="cell-9" class="clipboard-copy-txt">print(mysumstats.clumps["plink_log"])</div>
     
         </div>
     </div>
@@ -3786,8 +3963,8 @@ Options in effect:
   --out clumping_plink2.1
   --threads 1
 
-Start time: Sun May 11 12:26:58 2025
-31093 MiB RAM detected, ~27544 available; reserving 15546 MiB for main
+Start time: Sun May 11 19:14:20 2025
+31093 MiB RAM detected, ~10647 available; reserving 10583 MiB for main
 workspace.
 Using 1 compute thread.
 504 samples (0 females, 0 males, 504 ambiguous; 504 founders) loaded from
@@ -3799,7 +3976,7 @@ Note: No phenotype data present.
 --clump: 0/312 index candidates processed.
 --clump: 4 clumps formed from 312 index candidates.  
 Results written to clumping_plink2.1.clumps .
-End time: Sun May 11 12:27:00 2025
+End time: Sun May 11 19:14:21 2025
 
 PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)       www.cog-genomics.org/plink/2.0/
 (C) 2005-2023 Shaun Purcell, Christopher Chang   GNU General Public License v3
@@ -3817,8 +3994,8 @@ Options in effect:
   --out clumping_plink2.2
   --threads 1
 
-Start time: Sun May 11 12:27:00 2025
-31093 MiB RAM detected, ~27549 available; reserving 15546 MiB for main
+Start time: Sun May 11 19:14:22 2025
+31093 MiB RAM detected, ~10619 available; reserving 10555 MiB for main
 workspace.
 Using 1 compute thread.
 504 samples (0 females, 0 males, 504 ambiguous; 504 founders) loaded from
@@ -3830,7 +4007,7 @@ Note: No phenotype data present.
 --clump: 0/231 index candidates processed.
 --clump: 1 clump formed from 231 index candidates.  
 Results written to clumping_plink2.2.clumps .
-End time: Sun May 11 12:27:01 2025
+End time: Sun May 11 19:14:23 2025
 
 
 </pre>

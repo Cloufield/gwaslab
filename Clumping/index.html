@@ -11,6 +11,10 @@
       
       
       
+        <link rel="prev" href="../LDSCinGWASLab/">
+      
+      
+        <link rel="next" href="../Download/">
       
       
       <link rel="icon" href="../assets/gwaslab.png">
@@ -18,7 +22,7 @@
     
     
       
-        <title>Clumping in GWASLab by calling PLINK2 - GWASLab</title>
+        <title>Clumping - GWASLab</title>
       
     
     
@@ -103,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Clumping in GWASLab by calling PLINK2
+              Clumping
             
           </span>
         </div>
@@ -271,10 +275,12 @@
         
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../LDSCinGWASLab/" class="md-tabs__link">
           
   
@@ -1208,8 +1214,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -1218,12 +1226,12 @@
       
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
@@ -1237,7 +1245,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Downstream
@@ -1260,6 +1268,37 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Clumping
+  </span>
+  
+
+      </a>
+      
     </li>
   
 
@@ -1820,24 +1859,26 @@
 
 
 <h1 id="clumping-in-gwaslab-by-calling-plink2">Clumping in GWASLab by calling PLINK2</h1>
-<p>GWASLab provides a clumping function using PLINK2. 
+<p>GWASLab provides a wrapper for clumping using PLINK2. 
 You can get clumping results without worrying about the file format.  </p>
 <h1 id="clumping">Clumping</h1>
 <div class="admonition warning">
 <p class="admonition-title">You need to install PLINK2 first and add to your environment.</p>
 </div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>clump(  vcf=None, 
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>        bfile=None,
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        scaled=False, 
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        out=&quot;clumping_plink2&quot;, 
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        overwrite=False, 
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        n_cores=2, 
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        chrom=None, 
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        clump_p1=5e-8, 
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        clump_p2=5e-8, 
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        clump_r2=0.2, 
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        clump_kb=250,
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        log=Log())
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>clump(  plink2=&quot;plink2&quot;,
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>        vcf=None, 
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        bfile=None,
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>        pfile=None，
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        scaled=False, 
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        out=&quot;clumping_plink2&quot;, 
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        overwrite=False, 
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        n_cores=2, 
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        chrom=None, 
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        clump_p1=5e-8, 
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        clump_p2=5e-8, 
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        clump_r2=0.2, 
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        clump_kb=250,
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        log=Log())
 </span></code></pre></div>
 <table>
 <thead>
@@ -1850,15 +1891,27 @@ You can get clumping results without worrying about the file format.  </p>
 </thead>
 <tbody>
 <tr>
+<td><code>plink2</code></td>
+<td><code>string</code></td>
+<td>path to plink2</td>
+<td>'plink2'</td>
+</tr>
+<tr>
 <td><code>vcf</code></td>
 <td><code>string</code></td>
-<td>path to reference VCF file (it will be converted to plink binary format). You need to specify either <code>vcf</code> or <code>bfile</code></td>
+<td>path to reference VCF file (it will be converted to plink binary format). You need to specify either <code>vcf</code> ,<code>bfile</code> or <code>bfile</code></td>
 <td>-</td>
 </tr>
 <tr>
 <td><code>bfile</code></td>
 <td><code>string</code></td>
-<td>path to PLINK bfile. You need to specify either <code>vcf</code> or <code>bfile</code></td>
+<td>path to PLINK bfile. You need to specify either <code>vcf</code> ,<code>bfile</code> or <code>bfile</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>pfile</code></td>
+<td><code>string</code></td>
+<td>path to PLINK bfile. You need to specify either <code>vcf</code> <code>bfile</code>， or <code>pfile</code></td>
 <td>-</td>
 </tr>
 <tr>
@@ -1886,6 +1939,12 @@ You can get clumping results without worrying about the file format.  </p>
 <td>2</td>
 </tr>
 <tr>
+<td><code>memory</code></td>
+<td><code>int</code></td>
+<td>number of memory to use for plink (in MB)</td>
+<td>None</td>
+</tr>
+<tr>
 <td><code>clump_p1</code></td>
 <td><code>float</code></td>
 <td>clump_p1</td>
@@ -1911,23 +1970,19 @@ You can get clumping results without worrying about the file format.  </p>
 </tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">Plink2 script</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a># using P
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>plink2 \
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    --bfile {}\
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    --chr {} \
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    --clump {} \
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    --clump-field P \
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    --clump-snp-field SNPID \
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    --clump-p1 {} \
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    --clump-p2 {} \
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    --clump-r2 {} \
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    --clump-kb {} \
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    --threads {} \
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    --out {}
+<h1 id="example">Example</h1>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+</div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>clumps = mysumstats.clump(vcf= &quot;/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz&quot;)
 </span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># using MLOG10P
+<div class="admonition example">
+<p class="admonition-title">Brisbane plot</p>
+<p>See <a href="https://cloufield.github.io/gwaslab/util_ex_clumping/">Clumping in gwaslab</a></p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Plink2 script for clumping</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># using P
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>plink2 \
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    --bfile {}\
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    --chr {} \
@@ -1941,13 +1996,22 @@ You can get clumping results without worrying about the file format.  </p>
 </span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    --threads {} \
 </span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    --out {}
 </span></code></pre></div>
-</div>
-<h1 id="example">Example</h1>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-</div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>clumps = mysumstats.clump(vcf= &quot;/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz&quot;)
+<p>or</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a># using MLOG10P
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>plink2 \
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    --bfile {}\
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    --chr {} \
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    --clump {} \
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    --clump-field P \
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    --clump-snp-field SNPID \
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    --clump-p1 {} \
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    --clump-p2 {} \
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    --clump-r2 {} \
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    --clump-kb {} \
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    --threads {} \
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    --out {}
 </span></code></pre></div>
+</div>
 
 
 
