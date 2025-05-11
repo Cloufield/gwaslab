@@ -84,7 +84,7 @@ def _run_scdrs( scdrs="scdrs",
         bash_script+=f'''
 {python} {scdrs} perform-downstream {analysis_string} \
     --h5ad-file {h5ad_file} \
-    --score-file {trait}.full_score.gz \
+    --score-file ./{trait}.full_score.gz \
     --out-folder {out_folder} \
     --min_genes 250 \
     --min_cells 50 \

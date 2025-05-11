@@ -9,7 +9,7 @@ from gwaslab.util_ex_process_ref import _process_plink_input_files
 from gwaslab.g_version import _checking_plink_version
 
 def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", 
-           p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, 
+           p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, pfile=None,
            n_cores=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
            log=Log(),verbose=True,plink="plink",plink2="plink2"):
     ##start function with col checking##########################################################
@@ -54,6 +54,7 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
     # process reference file
     bfile, plink_log, ref_bim,filetype = _process_plink_input_files(chrlist=sumstats["CHR"].unique(), 
                                                        bfile=bfile, 
+                                                       pfile=pfile,
                                                        vcf=vcf, 
                                                        n_cores=n_cores,
                                                        plink_log=plink_log, 
@@ -162,9 +163,12 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
             log.write(e.output)
         #os.system(script)
         
-        clumped = pd.read_csv("{}.clumps".format(out_single_chr),sep="\s+")
-        results = pd.concat([results,clumped],ignore_index=True)
-        
+        try:
+            clumped = pd.read_csv("{}.clumps".format(out_single_chr),sep="\s+")
+            results = pd.concat([results,clumped],ignore_index=True)
+            
+        except:
+            log.write(f"Clumping failed for chr{i}")
         # remove temp SNPIDP file 
         os.remove(clump)
     

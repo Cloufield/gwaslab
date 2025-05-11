@@ -102,7 +102,7 @@ from gwaslab.util_ex_run_scdrs import _run_scdrs
 #20220309
 class Sumstats():
     def __init__(self,
-             sumstats,
+             sumstats=None,
              fmt=None,
              tab_fmt="tsv",
              snpid=None,

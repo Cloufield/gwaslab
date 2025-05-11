@@ -58,7 +58,7 @@ def preformat(sumstats,
           study=None,
           trait=None,
           build=None,
-          other=[],
+          other=None,
           usekeys=None,
           chrom_pat=None,
           snpid_pat=None,
@@ -68,8 +68,10 @@ def preformat(sumstats,
 
     #renaming dictionary
     rename_dictionary = {}
-    usecols = []
-    dtype_dictionary ={}    
+    usecols = list()
+    if other is None:
+        other = list()
+    dtype_dictionary = {}    
     if readargs is None:
         readargs={}
  #######################################################################################################################################################

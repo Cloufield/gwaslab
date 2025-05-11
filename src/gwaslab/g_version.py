@@ -2,11 +2,13 @@ from gwaslab.g_Log import Log
 import subprocess
 import os
 import numpy as np 
+import sys
 
 def _show_version(log=Log(), verbose=True):
     # show version when loading sumstats
     log.write("GWASLab v{} https://cloufield.github.io/gwaslab/".format(gwaslab_info()["version"]),verbose=verbose)
     log.write("(C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com",verbose=verbose)
+    log.write(f"Python version: {sys.version}",verbose=verbose)
 
 def _get_version():
     # return short version string like v3.4.33
@@ -15,8 +17,8 @@ def _get_version():
 def gwaslab_info():
     # version meta information
     dic={
-   "version":"3.6.2",
-   "release_date":"20250509"
+   "version":"3.6.3",
+   "release_date":"202505"
     }
     return dic   
 

@@ -55,6 +55,7 @@ nav:
        - "Infer Genome Build": InferBuild.md
     - Downstream:
        - "LDSC in GWASLab": LDSCinGWASLab.md
+       - "Clumping" : Clumping.md
     - References:
        - "Download": Download.md 
        - "Reference data" : Reference.md
