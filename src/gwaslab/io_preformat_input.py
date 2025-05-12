@@ -59,7 +59,8 @@ def preformat(sumstats,
           trait=None,
           build=None,
           other=None,
-          usekeys=None,
+          exclude=None,
+          include=None,
           chrom_pat=None,
           snpid_pat=None,
           verbose=False,
@@ -71,6 +72,11 @@ def preformat(sumstats,
     usecols = list()
     if other is None:
         other = list()
+    if exclude is None:
+        exclude = list()
+    if include is None:
+        include = list()
+    
     dtype_dictionary = {}    
     if readargs is None:
         readargs={}
@@ -78,7 +84,7 @@ def preformat(sumstats,
     # workflow: 
     # 1. formatbook
     # 2. user specified header
-    # 3. usekeys
+    # 3. include & exclude
     if tab_fmt=="parquet":
         if type(sumstats) is str:
             log.write("Start to load data from parquet file....",verbose=verbose)
@@ -318,18 +324,36 @@ def preformat(sumstats,
             study = raw_cols[9]
             usecols =  usecols + [study]
 
-    if usekeys is not None:
+    if len(include)>0:
     # extract only specified keys
         usecols_new =[]
-        for i in usekeys:
+        for i in include:
+            # rename_dictionary: sumstats to gwaslab
             for k, v in rename_dictionary.items():
                 if i == v:
+                    # get list of sumstats header
                     usecols_new.append(k)
         usecols_valid =[]
         for i in usecols_new:
             if i in usecols:
                 usecols_valid.append(i)
+        log.write(f" -Include columns :{",".join(usecols_valid)}" ,verbose=verbose)
         usecols = usecols_valid
+
+    if len(exclude)>0:
+    # exclude specified keys
+        exclude_cols =[]
+        for i in exclude:
+            # rename_dictionary: sumstats to gwaslab
+            for k, v in rename_dictionary.items():
+                if i == v:
+                    # get list of sumstats header
+                    exclude_cols.append(k)
+        log.write(f" -Exclude columns :{",".join(exclude_cols)}" ,verbose=verbose)
+        for i in exclude_cols:
+            if i in usecols:
+                usecols.remove(i)
+
  #loading data ##########################################################################################################
     
     try:

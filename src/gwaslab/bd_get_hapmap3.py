@@ -42,14 +42,39 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
         additional_cols= ["A1","A2"]
     else:
         additional_cols=[]
+    
     hapmap3_ref = pd.read_csv(data_path,sep="\s+",usecols=["#CHROM","POS","rsid"]+additional_cols, dtype={"#CHROM":"string","POS":"string"})
+    
     #rsid    A1      A2      #CHROM  POS
     #rs3094315       G       A       1       752566
     
     if rsid in sumstats.columns:
         log.write(" -rsID will be used for matching...", verbose=verbose)
-        output = sumstats.loc[sumstats[rsid].isin(hapmap3_ref["rsid"].values),:].copy()
-        log.write(" -Raw input contains "+str(len(output))+" Hapmap3 variants based on rsID...", verbose=verbose)
+        hapmap3_ref = hapmap3_ref.rename(columns={"rsid":rsid})
+        
+        output = sumstats.loc[sumstats[rsid].isin(hapmap3_ref[rsid].values),:].copy()
+        
+        output = pd.merge(output, hapmap3_ref, on = rsid, how=how, suffixes=('', '_hapmap3'))
+
+        raw_rsid_count= len(output)
+        log.write(f" -Raw input contains {raw_rsid_count} Hapmap3 variants based on rsID...", verbose=verbose)
+
+        if match_allele:
+            log.write(" -Checking if alleles are same...")
+            is_matched = ((output[ea].astype("string") == output["A1"]) & (output[nea].astype("string") == output["A2"])) \
+                            | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"]))
+            if how=="right":
+                is_matched = ((output[ea].astype("string") == output["A1"]) & (output[nea].astype("string") == output["A2"])) \
+                            | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"])) | output[ea].isna()
+            output = output.loc[is_matched,:]
+            output = output.drop(columns=["#CHROM","A1","A2"] )
+            log.write(f" -Filtered {raw_rsid_count - len(output)} Hapmap3 variants due to unmatech alleles...", verbose=verbose)
+        
+        for i in ["#CHROM","A1","A2","POS_hapmap3"]:
+            todrop=[]
+            if i in output.columns:
+                todrop.append(i)
+        output = output.drop(columns=todrop)
         return output
     
     elif chrom in sumstats.columns and pos in sumstats.columns:
