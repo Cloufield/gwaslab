@@ -18,30 +18,95 @@ def _merge_mold_with_sumstats_by_chrposp(mold, sumstats, ref_path=None,add_raw_i
                                         log=Log(),
                                         suffixes=("_MOLD",""),
                                         merge_mode="full",
+                                        merge_by_id=False,
                                         verbose=True,
                                         return_not_matched_mold =False):
     
     log.write("Start to merge sumstats...", verbose=verbose)
     if merge_mode=="full":
+        
         sumstats = sumstats.rename({
                                             "SNPID":"_SNPID_RIGHT",
                                             "rsID":"_rsID_RIGHT"
                                             }, strict=False) #,
+
     
-    # drop old ids
-    cols_to_drop = []
-    for i in sumstats.columns:
-        if i in ["SNPID","rsID"]:
-            cols_to_drop.append(i)    
-    if len(cols_to_drop)>0:
-        log.write(" -Dropping old IDs:{}".format(cols_to_drop), verbose=verbose)
-        sumstats = sumstats.drop(columns=cols_to_drop)
+    if merge_by_id==False:    
+        # drop old ids
+        cols_to_drop = []
+        for i in sumstats.columns:
+            if i in ["SNPID","rsID"]:
+                cols_to_drop.append(i)    
+        if len(cols_to_drop)>0:
+            log.write(" -Dropping old IDs:{}".format(cols_to_drop), verbose=verbose)
+            sumstats = sumstats.drop(columns=cols_to_drop)
 
-    ##################################################################################################################
+        ##################################################################################################################
 
-    # mold sumffix + mold 
+        # mold sumffix + mold 
+            # add ASET
+        mold = mold.with_columns(
+                pl.when( pl.col("EA_1") > pl.col("NEA_1") )  
+                .then(   pl.col("EA_1") + ":" + pl.col("NEA_1")  )  
+                .otherwise( pl.col("NEA_1") + ":" + pl.col("EA_1") )
+                .alias("ASET")
+            )
+        
+        sumstats = sumstats.with_columns(
+                pl.when( pl.col("EA") > pl.col("NEA") )  
+                .then(   pl.col("EA") + ":" + pl.col("NEA")  )  
+                .otherwise( pl.col("NEA") + ":" + pl.col("EA") )
+                .alias("ASET"))
+        
+        sumstats_len = len(sumstats)
+        mold_len = len(mold)
+        sumstats = sumstats.unique(subset=["CHR","POS","ASET"]) 
+        mold = mold.unique(subset=["CHR","POS","ASET"]) 
 
-    mold_sumstats = mold.join(sumstats, on=["CHR","POS"], how=merge_mode, suffix="_", coalesce=True)
+        log.write(f' -Left:  dropping duplicated variants based on CHR,POS,ASET: {sumstats_len - len(sumstats)}')
+        log.write(f' -Right: dropping duplicated variants based on CHR,POS,ASET: {mold_len - len(mold)}')
+
+        mold = mold.with_columns(
+            pl.when( pl.col("NEA_1").str.len_chars() != pl.col("EA_1").str.len_chars() )  
+            .then(   
+                pl.when( pl.col("EAF_1")<0.5 ).then(
+                    pl.col("ASET") + ":" + pl.col("EA_1") 
+                ).otherwise( pl.col("ASET") + ":" + pl.col("NEA_1") )
+                .alias("ASET")
+                )  
+            .otherwise( pl.col("ASET") )
+            .alias("ASET")
+        )
+        
+        sumstats = sumstats.with_columns(
+            pl.when( pl.col("NEA").str.len_chars() != pl.col("EA").str.len_chars() )  
+            .then(   
+                pl.when( pl.col("EAF")<0.5 ).then(
+                    pl.col("ASET") + ":" + pl.col("EA") 
+                ).otherwise( pl.col("ASET") + ":" + pl.col("NEA") )
+                .alias("ASET")
+                )  
+            .otherwise( pl.col("ASET"))
+            .alias("ASET")
+            )
+
+        mold_sumstats = mold.join(sumstats, on=["CHR","POS","ASET"], how=merge_mode, suffix="_", coalesce=True)
+    
+    elif merge_by_id==True:
+
+        sumstats = sumstats.rename({
+                                            "_SNPID_RIGHT":"SNPID",
+                                            }, strict=False)
+        
+
+        sumstats_len = len(sumstats)
+        mold_len = len(mold)
+        sumstats = sumstats.unique(subset=["SNPID","CHR","POS"])
+        mold = mold.unique(subset=["SNPID","CHR","POS"]) 
+        log.write(f' -Left:  dropping duplicated variants based on CHR,POS,SNPID: {sumstats_len - len(sumstats)}')
+        log.write(f' -Right: dropping duplicated variants based on CHR,POS,SNPID: {mold_len - len(mold)}')
+        mold_sumstats = mold.join(sumstats, on=["SNPID","CHR","POS"], how=merge_mode, suffix="_", coalesce=True)
+
 
     if merge_mode=="full":
         is_temp_na = mold_sumstats["EA_1"].is_null()
@@ -50,13 +115,17 @@ def _merge_mold_with_sumstats_by_chrposp(mold, sumstats, ref_path=None,add_raw_i
         for i in ["EA_1","NEA_1","EA","NEA"]:
             mold_sumstats = mold_sumstats.with_columns(pl.col(i).cast(pl.String).alias(i))
 
-        # for variants not in template, copy snp info
-        mold_sumstats = mold_sumstats.with_columns(
+        if merge_by_id==False:
+            mold_sumstats = mold_sumstats.with_columns(
             pl.when( is_temp_na )  
                 .then(   pl.col("_SNPID_RIGHT")  )  
                 .otherwise( pl.col("SNPID") )
                 .alias("SNPID")
-        ).with_columns(
+            )
+            mold_sumstats = mold_sumstats.drop(["_SNPID_RIGHT"])
+
+        # for variants not in template, copy snp info
+        mold_sumstats = mold_sumstats.with_columns(
             pl.when( is_temp_na )  
                 .then( pl.col("EA")  )  
                 .otherwise( pl.col("EA_1") )
@@ -68,10 +137,16 @@ def _merge_mold_with_sumstats_by_chrposp(mold, sumstats, ref_path=None,add_raw_i
                 .alias("NEA_1")
         ).with_columns(
             pl.when( is_temp_na )  
+                .then( pl.col("EAF")  )  
+                .otherwise( pl.col("EAF_1"))
+                .alias("EAF_1")
+        ).with_columns(
+            pl.when( is_temp_na )  
                 .then( pl.col("STATUS")  )  
                 .otherwise( pl.col("STATUS_1") )
                 .alias("STATUS_1")
         )
+
         # 
         if "_rsID_RIGHT" in mold_sumstats.columns:
             mold_sumstats = mold_sumstats.with_columns(
@@ -87,7 +162,7 @@ def _merge_mold_with_sumstats_by_chrposp(mold, sumstats, ref_path=None,add_raw_i
         
         mold_sumstats = mold_sumstats.with_columns(
                 pl.when( is_temp_na_2 )  
-                .then(   pl.col("EA_1")  )  
+                .then(   pl.col("EA_1") )  
                 .otherwise( pl.col("EA") )
                 .alias("EA")
                 ).with_columns(
@@ -97,10 +172,14 @@ def _merge_mold_with_sumstats_by_chrposp(mold, sumstats, ref_path=None,add_raw_i
                 .alias("NEA")
                 )
         
-        mold_sumstats = mold_sumstats.drop(["_SNPID_RIGHT"])
+        
+    if merge_by_id==False:
+        mold_sumstats = mold_sumstats.unique(subset=["CHR","POS","ASET"])
+        log.write(" -After merging by CHR, POS and ASET:{}".format(len(mold_sumstats)), verbose=verbose)
+    else:
+        mold_sumstats = mold_sumstats.unique(subset=["SNPID","CHR","POS"])
+        log.write(" -After merging by SNPID, CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
 
-    log.write(" -After merging by CHR and POS:{}".format(len(mold_sumstats)), verbose=verbose)
-    
     mold_sumstats = _keep_variants_with_same_allele_setp(mold_sumstats,suffixes=suffixes)
 
     log.write(" -Matched variants:{}".format(len(mold_sumstats)), verbose=verbose)
@@ -116,13 +195,9 @@ def _keep_variants_with_same_allele_setp(sumstats, log=Log(),verbose=True,suffix
     
     is_perfect_match = (sumstats[ea2] == sumstats[ea1]) & (sumstats[nea2] == sumstats[nea1])
     is_flipped_match = (sumstats[ea2] == sumstats[nea1]) & (sumstats[nea2] == sumstats[ea1])
-    is_allele_set_match = is_flipped_match | is_perfect_match
     
-    log.write(" -Matching alleles and keeping only variants with same allele set: ", verbose=verbose)
     log.write("  -Perfect match: {}".format(sum(is_perfect_match)), verbose=verbose)
     log.write("  -Flipped match: {}".format(sum(is_flipped_match)), verbose=verbose)
-    log.write("  -Unmatched : {}".format(sum(~is_allele_set_match)), verbose=verbose)
-    sumstats = sumstats.filter(is_allele_set_match)
     return sumstats
 
 def _align_with_moldp(sumstats, log=Log(),verbose=True, suffixes=("_MOLD","")):

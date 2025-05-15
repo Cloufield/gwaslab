@@ -107,6 +107,7 @@ def fixID(sumstats,
         except:
             log.write(" -Force converting rsID to pd.string data type...",verbose=verbose)
             sumstats[rsid] = sumstats[rsid].astype("string")
+    
     if snpid in sumstats.columns: 
         # convert to string datatype
         try:
@@ -147,6 +148,7 @@ def fixID(sumstats,
         log.write(" -A look at the unrecognized rsID :",set(sumstats.loc[(~is_rsid)&(~is_rs_chrpos),rsid].head()),"...", verbose=verbose) 
       
     ############################  fixing chr pos###################################################  
+    
     if fixchrpos == True:
     # from snpid or rsid, extract CHR:POS to fix CHR and POS    
         if snpid in sumstats.columns: 

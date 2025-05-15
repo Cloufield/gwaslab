@@ -53,6 +53,7 @@ class SumstatsMulti( ):
                  build="99",
                  engine="pandas",
                  merge_mode="outer",
+                 merge_by_id=False,
                  verbose=True ):
         
         for i,sumstatsObject in enumerate(sumstatsObjects):
@@ -152,7 +153,7 @@ class SumstatsMulti( ):
             for i, sumstatsObject in enumerate(sumstatsObjects):
                 if i >0:
                     self.log.write("Merging Sumstats #{} to main DataFrame...".format(i+1))
-                    self.data = self._merge_two_sumstats(sumstatsObject.data,i=i,merge_mode=merge_mode,engine=engine)
+                    self.data = self._merge_two_sumstats(sumstatsObject.data,i=i,merge_mode=merge_mode,engine=engine,merge_by_id=merge_by_id)
                     self.log.write("Finished merging Sumstats #{} to main DataFrame.".format(i+1))
         else:
             for i, sumstatsObject in enumerate(sumstatsObjects):
@@ -167,6 +168,7 @@ class SumstatsMulti( ):
                             verbose=True,
                             merge_mode="outer",
                             engine="pandas",
+                            merge_by_id=False,
                             i=0):
 
         # _1 _2 
@@ -184,6 +186,7 @@ class SumstatsMulti( ):
                                                         log=self.log,
                                                         verbose=verbose,
                                                         merge_mode=merge_mode,
+                                                        merge_by_id=merge_by_id,
                                                         stats_cols1 = self.other_cols[0],
                                                         stats_cols2 = self.other_cols[i],
                                                         suffixes=("_1",""),
