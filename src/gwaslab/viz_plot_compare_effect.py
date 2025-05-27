@@ -985,6 +985,7 @@ def test_q(df,beta1,se1,beta2,se2,q_level=0.05,is_q_mc=False, log=Log(), verbose
         log.write(" -Bonferroni correction applied...", verbose=verbose)
         df[rawpq] = df[pq] 
         df[pq] = df[pq] * len(df[pq])
+        df.loc[df[pq]>1,pq] = 1
 
     df.loc[df[pq]<q_level,"Edge_color"]="black"
     df.drop(columns=["Weight_1","Weight_2","BETA_FE"],inplace=True)
@@ -1330,17 +1331,20 @@ def configure_legend(fig, ax, legend_mode, is_q, is_q_mc, legend_elements, legen
     #    handle.set_edgecolor("white")
 
     ## Move titles to the left 
-    for item, label in zip(L.legendHandles, L.texts):
-        if label._text  in legend_elements:
-            item.set_edgecolor("white")
-            #item._legmarker.set_markersize(scatterargs["s"]*1.5)
-            item._sizes = [scatterargs["s"]*2]
-        if legend_mode == "full":
-            if label._text  in [legend_title, legend_title2]:
-                width=item.get_window_extent(fig.canvas.get_renderer()).width
-                label.set_ha('left')
-                label.set_position((-8*width,0))
-
+    try:
+        for item, label in zip(L.legendHandles, L.texts):
+            if label._text  in legend_elements:
+                item.set_edgecolor("white")
+                #item._legmarker.set_markersize(scatterargs["s"]*1.5)
+                item._sizes = [scatterargs["s"]*2]
+            if legend_mode == "full":
+                if label._text  in [legend_title, legend_title2]:
+                    width=item.get_window_extent(fig.canvas.get_renderer()).width
+                    label.set_ha('left')
+                    label.set_position((-8*width,0))
+    except:
+        pass
+    
     ax.tick_params(axis='both', labelsize=font_kwargs["fontsize"])
     plt.setp(L.texts,**font_kwargs)
     plt.setp(L.get_title(),**font_kwargs)
