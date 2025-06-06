@@ -337,7 +337,7 @@ def preformat(sumstats,
         for i in usecols_new:
             if i in usecols:
                 usecols_valid.append(i)
-        log.write(f" -Include columns :{",".join(usecols_valid)}" ,verbose=verbose)
+        log.write(f' -Include columns :{",".join(usecols_valid)}' ,verbose=verbose)
         usecols = usecols_valid
 
     if len(exclude)>0:
@@ -349,7 +349,7 @@ def preformat(sumstats,
                 if i == v:
                     # get list of sumstats header
                     exclude_cols.append(k)
-        log.write(f" -Exclude columns :{",".join(exclude_cols)}" ,verbose=verbose)
+        log.write(f' -Exclude columns :{",".join(exclude_cols)}' ,verbose=verbose)
         for i in exclude_cols:
             if i in usecols:
                 usecols.remove(i)
