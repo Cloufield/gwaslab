@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gwaslab"
-version = "3.6.3"
+version = "3.6.4"
 authors = [
   { name="Yunye", email="gwaslab@gmail.com" },
 ]
@@ -29,7 +29,8 @@ dependencies = [
     "pyensembl==2.2.3",
     "gtfparse==1.3.0",
     "h5py>=3.10.0",
-    "pyarrow"
+    "pyarrow",
+    "polars>=1.27.0"
 ]
 
 requires-python = ">=3.9,<3.13"
