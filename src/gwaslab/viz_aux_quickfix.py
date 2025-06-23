@@ -199,7 +199,6 @@ def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos=
             posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*chrpad
     else:
         posdiccul = _posdiccul
-
     # convert base pair postion to x axis position using the cumulative sum dictionary
     sumstats["_ADD"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
     

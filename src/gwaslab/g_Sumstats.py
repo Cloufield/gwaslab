@@ -914,10 +914,13 @@ class Sumstats():
                                                                   verbose=verbose, 
                                                                   **kwargs)
     
-    def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
+    def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", get_hm3=True,**kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+        if get_hm3==True:
+            insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+        else:
+            insumstats = self.data
         ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats,
                                              meta=self.meta,
                                              log=self.log, 

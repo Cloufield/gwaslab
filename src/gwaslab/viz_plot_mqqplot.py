@@ -1178,22 +1178,33 @@ def _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, l
     
     else:
         chrpad_to_remove = sumstats[pos].max()*chrpad
+        
         if ax1 is not None:
-            xmin, xmax = ax1.get_xlim() 
+            #xmin, xmax = ax1.get_xlim() 
+            xmax = sumstats["i"].max()
+            xmin=  sumstats["i"].min()
+            
+            #length = xmax - xmin
             length = xmax - xmin
             
             if xpad is not None:
                 log.write(" -Adjusting X padding on both side: {}".format(xpad), verbose=verbose)
                 pad = xpad* length #sumstats["i"].max()
                 ax1.set_xlim([xmin - pad + chrpad_to_remove, xmax + pad - chrpad_to_remove])
+
             if xpad is None and xpadl is not None:
                 log.write(" -Adjusting X padding on left side: {}".format(xpadl), verbose=verbose)
-                xmin, xmax = ax1.get_xlim() 
+                
+                xmax =  ax1.get_xlim()[1] 
+
                 pad = xpadl*length # sumstats["i"].max()
                 ax1.set_xlim([xmin - pad + chrpad_to_remove ,xmax])
+            
             if xpad is None and xpadr is not None:
                 log.write(" -Adjusting X padding on right side: {}".format(xpadr), verbose=verbose)
-                xmin, xmax = ax1.get_xlim() 
+                
+                xmin = ax1.get_xlim()[0] 
+
                 pad = xpadr*length # sumstats["i"].max()
                 ax1.set_xlim([xmin, xmax + pad - chrpad_to_remove])
 

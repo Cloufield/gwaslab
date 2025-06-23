@@ -70,8 +70,9 @@ def plot_miami2(
           region_hspace = 0.1,
           dpi=100,
           fontsize = 10,
+          xtick_label_size = 10,
           font_family="Arial",
-          xlabel_coords=(-0.01, -0.027),
+          xlabel_coords=None,
           xtick_label_pad=None,
           verbose=True,
           xtickpad=None,
@@ -142,9 +143,12 @@ def plot_miami2(
         scatter_args={}
 
     if fig_args is None:
-        fig_args= {"figsize":(15,5),"dpi":100}
+        fig_args= {"figsize":(15,10),"dpi":100}
     if save_args is None:
         save_args={"dpi":100,"facecolor":"white"}
+    
+    if xlabel_coords is None:
+        xlabel_coords = (-0.01,- region_hspace/2 )
 
     # figure out mqq args
     mqq_args1,mqq_args2 = _sort_args_to_12(mqq_args)
@@ -157,18 +161,9 @@ def plot_miami2(
 
     if dpi!=100:
         fig_args["dpi"] = dpi
-    if xtickpad is None:
-        if "figsize" not in fig_args.keys():
-            fig_args["figsize"] = (15,5)
-        xtickpad =   fig_args["figsize"][1] * region_hspace *72 / 6
-    if xtick_label_pad is None:
-        if "figsize" not in fig_args.keys():
-            fig_args["figsize"] = (15,5)
-        xtick_label_pad =  72 * fig_args["figsize"][1] * region_hspace / 6
     
     if titles is None:
         titles=["",""]
-    
     
     titles_pad_adjusted=[1,0]
     if titles_pad is None:
@@ -247,6 +242,8 @@ def plot_miami2(
     del(sumstats2)
     garbage_collect.collect()
     #####################################################################################################################
+
+
     ##plotting
     if figax is None:
         #fig_args["figsize"] = (15,10)
@@ -254,7 +251,30 @@ def plot_miami2(
         plt.subplots_adjust(hspace=region_hspace)    
     else:
         fig, ax1, ax5 = figax
+    ##########################################################################################################################
+    bbox1 = ax1.get_position() 
+    bbox5 = ax5.get_position()
+    
 
+
+    fig_height_inches = fig.get_figheight()
+    ax_height_inches = (bbox1.height + bbox5.height) * fig_height_inches /2
+    ax_height_points = ax_height_inches * 72
+    tick = ax1.xaxis.get_major_ticks()[0].tick1line
+    # Tick length is determined by its 'markersize' (in points)
+    tick_length = tick.get_markersize()
+    
+    tick_points_to_pixels = tick_length * fig.dpi / 72.0
+    ax_height_pixels = bbox1.height * fig.get_figheight() * fig.dpi
+    tick_axes_length = tick_points_to_pixels / ax_height_pixels
+
+    if xtick_label_pad is None:
+        if "figsize" not in fig_args.keys():
+            fig_args["figsize"] = (15,10)
+        # (total hsapce - tick label font size) / 2 
+        xtick_label_pad = 0
+        #xtick_label_pad =  ((ax_height_points * region_hspace) - 2*tick_length - xtick_label_size) / 2 
+    ########################################################################################################################
     #if same_ylim==True:
         #maxy = merged_sumstats[["scaled_P_1","scaled_P_2"]].max().max()
 
@@ -307,17 +327,23 @@ def plot_miami2(
     #ax5.set_xticks(chrom_df)
     ax5.set_xticklabels([])
     ax5.xaxis.set_ticks_position("top")
+    ax5.tick_params(axis='x', which='major', pad=0)
 
     # Ad#just the visibility for spines #######################################################
     ax1, ax5 = _set_spine_visibility(ax1, ax5)
     ######################################################################################################################
 #####################################################################################################################
     # set labels
-    ax1.set_xlabel("Chromosome",fontsize=fontsize,family=font_family)
+    ax1.set_xlabel("Chromosome",fontsize=fontsize,family=font_family,labelpad=0, va="center",ha="center")
     ax1.xaxis.set_label_coords(xlabel_coords[0],xlabel_coords[1])
+
+    #ax1.tick_params(axis='x', which='major', pad=xtick_label_pad, labelsize = xtick_label_size)
     
-    ax1.tick_params(axis='x', which='major', pad=xtick_label_pad)
-    
+    for label in ax1.get_xticklabels():
+        label.set_y( xlabel_coords[1] + tick_axes_length )
+    ax1.tick_params(axis='x', which='major', pad=xtick_label_pad, labelsize = xtick_label_size)
+    plt.setp(ax1.get_xticklabels(),  ha='center',va="center")
+
     ax1.set_ylabel("$\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
     ax5.set_ylabel("$\mathregular{-log_{10}(P)}$",fontsize=fontsize,family=font_family)
     
