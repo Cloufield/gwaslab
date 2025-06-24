@@ -1,5 +1,9 @@
 # Update Logs
 
+# 3.6.4 20250624
+- fixed x tick labels in plot_miami2
+- fixed xpad in plot_mqq
+
 # 3.6.3 202505
 - fixed pfile in `.clump()` 
 - fixed typos 

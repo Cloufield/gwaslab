@@ -237,7 +237,6 @@ def plot_miami2(
     # P_1  scaled_P_1  P_2  scaled_P_2  TCHR+POS CHR POS    
     log.write(" -Columns in merged sumstats: {}".format(",".join(merged_sumstats.columns)), verbose=verbose)
 
-
     del(sumstats1)
     del(sumstats2)
     garbage_collect.collect()
