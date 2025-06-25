@@ -102,9 +102,16 @@ def plot_miami2(
             cols = ["CHR","POS","P"]
 
     if cols1 is None:
-        cols1 = cols.copy()
+        if scaled1 == True:
+            cols1 = ["CHR","POS","MLOG10P"]
+        else:
+            cols1 = ["CHR","POS","P"]
+    
     if cols2 is None:
-        cols2 = cols.copy()
+        if scaled2 == True:
+            cols2 = ["CHR","POS","MLOG10P"]
+        else:
+            cols2 = ["CHR","POS","P"]
 
     if id1 is not None:
         cols1.append(id1)
@@ -206,8 +213,15 @@ def plot_miami2(
         sumstats2 = merged_sumstats[cols2].copy()
 
     ## rename and quick fix ###########################################################################################################
-    renaming_dict1 = {cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"}
-    renaming_dict2 = {cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"P"}
+    if scaled1==True:
+        renaming_dict1 = {cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"MLOG10P"}
+    else:
+        renaming_dict1 = {cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"}
+    if scaled2==True:
+        renaming_dict2 = {cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"MLOG10P"}
+    else:
+        renaming_dict2 = {cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"P"}
+    
 
     sumstats1 = sumstats1.rename(columns=renaming_dict1)
     sumstats1 = _quick_fix(sumstats1,chr_dict=chr_dict1, scaled=scaled1, verbose=verbose, log=log)
@@ -292,6 +306,7 @@ def plot_miami2(
                       _chrom_df_for_i = chrom_df,
                       _invert=False,
                       _if_quick_qc=False,
+                      font_family=font_family,
                       **mqq_args1
                      )
     log.write("Finished creating Manhattan plot for sumstats1".format(_get_version()), verbose=verbose)
@@ -311,6 +326,7 @@ def plot_miami2(
                       _chrom_df_for_i = chrom_df,
                        _invert=True,
                       _if_quick_qc=False,
+                      font_family=font_family,
                      **mqq_args2)
     log.write("Finished creating Manhattan plot for sumstats2".format(_get_version()), verbose=verbose)
     

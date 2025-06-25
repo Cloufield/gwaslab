@@ -1,5 +1,8 @@
 # Update Logs
 
+# 3.6.5 20250625
+- fixed scaled in plot_miami2
+
 # 3.6.4 20250624
 - fixed x tick labels in plot_miami2
 - fixed xpad in plot_mqq
