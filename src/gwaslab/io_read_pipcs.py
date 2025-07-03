@@ -11,7 +11,8 @@ def _read_pipcs(data,
                 group=None,
                 studie_names=None,
                 log=Log(),
-                verbose=True):
+                verbose=True,
+                **readcsv_kwargs):
     
     log.write("Start to load PIP and CREDIBLE_SET_INDEX from file...",verbose=verbose)
     log.write(" -File:{}".format(output_prefix),verbose=verbose)
@@ -32,14 +33,14 @@ def _read_pipcs(data,
         pipcs_single_list=[]
         for index,pipcs_path in enumerate(pipcs_path_list):
             log.write(" -Loading {}:".format(pipcs_loci_list[index]) + pipcs_path)
-            pipcs_single = pd.read_csv(pipcs_path)
+            pipcs_single = pd.read_csv(pipcs_path,**readcsv_kwargs)
             if "LOCUS" not in pipcs_single.columns:
                 pipcs_single["LOCUS"]=pipcs_loci_list[index]
             pipcs_single_list.append(pipcs_single)
 
         pipcs = pd.concat(pipcs_single_list, axis=0, ignore_index=True) 
     else:
-        pipcs = pd.read_csv("{}".format(output_prefix))
+        pipcs = pd.read_csv("{}".format(output_prefix),**readcsv_kwargs)
     
     if "CHR" not in pipcs.columns:
         log.write(" -Merging CHR and POS from main dataframe...",verbose=verbose)
