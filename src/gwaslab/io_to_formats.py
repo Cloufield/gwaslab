@@ -402,11 +402,11 @@ def tofmt(sumstats,
     
 ####################################################################################################################
 def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose):
-    chr_header = rename_dictionary["CHR"]
     if tab_fmt=="tsv" or tab_fmt=="csv":
         try:
             log.write(f"  -Fast to csv mode...",verbose=verbose)
             if "@" in path:
+                chr_header = rename_dictionary["CHR"]
                 log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)
                 log.write("  -Chromosomes:{}...".format(list(sumstats["CHR"].unique())),verbose=verbose)
                 for single_chr in list(sumstats["CHR"].unique()):
@@ -420,6 +420,7 @@ def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tab
         except:
             log.write(f"Error in using fast_to_csv. Falling back to original implementation.",verbose=verbose)
             if "@" in path:
+                chr_header = rename_dictionary["CHR"]
                 log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)
                 log.write("  -Chromosomes:{}...".format(list(sumstats["CHR"].unique())),verbose=verbose)
                 for single_chr in list(sumstats["CHR"].unique()):

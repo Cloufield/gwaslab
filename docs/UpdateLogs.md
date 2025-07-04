@@ -1,5 +1,8 @@
 # Update Logs
 
+# 3.6.6 20250704
+- fixed error in to_format() when CHR is not required.
+
 # 3.6.5 20250625
 - fixed scaled in plot_miami2
 
