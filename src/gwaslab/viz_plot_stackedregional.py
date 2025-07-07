@@ -54,6 +54,8 @@ def plot_stacked_mqq(   objects,
                         title_args=None,
                         #title_box = None,
                         gtf=None,
+                        mqq_height=1,
+                        cs_height=0.5,
                         gene_track_height=0.5,
                         fig_args=None,
                         region_hspace=0.07,
@@ -75,8 +77,9 @@ def plot_stacked_mqq(   objects,
     
     log.write("Start to create stacked mqq plot by iteratively calling plot_mqq:",verbose=verbose)
     # load sumstats
-    
+    log.write(" -Stacked plot mode:{}...".format(mode),verbose=verbose)
     ##########################################################################################################################################
+    # a list of modes for each panel
     if pm is None:
         pm=[]
 
@@ -94,13 +97,14 @@ def plot_stacked_mqq(   objects,
             else:
                 sumstats_list.append(each_object)
                 pm.append("m")
-    
+
+    log.write(" -Panel mode:{}...".format(pm),verbose=verbose)
+    ##########################################################################################################################################
+
     if common_ylabel==True:
         rr_ylabel=False
     else:
         rr_ylabel=True
-
-    log.write(" -Panel mode:{}...".format(pm),verbose=verbose)
     
     if fig_args is None:
         fig_args = {"dpi":200}
@@ -146,16 +150,36 @@ def plot_stacked_mqq(   objects,
     # figsize : Width, height in inches
 
     if mode=="r":
+    ##########################################################################################################################################   
+        if not (len(vcfs)==1 or len(vcfs)==len(sumstats_list)):
+            raise ValueError("Please make sure VCFs match Objects!")
+    
         if len(vcfs)==1:
             vcfs = vcfs *len(sumstats_list)
+    ##########################################################################################################################################    
+        height_ratios=[]
+        for index, i in enumerate(pm):
+            if i =="m":
+                height_ratios.append(mqq_height)
+            elif i=="pip":
+                height_ratios.append(cs_height)
+                vcfs[index] = "NA"
+
+        log.write(" -VCFs:{}...".format(vcfs),verbose=verbose)
+
+        # n: sumstats
+        # +1 : gene track
         n_plot = len(sumstats_list)
         n_plot_plus_gene_track = n_plot + 1
-
+        
         if len(region_chromatin_files)>0 and mode=="r":
-            height_ratios = [1 for i in range(n_plot_plus_gene_track-1)]+[region_chromatin_height]+[gene_track_height]
+            #height_ratios = [1 for i in range(n_plot_plus_gene_track-1)]+[region_chromatin_height]+[gene_track_height]
+            height_ratios += [region_chromatin_height]+[gene_track_height]
+            # +1 : region_chromatin_files
             n_plot_plus_gene_track +=1
         else:
-            height_ratios = [1 for i in range(n_plot_plus_gene_track-1)]+[gene_track_height]
+            #height_ratios = [1 for i in range(n_plot_plus_gene_track-1)]+[gene_track_height]
+            height_ratios += [gene_track_height]
         
         if "figsize" not in fig_args.keys():
             fig_args["figsize"] = [16,subplot_height*n_plot_plus_gene_track]
@@ -163,6 +187,7 @@ def plot_stacked_mqq(   objects,
         fig, axes = plt.subplots(n_plot_plus_gene_track, 1, sharex=True, 
                              gridspec_kw={'height_ratios': height_ratios},
                              **fig_args)
+        
         plt.subplots_adjust(hspace=region_hspace)
     elif mode=="m":
         n_plot = len(sumstats_list)
@@ -178,11 +203,11 @@ def plot_stacked_mqq(   objects,
         if "figsize" not in fig_args.keys():
             fig_args["figsize"] = [10,subplot_height*n_plot]
         fig, axes = plt.subplots(n_plot, 2, sharex=True, 
-                             gridspec_kw={'height_ratios': [1 for i in range(n_plot-1)],
+                             gridspec_kw={'height_ratios': [1 for i in range(n_plot)],
                                           'width_ratios':[mqqratio,1]},
                                           **fig_args)
         plt.subplots_adjust(hspace=region_hspace)
-    
+        vcfs = [None for i in range(n_plot)]
     if region_lead_grids is None:
         region_lead_grids = [i for i in range(len(axes))]
     ##########################################################################################################################################
@@ -325,6 +350,10 @@ def plot_stacked_mqq(   objects,
     #else:
     if title_pos is None:
         title_pos = [0.01,0.97]
+
+    if mode=="mqq":
+        axes = [axes[i,0] for i in range(len(objects))]
+
     if titles is not None:
         for index,title in enumerate(titles):
             axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_args)
