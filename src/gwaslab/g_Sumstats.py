@@ -57,6 +57,7 @@ from gwaslab.util_in_get_sig import annogene
 from gwaslab.util_in_get_sig import getnovel
 from gwaslab.util_in_get_sig import _check_cis
 from gwaslab.util_in_get_sig import _check_novel_set
+from gwaslab.util_ex_phewwas import _extract_associations
 from gwaslab.util_in_fill_data import filldata
 from gwaslab.bd_get_hapmap3 import gethapmap3
 from gwaslab.bd_common_data import get_chr_list
@@ -790,6 +791,13 @@ class Sumstats():
         # return sumstats object    
         return output
     
+    def get_associations(self, **kwargs):
+        associations_full,associations_summary  = _extract_associations(self.data,**kwargs)
+        
+        self.associations = associations_full
+        
+        return associations_summary
+
     def check_cis(self, gls=False, **kwargs):
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
