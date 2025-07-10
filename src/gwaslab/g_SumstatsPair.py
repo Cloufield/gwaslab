@@ -227,8 +227,8 @@ class SumstatsPair( ):
         self.coloc_susie_res = _run_coloc_susie(self.coloc["path"],log=self.log,ncols=self.ns,**kwargs)
 
     def run_two_sample_mr(self, clump=False, **kwargs):
-        exposure1 = self.meta["gwaslab"]["group_name"].split("_")[0]
-        outcome2 = self.meta["gwaslab"]["group_name"].split("_")[1]
+        exposure1 = self.study_names[0]
+        outcome2 = self.study_names[1]
         _run_two_sample_mr(self,exposure1=exposure1,outcome2=outcome2, clump=clump,**kwargs)
 
     def extract_with_ld_proxy(self,**arg):
