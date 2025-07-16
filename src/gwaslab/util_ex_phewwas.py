@@ -81,7 +81,7 @@ def get_associations_from_gwascatalog(sumstats, rsid="rsID", log=Log(), verbose=
     variants = pd.DataFrame()
 
     for index,row in association.drop_duplicates(subset=["associationId"]).iterrows():
-        log.write(f"Getting traits/studies/variants from GWAS Catalog for associationId: {row["associationId"]}...",verbose=verbose)
+        log.write(f'Getting traits/studies/variants from GWAS Catalog for associationId: {row["associationId"]}...',verbose=verbose)
 
         df = get_traits(association_id = row["associationId"])
         df.efo_traits["associationId"] = row["associationId"]
