@@ -251,7 +251,6 @@ class Sumstats():
           verbose=verbose,
           readargs=readargs,
           log=self.log)
-        
 
         # checking genome build
         self.meta["gwaslab"]["genome_build"] = _process_build(build, log=self.log, verbose=False)
@@ -907,14 +906,15 @@ class Sumstats():
                    **kwargs)
     
     def run_magma(self, build=None, verbose=True, **kwargs):
-        _run_magma(self.data, 
+        _run_magma(self, 
                    study=self.meta["gwaslab"]["study_name"], 
                    build=build, verbose=verbose, log=self.log, **kwargs)
         
     def run_scdrs(self, build=None, verbose=True, **kwargs):
-        _run_scdrs(
+        _run_scdrs(self,
                    study=self.meta["gwaslab"]["study_name"], 
-                   build=build, verbose=verbose, log=self.log, **kwargs)
+                   build=build, 
+                   verbose=verbose, log=self.log, **kwargs)
 ## LDSC ##############################################################################################
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", **kwargs):
         if build is None:

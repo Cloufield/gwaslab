@@ -5,7 +5,8 @@ import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
 
-def _run_scdrs( scdrs="scdrs",
+def _run_scdrs( gls,
+                scdrs="scdrs",
                 python="python",
                 study="Study1",
                 conda_env=None,
@@ -32,16 +33,21 @@ def _run_scdrs( scdrs="scdrs",
     
     log.write(" Start to run scDRS from command line:", verbose=verbose)
     
+    log.write(f" Output prefix: {out}", verbose=verbose)
+    gls.offload()
     trait = study
+    
     if out_file is None:
         out_file = f"./{trait}.gs"
+        out_file = os.path.join(out, out_file)
     if out_folder is None:
-        out_folder = f"./"
+        out_folder = out
+
     if conda_env is not None:
         conda_env_string = f"conda init bash\n conda activate {conda_env}\n"
     else:
         conda_env_string=""
-    log.write(f" Output prefix: {out}", verbose=verbose)
+    
 
     if group_analysis is not None:
         analysis_string = f"--group-analysis {group_analysis} "
@@ -104,5 +110,5 @@ def _run_scdrs( scdrs="scdrs",
     except subprocess.CalledProcessError as e:
         log.warning("ERROR!")
         log.write(e.output)
-
+    gls.reload()
     log.write("Finished running scDRS.", verbose=verbose)
