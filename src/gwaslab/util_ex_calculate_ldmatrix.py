@@ -11,7 +11,7 @@ from gwaslab.util_ex_process_ref import _process_plink_input_files
 from gwaslab.g_version import _checking_plink_version
 from gwaslab.util_in_filter_value import _exclude_hla
 
-def tofinemapping(sumstats, 
+def tofinemapping(gls, 
                   study=None, 
                   bfile=None, 
                   vcf=None, 
@@ -39,6 +39,9 @@ def tofinemapping(sumstats,
     _start_cols =["SNPID","CHR","POS","EA","NEA"]
     _start_function = ".calculate_ld_matrix()"
     _must_args ={}
+    
+    sumstats = gls.data
+    gls.offload()
 
     is_enough_info = start_to(sumstats=sumstats,
                             log=log,
@@ -166,7 +169,12 @@ def tofinemapping(sumstats,
         output_file_list_path=None
         log.write(" -No avaialable lead variants.",verbose=verbose)
         log.write(" -Stopped LD matrix calculation.",verbose=verbose)
+    
+    del sumstats
+
     finished(log=log, verbose=verbose, end_line=_end_line)
+    gls.reload()
+
     return output_file_list_path, output_file_list, plink_log
 
 

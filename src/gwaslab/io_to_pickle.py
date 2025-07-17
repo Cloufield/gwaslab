@@ -45,3 +45,18 @@ def load_data_from_pickle(path,usecols=None):
         data = data.loc[:,existing_cols]
         gc.collect()
     return data
+
+def _offload(df,path,log):
+    with open(path, 'wb') as file:
+        pickle.dump(df, file)
+        log.write("Dumpping dataframe to : ", path)
+
+def _reload(path,log):
+    with open(path, 'rb') as file:
+        df =  pickle.load(file)
+        log.write("Loaded dataframe back from : ", path)
+    try:
+        os.remove(path)
+    except:
+        pass
+    return df

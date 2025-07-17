@@ -9,9 +9,11 @@ from gwaslab.g_version import _check_susie_version
 from gwaslab.qc_fix_sumstats import start_to
 from gwaslab.qc_fix_sumstats import finished
 
-def _run_susie_rss(filepath, 
+def _run_susie_rss(gls,
+                   filepath, 
                    r="Rscript", 
                    mode="bs",
+                   out=None,
                    max_iter=100000,
                    min_abs_corr=0.1,
                    refine="TRUE",
@@ -21,7 +23,6 @@ def _run_susie_rss(filepath,
                    delete=False,  #if delete output file
                    susie_args="", 
                    log=Log(),
-                   main_sumstats=None,
                    verbose=True):
     ##start function with col checking##########################################################
     _start_line = "run finemapping using SuSieR from command line"
@@ -44,7 +45,9 @@ def _run_susie_rss(filepath,
         log.write(" -File path is None.")
         log.write("Finished finemapping using SuSieR.")
         return pd.DataFrame()
-        
+    
+    gls.offload()
+
     filelist = pd.read_csv(filepath,sep="\t")
     r_log=""
     # write R script
@@ -52,13 +55,18 @@ def _run_susie_rss(filepath,
 
     log = _checking_r_version(r, log)
     log = _check_susie_version(r,log)
-
+    
     for index, row in filelist.iterrows(): 
         gc.collect()
         study = row["STUDY"]
         ld_r_matrix = row["LD_R_MATRIX"] #ld matrix path
         sumstats = row["LOCUS_SUMSTATS"] #sumsttas path
-        output_prefix = sumstats.replace(".sumstats.gz","")
+        
+        if out is None:
+            output_prefix = sumstats.replace(".sumstats.gz","")
+        else:
+            output_prefix = os.path.join(out, os.path.basename(sumstats.replace(".sumstats.gz","")))
+        
         log.write(" -Running for: {} - {}".format(row["SNPID"],row["STUDY"] ))
         log.write("  -Locus sumstats:{}".format(sumstats))
         log.write("  -LD r matrix:{}".format(ld_r_matrix))
@@ -140,8 +148,10 @@ def _run_susie_rss(filepath,
             os.remove(temp_r_path)
             log.write("  -Removing temp R script: {}".format(temp_r_path))
     
+    gls.reload()
+
     locus_pip_cs = locus_pip_cs.rename(columns={"variable":"N_SNP","variable_prob":"PIP","cs":"CREDIBLE_SET_INDEX"})	
-    locus_pip_cs = pd.merge(locus_pip_cs, main_sumstats, on="SNPID",how="left")
+    locus_pip_cs = pd.merge(locus_pip_cs, gls.data[["SNPID","CHR","POS"]], on="SNPID",how="left")
     
     finished(log=log, verbose=verbose, end_line=_end_line)
     return locus_pip_cs

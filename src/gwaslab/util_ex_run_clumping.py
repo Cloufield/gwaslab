@@ -8,7 +8,7 @@ from gwaslab.qc_fix_sumstats import finished
 from gwaslab.util_ex_process_ref import _process_plink_input_files
 from gwaslab.g_version import _checking_plink_version
 
-def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2", 
+def _clump(gls, vcf=None, scaled=False, out="clumping_plink2", 
            p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, pfile=None,
            n_cores=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
            log=Log(),verbose=True,plink="plink",plink2="plink2"):
@@ -18,8 +18,16 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
     _start_cols =["SNPID","CHR","POS"]
     _start_function = ".clump()"
     _must_args ={}
+    
+    if out is None:
+        out = f"./{study}_clumpping".lstrip('/')
+    else:
+        out = out.lstrip('/')
+    
+    sumstats = gls.data
+    gls.offload()
 
-    is_enough_info = start_to(sumstats=insumstats,
+    is_enough_info = start_to(sumstats=sumstats,
                             log=log,
                             verbose=verbose,
                             start_line=_start_line,
@@ -42,11 +50,11 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
         clump_log10_p2=-np.log10(clump_p2)
         log.write("  -clump_log10_p1 : {}...".format(clump_log10_p1),verbose=verbose)
         log.write("  -clump_log10_p2 : {}...".format(clump_log10_p2),verbose=verbose)
-        sumstats = insumstats.loc[insumstats[mlog10p]>min(clump_log10_p1,clump_log10_p2),:].copy()
+        sumstats = sumstats.loc[sumstats[mlog10p]>min(clump_log10_p1,clump_log10_p2),:].copy()
     # extract lead variants
     else:
         log.write(" -Clumping will be performed using {}".format(p),verbose=verbose)
-        sumstats = insumstats.loc[insumstats[p]<max(clump_p1,clump_p2),:].copy()
+        sumstats = sumstats.loc[sumstats[p]<max(clump_p1,clump_p2),:].copy()
     log.write(" -Significant variants on CHR: ",list(sumstats["CHR"].unique()),verbose=verbose)
     
     plink_log=""
@@ -174,9 +182,10 @@ def _clump(insumstats, vcf=None, scaled=False, out="clumping_plink2",
     
     results = results.sort_values(by=["#CHROM","POS"]).rename(columns={"#CHROM":"CHR","ID":"SNPID"})
     log.write("Finished clumping.",verbose=verbose)
-    results_sumstats = insumstats.loc[insumstats["SNPID"].isin(results["SNPID"]),:].copy()
+    results_sumstats = sumstats.loc[sumstats["SNPID"].isin(results["SNPID"]),:].copy()
     finished(log=log, verbose=verbose, end_line=_end_line)
-
+    gls.reload()
+    
     return results_sumstats, results, plink_log
 
 

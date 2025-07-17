@@ -100,6 +100,9 @@ from gwaslab.util_ex_run_prscs import _run_prscs
 from gwaslab.util_ex_calculate_prs import _calculate_prs
 from gwaslab.util_ex_run_scdrs import _run_scdrs
 
+from gwaslab.io_to_pickle import _offload
+from gwaslab.io_to_pickle import _reload
+
 #20220309
 class Sumstats():
     def __init__(self,
@@ -174,6 +177,7 @@ class Sumstats():
         self.meta["gwaslab"]["study_name"] =  study
         self.meta["gwaslab"]["species"] = species
         
+        self.tmp_path = f"./{id(self)}"
         # initialize attributes for clumping and finmapping
         #self.to_finemapping_file_path = ""
         #self.to_finemapping_file  = pd.DataFrame()
@@ -957,20 +961,24 @@ class Sumstats():
 # external ################################################################################################
     
     def calculate_ld_matrix(self,**kwargs):
-        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
+        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping(self, study = self.meta["gwaslab"]["study_name"],**kwargs)
         #self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
     def extract_ld_matrix(self,**kwargs):
         self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping_using_ld(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
 
     def run_susie_rss(self,**kwargs):
-        self.pipcs=_run_susie_rss(self.finemapping["path"], main_sumstats = self.data[["SNPID","CHR","POS"]], **kwargs)
+        self.pipcs=_run_susie_rss(self, self.finemapping["path"], **kwargs)
         self.finemapping["pipcs"] = self.pipcs
         #self.pipcs=_run_susie_rss(self.to_finemapping_file_path,**kwargs)
+    
     def get_cs_lead(self,**kwargs):
         return _get_cs_lead(self.pipcs,**kwargs)
     
     def clump(self,**kwargs):
-        self.clumps["clumps"], self.clumps["clumps_raw"], self.clumps["plink_log"] = _clump(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
+        self.clumps["clumps"], self.clumps["clumps_raw"], self.clumps["plink_log"] = _clump(self, 
+                                                                                            log=self.log, 
+                                                                                            study = self.meta["gwaslab"]["study_name"], 
+                                                                                            **kwargs)
 
     def calculate_prs(self,**kwargs):
         combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
@@ -990,4 +998,11 @@ class Sumstats():
             build = self.meta["gwaslab"]["genome_build"]
         _to_format(self.data, path, log=self.log, verbose=verbose, meta=self.meta, build=build, **kwargs)
 
- 
+######################################################################################
+    def offload(self):
+        _offload(self.data, self.tmp_path, self.log)
+        del self.data
+        gc.collect()
+
+    def reload(self):
+         self.data = _reload(self.tmp_path, self.log)

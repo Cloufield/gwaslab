@@ -14,7 +14,7 @@ from gwaslab.qc_fix_sumstats import finished
 
 def _run_two_sample_mr(sumstatspair_object,
                        r,
-                       outdir="./",
+                       out="./",
                        clump=False,
                        f_check=10,
                        exposure1="Trait1",
@@ -78,8 +78,8 @@ def _run_two_sample_mr(sumstatspair_object,
     # Clumping       
 
     prefix = "{exposure}_{outcome}_{memory_id}".format(exposure = exposure1, outcome= outcome2, memory_id = id(sumstatspair))
-    prefix = "{}{}".format(outdir.rstrip('/') + "/",prefix)
-    temp_sumstats_path = "{outdir}twosample_mr_{exposure}_{outcome}_{memory_id}.csv.gz".format(outdir=outdir.rstrip('/') + "/",
+    prefix = "{}{}".format(out.rstrip('/') + "/",prefix)
+    temp_sumstats_path = "{out}twosample_mr_{exposure}_{outcome}_{memory_id}.csv.gz".format(out=out.rstrip('/') + "/",
                                                                                                exposure = exposure1, 
                                                                                                outcome= outcome2, 
                                                                                                memory_id = id(sumstatspair))
