@@ -55,6 +55,13 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
     else:
         log.write(" -Clumping will be performed using {}".format(p),verbose=verbose)
         sumstats = sumstats.loc[sumstats[p]<max(clump_p1,clump_p2),:].copy()
+
+    if len(sumstats)==0:
+        log.write(" -No significant variants after filtering.")
+        finished(log=log, verbose=verbose, end_line=_end_line)
+        gls.reload()
+        return pd.DataFrame(), pd.DataFrame(), ""
+    
     log.write(" -Significant variants on CHR: ",list(sumstats["CHR"].unique()),verbose=verbose)
     
     plink_log=""
