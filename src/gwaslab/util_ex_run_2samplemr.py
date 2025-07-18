@@ -180,7 +180,10 @@ def _run_two_sample_mr(sumstatspair_object,
         directionality_test = directionality_test_script
     )
         
-    temp_r_script_path = "_{}_{}_{}_gwaslab_2smr_temp.R".format(exposure1,outcome2,id(sumstatspair))
+    temp_r_script_path = "{}_{}_{}_{}_gwaslab_2smr_temp.R".format(out.rstrip('/') + "/",
+                                                                  exposure1,
+                                                                  outcome2,
+                                                                  id(sumstatspair))
     with open(temp_r_script_path,"w") as file:
             file.write(rscript)
 

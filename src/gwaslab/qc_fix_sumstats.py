@@ -69,7 +69,7 @@ from gwaslab.bd_common_data import get_chain
 
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",fixprefix=False,
-       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False,
+       fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False, reversea=False,
        overwrite=False,verbose=True,forcefixid=False,log=Log()):  
     '''
     1. fx SNPid
@@ -148,7 +148,15 @@ def fixID(sumstats,
         log.write(" -A look at the unrecognized rsID :",set(sumstats.loc[(~is_rsid)&(~is_rs_chrpos),rsid].head()),"...", verbose=verbose) 
       
     ############################  fixing chr pos###################################################  
-    
+    if reversea == True:
+        if snpid in sumstats.columns: 
+            log.write(" -Reversing Alleles in SNPID...", verbose=verbose)
+            to_fix = is_chrposrefalt
+            to_fix_num = sum(to_fix)
+            if to_fix_num>0 and verbose: log.write(" -Number of variants could be reversed: "+str(to_fix_num)+" ...")
+            extracted = sumstats.loc[to_fix, snpid].str.extract(r'(^\w+[:_-]\d+[:_-])([ATCG]+)([:_-])([ATCG]+$)', flags=re.IGNORECASE)
+            sumstats.loc[to_fix, snpid] = extracted[0] + extracted[3] + extracted[2] + extracted[1]
+            
     if fixchrpos == True:
     # from snpid or rsid, extract CHR:POS to fix CHR and POS    
         if snpid in sumstats.columns: 
