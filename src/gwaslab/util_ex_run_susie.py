@@ -14,9 +14,9 @@ def _run_susie_rss(gls,
                    r="Rscript", 
                    mode="bs",
                    out=None,
-                   max_iter=100000,
-                   min_abs_corr=0.1,
-                   refine="TRUE",
+                   max_iter=100,
+                   min_abs_corr=0.5,
+                   refine="FALSE",
                    L=10,
                    fillldna=True, 
                    n=None, 
@@ -73,25 +73,30 @@ def _run_susie_rss(gls,
         log.write("  -output_prefix:{}".format(output_prefix))
         
         rscript='''
-        library(susieR)
-        
-        sumstats <- read.csv("{}",sep="\t")
-        
-        R <- as.matrix(read.csv("{}",sep="\t",header=FALSE))
-        {}
+library(susieR)
 
-        n <- floor(mean(sumstats$N))
+sumstats <- read.csv("{}",sep="\t")
 
-        fitted_rss1 <- susie_rss({}, n = {}, R = R, max_iter = {}, min_abs_corr={}, refine = {}, L = {}{})
+R <- as.matrix(read.csv("{}",sep="\t",header=FALSE))
+{}
 
-        susie_fitted_summary <- summary(fitted_rss1)
+n <- floor(mean(sumstats$N))
 
-        output <- susie_fitted_summary$vars
-        output$SNPID <- sumstats$SNPID[susie_fitted_summary$vars$variable]
-        output$LOCUS <- "{}"
-        output$STUDY <- "{}"
+fitted_rss1 <- susie_rss({}, n = {}, R = R, max_iter = {}, min_abs_corr={}, refine = {}, L = {}{})
 
-        write.csv(output, "{}.pipcs", row.names = FALSE)
+susie_fitted_summary <- summary(fitted_rss1)
+
+output <- susie_fitted_summary$vars
+output$SNPID <- sumstats$SNPID[susie_fitted_summary$vars$variable]
+output$LOCUS <- "{}"
+output$STUDY <- "{}"
+
+write.csv(output, "{}.pipcs", row.names = FALSE)
+
+png(filename="{}_diagnostic.png")
+diagnostic <- kriging_rss({}, R, n=n)
+diagnostic$plot
+dev.off()
         '''.format(sumstats, 
                    ld_r_matrix,
                     "R[is.na(R)] <- 0" if fillldna==True else "",
@@ -104,7 +109,9 @@ def _run_susie_rss(gls,
                     susie_args, 
                     row["SNPID"],
                     row["STUDY"],
-                    output_prefix)
+                    output_prefix,
+                    output_prefix,
+                    "sumstats$Z" if mode=="z" else "sumstats$BETA/sumstats$SE")
         susier_line = "susie_rss({}, n = {}, R = R, max_iter = {}, min_abs_corr={}, refine = {}, L = {}{})".format("z= sumstats$Z," if mode=="z" else "bhat = sumstats$BETA,shat = sumstats$SE,",
                     n if n is not None else "n", 
                     max_iter,

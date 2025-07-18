@@ -19,6 +19,7 @@ def _run_coloc_susie(glsp,
                      ncols=None,
                      d1_args="",
                      d2_args="",
+                     out=None,
                      log=Log(), 
                      verbose=True):
     
@@ -30,6 +31,7 @@ def _run_coloc_susie(glsp,
         return pd.DataFrame()
     
     glsp.offload()
+
     if types is None:
         types = ("cc","cc")
     log.write(" -Phenotype types: {} and {}".format(types[0],types[1]), verbose=verbose)
@@ -52,7 +54,12 @@ def _run_coloc_susie(glsp,
         study = row["STUDY"]
         ld_r_matrix = row["LD_R_MATRIX"]
         sumstats = row["LOCUS_SUMSTATS"]
-        output_prefix = sumstats.replace(".sumstats.gz","")
+
+        if out is None:
+            output_prefix = sumstats.replace(".sumstats.gz","")
+        else:
+            output_prefix = os.path.join(out, os.path.basename(sumstats.replace(".sumstats.gz","")))
+        
         log.write(" -Running for: {} - {}".format(row["SNPID"],row["STUDY"] ), verbose=verbose)
         log.write("  -Locus sumstats:{}".format(sumstats), verbose=verbose)
         log.write("  -LD r matrix:{}".format(ld_r_matrix), verbose=verbose)
