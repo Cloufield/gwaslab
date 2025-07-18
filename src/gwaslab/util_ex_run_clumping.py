@@ -23,7 +23,7 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
         out = f"./{study}_clumpping".lstrip('/')
     else:
         out = out.lstrip('/')
-    
+    sumstats_id = gls.id
     sumstats = gls.data
     gls.offload()
 
@@ -96,9 +96,9 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
             is_avaialable_variant = (sumstats["CHR"]==i) & (is_on_both)
 
             if scaled == True:
-                sumstats.loc[is_avaialable_variant,["SNPID",mlog10p]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=False,sep="\t")
+                sumstats.loc[is_avaialable_variant,["SNPID",mlog10p]].to_csv("{}_gwaslab_tmp.{}.{}.SNPIDP".format(out, sumstats_id, i),index=False,sep="\t")
             else:
-                sumstats.loc[is_avaialable_variant,["SNPID",p]].to_csv("_gwaslab_tmp.{}.SNPIDP".format(i),index=False,sep="\t")
+                sumstats.loc[is_avaialable_variant,["SNPID",p]].to_csv("{}_gwaslab_tmp.{}.{}.SNPIDP".format(out, sumstats_id,i),index=False,sep="\t")
         except:
             log.write(" -Not available for: {}...".format(i),verbose=verbose)
         
@@ -110,7 +110,7 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
     for i in sumstats["CHR"].unique():
         chrom = i
         # temp file  
-        clump = "_gwaslab_tmp.{}.SNPIDP".format(chrom)
+        clump = "{}_gwaslab_tmp.{}.{}.SNPIDP".format(out,sumstats_id,chrom)
         # output prefix
         out_single_chr= out + ".{}".format(chrom)
         
@@ -181,7 +181,6 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
         os.remove(clump)
     
     results = results.sort_values(by=["#CHROM","POS"]).rename(columns={"#CHROM":"CHR","ID":"SNPID"})
-    log.write("Finished clumping.",verbose=verbose)
     results_sumstats = sumstats.loc[sumstats["SNPID"].isin(results["SNPID"]),:].copy()
     finished(log=log, verbose=verbose, end_line=_end_line)
     gls.reload()

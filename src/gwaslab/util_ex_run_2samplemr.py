@@ -83,9 +83,10 @@ def _run_two_sample_mr(sumstatspair_object,
                                                                                                exposure = exposure1, 
                                                                                                outcome= outcome2, 
                                                                                                memory_id = id(sumstatspair))
-    
-    sumstatspair.to_csv(temp_sumstats_path ,index=None)
-    
+    if len(sumstatspair)>0:
+        sumstatspair.to_csv(temp_sumstats_path ,index=None)
+    else:
+        return 0
     ###
     calculate_r_script = ""
     
