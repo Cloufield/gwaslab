@@ -62,6 +62,7 @@ def _run_susie_rss(gls,
         ld_r_matrix = row["LD_R_MATRIX"] #ld matrix path
         sumstats = row["LOCUS_SUMSTATS"] #sumsttas path
         
+        # out: directory for output files
         if out is None:
             output_prefix = sumstats.replace(".sumstats.gz","")
         else:
@@ -121,7 +122,12 @@ dev.off()
                     susie_args)
         log.write("  -SuSieR script: {}".format(susier_line))
         
+        # temporary R script path
         temp_r_path = "_{}_{}_{}_gwaslab_susie_temp.R".format(study,row["SNPID"],id(sumstats))
+        if out is not None:
+            temp_r_path = os.path.join(out, temp_r_path)
+        
+        
         log.write("  -Createing temp R script: {}".format(temp_r_path))
         with open(temp_r_path,"w") as file:
                 file.write(rscript)

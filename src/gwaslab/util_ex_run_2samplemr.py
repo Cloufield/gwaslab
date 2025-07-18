@@ -207,6 +207,7 @@ def _run_two_sample_mr(sumstatspair_object,
         log.write(rscript)
         log.write(e.output)
         os.remove(temp_r_script_path)
+    log.write(" Finished running MR using twosampleMR from command line.")
 
 
 
