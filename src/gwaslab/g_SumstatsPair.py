@@ -30,6 +30,8 @@ from gwaslab.io_read_pipcs import _read_pipcs
 from gwaslab.g_meta import _init_meta
 from gwaslab.viz_plot_stackedregional import plot_stacked_mqq
 from gwaslab.util_ex_run_ccgwas import _run_ccgwas
+from gwaslab.io_to_pickle import _offload
+from gwaslab.io_to_pickle import _reload
 
 class SumstatsPair( ):
     def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ,verbose=True ):
@@ -40,6 +42,8 @@ class SumstatsPair( ):
             raise ValueError("Please provide GWASLab Sumstats Object #2.")
         
         self.meta = _init_meta(object="SumstatsPair") 
+        self.id = id(self)
+        self.tmp_path = f"./{self.id}"
 
         if sumstatsObject1.meta["gwaslab"]["study_name"]!=sumstatsObject2.meta["gwaslab"]["study_name"]:
             self.study_name = "{}_{}".format(sumstatsObject1.meta["gwaslab"]["study_name"], sumstatsObject2.meta["gwaslab"]["study_name"])
@@ -186,18 +190,18 @@ class SumstatsPair( ):
 
 
     def clump(self,**kwargs):
-        self.clumps["clumps"],self.clumps["clumps_raw"],self.clumps["plink_log"] = _clump(self.data, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.meta["gwaslab"]["group_name"], **kwargs)
+        self.clumps["clumps"],self.clumps["clumps_raw"],self.clumps["plink_log"] = _clump(self, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.meta["gwaslab"]["group_name"], **kwargs)
 
     def to_coloc(self,**kwargs):
-        self.coloc["path"],self.coloc["file"],self.coloc["plink_log"] = tofinemapping(self.data,study=self.meta["gwaslab"]["group_name"],suffixes=self.suffixes,log=self.log,**kwargs)
+        self.coloc["path"],self.coloc["file"],self.coloc["plink_log"] = tofinemapping(self,study=self.meta["gwaslab"]["group_name"],suffixes=self.suffixes,log=self.log,**kwargs)
 
     def to_mesusie(self,**kwargs):
         self.mesusie["path"],self.mesusie["file"],self.mesusie["plink_log"] = tofinemapping_m(self.data,
-                                                                                                             studies = self.study_names,
-                                                                                                             group = self.meta["gwaslab"]["group_name"],
-                                                                                                             suffixes=self.suffixes,
-                                                                                                             log=self.log,
-                                                                                                             **kwargs)
+                                                                                              studies = self.study_names,
+                                                                                              group = self.meta["gwaslab"]["group_name"],
+                                                                                              suffixes=self.suffixes,
+                                                                                              log=self.log,
+                                                                                              **kwargs)
         
     def run_mesusie(self,**kwargs):
         prefix = _run_mesusie(self.mesusie["path"],log=self.log,ncols=self.ns,**kwargs)
@@ -224,7 +228,7 @@ class SumstatsPair( ):
                                    **kwargs)
          
     def run_coloc_susie(self,**kwargs):
-        self.coloc_susie_res = _run_coloc_susie(self.coloc["path"],log=self.log,ncols=self.ns,**kwargs)
+        self.coloc_susie_res = _run_coloc_susie(self, self.coloc["path"],log=self.log,ncols=self.ns,**kwargs)
 
     def run_two_sample_mr(self, clump=False, **kwargs):
         exposure1 = self.study_names[0]
@@ -266,4 +270,11 @@ class SumstatsPair( ):
                      xlabel="Effect Allele Frequency in Sumstats 1",
                      ylabel="Effect Allele Frequency in Sumstats 2",
                      **kwargs)
-                     
+
+    def offload(self):
+        _offload(self.data, self.tmp_path, self.log)
+        del self.data
+        gc.collect()
+
+    def reload(self):
+         self.data = _reload(self.tmp_path, self.log)

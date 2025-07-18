@@ -9,7 +9,9 @@ from gwaslab.g_version import _check_susie_version
 from gwaslab.qc_fix_sumstats import start_to
 from gwaslab.qc_fix_sumstats import finished
 
-def _run_coloc_susie(filepath, r="Rscript",
+def _run_coloc_susie(glsp,
+                     filepath, 
+                     r="Rscript",
                      types=None, ns=None, 
                      fillldna=True, delete=False, 
                      coloc_args="", 
@@ -20,8 +22,14 @@ def _run_coloc_susie(filepath, r="Rscript",
                      log=Log(), 
                      verbose=True):
     
-    log.write(" Start to run coloc.susie from command line:", verbose=verbose)
+    log.write("Start to run coloc.susie from command line:", verbose=verbose)
 
+    if filepath is None:
+        log.write(" -File path is None.", verbose=verbose)
+        log.write("Finished finemapping using SuSieR.", verbose=verbose)
+        return pd.DataFrame()
+    
+    glsp.offload()
     if types is None:
         types = ("cc","cc")
     log.write(" -Phenotype types: {} and {}".format(types[0],types[1]), verbose=verbose)
@@ -31,11 +39,6 @@ def _run_coloc_susie(filepath, r="Rscript",
             ns = ncols
     log.write(" -Ns: {} and {}".format(ns[0],ns[1]), verbose=verbose)
 
-    if filepath is None:
-        log.write(" -File path is None.", verbose=verbose)
-        log.write("Finished finemapping using SuSieR.", verbose=verbose)
-        return pd.DataFrame()
-        
     filelist = pd.read_csv(filepath,sep="\t")
     r_log=""
     # write R script
@@ -141,5 +144,7 @@ def _run_coloc_susie(filepath, r="Rscript",
         except subprocess.CalledProcessError as e:
             log.write(e.output)
             os.remove("_{}_{}_gwaslab_coloc_susie_temp.R".format(study,row["SNPID"]))
+    
     log.write("Finished clocalization using coloc and SuSiE.", verbose=verbose)
+    glsp.reload()
     return locus_pip_cs

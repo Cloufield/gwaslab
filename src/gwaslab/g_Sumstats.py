@@ -177,7 +177,8 @@ class Sumstats():
         self.meta["gwaslab"]["study_name"] =  study
         self.meta["gwaslab"]["species"] = species
         
-        self.tmp_path = f"./{id(self)}"
+        self.id = id(self)
+        self.tmp_path = f"./{self.id}"
         # initialize attributes for clumping and finmapping
         #self.to_finemapping_file_path = ""
         #self.to_finemapping_file  = pd.DataFrame()

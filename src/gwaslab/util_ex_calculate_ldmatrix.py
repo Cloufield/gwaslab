@@ -117,7 +117,8 @@ def tofinemapping(gls,
                                                     locus_sumstats=locus_sumstats, 
                                                     ref_bim=ref_bim[0],
                                                     log=log,suffixes=suffixes)
-        
+        del locus_sumstats
+        gc.collect()
         #########################################################################################################
         # create matched snp list
         matched_snp_list_path,matched_sumstats_path=_export_snplist_and_locus_sumstats(matched_sumstats=matched_sumstats, 
@@ -147,7 +148,8 @@ def tofinemapping(gls,
                                                             extra_plink_option=extra_plink_option,
                                                             ref_allele_path = matched_sumstats_path,
                                                             verbose=verbose)
-    
+        del matched_sumstats
+        gc.collect()
     
         # print file list
         row_dict={}
