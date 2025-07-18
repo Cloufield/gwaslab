@@ -72,7 +72,7 @@ def tofinemapping_using_ld(sumstats,
         sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
     else:
         sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
-
+    log.write(" -Number of loci: {}...".format(len(sig_df)),verbose=verbose)
     # Drop duplicate!!!!
     log.write(" -Dropping duplicated SNPIDs...",verbose=verbose)
     sumstats = sumstats.drop_duplicates(subset=["SNPID"]).copy()
@@ -447,7 +447,6 @@ def _merge_ld_map_with_sumstats(row,
     # matching by SNPID
     # preserve bim keys (use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.)
     combined_df = pd.merge(ld_map, locus_sumstats, on=["CHR","POS"],how="inner")
-    
     # match allele
     perfect_match =  ((combined_df["EA"] == combined_df["EA_bim"]) & (combined_df["NEA"] == combined_df["NEA_bim"]) ) 
     log.write("   -Variants with perfect matched alleles:{}".format(sum(perfect_match)))
