@@ -3,6 +3,7 @@ import numpy as np
 import scipy.stats as ss
 import gzip
 import os
+import re
 import gc
 from gwaslab.bd_common_data import get_format_dict
 from gwaslab.qc_fix_sumstats import sortcolumn
@@ -122,62 +123,22 @@ def preformat(sumstats,
         
         if "sep" not in readargs.keys():
             readargs["sep"] = "\t"
+    else:
+        meta_data = None
         
 #########################################################################################################################################################      
     
-    # check chr-separated path / vcf / then print header.            
-    try:
-        if type(sumstats) is str:
-            ## loading data from path #################################################
-            inpath = sumstats
-            ###load sumstats by each chromosome #################################################  
-            if "@" in inpath:
-                log.write(" -Detected @ in path: load sumstats by each chromosome...",verbose=verbose)
-                inpath_chr_list=[]
-                inpath_chr_num_list=[]
-                for chromosome in list(range(1,26))+["x","y","X","Y","MT","mt","m","M"]:
-                    inpath_chr = inpath.replace("@",str(chromosome))  
-                    if isfile_casesensitive(inpath_chr):
-                        inpath_chr_num_list.append(str(chromosome))
-                        inpath_chr_list.append(inpath_chr)        
-                log.write(" -Chromosomes detected:",",".join(inpath_chr_num_list),verbose=verbose)
-                readargs_header = get_readargs_header(inpath = inpath_chr_list[0], readargs = readargs)
-                row_one = pd.read_table(inpath_chr_list[0],**readargs_header)
-                # columns in the sumstats
-                raw_cols = row_one.columns
-            else:
-            ##### loading data from tabular file#################################################
-                readargs_header = get_readargs_header(inpath = inpath, readargs = readargs)
-                row_one = pd.read_table(inpath,**readargs_header)
-                raw_cols = row_one.columns
-            
-            if fmt=="vcf":
-                # expanded
-                format_cols = list(row_one["FORMAT"].str.split(":"))[0]
-                # fixed + study1 + expanded
-                raw_cols = meta_data["format_fixed"] + [raw_cols[9]] + format_cols
+    # check chr-separated path / vcf / then print header.     
+    inpath, inpath_chr_list, inpath_chr_num_list, format_cols, raw_cols, usecols, dtype_dictionary  = check_path_and_header(sumstats, 
+                                                                                                                    fmt, 
+                                                                                                                    meta_data, 
+                                                                                                                    readargs, 
+                                                                                                                    usecols, 
+                                                                                                                    dtype_dictionary, 
+                                                                                                                    rename_dictionary, 
+                                                                                                                    log, 
+                                                                                                                    verbose)     
 
-            ###################################################################################### 
-        elif type(sumstats) is pd.DataFrame:
-            ## loading data from dataframe
-            raw_cols = sumstats.columns
-        
-        ################################################
-        for key,value in rename_dictionary.items():
-            # check avaiable keys  key->raw header
-            # usecols : a list of raw headers to load from file/DataFrame 
-            if key in raw_cols:
-                usecols.append(key)
-            if value in ["EA","NEA"]:
-                dtype_dictionary[key]="category"
-            if value in ["STATUS"]:
-                dtype_dictionary[key]="string"     
-            if value in ["CHR"]:
-                dtype_dictionary[key]="string"  
-    
-    except ValueError:
-        raise ValueError("Please input a path or a pd.DataFrame, and make sure the separator is correct and the columns you specified are in the file.")
-        
     ###################################################################################################################################################
     ## check columns/datatype to use 
     if snpid:
@@ -359,7 +320,7 @@ def preformat(sumstats,
     try:
         if type(sumstats) is str:
             ## loading data from path
-            inpath = sumstats
+            #inpath = sumstats
             if "@" in inpath:
                 log.write("Start to initialize gl.Sumstats from files with pattern :" + inpath,verbose=verbose)
                 sumstats_chr_list=[]
@@ -650,3 +611,112 @@ def _load_variants_with_pattern(inpath,usecols,dtype_dictionary,readargs,rename_
     sumstats_filtered = pd.concat([chunk[chunk[chunk_snpid].str.match(snpid_pat, case=False,na=False) ] for chunk in sumstats_iter])
     log.write(" -Loaded {} variants with pattern : {} ...".format(len(sumstats_filtered), snpid_pat),verbose=verbose)
     return sumstats_filtered
+
+
+def check_path_and_header(sumstats=None, 
+                          fmt=None, 
+                          meta_data=None, 
+                          readargs=None, 
+                          usecols=None, 
+                          dtype_dictionary=None, 
+                          rename_dictionary=None, 
+                          log=None, 
+                          verbose=None):
+    
+
+    if type(sumstats) is str:
+        ## loading data from path #################################################
+        inpath = sumstats
+        
+        try:
+            format_cols, raw_cols, inpath_chr_list, inpath_chr_num_list = process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verbose)
+        
+        except (FileNotFoundError, IndexError):
+            log.warning("Loading {} failed...Tesing if compressed/uncompressed...".format(inpath),verbose=verbose)
+            try:
+                if inpath[-3:]==".gz":
+                    inpath = inpath[:-3]
+                    log.write(" -Trying to load {}...".format(inpath),verbose=verbose)
+                    format_cols, raw_cols, inpath_chr_list, inpath_chr_num_list =process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verbose)
+                else:
+                    inpath = inpath+".gz"
+                    log.write(" -Trying to load {}...".format(inpath),verbose=verbose)
+                    format_cols, raw_cols, inpath_chr_list, inpath_chr_num_list = process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verbose)
+            except:
+                raise ValueError("Please input a valid path, and make sure the separator is correct and the columns you specified are in the file.") 
+
+        ###################################################################################### 
+    elif type(sumstats) is pd.DataFrame:
+        format_cols = None
+        inpath_chr_list = None
+        inpath_chr_num_list = None
+        ## loading data from dataframe
+        raw_cols = sumstats.columns
+
+    ################################################
+    for key,value in rename_dictionary.items():
+        # check avaiable keys  key->raw header
+        # usecols : a list of raw headers to load from file/DataFrame 
+        if key in raw_cols:
+            usecols.append(key)
+        if value in ["EA","NEA"]:
+            dtype_dictionary[key]="category"
+        if value in ["STATUS"]:
+            dtype_dictionary[key]="string"     
+        if value in ["CHR"]:
+            dtype_dictionary[key]="string"  
+
+    return inpath, inpath_chr_list, inpath_chr_num_list, format_cols, raw_cols, usecols, dtype_dictionary
+
+def process_inpath_and_load_header(inpath, fmt, meta_data,  readargs, log, verbose):
+    
+    format_cols = None
+    inpath_chr_list = None
+    inpath_chr_num_list = None
+
+    if "@" in inpath:
+        log.write(" -Detected @ in path: load sumstats by each chromosome...",verbose=verbose)
+        inpath_chr_list=[]
+        inpath_chr_num_list=[]
+        
+        # create a regex pattern for matching
+        pat = os.path.basename(inpath).replace("@","(\w+)")
+        
+        # get dir
+        dirname = os.path.dirname(inpath)
+        
+        # all files in the directory
+        files = os.listdir(dirname)
+        
+        files.sort()
+
+        for file in files:
+            # match
+            result = re.match(pat, file)
+            if result:
+                # get chr
+                chr_matched = str(result.group(1))
+                inpath_chr_num_list.append(chr_matched)
+                inpath_chr_list.append(inpath.replace("@",str(chr_matched))  )
+        
+        log.write(" -Chromosomes detected:",",".join(inpath_chr_num_list),verbose=verbose)
+
+        #if inpath_chr_list is empty-> IndexError
+        readargs_header = get_readargs_header(inpath = inpath_chr_list[0], readargs = readargs)
+        row_one = pd.read_table(inpath_chr_list[0],**readargs_header)
+        # columns in the sumstats
+        raw_cols = row_one.columns
+    else:
+    ##### loading data from tabular file#################################################
+    #if file not found, FileNotFoundError
+        readargs_header = get_readargs_header(inpath = inpath, readargs = readargs)
+        row_one = pd.read_table(inpath,**readargs_header)
+        raw_cols = row_one.columns
+
+    if fmt=="vcf":
+        # expanded
+        format_cols = list(row_one["FORMAT"].str.split(":"))[0]
+        # fixed + study1 + expanded
+        raw_cols = meta_data["format_fixed"] + [raw_cols[9]] + format_cols
+
+    return format_cols, raw_cols, inpath_chr_list, inpath_chr_num_list
