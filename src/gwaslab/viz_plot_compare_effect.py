@@ -91,7 +91,7 @@ def compare_effect(path1,
         exponent = math.floor(math.log10(sig_level))
         mantissa = sig_level / 10**exponent
 
-        legend_title =  '$\mathregular{ P < {} x 10^{{{}}}}$ in:'.format(mantissa, exponent)
+        legend_title =  '$\mathregular{{ P < {} x 10^{{{}}} }}$ in:'.format(mantissa, exponent)
 
     if is_q_mc=="fdr" or is_q_mc=="bon":
         is_q = True
