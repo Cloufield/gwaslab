@@ -93,11 +93,15 @@ def compare_effect(path1,
 
         legend_title =  '$\mathregular{{ P < {} x 10^{{{}}} }}$ in:'.format(mantissa, exponent)
 
+    # what method to use for correction
     if is_q_mc=="fdr" or is_q_mc=="bon":
         is_q = True
+
+    # if heterogeneity test
     if is_q == True:
         if is_q_mc not in [False,"fdr","bon","non"]:
             raise ValueError('Please select either "fdr" or "bon" or "non"/False for is_q_mc.')
+        
     if save_args is None:
         save_args = {"dpi":300,"facecolor":"white"}
     if reg_box is None:
@@ -985,6 +989,7 @@ def test_q(df,beta1,se1,beta2,se2,q_level=0.05,is_q_mc=False, log=Log(), verbose
         log.write(" -Bonferroni correction applied...", verbose=verbose)
         df[rawpq] = df[pq] 
         df[pq] = df[pq] * len(df[pq])
+        # P value upper bound -> 1
         df.loc[df[pq]>1,pq] = 1
 
     df.loc[df[pq]<q_level,"Edge_color"]="black"

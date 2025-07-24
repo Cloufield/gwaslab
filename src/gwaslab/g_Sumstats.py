@@ -66,6 +66,7 @@ from gwaslab.bd_common_data import get_chr_to_number
 from gwaslab.bd_common_data import get_high_ld
 from gwaslab.bd_common_data import get_format_dict
 from gwaslab.bd_common_data import get_formats_list
+from gwaslab.bd_path_manager import _path
 from gwaslab.g_version import _show_version
 from gwaslab.g_version import gwaslab_info
 from gwaslab.g_meta import _init_meta
@@ -178,7 +179,8 @@ class Sumstats():
         self.meta["gwaslab"]["species"] = species
         
         self.id = id(self)
-        self.tmp_path = f"./{self.id}"
+        self.tmp_path = _path(pid=self.id)
+        
         # initialize attributes for clumping and finmapping
         #self.to_finemapping_file_path = ""
         #self.to_finemapping_file  = pd.DataFrame()

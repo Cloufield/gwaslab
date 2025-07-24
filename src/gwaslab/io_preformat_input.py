@@ -647,6 +647,7 @@ def check_path_and_header(sumstats=None,
 
         ###################################################################################### 
     elif type(sumstats) is pd.DataFrame:
+        inpath = None
         format_cols = None
         inpath_chr_list = None
         inpath_chr_num_list = None
