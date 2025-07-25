@@ -221,6 +221,8 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS",
                ea="EA", nea="NEA",build="19",
                change_status=True, 
                verbose=True,log=Log()):
+    
+
     ##start function with col checking##########################################################
     _start_line = "infer genome build version using hapmap3 SNPs"
     _end_line = "inferring genome build version using hapmap3 SNPs"
@@ -266,7 +268,6 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS",
         log.write(" -Since num_hg19 >> num_hg38, assigning genome build hg19...", verbose=verbose) 
         if change_status==True:
             sumstats[status] = vchange_status(sumstats[status],1,"9","1")
-            sumstats[status] = vchange_status(sumstats[status],2,"9","9")
         inferred_build="19"
     elif match_count_for_19 < match_count_for_38:
         log.write(" -Since num_hg19 << num_hg38, assigning genome build hg38...", verbose=verbose) 

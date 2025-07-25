@@ -12,6 +12,7 @@ from gwaslab.qc_check_datatype import check_datatype
 from gwaslab.qc_check_datatype import quick_convert_datatype
 from gwaslab.qc_check_datatype import check_dataframe_memory_usage
 from gwaslab.g_headers import _check_overlap_with_reserved_keys
+from gwaslab.g_vchange_status import STATUS_CATEGORIES
 #20221030
 def preformat(sumstats,
           fmt=None,
@@ -406,8 +407,8 @@ def preformat(sumstats,
         sumstats["N_CONTROL"] = ncontrol
     
     ### status ######################################################################################################
-    if status is None:
-        sumstats = process_status(sumstats=sumstats,build=build,log=log,verbose=verbose)
+    
+    sumstats = process_status(sumstats=sumstats,build=build,status=status,log=log,verbose=verbose)
     
     ## ea/nea, ref/alt ##############################################################################################
     sumstats = process_allele(sumstats=sumstats,log=log,verbose=verbose)
@@ -560,13 +561,14 @@ def process_allele(sumstats,log,verbose):
         sumstats["NEA"]=sumstats["NEA"].astype("category")  
     return sumstats
 
-def process_status(sumstats,build,log,verbose):
-    log.write(" -Initiating a status column: STATUS ...",verbose=verbose)
-    #sumstats["STATUS"] = int(build)*(10**5) +99999
-    build = _process_build(build,log,verbose)
-    sumstats["STATUS"] = build +"99999"
-    categories = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
-    sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=categories)
+def process_status(sumstats,build,status, log,verbose):
+    if status is None:
+        log.write(" -Initiating a status column: STATUS ...",verbose=verbose)
+        #sumstats["STATUS"] = int(build)*(10**5) +99999
+        build = _process_build(build,log,verbose)
+        sumstats["STATUS"] = build +"99999"
+
+    sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=STATUS_CATEGORIES)
     return sumstats
 
 

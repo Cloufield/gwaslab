@@ -347,9 +347,7 @@ def _inch_to_point(inch):
     #points: 1/72 inch
     return inch*72
         
-        
-        
-        
+NA_STRINGS=["na","NA","Na","Nan","NaN","<NA>","null","NULL","#N/A","#VALUE!","N/A","n/a","missing",""]        
         
         
         

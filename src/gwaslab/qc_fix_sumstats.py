@@ -22,7 +22,10 @@ from gwaslab.g_version import _get_version
 from gwaslab.util_in_fill_data import _convert_betase_to_mlog10p
 from gwaslab.util_in_fill_data import _convert_betase_to_p
 from gwaslab.util_in_fill_data import _convert_mlog10p_to_p
+
 from gwaslab.bd_common_data import get_chain
+from gwaslab.bd_common_data import NA_STRINGS
+from gwaslab.g_vchange_status import STATUS_CATEGORIES
 #process build
 #setbuild
 #fixID
@@ -120,7 +123,21 @@ def fixID(sumstats,
         except:
             log.write(" -Force converting SNPID to pd.string data type...",verbose=verbose)
             sumstats[snpid] = sumstats[snpid].astype("string")
+    ############################  checking string NA ###################################################
+    log.write(" -Checking NA strings :{}".format(",".join(NA_STRINGS)),verbose=verbose)  
+    if snpid in sumstats.columns:  
+        log.write(" -Checking if SNPID contains NA strings...",verbose=verbose)
+        is_snpid_string_na = sumstats[snpid].isin(NA_STRINGS)
+        if sum(is_snpid_string_na) >0:
+            log.write("  -Converting {} NA strings in SNPID to pd.NA...".format(sum(is_snpid_string_na)),verbose=verbose)
+            sumstats.loc[is_snpid_string_na ,snpid] = pd.NA
 
+    if rsid in sumstats.columns: 
+        log.write(" -Checking if rsID contains NA strings...",verbose=verbose)
+        is_rsid_string_na = sumstats[rsid].isin(NA_STRINGS)
+        if sum(is_rsid_string_na) >0:
+            log.write("  -Converting {} NA strings in rsID to pd.NA...".format(sum(is_rsid_string_na)),verbose=verbose)
+            sumstats.loc[is_rsid_string_na ,rsid] = pd.NA
     ############################  checking ###################################################  
     if snpid in sumstats.columns:  
         log.write(" -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)",verbose=verbose)
@@ -1131,8 +1148,7 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
         cols_to_check.append(header)
         if header=="STATUS": 
             log.write(" -Checking STATUS and converting STATUS to categories....", verbose=verbose) 
-            categories = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
-            sumstats[header] = pd.Categorical(sumstats[header],categories=categories)
+            sumstats[header] = pd.Categorical(sumstats[header],categories=STATUS_CATEGORIES)
             return sumstats
         
         if dtype in ["Int64","Int32","int","int32","in64"]:

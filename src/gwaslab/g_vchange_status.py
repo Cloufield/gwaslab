@@ -1,15 +1,15 @@
 import pandas as pd
 
-CATEGORIES = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
+STATUS_CATEGORIES = [str(j+i) for j in [1300000,1800000,1900000,3800000,3900000,9700000,9800000,9900000] for i in range(0,100000)]
 
 def vchange_status(status,digit,before,after):
     dic={}
     for i in range(len(before)):
-        dic[before[i]]=after[i]
+        dic[str(before[i])] = str(after[i])
     if digit>1:
-        return pd.Categorical(status.str[:digit-1]+status.str[digit-1].replace(dic)+status.str[digit:],categories=CATEGORIES)
+        return pd.Categorical(status.str[:digit-1] + status.str[digit-1].replace(dic) + status.str[digit:],categories=STATUS_CATEGORIES)
     else:
-        return pd.Categorical(status.str[digit-1].replace(dic)+status.str[digit:],categories=CATEGORIES)
+        return pd.Categorical(status.str[digit-1].replace(dic) + status.str[digit:],categories=STATUS_CATEGORIES)
 
 def copy_status(from_status,to_status, digit):
     if digit>1:
