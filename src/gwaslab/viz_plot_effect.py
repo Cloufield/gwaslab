@@ -82,15 +82,19 @@ def _plot_effect(to_plot,
                  effect_label=None,
                  eaf_label=None,
                  snpr2_label=None,
+                 xlim_eaf=None,
+                 xlim_snpr2 = None,
                  log=Log(),
                  verbose=True,
                  legend_mode=1,
                  ncol=2,
+                 gap=1,
                  fontsize=12,
                  font_family="Arial",
                  size=None,
                  hue=None,
                  style=None,
+                 sort_args=None,
                  **args):
 
     if err_args is None:
@@ -108,7 +112,8 @@ def _plot_effect(to_plot,
         fig_args={"figsize":(8,8),"dpi":300}
     if scatter_args is None:
         scatter_args={"s":20}
-    
+    if sort_args is None:
+        sort_args={}
 
     legend_titles=[]
     if hue is not None:
@@ -142,17 +147,24 @@ def _plot_effect(to_plot,
     if y_sort is None:
         y_sort = ["CHR","POS","STUDY"]
     
-    to_plot = to_plot.sort_values(by=y_sort)
+    #to_plot = to_plot.sort_values(by=y_sort)
 
     if group is None:
-        group = ["CHR","POS"]
-        to_plot = to_plot.sort_values(by=group)
-    # Assign group IDs based on the sorted 'score'
-        
-    to_plot['_VAR_GROUP'] = to_plot.groupby(group).ngroup() + 1
+        group = ["CHR","POS"] + y_sort
+    
+    sort_columns= group + y_sort
 
-    to_plot["_VAR_INDEX"] = range(len(to_plot))
-    to_plot["_VAR_INDEX"]= to_plot["_VAR_INDEX"] + to_plot['_VAR_GROUP']
+    to_plot = to_plot.sort_values(by=sort_columns,**sort_args)
+    
+    # calculate cum sum
+    cum_sizes = to_plot.groupby(group).size()
+    cum_sizes = cum_sizes +  gap 
+    cum_sizes = cum_sizes.cumsum() 
+    
+    # create index for y axis
+    to_plot['_GROUP_CUMSUM'] = to_plot.set_index(group).index.map(cum_sizes)
+    to_plot['_VAR_INDEX'] = to_plot.groupby(group).cumcount()
+    to_plot["_VAR_INDEX"]=  to_plot['_GROUP_CUMSUM'] - to_plot['_VAR_INDEX'] 
 
     y="_VAR_INDEX"
 
@@ -171,15 +183,15 @@ def _plot_effect(to_plot,
         fig,ax1 = plt.subplots(ncols=ncols, **fig_args)
     elif ncols==2:
         if eaf_panel==True:
-            fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True)
+            fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True, **fig_args)
             ax1=axes[0]
             ax2=axes[1]
         else:
-            fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True)
+            fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True, **fig_args)
             ax1=axes[0]
             ax3=axes[1]
     else:
-        fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True)
+        fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True, **fig_args)
         ax1=axes[0]
         ax2=axes[1]
         ax3=axes[2]
@@ -192,6 +204,7 @@ def _plot_effect(to_plot,
     ax1.axvline(x=0,linestyle="dashed",c="grey")
     ax1.set_yticks(to_plot[y], labels = to_plot[y_name], fontsize=fontsize, family=font_family)
     ax1.set_ylabel(ylabel, fontsize=fontsize, family=font_family) 
+    ax1.set_xlabel(x, fontsize=fontsize, family=font_family) 
 
     if title is not None:
         ax1.set_title(title,fontsize=fontsize, family=font_family)
@@ -199,11 +212,14 @@ def _plot_effect(to_plot,
     if eaf_panel==True:
         ax2.barh(y=to_plot[y], width=to_plot[eaf], zorder=100, **eaf_args)
         ax2.set_xlabel(eaf, fontsize=fontsize, family=font_family)
+        if xlim_eaf is not None:
+            ax3.set_xlim(xlim_eaf)
 
     if snpvar_panel==True:
         ax3.barh(y=to_plot[y], width=to_plot[snpr2], zorder=100,**snpr2_args)
         ax3.set_xlabel(snpr2, fontsize=fontsize, family=font_family)
-    
+        if xlim_snpr2 is not None:
+            ax3.set_xlim(xlim_snpr2)
     #try:
     if legend_mode==1:
         #if ncols==1:
@@ -273,6 +289,12 @@ def _plot_effect(to_plot,
     #    for legend_row in legend_rows[:-1]:
     #        ax1.add_artist(legend_row)
 
+
+
+    ax1.tick_params(axis='x', 
+                        labelsize=fontsize,
+                        labelfontfamily=font_family) 
+    
     if effect_label is not None:
         ax1.set_xlabel(effect_label, fontsize=fontsize, family=font_family)
         ax1.tick_params(axis='x', 

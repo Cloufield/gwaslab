@@ -178,8 +178,7 @@ class Sumstats():
         self.meta["gwaslab"]["study_name"] =  study
         self.meta["gwaslab"]["species"] = species
         
-        self.id = id(self)
-        self.tmp_path = _path(pid=self.id)
+
         
         # initialize attributes for clumping and finmapping
         #self.to_finemapping_file_path = ""
@@ -265,6 +264,9 @@ class Sumstats():
             except:
                 pass
         gc.collect()   
+        
+        self.id = id(self)
+        self.tmp_path = _path(pid=self.id, log = self.log, verbose=verbose)
 
 #### healper #################################################################################
     def update_meta(self, **kwargs):
