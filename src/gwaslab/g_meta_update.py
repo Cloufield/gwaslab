@@ -1,5 +1,5 @@
 import numpy as np
-from gwaslab.util_in_filter_value import inferbuild
+from gwaslab.util.util_in_filter_value import inferbuild
 from gwaslab.g_Log import Log
 import time
 

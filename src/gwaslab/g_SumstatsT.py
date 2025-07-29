@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
 from gwaslab.g_Sumstats import Sumstats
-from gwaslab.hm_casting import _merge_mold_with_sumstats_by_chrpos
-from gwaslab.hm_casting import _align_with_mold
-from gwaslab.hm_casting import _fill_missing_columns
-from gwaslab.hm_casting import _check_daf
+from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
+from gwaslab.hm.hm_casting import _align_with_mold
+from gwaslab.hm.hm_casting import _fill_missing_columns
+from gwaslab.hm.hm_casting import _check_daf
+from gwaslab.hm.hm_casting import _assign_warning_code
 
-from gwaslab.hm_casting import _assign_warning_code
-from gwaslab.qc_fix_sumstats import flipallelestats
+from gwaslab.qc.qc_fix_sumstats import flipallelestats
 
 
 class SumstatsT( ):

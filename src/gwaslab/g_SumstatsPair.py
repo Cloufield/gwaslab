@@ -2,36 +2,42 @@ import pandas as pd
 import numpy as np
 import copy
 import gc
-from gwaslab.util_in_filter_value import filtervalues
-from gwaslab.g_Log import Log
 from math import floor
-from gwaslab.g_Sumstats import Sumstats
-from gwaslab.hm_casting import _merge_mold_with_sumstats_by_chrpos
-from gwaslab.hm_casting import _align_with_mold
-from gwaslab.hm_casting import _fill_missing_columns
-from gwaslab.hm_casting import _check_daf
-from gwaslab.hm_casting import _assign_warning_code
-from gwaslab.qc_fix_sumstats import flipallelestats
-from gwaslab.qc_check_datatype import check_datatype
-from gwaslab.qc_check_datatype import check_dataframe_shape
-from gwaslab.hm_casting import _renaming_cols
-from gwaslab.hm_casting import _sort_pair_cols
-from gwaslab.util_ex_calculate_ldmatrix import tofinemapping
-from gwaslab.util_ex_run_coloc import _run_coloc_susie
-from gwaslab.viz_plot_miamiplot2 import plot_miami2
-from gwaslab.viz_plot_compare_af import  plotdaf
-from gwaslab.util_ex_run_2samplemr import _run_two_sample_mr
-from gwaslab.util_ex_run_clumping import _clump
-from gwaslab.util_ex_ldproxyfinder import _extract_with_ld_proxy
-from gwaslab.g_headers import _get_headers
-from gwaslab.util_ex_match_ldmatrix import tofinemapping_m
-from gwaslab.util_ex_run_mesusie import _run_mesusie
-from gwaslab.io_read_pipcs import _read_pipcs
+
 from gwaslab.g_meta import _init_meta
-from gwaslab.viz_plot_stackedregional import plot_stacked_mqq
-from gwaslab.util_ex_run_ccgwas import _run_ccgwas
-from gwaslab.io_to_pickle import _offload
-from gwaslab.io_to_pickle import _reload
+from gwaslab.g_headers import _get_headers
+from gwaslab.g_Log import Log
+from gwaslab.g_Sumstats import Sumstats
+
+from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
+from gwaslab.hm.hm_casting import _align_with_mold
+from gwaslab.hm.hm_casting import _fill_missing_columns
+from gwaslab.hm.hm_casting import _check_daf
+from gwaslab.hm.hm_casting import _assign_warning_code
+from gwaslab.hm.hm_casting import _renaming_cols
+from gwaslab.hm.hm_casting import _sort_pair_cols
+
+from gwaslab.qc.qc_fix_sumstats import flipallelestats
+from gwaslab.qc.qc_check_datatype import check_datatype
+from gwaslab.qc.qc_check_datatype import check_dataframe_shape
+
+from gwaslab.util.util_ex_calculate_ldmatrix import tofinemapping
+from gwaslab.util.util_ex_run_coloc import _run_coloc_susie
+from gwaslab.util.util_ex_run_ccgwas import _run_ccgwas
+from gwaslab.util.util_ex_run_2samplemr import _run_two_sample_mr
+from gwaslab.util.util_ex_run_clumping import _clump
+from gwaslab.util.util_ex_ldproxyfinder import _extract_with_ld_proxy
+from gwaslab.util.util_ex_match_ldmatrix import tofinemapping_m
+from gwaslab.util.util_ex_run_mesusie import _run_mesusie
+from gwaslab.util.util_in_filter_value import filtervalues
+
+from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq
+from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
+from gwaslab.viz.viz_plot_compare_af import  plotdaf
+
+from gwaslab.io.io_to_pickle import _offload
+from gwaslab.io.io_to_pickle import _reload
+from gwaslab.io.io_read_pipcs import _read_pipcs
 
 class SumstatsPair( ):
     def __init__(self, sumstatsObject1, sumstatsObject2, study=None, suffixes = ("_1","_2") ,verbose=True ):
