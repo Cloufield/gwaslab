@@ -2,6 +2,7 @@ import re
 import pandas as pd
 import numpy as np
 from os import path
+from pathlib import Path
 
 from gwaslab.g_Log import Log
 from gwaslab.g_vchange_status import vchange_status
@@ -246,8 +247,10 @@ def inferbuild(sumstats,status="STATUS",chrom="CHR", pos="POS",
 
     inferred_build="Unknown"
     log.write("Start to infer genome build version using hapmap3 SNPs...", verbose=verbose)    
-    data_path_19 =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db150_hg19.snplist.gz'    
-    data_path_38 =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db151_hg38.snplist.gz'    
+
+    data_path_19 = path.join( Path(__file__).parents[1], "data","hapmap3_SNPs","hapmap3_db150_hg19.snplist.gz")
+    data_path_38 = path.join( Path(__file__).parents[1], "data","hapmap3_SNPs","hapmap3_db151_hg38.snplist.gz")
+
     log.write(" -Loading Hapmap3 variants data...", verbose=verbose)        
     hapmap3_ref_19 = pd.read_csv(data_path_19,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})
     hapmap3_ref_38 = pd.read_csv(data_path_38,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})
