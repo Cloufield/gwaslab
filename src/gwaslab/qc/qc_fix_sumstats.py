@@ -1158,12 +1158,11 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
         if dtype in ["Int64","Int32","int","int32","in64"]:
             log.write(" -Checking if {} <= {} <= {} ...".format( var_range[0] ,header, var_range[1]), verbose=verbose) 
             sumstats[header] = np.floor(pd.to_numeric(sumstats[header], errors='coerce')).astype(dtype)
-        
+            is_valid = (sumstats[header]>=var_range[0]) & (sumstats[header]<=var_range[1])
         elif dtype in ["Float64","Float32","float","float64","float32"]:
             log.write(" -Checking if {} < {} < {} ...".format( var_range[0] ,header, var_range[1]),verbose=verbose) 
             sumstats[header] = pd.to_numeric(sumstats[header], errors='coerce').astype(dtype)
-        
-        is_valid = (sumstats[header]>=var_range[0]) & (sumstats[header]<=var_range[1])
+            is_valid = (sumstats[header]>var_range[0]) & (sumstats[header]<var_range[1])
         is_valid = is_valid.fillna(False)
 
         if header=="P":
