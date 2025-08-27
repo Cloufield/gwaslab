@@ -566,24 +566,24 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         pre_number =len(sumstats) 
         specified_columns = []
         if "d" in mode:
-            specified_columns.append(rsid)
-            specified_columns.append(snpid)
-            specified_columns.append(chrom)
-            specified_columns.append(pos)
-            specified_columns.append(ea)
-            specified_columns.append(nea)
+            if rsid in sumstats.columns: specified_columns.append(rsid)
+            if snpid in sumstats.columns: specified_columns.append(snpid)
+            if chrom in sumstats.columns: specified_columns.append(chrom)
+            if pos in sumstats.columns: specified_columns.append(pos)
+            if ea in sumstats.columns: specified_columns.append(ea)
+            if nea in sumstats.columns: specified_columns.append(nea)
         if "r" in mode:
-            specified_columns.append(rsid)
+            if rsid in sumstats.columns:specified_columns.append(rsid)
         if "s" in mode:
-            specified_columns.append(snpid)
+            if snpid in sumstats.columns:specified_columns.append(snpid)
         if "m" in mode:
-            specified_columns.append(chrom)
-            specified_columns.append(pos)
+            if chrom in sumstats.columns:specified_columns.append(chrom)
+            if pos in sumstats.columns:specified_columns.append(pos)
         if "c" in mode:
-            specified_columns.append(chrom)
-            specified_columns.append(pos)
-            specified_columns.append(ea)
-            specified_columns.append(nea)
+            if chrom in sumstats.columns:specified_columns.append(chrom)
+            if pos in sumstats.columns:specified_columns.append(pos)
+            if ea in sumstats.columns:specified_columns.append(ea)
+            if nea in sumstats.columns:specified_columns.append(nea)
         sumstats = sumstats.loc[~sumstats[specified_columns].isna().any(axis=1),:]
         after_number=len(sumstats) 
         log.write(" -Removed ",pre_number -after_number," variants with NA values in {} .".format(set(specified_columns)), verbose=verbose)  

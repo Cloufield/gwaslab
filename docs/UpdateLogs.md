@@ -3,8 +3,12 @@
 # 3.6.7 
 - fixed error for `compare_effect()` when creating legend title
 - fixed error for changing STATUS in some cases
+- fixed error in `.remove_dup` when columns are missing
 - added checking for NA strings in `fix_id()`
 - added path manager
+- added support for NEA from formatbook
+- rearranged package structure
+- Make int columns inclusive of range ends and float columns exclusive of range ends. (credit to @jhchung)
 
 # 3.6.6 20250704
 - fixed error in to_format() when CHR is not required.

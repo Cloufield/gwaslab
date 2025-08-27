@@ -414,7 +414,7 @@ def preformat(sumstats,
     sumstats = process_allele(sumstats=sumstats,log=log,verbose=verbose)
         
     ## NEAF to EAF ###########################################################################################################
-    if neaf is not None :
+    if neaf is not None or ("NEAF" in sumstats.columns and "EAF" not in sumstats.columns):
         sumstats = process_neaf(sumstats=sumstats,log=log,verbose=verbose)
 
     ## reodering ###################################################################################################  
@@ -524,9 +524,15 @@ def process_neaf(sumstats,log,verbose):
     log.write(" -NEAF is specified...",verbose=verbose) 
     pre_number=len(sumstats)
     log.write(" -Checking if 0<= NEAF <=1 ...",verbose=verbose) 
-    sumstats["EAF"] = pd.to_numeric(sumstats["EAF"], errors='coerce')
-    sumstats = sumstats.loc[(sumstats["EAF"]>=0) & (sumstats["EAF"]<=1),:]
-    sumstats["EAF"] = 1- sumstats["EAF"]
+    if "NEAF" in sumstats.columns:
+        sumstats["NEAF"] = pd.to_numeric(sumstats["NEAF"], errors='coerce')
+        sumstats = sumstats.loc[(sumstats["NEAF"]>=0) & (sumstats["NEAF"]<=1),:]
+        sumstats["EAF"] = 1- sumstats["NEAF"]
+        sumstats.drop(columns=["NEAF"], inplace=True)
+    else:
+        sumstats["EAF"] = pd.to_numeric(sumstats["EAF"], errors='coerce')
+        sumstats = sumstats.loc[(sumstats["EAF"]>=0) & (sumstats["EAF"]<=1),:]
+        sumstats["EAF"] = 1- sumstats["EAF"]
     log.write(" -Converted NEAF to EAF.",verbose=verbose) 
     after_number=len(sumstats)
     log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.",verbose=verbose) 
