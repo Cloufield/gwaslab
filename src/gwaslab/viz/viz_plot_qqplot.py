@@ -39,6 +39,8 @@ def _plot_qq(
     linewidth,
     ytick3,
     ylabels,
+    xlabels,
+    xlim,
     ylabels_converted,
     qq_scatter_args,
     expected_min_mlog10p,
@@ -155,32 +157,12 @@ def _plot_qq(
                         log=log,
                         verbose=verbose
                         )
-
-    #if cut == 0: 
-    #    ax2.set_ylim(skip, ceil(maxy*1.2) )
-    #    
-    #if cut:
-    #    qcutline = ax2.axhline(y=cut, linewidth = linewidth, linestyle="--",color=cut_line_color,zorder=1)
-    #    step=2
-    #    if ((maxticker-cut)/cutfactor + cut) > cut:
-    #        if ystep == 0:
-    #            if (cut - skip ) // step > 10:
-    #                step = (cut - skip ) // 10
-    #        else:
-    #            step = ystep
-#
-    #        ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut]+[(maxticker-cut)/cutfactor + cut])
-    #        ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut]+[maxticker],fontsize=fontsize,family=font_family)
-    #    else:
-    #        if ystep == 0:
-    #            if (cut - skip ) // step > 10:
-    #                step = (cut - skip ) // 10
-    #        else:
-    #            step = ystep
-#
-    #        ax2.set_yticks([x for x in range(skip,cut-step,step)]+[cut])
-    #        ax2.set_yticklabels([x for x in range(skip,cut-step,step)]+[cut],fontsize=fontsize,family=font_family)
-    #    ax2.set_ylim(bottom = skip)
+    if xlim is not None:
+        ax2.set_xlim(xlim)
+        
+    if xlabels is not None:
+        ax2.set_xticks(xlabels)
+        ax2.set_xticklabels(xlabels,fontsize=fontsize,family=font_family)
 
     ax2.tick_params(axis='both', which='both', labelsize=fontsize,labelfontfamily=font_family)
     #
