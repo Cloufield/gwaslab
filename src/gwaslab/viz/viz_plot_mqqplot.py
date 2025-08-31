@@ -204,6 +204,8 @@ def mqqplot(insumstats,
           highlight_color="#CB132D",
           highlight_windowkb = 500,
           highlight_anno_args = None,
+          highlight_lim = None,
+          highlight_lim_mode = "absolute",
           pinpoint= None,
           pinpoint_color ="red",
           stratified=False,
@@ -531,6 +533,8 @@ def mqqplot(insumstats,
                                                     highlight=highlight, 
                                                     highlight_chrpos=highlight_chrpos, 
                                                     highlight_windowkb=highlight_windowkb, 
+                                                    highlight_lim = highlight_lim, 
+                                                    highlight_lim_mode = highlight_lim_mode,
                                                     snpid=snpid, 
                                                     chrom=chrom, 
                                                     pos=pos)
@@ -1335,19 +1339,38 @@ def _process_p_value(sumstats, mode,p, mlog10p, scaled, log, verbose ):
 
     return sumstats
 
-def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb, snpid, chrom, pos):
+def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb,  highlight_lim,  highlight_lim_mode, snpid, chrom, pos):
         if pd.api.types.is_list_like(highlight[0]):
             if highlight_chrpos == False:
                 # highlight for multiple sets
                 for i, highlight_set in enumerate(highlight):
                     to_highlight = sumstats.loc[sumstats[snpid].isin(highlight_set),:]
                     #assign colors: 0 is hightlight color
-                    for index,row in to_highlight.iterrows():
+                    #assign colors: i is highlight color
+                    for j, (index, row) in enumerate(to_highlight.iterrows()):
                         target_chr = int(row[chrom])
                         target_pos = int(row[pos])
                         right_chr=sumstats[chrom]==target_chr
-                        up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
-                        low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
+                        # Check if highlight_lim is provided for this group and SNP
+                        if (highlight_lim is not None and 
+                            i < len(highlight_lim) and 
+                            j < len(highlight_lim[i]) and 
+                            highlight_lim[i][j] is not None):
+                            # Use custom limits for this SNP
+                            if highlight_lim_mode == "absolute":
+                                # Absolute positions: (start_pos, end_pos)
+                                start_pos, end_pos = highlight_lim[i][j]
+                                up_pos = sumstats[pos] >= start_pos
+                                low_pos = sumstats[pos] <= end_pos
+                            else:
+                                # Offset mode: (lower_kb, upper_kb) relative to SNP position
+                                lower_kb, upper_kb = highlight_lim[i][j]
+                                up_pos = sumstats[pos] > target_pos + lower_kb * 1000
+                                low_pos = sumstats[pos] < target_pos + upper_kb * 1000
+                        else:
+                            # Use default highlight_windowkb
+                            up_pos = sumstats[pos] > target_pos - highlight_windowkb * 1000
+                            low_pos = sumstats[pos] < target_pos + highlight_windowkb * 1000
                         sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i
             else:
                 for i, highlight_chrpos_tuple in enumerate(highlight):
@@ -1371,13 +1394,30 @@ def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb
         else:
             # highlight for one set
             to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
-            #assign colors: 0 is hightlight color
-            for index,row in to_highlight.iterrows():
+            #assign colors: 0 is highlight color
+            for j, (index, row) in enumerate(to_highlight.iterrows()):
                 target_chr = int(row[chrom])
                 target_pos = int(row[pos])
                 right_chr=sumstats[chrom]==target_chr
-                up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
-                low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
+                # Check if highlight_lim is provided for this SNP
+                if (highlight_lim is not None and 
+                    j < len(highlight_lim) and 
+                    highlight_lim[j] is not None):
+                    # Use custom limits for this SNP
+                    if highlight_lim_mode == "absolute":
+                        # Absolute positions: (start_pos, end_pos)
+                        start_pos, end_pos = highlight_lim[j]
+                        up_pos = sumstats[pos] >= start_pos
+                        low_pos = sumstats[pos] <= end_pos
+                    else:
+                        # Offset mode: (lower_kb, upper_kb) relative to SNP position
+                        lower_kb, upper_kb = highlight_lim[j]
+                        up_pos = sumstats[pos] > target_pos + lower_kb * 1000
+                        low_pos = sumstats[pos] < target_pos + upper_kb * 1000
+                else:
+                    # Use default highlight_windowkb
+                    up_pos = sumstats[pos] > target_pos - highlight_windowkb * 1000
+                    low_pos = sumstats[pos] < target_pos + highlight_windowkb * 1000
                 sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0
         return sumstats
 
