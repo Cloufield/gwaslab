@@ -7,6 +7,11 @@ def _extract_associations(sumstats, rsid="rsID", log = Log(), verbose=True):
 
     assoc, traits, studies, variants = get_associations_from_gwascatalog(sumstats, rsid=rsid, log=log, verbose=verbose)
     
+    if len(assoc)==0:
+        # if no associations
+        log.write("No associations!")
+        return None, None
+    
     assoc = _fix_beta(assoc)
 
     traits_agg = traits.groupby("associationId")[["trait","shortForm"]].agg(lambda x: ",".join(x)).reset_index()
@@ -14,7 +19,7 @@ def _extract_associations(sumstats, rsid="rsID", log = Log(), verbose=True):
     assoc_traits_agg= pd.merge(assoc, traits_agg, on ="associationId",how="left")
     
     assoc_traits_agg= pd.merge(assoc_traits_agg, studies, on ="associationId", how="left")
-
+    
     assoc_traits_agg= pd.merge(assoc_traits_agg, variants, on ="associationId",how="left")
     
     assoc_traits_agg = assoc_traits_agg.rename(columns={"trait":"GWASCATALOG_TRAIT",
@@ -101,7 +106,12 @@ def get_associations_from_gwascatalog(sumstats, rsid="rsID", log=Log(), verbose=
     return association, traits, studies, variants
 
 def _fix_beta(association):
-
+    if "betaNum" not in association:
+        association["betaNum"] = pd.NA
+    if "orPerCopyNum" not in association:
+        association["orPerCopyNum"] = pd.NA
+    if "range" not in association:
+        association["range"] = pd.NA
     is_or_available = (association["betaNum"].isna()) & (~association["orPerCopyNum"].isna())
     is_range_available = (association["betaNum"].isna()) & (association["orPerCopyNum"].isna()) & (~association["range"].isna())
 

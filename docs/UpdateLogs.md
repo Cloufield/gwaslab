@@ -1,6 +1,11 @@
 # Update Logs
 
-# 3.6.7 
+# 3.5.8 20250902
+- added `qq_xlabels` and `qq_xlim` for `.plot_mqq(m="qq")`
+- added `highlight_lim` and `highlight_lim_mode` to accept different upper and lower bounds of the loci for highlighting in `.plot_mqq`
+- fixed errors in `.get_associations()`
+
+# 3.6.7 20250827
 - fixed error for `compare_effect()` when creating legend title
 - fixed error for changing STATUS in some cases
 - fixed error in `.remove_dup` when columns are missing
