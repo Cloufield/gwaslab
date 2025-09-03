@@ -102,7 +102,7 @@ from gwaslab.viz.viz_plot_mqqplot import mqqplot
 from gwaslab.viz.viz_plot_trumpetplot import plottrumpet
 from gwaslab.viz.viz_plot_compare_af import plotdaf
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
-
+from gwaslab.viz.viz_plot_associations import _plot_associations
 from gwaslab.io.io_read_pipcs import _read_pipcs
 from gwaslab.io.io_load_ld import tofinemapping_using_ld
 from gwaslab.io.io_preformat_input import preformat
@@ -811,6 +811,9 @@ class Sumstats():
         self.associations = associations_full
         
         return associations_summary
+    def plot_associations(self,**kwargs):
+
+        _plot_associations(self.associations, **kwargs)
 
     def check_cis(self, gls=False, **kwargs):
         if "SNPID" in self.data.columns:
