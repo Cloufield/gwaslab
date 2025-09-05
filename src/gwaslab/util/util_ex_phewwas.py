@@ -25,14 +25,18 @@ def _extract_associations(sumstats, rsid="rsID", log = Log(), verbose=True):
     assoc_traits_agg = assoc_traits_agg.rename(columns={"trait":"GWASCATALOG_TRAIT",
                                                         "riskFrequency":"RAF",
                                                         "betaNum":"Beta",
-                                                        "pvalue":"P-value"
+                                                        "pvalue":"P-value",
+                                                        "betaUnit":"Unit"
                                                         })
     
     summary_columns=['GWASCATALOG_TRAIT','associationId', 'rsID', "geneName", 
-                     'RA', 'RAF','Beta', 'P-value','cohort','initialSampleSize','publicationInfo.pubmedId',
+                     'RA', 'RAF','Beta',"Unit", 'P-value','cohort','initialSampleSize','publicationInfo.pubmedId',
                      "functionalClass","gene.geneName"]
     
     assoc_traits_agg_summary = assoc_traits_agg[summary_columns]
+
+    assoc_traits_agg_summary = _align_beta(sumstats, assoc_traits_agg_summary, log, verbose)
+    assoc_traits_agg = _align_beta(sumstats, assoc_traits_agg, log, verbose)
 
     return assoc_traits_agg, assoc_traits_agg_summary
 
@@ -125,3 +129,41 @@ def parse_range(x):
     low = np.log(range_list[0])
     beta = (high + low)/2
     return beta
+
+def _align_beta(sumstats, assoc_traits_agg_summary, log, verbose):
+    # merge with sumstats
+    log.write("Merging GWAS Catalog associationms with Sumstats...",)
+    assoc_traits_agg_summary = pd.merge(sumstats[["rsID","CHR","POS","EA","NEA","BETA"]], assoc_traits_agg_summary, on = "rsID", how="inner")
+    # check direction 
+    assoc_traits_agg_summary["GC_Beta_GL_RA"] = np.nan
+    assoc_traits_agg_summary["GC_Beta_GL_EA"] = np.nan
+
+    # get sumstats RA
+    assoc_traits_agg_summary["_GL_RA_BETA"] = assoc_traits_agg_summary["BETA"].abs()
+    assoc_traits_agg_summary["_GL_RA"] = assoc_traits_agg_summary["EA"]
+    assoc_traits_agg_summary["_GL_NRA"] = assoc_traits_agg_summary["NEA"]
+    is_GL_RA_flipped = assoc_traits_agg_summary["BETA"]<0
+    assoc_traits_agg_summary.loc[is_GL_RA_flipped, "_GL_RA"] = assoc_traits_agg_summary.loc[is_GL_RA_flipped, "NEA"]
+    assoc_traits_agg_summary.loc[is_GL_RA_flipped, "_GL_NRA"] = assoc_traits_agg_summary.loc[is_GL_RA_flipped, "EA"]
+    
+    is_matched = assoc_traits_agg_summary["_GL_RA"] == assoc_traits_agg_summary["RA"]
+    log.write(" -GL_RA matched RA for {} variants ".format(sum(is_matched)), verbose=verbose)
+    assoc_traits_agg_summary.loc[is_matched, "GC_Beta_GL_RA"] = assoc_traits_agg_summary.loc[is_matched, "Beta"]
+    
+    is_flipped = assoc_traits_agg_summary["_GL_NRA"] == assoc_traits_agg_summary["RA"]
+    log.write(" -GL_NRA matched RA for {} variants... Aligning with Sumstats Risk allele (BETA>0) in GC_Beta_GL_RA... ".format(sum(is_flipped)), verbose=verbose)
+    assoc_traits_agg_summary.loc[is_flipped, "GC_Beta_GL_RA"] = - assoc_traits_agg_summary.loc[is_flipped, "Beta"]
+
+    is_matched = assoc_traits_agg_summary["EA"] == assoc_traits_agg_summary["RA"]
+    log.write(" -EA matched RA for {} variants ".format(sum(is_matched)), verbose=verbose)
+    assoc_traits_agg_summary.loc[is_matched, "GC_Beta_GL_EA"] = assoc_traits_agg_summary.loc[is_matched, "Beta"]
+    
+    is_flipped = assoc_traits_agg_summary["NEA"] == assoc_traits_agg_summary["RA"]
+    log.write(" -NEA matched RA for {} variants... Aligning with Sumstats Risk allele (BETA>0) in GC_Beta_GL_RA... ".format(sum(is_flipped)), verbose=verbose)
+    assoc_traits_agg_summary.loc[is_flipped, "GC_Beta_GL_EA"] = - assoc_traits_agg_summary.loc[is_flipped, "Beta"]
+
+    not_match = (assoc_traits_agg_summary["_GL_RA"] != assoc_traits_agg_summary["RA"])& (assoc_traits_agg_summary["_GL_NRA"] != assoc_traits_agg_summary["RA"])
+    log.write(" -NEA and EA not matching RA for {} variants... ".format(sum(not_match)), verbose=verbose)
+
+
+    return assoc_traits_agg_summary
