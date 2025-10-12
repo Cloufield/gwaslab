@@ -1,5 +1,8 @@
 # Update Logs
 
+# 3.6.9 20250902
+- fixed wrong version numbers
+
 # 3.6.8 20250902
 - added `qq_xlabels` and `qq_xlim` for `.plot_mqq(m="qq")`
 - added `highlight_lim` and `highlight_lim_mode` to accept different upper and lower bounds of the loci for highlighting in `.plot_mqq`
