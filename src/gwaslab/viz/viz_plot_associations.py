@@ -33,8 +33,8 @@ def _plot_associations(associations,
     associations = associations.dropna(subset=[values])
     log.write(f" -Keeping associations without NA in {values} :{len(associations)} ", verbose=verbose)
 
-    log.write(f" -Total number of unique variants for plotting :{associations["rsID"].nunique()} ", verbose=verbose)
-    log.write(f" -Total number of unique traits for plotting:{associations["GWASCATALOG_TRAIT"].nunique()} ", verbose=verbose)
+    log.write(f" -Total number of unique variants for plotting :{associations['rsID'].nunique()} ", verbose=verbose)
+    log.write(f" -Total number of unique traits for plotting:{associations['GWASCATALOG_TRAIT'].nunique()} ", verbose=verbose)
 
     matrix_beta = associations.pivot_table(index=['rsID','gene.geneName'], 
                                     columns='GWASCATALOG_TRAIT', 
