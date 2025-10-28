@@ -32,3 +32,15 @@ class Log():
         else:
             if verbose: print(*message,end=end)
             self.log_text = self.log_text + " ".join(map(str,message)) + end
+
+    def get_log_for_last_operation(self):
+        last_log = []
+        rows = self.log_text.strip().split("\n")
+
+        # Iterate backwards to find the last operation
+        for line in reversed(rows):
+            last_log.append(line)
+            if "Start to" in line:
+                break
+
+        return "".join(reversed(last_log))

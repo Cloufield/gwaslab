@@ -695,7 +695,8 @@ class Sumstats():
         return fig, outliers
     
     def infer_ancestry(self, **kwargs):
-        self.meta["gwaslab"]["inferred_ancestry"] = _infer_ancestry(self.data, **kwargs)
+        self.meta["gwaslab"]["inferred_ancestry"] = _infer_ancestry(self.data, log=self.log,
+                                                                    **kwargs)
 
     def plot_gwheatmap(self, **kwargs):
         fig = _gwheatmap(self.data, **kwargs)
