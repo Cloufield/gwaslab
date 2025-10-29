@@ -296,7 +296,7 @@ def mqqplot(insumstats,
             region_ref.append(region_ref_second)
     region_ref_index_dic = {value: index for index,value in enumerate(region_ref)}
         
-    taf = _update_args(taf, [track_n,track_n_offset,track_fontsize_ratio,track_exon_ratio,track_text_offset])
+    taf = _update_arg(taf, [track_n,track_n_offset,track_fontsize_ratio,track_exon_ratio,track_text_offset])
     region_marker_shapes = _update_arg(region_marker_shapes, ['o', '^','s','D','*','P','X','h','8'])
     region_grid_line = _update_args(region_grid_line,  {"linewidth": 2,"linestyle":"--"})
     region_lead_grid_line = _update_args(region_lead_grid_line, {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"})
