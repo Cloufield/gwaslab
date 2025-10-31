@@ -170,10 +170,11 @@ def plottrumpet(mysumstats,
             cols_to_use.append(chrom) if chrom not in cols_to_use else cols_to_use
 
     if size != "ABS_BETA":
-        if size not in cols_to_use:
+        if size is not None and size not in cols_to_use:
             cols_to_use.append(size)
     if "hue" in scatter_args.keys():
-        cols_to_use.append(scatter_args["hue"]) 
+        if scatter_args["hue"] not in cols_to_use:
+            cols_to_use.append(scatter_args["hue"]) 
     #filter by p #################################################################################################################
     if p in mysumstats.columns:
         sumstats = mysumstats.loc[mysumstats[p]< p_level,cols_to_use ].copy()
@@ -287,7 +288,10 @@ def plottrumpet(mysumstats,
     sumstats["ABS_BETA"] = sumstats[beta].abs()
 
     ##################################################################################################
-    size_norm = (sumstats[size].min(), sumstats[size].max())
+    if size is None:
+        size_norm = None
+    else:
+        size_norm = (sumstats[size].min(), sumstats[size].max())
     ## if highlight  ##################################################################################################
 
     log.write(" -Creating scatter plot...", verbose=verbose)
@@ -389,15 +393,30 @@ def plottrumpet(mysumstats,
     
     #second_legend = ax.legend(title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
     log.write(" -Creating legends...")
+    # curve, size,  hue
     h,l = ax.get_legend_handles_labels()
+    
     if len(ts)>0:
+        # power curves
         l1 = ax.legend(h[:int(len(ts))],l[:int(len(ts))], title="Power", loc="upper right",fontsize =fontsize,title_fontsize=fontsize)
         for line in l1.get_lines():
             line.set_linewidth(5.0)
-    if hue is None:
-        l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=None, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
+    ## hue
+    if hue is not None or size is not None:
+    #    # sizes
+        if hue is None and size is not None:
+            hue_size_legend_title = size
+        elif hue is not None and size is None:
+            hue_size_legend_title = hue
+        else:
+            hue_size_legend_title = None
+        l2 = ax.legend(h[int(len(ts)):],l[int(len(ts)):], title=hue_size_legend_title, loc="lower right",fontsize =fontsize,title_fontsize=fontsize)
+    
+    ## hue
     if len(ts)>0:
         ax.add_artist(l1)
+    if hue is not None or size is not None:
+        ax.add_artist(l2)
     #first_legend = ax.legend(handles=dots, loc="lower right" ,title=size,fontsize =fontsize,title_fontsize=fontsize)
     #ax.add_artist(first_legend)
     ##################################################################################################
@@ -780,17 +799,31 @@ def plot_power_x(
                 log=Log()):
     
     #Checking columns#################################################################################################################
+    """
+    Create power cure with user-specified x axis
+    q mode:
+        N
+        MAF
+    b mode:
+        N_CASE
+        N_CONTROL
+        PREVALENCE
+    BETA
+    """
+
     log.write("Start to create power plot...", verbose=verbose)
     matplotlib.rc('font', family=font_family)
 
     log.write(" -Settings:", verbose=verbose)
     log.write("  -Mode: {}".format(mode), verbose=verbose)
+    
     if mode == "q" :
         log.write("  -X axis: {}".format(x), verbose=verbose)
         if x!="N":
             log.write("  -N: {}".format(ns), verbose=verbose)
         if x!="MAF":
             log.write("  -MAF: {}".format(mafs), verbose=verbose)
+
     if mode == "b" :
         log.write("  -X axis: {}".format(x), verbose=verbose)
         if x!="N_CASE":
@@ -846,8 +879,11 @@ def plot_power_x(
         prevalence_range = np.linspace(0.01,0.99,n_matrix)
     else:
         prevalence_range = np.linspace(prevalence_range[0],prevalence_range[1],n_matrix)
-    #configure power threshold###################################################################################################
     
+    
+    #configure power threshold###################################################################################################
+    # for hue
+    # which is the variable
     if type(ns) is list:
         var_to_change = ns
         legend_title = "N"
@@ -895,12 +931,13 @@ def plot_power_x(
     ##creating power line############################################################################################
     if mode=="q":
         for i,value in enumerate(var_to_change):
-            
+            # iterate through variables
             n = ns
             beta = betas
             maf = mafs
             sig_level = sig_levels
             
+            # update the variable
             if legend_title == "BETA":
                 beta = value
             elif legend_title == "MAF":
@@ -910,7 +947,7 @@ def plot_power_x(
             elif legend_title == "Significance level":
                 sig_level = value
 
-
+            # update X
             if x == "N":
                 x_values = n_range
                 n = x_values

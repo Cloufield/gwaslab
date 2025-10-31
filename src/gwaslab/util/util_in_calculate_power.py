@@ -27,17 +27,19 @@ def get_power(
         log.write("  -Number of cases:{}".format(ncase), verbose=verbose)
         log.write("  -Number of controls:{}".format(ncontrol), verbose=verbose)
         if genotype_rr is not None:
-            log.write("  -Risk allele RR:{:.3f}".format(genotype_rr), verbose=verbose)
+            log.write("  -Risk allele RR:{}".format(genotype_rr), verbose=verbose)
         elif genotype_or is not None:
-            log.write("  -Risk allele OR:{:.3f}".format(genotype_or), verbose=verbose)
+            log.write("  -Risk allele OR:{}".format(genotype_or), verbose=verbose)
         elif beta is not None:
-            log.write("  -Risk allele beta:{:.3f}".format(beta), verbose=verbose)
+            log.write("  -Risk allele beta:{}".format(beta), verbose=verbose)
         else:
             genotype_rr = 0.1
-            log.write("  -Risk allele RR:{:.3f}".format(genotype_rr), verbose=verbose)
-        log.write("  -Disease prevalence:{:.3f}".format(prevalence), verbose=verbose)
-        log.write("  -Risk allele frequency: {:.3f}".format(daf), verbose=verbose)
-        log.write("  -Significance level: {:.3e}".format(sig_level), verbose=verbose)
+            log.write("  -Risk allele RR:{}".format(genotype_rr), verbose=verbose)
+
+        log.write("  -Disease prevalence:{}".format(prevalence), verbose=verbose)
+        log.write("  -Risk allele frequency: {}".format(daf), verbose=verbose)
+        log.write("  -Significance level: {}".format(sig_level), verbose=verbose)
+        
         # Skol, A. D., Scott, L. J., Abecasis, G. R., & Boehnke, M. (2006). Joint analysis is more efficient than replication-based analysis for two-stage genome-wide association studies. Nature genetics, 38(2), 209-213.
         aaf = daf**2
         abf = 2 * (daf) * (1 - daf)
@@ -68,9 +70,9 @@ def get_power(
         abp= x[1] * prevalence / (x[0]*aaf + x[1]*abf + x[2]*bbf)
         bbp= x[2] * prevalence / (x[0]*aaf + x[1]*abf + x[2]*bbf)
         log.write("Probability of disease :", verbose=verbose)
-        log.write(" - Individuals with AA genotype: {:.3f}".format(aap), verbose=verbose)
-        log.write(" - Individuals with AB genotype: {:.3f}".format(abp), verbose=verbose)
-        log.write(" - Individuals with BB genotype: {:.3f}".format(bbp), verbose=verbose)
+        log.write(" - Individuals with AA genotype: {}".format(aap), verbose=verbose)
+        log.write(" - Individuals with AB genotype: {}".format(abp), verbose=verbose)
+        log.write(" - Individuals with BB genotype: {}".format(bbp), verbose=verbose)
         
         pcase= (aap * aaf + abp * abf*0.5) / prevalence
         pcontrol=((1-aap )* aaf + (1-abp )* abf*0.5) / (1 - prevalence)
@@ -78,16 +80,19 @@ def get_power(
         vcase = pcase *(1-pcase)
         vcontrol =pcontrol *(1-pcontrol)
         log.write("Expected risk allele frequency:", verbose=verbose)
-        log.write(" - In cases: {:.3f}".format(pcase), verbose=verbose)
-        log.write(" - In controls: {:.3f}".format(pcontrol), verbose=verbose)
+        log.write(" - In cases: {}".format(pcase), verbose=verbose)
+        log.write(" - In controls: {}".format(pcontrol), verbose=verbose)
 
         num= (pcase - pcontrol)
-        den= np.sqrt( (vcase/ncase +  vcontrol/ncontrol)*0.5 )
+        for_sqrt = (vcase/ncase +  vcontrol/ncontrol)*0.5
+        if np.iterable(for_sqrt):
+            for_sqrt[for_sqrt < 0] = np.nan
+        den= np.sqrt( for_sqrt )
         u = num / den
 
         c = ss.norm.isf(sig_level/2)
         power = 1 - ss.norm.cdf(c-u) + ss.norm.cdf(-c-u)
-        log.write("Expected power: {:.3f}".format(power), verbose=verbose)
+        log.write("Expected power: {}".format(power), verbose=verbose)
 
     elif mode=="q":
         if beta is None:
