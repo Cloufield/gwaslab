@@ -112,6 +112,7 @@ from gwaslab.io.io_to_pickle import _reload
 
 #20220309
 class Sumstats():
+    
     def __init__(self,
              sumstats=None,
              fmt=None,
@@ -274,6 +275,10 @@ class Sumstats():
         self.id = id(self)
         self.tmp_path = _path(pid=self.id, log = self.log, verbose=verbose)
 
+    def __getitem__(self, index):
+        return self.data[index]
+    def __len__(self):
+        return len(self.data)
 #### healper #################################################################################
     def update_meta(self, **kwargs):
         self.meta = _update_meta(self.meta, self.data,log = self.log, **kwargs)

@@ -1,5 +1,11 @@
 # Update Logs
 
+# 3.6.10 20251101
+- fixed taf update_args
+- fixed typos in log
+- fixed legend in trumpet plot
+- fixed quotation mark error for py39 in viz_plot_associations.py
+
 # 3.6.9 20250902
 - fixed wrong version numbers
 
