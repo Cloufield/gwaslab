@@ -3,6 +3,28 @@ import numpy as np
 import pandas as pd
 
 def snphwe(obs_hets, obs_hom1, obs_hom2):
+    """
+    Calculate the exact Hardy-Weinberg Equilibrium (HWE) test p-value for SNP data.
+    
+    This function implements the exact test described in Wigginton et al. (2005) AJHG,
+    converted from Jeremy McRae's C++ code to Python. It computes the p-value using
+    a combinatorial approach to assess deviation from HWE.
+    
+    Parameters:
+    -----------
+    obs_hets : int
+        Observed count of heterozygotes
+    obs_hom1 : int
+        Observed count of homozygotes for the first allele
+    obs_hom2 : int
+        Observed count of homozygotes for the second allele
+    
+    Returns:
+    --------
+    float
+        The p-value indicating deviation from Hardy-Weinberg Equilibrium,
+        capped at 1.0
+    """
     # Convert cpp code from (Jeremy McRae) to python  
     # https://github.com/jeremymcrae/snphwe/blob/master/src/snp_hwe.cpp
     #/* (original comments)

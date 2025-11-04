@@ -21,7 +21,27 @@ def filldata(
     extreme=False,
     log = Log()
     ):
+    """
+    Fill missing statistical values in genetic summary statistics from available columns.
     
+    This function systematically derives missing statistical values using relationships
+    between different statistical measures (e.g., converting beta/SE to Z-scores, or ORs
+    to betas). It handles multiple conversion pathways and maintains data consistency.
+    
+    Args:
+        insumstats (pandas.DataFrame): Input summary statistics DataFrame containing variant data
+        to_fill (str or list of str): Column name(s) to fill. Common values include 'OR', 'BETA', 'SE', 'Z', 'P', etc.
+        df (str, optional): Column name containing degrees of freedom for chi-square tests
+        overwrite (bool, optional): If True, overwrite existing values in target columns. Defaults to False
+        verbose (bool, optional): Whether to display progress messages. Defaults to True
+        only_sig (bool, optional): If True, only update values for significant variants. Defaults to False
+        sig_level (float, optional): Significance threshold for P-value filtering. Defaults to 5e-8
+        extreme (bool, optional): If True, use extreme value calculations for -log10(P). Defaults to False
+        log (gwaslab.g_Log.Log, optional): Logger object for tracking progress. Defaults to new Log()
+    
+    Returns:
+        pandas.DataFrame: Modified summary statistics DataFrame with filled values
+    """
     # if a string is passed to to_fill, convert it to list
     if type(to_fill) is str:
         to_fill = [to_fill]
@@ -374,4 +394,3 @@ def _get_multi_min(sumstats_multi, col, nstudy,log=Log(), verbose=True):
     combined_header_index = "{}_{}_COL".format(col, "MIN")
     sumstats_multi[combined_header_index] = sumstats_multi[cols].idxmin(axis=1)
     return sumstats_multi
-        

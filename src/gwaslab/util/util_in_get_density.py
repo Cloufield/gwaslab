@@ -5,6 +5,25 @@ from gwaslab.g_Log import Log
 import gc
 
 def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizekb=100,log=Log(),verbose=True):    
+    """
+    Calculate signal density in genomic data using a sliding window approach.
+    
+    This function computes signal density by analyzing the distribution of variants
+    across the genome within specified window sizes. It provides statistical summaries
+    of density values including mean, median, standard deviation, and maximum values.
+    
+    Args:
+        insumstats (pandas.DataFrame): Input summary statistics DataFrame containing variant data
+        id (str, optional): Column name containing variant identifiers. Defaults to "SNPID"
+        chrom (str, optional): Column name containing chromosome numbers. Defaults to "CHR"
+        pos (str, optional): Column name containing genomic positions. Defaults to "POS"
+        bwindowsizekb (int, optional): Window size in kilobases for density calculation. Defaults to 100
+        log (gwaslab.g_Log.Log, optional): Logger object for tracking progress. Defaults to new Log()
+        verbose (bool, optional): Whether to display progress messages. Defaults to True
+    
+    Returns:
+        pandas.Series: Calculated density values for each variant
+    """
     log.write("Start to calculate signal DENSITY..." ,verbose=verbose)
     sumstats = insumstats[[id,chrom,pos]].copy()
     log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb",verbose=verbose)
@@ -74,6 +93,26 @@ def assigndensity(insumstats,
 				pos="POS", 
 				bwindowsizekb=100,
 				log=Log(),verbose=True):
+    """
+    Assign signal density values based on significant signals in genomic data.
+    
+    This function calculates density values by counting significant signals within
+    specified windows around each variant. It's typically used for conditional analysis
+    where density is determined by pre-identified significant variants.
+    
+    Args:
+        insumstats (pandas.DataFrame): Input summary statistics DataFrame containing all variants
+        sig_sumstats (pandas.DataFrame): Summary statistics DataFrame containing significant variants
+        id (str, optional): Column name containing variant identifiers. Defaults to "SNPID"
+        chrom (str, optional): Column name containing chromosome numbers. Defaults to "CHR"
+        pos (str, optional): Column name containing genomic positions. Defaults to "POS"
+        bwindowsizekb (int, optional): Window size in kilobases for density calculation. Defaults to 100
+        log (gwaslab.g_Log.Log, optional): Logger object for tracking progress. Defaults to new Log()
+        verbose (bool, optional): Whether to display progress messages. Defaults to True
+    
+    Returns:
+        pandas.Series: Assigned density values for each variant
+    """
 
     large_number = 1000000000
     for i in range(7):

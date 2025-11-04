@@ -1,6 +1,9 @@
 from gwaslab.g_version import gwaslab_info
 
 def _init_meta(object="Sumstats"):
+    """
+    Initialize the meta information of the Sumstats Object. 
+    """
     metadata_ssf ={
                         "genotyping_technology":"Unknown", 
                         "gwas_id":"Unknown", 

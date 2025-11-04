@@ -89,6 +89,9 @@ def sum_status(id_to_use, sumstats):
         return results
     
 def lookupstatus(status):
+    """
+    Explain the STATUS code for variants.
+    """
     uniq_status = status.unique()
     status_dic_12={
     "13":"CHM13",

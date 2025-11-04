@@ -4,7 +4,10 @@ from gwaslab.g_Log import Log
 import time
 
 def _update_meta(meta, sumstats, object="Sumstats",log=Log(), verbose=True):  
-    
+    """
+    Update Sumstats Object meta info based on the statistics of the current sumstats.
+    Including information on variants, samples.
+    """
     meta["gwaslab"]["variants"]["variant_number"] = len(sumstats)
     
     if "CHR" in sumstats.columns:

@@ -110,6 +110,14 @@ from gwaslab.io.io_to_formats import _to_format
 from gwaslab.io.io_to_pickle import _offload
 from gwaslab.io.io_to_pickle import _reload
 
+def add_doc(src):
+    def deco(func):
+        src_doc = src.__doc__ or ""
+        func_doc = func.__doc__ or ""
+        func.__doc__ = func_doc + src_doc
+        return func
+    return deco
+
 #20220309
 class Sumstats():
     
@@ -280,22 +288,28 @@ class Sumstats():
     def __len__(self):
         return len(self.data)
 #### healper #################################################################################
+    @add_doc(_update_meta)
     def update_meta(self, **kwargs):
         self.meta = _update_meta(self.meta, self.data,log = self.log, **kwargs)
-
+    
+    @add_doc(summarize)
     def summary(self):
         return summarize(self.data)
-
+    
+    @add_doc(lookupstatus)
     def lookup_status(self,status="STATUS"):
         return lookupstatus(self.data[status])
     
+    @add_doc(_set_build)
     def set_build(self, build, verbose=True):
         self.data, self.meta["gwaslab"]["genome_build"] = _set_build(self.data, build=build, log=self.log,verbose=verbose)
         gc.collect()
-
+    
+    @add_doc(inferbuild)
     def infer_build(self,verbose=True,**kwargs):
         self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,log=self.log,verbose=verbose,**kwargs)
     
+    @add_doc(parallelizeliftovervariant)
     def liftover(self,to_build, from_build=None,**kwargs):
         if from_build is None:
             if self.meta["gwaslab"]["genome_build"]=="99":
@@ -544,13 +558,14 @@ class Sumstats():
         self.data = sortcolumn(self.data,log=self.log,**kwargs)
     
     ############################################################################################################
+    @add_doc(filldata)
     def fill_data(self, verbose=True, **kwargs):
         self.data = filldata(self.data, verbose=verbose, log=self.log, **kwargs)
         self.data = sortcolumn(self.data, verbose=verbose, log=self.log)
 
 # utilities ############################################################################################################
     # filter series ######################################################################
-    
+    @add_doc(_filter_region)
     def filter_region(self, inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -558,7 +573,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _filter_region(self.data, **kwargs)
-
+    
+    @add_doc(_get_flanking)
     def filter_flanking(self, inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -566,6 +582,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _get_flanking(self.data, **kwargs)
+    
+    @add_doc(_get_flanking_by_chrpos)
     def filter_flanking_by_chrpos(self, chrpos,  inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -573,6 +591,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _get_flanking_by_chrpos(self.data, chrpos,**kwargs)
+    
+    @add_doc(_get_flanking_by_id)
     def filter_flanking_by_id(self, snpid, inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -580,6 +600,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _get_flanking_by_id(self.data, snpid, **kwargs)
+    
+    @add_doc(filtervalues)
     def filter_value(self, expr, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -587,6 +609,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = filtervalues(self.data, expr,log=self.log,**kwargs)
+    
+    @add_doc(filterout)
     def filter_out(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -594,6 +618,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = filterout(self.data,log=self.log,**kwargs)
+    
+    @add_doc(filterin)
     def filter_in(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -601,6 +627,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = filterin(self.data,log=self.log,**kwargs)
+    
+    @add_doc(filterregionin)
     def filter_region_in(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -608,6 +636,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = filterregionin(self.data,log=self.log,**kwargs)
+    
+    @add_doc(filterregionout)
     def filter_region_out(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -615,6 +645,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = filterregionout(self.data,log=self.log,**kwargs)
+    
+    @add_doc(_filter_palindromic)
     def filter_palindromic(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -622,6 +654,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _filter_palindromic(self.data,log=self.log,**kwargs)
+    
+    @add_doc(_filter_snp)
     def filter_snp(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -629,6 +663,8 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _filter_snp(self.data,log=self.log,**kwargs)
+    
+    @add_doc(_filter_indel)
     def filter_indel(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -637,6 +673,8 @@ class Sumstats():
         else:
             self.data = _filter_indel(self.data,log=self.log,**kwargs)
     
+    
+    @add_doc(_exclude_hla)
     def exclude_hla(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -644,6 +682,7 @@ class Sumstats():
             return new_Sumstats_object
         else:
             self.data = _exclude_hla(self.data,log=self.log,**kwargs)
+
 
     def search(self, inplace=False, **kwargs):
         if inplace is False:
@@ -708,7 +747,16 @@ class Sumstats():
         return fig
     
     def plot_mqq(self, build=None, **kwargs):
+        """
+        Main function to plot Manhattan-like plot and QQ plot:
+        mode="mqq" : Manhattan plot and QQ plot
+        mode="m" : only Manhattan plot
+        mode="qq" : only QQ plot
+        mode="b" : only Brisbane plot (SNP density plot)
+        mode="r" : region plot
 
+        {mqqplot.__doc__}
+        """
         chrom="CHR"
         pos="POS"
         p="P"
@@ -745,6 +793,8 @@ class Sumstats():
         return fig
 
     def get_lead(self, build=None, gls=False, **kwargs):
+        """{getsig.__doc__}"""
+
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
@@ -796,6 +846,7 @@ class Sumstats():
 
         
     def get_novel(self, **kwargs):
+        """{getnovel.__doc__}"""
         if "SNPID" in self.data.columns:
             id_to_use = "SNPID"
         else:
@@ -1026,3 +1077,4 @@ class Sumstats():
 
     def reload(self):
          self.data = _reload(self.tmp_path, self.log)
+
