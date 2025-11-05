@@ -55,7 +55,7 @@ from gwaslab.bd.bd_download import remove_file
 from gwaslab.bd.bd_download import get_path
 from gwaslab.bd.bd_download import update_record
 from gwaslab.bd.bd_config import options
-
+from gwaslab.qc.qc_reserved_headers import researved_header
 
 
 

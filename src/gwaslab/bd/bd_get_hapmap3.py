@@ -14,6 +14,25 @@ from pathlib import Path
 #A signed summary statistic (beta, OR, log odds, Z-score, etc)
 
 def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
+    """
+    Extract HapMap3 SNPs from summary statistics based on rsID or genomic coordinates.
+    
+    Parameters:
+    sumstats (pd.DataFrame): Input summary statistics dataframe
+    rsid (str): Column name for rsID (default: "rsID")
+    chrom (str): Column name for chromosome (default: "CHR")
+    pos (str): Column name for position (default: "POS")
+    ea (str): Column name for effect allele (default: "EA")
+    nea (str): Column name for non-effect allele (default: "NEA")
+    build (str): Genome build version ("19" or "38") (default: "19")
+    verbose (bool): Print progress messages (default: True)
+    match_allele (bool): Check allele matching (default: True)
+    how (str): Type of merge to perform (default: "inner")
+    log (Log): Logging object (default: Log())
+    
+    Returns:
+    pd.DataFrame: Filtered summary statistics with HapMap3 SNPs
+    """
     ##start function with col checking##########################################################
     _start_line = "extract HapMap3 SNPs"
     _end_line = "extracting HapMap3 SNPs"

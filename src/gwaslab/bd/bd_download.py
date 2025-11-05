@@ -18,7 +18,10 @@ from gwaslab.g_version import _get_version
 
 def initiate_config(log=Log()):
     '''
-    Create an empty config file.
+    Create an empty configuration file for managing downloaded reference data records.
+    
+    Args:
+        log (Log): Logging object for tracking operations. Defaults to new Log instance.
     '''
     #config_path=path.dirname(__file__) + '/data/config.json'
     config_path = options.paths["config"]
@@ -30,7 +33,13 @@ def initiate_config(log=Log()):
 
 def update_config(log=Log()):
     '''
-    Update the config file. if not existing, create one.
+    Update the configuration file or create a new one if missing.
+    
+    Args:
+        log (Log): Logging object for tracking operations. Defaults to new Log instance.
+    
+    Returns:
+        dict: Dictionary of currently recorded downloaded files
     '''
     #config_path=path.dirname(__file__) + '/data/config.json',
     config_path = options.paths["config"]
@@ -64,7 +73,10 @@ def update_config(log=Log()):
 
 def set_default_directory(path):
     '''
-    Temoporarily set the default directory for downloaded reference data.
+    Set a temporary default directory for reference data downloads.
+    
+    Args:
+        path (str): Directory path to use for storing downloaded reference data
     '''
     #config_path=path.dirname(__file__) + '/data/config.json'
     #config_path = options.paths["config"]
@@ -85,7 +97,10 @@ def set_default_directory(path):
 
 def get_default_directory():
     '''
-    Return the default directory for downloaded reference data.
+    Get the configured default directory for reference data storage.
+    
+    Returns:
+        str: Path to the default data directory from configuration
     '''
     # config_path=path.dirname(__file__) + '/data/config.json'
     # config_path = options.paths["config"]
@@ -103,8 +118,14 @@ def get_default_directory():
 ##################################################################################
 def check_available_ref(log=Log(),verbose=True):
     '''
-    Check available reference files for gwaslab.
-    Return a dictionary of available reference files.
+    Load and return the list of available reference files from configuration.
+    
+    Args:
+        log (Log): Logging object for tracking operations
+        verbose (bool): Whether to show detailed logging output
+    
+    Returns:
+        dict: Dictionary mapping reference names to URLs
     '''
     log.write("Start to check available reference files...", verbose=verbose)
     #ref_path = path.dirname(__file__) + '/data/reference.json'
@@ -124,7 +145,10 @@ def check_available_ref(log=Log(),verbose=True):
 
 def update_available_ref(log=Log()):
     '''
-    Update the a dictionary of available reference files from github.
+    Download and update the reference file dictionary from GitHub.
+    
+    Args:
+        log (Log): Logging object for tracking operations
     '''
     url = 'https://raw.github.com/Cloufield/gwaslab/main/src/gwaslab/data/reference.json'
     log.write("Updating available_ref list from:",url)
@@ -139,8 +163,13 @@ def update_available_ref(log=Log()):
 
 def check_downloaded_ref(log=Log()):
     '''
-    Check downloaded reference files.
-    Return a path dictionary of downloaded reference files.
+    Verify and return records of already downloaded reference files.
+    
+    Args:
+        log (Log): Logging object for tracking operations
+    
+    Returns:
+        dict: Dictionary mapping reference names to local file paths
     '''
     log.write("Start to check downloaded reference files...")
     #config_path =  path.dirname(__file__) + '/data/config.json'
@@ -162,7 +191,15 @@ def check_downloaded_ref(log=Log()):
 
 def get_path(name,log=Log(),verbose=True):
     '''
-    Return the path for a given keyword using the dictionary of downloaded reference files.
+    Retrieve the local file path for a specified reference file name.
+    
+    Args:
+        name (str): Reference file identifier
+        log (Log): Logging object for tracking operations
+        verbose (bool): Whether to show detailed logging output
+    
+    Returns:
+        str|bool: File path if found, False otherwise
     '''
     #config_path =  path.dirname(__file__) + '/data/config.json'
     config_path = options.paths["config"]
@@ -188,7 +225,17 @@ def download_ref(name,
                 overwrite=False,
                 log=Log()):
     '''
-    Download the reference file for a given keyword. Url are retrieved from the reference.json file.
+    Download a reference file based on its identifier from reference.json.
+    
+    Args:
+        name (str): Reference file identifier
+        directory (str): Custom download directory (defaults to config value)
+        local_filename (str): Custom filename (defaults to URL-derived name)
+        overwrite (bool): Whether to overwrite existing files
+        log (Log): Logging object for tracking operations
+    
+    Returns:
+        None: File is saved to disk with path recorded in config
     '''
     from_dropbox=0
     dicts = check_available_ref(log,verbose=False)
@@ -301,7 +348,12 @@ def remove_file(name,log=Log()):
 #### helper #############################################################################################
 def update_record(  key, value, log=Log()):
     '''
-    Update the path for a reference file. 
+    Update configuration with new reference file path.
+    
+    Args:
+        key (str): Reference identifier
+        value (str): File system path
+        log (Log): Logging object for tracking operations
     '''
     log.write(" -Updating record in config file...")
     config_path = options.paths["config"]
@@ -316,7 +368,14 @@ def update_record(  key, value, log=Log()):
 
 def download_file(url, file_path=None):
     '''
-    A low level download function.
+    Low-level file download utility with streaming support.
+    
+    Args:
+        url (str): Source URL to download from
+        file_path (str): Destination path to save file
+    
+    Returns:
+        str: Path where file was saved
     '''
     # download file from url to file_path
     if file_path is not None:
@@ -329,7 +388,15 @@ def download_file(url, file_path=None):
 
 def url_to_local_file_name(local_filename, url, from_dropbox):
     '''
-    Process url to filename.
+    Convert URL to valid local filename, handling Dropbox special cases.
+    
+    Args:
+        local_filename (str): Optional custom filename
+        url (str): Source URL
+        from_dropbox (int): Dropbox indicator flag
+    
+    Returns:
+        tuple: (processed filename, dropbox flag) 
     '''
     if local_filename is None:
         # if local name not provided, grab it from url
@@ -349,7 +416,13 @@ def url_to_local_file_name(local_filename, url, from_dropbox):
 
 def check_and_download(name):
     '''
-    Check if the specified reference file exists. If not, download it.
+    Ensure a reference file exists by downloading if necessary.
+    
+    Args:
+        name (str): Reference file identifier
+    
+    Returns:
+        str: Path to the reference file (existing or newly downloaded)
     '''
     # if file exsits , return file path
     if get_path(name) is not False:
@@ -370,7 +443,10 @@ def search_local(file_path):
 
 def update_formatbook(log=Log()):
     '''
-    Update the formatbook from github.
+    Download and update the formatbook dictionary from GitHub.
+    
+    Args:
+        log (Log): Logging object for tracking operations
     '''
     url = 'https://raw.github.com/Cloufield/formatbook/main/formatbook.json'
     log.write("Updating formatbook from:",url)
@@ -388,7 +464,10 @@ def update_formatbook(log=Log()):
          
 def list_formats(log=Log()):
     '''
-    List all available format in formatbook.
+    Display all available formats in the formatbook.
+    
+    Args:
+        log (Log): Logging object for tracking operations
     '''
     #data_path =  path.dirname(__file__) + '/data/formatbook.json'
     data_path = options.paths["formatbook"]
@@ -399,7 +478,11 @@ def list_formats(log=Log()):
 
 def check_format(fmt,log=Log()):
     '''
-    Check the header converson dictionary between a given format and gwaslab format.
+    Check the header conversion dictionary between a given format and GWASLab format.
+    
+    Args:
+        fmt (str): Format name to check
+        log (Log): Logging object for tracking operations
     '''
     #data_path =  path.dirname(__file__) + '/data/formatbook.json'
     data_path = options.paths["formatbook"]
@@ -410,8 +493,3 @@ def check_format(fmt,log=Log()):
     log.write("") 
     for i in book[fmt].values():
         log.write(i,end="")
-
-
-
-
-########################################################################################################

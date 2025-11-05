@@ -15,7 +15,17 @@ from gwaslab.bd.bd_download import update_formatbook
 from gwaslab.bd.bd_config import options
 
 #hard-coded data
-def get_chr_to_NC(build,inverse=False):
+def get_chr_to_NC(build, inverse=False):
+    """
+    Create a dictionary mapping chromosome numbers to NCBI accession IDs.
+    
+    Parameters:
+    build (str): Genome build version ('19' or '38')
+    inverse (bool): If True, return NCBI ID to chromosome mapping
+    
+    Returns:
+    dict: Dictionary mapping chromosome identifiers (string) to NCBI accession IDs (string)
+    """
     #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
     if build =="19":
         dic={
@@ -78,10 +88,29 @@ def get_chr_to_NC(build,inverse=False):
     return dic
 
 def get_NC_to_chr(build):
+    """
+    Create a dictionary mapping NCBI accession IDs to chromosome numbers.
+    
+    Parameters:
+    build (str): Genome build version ('19' or '38')
+    
+    Returns:
+    dict: Dictionary mapping NCBI accession IDs (string) to chromosome numbers (string)
+    """
     return get_chr_to_NC(build=build,inverse=True)
 
 
-def get_number_to_NC(build,inverse=False):
+def get_number_to_NC(build, inverse=False):
+    """
+    Create a dictionary mapping chromosome numbers (int) to NCBI accession IDs (string).
+    
+    Parameters:
+    build (str): Genome build version ('19' or '38')
+    inverse (bool): If True, return NCBI ID to chromosome mapping
+    
+    Returns:
+    dict: Dictionary mapping chromosome identifiers (int) to NCBI accession IDs
+    """
     #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
     if build =="19":
         dic={
@@ -145,9 +174,30 @@ def get_number_to_NC(build,inverse=False):
 
 
 def get_NC_to_number(build):
+    """
+    Create a dictionary mapping NCBI accession IDs to chromosome numbers (int).
+    
+    Parameters:
+    build (str): Genome build version ('19' or '38')
+    
+    Returns:
+    dict: Dictionary mapping NCBI accession IDs to chromosome numbers (int)
+    """
     return get_number_to_NC(build=build,inverse=True)
 
-def get_chr_list(add_number=False,n=25,only_number=False):
+def get_chr_list(add_number=False, n=25, only_number=False):
+    """
+    Generate a list of chromosome identifiers.
+    
+    Parameters:
+    add_number (bool): If True, include both string and numeric representations of chromosomes 1-25
+    n (int): Maximum chromosome number to include (default: 25)
+    only_number (bool): If True, return only numeric chromosome numbers
+    
+    Returns:
+    list: List of chromosome identifiers in string format by default, 
+          or numeric format if specified
+    """
     chrom_list=[str(i) for i in range(1,n+1)]+["X","Y","M","MT"]
     
     if add_number == True:
@@ -156,8 +206,19 @@ def get_chr_list(add_number=False,n=25,only_number=False):
     if only_number ==True:
         chrom_list = [i for i in range(1,n+1)]
     return chrom_list
-
-def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"],xymt_num=[23,24,25]):
+def get_chr_to_number(out_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25]):
+    """
+    Create a dictionary mapping chromosome identifiers to numeric representations.
+    
+    Parameters:
+    out_chr (bool): If True, returns dictionary with string keys and values
+    xymt (list): List of non-numeric chromosome identifiers (default: ["X","Y","MT"])
+    xymt_num (list): Corresponding numeric values for xymt (default: [23,24,25])
+    
+    Returns:
+    dict: Dictionary mapping chromosome identifiers to numeric values or strings
+          depending on the out_chr parameter
+    """
     if out_chr is True:
         dic= {str(i):str(i) for i in range(1,200)}
         dic[xymt[0]]=str(xymt_num[0])
@@ -170,8 +231,19 @@ def get_chr_to_number(out_chr=False,xymt=["X","Y","MT"],xymt_num=[23,24,25]):
         dic[xymt[2]]= xymt_num[2]
         dic["M"] = xymt_num[2]
     return dic
-
-def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"],xymt_num=[23,24,25],prefix=""):
+def get_number_to_chr(in_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], prefix=""):
+    """
+    Create a dictionary mapping chromosome numbers to string representations.
+    
+    Parameters:
+    in_chr (bool): If True, returns dictionary with string keys and values
+    xymt (list): List of non-numeric chromosome identifiers (default: ["X","Y","MT"])
+    xymt_num (list): Corresponding numeric values for xymt (default: [23,24,25])
+    prefix (str): Optional prefix for chromosome identifiers
+    
+    Returns:
+    dict: Dictionary mapping chromosome numbers to string representations
+    """
     if in_chr is True:
         dic= {str(i):prefix+str(i) for i in range(1,200)}
         dic[str(xymt_num[0])]=prefix+xymt[0]
@@ -183,11 +255,18 @@ def get_number_to_chr(in_chr=False,xymt=["X","Y","MT"],xymt_num=[23,24,25],prefi
         dic[xymt_num[1]]=prefix+xymt[1]
         dic[xymt_num[2]]=prefix+xymt[2]
     return dic
-
-
 # reading from files    
 ###################################################################################################################    
 def get_high_ld(build="19"):
+    """
+    Get the path to the high LD region file for the specified genome build.
+    
+    Parameters:
+    build (str): Genome build version ('19' or '38') indicating which reference genome to use
+    
+    Returns:
+    str: Path to the high LD region BED file for the specified genome build
+    """
     if build=="19":
         #data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg19.bed.gz'
         data_path = path.join( Path(__file__).parents[1], "data","high_ld","high_ld_hla_hg19.bed.gz")
@@ -195,8 +274,19 @@ def get_high_ld(build="19"):
         #data_path =  path.dirname(__file__) + '/data/high_ld/high_ld_hla_hg38.bed.gz'
         data_path = path.join( Path(__file__).parents[1], "data","high_ld","high_ld_hla_hg38.bed.gz")
     return data_path
-
-def get_format_dict(fmt,inverse=False):
+def get_format_dict(fmt, inverse=False):
+    """
+    Retrieve format dictionary and metadata for a specified format.
+    
+    Parameters:
+    fmt (str): Format name to look up in the format book
+    inverse (bool): If True, return inverted dictionary with value-key mapping
+    
+    Returns:
+    tuple: 
+    - dict: Metadata associated with the format
+    - dict: Format dictionary mapping fields, or inverted mapping if specified
+    """
     #data_path =  path.dirname(__file__) + '/data/formatbook.json'
     data_path = options.paths["formatbook"]
     if not path.exists(data_path):
@@ -208,15 +298,30 @@ def get_format_dict(fmt,inverse=False):
         inv_dic = {v: k for k, v in dic_dict.items()}
         return dic_meta,inv_dic
     return dic_meta, dic_dict
-
 def get_formats_list():
+    """
+    Retrieve a list of available format names from the format book.
+    
+    Returns:
+    list: Format names available in the format book
+    """
     #data_path =  path.dirname(__file__) + '/data/formatbook.json'
     data_path = options.paths["formatbook"]
     dicts = json.load(open(data_path))
     format_list = list(dicts.keys())
     return format_list
-
 def get_recombination_rate(chrom, build="19"):
+    """
+    Retrieve recombination rate data for a specific chromosome and genome build.
+    
+    Parameters:
+    chrom (str or int): Chromosome number to retrieve recombination data for
+    build (str): Genome build version ('19' or '38') to use
+    
+    Returns:
+    pandas.DataFrame: Recombination rate data with columns 'Rate(cM/Mb)' and 'Position(bp)'
+                     Returns empty DataFrame if build is not supported or data is unavailable
+    """
     #http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20110106_recombination_hotspots/
     if build=="19":
         data_path =  options.paths["data_directory"] + 'recombination/hg19/genetic_map_GRCh37_chr'+str(chrom)+'.txt.gz'
@@ -245,9 +350,21 @@ def get_recombination_rate(chrom, build="19"):
     else:
         recombination_rate = pd.DataFrame(columns=["Rate(cM/Mb)","Position(bp)"])
     return recombination_rate
-
 ####################################################################################################################
-def get_gtf(chrom, build="19",source="ensembl"):
+def get_gtf(chrom, build="19", source="ensembl"):
+    """
+    Retrieve GTF data for a specific chromosome and genome build.
+    
+    Parameters:
+    chrom (str or int): Chromosome number to retrieve GTF data for
+    build (str): Genome build version ('19' or '38') to use
+    source (str): Data source to use ('ensembl' or 'refseq')
+    
+    Returns:
+    pandas.DataFrame: GTF data for the specified chromosome with columns:
+                     ['seqname','start','end','strand','feature','gene_biotype','gene_id','gene_name']
+                     Returns empty DataFrame if data is not available
+    """
     gtf = None
     if source=="ensembl":
         if build=="19": 
@@ -276,7 +393,6 @@ def get_gtf(chrom, build="19",source="ensembl"):
     if gtf is None:
         gtf = pd.DataFrame(columns=["seqname","start","end","strand","feature","gene_biotype","gene_id","gene_name"])
     return gtf
-
 def get_chain(from_build="19", to_build="38"):    
     chain_path = check_and_download("{}to{}".format(from_build, to_build))
     return chain_path
@@ -350,18 +466,4 @@ def _inch_to_point(inch):
     #points: 1/72 inch
     return inch*72
         
-NA_STRINGS=["na","NA","Na","Nan","NaN","<NA>","null","NULL","#N/A","#VALUE!","N/A","n/a","missing",""]        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-    
+NA_STRINGS=["na","NA","Na","Nan","NaN","<NA>","null","NULL","#N/A","#VALUE!","N/A","n/a","missing",""]
