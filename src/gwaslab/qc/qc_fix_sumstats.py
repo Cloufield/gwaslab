@@ -1499,7 +1499,7 @@ def sanitycheckstats(sumstats,
 
 def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG10P",rtol=1e-3, atol=1e-3, equal_nan=True, verbose=True,log=Log()):
     '''
-    Check consistency between related statistical values.
+    Check consistency between related statistical values. Minor inconsistencies are likely due to rounding.
 
     Args:
         sumstats (pd.DataFrame): Input GWAS summary statistics.
