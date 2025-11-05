@@ -102,7 +102,6 @@ def mqqplot(insumstats,
           qq_line_color = "grey",
           qq_xlabels = None,
           qq_xlim = None,
-          # region
           region = None,
           region_title=None,
           region_title_args=None,
@@ -150,7 +149,6 @@ def mqqplot(insumstats,
           track_text_offset=1,
           track_font_family = None,
           taf = None,
-          # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
           tabix=None,
           mqqratio=3,
           bwindowsizekb = 100,
@@ -257,8 +255,99 @@ def mqqplot(insumstats,
           expected_min_mlog10p=0,
           log=Log()
           ):
+    """
+    Generate a Manhattan-QQ (MQQ) plot for genome-wide association study (GWAS) results.
 
-# log.writeing meta info #######################################################################################
+    Parameters:
+    -----------
+    insumstats : pandas.DataFrame
+        Input GWAS summary statistics DataFrame containing at minimum:
+        - Chromosome numbers
+        - Genomic positions
+        - P-values or -log10(P) values
+    
+    chrom : str
+        Column name for chromosome values in insumstats
+        
+    pos : str
+        Column name for genomic position values in insumstats
+        
+    p : str
+        Column name for raw p-values in insumstats
+        
+    snpid : str
+        Column name for SNP IDs in insumstats
+        
+    eaf : str
+        Column name for effect allele frequency in insumstats
+        
+    mode : str, default="mqq"
+        Plotting mode. Options:
+        - "mqq": Manhattan-QQ combined plot
+        - "qqm": QQ-Manhattan combined plot
+        - "m": Manhattan plot only
+        - "qq": QQ plot only
+        - "r": Regional plot
+        - "b": Brisbane plot (density plot)
+    
+    highlight : list, optional
+        List of SNPs or genomic regions to highlight
+        
+    highlight_color : str, default="#CB132D"
+        Color for highlighted regions/SNPs
+    
+    pinpoint : list, optional
+        List of SNPs to pinpoint with a distinct marker
+    
+    anno : str or bool, optional
+        Column name for annotation (e.g., gene names) or True for default annotation
+    
+    region : tuple, optional
+        Genomic region to plot (e.g., (chr, start, end))
+    
+    colors : list, optional
+        Color palette for plots
+    
+    marker_size : tuple, default=(5,20)
+        Size range for scatter plot markers
+    
+    fontsize : int, default=9
+        Base font size for text elements
+    
+    title : str, optional
+        Main plot title
+    
+    save : str or bool, optional
+        File path to save the plot (e.g., "output.png")
+    
+    Returns:
+    --------
+    fig : matplotlib.figure.Figure
+        Generated plot figure
+    
+    log : gwaslab.g_Log.Log
+        Logging object with execution messages
+    
+    lead_snp_is : list, optional
+        Lead SNP positions in regional plots
+    
+    lead_snp_is_color : list, optional
+        Colors for lead SNPs in regional plots
+    
+    Examples:
+    ---------
+    >>> fig, log = mqqplot(
+    ...     insumstats=df,
+    ...     chrom="CHR",
+    ...     pos="POS",
+    ...     p="P",
+    ...     snpid="SNPID",
+    ...     mode="mqq",
+    ...     title="Manhattan-QQ Plot",
+    ...     save="output.png"
+    ... )
+    """
+    
     chr_dict = _update_args(chr_dict, get_chr_to_number())
     xtick_chr_dict = _update_args(xtick_chr_dict, get_number_to_chr())
     gtf_chr_dict = _update_args(gtf_chr_dict, get_number_to_chr())
@@ -295,7 +384,7 @@ def mqqplot(insumstats,
         if region_ref_second is not None:
             region_ref.append(region_ref_second)
     region_ref_index_dic = {value: index for index,value in enumerate(region_ref)}
-        
+    # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
     taf = _update_arg(taf, [track_n,track_n_offset,track_fontsize_ratio,track_exon_ratio,track_text_offset])
     region_marker_shapes = _update_arg(region_marker_shapes, ['o', '^','s','D','*','P','X','h','8'])
     region_grid_line = _update_args(region_grid_line,  {"linewidth": 2,"linestyle":"--"})

@@ -78,11 +78,37 @@ def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",fixprefix=False,
        fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False, reversea=False,
        overwrite=False,verbose=True,forcefixid=False,log=Log()):  
+    
     '''
-    1. fx SNPid
-    2. fix chr and pos using snpid
-    3. checking rsid and chr:pos:nea:ea
+    Fix various aspects of genomic data including SNPID, rsID, chromosome positions, and allele information.
+        1. fx SNPid
+        2. fix chr and pos using snpid
+        3. checking rsid and chr:pos:nea:ea
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        snpid (str): Column name for SNPID.
+        rsid (str): Column name for rsID.
+        chrom (str): Column name for chromosome.
+        pos (str): Column name for position.
+        nea (str): Column name for non-effect allele.
+        ea (str): Column name for effect allele.
+        status (str): Column name for status code.
+        fixprefix (bool): Whether to remove 'chr' prefix in SNPID.
+        fixchrpos (bool): Whether to fix chromosome and position from SNPID.
+        fixid (bool): Whether to generate new SNPID from available data.
+        fixeanea (bool): Whether to fix EA and NEA from SNPID.
+        fixeanea_flip (bool): Whether to flip EA and NEA during fixing.
+        fixsep (bool): Whether to standardize separators in SNPID.
+        reversea (bool): Whether to reverse alleles in SNPID.
+        overwrite (bool): Whether to overwrite existing values.
+        verbose (bool): Whether to print progress.
+        forcefixid (bool): Whether to force fix even without status check.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with fixed data.
     '''
+
     ##start function with col checking##########################################################
     _start_line = "check SNPID/rsID"
     _end_line = "checking SNPID/rsID"
@@ -397,11 +423,21 @@ def fixID(sumstats,
     finished(log,verbose,_end_line)
     return sumstats
 
-""
+
 
 def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
     '''
-    flip EA and NEA SNPid   CHR:POS:EA:NEA -> CHR:POS:NEA:EA
+    Strip non-standard characters from SNPID values.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        snpid (str): Column name for SNPID.
+        overwrite (bool): Whether to overwrite existing values.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with stripped SNPIDs.
     '''
     ##start function with col checking##########################################################
     _start_line = "strip SNPID"
@@ -435,9 +471,21 @@ def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
 
 def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
     '''
-    flip EA and NEA SNPid   CHR:POS:EA:NEA -> CHR:POS:NEA:EA
+    Flip alleles in SNPID values without changing status codes.
+        flip EA and NEA SNPid   CHR:POS:EA:NEA -> CHR:POS:NEA:EA
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        snpid (str): Column name for SNPID.
+        overwrite (bool): Whether to overwrite existing values.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with flipped alleles.
     '''
     ##start function with col checking##########################################################
+    
     _start_line = "flip SNPID"
     _end_line = "flipping SNPID"
     _start_cols =["SNPID"]
@@ -472,12 +520,34 @@ def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
 
 ###############################################################################################################
 # 20230128 
-def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove=False,keep_ascend=True,verbose=True,log=Log()):
+def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove_na=False,keep_ascend=True,verbose=True,log=Log()):
     '''
-    remove duplicate SNPs based on 1. SNPID,
-    remove duplicate SNPs based on 2. CHR, POS, EA, and NEA
-    remove duplicate SNPs based on 3. rsID
-    remove multiallelic SNPs based on 4. CHR, POS
+    Remove duplicate or multiallelic variants based on various criteria.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        mode (str): Combination of d/r/s/c/m for different duplication criteria.
+            ds: duplications using SNPID
+            dr: duplications using rsID 
+            dc: duplications using 4 columns including CHR, POS, EA, NEA 
+            m: duplications using 2 columns including CHR, POS (multi-allelic variants)
+        chrom (str): Column name for chromosome.
+        pos (str): Column name for position.
+        snpid (str): Column name for SNPID.
+        ea (str): Column name for effect allele.
+        nea (str): Column name for non-effect allele.
+        rsid (str): Column name for rsID.
+        keep (str): Which duplicate to keep (first/last/False).
+        keep_col (str): Column to sort by before removing duplicates.
+        remove_na (bool): Whether to remove NA values.
+        keep_ascend (bool): Whether to sort ascending.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with duplicates removed.
+
+
     '''
 
     ##start function with col checking##########################################################
@@ -560,7 +630,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         log.write(" -Sort the coordinates based on CHR and POS...", verbose=verbose)
         sumstats = sortcoordinate(sumstats,verbose=False)
     
-    if "n" in mode or remove==True:
+    if "n" in mode or remove_na==True:
         # if remove==True, remove NAs
         log.write(" -Removing NAs...", verbose=verbose)
         pre_number =len(sumstats) 
@@ -584,9 +654,10 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
             if pos in sumstats.columns:specified_columns.append(pos)
             if ea in sumstats.columns:specified_columns.append(ea)
             if nea in sumstats.columns:specified_columns.append(nea)
+        specified_columns = list(set(specified_columns))
         sumstats = sumstats.loc[~sumstats[specified_columns].isna().any(axis=1),:]
         after_number=len(sumstats) 
-        log.write(" -Removed ",pre_number -after_number," variants with NA values in {} .".format(set(specified_columns)), verbose=verbose)  
+        log.write(" -Removed ",pre_number -after_number," variants with NA values in {} .".format(specified_columns), verbose=verbose)  
 
     finished(log,verbose,_end_line)
     return sumstats
@@ -594,6 +665,26 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
 ###############################################################################################################
 # 20230128
 def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()):
+    '''
+    Standardize chromosome notation and handle special cases (X, Y, MT).
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        chrom (str): Column name for chromosome.
+        status (str): Column name for status code.
+        add_prefix (str): Prefix to add to chromosome values.
+        x (tuple): (name, number) for X chromosome.
+        y (tuple): (name, number) for Y chromosome.
+        mt (tuple): (name, number) for MT chromosome.
+        remove (bool): Whether to remove invalid chromosomes.
+        verbose (bool): Whether to print progress.
+        chrom_list (list): Valid chromosome list.
+        minchr (int): Minimum valid chromosome number.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with standardized chromosomes.
+    '''
     ##start function with col checking##########################################################
     _start_line = "fix chromosome notation (CHR)"
     _end_line = "fixing chromosome notation (CHR)"
@@ -736,6 +827,23 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
 ###############################################################################################################    
 # 20230128
 def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_limit=0 , upper_limit=None , limit=250000000, log=Log()):
+    '''
+    Standardize and validate basepair positions.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        pos (str): Column name for position.
+        status (str): Column name for status code.
+        remove (bool): Whether to remove invalid positions.
+        verbose (bool): Whether to print progress.
+        lower_limit (int): Minimum valid position.
+        upper_limit (int): Maximum valid position.
+        limit (int): Default upper limit if not specified.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with cleaned positions.
+    '''
     ##start function with col checking##########################################################
     _start_line = "fix basepair positions (POS)"
     _end_line = "fixing basepair positions (POS)"
@@ -801,6 +909,21 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
 ###############################################################################################################    
 # 20220514
 def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
+    '''
+    Validate and standardize allele values.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        ea (str): Column name for effect allele.
+        nea (str): Column name for non-effect allele.
+        status (str): Column name for status code.
+        remove (bool): Whether to remove invalid alleles.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with standardized alleles.
+    '''
     ##start function with col checking##########################################################
     _start_line = "fix alleles (EA and NEA)"
     _end_line = "fixing alleles (EA and NEA)"
@@ -904,6 +1027,26 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
 # 20220721
 
 def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",chunk=3000000,n_cores=1,verbose=True,log=Log()):
+    '''
+    Normalize indels in parallel using either variant or site mode.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        mode (str): 'v' for variant mode, 's' for site mode.
+        snpid (str): Column name for SNPID.
+        rsid (str): Column name for rsID.
+        pos (str): Column name for position.
+        nea (str): Column name for non-effect allele.
+        ea (str): Column name for effect allele.
+        status (str): Column name for status code.
+        chunk (int): Chunk size for processing.
+        n_cores (int): Number of CPU cores to use.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with normalized alleles.
+    '''
     ##start function with col checking##########################################################
     _start_line = "normalize indels"
     _end_line = "normalizing indels"
@@ -1223,7 +1366,37 @@ def sanitycheckstats(sumstats,
                      verbose=True,
                      log=Log()):
     '''
-    Sanity check (default; v3.4.33):
+    Perform sanity checks on statistical values for validity.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        coltocheck (list): Columns to check.
+        n (tuple): Valid range for N.
+        ncase (tuple): Valid range for N_CASE.
+        ncontrol (tuple): Valid range for N_CONTROL.
+        eaf (tuple): Valid range for EAF.
+        mac (tuple): Valid range for MAC.
+        maf (tuple): Valid range for MAF.
+        chisq (tuple): Valid range for CHISQ.
+        z (tuple): Valid range for Z.
+        t (tuple): Valid range for T.
+        f (tuple): Valid range for F.
+        p (tuple): Valid range for P.
+        mlog10p (tuple): Valid range for MLOG10P.
+        beta (tuple): Valid range for BETA.
+        se (tuple): Valid range for SE.
+        OR (tuple): Valid range for OR.
+        OR_95L (tuple): Valid range for OR_95L.
+        OR_95U (tuple): Valid range for OR_95U.
+        HR (tuple): Valid range for HR.
+        HR_95L (tuple): Valid range for HR_95L.
+        HR_95U (tuple): Valid range for HR_95U.
+        info (tuple): Valid range for INFO.
+        float_tolerance (float): Tolerance for floating point comparisons.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+    
+    Sanity check ranges (default; v3.4.33):
         N:      Int32    , N>0 , 
         EAF:    float32  , 0 <= EAF <=1, 
         P:      float64  , 0 <= P <= 1, 
@@ -1239,6 +1412,9 @@ def sanitycheckstats(sumstats,
         Z       float64  , -9999 < Z < 9999
         T       float64  , -99999 < T < 99999
         F       float64  , F > 0 
+
+    Returns:
+        pd.DataFrame: Modified sumstats with invalid variants removed.
     '''
     ##start function with col checking##########################################################
     _start_line = "perform sanity check for statistics"
@@ -1322,6 +1498,24 @@ def sanitycheckstats(sumstats,
 ### check consistency #############################################################################################################################################
 
 def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG10P",rtol=1e-3, atol=1e-3, equal_nan=True, verbose=True,log=Log()):
+    '''
+    Check consistency between related statistical values.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        beta (str): Column name for BETA.
+        se (str): Column name for SE.
+        p (str): Column name for P.
+        mlog10p (str): Column name for MLOG10P.
+        rtol (float): Relative tolerance for comparisons.
+        atol (float): Absolute tolerance for comparisons.
+        equal_nan (bool): Whether to consider NaN values as equal.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with consistency checks.
+    '''
     ##start function with col checking##########################################################
     _start_line = "check data consistency across columns"
     _end_line = "checking data consistency across columns"
@@ -1486,6 +1680,18 @@ def flip_by_sign(sumstats, matched_index, log, verbose, cols=None):
     return sumstats
 
 def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
+    '''
+    Adjust statistics when allele direction has changed.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        status (str): Column name for status code.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with flipped statistics.
+    '''
     ##start function with col checking##########################################################
     _start_line = "adjust statistics based on STATUS code"
     _end_line = "adjusting statistics based on STATUS code"
@@ -1631,6 +1837,25 @@ def liftover_variant(sumstats,
     return sumstats
 
 def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True,chain=None, verbose=True,log=Log()):
+    '''
+    Perform parallelized liftover of variants to a new build.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        n_cores (int): Number of CPU cores to use.
+        chrom (str): Column name for chromosome.
+        pos (str): Column name for position.
+        from_build (str): Original genome build.
+        to_build (str): Target genome build.
+        status (str): Column name for status code.
+        remove (bool): Whether to remove unmapped variants.
+        chain (str): Path to chain file for liftover.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with updated coordinates.
+    '''
     ##start function with col checking##########################################################
     _start_line = "perform liftover"
     _end_line = "liftover"
@@ -1703,6 +1928,20 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
 ###############################################################################################################
 # 20220426
 def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()):
+    '''
+    Sort variants by genomic coordinates.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        chrom (str): Column name for chromosome.
+        pos (str): Column name for position.
+        reindex (bool): Whether to reset index.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with sorted coordinates.
+    '''
     ##start function with col checking##########################################################
     _start_line = "sort the genome coordinates"
     _end_line = "sorting coordinates"
@@ -1736,6 +1975,18 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
 ###############################################################################################################
 # 20230430 added HR HR_95 BETA_95 N_CASE N_CONTROL
 def sortcolumn(sumstats,verbose=True,log=Log(),order = None):
+    '''
+    Reorder columns according to a specified order.
+
+    Args:
+        sumstats (pd.DataFrame): Input GWAS summary statistics.
+        verbose (bool): Whether to print progress.
+        log (Log): Log object for output.
+        order (list): List of column names in desired order.
+
+    Returns:
+        pd.DataFrame: Modified sumstats with reordered columns.
+    '''
     ##start function with col checking##########################################################
     _start_line = "reorder the columns"
     _end_line = "reordering the columns"

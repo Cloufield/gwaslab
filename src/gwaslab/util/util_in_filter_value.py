@@ -979,17 +979,62 @@ def _filter_region(sumstats, region, chrom="CHR", pos="POS", log=Log(), verbose=
     
 def _search_variants( sumstats, snplist=None, 
                      snpid="SNPID" ,rsid="rsID",
-                     chrom="CHR",pos="POS",ea="EA",nea="NEA",
-                     log=Log(),verbose=True):
+                     chrom="CHR", pos="POS", ea="EA", nea="NEA",
+                     log=Log(), verbose=True):
+    """
+    Search for variants in summary statistics using multiple identifier formats.
+    
+    Parameters:
+    -----------
+    sumstats : pandas.DataFrame
+        GWAS summary statistics table
+    snplist : list or None, default=None
+        List of variant identifiers to search for. Accepts multiple formats:
+        - CHR:POS (e.g., '1:123456')
+        - CHR-POS (e.g., '1_123456')
+        - rsID (e.g., 'rs12345')
+        - SNPID (e.g., '1:123456:A:G')
+        - Tuples of (CHR, POS)
+        - Full variant IDs with alleles (e.g., 'chr1:123456:A:G')
+    snpid : str, default="SNPID"
+        Column name containing variant IDs
+    rsid : str, default="rsID"
+        Column name containing rsIDs
+    chrom : str, default="CHR"
+        Column name for chromosome information
+    pos : str, default="POS"
+        Column name for position information
+    ea : str, default="EA"
+        Column name for effect allele
+    nea : str, default="NEA"
+        Column name for non-effect allele
+    log : gwaslab.Log, default=Log()
+        Log object for tracking operations
+    verbose : bool, default=True
+        If True, writes progress to log
+    
+    Returns:
+    --------
+    pandas.DataFrame
+        Subset of summary statistics containing matching variants
+    
+    Examples:
+    ---------
+    >>> variants = _search_variants(sumstats, snplist=["rs1234", "1:100500", (2, 202000), "19:45100000:C:T"])
+    >>> print(variants.shape)
+    """
     log.write("Start to search for variants...", verbose=verbose)
     # create a boolean col with FALSE 
+    if snplist is None:
+        return sumstats.iloc[0:0,:].copy()
+    
     if snpid in sumstats.columns:
         is_extract = sumstats[snpid]!=sumstats[snpid]
     else:
         is_extract = sumstats[rsid]!=sumstats[rsid]
     
     # search each variant
-    for variant in snplist:
+    for variant in snplist:        
         
         if pd.api.types.is_list_like(variant):
             # (1:1234)

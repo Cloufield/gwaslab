@@ -336,6 +336,31 @@ class Sumstats():
                     normalize=True,
                     normalizeallele_args={},
                     verbose=True):
+        """
+        All-in-one function for Sumstats quality control (QC), which is a wrapper of separate functions including:
+             `fix_id` for SNPID and rsID check.
+             `fix_chr` for chromosome notation (CHR) check.
+             `fix_pos` for basepair position (POS) check.
+             `fix_allele` for allele notation (EA and NEA) check.
+             `check_sanity` for statistics sanity check and datatype check (BETA, SE, P and so forth).
+             `check_data_consistency` for checking if convitable data are consistent (for example if the calculated BETA/SE is close to the orginal Z in the file)
+             `normalize_allele` for indel normalization.
+             `remove_dup` for removal of multi-allelic variants, indels, and duplicated variants.
+             `sort_coordinate` for sorting the genomic coordinates.
+             `sort_column` for sorting the order of columns in the dataframe.
+
+        Args:
+            remove : whether to remove bad quality variants dtected in  fixchr, fixpos, and fixallele.
+            removedup : whether to remove duplicated or multi-allelic variants using remove_dup.
+            fixid_args : dict of keyword arguments.  The kwargs are passed to fix_id.
+            fixchr_args : dict of keyword arguments.  The kwargs are passed to fix_chr.
+            fixpos_args : dict of keyword arguments.  The kwargs are passed to fix_pos.
+            fixallele_args : dict of keyword arguments.  The kwargs are passed to fix_allele.
+            sanitycheckstats_args : dict of keyword arguments.  The kwargs are passed to check_sanity.
+            consistencycheck_args : dict of keyword arguments.  The kwargs are passed to check_data_consistency.
+            normalizeallele_args : dict of keyword arguments.  The kwargs are passed to normalize.
+            removedup_args : dict of keyword arguments.  The kwargs are passed to remove_dup.
+        """
         ###############################################
         # try to fix data without dropping any information
         self.data = fixID(self.data,log=self.log,verbose=verbose, **fixid_args)
@@ -500,26 +525,36 @@ class Sumstats():
         
     ############################################################################################################
     #customizable API to build your own QC pipeline
+    @add_doc(fixID)
     def fix_id(self,**kwargs):
         self.data = fixID(self.data,log=self.log,**kwargs)
+    @add_doc(flipSNPID)
     def flip_snpid(self,**kwargs):
         self.data = flipSNPID(self.data,log=self.log,**kwargs)
+    @add_doc(stripSNPID)
     def strip_snpid(self,**kwargs):
         self.data = stripSNPID(self.data,log=self.log,**kwargs)
+    @add_doc(fixchr)
     def fix_chr(self,**kwargs):
         self.data = fixchr(self.data,log=self.log,**kwargs)
+    @add_doc(fixpos)
     def fix_pos(self,**kwargs):
         self.data = fixpos(self.data,log=self.log,**kwargs)
+    @add_doc(fixallele)
     def fix_allele(self,**kwargs):
         self.data = fixallele(self.data,log=self.log,**kwargs)
+    @add_doc(removedup)
     def remove_dup(self,**kwargs):
         self.data = removedup(self.data,log=self.log,**kwargs)
+    @add_doc(sanitycheckstats)
     def check_sanity(self,**kwargs):
         self.data = sanitycheckstats(self.data,log=self.log,**kwargs)
+    @add_doc(_check_data_consistency)
     def check_data_consistency(self, **kwargs):
         _check_data_consistency(self.data,log=self.log,**kwargs)
     def check_id(self,**kwargs):
         pass
+    @add_doc(checkref)
     def check_ref(self,ref_seq,ref_seq_mode="v",**kwargs):
         if ref_seq_mode=="v":
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
@@ -527,13 +562,17 @@ class Sumstats():
         elif ref_seq_mode=="s":
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
             self.data = oldcheckref(self.data,ref_seq,log=self.log,**kwargs)            
+    @add_doc(parallelinferstrand)
     def infer_strand(self,ref_infer,**kwargs):
         self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
         self.data = parallelinferstrand(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+    @add_doc(flipallelestats)
     def flip_allele_stats(self,**kwargs):
         self.data = flipallelestats(self.data,log=self.log,**kwargs)
+    @add_doc(parallelnormalizeallele)
     def normalize_allele(self,**kwargs):
         self.data = parallelnormalizeallele(self.data,log=self.log,**kwargs)
+    @add_doc(parallelizeassignrsid)
     def assign_rsid(self,
                     ref_rsid_tsv=None,
                     ref_rsid_vcf=None,
@@ -544,8 +583,10 @@ class Sumstats():
         if ref_rsid_vcf is not None:
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**kwargs)   
             self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
+    @add_doc(rsidtochrpos)
     def rsid_to_chrpos(self,**kwargs):
         self.data = rsidtochrpos(self.data,log=self.log,**kwargs)
+    @add_doc(parallelrsidtochrpos)
     def rsid_to_chrpos2(self,**kwargs):
         self.data = parallelrsidtochrpos(self.data,log=self.log,**kwargs)
 
@@ -683,7 +724,7 @@ class Sumstats():
         else:
             self.data = _exclude_hla(self.data,log=self.log,**kwargs)
 
-
+    @add_doc(_search_variants)
     def search(self, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
@@ -748,7 +789,7 @@ class Sumstats():
     
     def plot_mqq(self, build=None, **kwargs):
         """
-        Main function to plot Manhattan-like plot and QQ plot:
+        Wrapper function to plot Manhattan-like plot and QQ plot:
         mode="mqq" : Manhattan plot and QQ plot
         mode="m" : only Manhattan plot
         mode="qq" : only QQ plot
@@ -1077,4 +1118,3 @@ class Sumstats():
 
     def reload(self):
          self.data = _reload(self.tmp_path, self.log)
-
