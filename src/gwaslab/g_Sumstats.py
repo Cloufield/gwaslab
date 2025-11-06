@@ -55,6 +55,7 @@ from gwaslab.util.util_in_filter_value import sampling
 from gwaslab.util.util_in_filter_value import _get_flanking
 from gwaslab.util.util_in_filter_value import _get_flanking_by_chrpos
 from gwaslab.util.util_in_filter_value import _get_flanking_by_id
+from gwaslab.util.util_in_filter_value import _get_region_start_and_end
 from gwaslab.util.util_in_calculate_gc import lambdaGC
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
 from gwaslab.util.util_in_get_sig import getsig
@@ -609,6 +610,7 @@ class Sumstats():
     # filter series ######################################################################
     @add_doc(_filter_region)
     def filter_region(self, inplace=False,**kwargs):
+        """If inplace is True, process the sumstats in place. If False, return a new sumstats subset"""
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _filter_region(new_Sumstats_object.data, **kwargs)
@@ -627,6 +629,7 @@ class Sumstats():
     
     @add_doc(_get_flanking_by_chrpos)
     def filter_flanking_by_chrpos(self, chrpos,  inplace=False,**kwargs):
+        """If inplace is True, process the sumstats in place. If False, return a new sumstats subset"""
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = _get_flanking_by_chrpos(new_Sumstats_object.data, chrpos, **kwargs)
@@ -762,6 +765,11 @@ class Sumstats():
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = gethapmap3(new_Sumstats_object.data, build=build,log=self.log, **kwargs)
             return new_Sumstats_object
+    
+    @add_doc(_get_region_start_and_end)
+    def get_region_start_and_end(self,**kwargs):
+        return _get_region_start_and_end(**kwargs)
+
     ######################################################################
     
     def check_af(self,ref_infer,**kwargs):
@@ -809,27 +817,23 @@ class Sumstats():
             build = self.meta["gwaslab"]["genome_build"]
         fig = plottrumpet(self.data,build = build,  **kwargs)
         return fig
-
+    
+    @add_doc(getsig)
     def get_lead(self, build=None, gls=False, **kwargs):
-        """{getsig.__doc__}"""
-
-        if "SNPID" in self.data.columns:
-            id_to_use = "SNPID"
-        else:
-            id_to_use = "rsID"
+        """
+        wrapper for getsig: 
+            gls (boolean): if True, return a new Sumstats object
+        """
         
         # extract build information from meta data
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         
         output = getsig(self.data,
-                           id=id_to_use,
-                           chrom="CHR",
-                           pos="POS",
-                           p="P",
-                           log=self.log,
-                           build=build,
-                           **kwargs)
+                        log=self.log,
+                        build=self.meta["gwaslab"]["genome_build"],
+                        **kwargs)
+        
         # return sumstats object    
         if gls == True:
             new_Sumstats_object = copy.deepcopy(self)
@@ -862,18 +866,14 @@ class Sumstats():
                                                     bwindowsizekb=windowsizekb,
                                                     log=self.log)
 
-        
+    @add_doc(getnovel)
     def get_novel(self, **kwargs):
-        """{getnovel.__doc__}"""
-        if "SNPID" in self.data.columns:
-            id_to_use = "SNPID"
-        else:
-            id_to_use = "rsID"
+        """ 
+        wrapper for getnovel: 
+            gls (boolean): if True, return a new Sumstats object
+        """
+
         output = getnovel(self.data,
-                           id=id_to_use,
-                           chrom="CHR",
-                           pos="POS",
-                           p="P",
                            build=self.meta["gwaslab"]["genome_build"],
                            log=self.log,
                            **kwargs)

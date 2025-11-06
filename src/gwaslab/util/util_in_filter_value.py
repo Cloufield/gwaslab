@@ -607,11 +607,9 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, lo
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
-    chrpos : tuple or list of tuples
+    chrpos : list or list of lists
         Chromosome and position coordinate(s) to use as center
-        Format: (chromosome, position)
+        Format: [chromosome, position]
     windowsizekb : int, default=500
         Size of flanking region in kilobases
     verbose : bool, default=True
@@ -630,7 +628,7 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, lo
     log.write(" - Central positions: {}".format(chrpos), verbose=verbose)
     log.write(" - Flanking windowsize in kb: {}".format(windowsizekb), verbose=verbose)
 
-    if type(chrpos) == tuple:
+    if type(chrpos) == tuple or type(chrpos) == list:
         chrpos_to_check = [chrpos]
     else:
         chrpos_to_check = chrpos
@@ -1072,3 +1070,58 @@ def _search_variants( sumstats, snplist=None,
 
     log.write("Finished searching variants.", verbose=verbose)
     return to_search
+
+
+def _get_region_start_and_end(
+    chrom,
+    pos,
+    windowsizekb: int = 500,
+    verbose: bool = True,
+    log=None,
+    **kwargs):
+    """
+    Compute genomic region boundaries around a focal position.
+
+    Parameters
+    ----------
+    chrom : str or int
+        Chromosome identifier.
+    pos : int or float or str
+        Base-pair position.
+    windowsizekb : int, default=500
+        Window size in kilobases.
+    verbose : bool, default=True
+        Print log message.
+    log : Log, optional
+        GWASLab Log object for recording messages.
+
+    Returns
+    -------
+    tuple
+        (chrom, start, end), where start and end are base-pair coordinates (int).
+    """
+    # Ensure chrom is str
+    chrom = str(chrom)
+
+    # Convert pos to int safely
+    try:
+        pos = int(float(pos))
+    except Exception:
+        raise ValueError(f"Invalid position value: {pos}")
+
+    # Convert window to bp
+    try:
+        window = int(float(windowsizekb) * 1000)
+    except Exception:
+        raise ValueError(f"Invalid windowsizekb value: {windowsizekb}")
+
+    start = max(1, pos - window)
+    end = pos + window
+
+    if log is not None:
+        msg = f"[REGION] CHR {chrom}: {start:,} - {end:,} (±{windowsizekb}kb around {pos:,})"
+        log.write(msg)
+        if verbose:
+            print(msg)
+
+    return chrom, start, end

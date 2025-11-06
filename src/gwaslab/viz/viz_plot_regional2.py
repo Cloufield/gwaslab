@@ -37,10 +37,10 @@ def _plot_regional(
     ax3,
     region,
     vcf_path,
-    ld_path,
     marker_size,
     build,
     cut_line_color,
+    ld_path=None,
     gtf_path="default",
     gtf_chr_dict = get_number_to_chr(),
     gtf_gene_name=None,
@@ -95,14 +95,14 @@ def _plot_regional(
         Primary axis for variant plotting.
     ax3 : matplotlib.axes.Axes
         Axis for gene track plotting.
-    region : tuple
-        Genomic region to plot as (chr, start, end).
+    region : list, required for region plot
+        Genomic region to plot as (chr, start, end). Used to filter in variants in the specified region. Do not use expression to calculate start and end.
     vcf_path : str or None
         Path to reference VCF file for genotype data.
     ld_path : str or None
-        Path to LD data file.
-    marker_size : tuple
-        Size range for variant markers.
+        Path to LD data file. If vcf_path is not None, ld_path is None.
+    marker_size : list
+        Size range for variant markers. [45,65]
     build : str
         Genome build version (e.g., 'hg19').
     cut_line_color : str

@@ -1675,8 +1675,8 @@ mqqplot.__doc__ ="""
     anno : str or bool, optional
         Column name for annotation (e.g., gene names) or True for default annotation
     
-    region : tuple or list, optional
-        Genomic region to plot in format of (chr, start, end) (e.g.,(1, 12345, 23456) ) 
+    region : tuple or list, required for region plot
+        Genomic region to plot in format of (chr, start, end) (e.g.,(1, 12345, 23456) ).  Do not use expression to calculate start and end.
     
     colors : list, optional
         Color palette for plots

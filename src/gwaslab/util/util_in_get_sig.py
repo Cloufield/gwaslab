@@ -13,7 +13,7 @@ from gwaslab.bd.bd_common_data import get_chr_to_NC
 from gwaslab.bd.bd_common_data import gtf_to_protein_coding
 from gwaslab.bd.bd_common_data import gtf_to_all_gene
 from gwaslab.bd.bd_download import check_and_download
-
+from gwaslab.qc.qc_build import _process_build
 from gwaslab.qc.qc_fix_sumstats import check_dataframe_shape
 from gwaslab.qc.qc_fix_sumstats import start_to
 from gwaslab.qc.qc_fix_sumstats import finished
@@ -27,7 +27,7 @@ from gwaslab.util.util_in_fill_data import fill_p
 # getnovel
 
 def getsig(insumstats,
-           id,
+           id="SNPID",
            chrom="CHR",
            pos="POS",
            p="P",
@@ -45,7 +45,54 @@ def getsig(insumstats,
            gtf_path=None,
            verbose=True):
     """
-    Extract the lead variants using a sliding window. P or MLOG10P will be used and converted to SCALEDP for sorting. 
+    Extract lead variants using a sliding window approach with significance thresholding.
+
+    This function identifies lead variants from summary statistics using a sliding window 
+    algorithm based on either p-values or -log10(p-values). It handles data preprocessing, 
+    significance filtering, and optional gene annotation and Winner's Curse correction.
+
+    Parameters
+    ----------
+    use_p : bool, default=False
+        If True, use raw p-values (P) instead of -log10(p-values)
+    windowsizekb : int, default=500
+        Window size in kilobases for lead variant identification
+    sig_level : float, default=5e-8
+        Significance threshold for variant selection
+    xymt : list, default=["X","Y","MT"]
+        List of non-autosomal chromosome identifiers
+    anno : bool, default=False
+        If True, annotate variants with nearest gene information
+    wc_correction : bool, default=False
+        If True, apply Winner's Curse correction to effect sizes
+    build : {"19", "38"}, default="19"
+        Reference genome build for gene annotation
+    source : {"ensembl", "refseq"}, default="ensembl"
+        Database source for gene annotation
+    gtf_path : str, optional
+        Path to custom GTF file for gene annotation
+    verbose : bool, default=True
+        If True, print detailed processing information
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame containing significant lead variants with:
+        - Original summary statistics columns
+        - Annotated gene names (if anno=True)
+        - Winner's Curse corrected BETA values (if wc_correction=True)
+        - Additional metadata columns
+
+    Notes
+    -----
+    The function performs multiple steps:
+    1. Data validation and preprocessing
+    2. Significance filtering using specified threshold
+    3. Sliding window lead variant selection
+    4. Optional gene annotation using Ensembl/RefSeq
+    5. Optional Winner's Curse correction
+
+    When no significant variants are found, returns None after logging a message.
     """
     ##start function with col checking##########################################################
     _start_line = "extract lead variants"
@@ -69,6 +116,11 @@ def getsig(insumstats,
     log.write(" -Significance threshold :", sig_level, verbose=verbose)
     log.write(" -Sliding window size:", str(windowsizekb) ," kb", verbose=verbose)
     
+    if "SNPID" in insumstats.columns:
+        id = "SNPID"
+    else:
+        id = "rsID"
+
     #load data
     sumstats=insumstats.loc[~insumstats[id].isna(),:].copy()
     
@@ -252,7 +304,7 @@ def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ense
 
 def annogene(
            insumstats,
-           id,
+           id="SNPID",
            chrom="CHR",
            pos="POS",
            log=Log(),
@@ -263,8 +315,8 @@ def annogene(
            verbose=True):
     
     log.write("Start to annotate variants with nearest gene name(s)...", verbose=verbose)
+    build = _process_build(build)
     output = insumstats.copy()
-    
     if source == "ensembl":
         if build=="19":
             #data = EnsemblRelease(75)
@@ -358,10 +410,10 @@ def annogene(
     return output
 
 def getnovel(insumstats,
-           id,
-           chrom,
-           pos,
-           p,
+           id="SNPID",
+           chrom="CHR",
+           pos="POS",
+           p="P",
            use_p=False,
            known=False,
            efo=False,
@@ -382,6 +434,86 @@ def getnovel(insumstats,
            gwascatalog_source="NCBI",
            output_known=False,
            verbose=True):
+    """
+    Identify novel variants by comparing against known variant databases.
+
+    This function determines whether variants in summary statistics are novel by comparing them 
+    against known variants from GWAS catalog or user-provided reference data. It handles 
+    coordinate conversion, distance calculations, and group-based comparisons.
+
+    Parameters
+    ----------
+    known : pd.DataFrame or str, optional
+        DataFrame or path to file containing known variants with CHR/POS columns
+    efo : str or list, optional
+        EFO trait(s) for querying GWAS catalog
+    only_novel : bool, default=False
+        If True, return only novel variants
+    group_key : str, optional
+        Column name for grouping variants (e.g., trait/phenotype ID)
+    if_get_lead : bool, default=True
+        If True, first extract lead variants using getsig
+    windowsizekb_for_novel : int, default=1000
+        Distance threshold (kb) to define novelty
+    windowsizekb : int, default=500
+        Window size (kb) for lead variant extraction
+    sig_level : float, default=5e-8
+        Significance threshold for variant selection
+    log : gwaslab.g_Log.Log, default=Log()
+        Logger object for tracking processing steps
+    xymt : list, default=["X","Y","MT"]
+        Non-autosomal chromosome identifiers
+    anno : bool, default=False
+        If True, annotate variants with gene information
+    wc_correction : bool, default=False
+        If True, apply Winner's Curse correction
+    use_cache : bool, default=True
+        If True, use cached GWAS catalog data
+    cache_dir : str, default="./"
+        Directory for caching downloaded data
+    build : {"19", "38"}, default="19"
+        Reference genome build for GWAS catalog queries
+    source : {"ensembl", "refseq"}, default="ensembl"
+        Database source for gene annotation
+    gwascatalog_source : {"NCBI", "EBI"}, default="NCBI"
+        Source for GWAS catalog data
+    output_known : bool, default=False
+        If True, return both processed and known variants
+    verbose : bool, default=True
+        If True, print progress information
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame containing variants with novelty status and metadata:
+        - NOVEL : Boolean indicating novelty status
+        - DISTANCE_TO_KNOWN : Distance to nearest known variant
+        - LOCATION_OF_KNOWN : Relative position to known variant
+        - KNOWN_ID : ID of matching known variant
+        - Additional metadata from known variants
+
+    Other Parameters
+    ----------------
+    if_get_lead : bool, default=True
+        If True, first extract lead variants using getsig
+    windowsizekb : int, default=500
+        Window size (kb) for lead variant identification
+    windowsizekb_for_novel : int, default=1000
+        Distance threshold (kb) to define novelty
+
+    Notes
+    -----
+    The function performs multiple steps:
+    1. Data validation and preprocessing
+    2. Retrieval of known variants from GWAS catalog or user input
+    3. Coordinate conversion and helper column creation (TCHR+POS)
+    4. Distance calculations between variants
+    5. Novelty determination based on distance threshold
+    6. Grouped comparisons when group_key is provided
+
+    When no significant variants are found, returns None after logging a message.
+    """
+    
     ##start function with col checking##########################################################
     _start_line = "check if lead variants are known"
     _end_line = "checking if lead variants are known"
@@ -399,7 +531,12 @@ def getnovel(insumstats,
                             **_must_args)
     if is_enough_info == False: return None
     ############################################################################################
-    
+
+    if "SNPID" in insumstats.columns:
+        id = "SNPID"
+    else:
+        id = "rsID"
+
     if if_get_lead == True:
         allsig = getsig(insumstats=insumstats,
             id=id,chrom=chrom,pos=pos,p=p,use_p=use_p,windowsizekb=windowsizekb,sig_level=sig_level,log=log,

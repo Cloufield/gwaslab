@@ -2,7 +2,7 @@
     "1kg_eas_hg19": {
         "url": "https://www.dropbox.com/s/lztaxqhy2o6dpxw/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1",
         "description": "1KG EAS VCF hg19",
-        "suggested_use": "",
+        "suggested_use": "LD reference for region plot",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/s/k9klefl8m9fcfo1/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1"
