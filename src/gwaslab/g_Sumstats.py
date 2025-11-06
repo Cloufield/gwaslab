@@ -595,6 +595,7 @@ class Sumstats():
     def sort_coordinate(self,**sort_args):
         self.data = sortcoordinate(self.data,log=self.log,**sort_args)
         self.meta["is_sorted"] = True
+
     def sort_column(self,**kwargs):
         self.data = sortcolumn(self.data,log=self.log,**kwargs)
     
@@ -787,41 +788,17 @@ class Sumstats():
         fig = _gwheatmap(self.data, **kwargs)
         return fig
     
+    @add_doc(mqqplot)
     def plot_mqq(self, build=None, **kwargs):
         """
-        Wrapper function to plot Manhattan-like plot and QQ plot:
-        mode="mqq" : Manhattan plot and QQ plot
-        mode="m" : only Manhattan plot
-        mode="qq" : only QQ plot
-        mode="b" : only Brisbane plot (SNP density plot)
-        mode="r" : region plot
-
-        {mqqplot.__doc__}
+        Wrapper function to plot Manhattan-like plot and QQ plot.
         """
-        chrom="CHR"
-        pos="POS"
-        p="P"
-        
-        if "SNPID" in self.data.columns:
-            snpid="SNPID"
-        elif "rsID" in self.data.columns:
-            snpid="rsID"
-        
-        if "EAF" in self.data.columns:
-            eaf="EAF"
-        else:
-            eaf=None
 
         # extract build information from meta data
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
 
         plot = mqqplot(self.data,
-                       snpid=snpid, 
-                       chrom=chrom, 
-                       pos=pos, 
-                       p=p, 
-                       eaf=eaf,
                        build = build, 
                        **kwargs)
         

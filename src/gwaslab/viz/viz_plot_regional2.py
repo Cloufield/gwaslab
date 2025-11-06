@@ -56,7 +56,6 @@ def _plot_regional(
     region_ref=None,
     region_ref_index_dic = None,
     region_ref_alias = None,
-    #region_ref_second=None,
     region_grid = False,
     region_grid_line = {"linewidth": 2,"linestyle":"--"},
     region_lead_grid = True,
@@ -79,17 +78,135 @@ def _plot_regional(
     region_flank_factor = 0.05,
     track_font_family="Arial",
     taf=[4,0,0.95,1,1],
-    # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
     pos="POS",
     verbose=True,
     log=Log()
-):  
+):
+    """
+    Generate a regional plot with optional recombination rate tracks, gene annotations, and LD legends.
 
-    # x axix: use i to plot (there is a gap between i and pos) 
+    Parameters:
+    -----------
+    sumstats : pandas.DataFrame
+        Summary statistics DataFrame containing variant data.
+    fig : matplotlib.figure.Figure
+        Matplotlib Figure object to draw on.
+    ax1 : matplotlib.axes.Axes
+        Primary axis for variant plotting.
+    ax3 : matplotlib.axes.Axes
+        Axis for gene track plotting.
+    region : tuple
+        Genomic region to plot as (chr, start, end).
+    vcf_path : str or None
+        Path to reference VCF file for genotype data.
+    ld_path : str or None
+        Path to LD data file.
+    marker_size : tuple
+        Size range for variant markers.
+    build : str
+        Genome build version (e.g., 'hg19').
+    cut_line_color : str
+        Color for grid lines.
+    gtf_path : str, optional
+        Path to GTF file for gene annotations.
+    gtf_chr_dict : dict
+        Mapping of chromosome numbers to names.
+    gtf_gene_name : str, optional
+        Column name for gene IDs in GTF.
+    rr_path : str, optional
+        Recombination rate data path.
+    rr_header_dict : dict, optional
+        Column names for recombination rate data.
+    rr_chr_dict : dict
+        Chromosome mapping for recombination data.
+    rr_lim : tuple
+        Y-axis limits for recombination rate plot.
+    rr_ylabel : bool
+        Whether to show recombination rate y-label.
+    region_ld_legend : bool
+        Whether to show LD legend.
+    region_title : str, optional
+        Plot title.
+    mode : str
+        Plotting mode ('mqq' or 'regional').
+    region_step : int
+        Number of x-axis ticks.
+    region_ref : list, optional
+        Reference variants for LD calculation.
+    region_ref_index_dic : dict, optional
+        Mapping of reference variant indices.
+    region_ref_alias : dict, optional
+        Alternate names for reference variants.
+    region_grid : bool
+        Whether to show grid lines.
+    region_grid_line : dict
+        Grid line style parameters.
+    region_lead_grid : bool
+        Whether to show lead variant grid lines.
+    region_lead_grid_line : dict
+        Style parameters for lead variant grid lines.
+    region_title_args : dict, optional
+        Title text parameters.
+    region_ld_threshold : list
+        LD r² thresholds for color coding.
+    region_marker_shapes : list
+        Marker shapes for variants.
+    cbar_fontsize : int, optional
+        Font size for colorbar labels.
+    cbar_scale : bool
+        Whether to scale colorbar.
+    cbar_bbox_to_anchor : tuple
+        Colorbar position anchor.
+    cbar_w_scale : float
+        Width scale for colorbar.
+    cbar_h_scale : float
+        Height scale for colorbar.
+    cbar_downward_offset : float
+        Downward offset for colorbar.
+    cbar_borderpad : float
+        Border padding for colorbar.
+    cbar_equal_aspect : bool
+        Whether to maintain aspect ratio.
+    palette : list
+        Color palette for plotting.
+    region_protein_coding : bool
+        Whether to show protein-coding genes.
+    region_legend_marker : bool
+        Whether to show marker legend.
+    region_flank_factor : float
+        Flank region padding factor.
+    track_font_family : str
+        Font family for gene track labels.
+    taf : list
+        Gene track layout parameters.
+    pos : str
+        Column name for position data.
+    verbose : bool
+        Whether to print progress messages.
+    log : Log
+        Logging object.
+
+    Returns:
+    --------
+    ax1 : matplotlib.axes.Axes
+        Modified primary axis.
+    ax3 : matplotlib.axes.Axes
+        Modified gene track axis.
+    ax4 : matplotlib.axes.Axes or None
+        Recombination rate axis (if created).
+    cbar : matplotlib.colorbar.Colorbar or None
+        Colorbar (if created).
+    lead_snp_is : list
+        x-coordinates of lead variants.
+    lead_snp_is_colors : list
+        Colors of lead variants.
+    """
 
 
-    # if regional plot : pinpoint lead , add color bar ##################################################
     if (region is not None) :
+        # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
+    # x axix: use i to plot (there is a gap between i and pos) 
+    # if regional plot : pinpoint lead , add color bar ##################################################
         # pinpoint lead
         lead_ids = []
         

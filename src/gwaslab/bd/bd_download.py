@@ -8,6 +8,8 @@ import hashlib
 from gwaslab.g_Log import Log
 from gwaslab.bd.bd_config import options
 import re
+from copy import deepcopy
+from pathlib import Path
 from gwaslab.g_version import _get_version
 #### config ##############################################################################################
 # config.json
@@ -56,10 +58,13 @@ def update_config(log=Log()):
     # check if the ref file exists. If not, remove it from dicts.
     to_remove=[]
     for key,value in dicts["downloaded"].items():
-        if not path.exists(value):
+        if type(value) is not dict: 
+            to_remove.append(key)
+            continue
+        if not path.exists(value["local_path"]):
             to_remove.append(key)
         else:
-            log.write("  -",key," : ",value)
+            log.write("  -",key," : ",value["local_path"])
 
     # remove from dict
     for i in to_remove:
@@ -102,17 +107,8 @@ def get_default_directory():
     Returns:
         str: Path to the default data directory from configuration
     '''
-    # config_path=path.dirname(__file__) + '/data/config.json'
-    # config_path = options.paths["config"]
-    #try:
-        # get default directory
-        # dicts = json.load(open(config_path))
     return options.paths["data_directory"]
-    #except:
-        # if no config file: create one and get default directory
-    #    initiate_config()
-    #    dicts = json.load(open(config_path))
-    #    return dicts["default_directory"]
+
 
 
 ##################################################################################
@@ -169,7 +165,7 @@ def check_downloaded_ref(log=Log()):
         log (Log): Logging object for tracking operations
     
     Returns:
-        dict: Dictionary mapping reference names to local file paths
+        dict: Dictionary mapping reference keywords to local file paths
     '''
     log.write("Start to check downloaded reference files...")
     #config_path =  path.dirname(__file__) + '/data/config.json'
@@ -180,18 +176,21 @@ def check_downloaded_ref(log=Log()):
         initiate_config()      
     else:
         log.write(" -Config file exists.")
-        try:
-            dicts = update_config()
-            return dicts
-        except:
-            log.write(" -No records in config file.")
+        #try:
+        dicts = update_config()
+        return dicts
+        #except:
+        #    log.write(" -No records in config file.")
     log.write("Finished checking downloaded reference files...")
 
 ##################################################################################
 
 def get_path(name,log=Log(),verbose=True):
     '''
-    Retrieve the local file path for a specified reference file name.
+    Retrieve the local file path for a specified reference file using keywords. 
+    keywords can be found using:
+      check_downloaded_ref for already downloaded files.
+      check_available_ref for avaiable files for downloading.
     
     Args:
         name (str): Reference file identifier
@@ -210,8 +209,8 @@ def get_path(name,log=Log(),verbose=True):
     else:
         try:
             dicts = json.load(open(config_path))["downloaded"]
-            if path.exists(dicts[name]):
-                return dicts[name]
+            if path.exists(dicts[name]["local_path"]):
+                return dicts[name]["local_path"]
             else:
                 log.write("File not exist.", verbose=verbose)
         except:
@@ -229,9 +228,6 @@ def download_ref(name,
     
     Args:
         name (str): Reference file identifier
-        directory (str): Custom download directory (defaults to config value)
-        local_filename (str): Custom filename (defaults to URL-derived name)
-        overwrite (bool): Whether to overwrite existing files
         log (Log): Logging object for tracking operations
     
     Returns:
@@ -243,7 +239,7 @@ def download_ref(name,
     if name in dicts.keys():
         # get url for name
         
-        url = dicts[name]
+        url = dicts[name]["url"]
         
         log.write("Start to download ",name," ...")
 
@@ -267,22 +263,20 @@ def download_ref(name,
                 download_file(url,local_path)
         else:
             download_file(url,local_path)
-
-        # download file
-        #download_file(url,local_path)
         
         # update record in config json
-        if name+"_md5" in dicts.keys():
-            file_status = check_file_integrity(local_path=local_path, md5sum=dicts[name+"_md5"],log=log)
+        if "md5" in  dicts[name].keys():
+            file_status = check_file_integrity(local_path=local_path, md5sum=dicts[name]["md5"],log=log)
             if file_status==0:
                 log.write("Md5sum verification of ",name," failed! Please check again.")
-        update_record(name,local_path)
+        update_record("downloaded", name,"local_path",value=local_path)
         
         # if vcf.gz -> check tbi
         if local_path.endswith("vcf.gz"):
-                if name+"_tbi" in dicts.keys():
-                    tbi_url = dicts[name+"_tbi"]
+                if "tbi" in  dicts[name].keys():
+                    tbi_url = dicts[name]["tbi"]["url"]
                 try:
+                    log.write(" -Downloading to:",local_path+".tbi")
                     if search_local(local_path+".tbi") == True:
                         log.write(" -File {} exists.".format(local_path+".tbi"))
                         if overwrite == True:
@@ -290,9 +284,8 @@ def download_ref(name,
                             download_file(tbi_url,local_path+".tbi")
                     else:
                         download_file(tbi_url,local_path+".tbi")
-                    #download_file(tbi_url, local_path+".tbi")
-                    update_record(name+"_tbi",local_path+ ".tbi")
-                    log.write(" -Downloading to:",local_path+".tbi")
+
+                    update_record("downloaded", name, "tbi", "local_path", value=local_path+ ".tbi")
                 except:
                     pass
         
@@ -303,9 +296,10 @@ def download_ref(name,
                 with gzip.open(local_path, 'rb') as f_in:
                     with open(local_path[:-3], 'wb') as f_out:
                         shutil.copyfileobj(f_in, f_out)
-                        update_record(name,local_path[:-3])
+                        update_record("downloaded",name, "local_path", value=local_path[:-3])
             except:
                     pass
+        update_description(name, dicts[name])
         log.write("Downloaded ",name," successfully!")
     else:
         log.write(name," is not available. Please use check_available_ref() to check available reference files.")
@@ -346,25 +340,110 @@ def remove_file(name,log=Log()):
             log.write("No records in config file. Please download first.")
 
 #### helper #############################################################################################
-def update_record(  key, value, log=Log()):
-    '''
-    Update configuration with new reference file path.
-    
-    Args:
-        key (str): Reference identifier
-        value (str): File system path
-        log (Log): Logging object for tracking operations
-    '''
-    log.write(" -Updating record in config file...")
+def update_record(*keys, value, log=Log()):
+    """
+    Update configuration with a value at a nested key path.
+    Automatically creates intermediate levels if they do not exist.
+
+    Parameters
+    ----------
+    *keys : str
+        One or more hierarchical keys. For example:
+        update_record("1kg_eas_hg19", "tbi", value="/path/to/file")
+    value : Any
+        Value to be stored at that nested path.
+    log : Log, optional
+        Logging object for tracking operations.
+    """
+    if log is not None:
+        log.write(" - Updating record in config file...")
+
+    config_path = Path(options.paths["config"])
+
+    # Load config or initialize
+    if config_path.exists():
+        with open(config_path, "r", encoding="utf-8") as f:
+            try:
+                cfg = json.load(f)
+            except Exception:
+                cfg = {}
+    else:
+        cfg = {}
+
+    # Navigate and build nested dict
+    node = cfg
+    for k in keys[:-1]:
+        if k not in node or not isinstance(node[k], dict):
+            node[k] = {}
+        node = node[k]
+
+    # Assign the final value
+    node[keys[-1]] = value
+
+    # Write back
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=4, ensure_ascii=False)
+
+    #if log is not None:
+    #    log.write(f"   -> Updated path: {'/'.join(keys)}")
+
+def _deep_merge(a, b):
+    """
+    Recursively merge dictionary b into dictionary a.
+    If 'a' is not a dict, return 'b' (full replacement).
+    """
+    # If a is not a dict, b replaces it entirely
+    if not isinstance(a, dict):
+        return b
+
+    # Both a and b must be dicts to merge further
+    for k, v in b.items():
+        if isinstance(v, dict):
+            a[k] = _deep_merge(a.get(k), v)
+        else:
+            a[k] = v
+
+    return a
+
+def update_description(key, dicts, log=None):
+    """
+    Update configuration by deep-merging metadata into config["downloaded"][key].
+
+    Parameters
+    ----------
+    key : str
+        Reference identifier.
+    dicts : dict
+        Possibly nested dictionary to merge into the entry.
+    log : Log, optional
+        Logging object for tracking operations.
+    """
+    if log is not None:
+        log.write(" - Updating description records in config file...")
+
     config_path = options.paths["config"]
+
+    # Load or initialize config
     try:
-        with open(config_path,'r') as f:
-            dict=json.load(f)
-    except:
-        dict={'downloaded':{}}
-    dict["downloaded"][key] = value
-    with open(config_path, 'w') as f:
-        json.dump(dict,f,indent=4)
+        with open(config_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except Exception:
+        cfg = {}
+
+    # Ensure nested structure
+    cfg.setdefault("downloaded", {})
+    cfg["downloaded"].setdefault(key, {})
+
+    # Deep merge
+    cfg["downloaded"][key] = _deep_merge(cfg["downloaded"][key], dicts)
+
+    # Write back
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=4, ensure_ascii=False)
+
+    if log is not None:
+        log.write(f"   -> Deep-merged into downloaded/{key}")
+
 
 def download_file(url, file_path=None):
     '''

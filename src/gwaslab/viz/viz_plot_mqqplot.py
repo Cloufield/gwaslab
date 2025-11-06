@@ -72,11 +72,11 @@ from gwaslab.bd.bd_common_data import get_gtf
 # 20230202 ######################################################################################################
 
 def mqqplot(insumstats,            
-          chrom=None,
-          pos=None,
-          p=None,
-          snpid=None,
-          eaf=None,
+          chrom="CHR",
+          pos="POS",
+          p="P",
+          snpid="SNPID",
+          eaf="EAF",
           ea="EA",
           nea="NEA",
           check = True,
@@ -255,98 +255,16 @@ def mqqplot(insumstats,
           expected_min_mlog10p=0,
           log=Log()
           ):
-    """
-    Generate a Manhattan-QQ (MQQ) plot for genome-wide association study (GWAS) results.
-
-    Parameters:
-    -----------
-    insumstats : pandas.DataFrame
-        Input GWAS summary statistics DataFrame containing at minimum:
-        - Chromosome numbers
-        - Genomic positions
-        - P-values or -log10(P) values
     
-    chrom : str
-        Column name for chromosome values in insumstats
-        
-    pos : str
-        Column name for genomic position values in insumstats
-        
-    p : str
-        Column name for raw p-values in insumstats
-        
-    snpid : str
-        Column name for SNP IDs in insumstats
-        
-    eaf : str
-        Column name for effect allele frequency in insumstats
-        
-    mode : str, default="mqq"
-        Plotting mode. Options:
-        - "mqq": Manhattan-QQ combined plot
-        - "qqm": QQ-Manhattan combined plot
-        - "m": Manhattan plot only
-        - "qq": QQ plot only
-        - "r": Regional plot
-        - "b": Brisbane plot (density plot)
+    if snpid in insumstats.columns:
+        snpid=snpid
+    elif "SNPID" in insumstats.columns:
+        snpid="SNPID"
+    elif "rsID" in insumstats.columns:
+        snpid="rsID"
     
-    highlight : list, optional
-        List of SNPs or genomic regions to highlight
-        
-    highlight_color : str, default="#CB132D"
-        Color for highlighted regions/SNPs
-    
-    pinpoint : list, optional
-        List of SNPs to pinpoint with a distinct marker
-    
-    anno : str or bool, optional
-        Column name for annotation (e.g., gene names) or True for default annotation
-    
-    region : tuple, optional
-        Genomic region to plot (e.g., (chr, start, end))
-    
-    colors : list, optional
-        Color palette for plots
-    
-    marker_size : tuple, default=(5,20)
-        Size range for scatter plot markers
-    
-    fontsize : int, default=9
-        Base font size for text elements
-    
-    title : str, optional
-        Main plot title
-    
-    save : str or bool, optional
-        File path to save the plot (e.g., "output.png")
-    
-    Returns:
-    --------
-    fig : matplotlib.figure.Figure
-        Generated plot figure
-    
-    log : gwaslab.g_Log.Log
-        Logging object with execution messages
-    
-    lead_snp_is : list, optional
-        Lead SNP positions in regional plots
-    
-    lead_snp_is_color : list, optional
-        Colors for lead SNPs in regional plots
-    
-    Examples:
-    ---------
-    >>> fig, log = mqqplot(
-    ...     insumstats=df,
-    ...     chrom="CHR",
-    ...     pos="POS",
-    ...     p="P",
-    ...     snpid="SNPID",
-    ...     mode="mqq",
-    ...     title="Manhattan-QQ Plot",
-    ...     save="output.png"
-    ... )
-    """
+    if "EAF" not in insumstats.columns:
+        eaf=None
     
     chr_dict = _update_args(chr_dict, get_chr_to_number())
     xtick_chr_dict = _update_args(xtick_chr_dict, get_number_to_chr())
@@ -573,17 +491,7 @@ def mqqplot(insumstats,
     
     if region is not None:
         sumstats = _filter_region(sumstats, region, log=log, verbose=verbose)
-    #    region_chr = region[0]
-    #    region_start = region[1]
-    #    region_end = region[2]
-    #    
-    #    log.write(" -Extract SNPs in region : chr{}:{}-{}...".format(region_chr, region[1], region[2]),verbose=verbose)
-    #    
-    #    in_region_snp = (sumstats[chrom]==region_chr) & (sumstats[pos]<region_end) & (sumstats[pos]>region_start)
-    #    
-    #    log.write(" -Extract SNPs in specified regions: "+str(sum(in_region_snp)),verbose=verbose)
-    #    sumstats = sumstats.loc[in_region_snp,:]
-    #    
+  
         if len(sumstats)==0:
             log.warning("No valid data! Please check the input.")
             return None
@@ -1734,3 +1642,72 @@ def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
     ax4=None
     cbar=None
     return fig, ax1, ax2, ax3, ax4, cbar
+
+mqqplot.__doc__ ="""
+    Generate a Manhattan-like plot (Mahanttan plot, Region plot, Brisbane plot) and QQ plot for genome-wide association study (GWAS) results.
+
+    Parameters:
+    -----------
+    insumstats : pandas.DataFrame
+        Input GWAS summary statistics DataFrame containing at minimum:
+        - Chromosome numbers
+        - Genomic positions
+        - P-values or -log10(P) values
+        
+    mode : str, default="mqq"
+        Plotting mode. Options:
+        - "mqq": Manhattan-QQ combined plot
+        - "qqm": QQ-Manhattan combined plot
+        - "m": Manhattan plot only
+        - "qq": QQ plot only
+        - "r": Regional plot
+        - "b": Brisbane plot (density plot)
+    
+    highlight : list, optional
+        List of SNPs or genomic regions to highlight
+        
+    highlight_color : str, default="#CB132D"
+        Color for highlighted regions/SNPs
+    
+    pinpoint : list, optional
+        List of SNPs to pinpoint with a distinct marker
+    
+    anno : str or bool, optional
+        Column name for annotation (e.g., gene names) or True for default annotation
+    
+    region : tuple or list, optional
+        Genomic region to plot in format of (chr, start, end) (e.g.,(1, 12345, 23456) ) 
+    
+    colors : list, optional
+        Color palette for plots
+    
+    marker_size : tuple, default=(5,20)
+        Size range for scatter plot markers
+    
+    fontsize : int, default=9
+        Base font size for text elements
+    
+    title : str, optional
+        Main plot title
+    
+    save : str or bool, optional
+        File path to save the plot (e.g., "output.png")
+    
+    Returns:
+    --------
+    fig : matplotlib.figure.Figure
+        Generated plot figure
+    
+    log : gwaslab.g_Log.Log
+        Logging object with execution messages
+    
+    lead_snp_is : list, optional
+        Lead SNP positions in regional plots
+    
+    lead_snp_is_color : list, optional
+        Colors for lead SNPs in regional plots
+    
+    Region plot mode
+    ---------
+    {region_doc}
+    """.format(region_doc = _plot_regional.__doc__)

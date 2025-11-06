@@ -47,7 +47,7 @@ def _plot_qq(
     verbose=True,
     log=Log()
 ):
-
+            
     # QQ plot #########################################################################################################
     # ax2 qqplot
     log.write("Start to create QQ plot with "+str(len(sumstats))+" variants:",verbose=verbose )
@@ -138,7 +138,6 @@ def _plot_qq(
                     transform=ax2.transAxes,
                     fontsize=fontsize,family=font_family)
     
-
     ax2 = _set_yticklabels(cut=cut,
                         cutfactor=cutfactor,
                         cut_log=cut_log,
