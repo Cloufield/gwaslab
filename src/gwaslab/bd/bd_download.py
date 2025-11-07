@@ -64,7 +64,7 @@ def update_config(log=Log()):
         if not path.exists(value["local_path"]):
             to_remove.append(key)
         else:
-            log.write("  -",key," : ",value["local_path"])
+            log.write("  -",key,":", dicts["downloaded"][key])
 
     # remove from dict
     for i in to_remove:
@@ -114,7 +114,7 @@ def get_default_directory():
 ##################################################################################
 def check_available_ref(log=Log(),verbose=True):
     '''
-    Load and return the list of available reference files from configuration.
+    Load and return the list of available reference files from configuration for downloading.
     
     Args:
         log (Log): Logging object for tracking operations

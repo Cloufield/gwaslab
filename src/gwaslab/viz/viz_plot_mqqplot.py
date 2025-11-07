@@ -28,7 +28,7 @@ from gwaslab.g_Log import Log
 from gwaslab.g_version import _get_version
 
 from gwaslab.hm.hm_harmonize_sumstats import auto_check_vcf_chr_dict
-
+from gwaslab.qc.qc_build import _process_build
 from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
 from gwaslab.viz.viz_aux_annotate_plot import annotate_single
 from gwaslab.viz.viz_plot_qqplot import _plot_qq
@@ -319,6 +319,7 @@ def mqqplot(insumstats,
     track_font_family = _update_arg(track_font_family, font_family)
     
     build = _update_arg(build,"19")
+    build = _process_build(build, log=log, verbose=verbose)
 
     save_args = _update_args(save_args, {"dpi":600,"transparent":True})
     save_args = _update_args(saveargs , save_args)

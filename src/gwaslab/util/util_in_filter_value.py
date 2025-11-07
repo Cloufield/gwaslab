@@ -963,6 +963,10 @@ def _filter_region(sumstats, region, chrom="CHR", pos="POS", log=Log(), verbose=
         Subset of summary statistics in the specified region
     """
     if region is not None:
+        
+        if type(region[0]) is str:
+            region[0] = int(region[0])
+            
         region_chr = region[0]
         region_start = region[1]
         region_end = region[2]
