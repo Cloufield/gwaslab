@@ -806,7 +806,7 @@ class Sumstats():
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
 
-        plot = mqqplot(self.data,
+        plot, log = mqqplot(self.data,
                        build = build, 
                        **kwargs)
         
