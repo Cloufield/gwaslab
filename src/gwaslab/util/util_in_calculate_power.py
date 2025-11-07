@@ -21,6 +21,55 @@ def get_power(
               log=Log(),
               verbose=True
              ):
+    """
+    Calculate statistical power for genetic association studies.
+    
+    Parameters
+    ----------
+    mode : {'b', 'q'}, optional
+        Calculation mode: 
+        - 'b' for binary traits (case-control)
+        - 'q' for quantitative traits
+    genotype_rr : float, optional
+        Genotype relative risk (GRR) for risk allele for binary traits
+    genotype_or : float, optional
+        Genotype odds ratio (OR) for risk allele for binary traits
+    beta : float, optional
+        Effect size (log scale) for quantitative traits
+    eaf : float, optional
+        Effect allele frequency for quantitative traits
+    n : int, optional
+        Total sample size for quantitative traits
+    ncase : int, optional
+        Number of cases for binary mode
+    ncontrol : int, optional
+        Number of controls for binary mode
+    prevalence : float, optional
+        Disease prevalence in population
+    or_to_rr : bool, optional
+        Convert OR to GRR using prevalence (Zhang & Kai method)
+    daf : float, optional
+        Derived allele frequency
+    sig_level : float, optional
+        Significance threshold (default: 5e-8)
+    vary : float, optional
+        Phenotype variance for quantitative traits
+    
+    Returns
+    -------
+    float or array-like
+        Calculated statistical power (0-1)
+    
+    References
+    ----------
+    Skol, A. D., Scott, L. J., Abecasis, G. R., & Boehnke, M. (2006). 
+    Joint analysis is more efficient than replication-based analysis 
+    for two-stage genome-wide association studies. Nature genetics, 38(2), 209-213.
+    
+    Zhang, J., & Kai, F. Y. (1998). What's the relative risk? 
+    A method of correcting the odds ratio in cohort studies of common outcomes. 
+    Jama, 280(19), 1690-1691.
+    """
     log.write(" Start to calculate statistical power...", verbose=verbose)
     if mode=="b":
         log.write(" -Input settings (b mode):", verbose=verbose)
@@ -122,6 +171,45 @@ def get_beta(
               verbose=True,
               n_matrix=500
              ):
+    """
+    Calculate effect size (beta) values that achieve a target statistical power.
+    
+    Parameters
+    ----------
+    mode : {'q', 'b'}, optional
+        Calculation mode:
+        - 'q' for quantitative traits (default)
+        - 'b' for binary traits (case-control)
+    eaf_range : tuple of float, optional
+        Range of effect allele frequencies to evaluate (min, max)
+    beta_range : tuple of float, optional
+        Range of beta values to evaluate (min, max)
+    t : float, optional
+        Target power value (0-1) to find corresponding eaf-beta combinations
+    n : int, optional
+        Sample size for quantitative traits
+    sig_level : float, optional
+        Significance threshold (default: 5e-8)
+    vary : float, optional
+        Phenotype variance for quantitative traits
+    log : gwaslab.g_Log.Log object, optional
+        Logging object for output messages
+    verbose : bool, optional
+        If True, writes progress messages to log
+    n_matrix : int, optional
+        Size of the eaf-beta matrix for calculation resolution
+    
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame containing eaf-beta combinations that achieve the target power
+    
+    References
+    ----------
+    Skol, A. D., Scott, L. J., Abecasis, G. R., & Boehnke, M. (2006). 
+    Joint analysis is more efficient than replication-based analysis 
+    for two-stage genome-wide association studies. Nature genetics, 38(2), 209-213.
+    """
     if mode=="q":
         if t >0:
             def calculate_power_single(
@@ -170,6 +258,51 @@ def get_beta_binary(
               n_matrix=500,
               or_to_rr=False
              ):
+    """
+    Calculate effect size (beta) values that achieve a target statistical power for binary traits.
+    
+    Parameters
+    ----------
+    prevalence : float, optional
+        Disease prevalence in population
+    ncase : int, optional
+        Number of cases for binary traits
+    ncontrol : int, optional
+        Number of controls for binary traits
+    eaf_range : tuple of float, optional
+        Range of derived allele frequencies to evaluate (min, max)
+    beta_range : tuple of float, optional
+        Range of beta values to evaluate (min, max)
+    t : float, optional
+        Target power value (0-1) to find corresponding eaf-beta combinations
+    sig_level : float, optional
+        Significance threshold (default: 5e-8)
+    vary : float, optional
+        Phenotype variance for quantitative traits
+    log : gwaslab.g_Log.Log object, optional
+        Logging object for output messages
+    verbose : bool, optional
+        If True, writes progress messages to log
+    n_matrix : int, optional
+        Size of the eaf-beta matrix for calculation resolution
+    or_to_rr : bool, optional
+        Convert OR to GRR using prevalence (Zhang & Kai method)
+    
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame containing eaf-beta combinations that achieve the target power
+    
+    References
+    ----------
+    Skol, A. D., Scott, L. J., Abecasis, G. R., & Boehnke, M. (2006). 
+    Joint analysis is more efficient than replication-based analysis 
+    for two-stage genome-wide association studies. Nature genetics, 38(2), 209-213.
+    
+    Zhang, J., & Kai, F. Y. (1998). What's the relative risk? 
+    A method of correcting the odds ratio in cohort studies of common outcomes. 
+    Jama, 280(19), 1690-1691.
+    """
     if t >0:
         def calculate_power_single(
                             beta, 
@@ -236,5 +369,3 @@ def get_beta_binary(
                 i+=1
                 eaf_beta.append((eafs[i],betas[j]))
     return pd.DataFrame(eaf_beta)
-    
-    

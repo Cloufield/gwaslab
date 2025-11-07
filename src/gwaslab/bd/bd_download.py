@@ -83,22 +83,9 @@ def set_default_directory(path):
     Args:
         path (str): Directory path to use for storing downloaded reference data
     '''
-    #config_path=path.dirname(__file__) + '/data/config.json'
-    #config_path = options.paths["config"]
+
     options.set_option("data_directory", path)
-    #try:
-    #    # set default directory
-    #    dicts = json.load(open(config_path))
-    #    dicts["default_directory"] = default_directory_path
-    #    with open(config_path, 'w') as f:
-    #        json.dump(dicts,f,indent=4)
-    #except:
-    #    # if no config file: create one and set default directory
-    #    initiate_config()
-    #    dicts = json.load(open(config_path))
-    #    dicts["default_directory"] = default_directory_path
-    #    with open(config_path, 'w') as f:
-    #        json.dump(dicts,f,indent=4)
+
 
 def get_default_directory():
     '''
@@ -383,6 +370,70 @@ def update_record(*keys, value, log=Log()):
     # Write back
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=4, ensure_ascii=False)
+
+def scan_downloaded_files(log=Log(), verbose=True):
+    """
+    Scan data directory for files not in config and match with available references.
+    
+    Args:
+        log (Log): Logging object for tracking operations
+        verbose (bool): Whether to show detailed logging output
+    
+    Returns:
+        bool: True if successful
+    """
+    log.write("Starting to scan data directory for unregistered files...", verbose=verbose)
+    
+    # Get directory paths
+    data_dir = options.paths["data_directory"]
+    log.write(f" -Scanning directory: {data_dir}", verbose=verbose)
+    
+    # Get list of files in data directory
+    try:
+        files_in_dir = [f for f in os.listdir(data_dir) 
+                      if os.path.isfile(os.path.join(data_dir, f))]
+    except Exception as e:
+        log.write(f" -Error reading directory: {str(e)}")
+        return False
+    
+    # Get downloaded records from config
+    downloaded = check_downloaded_ref(log)
+    
+    # Get available references
+    available = check_available_ref(log, verbose=False)
+    
+    # Process each file in directory
+    for filename in files_in_dir:
+        # Skip if already in config
+        if filename in downloaded:
+            continue
+            
+        log.write(f" -Found unregistered file: {filename}", verbose=verbose)
+        
+        # Try to match with available references
+        matched_ref = None
+        for ref_name, ref_info in available.items():
+            # Check if filename matches URL's last component
+            url_filename = os.path.basename(ref_info['url'])
+            if filename == url_filename:
+                matched_ref = ref_name
+                log.write(f"  -Matched with reference: {ref_name}", verbose=verbose)
+                break
+        
+        if not matched_ref:
+            log.write(f"  -No matching reference found for {filename}", verbose=verbose)
+            continue
+        
+        # Update config with matched reference
+        local_path = os.path.join(data_dir, filename)
+        try:
+            update_record("downloaded", matched_ref, "local_path", value=local_path)
+            log.write(f"  -Updated config for {matched_ref} with path: {local_path}", verbose=verbose)
+        except Exception as e:
+            log.write(f"  -Error updating config for {filename}: {str(e)}")
+    
+    log.write("Completed scanning data directory", verbose=verbose)
+    return True
 
     #if log is not None:
     #    log.write(f"   -> Updated path: {'/'.join(keys)}")

@@ -4,9 +4,40 @@ import scipy as sp
 from gwaslab.g_Log import Log
 #20220312
 def lambdaGC(insumstats,include_chrXYMT=True, x=23 ,y=24, mt=25, mode="P",level=0.5,verbose=True,log=Log()):
-    '''
-    Calculate Genomic inflation factor for genomic control (LambdaGC)
-    '''
+    """
+    Calculate the Genomic Inflation Factor (LambdaGC) for genomic control in GWAS.
+    
+    Parameters
+    ----------
+    insumstats : pandas.DataFrame
+        Input summary statistics DataFrame containing 'CHR' and a column with test statistics
+    include_chrXYMT : bool, optional
+        If False, exclude sex chromosomes (X, Y) and mitochondrial (MT) from calculation
+    x, y, mt : int or str, optional
+        Identifiers for sex and mitochondrial chromosomes (default: 23, 24, 25)
+    mode : {'P', 'MLOG10P', 'Z', 'CHISQ'}, optional
+        Input data type to use for calculation:
+        - 'P': p-values (default)
+        - 'MLOG10P': -log10(p-values)
+        - 'Z': Z-scores
+        - 'CHISQ': Chi-squared statistics
+    level : float, optional
+        Quantile level for calculation (default: 0.5, median)
+    verbose : bool, optional
+        If True, write progress messages to log
+    log : gwaslab.g_Log.Log object, optional
+        Logging object for output messages
+    
+    Returns
+    -------
+    float
+        Genomic inflation factor (LambdaGC), calculated as the ratio of observed to expected median chi-squared statistics
+    
+    References
+    ----------
+    Devlin, B., & Roeder, K. (1999). Genomic control for association studies. 
+    Biometrics, 55(4), 964-975.
+    """
 
     mode=mode.upper()
     sumstats=insumstats.loc[:,["CHR",mode]]

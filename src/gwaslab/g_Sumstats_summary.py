@@ -2,6 +2,7 @@ import pandas as pd
 import time
 import numpy as np
 def summarize(insumstats,
+              chrom="CHR",
               snpid="SNPID",
               rsid="rsID",
               eaf="EAF",
@@ -9,6 +10,40 @@ def summarize(insumstats,
               n="N",
               status="STATUS",
              ):
+    """
+    Summarize input GWAS summary statistics by generating comprehensive quality control metrics.
+    
+    Analyzes various aspects of summary statistics including metadata, chromosome distribution,
+    missing data, minor allele frequency (MAF) distribution, p-value significance, and variant
+    status codes. Returns a structured DataFrame with aggregated statistics across categories.
+    
+    Parameters:
+    -----------
+    insumstats : pandas.DataFrame
+        Input summary statistics DataFrame containing GWAS results
+    chrom : str, default="CHR"
+        Column name for chromosome identifiers
+    snpid : str, default="SNPID"
+        Column name for SNP identifiers
+    rsid : str, default="rsID"
+        Column name for rsID identifiers
+    eaf : str, default="EAF"
+        Column name for effect allele frequency
+    p : str, default="P"
+        Column name for p-values
+    n : str, default="N"
+        Column name for sample sizes
+    status : str, default="STATUS"
+        Column name for variant status codes
+    
+    Returns:
+    --------
+    pandas.DataFrame
+        Multi-index DataFrame containing aggregated statistics with two levels:
+        - Category: High-level metric categories (META, CHR, MISSING, MAF, P, STATUS)
+        - Items: Specific metrics within each category
+        Includes value counts and percentages for numeric categories
+    """
     #print("Start summarizing the current sumstats...")
     ###############################################################################
     cols=[]
@@ -25,6 +60,16 @@ def summarize(insumstats,
     meta_dic["Column_names"] = ",".join(list(insumstats.columns.values))
     meta_dic["Last_checked_time"]=str(time.ctime(time.time()))
     output["META"]=meta_dic
+    ###############################################################################
+    numeric_cols=[]
+    chr_dic={}
+    chr_dic["Chromosomes_notations"] = sorted(list(insumstats[chrom].unique()))
+    chr_dic["Chromosomes_numbers"] = len(insumstats[chrom].unique())
+
+    for key, value in insumstats.groupby(chrom)[chrom].count().to_dict().items():
+        chr_dic["chr{}".format(key)] = value
+    numeric_cols.append("CHR")
+    output["CHR"]= chr_dic
     ###############################################################################
     ##check missing
     missing_dict={}
@@ -90,7 +135,39 @@ def sum_status(id_to_use, sumstats):
     
 def lookupstatus(status):
     """
-    Explain the STATUS code for variants.
+    Decode and analyze variant status codes in GWAS summary statistics.
+    
+    Processes status codes that encode multiple layers of variant validation information 
+    using a string-based format. Returns a structured DataFrame with detailed status 
+    breakdown and frequency statistics.
+    
+    Status Code Structure:
+    ----------------------
+    Each status code string contains 7+ digits encoding:
+    - 1st 2 digits: Genome build mapping (CHM13/hg19/hg38)
+    - 3rd digit: rsID and SNPID validation status
+    - 4th digit: Chromosome and position validation
+    - 5th digit: Standardization and normalization status
+    - 6th digit: Alignment to reference genome
+    - 7th digit: Palindromic SNP/indel status
+    
+    Parameters:
+    -----------
+    status : pandas.Series
+        Column of status codes from GWAS summary statistics
+    
+    Returns:
+    --------
+    pandas.DataFrame
+        DataFrame with columns:
+        - Genome_Build: Reference genome build information
+        - rsID&SNPID: Validation status of ID fields
+        - CHR&POS: Chromosome/position validation status
+        - Stadardize&Normalize: Standardization status
+        - Align: Reference alignment status
+        - Panlidromic_SNP&Indel: Variant type characteristics
+        - Count: Absolute count of each status code
+        - Percentage(%): Relative percentage of total variants
     """
     uniq_status = status.unique()
     status_dic_12={
@@ -169,4 +246,3 @@ def lookupstatus(status):
                            orient='index',columns=["Genome_Build","rsID&SNPID","CHR&POS","Stadardize&Normalize","Align","Panlidromic_SNP&Indel","Count","Percentage(%)"], dtype="string")
     df = df.sort_index()
     return df
-        
