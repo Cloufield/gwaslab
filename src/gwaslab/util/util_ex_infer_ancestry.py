@@ -1,13 +1,46 @@
 
 import pandas as pd
 from gwaslab.g_Log import Log
+from gwaslab.bd.bd_download import get_path
 
 def _infer_ancestry(sumstats, 
                     ancestry_af=None,
                     build="19",
                     log=Log(),
                     verbose=True):
+    """Infer ancestry based on Fst values from effective allele frequencies.
+
+    A high Fst value indicates that populations are genetically distinct. This function
+    compares the effective allele frequencies from the sumstats with those from 1kg data
+    to determine the closest ancestry.
+
+    Parameters
+    ----------
+    ancestry_af : str, optional
+        Path to allele frequency file. If None, uses 1kg_hm3_hg19_eaf for build 19 or 1kg_hm3_hg38_eaf for build 38. Default is None.
+    build : str, optional
+        Genome build version. Options are "19" or "38". Default is "19".
+    verbose : bool, optional
+        If True, write log messages. Default is True.
+
+    Returns
+    -------
+    str
+        The closest ancestry determined by the minimum average Fst value, derived from
+        the header name of the corresponding column.
+
+    Notes
+    -----
+    This function internally uses `calculate_fst` to compute Fst values for each variant.
+    """
     log.write("Start to infer ancestry based on Fst...", verbose=verbose)
+
+    if ancestry_af is None:
+        if build=="19":
+            ancestry_af = get_path("1kg_hm3_hg19_eaf")
+        elif build=="38":
+            ancestry_af = get_path("1kg_hm3_hg38_eaf")
+
     ref_af = pd.read_csv(ancestry_af, sep="\t")
     
     data_af = pd.merge(sumstats[["CHR","POS","EA","NEA","EAF"]] ,ref_af,on=["CHR","POS"],how="inner") 
@@ -62,4 +95,3 @@ def calculate_fst(p_1, p_2):
 
     # return output
     return fst
-    

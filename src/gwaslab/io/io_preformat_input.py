@@ -13,6 +13,9 @@ from gwaslab.qc.qc_check_datatype import quick_convert_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_memory_usage
 from gwaslab.g_headers import _check_overlap_with_reserved_keys
 from gwaslab.g_vchange_status import STATUS_CATEGORIES
+from gwaslab.g_Log import Log
+
+
 #20221030
 def preformat(sumstats,
           fmt=None,
@@ -67,9 +70,141 @@ def preformat(sumstats,
           snpid_pat=None,
           verbose=False,
           readargs=None,
-          log=None):
+          log=None,
+          **kwreadargs):
+    """
+    Load and preformat summary statistics data into standardized GWASLab format.
 
-    #renaming dictionary
+    Parameters
+    ----------
+    sumstats : str or pandas.DataFrame
+        Input data path or DataFrame.
+    fmt : str, optional
+        Format name to get predefined mapping (e.g., 'gwaslab', 'vcf').
+    tab_fmt : str, default: 'tsv'
+        Table format ('tsv', 'parquet').
+    snpid : str, optional
+        Column name for SNP ID in input data.
+    rsid : str, optional
+        Column name for rsID in input data.
+    chrom : str, optional
+        Column name for chromosome in input data.
+    pos : str, optional
+        Column name for position in input data.
+    ea : str, optional
+        Column name for effect allele in input data.
+    nea : str, optional
+        Column name for non-effect allele in input data.
+    ref : str, optional
+        Column name for reference allele in input data.
+    alt : str, optional
+        Column name for alternative allele in input data.
+    eaf : str, optional
+        Column name for effect allele frequency in input data.
+    neaf : str, optional
+        Column name for non-effect allele frequency in input data.
+    maf : str, optional
+        Column name for minor allele frequency in input data.
+    n : str or int, optional
+        Column name or constant value for sample size.
+    beta : str, optional
+        Column name for beta in input data.
+    se : str, optional
+        Column name for standard error in input data.
+    chisq : str, optional
+        Column name for chi-square in input data.
+    z : str, optional
+        Column name for z-score in input data.
+    f : str, optional
+        Column name for F-statistic in input data.
+    t : str, optional
+        Column name for T-statistic in input data.
+    p : str, optional
+        Column name for p-value in input data.
+    q : str, optional
+        Column name for Q-statistic in input data.
+    mlog10p : str, optional
+        Column name for -log10(p) in input data.
+    test : str, optional
+        Column name for test type in input data.
+    info : str, optional
+        Column name for imputation info in input data.
+    OR : str, optional
+        Column name for odds ratio in input data.
+    OR_95L : str, optional
+        Column name for lower 95% CI of OR in input data.
+    OR_95U : str, optional
+        Column name for upper 95% CI of OR in input data.
+    beta_95L : str, optional
+        Column name for lower 95% CI of beta in input data.
+    beta_95U : str, optional
+        Column name for upper 95% CI of beta in input data.
+    HR : str, optional
+        Column name for hazard ratio in input data.
+    HR_95L : str, optional
+        Column name for lower 95% CI of HR in input data.
+    HR_95U : str, optional
+        Column name for upper 95% CI of HR in input data.
+    i2 : str, optional
+        Column name for I2 statistic in input data.
+    snpr2 : str, optional
+        Column name for SNP R2 in input data.
+    phet : str, optional
+        Column name for p-heterogeneity in input data.
+    dof : str, optional
+        Column name for degrees of freedom in input data.
+    ncase : str or int, optional
+        Column name or constant value for case count.
+    ncontrol : str or int, optional
+        Column name or constant value for control count.
+    neff : str or int, optional
+        Column name or constant value for effective sample size.
+    direction : str, optional
+        Column name for effect direction in input data.
+    status : str, optional
+        Column name for status in input data.
+    study : str, optional
+        Column name for study ID in input data.
+    trait : str, optional
+        Column name for trait in input data.
+    build : str, optional
+        Genome build version (e.g., '19' and '38').
+    other : list, optional
+        Additional columns to include.
+    exclude : list, optional
+        Columns to exclude.
+    include : list, optional
+        Columns to include explicitly.
+    chrom_pat : str, optional
+        Pattern to filter chromosomes.
+    snpid_pat : str, optional
+        Pattern to filter SNPs.
+    verbose : bool, default: False
+        Enable verbose output.
+    readargs : dict, optional
+        Additional arguments for reading files using pd.read_csv() like `nrows`, `comment`.
+        Example: {"nrows": 1000} means to load first 1000 rows.
+    **kwreadargs : dict, optional
+        Additional keyword arguments passed to `readargs`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Formatted summary statistics with standardized column names.
+    dict
+        Updated readargs dictionary.
+
+    Raises
+    ------
+    ValueError
+        If input is not a path or DataFrame, or if columns are missing.
+    """
+    if readargs is None:
+        readargs = dict()
+    readargs = readargs | kwreadargs
+    
+    if log is None:
+        log = Log()
     rename_dictionary = {}
     usecols = list()
     if other is None:
@@ -411,7 +546,7 @@ def preformat(sumstats,
     sumstats = process_status(sumstats=sumstats,build=build,status=status,log=log,verbose=verbose)
     
     ## ea/nea, ref/alt ##############################################################################################
-    sumstats = process_allele(sumstats=sumstats,log=log,verbose=verbose)
+    sumstats = process_allele(sumstats=sumstats,log=log,rename_dictionary=rename_dictionary,verbose=verbose)
         
     ## NEAF to EAF ###########################################################################################################
     if neaf is not None or ("NEAF" in sumstats.columns and "EAF" not in sumstats.columns):
@@ -538,7 +673,10 @@ def process_neaf(sumstats,log,verbose):
     log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.",verbose=verbose) 
     return sumstats
 
-def process_allele(sumstats,log,verbose):
+def process_allele(sumstats,
+                   log,
+                   rename_dictionary,
+                   verbose):
     
     if "EA" in sumstats.columns:
 
@@ -565,6 +703,15 @@ def process_allele(sumstats,log,verbose):
         sumstats["EA"]=sumstats["EA"].astype("category")     
     if "NEA" in sumstats.columns:
         sumstats["NEA"]=sumstats["NEA"].astype("category")  
+
+    if "NEA" not in sumstats.columns and "EA" not in sumstats.columns:
+        if "REF" in sumstats.columns and "ALT" in sumstats.columns:
+            log.write(" -Converting REF and ALT to NEA and EA ...")
+            sumstats["REF"]=sumstats["REF"].astype("category") 
+            sumstats["ALT"]=sumstats["ALT"].astype("category") 
+            sumstats["NEA"]=sumstats["REF"].astype("category") 
+            sumstats["EA"]=sumstats["ALT"].astype("category") 
+            sumstats = sumstats.drop(columns=["ALT","REF"])
     return sumstats
 
 def process_status(sumstats,build,status, log,verbose):

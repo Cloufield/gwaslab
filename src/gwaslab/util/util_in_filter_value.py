@@ -30,16 +30,12 @@ def filtervalues(sumstats, expr, remove=False, verbose=True, log=Log()):
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     expr : str
         Query expression using pandas.DataFrame.query syntax
     remove : bool, default=False
         If True, removes variants meeting the condition
     verbose : bool, default=True
         If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     
     Returns:
     --------
@@ -61,8 +57,6 @@ def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     interval : dict, default={}
         Dictionary of intervals (not used in current implementation)
     lt : dict, default={}
@@ -75,8 +69,6 @@ def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=
         If True, removes variants meeting the condition
     verbose : bool, default=True
         If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     
     Returns:
     --------
@@ -106,8 +98,6 @@ def filterin(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log(
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     lt : dict, default={}
         Dictionary of {column: threshold} for lower bounds (variant values < threshold will be kept)
     gt : dict, default={}
@@ -118,8 +108,6 @@ def filterin(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log(
         If True, removes variants meeting the condition
     verbose : bool, default=True
         If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     
     Returns:
     --------
@@ -149,8 +137,6 @@ def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, b
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     path : str or None, default=None
         Path to BED file containing regions of interest
     chrom : str, default="CHR"
@@ -163,8 +149,6 @@ def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, b
         Genome build version (19 or 38) for high LD regions
     verbose : bool, default=True
         If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     
     Returns:
     --------
@@ -261,8 +245,6 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     path : str or None, default=None
         Path to BED file containing regions to exclude
     chrom : str, default="CHR"
@@ -275,8 +257,6 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
         Genome build version (19 or 38) for high LD regions
     verbose : bool, default=True
         If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     
     Returns:
     --------
@@ -363,26 +343,8 @@ def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS",
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
-    status : str, default="STATUS"
-        Column name for status information
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
-    ea : str, default="EA"
-        Column name for effect allele
-    nea : str, default="NEA"
-        Column name for non-effect allele
-    build : str, default="19"
-        Reference build version to compare against
     change_status : bool, default=True
         If True, updates status codes in the table
-    verbose : bool, default=True
-        If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     
     Returns:
     --------
@@ -456,16 +418,12 @@ def sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     n : int, default=1
         Number of variants to sample
     p : float, default=None
         Fraction of variants to sample (alternative to n)
     verbose : bool, default=True
         If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     **kwargs : dict
         Additional arguments for pandas.DataFrame.sample
     
@@ -503,18 +461,12 @@ def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     snpid : str
         ID of the central variant (must exist in SNPID column)
     windowsizekb : int, default=500
         Size of flanking region in kilobases
     verbose : bool, default=True
         If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
-    **kwargs : dict
-        Additional arguments (not used)
     
     Returns:
     --------
@@ -546,18 +498,12 @@ def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True, log=Log
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     snpid : str or list
         Variant ID(s) to use as center (searches in rsID/SNPID columns)
     windowsizekb : int, default=500
         Size of flanking region in kilobases
     verbose : bool, default=True
         If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
-    **kwargs : dict
-        Additional arguments (not used)
     
     Returns:
     --------
@@ -614,10 +560,6 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, lo
         Size of flanking region in kilobases
     verbose : bool, default=True
         If True, writes progress to log
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
-    **kwargs : dict
-        Additional arguments (not used)
     
     Returns:
     --------
@@ -661,16 +603,12 @@ def _filter_palindromic(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verb
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     mode : str, default="in"
         "in" to keep palindromic variants, "out" to remove them
     ea : str, default="EA"
         Column name for effect allele
     nea : str, default="NEA"
         Column name for non-effect allele
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     verbose : bool, default=True
         If True, writes progress to log
     
@@ -698,16 +636,12 @@ def _filter_indel(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=Tr
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     mode : str, default="in"
         "in" to keep indels, "out" to remove them
     ea : str, default="EA"
         Column name for effect allele
     nea : str, default="NEA"
         Column name for non-effect allele
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     verbose : bool, default=True
         If True, writes progress to log
     
@@ -733,16 +667,12 @@ def _filter_snp(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     mode : str, default="in"
         "in" to keep SNPs, "out" to remove them
     ea : str, default="EA"
         Column name for effect allele
     nea : str, default="NEA"
         Column name for non-effect allele
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     verbose : bool, default=True
         If True, writes progress to log
     
@@ -768,8 +698,6 @@ def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None , upper=None, buil
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     chrom : str, default="CHR"
         Column name for chromosome information
     pos : str, default="POS"
@@ -782,8 +710,6 @@ def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None , upper=None, buil
         Genome build version (19 or 38)
     mode : str, default="xmhc"
         "xmhc" for extended MHC region, "hla" or "mhc" for classical HLA region
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     verbose : bool, default=True
         If True, writes progress to log
     
@@ -848,16 +774,10 @@ def _exclude_sexchr(sumstats, chrom="CHR", pos="POS", sexchrs=[23,24,25], log=Lo
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     chrom : str, default="CHR"
         Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
     sexchrs : list, default=[23,24,25]
         List of sex chromosome numbers to exclude
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     verbose : bool, default=True
         If True, writes progress to log
     
@@ -888,14 +808,10 @@ def _extract(sumstats, extract=None, id_use="SNPID", log=Log(), verbose=True ):
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     extract : list or None, default=None
         List of variant IDs to extract
     id_use : str, default="SNPID"
         Column name containing variant IDs
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     verbose : bool, default=True
         If True, writes progress to log
     
@@ -916,14 +832,10 @@ def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
     exclude : list or None, default=None
         List of variant IDs to exclude
     id_use : str, default="SNPID"
         Column name containing variant IDs
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     verbose : bool, default=True
         If True, writes progress to log
     
@@ -938,22 +850,14 @@ def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
         log.write(" -Excluded {} variants from sumstats...".format(len(sumstats)),verbose=verbose)
     return sumstats
 
-def _filter_region(sumstats, region, chrom="CHR", pos="POS", log=Log(), verbose=True):
+def _filter_region(sumstats, region=None, chrom="CHR", pos="POS", log=Log(), verbose=True):
     """
     Filter variants within a specific genomic region.
     
     Parameters:
     -----------
-    sumstats : pandas.DataFrame
-        GWAS summary statistics table
-    region : tuple
-        Genomic region to filter (chr, start, end)
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
+    region : List
+        Genomic region to filter [chr, start, end]
     verbose : bool, default=True
         If True, writes progress to log
     
@@ -996,22 +900,8 @@ def _search_variants( sumstats, snplist=None,
         - CHR-POS (e.g., '1_123456')
         - rsID (e.g., 'rs12345')
         - SNPID (e.g., '1:123456:A:G')
-        - Tuples of (CHR, POS)
+        - List of [CHR, POS]
         - Full variant IDs with alleles (e.g., 'chr1:123456:A:G')
-    snpid : str, default="SNPID"
-        Column name containing variant IDs
-    rsid : str, default="rsID"
-        Column name containing rsIDs
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
-    ea : str, default="EA"
-        Column name for effect allele
-    nea : str, default="NEA"
-        Column name for non-effect allele
-    log : gwaslab.Log, default=Log()
-        Log object for tracking operations
     verbose : bool, default=True
         If True, writes progress to log
     
@@ -1022,7 +912,7 @@ def _search_variants( sumstats, snplist=None,
     
     Examples:
     ---------
-    >>> variants = _search_variants(sumstats, snplist=["rs1234", "1:100500", (2, 202000), "19:45100000:C:T"])
+    >>> variants = _search_variants(sumstats, snplist=["rs1234", "1:100500", [2, 202000], "19:45100000:C:T"])
     >>> print(variants.shape)
     """
     log.write("Start to search for variants...", verbose=verbose)
@@ -1084,7 +974,7 @@ def _get_region_start_and_end(
     log=None,
     **kwargs):
     """
-    Compute genomic region boundaries around a focal position.
+    Determine the [chr, start, end] for a region. 
 
     Parameters
     ----------
@@ -1096,13 +986,11 @@ def _get_region_start_and_end(
         Window size in kilobases.
     verbose : bool, default=True
         Print log message.
-    log : Log, optional
-        GWASLab Log object for recording messages.
 
     Returns
     -------
-    tuple
-        (chrom, start, end), where start and end are base-pair coordinates (int).
+    list
+        [chrom, start, end], where start and end are base-pair coordinates (int).
     """
     # Ensure chrom is str
     chrom = str(chrom)
@@ -1127,5 +1015,9 @@ def _get_region_start_and_end(
         log.write(msg)
         if verbose:
             print(msg)
+    try:
+        chrom = int(chrom)
+    except:
+        pass
 
-    return chrom, start, end
+    return [chrom, start, end]

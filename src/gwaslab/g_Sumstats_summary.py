@@ -7,6 +7,7 @@ def summarize(insumstats,
               rsid="rsID",
               eaf="EAF",
               p="P",
+              beta="BETA",
               n="N",
               status="STATUS",
              ):
@@ -15,26 +16,7 @@ def summarize(insumstats,
     
     Analyzes various aspects of summary statistics including metadata, chromosome distribution,
     missing data, minor allele frequency (MAF) distribution, p-value significance, and variant
-    status codes. Returns a structured DataFrame with aggregated statistics across categories.
-    
-    Parameters:
-    -----------
-    insumstats : pandas.DataFrame
-        Input summary statistics DataFrame containing GWAS results
-    chrom : str, default="CHR"
-        Column name for chromosome identifiers
-    snpid : str, default="SNPID"
-        Column name for SNP identifiers
-    rsid : str, default="rsID"
-        Column name for rsID identifiers
-    eaf : str, default="EAF"
-        Column name for effect allele frequency
-    p : str, default="P"
-        Column name for p-values
-    n : str, default="N"
-        Column name for sample sizes
-    status : str, default="STATUS"
-        Column name for variant status codes
+    status codes (details can be checked using `lookup_status`). Returns a structured DataFrame with aggregated statistics across categories.
     
     Returns:
     --------
@@ -47,7 +29,7 @@ def summarize(insumstats,
     #print("Start summarizing the current sumstats...")
     ###############################################################################
     cols=[]
-    for i in [snpid,rsid,eaf,p,n,status]:
+    for i in [snpid,rsid,eaf,p,beta,n,status]:
         if i in insumstats.columns:
             cols.append(i)
     sumstats= insumstats[cols].copy()
@@ -89,9 +71,10 @@ def summarize(insumstats,
     if eaf in sumstats.columns:
         maf = pd.to_numeric(sumstats[eaf], errors='coerce')
         maf[maf>0.5] = 1 - maf[maf>0.5]
-        maf_dic["Common"] =  sum(maf>0.05)
-        maf_dic["Low_frequency"] = sum((maf>0.01 )& (maf<0.05))
-        maf_dic["Rare"] = sum(maf<0.01)
+        maf_dic["Common (MAF>0.05)"] =  sum(maf>0.05)
+        maf_dic["Low_frequency (0.01<MAF<0.05)"] = sum((maf>0.01 )& (maf<0.05))
+        maf_dic["Rare (MAF<0.01)"] = sum(maf<0.01)
+        maf_dic["Ultra Rare (MAF<0.001)"] = sum(maf<0.001)
         output["MAF"]=maf_dic
         numeric_cols.append("MAF")
     ##############################################################################
@@ -103,6 +86,19 @@ def summarize(insumstats,
         p_dic["Suggestive"] = sum(sumstats[p]<5e-6)
         output["P"]=p_dic
         numeric_cols.append("P")
+
+    if p in sumstats.columns and beta in sumstats.columns:
+        beta_dic={}
+        beta_dic["P<5e-8 with ABS(BETA)>10"] =   sum(sumstats.loc[sumstats[p] <5e-8, beta].abs()>10)
+        beta_dic["P<5e-8 with ABS(BETA)>3"] =    sum(sumstats.loc[sumstats[p] <5e-8,beta].abs()>3)
+        beta_dic["P<5e-8 with ABS(BETA)>1"] =    sum(sumstats.loc[sumstats[p] <5e-8,beta].abs()>1)
+        beta_dic["P<5e-8 with ABS(BETA)>0.5"] =  sum(sumstats.loc[sumstats[p] <5e-8,beta].abs()>0.5)
+        beta_dic["P<5e-8 with ABS(BETA)>0.3"] =  sum(sumstats.loc[sumstats[p] <5e-8,beta].abs()>0.3)
+        beta_dic["P<5e-8 with ABS(BETA)>0.2"] =  sum(sumstats.loc[sumstats[p] <5e-8,beta].abs()>0.2)
+        beta_dic["P<5e-8 with ABS(BETA)>0.1"] =  sum(sumstats.loc[sumstats[p] <5e-8,beta].abs()>0.1)
+        beta_dic["P<5e-8 with ABS(BETA)>0.05"] =  sum(sumstats.loc[sumstats[p] <5e-8,beta].abs()>0.05)
+        output["BETA"]=beta_dic
+        numeric_cols.append("BETA")
     ##############################################################################
     ##check status
 
@@ -116,6 +112,8 @@ def summarize(insumstats,
             status_dic[str(index)]=row.iloc[0]
         output["STATUS"]=status_dic
         numeric_cols.append("STATUS")
+
+
     df = pd.DataFrame.from_dict({(i,j): output[i][j] 
                            for i in output.keys() 
                            for j in output[i].keys()},
@@ -126,7 +124,7 @@ def summarize(insumstats,
         df.loc[numeric_cols,"Percentage"] = np.around(pd.to_numeric(df.loc[numeric_cols,"Values"],errors='coerce')*100 / int(sumstats.shape[0]),2)
     #df = pd.DataFrame.from_dict(output,orient="index",columns=["Values"],dtype="string").sort_index()
     ###############################################################################
-    return df 
+    return df
 
 def sum_status(id_to_use, sumstats):
         results = sumstats.groupby("STATUS",observed=True).count()
@@ -135,7 +133,7 @@ def sum_status(id_to_use, sumstats):
     
 def lookupstatus(status):
     """
-    Decode and analyze variant status codes in GWAS summary statistics.
+    Decode and analyze variant status codes.
     
     Processes status codes that encode multiple layers of variant validation information 
     using a string-based format. Returns a structured DataFrame with detailed status 

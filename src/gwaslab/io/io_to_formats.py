@@ -3,6 +3,10 @@ import yaml
 import hashlib
 import copy
 import gzip
+"""
+Convert summary statistics to specified output format with various processing options.
+"""
+
 from pysam import tabix_compress 
 from pysam import tabix_index
 from datetime import datetime
@@ -58,7 +62,78 @@ def _to_format(sumstats,
               to_tabular_kwargs=None,
               log=Log(),
               verbose=True):
+    """
+    Convert summary statistics to specified output format with various processing options.
     
+    Parameters
+    ----------
+    sumstats : pandas.DataFrame
+        DataFrame containing summary statistics with columns for chromosome (CHR), position (POS), and p-values (P)
+    path : str, optional
+        Output file path prefix. Default is "./sumstats"
+    fmt : str, optional
+        Output format ('gwaslab', 'vcf', 'bed', 'annovar', etc.). Default is 'gwaslab'
+    tab_fmt : str, optional
+        Tabular format type ('tsv', 'csv', 'parquet'). Default is 'tsv'
+    extract : list or str, optional
+        SNPs to extract. Default is None
+    exclude : list or str, optional
+        SNPs to exclude. Default is None
+    cols : list, optional
+        Additional columns to include in output. Default is empty list
+    id_use : str, optional
+        Column name to use as SNP identifier. Default is 'rsID'
+    hapmap3 : bool, optional
+        Whether to extract Hapmap3 SNPs. Default is False
+    exclude_hla : bool, optional
+        Whether to exclude HLA region. Default is False
+    hla_range : tuple, optional
+        HLA exclusion range in Mbp. Default is (25,34)
+    build : str, optional
+        Genome build version. Default is None
+    n : float, optional
+        Sample size to add as 'N' column. Default is None
+    no_status : bool, optional
+        Whether to exclude 'STATUS' column. Default is False
+    output_log : bool, optional
+        Whether to save a log file. Default is True
+    float_formats : dict, optional
+        Dictionary of float formatting strings. Default is None
+    xymt_number : bool, optional
+        Whether to use numeric codes for X/Y/MT chromosomes. Default is False
+    xymt : list, optional
+        Chromosome names for X, Y, MT. Default is ["X","Y","MT"]
+    chr_prefix : str, optional
+        Prefix for chromosome numbers. Default is empty string
+    meta : dict, optional
+        Metadata dictionary. Default is None
+    ssfmeta : bool, optional
+        Whether to create SSF-style metadata. Default is False
+    md5sum : bool, optional
+        Whether to generate MD5 checksum. Default is False
+    gzip : bool, optional
+        Whether to gzip compress output. Default is True
+    bgzip : bool, optional
+        Whether to bgzip compress output. Default is False
+    tabix : bool, optional
+        Whether to create Tabix index. Default is False
+    tabix_indexargs : dict, optional
+        Dictionary of Tabix indexing arguments. Default is empty dict
+    to_csvargs : dict, optional
+        Dictionary of CSV writing arguments. Default is None
+    to_tabular_kwargs : dict, optional
+        Dictionary of tabular format arguments. Default is None
+    log : gwaslab.Log, optional
+        Log object for tracking progress. Default is new Log instance
+    verbose : bool, optional
+        Whether to print progress messages. Default is True
+
+    Returns
+    -------
+    None
+        Output is written to file(s) specified by path parameter
+    """
+             
     if to_csvargs is None:
         to_csvargs=dict()
     if tabix_indexargs is None:
@@ -746,4 +821,3 @@ def _process_vcf_header(sumstats, meta, meta_data, build, log, verbose):
     log.write("  -SwitchedAlleles:{}".format(switchedalleles),verbose=verbose) 
 
     return vcf_header
-        

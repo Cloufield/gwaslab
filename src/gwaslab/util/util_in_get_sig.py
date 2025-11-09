@@ -62,15 +62,20 @@ def getsig(insumstats,
     xymt : list, default=["X","Y","MT"]
         List of non-autosomal chromosome identifiers
     anno : bool, default=False
-        If True, annotate variants with nearest gene information
+        If True, annotate variants with nearest gene information based on GTF
     wc_correction : bool, default=False
         If True, apply Winner's Curse correction to effect sizes
     build : {"19", "38"}, default="19"
         Reference genome build for gene annotation
     source : {"ensembl", "refseq"}, default="ensembl"
         Database source for gene annotation
-    gtf_path : str, optional
-        Path to custom GTF file for gene annotation
+    gtf_path : str, default='default'
+        Path to GTF file for gene annotation.
+        gtf_path options:
+        - 'default' : same as 'ensembl'.`build` should be specified.
+        - 'ensembl' : GTF from ensembl. `build` should be specified.
+        - 'refseq' : GTF from refseq. `build` should be specified.
+        - str : path for user provided gtf
     verbose : bool, default=True
         If True, print detailed processing information
 
@@ -315,7 +320,7 @@ def annogene(
            verbose=True):
     
     log.write("Start to annotate variants with nearest gene name(s)...", verbose=verbose)
-    build = _process_build(build)
+    build = _process_build(build, log=log,verbose=verbose)
     output = insumstats.copy()
     if source == "ensembl":
         if build=="19":

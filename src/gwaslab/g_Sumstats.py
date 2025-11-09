@@ -100,10 +100,14 @@ from gwaslab.hm.hm_casting  import _merge_mold_with_sumstats_by_chrpos
 
 from gwaslab.viz.viz_plot_phe_heatmap import _gwheatmap
 from gwaslab.viz.viz_plot_mqqplot import mqqplot
+from gwaslab.viz.viz_plot_regional2 import _plot_regional
 from gwaslab.viz.viz_plot_trumpetplot import plottrumpet
 from gwaslab.viz.viz_plot_compare_af import plotdaf
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
 from gwaslab.viz.viz_plot_associations import _plot_associations
+from gwaslab.viz.viz_plot_qqplot import _plot_qq
+
+
 from gwaslab.io.io_read_pipcs import _read_pipcs
 from gwaslab.io.io_load_ld import tofinemapping_using_ld
 from gwaslab.io.io_preformat_input import preformat
@@ -122,6 +126,7 @@ def add_doc(src):
 #20220309
 class Sumstats():
     
+    @add_doc(preformat)
     def __init__(self,
              sumstats=None,
              fmt=None,
@@ -176,43 +181,16 @@ class Sumstats():
              trait="Trait_1",
              build="99",
              species="homo sapiens",
-             build_infer=False,
-             **readargs):
-
-        # basic attributes
-        self.data = pd.DataFrame()
+             readargs=None,
+             **kwreadargs):
+        
         self.log = Log()
-        self.ldsc_h2 = None
-        self.ldsc_h2_results = None
-        self.ldsc_rg = pd.DataFrame()
-        self.ldsc_h2_cts = None
-        self.ldsc_partitioned_h2_summary = None
-        self.ldsc_partitioned_h2_results = None
-        # meta information
-        self.meta = _init_meta() 
-        self.build = build
-        self.meta["gwaslab"]["study_name"] =  study
-        self.meta["gwaslab"]["species"] = species
-        
-
-        
-        # initialize attributes for clumping and finmapping
-        #self.to_finemapping_file_path = ""
-        #self.to_finemapping_file  = pd.DataFrame()
-        #self.plink_log = ""
-
-        # path / file / plink_log
-        self.finemapping = dict()
-
-        # clumps / clumps_raw / plink_log
-        self.clumps = dict()
-        
-        #
-        self.pipcs = pd.DataFrame()
-
         # print gwaslab version information
         _show_version(self.log, verbose=verbose)
 
+        # basic attributes
+        self.data = pd.DataFrame()
+        
         #preformat the data
         self.data  = preformat(
           sumstats=sumstats,
@@ -270,19 +248,48 @@ class Sumstats():
           readargs=readargs,
           log=self.log)
 
-        # checking genome build
-        self.meta["gwaslab"]["genome_build"] = _process_build(build, log=self.log, verbose=False)
+        # meta information
+        self.meta = _init_meta() 
+        self.meta["gwaslab"]["study_name"] = study
+        self.meta["gwaslab"]["species"] = species
 
-        # if build is unknown and build_infer is True, infer the build
-        if species=="homo sapiens" and self.meta["gwaslab"]["genome_build"]=="99" and build_infer is True:
-            try:
-                self.infer_build()
-            except:
-                pass
-        gc.collect()   
-        
+        # set build
+        self.meta["gwaslab"]["genome_build"] = _process_build(build,  log=self.log, verbose=False, species=species)
+        self._build = self.meta["gwaslab"]["genome_build"]
+
         self.id = id(self)
         self.tmp_path = _path(pid=self.id, log = self.log, verbose=verbose)
+        
+        #for downstream analysis
+        self.ldsc_h2 = None
+        self.ldsc_h2_results = None
+        self.ldsc_rg = pd.DataFrame()
+        self.ldsc_h2_cts = None
+        self.ldsc_partitioned_h2_summary = None
+        self.ldsc_partitioned_h2_results = None
+        self.finemapping = dict()
+        # clumps / clumps_raw / plink_log
+        self.clumps = dict()
+        self.pipcs = pd.DataFrame()
+        
+        # initialize attributes for clumping and finmapping
+        #self.to_finemapping_file_path = ""
+        #self.to_finemapping_file  = pd.DataFrame()
+        #self.plink_log = ""
+
+        # path / file / plink_log        
+    
+    @property
+    def build(self):
+        if self._build =="Unknown" or self._build =="99":
+            if self.meta["gwaslab"]["species"] == "homo sapiens":
+                self.infer_build()
+        return self._build
+
+    @build.setter
+    def build(self, value):
+        # Assign the new build
+        self._build = value
 
     def __getitem__(self, index):
         return self.data[index]
@@ -309,17 +316,17 @@ class Sumstats():
     @add_doc(inferbuild)
     def infer_build(self,verbose=True,**kwargs):
         self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,log=self.log,verbose=verbose,**kwargs)
-    
+        self.build = self.meta["gwaslab"]["genome_build"]
+
     @add_doc(parallelizeliftovervariant)
     def liftover(self,to_build, from_build=None,**kwargs):
         if from_build is None:
-            if self.meta["gwaslab"]["genome_build"]=="99":
-                self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,**kwargs)
-            from_build = self.meta["gwaslab"]["genome_build"]
+            from_build = self.build
         self.data = parallelizeliftovervariant(self.data,from_build=from_build, to_build=to_build, log=self.log,**kwargs)
         self.meta["is_sorted"] = False
         self.meta["is_harmonised"] = False
         self.meta["gwaslab"]["genome_build"]=to_build
+        self.build = to_build
 
 # QC ######################################################################################
     #clean the sumstats with one line
@@ -756,14 +763,12 @@ class Sumstats():
             new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         
-    def filter_hapmap3(self, inplace=False, build=None, **kwargs ):
-        if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
+    def filter_hapmap3(self, inplace=False, **kwargs ):
         if inplace is True:
-            self.data = gethapmap3(self.data, build=build,log=self.log, **kwargs)
+            self.data = gethapmap3(self.data, build=self.build,log=self.log, **kwargs)
         else:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = gethapmap3(new_Sumstats_object.data, build=build,log=self.log, **kwargs)
+            new_Sumstats_object.data = gethapmap3(new_Sumstats_object.data, build=self.build,log=self.log, **kwargs)
             return new_Sumstats_object
     
     @add_doc(_get_region_start_and_end)
@@ -788,6 +793,7 @@ class Sumstats():
         fig,outliers = plotdaf(self.data, **kwargs)
         return fig, outliers
     
+    @add_doc(_infer_ancestry)
     def infer_ancestry(self, **kwargs):
         self.meta["gwaslab"]["inferred_ancestry"] = _infer_ancestry(self.data, log=self.log,
                                                                     **kwargs)
@@ -798,40 +804,34 @@ class Sumstats():
     
     @add_doc(mqqplot)
     def plot_mqq(self, build=None, **kwargs):
-        """
-        Wrapper function to plot Manhattan-like plot and QQ plot.
-        """
-
-        # extract build information from meta data
-        if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-
-        plot, log = mqqplot(self.data,
-                       build = build, 
-                       **kwargs)
-        
+        plot, log = mqqplot(self.data, build = self.build, **kwargs)
         return plot
     
-    def plot_trumpet(self, build=None, **kwargs):
-        if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        fig = plottrumpet(self.data,build = build,  **kwargs)
+    @add_doc(mqqplot)
+    def plot_manhantan(self, build=None, **kwargs):
+        plot, log = mqqplot(self.data, build = self.build, **kwargs)
+        return plot
+    
+    @add_doc(_plot_qq)
+    def plot_qq(self, build=None, **kwargs):
+        plot, log = mqqplot(self.data, mode="qq", build = self.build, **kwargs)
+        return plot
+    
+    @add_doc(_plot_regional)
+    def plot_region(self, build=None, **kwargs):
+        plot, log = mqqplot(self.data, mode="r", build = self.build, **kwargs)
+        return plot
+
+    @add_doc(plottrumpet)
+    def plot_trumpet(self, **kwargs):
+        fig = plottrumpet(self.data, build = self.build,  **kwargs)
         return fig
     
     @add_doc(getsig)
-    def get_lead(self, build=None, gls=False, **kwargs):
-        """
-        wrapper for getsig: 
-            gls (boolean): if True, return a new Sumstats object
-        """
-        
-        # extract build information from meta data
-        if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        
+    def get_lead(self, gls=False, build=None, **kwargs):
         output = getsig(self.data,
                         log=self.log,
-                        build=self.meta["gwaslab"]["genome_build"],
+                        build=self.build,
                         **kwargs)
         
         # return sumstats object    
@@ -841,7 +841,8 @@ class Sumstats():
             gc.collect()
             return new_Sumstats_object
         return output
-
+    
+    @add_doc(getsignaldensity)
     def get_density(self, sig_list=None, windowsizekb=100,**kwargs):
         
         if "SNPID" in self.data.columns:
@@ -1005,6 +1006,7 @@ class Sumstats():
                    build=build, 
                    verbose=verbose, log=self.log, **kwargs)
 ## LDSC ##############################################################################################
+    @add_doc(_estimate_h2_by_ldsc)
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]

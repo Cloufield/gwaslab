@@ -28,19 +28,27 @@ def filldata(
     between different statistical measures (e.g., converting beta/SE to Z-scores, or ORs
     to betas). It handles multiple conversion pathways and maintains data consistency.
     
-    Args:
-        insumstats (pandas.DataFrame): Input summary statistics DataFrame containing variant data
-        to_fill (str or list of str): Column name(s) to fill. Common values include 'OR', 'BETA', 'SE', 'Z', 'P', etc.
-        df (str, optional): Column name containing degrees of freedom for chi-square tests
-        overwrite (bool, optional): If True, overwrite existing values in target columns. Defaults to False
-        verbose (bool, optional): Whether to display progress messages. Defaults to True
-        only_sig (bool, optional): If True, only update values for significant variants. Defaults to False
-        sig_level (float, optional): Significance threshold for P-value filtering. Defaults to 5e-8
-        extreme (bool, optional): If True, use extreme value calculations for -log10(P). Defaults to False
-        log (gwaslab.g_Log.Log, optional): Logger object for tracking progress. Defaults to new Log()
+    Parameters
+    ----------
+    to_fill : str or list of str
+        Column name(s) to fill. Common values include 'OR', 'BETA', 'SE', 'Z', 'P', etc.
+    df : str, optional
+        Column name containing degrees of freedom for chi-square tests.
+    overwrite : bool, optional, default=False
+        If True, overwrite existing values in target columns.
+    verbose : bool, optional, default=True
+        Whether to display progress messages.
+    only_sig : bool, optional, default=False
+        If True, only update values for significant variants.
+    sig_level : float, optional, default=5e-8
+        Significance threshold for P-value filtering.
+    extreme : bool, optional, default=False
+        If True, use extreme value calculations for -log10(P).
     
-    Returns:
-        pandas.DataFrame: Modified summary statistics DataFrame with filled values
+    Returns
+    -------
+    pandas.DataFrame
+        Modified summary statistics DataFrame with filled values
     """
     # if a string is passed to to_fill, convert it to list
     if type(to_fill) is str:

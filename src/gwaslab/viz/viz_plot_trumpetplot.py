@@ -64,7 +64,7 @@ def plottrumpet(mysumstats,
                 scatter_args=None,
                 fontsize=15,
                 font_family="Arial",
-                size= "ABS_BETA",
+                size= None,
                 sizes=None,
                 save=False,
                 save_args=None,
@@ -87,7 +87,135 @@ def plottrumpet(mysumstats,
                 yticklabels=None,
                 sort="beta",
                 verbose=True,
+                title=None,
+                title_fontsize=15,
                 log=Log()):
+    """
+    Create trumpet plot for genetic association results.
+    
+    This function generates a trumpet plot to visualize effect sizes and minor allele frequencies
+    with power curves and optional highlighting of significant variants.
+    
+    Parameters
+    ----------
+    mode : str, required
+        Analysis mode: "q" (quantitative trait) or "b" (binary trait). Default is "q"
+    n : str, optional
+        Column name for sample size for quantitative trait analysis. Used in "q" mode. Default is "N"
+    ts : list, optional
+        Power thresholds to plot. Default is [0.2,0.4,0.6,0.8]
+    anno : str or None, optional
+        Column name for variant annotation. Default is None
+    prevalence : float, optional
+        Prevalence for binary trait analysis. Used in "b" mode. Default is None
+    or_to_rr : bool, optional
+        Convert odds ratio to risk ratio. Used in "b" mode. Default is False
+    ncase : int, optional
+        Number of cases for binary trait analysis. Used in "b" mode. Default is None
+    ncontrol : int, optional
+        Number of controls for binary trait analysis.Used in "b" mode. Default is None
+    sig_level : float, optional
+        Significance threshold. Default is 5e-8
+    p_level : float, optional
+        P-value threshold for variant inclusion. Default is 5e-8
+    anno_y : float, optional
+        Annotation y-axis threshold. Default is 1
+    anno_x : float, optional
+        Annotation x-axis threshold. Default is 0.01
+    maf_range : tuple, optional
+        MAF range for power calculation. If None, auto-detected. Default is None
+    beta_range : tuple, optional
+        Beta range for power calculation. If None, auto-detected. Default is None
+    n_matrix : int, optional
+        Power curve smoothness parameter. Default is 1000
+    xscale : str, optional
+        X-axis scale: "log" or "linear". Default is "log"
+    yscale_factor : float, optional
+        Effect size scaling factor. Default is 1
+    cmap : str, optional
+        Colormap for power curves. Default is "cool"
+    ylim : tuple, optional
+        Y-axis limits. For example, [-3, 3]. If None, auto-detected. Default is None.
+    xlim : tuple, optional
+        X-axis limits. Default is None
+    markercolor : str, optional
+        Color for scatter points. Default is "#597FBD"
+    hue : str, optional
+        Column name for color grouping. Only used when you want to color variants differently. Default is None
+    highlight : list, optional
+        Variants to highlight. Default is None
+    highlight_chrpos : bool, optional
+        Use chromosome position for highlighting. Default is False
+    highlight_windowkb : int, optional
+        Window size for highlighting. Default is 500
+    highlight_anno_args : dict, optional
+        Annotation arguments for highlights. Default is None
+    highlight_lim : tuple, optional
+        Highlight limits. Default is None
+    highlight_lim_mode : str, optional
+        Highlight limit mode. Default is "absolute"
+    pinpoint : list, optional
+        Variants to pinpoint. Default is None
+    pinpoint_color : str, optional
+        Color for pinpointed variants. Default is "red"
+    scatter_args : dict, optional
+        Additional seaborn scatter plot arguments. x, y, size, ax,sizes, size_norm, legend, edgecolor, alpha, zorder have already been used. Default is None
+    fontsize : int, optional
+        Font size. Default is 15
+    font_family : str, optional
+        Font family. Default is "Arial"
+    size : str, optional
+        Column name for point size. Default is None
+    sizes : tuple, optional
+        Size range for points. Default is None
+    save : bool, optional
+        Save the plot. Default is False
+    save_args : dict, optional
+        Arguments for saving the plot. Default is None
+    figargs : dict, optional
+        Figure creation arguments. Default is None
+    build : str, optional
+        Reference genome build. Default is "99"
+    anno_set : list, optional
+        Annotation set. Default is None
+    anno_alias : dict, optional
+        Annotation alias mapping. Default is None
+    anno_d : dict, optional
+        Annotation dictionary. Default is None
+    anno_args : dict, optional
+        Annotation arguments. Default is None
+    anno_style : str, optional
+        Annotation style. Default is "expand"
+    anno_source : str, optional
+        Annotation source. Default is "ensembl"
+    anno_max_iter : int, optional
+        Maximum annotation iterations. Default is 100
+    arm_scale : float, optional
+        Annotation arm scaling. Default is 1
+    repel_force : float, optional
+        Repulsion force for annotations. Default is 0.01
+    ylabel : str, optional
+        Y-axis label. Default is "Effect size"
+    xlabel : str, optional
+        X-axis label. Default is "Minor allele frequency"
+    xticks : list, optional
+        X-axis tick positions. Default is None
+    xticklabels : list, optional
+        X-axis tick labels. Default is None
+    yticks : list, optional
+        Y-axis tick positions. Default is None
+    yticklabels : list, optional
+        Y-axis tick labels. Default is None
+    sort : str, optional
+        Sorting method for annotations. Default is "beta"
+    verbose : bool, optional
+        Verbose output. Default is True
+    
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The generated trumpet plot figure
+    """
     
     #Checking columns#################################################################################################################
     matplotlib.rc('font', family=font_family)
@@ -203,6 +331,8 @@ def plottrumpet(mysumstats,
             n = sumstats["N"].median() 
         elif n == "mean":
             n = sumstats["N"].mean() 
+        else:
+            n = n
         log.write(" -N for power calculation: {}".format(n), verbose=verbose)
 
     #configure beta and maf range ###################################################################################################
@@ -429,11 +559,11 @@ def plottrumpet(mysumstats,
         ax.set_xscale('log')
         rotation=0
         ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
-        ax.set_xlim(min(sumstats[maf].min()/2,0.001/2),0.52)
+        ax.set_xlim(sumstats[maf].min()/2,0.52)
     else:
         rotation=90    
         ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
-        ax.set_xlim(-0.02,0.52)
+        ax.set_xlim(-0.01,0.52)
         
     if xlim is not None:
         ax.set_xlim(xlim)
@@ -547,6 +677,9 @@ def plottrumpet(mysumstats,
     
 
     ############  Annotation ##################################################################################################
+    if title:
+        ax.set_title(title,fontsize=title_fontsize,family=font_family)
+    
     if mode=="q":
         save_figure(fig, save, keyword="trumpet_q",save_args=save_args, log=log, verbose=verbose)
     elif mode=="b":
@@ -558,7 +691,7 @@ def plottrumpet(mysumstats,
 ####################################################################
 
 
-def plot_power( ns=1000,
+def plot_power(ns=1000,
                 mode="q",
                 ts=None,
                 prevalences=0.1,
@@ -586,6 +719,76 @@ def plot_power( ns=1000,
                 yticklabels=None,
                 verbose=True,
                 log=Log()):
+    """
+    Generate power curves for genetic association studies.
+    
+    This function creates power curves visualizing the relationship between
+    effect sizes and minor allele frequencies under various parameter settings.
+    
+    Parameters
+    ----------
+    ns : int or list, optional
+        Sample size(s) for quantitative trait analysis. Default is 1000
+    mode : str, optional
+        Analysis mode: "q" (quantitative) or "b" (binary). Default is "q"
+    ts : list or None, optional
+        Power thresholds to plot. Default is [0.2, 0.4, 0.6, 0.8]
+    prevalences : float or list, optional
+        Prevalence for binary trait analysis. Default is 0.1
+    or_to_rr : bool, optional
+        Convert odds ratio to risk ratio. Default is False
+    ncases : int or list, optional
+        Number of cases for binary trait analysis. Default is 5000
+    ncontrols : int or list, optional
+        Number of controls for binary trait analysis. Default is 5000
+    sig_levels : float or list, optional
+        Significance threshold(s). Default is 5e-8
+    maf_range : tuple or None, optional
+        MAF range for power calculation. Default is (0.001, 0.5)
+    beta_range : tuple or None, optional
+        Beta range for power calculation. Default is (0.0001, 3)
+    n_matrix : int, optional
+        Power curve smoothness parameter. Default is 1000
+    xscale : str, optional
+        X-axis scale: "log" or "linear". Default is "log"
+    yscale_factor : float, optional
+        Effect size scaling factor. Default is 1
+    cmap : str, optional
+        Colormap for power curves. Default is "cool"
+    ylim : tuple or None, optional
+        Y-axis limits. Default is None
+    fontsize : int, optional
+        Font size for labels. Default is 15
+    font_family : str, optional
+        Font family for text. Default is "Arial"
+    sizes : tuple or None, optional
+        Size range for points. Default is (20, 80)
+    save : bool, optional
+        Save the plot. Default is False
+    save_args : dict or None, optional
+        Arguments for saving the plot. Default is None
+    ylabel : str, optional
+        Y-axis label. Default is "Effect size"
+    xlabel : str, optional
+        X-axis label. Default is "Minor allele frequency"
+    xticks : list or None, optional
+        X-axis tick positions. Default is None
+    xticklabels : list or None, optional
+        X-axis tick labels. Default is None
+    yticks : list or None, optional
+        Y-axis tick positions. Default is None
+    yticklabels : list or None, optional
+        Y-axis tick labels. Default is None
+    verbose : bool, optional
+        Verbose output. Default is True
+    log : gwaslab.g_Log.Log, optional
+        Logger object. Default is new Log()
+    
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The generated power curve plot figure
+    """
     
     #Checking columns#################################################################################################################
     matplotlib.rc('font', family=font_family)
@@ -739,7 +942,7 @@ def plot_power( ns=1000,
     else:
         rotation=90    
         ax.set_xticks(xticks,xticklabels,fontsize=fontsize,rotation=rotation)
-        ax.set_xlim(-0.02,0.52)
+        ax.set_xlim(-0.01,0.52)
     
     if ylim is not None:
         ax.set_ylim(ylim)
@@ -1010,7 +1213,7 @@ def plot_power_x(
                               beta = beta, 
                               daf = maf,
                               ncase=ncase,
-                              ncontrol=ncontrol,
+                              ncontrol=ncontrol, 
                               prevalence=prevalence,
                               sig_level=sig_level,
                               or_to_rr = or_to_rr,

@@ -70,9 +70,49 @@ def rsidtochrpos(sumstats,
          path=None, ref_rsid_to_chrpos_tsv=None, snpid="SNPID",
          rsid="rsID", chrom="CHR",pos="POS",ref_rsid="rsID",ref_chr="CHR",ref_pos="POS", build="19",
               overwrite=False,remove=False,chunksize=5000000,verbose=True,log=Log()):
-    '''
-    assign chr:pos based on rsID
-    '''
+    """
+    Assign CHR:POS based on rsID.
+
+    Parameters
+    ----------
+    sumstats : DataFrame
+        Summary statistics DataFrame.
+    path : str, optional
+        Path to the reference file.
+    ref_rsid_to_chrpos_tsv : str, optional
+        Path to the TSV file containing rsID to CHR:POS mapping.
+    snpid : str, default='SNPID'
+        Column name for SNP IDs.
+    rsid : str, default='rsID'
+        Column name for rsIDs.
+    chrom : str, default='CHR'
+        Column name for chromosomes.
+    pos : str, default='POS'
+        Column name for positions.
+    ref_rsid : str, default='rsID'
+        Reference column name for rsIDs in the TSV file.
+    ref_chr : str, default='CHR'
+        Reference column name for chromosomes in the TSV file.
+    ref_pos : str, default='POS'
+        Reference column name for positions in the TSV file.
+    build : str, default='19'
+        Reference genome build.
+    overwrite : bool, default=False
+        Whether to overwrite existing CHR and POS values.
+    remove : bool, default=False
+        Whether to remove variants not found in the reference.
+    chunksize : int, default=5000000
+        Size of chunks to process the TSV file in.
+    verbose : bool, default=True
+        Whether to print progress information.
+    log : Log, default=Log()
+        Logging object to write to.
+
+    Returns
+    -------
+    DataFrame
+        Updated summary statistics DataFrame with CHR and POS values assigned based on rsIDs.
+    """
     ##start function with col checking##########################################################
     _start_line = "assign CHR and POS using rsIDs"
     _end_line = "assigning CHR and POS using rsIDs"
@@ -143,6 +183,27 @@ def rsidtochrpos(sumstats,
 ####################################################################################################################
     
 def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
+    """
+    Merge chromosome position data from HDF5 group into sumstats_part.
+
+    Parameters
+    ----------
+    sumstats_part : DataFrame
+        Subset of summary statistics to update.
+    all_groups_max : int
+        Maximum group index in the HDF5 file.
+    path : str
+        Path to the HDF5 file.
+    build : str
+        Genome build version.
+    status : str
+        Column name for status codes.
+
+    Returns
+    -------
+    DataFrame
+        Updated subset of summary statistics with merged data.
+    """
     group=str(sumstats_part["group"].mode(dropna=True)[0])
     if group in [str(i) for i in range(all_groups_max+1)]:
         try:
@@ -159,7 +220,63 @@ def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
 
 def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None, ref_rsid_to_chrpos_vcf = None, ref_rsid_to_chrpos_hdf5 = None, build="99",status="STATUS",
                          n_cores=4,block_size=20000000,verbose=True,log=Log()):
+    """
+    Assign chromosome and position (CHR:POS) based on rsID using parallel HDF5 processing.
 
+    This function assigns CHR and POS values to summary statistics by matching rsIDs against a reference 
+    HDF5 file containing rsID to CHR:POS mappings. The HDF5 file is typically generated from a VCF file 
+    and contains precomputed CHR:POS values grouped by rsID blocks. The function processes data in parallel 
+    using multiple CPU cores for improved performance on large datasets.
+
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Input summary statistics DataFrame containing variant data.
+    rsid : str, default="rsID"
+        Column name containing rsID values in `sumstats`.
+    chrom : str, default="CHR"
+        Column name for chromosome values to be updated.
+    pos : str, default="POS"
+        Column name for position values to be updated.
+    path : str, optional
+        Path to the HDF5 reference file. If not provided, must specify either `ref_rsid_to_chrpos_vcf` 
+        or `ref_rsid_to_chrpos_hdf5`.
+    ref_rsid_to_chrpos_vcf : str, optional
+        Path to VCF file containing rsID to CHR:POS mappings. If provided, the corresponding HDF5 file 
+        path will be automatically generated.
+    ref_rsid_to_chrpos_hdf5 : str, optional
+        Path to pre-generated HDF5 file containing rsID to CHR:POS mappings. Takes precedence over 
+        `ref_rsid_to_chrpos_vcf`.
+    build : str, default="99"
+        Reference genome build identifier. "99" indicates unknown or unspecified build.
+    status : str, default="STATUS"
+        Column name for status codes in `sumstats`.
+    n_cores : int, default=4
+        Number of CPU cores to use for parallel processing.
+    block_size : int, default=20000000
+        Size of data blocks for parallel processing. Must match the block size used when generating 
+        the HDF5 reference file.
+    verbose : bool, default=True
+        If True, print progress messages.
+    log : gwaslab.g_Log.Log, default=Log()
+        Logging object for recording process information.
+
+    Returns
+    -------
+    pd.DataFrame
+        Updated summary statistics DataFrame with CHR and POS values assigned based on rsID matches. 
+        Variants without valid rsIDs or matches will retain original values (or NaN if new columns were 
+        created).
+
+    Notes
+    -----
+    - The HDF5 reference file should be structured with groups named as "group_X" where X is the block 
+      index (0,1,2,...), each containing a DataFrame with columns "rsn", "CHR", and "POS".
+    - This function first attempts to use `ref_rsid_to_chrpos_hdf5` if provided, otherwise generates 
+      the HDF5 path from `ref_rsid_to_chrpos_vcf`.
+    - Non-valid rsIDs (containing non-numeric characters after "rs") and duplicated rsIDs are processed 
+      separately and not updated.
+    """
     ##start function with col checking##########################################################
     _start_line = "assign CHR and POS using rsIDs"
     _end_line = "assigning CHR and POS using rsIDs"
@@ -396,19 +513,46 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
 
 #20240320 check if non-effect allele is aligned with reference genome         
 def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array, records_len: np.array):
-    # starting_positions and records_len must be 1D arrays containing data only for the chromosomes contained in x,
-    # and these arrays must be ordered in the same way as the chromosomes in np.unique(x['CHR'].values).
-    # status 
-    #0 /  ----->  match
-    #1 /  ----->  Flipped Fixed
-    #2 /  ----->  Reverse_complementary Fixed
-    #3 /  ----->  flipped
-    #4 /  ----->  reverse_complementary 
-    #5 / ------>  reverse_complementary + flipped
-    #6 /  ----->  both allele on genome + unable to distinguish
-    #7 /  ----> reverse_complementary + both allele on genome + unable to distinguish
-    #8 / -----> not on ref genome
-    #9 / ------> unchecked
+    """
+    Check if non-effect allele (NEA) is aligned with reference genome using vectorized operations.
+
+    This function efficiently checks alignment status for multiple variants against a reference genome
+    using numpy vectorization. It updates the status codes based on whether alleles match the reference,
+    need flipping, or are not present in the reference.
+
+    Parameters
+    ----------
+    x : pd.DataFrame
+        DataFrame containing variant data with columns in order: ['CHR', 'POS', 'EA', 'NEA', 'STATUS'].
+        Note: Column names are not explicitly checked - the function expects specific column ordering.
+    record : np.array
+        Concatenated reference genome sequence as a 1D numpy array of integers (after translation).
+    starting_positions : np.array
+        1D array containing the starting index in `record` for each chromosome in `x`.
+        Must correspond to chromosomes in np.unique(x['CHR'].values) and be ordered accordingly.
+    records_len : np.array
+        1D array containing the length of each chromosome's sequence in `record`.
+        Must correspond to chromosomes in np.unique(x['CHR'].values) and be ordered accordingly.
+
+    Returns
+    -------
+    np.array
+        Array of updated status strings after checking against the reference genome.
+
+    Notes
+    -----
+    Status codes are stored as the 6th character (0-based index 5) of the status string:
+    0: Alleles match reference (NEA == ref)
+    1: Flipped Fixed
+    2: Reverse_complementary Fixed
+    3: Flipped (EA == ref but NEA != ref)
+    4: Reverse_complementary (rev_NEA == ref)
+    5: Reverse_complementary + Flipped
+    6: Both alleles on genome but indistinguishable (indel)
+    7: Reverse_complementary + both alleles on genome + indistinguishable
+    8: Not on reference genome
+    9: Unchecked
+    """
     if x.empty:
         return np.array([])
     
@@ -633,7 +777,56 @@ def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=
     return sumstats[status].values
         
 
-def checkref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
+def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", status="STATUS", chr_dict=get_chr_to_number(), remove=False, verbose=True, log=Log()):
+    """
+    Check if non-effect allele (NEA) is aligned with reference genome.
+
+    This function checks whether the non-effect allele (NEA) in the summary statistics
+    matches the reference genome sequence. It updates the status codes in the summary
+    statistics DataFrame to reflect the alignment status.
+
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Summary statistics DataFrame containing variant data.
+    ref_seq : str
+        Path to the reference genome FASTA file.
+    chrom : str, default="CHR"
+        Column name for chromosome information in sumstats.
+    pos : str, default="POS"
+        Column name for position information in sumstats.
+    ea : str, default="EA"
+        Column name for effect allele in sumstats.
+    nea : str, default="NEA"
+        Column name for non-effect allele in sumstats.
+    status : str, default="STATUS"
+        Column name for status codes in sumstats.
+    chr_dict : dict, optional
+        Dictionary mapping chromosome names to standardized format.
+    remove : bool, default=False
+        If True, remove variants not on the reference genome.
+    verbose : bool, default=True
+        If True, print progress messages.
+    log : gwaslab.g_Log.Log, default=Log()
+        Logging object for recording process information.
+
+    Returns
+    -------
+    pd.DataFrame
+        Updated summary statistics DataFrame with status codes reflecting
+        alignment with reference genome.
+
+    Notes
+    -----
+    The function uses the following status codes (6th character of status string):
+    0: Alleles match reference (NEA == ref)
+    3: Flipped (EA == ref but NEA != ref)
+    4: Reverse_complementary (rev_NEA == ref)
+    5: Reverse_complementary + Flipped
+    6: Both alleles on genome but indistinguishable (indel)
+    8: Not on reference genome
+    9: Unchecked
+    """
     ##start function with col checking##########################################################
     _start_line = "check if NEA is aligned with reference sequence"
     _end_line = "checking if NEA is aligned with reference sequence"
@@ -785,15 +978,71 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
     rsID = sumstats.apply(map_func,axis=1)
     return rsID
 
-def parallelizeassignrsid(sumstats, path, ref_mode="vcf",snpid="SNPID",rsid="rsID",chr="CHR",pos="POS",ref="NEA",alt="EA",status="STATUS",
-                          n_cores=1,chunksize=5000000,ref_snpid="SNPID",ref_rsid="rsID",
-                          overwrite="empty",verbose=True,log=Log(),chr_dict=None):
-    '''
-    overwrite mode : 
-    all ,    overwrite rsid for all availalbe rsid 
-    invalid,  only assign rsid for variants with invalid rsid
-    empty    only assign rsid for variants with na rsid
-    '''
+def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="rsID", chr="CHR", pos="POS", ref="NEA", alt="EA", status="STATUS",
+                          n_cores=1, chunksize=5000000, ref_snpid="SNPID", ref_rsid="rsID",
+                          overwrite="empty", verbose=True, log=Log(), chr_dict=None):
+    """
+    Assign rsID to variants by matching with reference file.
+
+    This function assigns rsID to variants in the summary statistics by matching
+    chromosome position and alleles with a reference file (VCF or TSV format).
+    It supports different overwrite modes and can process data in parallel.
+
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Summary statistics DataFrame containing variant data.
+    path : str
+        Path to the reference file (VCF or TSV).
+    ref_mode : str, default="vcf"
+        Reference file format ("vcf" for VCF files, "tsv" for TSV files).
+    snpid : str, default="SNPID"
+        Column name for SNP IDs in the summary statistics.
+    rsid : str, default="rsID"
+        Column name for rsIDs in the summary statistics.
+    chr : str, default="CHR"
+        Column name for chromosome information.
+    pos : str, default="POS"
+        Column name for position information.
+    ref : str, default="NEA"
+        Column name for reference allele (non-effect allele).
+    alt : str, default="EA"
+        Column name for alternative allele (effect allele).
+    status : str, default="STATUS"
+        Column name for status codes.
+    n_cores : int, default=1
+        Number of CPU cores to use for parallel processing.
+    chunksize : int, default=5000000
+        Size of chunks for processing large reference files.
+    ref_snpid : str, default="SNPID"
+        Column name for SNP IDs in the reference TSV file.
+    ref_rsid : str, default="rsID"
+        Column name for rsIDs in the reference TSV file.
+    overwrite : str, default="empty"
+        Overwrite mode for rsID assignment:
+        - "all": overwrite rsID for all available rsID
+        - "invalid": only assign rsID for variants with invalid rsID
+        - "empty": only assign rsID for variants with NA rsID
+    verbose : bool, default=True
+        If True, print progress messages.
+    log : gwaslab.g_Log.Log, default=Log()
+        Logging object for recording process information.
+    chr_dict : dict, optional
+        Dictionary for mapping chromosome names to standardized format.
+
+    Returns
+    -------
+    pd.DataFrame
+        Updated summary statistics DataFrame with rsID assignments.
+
+    Notes
+    -----
+    The function first checks if the required columns are present in the summary
+    statistics. For VCF reference files, it matches variants based on
+    CHR:POS:REF:ALT/ALT:REF. For TSV reference files, it matches based on SNPID.
+    The function handles parallel processing for large datasets and provides
+    detailed logging of the assignment process.
+    """
 
     if ref_mode=="vcf":
         ###################################################################################################################
@@ -1343,7 +1592,65 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
 
 ################################################################################################################
-def parallelecheckaf(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.4,column_name="DAF",suffix="",n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
+def parallelecheckaf(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+    """
+    Check the difference between effect allele frequency (EAF) in summary statistics and alternative allele frequency in reference VCF.
+
+    This function calculates the difference between the effect allele frequency (EAF) in the summary statistics
+    and the alternative allele frequency (ALT_AF) in the reference VCF file. The difference (DAF) is stored in
+    a new column in the summary statistics DataFrame.
+
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Summary statistics DataFrame containing variant data.
+    ref_infer : str
+        Path to the reference VCF file.
+    ref_alt_freq : str, optional
+        Field name for alternative allele frequency in VCF INFO section.
+    maf_threshold : float, default=0.4
+        Minor allele frequency threshold for filtering variants.
+    column_name : str, default="DAF"
+        Name of the column to store the difference values.
+    suffix : str, default=""
+        Suffix to append to the column name.
+    n_cores : int, default=1
+        Number of CPU cores to use for parallel processing.
+    chr : str, default="CHR"
+        Column name for chromosome information.
+    pos : str, default="POS"
+        Column name for position information.
+    ref : str, default="NEA"
+        Column name for reference allele (non-effect allele).
+    alt : str, default="EA"
+        Column name for alternative allele (effect allele).
+    eaf : str, default="EAF"
+        Column name for effect allele frequency.
+    status : str, default="STATUS"
+        Column name for status codes.
+    chr_dict : dict, optional
+        Dictionary for mapping chromosome names to standardized format.
+    force : bool, default=False
+        If True, check all variants regardless of status.
+    verbose : bool, default=True
+        If True, print progress messages.
+    log : gwaslab.g_Log.Log, default=Log()
+        Logging object for recording process information.
+
+    Returns
+    -------
+    pd.DataFrame
+        Updated summary statistics DataFrame with a new column containing
+        the difference between EAF (sumstats) and ALT_AF (reference VCF).
+
+    Notes
+    -----
+    - The difference in allele frequency (DAF) is calculated as: DAF = EAF (sumstats) - ALT_AF (reference VCF)
+    - This DAF is not the derived allele frequency.
+    - The function provides statistics about the DAF values including max, min, standard deviation,
+      and absolute value statistics.
+    - Only variants with valid chromosome position and allele information are checked by default.
+    """
     ##start function with col checking##########################################################
     _start_line = "check the difference between EAF (sumstats) and ALT frequency (reference VCF)"
     _end_line = "checking the difference between EAF (sumstats) and ALT frequency (reference VCF)"
@@ -1426,7 +1733,59 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
     return np.nan
 ################################################################################################################
 
-def paralleleinferaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
+def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+    """
+    Infer effect allele frequency (EAF) in summary statistics using reference VCF ALT frequency.
+
+    This function infers the effect allele frequency (EAF) in the summary statistics by matching
+    variants with a reference VCF file. It calculates the ALT frequency from the reference VCF
+    and updates the EAF values in the summary statistics DataFrame.
+
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Summary statistics DataFrame containing variant data.
+    ref_infer : str
+        Path to the reference VCF file.
+    ref_alt_freq : str, optional
+        Field name for alternative allele frequency in VCF INFO section.
+    n_cores : int, default=1
+        Number of CPU cores to use for parallel processing.
+    chr : str, default="CHR"
+        Column name for chromosome information.
+    pos : str, default="POS"
+        Column name for position information.
+    ref : str, default="NEA"
+        Column name for reference allele (non-effect allele).
+    alt : str, default="EA"
+        Column name for alternative allele (effect allele).
+    eaf : str, default="EAF"
+        Column name for effect allele frequency.
+    status : str, default="STATUS"
+        Column name for status codes.
+    chr_dict : dict, optional
+        Dictionary for mapping chromosome names to standardized format.
+    force : bool, default=False
+        If True, infer EAF for all variants regardless of status.
+    verbose : bool, default=True
+        If True, print progress messages.
+    log : gwaslab.g_Log.Log, default=Log()
+        Logging object for recording process information.
+
+    Returns
+    -------
+    pd.DataFrame
+        Updated summary statistics DataFrame with inferred EAF values.
+
+    Notes
+    -----
+    - The function first checks if the required columns are present in the summary statistics.
+    - By default, it only processes variants with valid status codes (standardized and normalized).
+    - The function uses parallel processing to improve performance on large datasets.
+    - After inference, it provides statistics about the number of variants for which EAF was
+      successfully inferred and those still missing EAF values.
+    - The inferred EAF values are stored in the specified EAF column of the summary statistics.
+    """
     ##start function with col checking##########################################################
     _start_line = "infer sumstats EAF using reference VCF ALT frequency"
     _end_line = "inferring sumstats EAF using reference VCF ALT frequency"
@@ -1505,8 +1864,67 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
 
 ################################################################################################################
 
-def _paralleleinferafwithmaf(sumstats,ref_infer,ref_alt_freq=None,n_cores=1, chr="CHR",pos="POS",ref="NEA",alt="EA",
-                            eaf="EAF",maf="MAF",ref_eaf="_REF_EAF",status="STATUS",chr_dict=None,force=False, verbose=True,log=Log()):
+def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
+                            eaf="EAF", maf="MAF", ref_eaf="_REF_EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+    """
+    Infer effect allele frequency (EAF) in summary statistics from MAF using reference VCF ALT frequency.
+
+    This function infers the effect allele frequency (EAF) in the summary statistics by first
+    extracting the reference allele frequency from a VCF file, then using this information along
+    with the summary statistics MAF to calculate the correct EAF. It handles cases where the
+    effect allele might need to be flipped based on the reference data.
+
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Summary statistics DataFrame containing variant data.
+    ref_infer : str
+        Path to the reference VCF file.
+    ref_alt_freq : str, optional
+        Field name for alternative allele frequency in VCF INFO section.
+    n_cores : int, default=1
+        Number of CPU cores to use for parallel processing.
+    chr : str, default="CHR"
+        Column name for chromosome information.
+    pos : str, default="POS"
+        Column name for position information.
+    ref : str, default="NEA"
+        Column name for reference allele (non-effect allele).
+    alt : str, default="EA"
+        Column name for alternative allele (effect allele).
+    eaf : str, default="EAF"
+        Column name for effect allele frequency.
+    maf : str, default="MAF"
+        Column name for minor allele frequency.
+    ref_eaf : str, default="_REF_EAF"
+        Temporary column name for storing reference allele frequency.
+    status : str, default="STATUS"
+        Column name for status codes.
+    chr_dict : dict, optional
+        Dictionary for mapping chromosome names to standardized format.
+    force : bool, default=False
+        If True, infer EAF for all variants regardless of status.
+    verbose : bool, default=True
+        If True, print progress messages.
+    log : gwaslab.g_Log.Log, default=Log()
+        Logging object for recording process information.
+
+    Returns
+    -------
+    pd.DataFrame
+        Updated summary statistics DataFrame with inferred EAF values.
+
+    Notes
+    -----
+    - The function first extracts reference allele frequencies from the VCF file.
+    - It then compares these reference frequencies with the MAF in the summary statistics
+      to determine if flipping is needed.
+    - If the reference allele frequency and MAF suggest different major/minor alleles,
+      the EAF is calculated as 1 - MAF (flipping the allele).
+    - The temporary reference EAF column (_REF_EAF) is dropped before returning the DataFrame.
+    - The function provides statistics about the number of variants for which EAF was
+      successfully inferred and those still missing EAF values.
+    """
     ##start function with col checking##########################################################
     _start_line = "infer sumstats EAF from sumstats MAF using reference VCF ALT frequency"
     _end_line = "inferring sumstats EAF from sumstats MAF using reference VCF ALT frequency"
@@ -1595,7 +2013,44 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
     return np.nan
 
 ##############################################################################################################################################################################################
-def auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log):    
+def auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log):
+    """
+    Automatically determine chromosome naming convention used in VCF/BCF files.
+
+    This function checks the chromosome naming convention used in VCF/BCF files and
+    returns an appropriate chromosome dictionary mapping. It first checks if the
+    chromosome IDs match RefSeq IDs (for hg19 or hg38 builds), then checks for
+    common prefixes like "chr", and finally defaults to standard numeric chromosomes.
+
+    Parameters
+    ----------
+    vcf_path : str or None
+        Path to the VCF/BCF file to check. If None, the function returns vcf_chr_dict.
+    vcf_chr_dict : dict or None
+        Optional pre-defined chromosome dictionary. If None, the function will
+        attempt to determine the appropriate dictionary.
+    verbose : bool
+        If True, print detailed progress messages.
+    log : gwaslab.g_Log.Log
+        Logging object for recording process information.
+
+    Returns
+    -------
+    dict
+        A chromosome dictionary mapping that matches the chromosome naming
+        convention used in the VCF/BCF file. This dictionary maps standard
+        chromosome numbers to the format used in the VCF/BCF file.
+
+    Notes
+    -----
+    The function checks for chromosome naming conventions in the following order:
+    1. RefSeq IDs (for hg19 or hg38 builds)
+    2. Chromosome prefixes (e.g., "chr1", "Chr1", "CHR1")
+    3. Standard numeric chromosomes (e.g., 1, 2, 3, ...)
+
+    If no specific convention is detected, it defaults to standard numeric
+    chromosomes without any prefix.
+    """
     if vcf_path is not None:
         if vcf_chr_dict is None:
             log.write(" -Checking chromosome notations in VCF/BCF files..." ,verbose=verbose)  
@@ -1632,4 +2087,3 @@ def check_vcf_chr_NC(vcf_bcf_path,log,verbose):
             return get_number_to_NC(build="38")
     else:
         return None
-

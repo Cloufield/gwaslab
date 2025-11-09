@@ -47,6 +47,36 @@ def _plot_qq(
     verbose=True,
     log=Log()
 ):
+    """
+    Generate a QQ plot to visualize the distribution of p-values from GWAS results.
+    
+    Parameters
+    ----------
+    gc : bool
+        Whether to calculate and display genomic inflation factor.
+    stratified : bool, default=False
+        Whether to stratify by MAF (Minor Allele Frequency).
+    maf_bins : list of tuples
+        Bins for MAF stratification [(lower1, upper1), ...].
+    maf_bin_colors : list
+        Colors for each MAF bin.
+    qtitle : str
+        Title for the QQ plot.
+    qtitle_pad : float
+        Padding for the title.
+    include_chrXYMT : bool
+        Whether to include chrX, chrY, and MT in GC calculation.
+    expected_min_mlog10p : float
+        Expected minimum -log10(p) value for theoretical distribution.
+    figargs : dict, optional
+        Figure arguments for subplots. Default is None. (Used in all modes)
+    fig_args : dict, optional
+        Alternative name for figure arguments. Default is None. (Used in all modes)
+    Returns
+    -------
+    matplotlib.axes.Axes
+        Modified axes object with the QQ plot.
+    """
             
     # QQ plot #########################################################################################################
     # ax2 qqplot
@@ -173,5 +203,3 @@ def _plot_qq(
     
     # Creating QQ plot Finished #############################################################################################
     return ax2
-
-

@@ -10,21 +10,27 @@ from functools import partial
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.g_Log import Log
 
-def _process_build(build, log, verbose):
-    if str(build).lower() in ["hg19","19","37","b37","grch37"]:
-        log.write(" -Genomic coordinates are based on GRCh37/hg19...", verbose=verbose)
-        final_build = "19"
-    elif str(build).lower() in ["hg18","18","36","b36","grch36"]:
-        log.write(" -Genomic coordinates are based on GRCh36/hg18...", verbose=verbose)
-        final_build = "18"
-    elif str(build).lower() in ["hg38","38","b38","grch38"]:
-        log.write(" -Genomic coordinates are based on GRCh38/hg38...", verbose=verbose)
-        final_build = "38"
-    elif str(build).lower() in ["t2t","hs1","chm13","13"]:
-        log.write(" -Genomic coordinates are based on T2T-CHM13...", verbose=verbose)
-        final_build = "13"
+def _process_build(build,  
+                   log=Log(), 
+                   verbose=True,
+                   species="homo sapiens"):
+    if species=="homo sapiens":
+        if str(build).lower() in ["hg19","19","37","b37","grch37"]:
+            log.write(" -Genomic coordinates are based on GRCh37/hg19...", verbose=verbose)
+            final_build = "19"
+        elif str(build).lower() in ["hg18","18","36","b36","grch36"]:
+            log.write(" -Genomic coordinates are based on GRCh36/hg18...", verbose=verbose)
+            final_build = "18"
+        elif str(build).lower() in ["hg38","38","b38","grch38"]:
+            log.write(" -Genomic coordinates are based on GRCh38/hg38...", verbose=verbose)
+            final_build = "38"
+        elif str(build).lower() in ["t2t","hs1","chm13","13"]:
+            log.write(" -Genomic coordinates are based on T2T-CHM13...", verbose=verbose)
+            final_build = "13"
+        else:
+            log.warning("Version of genomic coordinates is unknown...", verbose=verbose)
+            final_build = "99"
     else:
-        log.warning("Version of genomic coordinates is unknown...", verbose=verbose)
         final_build = "99"
     return final_build
 

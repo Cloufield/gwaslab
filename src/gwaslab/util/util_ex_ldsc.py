@@ -264,6 +264,35 @@ class ARGS():
 
 
 def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False, munge_args=None, **raw_kwargs):
+    """
+    Estimate SNP heritability using LD score regression.
+
+    Parameters
+    ----------
+    verbose : bool, default=True
+        If True, print detailed progress messages.
+    munge : bool, default=False
+        If True, perform data munging (filtering, cleaning) before analysis.
+    **raw_kwargs
+        Additional keyword arguments passed to LDSC. Common parameters include:
+        - ref_ld: reference LD score file path or directory path (required)
+        - w_ld: Weight LD scores
+        - samp_prev: Sample prevalence for case-control studies
+        - pop_prev: Population prevalence for case-control studies
+
+    Returns
+    -------
+    tuple
+        A tuple containing:
+        - parsed_summary (pd.DataFrame): Heritability estimate and related statistics
+        - results_table (pd.DataFrame or None): Coefficient results if available; otherwise None
+
+    Notes
+    -----
+    This function wraps the LDSC implementation from Bulik-Sullivan et al. (2015).
+    Requires input columns: CHR, POS, EA, NEA.
+    For case-control studies, provide samp_prev and pop_prev via meta or raw_kwargs.
+    """
     sumstats = insumstats
     kwargs = copy.deepcopy(raw_kwargs)
     

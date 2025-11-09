@@ -9,8 +9,6 @@ def lambdaGC(insumstats,include_chrXYMT=True, x=23 ,y=24, mt=25, mode="P",level=
     
     Parameters
     ----------
-    insumstats : pandas.DataFrame
-        Input summary statistics DataFrame containing 'CHR' and a column with test statistics
     include_chrXYMT : bool, optional
         If False, exclude sex chromosomes (X, Y) and mitochondrial (MT) from calculation
     x, y, mt : int or str, optional
@@ -25,8 +23,6 @@ def lambdaGC(insumstats,include_chrXYMT=True, x=23 ,y=24, mt=25, mode="P",level=
         Quantile level for calculation (default: 0.5, median)
     verbose : bool, optional
         If True, write progress messages to log
-    log : gwaslab.g_Log.Log object, optional
-        Logging object for output messages
     
     Returns
     -------

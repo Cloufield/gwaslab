@@ -6,6 +6,10 @@ import numpy as np
 import scipy as sp
 import matplotlib as mpl
 from scipy import stats
+"""
+Annotate significant variants in a single Manhattan/QQ plot with customizable styling and positioning options.
+"""
+
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from adjustText import adjust_text
 from gwaslab.g_Log import Log
@@ -51,6 +55,89 @@ def annotate_single(
     _invert=False,
     log=Log()
 ):
+    """
+    Annotate significant variants in a single Manhattan/QQ plot with customizable styling and positioning options.
+    
+    Parameters
+    ----------
+    sumstats : pandas.DataFrame
+        DataFrame containing summary statistics with columns for chromosome (CHR), position (POS), and p-values (P)
+    anno : bool or str, optional
+        Column name to use for annotation. If True, uses "CHR:POS". Default is True
+    mode : str, optional
+        Annotation mode ('r' for right style, 'tight' for compact style, 'expand' for spaced style). Default is 'r'
+    ax1 : matplotlib.axes.Axes
+        Matplotlib axis object to add annotations to
+    highlight_i : list, optional
+        List of indices to highlight with special styling. Default is empty list
+    highlight_chrpos : dict, optional
+        Dictionary mapping highlighted SNPs to custom CHR:POS values. Default is empty dict
+    highlight_anno_args : dict, optional
+        Dictionary of styling arguments for highlighted variants. Default is empty dict
+    to_annotate : pandas.DataFrame
+        DataFrame containing variants to annotate with their positions and p-values
+    anno_d : dict, optional
+        Dictionary mapping annotation indices to custom positioning options. For example, {0:"l"} means adjust the direction of the 0th to left. Default is empty dict
+    anno_alias : dict, optional
+        Dictionary mapping SNP IDs to custom annotation labels. Default is empty dict
+    anno_style : str, optional
+        Style of annotation ('right', 'tight', 'expand'). Default is 'right'
+    anno_args : dict, optional
+        Dictionary of default styling arguments for annotations. Default is empty dict
+    anno_args_single : dict, optional
+        Dictionary mapping SNP IDs to custom styling arguments. Default is empty dict
+    arm_scale : float, optional
+        Scaling factor for annotation arm length. Default is 1.0
+    anno_max_iter : int, optional
+        Maximum iterations for text repulsion algorithm. Default is 50
+    arm_scale_d : dict, optional
+        Dictionary mapping annotation indices to custom arm scaling factors. Default is None
+    arm_offset : float, optional
+        Offset for custom arm positioning. Default is 0.0
+    anno_adjust : bool, optional
+        Whether to automatically adjust text positions to prevent overlap. Default is True
+    anno_xshift : float, optional
+        Horizontal shift for all annotations. Default is None
+    anno_fixed_arm_length : float, optional
+        Fixed arm length for annotations. Default is None
+    maxy : float
+        Maximum y-value for the plot
+    anno_fontsize : int, optional
+        Font size for annotations. Default is 10
+    font_family : str, optional
+        Font family for annotations. Default is 'sans-serif'
+    region : tuple, optional
+        Genomic region coordinates (start, end). Default is None
+    region_anno_bbox_args : dict, optional
+        Dictionary of bounding box arguments for region annotations. Default is empty dict
+    skip : float, optional
+        Spacing between annotations. Default is 0.1
+    arrow_kwargs : dict, optional
+        Dictionary of arrow styling arguments. Default is None
+    anno_height : float, optional
+        Vertical spacing factor for annotations. Default is 1.0
+    amode : str, optional
+        Algorithm mode for text positioning ('int' or 'float'). Default is 'int'
+    snpid : str, optional
+        Column name containing SNP identifiers. Default is 'SNPID'
+    chrom : str, optional
+        Column name containing chromosome numbers. Default is 'CHR'
+    pos : str, optional
+        Column name containing genomic positions. Default is 'POS'
+    repel_force : float, optional
+        Force strength for text repulsion algorithm. Default is 0.02
+    verbose : bool, optional
+        Whether to print progress messages. Default is True
+    _invert : bool, optional
+        Whether to invert the plot orientation. Default is False
+    log : gwaslab.Log, optional
+        Log object for tracking progress. Default is new Log instance
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        Modified axis object with annotations added
+    """
     if arrow_kwargs is None:
         arrow_kwargs=dict()
         
