@@ -270,15 +270,21 @@ def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False,
     Parameters
     ----------
     verbose : bool, default=True
-        If True, print detailed progress messages.
+        If True, print detailed progress and status messages during execution.
     munge : bool, default=False
-        If True, perform data munging (filtering, cleaning) before analysis.
+        If True, apply standard munging procedures (e.g., filtering, harmonization, and QC)
+        to the input summary statistics prior to analysis.
     **raw_kwargs
-        Additional keyword arguments passed to LDSC. Common parameters include:
-        - ref_ld: reference LD score file path or directory path (required)
-        - w_ld: Weight LD scores
-        - samp_prev: Sample prevalence for case-control studies
-        - pop_prev: Population prevalence for case-control studies
+        Additional keyword arguments forwarded directly to the underlying LDSC call.
+        Common options include:
+            ref_ld_chr : str or path-like, required
+                Path to reference LD score files (directory or specific file prefix).
+            w_ld_chr : str or path-like, optional
+                Path to LD weight scores. Often the same as `ref_ld`.
+            samp_prev : float, optional
+                Sample prevalence (case proportion) for case–control summary statistics.
+            pop_prev : float, optional
+                Population prevalence for case–control traits.
 
     Returns
     -------

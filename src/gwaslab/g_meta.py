@@ -1,4 +1,6 @@
 from gwaslab.g_version import gwaslab_info
+from datetime import datetime
+
 
 def _init_meta(object="Sumstats"):
     """
@@ -63,7 +65,18 @@ def _init_meta(object="Sumstats"):
                         "ref_infer_daf":"Unknown",
                         "ref_rsid_to_chrpos_tsv":"Unknown",
                         "ref_rsid_to_chrpos_vcf":"Unknown"
-                    }}}
+                    },
+                    "basic_check": {
+                            "run": False,
+                            "last_run_time": "",
+                            "args": {}
+                    },
+                    "harmonize": {
+                        "run": False,
+                        "last_run_time": "",
+                        "args": {}
+                    }       
+                    }}
         metadata |= metadata_ssf
     
     # SumstatsPair
@@ -95,7 +108,8 @@ def _init_meta(object="Sumstats"):
                                         "ref_infer_daf":"Unknown",
                                         "ref_rsid_to_chrpos_tsv":"Unknown",
                                         "ref_rsid_to_chrpos_vcf":"Unknown"
-                                    }}}
+                                    }                             
+                                    }}
         metadata |= metadata_multi
     
     # SumstatsMulti
@@ -136,4 +150,18 @@ def _append_meta_record(old, new):
         return new
     else:
         return "{}, {}".format(old, new)
-    
+
+def _check_sumstats_qc_status(self):
+    return [self.meta["gwaslab"]["basic_check"], self.meta["gwaslab"]["harmonize"]]
+
+def _set_qc_status(self, args):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    self.meta["gwaslab"]["basic_check"]["run"] = True
+    self.meta["gwaslab"]["basic_check"]["last_run_time"] = True
+    self.meta["gwaslab"]["basic_check"]["last_run_time"] = args 
+
+def _set_harmonization_status(self, args):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    self.meta["gwaslab"]["harmonize"]["run"]= True
+    self.meta["gwaslab"]["harmonize"]["last_run_time"] = True
+    self.meta["gwaslab"]["harmonize"]["last_run_time"] = args 

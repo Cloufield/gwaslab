@@ -56,22 +56,36 @@ def _plot_qq(
         Whether to calculate and display genomic inflation factor.
     stratified : bool, default=False
         Whether to stratify by MAF (Minor Allele Frequency).
-    maf_bins : list of tuples
+    maf_bins : list of tuples, optional
         Bins for MAF stratification [(lower1, upper1), ...].
-    maf_bin_colors : list
+    maf_bin_colors : list, optional
         Colors for each MAF bin.
-    qtitle : str
+    qtitle : str, optional
         Title for the QQ plot.
-    qtitle_pad : float
+    qtitle_pad : float, optional
         Padding for the title.
-    include_chrXYMT : bool
+    include_chrXYMT : bool, optional
         Whether to include chrX, chrY, and MT in GC calculation.
-    expected_min_mlog10p : float
+    expected_min_mlog10p : float, optional
         Expected minimum -log10(p) value for theoretical distribution.
-    figargs : dict, optional
-        Figure arguments for subplots. Default is None. (Used in all modes)
     fig_args : dict, optional
-        Alternative name for figure arguments. Default is None. (Used in all modes)
+        Figure arguments for subplots. Default is None. 
+    colors : list, default=['#597FBD','#74BAD3']
+        Color palette for plot. 
+    marker_size : tuple, default=(5,20)
+        Size range for markers. marker_size[1] will be used for qq plot.
+    use_rank : bool, default=False
+        Whether to use rank for plotting.
+    verbose : bool, default=True
+        Whether to show progress. 
+    build : str, optional
+        Genomic build version. Default is None. 
+    dpi : int, default=200
+        Dots per inch for figure resolution. 
+    save : str, optional
+        File path to save plot. Default is None. 
+    save_args : dict, default={"dpi":600,"transparent":True}
+        Arguments for saving the plot. 
     Returns
     -------
     matplotlib.axes.Axes

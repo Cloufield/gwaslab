@@ -183,10 +183,6 @@ def _plot_regional(
         Text offset for tracks. (Used in 'r' mode)
     track_font_family : str, optional
         Font family for tracks. Default is None. (Used in 'r' mode)
-    taf : dict, optional
-        Track annotation file. Default is None. (Used in 'r' mode)
-    tabix : str, optional
-        Path to tabix executable. Default is None. (Used in 'r' mode)
     windowsizekb : int, optional,default=500
         Window size in kb for obtainning significant variant. (Used all modes)
     anno : str, optional,default=None.
@@ -205,7 +201,6 @@ def _plot_regional(
         Annotation style. (Used in 'm' and 'r' modes)
     anno_fixed_arm_length : float, optional
         Fixed arm length for annotations. Default is None. (Used in 'm' and 'r' modes)
-
     anno_adjust : bool, default=False
         Whether to adjust annotation positions for tight style. (Used in 'm' and 'r' modes)
     anno_xshift : float, optional
@@ -328,6 +323,8 @@ def _plot_regional(
 
     Less used parameters
     -------
+    taf : dict, optional
+        Track annotation file. Default is None. (Used in 'r' mode)
     vcf_chr_dict : dict, optional
         Sumstats CHR (int) to VCF contig (str) dict for loading VCF data. 
         If None, it will be auto-detected (prefered). 
@@ -378,6 +375,8 @@ def _plot_regional(
         Path to GTF file for annotations. Default is None. (Used in 'm' and 'r' modes)
     ylabel : str, optional
         Y-axis label. Default is None. (Used in all modes)
+    tabix : str, optional
+        Path to tabix executable. Default is None. (Used in 'r' mode)
     """
 
 

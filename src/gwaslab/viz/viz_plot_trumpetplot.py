@@ -144,22 +144,12 @@ def plottrumpet(mysumstats,
         Column name for color grouping. Only used when you want to color variants differently. Default is None
     highlight : list, optional
         Variants to highlight. Default is None
-    highlight_chrpos : bool, optional
-        Use chromosome position for highlighting. Default is False
-    highlight_windowkb : int, optional
-        Window size for highlighting. Default is 500
-    highlight_anno_args : dict, optional
-        Annotation arguments for highlights. Default is None
-    highlight_lim : tuple, optional
-        Highlight limits. Default is None
-    highlight_lim_mode : str, optional
-        Highlight limit mode. Default is "absolute"
     pinpoint : list, optional
         Variants to pinpoint. Default is None
     pinpoint_color : str, optional
         Color for pinpointed variants. Default is "red"
     scatter_args : dict, optional
-        Additional seaborn scatter plot arguments. x, y, size, ax,sizes, size_norm, legend, edgecolor, alpha, zorder have already been used. Default is None
+        Additional seaborn scatter plot arguments. Excluding x, y, size, ax,sizes, size_norm, legend, edgecolor, alpha, zorder. Default is None
     fontsize : int, optional
         Font size. Default is 15
     font_family : str, optional
@@ -173,7 +163,7 @@ def plottrumpet(mysumstats,
     save_args : dict, optional
         Arguments for saving the plot. Default is None
     figargs : dict, optional
-        Figure creation arguments. Default is None
+        Figure creation arguments.Passed to plt.subplots. Default is None
     build : str, optional
         Reference genome build. Default is "99"
     anno_set : list, optional
@@ -188,12 +178,18 @@ def plottrumpet(mysumstats,
         Annotation style. Default is "expand"
     anno_source : str, optional
         Annotation source. Default is "ensembl"
-    anno_max_iter : int, optional
-        Maximum annotation iterations. Default is 100
-    arm_scale : float, optional
-        Annotation arm scaling. Default is 1
-    repel_force : float, optional
-        Repulsion force for annotations. Default is 0.01
+    sort : str, optional
+        Sorting method for annotations. Default is "beta"
+    verbose : bool, optional
+        Verbose output. Default is True
+    
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The generated trumpet plot figure
+    
+    Less used parameters
+    -------
     ylabel : str, optional
         Y-axis label. Default is "Effect size"
     xlabel : str, optional
@@ -206,15 +202,22 @@ def plottrumpet(mysumstats,
         Y-axis tick positions. Default is None
     yticklabels : list, optional
         Y-axis tick labels. Default is None
-    sort : str, optional
-        Sorting method for annotations. Default is "beta"
-    verbose : bool, optional
-        Verbose output. Default is True
-    
-    Returns
-    -------
-    matplotlib.figure.Figure
-        The generated trumpet plot figure
+    anno_max_iter : int, optional
+        Maximum annotation iterations. Default is 100
+    arm_scale : float, optional
+        Annotation arm scaling. Default is 1
+    repel_force : float, optional
+        Repulsion force for annotations. Default is 0.01
+    highlight_chrpos : bool, optional
+        Use chromosome position for highlighting. Default is False
+    highlight_windowkb : int, optional
+        Window size for highlighting. Default is 500
+    highlight_anno_args : dict, optional
+        Annotation arguments for highlights. Default is None
+    highlight_lim : tuple, optional
+        Highlight limits. Default is None
+    highlight_lim_mode : str, optional
+        Highlight limit mode. Default is "absolute"
     """
     
     #Checking columns#################################################################################################################

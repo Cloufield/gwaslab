@@ -10,7 +10,10 @@ from gwaslab.g_version import gwaslab_info
 from gwaslab.g_meta import _init_meta
 from gwaslab.g_meta import _append_meta_record
 from gwaslab.g_meta_update import _update_meta
+from gwaslab.g_meta import _check_sumstats_qc_status
 from gwaslab.g_Log import Log
+from gwaslab.g_meta import _set_harmonization_status
+from gwaslab.g_meta import _set_qc_status
 
 from gwaslab.qc.qc_fix_sumstats import fixID
 from gwaslab.qc.qc_fix_sumstats import flipSNPID
@@ -181,8 +184,7 @@ class Sumstats():
              trait="Trait_1",
              build="99",
              species="homo sapiens",
-             readargs=None,
-             **kwreadargs):
+             **readargs):
         
         self.log = Log()
         # print gwaslab version information
@@ -361,14 +363,13 @@ class Sumstats():
             remove : whether to remove bad quality variants dtected in  fixchr, fixpos, and fixallele.
             removedup : whether to remove duplicated or multi-allelic variants using remove_dup.
             fixid_args : dict of keyword arguments.  The kwargs are passed to fix_id.
-            fixchr_args : dict of keyword arguments.  The kwargs are passed to fix_chr.
-            fixpos_args : dict of keyword arguments.  The kwargs are passed to fix_pos.
             fixallele_args : dict of keyword arguments.  The kwargs are passed to fix_allele.
             sanitycheckstats_args : dict of keyword arguments.  The kwargs are passed to check_sanity.
             consistencycheck_args : dict of keyword arguments.  The kwargs are passed to check_data_consistency.
             normalizeallele_args : dict of keyword arguments.  The kwargs are passed to normalize.
             removedup_args : dict of keyword arguments.  The kwargs are passed to remove_dup.
         """
+        saved_args = {**locals()}
         ###############################################
         # try to fix data without dropping any information
         self.data = fixID(self.data,log=self.log,verbose=verbose, **fixid_args)
@@ -385,6 +386,8 @@ class Sumstats():
         self.data = sortcoordinate(self.data,verbose=verbose,log=self.log)
         self.data = sortcolumn(self.data,verbose=verbose,log=self.log)
         self.meta["is_sorted"] = True
+        
+        _set_qc_status(self.meta, saved_args)
         ###############################################
         
     
@@ -422,6 +425,8 @@ class Sumstats():
         #    1.4 normalization : EA NEA
         #    1.5 sanity check : BETA SE OR EAF N OR_95L OR_95H
         #    1.6 sorting genomic coordinates and column order 
+        saved_args = {**locals()}
+
         if basic_check is True:
             
             self.data = fixID(self.data,log=self.log,**fixid_args)
@@ -439,6 +444,8 @@ class Sumstats():
             self.data = sortcolumn(self.data,log=self.log)
 
             self.data = sortcoordinate(self.data,log=self.log)
+
+            _set_qc_status(self.meta, saved_args)
             gc.collect()
         
         #####################################################
@@ -516,6 +523,8 @@ class Sumstats():
         gc.collect()
         self.meta["is_sorted"] = True
         self.meta["is_harmonised"] = True
+
+        _set_harmonization_status(self.meta, saved_args)
         return self
     
     def align_with_template(self, template, **kwargs):
@@ -530,7 +539,9 @@ class Sumstats():
 
         ## flip
         self.data =flipallelestats(aligned_data, log=self.log)
-        
+
+    def check_sumstats_qc_status(self):
+        return _check_sumstats_qc_status(self)
     ############################################################################################################
     #customizable API to build your own QC pipeline
     @add_doc(fixID)
@@ -823,7 +834,7 @@ class Sumstats():
         return plot
 
     @add_doc(plottrumpet)
-    def plot_trumpet(self, **kwargs):
+    def plot_trumpet(self, build=None, **kwargs):
         fig = plottrumpet(self.data, build = self.build,  **kwargs)
         return fig
     
@@ -1016,6 +1027,7 @@ class Sumstats():
                                                                   log=self.log, 
                                                                   verbose=verbose, 
                                                                   **kwargs)
+        return self.ldsc_h2_results
     
     def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", get_hm3=True,**kwargs):
         if build is None:
@@ -1030,6 +1042,7 @@ class Sumstats():
                                              verbose=verbose, 
                                              **kwargs)
         self.ldsc_rg = pd.concat([self.ldsc_rg, ldsc_rg],ignore_index=True)
+        return self.ldsc_rg
 
     def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         if build is None:
@@ -1039,7 +1052,7 @@ class Sumstats():
                                                      log=self.log,
                                                        verbose=verbose, 
                                                        **kwargs)
-    
+        return self.ldsc_h2_cts
     def estimate_partitioned_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
@@ -1049,6 +1062,7 @@ class Sumstats():
                                                                                                                log=self.log, 
                                                                                                                verbose=verbose, 
                                                                                                                **kwargs)
+        return self.ldsc_partitioned_h2_results
 # external ################################################################################################
     
     def calculate_ld_matrix(self,**kwargs):
