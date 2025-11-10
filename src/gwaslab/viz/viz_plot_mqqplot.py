@@ -30,7 +30,7 @@ from gwaslab.viz.viz_plot_qqplot import _plot_qq
 from gwaslab.viz.viz_plot_regional2 import _plot_regional
 from gwaslab.viz.viz_plot_regional2 import process_vcf
 from gwaslab.viz.viz_plot_regional2 import _get_lead_id
-from gwaslab.viz.viz_aux_quickfix import _get_largenumber
+from gwaslab.viz.viz_plot_density import _process_density
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_p_value
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_pos
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_chr
@@ -254,7 +254,6 @@ def mqqplot(insumstats,
     mode : str, default='mqq'
         Plotting mode. Options:
         - 'm' : Manhattan plot
-        - 'b' : Brisbane plot
         - 'mqq' : 'm' and 'qq' can be combined to create Manhattan-QQ layout (default)
     scatter_args : dict, optional
         Arguments for scatter plot styling. Default is None. (Used in 'm', 'r' modes)
@@ -271,20 +270,6 @@ def mqqplot(insumstats,
         Region can be determined using `get_region_start_and_end`.(Required in 'r' mode)
     mqqratio : int, default=3
         Ratio for MQQ plot layout. (Used in 'mqq', 'qqm' modes)
-    bwindowsizekb : int, default=100
-        Window size in kb for Brisbane plot density calculation. (Used in 'b' mode)
-    density_color : bool, default=False
-        Whether to color Brisbane plot points by density. (Used in 'b' mode)
-    density_range : tuple, default=(0,15)
-        Color range for density plot. (Used in 'b' mode)
-    density_trange : tuple, default=(0,10)
-        Threshold range for density plot. (Used in 'b' mode)
-    density_threshold : int, default=5
-        Threshold for density coloring. (Used in 'b' mode)
-    density_tpalette : str, default='Blues'
-        Palette for thresholded density colors. (Used in 'b' mode)
-    density_palette : str, default='Reds'
-        Palette for density colors. (Used in 'b' mode)
     windowsizekb : int, default=500
         Window size in kb for obtainning significant variant. 
     anno : boolean, str or 'GENENAME', default=None.
@@ -311,9 +296,6 @@ def mqqplot(insumstats,
         Fixed arm length for annotations. Default is None. 
     anno_source : str, default='ensembl'
         Source for annotations.
-    anno_gtf_path : str, default=None
-        Path to GTF file for annotations when anno is 'GENENAME'. Same as gtf_path in `get_lead` method.
-        If none, auto-detected (preferred). Default is None. 
     anno_xshift : float, optional
         X-axis shift for annotations. Default is None. 
     anno_max_iter : int, default=100
@@ -466,6 +448,9 @@ def mqqplot(insumstats,
 
     Less used parameters
     -------
+    anno_gtf_path : str, default=None
+        Path to GTF file for annotations when anno is 'GENENAME'. Same as gtf_path in `get_lead` method.
+        If none, auto-detected (preferred). Default is None. 
     chr_dict : dict, default=None
         Mapping dictionary for chromosome names. Only used when chromosomes in reference files are not standardized (Used in 'm' and 'r' modes)
     xtick_chr_dict : dict, default=None
@@ -1665,32 +1650,7 @@ def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb
                 sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0
         return sumstats
 
-def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
-    if "b" in mode and "DENSITY" not in sumstats.columns:
-        log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb",verbose=verbose)
-        large_number = _get_largenumber(sumstats[pos].max(),log=log)
 
-        stack=[]
-        sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
-        sumstats = sumstats.sort_values(by="TCHR+POS")
-        for index,row in sumstats.iterrows():
-            stack.append([row["SNPID"],row["TCHR+POS"],0])  
-            for i in range(2,len(stack)+1):
-                if stack[-i][1]>= (row["TCHR+POS"]- 1000*bwindowsizekb):
-                    stack[-i][2]+=1
-                    stack[-1][2]+=1
-                else:
-                    break
-        df = pd.DataFrame(stack,columns=["SNPID","TCHR+POS","DENSITY"])
-        sumstats["DENSITY"] = df["DENSITY"].astype("Float64").values
-
-        bmean=sumstats.drop_duplicates(subset="SNPID")["DENSITY"].mean()
-        bmedian=sumstats.drop_duplicates(subset="SNPID")["DENSITY"].median()
-    elif "b" in mode and "DENSITY" in sumstats.columns:
-        bmean=sumstats["DENSITY"].mean()
-        bmedian=sumstats["DENSITY"].median()
-        log.write(" -DENSITY column exists. Skipping calculation...",verbose=verbose) 
-    return   sumstats, bmean, bmedian
 
 def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_plot , sc_linewidth, sig_line_color, suggestive_sig_line_color, additional_line_color, mode, bmean, bmedian , log=Log(),verbose=True):
     # genomewide significant line

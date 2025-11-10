@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.g_Log import Log
 from gwaslab.io.io_process_args import _extract_kwargs
+import seaborn as sns
 
 def _plot_effect(to_plot, 
                  y=None, 
@@ -42,7 +43,92 @@ def _plot_effect(to_plot,
                  style=None,
                  sort_args=None,
                  **args):
+    """Plot effect sizes with optional panels for EAF and SNPR2.
 
+    Parameters
+    ----------
+    to_plot : pandas.DataFrame
+        DataFrame containing the data to plot.
+    y : list of str, optional
+        Columns to use for y-axis labeling. Default is None.
+    y_sort : list of str, optional
+        Columns to sort by for y-axis order. Default is None.
+    group : list of str, optional
+        Columns to group by. Default is None.
+    x : str, default="BETA"
+        Column name for x-axis (effect size).
+    se : str, default="SE"
+        Column name for standard error.
+    eaf : str, default="EAF"
+        Column name for effect allele frequency.
+    snpr2 : str, default="SNPR2"
+        Column name for SNP R-squared.
+    ylabel : str, default="Variant"
+        Label for y-axis.
+    eaf_panel : bool, default=True
+        Whether to include EAF panel.
+    snpvar_panel : bool, default=True
+        Whether to include SNP variance panel.
+    rename_dic : dict, optional
+        Dictionary for renaming labels. Default is None.
+    err_args : dict, optional
+        Arguments for error bars. Default is None.
+    font_args : dict, optional
+        Font-related arguments. Default is None.
+    save : str, optional
+        File path to save the figure. Default is None.
+    title : str, optional
+        Title of the plot. Default is None.
+    save_args : dict, optional
+        Additional arguments for saving. Default is None.
+    eaf_args : dict, optional
+        Arguments for EAF panel. Default is None.
+    snpr2_args : dict, optional
+        Arguments for SNPR2 panel. Default is None.
+    fig_args : dict, optional
+        Figure size and DPI settings. Default is None.
+    scatter_args : dict, optional
+        Scatter plot arguments. Default is None.
+    effect_label : str, optional
+        Custom label for effect size axis. Default is None.
+    eaf_label : str, optional
+        Custom label for EAF axis. Default is None.
+    snpr2_label : str, optional
+        Custom label for SNPR2 axis. Default is None.
+    xlim_eaf : tuple, optional
+        X-axis limits for EAF panel. Default is None.
+    xlim_snpr2 : tuple, optional
+        X-axis limits for SNPR2 panel. Default is None.
+    log : gwaslab.g_Log.Log, default=Log()
+        Logging object.
+    verbose : bool, default=True
+        Whether to print progress messages.
+    legend_mode : int, default=1
+        Legend positioning mode.
+    ncol : int, default=2
+        Number of legend columns.
+    gap : int, default=1
+        Gap between groups.
+    fontsize : int, default=12
+        Font size for labels.
+    font_family : str, default="Arial"
+        Font family for text.
+    size : str, optional
+        Column name for marker size. Default is None.
+    hue : str, optional
+        Column name for color encoding. Default is None.
+    style : str, optional
+        Column name for marker style. Default is None.
+    sort_args : dict, optional
+        Additional sorting arguments. Default is None.
+    **args : dict
+        Additional arguments passed to scatterplot.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The generated figure object.
+    """
     if err_args is None:
         err_args={"ecolor":"#cccccc",
                   "linewidth":0,
@@ -84,14 +170,19 @@ def _plot_effect(to_plot,
         string = "-".join(map(str,cols))
         return string
     
-    y_name = "-".join(y)
+    if len(to_plot)>100:
+        return "Too many variants to plot"
     
-    to_plot[y_name] = to_plot[y].apply(lambda x: concat_cols(x), axis=1)
+    if y is list:
+        y_name = "-".join(y)
+        to_plot[y_name] = to_plot[y].apply(lambda x: concat_cols(x), axis=1)
+    else:
+        y_name = y
     
 
     # sort y 
     if y_sort is None:
-        y_sort = ["CHR","POS","STUDY"]
+        y_sort = [i  for i in ["CHR","POS","STUDY"] if i in to_plot.columns]
     
     #to_plot = to_plot.sort_values(by=y_sort)
 
@@ -120,24 +211,24 @@ def _plot_effect(to_plot,
             "STUDY":"Study"
                       }
     ncols=1
-    if eaf_panel:
+    if eaf_panel and eaf in to_plot.columns:
         ncols+=1
-    if snpvar_panel:
+    if snpvar_panel and snpr2 in to_plot.columns:
         ncols+=1
 
     if ncols==1:
         fig,ax1 = plt.subplots(ncols=ncols, **fig_args)
     elif ncols==2:
-        if eaf_panel==True:
-            fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True, **fig_args)
+        if eaf_panel==True and eaf in to_plot.columns:
+            fig,axes = plt.subplots(ncols=ncols,sharey=True, **fig_args)
             ax1=axes[0]
             ax2=axes[1]
         else:
-            fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True, **fig_args)
+            fig,axes = plt.subplots(ncols=ncols,sharey=True, **fig_args)
             ax1=axes[0]
             ax3=axes[1]
     else:
-        fig,axes = plt.subplots(ncols=ncols, dpi=400,sharey=True, **fig_args)
+        fig,axes = plt.subplots(ncols=ncols,sharey=True, **fig_args)
         ax1=axes[0]
         ax2=axes[1]
         ax3=axes[2]
@@ -155,13 +246,13 @@ def _plot_effect(to_plot,
     if title is not None:
         ax1.set_title(title,fontsize=fontsize, family=font_family)
 
-    if eaf_panel==True:
+    if eaf_panel==True and eaf in to_plot.columns:
         ax2.barh(y=to_plot[y], width=to_plot[eaf], zorder=100, **eaf_args)
         ax2.set_xlabel(eaf, fontsize=fontsize, family=font_family)
         if xlim_eaf is not None:
             ax3.set_xlim(xlim_eaf)
 
-    if snpvar_panel==True:
+    if snpvar_panel==True and snpr2 in to_plot.columns:
         ax3.barh(y=to_plot[y], width=to_plot[snpr2], zorder=100,**snpr2_args)
         ax3.set_xlabel(snpr2, fontsize=fontsize, family=font_family)
         if xlim_snpr2 is not None:
@@ -169,12 +260,13 @@ def _plot_effect(to_plot,
     #try:
     if legend_mode==1:
         #if ncols==1:
-        sns.move_legend(
-            ax1, "upper left",
-            bbox_to_anchor=(1, 1), title=None, frameon=False, bbox_transform = axes[-1].transAxes, 
-            title_fontproperties={"size":fontsize,"family":font_family},
-            prop={"size":fontsize,"family":font_family}
-            )
+        if len(legend_titles)>0: 
+            sns.move_legend(
+                ax1, "upper left",
+                bbox_to_anchor=(1, 1), title=None, frameon=False, bbox_transform = axes[-1].transAxes, 
+                title_fontproperties={"size":fontsize,"family":font_family},
+                prop={"size":fontsize,"family":font_family}
+                )
             #else:
 ##
             #    sns.move_legend(
@@ -246,12 +338,12 @@ def _plot_effect(to_plot,
         ax1.tick_params(axis='x', 
                         labelsize=fontsize,
                         labelfontfamily=font_family)
-    if eaf_label is not None:
+    if eaf_label is not None and eaf in to_plot.columns:
         ax2.set_xlabel(eaf_label, fontsize=fontsize, family=font_family)
         ax2.tick_params(axis='x', 
                         labelsize=fontsize,
                         labelfontfamily=font_family)
-    if snpr2_label is not None:
+    if snpr2_label is not None and snpr2 in to_plot.columns:
         ax3.set_xlabel(snpr2_label, fontsize=fontsize, family=font_family)
         ax3.tick_params(axis='x', 
                         labelsize=fontsize,

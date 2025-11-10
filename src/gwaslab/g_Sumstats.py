@@ -109,7 +109,8 @@ from gwaslab.viz.viz_plot_compare_af import plotdaf
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
 from gwaslab.viz.viz_plot_associations import _plot_associations
 from gwaslab.viz.viz_plot_qqplot import _plot_qq
-
+from gwaslab.viz.viz_plot_density import _process_density
+from gwaslab.viz.viz_plot_effect import _plot_effect
 
 from gwaslab.io.io_read_pipcs import _read_pipcs
 from gwaslab.io.io_load_ld import tofinemapping_using_ld
@@ -298,13 +299,13 @@ class Sumstats():
     def __len__(self):
         return len(self.data)
 #### healper #################################################################################
-    @add_doc(_update_meta)
-    def update_meta(self, **kwargs):
-        self.meta = _update_meta(self.meta, self.data,log = self.log, **kwargs)
+    #@add_doc(_update_meta)
+    #def update_meta(self, **kwargs):
+    #    self.meta = _update_meta(self.meta, self.data,log = self.log, **kwargs)
     
     @add_doc(summarize)
     def summary(self):
-        return summarize(self.data)
+        return summarize(self)
     
     @add_doc(lookupstatus)
     def lookup_status(self,status="STATUS"):
@@ -823,6 +824,11 @@ class Sumstats():
         plot, log = mqqplot(self.data, build = self.build, **kwargs)
         return plot
     
+    @add_doc(_process_density)
+    def plot_snp_density(self, build=None, **kwargs):
+        plot, log = mqqplot(self.data, mode="b", build = self.build, **kwargs)
+        return plot
+    
     @add_doc(_plot_qq)
     def plot_qq(self, build=None, **kwargs):
         plot, log = mqqplot(self.data, mode="qq", build = self.build, **kwargs)
@@ -837,7 +843,11 @@ class Sumstats():
     def plot_trumpet(self, build=None, **kwargs):
         fig = plottrumpet(self.data, build = self.build,  **kwargs)
         return fig
-    
+
+    @add_doc(_plot_effect)
+    def plot_effect(self,**kwargs):
+        _plot_effect(self.data,**kwargs)
+
     @add_doc(getsig)
     def get_lead(self, gls=False, build=None, **kwargs):
         output = getsig(self.data,
