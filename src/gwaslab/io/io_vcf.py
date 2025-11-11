@@ -96,6 +96,14 @@ def check_vcf_chr_prefix(
             return match.group(1)
     return None
 
+def is_vcf_file(path: str) -> bool:
+    """Check if the given path is a VCF or BCF file by examining headers."""
+    try:
+        with VariantFile(path) as f:
+            return True
+    except Exception:
+        return False
+
 def check_vcf_chr_NC(
     vcf_bcf_path: str, 
     log: "Log", 

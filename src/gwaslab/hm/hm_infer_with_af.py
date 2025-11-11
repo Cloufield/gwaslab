@@ -176,23 +176,23 @@ def _infer_strand(
     # Check for NA values in critical columns
     flipped_na_count = sumstats[flipped_col].isna().sum()
     if flipped_na_count > 0:
-        log.write(f"[infer_strand] WARNING: {flipped_na_count} variants have NA in {flipped_col} column", verbose=verbose)
+        log.write(" -WARNING: {} variants have NA in {} column...".format(flipped_na_count, flipped_col), verbose=verbose)
     
     eaf_na_count = sumstats[eaf].isna().sum()
     if eaf_na_count > 0:
-        log.write(f"[infer_strand] WARNING: {eaf_na_count} variants have NA in {eaf} column", verbose=verbose)
+        log.write(" -WARNING: {} variants have NA in {} column...".format(eaf_na_count, eaf), verbose=verbose)
     
     raf_na_count = sumstats[raf].isna().sum()
     if raf_na_count > 0:
-        log.write(f"[infer_strand] WARNING: {raf_na_count} variants have NA in {raf} column", verbose=verbose)
+        log.write(" -WARNING: {} variants have NA in {} column...".format(raf_na_count, raf), verbose=verbose)
     
     # Initialize strand column if not present
     if strand_col not in sumstats.columns:
         sumstats[strand_col] = pd.NA
-        log.write(f"[infer_strand] Initialized new {strand_col} column", verbose=verbose)
+        log.write(" -Initialized new {} column...".format(strand_col), verbose=verbose)
     else:
         existing_strand_count = sumstats[strand_col].notna().sum()
-        log.write(f"[infer_strand] Found existing {strand_col} column with {existing_strand_count} non-NA values", verbose=verbose)
+        log.write(" -Found existing {} column with {} non-NA values...".format(strand_col, existing_strand_count), verbose=verbose)
     
     # Identify non-palindromic variants (not A/T, T/A, G/C, C/G) and not indels
     non_palindromic_mask = ~(
@@ -233,7 +233,7 @@ def _infer_strand(
         unknown_palindromic_mask = sumstats[status_col].str.match(r'\w\w\w\w\w[012][89]', case=False, na=False)
         valid_palindromic_mask = valid_palindromic_mask & unknown_palindromic_mask
     else:
-        log.write(f"[infer_strand] WARNING: STATUS column '{status_col}' not found, cannot filter by strand status", verbose=verbose)
+        log.write(" -WARNING: STATUS column '{}' not found, cannot filter by strand status...".format(status_col), verbose=verbose)
     
     # For palindromic SNPs, use EAF/RAF to determine strand
     if valid_palindromic_mask.any():
@@ -321,7 +321,7 @@ def _infer_strand(
         unknown_indel_mask = sumstats[status_col].str.match(r'\w\w\w\w\w[6][89]', case=False, na=False)
         valid_indel_mask = valid_indel_mask & unknown_indel_mask
     else:
-        log.write(f"[infer_strand] WARNING: STATUS column '{status_col}' not found, cannot filter by strand status", verbose=verbose)
+        log.write(" -WARNING: STATUS column '{}' not found, cannot filter by strand status...".format(status_col), verbose=verbose)
     
     # For indels, use EAF/RAF to determine strand
     if valid_indel_mask.any():

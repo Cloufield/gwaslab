@@ -5,7 +5,7 @@ import subprocess
 import shutil
 import os
 import tempfile
-from gwaslab.io.io_vcf import auto_check_vcf_chr_dict
+from gwaslab.io.io_vcf import auto_check_vcf_chr_dict, is_vcf_file
 
 def _assign_rsid(
     sumstats: pd.DataFrame,
@@ -100,11 +100,8 @@ def _assign_rsid(
     import os
     import re
 
-    def _looks_like_vcf(p: str) -> bool:
-        p = p.lower()
-        return p.endswith(".vcf") or p.endswith(".vcf.gz") or p.endswith(".bcf")
 
-    log.write("[assign_rsid_from_ref] Start", verbose=verbose)
+    log.write(" -Starting to assign rsID from reference...", verbose=verbose)
 
     # ---------------------------
     # Required column checks
@@ -127,15 +124,15 @@ def _assign_rsid(
         if vcf_path is not None:
             ref_mode = "vcf"
         else:
-            ref_mode = "vcf" if _looks_like_vcf(path) else "tsv"
+            ref_mode = "vcf" if is_vcf_file(path) else "tsv"
 
-    log.write(f"[assign] reference mode = {ref_mode}", verbose=verbose)
+    log.write(" -Determining reference mode: {}...".format(ref_mode), verbose=verbose)
 
     if ref_mode == "tsv":
         lookup_tsv = path
         if not os.path.exists(lookup_tsv):
             raise FileNotFoundError(f"Lookup TSV not found: {lookup_tsv}")
-        log.write(f"[lookup] Using TSV directly: {lookup_tsv}", verbose=verbose)
+        log.write(" -Using TSV directly for lookup: {}...".format(lookup_tsv), verbose=verbose)
 
     else:  # ref_mode == "vcf"
         if tsv_path:
@@ -145,15 +142,15 @@ def _assign_rsid(
 
         if reuse_lookup and tsv_exists:
             lookup_tsv = tsv_path if os.path.exists(tsv_path) else tsv_path + ".gz"
-            log.write(f"[lookup] Reusing existing lookup TSV: {lookup_tsv}", verbose=verbose)
+            log.write(" -Reusing existing lookup TSV: {}...".format(lookup_tsv), verbose=verbose)
         else:
             vcf_input = path
             if convert_to_bcf:
-                log.write(f"[vcf→bcf] Converting (strip_info={strip_info})", verbose=verbose)
+                log.write(" -Converting VCF to BCF (strip_info={})...".format(strip_info), verbose=verbose)
                 vcf_input = _convert_vcf_to_bcf(path, threads=threads, strip=strip_info)
 
             lookup_tsv = tsv_path or "gwaslab_sumstats_lookup_table.tsv.gz"
-            log.write(f"[lookup] Extracting new lookup TSV from: {vcf_input}", verbose=verbose)
+            log.write(" -Extracting new lookup TSV from: {}...".format(vcf_input), verbose=verbose)
 
             lookup_tsv = _extract_lookup_table_from_vcf_bcf(
                 vcf_path=vcf_input,
@@ -193,7 +190,7 @@ def _assign_rsid(
     # ---------------------------
     # Apply new allele-aware assignment
     # ---------------------------
-    log.write("[assign] Running _assign_from_lookup(rsID)...", verbose=verbose)
+    log.write(" -Running _assign_from_lookup(rsID)...", verbose=verbose)
 
     sumstats = _assign_from_lookup(
         sumstats=sumstats,
@@ -212,9 +209,9 @@ def _assign_rsid(
 
     had_rsid_after = (~sumstats[rsid].isna()).sum()
 
-    log.write(f"[assign] Filled {filled} rsIDs.", verbose=verbose)
-    log.write(f"[total] rsID count: {had_rsid_before} → {had_rsid_after} / {total_before}", verbose=verbose)
-    log.write("[assign_rsid_from_ref] Done", verbose=verbose)
+    log.write(" -Filled {} rsIDs...".format(filled), verbose=verbose)
+    log.write(" -rsID count: {} → {} / {}...".format(had_rsid_before, had_rsid_after, total_before), verbose=verbose)
+    log.write(" -Finished assigning rsID from reference.", verbose=verbose)
 
     return sumstats
 
@@ -286,7 +283,7 @@ def _annotate_sumstats(
     if reuse_lookup and tsv_exists:
         # Normalize to actual existing path
         tsv_path = tsv_path if os.path.exists(tsv_path) else tsv_path + ".gz"
-        log.write(f"[info] Reusing existing lookup table: {tsv_path}")
+        log.write(" -Reusing existing lookup table: {}...".format(tsv_path), verbose=verbose)
 
     else:
         if vcf_path is None:
@@ -295,10 +292,10 @@ def _annotate_sumstats(
             )
 
         if convert_to_bcf:
-            log.write(f"[info] Converting VCF → BCF (strip_info={strip_info})")
+            log.write(" -Converting VCF to BCF (strip_info={})...".format(strip_info), verbose=verbose)
             vcf_path = _convert_vcf_to_bcf(vcf_path, threads=threads, strip=strip_info)
 
-        log.write(f"[info] Creating lookup table from VCF: {vcf_path}")
+        log.write(" -Creating lookup table from VCF: {}...".format(vcf_path), verbose=verbose)
         tsv_path = _extract_lookup_table_from_vcf_bcf(
             vcf_path   = vcf_path,
             sumstats   = sumstats,
@@ -342,7 +339,7 @@ def _extract_lookup_table_from_vcf_bcf(
 
     if chr_dict is None:
         chr_dict = auto_check_vcf_chr_dict(vcf_path, None, verbose, log)
-        log.write(f"Auto-determined chr_dict: {chr_dict}", verbose=verbose)
+        log.write(" -Auto-determined chr_dict: {}...".format(chr_dict), verbose=verbose)
 
     if assign_cols is None:
         assign_cols = []
@@ -356,7 +353,7 @@ def _extract_lookup_table_from_vcf_bcf(
     # ---------------- NEW: Save original CHR for later restore ----------------
     if chr_dict is not None:
         inv_chr_dict = {v: k for k, v in chr_dict.items()}  # inverse map
-        log.write("Converting chromosome notation using chr_dict → reference notation...")
+        log.write(" -Converting chromosome notation using chr_dict to reference notation...", verbose=verbose)
         sumstats_for_targets = sumstats[["CHR","POS"]].copy()
         sumstats_for_targets["CHR"] = (
             sumstats_for_targets["CHR"].astype(str).map(chr_dict)
@@ -370,7 +367,7 @@ def _extract_lookup_table_from_vcf_bcf(
         .sort_values(["CHR","POS"]) \
         .to_csv(targets_path, sep="\t", header=False, index=False)
 
-    log.write(f"Created target list → {targets_path}")
+    log.write(" -Created target list: {}...".format(targets_path), verbose=verbose)
 
     # ---- extract from VCF/BCF ----
     tmp_filtered_bcf = tempfile.NamedTemporaryFile(delete=False, suffix=".filtered.bcf").name
@@ -381,7 +378,7 @@ def _extract_lookup_table_from_vcf_bcf(
         "--threads", str(threads),
         vcf_path
     ]
-    log.write("Extracting target sites: " + " ".join(cmd_filter))
+    log.write(" -Extracting target sites...", verbose=verbose)
     subprocess.check_call(cmd_filter)
     subprocess.check_call(["bcftools", "index", "-f", tmp_filtered_bcf])
 
@@ -396,7 +393,7 @@ def _extract_lookup_table_from_vcf_bcf(
     header_line = "\t".join(header_cols) + "\n"
     cmd_query = ["bcftools", "query", "-f", fmt, tmp_filtered_bcf]
 
-    log.write(f"Writing lookup → {out_lookup}")
+    log.write(" -Writing lookup to {}...".format(out_lookup), verbose=verbose)
     if out_lookup.endswith(".gz"):
         import gzip
         out_handle = gzip.open(out_lookup, "wt")
@@ -418,21 +415,23 @@ def _extract_lookup_table_from_vcf_bcf(
 
     # ---------------- NEW: Convert CHR back using inverse dictionary ----------------
     if chr_dict is not None:
-        log.write("Converting CHR back to original sumstats notation...")
+        log.write(" -Converting CHR back to original sumstats notation...", verbose=verbose)
         df["CHR"] = df["CHR"].astype(str).map(inv_chr_dict).astype("category")
 
     df.to_csv(out_lookup, sep="\t", index=False, compression="infer")
+    
+    # ---- Cleanup ----
+    for f in [tmp_targets, tmp_filtered_bcf, tmp_filtered_bcf + ".csi", tmp_filtered_bcf + ".tbi"]:
+        if isinstance(f, str) and os.path.exists(f):
+            try:
+                os.remove(f)
+            except:
+                pass
 
-    log.write("lookup_table created:", out_lookup)
+    log.write(" -Lookup table created: {}...".format(out_lookup), verbose=verbose)
     return out_lookup
 
-    # ---- Cleanup ----
-    #for f in [tmp_targets, tmp_filtered_bcf, tmp_filtered_bcf + ".csi", tmp_filtered_bcf + ".tbi"]:
-    #    if isinstance(f, str) and os.path.exists(f):
-    #        try:
-    #            os.remove(f)
-    #        except:
-    #            pass
+
 
 import pandas as pd
 import numpy as np
@@ -454,7 +453,7 @@ def _assign_from_lookup(
 
     chunksize = 5_000_000
 
-    log.write(f"[START] Assigning annotation from lookup: {lookup_table}")
+    log.write(" -Starting to assign annotation from lookup: {}...".format(lookup_table), verbose=verbose)
 
     lookup_header = pd.read_csv(lookup_table, sep="\t", nrows=0).columns.tolist()
 
@@ -474,7 +473,7 @@ def _assign_from_lookup(
             f"Lookup must contain either (REF,ALT) or (NEA,EA). Found: {lookup_header}"
         )
 
-    log.write(f"[DETECT] Allele mode detected: {mode} → using {lookup_ea_col}(EA/ALT) / {lookup_nea_col}(NEA/REF)")
+    log.write(" -Detected allele mode: {} using {}(EA/ALT) / {}(NEA/REF)...".format(mode, lookup_ea_col, lookup_nea_col), verbose=verbose)
     original_assign_cols = assign_cols
     # -------------------------------
     # Normalize ID vs rsID behavior
@@ -506,7 +505,7 @@ def _assign_from_lookup(
     dropped = set(original_assign_cols) - set(assign_cols)
 
     if dropped:
-        log.write(f"[WARN] annotation columns not available in lookup → skipped: {dropped}")
+        log.warning("Annotation columns not available in lookup, skipped: {}...".format(dropped), verbose=verbose)
 
     # Initialize missing annotation columns in sumstats
     for col in assign_cols:
@@ -539,11 +538,11 @@ def _assign_from_lookup(
         dtype=dtype,
         chunksize=chunksize,
     ):
-        log.write(f"[CHUNK] Loaded {len(chunk):,} lookup rows.")
+        log.write(" -Loaded {:,} lookup rows...".format(len(chunk)), verbose=verbose)
 
         ss_sub = sumstats[sumstats[chrom].isin(chunk[chrom].unique())]
         if ss_sub.empty:
-            log.write("[SKIP] No matching chromosomes in this chunk.")
+            log.write(" -No matching chromosomes in this chunk...", verbose=verbose)
             continue
 
         ss_sub = ss_sub.copy()
@@ -585,11 +584,11 @@ def _assign_from_lookup(
         processed_variants += mask.sum()
         flipped_count += flipped[mask].sum()
 
-        log.write(f"[UPDATE] Assigned: {mask.sum():,} variants | Flipped: {flipped[mask].sum():,}")
+        log.write(" -Assigned: {:,} variants | Flipped: {:,}...".format(mask.sum(), flipped[mask].sum()), verbose=verbose)
 
-    log.write(f"[DONE] Total assigned: {processed_variants:,}")
-    log.write(f"[DONE] Total flipped alleles: {flipped_count:,}")
-    log.write("[END] Annotation complete.")
+    log.write(" -Total assigned: {:,}...".format(processed_variants), verbose=verbose)
+    log.write(" -Total flipped alleles: {:,}...".format(flipped_count), verbose=verbose)
+    log.write(" -Finished annotation.", verbose=verbose)
 
     return sumstats
 
@@ -647,15 +646,15 @@ def _convert_vcf_to_bcf(reference, threads=6, strip=True, ref_fa=None, log=Log()
 
     cmd1 = ["bash", "-c", cmd_norm + cmd_annot]
     if verbose:
-        log.write("Running:", cmd1[2])
+        log.write(" -Running: {}...".format(cmd1[2]), verbose=verbose)
     subprocess.check_call(cmd1)
 
     # ---- Index ----
     cmd2 = ["bcftools", "index", "-f", out_bcf]
     if verbose:
-        log.write("Running:", " ".join(cmd2))
+        log.write(" -Running: {}...".format(" ".join(cmd2)), verbose=verbose)
     subprocess.check_call(cmd2)
 
     if verbose:
-        log.write(f"Done. Output: {out_bcf} and index.")
+        log.write(" -Done. Output: {} and index...".format(out_bcf), verbose=verbose)
     return out_bcf
