@@ -8,8 +8,9 @@ import tempfile
 
 def _assign_rsid(
     sumstats: pd.DataFrame,
-    path: str,
+    path: str | None = None,
     ref_mode: str = "auto",
+    vcf_path: str | None = None,
     tsv_path: str | None = None,
     reuse_lookup: bool = True,
     convert_to_bcf: bool = False,
@@ -26,7 +27,74 @@ def _assign_rsid(
     verbose: bool = True,
 ):
     """
-    Assign rsID using new lookup + allele-matching + STATUS filtering.
+    Assign rsIDs to GWAS summary statistics using reference data with allele matching and STATUS filtering.
+
+    This function assigns rsIDs to a GWAS summary statistics DataFrame by matching variants against a reference
+    VCF or TSV file. It performs allele-aware matching and applies STATUS-based filtering to determine which
+    variants should be assigned rsIDs. The function handles various reference formats and allows control over
+    overwrite behavior for existing rsID values.
+
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        GWAS summary statistics DataFrame. Must contain columns specified by `chrom`, `pos`, `ea`, `nea`, and "STATUS".
+    path : str or None, optional
+        Path to reference file (VCF or TSV). Required if `ref_mode` is not "tsv" and `vcf_path` is not provided.
+    ref_mode : str, optional
+        Reference mode: "auto", "vcf", or "tsv". If "auto", determines mode based on file extension.
+    vcf_path : str or None, optional
+        Path to VCF file. Overrides `path` if provided and `ref_mode` is "vcf".
+    tsv_path : str or None, optional
+        Path to precomputed lookup TSV file. If not provided, generated from VCF.
+    reuse_lookup : bool, optional
+        If True, reuse existing lookup TSV if available.
+    convert_to_bcf : bool, optional
+        If True, convert VCF to BCF before processing.
+    strip_info : bool, optional
+        If True, strip INFO fields when converting VCF to BCF.
+    threads : int, optional
+        Number of threads for bcftools operations.
+    rsid : str, optional
+        Name of the rsID column in `sumstats`. Default is "rsID".
+    chrom : str, optional
+        Name of the chromosome column in `sumstats`. Default is "CHR".
+    pos : str, optional
+        Name of the position column in `sumstats`. Default is "POS".
+    ea : str, optional
+        Name of the effect allele column in `sumstats`. Default is "EA".
+    nea : str, optional
+        Name of the non-effect allele column in `sumstats`. Default is "NEA".
+    overwrite : str, optional
+        Overwrite mode: "all", "invalid", or "empty". Determines which existing rsID values to overwrite.
+        Default is "empty".
+    chr_dict : dict or None, optional
+        Dictionary mapping sumstats chromosome names to reference chromosome names.
+    log : gwaslab.g_Log.Log, optional
+        Log object for recording progress. Default is a new Log instance.
+    verbose : bool, optional
+        If True, log detailed progress messages. Default is True.
+
+    Returns
+    -------
+    pd.DataFrame
+        The input `sumstats` DataFrame with rsID column updated.
+
+    Raises
+    ------
+    ValueError
+        If required columns are missing in `sumstats` or invalid `overwrite` value is provided.
+    FileNotFoundError
+        If specified reference file is not found.
+
+    Notes
+    -----
+    - The function first checks for required columns in `sumstats`.
+    - STATUS filtering uses a regex pattern to identify variants eligible for rsID assignment.
+    - Overwrite modes:
+      * "all": overwrite all rsIDs for eligible variants
+      * "invalid": overwrite only non-rsID formatted values (e.g., not matching "rs[0-9]+")
+      * "empty": only fill missing rsID values
+    - If `ref_mode` is "auto", the function determines whether to use VCF or TSV based on file extension.
     """
     import os
     import re
@@ -55,7 +123,10 @@ def _assign_rsid(
     # Determine lookup TSV
     # ---------------------------
     if ref_mode == "auto":
-        ref_mode = "vcf" if _looks_like_vcf(path) else "tsv"
+        if vcf_path is not None:
+            ref_mode = "vcf"
+        else:
+            ref_mode = "vcf" if _looks_like_vcf(path) else "tsv"
 
     log.write(f"[assign] reference mode = {ref_mode}", verbose=verbose)
 

@@ -587,6 +587,7 @@ class Sumstats():
     def infer_strand(self,ref_infer,**kwargs):
         self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
         self.data = parallelinferstrand(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+    
     @add_doc(flipallelestats)
     def flip_allele_stats(self,**kwargs):
         self.data = flipallelestats(self.data,log=self.log,**kwargs)
@@ -600,6 +601,10 @@ class Sumstats():
     def assign_rsid2(self,**kwargs):
         from gwaslab.hm.hm_assign_rsid import _assign_rsid
         self.data = _assign_rsid(self.data,**kwargs)
+    
+    def infer_strand2(self,**kwargs):
+        from gwaslab.hm.hm_infer_with_af  import _infer_strand_with_annotation
+        self.data = _infer_strand_with_annotation(self.data,**kwargs)
 
     @add_doc(parallelizeassignrsid)
     def assign_rsid(self,
