@@ -5,6 +5,7 @@ import subprocess
 import shutil
 import os
 import tempfile
+from gwaslab.io.io_vcf import auto_check_vcf_chr_dict
 
 def _assign_rsid(
     sumstats: pd.DataFrame,
@@ -338,6 +339,10 @@ def _extract_lookup_table_from_vcf_bcf(
     verbose=True,
     log=Log()
     ):
+
+    if chr_dict is None:
+        chr_dict = auto_check_vcf_chr_dict(vcf_path, None, verbose, log)
+        log.write(f"Auto-determined chr_dict: {chr_dict}", verbose=verbose)
 
     if assign_cols is None:
         assign_cols = []
