@@ -101,6 +101,7 @@ from gwaslab.bd.bd_get_hapmap3 import gethapmap3
 from gwaslab.hm.hm_casting import _align_with_mold
 from gwaslab.hm.hm_casting  import _merge_mold_with_sumstats_by_chrpos
 
+
 from gwaslab.viz.viz_plot_phe_heatmap import _gwheatmap
 from gwaslab.viz.viz_plot_mqqplot import mqqplot
 from gwaslab.viz.viz_plot_regional2 import _plot_regional
@@ -109,7 +110,7 @@ from gwaslab.viz.viz_plot_compare_af import plotdaf
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
 from gwaslab.viz.viz_plot_associations import _plot_associations
 from gwaslab.viz.viz_plot_qqplot import _plot_qq
-from gwaslab.viz.viz_plot_density import _process_density
+#from gwaslab.viz.viz_plot_density import _process_density
 from gwaslab.viz.viz_plot_effect import _plot_effect
 
 from gwaslab.io.io_read_pipcs import _read_pipcs
@@ -388,7 +389,7 @@ class Sumstats():
         self.data = sortcolumn(self.data,verbose=verbose,log=self.log)
         self.meta["is_sorted"] = True
         
-        _set_qc_status(self.meta, saved_args)
+        _set_qc_status(self, saved_args)
         ###############################################
         
     
@@ -446,7 +447,7 @@ class Sumstats():
 
             self.data = sortcoordinate(self.data,log=self.log)
 
-            _set_qc_status(self.meta, saved_args)
+            _set_qc_status(self, saved_args)
             gc.collect()
         
         #####################################################
@@ -525,7 +526,7 @@ class Sumstats():
         self.meta["is_sorted"] = True
         self.meta["is_harmonised"] = True
 
-        _set_harmonization_status(self.meta, saved_args)
+        _set_harmonization_status(self, saved_args)
         return self
     
     def align_with_template(self, template, **kwargs):
@@ -592,6 +593,14 @@ class Sumstats():
     @add_doc(parallelnormalizeallele)
     def normalize_allele(self,**kwargs):
         self.data = parallelnormalizeallele(self.data,log=self.log,**kwargs)
+
+    def annotate_sumstats(self,**kwargs):
+        from gwaslab.hm.hm_assign_rsid import _annotate_sumstats
+        self.data = _annotate_sumstats(self.data,**kwargs)
+    def assign_rsid2(self,**kwargs):
+        from gwaslab.hm.hm_assign_rsid import _assign_rsid
+        self.data = _assign_rsid(self.data,**kwargs)
+
     @add_doc(parallelizeassignrsid)
     def assign_rsid(self,
                     ref_rsid_tsv=None,
@@ -824,7 +833,7 @@ class Sumstats():
         plot, log = mqqplot(self.data, build = self.build, **kwargs)
         return plot
     
-    @add_doc(_process_density)
+    #@add_doc(_process_density)
     def plot_snp_density(self, build=None, **kwargs):
         plot, log = mqqplot(self.data, mode="b", build = self.build, **kwargs)
         return plot

@@ -30,7 +30,7 @@ from gwaslab.viz.viz_plot_qqplot import _plot_qq
 from gwaslab.viz.viz_plot_regional2 import _plot_regional
 from gwaslab.viz.viz_plot_regional2 import process_vcf
 from gwaslab.viz.viz_plot_regional2 import _get_lead_id
-from gwaslab.viz.viz_plot_density import _process_density
+#from gwaslab.viz.viz_plot_density import _process_density
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_p_value
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_pos
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_chr
