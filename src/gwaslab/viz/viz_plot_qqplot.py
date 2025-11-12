@@ -8,7 +8,6 @@ from gwaslab.g_Log import Log
 
 from gwaslab.viz.viz_aux_quickfix import _set_yticklabels
 from gwaslab.util.util_in_calculate_gc import lambdaGC
-from gwaslab.io.io_process_args import _update_arg, resolve_overlapping_kwargs
 
 # qq plot module for mqqplot
 def _plot_qq(
