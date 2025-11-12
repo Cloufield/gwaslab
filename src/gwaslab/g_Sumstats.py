@@ -187,7 +187,8 @@ class Sumstats():
              trait="Trait_1",
              build="99",
              species="homo sapiens",
-             **readargs):
+             readargs=None,
+             **kwreadargs):
         
         self.log = Log()
         # print gwaslab version information
@@ -250,8 +251,9 @@ class Sumstats():
           chrom_pat=chrom_pat,
           snpid_pat=snpid_pat,
           verbose=verbose,
+          log=self.log, 
           readargs=readargs,
-          log=self.log)
+          **kwreadargs)
 
         # meta information
         self.meta = _init_meta() 

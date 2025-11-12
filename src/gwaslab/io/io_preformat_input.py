@@ -69,8 +69,8 @@ def preformat(sumstats,
           chrom_pat=None,
           snpid_pat=None,
           verbose=False,
-          readargs=None,
           log=None,
+          readargs=None,
           **kwreadargs):
     """
     Load and preformat summary statistics data into standardized GWASLab format.
@@ -80,7 +80,7 @@ def preformat(sumstats,
     sumstats : str or pandas.DataFrame
         Input data path or DataFrame.
     fmt : str, optional
-        Format name to get predefined mapping (e.g., 'gwaslab', 'vcf').
+        Format name to get predefined mapping if provided. (e.g., 'gwaslab', 'vcf').
     tab_fmt : str, default: 'tsv'
         Table format ('tsv', 'parquet').
     snpid : str, optional
@@ -95,10 +95,6 @@ def preformat(sumstats,
         Column name for effect allele in input data.
     nea : str, optional
         Column name for non-effect allele in input data.
-    ref : str, optional
-        Column name for reference allele in input data.
-    alt : str, optional
-        Column name for alternative allele in input data.
     eaf : str, optional
         Column name for effect allele frequency in input data.
     neaf : str, optional
@@ -163,12 +159,14 @@ def preformat(sumstats,
         Column name for effect direction in input data.
     status : str, optional
         Column name for status in input data.
-    study : str, optional
+    study : str, optional, default="Study_1"
         Column name for study ID in input data.
-    trait : str, optional
+    trait : str, optional, default="Trait_1"
         Column name for trait in input data.
     build : str, optional
         Genome build version (e.g., '19' and '38').
+    species : str, default="homo sapiens"
+        species
     other : list, optional
         Additional columns to include.
     exclude : list, optional
@@ -182,10 +180,8 @@ def preformat(sumstats,
     verbose : bool, default: False
         Enable verbose output.
     readargs : dict, optional
-        Additional arguments for reading files using pd.read_csv() like `nrows`, `comment`.
+        Additional arguments for reading files using pd.read_csv() like `nrows`, `comment`. 
         Example: {"nrows": 1000} means to load first 1000 rows.
-    **kwreadargs : dict, optional
-        Additional keyword arguments passed to `readargs`.
 
     Returns
     -------
@@ -201,7 +197,6 @@ def preformat(sumstats,
     """
     if readargs is None:
         readargs = dict()
-    readargs = readargs | kwreadargs
     
     if log is None:
         log = Log()
@@ -464,6 +459,8 @@ def preformat(sumstats,
                     log.write(" -Loading:" + i)
                     skip_rows = get_skip_rows(i)
                     readargs["skiprows"] = skip_rows
+                    explicit = {"usecols","dtype_dictionary"}
+                    readargs = {k: v for k, v in readargs.items() if k not in explicit}
                     sumstats_chr = pd.read_table(i,
                                         usecols=set(usecols),
                                         dtype=dtype_dictionary,
@@ -497,6 +494,8 @@ def preformat(sumstats,
                                                 log=log,
                                                 verbose=verbose)
                 else:
+                    explicit = {"usecols","dtype_dictionary"}
+                    readargs = {k: v for k, v in readargs.items() if k not in explicit}
                     sumstats = pd.read_table(inpath,
                                     usecols=set(usecols),
                                     dtype=dtype_dictionary,
@@ -726,7 +725,8 @@ def process_status(sumstats,build,status, log,verbose):
 
 
 def _load_single_chr(inpath,usecols,dtype_dictionary,readargs,rename_dictionary,chrom_pat,log,verbose):
-    
+    explicit = {"usecols","dtype_dictionary","chunksize","iterator"}
+    readargs = {k: v for k, v in readargs.items() if k not in explicit}
     sumstats_iter = pd.read_table(inpath,
                 usecols=set(usecols),
                 dtype=dtype_dictionary, 
@@ -747,7 +747,8 @@ def _load_single_chr(inpath,usecols,dtype_dictionary,readargs,rename_dictionary,
     return sumstats_filtered
 
 def _load_variants_with_pattern(inpath,usecols,dtype_dictionary,readargs,rename_dictionary,snpid_pat,log,verbose):
-    
+    explicit = {"usecols","dtype_dictionary","chunksize","iterator"}
+    readargs = {k: v for k, v in readargs.items() if k not in explicit}
     sumstats_iter = pd.read_table(inpath,
                 usecols=set(usecols),
                 dtype=dtype_dictionary, 
