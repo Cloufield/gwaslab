@@ -3,9 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.colors import to_hex
 import seaborn as sns
-from gwaslab.io.io_process_args import _update_arg, resolve_overlapping_kwargs
-sns.scatterplot = resolve_overlapping_kwargs()(sns.scatterplot)
-plt.subplots = resolve_overlapping_kwargs()(plt.subplots)
+from gwaslab.io.io_process_args import _update_arg
 import numpy as np
 import scipy as sp
 import copy
@@ -32,7 +30,7 @@ from gwaslab.viz.viz_plot_qqplot import _plot_qq
 from gwaslab.viz.viz_plot_regional2 import _plot_regional
 from gwaslab.viz.viz_plot_regional2 import process_vcf
 from gwaslab.viz.viz_plot_regional2 import _get_lead_id
-#from gwaslab.viz.viz_plot_density import _process_density
+from gwaslab.viz.viz_plot_density import _process_density
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_p_value
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_pos
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_chr
@@ -507,6 +505,8 @@ def mqqplot(insumstats,
     anno_args = _update_args(anno_args,dict())
     anno_args_single = _update_args(anno_args_single,dict())
     arrow_kwargs = _update_args(arrow_kwargs,dict())
+    
+
 
     colors = _update_arg(colors, ["#597FBD","#74BAD3"])
 
@@ -567,7 +567,7 @@ def mqqplot(insumstats,
     else:
         sig_level_plot = sig_level
         sig_level_lead = sig_level     
-    
+
     if check==True and _if_quick_qc==True:
         _if_quick_qc = True
     else:
@@ -933,12 +933,14 @@ def mqqplot(insumstats,
                 scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:len(region_ref)])}
                 style="SHAPE"
 
-        
+        explicit = {"edgecolor","edgecolors", "linewidth", "ax","palette","hue","data","legend","style","size","sizes","zorder"}
+        scatter_args = {k: v for k, v in scatter_args.items() if k not in explicit}
         ## if highlight 
         highlight_i = pd.DataFrame()
         if len(highlight) >0:
             to_plot = sumstats
             log.write(" -Creating background plot...",verbose=verbose)
+
             plot = sns.scatterplot(data=to_plot, x='i', y='scaled_P',
                                hue='chr_hue',
                                palette=palette,
@@ -1113,7 +1115,11 @@ def mqqplot(insumstats,
             lead_snp_is_color = []
         
         log.write("Finished creating MQQ plot successfully",verbose=verbose)
-
+        
+        if mode=="b":
+            scaled_threhosld = sig_level_lead
+        else:
+            scaled_threhosld = float(-np.log10(sig_level_lead))
         # Get top variants for annotation #######################################################
         log.write("Start to extract variants for annotation...",verbose=verbose)
         if (anno and anno!=True) or (len(anno_set)>0):
@@ -1122,7 +1128,7 @@ def mqqplot(insumstats,
                 if to_annotate.empty is not True:
                     log.write(" -Found "+str(len(to_annotate))+" specified variants to annotate...",verbose=verbose)
             else:
-                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level_lead)),:],
+                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> scaled_threhosld ,:],
                                snpid,
                                chrom,
                                pos,
@@ -1135,16 +1141,19 @@ def mqqplot(insumstats,
                 if (to_annotate.empty is not True) and ("b" not in mode):
                     log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
         else:
-            to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> float(-np.log10(sig_level_lead)),:],
-                               "i",
-                               chrom,
-                               pos,
-                               "raw_P",
-                               windowsizekb=windowsizekb,
-                               scaled=scaled,
-                               verbose=False,
-                               mlog10p="scaled_P",
-                               sig_level=sig_level_lead)
+            if "b" not in mode:
+                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> scaled_threhosld,:],
+                                "i",
+                                chrom,
+                                pos,
+                                "raw_P",
+                                windowsizekb=windowsizekb,
+                                scaled=scaled,
+                                verbose=False,
+                                mlog10p="scaled_P",
+                                sig_level=sig_level_lead)
+            else:
+                to_annotate=pd.DataFrame()
             if (to_annotate.empty is not True) and ("b" not in mode):
                 log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
         if (to_annotate.empty is not True) and anno=="GENENAME":
@@ -1792,8 +1801,12 @@ def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
     #ax3 gene track
     #ax4 recombination
 
+    explicit = {"gridspec_kw"}
+    fig_args = {k: v for k, v in fig_args.items() if k not in explicit}
+    
     if  mode=="qqm": 
-        fig, (ax2, ax1) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [1, mqqratio]},**fig_args)
+
+        fig, (ax2, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [1, mqqratio]},**fig_args)
         ax3 = None
 
     elif mode=="mqq":

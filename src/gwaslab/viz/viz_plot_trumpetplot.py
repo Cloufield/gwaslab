@@ -21,7 +21,6 @@ from gwaslab.util.util_in_calculate_power import get_beta
 from gwaslab.util.util_in_calculate_power import get_power
 from gwaslab.util.util_in_calculate_power import get_beta_binary
 from gwaslab.util.util_in_fill_data import filldata
-from gwaslab.io.io_process_args import _update_arg, resolve_overlapping_kwargs
 
 def plottrumpet(mysumstats,
                 snpid="SNPID",
@@ -378,7 +377,7 @@ def plottrumpet(mysumstats,
                                                     chrom=chrom, 
                                                     pos=pos)
     ##################################################################################################
-    plt.subplots = resolve_overlapping_kwargs()(plt.subplots)
+
     fig, ax = plt.subplots(**figargs)
     
     ##creating power line############################################################################################
@@ -428,7 +427,8 @@ def plottrumpet(mysumstats,
     else:
         size_norm = (sumstats[size].min(), sumstats[size].max())
     ## if highlight  ##################################################################################################
-    sns.scatterplot = resolve_overlapping_kwargs()(sns.scatterplot)
+    explicit = {"zorder","alpha","edgecolor","legend","size_norm","data","x","y","size","sizes"}
+    scatter_args = {k: v for k, v in scatter_args.items() if k not in explicit}
     log.write(" -Creating scatter plot...", verbose=verbose)
     dots = sns.scatterplot(data=sumstats,
                     x=maf,
@@ -586,7 +586,6 @@ def plottrumpet(mysumstats,
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_visible(True)
 
-    ax.annotate = resolve_overlapping_kwargs()(ax.annotate)
     ############  Annotation ##################################################################################################
     if anno is not None:
         if anno in sumstats.columns or anno=="GENENAME" :

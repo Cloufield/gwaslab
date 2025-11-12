@@ -96,7 +96,6 @@ def _plot_qq(
     # QQ plot #########################################################################################################
     # ax2 qqplot
     log.write("Start to create QQ plot with "+str(len(sumstats))+" variants:",verbose=verbose )
-    ax2.plot = resolve_overlapping_kwargs()(ax2.plot)
     
     # plotting qq plots using processed data after cut and skip
     
@@ -109,6 +108,8 @@ def _plot_qq(
     
     upper_bound_p = np.power(10.0, -expected_min_mlog10p)
 
+    explicit = {"color","marker_size"}
+    qq_scatter_args = {k: v for k, v in qq_scatter_args.items() if k not in explicit}
     if stratified is False:
         log.write(" -Plotting all variants...",verbose=verbose)
         # sort x,y for qq plot

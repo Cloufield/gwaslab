@@ -67,39 +67,33 @@ def _update_arg(arg=None, default_arg=None):
 from functools import wraps
 import inspect
 
-def resolve_overlapping_kwargs(strategy="prefer_explicit"):
-    """
-    Decorator that merges overlapping keyword arguments safely.
-    
-    Supports explicit args + one or more dicts passed via **extra dicts.
+import inspect
 
-    Example:
-        ax1_safe_plot(x, y, color='red', **style_dict)
-    """
+import inspect
+from functools import wraps
+
+def resolve_overlapping_kwargs(strategy="prefer_explicit", verbose=False):
+    """Decorator factory for any function."""
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            # Collect and merge all dict-type kwargs (that might have been expanded from **dict)
-            merged_kwargs = {}
-            for key, val in list(kwargs.items()):
-                # If user passes something like extra_args=<dict>, merge it directly
-                if isinstance(val, dict) and key.startswith("extra_"):
-                    merged_kwargs.update(val)
-                    kwargs.pop(key)
+            sig = inspect.signature(func)
+            bound_args = {}
+            for i, (name, param) in enumerate(sig.parameters.items()):
+                if i < len(args):
+                    bound_args[name] = args[i]
 
-            # Merge according to strategy
-            if strategy == "prefer_explicit":
-                combined = {**merged_kwargs, **kwargs}  # explicit wins
-            elif strategy == "prefer_extra":
-                combined = {**kwargs, **merged_kwargs}  # dict wins
-            elif strategy == "warn":
-                overlap = set(merged_kwargs) & set(kwargs)
-                if overlap:
-                    print(f"[Warning] Overlapping args ignored: {overlap}")
-                combined = {**merged_kwargs, **kwargs}
-            else:
-                combined = {**merged_kwargs, **kwargs}
+            overlap = set(bound_args.keys()) & set(kwargs.keys())
+            if overlap:
+                if verbose:
+                    print(f"[resolve_overlap] overlapping: {overlap}")
+                if strategy == "prefer_explicit":
+                    for key in overlap:
+                        kwargs.pop(key, None)
+                elif strategy == "prefer_kwargs":
+                    for key in overlap:
+                        bound_args[key] = kwargs.pop(key)
 
-            return func(*args, **combined)
+            return func(**bound_args, **kwargs)
         return wrapper
     return decorator

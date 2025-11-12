@@ -63,6 +63,7 @@ from gwaslab.util.util_in_calculate_gc import lambdaGC
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
 from gwaslab.util.util_in_get_sig import getsig
 from gwaslab.util.util_in_get_density import getsignaldensity
+from gwaslab.util.util_in_get_density import getsignaldensity2
 from gwaslab.util.util_in_get_density import assigndensity
 from gwaslab.util.util_in_get_sig import annogene
 from gwaslab.util.util_in_get_sig import getnovel
@@ -877,7 +878,7 @@ class Sumstats():
             return new_Sumstats_object
         return output
     
-    @add_doc(getsignaldensity)
+    @add_doc(getsignaldensity2)
     def get_density(self, sig_list=None, windowsizekb=100,**kwargs):
         
         if "SNPID" in self.data.columns:
@@ -886,7 +887,7 @@ class Sumstats():
             id_to_use = "rsID"
         
         if sig_list is None:
-            self.data["DENSITY"] = getsignaldensity(self.data,
+            self.data["DENSITY"] = getsignaldensity2(self.data,
                                                     id=id_to_use,
                                                     chrom="CHR",
                                                     pos="POS",

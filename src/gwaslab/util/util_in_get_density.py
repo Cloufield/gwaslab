@@ -148,3 +148,73 @@ def assigndensity(insumstats,
             gc.collect()
 	
     return sumstats["DENSITY"]
+
+def getsignaldensity2(
+    insumstats,
+    id="SNPID",
+    chrom="CHR",
+    pos="POS",
+    bwindowsizekb=100,
+    log=None,
+    verbose=True
+):
+    """
+    Efficiently calculate local signal density (number of nearby variants)
+    within ±window using binary search (O(n log n)).
+
+    Parameters
+    ----------
+    insumstats : pd.DataFrame
+        Must contain chromosome and position columns.
+    bwindowsizekb : int, default=100
+        Window size (kb) for counting neighbors on same chromosome.
+
+    Returns
+    -------
+    pd.Series of density values.
+    """
+
+    if log is None:
+        class Dummy:
+            def write(self, *args, **kwargs): pass
+        log = Dummy()
+
+    log.write("Start to calculate signal DENSITY...", verbose=verbose)
+    wsize = bwindowsizekb * 1000
+
+    # Select and copy only necessary columns
+    sumstats = insumstats[[id, chrom, pos]].copy()
+    sumstats = sumstats.sort_values([chrom, pos], ignore_index=True)
+
+    densities = np.zeros(len(sumstats), dtype=np.int32)
+
+    for chrom_i, df_chr in sumstats.groupby(chrom, sort=False):
+        positions = df_chr[pos].to_numpy()
+        n = len(positions)
+
+        # Use searchsorted to find right edges efficiently
+        # For each variant, find the rightmost index within +window
+        right_idx = np.searchsorted(positions, positions + wsize, side="right")
+        left_idx = np.searchsorted(positions, positions - wsize, side="left")
+
+        # Count how many fall within window (excluding itself)
+        density_chr = (right_idx - left_idx - 1).astype(np.int32)
+
+        densities[df_chr.index] = density_chr
+
+    sumstats["DENSITY"] = densities
+
+    # Basic stats
+    bmean = sumstats["DENSITY"].mean()
+    bmedian = sumstats["DENSITY"].median()
+    bsd = sumstats["DENSITY"].std()
+    bmax = sumstats["DENSITY"].max()
+    bmaxid = sumstats.loc[sumstats["DENSITY"].idxmax(), id]
+
+    log.write(f" -Mean : {bmean:.3f} signals per {bwindowsizekb} kb", verbose=verbose)
+    log.write(f" -SD : {bsd:.3f}", verbose=verbose)
+    log.write(f" -Median : {bmedian:.3f} signals per {bwindowsizekb} kb", verbose=verbose)
+    log.write(f" -Max : {bmax} signals per {bwindowsizekb} kb at variant {bmaxid}", verbose=verbose)
+    log.write("Finished calculating signal DENSITY successfully!", verbose=verbose)
+
+    return sumstats["DENSITY"]

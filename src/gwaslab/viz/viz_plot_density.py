@@ -1,5 +1,6 @@
 from gwaslab.viz.viz_aux_quickfix import _get_largenumber
 import pandas as pd
+from gwaslab.util.util_in_get_density import getsignaldensity2
 
 def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     """
@@ -77,22 +78,14 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
         Arguments for saving the plot. 
     """
     if "b" in mode and "DENSITY" not in sumstats.columns:
-        log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb",verbose=verbose)
-        large_number = _get_largenumber(sumstats[pos].max(),log=log)
 
-        stack=[]
-        sumstats["TCHR+POS"] = sumstats[chrom]*large_number +  sumstats[pos]
-        sumstats = sumstats.sort_values(by="TCHR+POS")
-        for index,row in sumstats.iterrows():
-            stack.append([row["SNPID"],row["TCHR+POS"],0])  
-            for i in range(2,len(stack)+1):
-                if stack[-i][1]>= (row["TCHR+POS"]- 1000*bwindowsizekb):
-                    stack[-i][2]+=1
-                    stack[-1][2]+=1
-                else:
-                    break
-        df = pd.DataFrame(stack,columns=["SNPID","TCHR+POS","DENSITY"])
-        sumstats["DENSITY"] = df["DENSITY"].astype("Float64").values
+        sumstats["DENSITY"] = getsignaldensity2(insumstats=sumstats,
+                                                id="SNPID",
+                                                chrom=chrom,
+                                                pos=pos,
+                                                bwindowsizekb=bwindowsizekb,
+                                                log=log,
+                                                verbose=verbose)
 
         bmean=sumstats.drop_duplicates(subset="SNPID")["DENSITY"].mean()
         bmedian=sumstats.drop_duplicates(subset="SNPID")["DENSITY"].median()
