@@ -29,9 +29,11 @@ from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
 from gwaslab.bd.bd_common_data import get_gtf
 
-"""
-
-"""
+from gwaslab.io.io_process_args import _update_arg, resolve_overlapping_kwargs
+sns.scatterplot = resolve_overlapping_kwargs()(sns.scatterplot)
+import matplotlib.axes as maxes
+maxes.Axes.axvline = resolve_overlapping_kwargs()(maxes.Axes.axvline)
+maxes.Axes.plot = resolve_overlapping_kwargs()(maxes.Axes.plot)
 
 def _plot_regional(
     sumstats,

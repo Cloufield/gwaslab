@@ -2,8 +2,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.colors import to_hex
-
 import seaborn as sns
+from gwaslab.io.io_process_args import _update_arg, resolve_overlapping_kwargs
+sns.scatterplot = resolve_overlapping_kwargs()(sns.scatterplot)
+plt.subplots = resolve_overlapping_kwargs()(plt.subplots)
 import numpy as np
 import scipy as sp
 import copy
@@ -44,7 +46,7 @@ from gwaslab.viz.viz_aux_save_figure import save_figure
 
 from gwaslab.io.io_load_ld import process_ld
 from gwaslab.io.io_process_args import _update_args
-from gwaslab.io.io_process_args import _update_arg
+
 
 from gwaslab.util.util_in_filter_value import _filter_region
 from gwaslab.util.util_in_get_sig import getsig

@@ -62,3 +62,44 @@ def _update_arg(arg=None, default_arg=None):
     else:
         # if not None, return arg  
         return arg
+
+
+from functools import wraps
+import inspect
+
+def resolve_overlapping_kwargs(strategy="prefer_explicit"):
+    """
+    Decorator that merges overlapping keyword arguments safely.
+    
+    Supports explicit args + one or more dicts passed via **extra dicts.
+
+    Example:
+        ax1_safe_plot(x, y, color='red', **style_dict)
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Collect and merge all dict-type kwargs (that might have been expanded from **dict)
+            merged_kwargs = {}
+            for key, val in list(kwargs.items()):
+                # If user passes something like extra_args=<dict>, merge it directly
+                if isinstance(val, dict) and key.startswith("extra_"):
+                    merged_kwargs.update(val)
+                    kwargs.pop(key)
+
+            # Merge according to strategy
+            if strategy == "prefer_explicit":
+                combined = {**merged_kwargs, **kwargs}  # explicit wins
+            elif strategy == "prefer_extra":
+                combined = {**kwargs, **merged_kwargs}  # dict wins
+            elif strategy == "warn":
+                overlap = set(merged_kwargs) & set(kwargs)
+                if overlap:
+                    print(f"[Warning] Overlapping args ignored: {overlap}")
+                combined = {**merged_kwargs, **kwargs}
+            else:
+                combined = {**merged_kwargs, **kwargs}
+
+            return func(*args, **combined)
+        return wrapper
+    return decorator
