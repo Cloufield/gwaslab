@@ -463,7 +463,7 @@ def tofmt(sumstats,
 #
         #elif tab_fmt=="parquet":
         #    sumstats.to_parquet(path, index=None, **to_tabular_kwargs)
-        _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose)
+        _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose, gzip)
         
         if tab_fmt not in non_md5sum_tab_fmt and "@" not in path:
             if md5sum == True: 
@@ -481,7 +481,7 @@ def tofmt(sumstats,
         return sumstats  
     
 ####################################################################################################################
-def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose):
+def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose, gzip):
     if tab_fmt=="tsv" or tab_fmt=="csv":
         try:
             log.write(f"  -Fast to csv mode...",verbose=verbose)
@@ -494,9 +494,9 @@ def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tab
 
                     fast_to_csv(sumstats.loc[sumstats[chr_header]==single_chr,:],
                                  single_path, 
-                                 to_csvargs=to_csvargs, compress=True, write_in_chunks=True)
+                                 to_csvargs=to_csvargs, compress=gzip, write_in_chunks=True)
             else:
-                fast_to_csv(sumstats, path, to_csvargs=to_csvargs, compress=True, write_in_chunks=True)
+                fast_to_csv(sumstats, path, to_csvargs=to_csvargs, compress=gzip, write_in_chunks=True)
         except:
             log.write(f"Error in using fast_to_csv. Falling back to original implementation.",verbose=verbose)
             if "@" in path:
@@ -520,7 +520,8 @@ def fast_to_csv(dataframe, path, to_csvargs=None, compress=True, write_in_chunks
 
         if path.endswith(".gz"):
             path = path[:-3]
-
+        else:
+            compress = False
         if to_csvargs is None:
             to_csvargs = {}
 

@@ -92,9 +92,9 @@ def preformat(sumstats,
     pos : str, optional
         Column name for position in input data.
     ea : str, optional
-        Column name for effect allele in input data.
+        Column name for effect allele in input data. (assuming alternative allele)
     nea : str, optional
-        Column name for non-effect allele in input data.
+        Column name for non-effect allele in input data. (assuming reference allele)
     eaf : str, optional
         Column name for effect allele frequency in input data.
     neaf : str, optional
@@ -168,20 +168,16 @@ def preformat(sumstats,
     species : str, default="homo sapiens"
         species
     other : list, optional
-        Additional columns to include.
-    exclude : list, optional
-        Columns to exclude.
-    include : list, optional
-        Columns to include explicitly.
+        Additional columns in the raw file to load.
     chrom_pat : str, optional
-        Pattern to filter chromosomes.
+        Regex pattern to filter chromosomes like'chrX'
     snpid_pat : str, optional
-        Pattern to filter SNPs.
+        Regex pattern to filter SNPs based on snpid like'chrX:'.
     verbose : bool, default: False
         Enable verbose output.
     readargs : dict, optional
         Additional arguments for reading files using pd.read_csv() like `nrows`, `comment`. 
-        Example: {"nrows": 1000} means to load first 1000 rows.
+        Example, {"nrows": 1000} means to load first 1000 rows.
 
     Returns
     -------
@@ -194,6 +190,13 @@ def preformat(sumstats,
     ------
     ValueError
         If input is not a path or DataFrame, or if columns are missing.
+
+    Less used parameters
+    -------------------------
+    exclude : list, optional
+        Columns to exclude explicitly. Columns should be passed as GWASLab built-in HEADER keywords in uppercase like BETA, DIRECTION. Not original headers.
+    include : list, optional
+        Columns to include explicitly. Columns should be passed as GWASLab built-in HEADER keywords in uppercase like BETA, DIRECTION. Not original headers.
     """
     if readargs is None:
         readargs = dict()
