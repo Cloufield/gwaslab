@@ -403,6 +403,7 @@ class Sumstats():
               ref_rsid_vcf=None,
               ref_infer=None,
               ref_alt_freq=None,
+              ref_maf_threshold = 0.5,
               maf_threshold=0.40,
               ref_seq_mode="v",
               n_cores=1,
@@ -483,7 +484,8 @@ class Sumstats():
             
         if ref_infer is not None: 
             
-            self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,maf_threshold=maf_threshold,
+            self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
+                                            maf_threshold=maf_threshold, ref_maf_threshold=ref_maf_threshold,
                                               n_cores=n_cores,log=self.log,**inferstrand_args)
 
             self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)

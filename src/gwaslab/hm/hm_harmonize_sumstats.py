@@ -1391,7 +1391,7 @@ def check_indel_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_thresho
 
 ##################################################################################################################################################
 
-def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,ref_maf_threshold=None,daf_tolerance=0.20,remove_snp="",mode="pi",n_cores=1,remove_indel="",
+def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,ref_maf_threshold=0.5,daf_tolerance=0.20,remove_snp="",mode="pi",n_cores=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
                        chr_dict=None,cache_options={},verbose=True,log=Log()):
     """
@@ -1418,7 +1418,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
     if ref_maf_threshold is None:
         ref_maf_threshold = maf_threshold
-        
+
     is_enough_info = start_to(sumstats=sumstats,
                             log=log,
                             verbose=verbose,
