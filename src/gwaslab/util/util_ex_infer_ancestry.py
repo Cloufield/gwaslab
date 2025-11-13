@@ -2,17 +2,18 @@
 import pandas as pd
 from gwaslab.g_Log import Log
 from gwaslab.bd.bd_download import get_path
+from gwaslab.qc.qc_fix_sumstats import start_to
 
 def _infer_ancestry(sumstats, 
                     ancestry_af=None,
-                    build="19",
+                    build=None,
                     log=Log(),
                     verbose=True):
     """Infer ancestry based on Fst values from effective allele frequencies.
 
     A high Fst value indicates that populations are genetically distinct. This function
     compares the effective allele frequencies from the sumstats with those from 1kg data
-    to determine the closest ancestry.
+    to determine the closest ancestry. Inconsistency may suggest mislabeling of EAF.
 
     Parameters
     ----------
@@ -34,12 +35,39 @@ def _infer_ancestry(sumstats,
     This function internally uses `calculate_fst` to compute Fst values for each variant.
     """
     log.write("Start to infer ancestry based on Fst...", verbose=verbose)
+    _start_line = "infer ancestry based on Fst"
+    _end_line = "inferring ancestry"
+    _start_cols =["CHR","POS","EA","NEA","EAF"]
+    _start_function = ".infer_ancestry()"
+    _must_args ={"build":build}
+
+    is_enough_info = start_to(sumstats=sumstats,
+                            log=log,
+                            verbose=verbose,
+                            start_line=_start_line,
+                            end_line=_end_line,
+                            start_cols=_start_cols,
+                            start_function=_start_function,
+                            **_must_args)
+    if is_enough_info == False: 
+        return ValueError("Not enought columns for inferreing: CHR,POS,EA,NEA,EAF")
 
     if ancestry_af is None:
         if build=="19":
             ancestry_af = get_path("1kg_hm3_hg19_eaf")
         elif build=="38":
             ancestry_af = get_path("1kg_hm3_hg38_eaf")
+    else:
+        if ancestry_af =="1kg_hm3_hg19_eaf":
+            ancestry_af = get_path("1kg_hm3_hg19_eaf")
+        elif ancestry_af =="1kg_hm3_hg38_eaf":
+            ancestry_af = get_path("1kg_hm3_hg38_eaf")
+    if ancestry_af is None:
+        raise ValueError("Please pass valid allele frequency table by ancestry file!")
+    
+    ##start function with col checking##########################################################
+
+    ############################################################################################
 
     ref_af = pd.read_csv(ancestry_af, sep="\t")
     

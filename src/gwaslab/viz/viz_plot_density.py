@@ -76,6 +76,9 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
         File path to save plot. Default is None. 
     save_args : dict, default={"dpi":600,"transparent":True}
         Arguments for saving the plot. 
+
+    
+    
     """
     if "b" in mode and "DENSITY" not in sumstats.columns:
 

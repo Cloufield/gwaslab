@@ -63,16 +63,14 @@ def _to_format(sumstats,
               log=Log(),
               verbose=True):
     """
-    Convert summary statistics to specified output format with various processing options.
+    Output the sumstats. Convert summary statistics to specified output format with various processing options. VCF, VEP, BED, tsv-like formats.
     
     Parameters
     ----------
-    sumstats : pandas.DataFrame
-        DataFrame containing summary statistics with columns for chromosome (CHR), position (POS), and p-values (P)
     path : str, optional
         Output file path prefix. Default is "./sumstats"
     fmt : str, optional
-        Output format ('gwaslab', 'vcf', 'bed', 'annovar', etc.). Default is 'gwaslab'
+        Output format ('gwaslab', 'vcf', 'bed', 'annovar', etc.).Avaiable forst can be checked using `get_formats_list`. Default is 'gwaslab' 
     tab_fmt : str, optional
         Tabular format type ('tsv', 'csv', 'parquet'). Default is 'tsv'
     extract : list or str, optional
@@ -81,8 +79,6 @@ def _to_format(sumstats,
         SNPs to exclude. Default is None
     cols : list, optional
         Additional columns to include in output. Default is empty list
-    id_use : str, optional
-        Column name to use as SNP identifier. Default is 'rsID'
     hapmap3 : bool, optional
         Whether to extract Hapmap3 SNPs. Default is False
     exclude_hla : bool, optional
@@ -105,8 +101,6 @@ def _to_format(sumstats,
         Chromosome names for X, Y, MT. Default is ["X","Y","MT"]
     chr_prefix : str, optional
         Prefix for chromosome numbers. Default is empty string
-    meta : dict, optional
-        Metadata dictionary. Default is None
     ssfmeta : bool, optional
         Whether to create SSF-style metadata. Default is False
     md5sum : bool, optional
@@ -123,8 +117,6 @@ def _to_format(sumstats,
         Dictionary of CSV writing arguments. Default is None
     to_tabular_kwargs : dict, optional
         Dictionary of tabular format arguments. Default is None
-    log : gwaslab.Log, optional
-        Log object for tracking progress. Default is new Log instance
     verbose : bool, optional
         Whether to print progress messages. Default is True
 
@@ -132,6 +124,13 @@ def _to_format(sumstats,
     -------
     None
         Output is written to file(s) specified by path parameter
+
+    Less used parameters
+    ---------------------------------------------------------------
+    log : gwaslab.Log, optional
+        Log object for tracking progress. Default is new Log instance
+    meta : dict, optional
+        Metadata dictionary. Default is None
     """
              
     if to_csvargs is None:
@@ -165,6 +164,9 @@ def _to_format(sumstats,
     output = sumstats.copy()
     
     #######################################################################################################
+    if id_use =="rsID":
+        if id_use not in sumstats.columns:
+            id_use="SNPID"
 
     if extract is not None:
         output = _extract(output, extract, id_use=id_use, log=onetime_log, verbose=verbose)

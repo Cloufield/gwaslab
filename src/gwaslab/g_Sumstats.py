@@ -111,7 +111,7 @@ from gwaslab.viz.viz_plot_compare_af import plotdaf
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
 from gwaslab.viz.viz_plot_associations import _plot_associations
 from gwaslab.viz.viz_plot_qqplot import _plot_qq
-#from gwaslab.viz.viz_plot_density import _process_density
+from gwaslab.viz.viz_plot_density import _process_density
 from gwaslab.viz.viz_plot_effect import _plot_effect
 
 from gwaslab.io.io_read_pipcs import _read_pipcs
@@ -843,7 +843,7 @@ class Sumstats():
         plot, log = mqqplot(self.data, build = self.build, **kwargs)
         return plot
     
-    #@add_doc(_process_density)
+    @add_doc(_process_density)
     def plot_snp_density(self, build=None, **kwargs):
         plot, log = mqqplot(self.data, mode="b", build = self.build, **kwargs)
         return plot
@@ -1126,7 +1126,7 @@ class Sumstats():
     def plot_pipcs(self, region=None, locus=None, **kwargs):
         _plot_cs(self.pipcs, region=region,locus=locus, **kwargs)
 # to_format ###############################################################################################       
-
+    @add_doc(_to_format)
     def to_format(self, path, build=None, verbose=True, **kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]

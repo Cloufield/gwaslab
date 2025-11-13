@@ -14,12 +14,7 @@ def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizek
     
     Parameters
     ----------
-    id : str, optional
-        Column name containing variant identifiers. Default is "SNPID".
-    chrom : str, optional
-        Column name containing chromosome numbers. Default is "CHR".
-    pos : str, optional
-        Column name containing genomic positions. Default is "POS".
+
     bwindowsizekb : int, optional
         Window size in kilobases for density calculation. Default is 100.
     verbose : bool, optional
@@ -29,6 +24,15 @@ def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizek
     -------
     pandas.Series
         Calculated density values for each variant.
+
+    Less used parameter
+    --------
+    id : str, optional
+        Column name containing variant identifiers. Default is "SNPID".
+    chrom : str, optional
+        Column name containing chromosome numbers. Default is "CHR".
+    pos : str, optional
+        Column name containing genomic positions. Default is "POS".
     """
     log.write("Start to calculate signal DENSITY..." ,verbose=verbose)
     sumstats = insumstats[[id,chrom,pos]].copy()
