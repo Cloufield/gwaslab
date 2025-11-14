@@ -341,15 +341,15 @@ def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS",
     """
     Infer genome build version using Hapmap3 SNPs.
     
-    Parameters:
-    -----------
-    change_status : bool, default=True
-        If True, updates status codes in the table
-    
     Returns:
     --------
     tuple
         (Updated summary statistics table, inferred build version)
+
+    Less used parameters:
+    -----------
+    change_status : bool, default=True
+        If True, updates status codes in the table
     """
     # Function implementation remains unchanged
     ##start function with col checking##########################################################
@@ -431,6 +431,7 @@ def sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
     --------
     pandas.DataFrame
         Subsampled summary statistics table
+    
     """
     log.write("Start to randomly select variants from the sumstats...", verbose=verbose) 
     if p is None:

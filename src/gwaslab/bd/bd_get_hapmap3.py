@@ -16,22 +16,41 @@ from pathlib import Path
 def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
     """
     Extract HapMap3 SNPs from summary statistics based on rsID or genomic coordinates.
-    
-    Parameters:
-    sumstats (pd.DataFrame): Input summary statistics dataframe
-    rsid (str): Column name for rsID (default: "rsID")
-    chrom (str): Column name for chromosome (default: "CHR")
-    pos (str): Column name for position (default: "POS")
-    ea (str): Column name for effect allele (default: "EA")
-    nea (str): Column name for non-effect allele (default: "NEA")
-    build (str): Genome build version ("19" or "38") (default: "19")
-    verbose (bool): Print progress messages (default: True)
-    match_allele (bool): Check allele matching (default: True)
-    how (str): Type of merge to perform (default: "inner")
-    log (Log): Logging object (default: Log())
-    
-    Returns:
-    pd.DataFrame: Filtered summary statistics with HapMap3 SNPs
+
+    Parameters
+    ----------
+
+    build : str, optional
+        Genome build version ("19" or "38"). Default is "19".
+    verbose : bool, optional
+        Print progress messages. Default is True.
+    match_allele : bool, optional
+        Check allele matching. Default is True.
+    how : str, optional
+        Type of merge to perform. Default is "inner".
+
+
+    Returns
+    -------
+    pd.DataFrame
+        Filtered summary statistics with HapMap3 SNPs.
+
+    Less used parameters
+    --------
+    sumstats : pd.DataFrame
+        Input summary statistics dataframe.
+    rsid : str, optional
+        Column name for rsID. Default is "rsID".
+    chrom : str, optional
+        Column name for chromosome. Default is "CHR".
+    pos : str, optional
+        Column name for position. Default is "POS".
+    ea : str, optional
+        Column name for effect allele. Default is "EA".
+    nea : str, optional
+        Column name for non-effect allele. Default is "NEA".
+    log : Log, optional
+        Logging object. Default is Log().
     """
     ##start function with col checking##########################################################
     _start_line = "extract HapMap3 SNPs"

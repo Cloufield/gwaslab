@@ -84,9 +84,9 @@ def preformat(sumstats,
     tab_fmt : str, default: 'tsv'
         Table format ('tsv', 'parquet').
     snpid : str, optional
-        Column name for SNP ID in input data.
+        Column name for SNP identifiers in the input data. Expected format is CHR:POS:NEA:EA (e.g., 1:123:A:G), although the delimiter may vary depending on the source.
     rsid : str, optional
-        Column name for rsID in input data.
+        Column name for rsID in the input data. Values should follow the standard "rs" prefix (e.g., rs12345).
     chrom : str, optional
         Column name for chromosome in input data.
     pos : str, optional

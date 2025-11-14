@@ -32,23 +32,26 @@ def filldata(
     ----------
     to_fill : str or list of str
         Column name(s) to fill. Common values include 'OR', 'BETA', 'SE', 'Z', 'P', etc.
-    df : str, optional
-        Column name containing degrees of freedom for chi-square tests.
     overwrite : bool, optional, default=False
         If True, overwrite existing values in target columns.
     verbose : bool, optional, default=True
         Whether to display progress messages.
-    only_sig : bool, optional, default=False
-        If True, only update values for significant variants.
-    sig_level : float, optional, default=5e-8
-        Significance threshold for P-value filtering.
     extreme : bool, optional, default=False
-        If True, use extreme value calculations for -log10(P).
+        If True, use extreme value calculations for -log10(P). Helpful when P<1e-300 (float64 datatype limits).
     
     Returns
     -------
     pandas.DataFrame
         Modified summary statistics DataFrame with filled values
+
+    Less used parameters
+    ----------------
+    df : str, optional
+        Column name containing degrees of freedom for chi-square tests. Only used when CHISQ 
+    only_sig : bool, optional, default=False
+        If True, only update values for significant variants.
+    sig_level : float, optional, default=5e-8
+        Significance threshold for P-value filtering.
     """
     # if a string is passed to to_fill, convert it to list
     if type(to_fill) is str:

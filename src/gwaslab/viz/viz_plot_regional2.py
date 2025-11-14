@@ -651,6 +651,8 @@ def _pinpoint_lead(sumstats,ax1,region_ref, region_ref_total_n, lead_color, mark
     return ax1, lead_id
 # -############################################################################################################################################################################
 def _add_region_title(region_title, ax1,region_title_args):
+    explicit = {"region_title","transform","va","ha","fontsize"}
+    region_title_args = {k: v for k, v in region_title_args.items() if k not in explicit}
     ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", **region_title_args )
     return ax1
 

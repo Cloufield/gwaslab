@@ -5,12 +5,11 @@ from gwaslab.g_Log import Log
 
 def _get_ess(sumstats, method="metal",log=Log(),verbose=True):
     """
-    Estimate effective sample size (N_EFF) for GWAS summary statistics.
+    Estimate effective sample size (N_EFF) for GWAS summary statistics. Summary statistics DataFrame containing N_CASE and N_CONTROL columns.
     
     Parameters
     ----------
-    sumstats : pandas.DataFrame
-        Summary statistics DataFrame containing N_CASE and N_CONTROL columns
+
     method : str or float, optional
         Method for ESS calculation:
         - "metal": Uses formula from Willer et al. (2010)
@@ -26,6 +25,11 @@ def _get_ess(sumstats, method="metal",log=Log(),verbose=True):
     Willer, C. J., Li, Y., & Abecasis, G. R. (2010). 
     METAL: fast and efficient meta-analysis of genomewide association scans. 
     Bioinformatics, 26(17), 2190-2191.
+
+    Less used paramters
+    ----------
+    sumstats : pandas.DataFrame
+        Summary statistics DataFrame containing N_CASE and N_CONTROL columns
     """
     log.write("Start to estimate effective sample size (N_EFF)...", verbose=verbose)
     if type(method) is str:

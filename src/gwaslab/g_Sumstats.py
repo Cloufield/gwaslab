@@ -1,125 +1,150 @@
-import pandas as pd
-import numpy as np
-import time
 import copy
 import gc
-from gwaslab.g_Sumstats_summary import summarize
-from gwaslab.g_Sumstats_summary import lookupstatus
-from gwaslab.g_version import _show_version
-from gwaslab.g_version import gwaslab_info
-from gwaslab.g_meta import _init_meta
-from gwaslab.g_meta import _append_meta_record
-from gwaslab.g_meta_update import _update_meta
-from gwaslab.g_meta import _check_sumstats_qc_status
+import time
+import numpy as np
+import pandas as pd
+
+# ----- Version / Metadata / Logging -----
 from gwaslab.g_Log import Log
-from gwaslab.g_meta import _set_harmonization_status
-from gwaslab.g_meta import _set_qc_status
+from gwaslab.g_Sumstats_summary import lookupstatus, summarize
+from gwaslab.g_version import _show_version, gwaslab_info
+from gwaslab.g_meta import (
+    _append_meta_record,
+    _check_sumstats_qc_status,
+    _init_meta,
+    _set_harmonization_status,
+    _set_qc_status,
+)
+from gwaslab.g_meta_update import _update_meta
 
-from gwaslab.qc.qc_fix_sumstats import fixID
-from gwaslab.qc.qc_fix_sumstats import flipSNPID
-from gwaslab.qc.qc_fix_sumstats import stripSNPID
-from gwaslab.qc.qc_fix_sumstats import removedup
-from gwaslab.qc.qc_fix_sumstats import fixchr
-from gwaslab.qc.qc_fix_sumstats import fixpos
-from gwaslab.qc.qc_fix_sumstats import fixallele
-from gwaslab.qc.qc_fix_sumstats import parallelnormalizeallele
-from gwaslab.qc.qc_fix_sumstats import sanitycheckstats
-from gwaslab.qc.qc_fix_sumstats import parallelizeliftovervariant
-from gwaslab.qc.qc_fix_sumstats import flipallelestats
-from gwaslab.qc.qc_fix_sumstats import sortcoordinate
-from gwaslab.qc.qc_fix_sumstats import sortcolumn
-from gwaslab.qc.qc_fix_sumstats import _set_build
-from gwaslab.qc.qc_fix_sumstats import _process_build
-from gwaslab.qc.qc_fix_sumstats import _check_data_consistency
+# ----- QC: Fix Sumstats -----
+from gwaslab.qc.qc_fix_sumstats import (
+    fixallele,
+    fixchr,
+    fixID,
+    fixpos,
+    flipallelestats,
+    flipSNPID,
+    parallelnormalizeallele,
+    parallelizeliftovervariant,
+    removedup,
+    sanitycheckstats,
+    sortcolumn,
+    sortcoordinate,
+    stripSNPID,
+    _check_data_consistency,
+    _process_build,
+    _set_build,
+)
 
-from gwaslab.hm.hm_harmonize_sumstats import parallelecheckaf
-from gwaslab.hm.hm_harmonize_sumstats import paralleleinferaf
-from gwaslab.hm.hm_harmonize_sumstats import checkref
-from gwaslab.hm.hm_harmonize_sumstats import oldcheckref
-from gwaslab.hm.hm_harmonize_sumstats import rsidtochrpos
-from gwaslab.hm.hm_harmonize_sumstats import parallelizeassignrsid
-from gwaslab.hm.hm_harmonize_sumstats import parallelinferstrand
-from gwaslab.hm.hm_harmonize_sumstats import parallelrsidtochrpos
-from gwaslab.hm.hm_harmonize_sumstats import _paralleleinferafwithmaf
+# ----- Harmonization -----
+from gwaslab.hm.hm_harmonize_sumstats import (
+    checkref,
+    oldcheckref,
+    parallelecheckaf,
+    paralleleinferaf,
+    parallelinferstrand,
+    parallelizeassignrsid,
+    parallelrsidtochrpos,
+    rsidtochrpos,
+    _paralleleinferafwithmaf,
+)
 
-from gwaslab.util.util_in_filter_value import filtervalues
-from gwaslab.util.util_in_filter_value import filterout
-from gwaslab.util.util_in_filter_value import filterin
-from gwaslab.util.util_in_filter_value import filterregionin
-from gwaslab.util.util_in_filter_value import filterregionout
-from gwaslab.util.util_in_filter_value import _filter_indel
-from gwaslab.util.util_in_filter_value import _filter_palindromic
-from gwaslab.util.util_in_filter_value import _filter_snp
-from gwaslab.util.util_in_filter_value import _filter_region
-from gwaslab.util.util_in_filter_value import _exclude_hla
-from gwaslab.util.util_in_filter_value import _search_variants
-from gwaslab.util.util_in_filter_value import inferbuild
-from gwaslab.util.util_in_filter_value import sampling
-from gwaslab.util.util_in_filter_value import _get_flanking
-from gwaslab.util.util_in_filter_value import _get_flanking_by_chrpos
-from gwaslab.util.util_in_filter_value import _get_flanking_by_id
-from gwaslab.util.util_in_filter_value import _get_region_start_and_end
+from gwaslab.hm.hm_casting import (
+    _align_with_mold,
+    _merge_mold_with_sumstats_by_chrpos,
+)
+
+# ----- Utility: Filtering -----
+from gwaslab.util.util_in_filter_value import (
+    filterin,
+    filterout,
+    filterregionin,
+    filterregionout,
+    filtervalues,
+    inferbuild,
+    sampling,
+    _exclude_hla,
+    _filter_indel,
+    _filter_palindromic,
+    _filter_region,
+    _filter_snp,
+    _get_flanking,
+    _get_flanking_by_chrpos,
+    _get_flanking_by_id,
+    _get_region_start_and_end,
+    _search_variants,
+)
+
+# ----- Utility: Calculation -----
 from gwaslab.util.util_in_calculate_gc import lambdaGC
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
-from gwaslab.util.util_in_get_sig import getsig
-from gwaslab.util.util_in_get_density import getsignaldensity
-from gwaslab.util.util_in_get_density import getsignaldensity2
-from gwaslab.util.util_in_get_density import assigndensity
-from gwaslab.util.util_in_get_sig import annogene
-from gwaslab.util.util_in_get_sig import getnovel
-from gwaslab.util.util_in_get_sig import _check_cis
-from gwaslab.util.util_in_get_sig import _check_novel_set
-from gwaslab.util.util_ex_phewwas import _extract_associations
-from gwaslab.util.util_in_fill_data import filldata
-from gwaslab.util.util_ex_run_clumping import _clump
-from gwaslab.util.util_ex_calculate_ldmatrix import tofinemapping
-from gwaslab.util.util_ex_run_susie import _run_susie_rss
-from gwaslab.util.util_ex_run_susie import _get_cs_lead
-from gwaslab.util.util_ex_ldsc import _estimate_h2_by_ldsc
-from gwaslab.util.util_ex_ldsc import _estimate_rg_by_ldsc
-from gwaslab.util.util_ex_ldsc import _estimate_h2_cts_by_ldsc
-from gwaslab.util.util_ex_ldsc import _estimate_partitioned_h2_by_ldsc 
-from gwaslab.util.util_ex_ldproxyfinder import _extract_ld_proxy
-from gwaslab.util.util_ex_run_magma import _run_magma
-from gwaslab.util.util_ex_infer_ancestry import _infer_ancestry
-from gwaslab.util.util_ex_run_prscs import _run_prscs
-from gwaslab.util.util_ex_calculate_prs import _calculate_prs
-from gwaslab.util.util_ex_run_scdrs import _run_scdrs
 from gwaslab.util.util_in_estimate_ess import _get_ess
-from gwaslab.util.util_abf_finemapping import abf_finemapping
-from gwaslab.util.util_abf_finemapping import make_cs
+from gwaslab.util.util_in_get_density import (
+    assigndensity,
+    getsignaldensity,
+    getsignaldensity2,
+)
+from gwaslab.util.util_in_get_sig import (
+    annogene,
+    getnovel,
+    getsig,
+    _check_cis,
+    _check_novel_set,
+)
+from gwaslab.util.util_in_fill_data import filldata
+from gwaslab.util.util_ex_phewwas import _extract_associations
 
+# ----- Utility: LDSC / PRS / LD -----
+from gwaslab.util.util_ex_calculate_ldmatrix import tofinemapping
+from gwaslab.util.util_ex_calculate_prs import _calculate_prs
+from gwaslab.util.util_ex_infer_ancestry import _infer_ancestry
+from gwaslab.util.util_ex_ldproxyfinder import _extract_ld_proxy
+from gwaslab.util.util_ex_ldsc import (
+    _estimate_h2_by_ldsc,
+    _estimate_h2_cts_by_ldsc,
+    _estimate_partitioned_h2_by_ldsc,
+    _estimate_rg_by_ldsc,
+)
+from gwaslab.util.util_ex_run_clumping import _clump
+from gwaslab.util.util_ex_run_magma import _run_magma
+from gwaslab.util.util_ex_run_prscs import _run_prscs
+from gwaslab.util.util_ex_run_scdrs import _run_scdrs
+from gwaslab.util.util_ex_run_susie import _get_cs_lead, _run_susie_rss
+
+# ----- Utility: Fine-mapping ABF -----
+from gwaslab.util.util_abf_finemapping import abf_finemapping, make_cs
+
+# ----- Base Data (Reference Panels / Common Data) -----
+from gwaslab.bd.bd_common_data import (
+    get_chr_list,
+    get_chr_to_number,
+    get_format_dict,
+    get_formats_list,
+    get_high_ld,
+    get_number_to_chr,
+)
 from gwaslab.bd.bd_get_hapmap3 import gethapmap3
-from gwaslab.bd.bd_common_data import get_chr_list
-from gwaslab.bd.bd_common_data import get_number_to_chr
-from gwaslab.bd.bd_common_data import get_chr_to_number
-from gwaslab.bd.bd_common_data import get_high_ld
-from gwaslab.bd.bd_common_data import get_format_dict
-from gwaslab.bd.bd_common_data import get_formats_list
 from gwaslab.bd.bd_path_manager import _path
-from gwaslab.bd.bd_get_hapmap3 import gethapmap3
 
-from gwaslab.hm.hm_casting import _align_with_mold
-from gwaslab.hm.hm_casting  import _merge_mold_with_sumstats_by_chrpos
-
-
-from gwaslab.viz.viz_plot_phe_heatmap import _gwheatmap
-from gwaslab.viz.viz_plot_mqqplot import mqqplot
-from gwaslab.viz.viz_plot_regional2 import _plot_regional
-from gwaslab.viz.viz_plot_trumpetplot import plottrumpet
+# ----- Visualization -----
+from gwaslab.viz.viz_plot_associations import _plot_associations
 from gwaslab.viz.viz_plot_compare_af import plotdaf
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
-from gwaslab.viz.viz_plot_associations import _plot_associations
-from gwaslab.viz.viz_plot_qqplot import _plot_qq
 from gwaslab.viz.viz_plot_density import _process_density
 from gwaslab.viz.viz_plot_effect import _plot_effect
+from gwaslab.viz.viz_plot_mqqplot import mqqplot
+from gwaslab.viz.viz_plot_phe_heatmap import _gwheatmap
+from gwaslab.viz.viz_plot_qqplot import _plot_qq
+from gwaslab.viz.viz_plot_regional2 import _plot_regional
+from gwaslab.viz.viz_plot_trumpetplot import plottrumpet
 
-from gwaslab.io.io_read_pipcs import _read_pipcs
+# ----- IO: Reading / Writing -----
 from gwaslab.io.io_load_ld import tofinemapping_using_ld
 from gwaslab.io.io_preformat_input import preformat
+from gwaslab.io.io_read_pipcs import _read_pipcs
 from gwaslab.io.io_to_formats import _to_format
-from gwaslab.io.io_to_pickle import _offload
-from gwaslab.io.io_to_pickle import _reload
+from gwaslab.io.io_to_pickle import _offload, _reload
 
 def add_doc(src):
     def deco(func):
@@ -290,7 +315,7 @@ class Sumstats():
     def build(self):
         if self._build =="Unknown" or self._build =="99":
             if self.meta["gwaslab"]["species"] == "homo sapiens":
-                self.infer_build()
+                self.log.warning("Build is unknown. .infer_build first.")
         return self._build
 
     @build.setter
@@ -353,26 +378,41 @@ class Sumstats():
                     verbose=True):
         """
         All-in-one function for Sumstats quality control (QC), which is a wrapper of separate functions including:
-             `fix_id` for SNPID and rsID check.
-             `fix_chr` for chromosome notation (CHR) check.
-             `fix_pos` for basepair position (POS) check.
-             `fix_allele` for allele notation (EA and NEA) check.
-             `check_sanity` for statistics sanity check and datatype check (BETA, SE, P and so forth).
-             `check_data_consistency` for checking if convitable data are consistent (for example if the calculated BETA/SE is close to the orginal Z in the file)
-             `normalize_allele` for indel normalization.
-             `remove_dup` for removal of multi-allelic variants, indels, and duplicated variants.
-             `sort_coordinate` for sorting the genomic coordinates.
-             `sort_column` for sorting the order of columns in the dataframe.
+        `fix_id` for SNPID and rsID check, `fix_chr` for chromosome notation (CHR) check,
+        `fix_pos` for basepair position (POS) check, `fix_allele` for allele notation (EA and NEA) check,
+        `check_sanity` for statistics sanity check and datatype check (BETA, SE, P and so forth),
+        `check_data_consistency` for checking if convitable data are consistent (e.g., if the calculated BETA/SE is close to the original Z),
+        `normalize_allele` for indel normalization, `remove_dup` for removal of multi-allelic variants, indels, and duplicated variants,
+        `sort_coordinate` for sorting the genomic coordinates, and `sort_column` for sorting the order of columns in the dataframe.
 
-        Args:
-            remove : whether to remove bad quality variants dtected in  fixchr, fixpos, and fixallele.
-            removedup : whether to remove duplicated or multi-allelic variants using remove_dup.
-            fixid_args : dict of keyword arguments.  The kwargs are passed to fix_id.
-            fixallele_args : dict of keyword arguments.  The kwargs are passed to fix_allele.
-            sanitycheckstats_args : dict of keyword arguments.  The kwargs are passed to check_sanity.
-            consistencycheck_args : dict of keyword arguments.  The kwargs are passed to check_data_consistency.
-            normalizeallele_args : dict of keyword arguments.  The kwargs are passed to normalize.
-            removedup_args : dict of keyword arguments.  The kwargs are passed to remove_dup.
+        Parameters
+        ----------
+        remove : bool, optional
+            Whether to remove bad quality variants detected in fixchr, fixpos, and fixallele.
+        removedup : bool, optional
+            Whether to remove duplicated or multi-allelic variants using remove_dup.
+        n_cores : int, optional
+            Number of cores to use for parallel processing.
+        fixid_args : dict, optional
+            Keyword arguments passed to `fix_id`.
+        removedup_args : dict, optional
+            Keyword arguments passed to `remove_dup`.
+        fixchr_args : dict, optional
+            Keyword arguments passed to `fix_chr`.
+        fixpos_args : dict, optional
+            Keyword arguments passed to `fix_pos`.
+        fixallele_args : dict, optional
+            Keyword arguments passed to `fix_allele`.
+        sanitycheckstats_args : dict, optional
+            Keyword arguments passed to `check_sanity`.
+        consistencycheck_args : dict, optional
+            Keyword arguments passed to `check_data_consistency`.
+        normalize : bool, optional
+            Whether to perform indel normalization.
+        normalizeallele_args : dict, optional
+            Keyword arguments passed to `normalize_allele`.
+        verbose : bool, optional
+            Whether to print progress information.
         """
         saved_args = {**locals()}
         ###############################################
@@ -421,16 +461,61 @@ class Sumstats():
               sanitycheckstats_args={},
               normalizeallele_args={}
               ):
-        
-        #Standard pipeline
-        ####################################################
-        #part 1 : basic_check
-        #    1.1 fix ID
-        #    1.2 remove duplication
-        #    1.3 standardization : CHR POS EA NEA
-        #    1.4 normalization : EA NEA
-        #    1.5 sanity check : BETA SE OR EAF N OR_95L OR_95H
-        #    1.6 sorting genomic coordinates and column order 
+        """
+        Standard pipeline for harmonizing sumstats including:
+        1. Basic check and standardization
+        2. Reference-based annotation and flipping
+        3. Liftover to target build
+
+        Parameters
+        ----------
+        basic_check : bool, optional
+            Whether to run basic QC pipeline (fixID, fixchr, fixpos, etc.)
+        ref_seq : str or None
+            Reference sequence file in fasta format for allele flipping
+        ref_rsid_tsv : str or None
+            Path to rsID TSV reference file
+        ref_rsid_vcf : str or None
+            Path to rsID VCF reference file
+        ref_infer : str or None
+            Reference VCF file for strand inference
+        ref_alt_freq : float or None
+            Allele frequency field name in VCF INFO for strand inference
+        ref_maf_threshold : float
+            MAF threshold (applied to reference VCF) for strand inference
+        maf_threshold : float
+            MAF threshold (applied to sumstats) for strand inference
+        ref_seq_mode : {'v', 's'}, optional
+            Reference sequence processing mode ('v' for vectorized, 's' for sequential)
+        n_cores : int, optional
+            Number of cores for parallel processing
+        remove : bool, optional
+            Whether to remove bad variants during QC
+        checkref_args : dict, optional
+            Arguments passed to check_ref
+        removedup_args : dict, optional
+            Arguments passed to remove_dup
+        assignrsid_args : dict, optional
+            Arguments passed to assign_rsid
+        inferstrand_args : dict, optional
+            Arguments passed to infer_strand
+        flipallelestats_args : dict, optional
+            Arguments passed to flip_allele_stats
+        liftover_args : dict, optional
+            Arguments passed to liftover
+        fixid_args : dict, optional
+            Arguments passed to fix_ID
+        fixchr_args : dict, optional
+            Arguments passed to fix_chr
+        fixpos_args : dict, optional
+            Arguments passed to fix_pos
+        fixallele_args : dict, optional
+            Arguments passed to fix_allele
+        sanitycheckstats_args : dict, optional
+            Arguments passed to check_sanity
+        normalizeallele_args : dict, optional
+            Arguments passed to normalize_allele
+        """
         saved_args = {**locals()}
 
         if basic_check is True:
@@ -546,7 +631,8 @@ class Sumstats():
 
         ## flip
         self.data =flipallelestats(aligned_data, log=self.log)
-
+    
+    @add_doc(_check_sumstats_qc_status)
     def check_sumstats_qc_status(self):
         return _check_sumstats_qc_status(self)
     ############################################################################################################
@@ -603,6 +689,7 @@ class Sumstats():
     def annotate_sumstats(self,**kwargs):
         from gwaslab.hm.hm_assign_rsid import _annotate_sumstats
         self.data = _annotate_sumstats(self.data,**kwargs)
+
     def assign_rsid2(self,**kwargs):
         from gwaslab.hm.hm_assign_rsid import _assign_rsid
         self.data = _assign_rsid(self.data,**kwargs)
@@ -630,11 +717,12 @@ class Sumstats():
         self.data = parallelrsidtochrpos(self.data,log=self.log,**kwargs)
 
     ############################################################################################################
-    
+    @add_doc(sortcoordinate)
     def sort_coordinate(self,**sort_args):
         self.data = sortcoordinate(self.data,log=self.log,**sort_args)
         self.meta["is_sorted"] = True
 
+    @add_doc(sortcolumn)
     def sort_column(self,**kwargs):
         self.data = sortcolumn(self.data,log=self.log,**kwargs)
     
@@ -777,15 +865,15 @@ class Sumstats():
         else:
             self.data = _search_variants(self.data,log=self.log,**kwargs)
     
-    def get_proxy(self,snplist, inplace=False, **kwargs):
-        if inplace is False:
-            new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _extract_ld_proxy(common_sumstats = new_Sumstats_object.data,
-                                                         snplist=snplist,
-                                                        log=new_Sumstats_object.log,
-                                                        **kwargs)
-            return new_Sumstats_object
-
+    @add_doc(_extract_ld_proxy)
+    def get_proxy(self,snplist, **kwargs):
+        proxy_variants = _extract_ld_proxy(common_sumstats = self.data,
+                                                            snplist=snplist,
+                                                            log=self.log,
+                                                            **kwargs)
+        return proxy_variants
+    
+    @add_doc(sampling)
     def random_variants(self,inplace=False,n=1,p=None,**kwargs):
         if inplace is True:
             self.data = sampling(self.data,n=n,p=p,log=self.log,**kwargs)
@@ -793,7 +881,8 @@ class Sumstats():
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
-        
+    
+    @add_doc(gethapmap3)
     def filter_hapmap3(self, inplace=False, **kwargs ):
         if inplace is True:
             self.data = gethapmap3(self.data, build=self.build,log=self.log, **kwargs)
@@ -811,11 +900,13 @@ class Sumstats():
     def check_af(self,ref_infer,**kwargs):
         self.data = parallelecheckaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_daf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_daf"] , ref_infer)
+    
     def infer_af(self,ref_infer,**kwargs):
         self.data = paralleleinferaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_af"] = ref_infer
         self.meta["gwaslab"]["references"]["ref_infer_af"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_af"] , ref_infer)
-    def maf_to_eaf(self,ref_infer,**kwargs):
+    
+    def infer_eaf_from_maf(self,ref_infer,**kwargs):
         self.data = _paralleleinferafwithmaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_maf"] = ref_infer
         self.meta["gwaslab"]["references"]["ref_infer_maf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_af"] , ref_infer)    
@@ -923,12 +1014,11 @@ class Sumstats():
     
     def get_associations(self, **kwargs):
         associations_full,associations_summary  = _extract_associations(self.data,**kwargs)
-        
         self.associations = associations_full
-        
         return associations_summary
+    
+    @add_doc(_plot_associations)
     def plot_associations(self,**kwargs):
-
         _plot_associations(self.associations, **kwargs)
 
     def check_cis(self, gls=False, **kwargs):
@@ -994,14 +1084,17 @@ class Sumstats():
                            log=self.log,
                            **kwargs)
         return output
-        
+    
+    @add_doc(_get_per_snp_r2)
     def get_per_snp_r2(self,**kwargs):
         self.data = _get_per_snp_r2(self.data, beta="BETA", af="EAF", n="N", log=self.log, **kwargs)
         #add data inplace
-        
+    
+    @add_doc(_get_ess)
     def get_ess(self, **kwargs):
         self.data = _get_ess(self.data, log=self.log, **kwargs)
-
+    
+    @add_doc(lambdaGC)
     def get_gc(self, mode=None, **kwargs):
         if mode is None:
             if "P" in self.data.columns:
@@ -1072,7 +1165,8 @@ class Sumstats():
                                              **kwargs)
         self.ldsc_rg = pd.concat([self.ldsc_rg, ldsc_rg],ignore_index=True)
         return self.ldsc_rg
-
+    
+    @add_doc(_estimate_h2_cts_by_ldsc)
     def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
@@ -1082,6 +1176,8 @@ class Sumstats():
                                                        verbose=verbose, 
                                                        **kwargs)
         return self.ldsc_h2_cts
+    
+    @add_doc(_estimate_partitioned_h2_by_ldsc)
     def estimate_partitioned_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
@@ -1097,6 +1193,7 @@ class Sumstats():
     def calculate_ld_matrix(self,**kwargs):
         self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping(self, study = self.meta["gwaslab"]["study_name"],**kwargs)
         #self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
+    
     def extract_ld_matrix(self,**kwargs):
         self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping_using_ld(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
 
@@ -1108,6 +1205,7 @@ class Sumstats():
     def get_cs_lead(self,**kwargs):
         return _get_cs_lead(self.pipcs,**kwargs)
     
+    @add_doc(_clump)
     def clump(self,**kwargs):
         self.clumps["clumps"], self.clumps["clumps_raw"], self.clumps["plink_log"] = _clump(self, 
                                                                                             log=self.log, 
@@ -1125,6 +1223,7 @@ class Sumstats():
 
     def plot_pipcs(self, region=None, locus=None, **kwargs):
         _plot_cs(self.pipcs, region=region,locus=locus, **kwargs)
+
 # to_format ###############################################################################################       
     @add_doc(_to_format)
     def to_format(self, path, build=None, verbose=True, **kwargs):

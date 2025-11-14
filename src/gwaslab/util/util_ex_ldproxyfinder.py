@@ -48,7 +48,38 @@ def _extract_with_ld_proxy( snplist=None,
                             windowsizekb=100,
                             ld_threshold=0.8
                             ):
-    ### Load vcf#######################################################################################
+    """
+    Find LD proxies for SNPs in the list using a VCF reference.
+
+    Parameters
+    ----------
+    snplist : list or None
+        List of SNP IDs to find proxies for.
+    common_sumstats : pandas.DataFrame or None
+        DataFrame with summary statistics for existing SNPs.
+    sumstats1 : pandas.DataFrame or None
+        DataFrame with summary statistics for SNPs to check.
+    vcf_path : str or None
+        Path to the VCF file for reference genotypes.
+    vcf_chr_dict : dict or None
+        Dictionary mapping chromosomes to VCF region strings.
+    tabix : str or None
+        Path to tabix executable.
+    log : gwaslab.g_Log.Log
+        Logging object.
+    verbose : bool
+        If True, write detailed logs.
+    windowsizekb : int
+        Size in kb for the flanking region around each SNP.
+    ld_threshold : float
+        Minimum R^2 value to consider a proxy valid.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Extracted summary statistics including matched proxies.
+    """
+    
     log.write("Start to load reference genotype...", verbose=verbose)
     log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)
     if tabix is None:
@@ -147,6 +178,38 @@ def _extract_ld_proxy(  snplist=None,
                         windowsizekb=100,
                         ld_threshold=0.8
                             ):
+    """
+    Find LD proxies within the sumstats for SNPs in the list using a VCF reference.
+
+    Parameters
+    ----------
+    snplist : list or None
+        List of full SNPIDs to find proxies for.
+    vcf_path : str or None
+        Path to the VCF file for reference genotypes.
+    verbose : bool
+        If True, write detailed logs.
+    windowsizekb : int
+        Size in kb for the flanking region around each SNP.
+    ld_threshold : float
+        Minimum R^2 value to consider a proxy valid.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Extracted summary statistics including matched proxies sorted by LD strength.
+
+    Less used parametrs
+    -------
+    vcf_chr_dict : dict or None
+        Dictionary mapping chromosomes to VCF region strings.
+    log : gwaslab.g_Log.Log
+        Logging object.
+    tabix : str or None
+        Path to tabix executable.
+    common_sumstats : pandas.DataFrame or None
+        DataFrame with summary statistics for existing SNPs.
+    """
     ### Load vcf#######################################################################################
     log.write("Start to load reference genotype...", verbose=verbose)
     log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)
@@ -207,9 +270,13 @@ def _extract_ld_proxy(  snplist=None,
             #row_with_rsq = pd.DataFrame(row_with_rsq)
             ld_proxies = pd.concat([ld_proxies, flanking_sumstats], ignore_index=True)
                     
+    if len(ld_proxies)==0:
+        log.write( "No proxy variants were found at given LD rsq threshold.")
+    else:
+        log.write("Finished loading reference genotype successfully!", verbose=verbose)
+        return ld_proxies.sort_values(by="RSQ",ascending=False)
 
-    log.write("Finished loading reference genotype successfully!", verbose=verbose)
-    return ld_proxies.sort_values(by="RSQ",ascending=False)
+        
 
 
 def _get_rsq(    row,

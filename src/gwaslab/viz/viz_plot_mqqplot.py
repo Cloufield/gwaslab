@@ -255,8 +255,9 @@ def mqqplot(insumstats,
         Plotting mode. Options:
         - 'm' : Manhattan plot
         - 'mqq' : 'm' and 'qq' can be combined to create Manhattan-QQ layout (default)
-    scatter_args : dict, optional
-        Arguments for scatter plot styling. Default is None. (Used in 'm', 'r' modes)
+    scatter_args : {dict, None}, optional
+        Arguments for scatter plot styling. Banned arguments include "edgecolor","edgecolors", "linewidth", "ax","palette","hue","data","legend","style","size","sizes","zorder","s".
+        Default is None.
     qq_scatter_args : dict, optional
         Arguments for QQ plot scatter styling. Default is None. (Used in 'qq' mode)
     qq_line_color : str, default='grey'
@@ -272,20 +273,20 @@ def mqqplot(insumstats,
         Ratio for MQQ plot layout. (Used in 'mqq', 'qqm' modes)
     windowsizekb : int, default=500
         Window size in kb for obtainning significant variant. 
-    anno : boolean, str or 'GENENAME', default=None.
+    anno :{None, bool, str, "GENENAME"}, default=None
         Specify which data to use for annotation. Default is None. 
         anno options:
-            None: no annotation
-            True: annotate variants with chromosome and position like chr:pos
-            'GENENAME': annotate variants with closest gene names
-            str: annotate variants with values in Column with the header 
+            - None: no annotation
+            - True: annotate variants with chromosome and position like chr:pos
+            - 'GENENAME': annotate variants with closest gene names
+            - str: annotate variants with values in Column with the header 
     anno_set : list, optional
         Set of variants IDs to annotate. Default is None. 
     anno_alias : dict, optional
         Dictionary mapping SNP IDs to custom annotation labels. Default is None. 
-    anno_d : dict, optional
-       Dictionary mapping annotation indices to custom positioning options. 
-       For example, {0:"l"} means adjust the direction of the 1st arm end to left. Default is empty dict. Default is None. 
+    anno_d : {dict, None}, optional
+       Dictionary mapping annotation indices to custom positioning options ( "l" or "r").
+       For example, {"0":"l"} means adjust the direction of the 1st arm end to left. Default is None. 
     anno_args : dict, optional
         ictionary of default styling arguments for annotations. Default is None. 
     anno_args_single : dict, optional
@@ -311,9 +312,10 @@ def mqqplot(insumstats,
     arm_scale_d : dict, optional
         Dictionary mapping annotation indices to custom arm scaling factors.
     cut : float, default=0
-        Cut value for shrinking variants above threshold. 
+        Threshold for shrinking extremely large -log10(P) values. Variants with MLOG10P greater than this threshold will be shrunk by a factor of `cutfactor`. 
+        Useful when the top signal is very strong and dominates the plot.
     skip : float, default=0
-        Skip variants with -log10(P) < skip. Very useful for quick plotting. 
+        Minimum -log10(P) value required for a variant to be plotted. Variants with MLOG10P < skip will be omitted. This is helpful for fast plotting or focusing on stronger signals.
     ystep : float, default=0
         Step size for y-axis. 
     ylabels : list, optional
@@ -392,7 +394,7 @@ def mqqplot(insumstats,
     drop_chr_start : bool, default=False
         Whether to drop chromosome start. 
     title : str, optional
-        Plot title. Default is None.
+        Plot title. Default is None. Only used when both Manhattan and QQ plot are created. 
     mtitle : str, optional
         Title for Manhattan plot. Default is None. 
     mtitle_pad : float, default=1.08
@@ -422,7 +424,7 @@ def mqqplot(insumstats,
     colors : list, default=['#597FBD','#74BAD3']
         Color palette for plot. 
     marker_size : tuple, default=(5,20)
-        Size range for markers.
+        Size range for markers. Passed to sns.scatterplot(). Pass like [20,20] for a fixed size. Overwrite "s" in scatter_args.
     use_rank : bool, default=False
         Whether to use rank for plotting.
     verbose : bool, default=True
@@ -538,7 +540,7 @@ def mqqplot(insumstats,
     region_anno_bbox_args = _update_args(region_anno_bbox_args, {"ec":"None","fc":"None"})
     region_ld_colors = _update_arg(region_ld_colors, ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"])
     region_ld_colors_m = _update_arg(region_ld_colors_m,  ["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"])
-    region_title_args = _update_args(region_title_args,  {"size":fontsize})
+    region_title_args = _update_args(region_title_args,  {"size":title_fontsize})
 
     font_family = _update_arg(font_family, fontfamily)
     cbar_fontsize = _update_arg(cbar_fontsize, fontsize)
@@ -933,7 +935,7 @@ def mqqplot(insumstats,
                 scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:len(region_ref)])}
                 style="SHAPE"
 
-        explicit = {"edgecolor","edgecolors", "linewidth", "ax","palette","hue","data","legend","style","size","sizes","zorder"}
+        explicit = {"edgecolor","edgecolors", "linewidth", "ax","palette","hue","data","legend","style","size","sizes","zorder","s"}
         scatter_args = {k: v for k, v in scatter_args.items() if k not in explicit}
         ## if highlight 
         highlight_i = pd.DataFrame()
@@ -988,6 +990,10 @@ def mqqplot(insumstats,
                 s = "DENSITY"
                 to_plot = sumstats.sort_values("DENSITY")
                 to_plot["DENSITY_hue"] = to_plot["DENSITY"].astype("float")
+                if type(density_trange) is list:
+                    density_trange = tuple(density_trange)
+                if type(density_range) is list:
+                    density_range = tuple(density_range)
                 plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]<=density_threshold,:], x='i', y='scaled_P',
                        hue=hue,
                        palette= density_tpalette,

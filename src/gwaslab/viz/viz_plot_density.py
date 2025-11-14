@@ -11,26 +11,28 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     Parameters
     ---
     bwindowsizekb : int, default=100
-        Window size in kb for Brisbane plot density calculation. (Used in 'b' mode)
+        Window size in kb for Brisbane plot density calculation.
     density_color : bool, default=False
-        Whether to color Brisbane plot points by density. (Used in 'b' mode)
+        Whether to color Brisbane plot points by density. 
     density_range : tuple, default=(0,15)
-        Color range for density plot. (Used in 'b' mode)
+        Color range for density plot. 
     density_trange : tuple, default=(0,10)
-        Threshold range for density plot. (Used in 'b' mode)
+        Threshold range for density plot.  For hue_norm.
     density_threshold : int, default=5
-        Threshold for density coloring. (Used in 'b' mode)
+        Threshold for density coloring. Different coloring makes it clear to see low and high density regions.
+        Above density_threshold, coloring using density_range and density_palette. 
+        Below density_threshold, coloring using density_trange and density_tpalette. 
     density_tpalette : str, default='Blues'
-        Palette for thresholded density colors. (Used in 'b' mode)
+        Palette for thresholded density colors.
     density_palette : str, default='Reds'
-        Palette for density colors. (Used in 'b' mode)
-    anno : boolean, str or 'GENENAME', default=None.
+        Palette for density colors. 
+    anno : boolean, str or 'GENENAME', default=None
         Specify which data to use for annotation. Default is None. 
         anno options:
-            None: no annotation
-            True: annotate variants with chromosome and position like chr:pos
-            'GENENAME': annotate variants with closest gene names
-            str: annotate variants with values in Column with the header 
+        - None: no annotation
+        - True: annotate variants with chromosome and position like chr:pos
+        - 'GENENAME': annotate variants with closest gene names
+        - str: annotate variants with values in Column with the header
     anno_set : list, optional
         Set of variants IDs to annotate. Default is None. 
     anno_alias : dict, optional

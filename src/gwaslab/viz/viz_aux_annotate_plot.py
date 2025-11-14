@@ -77,7 +77,7 @@ def annotate_single(
     to_annotate : pandas.DataFrame
         DataFrame containing variants to annotate with their positions and p-values
     anno_d : dict, optional
-        Dictionary mapping annotation indices to custom positioning options. For example, {0:"l"} means adjust the direction of the 0th to left. Default is empty dict
+        Dictionary mapping annotation indices to custom positioning options. For example, {"0":"l"} means adjust the direction of the 0th to left. Default is empty dict
     anno_alias : dict, optional
         Dictionary mapping SNP IDs to custom annotation labels. Default is empty dict
     anno_style : str, optional
@@ -138,6 +138,9 @@ def annotate_single(
     matplotlib.axes.Axes
         Modified axis object with annotations added
     """
+    if anno_d is not None:
+        anno_d = {int(key): value for key, value in anno_d.items()}
+
     if arrow_kwargs is None:
         arrow_kwargs=dict()
         

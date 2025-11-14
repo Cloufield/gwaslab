@@ -112,14 +112,6 @@ def assigndensity(insumstats,
     
     Parameters
     ----------
-    sig_sumstats : pandas.DataFrame
-        Summary statistics DataFrame containing significant variants.
-    id : str, optional
-        Column name containing variant identifiers. Default is "SNPID".
-    chrom : str, optional
-        Column name containing chromosome numbers. Default is "CHR".
-    pos : str, optional
-        Column name containing genomic positions. Default is "POS".
     bwindowsizekb : int, optional
         Window size in kilobases for density calculation. Default is 100.
     verbose : bool, optional
@@ -129,6 +121,17 @@ def assigndensity(insumstats,
     -------
     pandas.Series
         Assigned density values for each variant.
+
+    Less used parameter
+    --------
+    sig_sumstats : pandas.DataFrame
+        Summary statistics DataFrame containing significant variants.
+    id : str, optional
+        Column name containing variant identifiers. Default is "SNPID".
+    chrom : str, optional
+        Column name containing chromosome numbers. Default is "CHR".
+    pos : str, optional
+        Column name containing genomic positions. Default is "POS".
     """
 
     large_number = 1000000000
@@ -161,23 +164,36 @@ def getsignaldensity2(
     bwindowsizekb=100,
     log=None,
     verbose=True
-):
+    ):
     """
-    Efficiently calculate local signal density (number of nearby variants)
-    within ±window using binary search (O(n log n)).
+    Calculate signal density in genomic data using a sliding window approach.
+
+    This function computes signal density by analyzing the distribution of variants
+    across the genome within specified window sizes. It provides statistical summaries
+    of density values including mean, median, standard deviation, and maximum values.
 
     Parameters
     ----------
-    insumstats : pd.DataFrame
-        Must contain chromosome and position columns.
-    bwindowsizekb : int, default=100
-        Window size (kb) for counting neighbors on same chromosome.
+
+    bwindowsizekb : int, optional
+        Window size in kilobases for density calculation. Default is 100.
+    verbose : bool, optional
+        Whether to display progress messages. Default is True.
 
     Returns
     -------
-    pd.Series of density values.
-    """
+    pandas.Series
+        Calculated density values for each variant.
 
+    Less used parameter
+    --------
+    id : str, optional
+        Column name containing variant identifiers. Default is "SNPID".
+    chrom : str, optional
+        Column name containing chromosome numbers. Default is "CHR".
+    pos : str, optional
+        Column name containing genomic positions. Default is "POS".
+    """
     if log is None:
         class Dummy:
             def write(self, *args, **kwargs): pass
