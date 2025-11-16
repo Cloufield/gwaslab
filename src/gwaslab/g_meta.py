@@ -158,10 +158,12 @@ def _set_qc_status(self, args):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     self.meta["gwaslab"]["basic_check"]["run"] = True
     self.meta["gwaslab"]["basic_check"]["last_run_time"] = True
-    self.meta["gwaslab"]["basic_check"]["last_run_time"] = args 
+    args_to_save = {k: v for k, v in args.items() if k != "self"}
+    self.meta["gwaslab"]["basic_check"]["args"] = args_to_save
 
 def _set_harmonization_status(self, args):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     self.meta["gwaslab"]["harmonize"]["run"]= True
     self.meta["gwaslab"]["harmonize"]["last_run_time"] = True
-    self.meta["gwaslab"]["harmonize"]["last_run_time"] = args 
+    args_to_save = {k: v for k, v in args.items() if k != "self"}
+    self.meta["gwaslab"]["harmonize"]["args"] = args_to_save

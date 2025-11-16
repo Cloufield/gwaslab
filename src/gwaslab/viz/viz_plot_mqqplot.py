@@ -371,8 +371,8 @@ def mqqplot(insumstats,
         Color for pinpointed variants. (Used in all modes)
     stratified : bool, default=False
         Whether to create stratified QQ plots by MAF. (Used in 'qq' mode)
-    maf_bins : list, optional
-        MAF bins for stratified QQ plots. Default is None. (Used in 'qq' mode)
+    maf_bins : list of lists, optional
+        Bins for MAF stratification [[lower1, upper1], ...]. Default is [[0, 0.01], [0.01, 0.05], [0.05, 0.25],[0.25,0.5]]
     maf_bin_colors : list, optional
         Colors for MAF bins. Default is None. (Used in 'qq' mode)
     gc : bool, default=True
@@ -780,7 +780,6 @@ def mqqplot(insumstats,
                                                     pos=pos, 
                                                     verbose=verbose, 
                                                     log=log)
-        
         lines_to_plot = pd.Series(lines_to_plot.to_list() + [bmean, bmedian])
     
     else:
@@ -804,7 +803,6 @@ def mqqplot(insumstats,
     sumstats = sumstats.loc[sumstats["scaled_P"]>=skip,:]
     garbage_collect.collect()
     
-
     # shrink variants above cut line #########################################################################################
     try:
         sumstats["scaled_P"], maxy, maxticker, cut, cutfactor,ylabels_converted, lines_to_plot = _cut(series = sumstats["scaled_P"], 

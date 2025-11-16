@@ -5,16 +5,15 @@ from .hm_assign_rsid import _annotate_sumstats
 
 def _infer_strand_with_annotation(
     sumstats: pd.DataFrame,
+    path: str | None = None,
     vcf_path: str | None = None,
-    tsv_path: str = "gwaslab_sumstats_lookup_table.txt.gz",
+    tsv_path: str | None = None,
     assign_cols: tuple = ("AF",),
     chr_dict: dict | None = None,
     threads: int = 6,
     reuse_lookup: bool = True,
     convert_to_bcf: bool = False,
     strip_info: bool = True,
-    overwrite: bool = False,
-    is_id_rsid: bool = True,
     chrom: str = "CHR",
     pos: str = "POS",
     ea: str = "EA",
@@ -34,12 +33,12 @@ def _infer_strand_with_annotation(
     
     Parameters
     ----------
-    sumstats : pd.DataFrame
-        GWAS summary statistics DataFrame.
-    vcf_path : str or None
-        Path to VCF file for annotation.
-    tsv_path : str
-        Path to TSV lookup table.
+    path : str or None, optional
+        Path to reference file (VCF/BCF or TSV). Overrides `tsv_path`.
+    vcf_path : str or None, optional
+        Path to VCF/BCF file. Overrides `path` and `tsv_path`.
+    tsv_path : str or None, optional
+        Path to precomputed lookup TSV file. If not provided, generated from VCF.
     assign_cols : tuple
         Columns to assign during annotation (default: ("AF",)).
     chr_dict : dict or None
@@ -52,20 +51,6 @@ def _infer_strand_with_annotation(
         Whether to convert VCF to BCF.
     strip_info : bool
         Whether to strip INFO fields.
-    overwrite : bool
-        Whether to overwrite existing annotations.
-    is_id_rsid : bool
-        Whether ID is rsID.
-    chrom, pos, ea, nea : str
-        Column names for genomic coordinates and alleles.
-    eaf : str
-        Column name for effect allele frequency in sumstats.
-    flipped_col : str
-        Column name indicating if alleles were flipped.
-    strand_col : str
-        Column name to store strand information.
-    log : Log
-        Logging object.
     verbose : bool
         Verbosity flag.
     
@@ -74,9 +59,13 @@ def _infer_strand_with_annotation(
     pd.DataFrame
         Annotated and strand-inferred summary statistics.
     """
+
+    if convert_to_bcf == True:
+        strip_info = False
     # First annotate with AF
     annotated_sumstats = _annotate_sumstats(
         sumstats=sumstats,
+        path=path,
         vcf_path=vcf_path,
         tsv_path=tsv_path,
         assign_cols=assign_cols,
@@ -86,8 +75,6 @@ def _infer_strand_with_annotation(
         pos=pos,
         ea=ea,
         nea=nea,
-        overwrite=overwrite,
-        is_id_rsid=is_id_rsid,
         reuse_lookup=reuse_lookup,
         convert_to_bcf=convert_to_bcf,
         strip_info=strip_info,
@@ -109,8 +96,6 @@ def _infer_strand_with_annotation(
         log=log,
         verbose=verbose,
     )
-
-
 
 def _infer_strand(
     sumstats: pd.DataFrame,
@@ -136,12 +121,6 @@ def _infer_strand(
     
     Parameters
     ----------
-    sumstats : pd.DataFrame
-        GWAS summary statistics DataFrame containing at least CHR, POS, EA, NEA, EAF, RAF, and FLIPPED columns.
-    chrom, pos, ea, nea : str
-        Column names for chromosome, position, effect allele, and non-effect allele.
-    eaf : str
-        Column name for effect allele frequency (from sumstats).
     raf : str
         Column name for reference allele frequency (from reference file).
     flipped_col : str
@@ -370,9 +349,13 @@ def _infer_strand(
                 [str(i) for i in range(10)],
                 ["4"] * 10
             )
-    
+            
     # Handle ambiguous cases (NA in FLIPPED column)
-    ambiguous_mask = sumstats[raf].isna() & valid_indel_with_af_mask & valid_palindromic_with_af_mask
+    ambiguous_mask = sumstats[raf].isna()
+    if valid_indel_mask.any():
+        ambiguous_mask = ambiguous_mask & valid_indel_with_af_mask
+    if valid_palindromic_mask.any():
+        ambiguous_mask = ambiguous_mask & valid_palindromic_with_af_mask
     if ambiguous_mask.any():
         sumstats.loc[ambiguous_mask, strand_col] = "?"
         # Update STATUS code (last character = '8' for no ref data)

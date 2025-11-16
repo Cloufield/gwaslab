@@ -78,7 +78,11 @@ def preformat(sumstats,
     Parameters
     ----------
     sumstats : str or pandas.DataFrame
-        Input data path or DataFrame.
+        Input summary statistics, provided either as a file path or a DataFrame.
+        When summary statistics are split by chromosome, a single path pattern
+        may be supplied using the `@` symbol as a placeholder for the chromosome
+        number. For example: "gwas/chr@.sumstats.gz" will load
+        "gwas/chr1.sumstats.gz", "gwas/chr2.sumstats.gz", ... automatically.
     fmt : str, optional
         Format name to get predefined mapping if provided. (e.g., 'gwaslab', 'vcf').
     tab_fmt : str, default: 'tsv'
@@ -198,8 +202,11 @@ def preformat(sumstats,
     include : list, optional
         Columns to include explicitly. Columns should be passed as GWASLab built-in HEADER keywords in uppercase like BETA, DIRECTION. Not original headers.
     """
+    
     if readargs is None:
         readargs = dict()
+
+    readargs = readargs | kwreadargs
     
     if log is None:
         log = Log()

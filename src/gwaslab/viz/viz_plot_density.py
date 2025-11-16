@@ -82,10 +82,12 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     
     
     """
-    if "b" in mode and "DENSITY" not in sumstats.columns:
+    sumstats = sumstats.sort_values([chrom, pos], ignore_index=True)
 
+    if "b" in mode and "DENSITY" not in sumstats.columns:
+        
         sumstats["DENSITY"] = getsignaldensity2(insumstats=sumstats,
-                                                id="SNPID",
+                                                snpid="SNPID",
                                                 chrom=chrom,
                                                 pos=pos,
                                                 bwindowsizekb=bwindowsizekb,

@@ -36,6 +36,9 @@ def filtervalues(sumstats, expr, remove=False, verbose=True, log=Log()):
         If True, removes variants meeting the condition
     verbose : bool, default=True
         If True, writes progress to log
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
     
     Returns:
     --------
@@ -57,8 +60,6 @@ def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=
     
     Parameters:
     -----------
-    interval : dict, default={}
-        Dictionary of intervals (not used in current implementation)
     lt : dict, default={}
         Dictionary of {column: threshold} for lower bounds (variant values < threshold will be removed)
     gt : dict, default={}
@@ -69,7 +70,9 @@ def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=
         If True, removes variants meeting the condition
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
     Returns:
     --------
     pandas.DataFrame
@@ -108,7 +111,9 @@ def filterin(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log(
         If True, removes variants meeting the condition
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
     Returns:
     --------
     pandas.DataFrame
@@ -149,7 +154,10 @@ def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, b
         Genome build version (19 or 38) for high LD regions
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -257,7 +265,10 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
         Genome build version (19 or 38) for high LD regions
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+        
     Returns:
     --------
     pandas.DataFrame
@@ -424,6 +435,9 @@ def sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
         Fraction of variants to sample (alternative to n)
     verbose : bool, default=True
         If True, writes progress to log
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
     **kwargs : dict
         Additional arguments for pandas.DataFrame.sample
     
@@ -468,7 +482,10 @@ def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **
         Size of flanking region in kilobases
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -505,7 +522,10 @@ def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True, log=Log
         Size of flanking region in kilobases
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -561,7 +581,10 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, lo
         Size of flanking region in kilobases
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -612,7 +635,10 @@ def _filter_palindromic(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verb
         Column name for non-effect allele
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -645,7 +671,10 @@ def _filter_indel(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=Tr
         Column name for non-effect allele
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -676,7 +705,10 @@ def _filter_snp(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True
         Column name for non-effect allele
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -713,7 +745,10 @@ def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None , upper=None, buil
         "xmhc" for extended MHC region, "hla" or "mhc" for classical HLA region
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -781,7 +816,10 @@ def _exclude_sexchr(sumstats, chrom="CHR", pos="POS", sexchrs=[23,24,25], log=Lo
         List of sex chromosome numbers to exclude
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -815,7 +853,10 @@ def _extract(sumstats, extract=None, id_use="SNPID", log=Log(), verbose=True ):
         Column name containing variant IDs
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -839,7 +880,10 @@ def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
         Column name containing variant IDs
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame
@@ -861,7 +905,10 @@ def _filter_region(sumstats, region=None, chrom="CHR", pos="POS", log=Log(), ver
         Genomic region to filter [chr, start, end]
     verbose : bool, default=True
         If True, writes progress to log
-    
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+
     Returns:
     --------
     pandas.DataFrame

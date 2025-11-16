@@ -158,7 +158,7 @@ def assigndensity(insumstats,
 
 def getsignaldensity2(
     insumstats,
-    id="SNPID",
+    snpid="SNPID",
     chrom="CHR",
     pos="POS",
     bwindowsizekb=100,
@@ -203,7 +203,7 @@ def getsignaldensity2(
     wsize = bwindowsizekb * 1000
 
     # Select and copy only necessary columns
-    sumstats = insumstats[[id, chrom, pos]].copy()
+    sumstats = insumstats[[snpid, chrom, pos]].copy()
     sumstats = sumstats.sort_values([chrom, pos], ignore_index=True)
 
     densities = np.zeros(len(sumstats), dtype=np.int32)
@@ -229,7 +229,7 @@ def getsignaldensity2(
     bmedian = sumstats["DENSITY"].median()
     bsd = sumstats["DENSITY"].std()
     bmax = sumstats["DENSITY"].max()
-    bmaxid = sumstats.loc[sumstats["DENSITY"].idxmax(), id]
+    bmaxid = sumstats.loc[sumstats["DENSITY"].idxmax(), snpid]
 
     log.write(f" -Mean : {bmean:.3f} signals per {bwindowsizekb} kb", verbose=verbose)
     log.write(f" -SD : {bsd:.3f}", verbose=verbose)
@@ -237,4 +237,4 @@ def getsignaldensity2(
     log.write(f" -Max : {bmax} signals per {bwindowsizekb} kb at variant {bmaxid}", verbose=verbose)
     log.write("Finished calculating signal DENSITY successfully!", verbose=verbose)
 
-    return sumstats["DENSITY"]
+    return sumstats["DENSITY"].values

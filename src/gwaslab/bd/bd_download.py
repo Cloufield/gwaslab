@@ -12,6 +12,27 @@ from copy import deepcopy
 from pathlib import Path
 from gwaslab.g_version import _get_version
 
+"""
+Update configuration by deep-merging metadata into config["downloaded"][key].
+
+FUNCTION CORRELATION:
+add_local_data() → update_description() → _deep_merge() → config.json
+download_ref() → update_record() → config.json
+remove_local_record() → direct config deletion
+
+Key workflow:
+1. add_local_data() prepares metadata → passes to update_description()
+2. update_description() uses _deep_merge() to safely update config
+3. download_ref() uses update_record() for atomic path registration
+4. remove_local_record() directly manipulates config structure
+5. All operations maintain consistent config.json structure
+
+This creates a cohesive reference management system where:
+- Configuration updates flow through standardized pathways
+- Path handling is consistent across all operations
+- Metadata integrity is maintained through deep merging
+- Local and downloaded resources share the same configuration schema
+"""
 #### config ##############################################################################################
 # config.json
 # {
@@ -243,7 +264,7 @@ def download_ref(name,
         
         local_filename, from_dropbox = url_to_local_file_name(local_filename, url, from_dropbox)
 
-        local_path = directory + local_filename
+        local_path = os.path.join(directory, local_filename)
         log.write(" -Downloading to:",local_path)
         
         # if existing in default path
@@ -268,15 +289,16 @@ def download_ref(name,
                     tbi_url = dicts[name]["tbi"]["url"]
                 try:
                     log.write(" -Downloading to:",local_path+".tbi")
-                    if search_local(local_path+".tbi") == True:
-                        log.write(" -File {} exists.".format(local_path+".tbi"))
+                    tbi_path = local_path + ".tbi"
+                    if search_local(tbi_path) == True:
+                        log.write(" -File {} exists.".format(tbi_path))
                         if overwrite == True:
                             log.write(" -Overwriting the existing file.")
-                            download_file(tbi_url,local_path+".tbi")
+                            download_file(tbi_url, tbi_path)
                     else:
-                        download_file(tbi_url,local_path+".tbi")
+                        download_file(tbi_url, tbi_path)
 
-                    update_record("downloaded", name, "tbi", "local_path", value=local_path+ ".tbi")
+                    update_record("downloaded", name, "tbi", "local_path", value=tbi_path)
                 except:
                     pass
         
@@ -285,11 +307,12 @@ def download_ref(name,
             log.write(" -gunzip :",local_path)
             try:
                 with gzip.open(local_path, 'rb') as f_in:
-                    with open(local_path[:-3], 'wb') as f_out:
+                    decompressed_path = local_path[:-3]
+                    with open(decompressed_path, 'wb') as f_out:
                         shutil.copyfileobj(f_in, f_out)
-                        update_record("downloaded",name, "local_path", value=local_path[:-3])
+                        update_record("downloaded", name, "local_path", value=decompressed_path)
             except:
-                    pass
+                pass
         update_description(name, dicts[name])
         log.write("Downloaded ",name," successfully!")
     else:
@@ -422,6 +445,114 @@ def update_record(*keys, value, log=Log()):
     # Write back
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=4, ensure_ascii=False)
+
+def add_local_data(keyword, 
+                   local_path, 
+                   format,
+                   description,
+                   md5sum, 
+                   suggested_use,
+                   tbi,
+                   csi,
+                   log=Log()):
+    """
+    Add local data file to configuration without downloading.
+    
+    Parameters
+    ----------
+    keyword : str
+        Reference identifier for the local data
+    local_path : str
+        Absolute path to the local data file
+    format : str
+        Data format identifier (e.g., 'vcf', 'bcf', 'plink', 'gtf', 'fasta','tsv')
+    description : str
+        Human-readable description of the data
+    md5sum : str
+        MD5 checksum for file integrity verification
+    suggested_use : str
+        Description of typical use cases for this data
+    tbi : str, optional
+        Path to corresponding .tbi index file (if applicable)
+    csi : str, optional
+        Path to corresponding .csi index file (if applicable)
+    log : gwaslab.g_Log.Log, optional
+        Logger instance for recording operations
+    
+    Returns
+    -------
+    bool
+        True if successfully added, False otherwise
+    """
+    # Verify file exists
+    if not os.path.exists(local_path):
+        log.write(f"Error: Local file {local_path} does not exist.")
+        return False
+    
+    # Prepare metadata structure
+    meta = {
+        "local_path": local_path,
+        "url": "",
+        "description": description,
+        "suggested_use": suggested_use,
+        "md5sum": md5sum,
+        "format": format
+    }
+    
+    # Add TBI index if provided
+    if tbi and os.path.exists(tbi):
+        meta["tbi"] = {"local_path": tbi}
+    if csi and os.path.exists(tbi):
+        meta["csi"] = {"local_path": csi}
+
+    # Update configuration with metadata
+    update_description(keyword, meta, log=log)
+    log.write(f"Successfully registered local data '{keyword}' in configuration")
+    return True
+
+def remove_local_record(keyword, log=Log()):
+    """
+    Remove a local data record from configuration without deleting the physical file.
+    
+    Parameters
+    ----------
+    keyword : str
+        Reference identifier for the data to remove from configuration
+    log : gwaslab.g_Log.Log, optional
+        Logger instance for recording operations
+    
+    Returns
+    -------
+    bool
+        True if successfully removed from configuration, False otherwise
+    """
+    config_path = options.paths["config"]
+    
+    # Load config
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except Exception:
+        log.write("Error: Could not load config file.")
+        return False
+    
+    # Check if the keyword exists in downloaded records
+    if "downloaded" not in cfg or keyword not in cfg["downloaded"]:
+        log.write(f"Error: No record found for '{keyword}' in configuration.")
+        return False
+    
+    # Remove the record
+    del cfg["downloaded"][keyword]
+    
+    # Write back the updated config
+    try:
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=4, ensure_ascii=False)
+        log.write(f"Successfully removed record '{keyword}' from configuration")
+        return True
+    except Exception as e:
+        log.write(f"Error: Failed to update config file - {str(e)}")
+        return False
 
 def scan_downloaded_files(log=Log(), verbose=True):
     """
@@ -665,13 +796,14 @@ def update_formatbook(log=Log()):
 
 def list_formats(log=Log()):
     '''
-    Display all available formats in the formatbook.
+    Display all available formats in the formatbook for GWASLab.
     '''
     data_path = options.paths["formatbook"]
     book=json.load(open(data_path))
     available_formats = list(book.keys())
     available_formats.sort()
     log.write("Available formats:",",".join(available_formats))    
+    return available_formats
 
 def check_format(fmt,log=Log()):
     '''
@@ -690,3 +822,4 @@ def check_format(fmt,log=Log()):
     log.write("") 
     for i in book[fmt].values():
         log.write(i,end="")
+    return book[fmt]

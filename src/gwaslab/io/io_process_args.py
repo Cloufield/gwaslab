@@ -97,3 +97,21 @@ def resolve_overlapping_kwargs(strategy="prefer_explicit", verbose=False):
             return func(**bound_args, **kwargs)
         return wrapper
     return decorator
+
+def remove_overlapping_kwargs(kwargs_dict, protected_keys):
+    """
+    Return a new dict with keys in `protected_keys` removed.
+
+    Parameters
+    ----------
+    kwargs_dict : dict
+        Original kwargs dictionary.
+    protected_keys : Iterable[str]
+        Keys that should NOT appear in the returned dict.
+
+    Returns
+    -------
+    dict
+        A cleaned dictionary with protected_keys removed.
+    """
+    return {k: v for k, v in kwargs_dict.items() if k not in protected_keys}

@@ -57,7 +57,7 @@ def _plot_qq(
     stratified : bool, default=False
         Whether to stratify by MAF (Minor Allele Frequency).
     maf_bins : list of tuples, optional
-        Bins for MAF stratification [(lower1, upper1), ...].
+        Bins for MAF stratification [[lower1, upper1], ...].
     maf_bin_colors : list, optional
         Colors for each MAF bin.
     qtitle : str, optional

@@ -457,16 +457,12 @@ def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
 
     Parameters
     ----------
-    sumstats : pd.DataFrame
-        Input GWAS summary statistics.
     snpid : str
         Column name for SNPID.
     overwrite : bool
         Whether to overwrite existing values.
     verbose : bool, optional
         Whether to print progress.
-    log : Log
-        Log object for output.
 
     Returns
     -------
@@ -523,8 +519,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         String encoding the deduplication rules; may include one or more of:
         - 'ds' : Identify duplicates using SNPID.
         - 'dr' : Identify duplicates using rsID.
-        - 'dc' : Identify duplicates using chromosome, position, effect allele,
-        and non-effect allele.
+        - 'dc' : Identify duplicates using chromosome, position, effect allele, and non-effect allele.
         - 'm' : Identify multi-allelic variants (same chromosome + position).
     keep : {'first', 'last', False}, default 'first'
         Which record to retain when duplicates are detected.
@@ -663,6 +658,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
 def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()):
     """
     Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
+    All chromosome notations are converted to string type first. After fix, all chromosome notations will be int.
 
     This function normalizes chromosome labels to a consistent format, applies
     optional prefixes, and maps special chromosomes (e.g., X, Y, mitochondrial)
@@ -673,18 +669,16 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
     ----------
     add_prefix : str, optional, default=""
         Prefix to prepend to chromosome labels (e.g., "chr").
-    x : tuple of (str, int), optional
-        Mapping for the X chromosome, given as (label, numeric_value).
-    y : tuple of (str, int), optional
-        Mapping for the Y chromosome, given as (label, numeric_value).
-    mt : tuple of (str, int), optional
-        Mapping for the mitochondrial chromosome, given as (label, numeric_value).
+    x : list of [str, int], optional
+        Mapping for the X chromosome, given as [label, numeric_value]. Default is ["X",23]
+    y : list of [str, int], optional
+        Mapping for the Y chromosome, given as [label, numeric_value]. Default is ["Y",24]
+    mt : list of [str, int], optional
+        Mapping for the mitochondrial chromosome, given as [label, numeric_value]. Default is ["MY",25]
     remove : bool, default False
         If True, remove records with invalid or unrecognized chromosome labels.
     verbose : bool, default False
         If True, print progress or diagnostic messages.
-    chrom_list : list of str or int, optional
-        List of valid chromosome labels or numeric values.
     minchr : int, default 1
         Minimum allowed chromosome number when interpreting numeric labels.
 
@@ -692,6 +686,11 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
     -------
     pandas.DataFrame
         Summary statistics table with standardized chromosome identifiers.
+
+    Less used parameters
+    -------------------------
+    chrom_list : list of str or int, optional
+        List of valid chromosome labels or numeric values. Default is ["1", ..., "25", "X", "Y", "MT"]
     """
     ##start function with col checking##########################################################
     _start_line = "fix chromosome notation (CHR)"
@@ -725,7 +724,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
     except:
         log.write(" -Force converting to pd string data type...", verbose=verbose)
         sumstats[chrom] = sumstats[chrom].astype("string")
-    
+    ########################################################################################################################################
     # check if CHR is numeric
     is_chr_fixed = sumstats[chrom].str.isnumeric()
     # fill NAs with False
@@ -813,14 +812,15 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
     else:
         log.write(" -All CHR are already fixed...", verbose=verbose) 
         sumstats.loc[is_chr_fixed,status] = vchange_status(sumstats.loc[is_chr_fixed,status],4,"986","520")
-    
+
+    ########################################################################################################################################
     # Convert string to int
     try:
         sumstats[chrom] = sumstats[chrom].astype('Int64')
     except:
     #    # force convert
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
-    
+    ########################################################################################################################################
     # filter out variants with CHR <=0
     out_of_range_chr = sumstats[chrom] < minchr
     out_of_range_chr = out_of_range_chr.fillna(False)
@@ -849,7 +849,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
     verbose : bool, default False
         If True, print progress or diagnostic messages.
     lower_limit : int, optional
-        Minimum acceptable genomic position.
+        Minimum acceptable genomic position. Deafult is 0.
     upper_limit : int, optional
         Maximum acceptable genomic position.
     limit : int, default 3_000_000_000
