@@ -19,8 +19,8 @@ def lambdaGC(insumstats,include_chrXYMT=True, x=23 ,y=24, mt=25, mode="P",level=
         - 'MLOG10P': -log10(p-values)
         - 'Z': Z-scores
         - 'CHISQ': Chi-squared statistics
-    level : float, optional
-        Quantile level for calculation (default: 0.5, median)
+    level : float, optional default=0.5
+        Quantile level for calculation, default value is 0.5 which is median
     verbose : bool, optional
         If True, write progress messages to log
     
