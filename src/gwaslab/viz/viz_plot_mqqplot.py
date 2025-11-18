@@ -138,7 +138,7 @@ def mqqplot(insumstats,
           mqqratio=3,
           bwindowsizekb = 100,
           density_color=False,
-          density_range=(0,15),
+          density_range=None,
           density_trange=(0,10),
           density_threshold=5,
           density_tpalette="Blues",
@@ -988,6 +988,8 @@ def mqqplot(insumstats,
                 s = "DENSITY"
                 to_plot = sumstats.sort_values("DENSITY")
                 to_plot["DENSITY_hue"] = to_plot["DENSITY"].astype("float")
+                if density_range is None:
+                    density_range = (to_plot["DENSITY"].min(), to_plot["DENSITY"].max())
                 if type(density_trange) is list:
                     density_trange = tuple(density_trange)
                 if type(density_range) is list:
@@ -1535,7 +1537,7 @@ def _configure_cols_to_use(insumstats, snpid,  chrom, pos, ea, nea, eaf, p, mlog
         else:
             raise ValueError("Please make sure "+anno+" column is in input sumstats.")
     
-    if (density_color==True) or ("b" in mode and "DENSITY" in insumstats.columns):
+    if (density_color==True) and ("b" in mode and "DENSITY" in insumstats.columns):
         usecols.append("DENSITY")
     return usecols
 

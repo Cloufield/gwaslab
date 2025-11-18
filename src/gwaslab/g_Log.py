@@ -44,3 +44,9 @@ class Log():
                 break
 
         return "".join(reversed(last_log))
+    
+    def combine(self, log, pre=True):
+        if pre ==True:
+            self.log_text = "{}\n{}".format(log.log_text, self.log_text)
+        else:
+            self.log_text = "{}\n{}".format(self.log_text, log.log_text)

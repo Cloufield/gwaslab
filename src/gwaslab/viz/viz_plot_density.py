@@ -12,20 +12,16 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     ---
     bwindowsizekb : int, default=100
         Window size in kb for Brisbane plot density calculation.
+    colors : list, default=['#597FBD', '#74BAD3']
+        Color palette used to assign colors to each chromosome in the plot.
+        If the number of chromosomes exceeds the number of colors provided,
+        the palette will be cycled automatically.
     density_color : bool, default=False
-        Whether to color Brisbane plot points by density. 
-    density_range : tuple, default=(0,15)
-        Color range for density plot. 
-    density_trange : tuple, default=(0,10)
-        Threshold range for density plot.  For hue_norm.
-    density_threshold : int, default=5
-        Threshold for density coloring. Different coloring makes it clear to see low and high density regions.
-        Above density_threshold, coloring using density_range and density_palette. 
-        Below density_threshold, coloring using density_trange and density_tpalette. 
-    density_tpalette : str, default='Blues'
-        Palette for thresholded density colors.
+        Whether to color Brisbane plot points by density. If true, `density_palette` override `colors`.
     density_palette : str, default='Reds'
         Palette for density colors. 
+    density_range : tuple, default=None.
+        Color range for density plot. If None, range will auto-selected as (to_plot["DENSITY"].min(), to_plot["DENSITY"].max()).
     anno : boolean, str or 'GENENAME', default=None
         Specify which data to use for annotation. Default is None. 
         anno options:
@@ -80,13 +76,21 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
         Arguments for saving the plot. 
 
     
-    
+    Less used parameters
+    ----------------------
+    density_threshold : int, default=5
+        Threshold for density coloring. Different coloring makes it clear to see low and high density regions.
+        Above density_threshold, coloring using density_range and density_palette. 
+        Below density_threshold, coloring using density_trange and density_tpalette. 
+    density_trange : tuple, default=(0,10)
+        Threshold range for density plot.  For hue_norm.
+    density_tpalette : str, default='Blues'
+        Palette for thresholded density colors.
     """
-    sumstats = sumstats.sort_values([chrom, pos], ignore_index=True)
 
     if "b" in mode and "DENSITY" not in sumstats.columns:
         
-        sumstats["DENSITY"] = getsignaldensity2(insumstats=sumstats,
+        sumstats =  getsignaldensity2(insumstats=sumstats,
                                                 snpid="SNPID",
                                                 chrom=chrom,
                                                 pos=pos,

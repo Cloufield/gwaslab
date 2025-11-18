@@ -1,5 +1,13 @@
 # Update Logs
 
+# 3.6.12 20251118
+- added infer_strand2 and assign_rsid2 for testing
+- revised some docstrings (ongoing)
+
+# 3.6.11 20251113
+- added ref_maf_threshold for inferring strand
+- revised some docstrings (ongoing)
+
 # 3.6.10 20251101
 - fixed taf update_args
 - fixed typos in log

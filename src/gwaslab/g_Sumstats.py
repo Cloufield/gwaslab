@@ -1007,7 +1007,7 @@ class Sumstats():
         
         if sig_list is None:
             self.data["DENSITY"] = getsignaldensity2(self.data,
-                                                    id=id_to_use,
+                                                    snpid=id_to_use,
                                                     chrom="CHR",
                                                     pos="POS",
                                                     bwindowsizekb=windowsizekb,

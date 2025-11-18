@@ -203,7 +203,7 @@ def getsignaldensity2(
     wsize = bwindowsizekb * 1000
 
     # Select and copy only necessary columns
-    sumstats = insumstats[[snpid, chrom, pos]].copy()
+    sumstats = insumstats.copy()
     sumstats = sumstats.sort_values([chrom, pos], ignore_index=True)
 
     densities = np.zeros(len(sumstats), dtype=np.int32)
@@ -237,4 +237,4 @@ def getsignaldensity2(
     log.write(f" -Max : {bmax} signals per {bwindowsizekb} kb at variant {bmaxid}", verbose=verbose)
     log.write("Finished calculating signal DENSITY successfully!", verbose=verbose)
 
-    return sumstats["DENSITY"].values
+    return sumstats

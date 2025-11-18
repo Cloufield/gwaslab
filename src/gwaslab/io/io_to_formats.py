@@ -69,8 +69,8 @@ def _to_format(sumstats,
     ----------
     path : str, optional
         Output file path prefix. Default is "./sumstats"
-    fmt : str, optional
-        Output format ('gwaslab', 'vcf', 'bed', 'annovar', etc.).Avaiable forst can be checked using `get_formats_list`. Default is 'gwaslab' 
+    fmt : str, optional, default="gwaslab"
+        Output format ('gwaslab', 'vcf', 'bed', 'annovar', etc.). Avaiable forst can be checked using `get_formats_list`. Default is 'gwaslab' 
     tab_fmt : str, optional
         Tabular format type ('tsv', 'csv', 'parquet'). Default is 'tsv'
     extract : list or str, optional
