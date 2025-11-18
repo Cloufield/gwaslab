@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from pysam import VariantFile
 from Bio import SeqIO
+from Bio import bgzf
+import gzip
 from itertools import repeat
 from multiprocessing import Pool
 from functools import partial
@@ -775,7 +777,28 @@ def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=
     sumstats.loc[~condition, status] = _fast_check_status(sumstats_not_cond, record=record, starting_positions=starting_not_pos_cond, records_len=records_len_not_cond)
 
     return sumstats[status].values
-        
+
+def load_fasta_auto(path: str):
+    """
+    Automatically load FASTA or gzipped/bgzipped FASTA files.
+    Supports: .fa, .fasta, .fa.gz, .fa.bgz
+    Returns a SeqIO iterator.
+    """
+    lower = path.lower()
+
+    # BGZF (bgzip) detection
+    if lower.endswith(".bgz") or lower.endswith(".bgzf"):
+        handle = bgzf.open(path, "rt")
+
+    # Standard gzipped FASTA
+    elif lower.endswith(".gz"):
+        handle = gzip.open(path, "rt")
+
+    # Plain FASTA
+    else:
+        handle = open(path, "r")
+
+    return SeqIO.parse(handle, "fasta")       
 
 def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", status="STATUS", chr_dict=get_chr_to_number(), remove=False, verbose=True, log=Log()):
     """
@@ -847,7 +870,7 @@ def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", stat
     log.write(" -Reference genome FASTA file: "+ ref_seq,verbose=verbose)  
     log.write(" -Loading fasta records:",end="", verbose=verbose)
     chromlist = get_chr_list(add_number=True)
-    records = SeqIO.parse(ref_seq, "fasta")
+    records = load_fasta_auto(ref_seq)
     
     sumstats = sortcoordinate(sumstats,verbose=False)
 

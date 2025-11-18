@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from os import path
 from pathlib import Path
-
+from functools import wraps
 from gwaslab.g_Log import Log
 from gwaslab.g_vchange_status import vchange_status
 
@@ -11,19 +11,52 @@ from gwaslab.qc.qc_fix_sumstats import sortcoordinate
 from gwaslab.qc.qc_fix_sumstats import start_to
 from gwaslab.qc.qc_fix_sumstats import finished
 from gwaslab.qc.qc_fix_sumstats import _process_build
-
+from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd.bd_common_data import get_high_ld
 from gwaslab.bd.bd_common_data import get_chr_to_number
-
 from gwaslab.hm.hm_harmonize_sumstats import is_palindromic
-
+from gwaslab.g_version import _get_version
 import gc
+
+def with_logging(start_to_msg,finished_msg):
+    def decorator(func):
+        @wraps(func)  # This preserves the original function's metadata including __doc__
+        def wrapper(*args, **kwargs):
+            import inspect
+            sig = inspect.signature(func)
+            bound_args = sig.bind(*args, **kwargs)
+            bound_args.apply_defaults()
+            
+            log = bound_args.arguments.get('log', Log())
+            verbose = bound_args.arguments.get('verbose', True)
+            sumstats = bound_args.arguments.get('sumstats', pd.DataFrame)
+            
+            # Log start message
+            log.write(f"Start to {start_to_msg} ...(v{_get_version()})", verbose=verbose)
+            check_dataframe_shape(sumstats=sumstats,log=log, verbose=verbose)
+            prenum = len(sumstats)
+
+            # Execute the original function
+            result = func(*args, **kwargs)
+
+            afternum = len(sumstats)
+            log.write(" -Filtered out "+ str(prenum-afternum) +" variants", verbose=verbose)
+            check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose)
+            # Log finish message
+            log.write(f"Finished {finished_msg}.", verbose=verbose)
+            
+            return result
+        return wrapper
+    return decorator
+
 
 """
 Filtering and value manipulation utilities for GWAS summary statistics
 Provides functions to filter variants based on various criteria including 
 value thresholds, genomic regions, and special variant types.
 """
+
+@with_logging("filter variants by condition...","filtering variants")
 def filtervalues(sumstats, expr, remove=False, verbose=True, log=Log()):
     """
     Filter variants based on a query expression.
@@ -45,15 +78,13 @@ def filtervalues(sumstats, expr, remove=False, verbose=True, log=Log()):
     pandas.DataFrame
         Filtered summary statistics table
     """
-    log.write("Start filtering values by condition:",expr, verbose=verbose)
-    prenum = len(sumstats)
+    log.write(" -Expression:",expr, verbose=verbose)
     sumstats = sumstats.query(expr,engine='python').copy()
-    afternum = len(sumstats)
-    log.write(" -Removing "+ str(prenum-afternum) +" variants not meeting the conditions:",expr, verbose=verbose)
-    log.write("Finished filtering values.", verbose=verbose)
+
     gc.collect()
     return sumstats
 
+@with_logging("filter out variants based on threshold values...", "filtering variants")
 def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
     """
     Filter out variants based on threshold values.
@@ -78,7 +109,6 @@ def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=
     pandas.DataFrame
         Filtered summary statistics table
     """
-    log.write("Start filtering values:", verbose=verbose)
     for key,threshold in gt.items():
         num = len(sumstats.loc[sumstats[key]>threshold,:])
         log.write(" -Removing "+ str(num) +" variants with "+key+" > "+ str(threshold)+" ...", verbose=verbose)
@@ -91,10 +121,11 @@ def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=
         num = len(sumstats.loc[sumstats[key]==threshold,:])
         log.write(" -Removing "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...", verbose=verbose)
         sumstats = sumstats.loc[sumstats[key]!=threshold,:]
-    log.write("Finished filtering values.", verbose=verbose)
     gc.collect()
     return sumstats.copy()
 
+
+@with_logging("filter in variants based on threshold values", "filtering variants")
 def filterin(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
     """
     Filter in variants based on threshold values.
@@ -119,7 +150,6 @@ def filterin(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log(
     pandas.DataFrame
         Filtered summary statistics table
     """
-    log.write("Start filtering values:", verbose=verbose)
     for key,threshold in gt.items():
         num = len(sumstats.loc[sumstats[key]>threshold,:])
         log.write(" -Keeping "+ str(num) +" variants with "+key+" > "+ str(threshold)+" ...", verbose=verbose)
@@ -132,10 +162,10 @@ def filterin(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log(
         num = len(sumstats.loc[sumstats[key]==threshold,:])
         log.write(" -Keeping "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...", verbose=verbose)
         sumstats = sumstats.loc[sumstats[key]==threshold,:]
-    log.write("Finished filtering values.", verbose=verbose)
     gc.collect()
     return sumstats.copy()
 
+@with_logging("filter in variants if in intervals defined in bed files", "filtering variants")
 def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
     """
     Keep variants located within specified genomic regions from a BED file.
@@ -164,9 +194,6 @@ def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, b
         Filtered summary statistics table containing only variants in the specified regions
     """
     sumstats = sortcoordinate(sumstats,verbose=verbose)
-    log.write("Start to filter in variants if in intervals defined in bed files:", verbose=verbose)
-    log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns), verbose=verbose)
-    
     if high_ld is True:
         path = get_high_ld(build=build)
         log.write(" -Loading bed format file for hg"+build, verbose=verbose)
@@ -241,12 +268,11 @@ def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, b
     
     sumstats = sumstats.loc[sumstats["bed_indicator"],:]
     log.write(" -Number of variants in the specified regions to keep:",sum(sumstats["bed_indicator"]), verbose=verbose)
-    log.write(" -Number of variants removed:",sum(~sumstats["bed_indicator"]), verbose=verbose)
     sumstats = sumstats.drop(columns="bed_indicator")
-    log.write("Finished filtering in variants.", verbose=verbose)
     gc.collect()
     return sumstats
 
+@with_logging("filter out variants if in intervals defined in bed files", "filtering variants")
 def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
     """
     Remove variants located within specified genomic regions from a BED file.
@@ -275,8 +301,6 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
         Filtered summary statistics table with variants in specified regions removed
     """
     sumstats = sortcoordinate(sumstats,verbose=verbose)
-    log.write("Start to filter out variants if in intervals defined in bed files:", verbose=verbose)
-    log.write(" -Current Dataframe shape :",len(sumstats)," x ", len(sumstats.columns), verbose=verbose)
     if high_ld is True:
         path = get_high_ld(build=build)
         log.write(" -Loading bed format file for hg"+build, verbose=verbose)
@@ -336,15 +360,13 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
                     sum_num+=1
                            
     ## out
-    
     sumstats = sumstats.loc[~sumstats["bed_indicator"],:]
-    log.write(" -Number of variants in the specified regions to exclude:",sum(sumstats["bed_indicator"]), verbose=verbose)
-    log.write(" -Number of variants left:",len(sumstats), verbose=verbose)
     sumstats = sumstats.drop(columns="bed_indicator")
-    log.write("Finished filtering out variants.", verbose=verbose)
     gc.collect()
     return sumstats
 
+@with_logging("infer genome build version using hapmap3 SNPs", 
+              "inferring genome build version using hapmap3 SNPs")
 def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS", 
                ea="EA", nea="NEA", build="19",
                change_status=True, 
@@ -382,7 +404,6 @@ def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS",
     ############################################################################################
 
     inferred_build="Unknown"
-    log.write("Start to infer genome build version using hapmap3 SNPs...", verbose=verbose)    
 
     data_path_19 = path.join( Path(__file__).parents[1], "data","hapmap3_SNPs","hapmap3_db150_hg19.snplist.gz")
     data_path_38 = path.join( Path(__file__).parents[1], "data","hapmap3_SNPs","hapmap3_db151_hg38.snplist.gz")
@@ -419,10 +440,9 @@ def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS",
         inferred_build="38"
     else:
         log.write(" -Since num_hg19 = num_hg38, unable to infer...", verbose=verbose) 
-        
-    finished(log,verbose,_end_line)
     return sumstats, inferred_build
 
+@with_logging("randomly select variants from the sumstats", "sampling")
 def sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
     """
     Randomly sample variants from summary statistics.
@@ -470,6 +490,7 @@ def sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
     gc.collect()
     return sampled
 
+@with_logging("extract variants in the flanking regions", "extracting variants in the flanking regions")
 def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **kwargs):
     """
     Extract variants in flanking regions around a specified variant.
@@ -510,6 +531,7 @@ def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **
 
     return flanking
 
+@with_logging("extract variants in the flanking regions using rsID or SNPID", "extracting variants in the flanking regions")
 def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **kwargs):
     """
     Extract variants in flanking regions using rsID or SNPID.
@@ -568,6 +590,7 @@ def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True, log=Log
 
     return flanking
 
+@with_logging("extract variants in the flanking regions using CHR and POS", "extracting variants in the flanking regions")
 def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, log=Log(), **kwargs):
     """
     Extract variants in flanking regions using chromosome and position.
@@ -590,7 +613,6 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, lo
     pandas.DataFrame
         Variants in flanking regions
     """
-    log.write("Start to extract variants in the flanking regions using CHR and POS...",verbose=verbose)
     log.write(" - Central positions: {}".format(chrpos), verbose=verbose)
     log.write(" - Flanking windowsize in kb: {}".format(windowsizekb), verbose=verbose)
 
@@ -617,10 +639,9 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, lo
     flanking = sumstats.loc[is_flanking,:]
     
     log.write(" - Extracted {} variants in the regions.".format(len(flanking)),verbose=verbose)
-    log.write("Finished extracting variants in the flanking regions.",verbose=verbose)
-
     return flanking
 
+@with_logging("filter palindromic variants", "filtering variants")
 def _filter_palindromic(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True):
     """
     Filter palindromic variants based on allele symmetry.
@@ -644,7 +665,6 @@ def _filter_palindromic(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verb
     pandas.DataFrame
         Filtered summary statistics table
     """
-    log.write("Start to filter palindromic variants...",verbose=verbose)
     is_palindromic_snp = is_palindromic(sumstats[[nea,ea]],a1=nea,a2=ea)   
     
     log.write(" -Identified palindromic variants: {}".format(sum(is_palindromic_snp)),verbose=verbose)
@@ -654,9 +674,9 @@ def _filter_palindromic(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verb
     else:
         palindromic = sumstats.loc[~is_palindromic_snp,:]
 
-    log.write("Finished filtering palindromic variants.",verbose=verbose)
     return palindromic
 
+@with_logging("filter indels", "filtering variants")
 def _filter_indel(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True):
     """
     Filter indels based on allele length differences.
@@ -680,7 +700,6 @@ def _filter_indel(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=Tr
     pandas.DataFrame
         Filtered summary statistics table
     """
-    log.write("Start to filter indels...",verbose=verbose)
     is_indel = (sumstats[ea].str.len()!=sumstats[nea].str.len()) 
     
     log.write(" -Identified indels: {}".format(sum(is_indel)),verbose=verbose)
@@ -688,9 +707,9 @@ def _filter_indel(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=Tr
         indel = sumstats.loc[is_indel,:]
     else:
         indel = sumstats.loc[~is_indel,:]
-    log.write("Finished filtering indels.",verbose=verbose)
     return indel
 
+@with_logging("filter SNPs", "filtering variants")
 def _filter_snp(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True):
     """
     Filter SNPs based on allele length.
@@ -714,7 +733,6 @@ def _filter_snp(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True
     pandas.DataFrame
         Filtered summary statistics table
     """
-    log.write("Start to filter SNPs...",verbose=verbose)
     is_snp = (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
     
     log.write(" -Identified SNPs: {}".format(sum(is_snp)),verbose=verbose)
@@ -722,9 +740,9 @@ def _filter_snp(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True
         snp = sumstats.loc[is_snp,:]
     else:
         snp = sumstats.loc[~is_snp,:]
-    log.write("Finished filtering SNPs.",verbose=verbose)
     return snp
 
+@with_logging("exclude variants in HLA regions", "filtering variants")
 def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None , upper=None, build=None, mode="xmhc", log=Log(), verbose=True):
     """
     Exclude variants in HLA regions based on genomic coordinates.
@@ -804,6 +822,7 @@ def _exclude_hla(sumstats, chrom="CHR", pos="POS", lower=None , upper=None, buil
     
     return sumstats
 
+@with_logging("exclude variants on sex chromosomes", "filtering variants")
 def _exclude_sexchr(sumstats, chrom="CHR", pos="POS", sexchrs=[23,24,25], log=Log(), verbose=True):
     """
     Exclude variants on sex chromosomes.
@@ -841,6 +860,7 @@ def _exclude_sexchr(sumstats, chrom="CHR", pos="POS", sexchrs=[23,24,25], log=Lo
     
     return sumstats
 
+@with_logging("extract specific variants by ID", "extracting variants")
 def _extract(sumstats, extract=None, id_use="SNPID", log=Log(), verbose=True ):
     """
     Extract specific variants by ID.
@@ -868,6 +888,7 @@ def _extract(sumstats, extract=None, id_use="SNPID", log=Log(), verbose=True ):
         log.write(" -Extracted {} variants from sumstats...".format(len(sumstats)),verbose=verbose)
     return sumstats
 
+@with_logging("exclude specific variants by ID", "filtering variants")
 def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
     """
     Exclude specific variants by ID.
@@ -895,6 +916,7 @@ def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
         log.write(" -Excluded {} variants from sumstats...".format(len(sumstats)),verbose=verbose)
     return sumstats
 
+@with_logging("filter variants within a specific genomic region", "filtering variants")
 def _filter_region(sumstats, region=None, chrom="CHR", pos="POS", log=Log(), verbose=True):
     """
     Filter variants within a specific genomic region.
@@ -1012,7 +1034,6 @@ def _search_variants( sumstats, snplist=None,
 
     log.write("Finished searching variants.", verbose=verbose)
     return to_search
-
 
 def _get_region_start_and_end(
     chrom,

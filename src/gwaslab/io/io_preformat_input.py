@@ -160,7 +160,8 @@ def preformat(sumstats,
     neff : str or int, optional
         Column name or constant value for effective sample size.
     direction : str, optional
-        Column name for effect direction in input data.
+        Column name for meta-analysis effect-direction strings, where each character
+        ("+", "-", "0") represents the direction of effect for one cohort (e.g., "++-0+").
     status : str, optional
         Column name for status in input data.
     study : str, optional, default="Study_1"
