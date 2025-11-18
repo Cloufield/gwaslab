@@ -480,7 +480,8 @@ class Sumstats():
               fixallele_args={},
               sanitycheckstats_args={},
               normalizeallele_args={},
-              verbose=True
+              verbose=True,
+              sweep_mode=False
               ):
         """
         Standard pipeline for harmonizing sumstats including:
@@ -497,13 +498,13 @@ class Sumstats():
         ref_rsid_tsv : str or None
             Path to rsID TSV reference file
         ref_rsid_vcf : str or None
-            Path to rsID VCF reference file
+            Path to rsID VCF/BCF reference file
         ref_infer : str or None
-            Reference VCF file for strand inference
+            Reference VCF/BCF file for strand inference
         ref_alt_freq : float or None
-            Allele frequency field name in VCF INFO for strand inference
+            Allele frequency field name in VCF/BCF INFO for strand inference
         ref_maf_threshold : float
-            MAF threshold (applied to reference VCF) for strand inference
+            MAF threshold (applied to reference VCF/BCF) for strand inference
         maf_threshold : float
             MAF threshold (applied to sumstats) for strand inference
         ref_seq_mode : {'v', 's'}, optional
@@ -538,6 +539,8 @@ class Sumstats():
             Arguments passed to normalize_allele
         verbose : bool, optional
             Whether to print progress information.
+        sweep_mode:bool, optional
+            If false, use lookup (per-vairant) mode. If true, use sweep model (fast for large dataset).
         """
         saved_args = {**locals()}
 
@@ -594,9 +597,17 @@ class Sumstats():
             
         if ref_infer is not None: 
             inferstrand_args = remove_overlapping_kwargs(inferstrand_args,{"log","verbose","ref_infer","ref_alt_freq","maf_threshold","ref_maf_threshold","n_cores"})
-            self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
-                                            maf_threshold=maf_threshold, ref_maf_threshold=ref_maf_threshold,
-                                              n_cores=n_cores,log=self.log,verbose=verbose,**inferstrand_args)
+            if sweep_mode:
+                self.data = _infer_strand_with_annotation(self.data, 
+                                                        path = ref_rsid_vcf, 
+                                                        n_cores=n_cores,
+                                                        log=self.log,
+                                                        verbose=verbose,
+                                                        **inferstrand_args)
+            else:
+                self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
+                                                maf_threshold=maf_threshold, ref_maf_threshold=ref_maf_threshold,
+                                                  n_cores=n_cores,log=self.log,verbose=verbose,**inferstrand_args)
 
             self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
             
@@ -612,6 +623,7 @@ class Sumstats():
             gc.collect()
         
         #####################################################
+        
         if ref_rsid_tsv is not None:
             assignrsid_args = remove_overlapping_kwargs(assignrsid_args,{"ref_mode","path","n_cores","log","verbose"})
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
@@ -622,13 +634,17 @@ class Sumstats():
 
         if ref_rsid_vcf is not None:
             assignrsid_args = remove_overlapping_kwargs(assignrsid_args,{"ref_mode","path","n_cores","log","verbose"})
-            self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
-                                                 n_cores=n_cores,log=self.log,verbose=verbose,**assignrsid_args)   
+
+            if sweep_mode:
+                self.data = _assign_rsid(self.data, path = ref_rsid_vcf, n_cores=n_cores,log=self.log,verbose=verbose,**assignrsid_args)
+            else:
+                self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
+                                                     n_cores=n_cores,log=self.log,verbose=verbose,**assignrsid_args)   
 
             self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
             
             gc.collect()
-
+        
         ######################################################    
         if remove is True:
             removedup_args = remove_overlapping_kwargs(removedup_args,{"log","verbose"})
