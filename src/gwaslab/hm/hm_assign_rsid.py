@@ -277,7 +277,7 @@ def _annotate_sumstats(
     else:
         ref_mode = "tsv"
         path_to_use = tsv_path
-
+    log.write(" -Annotating {} from {}".format(",".join(assign_cols), path_to_use ))
     log.write(" -Determining reference mode: {}...".format(ref_mode), verbose=verbose)
     if ref_mode == "tsv":
         # path_to_use is tsv
