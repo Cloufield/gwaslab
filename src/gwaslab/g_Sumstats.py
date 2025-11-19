@@ -501,8 +501,8 @@ class Sumstats():
             Full path to rsID VCF/BCF reference file
         ref_infer : str or None
             Full path to Reference VCF/BCF file for strand inference
-        ref_alt_freq : float or None
-            Allele frequency field name in VCF/BCF INFO for strand inference
+        ref_alt_freq : str or None
+            Allele frequency field name in VCF/BCF INFO for strand inference. Default is "AF".
         ref_maf_threshold : float
             MAF threshold (applied to reference VCF/BCF) for strand inference
         maf_threshold : float
