@@ -19,7 +19,7 @@ def _infer_strand_with_annotation(
     ea: str = "EA",
     nea: str = "NEA",
     eaf: str = "EAF",
-    raf: str = "AF",
+    raf: str = "RAF",
     flipped_col: str = "ALLELE_FLIPPED",
     strand_col: str = "STRAND",
     log: "Log" = Log(),
@@ -39,7 +39,7 @@ def _infer_strand_with_annotation(
         Path to VCF/BCF file. Overrides `path` and `tsv_path`.
     tsv_path : str or None, optional
         Path to precomputed lookup TSV file. If not provided, generated from VCF.
-    assign_cols : tuple
+    assign_cols : tuple or str
         Columns to assign during annotation (default: ("AF",)).
     chr_dict : dict or None
         Chromosome dictionary for reference conversion.
@@ -60,8 +60,14 @@ def _infer_strand_with_annotation(
         Annotated and strand-inferred summary statistics.
     """
 
+    if type(assign_cols) is str:
+        assign_cols = (assign_cols)
+        
     if convert_to_bcf == True:
         strip_info = False
+
+    
+
     # First annotate with AF
     annotated_sumstats = _annotate_sumstats(
         sumstats=sumstats,
@@ -82,6 +88,11 @@ def _infer_strand_with_annotation(
         log=log,
     )
     
+    log.write( " -Renaming {} in reference to {} in Sumstats".format(assign_cols[0], raf))
+    if raf in annotated_sumstats.columns:
+        annotated_sumstats = annotated_sumstats.drop(columns=[raf])
+    annotated_sumstats = annotated_sumstats.rename(columns={assign_cols[0]:raf})
+
     # Then infer strand using the annotated AF as RAF
     return _infer_strand(
         sumstats=annotated_sumstats,
@@ -110,6 +121,7 @@ def _infer_strand(
     status_col: str = "STATUS",
     log: "Log" = Log(),
     maf_threshold: float = 0.40,
+    ref_maf_threshold: float = 0.40,
     daf_tolerance: float = 0.20,
     verbose: bool = True
 ) -> pd.DataFrame:
@@ -133,7 +145,7 @@ def _infer_strand(
         Logging object for progress messages.
     maf_threshold : float
         Maximum minor allele frequency threshold for palindromic SNPs (default: 0.40).
-        Palindromic SNPs with MAF > threshold will be excluded from strand determination.
+        Palindromic SNPs and Indels with MAF > threshold in either EAF and RAF will be excluded from strand determination.
     daf_tolerance : float
         Difference in allele frequency tolerance for indels (default: 0.20).
         Indels with |daf_forward - daf_reverse| < tolerance will be marked as ambiguous.
@@ -306,7 +318,14 @@ def _infer_strand(
     if valid_indel_mask.any():
         # Filter out variants with NA in EAF or RAF
         valid_indel_with_af_mask = valid_indel_mask & sumstats[eaf].notna() & sumstats[raf].notna()
-            
+
+        eaf_values = sumstats.loc[valid_indel_with_af_mask, eaf]
+        raf_values = sumstats.loc[valid_indel_with_af_mask, raf]
+        maf_eaf = eaf_values.apply(lambda x: min(x, 1-x))
+        maf_raf = raf_values.apply(lambda x: min(x, 1-x))
+        maf_mask = (maf_eaf <= maf_threshold) & (maf_raf <= maf_threshold)
+        valid_indel_with_af_mask = valid_indel_with_af_mask & maf_mask
+
         # Calculate difference between forward and reverse AF differences
         af_diff_forward = abs(sumstats.loc[valid_indel_with_af_mask, eaf] - sumstats.loc[valid_indel_with_af_mask, raf])
         af_diff_reverse = abs(sumstats.loc[valid_indel_with_af_mask, eaf] - (1 - sumstats.loc[valid_indel_with_af_mask, raf]))
@@ -366,4 +385,6 @@ def _infer_strand(
             ["8"] * 10
         )
     
+    sumstats = sumstats.drop(columns=[flipped_col, strand_col])
+
     return sumstats

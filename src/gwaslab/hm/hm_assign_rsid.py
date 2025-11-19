@@ -15,7 +15,7 @@ def _assign_rsid(
     lookup_path: str | None = None,
     convert_to_bcf: bool = False,
     strip_info: bool = True,
-    n_cores: int = 6,
+    threads: int = 6,
     rsid: str = "rsID",
     chrom: str = "CHR",
     pos: str = "POS",
@@ -48,7 +48,7 @@ def _assign_rsid(
         If True, convert VCF to BCF before processing.
     strip_info : bool, optional
         If True, strip INFO fields when converting VCF to BCF.
-    n_cores : int, optional
+    threads : int, optional
         Number of threads for bcftools operations.
     overwrite : str, optional
         Overwrite mode: "all", "invalid", or "empty". Determines which existing rsID values to overwrite.
@@ -128,14 +128,15 @@ def _assign_rsid(
         if not os.path.exists(path_to_use):
             raise FileNotFoundError(f"Lookup TSV not found: {path_to_use}")
         log.write(" -Using TSV directly for lookup: {}...".format(path_to_use), verbose=verbose)
-
+        lookup_tsv = path_to_use
+        rm_tmp_lookup = False
     else:  
         # path_to_use is vcf/bcf
 
         if convert_to_bcf:
             if path_to_use[-3]!="bcf":
                 log.write(" -Converting VCF to BCF (strip_info={})...".format(strip_info), verbose=verbose)
-                path_to_use = _convert_vcf_to_bcf(path, threads=n_cores, strip=strip_info)
+                path_to_use = _convert_vcf_to_bcf(path, threads=threads, strip=strip_info)
             else:
                 log.write(" -Already bcf")
 
@@ -147,7 +148,7 @@ def _assign_rsid(
             chr_dict=chr_dict,
             assign_cols=["rsID"],  # ensures the lookup carries ID/rsID usable by assigner
             out_lookup=lookup_path,
-            threads=n_cores,
+            threads=threads,
             verbose=verbose,
             log=log,
         )
@@ -283,7 +284,8 @@ def _annotate_sumstats(
         if not os.path.exists(path_to_use):
             raise FileNotFoundError(f"Lookup TSV not found: {path_to_use}")
         log.write(" -Using TSV directly for lookup: {}...".format(path_to_use), verbose=verbose)
-
+        lookup_tsv = path_to_use
+        rm_tmp_lookup = False
     else:  
         # path_to_use is vcf/bcf
         if convert_to_bcf:
@@ -346,11 +348,11 @@ def _extract_lookup_table_from_vcf_bcf(
         raise RuntimeError("bcftools not found in PATH")
 
     if out_lookup is None:
-        out_lookup_tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".lookup.txt")
+        out_lookup_tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".gwaslab.lookup.txt")
         out_lookup = out_lookup_tmp.name
 
 
-    tmp_targets = tempfile.NamedTemporaryFile(delete=False, suffix=".targets.txt")
+    tmp_targets = tempfile.NamedTemporaryFile(delete=False, suffix=".gwaslab.targets.sorted.txt.gz")
     _targets_path = tmp_targets.name
     tmp_targets.close()
 
@@ -372,7 +374,7 @@ def _extract_lookup_table_from_vcf_bcf(
     log.write(" -Created target list: {}...".format(_targets_path), verbose=verbose)
 
     # ---- extract from VCF/BCF ----
-    _tmp_filtered_bcf = tempfile.NamedTemporaryFile(delete=False, suffix=".filtered.bcf").name
+    _tmp_filtered_bcf = tempfile.NamedTemporaryFile(delete=False, suffix=".gwaslab.filtered.bcf").name
     cmd_filter = [
         "bcftools", "view",
         "-T", _targets_path,
@@ -551,6 +553,12 @@ def _assign_from_lookup(
         dtype=dtype,
         chunksize=chunksize,
     ):
+        try:
+            chunk = _expand_multiallelic_fast(chunk, lookup_ea_col, lookup_nea_col)
+        except:
+            log.warning(" -Expanding multiallelic EA in lookup failed...")
+            pass
+
         log.write(" -Loaded {:,} lookup rows...".format(len(chunk)), verbose=verbose)
 
         ss_sub = sumstats[sumstats[chrom].isin(chunk[chrom].unique())]
@@ -653,7 +661,7 @@ def _convert_vcf_to_bcf(reference,
         reference_vcf = reference
 
     # Output name
-    out_bcf = reference + (".strip.bcf" if strip else ".bcf")
+    out_bcf = reference.replace(".vcf.gz","") + (".strip.bcf" if strip else ".bcf")
 
     # ---- Build normalization command ----
     # Always split multi-allelics
@@ -683,3 +691,86 @@ def _convert_vcf_to_bcf(reference,
     if verbose:
         log.write(" -Done. Output: {} and index...".format(out_bcf), verbose=verbose)
     return out_bcf
+
+
+import os
+import shutil
+import subprocess
+import tempfile
+import pandas as pd
+from multiprocessing import Pool
+
+
+def _run_bcftools_extract(args):
+    chr_name, chr_target_file, vcf_path, threads = args
+    out_bcf = tempfile.NamedTemporaryFile(delete=False,
+                                          suffix=f".gwaslab.chr{chr_name}.bcf").name
+
+    cmd = [
+        "bcftools", "view",
+        "-T", chr_target_file,
+        "-Ob", "-o", out_bcf,
+        "--threads", str(threads),
+        vcf_path
+    ]
+    subprocess.check_call(cmd)
+    subprocess.check_call(["bcftools", "index", "-f", out_bcf])
+
+    return out_bcf
+
+
+
+
+
+def _expand_multiallelic_fast(df, ea_col, nea_col):
+    """
+    Expand multi-allelic lookup rows in a fast and memory-efficient way.
+    A,T,G → 3 biallelic rows.
+    """
+
+    # Detect if any multiallelic rows exist
+    if not df[ea_col].str.contains(",").any():
+        return df  # nothing to do
+
+    # ------------------------------
+    # Split EA (ALT) column
+    # ------------------------------
+    ea_split = df[ea_col].str.split(",", expand=True)
+
+    # Pre-split NEA/REF only if necessary
+    if df[nea_col].str.contains(",").any():
+        nea_split = df[nea_col].str.split(",", expand=True)
+    else:
+        # Avoid unnecessary expansion → more memory efficient
+        nea_split = None
+
+    out_frames = []
+
+    # ------------------------------
+    # Expand each ALT allele column
+    # ------------------------------
+    for i in range(ea_split.shape[1]):
+        ea_i = ea_split[i]
+
+        if ea_i.isna().all():
+            continue  # no more alternate alleles
+
+        df_i = df.copy()
+
+        # Assign EA/ALT
+        df_i[ea_col] = ea_i
+
+        # Assign NEA/REF
+        if nea_split is None:
+            # Avoid allocating new arrays: repeat scalar NEA values
+            pass
+        else:
+            df_i[nea_col] = nea_split[i]
+
+        # Keep only rows where this allele exists
+        df_i = df_i[ea_i.notna()]
+
+        out_frames.append(df_i)
+
+    # Concatenate efficiently
+    return pd.concat(out_frames, ignore_index=True)

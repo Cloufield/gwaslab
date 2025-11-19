@@ -2,7 +2,7 @@
     "1kg_eas_hg19": {
         "url": "https://www.dropbox.com/s/lztaxqhy2o6dpxw/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1",
         "description": "1000 Genomes Project East Asian (1KG EAS) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EAS population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for EAS population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/s/k9klefl8m9fcfo1/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1"
@@ -12,7 +12,7 @@
     "1kg_eur_hg19": {
         "url": "https://www.dropbox.com/s/1nbgqshknevseks/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1",
         "description": "1000 Genomes Project European (1KG EUR) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EUR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for EUR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/s/vscvkrflh6fc5a0/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1"},
@@ -21,7 +21,7 @@
     "1kg_eas_hg38": {
         "url": "https://www.dropbox.com/s/3dstbbb1el9r3au/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1",
         "description": "1000 Genomes Project East Asian (1KG EAS) VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EAS population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for EAS population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/s/vwnp5vd8dcqksn4/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1"},
@@ -30,7 +30,7 @@
     "1kg_eur_hg38": {
         "url": "https://www.dropbox.com/s/z0mkehg17lryapv/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1",
         "description": "1000 Genomes Project European (1KG EUR) VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EUR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for EUR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/s/ze8g58x75x9qbf0/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1"},
@@ -39,7 +39,7 @@
     "1kg_sas_hg19": {
         "url": "https://www.dropbox.com/scl/fi/fubqvuj3p4ii4y35zknv8/SAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=5z50f66iltjchcaszznq5bczt&dl=1",
         "description": "1000 Genomes Project South Asian (1KG SAS) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the SAS population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for SAS population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/icnmrnzee7ofdpx5l96tg/SAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=st8t88snby26q37rqi6zh5zck&dl=1"},
@@ -48,7 +48,7 @@
     "1kg_amr_hg19": {
         "url": "https://www.dropbox.com/scl/fi/bxa4zfngsxsc38rhtiv8c/AMR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=ibcn8hb1n8n36j3u0jfzci267&dl=1",
         "description": "1000 Genomes Project American (1KG AMR) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the AMR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for AMR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/1zk16x7h4r89jurzwu05u/AMR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=b4cere4w38zvzyfitfge3r8n0&dl=1"},
@@ -57,7 +57,7 @@
     "1kg_sas_hg38": {
         "url": "https://www.dropbox.com/scl/fi/jr3l5zz42py3kny2bccmj/SAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=x0t6tsy71jxzf021wfqdn8k5q&dl=1",
         "description": "1000 Genomes Project South Asian (1KG SAS) VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the SAS population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for SAS population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/02oia4ur5r7w9qgiuf6i9/SAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=00p9rxe0xzfs6hr1rg4d8oadm&dl=1"},
@@ -66,7 +66,7 @@
     "1kg_amr_hg38": {
         "url": "https://www.dropbox.com/scl/fi/4t4tyuhzp78uyb6tgkroq/AMR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=p96gbs1tcdia31jnjv1b82kuz&dl=1",
         "description": "1000 Genomes Project American (1KG AMR) VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the AMR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for AMR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/x0dby543tr9xpaqj2i0ba/AMR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=uj8o7j0cy0spipe174jn54sqs&dl=1"},
@@ -75,7 +75,7 @@
     "1kg_afr_hg19": {
         "url": "https://www.dropbox.com/scl/fi/tq4w9lyt5z47ym7grtrxg/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=k3bimeu3yr5loq8hohba5mr6k&dl=1",
         "description": "1000 Genomes Project African (1KG AFR) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the AFR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for AFR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/0giiptu0btwj1kfm6jdzr/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=ucb5weprsc5prcg8hvtgmruxx&dl=1"},
@@ -84,7 +84,7 @@
     "1kg_pan_hg19": {
         "url": "https://www.dropbox.com/scl/fi/6b4j9z9knmllfnbx86aw6/PAN.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=eento8vg06zyrkvooc9wd4cvu&dl=1",
         "description": "1000 Genomes Project Pan-ancestry (1KG PAN) VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the PAN population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for PAN population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/stco946scio5tvto0ln4j/PAN.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=hfh53beb627lmqwv3d8mzqy0c&dl=1"},
@@ -93,7 +93,7 @@
     "1kg_afr_hg38": {
         "url": "https://www.dropbox.com/scl/fi/239xmm7qijtnsks97chc9/AFR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=47en5fk1icbekpg7we3uot9g8&dl=1",
         "description": "1000 Genomes Project African (1KG AFR) VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the AFR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for AFR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/3y3pg4yqwo2jaaamx1c8f/AFR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=say0ihfwa51z3otgn4bjtze8p&dl=1"},
@@ -102,7 +102,7 @@
     "1kg_pan_hg38": {
         "url": "https://www.dropbox.com/scl/fi/nf01487smtmeq243ihfwm/PAN.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=3pefbkzxwcnejx4inynifpft7&dl=1",
         "description": "1000 Genomes Project Pan-ancestry (1KG PAN) VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the PAN population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for PAN population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/hu7cttr4cenw5yjsm2775/PAN.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=568u7bkvkybm4wt2q9284o198&dl=1"},
@@ -111,7 +111,7 @@
     "1kg_eas_x_hg19": {
         "url": "https://www.dropbox.com/scl/fi/1inmw09rk35ncuq7tibmp/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=vcjpukgsb7gt4tizg1fvr7tr2&dl=1",
         "description": "1000 Genomes Project East Asian (1KG EAS) X-chromosome VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EAS population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for EAS population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/uyxb9lfi88dqjp5l3vrzf/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=vt196d16h690dmzox5jyc33xx&dl=1"},
@@ -120,7 +120,7 @@
     "1kg_eur_x_hg19": {
         "url": "https://www.dropbox.com/scl/fi/6r4sc2yax8pk644piew2d/EUR.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=l5towjhyl733nrd1msjr1d8gl&dl=1",
         "description": "1000 Genomes Project European (1KG EUR) X-chromosome VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EUR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for EUR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/yuid87x398yc9n8nc4bb1/EUR.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=01skm13sk6099y34zy6qvweqj&dl=1"},
@@ -129,7 +129,7 @@
     "1kg_eas_x_hg38": {
         "url": "https://www.dropbox.com/scl/fi/2m6i93vv1ooano0muukck/EAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=y6087mmt9kmls066mzobjeqp7&dl=1",
         "description": "1000 Genomes Project East Asian (1KG EAS) X-chromosome VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EAS population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for EAS population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/l6jpt86edarb4emehxwcy/EAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=ddr1fcijb1bh2nso0q0updolh&dl=1"},
@@ -138,7 +138,7 @@
     "1kg_eur_x_hg38": {
         "url": "https://www.dropbox.com/scl/fi/ceoff4p95ftef6yldhl67/EUR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=yyt9u11dk6kyha0cvturvrtvf&dl=1",
         "description": "1000 Genomes Project European (1KG EUR) X-chromosome VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the EUR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for EUR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/tux32myi6g18bx7nd1rdq/EUR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=m4f0v3rblnzv7dj0lo6hsd0hb&dl=1"},
@@ -147,7 +147,7 @@
     "1kg_sas_x_hg19": {
         "url": "https://www.dropbox.com/scl/fi/592lbmrkfjn80twnvlt2q/SAS.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=zrar7nmltpsuznlyuqw9k77q6&dl=1",
         "description": "1000 Genomes Project South Asian (1KG SAS) X-chromosome VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the SAS population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for SAS population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/rmaybun6v248nmjmaz2tj/SAS.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=izv96vfajgdd5wsyuvx98ntvk&dl=1"},
@@ -156,7 +156,7 @@
     "1kg_amr_x_hg19": {
         "url": "https://www.dropbox.com/scl/fi/gwryyxs0ilgoazqvp39be/AMR.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=z46we3kshi9t96x7issl36bda&dl=1",
         "description": "1000 Genomes Project American (1KG AMR) X-chromosome VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the AMR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for AMR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/r6g5893smgmnsir5r0v5n/AMR.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=sel2f4p7ctggf30udrhcy0psu&dl=1"},
@@ -165,7 +165,7 @@
     "1kg_sas_x_hg38": {
         "url": "https://www.dropbox.com/scl/fi/r6qa9l6h9rc5rvenjsdqo/SAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=mucn2zizrlkebn1e5q7rtzu8e&dl=1",
         "description": "1000 Genomes Project South Asian (1KG SAS) X-chromosome VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the SAS population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for SAS population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/5ktxs24sq6v8hvaowr4xv/SAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=5y2z66b3s6bgzoikdjvr46ccw&dl=1"},
@@ -174,7 +174,7 @@
     "1kg_amr_x_hg38": {
         "url": "https://www.dropbox.com/scl/fi/5brd1nh7u20oigtb17mkb/AMR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=zt0d0nqmlq3u5uu6ukwvof6ta&dl=1",
         "description": "1000 Genomes Project American (1KG AMR) X-chromosome VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the AMR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for AMR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/8bz6uwjgw8bj16uaz6kye/AMR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=pc2mepgosxdijpfru4vhum5v&dl=1"},
@@ -183,7 +183,7 @@
     "1kg_afr_x_hg19": {
         "url": "https://www.dropbox.com/scl/fi/kz5j4532pyaigceww0vg5/AFR.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=sti0g2ri004chu8b12pqgicvw&dl=1",
         "description": "1000 Genomes Project African (1KG AFR) X-chromosome VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the AFR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for AFR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/oadjwamy5pe1ilv2237gq/AFR.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=a10bhxrfa904dasrcuc40njq4&dl=1"},
@@ -192,7 +192,7 @@
     "1kg_pan_x_hg19": {
         "url": "https://www.dropbox.com/scl/fi/rwov9vszj8rx78u65dxnk/PAN.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=ej33zb9ulwdfseur1surz653z&dl=1",
         "description": "1000 Genomes Project Pan-ancestry (1KG PAN) X-chromosome VCF on the hg19 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the PAN population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for PAN population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/x0n1htmkbulqybr5cc2cb/PAN.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=8rga64u5gm9vp9whqwlj37hre&dl=1"},
@@ -201,7 +201,7 @@
     "1kg_afr_x_hg38": {
         "url": "https://www.dropbox.com/scl/fi/ef8h09lhg8vmdxfxsayv4/AFR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=96xjxu546sbbq5hbgaihh84l8&dl=1",
         "description": "1000 Genomes Project African (1KG AFR) X-chromosome VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the AFR population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for AFR population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/tlwhui80cy32mtx6hc8f6/AFR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=ana497w8is840ygarx3w1v5pc&dl=1"},
@@ -210,7 +210,7 @@
     "1kg_pan_x_hg38": {
         "url": "https://www.dropbox.com/scl/fi/tf7j5540jyzxz2oo7jtho/PAN.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=e872ihg5477mlu30vet1e5lvk&dl=1",
         "description": "1000 Genomes Project Pan-ancestry (1KG PAN) X-chromosome VCF on the hg38 reference. Multi-allelic variants were decomposed. Variants were normalized. The INFO field includes the AF annotation, representing allele frequency in the PAN population.",
-        "suggested_use": "LD reference panel for creating region plot",
+        "suggested_use": "LD reference panel for creating region plot; infer strand for PAN population",
         "related_files": "",
         "tbi": {
             "url":"https://www.dropbox.com/scl/fi/u28zo2sjbcmtfs69zqaya/PAN.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=t5psxvoewd1oog2hwzellc78p&dl=1"},

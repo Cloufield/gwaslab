@@ -65,6 +65,14 @@ def auto_check_vcf_chr_dict(
             log.write(" -No prefix for chromosomes in the VCF/BCF files.", verbose=verbose)
             vcf_chr_dict = get_number_to_chr()
     
+    # Filter to only include contigs present in the VCF file
+    if vcf_path is not None:
+        vcf_bcf = VariantFile(vcf_path)
+        valid_contigs = set(vcf_bcf.header.contigs)
+        vcf_chr_dict_filtered = {k: v for k, v in vcf_chr_dict.items() if v in valid_contigs}
+        if vcf_chr_dict_filtered:
+            return vcf_chr_dict_filtered
+    
     return vcf_chr_dict or get_number_to_chr()
 
 def check_vcf_chr_prefix(

@@ -55,7 +55,7 @@ def initiate_config(log=Log()):
         json.dump(dict,f,indent=4) 
         log.write(" -Config file path:",config_path)
 
-def update_config(log=Log()):
+def update_config(log=Log(), verbose=True, show_all=False):
     '''
     Update the configuration file or create a new one if missing.
 
@@ -82,6 +82,10 @@ def update_config(log=Log()):
     
     # check if the ref file exists. If not, remove it from dicts.
     to_remove=[]
+
+    key_list = []
+    filtered_dicts = {}
+
     for key,value in dicts["downloaded"].items():
         if type(value) is not dict: 
             to_remove.append(key)
@@ -89,7 +93,14 @@ def update_config(log=Log()):
         if not path.exists(value["local_path"]):
             to_remove.append(key)
         else:
-            log.write("  -",key,":", dicts["downloaded"][key])
+            key_list.append(key)
+            filtered_value = {}
+            for value_key, value_value in value.items():
+                if value_key in ["local_path","description","suggested_use"]:
+                    filtered_value[value_key] = value_value
+            filtered_dicts[key] = filtered_value
+
+    log.write(" - Local file keywords: "," ".join(key_list), verbose=verbose)
 
     # remove from dict
     for i in to_remove:
@@ -99,7 +110,7 @@ def update_config(log=Log()):
     with open(config_path, 'w') as f:
         json.dump(dicts,f,indent=4)
     # also return the dics
-    return dicts["downloaded"]
+    return filtered_dicts if not show_all else dicts["downloaded"]
 
 def set_default_directory(path):
     '''
@@ -125,7 +136,9 @@ def get_default_directory():
     return options.paths["data_directory"]
 
 ##################################################################################
-def check_available_ref(log=Log(),verbose=True):
+def check_available_ref(log=Log(), 
+                        show_all=False,
+                        verbose=True):
     '''
     Load and return the list of available reference files from configuration for downloading.
 
@@ -141,9 +154,20 @@ def check_available_ref(log=Log(),verbose=True):
         update_available_ref()
     dicts = json.load(open(ref_path))
     if dicts is not None:
-        for key,value in dicts.items():
-            log.write(" -",key,":",value, verbose=verbose)
-        return dicts
+        key_list = []
+        filtered_dicts = {}
+        for key, value in dicts.items():
+            key_list.append(key)
+            filtered_value = {}
+            for value_key, value_value in value.items():
+                if value_key in ["description","suggested_use"]:
+                    filtered_value[value_key] = value_value
+            
+            #log.write(" -",key,":",filtered_value, verbose=verbose, show_time=False)
+            filtered_dicts[key] = filtered_value
+
+        log.write(" - Avaiable keywords: "," ".join(key_list), verbose=verbose)
+        return filtered_dicts if not show_all else dicts
     else:
         log.write(" -No available reference files.", verbose=verbose)
     log.write("Finished checking available reference files...", verbose=verbose)
@@ -165,7 +189,7 @@ def update_available_ref(log=Log()):
 
 def check_downloaded_ref(log=Log()):
     '''
-    Verify and return records of already downloaded reference files.
+    Verify and return records of local reference files that are already downloaded or manually added by user.
 
     Returns
     -------
@@ -448,15 +472,15 @@ def update_record(*keys, value, log=Log()):
 
 def add_local_data(keyword, 
                    local_path, 
-                   format,
-                   description,
-                   md5sum, 
-                   suggested_use,
-                   tbi,
-                   csi,
+                   format= None,
+                   description= None,
+                   md5sum= None,
+                   suggested_use= None,
+                   tbi = None,
+                   csi= None,
                    log=Log()):
     """
-    Add local data file to configuration without downloading.
+    Add or update local data file to configuration without downloading.
     
     Parameters
     ----------
@@ -492,7 +516,6 @@ def add_local_data(keyword,
     # Prepare metadata structure
     meta = {
         "local_path": local_path,
-        "url": "",
         "description": description,
         "suggested_use": suggested_use,
         "md5sum": md5sum,

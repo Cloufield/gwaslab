@@ -494,13 +494,13 @@ class Sumstats():
         basic_check : bool, optional
             Whether to run basic QC pipeline (fixID, fixchr, fixpos, etc.)
         ref_seq : str or None
-            Reference sequence file in fasta format for allele flipping
+            Full path to reference sequence file in fasta format for allele flipping
         ref_rsid_tsv : str or None
-            Path to rsID TSV reference file
+            Full path to rsID TSV reference file
         ref_rsid_vcf : str or None
-            Path to rsID VCF/BCF reference file
+            Full path to rsID VCF/BCF reference file
         ref_infer : str or None
-            Reference VCF/BCF file for strand inference
+            Full path to Reference VCF/BCF file for strand inference
         ref_alt_freq : float or None
             Allele frequency field name in VCF/BCF INFO for strand inference
         ref_maf_threshold : float
@@ -510,7 +510,7 @@ class Sumstats():
         ref_seq_mode : {'v', 's'}, optional
             Reference sequence processing mode ('v' for vectorized, 's' for sequential)
         n_cores : int, optional
-            Number of cores for parallel processing
+            Number of cores/threads for parallel processing
         remove : bool, optional
             Whether to remove bad variants during QC
         checkref_args : dict, optional
@@ -523,8 +523,6 @@ class Sumstats():
             Arguments passed to infer_strand
         flipallelestats_args : dict, optional
             Arguments passed to flip_allele_stats
-        liftover_args : dict, optional
-            Arguments passed to liftover
         fixid_args : dict, optional
             Arguments passed to fix_ID
         fixchr_args : dict, optional
@@ -596,11 +594,12 @@ class Sumstats():
             gc.collect()
             
         if ref_infer is not None: 
-            inferstrand_args = remove_overlapping_kwargs(inferstrand_args,{"log","verbose","ref_infer","ref_alt_freq","maf_threshold","ref_maf_threshold","n_cores"})
+            inferstrand_args = remove_overlapping_kwargs(inferstrand_args,{"log","verbose","ref_infer","ref_alt_freq","maf_threshold","ref_maf_threshold","n_cores","path","assign_cols"})
             if sweep_mode:
                 self.data = _infer_strand_with_annotation(self.data, 
-                                                        path = ref_rsid_vcf, 
-                                                        n_cores=n_cores,
+                                                        path = ref_infer, 
+                                                        assign_cols = ref_alt_freq, 
+                                                        threads=n_cores,
                                                         log=self.log,
                                                         verbose=verbose,
                                                         **inferstrand_args)
@@ -636,7 +635,7 @@ class Sumstats():
             assignrsid_args = remove_overlapping_kwargs(assignrsid_args,{"ref_mode","path","n_cores","log","verbose"})
 
             if sweep_mode:
-                self.data = _assign_rsid(self.data, path = ref_rsid_vcf, n_cores=n_cores,log=self.log,verbose=verbose,**assignrsid_args)
+                self.data = _assign_rsid(self.data, path = ref_rsid_vcf, threads=n_cores,log=self.log,verbose=verbose,**assignrsid_args)
             else:
                 self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
                                                      n_cores=n_cores,log=self.log,verbose=verbose,**assignrsid_args)   
