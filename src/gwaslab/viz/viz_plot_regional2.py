@@ -555,17 +555,37 @@ def _plot_regional(
 
 # + ###########################################################################################################################################################################
 def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
+    """
+    Retrieve the lead variant index from sumstats based on rsID/SNPID/CHR:POS:NEA:EA in region_ref.
+    
+    Parameters
+    ----------
+    sumstats : pandas.DataFrame, optional
+        Summary statistics DataFrame containing variant data.
+    region_ref : str or list, optional
+        Reference variant(s) to search for. If None, uses the variant with maximum scaled P-value.
+    log : gwaslab.Log, optional
+        Logging object for recording messages. Default is None.
+    verbose : bool, optional
+        Whether to show progress. Default is True.
+    
+    Returns
+    -------
+    lead_id : int or None
+        Index of the lead variant if found, otherwise None.
+    """
+    region_ref_to_check = copy.copy(region_ref)
     # region_ref_single (not none) -> specified variant ID
     # convert region_ref_single -> lead_id(index)
     
     #
-    region_ref_to_check = copy.copy(region_ref)
     try: 
         if len(region_ref_to_check)>0 and type(region_ref_to_check) is not str:
             region_ref_to_check = region_ref_to_check[0]
     except:
         pass
     
+    # index of lead variant
     lead_id=None
     
     # match by rsID 
@@ -616,7 +636,7 @@ def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
                 lead_id = None
                 return lead_id
         else:
-            log.write(" -Reference variant ID: {} - {}".format(region_ref_to_check, lead_id), verbose=verbose)
+            log.write(" -Reference variant ID: {} with Index {}".format(region_ref_to_check, lead_id), verbose=verbose)
 
     if lead_id is None:
         log.write(" -Extracting lead variant...", verbose=verbose)
@@ -625,7 +645,10 @@ def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
     return lead_id
 
 def _pinpoint_lead(sumstats,ax1,region_ref, region_ref_total_n, lead_color, marker_size, log, verbose, region_marker_shapes):
-    
+    """
+    Extract lead_id
+    Draw a single marker for the lead_id
+    """
     if region_ref is None:
         log.write(" -Extracting lead variant..." , verbose=verbose)
         lead_id = sumstats["scaled_P"].idxmax()
@@ -634,10 +657,10 @@ def _pinpoint_lead(sumstats,ax1,region_ref, region_ref_total_n, lead_color, mark
     
     if lead_id is not None:
         if region_ref_total_n <2:
-            # single-ref mode
+            # single-ref mode: just use SHAPE
             marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]]
         else:
-            # multi-ref mode
+            # multi-ref mode: just use SHAPE - 1
             marker_shape = region_marker_shapes[sumstats.loc[lead_id,"SHAPE"]-1]
 
     if lead_id is not None:
@@ -732,8 +755,8 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
     if region_legend_marker==True:
         for group_index, ref in enumerate(region_ref):
 
-            data_to_point_y =((axins1.bbox.get_points()[1][1]-axins1.bbox.get_points()[0][1])*height_raw/(ymax -ymin))
-            data_to_point_x =((axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0])*width_raw/(xmax -xmin))
+            data_to_point_y =((axins1.bbox.get_points()[1][1]-axins1.bbox.get_points()[0][1])*height_raw/(ymax -ymin)
+            data_to_point_x =((axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0])*width_raw/(xmax -xmin)
             y_to_x = data_to_point_y/data_to_point_x
             x_to_y = 1/y_to_x
             xyratio = min(y_to_x, x_to_y)
@@ -762,8 +785,8 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
             # ([x0,y0][x1,y1])
             #  y pixels / per data 1
             
-            data_to_point_y =((axins1.bbox.get_points()[1][1]-axins1.bbox.get_points()[0][1])*height_raw/(ymax -ymin))
-            data_to_point_x =((axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0])*width_raw/(xmax -xmin))
+            data_to_point_y =((axins1.bbox.get_points()[1][1]-axins1.bbox.get_points()[0][1])*height_raw/(ymax -ymin)
+            data_to_point_x =((axins1.bbox.get_points()[1][0]-axins1.bbox.get_points()[0][0])*width_raw/(xmax -xmin)
             
             if data_to_point_y < data_to_point_x:
                 length_raw = 1 #height_raw
@@ -781,7 +804,7 @@ def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_ind
             
             axins1.scatter(x, y, s=s, marker=marker,c=c, edgecolors="black", linewidths = 1,  clip_on=False, zorder=100)
 
-            pad = ((marker_side_in_data*2+0.02)* font_points_per_data_1 * length_raw/100)
+            pad = ((marker_side_in_data*2+0.02)* font_points_per_data_1 * length_raw/100
             tick_length=(abs(x)* font_points_per_data_1 * length_raw/100)
             axins1.tick_params(axis="y", pad=pad-0.5*tick_length, length=tick_length) 
 
@@ -1155,7 +1178,7 @@ def process_gtf(gtf_path,
         gtf = gtf.loc[gtf["seqname"]==gtf_chr_dict[region[0]],:]
 
     # filter in region
-    genes_1mb = gtf.loc[(gtf["seqname"]==to_query_chrom)&(gtf["start"]<region[2])&(gtf["end"]>region[1]),:].copy()
+    genes_1mb = gtf.loc[(gtf["seqname"]==to_query_chrom)&(gtf["start"]<region[2])&(gtf["end"]>region[1]),:]
     
     # extract biotype
     #genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
@@ -1183,7 +1206,7 @@ def process_gtf(gtf_path,
 
     # extract protein coding gene
     if region_protein_coding is True:
-        #genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:].copy()
+        #genes_1mb  =  genes_1mb.loc[genes_1mb["gene_biotype"]=="protein_coding",:]
         pc_genes_1mb_list = genes_1mb.loc[(genes_1mb["feature"]=="gene")& (genes_1mb["gene_biotype"]=="protein_coding") & (genes_1mb["name"]!=""),"name"].values
         genes_1mb = genes_1mb.loc[(genes_1mb["feature"].isin(["exon","gene"])) & (genes_1mb["name"].isin(pc_genes_1mb_list)),:]
     # extract exon
@@ -1249,7 +1272,7 @@ def assign_stack(uniq_gene_region):
                                 stacks[i].insert(j+1,(row["left"],row["right"]))
                                 stack_dic[row["name"]] = i
                                 break
-                        #last one in a stack
+                        # last one in a stack
                         elif row["left"]>stacks[i][j][1]:
                             stacks[i].append((row["left"],row["right"]))
                             stack_dic[row["name"]] = i
