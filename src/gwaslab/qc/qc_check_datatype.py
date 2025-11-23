@@ -9,7 +9,7 @@ dtype_dict ={
     "SNPID":["string","object"],
     "rsID": ["string","object"],
     "CHR":  ["Int64","int64","int32","Int32","int"],
-    "POS":  ["int64","Int64"],
+    "POS":  ["int64","Int64","int"],
     "EA":   ["category"],  
     "NEA":["category"],  
     "REF":["category"],  
@@ -126,3 +126,20 @@ def check_dataframe_memory_usage(sumstats, log, verbose):
     except:
         log.warning("Error: cannot get Memory usage...")
 
+def check_datatype_for_cols(sumstats, cols=None, verbose=True, log=Log()):
+    if cols is None:
+        cols = []
+    try:
+        failed = []
+
+        for header,dtype in sumstats.dtypes.items():
+            if header in cols:
+                verified_str = verify_datatype(header, dtype)
+                if verified_str=="F":
+                    failed.append(header)
+    except:
+        pass
+
+    if len(failed) >0:
+        log.warning("Data types were not fixed for : {} ".format(",".join(failed)))
+        raise ValueError("Please run basic_check to fix the dtypes for : {} ".format(",".join(failed)))
