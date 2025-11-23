@@ -7,6 +7,7 @@ from multiprocessing import  Pool
 from liftover import get_lifter
 from liftover import ChainFile
 from functools import partial
+from functools import wraps
 
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.g_vchange_status import status_match
@@ -25,7 +26,7 @@ from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_build import _process_build
 from gwaslab.qc.qc_build import _set_build
-
+from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.util.util_in_fill_data import _convert_betase_to_mlog10p
 from gwaslab.util.util_in_fill_data import _convert_betase_to_p
 from gwaslab.util.util_in_fill_data import _convert_mlog10p_to_p
@@ -40,16 +41,16 @@ from gwaslab.util.util_in_fill_data import _convert_mlog10p_to_p
 #fixallele
 #normalizeallele
 #normalizevariant
-#checkref
-#sanitycheckstats
-#_check_data_consistency
 #flipallelestats
-#parallelizeassignrsid
 #sortcoordinate
 #sortcolumn
 
-###############################################################################################################
-
+@with_logging(
+        start_to_msg= "check SNPID/rsID",
+        finished_msg= "checking SNPID/rsID",
+        start_function= ".fix_id()",
+        start_cols=[]
+)
 def fixID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",fixprefix=False,
        fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False, reversea=False,
@@ -88,24 +89,6 @@ def fixID(sumstats,
     pd.DataFrame
         Modified sumstats with fixed data.
     '''
-
-    ##start function with col checking##########################################################
-    _start_line = "check SNPID/rsID"
-    _end_line = "checking SNPID/rsID"
-    _start_cols =[]
-    _start_function = ".fix_id()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     ############################  checking datatype ###################################################  
     if rsid in sumstats.columns:
@@ -400,11 +383,14 @@ def fixID(sumstats,
         else:
             log.write(" -ID unfixable: no CHR and POS columns or no SNPID. ", verbose=verbose)
 
-    finished(log,verbose,_end_line)
     return sumstats
 
-
-
+@with_logging(
+        start_to_msg= "strip SNPID",
+        finished_msg= "stripping SNPID",
+        start_function= ".strip_snpid()",
+        start_cols=["SNPID"]
+)
 def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
     '''
     Strip non-standard characters from SNPID values.
@@ -420,22 +406,6 @@ def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
     pd.DataFrame
         Modified sumstats with stripped SNPIDs.
     '''
-    ##start function with col checking##########################################################
-    _start_line = "strip SNPID"
-    _end_line = "stripping SNPID"
-    _start_cols =["SNPID"]
-    _start_function = ".strip_snpid()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
     log.write(" -Checking if SNPID is (xxx:)CHR:POS:ATCG_Allele:ATCG_Allele(:xxx)...(separator: - ,: , _)",verbose=verbose)
     is_chrposrefalt = sumstats[snpid].str.contains(r'[:_-]?\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+[:_-]?', case=False, flags=0, na=False)
     # check if SNPID is NA
@@ -447,9 +417,14 @@ def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
     sumstats.loc[is_chrposrefalt,snpid] = \
         sumstats.loc[is_chrposrefalt,snpid].str.extract(r'[:_-]?(chr)?(\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+)[:_-]?',flags=re.IGNORECASE|re.ASCII)[1].astype("string")  
 
-    finished(log,verbose,_end_line)
     return sumstats
 
+@with_logging(
+        start_to_msg= "flip SNPID from CHR:POS:A1:A2 to CHR:POS:A2:A1",
+        finished_msg= "flipping SNPID",
+        start_function= ".flip_snpid()",
+        start_cols=["SNPID"]
+)
 def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
     '''
     Flip alleles in SNPID values without changing status codes.
@@ -470,22 +445,6 @@ def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
         Modified sumstats with flipped alleles.
     '''
     ##start function with col checking##########################################################
-    
-    _start_line = "flip SNPID"
-    _end_line = "flipping SNPID"
-    _start_cols =["SNPID"]
-    _start_function = ".flip_snpid()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
     log.warning("This function only flips alleles in SNPID without changing EA, NEA, STATUS or any statistics.")
     log.write(" -Checking if SNPID is CHR:POS:ATCG_Allele:ATCG_Allele...(separator: - ,: , _)",verbose=verbose)
     is_chrposrefalt = sumstats[snpid].str.match(r'^\w+[:_-]\d+[:_-][ATCG]+[:_-][ATCG]+$', case=False, flags=0, na=False)
@@ -500,11 +459,16 @@ def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
         + ":"+sumstats.loc[is_chrposrefalt,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[4].astype("string") \
         + ":"+sumstats.loc[is_chrposrefalt,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[3].astype("string")
 
-    finished(log,verbose,_end_line)
     return sumstats
 
 ###############################################################################################################
 # 20230128 
+@with_logging(
+        start_to_msg= "remove duplicated/multiallelic variants",
+        finished_msg= "removing duplicated/multiallelic variants",
+        start_function= ".remove_dup()",
+        start_cols=None
+)
 def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove_na=False,keep_ascend=True,verbose=True,log=Log()):
     """
     Remove duplicate or multiallelic variants based on user-selected criteria.
@@ -540,24 +504,6 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         according to the specified mode.
 
     """
-
-    ##start function with col checking##########################################################
-    _start_line = "remove duplicated/multiallelic variants"
-    _end_line = "removing duplicated/multiallelic variants"
-    _start_cols =[]
-    _start_function = ".remove_dup()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     log.write(" -Removing mode:{}".format(mode), verbose=verbose)
     # sort the variants using the specified column before removing
@@ -650,11 +596,16 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         after_number=len(sumstats) 
         log.write(" -Removed ",pre_number -after_number," variants with NA values in {} .".format(specified_columns), verbose=verbose)  
 
-    finished(log,verbose,_end_line)
     return sumstats
 
 ###############################################################################################################
 # 20230128
+@with_logging(
+        start_to_msg= "fix chromosome notation (CHR)",
+        finished_msg= "fixing chromosome notation (CHR)",
+        start_function= ".fix_chr()",
+        start_cols=["CHR","STATUS"]
+)
 def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()):
     """
     Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
@@ -692,23 +643,6 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
     chrom_list : list of str or int, optional
         List of valid chromosome labels or numeric values. Default is ["1", ..., "25", "X", "Y", "MT"]
     """
-    ##start function with col checking##########################################################
-    _start_line = "fix chromosome notation (CHR)"
-    _end_line = "fixing chromosome notation (CHR)"
-    _start_cols =[chrom,status]
-    _start_function = ".fix_chr()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     #chrom_list = get_chr_list() #bottom 
     if chrom_list is None:
@@ -829,11 +763,16 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         log.write(" -Removed {} variants with CHR < {}...".format(sum(out_of_range_chr),minchr), verbose=verbose)
         sumstats = sumstats.loc[~out_of_range_chr,:]
 
-    finished(log,verbose,_end_line)
     return sumstats
 
 ###############################################################################################################    
 # 20230128
+@with_logging(
+        start_to_msg= "fix basepair positions (POS)",
+        finished_msg= "fixing basepair positions (POS)",
+        start_function= ".fix_pos()",
+        start_cols=["POS","STATUS"]
+)
 def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_limit=0 , upper_limit=None , limit=250000000, log=Log()):
     '''
     Standardize and validate genomic base-pair positions.
@@ -860,23 +799,6 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
     pandas.DataFrame
         Summary statistics with standardized and validated base-pair positions.
     '''
-    ##start function with col checking##########################################################
-    _start_line = "fix basepair positions (POS)"
-    _end_line = "fixing basepair positions (POS)"
-    _start_cols =[pos,status]
-    _start_function = ".fix_pos()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     if upper_limit is None:
         upper_limit = limit
@@ -919,11 +841,16 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
         remain_var_num = len(sumstats)
         log.write(" -Removed "+str(all_var_num - remain_var_num)+" variants with bad positions.", verbose=verbose)        
  
-    finished(log,verbose,_end_line)
     return sumstats
 
 ###############################################################################################################    
 # 20220514
+@with_logging(
+        start_to_msg= "fix alleles (EA and NEA)",
+        finished_msg= "fixing alleles (EA and NEA)",
+        start_function= ".fix_allele()",
+        start_cols=["EA","NEA","STATUS"]
+)
 def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
     """
     Validate and standardize allele representations.
@@ -944,22 +871,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
     pandas.DataFrame
         Summary statistics table with validated and standardized allele values.
     """
-    ##start function with col checking##########################################################
-    _start_line = "fix alleles (EA and NEA)"
-    _end_line = "fixing alleles (EA and NEA)"
-    _start_cols =[ea, nea,status]
-    _start_function = ".fix_allele()"
-    _must_args ={}
 
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
     ############################################################################################
     #try:
     #    ea_missing = sum(sumstats[ea].isna())
@@ -1040,12 +952,17 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
     if sum(is_eanea_fixed&is_normalized)>0:
         sumstats.loc[is_eanea_fixed&is_normalized,status]     = vchange_status(sumstats.loc[is_eanea_fixed&is_normalized, status],  5,"4","3")
 
-    finished(log,verbose,_end_line)
     return sumstats
 
 ###############################################################################################################   
 # 20220721
 
+@with_logging(
+        start_to_msg= "normalize indels",
+        finished_msg= "normalizing indels",
+        start_function= ".normalize()",
+        start_cols=["EA","NEA","STATUS"]
+)
 def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",chunk=3000000,n_cores=1,verbose=True,log=Log()):
     '''
     Normalize indels in parallel.
@@ -1071,22 +988,6 @@ def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS
     pandas.DataFrame
         Summary statistics with normalized indel allele representations.
     '''
-    ##start function with col checking##########################################################
-    _start_line = "normalize indels"
-    _end_line = "normalizing indels"
-    _start_cols =[ea, nea,status]
-    _start_function = ".normalize()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
     ############################################################################################
 
     #variants_to_check = status_match(sumstats[status],5,[4,5]) #
@@ -1094,7 +995,6 @@ def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS
     variants_to_check = sumstats[status].str[4].str.match(r'4|5', case=False, flags=0, na=False)
     if sum(variants_to_check)==0:
         log.write(" -No available variants to normalize..", verbose=verbose)
-        log.write("Finished normalizing variants successfully!", verbose=verbose)
         return sumstats
     ###############################################################################################################
     if mode=="v":
@@ -1186,7 +1086,6 @@ def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS
     except:
         sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
   
-    finished(log,verbose,_end_line)
     return sumstats
 
 def normalizeallele(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
@@ -1302,357 +1201,6 @@ def normalizevariant(pos,a,b,status):
     return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end # change_status(status,5,3) #
 ""
 
-
-###############################################################################################################
-# 20220426
-def add_tolerence(stats, float_tolerance, mode):
-    if "l" in mode:
-        stats = (stats[0] - float_tolerance if stats[0]!=float("Inf") else float("Inf"), stats[1])
-    if "r" in mode:
-        stats = (stats[0] , stats[1] + float_tolerance if stats[0]!=float("Inf") else float("Inf"))
-    return stats
-
-
-def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, verbose, dtype="Int64"):
-    pre_number=len(sumstats)
-    if header in coltocheck and header in sumstats.columns:
-        cols_to_check.append(header)
-        if header=="STATUS": 
-            log.write(" -Checking STATUS and converting STATUS to categories....", verbose=verbose) 
-            sumstats[header] = pd.Categorical(sumstats[header],categories=STATUS_CATEGORIES)
-            return sumstats
-        
-        if dtype in ["Int64","Int32","int","int32","in64"]:
-            log.write(" -Checking if {} <= {} <= {} ...".format( var_range[0] ,header, var_range[1]), verbose=verbose) 
-            sumstats[header] = np.floor(pd.to_numeric(sumstats[header], errors='coerce')).astype(dtype)
-            is_valid = (sumstats[header]>=var_range[0]) & (sumstats[header]<=var_range[1])
-        elif dtype in ["Float64","Float32","float","float64","float32"]:
-            log.write(" -Checking if {} < {} < {} ...".format( var_range[0] ,header, var_range[1]),verbose=verbose) 
-            sumstats[header] = pd.to_numeric(sumstats[header], errors='coerce').astype(dtype)
-            is_valid = (sumstats[header]>var_range[0]) & (sumstats[header]<var_range[1])
-        is_valid = is_valid.fillna(False)
-
-        if header=="P":
-            is_low_p =  sumstats["P"] == 0 
-            if sum(is_low_p) >0:
-                log.warning("Extremely low P detected (P=0 or P < minimum positive value of float64) : {}".format(sum(is_low_p)))
-                log.warning("Please consider using MLOG10P instead.")
-        
-        if header=="INFO":
-            is_high_info =  sumstats["INFO"]>1 
-            if sum(is_high_info) >0:
-                log.warning("High INFO detected (INFO>1) : {}".format(sum(is_high_info)))
-                log.warning("max(INFO): {}".format(sumstats["INFO"].max()))
-                log.warning("Please check if this is as expected.")
-
-        if sum(~is_valid)>0:
-            try:
-                if "SNPID" in sumstats.columns:
-                    id_to_use = "SNPID"
-                elif "rsID" in sumstats.columns:
-                    id_to_use = "rsID"
-                invalid_ids = sumstats.loc[~is_valid, id_to_use].head().astype("string")
-                invalid_values = sumstats.loc[~is_valid, header].head().astype("string").fillna("NA")
-                log.write("  -Examples of invalid variants({}): {} ...".format(id_to_use, ",".join(invalid_ids.to_list()) ), verbose=verbose) 
-                log.write("  -Examples of invalid values ({}): {} ...".format(header, ",".join(invalid_values.to_list()) ), verbose=verbose) 
-            except:
-                pass
-
-        sumstats = sumstats.loc[is_valid,:]
-        after_number=len(sumstats)
-        log.write(" -Removed {} variants with bad/na {}.".format(pre_number - after_number, header), verbose=verbose) 
-    return sumstats
-
-def sanitycheckstats(sumstats,
-                     coltocheck=None,
-                     n=(0,2**31-1),
-                     ncase=(0,2**31-1),
-                     ncontrol=(0,2**31-1),
-                     eaf=(0,1),
-                     mac=(0,2**31-1),
-                     maf=(0,0.5),
-                     chisq=(0,float("Inf")),
-                     z=(-9999,9999),
-                     t=(-99999,99999),
-                     f=(0,float("Inf")),
-                     p=(0,1),
-                     mlog10p=(0,99999),
-                     beta=(-100,100),
-                     se=(0,float("Inf")),
-                     OR=(np.exp(-100),np.exp(100)),
-                     OR_95L=(0,float("Inf")),
-                     OR_95U=(0,float("Inf")),
-                     HR=(np.exp(-100),np.exp(100)),
-                     HR_95L=(0,float("Inf")),
-                     HR_95U=(0,float("Inf")),
-                     info=(0,2),
-                     float_tolerance = 1e-7,
-                     verbose=True,
-                     log=Log()):
-    '''
-    Check whether numerical summary statistics fall within valid ranges.
-
-    This function validates commonly used GWAS fields (sample sizes, allele
-    frequencies, effect sizes, test statistics, etc.) against expected numeric
-    ranges. Columns not present in the input are ignored.
-
-    Parameters
-    ----------
-    n : tuple of (float, float), optional
-        Valid range for sample size (N).
-    ncase : tuple of (float, float), optional
-        Valid range for number of cases (N_CASE).
-    ncontrol : tuple of (float, float), optional
-        Valid range for number of controls (N_CONTROL).
-    eaf : tuple of (float, float), optional
-        Valid range for effect allele frequency (EAF).
-    mac : tuple of (float, float), optional
-        Valid range for minor allele count (MAC).
-    maf : tuple of (float, float), optional
-        Valid range for minor allele frequency (MAF).
-    chisq : tuple of (float, float), optional
-        Valid range for chi-square statistics (CHISQ).
-    z : tuple of (float, float), optional
-        Valid range for z-scores (Z).
-    t : tuple of (float, float), optional
-        Valid range for t-statistics (T).
-    f : tuple of (float, float), optional
-        Valid range for F-statistics (F).
-    p : tuple of (float, float), optional
-        Valid range for p-values (P).
-    mlog10p : tuple of (float, float), optional
-        Valid range for negative log10 p-values (MLOG10P).
-    beta : tuple of (float, float), optional
-        Valid range for effect size estimates (BETA).
-    se : tuple of (float, float), optional
-        Valid range for standard errors (SE).
-    OR : tuple of (float, float), optional
-        Valid range for odds ratios (OR).
-    OR_95L : tuple of (float, float), optional
-        Valid range for lower bound of 95% CI for OR.
-    OR_95U : tuple of (float, float), optional
-        Valid range for upper bound of 95% CI for OR.
-    HR : tuple of (float, float), optional
-        Valid range for hazard ratios (HR).
-    HR_95L : tuple of (float, float), optional
-        Valid range for lower bound of 95% CI for HR.
-    HR_95U : tuple of (float, float), optional
-        Valid range for upper bound of 95% CI for HR.
-    info : tuple of (float, float), optional
-        Valid range for imputation info score (INFO).
-    float_tolerance : float, default 0.0
-        Numerical tolerance applied when comparing floating-point values.
-    verbose : bool, default False
-        If True, print progress and warnings.
-
-    Note:
-    Sanity check ranges (default; v3.4.33):
-        N:      Int32    , N>0 , 
-        EAF:    float32  , 0 <= EAF <=1, 
-        P:      float64  , 0 <= P <= 1, 
-        BETA:   float64  , abs(BETA) <100
-        SE:     float64  , SE > 0
-        OR:     float64  , np.exp(-100) <OR < np.exp(100)
-        OR_95L: float64  , OR_95L >0
-        OR_95U: float64  , OR_95L >0
-        HR:     float64  , np.exp(-100) <log(HR) <np.exp(100)
-        HR_95L: float64  , HR_95L >0
-        HR_95U: float64  , HR_95L >0
-        INFO:   float32  , 1>=INFO>0
-        Z       float64  , -9999 < Z < 9999
-        T       float64  , -99999 < T < 99999
-        F       float64  , F > 0 
-
-    Returns:
-        pd.DataFrame: Modified sumstats with invalid variants removed.
-    '''
-    ##start function with col checking##########################################################
-    _start_line = "perform sanity check for statistics"
-    _end_line = "sanity check for statistics"
-    _start_cols =[]
-    _start_function = ".check_sanity()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
-
-    log.write(" -Comparison tolerance for floats: {}".format(float_tolerance), verbose=verbose) 
-    eaf = add_tolerence(eaf, float_tolerance, "lr")
-    maf = add_tolerence(maf, float_tolerance, "lr")
-    beta = add_tolerence(beta, float_tolerance, "lr")
-    se = add_tolerence(se, float_tolerance, "lr")
-    mlog10p = add_tolerence(mlog10p, float_tolerance, "lr")
-    OR = add_tolerence(OR, float_tolerance, "lr")
-    OR_95L = add_tolerence(OR_95L, float_tolerance, "lr")
-    OR_95U = add_tolerence(OR_95U, float_tolerance, "lr")
-    HR = add_tolerence(HR, float_tolerance, "lr")
-    HR_95L = add_tolerence(HR_95L, float_tolerance, "lr")
-    HR_95U = add_tolerence(HR_95U, float_tolerance, "lr")
-    info = add_tolerence(info, float_tolerance, "lr")
-    z = add_tolerence(z, float_tolerance, "lr")
-    p = add_tolerence(p, float_tolerance, "lr")
-    f = add_tolerence(f, float_tolerance, "lr")
-    chisq = add_tolerence(chisq, float_tolerance, "lr")
-    ############################################################################################
-    ## add direction
-    if coltocheck is None:
-        coltocheck = ["P","MLOG10P","INFO","Z","BETA","SE","EAF","CHISQ","F","N","N_CASE","N_CONTROL","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","STATUS"]
-    
-    cols_to_check=[]
-    oringinal_number=len(sumstats)
-    sumstats = sumstats.copy()
-    
-    ###Int64 ################################################################################################################################################
-    sumstats = check_range(sumstats, var_range=n, header="N", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="Int64")
-    sumstats = check_range(sumstats, var_range=ncase, header="N_CASE", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="Int64")
-    sumstats = check_range(sumstats, var_range=ncontrol, header="N_CONTROL", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="Int64")
-
-    ###float32 ################################################################################################################################################
-    sumstats = check_range(sumstats, var_range=eaf, header="EAF", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float32")
-    sumstats = check_range(sumstats, var_range=maf, header="MAF", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float32")
-    sumstats = check_range(sumstats, var_range=info, header="INFO", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float32")
-
-    ###float64 ################################################################################################################################################
-    sumstats = check_range(sumstats, var_range=chisq, header="CHISQ", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=z, header="Z", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=t, header="T", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=f, header="F", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=p, header="P", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=mlog10p, header="MLOG10P", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=beta, header="BETA", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=se, header="SE", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=OR, header="OR", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=OR_95L, header="OR_95L", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=OR_95U, header="OR_95U", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=HR, header="HR", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=HR_95L, header="HR_95L", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    sumstats = check_range(sumstats, var_range=HR_95U, header="HR_95U", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
-    ###STATUS ###############################################################################################################################################
-    sumstats = check_range(sumstats, var_range=None, header="STATUS", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="category")
-
-    after_number=len(sumstats)
-    log.write(" -Removed "+str(oringinal_number - after_number)+" variants with bad statistics in total.",verbose=verbose) 
-    log.write(" -Data types for each column:",verbose=verbose)
-    check_datatype(sumstats,verbose=verbose, log=log)
-    finished(log,verbose,_end_line)
-    return sumstats
-
-### check consistency #############################################################################################################################################
-
-def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG10P",rtol=1e-3, atol=1e-3, equal_nan=True, verbose=True,log=Log()):
-    '''
-    Check consistency between related statistical values. Minor inconsistencies are likely due to rounding.
-
-    Parameters
-    ----------
-    rtol : float, default 1e-05
-        Relative tolerance for comparisons (fractional).
-    atol : float, default 1e-08
-        Absolute tolerance for comparisons (absolute threshold).
-    equal_nan : bool, default False
-        If True, treat NaN values as equal during consistency checks.
-    verbose : bool, default False
-        If True, print progress or warning messages.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Summary statistics table including annotations for detected inconsistencies.
-    '''
-    ##start function with col checking##########################################################
-    _start_line = "check data consistency across columns"
-    _end_line = "checking data consistency across columns"
-    _start_cols =[]
-    _start_function = ".check_data_consistency()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
-
-    log.write(" -Tolerance: {} (Relative) and {} (Absolute)".format(rtol, atol),verbose=verbose)
-    check_status = 0
-    
-    if "SNPID" in sumstats.columns:
-        id_to_use = "SNPID"
-    elif "rsID" in sumstats.columns:
-        id_to_use = "rsID"
-    else:
-        log.write(" -SNPID/rsID not available...SKipping",verbose=verbose)
-        log.write("Finished checking data consistency across columns.",verbose=verbose) 
-        return 0
-    
-    
-    if "BETA" in sumstats.columns and "SE" in sumstats.columns:
-        if "MLOG10P" in sumstats.columns:
-            log.write(" -Checking if BETA/SE-derived-MLOG10P is consistent with MLOG10P...",verbose=verbose)
-            betase_derived_mlog10p =  _convert_betase_to_mlog10p(sumstats["BETA"], sumstats["SE"])
-            is_close = np.isclose(betase_derived_mlog10p, sumstats["MLOG10P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
-            diff = betase_derived_mlog10p - sumstats["MLOG10P"]
-            if sum(~is_close)>0:
-                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
-                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
-            else:
-                log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
-            check_status=1
-        
-        if "P" in sumstats.columns:
-            log.write(" -Checking if BETA/SE-derived-P is consistent with P...",verbose=verbose)
-            betase_derived_p =  _convert_betase_to_p(sumstats["BETA"], sumstats["SE"])
-            is_close = np.isclose(betase_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
-            diff = betase_derived_p - sumstats["P"]
-            if sum(~is_close)>0:
-                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
-                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
-            else:
-                log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
-            check_status=1
-    
-    if "MLOG10P" in sumstats.columns and "P" in sumstats.columns:
-        log.write(" -Checking if MLOG10P-derived-P is consistent with P...",verbose=verbose)
-        mlog10p_derived_p = _convert_mlog10p_to_p(sumstats["MLOG10P"])
-        is_close = np.isclose(mlog10p_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
-        diff = mlog10p_derived_p - sumstats["P"]
-        if sum(~is_close)>0:
-            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
-            log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
-        else:
-            log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
-        check_status=1
-
-    if "N" in sumstats.columns and "N_CONTROL" in sumstats.columns and "N_CASE" in sumstats.columns:
-        log.write(" -Checking if N is consistent with N_CASE + N_CONTROL ...", verbose=verbose) 
-        is_close = sumstats["N"] == sumstats["N_CASE"] + sumstats["N_CONTROL"] 
-        #is_close = np.isclose(sumstats["N"], sumstats["N_CASE"] + sumstats["N_CONTROL"] , rtol=rtol, atol=atol, equal_nan=equal_nan)
-        diff = abs(sumstats["N"] - (sumstats["N_CASE"] + sumstats["N_CONTROL"] ))
-        if sum(~is_close)>0:
-            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
-            log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
-        else:
-            log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
-        check_status=1
-        
-    if check_status==1:
-        log.write(" -Note: if the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
-    else:
-        log.write(" -No availalbe columns for data consistency checking...Skipping...",verbose=verbose)
-    finished(log,verbose,_end_line)
-
 ###############################################################################################################
 # 20220426
 def get_reverse_complementary_allele(a):
@@ -1730,6 +1278,12 @@ def flip_by_sign(sumstats, matched_index, log, verbose, cols=None):
         sumstats.loc[matched_index,"DIRECTION"] =   sumstats.loc[matched_index,"DIRECTION"].apply(flip_direction)
     return sumstats
 
+@with_logging(
+        start_to_msg= "adjust statistics based on STATUS code",
+        finished_msg= "adjusting statistics based on STATUS code",
+        start_function= ".flip_allele_stats()",
+        start_cols=None
+)
 def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     '''
     Adjust statistics when allele direction has changed. Run after checking with reference sequence.
@@ -1744,23 +1298,6 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     pandas.DataFrame
         Summary statistics with effect sizes and alleles flipped where required.
     '''
-    ##start function with col checking##########################################################
-    _start_line = "adjust statistics based on STATUS code"
-    _end_line = "adjusting statistics based on STATUS code"
-    _start_cols =[]
-    _start_function = ".flip_allele_stats()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     if_stats_flipped = False
     ###################get reverse complementary####################
@@ -1837,8 +1374,6 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
 
     if if_stats_flipped != True:
         log.write(" -No statistics have been changed.")
-
-    finished(log, verbose, _end_line)
     return sumstats
 
 
@@ -1888,6 +1423,12 @@ def liftover_variant(sumstats,
         sumstats.loc[variants_on_chrom_to_convert,chrom]    =  lifted.str[0].map(dic2).astype("Int64")
     return sumstats
 
+@with_logging(
+        start_to_msg= "perform liftover",
+        finished_msg= "liftover",
+        start_function= ".liftover()",
+        start_cols=["CHR","POS","STATUS"]
+)
 def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True,chain=None, verbose=True,log=Log()):
     '''
     Perform parallelized liftover of variants to a new build.
@@ -1914,24 +1455,6 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     pandas.DataFrame
         Summary statistics table with updated genomic coordinates.
     '''
-    ##start function with col checking##########################################################
-    _start_line = "perform liftover"
-    _end_line = "liftover"
-    _start_cols =[chrom,pos,status]
-    _start_function = ".liftover()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            n_cores=n_cores,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
     
     lifter_from_build = _process_build(from_build,log=log,verbose=False)
     lifter_to_build = _process_build(to_build,log=log,verbose=False)
@@ -1979,12 +1502,18 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     # after liftover check chr and pos
     sumstats = fixchr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=True)
     sumstats = fixpos(sumstats,pos=pos,remove=remove, verbose=True)
-    
-    finished(log,verbose,_end_line)
+
     return sumstats
 
 ###############################################################################################################
 # 20220426
+@with_logging(
+        start_to_msg= "sort the genome coordinates",
+        finished_msg= "sorting coordinates",
+        start_function= ".sort_coordinate()",
+        start_cols=["CHR","POS"],
+        show_shape=False
+)
 def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()):
     '''
     Sort variants by genomic coordinates.
@@ -1999,23 +1528,6 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
     pandas.DataFrame
         DataFrame with sorted genomic coordinates.
     '''
-    ##start function with col checking##########################################################
-    _start_line = "sort the genome coordinates"
-    _end_line = "sorting coordinates"
-    _start_cols =[chrom,pos]
-    _start_function = ".sort_coordinate()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
     
     try:
         if sumstats[pos].dtype == "Int64":
@@ -2026,11 +1538,16 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
     except:
         pass
     sumstats = sumstats.sort_values(by=[chrom,pos],ascending=True,ignore_index=True)
-    
-    finished(log,verbose,_end_line)
     return sumstats
 ###############################################################################################################
 # 20230430 added HR HR_95 BETA_95 N_CASE N_CONTROL
+@with_logging(
+        start_to_msg= "reorder the columns",
+        finished_msg= "reordering the columns",
+        start_function= ".sort_column()",
+        start_cols=None,
+        show_shape=False
+)
 def sortcolumn(sumstats,verbose=True,log=Log(),order = None):
     '''
     Reorder columns according to a specified order.
@@ -2045,23 +1562,6 @@ def sortcolumn(sumstats,verbose=True,log=Log(),order = None):
     pd.DataFrame
         Modified sumstats with reordered columns.
     '''
-    ##start function with col checking##########################################################
-    _start_line = "reorder the columns"
-    _end_line = "reordering the columns"
-    _start_cols =[]
-    _start_function = ".sort_column()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     if order is None:
         order = [
@@ -2075,98 +1575,8 @@ def sortcolumn(sumstats,verbose=True,log=Log(),order = None):
     log.write(" -Reordering columns to    :", ",".join(output_columns), verbose=verbose)
     sumstats = sumstats[ output_columns]
 
-    finished(log,verbose,_end_line)
     return sumstats
 
-
-###############################################################################################################
-def start_to(sumstats, 
-             log, 
-             verbose, 
-             start_line,
-             end_line,
-             start_cols,
-             start_function,
-             ref_vcf=None,
-             ref_fasta=None,
-             n_cores=None,
-             ref_tsv=None,
-             **kwargs
-             ):
-    
-    log.write("Start to {}...{}".format(start_line,_get_version()), verbose=verbose)
-    
-    if sumstats is not None:
-        check_dataframe_shape(sumstats=sumstats, 
-                            log=log, 
-                            verbose=verbose)  
-        is_enough_col = check_col(sumstats.columns, 
-                                verbose=verbose, 
-                                log=log, 
-                                cols=start_cols, 
-                                function=start_function)
-        if is_enough_col==True:
-            if n_cores is not None:
-                log.write(" -Number of threads/cores to use: {}".format(n_cores))
-            if ref_vcf is not None:
-                log.write(" -Reference VCF: {}".format(ref_vcf))
-            if ref_fasta is not None:
-                log.write(" -Reference FASTA: {}".format(ref_fasta))
-            if ref_tsv is not None:
-                log.write(" -Reference TSV: {}".format(ref_tsv))
-            
-            is_args_valid = True
-            for key, value in kwargs.items():
-                is_args_valid = is_args_valid & check_arg(log, verbose, key, value, start_function)
-            is_enough_col = is_args_valid & is_enough_col
-
-        if  is_enough_col == False:
-            skipped(log, verbose, end_line)
-        return is_enough_col
-    else:
-        return None
-
-def finished(log, verbose, end_line):
-    log.write("Finished {}.".format(end_line), verbose=verbose)
-    gc.collect()
-
-def skipped(log, verbose, end_line):
-    log.write("Skipped {}.".format(end_line), verbose=verbose)
-    gc.collect()
-
-def check_arg(log, verbose, key, value, function):
-    if value is None:
-        log.warning("Necessary argument {} for {} is not provided!".format(key, function))
-        return False
-    return True
-
-def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
-    not_in_df=[]
-    for i in cols:
-        if type(i) is str:
-            # single check
-            if i in df_col_names:
-                continue
-            else:
-                not_in_df.append(i)
-        else:
-            # paried check
-            count=0
-            for j in i:
-                if j not in df_col_names:
-                    not_in_df.append(j)
-                    count+=1
-
-    if len(not_in_df)>0:
-        if function is None:
-            to_show_title=" "
-        else:
-            to_show_title = " for {} ".format(function)
-        log.warning("Necessary columns{}were not detected:{}".format(to_show_title, ",".join(not_in_df)))
-        skipped(log, verbose, end_line=function)
-        return False
-    
-    return True
 
 ###############################################################################################################
 def _df_split(dataframe, n):

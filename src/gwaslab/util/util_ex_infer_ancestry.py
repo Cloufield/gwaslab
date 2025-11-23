@@ -2,8 +2,14 @@
 import pandas as pd
 from gwaslab.g_Log import Log
 from gwaslab.bd.bd_download import get_path
-from gwaslab.qc.qc_fix_sumstats import start_to
-
+from gwaslab.qc.qc_decorator import with_logging
+@with_logging(
+        start_to_msg="infer ancestry based on Fst",
+        finished_msg="inferring ancestry",
+        start_cols=["CHR","POS","EA","NEA","EAF"],
+        start_function="infer_ancestry",
+        must_args=["build"]
+)
 def _infer_ancestry(sumstats, 
                     ancestry_af=None,
                     build=None,
@@ -34,23 +40,6 @@ def _infer_ancestry(sumstats,
     -----
     This function internally uses `calculate_fst` to compute Fst values for each variant.
     """
-    log.write("Start to infer ancestry based on Fst...", verbose=verbose)
-    _start_line = "infer ancestry based on Fst"
-    _end_line = "inferring ancestry"
-    _start_cols =["CHR","POS","EA","NEA","EAF"]
-    _start_function = ".infer_ancestry()"
-    _must_args ={"build":build}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: 
-        return ValueError("Not enought columns for inferreing: CHR,POS,EA,NEA,EAF")
 
     if ancestry_af is None:
         if build=="19":

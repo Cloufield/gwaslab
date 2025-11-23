@@ -1,9 +1,7 @@
 import pandas as pd
 from os import path
 from gwaslab.g_Log import Log
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import skipped
-from gwaslab.qc.qc_fix_sumstats import finished
+from gwaslab.qc.qc_decorator import with_logging
 from pathlib import Path
 
 #A unique identifier (e.g., the rs number)
@@ -12,7 +10,11 @@ from pathlib import Path
 #Sample size (which often varies from SNP to SNP)
 #A P-value
 #A signed summary statistic (beta, OR, log odds, Z-score, etc)
-
+@with_logging(
+        start_to_msg="extract HapMap3 SNPs",
+        finished_msg="extracting HapMap3 SNPs",
+        start_function=".gethapmap3"
+)
 def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
     """
     Extract HapMap3 SNPs from summary statistics based on rsID or genomic coordinates.
@@ -52,24 +54,6 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
     log : Log, optional
         Logging object. Default is Log().
     """
-    ##start function with col checking##########################################################
-    _start_line = "extract HapMap3 SNPs"
-    _end_line = "extracting HapMap3 SNPs"
-    _start_cols =[]
-    _start_function = ".gethapmap3"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return None
-
-    ############################################################################################
     if build=="19":
         #data_path =  path.dirname(__file__) + '/data/hapmap3_SNPs/hapmap3_db150_hg19.snplist.gz'
         data_path = path.join( Path(__file__).parents[1], "data","hapmap3_SNPs","hapmap3_db150_hg19.snplist.gz")
@@ -136,7 +120,6 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
             output = output.loc[is_matched,:]
         output = output.drop(columns=["chr:pos"]+additional_cols)
         log.write(" -Raw input contains "+str(len(output))+" Hapmap3 variants based on CHR:POS...", verbose=verbose)
-        finished(log=log,verbose=verbose,end_line=_end_line)
         return output
     else:
         raise ValueError("Not enough information to match SNPs. Please check your sumstats...")

@@ -15,7 +15,8 @@ from gwaslab.qc.qc_fix_sumstats import fixchr
 from gwaslab.qc.qc_fix_sumstats import fixpos
 from gwaslab.qc.qc_fix_sumstats import fixallele
 from gwaslab.qc.qc_fix_sumstats import parallelnormalizeallele
-from gwaslab.qc.qc_fix_sumstats import sanitycheckstats
+from gwaslab.qc.qc_sanity_check import sanitycheckstats
+
 from gwaslab.qc.qc_fix_sumstats import parallelizeliftovervariant
 from gwaslab.qc.qc_fix_sumstats import flipallelestats
 from gwaslab.qc.qc_fix_sumstats import sortcoordinate
@@ -78,7 +79,7 @@ from gwaslab.viz.viz_plot_trumpetplot import plottrumpet
 from gwaslab.viz.viz_plot_compare_af import plotdaf
 from gwaslab.util.util_ex_run_susie import _run_susie_rss
 from gwaslab.util.util_ex_run_susie import _get_cs_lead
-from gwaslab.qc.qc_fix_sumstats import _check_data_consistency
+from gwaslab.qc.qc_sanity_check import _check_data_consistency
 from gwaslab.util.util_ex_ldsc import _estimate_h2_by_ldsc
 from gwaslab.util.util_ex_ldsc import _estimate_rg_by_ldsc
 from gwaslab.util.util_ex_ldsc import _estimate_h2_cts_by_ldsc

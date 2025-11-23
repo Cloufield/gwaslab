@@ -15,8 +15,6 @@ from gwaslab.bd.bd_common_data import gtf_to_all_gene
 from gwaslab.bd.bd_download import check_and_download
 from gwaslab.qc.qc_build import _process_build
 from gwaslab.qc.qc_fix_sumstats import check_dataframe_shape
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
 from gwaslab.qc.qc_build import _check_build
 from gwaslab.util.util_in_correct_winnerscurse import wc_correct
 from gwaslab.util.util_ex_gwascatalog import gwascatalog_trait
@@ -25,7 +23,13 @@ from gwaslab.util.util_in_fill_data import fill_p
 # closest_gene
 # annogene
 # getnovel
-
+from gwaslab.qc.qc_decorator import with_logging
+@with_logging(
+        start_to_msg="extract lead variants",
+        finished_msg="extracting lead variants",
+        start_cols=["CHR","POS"],
+        start_function=".get_lead()"
+)
 def getsig(insumstats,
            id="SNPID",
            chrom="CHR",
@@ -99,23 +103,6 @@ def getsig(insumstats,
 
     When no significant variants are found, returns None after logging a message.
     """
-    ##start function with col checking##########################################################
-    _start_line = "extract lead variants"
-    _end_line = "extracting lead variants"
-    _start_cols = [chrom,pos]
-    _start_function = ".get_lead()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=insumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return None
-    ############################################################################################
 
     log.write(" -Processing "+str(len(insumstats))+" variants...", verbose=verbose)
     log.write(" -Significance threshold :", sig_level, verbose=verbose)
@@ -243,7 +230,7 @@ def getsig(insumstats,
         log.write(" -Conducting Winner's Curse correction for BETA...", verbose=verbose)
         log.write(" -Referece: Zhong, H., & Prentice, R. L. (2008). Bias-reduced estimators and confidence intervals for odds ratios in genome-wide association studies. Biostatistics, 9(4), 621-634.")
         output["BETA_WC"] = output[["BETA","SE"]].apply(lambda x: wc_correct(x["BETA"],x["SE"],sig_level),axis=1)
-    finished(log,verbose,_end_line)
+
     return output.copy()
 
 
@@ -414,6 +401,12 @@ def annogene(
     log.write("Finished annotating variants with nearest gene name(s) successfully!", verbose=verbose)
     return output
 
+@with_logging(
+        start_to_msg="check if lead variants are known",
+        finished_msg="checking if lead variants are known",
+        start_cols=["CHR","POS"],
+        start_function=".get_novel()"
+)
 def getnovel(insumstats,
            id="SNPID",
            chrom="CHR",
@@ -518,24 +511,6 @@ def getnovel(insumstats,
 
     When no significant variants are found, returns None after logging a message.
     """
-    
-    ##start function with col checking##########################################################
-    _start_line = "check if lead variants are known"
-    _end_line = "checking if lead variants are known"
-    _start_cols = [chrom,pos]
-    _start_function = ".get_novel()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=insumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return None
-    ############################################################################################
 
     if "SNPID" in insumstats.columns:
         id = "SNPID"
@@ -675,8 +650,6 @@ def getnovel(insumstats,
     log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...", verbose=verbose)
     log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...", verbose=verbose)
     
-    finished(log,verbose,_end_line)
-    
     # how to return
     if only_novel is True:
         if output_known is True:
@@ -690,7 +663,13 @@ def getnovel(insumstats,
             return allsig
 ##################################################################################################################################################################################################
 
-
+@with_logging(
+        start_to_msg="check if variants are in cis or trans regions",
+        finished_msg="checking if variants are in cis or trans regions",
+        start_cols=["CHR","POS"],
+        start_function=".check_cis()",
+        must_args=["group_key"]
+)
 def _check_cis(insumstats,
            id,
            chrom,
@@ -709,22 +688,6 @@ def _check_cis(insumstats,
            source="ensembl",
            verbose=True):
     ##start function with col checking##########################################################
-    _start_line = "check if variants are in cis or trans regions"
-    _end_line = "checking if variants are in cis or trans regions"
-    _start_cols = [chrom,pos, group_key]
-    _start_function = ".check_cis()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=insumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return None
-    ############################################################################################
     
     if if_get_lead == True:
         allsig = getsig(insumstats=insumstats,
@@ -795,8 +758,6 @@ def _check_cis(insumstats,
         log.write (" -Number of NoReference variants: {}".format(number_of_noreference),verbose=verbose)
     except:
         pass
-
-    finished(log,verbose,_end_line)
     
     return allsig
 
@@ -901,6 +862,13 @@ def determine_if_same_chromosome(allsig, knownsig, maxpos):
             allsig.loc[ not_on_same_chromosome ,"KNOWN_EFOID"] = pd.NA
     return allsig
 
+@with_logging(
+        start_to_msg="check if variant sets are overlapping with those in reference file",
+        finished_msg="checking if variant sets are overlapping with those in reference file",
+        start_cols=["CHR","POS"],
+        start_function=".check_novel_set()",
+        must_args=["group_key"]
+)
 def _check_novel_set(insumstats,
            id,
            chrom,
@@ -922,22 +890,6 @@ def _check_novel_set(insumstats,
            verbose=True):
     
     ##start function with col checking##########################################################
-    _start_line = "check if variant sets are overlapping with those in reference file"
-    _end_line = "checking if variant sets are overlapping with those in reference file"
-    _start_cols = [chrom,pos, group_key]
-    _start_function = ".check_cis()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=insumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return None
-    ############################################################################################
     
     if if_get_lead == True:
         allsig = getsig(insumstats=insumstats,
@@ -1036,7 +988,6 @@ def _check_novel_set(insumstats,
     allsig["SUMSTATS_SET_SIZE"] = 0
     allsig["SUMSTATS_SET_SIZE"] = allsig[ "SUMSTATS_SET_VARIANT"].str.len()
     
-    finished(log,verbose,_end_line)
     
     return allsig
 

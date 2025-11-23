@@ -2,8 +2,6 @@ import pandas as pd
 import os
 import numpy as np
 from gwaslab.g_Log import Log
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
 
 def process_vcf_to_hfd5(vcf, 
                     directory=None, 

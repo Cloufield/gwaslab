@@ -3,21 +3,20 @@ import numpy as np
 import os
 import pandas as pd
 from gwaslab.g_Log import Log
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.g_version import _checking_plink_version
-
+from gwaslab.qc.qc_decorator import with_logging
+@with_logging(
+        start_to_msg="perfrom clumping",
+        finished_msg="clumping",
+        start_cols=["SNPID","CHR","POS"],
+        start_function=".clump()"
+)
 def _clump(gls, vcf=None, scaled=False, out="clumping_plink2", 
            p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, pfile=None,
            n_cores=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
            log=Log(),verbose=True,plink="plink",plink2="plink2"):
     ##start function with col checking##########################################################
-    _start_line = "perfrom clumping"
-    _end_line = "clumping"
-    _start_cols =["SNPID","CHR","POS"]
-    _start_function = ".clump()"
-    _must_args ={}
     
     if out is None:
         out = f"./{study}_clumpping".lstrip('/')
@@ -27,15 +26,6 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
     sumstats = gls.data
     gls.offload()
 
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: raise ValueError("Not enough columns for clumping")
     ############################################################################################
     ## process reference
     log.write("Start to perform clumping...",verbose=verbose)
@@ -58,7 +48,6 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
 
     if len(sumstats)==0:
         log.write(" -No significant variants after filtering.")
-        finished(log=log, verbose=verbose, end_line=_end_line)
         gls.reload()
         return pd.DataFrame(), pd.DataFrame(), ""
     
@@ -189,7 +178,6 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
     
     results = results.sort_values(by=["#CHROM","POS"]).rename(columns={"#CHROM":"CHR","ID":"SNPID"})
     results_sumstats = sumstats.loc[sumstats["SNPID"].isin(results["SNPID"]),:].copy()
-    finished(log=log, verbose=verbose, end_line=_end_line)
     gls.reload()
     
     return results_sumstats, results, plink_log

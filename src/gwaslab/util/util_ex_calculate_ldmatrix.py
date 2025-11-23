@@ -4,13 +4,18 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
 from gwaslab.util.util_in_get_sig import getsig
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.g_version import _checking_plink_version
 
+from gwaslab.qc.qc_decorator import with_logging
+@with_logging(
+        start_to_msg="calculate LD matrix",
+        finished_msg="calculating LD matrix",
+        start_cols=["SNPID","CHR","POS","EA","NEA"],
+        start_function="calculate_ld_matrix"
+)
 def tofinemapping(gls, 
                   study=None, 
                   bfile=None, 
@@ -34,24 +39,10 @@ def tofinemapping(gls,
                   **kwargs):
     
     ##start function with col checking##########################################################
-    _start_line = "calculate LD matrix"
-    _end_line = "calculating LD matrix"
-    _start_cols =["SNPID","CHR","POS","EA","NEA"]
-    _start_function = ".calculate_ld_matrix()"
-    _must_args ={}
     
     sumstats = gls.data
     gls.offload()
 
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: raise ValueError("Not enough columns for calculating LD matrix")
     ############################################################################################
     if suffixes is None:
         suffixes=[""]
@@ -174,7 +165,6 @@ def tofinemapping(gls,
     
     del sumstats
 
-    finished(log=log, verbose=verbose, end_line=_end_line)
     gls.reload()
 
     return output_file_list_path, output_file_list, plink_log

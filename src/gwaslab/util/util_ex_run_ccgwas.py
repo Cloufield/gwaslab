@@ -6,8 +6,6 @@ import numpy as np
 from gwaslab.g_Log import Log
 from gwaslab.g_version import _checking_r_version
 from gwaslab.g_version import _check_susie_version
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
 from gwaslab.util.util_ex_calculate_ldmatrix import _extract_variants_in_locus
 from gwaslab.util.util_in_get_sig import getsig
 

@@ -6,7 +6,6 @@ from gwaslab.g_vchange_status import copy_status
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.qc.qc_fix_sumstats import flipallelestats
 from gwaslab.qc.qc_check_datatype import check_datatype
-from gwaslab.qc.qc_fix_sumstats import start_to
 from gwaslab.util.util_in_fill_data import filldata
 from Bio import SeqIO
 from itertools import combinations

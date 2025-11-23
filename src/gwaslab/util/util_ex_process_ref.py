@@ -4,8 +4,6 @@ import subprocess
 from gwaslab.g_Log import Log
 import os
 from gwaslab.g_version import _checking_plink_version
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
 
 def _process_plink_input_files(chrlist, 
                                bfile=None, 

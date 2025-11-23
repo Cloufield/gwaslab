@@ -9,22 +9,21 @@ import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
 from gwaslab.g_version import _checking_plink_version
-
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
-
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
-
 from gwaslab.util.util_in_get_sig import getsig
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.util.util_ex_calculate_ldmatrix import _extract_variants_in_locus
 from gwaslab.util.util_ex_calculate_ldmatrix import _export_snplist_and_locus_sumstats
 from gwaslab.util.util_ex_calculate_ldmatrix import _extract_variants_in_locus
-
 from gwaslab.viz.viz_plot_regional2 import _get_lead_id
-
-
+from gwaslab.qc.qc_decorator import with_logging
+@with_logging(
+        start_to_msg="calculate LD matrix",
+        finished_msg="calculating LD matrix",
+        start_cols=["SNPID","CHR","POS","EA","NEA"],
+        start_function="calculate_ld_matrix"
+)
 def tofinemapping_using_ld(sumstats, 
                   study=None, 
                   ld_map_path=None, 
@@ -47,23 +46,7 @@ def tofinemapping_using_ld(sumstats,
                   suffixes=None,
                   verbose=True,
                   **kwargs):
-    ##start function with col checking##########################################################
-    _start_line = "calculate LD matrix"
-    _end_line = "calculating LD matrix"
-    _start_cols =["SNPID","CHR","POS","EA","NEA"]
-    _start_function = ".calculate_ld_matrix()"
-    _must_args ={}
 
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: raise ValueError("Not enough columns for calculating LD matrix")
-    ############################################################################################
     if suffixes is None:
         suffixes=[""]
     if getlead_args is None:
@@ -146,7 +129,6 @@ def tofinemapping_using_ld(sumstats,
         output_file_list_path=None
         log.write(" -No avaialable lead variants.",verbose=verbose)
         log.write(" -Stopped LD matrix calculation.",verbose=verbose)
-    finished(log=log, verbose=verbose, end_line=_end_line)
     return output_file_list_path, output_file_list, plink_log
 
 

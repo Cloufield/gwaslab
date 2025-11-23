@@ -6,10 +6,7 @@ from pathlib import Path
 from functools import wraps
 from gwaslab.g_Log import Log
 from gwaslab.g_vchange_status import vchange_status
-
 from gwaslab.qc.qc_fix_sumstats import sortcoordinate
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
 from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd.bd_common_data import get_high_ld
@@ -385,23 +382,6 @@ def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS",
         If True, updates status codes in the table
     """
     # Function implementation remains unchanged
-    ##start function with col checking##########################################################
-    _start_line = "infer genome build version using hapmap3 SNPs"
-    _end_line = "inferring genome build version using hapmap3 SNPs"
-    _start_cols = [chrom,pos]
-    _start_function = ".infer_build()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                              log=log,
-                              verbose=verbose,
-                              start_line=_start_line,
-                              end_line=_end_line,
-                              start_cols=_start_cols,
-                              start_function=_start_function,
-                              **_must_args)
-    if is_enough_info == False: return sumstats, "Unknown"
-    ############################################################################################
 
     inferred_build="Unknown"
 

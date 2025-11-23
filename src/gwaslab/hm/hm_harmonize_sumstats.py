@@ -15,10 +15,7 @@ from gwaslab.qc.qc_fix_sumstats import fixchr
 from gwaslab.qc.qc_fix_sumstats import fixpos
 from gwaslab.qc.qc_fix_sumstats import sortcolumn
 from gwaslab.qc.qc_fix_sumstats import _df_split
-from gwaslab.qc.qc_fix_sumstats import check_col
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
-from gwaslab.qc.qc_fix_sumstats import skipped
+from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.qc.qc_fix_sumstats import sortcoordinate
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd.bd_common_data import get_number_to_chr
@@ -68,6 +65,12 @@ TRANSLATE_TABLE_COMPL = _maketrans(COMPLEMENTARY_MAPPING)
 #################################################################################################################
 
 ###~!!!!
+with_logging(
+    start_to_msg="assign CHR and POS using rsIDs",
+    finished_msg="assigning CHR and POS using rsIDs",
+    start_cols=["rsid"],
+    start_function=".rsid_to_chrpos()"
+)
 def rsidtochrpos(sumstats,
          path=None, ref_rsid_to_chrpos_tsv=None, snpid="SNPID",
          rsid="rsID", chrom="CHR",pos="POS",ref_rsid="rsID",ref_chr="CHR",ref_pos="POS", build="19",
@@ -115,23 +118,6 @@ def rsidtochrpos(sumstats,
     DataFrame
         Updated summary statistics DataFrame with CHR and POS values assigned based on rsIDs.
     """
-    ##start function with col checking##########################################################
-    _start_line = "assign CHR and POS using rsIDs"
-    _end_line = "assigning CHR and POS using rsIDs"
-    _start_cols = [rsid]
-    _start_function = ".rsid_to_chrpos()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                              log=log,
-                              verbose=verbose,
-                              start_line=_start_line,
-                              end_line=_end_line,
-                              start_cols=_start_cols,
-                              start_function=_start_function,
-                              **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     log.write(" -rsID dictionary file: "+ path,verbose=verbose)  
     
@@ -177,7 +163,6 @@ def rsidtochrpos(sumstats,
     sumstats = fixpos(sumstats,verbose=verbose)
     sumstats = sortcolumn(sumstats,verbose=verbose)
 
-    finished(log,verbose,_end_line)
     return sumstats
     #################################################################################################### 
 
@@ -219,7 +204,12 @@ def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
             pass
     return sumstats_part
 
-
+with_logging(
+    start_to_msg="assign CHR and POS using rsIDs",
+    finished_msg="assigning CHR and POS using rsIDs",
+    start_cols=["rsid"],
+    start_function=".rsid_to_chrpos2()"
+)
 def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None, ref_rsid_to_chrpos_vcf = None, ref_rsid_to_chrpos_hdf5 = None, build="99",status="STATUS",
                          n_cores=4,block_size=20000000,verbose=True,log=Log()):
     """
@@ -279,23 +269,6 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     - Non-valid rsIDs (containing non-numeric characters after "rs") and duplicated rsIDs are processed 
       separately and not updated.
     """
-    ##start function with col checking##########################################################
-    _start_line = "assign CHR and POS using rsIDs"
-    _end_line = "assigning CHR and POS using rsIDs"
-    _start_cols = [rsid]
-    _start_function = ".rsid_to_chrpos2()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                              log=log,
-                              verbose=verbose,
-                              start_line=_start_line,
-                              end_line=_end_line,
-                              start_cols=_start_cols,
-                              start_function=_start_function,
-                              **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     if ref_rsid_to_chrpos_hdf5 is not None:
         path = ref_rsid_to_chrpos_hdf5
@@ -382,7 +355,6 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     pool.close()
     pool.join()
 
-    finished(log, verbose, _end_line)
     return sumstats
 ####################################################################################################################
 # old version
@@ -440,23 +412,13 @@ def _old_check_status(row,record):
             # ea !=ref
             return status_pre+"8"+status_end
 
+with_logging(
+    start_to_msg="check if NEA is aligned with reference sequence",
+    finished_msg="checking if NEA is aligned with reference sequence",
+    start_cols=["CHR","POS","EA","NEA","STATUS"],
+    start_function=".check_ref()"
+)
 def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
-    ##start function with col checking##########################################################
-    _start_line = "check if NEA is aligned with reference sequence"
-    _end_line = "checking if NEA is aligned with reference sequence"
-    _start_cols = [chrom,pos,ea,nea,status]
-    _start_function = ".check_ref()"
-    _must_args ={}
-    is_enough_info = start_to(sumstats=sumstats,
-                              log=log,
-                              verbose=verbose,
-                              start_line=_start_line,
-                              end_line=_end_line,
-                              start_cols=_start_cols,
-                              start_function=_start_function,
-                              **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
     log.write(" -Reference genome FASTA file: "+ ref_seq,verbose=verbose)  
     log.write(" -Checking records: ", end="",verbose=verbose)  
     chromlist = get_chr_list(add_number=True)
@@ -510,7 +472,6 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
         sumstats = sumstats.loc[~sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w"),:]
         log.write(" -Variants not on given reference sequence were removed.",verbose=verbose)
     
-    finished(log, verbose, _end_line)
     return sumstats
 
 #20240320 check if non-effect allele is aligned with reference genome         
@@ -800,6 +761,12 @@ def load_fasta_auto(path: str):
 
     return SeqIO.parse(handle, "fasta")       
 
+with_logging(
+    start_to_msg="check if NEA is aligned with reference sequence",
+    finished_msg="checking if NEA is aligned with reference sequence",
+    start_cols=["CHR","POS","EA","NEA","STATUS"],
+    start_function=".check_ref()"
+)
 def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", status="STATUS", chr_dict=get_chr_to_number(), remove=False, verbose=True, log=Log()):
     """
     Check if non-effect allele (NEA) is aligned with reference genome.
@@ -850,23 +817,6 @@ def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", stat
     8: Not on reference genome
     9: Unchecked
     """
-    ##start function with col checking##########################################################
-    _start_line = "check if NEA is aligned with reference sequence"
-    _end_line = "checking if NEA is aligned with reference sequence"
-    _start_cols = [chrom,pos,ea,nea,status]
-    _start_function = ".check_ref()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                              log=log,
-                              verbose=verbose,
-                              start_line=_start_line,
-                              end_line=_end_line,
-                              start_cols=_start_cols,
-                              start_function=_start_function,
-                              **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
     log.write(" -Reference genome FASTA file: "+ ref_seq,verbose=verbose)  
     log.write(" -Loading fasta records:",end="", verbose=verbose)
     chromlist = get_chr_list(add_number=True)
@@ -930,8 +880,6 @@ def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", stat
         sumstats = sumstats.loc[~sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w"),:]
         log.write(" -Variants not on given reference sequence were removed.",verbose=verbose)
 
-    
-    finished(log, verbose, _end_line)
     return sumstats
 
 def build_fasta_records(fasta_records_dict, pos_as_dict=True, log=Log(), verbose=True):
@@ -1001,6 +949,12 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
     rsID = sumstats.apply(map_func,axis=1)
     return rsID
 
+with_logging(
+    start_to_msg="assign rsID using reference file",
+    finished_msg="assign rsID using reference file",
+    start_cols=["CHR","POS","EA","NEA","STATUS"],
+    start_function=".assign_rsid()"
+)
 def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="rsID", chr="CHR", pos="POS", ref="NEA", alt="EA", status="STATUS",
                           n_cores=1, chunksize=5000000, ref_snpid="SNPID", ref_rsid="rsID",
                           overwrite="empty", verbose=True, log=Log(), chr_dict=None):
@@ -1068,26 +1022,6 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
     """
 
     if ref_mode=="vcf":
-        ###################################################################################################################
-        ##start function with col checking##########################################################
-        _start_line = "assign rsID using reference VCF"
-        _end_line = "assign rsID using reference file"
-        _start_cols = [chr,pos,ref,alt,status]
-        _start_function = ".assign_rsid()"
-        _must_args ={}
-
-        is_enough_info = start_to(sumstats=sumstats,
-                                log=log,
-                                verbose=verbose,
-                                start_line=_start_line,
-                                end_line=_end_line,
-                                start_cols=_start_cols,
-                                start_function=_start_function,
-                                n_cores=n_cores,
-                                ref_vcf=path,
-                                **_must_args)
-        if is_enough_info == False: return sumstats
-        ############################################################################################
         chr_dict = auto_check_vcf_chr_dict(path, chr_dict, verbose, log)
         log.write(" -Assigning rsID based on CHR:POS and REF:ALT/ALT:REF...",verbose=verbose)
         ##############################################
@@ -1128,28 +1062,6 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
     
     ##################################################################################################################
     elif ref_mode=="tsv":
-        '''
-        assign rsID based on chr:pos
-        '''
-        ##start function with col checking##########################################################
-        _start_line = "assign rsID by matching SNPID with CHR:POS:REF:ALT in the reference TSV"
-        _end_line = "assign rsID using reference file"
-        _start_cols = [snpid,status]
-        _start_function = ".assign_rsid()"
-        _must_args ={}
-
-        is_enough_info = start_to(sumstats=sumstats,
-                                log=log,
-                                verbose=verbose,
-                                start_line=_start_line,
-                                end_line=_end_line,
-                                start_cols=_start_cols,
-                                start_function=_start_function,
-                                n_cores=n_cores,
-                                ref_tsv=path,
-                                **_must_args)
-        if is_enough_info == False: return sumstats
-        ############################################################################################
         
         #standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
         standardized_normalized = sumstats["STATUS"] == sumstats["STATUS"]
@@ -1194,7 +1106,6 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
             log.write(" -No rsID can be fixed...skipping...",verbose=verbose)
         ################################################################################################################
             
-    finished(log,verbose,_end_line)
     return sumstats
 #################################################################################################################################################
 #single record assignment
@@ -1413,7 +1324,13 @@ def check_indel_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_thresho
     return status_part
 
 ##################################################################################################################################################
-
+@with_logging(
+    start_to_msg="infer strand for palindromic SNPs/align indistinguishable indels",
+    finished_msg="inferring strand for palindromic SNPs/align indistinguishable indels",
+    start_cols=["CHR","POS","EA","NEA","STATUS"],
+    start_function=".infer_strand()",
+    must_args=["ref_alt_freq"]
+)
 def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,ref_maf_threshold=0.5,daf_tolerance=0.20,remove_snp="",mode="pi",n_cores=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
                        chr_dict=None,cache_options={},verbose=True,log=Log()):
@@ -1430,30 +1347,6 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
         The usefulness of a cache_loader or cache_process object is to pass a custom object which already has the cache loaded. This can be useful if the cache is loaded in background in another thread/process while other operations are performed.
         The cache_manager is a CacheManager object is used to expose the API to interact with the cache.
     """
-
-
-    ##start function with col checking##########################################################
-    _start_line = "infer strand for palindromic SNPs/align indistinguishable indels"
-    _end_line = "inferring strand for palindromic SNPs/align indistinguishable indels"
-    _start_cols = [chr,pos,ref,alt,eaf,status]
-    _start_function = ".infer_strand()"
-    _must_args ={"ref_alt_freq":ref_alt_freq}
-
-    if ref_maf_threshold is None:
-        ref_maf_threshold = maf_threshold
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            n_cores=n_cores,
-                            ref_vcf=ref_infer,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
     
@@ -1608,7 +1501,6 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
         else:
             log.warning("No indistinguishable indels available for checking.") 
     
-    finished(log,verbose,_end_line)
     return sumstats
 
 
@@ -1631,6 +1523,14 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
 
 ################################################################################################################
+
+@with_logging(
+    start_to_msg="check the difference between EAF (sumstats) and ALT frequency (reference VCF)",
+    finished_msg="checking the difference between EAF (sumstats) and ALT frequency (reference VCF)",
+    start_cols=["CHR","POS","EA","NEA","EAF","STATUS"],
+    start_function=".check_daf()",
+    must_args=["ref_alt_freq"]
+)
 def parallelecheckaf(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Check the difference between effect allele frequency (EAF) in summary statistics and alternative allele frequency in reference VCF.
@@ -1690,25 +1590,6 @@ def parallelecheckaf(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, 
       and absolute value statistics.
     - Only variants with valid chromosome position and allele information are checked by default.
     """
-    ##start function with col checking##########################################################
-    _start_line = "check the difference between EAF (sumstats) and ALT frequency (reference VCF)"
-    _end_line = "checking the difference between EAF (sumstats) and ALT frequency (reference VCF)"
-    _start_cols = [chr,pos,ref,alt,eaf,status]
-    _start_function = ".check_daf()"
-    _must_args ={"ref_alt_freq":ref_alt_freq}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            n_cores=n_cores,
-                            ref_vcf=ref_infer,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
 
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
 
@@ -1772,6 +1653,13 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
     return np.nan
 ################################################################################################################
 
+@with_logging(
+    start_to_msg="infer sumstats EAF using reference VCF ALT frequency",
+    finished_msg="inferring sumstats EAF using reference VCF ALT frequency",
+    start_cols=["CHR","POS","EA","NEA","STATUS"],
+    start_function=".check_daf()",
+    must_args=["ref_alt_freq"]
+)
 def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Infer effect allele frequency (EAF) in summary statistics using reference VCF ALT frequency.
@@ -1825,25 +1713,6 @@ def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR
       successfully inferred and those still missing EAF values.
     - The inferred EAF values are stored in the specified EAF column of the summary statistics.
     """
-    ##start function with col checking##########################################################
-    _start_line = "infer sumstats EAF using reference VCF ALT frequency"
-    _end_line = "inferring sumstats EAF using reference VCF ALT frequency"
-    _start_cols = [chr,pos,ref,alt,status]
-    _start_function = ".infer_af()"
-    _must_args ={"ref_alt_freq":ref_alt_freq}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            n_cores=n_cores,
-                            ref_vcf=ref_infer,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
     
     if eaf not in sumstats.columns:
@@ -1874,7 +1743,6 @@ def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR
         log.write(" -Inferred EAF for {} variants.".format(prenumber - afternumber),verbose=verbose) 
         log.write(" -EAF is still missing for {} variants.".format(afternumber),verbose=verbose) 
     
-    finished(log,verbose,_end_line)
     return sumstats
 
 def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):
@@ -1902,7 +1770,13 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
 ##############################################################################################################################################################################################
 
 ################################################################################################################
-
+@with_logging(
+    start_to_msg="infer sumstats EAF from sumstats MAF using reference VCF ALT frequency",
+    finished_msg="inferring sumstats EAF from sumstats MAF using reference VCF ALT frequency",
+    start_cols=["CHR","POS","EA","NEA","MAF","STATUS"],
+    start_function=".infer_af()",
+    must_args=["ref_alt_freq"]
+)
 def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
                             eaf="EAF", maf="MAF", ref_eaf="_REF_EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
@@ -1964,25 +1838,6 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
     - The function provides statistics about the number of variants for which EAF was
       successfully inferred and those still missing EAF values.
     """
-    ##start function with col checking##########################################################
-    _start_line = "infer sumstats EAF from sumstats MAF using reference VCF ALT frequency"
-    _end_line = "inferring sumstats EAF from sumstats MAF using reference VCF ALT frequency"
-    _start_cols = [chr,pos,ref,alt,status]
-    _start_function = ".infer_af()"
-    _must_args ={"ref_alt_freq":ref_alt_freq}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            n_cores=n_cores,
-                            ref_vcf=ref_infer,
-                            **_must_args)
-    if is_enough_info == False: return sumstats
-    ############################################################################################
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
     
     if eaf not in sumstats.columns:
@@ -2025,7 +1880,6 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
         log.write(" -EAF is still missing for {} variants.".format(afternumber),verbose=verbose) 
         sumstats = sumstats.drop(columns=[ref_eaf])
     
-    finished(log,verbose,_end_line)
     return sumstats
 
 def inferaf(sumstats,ref_infer,ref_alt_freq=None,chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",chr_dict=None):

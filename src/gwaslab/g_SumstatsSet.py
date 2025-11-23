@@ -21,14 +21,14 @@ from gwaslab.qc.qc_fix_sumstats import fixchr
 from gwaslab.qc.qc_fix_sumstats import fixpos
 from gwaslab.qc.qc_fix_sumstats import fixallele
 from gwaslab.qc.qc_fix_sumstats import parallelnormalizeallele
-from gwaslab.qc.qc_fix_sumstats import sanitycheckstats
+from gwaslab.qc.qc_sanity_check import sanitycheckstats
 from gwaslab.qc.qc_fix_sumstats import parallelizeliftovervariant
 from gwaslab.qc.qc_fix_sumstats import flipallelestats
 from gwaslab.qc.qc_fix_sumstats import sortcoordinate
 from gwaslab.qc.qc_fix_sumstats import sortcolumn
 from gwaslab.qc.qc_fix_sumstats import _set_build
 from gwaslab.qc.qc_fix_sumstats import _process_build
-from gwaslab.qc.qc_fix_sumstats import _check_data_consistency
+from gwaslab.qc.qc_sanity_check import _check_data_consistency
 
 from gwaslab.hm.hm_harmonize_sumstats import parallelecheckaf
 from gwaslab.hm.hm_harmonize_sumstats import paralleleinferaf

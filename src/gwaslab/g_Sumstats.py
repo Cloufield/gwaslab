@@ -28,15 +28,16 @@ from gwaslab.qc.qc_fix_sumstats import (
     parallelnormalizeallele,
     parallelizeliftovervariant,
     removedup,
-    sanitycheckstats,
     sortcolumn,
     sortcoordinate,
     stripSNPID,
-    _check_data_consistency,
     _process_build,
     _set_build,
 )
-
+from gwaslab.qc.qc_sanity_check import (
+    sanitycheckstats,
+    _check_data_consistency,
+)
 # ----- Harmonization -----
 from gwaslab.hm.hm_harmonize_sumstats import (
     checkref,
@@ -148,6 +149,7 @@ from gwaslab.io.io_to_pickle import _offload, _reload
 from gwaslab.io.io_process_args import remove_overlapping_kwargs
 from gwaslab.hm.hm_assign_rsid import _assign_rsid
 from gwaslab.hm.hm_infer_with_af  import _infer_strand_with_annotation
+from gwaslab.view.view_sumstats import _head, _tail #_random, _info, _describe
 
 def add_doc(src):
     def deco(func):
@@ -1276,5 +1278,25 @@ class Sumstats():
         del self.data
         gc.collect()
 
+    @add_doc(_head)
+    def head(self, n=5, **kwargs):
+        return _head(self.data, n=n, **kwargs)
+    
+    @add_doc(_tail)
+    def tail(self, n=5, **kwargs):
+        return _tail(self.data, n=n, **kwargs)
+    
+    #@add_doc(_random)
+    #def random(self, n=5, **kwargs):
+    #    return _random(self.data, n=n, **kwargs)
+    
+    #@add_doc(_info)
+    #def info(self, **kwargs):
+    #    return _info(self.data, **kwargs)
+    
+    #@add_doc(_describe)
+    #def describe(self, **kwargs):
+    #    return _describe(self.data, **kwargs)
+    
     def reload(self):
          self.data = _reload(self.tmp_path, self.log)

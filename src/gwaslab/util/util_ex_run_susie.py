@@ -6,9 +6,13 @@ import numpy as np
 from gwaslab.g_Log import Log
 from gwaslab.g_version import _checking_r_version
 from gwaslab.g_version import _check_susie_version
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
-
+from gwaslab.qc.qc_decorator import with_logging
+@with_logging(
+        start_to_msg="run finemapping using SuSieR from command line",
+        finished_msg="running finemapping using SuSieR from command line",
+        start_cols=["SNPID","CHR","POS"],
+        start_function=".run_susie_rss()"
+)
 def _run_susie_rss(gls,
                    filepath, 
                    r="Rscript", 
@@ -24,23 +28,6 @@ def _run_susie_rss(gls,
                    susie_args="", 
                    log=Log(),
                    verbose=True):
-    ##start function with col checking##########################################################
-    _start_line = "run finemapping using SuSieR from command line"
-    _end_line = "running finemapping using SuSieR from command line"
-    _start_cols =[]
-    _start_function = ".run_susie_rss()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=None,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: raise ValueError("Not enough columns for calculating LD matrix")
-    ############################################################################################
     if filepath is None:
         log.write(" -File path is None.")
         log.write("Finished finemapping using SuSieR.")
@@ -166,7 +153,6 @@ dev.off()
     locus_pip_cs = locus_pip_cs.rename(columns={"variable":"N_SNP","variable_prob":"PIP","cs":"CREDIBLE_SET_INDEX"})	
     locus_pip_cs = pd.merge(locus_pip_cs, gls.data[["SNPID","CHR","POS"]], on="SNPID",how="left")
     
-    finished(log=log, verbose=verbose, end_line=_end_line)
     return locus_pip_cs
 
 def _get_cs_lead(pipcs):

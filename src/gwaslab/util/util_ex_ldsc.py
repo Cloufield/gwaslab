@@ -5,9 +5,6 @@ from gwaslab.extension.ldsc.ldsc_sumstats import estimate_h2
 from gwaslab.extension.ldsc.ldsc_sumstats import estimate_rg
 from gwaslab.extension.ldsc.ldsc_sumstats import cell_type_specific
 
-from gwaslab.qc.qc_fix_sumstats import start_to
-from gwaslab.qc.qc_fix_sumstats import finished
-from gwaslab.qc.qc_fix_sumstats import skipped
 
 from gwaslab.io.io_read_ldsc import parse_ldsc_summary
 from gwaslab.io.io_read_ldsc import parse_partitioned_ldsc_summary
@@ -261,8 +258,13 @@ class ARGS():
 
 
 ####################################################################################################################
-
-
+from gwaslab.qc.qc_decorator import with_logging
+@with_logging(
+        start_to_msg="run LD score regression",
+        finished_msg="running LD score regression",
+        start_cols=["CHR","POS","EA","NEA"],
+        start_function="estimate_h2_by_ldsc"
+)
 def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False, munge_args=None, **raw_kwargs):
     """
     Estimate SNP heritability using LD score regression.
@@ -312,23 +314,6 @@ def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False,
         sumstats = _munge_sumstats(sumstats, log=log, verbose=verbose,**munge_args)
         log.write("Finished munging sumstats.")
 
-    ##start function with col checking##########################################################
-    _start_line = "run LD score regression"
-    _end_line = "running LD score regression"
-    _start_cols =["CHR","POS","EA","NEA"]
-    _start_function = ".estimate_h2_by_ldsc()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return None
-    ############################################################################################
     log.write(" -Run single variate LD score regression:", verbose=verbose)
     log.write("  -Adopted from LDSC source code: https://github.com/bulik/ldsc", verbose=verbose)
     log.write("  -Please cite LDSC: Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.", verbose=verbose)
@@ -361,34 +346,21 @@ def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False,
         
 
     log.write(" -Results have been stored in .ldsc_h2", verbose=verbose)
-    finished(log=log,verbose=verbose,end_line=_end_line)
     return parse_ldsc_summary(summary), results_table
 
 
 ####################################################################################################################
-
+@with_logging(
+        start_to_msg="run LD score regression",
+        finished_msg="running LD score regression",
+        start_cols=["CHR","POS","EA","NEA"],
+        start_function="estimate_partitioned_h2_by_ldsc"
+)
 def _estimate_partitioned_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, **raw_kwargs):
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
         sumstats["N"] = sumstats["N"].fillna(sumstats["N"].median()).apply("int64")
-    ##start function with col checking##########################################################
-    _start_line = "run LD score regression"
-    _end_line = "running LD score regression"
-    _start_cols =["CHR","POS","EA","NEA"]
-    _start_function = ".estimate_partitioned_h2_by_ldsc()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return None
-    ############################################################################################
     log.write(" -Run partitioned LD score regression:", verbose=verbose)
     log.write("  -Adopted from LDSC source code: https://github.com/bulik/ldsc", verbose=verbose)
     log.write("  -Please cite LDSC: Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.", verbose=verbose)
@@ -414,41 +386,28 @@ def _estimate_partitioned_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, 
     summary,results = estimate_h2(sumstats, default_args, log)
     
     log.write(" -Results have been stored in .ldsc_h2", verbose=verbose)
-    finished(log=log,verbose=verbose,end_line=_end_line)
     return parse_partitioned_ldsc_summary(summary), results
 
 
 ####################################################################################################################
 
 
-
+@with_logging(
+        start_to_msg="run LD score regression for genetic correlation",
+        finished_msg="running LD score regression for genetic correlation",
+        start_cols=["CHR","POS","EA","NEA"],
+        start_function="estimate_rg_by_ldsc"
+)
 def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True, **raw_kwargs):
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
         sumstats["N"] = sumstats["N"].fillna(sumstats["N"].median()).apply("int64")
-    ##start function with col checking##########################################################
-    _start_line = "run LD score regression for genetic correlation"
-    _end_line = "running LD score regression for genetic correlation"
-    _start_cols =["CHR","POS","EA","NEA"]
-    _start_function = ".estimate_rg_by_ldsc()"
-    _must_args ={}
 
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return None
-    ############################################################################################
     log.write(" -Run cross-trait LD score regression:", verbose=verbose)
     log.write("  -Adopted from LDSC source code: https://github.com/bulik/ldsc", verbose=verbose)
     log.write("  -Please cite LDSC: Bulik-Sullivan, B., et al. An Atlas of Genetic Correlations across Human Diseases and Traits. Nature Genetics, 2015.", verbose=verbose)
     log.write(" -Arguments:", verbose=verbose)
-    
 
     
     samp_prev_string=""
@@ -509,35 +468,21 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
     summary = estimate_rg(sumstats[["SNP","A1","A2","Z","N"]], other_traits_to_use, default_args, log)[1]
     
     log.write(" -Results have been stored in .ldsc_rg", verbose=verbose)
-    finished(log=log,verbose=verbose,end_line=_end_line)
     return summary
 
 
 ####################################################################################################################
-
-
+@with_logging(
+        start_to_msg="run LD score regression",
+        finished_msg="running LD score regression",
+        start_cols=["CHR","POS","EA","NEA"],
+        start_function="estimate_h2_cts_by_ldsc"
+)
 def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **raw_kwargs):
     sumstats = insumstats.copy()
     kwargs = copy.deepcopy(raw_kwargs)
     if "N" in sumstats.columns:
         sumstats["N"] = sumstats["N"].fillna(sumstats["N"].median()).apply("int64")
-    ##start function with col checking##########################################################
-    _start_line = "run LD score regression"
-    _end_line = "running LD score regression"
-    _start_cols =["CHR","POS","EA","NEA"]
-    _start_function = ".estimate_h2_cts_by_ldsc()"
-    _must_args ={}
-
-    is_enough_info = start_to(sumstats=sumstats,
-                            log=log,
-                            verbose=verbose,
-                            start_line=_start_line,
-                            end_line=_end_line,
-                            start_cols=_start_cols,
-                            start_function=_start_function,
-                            **_must_args)
-    if is_enough_info == False: return None
-    ############################################################################################
     log.write(" -Run cell type specific LD score regression:", verbose=verbose)
     log.write("  -Adopted from LDSC source code: https://github.com/bulik/ldsc", verbose=verbose)
     log.write("  -Please cite LDSC: Finucane, H. K., Reshef, Y. A., Anttila, V., Slowikowski, K., Gusev, A., Byrnes, A., ... & Price, A. L. (2018). Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types. Nature genetics, 50(4), 621-629.", verbose=verbose)
@@ -557,7 +502,6 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **raw_kwargs):
     summary = cell_type_specific(sumstats, default_args, log)
     
     log.write(" -Results have been stored in .ldsc_partitioned_h2", verbose=verbose)
-    finished(log=log,verbose=verbose,end_line=_end_line)
     return summary
 
 
