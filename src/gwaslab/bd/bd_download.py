@@ -272,7 +272,7 @@ def download_ref(name,
         File is saved to disk with path recorded in config
     '''
     from_dropbox=0
-    dicts = check_available_ref(log,verbose=False)
+    dicts = check_available_ref(log,verbose=False,show_all=True)
     
     if name in dicts.keys():
         # get url for name
