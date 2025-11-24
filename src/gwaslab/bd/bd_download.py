@@ -609,7 +609,7 @@ def scan_downloaded_files(log=Log(), verbose=True):
     downloaded = check_downloaded_ref(log)
     
     # Get available references
-    available = check_available_ref(log, verbose=False)
+    available = check_available_ref(log, verbose=False,show_all=True)
     
     # Process each file in directory
     for filename in files_in_dir:
