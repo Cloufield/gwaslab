@@ -60,6 +60,7 @@ def _to_format(sumstats,
               tabix_indexargs={},
               to_csvargs=None,
               to_tabular_kwargs=None,
+              validate=False,
               log=Log(),
               verbose=True):
     """
@@ -119,6 +120,8 @@ def _to_format(sumstats,
         Dictionary of tabular format arguments. Default is None
     verbose : bool, optional
         Whether to print progress messages. Default is True
+    validate : bool, optional
+         Whether to use the gwas-ssf CLI tool for validation (only for SSF format). Default is False
 
     Returns
     -------
@@ -242,7 +245,7 @@ def _to_format(sumstats,
     # output, mapping column names
     
     if fmt in get_formats_list() + ["vep","bed","annovar","vcf"]:
-        tofmt(output,
+        output_file = tofmt(output,
               path=path,
               fmt=fmt,
               tab_fmt=tab_fmt,
@@ -275,6 +278,35 @@ def _to_format(sumstats,
             onetime_log.save(log_path, verbose=False)
         except:
             pass
+
+    # Check if we should validate the output using gwas-ssf CLI for SSF format
+    if fmt == "ssf" and validate:
+         try:
+             import os
+             import subprocess
+                 
+             if os.path.exists(output_file):
+                  log.write("Validating output with gwas-ssf CLI...", verbose=verbose)
+                  # Call gwas-ssf validate command
+                  result = subprocess.run(["gwas-ssf", "validate", output_file], 
+                                        capture_output=True, text=True)
+                  # Log the full output for debugging
+                  if result.stdout:
+                      log.write(f"gwas-ssf stdout:\n{result.stdout}", verbose=verbose)
+                  if result.stderr:
+                      log.write(f"gwas-ssf stderr:\n{result.stderr}", verbose=verbose)
+                      
+                  if result.returncode == 0:
+                      log.write("Output validation successful.", verbose=verbose)
+                  else:
+                      log.write(f"Output validation failed with return code {result.returncode}.", verbose=verbose)
+             else:
+                 log.write(f"Output file not found for validation: {output_file}", verbose=verbose)
+         except FileNotFoundError:
+             log.write("Warning: gwas-ssf command not found.", verbose=verbose)
+         except Exception as e:
+             log.write(f"Warning: Error during gwas-ssf validation: {e}", verbose=verbose)
+
 
 ###################################################################################################################################################
 def tofmt(sumstats,
@@ -478,7 +510,7 @@ def tofmt(sumstats,
         ## update ssf-style meta data and export to yaml file
         _configure_ssf_meta(sumstats, fmt, ssfmeta, meta, meta_data, path, md5_value, yaml_path, log, verbose)
         
-        return sumstats  
+        return path  
     
 ####################################################################################################################
 def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose, gzip):
