@@ -6,7 +6,14 @@ import shutil
 import os
 import tempfile
 from gwaslab.io.io_vcf import auto_check_vcf_chr_dict, is_vcf_file
+from gwaslab.qc.qc_decorator import with_logging
 
+@with_logging(
+    start_to_msg="assign rsID from reference",
+    finished_msg="assigning rsID from reference",
+    start_cols=["CHR","POS","EA","NEA","STATUS"],
+    start_function=".assign_rsid2()"
+)
 def _assign_rsid(
     sumstats: pd.DataFrame,
     path: str | None = None,
@@ -84,16 +91,6 @@ def _assign_rsid(
     """
     import os
     import re
-
-
-    log.write(" -Starting to assign rsID from reference...", verbose=verbose)
-
-    # ---------------------------
-    # Required column checks
-    # ---------------------------
-    for col in [chrom, pos, ea, nea, "STATUS"]:
-        if col not in sumstats.columns:
-            raise ValueError(f"sumstats missing required column: {col}")
 
     # Ensure rsID exists
     if rsid not in sumstats.columns:
@@ -177,11 +174,6 @@ def _assign_rsid(
 
     before_missing = sumstats[rsid].isna().sum()
 
-    # ---------------------------
-    # Apply new allele-aware assignment
-    # ---------------------------
-    log.write(" -Running _assign_from_lookup(rsID)...", verbose=verbose)
-
     sumstats = _assign_from_lookup(
         sumstats=sumstats,
         lookup_table=lookup_tsv,
@@ -206,7 +198,12 @@ def _assign_rsid(
 
     return sumstats
 
-
+@with_logging(
+    start_to_msg="annotate GWAS summary statistics",
+    finished_msg="annotating GWAS summary statistics",
+    start_cols=["CHR","POS","EA","NEA"],
+    start_function=".annotate_sumstats()"
+)
 def _annotate_sumstats(
     sumstats: pd.DataFrame,
     path: str | None = None,
@@ -325,7 +322,12 @@ def _annotate_sumstats(
 
     return sumstats
 
-
+@with_logging(
+    start_to_msg="extract lookup table from vcf/bcf",
+    finished_msg="extracting lookup table from vcf/bcf",
+    start_cols=["CHR","POS"],
+    start_function="._extract_lookup_table_from_vcf_bcf()"
+)
 def _extract_lookup_table_from_vcf_bcf(
     vcf_path,
     sumstats,
@@ -451,6 +453,13 @@ def _extract_lookup_table_from_vcf_bcf(
 import pandas as pd
 import numpy as np
 
+@with_logging(
+    start_to_msg="assign from lookup table",
+    finished_msg="assigning from lookup table",
+    start_cols=["CHR","POS"],
+    start_function="._assign_from_lookup()",
+    must_args=["lookup_table"]
+)
 def _assign_from_lookup(
     sumstats,
     lookup_table,
@@ -465,10 +474,7 @@ def _assign_from_lookup(
 ):
     import pandas as pd
     import numpy as np
-
     chunksize = 5_000_000
-
-    log.write(" -Starting to assign annotation from lookup: {}...".format(lookup_table), verbose=verbose)
 
     lookup_header = pd.read_csv(lookup_table, sep="\t", nrows=0).columns.tolist()
 
@@ -609,7 +615,6 @@ def _assign_from_lookup(
 
     log.write(" -Total assigned: {:,}...".format(processed_variants), verbose=verbose)
     log.write(" -Total flipped alleles: {:,}...".format(flipped_count), verbose=verbose)
-    log.write(" -Finished annotation.", verbose=verbose)
     if rm_tmp_lookup is True:
         for f in [lookup_table]:
             if isinstance(f, str) and os.path.exists(f):

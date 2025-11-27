@@ -65,10 +65,10 @@ TRANSLATE_TABLE_COMPL = _maketrans(COMPLEMENTARY_MAPPING)
 #################################################################################################################
 
 ###~!!!!
-with_logging(
+@with_logging(
     start_to_msg="assign CHR and POS using rsIDs",
     finished_msg="assigning CHR and POS using rsIDs",
-    start_cols=["rsid"],
+    start_cols=["rsID"],
     start_function=".rsid_to_chrpos()"
 )
 def rsidtochrpos(sumstats,
@@ -204,10 +204,10 @@ def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
             pass
     return sumstats_part
 
-with_logging(
+@with_logging(
     start_to_msg="assign CHR and POS using rsIDs",
     finished_msg="assigning CHR and POS using rsIDs",
-    start_cols=["rsid"],
+    start_cols=["rsID"],
     start_function=".rsid_to_chrpos2()"
 )
 def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None, ref_rsid_to_chrpos_vcf = None, ref_rsid_to_chrpos_hdf5 = None, build="99",status="STATUS",
@@ -412,7 +412,7 @@ def _old_check_status(row,record):
             # ea !=ref
             return status_pre+"8"+status_end
 
-with_logging(
+@with_logging(
     start_to_msg="check if NEA is aligned with reference sequence",
     finished_msg="checking if NEA is aligned with reference sequence",
     start_cols=["CHR","POS","EA","NEA","STATUS"],
@@ -761,7 +761,7 @@ def load_fasta_auto(path: str):
 
     return SeqIO.parse(handle, "fasta")       
 
-with_logging(
+@with_logging(
     start_to_msg="check if NEA is aligned with reference sequence",
     finished_msg="checking if NEA is aligned with reference sequence",
     start_cols=["CHR","POS","EA","NEA","STATUS"],
@@ -949,7 +949,7 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
     rsID = sumstats.apply(map_func,axis=1)
     return rsID
 
-with_logging(
+@with_logging(
     start_to_msg="assign rsID using reference file",
     finished_msg="assign rsID using reference file",
     start_cols=["CHR","POS","EA","NEA","STATUS"],

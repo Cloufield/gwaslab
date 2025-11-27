@@ -108,14 +108,15 @@ def getsig(insumstats,
     log.write(" -Significance threshold :", sig_level, verbose=verbose)
     log.write(" -Sliding window size:", str(windowsizekb) ," kb", verbose=verbose)
     
-    if "SNPID" in insumstats.columns:
-        id = "SNPID"
-    else:
-        id = "rsID"
-
-    #load data
-    sumstats=insumstats.loc[~insumstats[id].isna(),:].copy()
+    #if "SNPID" in insumstats.columns:
+    #    id = "SNPID"
+    #else:
+    #    id = "rsID"
+#
+    ##load data
+    #sumstats=insumstats.loc[~insumstats[id].isna(),:].copy()
     
+    sumstats = insumstats.copy()
     #convert chrom to int
     if sumstats[chrom].dtype in ["object",str,pd.StringDtype]:
         chr_to_num = get_chr_to_number(out_chr=True,xymt=["X","Y","MT"])

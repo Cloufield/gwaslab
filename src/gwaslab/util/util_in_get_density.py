@@ -34,6 +34,7 @@ def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizek
     pos : str, optional
         Column name containing genomic positions. Default is "POS".
     """
+
     log.write("Start to calculate signal DENSITY..." ,verbose=verbose)
     sumstats = insumstats[[id,chrom,pos]].copy()
     log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb",verbose=verbose)
@@ -229,6 +230,9 @@ def getsignaldensity2(
     bmedian = sumstats["DENSITY"].median()
     bsd = sumstats["DENSITY"].std()
     bmax = sumstats["DENSITY"].max()
+    
+    if snpid not in sumstats.columns:
+        snpid = "rsID"
     bmaxid = sumstats.loc[sumstats["DENSITY"].idxmax(), snpid]
 
     log.write(f" -Mean : {bmean:.3f} signals per {bwindowsizekb} kb", verbose=verbose)
