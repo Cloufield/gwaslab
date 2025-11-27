@@ -80,6 +80,9 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
         
         if dtype in ["Int64","Int32","int","int32","in64"]:
             log.write(" -Checking if {} <= {} <= {} ...".format( var_range[0] ,header, var_range[1]), verbose=verbose) 
+            # Remove commas for string representations of numbers before conversion
+            if sumstats[header].dtype == 'object':
+                sumstats[header] = sumstats[header].astype(str).str.replace(',', '')
             sumstats[header] = np.floor(pd.to_numeric(sumstats[header], errors='coerce')).astype(dtype)
             is_valid = (sumstats[header]>=var_range[0]) & (sumstats[header]<=var_range[1])
         elif dtype in ["Float64","Float32","float","float64","float32"]:
@@ -113,10 +116,15 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
                 log.write("  -Examples of invalid values ({}): {} ...".format(header, ",".join(invalid_values.to_list()) ), verbose=verbose) 
             except:
                 pass
-
-        sumstats = sumstats.loc[is_valid,:]
-        after_number=len(sumstats)
-        log.write(" -Removed {} variants with bad/na {}.".format(pre_number - after_number, header), verbose=verbose) 
+        
+        # If all values are invalid, drop the column instead of filtering rows
+        if not is_valid.any():
+            sumstats = sumstats.drop(columns=[header])
+            log.write(" -Dropped column {} as all values are invalid.".format(header), verbose=verbose)
+        else:
+            sumstats = sumstats.loc[is_valid,:]
+            after_number=len(sumstats)
+            log.write(" -Removed {} variants with bad/na {}.".format(pre_number - after_number, header), verbose=verbose) 
     return sumstats
 
 @with_logging(
