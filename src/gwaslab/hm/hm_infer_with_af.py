@@ -60,8 +60,8 @@ def _infer_strand_with_annotation(
         Annotated and strand-inferred summary statistics.
     """
 
-    if type(assign_cols) is str:
-        assign_cols = (assign_cols)
+    if isinstance(assign_cols, str):
+        assign_cols = [assign_cols]
         
     if convert_to_bcf == True:
         strip_info = False
