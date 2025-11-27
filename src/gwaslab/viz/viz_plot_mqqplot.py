@@ -1122,7 +1122,7 @@ def mqqplot(insumstats,
         
         log.write("Finished creating MQQ plot successfully",verbose=verbose)
         
-        if mode=="b":
+        if "b" in mode:
             scaled_threhosld = sig_level_lead
         else:
             scaled_threhosld = float(-np.log10(sig_level_lead))
@@ -1160,6 +1160,8 @@ def mqqplot(insumstats,
                                 sig_level=sig_level_lead)
             else:
                 to_annotate=pd.DataFrame()
+
+        
             if (to_annotate.empty is not True) and ("b" not in mode):
                 log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
         if (to_annotate.empty is not True) and anno=="GENENAME":

@@ -398,6 +398,7 @@ def annogene(
             output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
                 list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source,build=build), axis=1)), 
                 index=output.index).values
+    output["GENE"] = output["GENE"].replace("","Unknown")
     log.write("Finished annotating variants with nearest gene name(s) successfully!", verbose=verbose)
     return output
 

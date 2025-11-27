@@ -1023,7 +1023,7 @@ class Sumstats():
             id_to_use = "rsID"
         
         if sig_list is None:
-            self.data["DENSITY"] = getsignaldensity2(self.data,
+            self.data = getsignaldensity2(self.data,
                                                     snpid=id_to_use,
                                                     chrom="CHR",
                                                     pos="POS",

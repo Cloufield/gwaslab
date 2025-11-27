@@ -259,12 +259,6 @@ def download_ref(name,
     ----------
     name : str
         Reference file identifier
-    directory : str, optional
-        Directory path to use for storing downloaded reference data
-    local_filename : str, optional
-        Custom filename for the downloaded file
-    overwrite : bool, optional
-        Whether to overwrite an existing file if it already exists
 
     Returns
     -------
