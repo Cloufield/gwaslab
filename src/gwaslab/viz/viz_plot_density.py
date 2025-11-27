@@ -22,6 +22,10 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
         Palette for density colors. 
     density_range : tuple, default=None.
         Color range for density plot. If None, range will auto-selected as (to_plot["DENSITY"].min(), to_plot["DENSITY"].max()).
+    sig_level : int, optional
+        Significance level for variants density for annotation. Default is 1.
+    windowsizekb : int, default=500
+        Window size in kb for obtainning significant variant for annotation. 
     anno : boolean, str or 'GENENAME', default=None
         Specify which data to use for annotation. Default is None. 
         anno options:
