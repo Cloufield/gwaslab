@@ -1429,13 +1429,13 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
         status1 = sumstats[status].str.match(r'\w\w\w\w\w\w[1]', case=False, flags=0, na=False)  
         status5 = sumstats[status].str.match(r'\w\w\w\w\w\w[5]', case=False, flags=0, na=False)  
         status7 = sumstats[status].str.match(r'\w\w\w\w\w\w[7]', case=False, flags=0, na=False)  
-        status8 = sumstats[status].str.match(r'\w\w\w\w\w[123][8]', case=False, flags=0, na=False)  
+        status8 = sumstats[status].str.match(r'\w\w\w\w\w\w[8]', case=False, flags=0, na=False)  
 
         log.write("  -Non-palindromic : ",sum(status0),verbose=verbose)
         log.write("  -Palindromic SNPs on + strand: ",sum(status1),verbose=verbose)
         log.write("  -Palindromic SNPs on - strand and needed to be flipped:",sum(status5),verbose=verbose)   
         log.write("  -Palindromic SNPs with MAF not available to infer : ",sum(status7),verbose=verbose)  
-        log.write("  -Palindromic SNPs with no macthes or no information : ",sum(status8),verbose=verbose)  
+        log.write("  -Palindromic SNPs lacking reference matches, or with reference ALT unavailable or above MAF threshold for inference : ",sum(status8),verbose=verbose)  
 
         if ("7" in remove_snp) and ("8" in remove_snp) :
             log.write("  -Palindromic SNPs with MAF not available to infer and with no macthes or no information will will be removed",verbose=verbose) 
