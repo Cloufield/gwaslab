@@ -2,7 +2,14 @@ import pandas as pd
 from gwaslab.g_Log import Log
 from gwaslab.g_vchange_status import vchange_status
 from .hm_assign_rsid import _annotate_sumstats
+from gwaslab.qc.qc_decorator import with_logging
 
+@with_logging(
+    start_to_msg="annotate and infer strand orientation using allele frequencies",
+    finished_msg="annotating and inferring strand orientation using allele frequencies",
+    start_cols=["CHR","POS","EA","NEA","EAF","STATUS"],
+    start_function=".infer_strand2()"
+)
 def _infer_strand_with_annotation(
     sumstats: pd.DataFrame,
     path: str | None = None,
@@ -108,6 +115,12 @@ def _infer_strand_with_annotation(
         verbose=verbose,
     )
 
+@with_logging(
+    start_to_msg="infer strand orientation using allele frequencies",
+    finished_msg="inferring strand orientation using allele frequencies",
+    start_cols=["CHR","POS","EA","NEA","EAF"],
+    start_function=".infer_strand()"
+)
 def _infer_strand(
     sumstats: pd.DataFrame,
     chrom: str = "CHR",

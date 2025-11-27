@@ -25,7 +25,7 @@ def with_logging(start_to_msg,
     if must_args is None:
         must_args = []
     if start_function is None:
-        start_function = "this method"
+        start_function = "this step"
 
     def decorator(func):
         @wraps(func)  # This preserves the original function's metadata including __doc__
@@ -34,25 +34,45 @@ def with_logging(start_to_msg,
             sig = inspect.signature(func)
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
-            
             log = bound_args.arguments.get('log', Log())
             verbose = bound_args.arguments.get('verbose', True)
             
+            #############################################################################################
+
             insumstats = bound_args.arguments.get('insumstats', None)
             if insumstats is None:
                 sumstats = bound_args.arguments.get('sumstats', None)
             else:
                 sumstats = insumstats
-            
+            #############################################################################################
             n_cores = bound_args.arguments.get('n_cores', None)
             ref_vcf = bound_args.arguments.get('ref_vcf', None)
             ref_fasta = bound_args.arguments.get('ref_fasta', None)
             ref_tsv = bound_args.arguments.get('ref_tsv',None)
+            if n_cores is not None:
+                log.write(" -Number of threads/cores to use: {}".format(n_cores))
+            if ref_vcf is not None:
+                log.write(" -Reference VCF: {}".format(ref_vcf))
+            if ref_fasta is not None:
+                log.write(" -Reference FASTA: {}".format(ref_fasta))
+            if ref_tsv is not None:
+                log.write(" -Reference TSV: {}".format(ref_tsv))
 
             # Log start message
             log.write(f"Start to {start_to_msg} ...({_get_version()})", verbose=verbose)
             
+            # must_arg can not be None
+            #############################################################################################
+            is_args_valid = True
+            for key in must_args:
+                value = bound_args.arguments.get(key,None)
+                is_args_valid = is_args_valid & check_arg(log, verbose, key, value, start_function)
+            if is_args_valid==False:
+                raise ValueError("{} must be provided.".format(must_args))
+
+            #############################################################################################
             if sumstats is not None:
+                # check sumstats shape, columns
                 if show_shape:
                     check_dataframe_shape(sumstats=sumstats, 
                                         log=log, 
@@ -67,25 +87,16 @@ def with_logging(start_to_msg,
                     check_datatype_for_cols(sumstats=sumstats, cols=start_cols)
 
                 if is_enough_col==True:
-                    if n_cores is not None:
-                        log.write(" -Number of threads/cores to use: {}".format(n_cores))
-                    if ref_vcf is not None:
-                        log.write(" -Reference VCF: {}".format(ref_vcf))
-                    if ref_fasta is not None:
-                        log.write(" -Reference FASTA: {}".format(ref_fasta))
-                    if ref_tsv is not None:
-                        log.write(" -Reference TSV: {}".format(ref_tsv))
-                    
-                    is_args_valid = True
-                    for key in must_args:
-                        value = bound_args.arguments.get(key,None)
-                        is_args_valid = is_args_valid & check_arg(log, verbose, key, value, start_function)
-                    is_enough_col = is_args_valid & is_enough_col
+                    # Execute the original function
+                    result = func(*args, **kwargs)
+                else:
+                    # not enough cols, return sumstats
+                    return sumstats
+            else:
+                # Execute the original function
+                result = func(*args, **kwargs)
 
-            # Execute the original function
-            result = func(*args, **kwargs)
-
-            if show_shape:
+            if sumstats is not None and show_shape:
                 check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose)
             # Log finish message
             log.write(f"Finished {finished_msg}.", verbose=verbose)
