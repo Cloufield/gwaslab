@@ -30,14 +30,14 @@ def with_logging_filter(start_to_msg,finished_msg):
             sumstats = bound_args.arguments.get('sumstats', pd.DataFrame)
             
             # Log start message
-            log.write(f"Start to {start_to_msg} ...(v{_get_version()})", verbose=verbose)
+            log.write(f"Start to {start_to_msg} ...({_get_version()})", verbose=verbose)
             check_dataframe_shape(sumstats=sumstats,log=log, verbose=verbose)
             prenum = len(sumstats)
 
             # Execute the original function
             result = func(*args, **kwargs)
 
-            afternum = len(sumstats)
+            afternum = len(result)
             log.write(" -Filtered out "+ str(prenum-afternum) +" variants", verbose=verbose)
             check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose)
             # Log finish message
