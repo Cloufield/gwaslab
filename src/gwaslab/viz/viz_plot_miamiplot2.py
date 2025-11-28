@@ -43,7 +43,8 @@ from gwaslab.viz.viz_plot_mqqplot import mqqplot
 
 from gwaslab.io.io_to_pickle import load_pickle
 from gwaslab.io.io_to_pickle import load_data_from_pickle
-
+from gwaslab.viz.viz_aux_save_figure import safefig
+@safefig
 def plot_miami2( 
           path1=None,
           path2=None,

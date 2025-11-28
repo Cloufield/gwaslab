@@ -28,7 +28,8 @@ from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
 from gwaslab.bd.bd_common_data import get_gtf
-
+from gwaslab.viz.viz_aux_save_figure import safefig
+@safefig
 def _plot_regional(
     sumstats,
     fig,

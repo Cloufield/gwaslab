@@ -10,6 +10,8 @@ from gwaslab.viz.viz_aux_quickfix import _set_yticklabels
 from gwaslab.util.util_in_calculate_gc import lambdaGC
 
 # qq plot module for mqqplot
+from gwaslab.viz.viz_aux_save_figure import safefig
+@safefig
 def _plot_qq(
     sumstats,
     p_toplot_raw,

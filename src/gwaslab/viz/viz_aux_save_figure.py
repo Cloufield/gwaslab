@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from gwaslab.g_Log import Log
 import time
 import os.path
+import functools
 
 def save_figure(fig, save, keyword, save_args=None, log = Log(), verbose=True):
     log.write("Start to save figure..." ,verbose=verbose)
@@ -65,3 +66,13 @@ def get_default_path(keyword,fmt="png"):
         else:
             break
     return file_path
+
+def safefig(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            plt.close('all')   # <-- prevents empty figure output
+            raise e
+    return wrapper

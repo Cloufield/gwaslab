@@ -52,11 +52,8 @@ from gwaslab.util.util_in_get_sig import annogene
 
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
-
-
-
-# 20230202 ######################################################################################################
-
+from gwaslab.viz.viz_aux_save_figure import safefig
+@safefig
 def mqqplot(insumstats,            
           chrom="CHR",
           pos="POS",
@@ -1146,6 +1143,7 @@ def mqqplot(insumstats,
                                verbose=False)
                 if (to_annotate.empty is not True) and ("b" not in mode):
                     log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
+                
         else:
             if "b" not in mode:
                 to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> scaled_threhosld,:],
@@ -1174,6 +1172,9 @@ def mqqplot(insumstats,
                                    source=anno_source,
                                    gtf_path=anno_gtf_path,
                                    verbose=verbose).rename(columns={"GENE":"Annotation"})
+            if "b" in mode and (to_annotate.empty is not True):
+                for index, row in to_annotate.iterrows():
+                    log.write(" -Annotated {} with {} at density {}".format(row[snpid],row["Annotation"],row["DENSITY"]),verbose=verbose)
         log.write("Finished extracting variants for annotation...",verbose=verbose)
 
         # Configure X, Y axes #######################################################
