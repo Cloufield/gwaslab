@@ -147,6 +147,7 @@ from gwaslab.io.io_read_pipcs import _read_pipcs
 from gwaslab.io.io_to_formats import _to_format
 from gwaslab.io.io_to_pickle import _offload, _reload
 from gwaslab.io.io_process_args import remove_overlapping_kwargs
+from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
 from gwaslab.hm.hm_assign_rsid import _assign_rsid
 from gwaslab.hm.hm_infer_with_af  import _infer_strand_with_annotation
 from gwaslab.view.view_sumstats import _head, _tail #_random, _info, _describe
@@ -1159,7 +1160,9 @@ class Sumstats():
         region_data = abf_finemapping(self.data.copy(),region=region,chrpos=chrpos,snpid=snpid,log=self.log, **kwargs)
         credible_sets = make_cs(region_data,threshold=0.95,log=self.log)
         return region_data, credible_sets
-    
+        
+    def get_ld_matrix_from_vcf(self, **kwargs):
+        return _get_ld_matrix_from_vcf(self.data.copy(), log=self.log, **kwargs)
 ######################################################################################################
     def run_prscs(self, build=None, verbose=True, match_allele=True, how="inner", **kwargs):
         if build is None:
