@@ -52,13 +52,12 @@ def getsig(insumstats,
     Extract lead variants using a sliding window approach with significance thresholding.
 
     This function identifies lead variants from summary statistics using a sliding window 
-    algorithm based on either p-values or -log10(p-values). It handles data preprocessing, 
+    algorithm based on either -log10(p-values) or p-values. It prioritizes -log10(p-values) 
+    if available, otherwise falls back to p-values. It handles data preprocessing, 
     significance filtering, and optional gene annotation and Winner's Curse correction.
 
     Parameters
     ----------
-    use_p : bool, default=False
-        If True, use raw p-values (P) instead of -log10(p-values)
     windowsizekb : int, default=500
         Window size in kilobases for lead variant identification
     sig_level : float, default=5e-8

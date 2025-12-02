@@ -1438,15 +1438,13 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     n_cores : int
         Number of CPU cores to use for parallel processing.
     from_build : str
-        Name of the original genome build (e.g., "hg19").
+        Name of the original genome build (e.g., "19").
     to_build : str
-        Name of the target genome build (e.g., "hg38").
-    status : str
-        Column name used to record the mapping/liftover status.
+        Name of the target genome build (e.g., "38").
     remove : bool, default False
         If True, remove variants that fail to map.
-    chain : str
-        Path to the chain file used for liftover.
+    chain : str, None, default None
+        Path to the chain file used for liftover. If None, automatically find the chain file.
     verbose : bool, default False
         If True, print progress messages during processing.
 

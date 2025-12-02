@@ -31,7 +31,7 @@ def filldata(
     Parameters
     ----------
     to_fill : str or list of str
-        Column name(s) to fill. Common values include 'OR', 'BETA', 'SE', 'Z', 'P', etc.
+        Column name(s) to fill. Common values include "OR","OR_95L","OR_95U","BETA","SE","P","Z","CHISQ","MLOG10P","MAF", etc.
     overwrite : bool, optional, default=False
         If True, overwrite existing values in target columns.
     verbose : bool, optional, default=True
