@@ -71,9 +71,12 @@ def _to_format(sumstats,
     path : str, optional
         Output file path prefix. Default is "./sumstats"
     fmt : str, optional, default="gwaslab"
-        Output format ('gwaslab', 'vcf', 'bed', 'annovar', etc.). Avaiable forst can be checked using `get_formats_list`. Default is 'gwaslab' 
+        Output format. Supported formats include 'gwaslab', 'vcf', 'bed', 'annovar', etc.  The list of available formats can be checked using `get_formats_list()`.  
+        Default is 'gwaslab'.
     tab_fmt : str, optional
-        Tabular format type ('tsv', 'csv', 'parquet'). Default is 'tsv'
+        Tabular output format type used when `fmt` is not one of 'vcf', 'bed', or 'annovar'.  
+        Supported options are 'tsv', 'csv', and 'parquet'.  
+        Default is 'tsv'.
     extract : list or str, optional
         SNPs to extract. Default is None
     exclude : list or str, optional

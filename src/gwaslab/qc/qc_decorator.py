@@ -73,7 +73,9 @@ def with_logging(start_to_msg,
             #############################################################################################
             if sumstats is not None:
                 # check sumstats shape, columns
+                initial_shape = None
                 if show_shape:
+                    initial_shape = (len(sumstats), len(sumstats.columns))
                     check_dataframe_shape(sumstats=sumstats, 
                                         log=log, 
                                         verbose=verbose)  
@@ -97,7 +99,9 @@ def with_logging(start_to_msg,
                 result = func(*args, **kwargs)
 
             if sumstats is not None and show_shape:
-                check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose)
+                final_shape = (len(sumstats), len(sumstats.columns))
+                if initial_shape != final_shape:
+                    check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose)
             # Log finish message
             log.write(f"Finished {finished_msg}.", verbose=verbose)
             return result
