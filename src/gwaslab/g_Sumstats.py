@@ -322,6 +322,10 @@ class Sumstats():
         if self._build =="Unknown" or self._build =="99":
             if self.meta["gwaslab"]["species"] == "homo sapiens":
                 self.log.warning("Build is unknown. .infer_build first.")
+                try:
+                    self.infer_build()
+                except:
+                    pass
         return self._build
 
     @build.setter
@@ -491,6 +495,7 @@ class Sumstats():
         1. Basic check and standardization using fix_id, fix_chr, fix_pos, fix_allele, check_sanity, normalize_allele, sort_coordinate, and sort_column.
         2. Reference-based annotation and flipping using check_ref, flip_allele_stats, infer_strand, and assign_rsid.
         3. Optional duplicate removal with removedup and final sorting via sort_coordinate and sort_column.
+        For infer_strand, and assign_rsid, check_ref with ref_seq is required.
 
         Parameters
         ----------

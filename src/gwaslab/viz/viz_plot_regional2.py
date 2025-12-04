@@ -1193,8 +1193,11 @@ def process_gtf(gtf_path,
             #genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_name "([\w\.-]+)"').astype("string")
             genes_1mb.loc[:,"name"] = genes_1mb["gene_name"]
         else:
-            #genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"').astype("string")
-            genes_1mb.loc[:,"name"] = genes_1mb["gene_id"]
+            if "gene_name" in gtf.columns:
+                genes_1mb.loc[:,"name"] = genes_1mb["gene_name"]
+            else:
+                #genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"').astype("string")
+                genes_1mb.loc[:,"name"] = genes_1mb["gene_id"]
     else:
         #pattern = r'{} "([\w\.-]+)"'.format(gtf_gene_name)
         #genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(pattern).astype("string")

@@ -328,7 +328,7 @@ def _annotate_sumstats(
     start_cols=["CHR","POS"],
     start_function="._extract_lookup_table_from_vcf_bcf()"
 )
-def _extract_lookup_table_from_vcf_bcf(
+def _extract_lookup_table_from_vcf_bcf_old(
     vcf_path,
     sumstats,
     chr_dict = None,
@@ -447,8 +447,149 @@ def _extract_lookup_table_from_vcf_bcf(
 
     log.write(" -Lookup table created: {}...".format(out_lookup), verbose=verbose)
     return out_lookup, rm_out_lookup
+from io import StringIO
+import pandas as pd
+import subprocess, tempfile, os
 
+def _worker_bcf_lookup(args):
+    (chr_val, df_chr, vcf_path, fmt, split_by_chr,
+     inv_chr_dict, info_tags, id_col, log, verbose) = args
 
+    import tempfile, subprocess, os
+    import pandas as pd
+    from io import StringIO
+
+    orig_chr = inv_chr_dict.get(chr_val, chr_val)
+
+    # Create per-chr target list
+    tmp_targets = tempfile.NamedTemporaryFile(
+        delete=False, suffix=f".{orig_chr}.targets.txt"
+    )
+    targets_path = tmp_targets.name
+    tmp_targets.close()
+
+    df_chr[["CHR","POS"]].sort_values(["CHR","POS"]) \
+        .to_csv(targets_path, sep="\t", header=False, index=False)
+
+    # FAST bcftools pipeline: uncompressed streaming (-Ou)
+    if split_by_chr:
+        cmd = (
+            f"bcftools view -r {chr_val} -Ou {vcf_path} | "
+            f"bcftools view -T {targets_path} -Ou | "
+            f"bcftools query -f '{fmt}'"
+        )
+    else:
+        cmd = (
+            f"bcftools view -T {targets_path} -Ou {vcf_path} | "
+            f"bcftools query -f '{fmt}'"
+        )
+
+    
+    # Run pipeline and capture text output
+    data = subprocess.check_output(cmd, shell=True, text=True)
+    log.write(f" {orig_chr}", verbose=verbose, end="", show_time=False)
+
+    # Convert to DataFrame
+    if data.strip() == "":
+        df_out = pd.DataFrame(columns=["CHR","POS","REF","ALT",id_col] + info_tags)
+    else:
+        df_out = pd.read_csv(StringIO(data), sep="\t", header=None)
+        df_out.columns = ["CHR","POS","REF","ALT",id_col] + info_tags
+
+    # cleanup only target file
+    try:
+        os.remove(targets_path)
+    except:
+        pass
+
+    return df_out
+from multiprocessing import Pool
+
+@with_logging(
+    start_to_msg="extract lookup table from vcf/bcf",
+    finished_msg="extracting lookup table from vcf/bcf",
+    start_cols=["CHR","POS"],
+    start_function="._extract_lookup_table_from_vcf_bcf()"
+)
+def _extract_lookup_table_from_vcf_bcf(
+    vcf_path,
+    sumstats,
+    chr_dict=None,
+    assign_cols=None,
+    out_lookup=None,
+    verbose=True,
+    rm_out_lookup=False,
+    split_by_chr=True,
+    threads=6,     # <-- n_cores for Pool
+    log=Log()
+):
+    import os, shutil, tempfile, pandas as pd
+
+    def is_indexed(p):
+        return os.path.exists(p + ".tbi") or os.path.exists(p + ".csi")
+
+    if split_by_chr is None:
+        split_by_chr = not is_indexed(vcf_path)
+
+    if chr_dict is None:
+        chr_dict = auto_check_vcf_chr_dict(vcf_path, None, verbose, log)
+
+    if assign_cols is None:
+        assign_cols = []
+
+    if out_lookup is None:
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".lookup.txt.gz")
+        out_lookup = tmp.name
+        tmp.close()
+
+    inv_chr_dict = {v: k for k, v in chr_dict.items()}
+
+    targets = sumstats[["CHR","POS"]].copy()
+    targets["CHR"] = targets["CHR"].map(chr_dict)
+    targets = targets.dropna().drop_duplicates()
+    chr_groups = dict(tuple(targets.groupby("CHR")))
+
+    info_tags = [c for c in assign_cols if c not in ("ID","rsID")]
+    id_col = "rsID" if ("rsID" in assign_cols) else "ID"
+    fmt = "%CHROM\t%POS\t%REF\t%ALT\t%ID" + "".join([f"\t%INFO/{t}" for t in info_tags]) + "\n"
+
+    # Prepare args for pool
+    tasks = []
+    for chr_val, df_chr in chr_groups.items():
+        tasks.append((chr_val, df_chr, vcf_path, fmt, split_by_chr,
+                      inv_chr_dict, info_tags, id_col, log, verbose))
+
+    log.write(f" -Running multiprocessing: {threads} workers, {len(tasks)} chromosomes",
+              verbose=verbose)
+    
+    if split_by_chr:
+        log.write(" -Calling: bcftools view -r <CHR> -Ou <VCF> | "
+                  "bcftools view -T <TARGETS> -Ou | "
+                  "bcftools query -f '<FMT>'", verbose=verbose)
+    else:
+        # TEMPLATE log
+        log.write(" -Calling: bcftools view -T <TARGETS> -Ou <VCF> | "
+                  "bcftools query -f '<FMT>'", verbose=verbose)
+
+    with Pool(threads) as pool:
+        log.write(f" -Finished:",end="", verbose=verbose)
+        dfs = pool.map(_worker_bcf_lookup, tasks)
+        log.write(f"", verbose=verbose, show_time=False)
+        pool.close()
+        pool.join()
+
+    # Merge results
+    df = pd.concat(dfs, ignore_index=True)
+    df["CHR"] = df["CHR"].astype(str).map(inv_chr_dict).astype("category")
+
+    if id_col == "rsID" and "ID" in df.columns:
+        df.rename(columns={"ID":"rsID"}, inplace=True)
+
+    df.sort_values(["CHR","POS"], inplace=True)
+    df.to_csv(out_lookup, sep="\t", index=False, compression="infer")
+
+    log.write(f" -Lookup table created: {out_lookup}", verbose=verbose)
+    return out_lookup, rm_out_lookup
 
 import pandas as pd
 import numpy as np
@@ -478,9 +619,9 @@ def _assign_from_lookup(
 
     lookup_header = pd.read_csv(lookup_table, sep="\t", nrows=0).columns.tolist()
 
-    # -------------------------------
-    # Detect allele column mode
-    # -------------------------------
+    # ------------------------------
+    # Detect allele mode
+    # ------------------------------
     if ("REF" in lookup_header) and ("ALT" in lookup_header):
         lookup_nea_col = "REF"
         lookup_ea_col  = "ALT"
@@ -490,12 +631,13 @@ def _assign_from_lookup(
         lookup_ea_col  = "EA"
         mode = "EA_NEA"
     else:
-        raise ValueError(
-            f"Lookup must contain either (REF,ALT) or (NEA,EA). Found: {lookup_header}"
-        )
+        raise ValueError(f"Lookup must contain REF/ALT or NEA/EA. Found: {lookup_header}")
 
-    log.write(" -Detected allele mode: {} using {}(EA/ALT) / {}(NEA/REF)...".format(mode, lookup_ea_col, lookup_nea_col), verbose=verbose)
+    log.write(f" -Detected allele mode: {mode} using {lookup_ea_col}(EA/ALT) / {lookup_nea_col}(NEA/REF)...",
+              verbose=verbose)
+
     original_assign_cols = assign_cols
+
     # -------------------------------
     # Normalize ID vs rsID behavior
     # -------------------------------
@@ -528,62 +670,54 @@ def _assign_from_lookup(
     if dropped:
         log.warning("Annotation columns not available in lookup, skipped: {}...".format(dropped), verbose=verbose)
 
-    # Initialize missing annotation columns in sumstats
+
+    # Init missing annotation columns
     for col in assign_cols:
         if col not in sumstats.columns:
             sumstats[col] = pd.NA
-
     if "ALLELE_FLIPPED" not in sumstats.columns:
         sumstats["ALLELE_FLIPPED"] = False
 
-    # Required columns
     usecols = [chrom, pos, lookup_ea_col, lookup_nea_col] + list(assign_cols)
+    dtype = {chrom:"int64", pos:"int64",
+             lookup_ea_col:"category", lookup_nea_col:"category"}
 
-    dtype = {
-        chrom: "int64",
-        pos:   "int64",
-        lookup_ea_col:  "category",
-        lookup_nea_col: "category"
-    }
+    # Track unique updates correctly
+    assign_cols_list = list(assign_cols)
+    initial_missing = sumstats[assign_cols_list].isna()
+    updated_rows = set()
+    flipped_rows = set()
 
-    processed_variants = 0
-    flipped_count = 0
-
-    # -------------------------------
-    # Stream lookup data
-    # -------------------------------
+    # ------------------------------
+    # Chunk-wise streaming
+    # ------------------------------
     for chunk in pd.read_csv(
-        lookup_table,
-        sep="\t",
-        usecols=usecols,
-        dtype=dtype,
-        chunksize=chunksize,
+        lookup_table, sep="\t", usecols=usecols,
+        dtype=dtype, chunksize=chunksize
     ):
         try:
             chunk = _expand_multiallelic_fast(chunk, lookup_ea_col, lookup_nea_col)
-        except:
-            log.warning(" -Expanding multiallelic EA in lookup failed...")
-            pass
+        except Exception:
+            log.warning(" -Multiallelic expansion failed: using original rows...",
+                        verbose=verbose)
 
-        log.write(" -Loaded {:,} lookup rows...".format(len(chunk)), verbose=verbose)
+        lookup_rows = len(chunk)
+        log.write(f" -Loaded {lookup_rows:,} lookup rows...", verbose=verbose)
 
         ss_sub = sumstats[sumstats[chrom].isin(chunk[chrom].unique())]
         if ss_sub.empty:
-            log.write(" -No matching chromosomes in this chunk...", verbose=verbose)
+            log.write(" -No matching CHR in this chunk, skipping...", verbose=verbose)
             continue
-
         ss_sub = ss_sub.copy()
 
-        # unify alleles
-        alleles = pd.CategoricalDtype(
-            categories=list(
-                set(ss_sub[ea].unique())
-                | set(ss_sub[nea].unique())
-                | set(chunk[lookup_ea_col].unique())
-                | set(chunk[lookup_nea_col].unique())
-            ),
-            ordered=False
+        # Unified allele symbol space
+        allele_space = (
+            set(ss_sub[ea].unique())
+            | set(ss_sub[nea].unique())
+            | set(chunk[lookup_ea_col].unique())
+            | set(chunk[lookup_nea_col].unique())
         )
+        alleles = pd.CategoricalDtype(categories=list(allele_space), ordered=False)
 
         ss_sub[ea]  = ss_sub[ea].astype(alleles)
         ss_sub[nea] = ss_sub[nea].astype(alleles)
@@ -595,8 +729,12 @@ def _assign_from_lookup(
                  .set_index([chrom, pos, lookup_nea_col, lookup_ea_col])[list(assign_cols)]
         )
 
-        key_fwd = pd.MultiIndex.from_arrays([ss_sub[chrom], ss_sub[pos], ss_sub[nea], ss_sub[ea]])
-        key_rev = pd.MultiIndex.from_arrays([ss_sub[chrom], ss_sub[pos], ss_sub[ea], ss_sub[nea]])
+        key_fwd = pd.MultiIndex.from_arrays(
+            [ss_sub[chrom], ss_sub[pos], ss_sub[nea], ss_sub[ea]]
+        )
+        key_rev = pd.MultiIndex.from_arrays(
+            [ss_sub[chrom], ss_sub[pos], ss_sub[ea], ss_sub[nea]]
+        )
 
         vals_fwd = lookup.reindex(key_fwd).to_numpy()
         vals_rev = lookup.reindex(key_rev).to_numpy()
@@ -604,25 +742,53 @@ def _assign_from_lookup(
         flipped = pd.isna(vals_fwd).all(axis=1) & pd.notna(vals_rev).any(axis=1)
         assigned = np.where(pd.notna(vals_fwd), vals_fwd, vals_rev)
 
-        mask = sumstats.loc[ss_sub.index, assign_cols].isna().any(axis=1).to_numpy()
-        sumstats.loc[ss_sub.index[mask], assign_cols] = assigned[mask]
-        sumstats.loc[ss_sub.index[mask], "ALLELE_FLIPPED"] |= flipped[mask]
+        # Where annotation was missing before assignment
+        missing_mask = sumstats.loc[ss_sub.index, assign_cols].isna().any(axis=1).to_numpy()
+        rows_now = ss_sub.index[missing_mask]
 
-        processed_variants += mask.sum()
-        flipped_count += flipped[mask].sum()
+        sumstats.loc[rows_now, assign_cols] = assigned[missing_mask]
+        sumstats.loc[rows_now, "ALLELE_FLIPPED"] |= flipped[missing_mask]
 
-        log.write(" -Assigned: {:,} variants | Flipped: {:,}...".format(mask.sum(), flipped[mask].sum()), verbose=verbose)
+        # Determine which rows were updated for the FIRST time
+        newly_filled = (
+            initial_missing.loc[rows_now, :] &
+            sumstats.loc[rows_now, assign_cols].notna()
+        )
+        new_rows = newly_filled.index[newly_filled.any(axis=1)]
+        updated_rows.update(new_rows.tolist())
 
-    log.write(" -Total assigned: {:,}...".format(processed_variants), verbose=verbose)
-    log.write(" -Total flipped alleles: {:,}...".format(flipped_count), verbose=verbose)
-    if rm_tmp_lookup is True:
-        for f in [lookup_table]:
-            if isinstance(f, str) and os.path.exists(f):
-                try:
-                    os.remove(f)
-                    log.write(" -Cleaninig up : {}...".format(f), verbose=verbose)
-                except:
-                    pass
+        flipped_new = new_rows[flipped[missing_mask][new_rows]]
+        flipped_rows.update(flipped_new.tolist())
+
+        # Update baseline missing map
+        initial_missing.loc[rows_now, :] = sumstats.loc[rows_now, assign_cols].isna()
+
+        log.write(
+            f" -Newly annotated sumstats rows: {len(new_rows):,} "
+            f"(chunk lookup rows: {lookup_rows:,}) "
+            f"| New flips: {len(flipped_new):,}",
+            verbose=verbose
+        )
+
+    # ------------------------------
+    # Final statistics
+    # ------------------------------
+    processed_variants = len(updated_rows)
+    flipped_count = len(flipped_rows)
+
+    log.write(f" -Total unique sumstats rows annotated: {processed_variants:,}",
+              verbose=verbose)
+    log.write(f" -Total unique rows with allele flips: {flipped_count:,}",
+              verbose=verbose)
+
+    if rm_tmp_lookup:
+        if isinstance(lookup_table, str) and os.path.exists(lookup_table):
+            try:
+                os.remove(lookup_table)
+                log.write(f" -Cleaning lookup: {lookup_table}...", verbose=verbose)
+            except:
+                pass
+
     return sumstats
 
 import subprocess

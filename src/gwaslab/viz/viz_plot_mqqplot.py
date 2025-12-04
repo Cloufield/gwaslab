@@ -328,11 +328,12 @@ def mqqplot(insumstats,
     sig_line : bool, default=True
         Whether to show significance line. 
     sig_level : float, optional
-        Significance level for variants. Default is None.
+        Significance level for variants. Overrides sig_level_plot and sig_level_lead. Default is None.
     sig_level_plot : float, default=5e-8
-        Significance level to plot.
+        Significance level threshold to plot a line on the Manhattan plot. When sig_level is None, sig_level_plot will be used.
     sig_level_lead : float, default=5e-8
-        Significance level for lead variants. 
+        Significance level for extracting lead variants to annotate on the plot.  When sig_level is None, sig_level_plot will be used.
+        When too many lead variants, it is helpful to set sig_level_lead to a more strict value.
     sig_line_color : str, default='grey'
         Color for significance line. 
     suggestive_sig_line : bool, default=False
@@ -587,7 +588,16 @@ def mqqplot(insumstats,
         # in pixels
         arm_offset = fig_args["dpi"] * repel_force * fig_args["figsize"][0]*0.5
 
-    log.write("Starting MQQ plot creation (Version {})".format(_get_version()),verbose=verbose)
+    plot_label = (
+        "Manhattan-QQ plot" if ("m" in mode and "qq" in mode) else
+        "Manhattan plot" if mode == "m" else
+        "QQ plot" if mode == "qq" else
+        "Region plot" if mode == "r" else
+        "Density plot" if mode == "b" else
+        "MQQ plot"
+    )
+
+    log.write("Starting {} creation (Version {})".format(plot_label, _get_version()),verbose=verbose)
     
     build = _update_arg(build,"19")
     build = _process_build(build, log=log, verbose=verbose)
@@ -595,9 +605,9 @@ def mqqplot(insumstats,
     log.write(" - Genomic coordinates version: {} ...".format(build),verbose=verbose)
     if build is None or build=="99":
         log.warning("Genomic coordinates version is unknown.")
-    log.write(" -Genome-wide significance level to plot is set to "+str(sig_level_plot)+" ...",verbose=verbose)
+    log.write(" - Genome-wide significance level to plot is set to "+str(sig_level_plot)+" ...",verbose=verbose)
     log.write(" - Input sumstats contains {} variants...".format(len(insumstats)),verbose=verbose)
-    log.write(" - MQQ plot layout mode selected: {}".format(mode),verbose=verbose)
+    log.write(" - {} layout mode selected: {}".format(plot_label, mode),verbose=verbose)
     
     if len(anno_set)>0 and ("m" in mode):
         log.write(" -Variants to annotate : "+",".join(anno_set),verbose=verbose)    
@@ -820,7 +830,7 @@ def mqqplot(insumstats,
     log.write("Finished data conversion and sanity check.",verbose=verbose)
     
     # Manhattan plot ##########################################################################################################
-    log.write("Start to create MQQ plot with "+str(len(sumstats))+" variants...",verbose=verbose)
+    log.write("Start to create {} with ".format(plot_label)+str(len(sumstats))+" variants...",verbose=verbose)
     ## regional plot ->rsq
         #calculate rsq]
     if vcf_path is not None:
@@ -1117,7 +1127,7 @@ def mqqplot(insumstats,
             lead_snp_is =[]
             lead_snp_is_color = []
         
-        log.write("Finished creating MQQ plot successfully",verbose=verbose)
+        log.write("Finished creating {} successfully".format(plot_label),verbose=verbose)
         
         if "b" in mode:
             scaled_threhosld = sig_level_lead

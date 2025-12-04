@@ -16,6 +16,83 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
            p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, pfile=None,
            n_cores=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
            log=Log(),verbose=True,plink="plink",plink2="plink2"):
+    """
+    Perform LD clumping of GWAS summary statistics using PLINK2.
+
+    Parameters
+    ----------
+    vcf : str or None, optional
+        Path or prefix to reference VCF or genotype data compatible with PLINK2.
+        Used when deriving `--pfile` inputs.
+    bfile : str or None, optional
+        Prefix to PLINK binary files (`.bed/.bim/.fam`). May include "@"
+        as a chromosome placeholder.
+    pfile : str or None, optional
+        Prefix to PLINK2 files (`.pgen/.pvar/.psam`). May include "@"
+        as a chromosome placeholder.
+    scaled : bool, optional
+        If True, clump on `mlog10p` using PLINK2 `--clump-log10`. If False,
+        clump on `p`.
+    out : str or None, optional
+        Output prefix. If None, uses "./{study}_clumpping".
+    p : str, optional
+        Column name of p-values in `gls.data`.
+    mlog10p : str, optional
+        Column name of -log10(p) in `gls.data`.
+    overwrite : bool, optional
+        Whether to overwrite any intermediate reference files produced while
+        preparing inputs.
+    study : str or None, optional
+        Study name used when `out` is None.
+    n_cores : int, optional
+        Number of threads to pass to PLINK2 via `--threads`.
+    memory : int or None, optional
+        Memory limit (MB) for PLINK2 via `--memory`.
+    chrom : any, optional
+        Unused parameter kept for API compatibility.
+    clump_p1 : float, optional
+        Primary p-value threshold (`--clump-p1` or `--clump-log10-p1`).
+    clump_p2 : float, optional
+        Secondary p-value threshold (`--clump-p2` or `--clump-log10-p2`).
+    clump_r2 : float, optional
+        LD threshold (`--clump-r2`).
+    clump_kb : int, optional
+        Window size in kilobases (`--clump-kb`).
+    log : gwaslab.g_Log.Log, optional
+        Logger instance used for progress reporting.
+    verbose : bool, optional
+        Whether to emit verbose log messages.
+    plink : str, optional
+        Path to PLINK (v1). Not used directly in clumping.
+    plink2 : str, optional
+        Path to PLINK2 binary.
+
+    Returns
+    -------
+    results_sumstats : pandas.DataFrame
+        Subset of input summary statistics for clumped lead variants.
+    results : pandas.DataFrame
+        Concatenated PLINK2 `.clumps` output across processed chromosomes.
+    plink_log : str
+        Combined PLINK2 log output captured during execution.
+
+    Notes
+    -----
+    - Writes temporary files named "{out}_gwaslab_tmp.{sumstats_id}.{chr}.SNPIDP",
+      which are removed after clumping.
+    - Produces per-chromosome output files "{out}.{chr}.clumps".
+
+    Examples
+    --------
+    >>> results_sumstats, results, logstr = _clump(
+    ...     bfile="ref/chr@",
+    ...     clump_p1=5e-8,
+    ...     clump_p2=1e-5,
+    ...     clump_r2=0.1,
+    ...     clump_kb=250,
+    ...     n_cores=4
+    ... )
+    """
     ##start function with col checking##########################################################
     
     if out is None:

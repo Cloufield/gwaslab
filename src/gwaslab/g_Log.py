@@ -12,7 +12,7 @@ class Log():
             self.log_text = self.log_text + " ".join(map(str,message)) + end
     
     def warning(self,*message,end="\n",show_time=True, verbose=True):
-        self.write(" #WARNING! {}".format(" ".join(map(str,message))), 
+        self.write("#WARNING! {}".format(" ".join(map(str,message))), 
                    end=end, 
                    show_time=show_time,
                    verbose=verbose)
