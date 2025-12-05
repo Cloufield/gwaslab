@@ -18,8 +18,41 @@ def with_logging(start_to_msg,
                  start_cols = None,
                  must_args=None,
                  show_shape=True,
-                 check_dtype=False
+                 check_dtype=False,
+                 fix=False
                  ):
+    """
+    Decorator to add standardized logging, argument checks, and optional dtype
+    verification to QC/processing functions.
+
+    Parameters
+    ----------
+    start_to_msg : str
+        Message describing the operation start.
+    finished_msg : str
+        Message describing the operation completion.
+    start_function : str or None, default None
+        Function label used in logs when reporting missing columns or args.
+    start_cols : list or None, default None
+        Required columns to check in the input DataFrame prior to execution.
+    must_args : list or None, default None
+        Argument names that must be provided (non-None) for the wrapped func.
+    show_shape : bool, default True
+        Log DataFrame shape before and after the function call when available.
+    check_dtype : bool, default False
+        If True, verify dtypes for `start_cols` using `check_datatype_for_cols`.
+    fix : bool, default True
+        If True and `check_dtype` is enabled, attempt dtype fixes where possible.
+
+    Behavior
+    --------
+    - Logs references (threads, VCF/FASTA/TSV) and start/end messages.
+    - Validates required args and columns; skips execution if columns missing.
+    - Optionally checks DataFrame dtypes and applies fixes.
+    - Preserves original function metadata via `functools.wraps`.
+    """
+    if fix ==True:
+        check_dtype=True
     if start_cols is None:
         start_cols = []
     if must_args is None:
@@ -86,7 +119,7 @@ def with_logging(start_to_msg,
                                         cols=start_cols, 
                                         function=start_function)
                 if check_dtype:
-                    check_datatype_for_cols(sumstats=sumstats, cols=start_cols)
+                    check_datatype_for_cols(sumstats=sumstats, cols=start_cols, fix=fix)
 
                 if is_enough_col==True:
                     # Execute the original function
@@ -110,67 +143,29 @@ def with_logging(start_to_msg,
 
 
 ###############################################################################################################
-def start_to(sumstats, 
-             log, 
-             verbose, 
-             start_line,
-             end_line,
-             start_cols,
-             start_function,
-             ref_vcf=None,
-             ref_fasta=None,
-             n_cores=None,
-             ref_tsv=None,
-             **kwargs
-             ):
-    
-    log.write("Start to {}...{}".format(start_line,_get_version()), verbose=verbose)
-    
-    if sumstats is not None:
-        check_dataframe_shape(sumstats=sumstats, 
-                            log=log, 
-                            verbose=verbose)  
-        is_enough_col = check_col(sumstats.columns, 
-                                verbose=verbose, 
-                                log=log, 
-                                cols=start_cols, 
-                                function=start_function)
-        if is_enough_col==True:
-            if n_cores is not None:
-                log.write(" -Number of threads/cores to use: {}".format(n_cores))
-            if ref_vcf is not None:
-                log.write(" -Reference VCF: {}".format(ref_vcf))
-            if ref_fasta is not None:
-                log.write(" -Reference FASTA: {}".format(ref_fasta))
-            if ref_tsv is not None:
-                log.write(" -Reference TSV: {}".format(ref_tsv))
-            
-            is_args_valid = True
-            for key, value in kwargs.items():
-                is_args_valid = is_args_valid & check_arg(log, verbose, key, value, start_function)
-            is_enough_col = is_args_valid & is_enough_col
-
-        if  is_enough_col == False:
-            skipped(log, verbose, end_line)
-        return is_enough_col
-    else:
-        return None
-
-def finished(log, verbose, end_line):
-    log.write("Finished {}.".format(end_line), verbose=verbose)
-    gc.collect()
-
-def skipped(log, verbose, end_line):
-    log.write("Skipped {}.".format(end_line), verbose=verbose)
-    gc.collect()
-
-def check_arg(log, verbose, key, value, function):
-    if value is None:
-        log.warning("Necessary argument {} for {} is not provided!".format(key, function))
-        return False
-    return True
 
 def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
+    """
+    Verify presence of required columns prior to executing a processing step.
+
+    Parameters
+    ----------
+    df_col_names : Iterable[str]
+        Column names of the input DataFrame.
+    verbose : bool, default True
+        Whether to print log messages to stdout.
+    log : gwaslab.g_Log.Log
+        Logger used for messages and warnings.
+    cols : list
+        Required columns (strings) or tuples/lists to check as pairs/groups.
+    function : str or None
+        Function label used for contextual logging.
+
+    Returns
+    -------
+    bool
+        True when all required columns are present, False otherwise.
+    """
     not_in_df=[]
     for i in cols:
         if type(i) is str:

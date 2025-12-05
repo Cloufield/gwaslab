@@ -14,6 +14,9 @@ from gwaslab.g_meta import (
     _init_meta,
     _set_harmonization_status,
     _set_qc_status,
+    _update_step_status,
+    _update_qc_step,
+    _update_harmonize_step,
 )
 from gwaslab.g_meta_update import _update_meta
 
@@ -151,6 +154,7 @@ from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
 from gwaslab.hm.hm_assign_rsid import _assign_rsid
 from gwaslab.hm.hm_infer_with_af  import _infer_strand_with_annotation
 from gwaslab.view.view_sumstats import _head, _tail #_random, _info, _describe
+from datetime import datetime
 
 def add_doc(src):
     def deco(func):
@@ -296,7 +300,7 @@ class Sumstats():
         self._build = self.meta["gwaslab"]["genome_build"]
 
         self.id = id(self)
-        self.tmp_path = _path(pid=self.id, log = self.log, verbose=verbose)
+        self.tmp_path = _path(pid=self.id, log = self.log, verbose=False)
         
         #for downstream analysis
         self.ldsc_h2 = None
@@ -369,6 +373,7 @@ class Sumstats():
         self.meta["is_harmonised"] = False
         self.meta["gwaslab"]["genome_build"]=to_build
         self.build = to_build
+        _update_harmonize_step(self, "liftover", kwargs, True)
 
 # QC ######################################################################################
     #clean the sumstats with one line
@@ -425,37 +430,48 @@ class Sumstats():
             Whether to print progress information.
         """
         saved_args = {**locals()}
+        # prepare status section
         ###############################################
         # try to fix data without dropping any information 
         
         fixid_args = remove_overlapping_kwargs(fixid_args,{"log", "remove", "verbose"})
         self.data = fixID(self.data,log=self.log,verbose=verbose, **fixid_args)
+        _update_qc_step(self, "id", fixid_args, True)
         
         fixchr_args = remove_overlapping_kwargs(fixchr_args,{"log", "remove", "verbose"})
         self.data = fixchr(self.data,log=self.log,remove=remove,verbose=verbose,**fixchr_args)
+        _update_qc_step(self, "chr", fixchr_args, True)
         
         fixpos_args = remove_overlapping_kwargs(fixpos_args,{"log", "remove", "verbose"})
         self.data = fixpos(self.data,log=self.log,remove=remove,verbose=verbose,**fixpos_args)
+        _update_qc_step(self, "pos", fixpos_args, True)
         
         fixallele_args = remove_overlapping_kwargs(fixallele_args,{"log", "remove", "verbose"})
         self.data = fixallele(self.data,log=self.log, remove=remove, verbose=verbose,**fixallele_args)
+        _update_qc_step(self, "allele", fixallele_args, True)
         
         sanitycheckstats_args = remove_overlapping_kwargs(sanitycheckstats_args,{"log", "remove", "verbose"})
         self.data = sanitycheckstats(self.data,log=self.log,verbose=verbose,**sanitycheckstats_args)
+        _update_qc_step(self, "sanity", sanitycheckstats_args, True)
         
         consistencycheck_args = remove_overlapping_kwargs(consistencycheck_args,{"log", "remove", "verbose"})
         _check_data_consistency(self.data,log=self.log,verbose=verbose,**consistencycheck_args)
+        _update_qc_step(self, "consistency", consistencycheck_args, True)
         
         if normalize is True:
             normalizeallele_args = remove_overlapping_kwargs(normalizeallele_args,{"log", "remove", "verbose","n_cores"})
             self.data = parallelnormalizeallele(self.data,n_cores=n_cores,verbose=verbose,log=self.log,**normalizeallele_args)
+            _update_qc_step(self, "normalize", normalizeallele_args, True)
         
         if remove_dup is True:
             removedup_args = remove_overlapping_kwargs(removedup_args,{"log", "remove", "verbose"})
             self.data = removedup(self.data,log=self.log,verbose=verbose,**removedup_args)
+            _update_qc_step(self, "remove_dup", removedup_args, True)
         
         self.data = sortcoordinate(self.data,verbose=verbose,log=self.log)
+        _update_qc_step(self, "sort_coord", {}, True)
         self.data = sortcolumn(self.data,verbose=verbose,log=self.log)
+        _update_qc_step(self, "sort_column", {}, True)
         
         self.meta["is_sorted"] = True
         
@@ -549,24 +565,33 @@ class Sumstats():
             If false, use lookup (per-vairant) mode. If true, use sweep model (fast for large dataset).
         """
         saved_args = {**locals()}
+        # prepare status helpers
 
         if basic_check is True:
             fixid_args = remove_overlapping_kwargs(fixid_args,{"log", "remove", "verbose"})
             self.data = fixID(self.data,log=self.log,verbose=verbose,**fixid_args)
+            _update_qc_step(self, "id", fixid_args, True)
             fixchr_args = remove_overlapping_kwargs(fixchr_args,{"log", "remove", "verbose"})
             self.data = fixchr(self.data,remove=remove,log=self.log,verbose=verbose,**fixchr_args)
+            _update_qc_step(self, "chr", fixchr_args, True)
             fixpos_args = remove_overlapping_kwargs(fixpos_args,{"log", "remove", "verbose"})
             self.data = fixpos(self.data,remove=remove,log=self.log,verbose=verbose,**fixpos_args)
+            _update_qc_step(self, "pos", fixpos_args, True)
             fixallele_args = remove_overlapping_kwargs(fixallele_args,{"log", "remove", "verbose"})
             self.data = fixallele(self.data,log=self.log,verbose=verbose,**fixallele_args)
+            _update_qc_step(self, "allele", fixallele_args, True)
             sanitycheckstats_args = remove_overlapping_kwargs(sanitycheckstats_args,{"log", "remove", "verbose"})
             self.data = sanitycheckstats(self.data,log=self.log,verbose=verbose,**sanitycheckstats_args)
+            _update_qc_step(self, "sanity", sanitycheckstats_args, True)
             normalizeallele_args = remove_overlapping_kwargs(normalizeallele_args,{"log", "remove", "verbose","n_cores"})
             self.data = parallelnormalizeallele(self.data,log=self.log,n_cores=n_cores,verbose=verbose,**normalizeallele_args)
+            _update_qc_step(self, "normalize", normalizeallele_args, True)
             
             self.data = sortcolumn(self.data,log=self.log,verbose=verbose)
+            _update_qc_step(self, "sort_column", {}, True)
 
             self.data = sortcoordinate(self.data,log=self.log,verbose=verbose)
+            _update_qc_step(self, "sort_coord", {}, True)
 
             _set_qc_status(self, saved_args)
             gc.collect()
@@ -598,6 +623,8 @@ class Sumstats():
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
             flipallelestats_args = remove_overlapping_kwargs(flipallelestats_args,{"log","verbose"})
             self.data = flipallelestats(self.data,log=self.log,verbose=verbose,**flipallelestats_args)
+            _update_harmonize_step(self, "check_ref", checkref_args, True)
+            _update_harmonize_step(self, "flip_allele_stats", flipallelestats_args, True)
             
             gc.collect()
             
@@ -617,6 +644,7 @@ class Sumstats():
                                                   n_cores=n_cores,log=self.log,verbose=verbose,**inferstrand_args)
 
             self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
+            _update_harmonize_step(self, "infer_strand", inferstrand_args, True)
             
             flipallelestats_args = remove_overlapping_kwargs(flipallelestats_args,{"log","verbose"})
             self.data =flipallelestats(self.data,log=self.log,verbose=verbose,**flipallelestats_args)
@@ -637,6 +665,7 @@ class Sumstats():
                                                  n_cores=n_cores,log=self.log,verbose=verbose,**assignrsid_args)
 
             self.meta["gwaslab"]["references"]["ref_rsid_tsv"] = ref_rsid_tsv
+            _update_harmonize_step(self, "assign_rsid", assignrsid_args, True)
             gc.collect()
 
         if ref_rsid_vcf is not None:
@@ -650,17 +679,21 @@ class Sumstats():
 
             self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
             
+            _update_harmonize_step(self, "assign_rsid", assignrsid_args, True)
             gc.collect()
         
         ######################################################    
         if remove is True:
             removedup_args = remove_overlapping_kwargs(removedup_args,{"log","verbose"})
             self.data = removedup(self.data,log=self.log,verbose=verbose,**removedup_args)
+            _update_qc_step(self, "remove_dup", removedup_args, True)
         ################################################ 
         
         self.data = sortcoordinate(self.data,log=self.log,verbose=verbose)
+        _update_qc_step(self, "sort_coord", {}, True)
         
         self.data = sortcolumn(self.data,log=self.log,verbose=verbose)
+        _update_qc_step(self, "sort_column", {}, True)
         gc.collect()
         self.meta["is_sorted"] = True
         self.meta["is_harmonised"] = True
@@ -689,6 +722,7 @@ class Sumstats():
     @add_doc(fixID)
     def fix_id(self,**kwargs):
         self.data = fixID(self.data,log=self.log,**kwargs)
+        _update_qc_step(self, "id", kwargs, True)
     @add_doc(flipSNPID)
     def flip_snpid(self,**kwargs):
         self.data = flipSNPID(self.data,log=self.log,**kwargs)
@@ -698,21 +732,27 @@ class Sumstats():
     @add_doc(fixchr)
     def fix_chr(self,**kwargs):
         self.data = fixchr(self.data,log=self.log,**kwargs)
+        _update_qc_step(self, "chr", kwargs, True)
     @add_doc(fixpos)
     def fix_pos(self,**kwargs):
         self.data = fixpos(self.data,log=self.log,**kwargs)
+        _update_qc_step(self, "pos", kwargs, True)
     @add_doc(fixallele)
     def fix_allele(self,**kwargs):
         self.data = fixallele(self.data,log=self.log,**kwargs)
+        _update_qc_step(self, "allele", kwargs, True)
     @add_doc(removedup)
     def remove_dup(self,**kwargs):
         self.data = removedup(self.data,log=self.log,**kwargs)
+        _update_qc_step(self, "remove_dup", kwargs, True)
     @add_doc(sanitycheckstats)
     def check_sanity(self,**kwargs):
         self.data = sanitycheckstats(self.data,log=self.log,**kwargs)
+        _update_qc_step(self, "sanity", kwargs, True)
     @add_doc(_check_data_consistency)
     def check_data_consistency(self, **kwargs):
         _check_data_consistency(self.data,log=self.log,**kwargs)
+        _update_qc_step(self, "consistency", kwargs, True)
     def check_id(self,**kwargs):
         pass
     @add_doc(checkref)
@@ -723,17 +763,21 @@ class Sumstats():
         elif ref_seq_mode=="s":
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
             self.data = oldcheckref(self.data,ref_seq,log=self.log,**kwargs)            
+        _update_harmonize_step(self, "check_ref", kwargs, True)
     @add_doc(parallelinferstrand)
     def infer_strand(self,ref_infer,**kwargs):
         self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
         self.data = parallelinferstrand(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+        _update_harmonize_step(self, "infer_strand", kwargs, True)
     
     @add_doc(flipallelestats)
     def flip_allele_stats(self,**kwargs):
         self.data = flipallelestats(self.data,log=self.log,**kwargs)
+        _update_harmonize_step(self, "flip_allele_stats", kwargs, True)
     @add_doc(parallelnormalizeallele)
     def normalize_allele(self,**kwargs):
         self.data = parallelnormalizeallele(self.data,log=self.log,**kwargs)
+        _update_qc_step(self, "normalize", kwargs, True)
 
     def annotate_sumstats(self,**kwargs):
         from gwaslab.hm.hm_assign_rsid import _annotate_sumstats
@@ -742,6 +786,7 @@ class Sumstats():
     @add_doc(_assign_rsid)
     def assign_rsid2(self,**kwargs):
         self.data = _assign_rsid(self.data,**kwargs)
+        _update_harmonize_step(self, "assign_rsid", kwargs, True)
 
     @add_doc(_infer_strand_with_annotation)
     def infer_strand2(self,**kwargs):
@@ -755,9 +800,11 @@ class Sumstats():
         if ref_rsid_tsv is not None:
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**kwargs)
             self.meta["gwaslab"]["references"]["ref_rsid_tsv"] = ref_rsid_tsv
+            _update_harmonize_step(self, "assign_rsid", kwargs, True)
         if ref_rsid_vcf is not None:
             self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**kwargs)   
             self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
+            _update_harmonize_step(self, "assign_rsid", kwargs, True)
     @add_doc(rsidtochrpos)
     def rsid_to_chrpos(self,**kwargs):
         self.data = rsidtochrpos(self.data,log=self.log,**kwargs)
@@ -770,10 +817,12 @@ class Sumstats():
     def sort_coordinate(self,**sort_args):
         self.data = sortcoordinate(self.data,log=self.log,**sort_args)
         self.meta["is_sorted"] = True
+        _update_qc_step(self, "sort_coord", {}, True)
 
     @add_doc(sortcolumn)
     def sort_column(self,**kwargs):
         self.data = sortcolumn(self.data,log=self.log,**kwargs)
+        _update_qc_step(self, "sort_column", {}, True)
     
     ############################################################################################################
     @add_doc(filldata)

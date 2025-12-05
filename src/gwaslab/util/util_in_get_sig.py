@@ -1,3 +1,4 @@
+from gwaslab.qc.qc_check_datatype import check_datatype
 import pandas as pd
 import numpy as np
 import scipy as sp
@@ -28,7 +29,8 @@ from gwaslab.qc.qc_decorator import with_logging
         start_to_msg="extract lead variants",
         finished_msg="extracting lead variants",
         start_cols=["CHR","POS"],
-        start_function=".get_lead()"
+        start_function=".get_lead()",
+        fix=True
 )
 def getsig(insumstats,
            id="SNPID",

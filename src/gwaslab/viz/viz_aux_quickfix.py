@@ -95,6 +95,45 @@ def _quick_fix_pos(seires,log=Log(), verbose=True):
     seires = np.floor(pd.to_numeric(seires, errors='coerce')).astype('Int64')
     return seires
 
+def _normalize_region(region, chr_dict=None, log=Log(), verbose=True):
+    '''
+    Normalize a region input to a tuple (chr, start, end) with integer
+    positions and standardized chromosome notation.
+    Accepts tuples/lists or strings like 'chr1:12345-67890'.
+    '''
+    if region is None:
+        return None
+    if chr_dict is None:
+        chr_dict = get_chr_to_number()
+    if isinstance(region, str):
+        s = region.strip()
+        if ":" in s and "-" in s:
+            left, right = s.split(":", 1)
+            start_str, end_str = right.split("-", 1)
+            chrom = left.strip().upper().lstrip("CHR")
+            start = int(float(start_str.strip()))
+            end = int(float(end_str.strip()))
+        else:
+            raise ValueError("Region string must be in 'chr:start-end' format")
+    else:
+        if len(region) != 3:
+            raise ValueError("Region must be a tuple/list of (chr, start, end)")
+        chrom_raw, start_raw, end_raw = region
+        chrom = str(chrom_raw).strip().upper().lstrip("CHR")
+        start = int(float(start_raw))
+        end = int(float(end_raw))
+    if chrom in chr_dict:
+        chrom = chr_dict[chrom]
+    else:
+        try:
+            chrom = int(chrom)
+        except Exception:
+            raise ValueError("Chromosome '{}' is not recognized".format(chrom))
+    if start > end:
+        start, end = end, start
+    log.write(" -Normalized region: (CHR={}, START={}, END={})".format(chrom, start, end), verbose=verbose)
+    return (chrom, start, end)
+
 
 def _dropna_in_cols(sumstats, cols, log=Log(), verbose=True):
     to_drop = sumstats[cols].isna().any(axis=1)
