@@ -142,6 +142,14 @@ def with_logging(start_to_msg,
     return decorator
 
 
+def check_arg(log, verbose, key, value, start_function):
+    if value is None:
+        log.warning("{} requires non-None argument: {}".format(start_function, key), verbose=verbose)
+        return False
+    if isinstance(value, (str, bytes)) and str(value).strip() == "":
+        log.warning("{} requires non-empty argument: {}".format(start_function, key), verbose=verbose)
+        return False
+    return True
 ###############################################################################################################
 
 def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):

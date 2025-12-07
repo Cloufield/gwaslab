@@ -25,10 +25,6 @@ def _infer_ancestry(sumstats,
     ----------
     ancestry_af : str, optional
         Path to allele frequency file. If None, uses 1kg_hm3_hg19_eaf for build 19 or 1kg_hm3_hg38_eaf for build 38. Default is None.
-    build : str, optional
-        Genome build version. Options are "19" or "38". Default is "19".
-    verbose : bool, optional
-        If True, write log messages. Default is True.
 
     Returns
     -------

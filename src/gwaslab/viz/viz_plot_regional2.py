@@ -83,12 +83,12 @@ def _plot_regional(
     log=Log()
 ):
     """
-    Create an Region plot.
+    Create an Region plot. By default lead variant will be selected as reference variant for LD coloring.
     
     Parameters
     ----------
     vcf_path : str, optional, default=None
-        Path to VCF file for LD reference in regional plot analysis. Default is None. (Used in 'r' mode)
+        Path to VCF file for LD reference in regional plot analysis. Default is None.
 
     gtf_path : str, optional, default='ensembl'
         Path to GTF file for gene annotation in regional plots. 
@@ -98,216 +98,217 @@ def _plot_regional(
         - str : path for user provided gtf
 
     scaled : bool, optional, default=False
-        Whether P-values are already scaled. (Used in all modes)
+        Whether P-values are already scaled.
     scatter_args : dict, optional
-        Arguments for scatter plot styling. Default is None. (Used in 'm', 'r' modes)
+        Arguments for scatter plot styling. Default is None.
     scatterargs : dict, optional
-        Alternative name for scatter plot styling. Default is None. (Used in all modes)
+        Alternative name for scatter plot styling. Default is None.
     region : tuple or list, required
-        Genomic region specification (chr, start, end) for regional plots. Notr start < end. No numeric expression is allowed. . 
-        Region can be determined using `get_region_start_and_end`.(Required in 'r' mode)
+        Genomic region specification (chr, start, end) for regional plots. Note start < end. No numeric expression is allowed.
+        Region can be determined using `get_region_start_and_end`.
     region_title : str, optional
-        Title for regional plot. Default is None. (Used in 'r' mode)
+        Title for regional plot. Default is None.
     region_title_args : dict, optional
-        Arguments for regional plot title styling. Default is None. (Used in 'r' mode)
+        Arguments for regional plot title styling. Default is None.
     region_ref : str or list, optional
-        Reference variant(s) for regional plot. Default is auto-detected lead variant.. (Used in 'r' mode)
+        Reference variant(s) for regional plot. If not provided, the lead variant
+        in the region (highest `scaled_P`) is auto-selected as the default reference.
     region_ref2 : str, optional
-        Second reference variant for regional plot. Default is None. (Used in 'r' mode)
+        Second reference variant for regional plot. Default is None.
     region_ref_second : str, optional,optional
-        Alternative name for second reference variant. Default is None. (Used in 'r' mode)
+        Alternative name for second reference variant. Default is None.
     region_step : int,optional, default=21
-        Step size for regional plot grid. (Used in 'r' mode)
+        Step size for regional plot grid.
     region_grid : bool, optional,default=False
-        Whether to show grid lines in regional plots. (Used in 'r' mode)
+        Whether to show grid lines in regional plots.
     region_grid_line : dict,optional, default={"linewidth": 2,"linestyle":"--"}
-        Styling arguments for regional plot grid lines. (Used in 'r' mode)
+        Styling arguments for regional plot grid lines.
     region_lead_grid : bool, optional,default=True
-        Whether to show lead variant grid in regional plots. (Used in 'r' mode)
+        Whether to show lead variant grid in regional plots.
     region_lead_grid_line : dict,optional, default={"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
-        Styling arguments for lead variant grid lines. (Used in 'r' mode)
+        Styling arguments for lead variant grid lines.
     region_hspace : float,optional, default=0.02
-        Horizontal space between regional plot panels. (Used in 'r' mode)
+        Horizontal space between regional plot panels.
     region_ld_threshold : list,optional, default=[0.2,0.4,0.6,0.8]
-        LD thresholds for regional plot coloring. (Used in 'r' mode)
+        LD thresholds for regional plot coloring.
     region_ld_legend : bool, optional,default=True
-        Whether to show LD legend in regional plot. (Used in 'r' mode)
+        Whether to show LD legend in regional plot.
     region_ld_colors : list, optional,default=["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
-        Colors for LD levels in regional plot. (Used in 'r' mode)
+        Colors for LD levels in regional plot.
     region_ld_colors_m : list, optional, default=["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]
-        Colors for multi-lead variant regional plots. (Used in 'r' mode)
+        Colors for multi-lead variant regional plots.
     region_recombination : bool,optional, default=True
-        Whether to plot recombination rate in regional plot. (Used in 'r' mode)
+        Whether to plot recombination rate in regional plot.
     region_flank_factor : float, optional,default=0.05
-        Flanking factor for regional plot. (Used in 'r' mode)
+        Flanking factor for regional plot.
     region_anno_bbox_args : dict, optional,default={"ec":"None","fc":"None"}
-        Bounding box arguments for regional plot annotations. (Used in 'r' mode)
+        Bounding box arguments for regional plot annotations.
     region_marker_shapes : list, optional,default=['o', '^','s','D','*','P','X','h','8']
-        Shapes for markers in regional plot. First one, the the shape for non-reference variants, the second one is for the first reference variants and so on. (Used in 'r' mode)
+        Shapes for markers in regional plot. First one, the shape for non-reference variants, the second one is for the first reference variants and so on.
     region_legend_marker : bool, optional,default=True
-        Whether to show marker legend in regional plot. (Used in 'r' mode)
+        Whether to show marker legend in regional plot.
     region_ref_alias : dict, optional
-        Alias mapping for reference variants in regional plot. Default is None. (Used in 'r' mode)
+        Alias mapping for reference variants in regional plot. Default is None.
     cbar_title : str, default='LD $\\mathregular{r^2}$ with variant'
-        Title for color bar. (Used in 'r' mode)
+        Title for color bar.
     cbar_fontsize : int, optional
-        Font size for color bar labels. Default is None. (Used in 'r' mode)
+        Font size for color bar labels. Default is None.
     cbar_scale : bool, default=True
-        Whether to scale color bar. (Used in 'r' mode)
+        Whether to scale color bar.
     cbar_font_family : str, optional
-        Font family for color bar. Default is None. (Used in 'r' mode)
+        Font family for color bar. Default is None.
     cbar_bbox_to_anchor : tuple,optional, default=(0,0,1,1)
-        Bounding box anchor for color bar. (Used in 'r' mode)
+        Bounding box anchor for color bar.
     cbar_equal_aspect : bool, optional,default=True
-        Whether to keep equal aspect in color bar. (Used in 'r' mode)
+        Whether to keep equal aspect in color bar.
     cbar_w_scale : float,optional, default=1
-        Width scale for color bar. (Used in 'r' mode)
+        Width scale for color bar.
     cbar_h_scale : float,optional, default=1
-        Height scale for color bar. (Used in 'r' mode)
+        Height scale for color bar.
     cbar_downward_offset : float, optional,default=1.3
-        Downward offset for color bar. (Used in 'r' mode)
+        Downward offset for color bar.
     cbar_borderpad : float, optional
-        Border padding for color bar. Default is None. (Used in 'r' mode)
+        Border padding for color bar. Default is None.
     track_n : int,optional, default=4
-        Number of tracks in regional plot. (Used in 'r' mode)
+        Number of tracks in regional plot.
     track_n_offset : int,optional,default=0
-        Track offset in regional plot. (Used in 'r' mode)
+        Track offset in regional plot.
     track_fontsize_ratio : float,optional, default=0.95
-        Font size ratio for tracks. (Used in 'r' mode)
+        Font size ratio for tracks.
     track_exon_ratio : int,optional, default=1
-        Exon ratio for tracks. (Used in 'r' mode)
+        Exon ratio for tracks.
     track_text_offset : int, optional,default=1
-        Text offset for tracks. (Used in 'r' mode)
+        Text offset for tracks.
     track_font_family : str, optional
-        Font family for tracks. Default is None. (Used in 'r' mode)
+        Font family for tracks. Default is None.
     windowsizekb : int, optional,default=500
-        Window size in kb for obtainning significant variant. (Used all modes)
+        Window size in kb for obtainning significant variant.
     anno : str, optional,default=None.
-        Annotation source (e.g., 'GENENAME'). Default is None. (Used in 'm' and 'r' modes)
+        Annotation source (e.g., 'GENENAME'). Default is None.
     anno_set : list, optional
-        Set of variants to annotate. Default is None. (Used in 'm' and 'r' modes)
+        Set of variants to annotate. Default is None.
     anno_alias : dict, optional
-        Alias mapping for annotations. Default is None. (Used in 'm' and 'r' modes)
+        Alias mapping for annotations. Default is None.
     anno_d : dict, optional
-        Additional annotation data. Default is None. (Used in 'm' and 'r' modes)
+        Additional annotation data. Default is None.
     anno_args : dict, optional
-        Arguments for annotation styling. Default is None. (Used in 'm' and 'r' modes)
+        Arguments for annotation styling. Default is None.
     anno_args_single : dict, optional
-        Arguments for single annotation styling. Default is None. (Used in 'm' and 'r' modes)
+        Arguments for single annotation styling. Default is None.
     anno_style : str, optional,default='right'
-        Annotation style. (Used in 'm' and 'r' modes)
+        Annotation style.
     anno_fixed_arm_length : float, optional
-        Fixed arm length for annotations. Default is None. (Used in 'm' and 'r' modes)
+        Fixed arm length for annotations. Default is None.
     anno_adjust : bool, default=False
-        Whether to adjust annotation positions for tight style. (Used in 'm' and 'r' modes)
+        Whether to adjust annotation positions for tight style.
     anno_xshift : float, optional
-        X-axis shift for annotations. Default is None. (Used in 'm' and 'r' modes)
+        X-axis shift for annotations. Default is None.
     anno_max_iter : int, optional, default=100
-        Maximum iterations for annotation adjustment. (Used in 'm' and 'r' modes)
+        Maximum iterations for annotation adjustment.
     arrow_kwargs : dict, optional
-        Arguments for annotation arrows. Default is None. (Used in 'm' and 'r' modes)
+        Arguments for annotation arrows. Default is None.
     arm_offset : float, optional
-        Offset for annotation arms. Default is None. (Used in 'm' and 'r' modes)
+        Offset for annotation arms. Default is None.
     arm_scale : float, optional,default=1
-        Scale for annotation arms. (Used in 'm' and 'r' modes)
+        Scale for annotation arms.
     anno_height : float, optional,default=1
-        Height for annotations. (Used in 'm' and 'r' modes)
+        Height for annotations.
     arm_scale_d : float, optional
-        Scale for annotation arms in density plots. Default is None. (Used in 'm' and 'r' modes)
+        Scale for annotation arms in density plots. Default is None.
     cut : float, optional,default=0
-        Cut value for shrinking variants above threshold. (Used in all modes)
+        Cut value for shrinking variants above threshold.
     skip : float,optional, default=0
-        Skip variants with -log10(P) < skip. (Used in all modes)
+        Skip variants with -log10(P) < skip.
     ystep : float, optional,default=0
-        Step size for y-axis. (Used in all modes)
+        Step size for y-axis.
     ylabels : list, optional
-        Custom y-axis labels. Default is None. (Used in all modes)
+        Custom y-axis labels. Default is None.
     ytick3 : bool, optional,default=True
-        Whether to use 3 y-axis ticks. (Used in all modes)
+        Whether to use 3 y-axis ticks.
     cutfactor : int, optional,default=10
-        Factor for shrinking cut line. (Used in all modes)
+        Factor for shrinking cut line.
     cut_line_color : str, optional,default='#ebebeb'
-        Color for cut line. (Used in all modes)
+        Color for cut line.
     cut_log : bool,optional, default=False
-        Whether to use log scale for cut line. (Used in all modes)
+        Whether to use log scale for cut line.
     sig_line : bool, optional,default=True
-        Whether to show significance line. (Used in all modes)
+        Whether to show significance line.
     sig_level : float, optional
-        Significance level for variants. Default is None. (Used in all modes)
+        Significance level for variants. Default is None.
     sig_level_plot : float,optional, default=5e-8
-        Significance level to plot. (Used in all modes)
+        Significance level to plot.
     sig_level_lead : float,optional, default=5e-8
-        Significance level for lead variants. (Used in all modes)
+        Significance level for lead variants.
     sig_line_color : str, optional,default='grey'
-        Color for significance line. (Used in all modes)
+        Color for significance line.
     suggestive_sig_line : bool,optional, default=False
-        Whether to show suggestive significance line. (Used in all modes)
+        Whether to show suggestive significance line.
     suggestive_sig_level : float,optional, default=5e-6
-        Suggestive significance level. (Used in all modes)
+        Suggestive significance level.
     suggestive_sig_line_color : str,optional, default='grey'
-        Color for suggestive significance line. (Used in all modes)
+        Color for suggestive significance line.
     additional_line : list, optional
-        Additional lines to plot. Default is None. (Used in all modes)
+        Additional lines to plot. Default is None.
     additional_line_color : list, optional
-        Colors for additional lines. Default is None. (Used in all modes)
+        Colors for additional lines. Default is None.
     sc_linewidth : int,optional, default=2
-        Line width for significance lines. (Used in all modes)
+        Line width for significance lines.
     pinpoint : list, optional
-        List of variants to pinpoint. Default is None. (Used in all modes)
+        List of variants to pinpoint. Default is None.
     pinpoint_color : str, optional,default='red'
-        Color for pinpointed variants. (Used in all modes)
+        Color for pinpointed variants.
     ylim : tuple, optional
-        Y-axis limits for plot. Default is None. (Used in all modes)
+        Y-axis limits for plot. Default is None.
     xpad : float, optional
-        X-axis padding proportion. Default is None. (Used in all modes)
+        X-axis padding proportion. Default is None.
     xpadl : float, optional
-        Left X-axis padding proportion. Default is None. (Used in all modes)
+        Left X-axis padding proportion. Default is None.
     xpadr : float, optional
-        Right X-axis padding proportion. Default is None. (Used in all modes)
+        Right X-axis padding proportion. Default is None.
     xtight : bool, optional,default=False
-        Whether to use tight X-axis padding. (Used in all modes)
+        Whether to use tight X-axis padding.
     chrpad : float, optional,default=0.03
-        Chromosome padding factor. (Used in all modes)
+        Chromosome padding factor.
     title : str, optional
-        Plot title. Default is None. (Used in all modes)
+        Plot title. Default is None.
     xlabel : str, optional
-        X-axis label. Default is None. (Used in all modes)
+        X-axis label. Default is None.
     title_pad : float,optional,default=1.08
-        Padding for plot title. (Used in all modes)
+        Padding for plot title.
     title_fontsize : int,optional, default=13
-        Font size for title. (Used in all modes)
+        Font size for title.
     fontsize : int, optional,default=9
-        Base font size for plot elements. (Used in all modes)
+        Base font size for plot elements.
     font_family : str, optional
-        Font family for text elements. Default is None. (Used in all modes)
+        Font family for text elements. Default is None.
     fontfamily : str, optional,default='Arial'
-        Alternative name for font family. (Used in all modes)
+        Alternative name for font family.
     math_fontfamily : str, optional,default='dejavusans'
-        Font family for math text. (Used in all modes)
+        Font family for math text.
     anno_fontsize : int, optional,default=9
-        Font size for annotations. (Used in 'm' and 'r' modes)
+        Font size for annotations.
     figargs : dict, optional
-        Figure arguments for subplots. Default is None. (Used in all modes)
+        Figure arguments for subplots. Default is None.
     fig_args : dict, optional
-        Alternative name for figure arguments. Default is None. (Used in all modes)
+        Alternative name for figure arguments. Default is None.
     colors : list,optional, default=['#597FBD','#74BAD3']
-        Color palette for plot. (Used in all modes)
+        Color palette for plot.
     marker_size : tuple, optional,default=(45,65)
-        Size range for markers. (Used in all modes)
+        Size range for markers.
     verbose : bool, optional,default=True
-        Whether to show progress. (Used in all modes)
+        Whether to show progress.
     repel_force : float, optional,default=0.03
-        Force for repelling overlapping labels. (Used in 'm' and 'r' modes)
+        Force for repelling overlapping labels.
     build : str, optional
-        Genomic build version. Default is None. (Used in all modes)
+        Genomic build version. Default is None.
     dpi : int, optional, default=200
-        Dots per inch for figure resolution. (Used in all modes)
+        Dots per inch for figure resolution.
     save : str, optional
-        File path to save plot. Default is None. (Used in all modes)
+        File path to save plot. Default is None.
     save_args : dict, optional,default={"dpi":600,"transparent":True}
-        Arguments for saving the plot. (Used in all modes)
+        Arguments for saving the plot.
     saveargs : dict, optional
-        Alternative name for save arguments. Default is None. (Used in all modes)
+        Alternative name for save arguments. Default is None.
     
     Returns
     -------
@@ -321,7 +322,7 @@ def _plot_regional(
     Less used parameters
     -------
     taf : dict, optional
-        Track annotation file. Default is None. (Used in 'r' mode)
+        Track annotation file. Default is None.
     vcf_chr_dict : dict, optional
         Sumstats CHR (int) to VCF contig (str) dict for loading VCF data. 
         If None, it will be auto-detected (prefered). 
@@ -343,37 +344,37 @@ def _plot_regional(
         Sumstats CHR (int) to recombination data chromosome (string) dict. Default is None. 
         Only used when user provided recombination rate data was used.
     rr_lim : tuple, optional, default=(0,100)
-        Recombination rate limits. (Used in 'r' mode)
+        Recombination rate limits.
     rr_ylabel : bool,optional, default=True
-        Whether to show recombination rate y-label. (Used in 'r' mode)
+        Whether to show recombination rate y-label.
     ld_path : str, optional,default=None
-        Path to precomputed LD matrix for regional plot. Default is None. (Used in 'r' mode)
+        Path to precomputed LD matrix for regional plot. Default is None.
     ld_map_path : str, optional,default=None
-        Path to LD map data. Default is None. (Used in 'r' mode)
+        Path to LD map data. Default is None.
     ld_fmt : str, default='npz'
-        Format of LD data file. (Used in 'r' mode)
+        Format of LD data file.
     ld_if_square : bool, optional,default=False
-        Whether LD matrix is square. (Used in 'r' mode)
+        Whether LD matrix is square.
     ld_if_add_T : bool,optional, default=False
-        Whether to add transpose for LD matrix. (Used in 'r' mode)
+        Whether to add transpose for LD matrix.
     ld_map_rename_dic : dict, optional
-        Dictionary to rename LD map columns. Default is None. (Used in 'r' mode)
+        Dictionary to rename LD map columns. Default is None.
     ld_map_kwargs : dict, optional
-        Additional arguments for LD map. Default is None. (Used in 'r' mode)
+        Additional arguments for LD map. Default is None.
     jagged : bool,optional, default=False
-        Whether to make y-axis jagged. (Used in all modes)
+        Whether to make y-axis jagged.
     jagged_len : float, optional,default=0.01
-        Length of jagged line. (Used in all modes)
+        Length of jagged line.
     jagged_wid : float, optional,default=0.01
-        Width of jagged line. (Used in all modes)
+        Width of jagged line.
     anno_source : str,optional, default='ensembl'
-        Source for annotations. (Used in 'm' and 'r' modes)
+        Source for annotations.
     anno_gtf_path : str, optional
-        Path to GTF file for annotations. Default is None. (Used in 'm' and 'r' modes)
+        Path to GTF file for annotations. Default is None.
     ylabel : str, optional
-        Y-axis label. Default is None. (Used in all modes)
+        Y-axis label. Default is None.
     tabix : str, optional
-        Path to tabix executable. Default is None. (Used in 'r' mode)
+        Path to tabix executable. Default is None.
     """
 
 

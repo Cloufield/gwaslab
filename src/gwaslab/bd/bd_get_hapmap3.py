@@ -22,8 +22,6 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
     Parameters
     ----------
 
-    build : str, optional
-        Genome build version ("19" or "38"). Default is "19".
     verbose : bool, optional
         Print progress messages. Default is True.
     match_allele : bool, optional
@@ -39,6 +37,9 @@ def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",b
 
     Less used parameters
     --------
+
+    build : str, optional
+        Genome build version ("19" or "38"). Default is "19".
     sumstats : pd.DataFrame
         Input summary statistics dataframe.
     rsid : str, optional
