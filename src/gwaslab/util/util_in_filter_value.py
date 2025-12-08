@@ -39,7 +39,7 @@ def with_logging_filter(start_to_msg,finished_msg):
 
             afternum = len(result)
             log.write(" -Filtered out "+ str(prenum-afternum) +" variants", verbose=verbose)
-            check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose)
+            check_dataframe_shape(sumstats=result, log=log, verbose=verbose)
             # Log finish message
             log.write(f"Finished {finished_msg}.", verbose=verbose)
             
@@ -634,10 +634,6 @@ def _filter_palindromic(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verb
     -----------
     mode : str, default="in"
         "in" to keep palindromic variants, "out" to remove them
-    ea : str, default="EA"
-        Column name for effect allele
-    nea : str, default="NEA"
-        Column name for non-effect allele
     verbose : bool, default=True
         If True, writes progress to log
     inplace : bool, default=False  
@@ -668,11 +664,7 @@ def _filter_indel(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=Tr
     Parameters:
     -----------
     mode : str, default="in"
-        "in" to keep indels, "out" to remove them
-    ea : str, default="EA"
-        Column name for effect allele
-    nea : str, default="NEA"
-        Column name for non-effect allele
+        "in" to keep indels, "out" to remove indels
     verbose : bool, default=True
         If True, writes progress to log
     inplace : bool, default=False  
@@ -701,11 +693,7 @@ def _filter_snp(sumstats, mode="in", ea="EA", nea="NEA", log=Log(), verbose=True
     Parameters:
     -----------
     mode : str, default="in"
-        "in" to keep SNPs, "out" to remove them
-    ea : str, default="EA"
-        Column name for effect allele
-    nea : str, default="NEA"
-        Column name for non-effect allele
+        "in" to keep SNPs, "out" to remove SNPs
     verbose : bool, default=True
         If True, writes progress to log
     inplace : bool, default=False  

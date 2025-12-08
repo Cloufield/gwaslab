@@ -309,11 +309,6 @@ def lookupstatus(status):
     - 6th digit: Alignment to reference genome
     - 7th digit: Palindromic SNP/indel status
     
-    Parameters:
-    -----------
-    status : pandas.Series
-        Column of status codes from GWAS summary statistics
-    
     Returns:
     --------
     pandas.DataFrame
