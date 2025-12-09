@@ -20,6 +20,7 @@ from gwaslab.qc.qc_build import _check_build
 from gwaslab.util.util_in_correct_winnerscurse import wc_correct
 from gwaslab.util.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.util.util_in_fill_data import fill_p
+from gwaslab.util.util_in_get_density import getsignaldensity2
 # getsig
 # closest_gene
 # annogene
@@ -51,7 +52,7 @@ def getsig(insumstats,
            gtf_path=None,
            verbose=True):
     """
-    Extract lead variants using a sliding window approach with significance thresholding.
+    Extract lead variants by P values using a sliding window approach with significance thresholding.
 
     This function identifies lead variants from summary statistics using a sliding window 
     algorithm based on either -log10(p-values) or p-values. It prioritizes -log10(p-values) 
@@ -68,12 +69,14 @@ def getsig(insumstats,
         List of non-autosomal chromosome identifiers
     wc_correction : bool, default=False
         If True, apply Winner's Curse correction to effect sizes
-    build : {"19", "38"}, default="19"
-        Reference genome build for gene annotation
-    source : {"ensembl", "refseq"}, default="ensembl"
-        Database source for gene annotation
-    verbose : bool, default=True
-        If True, print detailed processing information
+    anno : bool, default=False
+        If True, annotate output with nearest gene names.
+    build : {"19","38"}, default="19"
+        Reference genome build for optional annotation.
+    source : {"ensembl","refseq"}, default="ensembl"
+        Gene annotation source.
+    gtf_path : str or None, optional
+        Custom GTF path for annotation; if None, auto-download/reference is used.
 
     Returns
     -------
@@ -136,62 +139,14 @@ def getsig(insumstats,
         sumstats_sig.loc[:,"__SCALEDP"] = pd.to_numeric(sumstats_sig[p], errors='coerce')
     log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...", verbose=verbose)
 
-    #sort the coordinates
     sumstats_sig = sumstats_sig.sort_values([chrom,pos])
-    if sumstats_sig is None:
+    if len(sumstats_sig) == 0:
         log.write(" -No lead snps at given significance threshold!", verbose=verbose)
         return None
-    
-    #init 
-    sig_index_list=[]
-    current_sig_index = False
-    current_sig_p = 1
-    current_sig_pos = 0
-    current_sig_chr = 0
-    
+
     p="__SCALEDP"
-    
-    #iterate through all significant snps
-    for line_number,(index, row) in enumerate(sumstats_sig.iterrows()):
-        #when finished one chr 
-        if row[chrom]!=current_sig_chr:
-            #add the current lead variants id to lead variant list
-            if current_sig_index is not False:sig_index_list.append(current_sig_index)
-            
-            #update lead vairant info to the new variant
-            current_sig_chr=row[chrom]
-            current_sig_pos=row[pos]
-            current_sig_p=row[p]
-            current_sig_index=row[id]
-            
-            # only one significant variant on a new chromsome and this is the last sig variant
-            if  line_number == len(sumstats_sig)-1:
-                sig_index_list.append(current_sig_index)
-            continue
-        
-        # next loci : gap > windowsizekb*1000
-        if row[pos]>current_sig_pos + windowsizekb*1000:
-            sig_index_list.append(current_sig_index)
-            current_sig_pos=row[pos]
-            current_sig_p=row[p]
-            current_sig_index=row[id]
-            if  line_number == len(sumstats_sig)-1:
-                sig_index_list.append(current_sig_index)
-            continue
-        
-        # update current pos and p
-        if row[p]<current_sig_p:
-            current_sig_pos=row[pos]
-            current_sig_p=row[p]
-            current_sig_index=row[id]
-        else:
-            current_sig_pos=row[pos]
-            
-        #when last line in sig_index_list
-        if  line_number == len(sumstats_sig)-1:
-            sig_index_list.append(current_sig_index)
-            continue
-    
+    sig_index_list = _collect_leads_generic(sumstats_sig, chrom, pos, windowsizekb, p, id, maximize=False)
+
     log.write(" -Identified "+str(len(sig_index_list))+" lead variants!", verbose=verbose)
     
     # drop internal __SCALEDP
@@ -225,6 +180,134 @@ def getsig(insumstats,
         output["BETA_WC"] = output[["BETA","SE"]].apply(lambda x: wc_correct(x["BETA"],x["SE"],sig_level),axis=1)
 
     return output.copy()
+
+
+@with_logging(
+        start_to_msg="extract top variants by metric",
+        finished_msg="extracting top variants",
+        start_cols=["CHR","POS"],
+        start_function=".get_top()",
+        fix=True
+)
+def gettop(insumstats,
+           id="SNPID",
+           chrom="CHR",
+           pos="POS",
+           by="DENSITY",
+           threshold=None,
+           windowsizekb=500,
+           log=Log(),
+           xymt=["X","Y","MT"],
+           anno=False,
+           build="19",
+           source="ensembl",
+           gtf_path=None,
+           verbose=True):
+    """
+    Extract top variants by maximizing a metric within sliding windows.
+
+    This function identifies lead variants by selecting, within each
+    contiguous window on a chromosome, the variant with the highest value
+    of a specified column (e.g., `DENSITY`). It follows the same windowing
+    logic as `getsig`, but does not rely on `P` or `MLOG10P`.
+
+    Parameters
+    ----------
+    by : str, default="DENSITY"
+        Column name whose values are maximized to choose leads.
+    threshold : float or None, default=None
+        If provided, only variants with `by` >= `threshold` are considered. Deafult threshold is the median of maximum values of each chormosome.
+    windowsizekb : int, default=500
+        Sliding window size in kilobases used to determine locus boundaries.
+    anno : bool, default=False
+        If True, annotate output with nearest gene names.
+    build : {"19","38"}, default="19"
+        Reference genome build for optional annotation.
+    source : {"ensembl","refseq"}, default="ensembl"
+        Gene annotation source.
+    gtf_path : str or None, optional
+        Custom GTF path for annotation; if None, auto-download/reference is used.
+
+    Returns
+    -------
+    pandas.DataFrame or None
+        DataFrame containing the selected lead variants. Returns None if
+        no variants have valid values in the `by` column.
+    """
+    sumstats = insumstats.copy()
+    if sumstats[chrom].dtype in ["object",str,pd.StringDtype]:
+        chr_to_num = get_chr_to_number(out_chr=True,xymt=["X","Y","MT"])
+        sumstats[chrom]=sumstats[chrom].map(chr_to_num)
+    sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
+    sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+
+    if (by == "DENSITY") and ("DENSITY" not in sumstats.columns):
+        sumstats = getsignaldensity2(insumstats=sumstats,
+                                     snpid=id,
+                                     chrom=chrom,
+                                     pos=pos,
+                                     bwindowsizekb=windowsizekb,
+                                     log=log,
+                                     verbose=verbose)
+    if by not in sumstats.columns:
+        raise ValueError("Please make sure {} column is in input sumstats.".format(by))
+
+    sumstats["__ID"] = range(len(sumstats))
+    id = "__ID"
+    sumstats_sig = sumstats.loc[~sumstats[by].isna(),:].copy()
+    sumstats_sig["__BYNUM"] = pd.to_numeric(sumstats_sig[by], errors='coerce')
+    if threshold is None:
+        chr_max = sumstats_sig.groupby(chrom, sort=False)["__BYNUM"].max()
+        threshold = float(chr_max.median()) if len(chr_max) > 0 else None
+    if threshold is not None:
+        sumstats_sig = sumstats_sig.loc[sumstats_sig["__BYNUM"] >= threshold, :]
+        log.write(" -Using {} threshold: {}".format(by, threshold), verbose=verbose)
+    sumstats_sig = sumstats_sig.sort_values([chrom,pos])
+    if len(sumstats_sig) == 0:
+        log.write(" -No variants passing {} threshold or valid metric".format(by), verbose=verbose)
+        return None
+
+    sig_index_list = _collect_leads_generic(sumstats_sig, chrom, pos, windowsizekb, "__BYNUM", id, maximize=True)
+    log.write(" -Identified "+str(len(sig_index_list))+" top variants!", verbose=verbose)
+
+    sumstats_sig = sumstats_sig.drop(["__BYNUM"],axis=1)
+    output = sumstats_sig.loc[sumstats_sig[id].isin(sig_index_list),:].copy()
+
+    if anno is True and len(output)>0:
+        output = annogene(output,
+               id=id,
+               chrom=chrom,
+               pos=pos,
+               log=log,
+               xymt=xymt,
+               build=build,
+               source=source,
+               gtf_path=gtf_path,
+               verbose=verbose)
+    output = output.drop("__ID",axis=1)
+    return output.copy()
+
+def _collect_leads_generic(df, chrom, pos, windowsizekb, score_col, id_col, maximize=True):
+    # Return empty immediately if the input is empty
+    if len(df) == 0:
+        return []
+    # Convert window size from kb to base pairs
+    threshold = windowsizekb * 1000
+    # Identify starts of new clusters when chromosome changes
+    new_chr = df[chrom].ne(df[chrom].shift())
+    # Compute position difference within chromosome; reset at new chromosome
+    pos_diff = df[pos].diff().mask(new_chr, 0).fillna(0)
+    # A new cluster starts on chromosome change or if gap exceeds threshold
+    breaks = new_chr | (pos_diff > threshold)
+    # Assign a cluster id by cumulative sum of break flags
+    cluster_id = breaks.cumsum()
+    # Choose the lead index per cluster by maximizing or minimizing the score
+    if maximize:
+        idx = df.groupby(cluster_id, sort=False)[score_col].idxmax()
+    else:
+        idx = df.groupby(cluster_id, sort=False)[score_col].idxmin()
+    # Return the corresponding id values for selected indices
+    return df.loc[idx, id_col].tolist()
 
 
 def closest_gene(x,data,chrom="CHR",pos="POS",maxiter=20000,step=50,source="ensembl",build="19"):

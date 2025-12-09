@@ -48,6 +48,7 @@ from gwaslab.io.io_process_args import _update_args
 
 from gwaslab.util.util_in_filter_value import _filter_region
 from gwaslab.util.util_in_get_sig import getsig
+from gwaslab.util.util_in_get_sig import gettop
 from gwaslab.util.util_in_get_sig import annogene
 
 from gwaslab.bd.bd_common_data import get_chr_to_number
@@ -568,6 +569,8 @@ def mqqplot(insumstats,
     else:
         sig_level_plot = sig_level
         sig_level_lead = sig_level     
+    if mode=="b":
+        sig_level_lead = None
 
     if check==True and _if_quick_qc==True:
         _if_quick_qc = True
@@ -1132,10 +1135,11 @@ def mqqplot(insumstats,
         log.write("Finished creating {} successfully".format(plot_label),verbose=verbose)
         
         if "b" in mode:
-            scaled_threhosld = sig_level_lead
+            scaled_threhosld = None
         else:
             scaled_threhosld = float(-np.log10(sig_level_lead))
         # Get top variants for annotation #######################################################
+        to_annotate = pd.DataFrame()
         log.write("Start to extract variants for annotation...",verbose=verbose)
         if (anno and anno!=True) or (len(anno_set)>0):
             if len(anno_set)>0:
@@ -1143,7 +1147,17 @@ def mqqplot(insumstats,
                 if to_annotate.empty is not True:
                     log.write(" -Found "+str(len(to_annotate))+" specified variants to annotate...",verbose=verbose)
             else:
-                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> scaled_threhosld ,:],
+                if "b" in mode:
+                    to_annotate=gettop(sumstats,
+                               id=snpid,
+                               chrom=chrom,
+                               pos=pos,
+                               by="scaled_P",
+                               windowsizekb=windowsizekb,
+                               verbose=True)
+                               
+                else:
+                    to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> scaled_threhosld ,:],
                                snpid,
                                chrom,
                                pos,
@@ -1153,8 +1167,8 @@ def mqqplot(insumstats,
                                scaled=scaled,
                                mlog10p="scaled_P",
                                verbose=False)
-                if (to_annotate.empty is not True) and ("b" not in mode):
-                    log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
+                    if (to_annotate.empty is not True) and ("b" not in mode):
+                        log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
                 
         else:
             if "b" not in mode:
@@ -1168,12 +1182,9 @@ def mqqplot(insumstats,
                                 verbose=False,
                                 mlog10p="scaled_P",
                                 sig_level=sig_level_lead)
-            else:
-                to_annotate=pd.DataFrame()
-
-        
-            if (to_annotate.empty is not True) and ("b" not in mode):
-                log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
+    
+                if (to_annotate.empty is not True):
+                    log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
         if (to_annotate.empty is not True) and anno=="GENENAME":
             to_annotate = annogene(to_annotate,
                                    id=snpid,

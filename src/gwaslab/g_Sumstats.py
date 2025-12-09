@@ -93,6 +93,7 @@ from gwaslab.util.util_in_get_sig import (
     annogene,
     getnovel,
     getsig,
+    gettop,
     _check_cis,
     _check_novel_set,
 )
@@ -1078,8 +1079,8 @@ class Sumstats():
         return plot
     
     @add_doc(mqqplot)
-    def plot_manhantan(self, build=None, **kwargs):
-        params = self._apply_viz_params(mqqplot, kwargs, key="plot_manhantan")
+    def plot_manhattan(self, build=None, **kwargs):
+        params = self._apply_viz_params(mqqplot, kwargs, key="plot_manhattan")
         if "build" not in params:
             params["build"] = self.build
         plot, log = mqqplot(self.data, **params)
@@ -1122,6 +1123,20 @@ class Sumstats():
                         **kwargs)
         
         # return sumstats object    
+        if gls == True:
+            new_Sumstats_object = copy.deepcopy(self)
+            new_Sumstats_object.data = output
+            gc.collect()
+            return new_Sumstats_object
+        return output
+
+    @add_doc(gettop)
+    def get_top(self, gls=False, build=None, **kwargs):
+        kwargs = remove_overlapping_kwargs(kwargs,{"log","build"})
+        output = gettop(self.data,
+                        log=self.log,
+                        build=self.build,
+                        **kwargs)
         if gls == True:
             new_Sumstats_object = copy.deepcopy(self)
             new_Sumstats_object.data = output
