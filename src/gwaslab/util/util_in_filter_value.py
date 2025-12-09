@@ -366,7 +366,7 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
 @with_logging("infer genome build version using hapmap3 SNPs", 
               "inferring genome build version using hapmap3 SNPs",
               start_function=".infer_build()",
-              start_cols=["CHR","POS"],
+              start_cols=["CHR","POS"],fix=True,
               check_dtype=True)
 def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS", 
                ea="EA", nea="NEA", build="19",
