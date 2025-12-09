@@ -196,7 +196,6 @@ def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
         else:
             to_show_title = " for {} ".format(function)
         log.warning("Necessary columns{}were not detected:{}".format(to_show_title, ",".join(not_in_df)))
-        skipped(log, verbose, end_line=function)
         return False
     
     return True
