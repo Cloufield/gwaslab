@@ -195,7 +195,7 @@ def gettop(insumstats,
            pos="POS",
            by="DENSITY",
            threshold=None,
-           windowsizekb=500,
+           windowsizekb=1000,
            log=Log(),
            xymt=["X","Y","MT"],
            anno=False,
@@ -217,7 +217,7 @@ def gettop(insumstats,
         Column name whose values are maximized to choose leads.
     threshold : float or None, default=None
         If provided, only variants with `by` >= `threshold` are considered. Deafult threshold is the median of maximum values of each chormosome.
-    windowsizekb : int, default=500
+    windowsizekb : int, default=1000
         Sliding window size in kilobases used to determine locus boundaries.
     anno : bool, default=False
         If True, annotate output with nearest gene names.
