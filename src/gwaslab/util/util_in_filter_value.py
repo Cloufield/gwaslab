@@ -55,32 +55,51 @@ value thresholds, genomic regions, and special variant types.
 """
 
 @with_logging_filter("filter variants by condition...","filtering variants")
-def filtervalues(sumstats, expr, remove=False, verbose=True, log=Log()):
+def filtervalues(sumstats, expr, groupby=None, verbose=True, log=Log()):
     """
-    Filter variants based on a query expression.
-    
-    Parameters:
-    -----------
+    Filter variants based on a query expression, optionally evaluated
+    within groups (per group filtering).
+
+    Parameters
+    ----------
     expr : str
-        Query expression using pandas.DataFrame.query syntax
-    remove : bool, default=False
-        If True, removes variants meeting the condition
+        Query expression using pandas.DataFrame.query syntax.
+        Example: "PVAL < 5e-8 and ABS(BETA) > 0.1"
+    groupby : str or list-like, optional
+        Column(s) to group by before filtering (per-group evaluation).
+        If None, filter on the entire table.
     verbose : bool, default=True
-        If True, writes progress to log
-    inplace : bool, default=False  
-        If False, return a new `Sumstats` object containing the filtered results.  
-        If True, apply the filter to the current object in place and return None.
-    
-    Returns:
-    --------
+        If True, logs the filter expression and grouped filter mode.
+
+    Returns
+    -------
     pandas.DataFrame
         Filtered summary statistics table
     """
-    log.write(" -Expression:",expr, verbose=verbose)
-    sumstats = sumstats.query(expr,engine='python').copy()
+    log.write(f" -Expression: {expr}", verbose=verbose)
+
+    # Normal global filter
+    if groupby is None:
+        result = sumstats.query(expr, engine="python").copy()
+        gc.collect()
+        return result
+
+    # Group-wise filter
+    log.write(f" -Group-by columns: {groupby}", verbose=verbose)
+
+    def _group_filter(df):
+        try:
+            return df.query(expr, engine="python")
+        except Exception as e:
+            log.write(f"   ! Query failed in group {df.name}: {e}", verbose=verbose)
+            return df.iloc[0:0]  # return an empty group
+
+    # Apply query to each group separately, then merge
+    grouped = sumstats.groupby(groupby, dropna=False, sort=False)
+    result = grouped.apply(_group_filter).reset_index(drop=True)
 
     gc.collect()
-    return sumstats
+    return result
 
 @with_logging_filter("filter out variants based on threshold values...", "filtering variants")
 def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
