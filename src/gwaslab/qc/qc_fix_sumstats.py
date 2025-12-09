@@ -31,6 +31,8 @@ from gwaslab.util.util_in_fill_data import _convert_betase_to_mlog10p
 from gwaslab.util.util_in_fill_data import _convert_betase_to_p
 from gwaslab.util.util_in_fill_data import _convert_mlog10p_to_p
 
+RE_SNPID = re.compile(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$', re.IGNORECASE|re.ASCII)
+
 #process build
 #setbuild
 #fixID
@@ -215,9 +217,9 @@ def fixID(sumstats,
             if sum(to_fix)>0:
                 log.write(" -Filling CHR and POS columns using valid SNPID's chr:pos...", verbose=verbose)
                 # format and qc filled chr and pos
-               
-                sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[1]
-                sumstats.loc[to_fix,pos] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[2]
+                extracted = sumstats.loc[to_fix, snpid].str.extract(RE_SNPID)
+                sumstats.loc[to_fix, chrom] = extracted[1]
+                sumstats.loc[to_fix, pos] = extracted[2]
                 
                 #sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,snpid].str.split(':|_|-').str[0].str.strip("chrCHR").astype("string")
                 #sumstats.loc[to_fix,pos] =np.floor(pd.to_numeric(sumstats.loc[to_fix,snpid].str.split(':|_|-').str[1], errors='coerce')).astype('Int64')
@@ -296,12 +298,14 @@ def fixID(sumstats,
     #        
             if fixeanea_flip == True:
                 log.write(" -Flipped : CHR:POS:NEA:EA -> CHR:POS:EA:NEA ", verbose=verbose)
-                sumstats.loc[to_fix,ea] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[3]
-                sumstats.loc[to_fix,nea] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[4]
+                extracted = sumstats.loc[to_fix, snpid].str.extract(RE_SNPID)
+                sumstats.loc[to_fix, ea] = extracted[3]
+                sumstats.loc[to_fix, nea] = extracted[4]
             else:
                 log.write(" -Chr:pos:a1:a2...a1->EA , a2->NEA ", verbose=verbose)
-                sumstats.loc[to_fix,ea] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[4]
-                sumstats.loc[to_fix,nea] = sumstats.loc[to_fix,snpid].str.extract(r'^(chr)?(\w+)[:_-](\d+)[:_-]([ATCG]+)[:_-]([ATCG]+)$',flags=re.IGNORECASE|re.ASCII)[3]
+                extracted = sumstats.loc[to_fix, snpid].str.extract(RE_SNPID)
+                sumstats.loc[to_fix, ea] = extracted[4]
+                sumstats.loc[to_fix, nea] = extracted[3]
     
     #        #to_change_status = sumstats[status].str.match(r"\w\w\w[45]\w\w\w")
     #        #sumstats.loc[to_fix&to_change_status,status] = vchange_status(sumstats.loc[to_fix&to_change_status,status],4,"2")  
