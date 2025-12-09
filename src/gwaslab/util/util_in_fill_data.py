@@ -242,11 +242,21 @@ def fill_extreme_mlog10p(sumstats,df,log,verbose=True,filled_count=0):
 
 def fill_maf(sumstats,log,verbose=True,filled_count=0):
     if "EAF" in sumstats.columns:
-        # EAF -> MAF
         log.write("  - Filling MAF using EAF column...", verbose=verbose)
-        sumstats["MAF"] =  sumstats["EAF"].apply(lambda x: min(x,1-x) if pd.notnull(x) else np.nan)
+        non_null_eaf = int(sumstats["EAF"].notna().sum())
+        valid_eaf = int(((sumstats["EAF"] >= 0) & (sumstats["EAF"] <= 1)).sum())
+        invalid_eaf = non_null_eaf - valid_eaf
+        log.write("    - EAF non-null: ", non_null_eaf, verbose=verbose)
+        log.write("    - Invalid EAF (outside [0,1]): ", invalid_eaf, verbose=verbose)
+        sumstats["MAF"] = sumstats["EAF"].apply(lambda x: min(x, 1 - x) if pd.notnull(x) else np.nan)
+        maf_non_null = int(sumstats["MAF"].notna().sum())
+        min_maf = sumstats["MAF"].min()
+        max_maf = sumstats["MAF"].max()
+        log.write("    - MAF filled non-null: ", maf_non_null, verbose=verbose)
+        log.write("    - MAF range: [{}, {}]".format(min_maf, max_maf), verbose=verbose)
         filled_count +=1
     else:
+        log.write("  - EAF column not available. Skipping MAF fill.", verbose=verbose)
         return 0,filled_count
     return 1,filled_count
 
