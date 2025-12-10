@@ -412,7 +412,7 @@ def annogene(
                 gtf_path_or_url=gtf_path)
             if path.isfile(gtf_db_path) is False:
                 data.index()
-            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+            output.loc[:,["LOCATION","GENENAME"]] = pd.DataFrame(
                 list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source), axis=1)), 
                 index=output.index).values
         elif build=="38":
@@ -432,7 +432,7 @@ def annogene(
                 gtf_path_or_url=gtf_path)
             if path.isfile(gtf_db_path) is False:
                 data.index()
-            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+            output.loc[:,["LOCATION","GENENAME"]] = pd.DataFrame(
                 list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source), axis=1)), 
                 index=output.index).values
     
@@ -454,7 +454,7 @@ def annogene(
                 gtf_path_or_url=gtf_path)
             if path.isfile(gtf_db_path) is False:
                 data.index()
-            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+            output.loc[:,["LOCATION","GENENAME"]] = pd.DataFrame(
                 list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source,build=build), axis=1)), 
                 index=output.index).values
         elif build=="38":
@@ -474,10 +474,10 @@ def annogene(
                 gtf_path_or_url=gtf_path)
             if path.isfile(gtf_db_path) is False:
                 data.index()
-            output.loc[:,["LOCATION","GENE"]] = pd.DataFrame(
+            output.loc[:,["LOCATION","GENENAME"]] = pd.DataFrame(
                 list(output.apply(lambda x:closest_gene(x,data=data,chrom=chrom,pos=pos,source=source,build=build), axis=1)), 
                 index=output.index).values
-    output["GENE"] = output["GENE"].replace("","Unknown")
+    output["GENENAME"] = output["GENENAME"].replace("","Unknown")
     log.write("Finished annotating variants with nearest gene name(s) successfully!", verbose=verbose)
     return output
 

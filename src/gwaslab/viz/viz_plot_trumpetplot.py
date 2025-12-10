@@ -600,7 +600,7 @@ def plottrumpet(mysumstats,
                                     log=log,
                                     build=build,
                                     source=anno_source,
-                                    verbose=verbose).rename(columns={"GENE":"GENENAME"})
+                                    verbose=verbose).rename(columns={"GENENAME":"GENENAME"})
 
             texts_u=[]
             texts_d=[]

@@ -570,6 +570,26 @@ def preformat(sumstats,
     gc.collect()
     check_dataframe_memory_usage(sumstats,log=log,verbose=verbose)
     
+    # Force create IDs if both rsID and SNPID are absent
+    if ("rsID" not in sumstats.columns) and ("SNPID" not in sumstats.columns):
+        if ("CHR" in sumstats.columns) and ("POS" in sumstats.columns):
+            if ("EA" in sumstats.columns) and ("NEA" in sumstats.columns):
+                sumstats["SNPID"] = (
+                    sumstats["CHR"].astype("string") + ":" +
+                    sumstats["POS"].astype("string") + ":" +
+                    sumstats["NEA"].astype("string") + ":" +
+                    sumstats["EA"].astype("string")
+                )
+            else:
+                sumstats["SNPID"] = (
+                    sumstats["CHR"].astype("string") + ":" +
+                    sumstats["POS"].astype("string")
+                )
+            log.write(" -No rsID/SNPID found; created SNPID from CHR:POS[:NEA:EA]", verbose=verbose)
+        else:
+            sumstats["SNPID"] = pd.Series([None] * len(sumstats), dtype="string")
+            log.warning(" -No rsID/SNPID and missing CHR/POS; created empty SNPID", verbose=verbose)
+
     log.write("Finished loading data successfully!",verbose=verbose)
     return sumstats
 

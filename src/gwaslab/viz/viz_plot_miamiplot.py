@@ -567,7 +567,7 @@ def plot_miami(
                                         log=log,
                                         build=build,
                                         source=anno_source,
-                                        verbose=verbose).rename(columns={"GENE":"GENENAME"})
+                                        verbose=verbose).rename(columns={"GENENAME":"GENENAME"})
 
             if (to_annotate5.empty is False) and anno=="GENENAME":
                     to_annotate5 = annogene(to_annotate5,
@@ -577,7 +577,7 @@ def plot_miami(
                                         log=log,
                                         build=build,
                                         source=anno_source,
-                                        verbose=verbose).rename(columns={"GENE":"GENENAME"})        
+                                        verbose=verbose).rename(columns={"GENENAME":"GENENAME"})        
     else:
         to_annotate1 = pd.DataFrame()
         to_annotate5 = pd.DataFrame()

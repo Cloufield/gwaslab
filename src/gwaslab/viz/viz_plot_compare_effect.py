@@ -696,11 +696,11 @@ def merge_list(sig_list_1, sig_list_2, anno,labels,log, verbose):
     log.write("Merging snps from "+labels[0]+" and "+labels[1]+"...", verbose=verbose)
     
     if anno == "GENENAME":
-        if "GENE" not in sig_list_1.columns:
-            sig_list_1["GENE"]=pd.NA
+        if "GENENAME" not in sig_list_1.columns:
+            sig_list_1["GENENAME"]=pd.NA
             sig_list_1["LOCATION"]=pd.NA
-        if "GENE" not in sig_list_2.columns:
-            sig_list_2["GENE"]=pd.NA
+        if "GENENAME" not in sig_list_2.columns:
+            sig_list_2["GENENAME"]=pd.NA
             sig_list_2["LOCATION"]=pd.NA
 
     sig_list_merged = pd.merge(sig_list_1,sig_list_2,left_on="SNPID",right_on="SNPID",how="outer",suffixes=('_1', '_2'))

@@ -1210,7 +1210,7 @@ def mqqplot(insumstats,
                                    build=build,
                                    source=anno_source,
                                    gtf_path=anno_gtf_path,
-                                   verbose=verbose).rename(columns={"GENE":"Annotation"})
+                                   verbose=verbose).rename(columns={"GENENAME":"Annotation"})
             if "b" in mode and (to_annotate.empty is not True):
                 for index, row in to_annotate.iterrows():
                     log.write(" -Annotated {} with {} at density {}".format(row[snpid],row["Annotation"],row["DENSITY"]),verbose=verbose)
