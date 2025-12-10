@@ -1,4 +1,5 @@
 import copy
+import pandas as pd
 
 def _list_func_args(func):
     return func.__code__.co_varnames
@@ -48,8 +49,9 @@ def _update_args(args=None, default_args=None):
         # if None, return default dict
         return default_args
     else:
-        # if not None, update default dict
-        for key,value in args.items():
+        for key, value in args.items():
+            if isinstance(value, pd.Series):
+                value = value.tolist()
             default_args[key] = value
         return default_args
 
@@ -57,11 +59,10 @@ def _update_args(args=None, default_args=None):
 
 def _update_arg(arg=None, default_arg=None):
     if arg is None:
-        # if None, return default
         return default_arg
-    else:
-        # if not None, return arg  
-        return arg
+    if isinstance(arg, pd.Series):
+        return arg.tolist()
+    return arg
 
 
 from functools import wraps
@@ -115,3 +116,17 @@ def remove_overlapping_kwargs(kwargs_dict, protected_keys):
         A cleaned dictionary with protected_keys removed.
     """
     return {k: v for k, v in kwargs_dict.items() if k not in protected_keys}
+
+def normalize_series_inputs(keys=None):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            sig = inspect.signature(func)
+            bound = sig.bind_partial(*args, **kwargs)
+            bound.apply_defaults()
+            for name, value in list(bound.arguments.items()):
+                if (keys is None or name in keys) and isinstance(value, pd.Series):
+                    bound.arguments[name] = value.tolist()
+            return func(**bound.arguments)
+        return wrapper
+    return decorator

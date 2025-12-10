@@ -2,7 +2,7 @@ from gwaslab.viz.viz_aux_quickfix import _get_largenumber
 import pandas as pd
 from gwaslab.util.util_in_get_density import getsignaldensity2
 
-def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
+def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log, snpid):
     """
     Create Brisbane plot (variant density plot)
     Y axis: number of neiboring variants within a window around each variant)
@@ -96,15 +96,15 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     if "b" in mode and "DENSITY" not in sumstats.columns:
         
         sumstats =  getsignaldensity2(insumstats=sumstats,
-                                                snpid="SNPID",
+                                                snpid=snpid,
                                                 chrom=chrom,
                                                 pos=pos,
                                                 bwindowsizekb=bwindowsizekb,
                                                 log=log,
                                                 verbose=verbose)
 
-        bmean=sumstats.drop_duplicates(subset="SNPID")["DENSITY"].mean()
-        bmedian=sumstats.drop_duplicates(subset="SNPID")["DENSITY"].median()
+        bmean=sumstats["DENSITY"].mean()
+        bmedian=sumstats["DENSITY"].median()
     elif "b" in mode and "DENSITY" in sumstats.columns:
         bmean=sumstats["DENSITY"].mean()
         bmedian=sumstats["DENSITY"].median()

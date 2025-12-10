@@ -431,12 +431,12 @@ def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS",
         log.warning("Please be cautious due to the limited number of variants.", verbose=verbose) 
     
     if match_count_for_19 > match_count_for_38:
-        log.write(" -Since num_hg19 >> num_hg38, assigning genome build hg19...", verbose=verbose) 
+        log.write(" -Since num_hg19 >> num_hg38, set the genome build to hg19 for the STATUS code....", verbose=verbose) 
         if change_status==True:
             sumstats[status] = vchange_status(sumstats[status],1,"9","1")
         inferred_build="19"
     elif match_count_for_19 < match_count_for_38:
-        log.write(" -Since num_hg19 << num_hg38, assigning genome build hg38...", verbose=verbose) 
+        log.write(" -Since num_hg19 << num_hg38, set the genome build to hg38 for the STATUS code....", verbose=verbose) 
         if change_status==True:
             sumstats[status] = vchange_status(sumstats[status],1,"9","3")
             sumstats[status] = vchange_status(sumstats[status],2,"9","8")

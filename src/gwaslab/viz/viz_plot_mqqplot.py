@@ -4,6 +4,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.colors import to_hex
 import seaborn as sns
 from gwaslab.io.io_process_args import _update_arg
+from gwaslab.io.io_process_args import normalize_series_inputs
 import numpy as np
 import scipy as sp
 import copy
@@ -55,6 +56,12 @@ from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.viz.viz_aux_save_figure import safefig
 from gwaslab.viz.viz_aux_quickfix import _normalize_region
+@normalize_series_inputs(keys=[
+    "highlight","pinpoint","additional_line","anno_set","colors",
+    "qq_xlabels","qq_xlim","region","region_marker_shapes",
+    "region_ld_threshold","region_ld_colors","region_ld_colors_m",
+    "maf_bins","maf_bin_colors","cbar_bbox_to_anchor","marker_size"
+])
 @safefig
 def mqqplot(insumstats,            
           chrom="CHR",
@@ -490,7 +497,7 @@ def mqqplot(insumstats,
     
     if "EAF" not in insumstats.columns:
         eaf=None
-    
+
     chr_dict = _update_args(chr_dict, get_chr_to_number())
     xtick_chr_dict = _update_args(xtick_chr_dict, get_number_to_chr())
     gtf_chr_dict = _update_args(gtf_chr_dict, get_number_to_chr())
@@ -676,7 +683,7 @@ def mqqplot(insumstats,
     if mode=="b":
         sig_level=1,
         sig_line=False,
-        #windowsizekb = 100000000   
+        windowsizekb = 1000
         mode="mb"
         scatter_args={"marker":"s"}
         marker_size= (marker_size[1],marker_size[1])
@@ -790,6 +797,7 @@ def mqqplot(insumstats,
                                                     bwindowsizekb=bwindowsizekb, 
                                                     chrom=chrom, 
                                                     pos=pos, 
+                                                    snpid=snpid,
                                                     verbose=verbose, 
                                                     log=log)
         lines_to_plot = pd.Series(lines_to_plot.to_list() + [bmean, bmedian])
@@ -1155,7 +1163,6 @@ def mqqplot(insumstats,
                                by="scaled_P",
                                windowsizekb=windowsizekb,
                                verbose=True)
-                               
                 else:
                     to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> scaled_threhosld ,:],
                                snpid,
@@ -1182,6 +1189,15 @@ def mqqplot(insumstats,
                                 verbose=False,
                                 mlog10p="scaled_P",
                                 sig_level=sig_level_lead)
+            else:
+                if "b" in mode:
+                    to_annotate=gettop(sumstats,
+                               id=snpid,
+                               chrom=chrom,
+                               pos=pos,
+                               by="scaled_P",
+                               windowsizekb=windowsizekb,
+                               verbose=True)
     
                 if (to_annotate.empty is not True):
                     log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
