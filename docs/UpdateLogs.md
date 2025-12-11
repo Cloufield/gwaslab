@@ -1,5 +1,26 @@
 # Update Logs
 
+# 3.6.14 20251211
+- updated methods for filling SE using BETA and P (credit to lict99)
+- added get_top
+- added vislization parameter manager
+- added force SNPID generation if both SNPID and rsID is missing
+- unified GENE to GENENAME
+- updated 1KG hg19 reference VCFs -> v5b (credit to wangyiyisheng; #197, #193, #180)
+- updated 1KG hg19 and hg38 reference VCFs without removing multiallelic sites (credit to wangyiyisheng; #197, #193, #180)
+
+# 3.6.13 20251127
+- updated docstrings
+- fixed 
+- improved sanity_check logic
+- fix counting density
+- fixed counting status for infer_strand
+- add `validate` for ssf by calling validator from GWASCatalog
+- fixed download_ref
+- added region normalization
+- added decorator for checking data types
+- updated meta
+
 # 3.6.12 20251118
 - added infer_strand2 and assign_rsid2 for testing
 - revised some docstrings (ongoing)

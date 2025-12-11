@@ -8,7 +8,7 @@ import gc
 #from gwaslab.qc_fix_sumstats import sortcolumn
 from gwaslab.g_version import _get_version
 from gwaslab.qc.qc_check_datatype import check_datatype
-
+from scipy.special import erfcinv
 
 def filldata( 
     insumstats,
@@ -192,7 +192,9 @@ def fill_se(sumstats,log,verbose=True,filled_count=0):
     # OR / OR_95L /OR_95U -> SE
     if ("P" in sumstats.columns) and ("BETA" in sumstats.columns):
         log.write("  - Filling SE value using BETA and P column...", verbose=verbose)
-        sumstats["SE"]= np.abs(sumstats["BETA"]/ ss.norm.ppf(1-sumstats["P"]/2))
+        abs_z = np.sqrt(2) * erfcinv(sumstats["P"])
+        sumstats["SE"] = np.abs(sumstats["BETA"] / abs_z)
+        #sumstats["SE"]= np.abs(sumstats["BETA"]/ ss.norm.ppf(1-sumstats["P"]/2))
         filled_count +=1
     elif ("OR" in sumstats.columns) and ("OR_95U" in sumstats.columns): 
         log.write("  - Filling SE value using OR/OR_95U column...", verbose=verbose)
