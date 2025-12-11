@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gwaslab"
-version = "3.6.14"
+version = "3.6.15"
 authors = [
   { name="Yunye", email="gwaslab@gmail.com" },
 ]
@@ -53,6 +53,7 @@ gwaslab = [
 	"./data/chrx_par/chrx_par_hg38.bed.gz",
 	"./data/high_ld/high_ld_hla_hg38.bed.gz",
 	"./data/high_ld/high_ld_hla_hg19.bed.gz",
+	"./viz/viz_aux_params.txt"
 ]
 
 [project.urls]
