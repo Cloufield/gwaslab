@@ -1,5 +1,10 @@
 # Update Logs
 
+# 4.0 comming soon
+
+# 3.6.16 20251211
+- fix error in get_sig when no lead snps at given significance threshold
+
 # 3.6.15 20251211
 - add new file
 

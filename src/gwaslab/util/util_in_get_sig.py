@@ -142,7 +142,7 @@ def getsig(insumstats,
     sumstats_sig = sumstats_sig.sort_values([chrom,pos])
     if len(sumstats_sig) == 0:
         log.write(" -No lead snps at given significance threshold!", verbose=verbose)
-        return None
+        return pd.DataFrame(columns=sumstats_sig.columns)
 
     p="__SCALEDP"
     sig_index_list = _collect_leads_generic(sumstats_sig, chrom, pos, windowsizekb, p, id, maximize=False)
