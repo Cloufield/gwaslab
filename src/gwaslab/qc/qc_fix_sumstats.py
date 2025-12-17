@@ -1462,12 +1462,10 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         try:
             chain = get_chain(from_build=from_build, to_build=to_build)
             if chain is None or chain==False:
-                raise ValueError("")
+                raise ValueError("No available chain file for {} -> {}".format(lifter_from_build, lifter_to_build))
             log.write(" -Creating converter using provided ChainFile: {}".format(chain), verbose=verbose)
         except:
             chain = None
-            lifter_from_build=from_build
-            lifter_to_build=to_build
             log.write(" -Try creating converter using liftover package", verbose=verbose)
 
     log.write(" -Creating converter : {} -> {}".format(lifter_from_build, lifter_to_build), verbose=verbose)
@@ -1486,7 +1484,7 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         pool = Pool(n_cores)
         #df = pd.concat(pool.starmap(func, df_split))
         func=liftover_variant
-        sumstats[[chrom,pos,status]] = pd.concat(pool.map(partial(func,chrom=chrom,pos=pos,from_build=from_build,to_build=to_build,status=status,chain=chain),df_split))
+        sumstats[[chrom,pos,status]] = pd.concat(pool.map(partial(func,chrom=chrom,pos=pos,from_build=lifter_from_build,to_build=lifter_to_build,status=status,chain=chain),df_split))
         pool.close()
         pool.join()
     ############################################################################

@@ -114,7 +114,7 @@ def _configure_cols_to_use(insumstats, snpid, chrom, pos, ea, nea, eaf, p, mlog1
     if _chrom_df_for_i is not None:
         usecols.append("i")
 
-    if len(anno_set) > 0 or len(anno_alias) > 0:
+    if (anno_set is not None and len(anno_set) > 0) or (anno_alias is not None and len(anno_alias) > 0):
         if anno is None:
             anno = True
 

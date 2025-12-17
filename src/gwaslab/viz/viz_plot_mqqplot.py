@@ -89,7 +89,7 @@ def _setup_and_log_mqq_info(
     log.write(" - {} layout mode selected: {}".format(plot_label, mode), verbose=verbose)
 
     # Annotation set (only meaningful when Manhattan panel is present)
-    if len(anno_set) > 0 and ("m" in mode):
+    if anno_set is not None and len(anno_set) > 0 and ("m" in mode):
         log.write(" -Variants to annotate : " + ",".join(anno_set), verbose=verbose)
 
     # Highlight configuration (supports lists of loci or direct chr:pos sets)
