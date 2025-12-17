@@ -1,26 +1,25 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import matplotlib.patches as patches
-import seaborn as sns
-import numpy as np
-import scipy as sp
-from matplotlib.collections import LineCollection
-import matplotlib.colors as mc
 import matplotlib
+import matplotlib.colors as mc
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.ticker as ticker
+import numpy as np
+import pandas as pd
+import scipy as sp
+import seaborn as sns
 from adjustText import adjust_text
+from matplotlib.collections import LineCollection
 from gwaslab.g_Log import Log
-
+from gwaslab.util.util_in_calculate_power import get_beta
+from gwaslab.util.util_in_calculate_power import get_beta_binary
+from gwaslab.util.util_in_calculate_power import get_power
+from gwaslab.util.util_in_fill_data import filldata
+from gwaslab.util.util_in_get_sig import annogene
 from gwaslab.viz.viz_aux_annotate_plot import annotate_single
 from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
 from gwaslab.viz.viz_aux_save_figure import save_figure
+from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_plot_mqqplot import _process_highlight
-
-from gwaslab.util.util_in_get_sig import annogene
-from gwaslab.util.util_in_calculate_power import get_beta
-from gwaslab.util.util_in_calculate_power import get_power
-from gwaslab.util.util_in_calculate_power import get_beta_binary
-from gwaslab.util.util_in_fill_data import filldata
 
 def plottrumpet(mysumstats,
                 snpid="SNPID",
@@ -56,24 +55,24 @@ def plottrumpet(mysumstats,
                 highlight_chrpos = False,
                 highlight_color="#CB132D",
                 highlight_windowkb = 500,
-                highlight_anno_args = None,
+                highlight_anno_kwargs = None,
                 highlight_lim = None,
                 highlight_lim_mode = "absolute",
                 pinpoint= None,
                 pinpoint_color ="red",
-                scatter_args=None,
+                scatter_kwargs=None,
                 fontsize=15,
                 font_family="Arial",
                 size= None,
                 sizes=None,
                 save=False,
-                save_args=None,
-                figargs=None,
+                save_kwargs=None,
+                fig_kwargs=None,
                 build="99",
                 anno_set=None,
                 anno_alias=None,
                 anno_d=None,
-                anno_args=None,
+                anno_kwargs=None,
                 anno_style="expand",
                 anno_source = "ensembl",
                 anno_max_iter=100,
@@ -148,7 +147,7 @@ def plottrumpet(mysumstats,
         Variants to pinpoint. Default is None
     pinpoint_color : str, optional
         Color for pinpointed variants. Default is "red"
-    scatter_args : dict, optional
+    scatter_kwargs : dict, optional
         Additional seaborn scatter plot arguments. Excluding x, y, size, ax,sizes, size_norm, legend, edgecolor, alpha, zorder. Default is None
     fontsize : int, optional
         Font size. Default is 15
@@ -160,10 +159,10 @@ def plottrumpet(mysumstats,
         Size range for points. Default is None
     save : bool, optional
         Save the plot. Default is False
-    save_args : dict, optional
+    save_kwargs : dict, optional
         Arguments for saving the plot. Default is None
-    figargs : dict, optional
-        Figure creation arguments.Passed to plt.subplots. Default is None
+    fig_kwargs : dict, optional
+        Figure creation arguments passed to plt.subplots. Default is None
     build : str, optional
         Reference genome build. Default is "99"
     anno_set : list, optional
@@ -172,7 +171,7 @@ def plottrumpet(mysumstats,
         Annotation alias mapping. Default is None
     anno_d : dict, optional
         Annotation dictionary. Default is None
-    anno_args : dict, optional
+    anno_kwargs : dict, optional
         Annotation arguments. Default is None
     anno_style : str, optional
         Annotation style. Default is "expand"
@@ -212,7 +211,7 @@ def plottrumpet(mysumstats,
         Use chromosome position for highlighting. Default is False
     highlight_windowkb : int, optional
         Window size for highlighting. Default is 500
-    highlight_anno_args : dict, optional
+    highlight_anno_kwargs : dict, optional
         Annotation arguments for highlights. Default is None
     highlight_lim : tuple, optional
         Highlight limits. Default is None
@@ -224,8 +223,8 @@ def plottrumpet(mysumstats,
     matplotlib.rc('font', family=font_family)
     if sizes is None:
         sizes = (20,80)
-    if anno_args is None:
-        anno_args={"fontsize":12,"fontstyle":"italic"}
+    if anno_kwargs is None:
+        anno_kwargs={"fontsize":12,"fontstyle":"italic"}
     if anno_set is None:
         anno_set=list()
     if anno_alias is None:
@@ -241,14 +240,31 @@ def plottrumpet(mysumstats,
         else:
             xticks = [0,0.01,0.05,0.1,0.2,0.5]
             xticklabels = xticks            
-    if figargs is None:
-        figargs={"figsize":(10,8)}
-    if scatter_args is None:
-        scatter_args ={}
+    style = set_plot_style(
+        plot="plot_trumpet",
+        mode=mode,
+        fig_kwargs=fig_kwargs,
+        save_kwargs=save_kwargs if save_kwargs is not None else save_kwargs,
+        save=save,
+        scatter_kwargs=scatter_kwargs,
+        fontsize=fontsize,
+        fontfamily=font_family,
+        verbose=verbose,
+        log=log,
+    )
+    fig_kwargs = style.get("fig_kwargs", style.get("fig_kwargs", {}))
+    save_kwargs = style.get("save_kwargs", style.get("save_kwargs", {}))
+    scatter_kwargs = style.get("scatter_kwargs", style.get("scatter_kwargs", {}))
+    fontsize = style["fontsize"]
+    font_family = style["font_family"]
+    if "figsize" not in fig_kwargs:
+        fig_kwargs = {**{"figsize":(10,8)}, **fig_kwargs}
+    if scatter_kwargs is None:
+        scatter_kwargs ={}
     if hue is not None:
-        scatter_args["hue"]=hue
+        scatter_kwargs["hue"]=hue
     if markercolor is not None:
-        scatter_args["color"]=markercolor
+        scatter_kwargs["color"]=markercolor
     if highlight is None:
         highlight = list()
     if pinpoint is None:
@@ -295,7 +311,8 @@ def plottrumpet(mysumstats,
             if anno!=True:
                 log.write(" -Loading column {} for annotation...".format(anno), verbose=verbose)
                 if anno not in cols_to_use:
-                    cols_to_use.append(anno)
+                    if anno!=False:
+                        cols_to_use.append(anno)
         else:
             cols_to_use.append(pos) if pos not in cols_to_use else cols_to_use
             cols_to_use.append(chrom) if chrom not in cols_to_use else cols_to_use
@@ -303,9 +320,9 @@ def plottrumpet(mysumstats,
     if size != "ABS_BETA":
         if size is not None and size not in cols_to_use:
             cols_to_use.append(size)
-    if "hue" in scatter_args.keys():
-        if scatter_args["hue"] not in cols_to_use:
-            cols_to_use.append(scatter_args["hue"]) 
+    if "hue" in scatter_kwargs.keys():
+        if scatter_kwargs["hue"] not in cols_to_use:
+            cols_to_use.append(scatter_kwargs["hue"]) 
     #filter by p #################################################################################################################
     if p in mysumstats.columns:
         sumstats = mysumstats.loc[mysumstats[p]< p_level,cols_to_use ].copy()
@@ -378,7 +395,7 @@ def plottrumpet(mysumstats,
                                                     pos=pos)
     ##################################################################################################
 
-    fig, ax = plt.subplots(**figargs)
+    fig, ax = plt.subplots(**fig_kwargs)
     
     ##creating power line############################################################################################
     if mode=="q":
@@ -428,7 +445,7 @@ def plottrumpet(mysumstats,
         size_norm = (sumstats[size].min(), sumstats[size].max())
     ## if highlight  ##################################################################################################
     explicit = {"zorder","alpha","edgecolor","legend","size_norm","data","x","y","size","sizes"}
-    scatter_args = {k: v for k, v in scatter_args.items() if k not in explicit}
+    scatter_kwargs = {k: v for k, v in scatter_kwargs.items() if k not in explicit}
     log.write(" -Creating scatter plot...", verbose=verbose)
     dots = sns.scatterplot(data=sumstats,
                     x=maf,
@@ -441,7 +458,7 @@ def plottrumpet(mysumstats,
                     edgecolor="black",
                     alpha=0.8,
                     zorder=2,
-                    **scatter_args)
+                    **scatter_kwargs)
     log.write(" -Finished screating scatter plot...", verbose=verbose)
     if len(highlight) >0:
         
@@ -452,7 +469,7 @@ def plottrumpet(mysumstats,
 
         if pd.api.types.is_list_like(highlight[0]) and highlight_chrpos==False:
             for i, highlight_set in enumerate(highlight):
-                scatter_args["color"]=highlight_color[i%len(highlight_color)]
+                scatter_kwargs["color"]=highlight_color[i%len(highlight_color)]
                 log.write(" -Highlighting set {} target loci...".format(i+1),verbose=verbose)
                 sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==i], x=maf,
                     y=beta,
@@ -463,11 +480,11 @@ def plottrumpet(mysumstats,
                     size_norm=size_norm,
                     linewidth=linewidth,
                     zorder=3+i,
-                    ax=ax,edgecolor=edgecolor,**scatter_args)  
+                    ax=ax,edgecolor=edgecolor,**scatter_kwargs)  
 
         else:
             log.write(" -Highlighting target loci...",verbose=verbose)
-            scatter_args["color"]=highlight_color
+            scatter_kwargs["color"]=highlight_color
             sns.scatterplot(data=sumstats.loc[sumstats["HUE"]==0], x=maf,
                     y=beta,
                 legend=legend,
@@ -477,7 +494,7 @@ def plottrumpet(mysumstats,
                 zorder=3,
                 ax=ax,
                 edgecolor="black",
-                **scatter_args)  
+                **scatter_kwargs)  
     ####################################################################################################################
     if len(pinpoint)>0:
         legend = None
@@ -487,7 +504,7 @@ def plottrumpet(mysumstats,
         if pd.api.types.is_list_like(pinpoint[0]):
 
             for i, pinpoint_set in enumerate(pinpoint):
-                scatter_args["color"]=pinpoint_color[i%len(pinpoint_color)]
+                scatter_kwargs["color"]=pinpoint_color[i%len(pinpoint_color)]
                 if sum(sumstats[snpid].isin(pinpoint_set))>0:
                     to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint_set),:]
                     log.write(" -Pinpointing set {} target vairants...".format(i+1),verbose=verbose)
@@ -501,12 +518,12 @@ def plottrumpet(mysumstats,
                     zorder=3,
                     ax=ax,
                     edgecolor="black",
-                    **scatter_args)  
+                    **scatter_kwargs)  
                     #ax.scatter(to_pinpoint[maf],to_pinpoint[beta],color=pinpoint_color[i%len(pinpoint_color)],zorder=100,s=to_pinpoint[size])
                 else:
                     log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
         else:
-            scatter_args["color"]=pinpoint_color
+            scatter_kwargs["color"]=pinpoint_color
             if sum(sumstats[snpid].isin(pinpoint))>0:
                 to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
                 log.write(" -Pinpointing target vairants...",verbose=verbose)
@@ -519,7 +536,7 @@ def plottrumpet(mysumstats,
                     zorder=3,
                     ax=ax,
                     edgecolor="black",
-                    **scatter_args)  
+                    **scatter_kwargs)  
                 #ax.scatter(to_pinpoint[maf],to_pinpoint[beta],color=pinpoint_color[i%len(pinpoint_color)],zorder=100,s=to_pinpoint[size])
             else:
                 log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
@@ -661,11 +678,11 @@ def plottrumpet(mysumstats,
                             if row[beta] >0 :
                                 texts_u.append(ax.annotate(row[anno], xy=(row[maf], row[beta]),xytext=(last_pos , 1.2*maxy),
                                                         arrowprops=dict(relpos=(0,0),arrowstyle="-|>",facecolor='black',connectionstyle="arc,angleA=-90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
-                                                        ha="left",va="bottom",**anno_args))
+                                                        ha="left",va="bottom",**anno_kwargs))
                             else:
                                 texts_d.append(ax.annotate(row[anno], xy=(row[maf], row[beta]),xytext=(last_pos , -1.2*maxy),
                                                         arrowprops=dict(relpos=(0,1),arrowstyle="-|>",facecolor='black',connectionstyle="arc,angleA=90,armA={},angleB=0,armB=0,rad=0".format(armB_length_in_point)),rotation=90,
-                                                        ha="left",va="top",**anno_args))
+                                                        ha="left",va="top",**anno_kwargs))
                         
                         if anno_style=="tight":
                             texts_d.append(ax.text(row[maf], row[beta], row[anno]))
@@ -686,9 +703,9 @@ def plottrumpet(mysumstats,
         ax.set_title(title,fontsize=title_fontsize,family=font_family)
     
     if mode=="q":
-        save_figure(fig, save, keyword="trumpet_q",save_args=save_args, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="trumpet_q",save_kwargs=save_kwargs, log=log, verbose=verbose)
     elif mode=="b":
-        save_figure(fig, save, keyword="trumpet_b",save_args=save_args, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="trumpet_b",save_kwargs=save_kwargs, log=log, verbose=verbose)
 
     log.write("Finished creating trumpet plot!", verbose=verbose)
     return fig
@@ -715,7 +732,7 @@ def plot_power(ns=1000,
                 font_family="Arial",
                 sizes=None,
                 save=False,
-                save_args=None,
+                save_kwargs=None,
                 ylabel="Effect size",
                 xlabel="Minor allele frequency",
                 xticks = None,
@@ -770,7 +787,7 @@ def plot_power(ns=1000,
         Size range for points. Default is (20, 80)
     save : bool, optional
         Save the plot. Default is False
-    save_args : dict or None, optional
+    save_kwargs : dict or None, optional
         Arguments for saving the plot. Default is None
     ylabel : str, optional
         Y-axis label. Default is "Effect size"
@@ -964,9 +981,9 @@ def plot_power(ns=1000,
     ############  Annotation ##################################################################################################
  
     if mode=="q":
-        save_figure(fig, save, keyword="power_q",save_args=save_args, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_q",save_kwargs=save_kwargs, log=log, verbose=verbose)
     elif mode=="b":
-        save_figure(fig, save, keyword="power_b",save_args=save_args, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_b",save_kwargs=save_kwargs, log=log, verbose=verbose)
 
     log.write("Finished creating trumpet plot!", verbose=verbose)
     return fig
@@ -996,7 +1013,7 @@ def plot_power_x(
                 fontsize=15,
                 font_family="Arial",
                 save=False,
-                save_args=None,
+                save_kwargs=None,
                 ylabel="Power",
                 xlabel="N",
                 xticks = None,
@@ -1276,9 +1293,9 @@ def plot_power_x(
     ############  Annotation ##################################################################################################
  
     if mode=="q":
-        save_figure(fig, save, keyword="power_xq",save_args=save_args, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_xq",save_kwargs=save_kwargs, log=log, verbose=verbose)
     elif mode=="b":
-        save_figure(fig, save, keyword="power_xb",save_args=save_args, log=log, verbose=verbose)
+        save_figure(fig, save, keyword="power_xb",save_kwargs=save_kwargs, log=log, verbose=verbose)
 
     log.write("Finished creating power plot!", verbose=verbose)
     return fig

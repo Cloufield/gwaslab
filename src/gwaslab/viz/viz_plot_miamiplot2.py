@@ -19,30 +19,30 @@ from gwaslab.g_Log import Log
 from gwaslab.g_version import _get_version
 from gwaslab.g_Sumstats import Sumstats
 
-from gwaslab.util.util_in_get_sig import getsig
-from gwaslab.util.util_in_get_sig import annogene
+from gwaslab.util.util_in_get_sig import getsig, annogene
 
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
-from gwaslab.bd.bd_common_data import get_gtf
+from gwaslab.io.io_gtf import get_gtf
 
 from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
-from gwaslab.viz.viz_aux_quickfix import _quick_fix
-from gwaslab.viz.viz_aux_quickfix import _get_largenumber
-from gwaslab.viz.viz_aux_quickfix import _quick_add_tchrpos
-from gwaslab.viz.viz_aux_quickfix import _quick_merge_sumstats
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_i
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank
-from gwaslab.viz.viz_aux_quickfix import _quick_extract_snp_in_region
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_highlight_hue_pair
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_marker_relative_size
+from gwaslab.viz.viz_aux_quickfix import (
+    _quick_fix,
+    _get_largenumber,
+    _quick_add_tchrpos,
+    _quick_merge_sumstats,
+    _quick_assign_i,
+    _quick_assign_i_with_rank,
+    _quick_extract_snp_in_region,
+    _quick_assign_highlight_hue_pair,
+    _quick_assign_marker_relative_size,
+)
 from gwaslab.viz.viz_aux_annotate_plot import annotate_pair
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_plot_mqqplot import mqqplot
+from gwaslab.viz.viz_aux_style_options import set_plot_style
 
-from gwaslab.io.io_to_pickle import load_pickle
-from gwaslab.io.io_to_pickle import load_data_from_pickle
 from gwaslab.viz.viz_aux_save_figure import safefig
 @safefig
 def plot_miami2( 
@@ -56,13 +56,7 @@ def plot_miami2(
           id0="TCHR+POS",
           id1=None,
           id2=None,
-          sep=None,
-          sep1=None,
-          sep2=None,
           mode="m",
-          loadmode="tabular",
-          loadmode1=None,
-          loadmode2=None,
           chr_dict=None,
           chr_dict1=None,
           chr_dict2=None,
@@ -82,54 +76,46 @@ def plot_miami2(
           xtick_label_pad=None,
           verbose=True,
           xtickpad=None,
-          fig_args=None,
-          readcsv_args=None,
-          readcsv_args1=None,
-          readcsv_args2=None,
-          scatter_args=None,
+          fig_kwargs=None,
+          scatter_kwargs=None,
           same_ylim=False,
           save=None,
-          save_args=None,
+          save_kwargs=None,
           figax=None,
           log=Log(),
-          **mqq_args
+          **mqq_kwargs
           ):
     log.write("Start to create miami plot {}:".format(_get_version()), verbose=verbose)
     ## figuring arguments ###########################################################################################################
-    # figure columns to use
-    if scaled == True:
+    # figure columns to use (auto-detect scaled)
+    if scaled is True:
         scaled1 = True
         scaled2 = True
-    
+    else:
+        try:
+            if isinstance(path1, Sumstats) and ("MLOG10P" in path1.data.columns):
+                scaled1 = True
+        except Exception:
+            pass
+        try:
+            if isinstance(path2, Sumstats) and ("MLOG10P" in path2.data.columns):
+                scaled2 = True
+        except Exception:
+            pass
+
     if cols is None:
-        if scaled == True:
-            cols = ["CHR","POS","MLOG10P"]
-        else:
-            cols = ["CHR","POS","P"]
+        cols = ["CHR","POS","MLOG10P" if scaled or (scaled1 and scaled2) else "P"]
 
     if cols1 is None:
-        if scaled1 == True:
-            cols1 = ["CHR","POS","MLOG10P"]
-        else:
-            cols1 = ["CHR","POS","P"]
+        cols1 = ["CHR","POS","MLOG10P" if scaled1 else "P"]
     
     if cols2 is None:
-        if scaled2 == True:
-            cols2 = ["CHR","POS","MLOG10P"]
-        else:
-            cols2 = ["CHR","POS","P"]
+        cols2 = ["CHR","POS","MLOG10P" if scaled2 else "P"]
 
     if id1 is not None:
         cols1.append(id1)
     if id2 is not None:
         cols2.append(id2)
-    
-    if sep is None:
-        sep="\t"
-    if sep1 is None:
-        sep1=sep
-    if sep2 is None:
-        sep2=sep
     
     if chr_dict is None:
         chr_dict  = get_chr_to_number()
@@ -138,42 +124,43 @@ def plot_miami2(
     if chr_dict2 is None:
         chr_dict2 = chr_dict
 
-
     
-    if readcsv_args is None:
-        readcsv_args={}
-    if readcsv_args1 is None:
-        readcsv_args1=readcsv_args
-    if readcsv_args2 is None:
-        readcsv_args2=readcsv_args
-    
-    if loadmode1 is None:
-        loadmode1 = loadmode
-    if loadmode2 is None:
-        loadmode2 = loadmode
 
-    if scatter_args is None:
-        scatter_args={}
+    if scatter_kwargs is None:
+        scatter_kwargs = {}
 
-    if fig_args is None:
-        fig_args= {"figsize":(15,10),"dpi":100}
-    if save_args is None:
-        save_args={"dpi":100,"facecolor":"white"}
+    style = set_plot_style(
+        plot="plot_miami",
+        mode=mode,
+        fig_kwargs=fig_kwargs,
+        save_kwargs=save_kwargs,
+        save=save,
+        scatter_kwargs=scatter_kwargs,
+        fontsize=fontsize,
+        fontfamily=font_family,
+        dpi=dpi,
+        verbose=verbose,
+        log=log,
+    )
+    fig_kwargs = style["fig_kwargs"]
+    save_kwargs = style["save_kwargs"]
+    scatter_kwargs = style["scatter_kwargs"]
+    fontsize = style["fontsize"]
+    font_family = style["font_family"]
+    dpi = style["dpi"]
     
     if xlabel_coords is None:
         xlabel_coords = (-0.01,- region_hspace/2 )
 
     # figure out mqq args
-    mqq_args1,mqq_args2 = _sort_args_to_12(mqq_args)
+    mqq_kwargs1,mqq_kwargs2 = _sort_kwargs_to_12(mqq_kwargs)
     
     # figure out args for pdf and svg
-    fig_args, scatter_args = _figure_args_for_vector_plot(save, fig_args, scatter_args)
+    from gwaslab.viz.viz_aux_style_options import figure_kwargs_for_vector_plot
+    fig_kwargs, scatter_kwargs = figure_kwargs_for_vector_plot(save, fig_kwargs, scatter_kwargs)
 
     # add suffix if ids are the same
-    id1_1, id2_2, mqq_args1, mqq_args2 = _solve_id_contradictory(id0, id1, id2, mqq_args1, mqq_args2)
-
-    if dpi!=100:
-        fig_args["dpi"] = dpi
+    id1_1, id2_2, mqq_kwargs1, mqq_kwargs2 = _solve_id_contradictory(id0, id1, id2, mqq_kwargs1, mqq_kwargs2)
     
     if titles is None:
         titles=["",""]
@@ -181,70 +168,54 @@ def plot_miami2(
     titles_pad_adjusted=[1,0]
     if titles_pad is None:
         titles_pad=[0.2,0.2]
-        if "anno" in mqq_args.keys():
-            if mqq_args["anno"] is not None:
+        if "anno" in mqq_kwargs.keys():
+            if mqq_kwargs["anno"] is not None:
                 titles_pad_adjusted= [1 + titles_pad[0], -titles_pad[1]]
-        if "anno1" in mqq_args.keys():
-            if mqq_args["anno1"] is not None:
+        if "anno1" in mqq_kwargs.keys():
+            if mqq_kwargs["anno1"] is not None:
                 titles_pad_adjusted[0]= 1 + titles_pad[0]
-        if "anno2" in mqq_args.keys():
-            if mqq_args["anno2"] is not None:
+        if "anno2" in mqq_kwargs.keys():
+            if mqq_kwargs["anno2"] is not None:
                 titles_pad_adjusted[1]=  - titles_pad[1]
     else:
         titles_pad_adjusted=[1 + titles_pad[0], -titles_pad[1]]
 
     if merged_sumstats is None:
-    ## load sumstats1 ###########################################################################################################
         sumstats1 = _figure_type_load_sumstats(name="Sumstats1", 
-                                            path=path1, 
-                                            sep=sep1, 
-                                            cols=cols1, 
-                                            readcsv_args=readcsv_args2, 
-                                            loadmode=loadmode1, 
-                                            log=log,
-                                            verbose=verbose)
-        ## load sumstats2 ###########################################################################################################
+                                               path=path1, 
+                                               cols=cols1, 
+                                               log=log,
+                                               verbose=verbose)
         sumstats2 = _figure_type_load_sumstats(name="Sumstats2", 
-                                            path=path2, 
-                                            sep=sep2, 
-                                            cols=cols2, 
-                                            readcsv_args=readcsv_args2, 
-                                            loadmode=loadmode2, 
-                                            log=log,
-                                            verbose=verbose)
+                                               path=path2, 
+                                               cols=cols2, 
+                                               log=log,
+                                               verbose=verbose)
     else:
-        cols1[2] += suffixes[0]
-        cols2[2] += suffixes[1]
-        sumstats1 = merged_sumstats[cols1].copy()
-        sumstats2 = merged_sumstats[cols2].copy()
+        if suffixes is not None:
+            cols1[2] += suffixes[0]
+            cols2[2] += suffixes[1]
+        #sumstats1 = merged_sumstats[cols1].copy()
+        #sumstats2 = merged_sumstats[cols2].copy()
 
-    ## rename and quick fix ###########################################################################################################
-    if scaled1==True:
-        renaming_dict1 = {cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"MLOG10P"}
+    ## quick fix ###########################################################################################################
+    if merged_sumstats is None:
+        sumstats1 = _quick_fix(sumstats1,chr_dict=chr_dict1, scaled=scaled1, verbose=verbose, log=log)
+        sumstats2 = _quick_fix(sumstats2,chr_dict=chr_dict2, scaled=scaled2, verbose=verbose, log=log)
+
+        # get a large number ###########################################################################################################
+        large_number = _get_largenumber(sumstats1["POS"].max(), sumstats2["POS"].max(),log=log)
     else:
-        renaming_dict1 = {cols1[0]:"CHR",cols1[1]:"POS",cols1[2]:"P"}
-    if scaled2==True:
-        renaming_dict2 = {cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"MLOG10P"}
-    else:
-        renaming_dict2 = {cols2[0]:"CHR",cols2[1]:"POS",cols2[2]:"P"}
-    
+        large_number = _get_largenumber(merged_sumstats["POS"].max(), merged_sumstats["POS"].max(),log=log)
 
-    sumstats1 = sumstats1.rename(columns=renaming_dict1)
-    sumstats1 = _quick_fix(sumstats1,chr_dict=chr_dict1, scaled=scaled1, verbose=verbose, log=log)
-
-    sumstats2 = sumstats2.rename(columns=renaming_dict2)
-    sumstats2 = _quick_fix(sumstats2,chr_dict=chr_dict2, scaled=scaled2, verbose=verbose, log=log)
-
-    # get a large number ###########################################################################################################
-    large_number = _get_largenumber(sumstats1["POS"].max(), sumstats2["POS"].max(),log=log)
-    
     ## create merge index ###########################################################################################################
-    sumstats1 = _quick_add_tchrpos(sumstats1,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
-    sumstats2 = _quick_add_tchrpos(sumstats2,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
-    log.write(" -Merging sumstats using chr and pos...",verbose=verbose)
+    if merged_sumstats is None:
+        sumstats1 = _quick_add_tchrpos(sumstats1,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
+        sumstats2 = _quick_add_tchrpos(sumstats2,large_number=large_number, dropchrpos=False, verbose=verbose, log=log)
+        log.write(" -Merging sumstats using chr and pos...",verbose=verbose)
     
-    ###### merge #####################################################################################################
-    merged_sumstats = _quick_merge_sumstats(sumstats1=sumstats1,sumstats2=sumstats2)
+        ###### merge #####################################################################################################
+        merged_sumstats = _quick_merge_sumstats(sumstats1=sumstats1,sumstats2=sumstats2)
     
     #assign index for x axis
     merged_sumstats, chrom_df = _quick_assign_i_with_rank(merged_sumstats, 
@@ -256,17 +227,18 @@ def plot_miami2(
     
     # P_1  scaled_P_1  P_2  scaled_P_2  TCHR+POS CHR POS    
     log.write(" -Columns in merged sumstats: {}".format(",".join(merged_sumstats.columns)), verbose=verbose)
-
-    del(sumstats1)
-    del(sumstats2)
+    
+    if merged_sumstats is None:
+        del(sumstats1)
+        del(sumstats2)
     garbage_collect.collect()
     #####################################################################################################################
 
 
     ##plotting
     if figax is None:
-        #fig_args["figsize"] = (15,10)
-        fig, (ax1, ax5) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 1]},**fig_args)
+        #fig_kwargs["figsize"] = (15,10)
+        fig, (ax1, ax5) = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 1]},**fig_kwargs)
         plt.subplots_adjust(hspace=region_hspace)    
     else:
         fig, ax1, ax5 = figax
@@ -288,8 +260,8 @@ def plot_miami2(
     tick_axes_length = tick_points_to_pixels / ax_height_pixels
 
     if xtick_label_pad is None:
-        if "figsize" not in fig_args.keys():
-            fig_args["figsize"] = (15,10)
+        if "figsize" not in fig_kwargs.keys():
+            fig_kwargs["figsize"] = (15,10)
         # (total hsapce - tick label font size) / 2 
         xtick_label_pad = 0
         #xtick_label_pad =  ((ax_height_points * region_hspace) - 2*tick_length - xtick_label_size) / 2 
@@ -299,22 +271,22 @@ def plot_miami2(
 
     log.write("Start to create Manhattan plot for sumstats1...", verbose=verbose)
     fig,log = mqqplot(merged_sumstats,
-                      chrom="CHR",
-                      pos="POS",
-                      p="P_1",
-                      mlog10p="scaled_P_1",
-                      snpid=id1_1,
-                      scaled=scaled1,
-                      log=log, 
-                      mode=mode,
-                      figax=(fig,ax1),
-                      scatter_args=scatter_args,
-                      _chrom_df_for_i = chrom_df,
-                      _invert=False,
-                      _if_quick_qc=False,
-                      font_family=font_family,
-                      **mqq_args1
-                     )
+                    chrom="CHR",
+                    pos="POS",
+                    p="P_1",
+                    mlog10p="scaled_P_1",
+                    snpid=id1_1,
+                    scaled=scaled1,
+                    log=log, 
+                    mode=mode,
+                    figax=(fig,ax1),
+                    scatter_kwargs=scatter_kwargs,
+                    _chrom_df_for_i = chrom_df,
+                    _invert=False,
+                    _if_quick_qc=False,
+                    font_family=font_family,
+                    **mqq_kwargs1
+                    )
     log.write("Finished creating Manhattan plot for sumstats1".format(_get_version()), verbose=verbose)
 
     log.write("Start to create Manhattan plot for sumstats2...", verbose=verbose)
@@ -328,12 +300,12 @@ def plot_miami2(
                       log=log, 
                       mode=mode,
                       figax=(fig,ax5),
-                      scatter_args=scatter_args,
+                      scatter_kwargs=scatter_kwargs,
                       _chrom_df_for_i = chrom_df,
                        _invert=True,
                       _if_quick_qc=False,
                       font_family=font_family,
-                     **mqq_args2)
+                     **mqq_kwargs2)
     log.write("Finished creating Manhattan plot for sumstats2".format(_get_version()), verbose=verbose)
     
 
@@ -373,7 +345,7 @@ def plot_miami2(
 
     ax5.invert_yaxis() 
 
-    save_figure(fig, save, keyword="miami",save_args=save_args, log=log, verbose=verbose)
+    save_figure(fig, save, keyword="miami",save_kwargs=save_kwargs, log=log, verbose=verbose)
 
     garbage_collect.collect()
     
@@ -381,33 +353,33 @@ def plot_miami2(
     #Return matplotlib figure object #######################################################################################
     return fig, log
 
-def _sort_args_to_12(mqq_args):
-    mqq_args1={}
-    mqq_args2={}
-    for key, value in mqq_args.items():
+def _sort_kwargs_to_12(mqq_kwargs):
+    mqq_kwargs1={}
+    mqq_kwargs2={}
+    for key, value in mqq_kwargs.items():
         if key[-1]=="1":
             # for top mqq
-            mqq_args1[key[:-1]] = value
+            mqq_kwargs1[key[:-1]] = value
         elif key[-1]=="2":
             # for bottom mqq
-            mqq_args2[key[:-1]] = value
+            mqq_kwargs2[key[:-1]] = value
         else:
             # for both top and bottom
-            mqq_args1[key] = value
-            mqq_args2[key] = value
-    return mqq_args1, mqq_args2
+            mqq_kwargs1[key] = value
+            mqq_kwargs2[key] = value
+    return mqq_kwargs1, mqq_kwargs2
 
-def _solve_id_contradictory(id0, id1, id2, mqq_args1, mqq_args2):
+def _solve_id_contradictory(id0, id1, id2, mqq_kwargs1, mqq_kwargs2):
     if (id1 is not None) and (id2 is not None):
         if id1 == id2:
             id1_1 = id1 + "_1"
             id2_2 = id2 + "_2"
-            if "anno" in mqq_args1.keys():
-                if mqq_args1["anno"] == id1:
-                    mqq_args1["anno"] = id1_1
-            if "anno" in mqq_args2.keys():
-                if mqq_args2["anno"] == id2:
-                    mqq_args2["anno"] = id2_2
+            if "anno" in mqq_kwargs1.keys():
+                if mqq_kwargs1["anno"] == id1:
+                    mqq_kwargs1["anno"] = id1_1
+            if "anno" in mqq_kwargs2.keys():
+                if mqq_kwargs2["anno"] == id2:
+                    mqq_kwargs2["anno"] = id2_2
         else:
             id1_1 = id1
             id2_2 = id2
@@ -418,16 +390,11 @@ def _solve_id_contradictory(id0, id1, id2, mqq_args1, mqq_args2):
     if id2 is None:
         id2_2 = id0
 
-    return (id1_1, id2_2, mqq_args1, mqq_args2)
+    return (id1_1, id2_2, mqq_kwargs1, mqq_kwargs2)
 
-def _figure_args_for_vector_plot(save, fig_args, scatter_kwargs ):
-    if save is not None:
-        if type(save) is not bool:
-            if len(save)>3:
-                if save[-3:]=="pdf" or save[-3:]=="svg":
-                    fig_args["dpi"]=72
-                    scatter_kwargs["rasterized"]=True
-    return fig_args, scatter_kwargs
+def _figure_kwargs_for_vector_plot(save, fig_kwargs, scatter_kwargs ):
+    from gwaslab.viz.viz_aux_style_options import figure_kwargs_for_vector_plot
+    return figure_kwargs_for_vector_plot(save, fig_kwargs, scatter_kwargs)
 
 def _set_spine_visibility(ax1,ax5):
     ax1.spines["top"].set_visible(False)
@@ -441,21 +408,9 @@ def _set_spine_visibility(ax1,ax5):
     ax5.spines["bottom"].set_visible(False)
     return ax1,ax5
 
-def _figure_type_load_sumstats(name, path, sep, cols, readcsv_args, loadmode, log, verbose):
-    if type(path) is str:
-        log.write(" -Loading {} ({} mode): {}".format(name, loadmode, path), verbose=verbose)
+def _figure_type_load_sumstats(name, path, cols, log, verbose):
     log.write(" -Obtaining {} CHR, POS, P and annotation from: {}".format(name, cols), verbose=verbose)
-    
-    if loadmode=="pickle":
-        sumstats = load_data_from_pickle(path,usecols=cols) 
-    else:
-        if type(path) is Sumstats:
-            log.write(" -Loading {} from gwaslab.Sumstats Object".format(name), verbose=verbose)
-            sumstats = path.data[cols].copy()
-        elif type(path) is pd.DataFrame:
-            log.write(" -Loading {} from pandas.DataFrame Object".format(name), verbose=verbose)
-            sumstats = path[cols].copy()
-        else:
-            log.write(" -Loading {} from tabular files".format(name), verbose=verbose)
-            sumstats=pd.read_table(path,sep=sep,usecols=cols,dtype={cols[0]:"string",cols[1]:"Int64",cols[2]:"float64"},**readcsv_args)
-    return sumstats
+    if isinstance(path, Sumstats):
+        log.write(" -Loading {} from gwaslab.Sumstats Object".format(name), verbose=verbose)
+        return path.data[cols].copy()
+    raise TypeError("{} must be a gwaslab.Sumstats".format(name))

@@ -1,60 +1,55 @@
 [build-system]
-requires = [
-    "setuptools>=61",
-    "wheel"
-]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gwaslab"
-version = "3.6.13"
-authors = [
-  { name="Yunye", email="gwaslab@gmail.com" },
-]
-description = "A collection of handy tools for GWAS SumStats"
-
+version = "4.0.0"
+description = "Python toolkit for handling GWAS summary statistics"
 readme = "README.md"
-
+requires-python = ">=3.9"
+license = { text = "GPL-3.0-only" }
+authors = [ { name = "Yunye He", email = "gwaslab@gmail.com" } ]
 dependencies = [
-    "pandas>=1.3,!=1.5",
-    "numpy>=1.21.2,<2",
-    "matplotlib>=3.8,<3.9",
-    "seaborn>=0.12",
-    "scipy>=1.12",
-    "pySAM==0.22.1",
-    "Biopython>=1.79",
-    "adjustText>=0.7.3, <=0.8",
-    "liftover>=1.1.13, <=1.3.1",
-    "scikit-allel>=1.3.5",
-    "pyensembl==2.2.3",
-    "gtfparse==1.3.0",
-    "h5py>=3.10.0",
-    "pyarrow",
-    "polars>=1.27.0"
+  "pandas!=1.5,>=1.3",
+  "numpy<2,>=1.21.2",
+  "matplotlib<3.9,>=3.8",
+  "seaborn>=0.12",
+  "scipy>=1.12",
+  "pysam==0.22.1",
+  "biopython>=1.79",
+  "adjustText>=0.7.3,<=0.8",
+  "liftover>=1.1.13,<=1.3.1",
+  "scikit-allel>=1.3.5",
+  "pyensembl==2.2.3",
+  "gtfparse==1.3.0",
+  "h5py>=3.10.0",
+  "pyarrow",
+  "polars>=1.27.0"
 ]
 
-requires-python = ">=3.9,<3.13"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Operating System :: OS Independent",
-]
+[project.urls]
+Homepage = "https://cloufield.github.io/gwaslab/"
+Repository = "https://github.com/Cloufield/gwaslab"
+
+[project.scripts]
+gwaslab = "gwaslab.CLI.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
 gwaslab = [
-	"./data/formatbook.json",
-	"./data/reference.json",
-	"./data/hapmap3_SNPs/hapmap3_db150_hg19.snplist.gz",
-	"./data/hapmap3_SNPs/hapmap3_db151_hg38.snplist.gz",
-	"./data/chrx_par/chrx_par_hg19.bed.gz",
-	"./data/chrx_par/chrx_par_hg38.bed.gz",
-	"./data/high_ld/high_ld_hla_hg38.bed.gz",
-	"./data/high_ld/high_ld_hla_hg19.bed.gz",
+  "data/*",
+  "data/**",
+  "viz/*.txt",
+  "viz/*.json",
+  "data/chrX_par/*",
+  "data/chrx_par/*",
+  "data/high_ld/*",
+  "data/hapmap3_SNPs/*"
 ]
 
-[project.urls]
-"Homepage" = "https://cloufield.github.io/gwaslab/"
-"Github" = "https://github.com/Cloufield/gwaslab"

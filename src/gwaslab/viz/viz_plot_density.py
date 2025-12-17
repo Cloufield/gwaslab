@@ -7,7 +7,6 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     Create Brisbane plot (variant density plot)
     Y axis: number of neiboring variants within a window around each variant)
     X axis: same as Manhattan plot
-    Annotation will be based on density.
 
     Parameters
     ---
@@ -26,7 +25,7 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     sig_level : int, optional
         Threshold for variants density for annotation. Default is 1.
     windowsizekb : int, default=500
-        Window size in kb for determine top density loci for annotation. 
+        Window size in kb for determine lead variants for annotation. 
     anno : boolean, str or 'GENENAME', default=None
         Specify which data to use for annotation. Default is None. 
         anno options:
@@ -41,9 +40,9 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     anno_d : dict, optional
        Dictionary mapping annotation indices to custom positioning options. 
        For example, {0:"l"} means adjust the direction of the 1st arm end to left. Default is empty dict. Default is None. 
-    anno_args : dict, optional
+    anno_kwargs : dict, optional
         ictionary of default styling arguments for annotations. Default is None. 
-    anno_args_single : dict, optional
+    anno_kwargs_single : dict, optional
         Dictionary mapping SNP IDs to custom styling arguments. Default is None.
     anno_style : 'right' or 'tight' or 'expand', default='right'
         Style of annotation ('right', 'tight', 'expand'). Default is 'right'.
@@ -51,6 +50,18 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
         Fixed arm length for annotations. Default is None. 
     anno_source : str, default='ensembl'
         Source for annotations.
+    anno_xshift : float, optional
+        X-axis shift for annotations. Default is None. 
+    anno_max_iter : int, default=100
+        Maximum iterations for text repulsion algorithm. 
+    arrow_kwargs : dict, optional
+        Arguments for annotation arrows. Default is None.
+    arm_offset : float, optional
+        Offset for annotation arms. Default is None. 
+    arm_scale : float, default=1
+        Scaling factor for annotation arm length. 
+    anno_height : float, default=1
+        Height for annotations. 
     arm_scale_d : dict, optional
         Dictionary mapping annotation indices to custom arm scaling factors.
     pinpoint : list, optional
@@ -65,7 +76,7 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
         Dots per inch for figure resolution. 
     save : str, optional
         File path to save plot. Default is None. 
-    save_args : dict, default={"dpi":600,"transparent":True}
+    save_kwargs : dict, default={"dpi":600,"transparent":True}
         Arguments for saving the plot. 
 
     
@@ -79,18 +90,6 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
         Threshold range for density plot.  For hue_norm.
     density_tpalette : str, default='Blues'
         Palette for thresholded density colors.
-    anno_xshift : float, optional
-        X-axis shift for annotations. Default is None. 
-    anno_max_iter : int, default=100
-        Maximum iterations for text repulsion algorithm. 
-    arrow_kwargs : dict, optional
-        Arguments for annotation arrows. Default is None.
-    arm_offset : float, optional
-        Offset for annotation arms. Default is None. 
-    arm_scale : float, default=1
-        Scaling factor for annotation arm length. 
-    anno_height : float, default=1
-        Height for annotations. 
     """
 
     if "b" in mode and "DENSITY" not in sumstats.columns:

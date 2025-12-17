@@ -24,13 +24,13 @@ def annotate_single(
     ax1,
     highlight_i,
     highlight_chrpos,
-    highlight_anno_args,
+    highlight_anno_kwargs,
     to_annotate,
     anno_d,
     anno_alias,
     anno_style,
-    anno_args,
-    anno_args_single,
+    anno_kwargs,
+    anno_kwargs_single,
     arm_scale,
     anno_max_iter,
     arm_scale_d,
@@ -42,7 +42,7 @@ def annotate_single(
     anno_fontsize,
     font_family,
     region,
-    region_anno_bbox_args,
+    region_anno_bbox_kwargs,
     skip,
     arrow_kwargs=None,
     anno_height=1,
@@ -72,7 +72,7 @@ def annotate_single(
         List of indices to highlight with special styling. Default is empty list
     highlight_chrpos : dict, optional
         Dictionary mapping highlighted SNPs to custom CHR:POS values. Default is empty dict
-    highlight_anno_args : dict, optional
+    highlight_anno_kwargs : dict, optional
         Dictionary of styling arguments for highlighted variants. Default is empty dict
     to_annotate : pandas.DataFrame
         DataFrame containing variants to annotate with their positions and p-values
@@ -82,9 +82,9 @@ def annotate_single(
         Dictionary mapping SNP IDs to custom annotation labels. Default is empty dict
     anno_style : str, optional
         Style of annotation ('right', 'tight', 'expand'). Default is 'right'
-    anno_args : dict, optional
+    anno_kwargs : dict, optional
         Dictionary of default styling arguments for annotations. Default is empty dict
-    anno_args_single : dict, optional
+    anno_kwargs_single : dict, optional
         Dictionary mapping SNP IDs to custom styling arguments. Default is empty dict
     arm_scale : float, optional
         Scaling factor for annotation arm length. Default is 1.0
@@ -108,7 +108,7 @@ def annotate_single(
         Font family for annotations. Default is 'sans-serif'
     region : tuple, optional
         Genomic region coordinates (start, end). Default is None
-    region_anno_bbox_args : dict, optional
+    region_anno_bbox_kwargs : dict, optional
         Dictionary of bounding box arguments for region annotations. Default is empty dict
     skip : float, optional
         Spacing between annotations. Default is 0.1
@@ -290,7 +290,7 @@ def annotate_single(
             if "r" in mode:
                 arrowargs["color"] = "black" 
                 bbox_para=dict(boxstyle="round", fc="white",zorder=3)
-                for key,value in region_anno_bbox_args.items():
+                for key,value in region_anno_bbox_kwargs.items():
                     bbox_para[key]=value
             else:
                 bbox_para=None
@@ -308,19 +308,19 @@ def annotate_single(
                 anno_default["rotation"] = 90
             ################################################################################################################################
             # anno args for all
-            for key,value in anno_args.items():
+            for key,value in anno_kwargs.items():
                 anno_default[key]=value
             
             # anno args for highlight group
             if len(highlight_i) >0:
                 if row["i"] in highlight_i:
-                    for key,value in highlight_anno_args.items():
+                    for key,value in highlight_anno_kwargs.items():
                         anno_default[key]=value
             
             # anno args for specifc
             #try:
-            if row[snpid] in anno_args_single.keys():
-                for key,value in anno_args_single[row[snpid]].items():
+            if row[snpid] in anno_kwargs_single.keys():
+                for key,value in anno_kwargs_single[row[snpid]].items():
                     anno_default[key]=value
             #except:
             #    pass
@@ -386,7 +386,7 @@ def annotate_pair(
     anno_alias1,
     anno_alias2,
     anno_style,
-    anno_args,
+    anno_kwargs,
     arm_scale,
     anno_max_iter,
     arm_scale_d,
@@ -472,12 +472,12 @@ def annotate_pair(
                     elif anno_style == "expand" :
                         #expand style
                         last_pos = row["ADJUSTED_i"]
-                        anno_args["rotation"] = 90
+                        anno_kwargs["rotation"] = 90
                     elif anno_style == "tight" :
                         #tight style
                         anno_fixed_arm_length = 1
                         anno_adjust = True
-                        anno_args["rotation"] = 90
+                        anno_kwargs["rotation"] = 90
                     else:
                         pass
 
@@ -577,7 +577,7 @@ def annotate_pair(
                         else:
                             anno_default["fontweight"] = "normal"
                     
-                    for key,value in anno_args.items():
+                    for key,value in anno_kwargs.items():
                         anno_default[key]=value
 
                     if anno_adjust==True:

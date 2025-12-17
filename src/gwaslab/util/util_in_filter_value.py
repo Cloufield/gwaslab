@@ -16,18 +16,33 @@ from gwaslab.hm.hm_harmonize_sumstats import is_palindromic
 from gwaslab.g_version import _get_version
 import gc
 
+_HAPMAP_CACHE = {}
+
+def _get_hapmap_df(build):
+    if build in _HAPMAP_CACHE:
+        return _HAPMAP_CACHE[build]
+    base = Path(__file__).parents[1] / "data" / "hapmap3_SNPs"
+    if build == "19":
+        p = base / "hapmap3_db150_hg19.snplist.gz"
+    else:
+        p = base / "hapmap3_db151_hg38.snplist.gz"
+    df = pd.read_csv(p, sep=r"\s+", usecols=["#CHROM", "POS"], dtype={"#CHROM": "Int64", "POS": "Int64"})
+    df = df.rename(columns={"#CHROM": "CHR"}).astype({"CHR": "Int64", "POS": "Int64"})
+    _HAPMAP_CACHE[build] = df
+    return df
+
 def with_logging_filter(start_to_msg,finished_msg):
     def decorator(func):
         @wraps(func)  # This preserves the original function's metadata including __doc__
         def wrapper(*args, **kwargs):
             import inspect
             sig = inspect.signature(func)
-            bound_args = sig.bind(*args, **kwargs)
-            bound_args.apply_defaults()
+            bound_kwargs = sig.bind(*args, **kwargs)
+            bound_kwargs.apply_defaults()
             
-            log = bound_args.arguments.get('log', Log())
-            verbose = bound_args.arguments.get('verbose', True)
-            sumstats = bound_args.arguments.get('sumstats', pd.DataFrame)
+            log = bound_kwargs.arguments.get('log', Log())
+            verbose = bound_kwargs.arguments.get('verbose', True)
+            sumstats = bound_kwargs.arguments.get('sumstats', pd.DataFrame)
             
             # Log start message
             log.write(f"Start to {start_to_msg} ...({_get_version()})", verbose=verbose)
@@ -55,51 +70,32 @@ value thresholds, genomic regions, and special variant types.
 """
 
 @with_logging_filter("filter variants by condition...","filtering variants")
-def filtervalues(sumstats, expr, groupby=None, verbose=True, log=Log()):
+def filtervalues(sumstats, expr, remove=False, verbose=True, log=Log()):
     """
-    Filter variants based on a query expression, optionally evaluated
-    within groups (per group filtering).
-
-    Parameters
-    ----------
+    Filter variants based on a query expression.
+    
+    Parameters:
+    -----------
     expr : str
-        Query expression using pandas.DataFrame.query syntax.
-        Example: "PVAL < 5e-8 and ABS(BETA) > 0.1"
-    groupby : str or list-like, optional
-        Column(s) to group by before filtering (per-group evaluation).
-        If None, filter on the entire table.
+        Query expression using pandas.DataFrame.query syntax
+    remove : bool, default=False
+        If True, removes variants meeting the condition
     verbose : bool, default=True
-        If True, logs the filter expression and grouped filter mode.
-
-    Returns
-    -------
+        If True, writes progress to log
+    inplace : bool, default=False  
+        If False, return a new `Sumstats` object containing the filtered results.  
+        If True, apply the filter to the current object in place and return None.
+    
+    Returns:
+    --------
     pandas.DataFrame
         Filtered summary statistics table
     """
-    log.write(f" -Expression: {expr}", verbose=verbose)
-
-    # Normal global filter
-    if groupby is None:
-        result = sumstats.query(expr, engine="python").copy()
-        gc.collect()
-        return result
-
-    # Group-wise filter
-    log.write(f" -Group-by columns: {groupby}", verbose=verbose)
-
-    def _group_filter(df):
-        try:
-            return df.query(expr, engine="python")
-        except Exception as e:
-            log.write(f"   ! Query failed in group {df.name}: {e}", verbose=verbose)
-            return df.iloc[0:0]  # return an empty group
-
-    # Apply query to each group separately, then merge
-    grouped = sumstats.groupby(groupby, dropna=False, sort=False)
-    result = grouped.apply(_group_filter).reset_index(drop=True)
+    log.write(" -Expression:",expr, verbose=verbose)
+    sumstats = sumstats.query(expr,engine='python').copy()
 
     gc.collect()
-    return result
+    return sumstats
 
 @with_logging_filter("filter out variants based on threshold values...", "filtering variants")
 def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
@@ -140,7 +136,6 @@ def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=
         sumstats = sumstats.loc[sumstats[key]!=threshold,:]
     gc.collect()
     return sumstats.copy()
-
 
 @with_logging_filter("filter in variants based on threshold values", "filtering variants")
 def filterin(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
@@ -191,9 +186,6 @@ def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, b
     -----------
     path : str or None, default=None
         Path to BED file containing regions of interest
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
         Column name for position information
     high_ld : bool, default=False
         If True, uses high LD regions from the specified build
@@ -298,10 +290,6 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
     -----------
     path : str or None, default=None
         Path to BED file containing regions to exclude
-    chrom : str, default="CHR"
-        Column name for chromosome information
-    pos : str, default="POS"
-        Column name for position information
     high_ld : bool, default=False
         If True, excludes variants in high LD regions from the specified build
     build : str, default="19"
@@ -385,7 +373,7 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
 @with_logging("infer genome build version using hapmap3 SNPs", 
               "inferring genome build version using hapmap3 SNPs",
               start_function=".infer_build()",
-              start_cols=["CHR","POS"],fix=True,
+              start_cols=["CHR","POS"],
               check_dtype=True)
 def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS", 
                ea="EA", nea="NEA", build="19",
@@ -406,37 +394,30 @@ def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS",
     """
     # Function implementation remains unchanged
 
-    inferred_build="Unknown"
-
-    data_path_19 = path.join( Path(__file__).parents[1], "data","hapmap3_SNPs","hapmap3_db150_hg19.snplist.gz")
-    data_path_38 = path.join( Path(__file__).parents[1], "data","hapmap3_SNPs","hapmap3_db151_hg38.snplist.gz")
-
-    log.write(" -Loading Hapmap3 variants data...", verbose=verbose)        
-    hapmap3_ref_19 = pd.read_csv(data_path_19,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})
-    hapmap3_ref_38 = pd.read_csv(data_path_38,sep="\s+",usecols=["#CHROM","POS"],dtype={"#CHROM":"string","POS":"string"})
-    
-    log.write(" -CHR:POS will be used for matching...", verbose=verbose)
-    raw_chrpos = sumstats[chrom].astype("string")+":"+sumstats[pos].astype("string")
-    
-    hapmap3_ref_19["chr:pos"] = hapmap3_ref_19["#CHROM"]+":"+hapmap3_ref_19["POS"]
-    hapmap3_ref_38["chr:pos"] = hapmap3_ref_38["#CHROM"]+":"+hapmap3_ref_38["POS"]
-    
-    match_count_for_19 = sum(raw_chrpos.isin(hapmap3_ref_19["chr:pos"].values))
-    match_count_for_38 = sum(raw_chrpos.isin(hapmap3_ref_38["chr:pos"].values))
-    
-    log.write(" -Matching variants for hg19: num_hg19 = ",match_count_for_19, verbose=verbose)        
-    log.write(" -Matching variants for hg38: num_hg38 = ",match_count_for_38, verbose=verbose) 
+    inferred_build = "Unknown"
+    log.write(" -Loading Hapmap3 variants data...", verbose=verbose)
+    hapmap3_ref_19 = _get_hapmap_df("19")
+    hapmap3_ref_38 = _get_hapmap_df("38")
+    log.write(" -CHR and POS will be used for matching...", verbose=verbose)
+    chr_series = pd.to_numeric(sumstats[chrom], errors="coerce").astype("Int64")
+    pos_series = pd.to_numeric(sumstats[pos], errors="coerce").astype("Int64")
+    coords = pd.DataFrame({"CHR": chr_series, "POS": pos_series})
+    coords = coords.dropna().astype({"CHR": "Int64", "POS": "Int64"})
+    match_count_for_19 = pd.merge(coords, hapmap3_ref_19, on=["CHR", "POS"], how="inner").shape[0]
+    match_count_for_38 = pd.merge(coords, hapmap3_ref_38, on=["CHR", "POS"], how="inner").shape[0]
+    log.write(" -Matching variants for hg19: num_hg19 = ", match_count_for_19, verbose=verbose)
+    log.write(" -Matching variants for hg38: num_hg38 = ", match_count_for_38, verbose=verbose)
     
     if max(match_count_for_19, match_count_for_38)<10000:
         log.warning("Please be cautious due to the limited number of variants.", verbose=verbose) 
     
     if match_count_for_19 > match_count_for_38:
-        log.write(" -Since num_hg19 >> num_hg38, assigning genome build hg19...", verbose=verbose) 
+        log.write(" -Since num_hg19 >> num_hg38, set the genome build to hg19 for the STATUS code....", verbose=verbose) 
         if change_status==True:
             sumstats[status] = vchange_status(sumstats[status],1,"9","1")
         inferred_build="19"
     elif match_count_for_19 < match_count_for_38:
-        log.write(" -Since num_hg19 << num_hg38, assigning genome build hg38...", verbose=verbose) 
+        log.write(" -Since num_hg19 << num_hg38, set the genome build to hg38 for the STATUS code....", verbose=verbose) 
         if change_status==True:
             sumstats[status] = vchange_status(sumstats[status],1,"9","3")
             sumstats[status] = vchange_status(sumstats[status],2,"9","8")

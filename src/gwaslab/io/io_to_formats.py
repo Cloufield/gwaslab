@@ -484,7 +484,7 @@ def tofmt(sumstats,
         yaml_path = path + "."+suffix+".{}-meta.yaml".format(tab_fmt)
         log.write(" -Output path:",path, verbose=verbose) 
 
-        sumstats,to_csvargs = _configure_output_cols_and_args(sumstats, rename_dictionary, cols, no_status, path, meta_data, to_csvargs, log, verbose)
+        sumstats,to_csvargs = _configure_output_cols_and_kwargs(sumstats, rename_dictionary, cols, no_status, path, meta_data, to_csvargs, log, verbose)
         
         log.write(" -Writing sumstats to: {}...".format(path),verbose=verbose)
         
@@ -616,7 +616,7 @@ def fast_to_vcf(dataframe, path, vcf_header, output_format, meta_data, meta):
         f.write(out_string)
 
 ####################################################################################################################
-def _configure_output_cols_and_args(sumstats, rename_dictionary, cols, no_status, path, meta_data, to_csvargs, log, verbose):
+def _configure_output_cols_and_kwargs(sumstats, rename_dictionary, cols, no_status, path, meta_data, to_csvargs, log, verbose):
     # grab format cols that exist in sumstats
     ouput_cols=[]
     for i in sumstats.columns:

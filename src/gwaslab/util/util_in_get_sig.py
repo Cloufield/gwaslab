@@ -11,8 +11,8 @@ from gwaslab.g_Log import Log
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_chr_to_NC
-from gwaslab.bd.bd_common_data import gtf_to_protein_coding
-from gwaslab.bd.bd_common_data import gtf_to_all_gene
+from gwaslab.io.io_gtf import gtf_to_protein_coding
+from gwaslab.io.io_gtf import gtf_to_all_gene
 from gwaslab.bd.bd_download import check_and_download
 from gwaslab.qc.qc_build import _process_build
 from gwaslab.qc.qc_fix_sumstats import check_dataframe_shape
@@ -20,7 +20,6 @@ from gwaslab.qc.qc_build import _check_build
 from gwaslab.util.util_in_correct_winnerscurse import wc_correct
 from gwaslab.util.util_ex_gwascatalog import gwascatalog_trait
 from gwaslab.util.util_in_fill_data import fill_p
-from gwaslab.util.util_in_get_density import getsignaldensity2
 # getsig
 # closest_gene
 # annogene
@@ -62,21 +61,13 @@ def getsig(insumstats,
     Parameters
     ----------
     windowsizekb : int, default=500
-        Window size in kilobases for lead variant identification
+        Window size in kilobases for lead variant identification, default=500
     sig_level : float, default=5e-8
-        Significance threshold for variant selection
+        Significance threshold for variant selection, default=5e-8
     xymt : list, default=["X","Y","MT"]
         List of non-autosomal chromosome identifiers
     wc_correction : bool, default=False
         If True, apply Winner's Curse correction to effect sizes
-    anno : bool, default=False
-        If True, annotate output with nearest gene names.
-    build : {"19","38"}, default="19"
-        Reference genome build for optional annotation.
-    source : {"ensembl","refseq"}, default="ensembl"
-        Gene annotation source.
-    gtf_path : str or None, optional
-        Custom GTF path for annotation; if None, auto-download/reference is used.
 
     Returns
     -------
@@ -129,20 +120,20 @@ def getsig(insumstats,
     ## use mlog10p first
     if use_p==False and (mlog10p in sumstats.columns):
         log.write(" -Using {} for extracting lead variants...".format(mlog10p),verbose=verbose)
-        sumstats_sig = sumstats.loc[sumstats[mlog10p]> -np.log10(sig_level),:].copy()
+        sumstats_sig = sumstats.loc[sumstats[mlog10p]>= -np.log10(sig_level),:].copy()
         sumstats_sig.loc[:,"__SCALEDP"] = -pd.to_numeric(sumstats_sig[mlog10p], errors='coerce')
     else:
         #use P
         log.write(" -Using {} for extracting lead variants...".format(p),verbose=verbose)         
         sumstats[p] = pd.to_numeric(sumstats[p], errors='coerce')
-        sumstats_sig = sumstats.loc[sumstats[p]<sig_level,:].copy()
+        sumstats_sig = sumstats.loc[sumstats[p]<=sig_level,:].copy()
         sumstats_sig.loc[:,"__SCALEDP"] = pd.to_numeric(sumstats_sig[p], errors='coerce')
     log.write(" -Found "+str(len(sumstats_sig))+" significant variants in total...", verbose=verbose)
 
     sumstats_sig = sumstats_sig.sort_values([chrom,pos])
     if len(sumstats_sig) == 0:
         log.write(" -No lead snps at given significance threshold!", verbose=verbose)
-        return None
+        return pd.DataFrame(columns=sumstats_sig.columns)
 
     p="__SCALEDP"
     sig_index_list = _collect_leads_generic(sumstats_sig, chrom, pos, windowsizekb, p, id, maximize=False)
@@ -195,7 +186,8 @@ def gettop(insumstats,
            pos="POS",
            by="DENSITY",
            threshold=None,
-           windowsizekb=1000,
+           windowsizekb=500,
+           bwindowsizekb=100,
            log=Log(),
            xymt=["X","Y","MT"],
            anno=False,
@@ -204,9 +196,9 @@ def gettop(insumstats,
            gtf_path=None,
            verbose=True):
     """
-    Extract top variants by maximizing a metric within sliding windows.
+    Extract top variants by maximizing a metric within sliding windows. (used for get top density variants)
 
-    This function identifies lead variants by selecting, within each
+    This function identifies top variants by selecting, within each
     contiguous window on a chromosome, the variant with the highest value
     of a specified column (e.g., `DENSITY`). It follows the same windowing
     logic as `getsig`, but does not rely on `P` or `MLOG10P`.
@@ -217,16 +209,12 @@ def gettop(insumstats,
         Column name whose values are maximized to choose leads.
     threshold : float or None, default=None
         If provided, only variants with `by` >= `threshold` are considered. Deafult threshold is the median of maximum values of each chormosome.
-    windowsizekb : int, default=1000
-        Sliding window size in kilobases used to determine locus boundaries.
+    windowsizekb : int,
+        Sliding window size in kilobases used to determine locus boundaries.  default=500
+    bwindowsizekb : int, 
+        Window size for calculating density. default=100
     anno : bool, default=False
         If True, annotate output with nearest gene names.
-    build : {"19","38"}, default="19"
-        Reference genome build for optional annotation.
-    source : {"ensembl","refseq"}, default="ensembl"
-        Gene annotation source.
-    gtf_path : str or None, optional
-        Custom GTF path for annotation; if None, auto-download/reference is used.
 
     Returns
     -------
@@ -234,6 +222,7 @@ def gettop(insumstats,
         DataFrame containing the selected lead variants. Returns None if
         no variants have valid values in the `by` column.
     """
+    log.write(" -Sliding window size for extracting top:", str(windowsizekb), " kb", verbose=verbose)
     sumstats = insumstats.copy()
     if sumstats[chrom].dtype in ["object",str,pd.StringDtype]:
         chr_to_num = get_chr_to_number(out_chr=True,xymt=["X","Y","MT"])
@@ -246,7 +235,7 @@ def gettop(insumstats,
                                      snpid=id,
                                      chrom=chrom,
                                      pos=pos,
-                                     bwindowsizekb=windowsizekb,
+                                     bwindowsizekb=bwindowsizekb,
                                      log=log,
                                      verbose=verbose)
     if by not in sumstats.columns:
@@ -745,7 +734,7 @@ def getnovel(insumstats,
         finished_msg="checking if variants are in cis or trans regions",
         start_cols=["CHR","POS"],
         start_function=".check_cis()",
-        must_args=["group_key"]
+        must_kwargs=["group_key"]
 )
 def _check_cis(insumstats,
            id,
@@ -944,7 +933,7 @@ def determine_if_same_chromosome(allsig, knownsig, maxpos):
         finished_msg="checking if variant sets are overlapping with those in reference file",
         start_cols=["CHR","POS"],
         start_function=".check_novel_set()",
-        must_args=["group_key"]
+        must_kwargs=["group_key"]
 )
 def _check_novel_set(insumstats,
            id,

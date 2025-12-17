@@ -21,7 +21,7 @@ from gwaslab.qc.qc_fix_sumstats import parallelizeliftovervariant
 from gwaslab.qc.qc_fix_sumstats import flipallelestats
 from gwaslab.qc.qc_fix_sumstats import sortcoordinate
 from gwaslab.qc.qc_fix_sumstats import sortcolumn
-from gwaslab.qc.qc_fix_sumstats import _set_build
+from gwaslab.qc.qc_build import _set_build
 from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.hm.hm_harmonize_sumstats import parallelecheckaf
 from gwaslab.hm.hm_harmonize_sumstats import paralleleinferaf

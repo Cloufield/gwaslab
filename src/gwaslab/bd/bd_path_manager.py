@@ -94,8 +94,8 @@ def _path( *args,
             pid = id(path_list)
         
         ###############################################################################################################################################
-        all_args = locals()
-        for key,value in all_args.items():
+        all_kwargs = locals()
+        for key,value in all_kwargs.items():
             if key in path_order:
                 if value is not None:
                     if value !=False:

@@ -1,6 +1,7 @@
 import copy
+import pandas as pd
 
-def _list_func_kwargs(func):
+def _list_func_args(func):
     return func.__code__.co_varnames
 
 def _extract_kwargs(prefix:str, default:dict, kwargs:dict) -> dict:
@@ -39,19 +40,19 @@ def _merge_and_sync_dic(list_of_dics:list, default:dict) -> dict:
             temp.update(dic)
     return temp
 
-def _update_kwargs(args=None, default_kwargs=None):
+def _update_kwargs(args=None, default_args=None):
     
-    if default_kwargs is None:
-        default_kwargs={}
+    if default_args is None:
+        default_args={}
 
     if args is None:
         # if None, return default dict
-        return default_kwargs
+        return default_args
     else:
         # if not None, update default dict
         for key,value in args.items():
-            default_kwargs[key] = value
-        return default_kwargs
+            default_args[key] = value
+        return default_args
 
     
 
@@ -78,12 +79,12 @@ def resolve_overlapping_kwargs(strategy="prefer_explicit", verbose=False):
         @wraps(func)
         def wrapper(*args, **kwargs):
             sig = inspect.signature(func)
-            bound_kwargs = {}
+            bound_args = {}
             for i, (name, param) in enumerate(sig.parameters.items()):
                 if i < len(args):
-                    bound_kwargs[name] = args[i]
+                    bound_args[name] = args[i]
 
-            overlap = set(bound_kwargs.keys()) & set(kwargs.keys())
+            overlap = set(bound_args.keys()) & set(kwargs.keys())
             if overlap:
                 if verbose:
                     print(f"[resolve_overlap] overlapping: {overlap}")
@@ -92,9 +93,9 @@ def resolve_overlapping_kwargs(strategy="prefer_explicit", verbose=False):
                         kwargs.pop(key, None)
                 elif strategy == "prefer_kwargs":
                     for key in overlap:
-                        bound_kwargs[key] = kwargs.pop(key)
+                        bound_args[key] = kwargs.pop(key)
 
-            return func(**bound_kwargs, **kwargs)
+            return func(**bound_args, **kwargs)
         return wrapper
     return decorator
 
@@ -115,3 +116,18 @@ def remove_overlapping_kwargs(kwargs_dict, protected_keys):
         A cleaned dictionary with protected_keys removed.
     """
     return {k: v for k, v in kwargs_dict.items() if k not in protected_keys}
+
+
+def normalize_series_inputs(keys=None):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            sig = inspect.signature(func)
+            bound = sig.bind_partial(*args, **kwargs)
+            bound.apply_defaults()
+            for name, value in list(bound.arguments.items()):
+                if (keys is None or name in keys) and isinstance(value, pd.Series):
+                    bound.arguments[name] = value.tolist()
+            return func(**bound.arguments)
+        return wrapper
+    return decorator

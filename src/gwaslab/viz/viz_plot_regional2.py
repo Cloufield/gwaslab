@@ -4,6 +4,7 @@ import matplotlib.ticker as ticker
 import matplotlib.patches as patches
 from matplotlib.colors import ListedColormap
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import to_hex
 import matplotlib.colors
 from matplotlib.colors import Normalize
 from matplotlib.patches import Rectangle
@@ -27,8 +28,9 @@ from gwaslab.g_Log import Log
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
-from gwaslab.bd.bd_common_data import get_gtf
+from gwaslab.io.io_gtf import get_gtf
 from gwaslab.viz.viz_aux_save_figure import safefig
+from gwaslab.viz.viz_aux_style_options import set_plot_style
 @safefig
 def _plot_regional(
     sumstats,
@@ -60,7 +62,7 @@ def _plot_regional(
     region_grid_line = {"linewidth": 2,"linestyle":"--"},
     region_lead_grid = True,
     region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"},
-    region_title_args = None,
+    region_title_kwargs = None,
     region_ld_threshold = [0.2,0.4,0.6,0.8],
     region_marker_shapes=None,
     cbar_fontsize=None,
@@ -84,7 +86,6 @@ def _plot_regional(
 ):
     """
     Create an Region plot. By default lead variant will be selected as reference variant for LD coloring.
-    
     Parameters
     ----------
     vcf_path : str, optional, default=None
@@ -99,7 +100,7 @@ def _plot_regional(
 
     scaled : bool, optional, default=False
         Whether P-values are already scaled.
-    scatter_args : dict, optional
+    scatter_kwargs : dict, optional
         Arguments for scatter plot styling. Default is None.
     scatterargs : dict, optional
         Alternative name for scatter plot styling. Default is None.
@@ -108,7 +109,7 @@ def _plot_regional(
         Region can be determined using `get_region_start_and_end`.
     region_title : str, optional
         Title for regional plot. Default is None.
-    region_title_args : dict, optional
+    region_title_kwargs : dict, optional
         Arguments for regional plot title styling. Default is None.
     region_ref : str or list, optional
         Reference variant(s) for regional plot. If not provided, the lead variant
@@ -141,7 +142,7 @@ def _plot_regional(
         Whether to plot recombination rate in regional plot.
     region_flank_factor : float, optional,default=0.05
         Flanking factor for regional plot.
-    region_anno_bbox_args : dict, optional,default={"ec":"None","fc":"None"}
+    region_anno_bbox_kwargs : dict, optional,default={"ec":"None","fc":"None"}
         Bounding box arguments for regional plot annotations.
     region_marker_shapes : list, optional,default=['o', '^','s','D','*','P','X','h','8']
         Shapes for markers in regional plot. First one, the shape for non-reference variants, the second one is for the first reference variants and so on.
@@ -191,9 +192,9 @@ def _plot_regional(
         Alias mapping for annotations. Default is None.
     anno_d : dict, optional
         Additional annotation data. Default is None.
-    anno_args : dict, optional
+    anno_kwargs : dict, optional
         Arguments for annotation styling. Default is None.
-    anno_args_single : dict, optional
+    anno_kwargs_single : dict, optional
         Arguments for single annotation styling. Default is None.
     anno_style : str, optional,default='right'
         Annotation style.
@@ -289,7 +290,7 @@ def _plot_regional(
         Font size for annotations.
     figargs : dict, optional
         Figure arguments for subplots. Default is None.
-    fig_args : dict, optional
+    fig_kwargs : dict, optional
         Alternative name for figure arguments. Default is None.
     colors : list,optional, default=['#597FBD','#74BAD3']
         Color palette for plot.
@@ -305,7 +306,7 @@ def _plot_regional(
         Dots per inch for figure resolution.
     save : str, optional
         File path to save plot. Default is None.
-    save_args : dict, optional,default={"dpi":600,"transparent":True}
+    save_kwargs : dict, optional,default={"dpi":600,"transparent":True}
         Arguments for saving the plot.
     saveargs : dict, optional
         Alternative name for save arguments. Default is None.
@@ -376,7 +377,19 @@ def _plot_regional(
     tabix : str, optional
         Path to tabix executable. Default is None.
     """
-
+    style = set_plot_style(
+        plot="plot_region",
+        mode="r",
+        fontfamily=track_font_family,
+        verbose=verbose,
+        log=log,
+    )
+    base_region_title = style.get("region_title_kwargs", {})
+    explicit_region_title = region_title_kwargs if region_title_kwargs is not None else region_title_kwargs
+    region_title_kwargs = dict(base_region_title)
+    if explicit_region_title is not None:
+        region_title_kwargs.update(explicit_region_title)
+    region_title_kwargs = region_title_kwargs
 
     if (region is not None) :
         # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
@@ -444,7 +457,7 @@ def _plot_regional(
             cbar=None
 
         if region_title is not None:
-                ax1 = _add_region_title(region_title, ax1=ax1,region_title_args=region_title_args )
+                ax1 = _add_region_title(region_title, ax1=ax1,region_title_kwargs=region_title_kwargs )
     
     ## recombinnation rate ##################################################       
     if (region is not None) and (region_recombination is True):
@@ -554,6 +567,59 @@ def _plot_regional(
                     lim =1000)     
     
     return ax1, ax3, ax4, cbar, lead_snp_is, lead_snp_is_colors
+
+def regional_mode_setup(
+    sumstats,
+    region_ref,
+    region_ld_colors,
+    region_marker_shapes,
+    region_ld_colors_m,
+    region_ld_threshold,
+    chrom,
+    pos,
+    vcf_path,
+    ld_path,
+    log=Log(),
+    verbose=True,
+):
+    legend = None
+    linewidth = 1
+    style = None
+    edgecolor = "black"
+    to_plot = None
+    if vcf_path is None and ld_path is None:
+        sumstats["LD"] = 100
+        sumstats["SHAPE"] = 1
+    sumstats["chr_hue"] = sumstats["LD"]
+    if len(region_ref) == 1:
+        palette = {100 + i: region_ld_colors[i] for i in range(len(region_ld_colors))}
+        markers = {(i + 1): m for i, m in enumerate(region_marker_shapes[:2])}
+        if region_ref[0] is None:
+            id_to_hide = sumstats["scaled_P"].idxmax()
+            to_plot = sumstats.drop(id_to_hide, axis=0)
+        else:
+            id_to_hide = _get_lead_id(sumstats, region_ref, log=log, verbose=verbose)
+            if id_to_hide is not None:
+                to_plot = sumstats.drop(id_to_hide, axis=0)
+        style = "SHAPE"
+    else:
+        palette = {}
+        region_color_maps = []
+        for colorgroup in region_ld_colors_m:
+            color_map_len = len(region_ld_threshold) + 2
+            rgba = LinearSegmentedColormap.from_list("custom", ["white", colorgroup], color_map_len)(range(1, color_map_len))
+            output_hex_colors = []
+            for i in range(len(rgba)):
+                output_hex_colors.append(to_hex(rgba[i]))
+                region_ld_colors_single = [region_ld_colors[0]] + output_hex_colors + [output_hex_colors[-1]]
+            region_color_maps.append(region_ld_colors_single)
+        for i, hex_colors in enumerate(region_color_maps):
+            for j, hex_color in enumerate(hex_colors):
+                palette[(i + 1) * 100 + j] = hex_color
+        edgecolor = "none"
+        markers = {(i + 1): m for i, m in enumerate(region_marker_shapes[: len(region_ref)])}
+        style = "SHAPE"
+    return legend, linewidth, palette, style, markers, to_plot, edgecolor
 
 # + ###########################################################################################################################################################################
 def _get_lead_id(sumstats=None, region_ref=None, log=None, verbose=True):
@@ -675,10 +741,10 @@ def _pinpoint_lead(sumstats,ax1,region_ref, region_ref_total_n, lead_color, mark
 
     return ax1, lead_id
 # -############################################################################################################################################################################
-def _add_region_title(region_title, ax1,region_title_args):
+def _add_region_title(region_title, ax1,region_title_kwargs):
     explicit = {"region_title","transform","va","ha","fontsize"}
-    region_title_args = {k: v for k, v in region_title_args.items() if k not in explicit}
-    ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", **region_title_args )
+    region_title_kwargs = {k: v for k, v in region_title_kwargs.items() if k not in explicit}
+    ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", **region_title_kwargs )
     return ax1
 
 def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ref,region_ref_index_dic,region_marker_shapes,fig, region_legend_marker=True,
@@ -1151,6 +1217,50 @@ def process_vcf(sumstats,
     return sumstats
 
 # -############################################################################################################################################################################
+
+def prepare_vcf_context(vcf_path, vcf_chr_dict=None, log=Log(), verbose=True):
+    from shutil import which
+    from gwaslab.hm.hm_harmonize_sumstats import auto_check_vcf_chr_dict
+    tabix = which("tabix")
+    log.write(" -tabix will be used: {}".format(tabix), verbose=verbose)
+    vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log)
+    return vcf_chr_dict, tabix
+
+def process_ld(sumstats, 
+               ld_path, 
+               ld_map_path,
+               region,
+               region_ref, 
+               log, 
+               verbose, 
+               pos ,
+               nea,
+               ea, 
+               region_ld_threshold, 
+               ld_fmt = "npz",
+               ld_if_square =  False,
+               ld_if_add_T = False,
+               ld_map_rename_dic = None,
+               ld_map_kwargs = None):
+    from gwaslab.io.io_load_ld import process_ld as _io_process_ld
+    return _io_process_ld(
+        sumstats=sumstats,
+        ld_path=ld_path,
+        ld_map_path=ld_map_path,
+        region=region,
+        region_ref=region_ref,
+        log=log,
+        verbose=verbose,
+        pos=pos,
+        nea=nea,
+        ea=ea,
+        region_ld_threshold=region_ld_threshold,
+        ld_fmt=ld_fmt,
+        ld_if_square=ld_if_square,
+        ld_if_add_T=ld_if_add_T,
+        ld_map_rename_dic=ld_map_rename_dic,
+        ld_map_kwargs=ld_map_kwargs,
+    )
 
 def process_gtf(gtf_path,
                 region,

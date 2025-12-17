@@ -34,6 +34,7 @@ from gwaslab.util.util_in_filter_value import filtervalues
 from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq
 from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
 from gwaslab.viz.viz_plot_compare_af import  plotdaf
+from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
 from gwaslab.io.io_to_pickle import _offload
 from gwaslab.io.io_to_pickle import _reload
@@ -77,6 +78,8 @@ class SumstatsPair( ):
         self.other_cols =[]
         self.other_cols2 =[]
         self.log = Log()
+        self.viz_params = VizParamsManager()
+        load_viz_config(self.viz_params)
         self.suffixes = suffixes
         self.colocalization=pd.DataFrame()
         
@@ -253,29 +256,48 @@ class SumstatsPair( ):
             self.data = filtervalues(self.data, expr,log=self.log,**kwargs)
         gc.collect()
 
-    def stacked_mqq(self, **kwargs):
-        
-        objects=[self.data[["SNPID","CHR","POS","EA","NEA","P_1"]].rename(columns={"P_1":"P"}), 
-                 self.data[["SNPID","CHR","POS","EA","NEA","P_2"]].rename(columns={"P_2":"P"}), 
-                 self.mesusie_res]
+    def _apply_viz_params(self, func, kwargs, key=None, mode=None):
+        params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
+        return self.viz_params.filter(func, params, key=key or func.__name__, mode=mode, log=self.log, verbose=kwargs.get("verbose", True))
 
-        plot_stacked_mqq(objects=objects, 
-                         **kwargs)
+    def stacked_mqq(self, **kwargs):
+        df1 = self.data[["SNPID","CHR","POS","EA","NEA","P_1"]].rename(columns={"P_1":"P"})
+        df2 = self.data[["SNPID","CHR","POS","EA","NEA","P_2"]].rename(columns={"P_2":"P"})
+        objects = [df1, df2]
+        if isinstance(self.mesusie_res, pd.DataFrame) and "PIP" in self.mesusie_res.columns:
+            objects.append(self.mesusie_res)
+
+        if "vcfs" not in kwargs or kwargs.get("vcfs") is None:
+            kwargs["vcfs"] = [None]
+        if "region_ld_threshold" not in kwargs or kwargs.get("region_ld_threshold") is None:
+            kwargs["region_ld_threshold"] = [0.2,0.4,0.6,0.8]
+        if "region_ld_colors" not in kwargs or kwargs.get("region_ld_colors") is None:
+            kwargs["region_ld_colors"] = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]
+        if "region_marker_shapes" not in kwargs or kwargs.get("region_marker_shapes") is None:
+            kwargs["region_marker_shapes"] = ['o','^','s','D','*','P','X','h','8']
+        if "titles" not in kwargs:
+            kwargs["titles"] = self.study_names
+
+        params = self._apply_viz_params(plot_stacked_mqq, kwargs, key="plot_stacked_mqq")
+        plot_stacked_mqq(objects=objects, **params)
 
     ## Visualization #############################################################################################################################################
     def plot_miami(self,**kwargs):
+        params = self._apply_viz_params(plot_miami2, kwargs, key="plot_miami2")
         plot_miami2(merged_sumstats=self.data, 
                     suffixes=self.suffixes,
-                    **kwargs)
+                    cols1=["CHR","POS","P_1"],
+                    cols2=["CHR","POS","P_2"],
+                    **params)
     
     def compare_af(self, **kwargs):
-        
+        params = self._apply_viz_params(plotdaf, kwargs, key="plot_compare_af")
         return plotdaf( self.data,
                      eaf="EAF_2",
                      raf="EAF_1",
                      xlabel="Effect Allele Frequency in Sumstats 1",
                      ylabel="Effect Allele Frequency in Sumstats 2",
-                     **kwargs)
+                     **params)
 
     def offload(self):
         _offload(self.data, self.tmp_path, self.log)

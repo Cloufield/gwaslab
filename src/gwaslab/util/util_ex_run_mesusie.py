@@ -4,19 +4,19 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
-from gwaslab.g_version import _checking_r_version
-from gwaslab.g_version import _check_susie_version
-from gwaslab.viz.viz_plot_stackedregional import _sort_args
+from gwaslab.extension import _checking_r_version
+from gwaslab.extension import _check_susie_version
+from gwaslab.viz.viz_plot_stackedregional import _sort_kwargs
 
 def _run_mesusie(filepath, 
                  r="Rscript",
                  types=None, ns=None, 
                  fillldna=True, delete=False, 
-                 coloc_args="", 
-                 susie_args="", 
+                 coloc_kwargs="", 
+                 susie_kwargs="", 
                  ncols=None,
-                 d1_args="",
-                 d2_args="",
+                 d1_kwargs="",
+                 d2_kwargs="",
                  log=Log(), 
                  verbose=True):
     

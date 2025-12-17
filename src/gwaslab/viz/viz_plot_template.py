@@ -1,9 +1,10 @@
-import seaborn as sns
 import matplotlib.pyplot as plt
-from gwaslab.io.io_process_args import _update_args
-from gwaslab.io.io_process_args import _update_arg
+import seaborn as sns
 from gwaslab.g_Log import Log
+from gwaslab.io.io_process_kwargs import _update_arg
+from gwaslab.io.io_process_kwargs import _update_kwargs
 from gwaslab.viz.viz_aux_save_figure import save_figure
+from gwaslab.viz.viz_aux_style_options import set_plot_style
 
 def _plot( associations, 
             values="Beta",
@@ -18,17 +19,22 @@ def _plot( associations,
             ylim=None,
             yticks=None,
             xticks=None,
+            ytick_labels=None,
+            xtick_labels=None,
             title="Title",
             title_pad=1.08, 
             title_fontsize=13,
+            title_kwargs=None,
             linewidth=None,
             linestyle=None,
             linecolor=None,
             dpi=200,
-            fig_args= None,
-            scatter_args=None,
+            anno_kwargs=None,
+            err_kwargs=None,
+            fig_kwargs= None,
+            scatter_kwargs=None,
             save=None,
-            save_args=None,
+            save_kwargs=None,
             log=Log(),
             verbose=True,
             **args               
@@ -38,18 +44,24 @@ def _plot( associations,
     
     cmap = _update_arg(cmap, "RdBu")
 
-    fig_args = _update_args(fig_args, dict(figsize=(10,10)))
-
-    # create fig and ax    
-    fig,ax = plt.subplots(**fig_args)
+    style = set_plot_style(
+        plot="plot_template",
+        fig_kwargs=fig_kwargs or {"figsize":(10,10)},
+        save_kwargs=save_kwargs,
+        fontsize=fontsize,
+        fontfamily=font_family,
+        verbose=verbose,
+        log=log,
+    )
+    fig,ax = plt.subplots(**(style.get("fig_kwargs", {})))
 
     # draw lines
-    horizontal_line = ax.axhline(y=1, linewidth = linewidth,
-                            linestyle="--",
-                            color=linecolor,zorder=1000)
-    vertical_line   = ax.axvline(x=1, linewidth = linewidth,
-                            linestyle="--",
-                            color=linecolor,zorder=1000)
+    #horizontal_line = ax.axhline(y=1, linewidth = linewidth,
+    #                        linestyle="--",
+    #                        color=linecolor,zorder=1000)
+    #vertical_line   = ax.axvline(x=1, linewidth = linewidth,
+    #                        linestyle="--",
+    #                        color=linecolor,zorder=1000)
 
     # ticks
     if xticks is not None:
@@ -92,7 +104,8 @@ def _plot( associations,
     ax.spines["left"].set_visible(True)
     ax.spines["bottom"].set_visible(True)
 
-    save_figure(fig = fig, save = save, keyword=mode, save_args=save_args, log = log, verbose=verbose)
+    save_kwargs = style.get("save_kwargs", style.get("save_kwargs", {}))
+    save_figure(fig = fig, save = save, keyword=mode, save_kwargs=save_kwargs, log = log, verbose=verbose)
 
     log.write("Finished creating plots.", verbose=verbose)
     return fig, ax

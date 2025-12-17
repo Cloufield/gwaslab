@@ -8,7 +8,7 @@ import gc
 #from gwaslab.qc_fix_sumstats import sortcolumn
 from gwaslab.g_version import _get_version
 from gwaslab.qc.qc_check_datatype import check_datatype
-
+from scipy.special import erfcinv
 
 def filldata( 
     insumstats,
@@ -192,7 +192,8 @@ def fill_se(sumstats,log,verbose=True,filled_count=0):
     # OR / OR_95L /OR_95U -> SE
     if ("P" in sumstats.columns) and ("BETA" in sumstats.columns):
         log.write("  - Filling SE value using BETA and P column...", verbose=verbose)
-        sumstats["SE"]= np.abs(sumstats["BETA"]/ ss.norm.ppf(1-sumstats["P"]/2))
+        abs_z = np.sqrt(2) * erfcinv(sumstats["P"])
+        sumstats["SE"] = np.abs(sumstats["BETA"] / abs_z)
         filled_count +=1
     elif ("OR" in sumstats.columns) and ("OR_95U" in sumstats.columns): 
         log.write("  - Filling SE value using OR/OR_95U column...", verbose=verbose)
@@ -242,21 +243,11 @@ def fill_extreme_mlog10p(sumstats,df,log,verbose=True,filled_count=0):
 
 def fill_maf(sumstats,log,verbose=True,filled_count=0):
     if "EAF" in sumstats.columns:
+        # EAF -> MAF
         log.write("  - Filling MAF using EAF column...", verbose=verbose)
-        non_null_eaf = int(sumstats["EAF"].notna().sum())
-        valid_eaf = int(((sumstats["EAF"] >= 0) & (sumstats["EAF"] <= 1)).sum())
-        invalid_eaf = non_null_eaf - valid_eaf
-        log.write("    - EAF non-null: ", non_null_eaf, verbose=verbose)
-        log.write("    - Invalid EAF (outside [0,1]): ", invalid_eaf, verbose=verbose)
-        sumstats["MAF"] = sumstats["EAF"].apply(lambda x: min(x, 1 - x) if pd.notnull(x) else np.nan)
-        maf_non_null = int(sumstats["MAF"].notna().sum())
-        min_maf = sumstats["MAF"].min()
-        max_maf = sumstats["MAF"].max()
-        log.write("    - MAF filled non-null: ", maf_non_null, verbose=verbose)
-        log.write("    - MAF range: [{}, {}]".format(min_maf, max_maf), verbose=verbose)
+        sumstats["MAF"] =  sumstats["EAF"].apply(lambda x: min(x,1-x) if pd.notnull(x) else np.nan)
         filled_count +=1
     else:
-        log.write("  - EAF column not available. Skipping MAF fill.", verbose=verbose)
         return 0,filled_count
     return 1,filled_count
 

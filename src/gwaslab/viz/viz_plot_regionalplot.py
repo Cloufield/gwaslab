@@ -21,7 +21,7 @@ from gwaslab.g_Log import Log
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
-from gwaslab.bd.bd_common_data import get_gtf
+from gwaslab.io.io_gtf import get_gtf
 
 def _plot_regional(
     sumstats,
@@ -56,7 +56,7 @@ def _plot_regional(
     region_grid_line = {"linewidth": 2,"linestyle":"--"},
     region_lead_grid = True,
     region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"},
-    region_title_args = None,
+    region_title_kwargs = None,
     region_hspace=0.02,
     region_ld_threshold = [0.2,0.4,0.6,0.8],
     region_ld_colors = ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"],
@@ -126,7 +126,7 @@ def _plot_regional(
         else:
             cbar=None
         if region_title is not None:
-                ax1 = _add_region_title(region_title, ax1=ax1,region_title_args=region_title_args )
+                ax1 = _add_region_title(region_title, ax1=ax1,region_title_kwargs=region_title_kwargs )
     ## recombinnation rate ##################################################       
     if (region is not None) and (region_recombination is True):
         ax4 = _plot_recombination_rate(sumstats = sumstats,
@@ -288,8 +288,8 @@ def _pinpoint_lead(sumstats,ax1,region_ref, region_ld_threshold, region_ld_color
 
     return ax1, lead_id
 # -############################################################################################################################################################################
-def _add_region_title(region_title, ax1,region_title_args):
-    ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", **region_title_args )
+def _add_region_title(region_title, ax1,region_title_kwargs):
+    ax1.text(0.015,0.97, region_title, transform=ax1.transAxes, va="top", ha="left", **region_title_kwargs )
     return ax1
 
 def _add_ld_legend(sumstats, ax1, region_ld_threshold, region_ld_colors,position=1):

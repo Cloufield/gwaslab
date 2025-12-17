@@ -1,49 +1,47 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import matplotlib.patches as patches
-import seaborn as sns
+import gc as garbage_collect
 import numpy as np
+import pandas as pd
 import scipy as sp
-import gwaslab as gl
-from pyensembl import EnsemblRelease
+import seaborn as sns
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.ticker as ticker
+from adjustText import adjust_text
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from allel import GenotypeArray
 from allel import read_vcf
 from allel import rogers_huff_r_between
-import matplotlib as mpl
-from scipy import stats
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import gc as garbage_collect
-from adjustText import adjust_text
+from pyensembl import EnsemblRelease
 
-from gwaslab.g_Log import Log
-from gwaslab.g_Sumstats import Sumstats
-from gwaslab.util.util_in_get_sig import getsig
-from gwaslab.util.util_in_get_sig import annogene
-
+import gwaslab as gl
 from gwaslab.bd.bd_common_data import get_chr_to_number
+from gwaslab.io.io_gtf import get_gtf
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
-from gwaslab.bd.bd_common_data import get_gtf
-
-from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
-from gwaslab.viz.viz_aux_chromatin import _plot_chromatin_state
-from gwaslab.viz.viz_aux_quickfix import _quick_fix
-from gwaslab.viz.viz_aux_quickfix import _get_largenumber
-from gwaslab.viz.viz_aux_quickfix import _quick_add_tchrpos
-from gwaslab.viz.viz_aux_quickfix import _quick_merge_sumstats
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_i
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank
-from gwaslab.viz.viz_aux_quickfix import _quick_extract_snp_in_region
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_highlight_hue_pair
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_marker_relative_size
-from gwaslab.viz.viz_aux_annotate_plot import annotate_pair
-from gwaslab.viz.viz_aux_save_figure import save_figure
-from gwaslab.viz.viz_plot_mqqplot import mqqplot
-from gwaslab.viz.viz_plot_credible_sets import _plot_cs
-
-from gwaslab.io.io_to_pickle import load_pickle
+from gwaslab.g_Log import Log
+from gwaslab.g_Sumstats import Sumstats
 from gwaslab.io.io_to_pickle import load_data_from_pickle
+from gwaslab.io.io_to_pickle import load_pickle
+from gwaslab.util.util_in_get_sig import annogene
+from gwaslab.util.util_in_get_sig import getsig
+from gwaslab.viz.viz_aux_annotate_plot import annotate_pair
+from gwaslab.viz.viz_aux_chromatin import _plot_chromatin_state
+from gwaslab.viz.viz_aux_quickfix import (
+    _get_largenumber,
+    _quick_add_tchrpos,
+    _quick_assign_highlight_hue_pair,
+    _quick_assign_i,
+    _quick_assign_i_with_rank,
+    _quick_assign_marker_relative_size,
+    _quick_extract_snp_in_region,
+    _quick_fix,
+)
+from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
+from gwaslab.viz.viz_aux_save_figure import save_figure
+from gwaslab.viz.viz_aux_style_options import set_plot_style
+from gwaslab.viz.viz_plot_credible_sets import _plot_cs
+from gwaslab.viz.viz_plot_mqqplot import mqqplot
 
 
 def plot_stacked_mqq(   objects,
@@ -56,13 +54,13 @@ def plot_stacked_mqq(   objects,
                         region_chromatin_labels= None,
                         titles= None,
                         title_pos=None,
-                        title_args=None,
+                        title_kwargs=None,
                         #title_box = None,
                         gtf=None,
                         mqq_height=1,
                         cs_height=0.5,
                         gene_track_height=0.5,
-                        fig_args=None,
+                        fig_kwargs=None,
                         region_hspace=0.07,
                         subplot_height=4,
                         region_lead_grids = None,
@@ -73,11 +71,11 @@ def plot_stacked_mqq(   objects,
                         common_ylabel=True,
                         build="99", 
                         save=None,
-                        save_args=None,
+                        save_kwargs=None,
                         verbose=True,
                         pm=None,
                         log=Log(),
-                        **mqq_args
+                        **mqq_kwargs
                         ):
     
     log.write("Start to create stacked mqq plot by iteratively calling plot_mqq:",verbose=verbose)
@@ -111,10 +109,32 @@ def plot_stacked_mqq(   objects,
     else:
         rr_ylabel=True
     
-    if fig_args is None:
-        fig_args = {"dpi":200}
-    if save_args is None:
-        save_args = {"dpi":400,"facecolor":"white"}
+    style = set_plot_style(
+        plot="plot_stacked",
+        fig_kwargs=fig_kwargs if fig_kwargs is not None else fig_kwargs,
+        save_kwargs=save_kwargs if save_kwargs is not None else save_kwargs,
+        save=save,
+        fontsize=fontsize,
+        fontfamily=font_family,
+        verbose=verbose,
+        log=log,
+    )
+    fig_kwargs = style.get("fig_kwargs", style.get("fig_kwargs", {}))
+    save_kwargs = style.get("save_kwargs", style.get("save_kwargs", {}))
+    fontsize = style["fontsize"]
+    font_family = style["font_family"]
+    # title kwargs: merge priority -> explicit param -> mqq_kwargs -> style defaults
+    base_title = style.get("title_kwargs", style.get("title_kwargs", {}))
+    explicit_title_kwargs = title_kwargs
+    title_kwargs = dict(base_title)
+    if title_kwargs is not None:
+        title_kwargs.update(title_kwargs)
+    if explicit_title_kwargs is not None:
+        title_kwargs.update(explicit_title_kwargs)
+    extra = mqq_kwargs.get("title_kwargs") or mqq_kwargs.get("title_kwargs")
+    if extra is not None:
+        title_kwargs.update(extra)
+    title_pos = mqq_kwargs.get("title_pos") or style.get("title_pos", None)
     if region_lead_grid_line is None:
         region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
     if region_chromatin_files is None:
@@ -124,31 +144,16 @@ def plot_stacked_mqq(   objects,
         region_chromatin_labels = []
     if region_ld_legends is None:
         region_ld_legends = [0]
-    if title_args is None:
-        title_args = {"family":font_family}
+    if not title_kwargs:
+        title_kwargs = {"family": font_family}
     else:
-        if "family" not in title_args.keys():
-            title_args["family"] = font_family
+        if "family" not in title_kwargs.keys():
+            title_kwargs["family"] = font_family
 
-    if save is not None:
-        if type(save) is not bool:
-            if len(save)>3:
-                if save[-3:]=="pdf" or save[-3:]=="svg":
-                    log.write(" -Adjusting options for saving as pdf/svg...",verbose=verbose)
-                    fig_args["dpi"]=72
-                    
-                    if "scatter_args" not in  mqq_args.keys():
-                        mqq_args["scatter_args"]={"rasterized":True}
-                    else:
-                        mqq_args["scatter_args"]["rasterized"] = True
-
-                    if mode=="r":
-                        if "scatter_args" not in  mqq_args.keys():
-                            mqq_args["scatter_args"]={"rasterized":False}
-                        else:
-                            mqq_args["scatter_args"]["rasterized"] = False
-                else:
-                    fig_args["dpi"] = save_args["dpi"]
+    from gwaslab.viz.viz_aux_style_options import figure_kwargs_for_vector_plot
+    fig_kwargs, mqq_kwargs_scatter = figure_kwargs_for_vector_plot(save, fig_kwargs, mqq_kwargs.get("scatter_kwargs"))
+    if mqq_kwargs_scatter is not None:
+        mqq_kwargs["scatter_kwargs"] = mqq_kwargs_scatter
     # create figure and axes ##################################################################################################################
     #
     # subplot_height : subplot height
@@ -186,37 +191,37 @@ def plot_stacked_mqq(   objects,
             #height_ratios = [1 for i in range(n_plot_plus_gene_track-1)]+[gene_track_height]
             height_ratios += [gene_track_height]
         
-        if "figsize" not in fig_args.keys():
-            fig_args["figsize"] = [16,subplot_height*n_plot_plus_gene_track]
+        if "figsize" not in fig_kwargs.keys():
+            fig_kwargs["figsize"] = [16,subplot_height*n_plot_plus_gene_track]
 
         fig, axes = plt.subplots(n_plot_plus_gene_track, 1, sharex=True, 
                              gridspec_kw={'height_ratios': height_ratios},
-                             **fig_args)
+                             **fig_kwargs)
         
         plt.subplots_adjust(hspace=region_hspace)
     elif mode=="m":
         n_plot = len(sumstats_list)
-        if "figsize" not in fig_args.keys():
-            fig_args["figsize"] = [10,subplot_height*n_plot]
+        if "figsize" not in fig_kwargs.keys():
+            fig_kwargs["figsize"] = [10,subplot_height*n_plot]
         fig, axes = plt.subplots(n_plot, 1, sharex=True, 
                              gridspec_kw={'height_ratios': [1 for i in range(n_plot)]},
-                             **fig_args)
+                             **fig_kwargs)
         plt.subplots_adjust(hspace=region_hspace)
         vcfs = [None for i in range(n_plot)]
     elif mode=="mqq":
         n_plot = len(objects)
-        if "figsize" not in fig_args.keys():
-            fig_args["figsize"] = [10,subplot_height*n_plot]
+        if "figsize" not in fig_kwargs.keys():
+            fig_kwargs["figsize"] = [10,subplot_height*n_plot]
         fig, axes = plt.subplots(n_plot, 2, sharex=True, 
                              gridspec_kw={'height_ratios': [1 for i in range(n_plot)],
                                           'width_ratios':[mqqratio,1]},
-                                          **fig_args)
+                                          **fig_kwargs)
         plt.subplots_adjust(hspace=region_hspace)
         vcfs = [None for i in range(n_plot)]
     if region_lead_grids is None:
         region_lead_grids = [i for i in range(len(axes))]
     ##########################################################################################################################################
-    mqq_args_for_each_plot = _sort_args(mqq_args, n_plot)
+    mqq_kwargs_for_each_plot = _sort_kwargs(mqq_kwargs, n_plot)
 
     ##########################################################################################################################################
     # get x axis dict
@@ -268,7 +273,7 @@ def plot_stacked_mqq(   objects,
                             build=build,
                             verbose=verbose,
                             log=log,
-                            **mqq_args_for_each_plot[index]
+                            **mqq_kwargs_for_each_plot[index]
                             )  
             lead_variants_is[index] = lead_snp_is
             lead_variants_is_color[index] = lead_snp_is_color
@@ -297,7 +302,7 @@ def plot_stacked_mqq(   objects,
                                 build=build,
                                 verbose=verbose,
                                 log=log,
-                                **mqq_args_for_each_plot[index]
+                                **mqq_kwargs_for_each_plot[index]
                                 )
                 lead_variants_is[index] = lead_snp_is
                 lead_variants_is_color[index] = lead_snp_is_color
@@ -308,7 +313,7 @@ def plot_stacked_mqq(   objects,
                                   figax=figax,
                                   log=log,
                                   verbose=verbose,
-                                  **mqq_args_for_each_plot[index])
+                                  **mqq_kwargs_for_each_plot[index])
     if len(region_chromatin_files)>0 and mode=="r":
         xlim_i = axes[-1].get_xlim()
         fig = _plot_chromatin_state(     region_chromatin_files = region_chromatin_files, 
@@ -328,14 +333,14 @@ def plot_stacked_mqq(   objects,
     #    title_box = dict(boxstyle='square', facecolor='white', alpha=1.0, edgecolor="black")
     #    title_box = {}
 
-    #if title_args is None:
-    #    title_args = {}   
+    #if title_kwargs is None:
+    #    title_kwargs = {}   
     #if titles is not None and mode=="r":    
     #    if title_pos is None:
     #        title_pos = [0.01,0.99]
     #    for index,title in enumerate(titles):
     #        
-    #        current_text = axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_args)
+    #        current_text = axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_kwargs)
     #        r = fig.canvas.get_renderer()
     #        bb = current_text.get_window_extent(renderer=r).transformed(axes[index].transAxes.inverted())
     #        width = bb.width
@@ -360,8 +365,17 @@ def plot_stacked_mqq(   objects,
         axes = [axes[i,0] for i in range(len(objects))]
 
     if titles is not None:
-        for index,title in enumerate(titles):
-            axes[index].text(title_pos[0], title_pos[1] , title, transform=axes[index].transAxes,ha="left", va='top',zorder=999999, **title_args)
+        for index, title in enumerate(titles):
+            axes[index].text(
+                title_pos[0],
+                title_pos[1],
+                title,
+                transform=axes[index].transAxes,
+                ha="left",
+                va='top',
+                zorder=999999,
+                **(title_kwargs or {"family": font_family, "fontsize": fontsize})
+            )
     
     ##########################################################################################################################################
     # draw the line for lead variants
@@ -374,7 +388,7 @@ def plot_stacked_mqq(   objects,
         _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsize,font_family)
     
     ##########################################################################################################################################
-    save_figure(fig = fig, save = save, keyword= "stacked_" + mode, save_args=save_args, log = log, verbose=verbose)
+    save_figure(fig = fig, save = save, keyword= "stacked_" + mode, save_kwargs=save_kwargs, log = log, verbose=verbose)
     
     log.write("Finished creating stacked mqq plot by iteratively calling plot_mqq.",verbose=verbose)
     
@@ -417,17 +431,17 @@ def _add_new_y_label(mode, fig, gene_track_height,n_plot,subplot_height ,fontsiz
                  fontsize=fontsize,
                  family=font_family)    
 
-def _sort_args(mqq_args, n_plot):
-    mqq_args_for_each_plot={i:{} for i in range(n_plot)}
+def _sort_kwargs(mqq_kwargs, n_plot):
+    mqq_kwargs_for_each_plot={i:{} for i in range(n_plot)}
     
-    for key, value in mqq_args.items():
+    for key, value in mqq_kwargs.items():
         if key[-1].isnumeric():
-            mqq_args_for_each_plot[int(key[-1])-1][key[:-1]]=value
+            mqq_kwargs_for_each_plot[int(key[-1])-1][key[:-1]]=value
         else:
             # for both top and bottom
             for i in range(n_plot):
-                mqq_args_for_each_plot[i][key] = value
-    return mqq_args_for_each_plot
+                mqq_kwargs_for_each_plot[i][key] = value
+    return mqq_kwargs_for_each_plot
 
 def _get_chrom_dic(sumstats_list,chrom="CHR",pos="POS",chrpad=0.02):
     posdiccul = {}

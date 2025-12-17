@@ -16,7 +16,7 @@ def with_logging(start_to_msg,
                  finished_msg,
                  start_function=None,
                  start_cols = None,
-                 must_args=None,
+                 must_kwargs=None,
                  show_shape=True,
                  check_dtype=False,
                  fix=False
@@ -35,7 +35,7 @@ def with_logging(start_to_msg,
         Function label used in logs when reporting missing columns or args.
     start_cols : list or None, default None
         Required columns to check in the input DataFrame prior to execution.
-    must_args : list or None, default None
+    must_kwargs : list or None, default None
         Argument names that must be provided (non-None) for the wrapped func.
     show_shape : bool, default True
         Log DataFrame shape before and after the function call when available.
@@ -55,8 +55,8 @@ def with_logging(start_to_msg,
         check_dtype=True
     if start_cols is None:
         start_cols = []
-    if must_args is None:
-        must_args = []
+    if must_kwargs is None:
+        must_kwargs = []
     if start_function is None:
         start_function = "this step"
 
@@ -65,23 +65,23 @@ def with_logging(start_to_msg,
         def wrapper(*args, **kwargs):
             import inspect
             sig = inspect.signature(func)
-            bound_args = sig.bind(*args, **kwargs)
-            bound_args.apply_defaults()
-            log = bound_args.arguments.get('log', Log())
-            verbose = bound_args.arguments.get('verbose', True)
+            bound_kwargs = sig.bind(*args, **kwargs)
+            bound_kwargs.apply_defaults()
+            log = bound_kwargs.arguments.get('log', Log())
+            verbose = bound_kwargs.arguments.get('verbose', True)
             
             #############################################################################################
 
-            insumstats = bound_args.arguments.get('insumstats', None)
+            insumstats = bound_kwargs.arguments.get('insumstats', None)
             if insumstats is None:
-                sumstats = bound_args.arguments.get('sumstats', None)
+                sumstats = bound_kwargs.arguments.get('sumstats', None)
             else:
                 sumstats = insumstats
             #############################################################################################
-            n_cores = bound_args.arguments.get('n_cores', None)
-            ref_vcf = bound_args.arguments.get('ref_vcf', None)
-            ref_fasta = bound_args.arguments.get('ref_fasta', None)
-            ref_tsv = bound_args.arguments.get('ref_tsv',None)
+            n_cores = bound_kwargs.arguments.get('n_cores', None)
+            ref_vcf = bound_kwargs.arguments.get('ref_vcf', None)
+            ref_fasta = bound_kwargs.arguments.get('ref_fasta', None)
+            ref_tsv = bound_kwargs.arguments.get('ref_tsv',None)
             if n_cores is not None:
                 log.write(" -Number of threads/cores to use: {}".format(n_cores))
             if ref_vcf is not None:
@@ -96,12 +96,12 @@ def with_logging(start_to_msg,
             
             # must_arg can not be None
             #############################################################################################
-            is_args_valid = True
-            for key in must_args:
-                value = bound_args.arguments.get(key,None)
-                is_args_valid = is_args_valid & check_arg(log, verbose, key, value, start_function)
-            if is_args_valid==False:
-                raise ValueError("{} must be provided.".format(must_args))
+            is_kwargs_valid = True
+            for key in must_kwargs:
+                value = bound_kwargs.arguments.get(key,None)
+                is_kwargs_valid = is_kwargs_valid & check_arg(log, verbose, key, value, start_function)
+            if is_kwargs_valid==False:
+                raise ValueError("{} must be provided.".format(must_kwargs))
 
             #############################################################################################
             if sumstats is not None:
@@ -142,14 +142,6 @@ def with_logging(start_to_msg,
     return decorator
 
 
-def check_arg(log, verbose, key, value, start_function):
-    if value is None:
-        log.warning("{} requires non-None argument: {}".format(start_function, key), verbose=verbose)
-        return False
-    if isinstance(value, (str, bytes)) and str(value).strip() == "":
-        log.warning("{} requires non-empty argument: {}".format(start_function, key), verbose=verbose)
-        return False
-    return True
 ###############################################################################################################
 
 def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
@@ -198,4 +190,13 @@ def check_col(df_col_names, verbose=True, log=Log(), cols=None, function=None):
         log.warning("Necessary columns{}were not detected:{}".format(to_show_title, ",".join(not_in_df)))
         return False
     
+    return True
+
+def check_arg(log, verbose, key, value, start_function):
+    if value is None:
+        log.warning("{} requires non-None argument: {}".format(start_function, key), verbose=verbose)
+        return False
+    if isinstance(value, (str, bytes)) and str(value).strip() == "":
+        log.warning("{} requires non-empty argument: {}".format(start_function, key), verbose=verbose)
+        return False
     return True

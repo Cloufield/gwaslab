@@ -7,7 +7,7 @@ from gwaslab.g_Log import Log
 from gwaslab.util.util_in_get_sig import getsig
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.util.util_in_filter_value import _exclude_hla
-from gwaslab.g_version import _checking_plink_version
+from gwaslab.extension import _checking_plink_version
 
 from gwaslab.qc.qc_decorator import with_logging
 @with_logging(
@@ -29,7 +29,7 @@ def tofinemapping(gls,
                   n_cores=1, 
                   mode="r",
                   exclude_hla=False, 
-                  getlead_args=None, 
+                  getlead_kwargs=None, 
                   memory=None, 
                   overwrite=False,
                   log=Log(),
@@ -46,13 +46,13 @@ def tofinemapping(gls,
     ############################################################################################
     if suffixes is None:
         suffixes=[""]
-    if getlead_args is None:
-        getlead_args={"windowsizekb":1000}
+    if getlead_kwargs is None:
+        getlead_kwargs={"windowsizekb":1000}
     
     if loci_chrpos is None:
         if loci is None:
             log.write(" -Loci were not provided. All significant loci will be automatically extracted...",verbose=verbose)
-            sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
+            sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_kwargs)
         else:
             sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
     else:

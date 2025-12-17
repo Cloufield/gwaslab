@@ -2,6 +2,10 @@ import pandas as pd
 
 STATUS_CATEGORIES = [str(j+i) for j in [1300000,1800000,1900000,3800000,3900000,9700000,9800000,9900000] for i in range(0,100000)]
 
+def match_status(status, pattern, na=False):
+    pat = f"^{pattern}$"
+    return status.str.match(pat, na=na)
+
 def vchange_status(status,digit,before,after):
     dic = dict(zip(str(before), str(after)))
     left = status.str.slice(0, digit-1)
@@ -9,16 +13,6 @@ def vchange_status(status,digit,before,after):
     mid = mid_orig.map(dic).fillna(mid_orig)
     right = status.str.slice(digit, None)
     return pd.Categorical(left + mid + right, categories=STATUS_CATEGORIES)
-
-def vchange_status_old(status,digit,before,after):
-    dic={}
-    for i in range(len(before)):
-        dic[str(before[i])] = str(after[i])
-    if digit>1:
-        return pd.Categorical(status.str[:digit-1] + status.str[digit-1].replace(dic) + status.str[digit:],categories=STATUS_CATEGORIES)
-    else:
-        return pd.Categorical(status.str[digit-1].replace(dic) + status.str[digit:],categories=STATUS_CATEGORIES)
-
 
 def copy_status(from_status,to_status, digit):
     if digit>1:

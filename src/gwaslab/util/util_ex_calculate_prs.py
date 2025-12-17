@@ -6,7 +6,7 @@ import numpy as np
 from gwaslab.g_Log import Log
 from gwaslab.util.util_in_get_sig import getsig
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
-from gwaslab.g_version import _checking_plink_version
+from gwaslab.extension import _checking_plink_version
 
 def _calculate_prs(sumstats, 
           bfile=None, 

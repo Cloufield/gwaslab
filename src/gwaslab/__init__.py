@@ -23,15 +23,14 @@ from gwaslab.io.io_to_pickle import dump_pickle
 from gwaslab.io.io_to_pickle import load_pickle
 from gwaslab.io.io_read_tabular import _read_tabular as read_tabular
 
-from gwaslab.viz.viz_plot_compare_effect import compare_effect
-from gwaslab.viz.viz_plot_forestplot import plot_forest
-from gwaslab.viz.viz_plot_miamiplot import plot_miami
-from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
-from gwaslab.viz.viz_plot_rg_heatmap import plot_rg
-from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq
-from gwaslab.viz.viz_plot_trumpetplot import plot_power
-from gwaslab.viz.viz_plot_trumpetplot import plot_power_x
-from gwaslab.viz.viz_plot_scatter_with_reg import scatter
+from gwaslab.viz.viz_plot_compare_effect import compare_effect as _compare_effect
+from gwaslab.viz.viz_plot_forestplot import plot_forest as _plot_forest
+from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2 as _plot_miami2
+from gwaslab.viz.viz_plot_rg_heatmap import plot_rg as _plot_rg
+from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq as _plot_stacked_mqq
+from gwaslab.viz.viz_plot_trumpetplot import plot_power as _plot_power
+from gwaslab.viz.viz_plot_trumpetplot import plot_power_x as _plot_power_x
+from gwaslab.viz.viz_plot_scatter_with_reg import scatter as _scatter
 
 from gwaslab.bd.bd_common_data import get_NC_to_chr
 from gwaslab.bd.bd_common_data import get_NC_to_number
@@ -59,8 +58,49 @@ from gwaslab.bd.bd_download import add_local_data
 from gwaslab.bd.bd_download import remove_local_record
 from gwaslab.bd.bd_config import options
 from gwaslab.qc.qc_reserved_headers import researved_header
+from gwaslab.g_Log import Log
+from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
 
+_viz_params = VizParamsManager()
+load_viz_config(_viz_params)
 
+def compare_effect(path1, path2, **kwargs):
+    params = _viz_params.merge("compare_effect", kwargs)
+    params = _viz_params.filter(_compare_effect, params, key="compare_effect", log=Log(), verbose=params.get("verbose", True))
+    return _compare_effect(path1, path2, **params)
 
+def plot_forest(data, **kwargs):
+    params = _viz_params.merge("plot_forest", kwargs)
+    params = _viz_params.filter(_plot_forest, params, key="plot_forest", log=Log(), verbose=params.get("verbose", True))
+    return _plot_forest(data, **params)
 
+def plot_miami2(path1=None, path2=None, merged_sumstats=None, **kwargs):
+    params = _viz_params.merge("plot_miami2", kwargs)
+    params = _viz_params.filter(_plot_miami2, params, key="plot_miami2", log=Log(), verbose=params.get("verbose", True))
+    return _plot_miami2(path1=path1, path2=path2, merged_sumstats=merged_sumstats, **params)
+
+def plot_rg(ldscrg, **kwargs):
+    params = _viz_params.merge("plot_rg", kwargs)
+    params = _viz_params.filter(_plot_rg, params, key="plot_rg", log=Log(), verbose=params.get("verbose", True))
+    return _plot_rg(ldscrg, **params)
+
+def plot_stacked_mqq(objects, **kwargs):
+    params = _viz_params.merge("plot_stacked_mqq", kwargs)
+    params = _viz_params.filter(_plot_stacked_mqq, params, key="plot_stacked_mqq", log=Log(), verbose=params.get("verbose", True))
+    return _plot_stacked_mqq(objects, **params)
+
+def plot_power(**kwargs):
+    params = _viz_params.merge("plot_power", kwargs)
+    params = _viz_params.filter(_plot_power, params, key="plot_power", log=Log(), verbose=params.get("verbose", True))
+    return _plot_power(**params)
+
+def plot_power_x(**kwargs):
+    params = _viz_params.merge("plot_power_x", kwargs)
+    params = _viz_params.filter(_plot_power_x, params, key="plot_power_x", log=Log(), verbose=params.get("verbose", True))
+    return _plot_power_x(**params)
+
+def scatter(df, x, y, **kwargs):
+    params = _viz_params.merge("plot_scatter", kwargs)
+    params = _viz_params.filter(_scatter, params, key="plot_scatter", log=Log(), verbose=params.get("verbose", True))
+    return _scatter(df=df, x=x, y=y, **params)

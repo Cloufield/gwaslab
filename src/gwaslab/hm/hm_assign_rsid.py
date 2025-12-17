@@ -599,7 +599,7 @@ import numpy as np
     finished_msg="assigning from lookup table",
     start_cols=["CHR","POS"],
     start_function="._assign_from_lookup()",
-    must_args=["lookup_table"]
+    must_kwargs=["lookup_table"]
 )
 def _assign_from_lookup(
     sumstats,
@@ -757,8 +757,10 @@ def _assign_from_lookup(
         new_rows = newly_filled.index[newly_filled.any(axis=1)]
         updated_rows.update(new_rows.tolist())
 
-        flipped_new = new_rows[flipped[missing_mask][new_rows]]
-        flipped_rows.update(flipped_new.tolist())
+        # Map flipped flags to the corresponding sumstats indices for this chunk
+        flipped_now = pd.Series(flipped[missing_mask], index=rows_now)
+        flipped_new = flipped_now.loc[new_rows]
+        flipped_rows.update(flipped_new.index[flipped_new].tolist())
 
         # Update baseline missing map
         initial_missing.loc[rows_now, :] = sumstats.loc[rows_now, assign_cols].isna()

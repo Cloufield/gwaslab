@@ -9,7 +9,7 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
-from gwaslab.g_version import _checking_plink_version
+from gwaslab.extension import _checking_plink_version
 
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 
@@ -44,7 +44,7 @@ def tofinemapping_m(sumstats,
                     n_cores=1, 
                     mode="r",
                     exclude_hla=False, 
-                    getlead_args=None, 
+                    getlead_kwargs=None, 
                     memory=None, 
                     overwrite=False,
                     log=Log(),
@@ -57,14 +57,14 @@ def tofinemapping_m(sumstats,
     ############################################################################################
     if suffixes is None:
         suffixes=[""]
-    if getlead_args is None:
-        getlead_args={"windowsizekb":1000}
+    if getlead_kwargs is None:
+        getlead_kwargs={"windowsizekb":1000}
     if ld_map_kwargs is None:
         ld_map_kwargs={}
     
     if loci is None:
         log.write(" -Loci were not provided. All significant loci will be automatically extracted...",verbose=verbose)
-        sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_args)
+        sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_kwargs)
     else:
         sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
 

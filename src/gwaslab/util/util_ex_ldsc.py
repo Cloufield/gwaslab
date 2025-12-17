@@ -265,7 +265,7 @@ from gwaslab.qc.qc_decorator import with_logging
         start_cols=["CHR","POS","EA","NEA"],
         start_function="estimate_h2_by_ldsc"
 )
-def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False, munge_args=None, **raw_kwargs):
+def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False, munge_kwargs=None, **raw_kwargs):
     """
     Estimate SNP heritability using LD score regression.
 
@@ -308,10 +308,10 @@ def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False,
         sumstats["N"] = sumstats["N"].fillna(sumstats["N"].median()).apply("int64")
 
     if munge:
-        if munge_args is None:
-            munge_args={}
+        if munge_kwargs is None:
+            munge_kwargs={}
         log.write("Start to munge sumstats.")
-        sumstats = _munge_sumstats(sumstats, log=log, verbose=verbose,**munge_args)
+        sumstats = _munge_sumstats(sumstats, log=log, verbose=verbose,**munge_kwargs)
         log.write("Finished munging sumstats.")
 
     log.write(" -Run single variate LD score regression:", verbose=verbose)
@@ -328,7 +328,7 @@ def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False,
     for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
     
-    default_args = ARGS(kwargs = kwargs)
+    default_kwargs = ARGS(kwargs = kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -336,7 +336,7 @@ def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False,
     sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
 
     log.write(" -LDSC log:", verbose=verbose)
-    summary = estimate_h2(sumstats, args = default_args, log = log)
+    summary = estimate_h2(sumstats, args = default_kwargs, log = log)
     
     results_table = None
     if type(summary) is tuple:
@@ -375,7 +375,7 @@ def _estimate_partitioned_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, 
     for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
     
-    default_args = ARGS(kwargs = kwargs)
+    default_kwargs = ARGS(kwargs = kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -383,7 +383,7 @@ def _estimate_partitioned_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, 
     sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
     
     log.write(" -LDSC log:", verbose=verbose)
-    summary,results = estimate_h2(sumstats, default_args, log)
+    summary,results = estimate_h2(sumstats, default_kwargs, log)
     
     log.write(" -Results have been stored in .ldsc_h2", verbose=verbose)
     return parse_partitioned_ldsc_summary(summary), results
@@ -431,7 +431,7 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
     for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
 
-    default_args = ARGS(kwargs = kwargs)
+    default_kwargs = ARGS(kwargs = kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -459,13 +459,13 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
     if len(pop_prev_string.split(",")) == len(other_traits)+1 and len(samp_prev_string.split(",")) == len(other_traits)+1:
         if "samp_prev" not in kwargs.keys():
             log.write(" -{}:{}".format("samp_prev", samp_prev_string), verbose=verbose)
-            default_args.samp_prev = samp_prev_string
+            default_kwargs.samp_prev = samp_prev_string
         if "pop_prev" not in kwargs.keys():
             log.write(" -{}:{}".format("pop_prev", pop_prev_string), verbose=verbose)
-            default_args.pop_prev =  pop_prev_string    
+            default_kwargs.pop_prev =  pop_prev_string    
 
     log.write(" -LDSC log:", verbose=verbose)
-    summary = estimate_rg(sumstats[["SNP","A1","A2","Z","N"]], other_traits_to_use, default_args, log)[1]
+    summary = estimate_rg(sumstats[["SNP","A1","A2","Z","N"]], other_traits_to_use, default_kwargs, log)[1]
     
     log.write(" -Results have been stored in .ldsc_rg", verbose=verbose)
     return summary
@@ -491,7 +491,7 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **raw_kwargs):
     for key, value in kwargs.items():
         log.write("  -{}:{}".format(key, value), verbose=verbose)
     
-    default_args = ARGS(kwargs = kwargs)
+    default_kwargs = ARGS(kwargs = kwargs)
 
     if "Z" not in sumstats.columns:
         sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
@@ -499,7 +499,7 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **raw_kwargs):
     sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
     
     log.write(" -LDSC log:", verbose=verbose)
-    summary = cell_type_specific(sumstats, default_args, log)
+    summary = cell_type_specific(sumstats, default_kwargs, log)
     
     log.write(" -Results have been stored in .ldsc_partitioned_h2", verbose=verbose)
     return summary

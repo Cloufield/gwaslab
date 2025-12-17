@@ -4,19 +4,19 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
-from gwaslab.g_version import _checking_r_version
-from gwaslab.g_version import _check_susie_version
+from gwaslab.extension import _checking_r_version
+from gwaslab.extension import _check_susie_version
 
 def _run_coloc_susie(glsp,
                      filepath, 
                      r="Rscript",
                      types=None, ns=None, 
                      fillldna=True, delete=False, 
-                     coloc_args="", 
-                     susie_args="", 
+                     coloc_kwargs="", 
+                     susie_kwargs="", 
                      ncols=None,
-                     d1_args="",
-                     d2_args="",
+                     d1_kwargs="",
+                     d2_kwargs="",
                      out=None,
                      log=Log(), 
                      verbose=True):
@@ -75,16 +75,16 @@ def _run_coloc_susie(glsp,
         
         {fillna_script}
 
-        D1 <- list( "LD"=R, "beta"=df[,"BETA_1"],"varbeta"=df[,"SE_1"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type1}","N"={n1}{d1_args})
-        D2 <- list( "LD"=R, "beta"=df[,"BETA_2"],"varbeta"=df[,"SE_2"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type2}","N"={n2}{d2_args})
+        D1 <- list( "LD"=R, "beta"=df[,"BETA_1"],"varbeta"=df[,"SE_1"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type1}","N"={n1}{d1_kwargs})
+        D2 <- list( "LD"=R, "beta"=df[,"BETA_2"],"varbeta"=df[,"SE_2"]**2,"snp"=df[,"SNPID"],"position"=df[,"POS"],"type"="{type2}","N"={n2}{d2_kwargs})
 
         abf <- coloc.abf(dataset1=D1,dataset2=D2)
         write.csv(t(data.frame(abf$summary)) , "{output_prefix}.coloc.abf", row.names = FALSE)
 
-        S1=runsusie(D1{susie_args})
-        S2=runsusie(D2{susie_args})
+        S1=runsusie(D1{susie_kwargs})
+        S2=runsusie(D2{susie_kwargs})
 
-        susie.res=coloc.susie(S1,S2{coloc_args})
+        susie.res=coloc.susie(S1,S2{coloc_kwargs})
 
         write.csv(susie.res$summary, "{output_prefix}.coloc.susie", row.names = FALSE)
 
@@ -93,12 +93,12 @@ def _run_coloc_susie(glsp,
                     fillna_script = "R[is.na(R)] <- 0" if fillldna==True else "",
                     type1 = types[0], 
                     n1 =ns[0],
-                    d1_args = d1_args,
+                    d1_kwargs = d1_kwargs,
                     type2= types[1], 
-                    d2_args = d2_args,
+                    d2_kwargs = d2_kwargs,
                     n2= ns[1],
-                    susie_args = susie_args,
-                    coloc_args = coloc_args,
+                    susie_kwargs = susie_kwargs,
+                    coloc_kwargs = coloc_kwargs,
                     output_prefix = output_prefix)
         
         log.write("  -coloc abf script: {}".format("coloc.abf(dataset1=D1,dataset2=D2)"), verbose=verbose)

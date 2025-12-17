@@ -82,8 +82,8 @@ def preformatp(sumstats,
         if type(sumstats) is str:
             log.write("Start to load data from parquet file....",verbose=verbose)
             log.write(" -path: {}".format(sumstats),verbose=verbose)
-            sumstats = pd.read_parquet(sumstats,**readargs) 
-            log.write("Finished loading parquet file into pd.DataFrame....",verbose=verbose)
+            sumstats = pl.read_parquet(sumstats,**readargs)
+            log.write("Finished loading parquet file into DataFrame....",verbose=verbose)
         else:
             raise ValueError("Please input a path for parquet file.")
     
@@ -113,7 +113,7 @@ def preformatp(sumstats,
         if "format_other_cols" in meta_data.keys():
             other += meta_data["format_other_cols"]
         
-        if "sep" not in readargs.keys():
+        if "separator" not in readargs.keys():
             readargs["separator"] = "\t"
         
 #########################################################################################################################################################      
@@ -152,7 +152,10 @@ def preformatp(sumstats,
 
             ###################################################################################### 
         elif type(sumstats) is pd.DataFrame:
-            ## loading data from dataframe
+            ## loading data from pandas dataframe
+            raw_cols = sumstats.columns
+        elif isinstance(sumstats, pl.DataFrame):
+            ## loading data from polars dataframe
             raw_cols = sumstats.columns
         
         ################################################
@@ -366,18 +369,21 @@ def preformatp(sumstats,
                                     **readargs)
                 
         elif type(sumstats) is pd.DataFrame:
-            ## loading data from dataframe
+            ## loading data from pandas DataFrame
             log.write("Start to initialize gl.Sumstats from pandas DataFrame ...",verbose=verbose)
-            sumstats = sumstats[usecols].copy()
-            for key,value in dtype_dictionary.items():
-                if key in usecols:
-                    astype = value
-                    if rename_dictionary[key]=="CHR":
-                        astype ="Int64"  
-                    try:
-                        sumstats[key] = sumstats[key].astype(astype)
-                    except:
-                        sumstats[key] = sumstats[key].astype("string")
+            pdf = sumstats[usecols].copy()
+            sumstats = pl.from_pandas(pdf)
+            if len(dtype_dictionary)>0:
+                sumstats = sumstats.with_columns([
+                    pl.col(k).cast(dtype_dictionary[k], strict=False) for k in dtype_dictionary.keys() if k in sumstats.columns
+                ])
+        elif isinstance(sumstats, pl.DataFrame):
+            ## already a polars DataFrame; select columns and cast as needed
+            sumstats = sumstats.select([pl.col(c) for c in usecols if c in sumstats.columns])
+            if len(dtype_dictionary)>0:
+                sumstats = sumstats.with_columns([
+                    pl.col(k).cast(dtype_dictionary[k], strict=False) for k in dtype_dictionary.keys() if k in sumstats.columns
+                ])
     except ValueError:
         raise ValueError("Please input a path or a pd.DataFrame, and make sure it contain the columns.")
     
@@ -411,12 +417,15 @@ def preformatp(sumstats,
     sumstats = sumstats.rename(rename_dictionary)
 
     ## if n was provided as int #####################################################################################
-    if type(n) is int:
-        sumstats["N"] = n
-    if type(ncase) is int:
-        sumstats["N_CASE"] = ncase
-    if type(ncontrol) is int:
-        sumstats["N_CONTROL"] = ncontrol
+    assign_cols = []
+    if isinstance(n, int):
+        assign_cols.append(pl.lit(n).alias("N"))
+    if isinstance(ncase, int):
+        assign_cols.append(pl.lit(ncase).alias("N_CASE"))
+    if isinstance(ncontrol, int):
+        assign_cols.append(pl.lit(ncontrol).alias("N_CONTROL"))
+    if assign_cols:
+        sumstats = sumstats.with_columns(assign_cols)
     
     ### status ######################################################################################################
     if status is None:
@@ -460,9 +469,8 @@ def get_readargs_header(inpath,readargs):
                     readargs["separator"]="\t"
                     break
     readargs_header = readargs.copy()
-    readargs_header["n_rows"]=1
-    #readargs_header["dtype"]="string"
-    readargs_header["infer_schema"] = False
+    readargs_header["n_rows"] = 1
+    readargs_header["infer_schema_length"] = 0
     return readargs_header
 
 def get_skip_rows(inpath):
@@ -480,9 +488,8 @@ def get_skip_rows(inpath):
 def parse_vcf_study(sumstats,format_cols,study,vcf_usecols,log,verbose=True):
     log.write(" -Parsing based on FORMAT: ", format_cols,verbose=verbose)
     log.write(" -Parsing vcf study : ", study,verbose=verbose)
-    #sumstats[format_cols] = sumstats[study].str.split(":",expand=True).values
-    sumstats = sumstats.drop(["FORMAT",study])
-    sumstats = sumstats[vcf_usecols]
+    sumstats = sumstats.drop(["FORMAT", study])
+    sumstats = sumstats.select([pl.col(c) for c in vcf_usecols if c in sumstats.columns])
     gc.collect()
     return sumstats
 
@@ -534,57 +541,48 @@ def print_format_info(fmt,meta_data, rename_dictionary, verbose, log,output=Fals
             log.write("  - "+fmt+" values:"  , ','.join(values),verbose=verbose)       
 
 def process_neaf(sumstats,log,verbose):
-    log.write(" -NEAF is specified...",verbose=verbose) 
-    pre_number=len(sumstats)
-    log.write(" -Checking if 0<= NEAF <=1 ...",verbose=verbose) 
+    log.write(" -NEAF is specified...",verbose=verbose)
+    pre_number = sumstats.height
+    log.write(" -Checking if 0<= NEAF <=1 ...",verbose=verbose)
 
-    sumstats["EAF"] = pd.to_numeric(sumstats["EAF"], errors='coerce')
-    
-    sumstats = sumstats.filter(pl.col("EAF")>=0 & pl.col("EAF")<=1)
-    sumstats = sumstats.with_columns(
-        EAF = 1- pl.col("EAF")
-    )
-    log.write(" -Converted NEAF to EAF.",verbose=verbose) 
+    if "NEAF" in sumstats.columns:
+        sumstats = (
+            sumstats
+            .with_columns(pl.col("NEAF").cast(pl.Float64, strict=False))
+            .filter((pl.col("NEAF")>=0) & (pl.col("NEAF")<=1))
+            .with_columns((1 - pl.col("NEAF")).alias("EAF"))
+            .drop("NEAF")
+        )
+    else:
+        sumstats = (
+            sumstats
+            .with_columns(pl.col("EAF").cast(pl.Float64, strict=False))
+            .filter((pl.col("EAF")>=0) & (pl.col("EAF")<=1))
+            .with_columns((1 - pl.col("EAF")).alias("EAF"))
+        )
 
-    after_number=len(sumstats)
-
-    log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.",verbose=verbose) 
-    
+    log.write(" -Converted NEAF to EAF.",verbose=verbose)
+    after_number = sumstats.height
+    log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.",verbose=verbose)
     return sumstats
 
 def process_allele(sumstats,log,verbose):
-    
     if "EA" in sumstats.columns:
-
-        if "REF" in sumstats.columns and "ALT" in sumstats.columns:
-
-            if "NEA" not in sumstats.columns:
-                log.write(" NEA not available: assigning REF to NEA...",verbose=verbose) 
-
-                sumstats = sumstats.with_columns(NEA = pl.col("REF"))
-            
-            log.write(" -EA,REF and ALT columns are available: assigning NEA...",verbose=verbose) 
-            ea_alt = sumstats["EA"]==sumstats["ALT"]
-            
-            log.write(" -For variants with EA == ALT : assigning REF to NEA ...",verbose=verbose) 
-            sumstats.loc[ea_alt,"NEA"] = sumstats.loc[ea_alt,"REF"]
-            
-            sumstats = sumstats.with_columns(
-                pl.when(ea_alt)
+        if ("REF" in sumstats.columns) and ("ALT" in sumstats.columns):
+            log.write(" -EA,REF and ALT columns are available: assigning NEA...",verbose=verbose)
+            sumstats = sumstats.with_columns([
+                pl.when(pl.col("EA") == pl.col("ALT"))
                 .then(pl.col("REF"))
-                .otherwise(pl.col("NEA"))
+                .otherwise(pl.col("ALT"))
                 .alias("NEA")
-                )
-
-            ea_not_alt = sumstats["EA"]!=sumstats["ALT"]
-            log.write(" -For variants with EA != ALT : assigning ALT to NEA ...",verbose=verbose) 
-            sumstats = sumstats.with_columns(
-                pl.when(ea_not_alt)
-                .then(pl.col("ALT"))
-                .otherwise(pl.col("NEA"))
-                .alias("NEA")
-                )
-            
+            ])
+    else:
+        if ("REF" in sumstats.columns) and ("ALT" in sumstats.columns):
+            log.write(" -Converting REF and ALT to NEA and EA ...",verbose=verbose)
+            sumstats = sumstats.with_columns([
+                pl.col("REF").alias("NEA"),
+                pl.col("ALT").alias("EA")
+            ]).drop(["ALT","REF"])
     return sumstats
 
 def process_status(sumstats,build,log,verbose):

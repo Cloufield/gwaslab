@@ -515,11 +515,11 @@ def preformat(sumstats,
         elif type(sumstats) is pd.DataFrame:
             ## loading data from dataframe
             log.write("Start to initialize gl.Sumstats from pandas DataFrame ...",verbose=verbose)
-            sumstats = sumstats[usecols].copy()
+            sumstats = sumstats.copy()
             for key,value in dtype_dictionary.items():
-                if key in usecols:
+                if key in sumstats.columns:
                     astype = value
-                    if rename_dictionary[key]=="CHR":
+                    if key in rename_dictionary and rename_dictionary[key]=="CHR":
                         astype ="Int64"  
                     try:
                         sumstats[key] = sumstats[key].astype(astype)
@@ -566,6 +566,26 @@ def preformat(sumstats,
     sumstats = sortcolumn(sumstats=sumstats,log=log,verbose=verbose)    
     sumstats = quick_convert_datatype(sumstats,log=log,verbose=verbose)
     
+    # Force create IDs if both rsID and SNPID are absent
+    if ("rsID" not in sumstats.columns) and ("SNPID" not in sumstats.columns):
+        if ("CHR" in sumstats.columns) and ("POS" in sumstats.columns):
+            if ("EA" in sumstats.columns) and ("NEA" in sumstats.columns):
+                sumstats["SNPID"] = (
+                    sumstats["CHR"].astype("string") + ":" +
+                    sumstats["POS"].astype("string") + ":" +
+                    sumstats["NEA"].astype("string") + ":" +
+                    sumstats["EA"].astype("string")
+                )
+            else:
+                sumstats["SNPID"] = (
+                    sumstats["CHR"].astype("string") + ":" +
+                    sumstats["POS"].astype("string")
+                )
+            log.write(" -No rsID/SNPID found; created SNPID from CHR:POS[:NEA:EA]", verbose=verbose)
+        else:
+            sumstats["SNPID"] = pd.Series([None] * len(sumstats), dtype="string")
+            log.warning(" -No rsID/SNPID and missing CHR/POS; created empty SNPID", verbose=verbose)
+
     check_datatype(sumstats,log=log,verbose=verbose)
     gc.collect()
     check_dataframe_memory_usage(sumstats,log=log,verbose=verbose)

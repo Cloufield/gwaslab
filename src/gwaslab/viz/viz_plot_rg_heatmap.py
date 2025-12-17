@@ -1,4 +1,3 @@
-import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,6 +7,7 @@ import matplotlib
 from gwaslab.g_Log import Log
 import scipy.stats as ss
 from gwaslab.viz.viz_aux_save_figure import save_figure
+from gwaslab.viz.viz_aux_style_options import set_plot_style
 
 #################################################################################################
 def convert_p_to_width(p,sig_level):
@@ -40,20 +40,20 @@ def plot_rg(ldscrg,
         cmap = None,
         full_cell =None,
         log=Log(),
-        panno_args=None,
-        rganno_args=None,
+        panno_kwargs=None,
+        rganno_kwargs=None,
         verbose=True,
         asize=10,
         sort_key=None,
         square=False,
-        colorbar_args=None,
-        fig_args=None,
-        xticklabel_args=None,
-        yticklabel_args=None,
+        colorbar_kwargs=None,
+        fig_kwargs=None,
+        xticklabel_kwargs=None,
+        yticklabel_kwargs=None,
         fdr_method="bh",
         fontsize=10,
         save=None,
-        save_args=None):
+        save_kwargs=None):
     
     log.write("Start to create ldsc genetic correlation heatmap..." ,verbose=verbose)
     # configure arguments
@@ -62,14 +62,24 @@ def plot_rg(ldscrg,
             cmap = matplotlib.cm.get_cmap('RdBu')
         except:
             cmap = matplotlib.colormaps.get_cmap('RdBu')
-    if fig_args is None:
-        fig_args = {"dpi":300}
-    if colorbar_args is None:
-        colorbar_args={"shrink":0.82}
-    if yticklabel_args is None:
-        yticklabel_args={"fontsize":fontsize, "fontfamily":"Arial"}
-    if xticklabel_args is None:    
-        xticklabel_args={"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":fontsize, "fontfamily":"Arial"}
+    style = set_plot_style(
+        plot="plot_rg",
+        fig_kwargs=fig_kwargs or {"dpi":300},
+        save_kwargs=save_kwargs,
+        fontsize=fontsize,
+        fontfamily="Arial",
+        verbose=verbose,
+        log=log,
+    )
+    fig_kwargs = style.get("fig_kwargs", {})
+    save_kwargs = style.get("save_kwargs", {})
+    fontsize = style["fontsize"]
+    if colorbar_kwargs is None:
+        colorbar_kwargs={"shrink":0.82}
+    if yticklabel_kwargs is None:
+        yticklabel_kwargs={"fontsize":fontsize, "fontfamily":style["font_family"]}
+    if xticklabel_kwargs is None:    
+        xticklabel_kwargs={"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":fontsize, "fontfamily":style["font_family"]}
     if sig_levels is None:
         sig_levels = [0.05]
     if corrections is None:
@@ -78,10 +88,10 @@ def plot_rg(ldscrg,
         panno_texts = ["*"*(i+1) for i in range(len(sig_levels)*len(corrections))]
     if full_cell is None:
         full_cell = ("fdr",0.05)
-    if rganno_args is None:
-        rganno_args ={}
-    if save_args is None:
-        save_args = {}
+    if rganno_kwargs is None:
+        rganno_kwargs ={}
+    if save_kwargs is None:
+        save_kwargs = {}
     
     #drop na records in P column 
     log.write("Raw dataset records:",len(ldscrg) ,verbose=verbose)
@@ -182,7 +192,7 @@ def plot_rg(ldscrg,
     
     log.write("Plotting heatmap..." ,verbose=verbose)
     ########ticks###############################################
-    fig,ax = plt.subplots(**fig_args)
+    fig,ax = plt.subplots(**fig_kwargs)
     
     # configure x/y ticks
     xticks=df["x"].sort_values().drop_duplicates().astype(int)
@@ -199,9 +209,9 @@ def plot_rg(ldscrg,
     ax.tick_params('both', length=0, width=0, which='minor')
     
     #labels
-    ax.set_yticklabels(yticks.map(dic_p1_r),**yticklabel_args)
+    ax.set_yticklabels(yticks.map(dic_p1_r),**yticklabel_kwargs)
 
-    ax.set_xticklabels(xticks.map(dic_p2_r),**xticklabel_args)
+    ax.set_xticklabels(xticks.map(dic_p2_r),**xticklabel_kwargs)
     
     #########patches###########################################
     
@@ -292,22 +302,22 @@ def plot_rg(ldscrg,
     ax.add_collection(squares_collection)       
     
     if rganno is not False:
-        rganno_default_args = {"weight":"bold","ha":"center", "va":"center", "fontfamily":"Arial","fontsize":fontsize}
-        for key, value in rganno_args.items():
-            rganno_default_args[key] = value
+        rganno_default_kwargs = {"weight":"bold","ha":"center", "va":"center", "fontfamily":"Arial","fontsize":fontsize}
+        for key, value in rganno_kwargs.items():
+            rganno_default_kwargs[key] = value
         for i in rgtoanno:
             if i[2]>1: i[2]=1
             if i[2]<-1: i[2]=-1
-            if "color" in rganno_default_args.keys() or "c" in rganno_default_args.keys():
-                ax.text(i[0],i[1],"{:.3f}".format(i[2]),**rganno_default_args)
+            if "color" in rganno_default_kwargs.keys() or "c" in rganno_default_kwargs.keys():
+                ax.text(i[0],i[1],"{:.3f}".format(i[2]),**rganno_default_kwargs)
             else:
-                ax.text(i[0],i[1],"{:.3f}".format(i[2]),color=i[3],**rganno_default_args)
+                ax.text(i[0],i[1],"{:.3f}".format(i[2]),color=i[3],**rganno_default_kwargs)
     
     # configure args for p annotation
-    panno_default_args={"size":asize,"color":"white","weight":"bold","horizontalalignment":"center","verticalalignment":"center_baseline","font":"Arial"}
-    if panno_args is not None:
-        for key, value in panno_args.items():
-            panno_default_args[key] = value
+    panno_default_kwargs={"size":asize,"color":"white","weight":"bold","horizontalalignment":"center","verticalalignment":"center_baseline","font":"Arial"}
+    if panno_kwargs is not None:
+        for key, value in panno_kwargs.items():
+            panno_default_kwargs[key] = value
 
     # annotate p
     if panno is True:
@@ -319,18 +329,18 @@ def plot_rg(ldscrg,
         for panno_set_number in panno_list.keys():
             for key, i in panno_list[panno_set_number].items():
                 if panno_set_number == 1:
-                    ax.text(i[0],i[1]-0.1,i[4], **panno_default_args)
+                    ax.text(i[0],i[1]-0.1,i[4], **panno_default_kwargs)
                 else:
-                    ax.text(i[0],i[1]-0.1,i[4], **panno_default_args)
+                    ax.text(i[0],i[1]-0.1,i[4], **panno_default_kwargs)
             
     ## color bar ###############################################
     norm = matplotlib.colors.Normalize(vmin=-1, vmax=1)
-    fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, **colorbar_args)
+    fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax, **colorbar_kwargs)
 
     if equal_aspect is True:
         ax.set_aspect('equal', adjustable='box')
     
-    save_figure(fig, save, keyword="ldscrg",save_args=save_args, log=log, verbose=verbose)
+    save_figure(fig, save, keyword="ldscrg",save_kwargs=save_kwargs, log=log, verbose=verbose)
 
     log.write("Finished creating ldsc genetic correlation heatmap!" ,verbose=verbose)
 

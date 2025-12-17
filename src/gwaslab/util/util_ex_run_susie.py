@@ -4,8 +4,8 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
-from gwaslab.g_version import _checking_r_version
-from gwaslab.g_version import _check_susie_version
+from gwaslab.extension import _checking_r_version
+from gwaslab.extension import _check_susie_version
 from gwaslab.qc.qc_decorator import with_logging
 @with_logging(
         start_to_msg="run finemapping using SuSieR from command line",
@@ -25,7 +25,7 @@ def _run_susie_rss(gls,
                    fillldna=True, 
                    n=None, 
                    delete=False,  #if delete output file
-                   susie_args="", 
+                   susie_kwargs="", 
                    log=Log(),
                    verbose=True):
     if filepath is None:
@@ -94,7 +94,7 @@ dev.off()
                     min_abs_corr, 
                     refine, 
                     L, 
-                    susie_args, 
+                    susie_kwargs, 
                     row["SNPID"],
                     row["STUDY"],
                     output_prefix,
@@ -106,7 +106,7 @@ dev.off()
                     min_abs_corr, 
                     refine, 
                     L, 
-                    susie_args)
+                    susie_kwargs)
         log.write("  -SuSieR script: {}".format(susier_line))
         
         # temporary R script path

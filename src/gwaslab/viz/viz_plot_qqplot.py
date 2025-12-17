@@ -44,7 +44,7 @@ def _plot_qq(
     xlabels,
     xlim,
     ylabels_converted,
-    qq_scatter_args,
+    qq_scatter_kwargs,
     expected_min_mlog10p,
     verbose=True,
     log=Log()
@@ -70,7 +70,7 @@ def _plot_qq(
         Whether to include chrX, chrY, and MT in GC calculation.
     expected_min_mlog10p : float, optional
         Expected minimum -log10(p) value for theoretical distribution.
-    fig_args : dict, optional
+    fig_kwargs : dict, optional
         Figure arguments for subplots. Default is None. 
     colors : list, default=['#597FBD','#74BAD3']
         Color palette for plot. 
@@ -86,7 +86,7 @@ def _plot_qq(
         Dots per inch for figure resolution. 
     save : str, optional
         File path to save plot. Default is None. 
-    save_args : dict, default={"dpi":600,"transparent":True}
+    save_kwargs : dict, default={"dpi":600,"transparent":True}
         Arguments for saving the plot. 
     Returns
     -------
@@ -110,7 +110,7 @@ def _plot_qq(
     upper_bound_p = np.power(10.0, -expected_min_mlog10p)
 
     explicit = {"color","marker_size"}
-    qq_scatter_args = {k: v for k, v in qq_scatter_args.items() if k not in explicit}
+    qq_scatter_kwargs = {k: v for k, v in qq_scatter_kwargs.items() if k not in explicit}
     if stratified is False:
         log.write(" -Plotting all variants...",verbose=verbose)
         # sort x,y for qq plot
@@ -124,7 +124,7 @@ def _plot_qq(
 
         log.write(" -Expected range of P: (0,{})".format(upper_bound_p),verbose=verbose)
         #p_toplot = sumstats["scaled_P"]
-        ax2.scatter(expected_all,observed,s=marker_size[1],color=colors[0],**qq_scatter_args)
+        ax2.scatter(expected_all,observed,s=marker_size[1],color=colors[0],**qq_scatter_kwargs)
 
     else:
         # stratified qq plot
@@ -148,7 +148,7 @@ def _plot_qq(
             expected = -np.log10(np.linspace(minit,upper_bound_p,max(len(databin_raw),len(databin))))[:len(observed)]
 
             label ="( "+str(lower)+","+str(upper) +" ]"
-            ax2.scatter(expected,observed,s=marker_size[1],color=maf_bin_colors[i],label=label,**qq_scatter_args)
+            ax2.scatter(expected,observed,s=marker_size[1],color=maf_bin_colors[i],label=label,**qq_scatter_kwargs)
             ax2_legend= ax2.legend(loc="best",fontsize=fontsize,markerscale=1.5,frameon=False, handletextpad=0.4, borderaxespad=0.4)
             plt.setp(ax2_legend.texts, family=font_family)
 

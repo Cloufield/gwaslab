@@ -124,12 +124,12 @@ def rsidtochrpos(sumstats,
     if ref_rsid_to_chrpos_tsv is not None:
         path = ref_rsid_to_chrpos_tsv
 
-    if snpid in sumstats.columns and sum(sumstats[rsid].isna())>0:
+    if snpid in sumstats.columns and sumstats[rsid].isna().sum()>0:
         log.write(" -Filling na in rsID columns with SNPID...",verbose=verbose)  
         sumstats.loc[sumstats[rsid].isna(),rsid] = sumstats.loc[sumstats[rsid].isna(),snpid]
     
-    if sum(sumstats[rsid].isna())>0:
-        log.write(" -Filling na in rsID columns with NA_xxx for {} variants...".format(sum(sumstats[rsid].isna())),verbose=verbose)  
+    if sumstats[rsid].isna().sum()>0:
+        log.write(" -Filling na in rsID columns with NA_xxx for {} variants...".format(sumstats[rsid].isna().sum()), verbose=verbose)  
         sumstats.loc[sumstats[rsid].isna(),rsid] = ["NA_" + str(x+1) for x in range(len(sumstats.loc[sumstats[rsid].isna(),rsid]))]
 
     dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_rsid,ref_chr,ref_pos],
@@ -290,8 +290,8 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     sumstats_nonrs = sumstats.loc[sumstats["rsn"].isna()|sumstats["rsn"].duplicated(keep='first') ,:].copy()
     sumstats_rs  = sumstats.loc[sumstats["rsn"].notnull(),:].copy()
     
-    log.write(" -Non-Valid rsIDs: ",sum(sumstats["rsn"].isna()),verbose=verbose)
-    log.write(" -Duplicated rsIDs except for the first occurrence: ",sum(sumstats.loc[~sumstats["rsn"].isna(), "rsn"].duplicated(keep='first')),verbose=verbose)
+    log.write(" -Non-Valid rsIDs: ", sumstats["rsn"].isna().sum(), verbose=verbose)
+    log.write(" -Duplicated rsIDs except for the first occurrence: ", sumstats.loc[~sumstats["rsn"].isna(), "rsn"].duplicated(keep='first').sum(), verbose=verbose)
     log.write(" -Valid rsIDs: ", len(sumstats_rs),verbose=verbose)
     
     del sumstats
@@ -443,14 +443,14 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
     #sumstats[status] = sumstats[status].astype("string")
 
 
-    available_to_check =sum( (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna()))
-    status_0=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False))
-    status_3=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False))
-    status_4=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[4]\w", case=False, flags=0, na=False))
-    status_5=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[5]\w", case=False, flags=0, na=False))
-    status_6=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[6]\w", case=False, flags=0, na=False))
-    #status_7=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[7]\w", case=False, flags=0, na=False))
-    status_8=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w", case=False, flags=0, na=False))
+    available_to_check = ((~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())).sum()
+    status_0 = sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False).sum()
+    status_3 = sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False).sum()
+    status_4 = sumstats["STATUS"].str.match("\w\w\w\w\w[4]\w", case=False, flags=0, na=False).sum()
+    status_5 = sumstats["STATUS"].str.match("\w\w\w\w\w[5]\w", case=False, flags=0, na=False).sum()
+    status_6 = sumstats["STATUS"].str.match("\w\w\w\w\w[6]\w", case=False, flags=0, na=False).sum()
+    #status_7 = sumstats["STATUS"].str.match("\w\w\w\w\w[7]\w", case=False, flags=0, na=False).sum()
+    status_8 = sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w", case=False, flags=0, na=False).sum()
     
     log.write(" -Variants allele on given reference sequence : ",status_0,verbose=verbose)
     log.write(" -Variants flipped : ",status_3,verbose=verbose)
@@ -851,14 +851,14 @@ def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", stat
     sumstats[status] = pd.Categorical(sumstats[status],categories=STATUS_CATEGORIES)
     #sumstats[status] = sumstats[status].astype("string")
 
-    available_to_check =sum( (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna()))
-    status_0=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False))
-    status_3=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False))
-    status_4=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[4]\w", case=False, flags=0, na=False))
-    status_5=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[5]\w", case=False, flags=0, na=False))
-    status_6=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[6]\w", case=False, flags=0, na=False))
-    #status_7=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[7]\w", case=False, flags=0, na=False))
-    status_8=sum(sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w", case=False, flags=0, na=False))
+    available_to_check = ((~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())).sum()
+    status_0 = sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False).sum()
+    status_3 = sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False).sum()
+    status_4 = sumstats["STATUS"].str.match("\w\w\w\w\w[4]\w", case=False, flags=0, na=False).sum()
+    status_5 = sumstats["STATUS"].str.match("\w\w\w\w\w[5]\w", case=False, flags=0, na=False).sum()
+    status_6 = sumstats["STATUS"].str.match("\w\w\w\w\w[6]\w", case=False, flags=0, na=False).sum()
+    #status_7 = sumstats["STATUS"].str.match("\w\w\w\w\w[7]\w", case=False, flags=0, na=False).sum()
+    status_8 = sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w", case=False, flags=0, na=False).sum()
     
     log.write(" -Variants allele on given reference sequence : ",status_0,verbose=verbose)
     log.write(" -Variants flipped : ",status_3,verbose=verbose)
@@ -1030,7 +1030,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
 
         ###############################################
         total_number= len(sumstats)
-        pre_number = sum(~sumstats[rsid].isna())
+        pre_number = (~sumstats[rsid].isna()).sum()
 
         ##################################################################################################################
         standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
@@ -1043,8 +1043,8 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
         ##################################################################################################################
         # multicore arrangement
 
-        if sum(to_assign)>0:
-            if sum(to_assign)<10000: n_cores=1
+        if to_assign.sum()>0:
+            if to_assign.sum()<10000: n_cores=1
             #df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], n_cores)
             df_split = _df_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], n_cores)
             pool = Pool(n_cores)
@@ -1056,7 +1056,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
         gc.collect()
         ##################################################################################################################
 
-        after_number = sum(~sumstats[rsid].isna())
+        after_number = (~sumstats[rsid].isna()).sum()
         log.write(" -rsID Annotation for "+str(total_number - after_number) +" need to be fixed!",verbose=verbose)
         log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!",verbose=verbose)
     
@@ -1077,9 +1077,9 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
             to_assign = (~sumstats[rsid].str.match(r'rs([0-9]+)', case=False, flags=0, na=False)) & standardized_normalized
             
         total_number= len(sumstats)
-        pre_number = sum(~sumstats[rsid].isna())
-        log.write(" -"+str(sum(to_assign)) +" rsID could be possibly fixed...",verbose=verbose)
-        if sum(to_assign)>0: 
+        pre_number = (~sumstats[rsid].isna()).sum()
+        log.write(" -"+str(to_assign.sum()) +" rsID could be possibly fixed...", verbose=verbose)
+        if to_assign.sum()>0:
             sumstats = sumstats.set_index(snpid)  
             dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_snpid,ref_rsid],
                               chunksize=chunksize,index_col=ref_snpid,
@@ -1099,7 +1099,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
             sumstats = sumstats.reset_index()
             sumstats = sumstats.rename(columns = {'index':snpid})
 
-            after_number = sum(~sumstats[rsid].isna())
+            after_number = (~sumstats[rsid].isna()).sum()
             log.write(" -rsID annotation for "+str(total_number - after_number) +" needed to be fixed!",verbose=verbose)
             log.write(" -Annotated "+str(after_number - pre_number) +" rsID successfully!",verbose=verbose)
         else:
@@ -1329,7 +1329,7 @@ def check_indel_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_thresho
     finished_msg="inferring strand for palindromic SNPs/align indistinguishable indels",
     start_cols=["CHR","POS","EA","NEA","STATUS"],
     start_function=".infer_strand()",
-    must_args=["ref_alt_freq"]
+    must_kwargs=["ref_alt_freq"]
 )
 def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,ref_maf_threshold=0.5,daf_tolerance=0.20,remove_snp="",mode="pi",n_cores=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
@@ -1370,7 +1370,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
         ##not palindromic : change status
         sumstats.loc[not_palindromic_snp,status] = vchange_status(sumstats.loc[not_palindromic_snp,status], 7 ,"9","0")  
-        log.write(" -Identified ", sum(palindromic)," palindromic SNPs...",verbose=verbose)
+        log.write(" -Identified ", palindromic.sum(), " palindromic SNPs...", verbose=verbose)
         
         #palindromic but can not infer
         maf_can_infer   = (sumstats[eaf] < maf_threshold) | (sumstats[eaf] > 1 - maf_threshold)
@@ -1382,11 +1382,11 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
         unknow_palindromic_to_check = palindromic & maf_can_infer & unknow_palindromic
         
-        log.write(" -After filtering by MAF< {} , {} palindromic SNPs with unknown strand will be inferred...".format(maf_threshold, sum(unknow_palindromic_to_check)),verbose=verbose)
+        log.write(" -After filtering by MAF< {} , {} palindromic SNPs with unknown strand will be inferred...".format(maf_threshold, unknow_palindromic_to_check.sum()), verbose=verbose)
 
         ######################################################################################### 
-        if sum(unknow_palindromic_to_check)>0:
-            if sum(unknow_palindromic_to_check)<10000: 
+        if unknow_palindromic_to_check.sum()>0:
+            if unknow_palindromic_to_check.sum()<10000:
                 n_cores=1
 
             if use_cache and cache_manager is None:
@@ -1450,8 +1450,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
     ### unknow_indel
     if "i" in mode:
         unknow_indel = sumstats[status].str.match(r'\w\w\w\w\w[6][89]', case=False, flags=0, na=False)   
-        log.write(" -Identified ", sum(unknow_indel)," indistinguishable Indels...",verbose=verbose)
-        if sum(unknow_indel)>0:
+        log.write(" -Identified ", unknow_indel.sum(), " indistinguishable Indels...", verbose=verbose)
+        if unknow_indel.sum()>0:
             log.write(" -Indistinguishable indels will be inferred from reference vcf REF and ALT...",verbose=verbose)
             #########################################################################################  
             #with maf can not infer
@@ -1459,8 +1459,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             #sumstats.loc[unknow_indel&(~maf_can_infer),status] = vchange_status(sumstats.loc[unknow_indel&(~maf_can_infer),status],7,"9","8") 
             log.write(" -Difference in allele frequency (DAF) tolerance: {}".format(daf_tolerance),verbose=verbose)
                          
-            if sum(unknow_indel)>0:
-                if sum(unknow_indel)<10000: 
+            if unknow_indel.sum()>0:
+                if unknow_indel.sum()<10000:
                     n_cores=1
 
                 if use_cache and cache_manager is None:
@@ -1492,9 +1492,9 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
             status6 =  sumstats[status].str.match(r'\w\w\w\w\w\w[6]', case=False, flags=0, na=False)  
             status8 =  sumstats[status].str.match(r'\w\w\w\w\w[6][8]', case=False, flags=0, na=False)  
 
-            log.write("  -Indels ea/nea match reference : ",sum(status3),verbose=verbose)
-            log.write("  -Indels ea/nea need to be flipped : ",sum(status6),verbose=verbose)
-            log.write("  -Indels with no macthes or no information : ",sum(status8),verbose=verbose)
+            log.write("  -Indels ea/nea match reference : ", status3.sum(), verbose=verbose)
+            log.write("  -Indels ea/nea need to be flipped : ", status6.sum(), verbose=verbose)
+            log.write("  -Indels with no macthes or no information : ", status8.sum(), verbose=verbose)
             if "8" in remove_indel:
                 log.write("  -Indels with no macthes or no information will be removed",verbose=verbose)
                 sumstats = sumstats.loc[~status8,:].copy()    
@@ -1529,7 +1529,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
     finished_msg="checking the difference between EAF (sumstats) and ALT frequency (reference VCF)",
     start_cols=["CHR","POS","EA","NEA","EAF","STATUS"],
     start_function=".check_daf()",
-    must_args=["ref_alt_freq"]
+    must_kwargs=["ref_alt_freq"]
 )
 def parallelecheckaf(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
@@ -1602,16 +1602,16 @@ def parallelecheckaf(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, 
         log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)  
         if not force:
             good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
-        log.write(" -Checking variants:", sum(good_chrpos),verbose=verbose) 
+        log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose)
         sumstats[column_name]=np.nan
     
     ########################  
-        if sum(~sumstats[eaf].isna())<10000: 
+        if (~sumstats[eaf].isna()).sum()<10000:
             n_cores=1       
         #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], n_cores)
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], n_cores)
         pool = Pool(n_cores)
-        if sum(~sumstats[eaf].isna())>0:
+        if (~sumstats[eaf].isna()).sum()>0:
             map_func = partial(checkaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,column_name=column_name,chr_dict=chr_dict) 
             sumstats.loc[good_chrpos,[column_name]] = pd.concat(pool.map(map_func,df_split))
         pool.close()
@@ -1658,7 +1658,7 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
     finished_msg="inferring sumstats EAF using reference VCF ALT frequency",
     start_cols=["CHR","POS","EA","NEA","STATUS"],
     start_function=".check_daf()",
-    must_args=["ref_alt_freq"]
+    must_kwargs=["ref_alt_freq"]
 )
 def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
@@ -1718,17 +1718,17 @@ def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR
     if eaf not in sumstats.columns:
         sumstats[eaf]=np.nan
     
-    prenumber = sum(sumstats[eaf].isna())
+    prenumber = sumstats[eaf].isna().sum()
 
     # ref_alt_freq INFO in vcf was provided
     if ref_alt_freq is not None:
         log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)   
         if not force:
             good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
-        log.write(" -Checking variants:", sum(good_chrpos),verbose=verbose) 
+        log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose) 
     
     ########################  
-        if sum(sumstats[eaf].isna())<10000: 
+        if sumstats[eaf].isna().sum()<10000:
             n_cores=1       
         #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
@@ -1739,7 +1739,7 @@ def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR
         pool.join()
     ###########################
         
-        afternumber = sum(sumstats[eaf].isna())
+        afternumber = sumstats[eaf].isna().sum()
         log.write(" -Inferred EAF for {} variants.".format(prenumber - afternumber),verbose=verbose) 
         log.write(" -EAF is still missing for {} variants.".format(afternumber),verbose=verbose) 
     
@@ -1775,7 +1775,7 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
     finished_msg="inferring sumstats EAF from sumstats MAF using reference VCF ALT frequency",
     start_cols=["CHR","POS","EA","NEA","MAF","STATUS"],
     start_function=".infer_af()",
-    must_args=["ref_alt_freq"]
+    must_kwargs=["ref_alt_freq"]
 )
 def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
                             eaf="EAF", maf="MAF", ref_eaf="_REF_EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
@@ -1845,18 +1845,18 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
     if ref_eaf not in sumstats.columns:
         sumstats[ref_eaf]=np.nan
 
-    prenumber = sum(sumstats[eaf].isna())
+    prenumber = sumstats[eaf].isna().sum()
 
     # ref_alt_freq INFO in vcf was provided
     if ref_alt_freq is not None:
         log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)   
         if not force:
             good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
-        log.write(" -Checking variants:", sum(good_chrpos),verbose=verbose) 
+        log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose)
     
         ########################  
         #extract ref af
-        if sum(sumstats[eaf].isna())<10000: 
+        if sumstats[eaf].isna().sum()<10000:
             n_cores=1       
         #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
@@ -1875,7 +1875,7 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
         sumstats.loc[is_filpped,eaf] = 1 - sumstats.loc[is_filpped,maf]
 
         ###########################    
-        afternumber = sum(sumstats[eaf].isna())
+        afternumber = sumstats[eaf].isna().sum()
         log.write(" -Inferred EAF for {} variants.".format(prenumber - afternumber),verbose=verbose) 
         log.write(" -EAF is still missing for {} variants.".format(afternumber),verbose=verbose) 
         sumstats = sumstats.drop(columns=[ref_eaf])

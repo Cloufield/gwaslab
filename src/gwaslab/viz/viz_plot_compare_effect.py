@@ -1,31 +1,28 @@
+import gc
+import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import scipy.stats as ss
 import seaborn as sns
-import gc
-import math
 import scipy.stats as ss
 from matplotlib.patches import Rectangle
 from adjustText import adjust_text
 from gwaslab.g_Log import Log
 from gwaslab.g_Sumstats import Sumstats
-
 from gwaslab.viz.viz_aux_save_figure import save_figure
+from gwaslab.viz.viz_aux_style_options import set_plot_style
 
-from gwaslab.util.util_in_get_sig import getsig
-from gwaslab.util.util_in_get_sig import annogene
+from gwaslab.util.util_in_get_sig import getsig, annogene
 from gwaslab.util.util_in_correct_winnerscurse import wc_correct
 from gwaslab.util.util_in_correct_winnerscurse import wc_correct_test
+from gwaslab.viz.viz_plot_scatter_with_reg import jackknife_r as scatter_jackknife_r
+from gwaslab.viz.viz_plot_scatter_with_reg import create_helper_line as _create_helper_line
+from gwaslab.viz.viz_plot_scatter_with_reg import create_reg_line as _create_reg_line
+from gwaslab.viz.viz_plot_scatter_with_reg import plot_scatter_with_err
 
-from gwaslab.io.io_process_args import _merge_and_sync_dic
-from gwaslab.io.io_process_args import _extract_kwargs
 #20220422
 def compare_effect(path1,
                    path2,
-                   cols_name_list_1=None, effect_cols_list_1=None,
-                   cols_name_list_2=None, effect_cols_list_2=None,
-                   eaf=[],
                    maf_level=None,
                    label=None,
                    snplist=None,
@@ -36,10 +33,7 @@ def compare_effect(path1,
                    anno_min1=0,
                    anno_min2=0,
                    anno_diff=0,
-                   anno_args=None,
-                   scaled=False,
-                   scaled1=False,
-                   scaled2=False,
+                   anno_kwargs=None,
                    wc_correction=False, 
                    null_beta=0,
                    is_q=False,
@@ -47,7 +41,7 @@ def compare_effect(path1,
                    include_all=True,
                    q_level=0.05,
                    sig_level=5e-8,
-                   get_lead_args=None,
+                   get_lead_kwargs=None,
                    drop=False,
                    wc_sig_level=5e-8,
                    # reg
@@ -62,151 +56,124 @@ def compare_effect(path1,
                    legend_title=r'$\mathregular{ P < 5 x 10^{-8}}$ in:',
                    legend_title2=r'Heterogeneity test:',
                    legend_pos='upper left',
-                   scatterargs=None,
-                   plt_args=None,
+                   scatter_kwargs=None,
+                   fig_kwargs=None,
                    xylabel_prefix="Per-allele effect size in ",
-                   helper_line_args=None,
+                   helper_line_kwargs=None,
                    adjust_text_kwargs = None,
                    adjust_text_kwargs_l = None,
                    adjust_text_kwargs_r = None,
-                   font_args=None,
-                   fontargs=None,
+                   font_kwargs=None,
                    build="19",
                    r_or_r2="r",
-                   errargs=None,
-                   legend_args=None,
-                   sep=["\t","\t"],
+                   err_kwargs=None,
+                   legend_kwargs=None,
+                   clean_output=False,
                    log = Log(),
                    save=False,
-                   save_args=None,
+                   save_kwargs=None,
                    verbose=False,
                    **kwargs):
 
-    #[snpid,p,ea,nea]      ,[effect,se]
-    #[snpid,p,ea,nea,chr,pos],[effect,se]
-    #[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
-    if scaled == True:
-        scaled1 = True
-        scaled2 = True
+    # Input column examples:
+    # [snpid,p,ea,nea] / [effect,se]
+    # [snpid,p,ea,nea,chr,pos] / [effect,se]
+    # [snpid,p,ea,nea,chr,pos] / [OR,OR_l,OR_h]
 
-    if legend_title== r'$\mathregular{ P < 5 x 10^{-8}}$ in:' and sig_level!=5e-8:
-        
+    # Auto-format legend title based on significance threshold
+    if legend_title == r'$\mathregular{ P < 5 x 10^{-8}}$ in:' and sig_level != 5e-8:
         exponent = math.floor(math.log10(sig_level))
-        mantissa = sig_level / 10**exponent
+        mantissa = sig_level / 10 ** exponent
+        legend_title = '$\mathregular{{ P < {} x 10^{{{}}} }}$ in:'.format(mantissa, exponent)
 
-        legend_title =  '$\mathregular{{ P < {} x 10^{{{}}} }}$ in:'.format(mantissa, exponent)
-
-    # what method to use for correction
-    if is_q_mc=="fdr" or is_q_mc=="bon":
+    # Enable heterogeneity flag when using multiple correction
+    if is_q_mc in {"fdr", "bon"}:
         is_q = True
 
-    # if heterogeneity test
-    if is_q == True:
-        if is_q_mc not in [False,"fdr","bon","non"]:
+    # Validate heterogeneity options
+    if is_q:
+        if is_q_mc not in [False, "fdr", "bon", "non"]:
             raise ValueError('Please select either "fdr" or "bon" or "non"/False for is_q_mc.')
-        
-    if save_args is None:
-        save_args = {"dpi":300,"facecolor":"white"}
+
+    # Merge style
+    style = set_plot_style(
+        plot="compare_effect",
+        fig_kwargs=fig_kwargs,
+        save_kwargs=save_kwargs,
+        save=save,
+        scatter_kwargs=scatter_kwargs,
+        err_kwargs=err_kwargs,
+        font_kwargs=font_kwargs,
+        helper_line_kwargs=helper_line_kwargs,
+        anno_kwargs=anno_kwargs,
+        fontsize=font_kwargs.get('fontsize') if font_kwargs else None,
+        fontfamily=None,
+        verbose=verbose,
+        log=log,
+    )
+
+    fig_kwargs = style.get("fig_kwargs", {})
+    save_kwargs = style.get("save_kwargs", {})
+    scatter_kwargs = style.get("scatter_kwargs", {})
+    err_kwargs = style.get("err_kwargs", {})
+    font_kwargs = style.get("font_kwargs", {})
+    helper_line_kwargs = style.get("helper_line_kwargs", {})
+    anno_kwargs = style.get("anno_kwargs", {})
+
     if reg_box is None:
         reg_box= None
     elif reg_box==True:
         reg_box = dict(boxstyle='round', facecolor='white', alpha=1,edgecolor="grey")
-    if sep is None:
-        sep = ["\t","\t"]
-    if get_lead_args is None:
-        get_lead_args = {}
+    if get_lead_kwargs is None:
+        get_lead_kwargs = {}
     if anno=="GENENAME":
-        get_lead_args["anno"]=True
-    if anno_args is None:
-        anno_args = {}
-    if errargs is None:
-        errargs={"ecolor":"#cccccc","elinewidth":1}
-    if fontargs is None:
-        fontargs={'fontsize':12,'family':'sans','fontname':'Arial'}
-    if helper_line_args is None:
-        helper_line_args={"color":'black', "linestyle":'-',"lw":1}
-    if plt_args is None:
-        plt_args={"figsize":(7,7),"dpi":300}
-    if scatterargs is None:
-        scatterargs={"s":20}
+        get_lead_kwargs["anno"]=True
     if label is None:
         label = ["Sumstats_1","Sumstats_2","Both","None"]
-    if anno_het ==True:
-        is_q=True
+    if anno_het:
+        is_q = True
     
     adjust_text_kwargs_r_default = {"autoalign":False,"precision":0.001,"lim":1000,"ha":"left","va":"top","expand_text":(1,1.8),"expand_objects":(0.1,0.1),"expand_points":(1.8,1.8),"force_objects":(0.8,0.8),"arrowprops":dict(arrowstyle='-|>', color='grey')}
     adjust_text_kwargs_l_default = {"autoalign":False,"precision":0.001,"lim":1000,"ha":"right","va":"bottom","expand_text":(1,1.8),"expand_objects":(0.1,0.1),"expand_points":(1.8,1.8),"force_objects":(0.8,0.8),"arrowprops":dict(arrowstyle='-|>', color='grey')}
 
-    if adjust_text_kwargs_l is None:
-        adjust_text_kwargs_l = adjust_text_kwargs_l_default
-    else:
-        for key, value in adjust_text_kwargs_l_default.items():
-            if key not in adjust_text_kwargs_l:
-                adjust_text_kwargs_l[key] = value
-
-    if adjust_text_kwargs_r is None:
-        adjust_text_kwargs_r = adjust_text_kwargs_r_default
-    else:
-        for key, value in adjust_text_kwargs_r_default.items():
-            if key not in adjust_text_kwargs_r:
-                adjust_text_kwargs_r[key] = value
+    base_l = dict(adjust_text_kwargs_l_default)
+    base_r = dict(adjust_text_kwargs_r_default)
     
-    if adjust_text_kwargs is not None:
-        for key, value in adjust_text_kwargs.items():
-            adjust_text_kwargs_l[key] = value
-            adjust_text_kwargs_r[key] = value
-    else:
-        adjust_text_kwargs = {}
+    if isinstance(adjust_text_kwargs_l, dict):
+        base_l.update({k: v for k, v in adjust_text_kwargs_l.items() if v is not None})
+    if isinstance(adjust_text_kwargs_r, dict):
+        base_r.update({k: v for k, v in adjust_text_kwargs_r.items() if v is not None})
+    if isinstance(adjust_text_kwargs, dict):
+        base_l.update({k: v for k, v in adjust_text_kwargs.items() if v is not None})
+        base_r.update({k: v for k, v in adjust_text_kwargs.items() if v is not None})
+    adjust_text_kwargs_l = base_l
+    adjust_text_kwargs_r = base_r
 
-
-    save_kwargs =      _extract_kwargs("save", save_args, locals())
-    anno_kwargs =      _extract_kwargs("anno", anno_args, locals())
-    err_kwargs =       _extract_kwargs("err", errargs, locals())
-    plt_kwargs =       _extract_kwargs("plt", plt_args,  locals())
-    scatter_kwargs =   _extract_kwargs("scatter", scatterargs, locals())
-    font_kwargs =      _extract_kwargs("font",fontargs, locals())
-
+    # 0. Start processing and validate inputs
     log.write("Start to process the raw sumstats for plotting...", verbose=verbose)
-    
-    # configure headers
-    cols_name_list_1,cols_name_list_2, effect_cols_list_1, effect_cols_list_2 = configure_headers(mode, 
-                                                                                                  path1, 
-                                                                                                  path2, 
-                                                                                                  cols_name_list_1,
-                                                                                                  cols_name_list_2,
-                                                                                                  effect_cols_list_1,
-                                                                                                  effect_cols_list_2,
-                                                                                                  scaled1,
-                                                                                                  scaled2,
-                                                                                                  log, 
-                                                                                                  verbose)
-    
-    # extract common variants / load sumstats 1
-    sumstats, common_snp_set = configure_common_snp_set(path1,path2,
+
+    if not isinstance(path1, Sumstats) or not isinstance(path2, Sumstats):
+        raise ValueError("Please provide GWASLab Sumstats objects for `path1` and `path2`.")
+    scaled1 = "MLOG10P" in path1.data.columns
+    scaled2 = "MLOG10P" in path2.data.columns
+    has_eaf1 = "EAF" in path1.data.columns
+    has_eaf2 = "EAF" in path2.data.columns
+    # 1. Load sumstats1 minimal columns
+    sumstats, common_snp_set = configure_common_snp_set(path1, path2,
                                snplist,
                                label,
-                               cols_name_list_1,
-                               cols_name_list_2,
-                               sep,
-                               scaled1,
-                               scaled2,
-                               log,verbose)
+                               log, verbose)
     
-    # rename sumstats headers -> keywords in gwaslab
+    # 2. Rename sumstats1 headers to GWASLab keywords
     sumstats = rename_sumtats(sumstats=sumstats,
-                              cols_name_list = cols_name_list_1, 
-                              scaled=scaled1,
-                              snplist=snplist)
+                              snplist=snplist,
+                              scaled=scaled1)
     
-    # exctract only available variants from sumstats1 
-    sumstats = sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
-    log.write(" -Using only variants available for both datasets...", verbose=verbose)
-    
-    ######### 8 extact SNPs for comparison 
+    # 3. Extract SNPs for comparison (provided list or auto lead SNPs)
     sig_list_1 = extract_snp_for_comparison(sumstats, 
                                             snplist, 
                                             label=label[0], 
-                                            get_lead_args=get_lead_args, 
+                                            get_lead_kwargs=get_lead_kwargs, 
                                             build=build,
                                             drop=drop, 
                                             anno=anno, 
@@ -218,33 +185,31 @@ def compare_effect(path1,
  
     ######### load sumstats1
 
-    ######### 9 extract snplist2
+    # 4. Load sumstats2 minimal columns
     if snplist is not None:
-        cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1]]
+        cols_to_extract = ["SNPID", "MLOG10P" if scaled2 else "P"]
     else:
-        cols_to_extract = [cols_name_list_2[0],cols_name_list_2[1],cols_name_list_2[4],cols_name_list_2[5]]
+        cols_to_extract = ["SNPID", "MLOG10P" if scaled2 else "P", "CHR", "POS"]
     
     sumstats = load_sumstats(path=path2, 
                             usecols=cols_to_extract, 
                             label=label[1], 
                             log=log, 
-                            verbose= verbose, 
-                            sep=sep[1])
+                            verbose= verbose)
     gc.collect()
     
     #if scaled2==True:
     #    sumstats[cols_name_list_2[1]] = np.power(10,-sumstats[cols_name_list_2[1]])
 
+    # 5. Rename sumstats2 headers to GWASLab keywords
     sumstats = rename_sumtats(sumstats=sumstats,
-                              cols_name_list = cols_name_list_2, 
-                              scaled=scaled2,
-                              snplist=snplist)
-    ######### 11 exctract only overlapping variants from sumstats2
-    sumstats = sumstats.loc[sumstats["SNPID"].isin(common_snp_set),:]
+                              snplist=snplist,
+                              scaled=scaled2)
+    # 6. Extract SNPs from sumstats2
     sig_list_2 = extract_snp_for_comparison(sumstats, 
                                         snplist, 
                                         label=label[1], 
-                                        get_lead_args=get_lead_args, 
+                                        get_lead_kwargs=get_lead_kwargs, 
                                         build=build,
                                         drop=drop, 
                                         anno=anno, 
@@ -253,7 +218,7 @@ def compare_effect(path1,
                                         log = log, 
                                         verbose = verbose)
 
-    ######### 13 Merge two list using SNPID
+    # 7. Merge SNP lists by SNPID
     sig_list_merged = merge_list(sig_list_1, 
                                  sig_list_2, 
                                  anno = anno, 
@@ -261,61 +226,53 @@ def compare_effect(path1,
                                  log=log, 
                                  verbose=verbose)
 
-    ###############################################################################
-    cols_to_extract = configure_cols_to_extract(mode=mode, 
-                                                cols_name_list = cols_name_list_1, 
-                                                effect_cols_list= effect_cols_list_1, 
-                                                eaf = eaf)
+    # 8. Load effect columns for sumstats1
+    cols_to_extract = configure_cols_to_extract(mode=mode, has_eaf=has_eaf1, scaled=scaled1)
     sumstats = load_sumstats(path=path1, 
                             usecols=cols_to_extract, 
                             label=label[0], 
                             log=log, 
-                            verbose= verbose, 
-                            sep=sep[0])
+                            verbose= verbose)
     
     #if scaled1==True:
     #    sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
+    # 9. Rename and clean sumstats1 effects
     sumstats = rename_sumstats_full(mode, sumstats,
                                     index=1, 
-                                    cols_name_list = cols_name_list_1, 
-                                    effect_cols_list = effect_cols_list_1, 
-                                    eaf = eaf, 
                                     drop = drop, 
                                     scaled=scaled1,
+                                    has_eaf=has_eaf1,
                                     log=log, verbose=verbose)
 
+    # 10. Merge effects from sumstats1
     log.write(" -Merging "+label[0]+" effect information...", verbose=verbose)
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
                                left_on="SNPID",right_on="SNPID",
                                how="left")
 
-    ############ 15 merging sumstats2
-    cols_to_extract = configure_cols_to_extract(mode=mode, 
-                                                cols_name_list = cols_name_list_2, 
-                                                effect_cols_list= effect_cols_list_2, 
-                                                eaf = eaf)
+    # 11. Load effect columns for sumstats2
+    cols_to_extract = configure_cols_to_extract(mode=mode, has_eaf=has_eaf2, scaled=scaled2)
     
     sumstats = load_sumstats(path=path2, 
                             usecols=cols_to_extract, 
                             label=label[1], 
                             log=log, 
-                            verbose= verbose, 
-                            sep=sep[1])
+                            verbose= verbose)
     
     #if scaled2==True:
     #    sumstats[cols_name_list_2[1]] = np.power(10,-sumstats[cols_name_list_2[1]])
     
     gc.collect()
     
+    # 12. Rename and clean sumstats2 effects
     sumstats = rename_sumstats_full(mode, sumstats,
                                     index=2, 
-                                    cols_name_list = cols_name_list_2, 
-                                    effect_cols_list = effect_cols_list_2, 
-                                    eaf = eaf, 
                                     drop = drop, 
                                     scaled=scaled2,
+                                    has_eaf=has_eaf2,
                                     log=log, verbose=verbose)
 
+    # 13. Merge effects from sumstats2
     log.write(" -Merging "+label[1]+" effect information...", verbose=verbose)
     sig_list_merged = pd.merge(sig_list_merged,sumstats,
                                left_on="SNPID",right_on="SNPID",
@@ -323,13 +280,11 @@ def compare_effect(path1,
     
     sig_list_merged.set_index("SNPID",inplace=True)
 
-    ################ 16 update sumstats1
+    # 14. Update p-values for sumstats1
 
     sig_list_merged = update_stats(sig_list_merged = sig_list_merged, 
                                    path = path1, 
-                                   cols_name_list = cols_name_list_1,
                                    index=1, 
-                                   sep=sep[0], 
                                    snplist = snplist, 
                                    label=label[0], 
                                    drop = drop, 
@@ -337,12 +292,10 @@ def compare_effect(path1,
                                    log=log, 
                                    verbose = verbose)
     
-    ################# 17 update sumstats2
+    # 15. Update p-values for sumstats2
     sig_list_merged = update_stats(sig_list_merged = sig_list_merged, 
                                    path = path2, 
-                                   cols_name_list = cols_name_list_2,
                                    index=2, 
-                                   sep=sep[1], 
                                    snplist = snplist, 
                                    label=label[1], 
                                    drop = drop, 
@@ -357,28 +310,26 @@ def compare_effect(path1,
     #    log.write(" -Sumstats -log10(P) values are being converted to P...", verbose=verbose)
     #    sig_list_merged["P_2"] = np.power(10,-sig_list_merged["P_2"])
     
-#################################################################################
+    # 16. Assign significance indicators
     sig_list_merged = assign_indicator(sig_list_merged, snplist, sig_level, scaled1, scaled2, log, verbose)
-    
-    sig_list_merged = align_alleles(sig_list_merged, label, mode, eaf, log, verbose)
-
+    # 17. Align alleles across datasets
+    sig_list_merged = align_alleles(sig_list_merged, label, mode, log, verbose)
+    # 18. Check allele match consistency
     sig_list_merged = check_allele_match(sig_list_merged, allele_match, label, log,verbose)
+    # 19. Filter by MAF if EAF present
+    sig_list_merged = filter_by_maf(sig_list_merged, maf_level, log, verbose)
 
-    sig_list_merged = filter_by_maf(sig_list_merged, eaf, maf_level, log, verbose)
-
-    if fdr==True and scaled==False:
+    if fdr is True and (not scaled1) and (not scaled2):
         log.write(" -Using FDR...", verbose=verbose)
         #sig_list_merged["P_1"] = fdrcorrection(sig_list_merged["P_1"])[1]
         #sig_list_merged["P_2"] = fdrcorrection(sig_list_merged["P_2"])[1]
         sig_list_merged["P_1"] =ss.false_discovery_control(sig_list_merged["P_1"])
         sig_list_merged["P_2"] =ss.false_discovery_control(sig_list_merged["P_2"])
 
-    ####################################################################################################################################
-    ## winner's curse correction using aligned beta
+    # 20. Winner's curse correction (optional)
     sig_list_merged = winnerscurse_correction(sig_list_merged, mode, wc_correction, sig_level,scaled1, scaled2, log, verbose)
 
-    ########################## Het test############################################################
-    ## heterogeneity test
+    # 21. Heterogeneity test (optional)
     if (is_q == True):
         log.write(" -Calculating Cochran's Q statistics and peform chisq test...", verbose=verbose)
         if mode=="beta" or mode=="BETA" or mode=="Beta":
@@ -390,13 +341,6 @@ def compare_effect(path1,
         log.write(" -Significant het:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:]), verbose=verbose)
         log.write(" -All sig:" ,len(sig_list_merged), verbose=verbose)
         log.write(" -Het rate:" ,len(sig_list_merged.loc[sig_list_merged["HetP"]<0.05,:])/len(sig_list_merged), verbose=verbose)   
-    
-    ######################### save ###############################################################
-    ## save the merged data
-    save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
-    log.write(" -Saving the merged data to:",save_path, verbose=verbose)
-    sig_list_merged = reorder_columns(sig_list_merged)
-    sig_list_merged.to_csv(save_path,sep="\t")
     
     # extract group
     if include_all==True:
@@ -423,55 +367,58 @@ def compare_effect(path1,
     log.write("Creating the scatter plot for effect sizes comparison...", verbose=verbose)
     #plt.style.use("ggplot")
     sns.set_style("ticks")
-    fig,ax = plt.subplots(**plt_kwargs) 
+    fig,ax = plt.subplots(**fig_kwargs)
     legend_elements=[]
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         if len(sum0)>0:
-            ax.errorbar(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"], xerr=sum0["SE_1"],yerr=sum0["SE_2"],
-                        linewidth=0,zorder=1,**err_kwargs)
-            
-            ax.scatter(sum0["EFFECT_1"],sum0["EFFECT_2_aligned"],label=label[3],zorder=2,color="#cccccc",edgecolors=sum0["Edge_color"],marker=".",**scatter_kwargs)
-            #legend_elements.append(mpatches.Circle(facecolor='#cccccc', edgecolor='white', label=label[3]))
+            plot_scatter_with_err(ax=ax, df=sum0, x="EFFECT_1", y="EFFECT_2_aligned",
+                                  xerr=sum0["SE_1"], yerr=sum0["SE_2"], engine="plt",
+                                  scatter_kwargs={**scatter_kwargs, "label": label[3], "zorder": 2, "color": "#cccccc", "edgecolors": sum0["Edge_color"], "marker": "."},
+                                  err_kwargs=err_kwargs)
             legend_elements.append(label[3])
         if len(sum1only)>0:
-            ax.errorbar(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"], xerr=sum1only["SE_1"],yerr=sum1only["SE_2"],
-                        linewidth=0,zorder=1,**err_kwargs)
-            ax.scatter(sum1only["EFFECT_1"],sum1only["EFFECT_2_aligned"],label=label[0],zorder=2,color="#e6320e",edgecolors=sum1only["Edge_color"],marker="^",**scatter_kwargs)
-            #legend_elements.append(mpatches.Patch(facecolor='#e6320e', edgecolor='white', label=label[0]))
+            plot_scatter_with_err(ax=ax, df=sum1only, x="EFFECT_1", y="EFFECT_2_aligned",
+                                  xerr=sum1only["SE_1"], yerr=sum1only["SE_2"], engine="plt",
+                                  scatter_kwargs={**scatter_kwargs, "label": label[0], "zorder": 2, "color": "#e6320e", "edgecolors": sum1only["Edge_color"], "marker": "^"},
+                                  err_kwargs=err_kwargs)
             legend_elements.append(label[0])
         if len(sum2only)>0:
-            ax.errorbar(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"], xerr=sum2only["SE_1"],yerr=sum2only["SE_2"],
-                        linewidth=0,zorder=1,**err_kwargs)
-            ax.scatter(sum2only["EFFECT_1"],sum2only["EFFECT_2_aligned"],label=label[1],zorder=2,color="#41e620",edgecolors=sum2only["Edge_color"],marker="o",**scatter_kwargs)
-            #legend_elements.append(mpatches.Circle(facecolor='#41e620', edgecolor='white', label=label[1]))
+            plot_scatter_with_err(ax=ax, df=sum2only, x="EFFECT_1", y="EFFECT_2_aligned",
+                                  xerr=sum2only["SE_1"], yerr=sum2only["SE_2"], engine="plt",
+                                  scatter_kwargs={**scatter_kwargs, "label": label[1], "zorder": 2, "color": "#41e620", "edgecolors": sum2only["Edge_color"], "marker": "o"},
+                                  err_kwargs=err_kwargs)
             legend_elements.append(label[1])
         if len(both)>0:
-            ax.errorbar(both["EFFECT_1"],both["EFFECT_2_aligned"], xerr=both["SE_1"],yerr=both["SE_2"],
-                        linewidth=0,zorder=1,**err_kwargs)
-            ax.scatter(both["EFFECT_1"],both["EFFECT_2_aligned"],label=label[2],zorder=2,color="#205be6",edgecolors=both["Edge_color"],marker="s",**scatter_kwargs)  
-            #legend_elements.append(mpatches.Patch(facecolor='#205be6', edgecolor='white', label=label[2]))
+            plot_scatter_with_err(ax=ax, df=both, x="EFFECT_1", y="EFFECT_2_aligned",
+                                  xerr=both["SE_1"], yerr=both["SE_2"], engine="plt",
+                                  scatter_kwargs={**scatter_kwargs, "label": label[2], "zorder": 2, "color": "#205be6", "edgecolors": both["Edge_color"], "marker": "s"},
+                                  err_kwargs=err_kwargs)
             legend_elements.append(label[2])
     else:
         ## if OR
         if len(sum0)>0:
-            ax.errorbar(sum0["OR_1"],sum0["OR_2_aligned"], xerr=sum0[["OR_L_1_err","OR_H_1_err"]].T,yerr=sum0[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
-                        linewidth=0,zorder=1,**err_kwargs)
-            ax.scatter(sum0["OR_1"],sum0["OR_2_aligned"],label=label[3],zorder=2,color="#cccccc",edgecolors=sum0["Edge_color"],marker=".",**scatter_kwargs)
+            plot_scatter_with_err(ax=ax, df=sum0, x="OR_1", y="OR_2_aligned",
+                                  xerr=sum0[["OR_L_1_err","OR_H_1_err"]].T, yerr=sum0[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T, engine="plt",
+                                  scatter_kwargs={**scatter_kwargs, "label": label[3], "zorder": 2, "color": "#cccccc", "edgecolors": sum0["Edge_color"], "marker": "."},
+                                  err_kwargs=err_kwargs)
             legend_elements.append(label[3])
         if len(sum1only)>0:
-            ax.errorbar(sum1only["OR_1"],sum1only["OR_2_aligned"], xerr=sum1only[["OR_L_1_err","OR_H_1_err"]].T,yerr=sum1only[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
-                        linewidth=0,zorder=1,**err_kwargs)
-            ax.scatter(sum1only["OR_1"],sum1only["OR_2_aligned"],label=label[0],zorder=2,color="#e6320e",edgecolors=sum1only["Edge_color"],marker="^",**scatter_kwargs)
+            plot_scatter_with_err(ax=ax, df=sum1only, x="OR_1", y="OR_2_aligned",
+                                  xerr=sum1only[["OR_L_1_err","OR_H_1_err"]].T, yerr=sum1only[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T, engine="plt",
+                                  scatter_kwargs={**scatter_kwargs, "label": label[0], "zorder": 2, "color": "#e6320e", "edgecolors": sum1only["Edge_color"], "marker": "^"},
+                                  err_kwargs=err_kwargs)
             legend_elements.append(label[0])
         if len(sum2only)>0:
-            ax.errorbar(sum2only["OR_1"],sum2only["OR_2_aligned"], xerr=sum2only[["OR_L_1_err","OR_H_1_err"]].T,yerr=sum2only[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
-                        linewidth=0,zorder=1,**err_kwargs)
-            ax.scatter(sum2only["OR_1"],sum2only["OR_2_aligned"],label=label[1],zorder=2,color="#41e620",edgecolors=sum2only["Edge_color"],marker="o",**scatter_kwargs)
+            plot_scatter_with_err(ax=ax, df=sum2only, x="OR_1", y="OR_2_aligned",
+                                  xerr=sum2only[["OR_L_1_err","OR_H_1_err"]].T, yerr=sum2only[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T, engine="plt",
+                                  scatter_kwargs={**scatter_kwargs, "label": label[1], "zorder": 2, "color": "#41e620", "edgecolors": sum2only["Edge_color"], "marker": "o"},
+                                  err_kwargs=err_kwargs)
             legend_elements.append(label[1])
         if len(both)>0:
-            ax.errorbar(both["OR_1"],both["OR_2_aligned"], xerr=both[["OR_L_1_err","OR_H_1_err"]].T,yerr=both[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T,
-                        linewidth=0,zorder=1,**err_kwargs)
-            ax.scatter(both["OR_1"],both["OR_2_aligned"],label=label[2],zorder=2,color="#205be6",edgecolors=both["Edge_color"],marker="s",**scatter_kwargs)
+            plot_scatter_with_err(ax=ax, df=both, x="OR_1", y="OR_2_aligned",
+                                  xerr=both[["OR_L_1_err","OR_H_1_err"]].T, yerr=both[["OR_L_2_aligned_err","OR_H_2_aligned_err"]].T, engine="plt",
+                                  scatter_kwargs={**scatter_kwargs, "label": label[2], "zorder": 2, "color": "#205be6", "edgecolors": both["Edge_color"], "marker": "s"},
+                                  err_kwargs=err_kwargs)
             legend_elements.append(label[2])
     ## annotation #################################################################################################################
     ax = scatter_annotation(ax, sig_list_merged,anno, anno_het, is_q, mode, 
@@ -486,12 +433,12 @@ def compare_effect(path1,
     
     if mode=="beta" or mode=="BETA" or mode=="Beta":
         #if using beta
-        ax.axhline(y=0, zorder=1,**helper_line_args)
-        ax.axvline(x=0, zorder=1,**helper_line_args)
+        ax.axhline(y=0, zorder=1,**helper_line_kwargs)
+        ax.axvline(x=0, zorder=1,**helper_line_kwargs)
     else:
         #if using OR
-        ax.axhline(y=1, zorder=1,**helper_line_args)
-        ax.axvline(x=1, zorder=1,**helper_line_args)
+        ax.axhline(y=1, zorder=1,**helper_line_kwargs)
+        ax.axvline(x=1, zorder=1,**helper_line_kwargs)
     
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
@@ -510,7 +457,7 @@ def compare_effect(path1,
                                  null_beta=null_beta, 
                                  r_se=r_se, 
                                  is_45_helper_line=is_45_helper_line,
-                                 helper_line_args=helper_line_args, 
+                                 helper_line_kwargs=helper_line_kwargs, 
                                  font_kwargs=font_kwargs,
                                  log=log, 
                                  verbose=verbose)
@@ -520,15 +467,23 @@ def compare_effect(path1,
     ax.set_ylabel(xylabel_prefix+label[1],**font_kwargs)
     
     ax = configure_legend(fig, ax, legend_mode, is_q, is_q_mc, legend_elements, legend_pos, q_level, 
-                        font_kwargs,scatterargs,legend_args,
+                        font_kwargs,scatter_kwargs,legend_kwargs,
                         legend_title, legend_title2 )
     ##plot finished########################################################################################
     gc.collect()
 
-    save_figure(fig, save, keyword="esc",save_args=save_kwargs, log=log, verbose=verbose)
+    save_figure(fig, save, keyword="esc",save_kwargs=save_kwargs, log=log, verbose=verbose)
     
-    sig_list_merged = reorder_columns(sig_list_merged)
-    
+    # Final reorder and save merged data at the end
+    if clean_output:
+        sig_list_merged = reorder_columns_clean(sig_list_merged, mode)
+    else:
+        sig_list_merged = reorder_columns(sig_list_merged)
+
+    save_path = label[0]+"_"+label[1]+"_beta_sig_list_merged.tsv"
+    log.write(" -Saving the merged data to:",save_path, verbose=verbose)
+    sig_list_merged.to_csv(save_path,sep="\t")
+
     return [sig_list_merged, fig,log]
 
 ###############################################################################################
@@ -545,131 +500,76 @@ def compare_effect(path1,
 ###############################################################################################
 ###############################################################################################
 
-def load_sumstats(path, usecols, label, log, verbose, sep):
+def load_sumstats(path, usecols, label, log, verbose):
     if type(usecols) is not list:
         usecols = [usecols]
     
     log.write(" -Loading sumstats for {} : {}".format(label,",".join(usecols)), verbose=verbose)
-    #log.write(" -Loading {} SNP list in memory...".format(label), verbose=verbose)   
-    
-    if type(path) is Sumstats:
+    if isinstance(path, Sumstats):
         sumstats = path.data.loc[:,usecols].copy()
-    elif type(path) is pd.DataFrame:
-        sumstats = path.loc[:,usecols].copy()
     else:
-        sumstats=pd.read_table(path,sep=sep,usecols=usecols)
+        raise ValueError("Please provide GWASLab Sumstats objects; file paths or DataFrames are not supported.")
     return sumstats
 
-def configure_headers(mode, 
-                    path1, 
-                    path2, 
-                    cols_name_list_1,
-                    cols_name_list_2,
-                    effect_cols_list_1,
-                    effect_cols_list_2,
-                    scaled1,
-                    scaled2,
-                    log, 
-                    verbose):
-    
+def configure_headers(mode, scaled1, scaled2, log, verbose):
     if mode not in ["Beta","beta","BETA","OR","or"]:
         raise ValueError("Please input Beta or OR")
-    
-    if type(path1) is Sumstats:
-        log.write("Path1 is gwaslab Sumstats object...", verbose=verbose)
-        if cols_name_list_1 is None:
-            cols_name_list_1 = ["SNPID","P","EA","NEA","CHR","POS"]
-            if scaled1==True:
-                cols_name_list_1 = ["SNPID","MLOG10P","EA","NEA","CHR","POS"]
-        if effect_cols_list_1 is None:
-            if mode=="beta":
-                effect_cols_list_1 = ["BETA","SE"]
-            else:
-                effect_cols_list_1 = ["OR","OR_95L","OR_95U"]
-    elif type(path1) is pd.DataFrame:
-        log.write("Path1 is pandas DataFrame object...", verbose=verbose)
+    log.write("Using fixed headers from Sumstats object.", verbose=verbose)
+    cols_name_list_1 = ["SNPID", "MLOG10P" if scaled1 else "P", "EA", "NEA", "CHR", "POS"]
+    cols_name_list_2 = ["SNPID", "MLOG10P" if scaled2 else "P", "EA", "NEA", "CHR", "POS"]
+    if mode == "beta" or mode == "Beta" or mode == "BETA":
+        effect_cols_list_1 = ["BETA", "SE"]
+        effect_cols_list_2 = ["BETA", "SE"]
+    else:
+        effect_cols_list_1 = ["OR", "OR_95L", "OR_95U"]
+        effect_cols_list_2 = ["OR", "OR_95L", "OR_95U"]
+    return cols_name_list_1, cols_name_list_2, effect_cols_list_1, effect_cols_list_2
 
-    if type(path2) is Sumstats:
-        log.write("Path2 is gwaslab Sumstats object...", verbose=verbose)
-        if cols_name_list_2 is None:
-            cols_name_list_2 = ["SNPID","P","EA","NEA","CHR","POS"]
-            if scaled2==True:
-                cols_name_list_2 = ["SNPID","MLOG10P","EA","NEA","CHR","POS"]
-        if effect_cols_list_2 is None:
-            if mode=="beta":
-                effect_cols_list_2 = ["BETA","SE"]
-            else:
-                effect_cols_list_2 = ["OR","OR_95L","OR_95U"]
-    elif type(path2) is pd.DataFrame:
-        log.write("Path2 is pandas DataFrame object...", verbose=verbose)
-
-    return cols_name_list_1,cols_name_list_2, effect_cols_list_1, effect_cols_list_2
-
-def configure_common_snp_set(path1,path2,
+def configure_common_snp_set(path1, path2,
                              snplist,
                              label,
-                             cols_name_list_1,cols_name_list_2,
-                             sep,
-                             scaled1,
-                             scaled2,
-                             log,verbose):
-    
-    ######### load sumstats2
-    sumstats = load_sumstats(path=path2, 
-                             usecols=cols_name_list_2[0], 
-                             label=label[1], 
-                             log=log, 
-                             verbose= verbose, 
-                             sep=sep[1])
-    
-    common_snp_set=set(sumstats[cols_name_list_2[0]].values)
-    
-    ######### extract snplist1
+                             log, verbose):
+    # favor snplist if provided
     if snplist is not None:
-        #use only SNPID, P
-        cols_to_extract = [cols_name_list_1[0],cols_name_list_1[1]]
+        log.write(" -Using provided snplist for intersection...", verbose=verbose)
+        # ensure set for fast lookup
+        snp_set = set(snplist)
+        # load SNPID only to reduce memory IO
+        snp2 = load_sumstats(path=path2, usecols="SNPID", label=label[1], log=log, verbose=verbose)
+        common_snp_set = snp_set.intersection(snp2["SNPID"].values)
+        # prepare columns from path1 according to downstream needs
+        use_pcol = "MLOG10P" if ("MLOG10P" in path1.data.columns) else "P"
+        cols_to_extract = ["SNPID", use_pcol]
     else:
-        # use SNPID, P, chr pos
-        cols_to_extract = [cols_name_list_1[0],cols_name_list_1[1],cols_name_list_1[4],cols_name_list_1[5]]
- 
-    ######### load sumstats1
-    sumstats = load_sumstats(path=path1, 
-                             usecols=cols_to_extract, 
-                             label=label[0], 
-                             log=log, 
-                             verbose= verbose, 
-                             sep=sep[0])
-    
+        snp2 = load_sumstats(path=path2, usecols="SNPID", label=label[1], log=log, verbose=verbose)
+        common_snp_set = set(snp2["SNPID"].values)
+        use_pcol = "MLOG10P" if ("MLOG10P" in path1.data.columns) else "P"
+        cols_to_extract = ["SNPID", use_pcol, "CHR", "POS"]
+
+    sumstats = load_sumstats(path=path1, usecols=cols_to_extract, label=label[0], log=log, verbose=verbose)
     gc.collect()
 
-    #if scaled1==True:
-    #    sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
-    ######### 5 extract the common set
-    
-    common_snp_set = common_snp_set.intersection(sumstats[cols_name_list_1[0]].values)
-    
-    log.write(" -Counting  variants available for both datasets:",len(common_snp_set)," variants...", verbose=verbose)
-    
+    # intersect with path1 SNPs
+    common_snp_set = common_snp_set.intersection(sumstats["SNPID"].values)
+
+    log.write(" -Counting  variants available for both datasets:", len(common_snp_set), " variants...", verbose=verbose)
+
     return sumstats, common_snp_set
 
-def rename_sumtats(sumstats, cols_name_list, snplist, scaled,suffix=""):
-    ######### 6 rename the sumstats
-    rename_dict = { cols_name_list[0]:"SNPID",
-                   cols_name_list[1]:"P{}".format(suffix),
-               }
-    if scaled==True:
-        rename_dict[cols_name_list[1]] = "MLOG10P{}".format(suffix)
-    
-    if snplist is None: 
-        rename_dict[cols_name_list[4]]="CHR"
-        rename_dict[cols_name_list[5]]="POS"
-    
-    sumstats = sumstats.rename(columns=rename_dict)
-    return sumstats
+def rename_sumtats(sumstats, snplist, scaled, suffix=""):
+    rename_dict = {"SNPID": "SNPID"}
+    if scaled:
+        rename_dict["MLOG10P"] = "MLOG10P{}".format(suffix)
+    else:
+        rename_dict["P"] = "P{}".format(suffix)
+    if snplist is None:
+        rename_dict["CHR"] = "CHR"
+        rename_dict["POS"] = "POS"
+    return sumstats.rename(columns=rename_dict)
 
 
 def extract_snp_for_comparison(sumstats, snplist, label, 
-                               get_lead_args, build, drop, anno, 
+                               get_lead_kwargs, build, drop, anno, 
                                sig_level,scaled, log, verbose):
     ######### 8 extact SNPs for comparison 
     if snplist is not None: 
@@ -677,11 +577,11 @@ def extract_snp_for_comparison(sumstats, snplist, label,
         log.write(" -Extract variants in the given list from "+label+"...")
         sig_list = sumstats.loc[sumstats["SNPID"].isin(snplist),:].copy()
         if anno=="GENENAME":
-            sig_list = annogene(sig_list,"SNPID","CHR","POS", build=build, verbose=verbose, **get_lead_args)
+            sig_list = annogene(sig_list,"SNPID","CHR","POS", build=build, verbose=verbose, **get_lead_kwargs)
     else:
         ######### 8,2 otherwise use the automatically detected lead SNPs
         log.write(" -Extract lead variants from "+label +"...", verbose=verbose)
-        sig_list = getsig(sumstats,"SNPID","CHR","POS","P","MLOG10P", build=build, verbose=verbose,sig_level=sig_level,**get_lead_args)
+        sig_list = getsig(sumstats,"SNPID","CHR","POS","P","MLOG10P", build=build, verbose=verbose,sig_level=sig_level,**get_lead_kwargs)
     
     if drop==True:
         if scaled==True:
@@ -714,48 +614,37 @@ def merge_list(sig_list_1, sig_list_2, anno,labels,log, verbose):
     #1     rs6704312  0.652104  0.143750
     return sig_list_merged
 
-def configure_cols_to_extract(mode, 
-                              cols_name_list, 
-                              effect_cols_list, 
-                              eaf):
-    
+def configure_cols_to_extract(mode, has_eaf, scaled):
     if mode=="beta" or mode=="BETA" or mode=="Beta":
-        #[snpid,p,ea,nea]      ,[effect,se]
-        #[snpid,p,ea,nea,chr,pos],[effect,se]
-        #[snpid,p,ea,nea,chr,pos],[OR,OR_l,OR_h]
-        cols_to_extract = [cols_name_list[0],cols_name_list[1], cols_name_list[2],cols_name_list[3], effect_cols_list[0], effect_cols_list[1]]
+        cols = ["SNPID", "MLOG10P" if scaled else "P", "EA", "NEA", "BETA", "SE"]
     else:
-        cols_to_extract = [cols_name_list[0],cols_name_list[1], cols_name_list[2],cols_name_list[3], effect_cols_list[0], effect_cols_list[1], effect_cols_list[2]]
-    
-    if len(eaf)>0: 
-        cols_to_extract.append(eaf[0])   
-    
-    return cols_to_extract
+        cols = ["SNPID", "MLOG10P" if scaled else "P", "EA", "NEA", "OR", "OR_95L", "OR_95U"]
+    if has_eaf:
+        cols.append("EAF")
+    return cols
 
-def rename_sumstats_full(mode, sumstats, cols_name_list, effect_cols_list, eaf, drop, index, scaled, log, verbose):
+def rename_sumstats_full(mode, sumstats, drop, index, scaled, has_eaf, log, verbose):
     if mode=="beta" or mode=="BETA" or mode=="Beta":
-        rename_dict = { cols_name_list[0]:"SNPID",
-                        cols_name_list[1]:"P_{}".format(index),
-                        cols_name_list[2]:"EA_{}".format(index),
-                        cols_name_list[3]:"NEA_{}".format(index),
-                        effect_cols_list[0]:"EFFECT_{}".format(index),
-                        effect_cols_list[1]:"SE_{}".format(index)}
-
-        
+        rename_dict = {
+            "SNPID": "SNPID",
+            ("MLOG10P" if scaled else "P"): ("MLOG10P_{}".format(index) if scaled else "P_{}".format(index)),
+            "EA": "EA_{}".format(index),
+            "NEA": "NEA_{}".format(index),
+            "BETA": "EFFECT_{}".format(index),
+            "SE": "SE_{}".format(index),
+        }
     else:
-        # if or
-        rename_dict = { cols_name_list[0]:"SNPID",
-                        cols_name_list[1]:"P_{}".format(index),
-                        cols_name_list[2]:"EA_{}".format(index),
-                        cols_name_list[3]:"NEA_{}".format(index),
-                        effect_cols_list[0]:"OR_{}".format(index),
-                        effect_cols_list[1]:"OR_L_{}".format(index),
-                        effect_cols_list[2]:"OR_H_{}".format(index)}
-    if scaled==True:
-            rename_dict[cols_name_list[1]]="MLOG10P_{}".format(index)
-    ## check if eaf column is provided.
-    if len(eaf)>0: 
-        rename_dict[eaf[index-1]]="EAF_{}".format(index)
+        rename_dict = {
+            "SNPID": "SNPID",
+            ("MLOG10P" if scaled else "P"): ("MLOG10P_{}".format(index) if scaled else "P_{}".format(index)),
+            "EA": "EA_{}".format(index),
+            "NEA": "NEA_{}".format(index),
+            "OR": "OR_{}".format(index),
+            "OR_95L": "OR_L_{}".format(index),
+            "OR_95U": "OR_H_{}".format(index),
+        }
+    if has_eaf:
+        rename_dict["EAF"] = "EAF_{}".format(index)
     sumstats = sumstats.rename(columns=rename_dict)
     
     # drop na and duplicate
@@ -773,8 +662,6 @@ def rename_sumstats_full(mode, sumstats, cols_name_list, effect_cols_list, eaf, 
     
 def update_stats(sig_list_merged, 
                  path, 
-                 cols_name_list,
-                 sep, 
                  snplist, 
                  label, 
                  drop, 
@@ -784,19 +671,17 @@ def update_stats(sig_list_merged,
                  verbose):
     
     log.write(" -Updating missing information for "+label+" ...", verbose=verbose)
-    cols_to_extract = [cols_name_list[0], cols_name_list[1]]
+    cols_to_extract = ["SNPID", "MLOG10P" if scaled else "P"]
     
     sumstats = load_sumstats(path=path, 
                              usecols=cols_to_extract, 
                              label=label, 
                              log=log, 
-                             verbose= verbose, 
-                             sep=sep)
+                             verbose= verbose)
     #if scaled1==True:
     #    sumstats[cols_name_list_1[1]] = np.power(10,-sumstats[cols_name_list_1[1]])
     
     sumstats = rename_sumtats(sumstats = sumstats, 
-                              cols_name_list = cols_name_list, 
                               snplist = snplist,
                               scaled=scaled, 
                               suffix="_{}".format(index))
@@ -839,52 +724,31 @@ def assign_indicator(sig_list_merged, snplist, sig_level, scaled1, scaled2, log,
         sig_list_merged.drop(labels=['CHR_1', 'CHR_2','POS_1', 'POS_2'], axis=1,inplace=True)
     return sig_list_merged
 
-def align_alleles(sig_list_merged, label,mode,eaf, log, verbose):
+def align_alleles(sig_list_merged, label, mode, log, verbose):
     log.write(" -Aligning "+label[1]+" EA with "+label[0]+" EA ...", verbose=verbose)
-    ############### 19 align allele effect with sumstats 1
-    sig_list_merged["EA_1"]=sig_list_merged["EA_1"].astype("string")
-    sig_list_merged["EA_2"]=sig_list_merged["EA_2"].astype("string")
-    sig_list_merged["NEA_1"]=sig_list_merged["NEA_1"].astype("string")
-    sig_list_merged["NEA_2"]=sig_list_merged["NEA_2"].astype("string")
-    if mode=="beta" or mode=="BETA" or mode=="Beta":
-        # copy raw
-        sig_list_merged["EA_2_aligned"]=sig_list_merged["EA_2"]
-        sig_list_merged["NEA_2_aligned"]=sig_list_merged["NEA_2"]
-        sig_list_merged["EFFECT_2_aligned"]=sig_list_merged["EFFECT_2"]
-        
-        #filp ea/nea and beta for sumstats2
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EA_2_aligned"]= sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"NEA_2"]
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"NEA_2_aligned"]= sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EA_2"]
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EFFECT_2_aligned"]= -sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EFFECT_2"]
+    cols = ["EA_1", "EA_2", "NEA_1", "NEA_2"]
+    sig_list_merged[cols] = sig_list_merged[cols].astype("string")
+    mismatch = sig_list_merged["EA_1"] != sig_list_merged["EA_2"]
+    if mode in ("beta", "BETA", "Beta"):
+        sig_list_merged["EA_2_aligned"] = np.where(mismatch, sig_list_merged["NEA_2"], sig_list_merged["EA_2"])
+        sig_list_merged["NEA_2_aligned"] = np.where(mismatch, sig_list_merged["EA_2"], sig_list_merged["NEA_2"])
+        sig_list_merged["EFFECT_2_aligned"] = np.where(mismatch, -sig_list_merged["EFFECT_2"], sig_list_merged["EFFECT_2"])
     else:
-        #flip for OR or - +
-
-        sig_list_merged["EA_2_aligned"]=sig_list_merged["EA_2"]
-        sig_list_merged["NEA_2_aligned"]=sig_list_merged["NEA_2"]
-        sig_list_merged["OR_2_aligned"]=sig_list_merged["OR_2"]
-        sig_list_merged["OR_L_2_aligned"]=sig_list_merged["OR_L_2"]
-        sig_list_merged["OR_H_2_aligned"]=sig_list_merged["OR_H_2"]
-
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EA_2_aligned"]= sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"NEA_2"]
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"NEA_2_aligned"]= sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EA_2"]
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_2"]
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2"]
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_L_2_aligned"]= 1/sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"OR_H_2"]
-        
-        sig_list_merged["BETA_1"]=np.log(sig_list_merged["OR_1"])
-        sig_list_merged["BETA_2_aligned"]=np.log(sig_list_merged["OR_2_aligned"])
-        sig_list_merged["SE_1"]=(np.log(sig_list_merged["OR_H_1"]) - np.log(sig_list_merged["OR_1"]))/ss.norm.ppf(0.975)
-        sig_list_merged["SE_2"]=(np.log(sig_list_merged["OR_H_2_aligned"]) - np.log(sig_list_merged["OR_2_aligned"]))/ss.norm.ppf(0.975)
-        
-        sig_list_merged["OR_L_1_err"]=np.abs(sig_list_merged["OR_L_1"]-sig_list_merged["OR_1"])
-        sig_list_merged["OR_H_1_err"]=np.abs(sig_list_merged["OR_H_1"]-sig_list_merged["OR_1"])
-        sig_list_merged["OR_L_2_aligned_err"]=np.abs(sig_list_merged["OR_L_2_aligned"]-sig_list_merged["OR_2_aligned"])
-        sig_list_merged["OR_H_2_aligned_err"]=np.abs(sig_list_merged["OR_H_2_aligned"]-sig_list_merged["OR_2_aligned"])
-        
-    if len(eaf)>0:
-        # flip eaf
-        sig_list_merged["EAF_2_aligned"]=sig_list_merged["EAF_2"]
-        sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2_aligned"]= 1 -sig_list_merged.loc[sig_list_merged["EA_1"]!=sig_list_merged["EA_2"],"EAF_2"]
+        sig_list_merged["EA_2_aligned"] = np.where(mismatch, sig_list_merged["NEA_2"], sig_list_merged["EA_2"])
+        sig_list_merged["NEA_2_aligned"] = np.where(mismatch, sig_list_merged["EA_2"], sig_list_merged["NEA_2"])
+        sig_list_merged["OR_2_aligned"] = np.where(mismatch, 1 / sig_list_merged["OR_2"], sig_list_merged["OR_2"])
+        sig_list_merged["OR_L_2_aligned"] = np.where(mismatch, 1 / sig_list_merged["OR_H_2"], sig_list_merged["OR_L_2"])
+        sig_list_merged["OR_H_2_aligned"] = np.where(mismatch, 1 / sig_list_merged["OR_L_2"], sig_list_merged["OR_H_2"])
+        sig_list_merged["BETA_1"] = np.log(sig_list_merged["OR_1"])
+        sig_list_merged["BETA_2_aligned"] = np.log(sig_list_merged["OR_2_aligned"])
+        sig_list_merged["SE_1"] = (np.log(sig_list_merged["OR_H_1"]) - np.log(sig_list_merged["OR_1"])) / ss.norm.ppf(0.975)
+        sig_list_merged["SE_2"] = (np.log(sig_list_merged["OR_H_2_aligned"]) - np.log(sig_list_merged["OR_2_aligned"])) / ss.norm.ppf(0.975)
+        sig_list_merged["OR_L_1_err"] = np.abs(sig_list_merged["OR_L_1"] - sig_list_merged["OR_1"])
+        sig_list_merged["OR_H_1_err"] = np.abs(sig_list_merged["OR_H_1"] - sig_list_merged["OR_1"])
+        sig_list_merged["OR_L_2_aligned_err"] = np.abs(sig_list_merged["OR_L_2_aligned"] - sig_list_merged["OR_2_aligned"])
+        sig_list_merged["OR_H_2_aligned_err"] = np.abs(sig_list_merged["OR_H_2_aligned"] - sig_list_merged["OR_2_aligned"])
+    if "EAF_2" in sig_list_merged.columns:
+        sig_list_merged["EAF_2_aligned"] = np.where(mismatch, 1 - sig_list_merged["EAF_2"], sig_list_merged["EAF_2"])
     return sig_list_merged
 
 #########################################################################################################################
@@ -955,10 +819,10 @@ def winnerscurse_correction(sig_list_merged, mode, wc_correction, sig_level, sca
             sig_list_merged.loc[match2, "EFFECT_2_aligned"] = sig_list_merged.loc[match2, ["EFFECT_2_aligned_RAW","SE_2"]].apply(lambda x: wc_correct_test(x[0],x[1],sig_level),axis=1)
     return sig_list_merged
 
-def filter_by_maf(sig_list_merged, eaf, maf_level, log, verbose):
-    if (len(eaf)>0) and (maf_level is not None):
+def filter_by_maf(sig_list_merged, maf_level, log, verbose):
+    if maf_level is not None and "EAF_1" in sig_list_merged.columns and "EAF_2" in sig_list_merged.columns:
         both_eaf_clear =  (sig_list_merged["EAF_1"]>maf_level)&(sig_list_merged["EAF_1"]<1-maf_level)&(sig_list_merged["EAF_2"]>maf_level)&(sig_list_merged["EAF_2"]<1-maf_level)
-        log.write(" -Exclude "+str(len(sig_list_merged) -sum(both_eaf_clear))+ " variants with maf <",maf_level, verbose=verbose)
+        log.write(" -Exclude "+str(len(sig_list_merged) -sum(both_eaf_clear))+ " variants with maf <"+str(maf_level), verbose=verbose)
         sig_list_merged = sig_list_merged.loc[both_eaf_clear,:]
     return sig_list_merged
 
@@ -1068,89 +932,43 @@ def scatter_annotation(ax, sig_list_merged,anno, anno_het, is_q, mode,
                        anno_min,anno_min1,anno_min2,anno_diff,anno_kwargs,adjust_text_kwargs_l,adjust_text_kwargs_r,
                        log,verbose
                        ):
-    if anno==True or anno=="GENENAME":
-        sig_list_toanno = sig_list_merged.dropna(axis=0)
-        if is_q==True and anno_het == True:
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["Edge_color"]=="black",:]
+    xcol = "EFFECT_1" if (mode=="beta" or mode=="BETA" or mode=="Beta") else "OR_1"
+    ycol = "EFFECT_2_aligned" if (mode=="beta" or mode=="BETA" or mode=="Beta") else "OR_2_aligned"
+    df = sig_list_merged.dropna(axis=0)
+    if is_q==True and anno_het == True:
+        df = df.loc[df["Edge_color"]=="black",:]
+    m = (df[xcol].abs()>=anno_min1) & (df[ycol].abs()>=anno_min2) & (df[xcol].abs()>=anno_min) & (df[ycol].abs()>=anno_min) & (np.abs(df[xcol]-df[ycol])>=anno_diff)
+    df = df.loc[m,:]
+    texts_l=[]
+    texts_r=[]
+    if anno==True:
+        log.write("Annotating variants using {}".format("SNPID"), verbose=verbose)
+    elif anno=="GENENAME":
+        log.write("Annotating variants using {}".format("GENENAME"), verbose=verbose)
+    if anno==False:
+        return ax
 
-        if mode=="beta":
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
-            sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["EFFECT_1"].abs() >=anno_min) & (sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min) ,:]
-            sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["EFFECT_1"] - sig_list_toanno["EFFECT_2_aligned"]) >=anno_diff,:]
-        else:            
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["OR_1"].abs() >=anno_min1 ,:]
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["OR_2_aligned"].abs() >=anno_min2 ,:]
-            sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["OR_1"].abs() >=anno_min) & (sig_list_toanno["OR_2_aligned"].abs() >=anno_min) ,:]
-            sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["OR_1"] - sig_list_toanno["OR_2_aligned"]) >=anno_diff,:]
-
-        texts_l=[]
-        texts_r=[]
-        
-        if anno==True:
-            log.write("Annotating variants using {}".format("SNPID"), verbose=verbose)
-        elif anno=="GENENAME":
-            log.write("Annotating variants using {}".format("GENENAME"), verbose=verbose)
-        
-        for index, row in sig_list_toanno.iterrows():
-            #log.write("Annotating {}...".format(row), verbose=verbose)
+    if isinstance(anno, dict):
+        df = df.loc[df.index.isin(list(anno.keys())),:]
+        iterator = ((index, row, anno[index]) for index, row in df.iterrows())
+    else:
+        def pick_text(index, row):
             if anno==True:
-                to_anno_text = index
-            elif type(anno) is str:
-                if not pd.isna(row[anno]):
-                    to_anno_text = row[anno]
-                else:
-                    to_anno_text = index
-
-            if mode=="beta" or mode=="BETA" or mode=="Beta":
-                if row["EFFECT_1"] <  row["EFFECT_2_aligned"]:
-                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="right",va="bottom", **anno_kwargs))
-                else:
-                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],to_anno_text,ha="left",va="top", **anno_kwargs))
+                return index
+            elif type(anno) is str and not pd.isna(row[anno]):
+                return row[anno]
             else:
-                if row["OR_1"] <  row["OR_2_aligned"]:
-                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='right', va='bottom', **anno_kwargs)) 
-                else:
-                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],to_anno_text, ha='left', va='top', **anno_kwargs)) 
-        if len(texts_l)>0:
-            adjust_text(texts_l,ax=ax,**adjust_text_kwargs_l)
-        if len(texts_r)>0:
-            adjust_text(texts_r,ax=ax,**adjust_text_kwargs_r)
-    elif type(anno) is dict:
-        sig_list_toanno = sig_list_merged.dropna(axis=0)
-        # if input is a dict
-        sig_list_toanno = sig_list_toanno.loc[sig_list_toanno.index.isin(list(anno.keys())),:]
-        if is_q==True and anno_het == True:
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["Edge_color"]=="black",:]
-
-        if mode=="beta":
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_1"].abs() >=anno_min1 ,:]
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min2 ,:]
-            sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["EFFECT_1"].abs() >=anno_min) & (sig_list_toanno["EFFECT_2_aligned"].abs() >=anno_min) ,:]
-            sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["EFFECT_1"] - sig_list_toanno["EFFECT_2_aligned"]) >=anno_diff,:]
-        else:            
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["OR_1"].abs() >=anno_min1 ,:]
-            sig_list_toanno = sig_list_toanno.loc[sig_list_toanno["OR_2_aligned"].abs() >=anno_min2 ,:]
-            sig_list_toanno = sig_list_toanno.loc[(sig_list_toanno["OR_1"].abs() >=anno_min) & (sig_list_toanno["OR_2_aligned"].abs() >=anno_min) ,:]
-            sig_list_toanno = sig_list_toanno.loc[np.abs(sig_list_toanno["OR_1"] - sig_list_toanno["OR_2_aligned"]) >=anno_diff,:]
-        
-        texts_l=[]
-        texts_r=[]
-        for index, row in sig_list_toanno.iterrows():
-            if mode=="beta" or mode=="BETA" or mode=="Beta":
-                if row["EFFECT_1"] <  row["EFFECT_2_aligned"]:
-                    texts_l.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="right",va="bottom", **anno_kwargs))
-                else:
-                    texts_r.append(plt.text(row["EFFECT_1"], row["EFFECT_2_aligned"],anno[index],ha="left",va="top", **anno_kwargs))
-            else:
-                if row["OR_1"] <  row["OR_2_aligned"]:
-                    texts_l.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='right', va='bottom', **anno_kwargs)) 
-                else:
-                    texts_r.append(plt.text(row["OR_1"], row["OR_2_aligned"],anno[index], ha='left', va='top', **anno_kwargs)) 
-        if len(texts_l)>0:
-            adjust_text(texts_l,ax=ax,**adjust_text_kwargs_l)
-        if len(texts_r)>0:
-            adjust_text(texts_r,ax=ax,**adjust_text_kwargs_r)
+                return index
+        iterator = ((index, row, pick_text(index, row)) for index, row in df.iterrows())
+    for index, row, t in iterator:
+        if row[xcol] < row[ycol]:
+            texts_l.append(plt.text(row[xcol], row[ycol], t, ha="right", va="bottom", **anno_kwargs))
+        else:
+            texts_r.append(plt.text(row[xcol], row[ycol], t, ha="left", va="top", **anno_kwargs))
+    if len(texts_l)>0:
+        adjust_text(texts_l, ax=ax, **adjust_text_kwargs_l)
+    if len(texts_r)>0:
+        adjust_text(texts_r, ax=ax, **adjust_text_kwargs_r)
     return ax
 
 
@@ -1167,7 +985,7 @@ def configure_regression_line(is_reg,
                               null_beta, 
                               r_se, 
                             is_45_helper_line,
-                            helper_line_args, 
+                            helper_line_kwargs, 
                             font_kwargs,
                             log, 
                             verbose):
@@ -1179,7 +997,7 @@ def configure_regression_line(is_reg,
             # estimate se for r
             if r_se==True:
                 log.write(" -Estimating SE for rsq using Jackknife method.", verbose=verbose)
-                r_se_jackknife = jackknife_r(sig_list_merged)
+                r_se_jackknife = scatter_jackknife_r(sig_list_merged, x="EFFECT_1", y="EFFECT_2_aligned", log=log, verbose=verbose)
                 r_se_jackknife_string = " ({:.2f})".format(r_se_jackknife)
             else:
                 r_se_jackknife_string= ""
@@ -1205,7 +1023,7 @@ def configure_regression_line(is_reg,
         if reg[0] > 0:
             #if regression coeeficient >0 : auxiliary line slope = 1
             if is_45_helper_line is True:
-                ax.axline([min(xl,yl),min(xl,yl)], [max(xh, yh),max(xh, yh)],zorder=1,**helper_line_args)
+                _create_helper_line(ax, reg[0], is_45_helper_line, helper_line_kwargs)
 
             #add text
             try:
@@ -1236,10 +1054,7 @@ def configure_regression_line(is_reg,
         else:
             #if regression coeeficient <0 : auxiliary line slope = -1
             if is_45_helper_line is True:
-                if mode=="beta" or mode=="BETA" or mode=="Beta": 
-                    ax.axline([min(xl,yl),-min(xl,yl)], [max(xh, yh),-max(xh, yh)],zorder=1,**helper_line_args)
-                else:
-                    ax.axline([min(xl,yl),-min(xl,yl)], [max(xh, yh),-max(xh, yh)],zorder=1,**helper_line_args)
+                _create_helper_line(ax, reg[0], is_45_helper_line, helper_line_kwargs)
             #add text
             try:
                 p12=str("{:.2e}".format(p)).split("e")[0]
@@ -1273,16 +1088,16 @@ def configure_regression_line(is_reg,
             middle = sig_list_merged["OR_1"].mean()
         
         if mode=="beta" or mode=="BETA" or mode=="Beta":
-            ax.axline(xy1=(0,reg[1]),slope=reg[0],color="#cccccc",linestyle='--',zorder=1)
+            _create_reg_line(ax, reg, reg_xmin=0)
         else:
-            ax.axline(xy1=(1,reg[0]+reg[1]),slope=reg[0],color="#cccccc",linestyle='--',zorder=1)
+            _create_reg_line(ax, reg, reg_xmin=1)
     return ax
 
 
 def configure_legend(fig, ax, legend_mode, is_q, is_q_mc, legend_elements, legend_pos, q_level, 
-                     font_kwargs,scatterargs,legend_args,
+                     font_kwargs, scatter_kwargs, legend_kwargs,
                      legend_title, legend_title2  ):
-    legend_args_to_use ={
+    legend_kwargs_to_use ={
             "framealpha":1,
             "handlelength":0.7,
             "handletextpad":0.8,
@@ -1292,9 +1107,9 @@ def configure_legend(fig, ax, legend_mode, is_q, is_q_mc, legend_elements, legen
             "frameon":False
         }
 
-    if legend_args is not None:
-        for key,value in legend_args.items():
-            legend_args_to_use[key] = value
+    if legend_kwargs is not None:
+        for key,value in legend_kwargs.items():
+            legend_kwargs_to_use[key] = value
 
     if legend_mode == "full" and is_q==True :
         title_proxy = Rectangle((0,0), 0, 0, color='w',label=legend_title)
@@ -1326,13 +1141,13 @@ def configure_legend(fig, ax, legend_mode, is_q, is_q_mc, legend_elements, legen
             labels=labels,
             #title=legend_title,
             loc=legend_pos,
-            **legend_args_to_use
+            **legend_kwargs_to_use
             )
     else:
         L = ax.legend(
             title=legend_title,
             loc=legend_pos,
-            **legend_args_to_use
+            **legend_kwargs_to_use
             )
     
     #for i, handle in enumerate(L.legendHandles):
@@ -1343,8 +1158,8 @@ def configure_legend(fig, ax, legend_mode, is_q, is_q_mc, legend_elements, legen
         for item, label in zip(L.legendHandles, L.texts):
             if label._text  in legend_elements:
                 item.set_edgecolor("white")
-                #item._legmarker.set_markersize(scatterargs["s"]*1.5)
-                item._sizes = [scatterargs["s"]*2]
+                #item._legmarker.set_markersize(scatter_kwargs["s"]*1.5)
+                item._sizes = [scatter_kwargs["s"]*2]
             if legend_mode == "full":
                 if label._text  in [legend_title, legend_title2]:
                     width=item.get_window_extent(fig.canvas.get_renderer()).width
@@ -1380,3 +1195,23 @@ def reorder_columns(sig_list_merged):
             new_order.append(i)
     
     return sig_list_merged[new_order]
+
+def reorder_columns_clean(sig_list_merged, mode):
+    base = sig_list_merged.copy()
+    if 'EA_1' in base.columns and 'EA' not in base.columns:
+        base['EA'] = base['EA_1']
+    if 'NEA_1' in base.columns and 'NEA' not in base.columns:
+        base['NEA'] = base['NEA_1']
+    if mode in ("beta", "BETA", "Beta"):
+        if 'EFFECT_2_aligned' in base.columns:
+            base['BETA_2'] = base['EFFECT_2_aligned']
+        if 'BETA_1' not in base.columns and 'EFFECT_1' in base.columns:
+            base['BETA_1'] = base['EFFECT_1']
+        clean_cols = ['CHR','POS','GENENAME','EA','NEA','BETA_1','SE_1','P_1','MLOG10P_1','BETA_2','SE_2','P_2','MLOG10P_2','indicator']
+    else:
+        if 'OR_2_aligned' in base.columns:
+            base['OR_2'] = base['OR_2_aligned']
+        clean_cols = ['CHR','POS','GENENAME','EA','NEA','OR_1','SE_1','P_1','MLOG10P_1','OR_2','SE_2','P_2','MLOG10P_2','indicator']
+
+    # Return only the clean columns that exist
+    return base[[c for c in clean_cols if c in base.columns]].copy()

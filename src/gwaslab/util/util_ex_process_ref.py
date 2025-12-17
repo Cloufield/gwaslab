@@ -3,7 +3,7 @@ import numpy as np
 import subprocess
 from gwaslab.g_Log import Log
 import os
-from gwaslab.g_version import _checking_plink_version
+from gwaslab.extension import _checking_plink_version
 
 def _process_plink_input_files(chrlist, 
                                bfile=None, 

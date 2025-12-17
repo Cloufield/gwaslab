@@ -2,20 +2,29 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt 
 from scipy import stats, optimize
-#from statsmodels.stats.meta_analysis import combine_effects
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-# plot_forest
-# plot row
+from gwaslab.g_Log import Log
+from gwaslab.viz.viz_aux_style_options import set_plot_style
+from gwaslab.viz.viz_aux_save_figure import save_figure
 
-def plot_forest(data, 
-                study_col, 
-                group_col=False,
-                compact_factor=1,
-                width_ratios = [2,6,2],
-                sharex="col",
-                meta=False,
-                combine_effects_args={}):
+def plot_forest(
+    data,
+    study_col,
+    group_col=False,
+    compact_factor=1,
+    width_ratios=[2, 6, 2],
+    sharex="col",
+    meta=False,
+    combine_effects_kwargs={},
+    fig_kwargs=None,
+    save=False,
+    save_kwargs=None,
+    fontsize=12,
+    font_family="Arial",
+    verbose=True,
+    log=Log(),
+):
     if data is pd.DataFrame():
         meta_df_all = data
     else:
@@ -36,7 +45,7 @@ def plot_forest(data,
         combined_results = combine_effects(meta_df["beta"], 
                                            meta_df["se"]**2, 
                                            row_names=meta_df[study_col],
-                                           **combine_effects_args)
+                                           **combine_effects_kwargs)
         if meta==True:
             Q=combined_results.test_homogeneity().statistic
             Qdf=combined_results.test_homogeneity().df
@@ -58,35 +67,66 @@ def plot_forest(data,
         else:
             df_array_het.append(list())
 
-    nrows=len(df_array)
-    fig, axes = plt.subplots(nrows=nrows,ncols=3, sharex=sharex,gridspec_kw={'width_ratios': width_ratios},figsize=(15,len(df_to_plot)*nrows/compact_factor),dpi=300)
+    nrows = len(df_array)
+    style = set_plot_style(
+        plot="plot_forest",
+        fig_kwargs=fig_kwargs,
+        save_kwargs=save_kwargs,
+        save=save,
+        fontsize=fontsize,
+        fontfamily=font_family,
+        verbose=verbose,
+        log=log,
+    )
+    fig_kwargs = style.get("fig_kwargs", {})
+    save_kwargs = style.get("save_kwargs", {})
+    fontsize = style["fontsize"]
+    font_family = style["font_family"]
+    base_width = fig_kwargs.get("figsize", (15, 5))[0]
+    fig_kwargs["figsize"] = (base_width, len(df_to_plot) * nrows / compact_factor)
+    fig, axes = plt.subplots(
+        nrows=nrows,
+        ncols=3,
+        sharex=sharex,
+        gridspec_kw={"width_ratios": width_ratios},
+        **fig_kwargs,
+    )
     if nrows==1:
-        plot_row(axes,
-                 df_to_plot = df_array[0], 
-                 title=0,
-                 group_name=df_array_name[0],
-                 het_q_qdf_qp_i=df_array_het[0],
-                 meta=meta)
+        plot_row(
+            axes,
+            df_to_plot=df_array[0],
+            title=0,
+            group_name=df_array_name[0],
+            het_q_qdf_qp_i=df_array_het[0],
+            meta=meta,
+            fontsize=fontsize,
+            font_family=font_family,
+        )
     else:
         for i in range(nrows):
-            plot_row(axes[i],
-                     df_to_plot = df_array[i], 
-                     title=i, 
-                     group_name=df_array_name[i],
-                     het_q_qdf_qp_i=df_array_het[i],
-                     meta=meta)
+            plot_row(
+                axes[i],
+                df_to_plot=df_array[i],
+                title=i,
+                group_name=df_array_name[i],
+                het_q_qdf_qp_i=df_array_het[i],
+                meta=meta,
+                fontsize=fontsize,
+                font_family=font_family,
+            )
     fig.tight_layout()
+    save_figure(fig, save, "forest", save_kwargs=save_kwargs, log=log, verbose=verbose)
 
 
 
 
-def plot_row(axes,group_name,df_to_plot,meta,het_q_qdf_qp_i=None,title=0):
+def plot_row(axes, group_name, df_to_plot, meta, het_q_qdf_qp_i=None, title=0, fontsize=12, font_family="Arial"):
     studies = df_to_plot.loc[df_to_plot.index!="fixed effect",:].copy()
     studies["MARKERSIZE_N"] = studies["MARKERSIZE"]/np.nanmax(studies["MARKERSIZE"]) * 0.8
     pixels = axes[1].transData.transform((0,len(df_to_plot)+0.5))[1] - axes[1].transData.transform((0,0))[1]
     studies["MARKERSIZE_P"] =  studies["MARKERSIZE_N"] * (pixels/(len(df_to_plot)+0.5)) 
-    axes[1].scatter(x=studies["OR"],y=studies["YORDER"],s=studies["MARKERSIZE_P"]*2 ,marker="s",color="grey")
-    axes[1].errorbar(x=studies["OR"],y=studies["YORDER"],xerr=studies[["OR_95L-OR","OR_95U-OR"]].T ,elinewidth=2,lw=0,marker="s",color="black")
+    axes[1].scatter(x=studies["OR"], y=studies["YORDER"], s=studies["MARKERSIZE_P"] * 2, marker="s", color="grey")
+    axes[1].errorbar(x=studies["OR"], y=studies["YORDER"], xerr=studies[["OR_95L-OR", "OR_95U-OR"]].T, elinewidth=2, lw=0, marker="s", color="black")
 
     # diamond patch coordinates
     xm=df_to_plot.loc[df_to_plot.index=="fixed effect","OR"]
@@ -111,9 +151,9 @@ def plot_row(axes,group_name,df_to_plot,meta,het_q_qdf_qp_i=None,title=0):
     ## add lines
     axes[1].axvline(x=1,color="black")
     axes[1].axvline(x=df_to_plot.loc[df_to_plot.index=="fixed effect","OR"].values[0],color="grey",ls="--")
-    axes[1].set_ylim(0.25,len(df_to_plot)+0.75)
-    axes[2].set_ylim(0.25,len(df_to_plot)+0.75)
-    axes[2].set_xlim([0,1])
+    axes[1].set_ylim(0.25, len(df_to_plot) + 0.75)
+    axes[2].set_ylim(0.25, len(df_to_plot) + 0.75)
+    axes[2].set_xlim([0, 1])
     ## set spine invisible
     axes[1].spines["left"].set(visible=False)
     axes[1].spines["right"].set(visible=False)
@@ -140,30 +180,34 @@ def plot_row(axes,group_name,df_to_plot,meta,het_q_qdf_qp_i=None,title=0):
     
 
     # title
-    if title ==0:
-        #axes[0].set_title("Group",size=15)
-        axes[0].set_title("Groups",size=15,loc="left",fontweight ="bold")
-        axes[1].set_title("Odds Ratio",size=15,fontweight ="bold")
-        axes[1].set_title("Studies",size=15,loc="left",horizontalalignment="right",fontweight ="bold")
-        #axes[1].set_ylabel("Studies",size=15,loc="top")
-        axes[2].set_title("Odds Ratio, [95% CI]",size=15,loc="right",fontweight ="bold")
-    if meta==True:
-        het_string1 = r'$Q={:.2f},Qdf={}$'.format(het_q_qdf_qp_i[0],het_q_qdf_qp_i[1])
-        het_string2 = r'$p={:.1e},I^2={:.1f}%$'.format(het_q_qdf_qp_i[2],het_q_qdf_qp_i[3])
-        axes[0].text(0,0,s=het_string1+"\n"+het_string2,size=15) 
+    if title == 0:
+        axes[0].set_title("Groups", size=fontsize, loc="left", fontweight="bold")
+        axes[1].set_title("Odds Ratio", size=fontsize, fontweight="bold")
+        axes[1].set_ylabel("Studies", fontsize=fontsize, fontfamily=font_family)
+        axes[2].set_title("Odds Ratio, [95% CI]", size=fontsize, loc="right", fontweight="bold")
+    if meta == True:
+        het_string1 = r'$Q={:.2f},Qdf={}$'.format(het_q_qdf_qp_i[0], het_q_qdf_qp_i[1])
+        het_string2 = r'$p={:.1e},I^2={:.1f}%$'.format(het_q_qdf_qp_i[2], het_q_qdf_qp_i[3])
+        axes[0].text(0, 0, s=het_string1 + "\n" + het_string2, size=fontsize)
     
     axes[1].set_yticks(df_to_plot["YORDER"])
-    axes[1].set_yticklabels(df_to_plot.index,size=15)
-    axes[1].get_yticklabels()[-1].set(fontweight = "bold")
+    axes[1].set_yticklabels(df_to_plot.index, size=fontsize)
+    axes[1].get_yticklabels()[-1].set(fontweight="bold")
 
 
     axes[0].get_shared_y_axes().join(axes[0], axes[1])
-    axes[0].text(x=0,y=0.5,s=group_name,size=20)
+    axes[0].text(x=0, y=0.5, s=group_name, size=fontsize)
 
     for index, row in df_to_plot.iterrows():
         fontweight ="normal"
         if index=="fixed effect":
             fontweight ="bold"
-        axes[2].text(x=1,y=row["YORDER"],
-                     s='{:.2f} [ {:.2f} , {:.2f} ]'.format(row["OR"],row["OR_95L"],row["OR_95U"]),
-                     size=15,fontweight = fontweight,ha="right",va="center")
+        axes[2].text(
+            x=1,
+            y=row["YORDER"],
+            s="{:.2f} [ {:.2f} , {:.2f} ]".format(row["OR"], row["OR_95L"], row["OR_95U"]),
+            size=fontsize,
+            fontweight=fontweight,
+            ha="right",
+            va="center",
+        )

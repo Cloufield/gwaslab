@@ -1,12 +1,13 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
-from gwaslab.io.io_process_args import _update_args
-from gwaslab.io.io_process_args import _update_arg
+from gwaslab.io.io_process_kwargs import _update_kwargs
+from gwaslab.io.io_process_kwargs import _update_arg
 from gwaslab.g_Log import Log
+from gwaslab.viz.viz_aux_style_options import set_plot_style
 
 def _plot_associations(associations, 
                        values="Beta",
-                        fig_args=None,
+                        fig_kwargs=None,
                         log=Log(),
                         verbose=True,
                         sort="P-value",
@@ -47,8 +48,17 @@ def _plot_associations(associations,
     height = max(2, len(matrix_beta)//2)
     width = max(2, len(matrix_beta.columns)//2)
 
-    fig_args = _update_args(fig_args, dict(figsize=(width,height)))
-    fig,ax = plt.subplots(**fig_args)
+    style = set_plot_style(
+        plot="plot_associations",
+        fig_kwargs={"figsize":(width, height)},
+        save_kwargs=None,
+        fontsize=fontsize,
+        fontfamily=font_family,
+        verbose=verbose,
+        log=log,
+    )
+    fig,ax = plt.subplots(**(style.get("fig_kwargs", style.get("fig_kwargs", {}))))
+    save_kwargs = style.get("save_kwargs", style.get("save_kwargs", {}))
     
     sns.heatmap(matrix_beta.T, annot=True, fmt=".2f",cmap="RdBu",ax=ax)
     

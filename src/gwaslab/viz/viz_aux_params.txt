@@ -1,1408 +1,36 @@
 {
   "args": {
-    "chrom": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Chromosome column used to position variants and x-axis layout",
-      "default": "CHR",
+    "_chrom_df_for_i": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "",
+      "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "pos": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Base-pair position column used with `chrom` for plotting",
-      "add_to_docstring": false,
-      "default": "POS",
-      "ctx_defaults": {}
-    },
-    "p": {
-      "plots": [["plot_rg", null], ["plot_gwheatmap", null]],
-      "desc": "P-value column for RG/GW heatmap",
-      "default": "p",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "mlog10p": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"]],
-      "desc": "Negative log10 p-value column; improves performance and stability if provided",
-      "ctx_desc": {
-        "plot_region:r": "-log10(P) values for y-axis in regional plot",
-        "plot_mqq": "-log10(P) values driving Manhattan heights and QQ distribution",
-        "plot_qq:qq": "Observed -log10(P) used against expected under null in QQ plot"
-      },
-      "default": "MLOG10P",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "scaled": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Boolean indicating `mlog10p` is already precomputed",
+    "_get_region_lead": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "",
       "default": false,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "qq_scatter_args": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Style dict for QQ scatter (e.g., marker, s, edgecolor)",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "qq_line_color": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Reference line color for QQ plot (e.g., 'grey')",
-      "default": "grey",
-      "ctx_defaults": {
-        "plot_qq:qq": "grey"
-      },
-      "add_to_docstring": false
-    },
-    "qq_xlabels": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Custom x-axis tick labels for QQ plot",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "qq_xlim": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "X-axis limits for QQ plot, e.g., (min, max)",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Region triple (chr, start, end) in base pairs",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_title": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Title text for regional plot",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_ld_threshold": {
-      "plots": [["plot_region", "r"]],
-      "desc": "LD r^2 thresholds list for color stratification",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_ld_legend": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Whether to show LD legend/colorbar",
-      "default": true,
-      "ctx_defaults": {
-        "plot_region:r": true
-      },
-      "add_to_docstring": false
-    },
-    "region_ld_colors": {
-      "plots": [["plot_region", "r"]],
-      "desc": "LD colors (list or palette) aligned with thresholds",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "vcf_path": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Reference VCF path for LD computation/loading",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "rr_path": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Recombination rate data path or 'default' for built-in resource",
-      "default": "default",
-      "ctx_defaults": {
-        "plot_region:r": "default"
-      },
-      "add_to_docstring": false
-    },
-    "gtf_path": {
-      "plots": [["plot_region", "r"]],
-      "desc": "GTF gene annotation path or 'default' for built-in resource",
-      "default": "default",
-      "ctx_defaults": {
-        "plot_region:r": "default"
-      },
-      "add_to_docstring": false
-    },
-    "density_color": {
-      "plots": [["plot_snp_density", "b"]],
-      "desc": "Density palette or boolean to control density track colors",
-      "default": false,
-      "ctx_defaults": {
-        "plot_snp_density:b": false
-      },
-      "add_to_docstring": false
-    },
-    "bwindowsizekb": {
-      "plots": [["plot_snp_density", "b"]],
-      "desc": "Window size in kilobases for density computation",
-      "default": 100,
-      "ctx_defaults": {
-        "plot_snp_density:b": 100
-      },
-      "add_to_docstring": false
-    },
-    "mode": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Trumpet plot mode: 'q' (quantitative) or 'b' (binary)",
-      "ctx_desc": {
-        "plot_trumpet:q": "Quantitative trait mode; power lines computed for continuous effect sizes",
-        "plot_trumpet:b": "Binary trait mode; power lines computed under case-control assumptions"
-      },
-      "default": null,
-      "ctx_defaults": {
-        "plot_trumpet:q": "q",
-        "plot_trumpet:b": "b"
-      },
-      "add_to_docstring": false
-    },
-    "n": {
-      "plots": [["plot_trumpet", "q"]],
-      "desc": "Sample size column (quantitative mode)",
-      "ctx_desc": {
-        "plot_trumpet:q": "Total sample size used to compute power envelopes in quantitative mode"
-      },
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "prevalence": {
-      "plots": [["plot_trumpet", "b"]],
-      "desc": "Disease prevalence (used for power lines in binary mode)",
-      "ctx_desc": {
-        "plot_trumpet:b": "Population disease prevalence parameter for binary mode power computation"
-      },
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ncase": {
-      "plots": [["plot_trumpet", "b"]],
-      "desc": "Case count (binary mode)",
-      "ctx_desc": {
-        "plot_trumpet:b": "Number of cases in study for binary mode power envelopes"
-      },
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ncontrol": {
-      "plots": [["plot_trumpet", "b"]],
-      "desc": "Control count (binary mode)",
-      "ctx_desc": {
-        "plot_trumpet:b": "Number of controls in study for binary mode power envelopes"
-      },
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "sig_line": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Whether to draw significance reference line",
-      "default": true,
-      "ctx_defaults": {
-        "plot_mqq": true,
-        "plot_region:r": true
-      },
-      "add_to_docstring": false
-    },
-    "sig_level_plot": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Significance threshold for reference line, default 5e-8",
-      "default": 5e-08,
-      "ctx_defaults": {
-        "plot_mqq": 5e-08,
-        "plot_region:r": 5e-08
-      },
-      "add_to_docstring": false
-    },
-    "suggestive_sig_line": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Whether to draw suggestive threshold line (e.g., 5e-6)",
-      "default": false,
-      "ctx_defaults": {
-        "plot_mqq": false
-      },
-      "add_to_docstring": false
-    },
-    "suggestive_sig_level": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Suggestive threshold value, e.g., 5e-6",
-      "default": 5e-06,
-      "ctx_defaults": {
-        "plot_mqq": 5e-06
-      },
-      "add_to_docstring": false
-    },
-    "title": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_effect", null]],
-      "desc": "Figure title text",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "fontsize": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_effect", null]],
-      "desc": "Font size for ticks, labels, etc.",
-      "default": 12,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "font_family": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_effect", null]],
-      "desc": "Font family, e.g., 'Arial', for consistent styling",
-      "default": "Arial",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "save": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null]],
-      "desc": "Boolean or output filepath; when boolean, uses default naming",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "save_args": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null]],
-      "desc": "Dict of save options (e.g., dpi, bbox_inches)",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "build": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Genome build (e.g., '19'/'38') for annotation/coordinate resources",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "fig_args": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_effect", null]],
-      "desc": "Figure kwargs (e.g., figsize, dpi)",
-      "default": null,
-      "ctx_defaults": {}, 
-      "banned_keys": [],
-      "ctx_banned_keys": [],
-      "add_to_docstring": false
-    },
-    "figax": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"]],
-      "desc": "Existing figure/axes tuple to draw on",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "colors": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"]],
-      "desc": "Color palette or list",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "marker_size": {
-      "plots": [["plot_mqq", null], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Marker size or size range",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ylabel": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null]],
-      "desc": "Y-axis label",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xlabel": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "X-axis label",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "title_pad": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"]],
-      "desc": "Title padding",
-      "default": 1.08,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "title_fontsize": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Title font size",
-      "default": 13,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "chrpad": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Chromosome padding proportion",
-      "default": 0.03,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ylim": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Y-axis limits",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "dpi": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Figure DPI",
-      "default": 200,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "expected_min_mlog10p": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Expected minimum -log10(P) adjustment",
-      "default": 0,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "log": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_effect", null], ["plot_pipcs", null]],
-      "desc": "Logger object",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "verbose": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_effect", null], ["plot_pipcs", null]],
-      "desc": "Verbose logging toggle",
+    "_if_quick_qc": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "",
       "default": true,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "region_title_args": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Regional plot title styling args",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_ref": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Reference variant(s) for LD coloring",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_ref_second": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Second reference variant",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_grid_line": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Grid line style for regional plot",
-      "default": {
-        "linewidth": 2,
-        "linestyle": "--"
-      },
-      "ctx_defaults": {
-        "plot_region:r": {
-          "linewidth": 2,
-          "linestyle": "--"
-        }
-      },
-      "add_to_docstring": false
-    },
-    "region_lead_grid_line": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Lead grid line style",
-      "default": {
-        "alpha": 0.5,
-        "linewidth": 2,
-        "linestyle": "--",
-        "color": "#FF0000"
-      },
-      "ctx_defaults": {
-        "plot_region:r": {
-          "alpha": 0.5,
-          "linewidth": 2,
-          "linestyle": "--",
-          "color": "#FF0000"
-        }
-      },
-      "add_to_docstring": false
-    },
-    "region_ld_colors_m": {
-      "plots": [["plot_region", "r"]],
-      "desc": "LD colors for multi-lead mode",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ld_path": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Path to LD matrix resource",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ld_map_path": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Path to LD map file",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ld_fmt": {
-      "plots": [["plot_region", "r"]],
-      "desc": "LD format identifier (e.g., 'npz')",
-      "default": "npz",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ld_if_square": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Treat LD matrix as square",
+    "_invert": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "",
       "default": false,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "ld_if_add_T": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Add transpose when composing LD",
-      "default": false,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ld_map_rename_dic": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Rename dictionary for LD map columns",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ld_map_kwargs": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Extra kwargs for LD map loader",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_title": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Colorbar title",
-      "default": "LD $\\mathregular{r^2}$ with variant",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_fontsize": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Colorbar font size",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_scale": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Scale colorbar",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_font_family": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Colorbar font family",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_bbox_to_anchor": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Colorbar bbox_to_anchor",
-      "default": [
-        0,
-        0,
-        1,
-        1
-      ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_equal_aspect": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Equal aspect for colorbar",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_w_scale": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Colorbar width scale",
-      "default": 1,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_h_scale": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Colorbar height scale",
-      "default": 1,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_downward_offset": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Colorbar downward offset",
-      "default": 1.3,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cbar_borderpad": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Colorbar border padding",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "track_n": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Number of annotation tracks",
-      "default": 4,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "track_n_offset": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Track offset",
-      "default": 0,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "track_fontsize_ratio": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Track fontsize ratio",
-      "default": 0.95,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "track_exon_ratio": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Exon track ratio",
-      "default": 1,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "track_text_offset": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Track text offset",
-      "default": 1,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "gtf_chr_dict": {
-      "plots": [["plot_region", "r"]],
-      "desc": "GTF chromosome dictionary",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "gtf_gene_name": {
-      "plots": [["plot_region", "r"]],
-      "desc": "GTF gene name column",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "rr_header_dict": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Recombination rate header dict",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "rr_chr_dict": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Recombination rate chrom dict",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "rr_lim": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Recombination rate limits",
-      "default": [
-        0,
-        100
-      ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "rr_ylabel": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Show recombination rate y-label",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_marker_shapes": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Marker shapes for multi-lead",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_ref_alias": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Alias for reference variants",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_recombination": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Plot recombination rate",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_protein_coding": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Restrict to protein coding genes",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "region_legend_marker": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Show legend markers",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "repel_force": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_region", "r"]],
-      "desc": "Text repulsion force parameter",
-      "default": 0.03,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xpad": {
-      "plots": [["plot_region", "r"]],
-      "desc": "X padding proportion",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xpadl": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Left X padding",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xpadr": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Right X padding",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xtight": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Tight X padding",
-      "default": false,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "drop_chr_start": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Drop chromosome start",
-      "default": false,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "qtitle": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Manhattan/QQ combined title",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "qtitle_pad": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "QQ title padding",
-      "default": 1.08,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "gc": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Compute genomic control lambda",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cut": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Shrink variants above threshold",
-      "default": 0,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cutfactor": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Factor for shrink line",
-      "default": 10,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cut_log": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Use log scale for cut line",
-      "default": false,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "skip": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Minimum -log10(P) to plot",
-      "default": 0,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ystep": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Step size for y-axis",
-      "default": 0,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ylabels": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Custom y-axis labels",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ytick3": {
-      "plots": [["plot_qq", "qq"]],
-      "desc": "Use 3 y-axis ticks",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "density_range": {
-      "plots": [["plot_snp_density", "b"]],
-      "desc": "Density value range",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "density_trange": {
-      "plots": [["plot_snp_density", "b"]],
-      "desc": "Threshold range",
-      "default": [
-        0,
-        10
-      ],
-      "ctx_defaults": {
-        "plot_snp_density:b": [
-          0,
-          10
-        ]
-      },
-      "add_to_docstring": false
-    },
-    "density_threshold": {
-      "plots": [["plot_snp_density", "b"]],
-      "desc": "Threshold for density highlighting",
-      "default": 5,
-      "ctx_defaults": {
-        "plot_snp_density:b": 5
-      },
-      "add_to_docstring": false
-    },
-    "density_tpalette": {
-      "plots": [["plot_snp_density", "b"]],
-      "desc": "Palette for threshold coloring",
-      "default": "Blues",
-      "ctx_defaults": {
-        "plot_snp_density:b": "Blues"
-      },
-      "add_to_docstring": false
-    },
-    "density_palette": {
-      "plots": [["plot_snp_density", "b"]],
-      "desc": "Density palette",
-      "default": "Reds",
-      "ctx_defaults": {
-        "plot_snp_density:b": "Reds"
-      },
-      "add_to_docstring": false
-    },
-    "use_rank": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_snp_density", "b"]],
-      "desc": "Use rank for chrom indexing",
-      "default": false,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ts": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Power thresholds to plot",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "p_level": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "P-value threshold for inclusion",
-      "default": 5e-08,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_y": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Annotation y threshold",
-      "default": 1,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_x": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Annotation x threshold",
-      "default": 0.01,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "size": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Size mapping",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "hue": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Hue mapping",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "style": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Style mapping",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "scatter_args": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_effect", null]],
-      "desc": "Scatter style kwargs",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "mtitle": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Manhattan title",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "mtitle_pad": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Manhattan title padding",
-      "default": 1.08,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "snpid": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_gwheatmap", null]],
-      "desc": "SNP identifier column",
-      "default": "SNPID",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "eaf": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null], ["plot_gwheatmap", null]],
-      "desc": "Effect allele frequency column",
-      "default": "EAF",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ea": {
-      "plots": [["plot_mqq", null], ["plot_gwheatmap", null]],
-      "desc": "Effect allele column",
-      "default": "EA",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "nea": {
-      "plots": [["plot_mqq", null], ["plot_gwheatmap", null]],
-      "desc": "Non-effect allele column",
-      "default": "NEA",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "check": {
-      "plots": [["plot_mqq", null], ["plot_gwheatmap", null]],
-      "desc": "Enable input QC and normalization",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "chr_dict": {
-      "plots": [["plot_mqq", null], ["plot_gwheatmap", null]],
-      "desc": "Chromosome number/name mapping",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xtick_chr_dict": {
-      "plots": [["plot_mqq", null], ["plot_gwheatmap", null]],
-      "desc": "X-axis tick chromosome mapping",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "vcf_chr_dict": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Chromosome mapping for VCF resource",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "mqqratio": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Layout ratio for combined Manhattan-QQ plot",
-      "default": 3,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "windowsizekb": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Window size for lead variant extraction (kb)",
-      "default": 500,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cut_line_color": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Color for shrink line",
-      "default": "#ebebeb",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "jagged": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Enable jagged axis break markers",
-      "default": false,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "jagged_len": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Jagged marker length",
-      "default": 0.01,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "jagged_wid": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Jagged marker width",
-      "default": 0.01,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "sig_line_color": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Significance line color",
-      "default": "grey",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "additional_line": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Additional reference lines",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "additional_line_color": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Colors for additional lines",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "sc_linewidth": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Line width for significance lines",
-      "default": 2,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "highlight": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "List of focal variants to highlight",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "highlight_chrpos": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Highlight by chromosome position flag",
-      "default": false,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "highlight_color": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Highlight color",
-      "default": "#CB132D",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "highlight_windowkb": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Highlight window size (kb)",
-      "default": 500,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "highlight_anno_args": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Annotation style kwargs for highlighted variants",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "highlight_lim": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Custom highlight limits",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "highlight_lim_mode": {
-      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Highlight limit mode ('absolute'|'relative')",
-      "default": "absolute",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "pinpoint": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Variants to pinpoint",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "pinpoint_color": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Color for pinpoint",
-      "default": "red",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "stratified": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Enable stratified QQ by MAF",
-      "default": false,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "maf_bins": {
-      "plots": [["plot_mqq", null]],
-      "desc": "MAF bin definitions for stratified QQ",
-      "default": [
-        [
-          0,
-          0.01
-        ],
-        [
-          0.01,
-          0.05
-        ],
-        [
-          0.05,
-          0.25
-        ],
-        [
-          0.25,
-          0.5
-        ]
-      ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "maf_bin_colors": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Colors for MAF bins",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "include_chrXYMT": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Include sex/MT chromosomes in QQ",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "fontfamily": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Font family alias",
-      "default": "Arial",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "math_fontfamily": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Math text font family",
-      "default": "dejavusans",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_fontsize": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Font size for annotation text",
-      "default": 9,
-      "ctx_defaults": {
-        "plot_region:r": 9,
-        "plot_mqq": 9
-      },
-      "add_to_docstring": false
-    },
-    "figargs": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Figure kwargs alias",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "saveargs": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Save kwargs alias",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "scatterargs": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Scatter kwargs alias",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "qqscatterargs": {
-      "plots": [["plot_mqq", null]],
-      "desc": "QQ scatter kwargs alias",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "taf": {
-      "plots": [["plot_region", "r"]],
-      "desc": "Track arrangement factors",
-      "default": [
-        4,
-        0,
-        0.95,
-        1,
-        1
-      ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "tabix": {
-      "plots": [["plot_mqq", null]],
-      "desc": "Tabix index path for fast IO",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "maf": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Minor allele frequency column",
-      "default": "MAF",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "beta": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Effect size column",
-      "default": "BETA",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "maf_range": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "MAF range for power computation",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "beta_range": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Beta range for power computation",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "n_matrix": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Power curve smoothness parameter",
-      "default": 1000,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xscale": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "X-axis scale",
-      "default": "log",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "yscale_factor": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Y scale factor",
-      "default": 1,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "cmap": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_rg", null]],
-      "desc": "Colormap selection",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xlim": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "X-axis limits",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "markercolor": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Base marker color",
-      "default": "#597FBD",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "sizes": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Size list for style mapping",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xticks": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Custom x-axis ticks",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xticklabels": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Custom x-axis tick labels",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "yticks": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Custom y-axis ticks",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "yticklabels": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"]],
-      "desc": "Custom y-axis tick labels",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "sort": {
-      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null], ["plot_associations", null]],
-      "desc": "Sorting key or method",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ref_chrom": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Reference chromosome column",
-      "default": "REF_CHR",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ref_pos": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Reference position column",
-      "default": "REF_START",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "sizes_gw": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Marker size range for GW heatmap",
-      "default": [
-        10,
-        50
-      ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "alpha": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Alpha for markers",
-      "default": 0.5,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "group": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Grouping column for axes",
-      "default": "CIS/TRANS",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xchrpad": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Chrom padding for x grouping",
-      "default": 0,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ychrpad": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Chrom padding for y grouping",
-      "default": 0,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "xtick_chr_dict_gw": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Tick chr dict for x axis",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "ytick_chr_dict_gw": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Tick chr dict for y axis",
+    "_posdiccul": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_pipcs", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -1414,48 +42,757 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "fig_kwargs": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Figure kwargs for GW heatmap",
+    "additional_line": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Additional reference lines",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "scatter_kwargs": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Scatter kwargs for GW heatmap",
+    "additional_line_color": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Colors for additional lines",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "height_ratios": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Panel height ratios",
-      "default": [
-        1,
-        2
-      ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "hspace": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Vertical space between panels",
-      "default": 0.1,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "save_kwargs": {
-      "plots": [["plot_gwheatmap", null]],
-      "desc": "Save kwargs for GW heatmap",
+    "adjust_text_kwargs": {
+      "plots": ["compare_effect"],
+      "desc": "AdjustText kwargs for annotations",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "grid_linewidth": {
+    "adjust_text_kwargs_l": {
+      "plots": ["compare_effect"],
+      "desc": "AdjustText kwargs (left side)",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "adjust_text_kwargs_r": {
+      "plots": ["compare_effect"],
+      "desc": "AdjustText kwargs (right side)",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "allele_match": {
+      "plots": ["compare_effect"],
+      "desc": "Align alleles before comparison",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "alpha": {
       "plots": [["plot_gwheatmap", null]],
-      "desc": "Grid linewidth",
+      "desc": "Alpha for markers",
+      "default": 0.5,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], "compare_effect", ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Annotation source or column (e.g., 'GENENAME', True, or column name)",
+      "default": null,
+      "ctx_defaults": {
+        "compare_effect": false
+      },
+      "add_to_docstring": false
+    },
+    "anno_adjust": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Enable annotation position adjustment",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_alias": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Mapping from SNPID to custom annotation label",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_d": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Per-annotation positioning options (e.g., left/right)",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_diff": {
+      "plots": ["compare_effect"],
+      "desc": "Annotation difference threshold",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_fixed_arm_length": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Fixed arm length for annotations",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_fontsize": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Font size for annotation text",
+      "default": 9,
+      "ctx_defaults": {
+        "plot_region:r": 9,
+        "plot_mqq": 9
+      },
+      "add_to_docstring": false
+    },
+    "anno_gtf_path": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Custom GTF path for annotations",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_height": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Height for annotations",
       "default": 1,
+      "ctx_defaults": {
+        "plot_region:r": 1,
+        "plot_mqq": 1
+      },
+      "add_to_docstring": false
+    },
+    "anno_het": {
+      "plots": [],
+      "desc": "Enable heterogeneity annotation",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_kwargs": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Default styling kwargs for annotations",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_kwargs_single": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Per-SNP styling kwargs for annotations",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_max_iter": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_trumpet", null]],
+      "desc": "Maximum iterations for text repulsion algorithm",
+      "default": 100,
+      "ctx_defaults": {
+        "plot_region:r": 100,
+        "plot_mqq": 100
+      },
+      "add_to_docstring": false
+    },
+    "anno_min": {
+      "plots": [],
+      "desc": "Minimum -log10(P) for annotation",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_min1": {
+      "plots": [],
+      "desc": "Min threshold for series 1 annotation",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_min2": {
+      "plots": [],
+      "desc": "Min threshold for series 2 annotation",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_set": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", null], ["plot_trumpet", null], ["plot_miami2", null]],
+      "desc": "Set of variant IDs to annotate",
+      "default": [],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_source": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Annotation source backend (e.g., 'ensembl', 'refseq')",
+      "default": "ensembl",
+      "ctx_defaults": {
+        "plot_region:r": "ensembl",
+        "plot_mqq": "ensembl"
+      },
+      "add_to_docstring": false
+    },
+    "anno_style": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Annotation style ('right', 'tight', 'expand')",
+      "default": "right",
+      "ctx_defaults": {
+        "plot_region:r": "right",
+        "plot_mqq": "right"
+      },
+      "add_to_docstring": false
+    },
+    "anno_x": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Annotation x threshold",
+      "default": 0.01,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_xshift": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "X-axis shift applied to annotations",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "anno_y": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Annotation y threshold",
+      "default": 1,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "arm_offset": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Offset for annotation arms",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "arm_scale": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Scaling factor for arm length",
+      "default": 1,
+      "ctx_defaults": {
+        "plot_region:r": 1,
+        "plot_mqq": 1
+      },
+      "add_to_docstring": false
+    },
+    "arm_scale_d": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Per-annotation arm scaling dict",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "arrow_kwargs": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Arrow styling kwargs for annotations",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "asize": {
+      "plots": [["plot_rg", null]],
+      "desc": "Annotation size",
+      "default": 10,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "associations": {
+      "plots": [["plot_associations", null]],
+      "desc": "",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "beta": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Effect size column",
+      "default": "BETA",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "beta_range": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Beta range for power computation",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "build": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Genome build (e.g., '19'/'38') for annotation/coordinate resources",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "bwindowsizekb": {
+      "plots": [["plot_snp_density", "b"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Window size in kilobases for density computation",
+      "default": 100,
+      "ctx_defaults": {
+        "plot_snp_density:b": 100
+      },
+      "add_to_docstring": false
+    },
+    "cbar_bbox_to_anchor": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Colorbar bbox_to_anchor",
+      "default": [0, 0, 1, 1],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cbar_borderpad": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Colorbar border padding",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cbar_downward_offset": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Colorbar downward offset",
+      "default": 1.3,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cbar_equal_aspect": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Equal aspect for colorbar",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cbar_font_family": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Colorbar font family",
+      "default": "Arial",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cbar_fontsize": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Colorbar font size",
+      "default": 12,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cbar_h_scale": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Colorbar height scale",
+      "default": 1,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cbar_scale": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Scale colorbar",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cbar_title": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Colorbar title",
+      "default": "LD $\\mathregular{r^2}$ with variant",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cbar_w_scale": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Colorbar width scale",
+      "default": 1,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "check": {
+      "plots": [["plot_mqq", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Enable input QC and normalization",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "chr_dict": {
+      "plots": [["plot_mqq", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Chromosome number/name mapping",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "chrom": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_pipcs", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Chromosome column used to position variants and x-axis layout",
+      "default": "CHR",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "chrpad": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Chromosome padding proportion",
+      "default": 0.03,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cis_windowsizekb": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "",
+      "default": 100,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cmap": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_rg", null], ["plot_associations", null], ["plot_trumpet", null]],
+      "desc": "Colormap selection",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cmap_rg": {
+      "plots": [["plot_rg", null]],
+      "desc": "Colormap for RG heatmap",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "colorbar_kwargs": {
+      "plots": [["plot_rg", null]],
+      "desc": "Colorbar kwargs",
+      "default": {
+        "shrink": 0.82
+      },
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "colors": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_gwheatmap", null], "plot_manhattan"],
+      "desc": "Color palette or list",
+      "default": ["#597FBD","#74BAD3"],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "corrections": {
+      "plots": [["plot_rg", null]],
+      "desc": "Multiple testing corrections",
+      "default": ["non", "fdr", "bon"],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cs": {
+      "plots": [["plot_pipcs", null]],
+      "desc": "",
+      "default": "CREDIBLE_SET_INDEX",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cs_category": {
+      "plots": [["plot_pipcs", null]],
+      "desc": "",
+      "default": "CS_CATEGORY",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cut": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Shrink variants above threshold",
+      "default": 0,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cut_line_color": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Color for shrink line",
+      "default": "#ebebeb",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cut_log": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Use log scale for cut line",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "cutfactor": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Factor for shrink line",
+      "default": 10,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "daf": {
+      "plots": [["plot_daf", null]],
+      "desc": "",
+      "default": "DAF",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "density_color": {
+      "plots": [["plot_snp_density", "b"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Density palette or boolean to control density track colors",
+      "default": false,
+      "ctx_defaults": {
+        "plot_snp_density:b": false
+      },
+      "add_to_docstring": false
+    },
+    "density_palette": {
+      "plots": [["plot_snp_density", "b"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Density palette",
+      "default": "Reds",
+      "ctx_defaults": {
+        "plot_snp_density:b": "Reds"
+      },
+      "add_to_docstring": false
+    },
+    "density_range": {
+      "plots": [["plot_snp_density", "b"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Density value range",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "density_threshold": {
+      "plots": [["plot_snp_density", "b"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Threshold for density highlighting",
+      "default": 5,
+      "ctx_defaults": {
+        "plot_snp_density:b": 5
+      },
+      "add_to_docstring": false
+    },
+    "density_tpalette": {
+      "plots": [["plot_snp_density", "b"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Palette for threshold coloring",
+      "default": "Blues",
+      "ctx_defaults": {
+        "plot_snp_density:b": "Blues"
+      },
+      "add_to_docstring": false
+    },
+    "density_trange": {
+      "plots": [["plot_snp_density", "b"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Threshold range",
+      "default": [0, 10],
+      "ctx_defaults": {
+        "plot_snp_density:b": [0, 10]
+      },
+      "add_to_docstring": false
+    },
+    "dpi": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Figure DPI",
+      "default": 200,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "drop": {
+      "plots": [],
+      "desc": "Drop variants by condition",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "drop_chr_start": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Drop chromosome start",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ea": {
+      "plots": [["plot_mqq", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Effect allele column",
+      "default": "EA",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "eaf": {
+      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_daf", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_trumpet", null]],
+      "desc": "Effect allele frequency column",
+      "default": "EAF",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "eaf_kwargs": {
+      "plots": [["plot_effect", null]],
+      "desc": "Styling kwargs for EAF panel",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "eaf_label": {
+      "plots": [["plot_effect", null]],
+      "desc": "Label for EAF panel",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "eaf_panel": {
+      "plots": [["plot_effect", null]],
+      "desc": "Toggle EAF panel",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "edgecolor": {
+      "plots": [],
+      "desc": "Marker edge color",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "effect_label": {
+      "plots": [["plot_effect", null]],
+      "desc": "Label for effect size panel",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "equal_aspect": {
+      "plots": [["plot_rg", null]],
+      "desc": "Keep equal aspect ratio",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "err_kwargs": {
+      "plots": [["plot_effect", null]],
+      "desc": "Errorbar styling kwargs",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "expected_min_mlog10p": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Expected minimum -log10(P) adjustment",
+      "default": 0,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "fdr_method": {
+      "plots": [["plot_rg", null]],
+      "desc": "FDR correction method",
+      "default": "bh",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "fig_kwargs": {
+      "plots": [["plot_gwheatmap", null], ["plot_mqq", "mqq"], ["plot_mqq", "qqm"], ["plot_mqq", "m"], ["plot_mqq", "qq"], ["plot_mqq", "r"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_snp_density", "b"], ["plot_miami2", null], ["plot_manhattan", null], ["plot_manhantan", null], ["plot_rg", null], ["plot_daf", null], ["plot_effect", null], ["plot_forest", null], ["plot_associations", null], ["plot_pipcs", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_stacked", null], ["plot_template", null], ["plot_scatter", null], ["plot_mqq", null], ["plot_trumpet", null]],
+      "desc": "Figure kwargs for plot",
+      "default": null,
+      "ctx_defaults": {
+        "plot_mqq:mqq": {
+          "figsize": [15, 5],
+          "dpi": 200
+        },
+        "plot_mqq:qqm": {
+          "figsize": [15, 5],
+          "dpi": 200
+        },
+        "plot_mqq:m": {
+          "figsize": [15, 5],
+          "dpi": 200
+        },
+        "plot_manhattan": {
+          "figsize": [15, 5],
+          "dpi": 200
+        },
+        "plot_snp_density": {
+          "figsize": [15, 5],
+          "dpi": 200
+        },
+        "plot_miami2": {
+          "figsize": [15, 10],
+          "dpi": 200
+        },
+        "plot_qq": {
+          "figsize": [5, 5],
+          "dpi": 200
+        },
+        "plot_mqq:qq": {
+          "figsize": [15, 5],
+          "dpi": 200
+        },
+        "plot_region": {
+          "figsize": [15, 15],
+          "dpi": 200
+        },
+        "plot_mqq:r": {
+          "figsize": [15, 15],
+          "dpi": 200
+        }
+      },
+      "add_to_docstring": false
+    },
+    "figargs": {
+      "plots": [["plot_mqq", null]],
+      "desc": "Figure kwargs alias",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "figax": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_manhattan", null], ["plot_pipcs", null]],
+      "desc": "Existing figure/axes tuple to draw on",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "font_family": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_associations", null], ["plot_pipcs", null], ["plot_trumpet", null]],
+      "desc": "Font family, e.g., 'Arial', for consistent styling",
+      "default": "Arial",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "font_kwargs": {
+      "plots": [["plot_daf", null], ["plot_effect", null]],
+      "desc": "Font configuration kwargs",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "fontfamily": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Font family alias",
+      "default": "Arial",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "fontsize": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_associations", null], ["plot_pipcs", null], ["plot_trumpet", null]],
+      "desc": "Font size for ticks, labels, etc.",
+      "default": 12,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "full_cell": {
+      "plots": [["plot_rg", null]],
+      "desc": "Fill full cell when significant",
+      "default": ["fdr", 0.05],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "gap": {
+      "plots": [["plot_effect", null]],
+      "desc": "Panel gap or spacing",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "gc": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Compute genomic control lambda",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "get_lead_kwargs": {
+      "plots": [],
+      "desc": "Kwargs for extracting lead variants",
+      "default": {},
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -1466,17 +803,541 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "values": {
-      "plots": [["plot_associations", null]],
-      "desc": "Value to plot in associations heatmap",
-      "default": "Beta",
+    "grid_linewidth": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Grid linewidth",
+      "default": 1,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "cmap_rg": {
-      "plots": [["plot_rg", null]],
-      "desc": "Colormap for RG heatmap",
+    "group": {
+      "plots": [["plot_gwheatmap", null], ["plot_effect", null]],
+      "desc": "Grouping column for axes",
+      "default": "CIS/TRANS",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "gtf_chr_dict": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "GTF chromosome dictionary",
       "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "gtf_gene_name": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "GTF gene name column",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "gtf_path": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "GTF gene annotation path or 'default' for built-in resource",
+      "default": "default",
+      "ctx_defaults": {
+        "plot_region:r": "default"
+      },
+      "add_to_docstring": false
+    },
+    "height_ratios": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Panel height ratios",
+      "default": [1, 2],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "helper_line_kwargs": {
+      "plots": [["plot_daf", null]],
+      "desc": "45-degree helper line styling for AF comparison",
+      "default": {
+        "color": "black",
+        "linestyle": "-",
+        "lw": 1
+      },
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "highlight": {
+      "plots": [["plot_mqq", "m"], ["plot_mqq", null], ["plot_mqq", "mqq"], ["plot_mqq", "qqm"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_trumpet", null]],
+      "desc": "List of focal variants to highlight",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "highlight_anno_kwargs": {
+      "plots": [["plot_mqq", "m"], ["plot_mqq", "mqq"], ["plot_mqq", "qqm"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Annotation style kwargs for highlighted variants",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "highlight_chrpos": {
+      "plots": [["plot_mqq", "m"], ["plot_mqq", "mqq"], ["plot_mqq", "qqm"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Highlight by chromosome position flag",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "highlight_color": {
+      "plots": [["plot_mqq", "m"], ["plot_mqq", "mqq"], ["plot_mqq", "qqm"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Highlight color",
+      "default": "#CB132D",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "highlight_lim": {
+      "plots": [["plot_mqq", "m"], ["plot_mqq", "mqq"], ["plot_mqq", "qqm"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Custom highlight limits",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "highlight_lim_mode": {
+      "plots": [["plot_mqq", "m"], ["plot_mqq", "mqq"], ["plot_mqq", "qqm"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Highlight limit mode ('absolute'|'relative')",
+      "default": "absolute",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "highlight_windowkb": {
+      "plots": [["plot_mqq", "m"], ["plot_mqq", "mqq"], ["plot_mqq", "qqm"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Highlight window size (kb)",
+      "default": 500,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "histplot_kwargs": {
+      "plots": [["plot_daf", null]],
+      "desc": "Histogram plotting kwargs for AF distribution",
+      "default": {
+        "log_scale": [false, false]
+      },
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "hspace": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Vertical space between panels",
+      "default": 0.1,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "hue": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null], ["plot_trumpet", null]],
+      "desc": "Hue mapping",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "id0": {
+      "plots": [],
+      "desc": "Identifier for miami plot pair base",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "id1": {
+      "plots": [],
+      "desc": "Identifier for series 1",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "id2": {
+      "plots": [],
+      "desc": "Identifier for series 2",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "include_all": {
+      "plots": [],
+      "desc": "Include all variants for plotting",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "include_chrXYMT": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Include sex/MT chromosomes in QQ",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "insumstats": {
+      "plots": [["plot_gwheatmap", null], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "is_45_helper_line": {
+      "plots": [["plot_daf", null]],
+      "desc": "Draw 45-degree helper line",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "is_q": {
+      "plots": [],
+      "desc": "Treat inputs as odds ratios",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "is_q_mc": {
+      "plots": [],
+      "desc": "Monte Carlo mode for OR inputs",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "is_reg": {
+      "plots": [["plot_daf", null]],
+      "desc": "Enable regression line computation",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "is_threshold": {
+      "plots": [["plot_daf", null]],
+      "desc": "Draw threshold line",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "jagged": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Enable jagged axis break markers",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "jagged_len": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Jagged marker length",
+      "default": 0.01,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "jagged_wid": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Jagged marker width",
+      "default": 0.01,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "label": {
+      "plots": [],
+      "desc": "Legend labels or series labels",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ld_fmt": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "LD format identifier (e.g., 'npz')",
+      "default": "npz",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ld_if_add_T": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Add transpose when composing LD",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ld_if_square": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Treat LD matrix as square",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ld_map_kwargs": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Extra kwargs for LD map loader",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ld_map_path": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Path to LD map file",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ld_map_rename_dic": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Rename dictionary for LD map columns",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ld_path": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Path to LD matrix resource",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "legend1": {
+      "plots": [["plot_daf", null]],
+      "desc": "Toggle first legend block",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "legend2": {
+      "plots": [["plot_daf", null]],
+      "desc": "Toggle second legend block",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "legend_kwargs": {
+      "plots": [],
+      "desc": "Legend styling kwargs",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "legend_mode": {
+      "plots": [["plot_effect", null]],
+      "desc": "Legend layout mode",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "legend_pos": {
+      "plots": [],
+      "desc": "Legend position",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "legend_title": {
+      "plots": [["plot_pipcs", null]],
+      "desc": "Legend title",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "legend_title2": {
+      "plots": [],
+      "desc": "Second legend title",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "locus": {
+      "plots": [["plot_pipcs", null]],
+      "desc": "Locus label for credible sets",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "log": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_effect", null], ["plot_pipcs", null], ["plot_forest", null], ["plot_stacked", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_associations", null], ["plot_trumpet", null]],
+      "desc": "Logger object",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "maf": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Minor allele frequency column",
+      "default": "MAF",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "maf_bin_colors": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Colors for MAF bins",
+      "default": ["#f0ad4e", "#5cb85c", "#5bc0de", "#000042"],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "maf_bins": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "MAF bin definitions for stratified QQ",
+      "default": [[0, 0.01], [0.01, 0.05], [0.05, 0.25], [0.25, 0.5]],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "maf_level": {
+      "plots": [],
+      "desc": "Minor allele frequency stratification level",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "maf_range": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "MAF range for power computation",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "marker_size": {
+      "plots": [["plot_mqq", null], "plot_region", ["plot_mqq", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_mqq", "mqq"], ["plot_manhattan", null], ["plot_pipcs", null], ["plot_region", "r"]],
+      "desc": "Marker size or size range",
+      "default": null,
+      "ctx_defaults": {
+        "plot_mqq:r": [40, 65],
+        "plot_region": [40, 65],
+        "plot_mqq:mqq": [5, 20]
+      },
+      "add_to_docstring": false
+    },
+    "markercolor": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Base marker color",
+      "default": "#597FBD",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "math_fontfamily": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Math text font family",
+      "default": "dejavusans",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "mlog10p": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_snp_density", "b"]],
+      "desc": "Negative log10 p-value column; improves performance and stability if provided",
+      "ctx_desc": {
+        "plot_region:r": "-log10(P) values for y-axis in regional plot",
+        "plot_mqq": "-log10(P) values driving Manhattan heights and QQ distribution",
+        "plot_qq:qq": "Observed -log10(P) used against expected under null in QQ plot"
+      },
+      "default": "MLOG10P",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "mode": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_mqq", "mqq"], ["plot_mqq", "r"], ["plot_mqq", "b"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_trumpet", null]],
+      "desc": "Plotting mode",
+      "ctx_desc": {
+        "plot_mqq:mqq": "Manhattan plot and QQ plot",
+        "plot_trumpet:q": "Quantitative trait mode; power lines computed for continuous effect sizes",
+        "plot_trumpet:b": "Binary trait mode; power lines computed under case-control assumptions"
+      },
+      "default": null,
+      "ctx_defaults": {
+        "plot_trumpet:q": "q",
+        "plot_trumpet:b": "b"
+      },
+      "add_to_docstring": false
+    },
+    "mqqratio": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Layout ratio for combined Manhattan-QQ plot",
+      "default": 3,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "mtitle": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Manhattan title",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "mtitle_pad": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Manhattan title padding",
+      "default": 1.08,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "mysumstats": {
+      "plots": [["plot_trumpet", null]],
+      "desc": "",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "n": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", null]],
+      "desc": "Sample size column (quantitative mode)",
+      "ctx_desc": {
+        "plot_trumpet:q": "Total sample size used to compute power envelopes in quantitative mode"
+      },
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "n_matrix": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Power curve smoothness parameter",
+      "default": 1000,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ncase": {
+      "plots": [["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Case count (binary mode)",
+      "ctx_desc": {
+        "plot_trumpet:b": "Number of cases in study for binary mode power envelopes"
+      },
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ncol": {
+      "plots": [["plot_effect", null]],
+      "desc": "Number of columns in legend",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ncontrol": {
+      "plots": [["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Control count (binary mode)",
+      "ctx_desc": {
+        "plot_trumpet:b": "Number of controls in study for binary mode power envelopes"
+      },
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "nea": {
+      "plots": [["plot_mqq", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Non-effect allele column",
+      "default": "NEA",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "null_beta": {
+      "plots": ["compare_effect"],
+      "desc": "Null beta for hypothesis testing",
+      "default": 0,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "onlycs": {
+      "plots": [["plot_pipcs", null]],
+      "desc": "",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "or_to_rr": {
+      "plots": ["plot_trumpet"],
+      "desc": "Convert OR to RR",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "p": {
+      "plots": [["plot_rg", null], ["plot_gwheatmap", null], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_trumpet", null]],
+      "desc": "P-value column",
+      "default": "P",
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -1494,26 +1355,17 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "rg": {
-      "plots": [["plot_rg", null]],
-      "desc": "Genetic correlation value column",
-      "default": "rg",
+    "p_level": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "P-value threshold for inclusion",
+      "default": 5e-08,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "sig_levels": {
-      "plots": [["plot_rg", null]],
-      "desc": "Significance levels",
-      "default": [
-        0.05
-      ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "rganno": {
-      "plots": [["plot_rg", null]],
-      "desc": "RG annotation mode",
-      "default": "non",
+    "palette": {
+      "plots": ["plot_template"],
+      "desc": "Color palette name or list",
+      "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -1524,14 +1376,10 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "corrections": {
+    "panno_kwargs": {
       "plots": [["plot_rg", null]],
-      "desc": "Multiple testing corrections",
-      "default": [
-        "non",
-        "fdr",
-        "bon"
-      ],
+      "desc": "P-value annotation kwargs",
+      "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -1542,47 +1390,662 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "equal_aspect": {
-      "plots": [["plot_rg", null]],
-      "desc": "Keep equal aspect ratio",
-      "default": true,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "full_cell": {
-      "plots": [["plot_rg", null]],
-      "desc": "Fill full cell when significant",
-      "default": [
-        "fdr",
-        0.05
-      ],
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "panno_args": {
-      "plots": [["plot_rg", null]],
-      "desc": "P-value annotation kwargs",
+    "pinpoint": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Variants to pinpoint",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "rganno_args": {
+    "pinpoint_color": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Color for pinpoint",
+      "default": "red",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "pip": {
+      "plots": [["plot_pipcs", null]],
+      "desc": "",
+      "default": "PIP",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "pipcs_raw": {
+      "plots": [["plot_pipcs", null]],
+      "desc": "",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "pos": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_pipcs", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Base-pair position column used with `chrom` for plotting",
+      "add_to_docstring": false,
+      "default": "POS",
+      "ctx_defaults": {}
+    },
+    "prevalence": {
+      "plots": [["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Disease prevalence (used for power lines in binary mode)",
+      "ctx_desc": {
+        "plot_trumpet:b": "Population disease prevalence parameter for binary mode power computation"
+      },
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "q_level": {
+      "plots": ["compare_effect"],
+      "desc": "Quantile level for thresholds",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "qq_line_color": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Reference line color for QQ plot (e.g., 'grey')",
+      "default": "grey",
+      "ctx_defaults": {
+        "plot_qq:qq": "grey"
+      },
+      "add_to_docstring": false
+    },
+    "qq_scatter_kwargs": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Style dict for QQ scatter (e.g., marker, s, edgecolor)",
+      "default": {},
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "qq_xlabels": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Custom x-axis tick labels for QQ plot",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "qq_xlim": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "X-axis limits for QQ plot, e.g., (min, max)",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "qqscatterargs": {
+      "plots": [["plot_mqq", null]],
+      "desc": "QQ scatter kwargs alias",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "qtitle": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Manhattan/QQ combined title",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "qtitle_pad": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "QQ title padding",
+      "default": 1.08,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "r2": {
+      "plots": ["plot_daf"],
+      "desc": "Show R-squared value",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "r2_kwargs": {
+      "plots": [["plot_daf", null]],
+      "desc": "Text kwargs for R^2 annotation in AF comparison",
+      "default": {
+        "va": "bottom",
+        "ha": "right"
+      },
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "r_or_r2": {
+      "plots": ["compare_effect"],
+      "desc": "Show r or r^2 statistic",
+      "default": "r2",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "r_se": {
+      "plots": ["compare_effect"],
+      "desc": "Show regression standard error",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "raf": {
+      "plots": [["plot_daf", null]],
+      "desc": "",
+      "default": "RAF",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ref_chrom": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Reference chromosome column",
+      "default": "REF_CHR",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ref_pos": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Reference position column",
+      "default": "REF_START",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "reg_box": {
+      "plots": ["compare_effect"],
+      "desc": "Draw regression stats box",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "reg_line_kwargs": {
+      "plots": [["plot_daf", null]],
+      "desc": "Regression line styling for AF comparison",
+      "default": {
+        "color": "#cccccc",
+        "linestyle": "--"
+      },
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "reg_text": {
+      "plots": [],
+      "desc": "Custom text for regression box",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region": {
+      "plots": [["plot_region", "r"], ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_pipcs", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Region triple (chr, start, end) in base pairs",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_anno_bbox_kwargs": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Annotation bbox kwargs for region",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_flank_factor": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Flank proportion for region padding",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_grid": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Show grid lines in regional plot",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_grid_line": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Grid line style for regional plot",
+      "default": {
+        "linewidth": 2,
+        "linestyle": "--"
+      },
+      "ctx_defaults": {
+        "plot_region:r": {
+          "linewidth": 2,
+          "linestyle": "--"
+        }
+      },
+      "add_to_docstring": false
+    },
+    "region_hspace": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Vertical spacing between region panels",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_ld_colors": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "LD colors (list or palette) aligned with thresholds",
+      "default": ["#E4E4E4", "#020080", "#86CEF9", "#24FF02", "#FDA400", "#FF0000", "#FF0000"],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_ld_colors_m": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "LD colors for multi-lead mode",
+      "default": ["#E51819", "#367EB7", "green", "#F07818", "#AD5691", "yellow", "purple"],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_ld_legend": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Whether to show LD legend/colorbar",
+      "default": true,
+      "ctx_defaults": {
+        "plot_region:r": true
+      },
+      "add_to_docstring": false
+    },
+    "region_ld_threshold": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "LD r^2 thresholds list for color stratification",
+      "default": [0.2, 0.4, 0.6, 0.8],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_lead_grid": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Show lead grid lines",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_lead_grid_line": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Lead grid line style",
+      "default": {
+        "alpha": 0.5,
+        "linewidth": 2,
+        "linestyle": "--",
+        "color": "#FF0000"
+      },
+      "ctx_defaults": {
+        "plot_region:r": {
+          "alpha": 0.5,
+          "linewidth": 2,
+          "linestyle": "--",
+          "color": "#FF0000"
+        }
+      },
+      "add_to_docstring": false
+    },
+    "region_legend_marker": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Show legend markers",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_marker_shapes": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Marker shapes for multi-lead",
+      "default": ["o", "^", "s", "D", "*", "P", "X", "h", "8"],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_protein_coding": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Restrict to protein coding genes",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_recombination": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Plot recombination rate",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_ref": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Reference variant(s) for LD coloring",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_ref_alias": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Alias for reference variants",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_ref_second": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Second reference variant",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_step": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Y step for region layout",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_title": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Title text for regional plot",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "region_title_kwargs": {
+      "plots": ["plot_region", ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Regional plot title styling args",
+      "default": {
+        "family": "Arial",
+        "size": 12
+      },
+      "ctx_defaults": {
+        "plot_region:r": {
+          "family": "Arial"
+        }
+      },
+      "add_to_docstring": false
+    },
+    "rename_dic": {
+      "plots": ["compare_effect", ["plot_effect", null]],
+      "desc": "Rename dictionary for labels",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "repel_force": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Text repulsion force parameter",
+      "default": 0.03,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "rg": {
+      "plots": [["plot_rg", null]],
+      "desc": "Genetic correlation value column",
+      "default": "rg",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "rganno": {
+      "plots": [["plot_rg", null]],
+      "desc": "RG annotation mode",
+      "default": "non",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "rganno_kwargs": {
       "plots": [["plot_rg", null]],
       "desc": "RG annotation kwargs",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "asize": {
+    "rr_chr_dict": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Recombination rate chrom dict",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "rr_header_dict": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Recombination rate header dict",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "rr_lim": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Recombination rate limits",
+      "default": [0, 100],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "rr_path": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Recombination rate data path or 'default' for built-in resource",
+      "default": "default",
+      "ctx_defaults": {
+        "plot_region:r": "default"
+      },
+      "add_to_docstring": false
+    },
+    "rr_ylabel": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Show recombination rate y-label",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "same_ylim": {
+      "plots": ["plot_miami2"],
+      "desc": "Use same ylim across panels",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "save": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_effect", null], ["plot_snp_density", "b"], ["plot_trumpet", null]],
+      "desc": "Boolean or output filepath; when boolean, uses default naming",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "save_kwargs": {
+      "plots": [["plot_gwheatmap", null], ["plot_mqq", null], ["plot_manhattan", null], ["plot_daf", null], ["plot_effect", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_trumpet", null]],
+      "desc": "Save kwargs for GW heatmap",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "saveargs": {
+      "plots": [["plot_mqq", null]],
+      "desc": "Save kwargs alias",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sc_linewidth": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Line width for significance lines",
+      "default": 2,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "scaled": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Boolean indicating `mlog10p` is already precomputed",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "scaled1": {
+      "plots": ["compare_effect"],
+      "desc": "Series 1 pre-scaled -log10(P)",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "scaled2": {
+      "plots": ["compare_effect"],
+      "desc": "Series 2 pre-scaled -log10(P)",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "scatter_kwargs": {
+      "plots": [["plot_gwheatmap", null], "plot_miami2", ["plot_mqq", null], ["plot_manhattan", null], ["plot_daf", null], ["plot_effect", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_trumpet", null]],
+      "desc": "Scatter kwargs for GW heatmap",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "scatter_kwargs_outlier": {
+      "plots": [["plot_daf", null]],
+      "desc": "Scatter kwargs for outlier points in AF comparison",
+      "default": {
+        "s": 3,
+        "c": "red"
+      },
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "scatterargs": {
+      "plots": [["plot_mqq", null]],
+      "desc": "Scatter kwargs alias",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "se": {
+      "plots": [["plot_effect", null]],
+      "desc": "Standard error column",
+      "default": "SE",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sig_level": {
+      "plots": ["plot_trumpet", ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Significance threshold",
+      "default": 5e-08,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sig_level_lead": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "",
+      "default": 5e-08,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sig_level_plot": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Significance threshold for reference line, default 5e-8",
+      "default": 5e-08,
+      "ctx_defaults": {
+        "plot_mqq": 5e-08,
+        "plot_region:r": 5e-08
+      },
+      "add_to_docstring": false
+    },
+    "sig_levels": {
       "plots": [["plot_rg", null]],
-      "desc": "Annotation size",
-      "default": 10,
+      "desc": "Significance levels",
+      "default": [0.05],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sig_line": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Whether to draw significance reference line",
+      "default": true,
+      "ctx_defaults": {
+        "plot_mqq": true,
+        "plot_region:r": true
+      },
+      "add_to_docstring": false
+    },
+    "sig_line_color": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Significance line color",
+      "default": "grey",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "size": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null], ["plot_trumpet", null]],
+      "desc": "Size mapping",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sizes": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_gwheatmap", null], ["plot_trumpet", null]],
+      "desc": "Size list for style mapping",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sizes_gw": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Marker size range for GW heatmap",
+      "default": [10, 50],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "skip": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Minimum -log10(P) to plot",
+      "default": 0,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "snpid": {
+      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_trumpet", null]],
+      "desc": "SNP identifier column",
+      "default": "SNPID",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "snplist": {
+      "plots": ["compare_effect"],
+      "desc": "List of SNPs to include",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "snpr2": {
+      "plots": ["plot_effect"],
+      "desc": "SNP r2 column",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "snpr2_kwargs": {
+      "plots": ["plot_effect"],
+      "desc": "Styling kwargs for SNP r2 panel",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "snpr2_label": {
+      "plots": ["plot_effect"],
+      "desc": "Label for SNP r2 panel",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "snpvar_panel": {
+      "plots": ["plot_effect"],
+      "desc": "Toggle SNP variance panel",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sort": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null], ["plot_associations", null], ["plot_trumpet", null]],
+      "desc": "Sorting key or method",
+      "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
     "sort_key": {
       "plots": [["plot_rg", null]],
       "desc": "Sort key function",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sort_kwargs": {
+      "plots": ["plot_effect"],
+      "desc": "Sorting kwargs",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
@@ -1594,16 +2057,363 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "colorbar_args": {
-      "plots": [["plot_rg", null]],
-      "desc": "Colorbar kwargs",
+    "stratified": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Enable stratified QQ by MAF",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "style": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null]],
+      "desc": "Style mapping",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "suggestive_sig_level": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Suggestive threshold value, e.g., 5e-6",
+      "default": 5e-06,
+      "ctx_defaults": {
+        "plot_mqq": 5e-06
+      },
+      "add_to_docstring": false
+    },
+    "suggestive_sig_line": {
+      "plots": [["plot_mqq", "mqq"], ["plot_mqq", "r"], ["plot_mqq", "m"], ["plot_mqq", "qqm"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Whether to draw suggestive threshold line (e.g., 5e-6)",
+      "default": false,
+      "ctx_defaults": {
+        "plot_mqq": false
+      },
+      "add_to_docstring": false
+    },
+    "suggestive_sig_line_color": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "",
+      "default": "grey",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "sumstats": {
+      "plots": [["plot_daf", null]],
+      "desc": "",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "tabix": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Tabix index path for fast IO",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "taf": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Track arrangement factors",
+      "default": [4, 0, 0.95, 1, 1],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "threshold": {
+      "plots": ["plot_daf"],
+      "desc": "AF difference threshold",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "threshold_line_kwargs": {
+      "plots": [["plot_daf", null]],
+      "desc": "Threshold helper line styling for AF comparison",
       "default": {
-        "shrink": 0.82
+        "color": "#cccccc",
+        "linestyle": "dotted"
       },
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "xticklabel_args": {
+    "title": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_snp_density", "b"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_daf", null], ["plot_effect", null], ["plot_manhattan", null], ["plot_trumpet", null]],
+      "desc": "Figure title text",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "title_fontsize": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Title font size",
+      "default": 13,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "title_kwargs": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_stacked", null], ["plot_template", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Title styling kwargs (e.g., family, fontsize, weight)",
+      "default": null,
+      "ctx_defaults": {
+        "plot_mqq": {
+          "family": "Arial"
+        },
+        "plot_region:r": {
+          "family": "Arial"
+        },
+        "plot_stacked": {
+          "family": "Arial"
+        },
+        "plot_template": {
+          "family": "Arial"
+        }
+      },
+      "add_to_docstring": false
+    },
+    "title_pad": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_qq", "qq"], ["plot_manhattan", null], ["plot_snp_density", "b"]],
+      "desc": "Title padding",
+      "default": 1.08,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "title_pos": {
+      "plots": [["plot_stacked", null], ["plot_template", null]],
+      "desc": "Title position in axes coordinates (x, y)",
+      "default": [0.01, 0.97],
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "titles": {
+      "plots": [],
+      "desc": "Pair plot titles",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "titles_pad": {
+      "plots": [],
+      "desc": "Title padding configuration",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "to_plot": {
+      "plots": [["plot_effect", null]],
+      "desc": "",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "track_exon_ratio": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Exon track ratio",
+      "default": 1,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "track_font_family": {
+      "plots": [["plot_region", "r"], ["plot_mqq", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Font family for region tracks",
+      "default": "Arial",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "track_fontsize_ratio": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Track fontsize ratio",
+      "default": 0.95,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "track_n": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Number of annotation tracks",
+      "default": 4,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "track_n_offset": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Track offset",
+      "default": 0,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "track_text_offset": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Track text offset",
+      "default": 1,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ts": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Power thresholds to plot",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "use_rank": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_snp_density", "b"], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_qq", "qq"]],
+      "desc": "Use rank for chrom indexing",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "values": {
+      "plots": [["plot_associations", null]],
+      "desc": "Value to plot in associations heatmap",
+      "default": "Beta",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "vcf_chr_dict": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Chromosome mapping for VCF resource",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "vcf_path": {
+      "plots": [["plot_region", "r"], ["plot_manhattan", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Reference VCF path for LD computation/loading",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "verbose": {
+      "plots": ["all", ["plot_gwheatmap", null], ["plot_mqq", null], ["plot_manhattan", null], ["plot_daf", null], ["plot_effect", null], ["plot_associations", null], ["plot_pipcs", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_trumpet", null]],
+      "desc": "Verbose logging toggle",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "wc_correction": {
+      "plots": ["compare_effect"],
+      "desc": "Winner's curse correction toggle",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "wc_sig_level": {
+      "plots": ["compare_effect"],
+      "desc": "Significance threshold for WC correction",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "windowsizekb": {
+      "plots": [["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "Window size for lead variant extraction (kb)",
+      "default": 500,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "x": {
+      "plots": ["plot_template", ["plot_effect", null]],
+      "desc": "X variable/column name",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xchrpad": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Chrom padding for x grouping",
+      "default": 0,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xlabel": {
+      "plots": [["plot_mqq", null], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_daf", null], ["plot_associations", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"], ["plot_trumpet", null]],
+      "desc": "X-axis label",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xlabel_coords": {
+      "plots": ["plot_miami2"],
+      "desc": "X label position adjustment",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xlim": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "X-axis limits",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xlim_eaf": {
+      "plots": ["plot_effect"],
+      "desc": "X limits for EAF panel",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xlim_snpr2": {
+      "plots": ["plot_effect"],
+      "desc": "X limits for SNP r2 panel",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xpad": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "X padding proportion",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xpadl": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Left X padding",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xpadr": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Right X padding",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xscale": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "X-axis scale",
+      "default": "log",
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xtick_chr_dict": {
+      "plots": [["plot_mqq", null], ["plot_gwheatmap", null], ["plot_manhattan", null], ["plot_pipcs", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_region", "r"]],
+      "desc": "X-axis tick chromosome mapping",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xtick_chr_dict_gw": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Tick chr dict for x axis",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xtick_label_pad": {
+      "plots": ["plot_miami2"],
+      "desc": "Pad between x tick and label",
+      "default": 0,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xtick_label_size": {
+      "plots": [],
+      "desc": "X tick label size",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xticklabel_kwargs": {
       "plots": [["plot_rg", null]],
       "desc": "X ticklabel kwargs",
       "default": {
@@ -1616,7 +2426,119 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "yticklabel_args": {
+    "xticklabels": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Custom x-axis tick labels",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xtickpad": {
+      "plots": [],
+      "desc": "X tick pad",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xticks": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Custom x-axis ticks",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xtight": {
+      "plots": [["plot_region", "r"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"]],
+      "desc": "Tight X padding",
+      "default": false,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "xylabel_prefix": {
+      "plots": ["compare_effect"],
+      "desc": "Prefix for axis labels",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "y": {
+      "plots": ["plot_effect"],
+      "desc": "Y variable/column name",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "y_sort": {
+      "plots": ["plot_effect"],
+      "desc": "Y sorting key",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ychrpad": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Chrom padding for y grouping",
+      "default": 0,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ylabel": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_effect", null], ["plot_manhattan", null], ["plot_daf", null], ["plot_associations", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Y-axis label",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ylabels": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Custom y-axis labels",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ylim": {
+      "plots": [["plot_mqq", null], ["plot_region", "r"], ["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_qq", "qq"], ["plot_trumpet", null]],
+      "desc": "Y-axis limits",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "yscale_factor": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Y scale factor",
+      "default": 1,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ystep": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Step size for y-axis",
+      "default": 0,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ytick3": {
+      "plots": [["plot_qq", "qq"], ["plot_mqq", null], ["plot_manhattan", null], ["plot_snp_density", "b"], ["plot_region", "r"]],
+      "desc": "Use 3 y-axis ticks",
+      "default": true,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ytick_chr_dict": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "ytick_chr_dict_gw": {
+      "plots": [["plot_gwheatmap", null]],
+      "desc": "Tick chr dict for y axis",
+      "default": null,
+      "ctx_defaults": {},
+      "add_to_docstring": false
+    },
+    "yticklabel_kwargs": {
       "plots": [["plot_rg", null]],
       "desc": "Y ticklabel kwargs",
       "default": {
@@ -1626,999 +2548,20 @@
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "fdr_method": {
-      "plots": [["plot_rg", null]],
-      "desc": "FDR correction method",
-      "default": "bh",
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Annotation source or column (e.g., 'GENENAME', True, or column name)",
+    "yticklabels": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Custom y-axis tick labels",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "anno_set": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Set of variant IDs to annotate",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_alias": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Mapping from SNPID to custom annotation label",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_d": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Per-annotation positioning options (e.g., left/right)",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_args": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Default styling kwargs for annotations",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_args_single": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Per-SNP styling kwargs for annotations",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_style": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Annotation style ('right', 'tight', 'expand')",
-      "default": "right",
-      "ctx_defaults": {
-        "plot_region:r": "right",
-        "plot_mqq": "right"
-      },
-      "add_to_docstring": false
-    },
-    "anno_fixed_arm_length": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Fixed arm length for annotations",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_source": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Annotation source backend (e.g., 'ensembl', 'refseq')",
-      "default": "ensembl",
-      "ctx_defaults": {
-        "plot_region:r": "ensembl",
-        "plot_mqq": "ensembl"
-      },
-      "add_to_docstring": false
-    },
-    "anno_gtf_path": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Custom GTF path for annotations",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_adjust": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Enable annotation position adjustment",
-      "default": false,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_xshift": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "X-axis shift applied to annotations",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "anno_max_iter": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Maximum iterations for text repulsion algorithm",
-      "default": 100,
-      "ctx_defaults": {
-        "plot_region:r": 100,
-        "plot_mqq": 100
-      },
-      "add_to_docstring": false
-    },
-    "arrow_kwargs": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Arrow styling kwargs for annotations",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "arm_offset": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Offset for annotation arms",
-      "default": null,
-      "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "arm_scale": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Scaling factor for arm length",
-      "default": 1,
-      "ctx_defaults": {
-        "plot_region:r": 1,
-        "plot_mqq": 1
-      },
-      "add_to_docstring": false
-    },
-    "anno_height": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Height for annotations",
-      "default": 1,
-      "ctx_defaults": {
-        "plot_region:r": 1,
-        "plot_mqq": 1
-      },
-      "add_to_docstring": false
-    },
-    "arm_scale_d": {
-      "plots": [["plot_mqq", null], ["plot_region", "r"]],
-      "desc": "Per-annotation arm scaling dict",
+    "yticks": {
+      "plots": [["plot_trumpet", "q"], ["plot_trumpet", "b"], ["plot_trumpet", null]],
+      "desc": "Custom y-axis ticks",
       "default": null,
       "ctx_defaults": {},
       "add_to_docstring": false
     }
   },
-  "registry": {
-    "plot_mqq": {
-      "allowed": [
-        "chrom",
-        "pos",
-        "p",
-        "mlog10p",
-        "scaled",
-        "mode",
-        "scatter_args",
-        "qq_scatter_args",
-        "qq_line_color",
-        "qq_xlabels",
-        "qq_xlim",
-        "highlight",
-        "highlight_chrpos",
-        "highlight_color",
-        "highlight_windowkb",
-        "pinpoint",
-        "pinpoint_color",
-        "sig_line",
-        "sig_level_plot",
-        "suggestive_sig_line",
-        "suggestive_sig_level",
-        "additional_line",
-        "additional_line_color",
-        "sc_linewidth",
-        "ylim",
-        "chrpad",
-        "title",
-        "ylabel",
-        "xlabel",
-        "title_pad",
-        "title_fontsize",
-        "fontsize",
-        "font_family",
-        "fig_args",
-        "figax",
-        "colors",
-        "marker_size",
-        "use_rank",
-        "build",
-        "dpi",
-        "save",
-        "save_args",
-        "expected_min_mlog10p",
-        "log",
-        "verbose"
-      ],
-      "defaults": {
-        "mode": "mqq",
-        "qq_line_color": "grey",
-        "highlight_color": "#CB132D",
-        "highlight_windowkb": 500,
-        "sc_linewidth": 2,
-        "sig_line": true,
-        "sig_level_plot": 5e-08,
-        "suggestive_sig_line": false,
-        "suggestive_sig_level": 5e-06
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_region:r": {
-      "allowed": [
-        "chrom",
-        "pos",
-        "p",
-        "mlog10p",
-        "scaled",
-        "region",
-        "region_title",
-        "region_title_args",
-        "region_ref",
-        "region_ref_second",
-        "region_step",
-        "region_grid",
-        "region_grid_line",
-        "region_lead_grid",
-        "region_lead_grid_line",
-        "region_hspace",
-        "region_ld_threshold",
-        "region_ld_legend",
-        "region_ld_colors",
-        "region_ld_colors_m",
-        "region_recombination",
-        "region_protein_coding",
-        "region_flank_factor",
-        "region_anno_bbox_args",
-        "region_marker_shapes",
-        "region_legend_marker",
-        "region_ref_alias",
-        "vcf_path",
-        "vcf_chr_dict",
-        "ld_path",
-        "ld_map_path",
-        "ld_fmt",
-        "ld_if_square",
-        "ld_if_add_T",
-        "ld_map_rename_dic",
-        "ld_map_kwargs",
-        "cbar_title",
-        "cbar_fontsize",
-        "cbar_scale",
-        "cbar_font_family",
-        "cbar_bbox_to_anchor",
-        "cbar_equal_aspect",
-        "cbar_w_scale",
-        "cbar_h_scale",
-        "cbar_downward_offset",
-        "cbar_borderpad",
-        "track_n",
-        "track_n_offset",
-        "track_fontsize_ratio",
-        "track_exon_ratio",
-        "track_text_offset",
-        "track_font_family",
-        "gtf_path",
-        "gtf_chr_dict",
-        "gtf_gene_name",
-        "rr_path",
-        "rr_header_dict",
-        "rr_chr_dict",
-        "rr_lim",
-        "rr_ylabel",
-        "anno",
-        "anno_set",
-        "anno_alias",
-        "anno_d",
-        "anno_args",
-        "anno_args_single",
-        "anno_style",
-        "anno_fixed_arm_length",
-        "anno_source",
-        "anno_gtf_path",
-        "anno_adjust",
-        "anno_xshift",
-        "anno_max_iter",
-        "arrow_kwargs",
-        "arm_offset",
-        "arm_scale",
-        "anno_height",
-        "arm_scale_d",
-        "pinpoint",
-        "pinpoint_color",
-        "ylim",
-        "xpad",
-        "xpadl",
-        "xpadr",
-        "xtight",
-        "chrpad",
-        "drop_chr_start",
-        "title",
-        "ylabel",
-        "xlabel",
-        "title_pad",
-        "title_fontsize",
-        "fontsize",
-        "font_family",
-        "fig_args",
-        "figax",
-        "colors",
-        "marker_size",
-        "use_rank",
-        "repel_force",
-        "build",
-        "dpi",
-        "save",
-        "save_args",
-        "expected_min_mlog10p",
-        "log",
-        "verbose"
-      ],
-      "defaults": {
-        "region_step": 21,
-        "region_grid": false,
-        "region_lead_grid": true,
-        "region_hspace": 0.02,
-        "region_recombination": true,
-        "region_protein_coding": true,
-        "region_flank_factor": 0.05,
-        "cbar_title": "LD $\\mathregular{r^2}$ with variant",
-        "cbar_bbox_to_anchor": [
-          0,
-          0,
-          1,
-          1
-        ],
-        "cbar_equal_aspect": true,
-        "cbar_w_scale": 1,
-        "cbar_h_scale": 1,
-        "cbar_downward_offset": 1.3,
-        "track_n": 4,
-        "track_n_offset": 0,
-        "track_fontsize_ratio": 0.95,
-        "track_exon_ratio": 1,
-        "track_text_offset": 1,
-        "rr_lim": [
-          0,
-          100
-        ],
-        "rr_ylabel": true,
-        "gtf_path": "default",
-        "rr_path": "default",
-        "sig_line": true,
-        "sig_level_plot": 5e-08,
-        "suggestive_sig_line": false
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_qq:qq": {
-      "allowed": [
-        "qq_scatter_args",
-        "qq_line_color",
-        "qq_xlabels",
-        "qq_xlim",
-        "marker_size",
-        "gc",
-        "cut",
-        "cutfactor",
-        "cut_log",
-        "skip",
-        "ystep",
-        "ylabels",
-        "ytick3",
-        "colors",
-        "title",
-        "qtitle",
-        "qtitle_pad",
-        "fontsize",
-        "font_family",
-        "fig_args",
-        "figax",
-        "log",
-        "verbose",
-        "pinpoint",
-        "pinpoint_color",
-        "ylim",
-        "xpad",
-        "xpadl",
-        "xpadr",
-        "xtight",
-        "chrpad",
-        "drop_chr_start",
-        "title",
-        "ylabel",
-        "xlabel",
-        "title_pad",
-        "title_fontsize",
-        "fontsize",
-        "font_family",
-        "fig_args",
-        "figax",
-        "colors",
-        "marker_size",
-        "use_rank",
-        "repel_force",
-        "build",
-        "dpi",
-        "save",
-        "save_args",
-        "expected_min_mlog10p",
-        "log",
-        "verbose"
-      ],
-      "defaults": {
-        "qq_line_color": "grey"
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_snp_density:b": {
-      "allowed": [
-        "anno",
-        "anno_set",
-        "anno_alias",
-        "anno_d",
-        "anno_args",
-        "anno_args_single",
-        "anno_style",
-        "anno_fixed_arm_length",
-        "anno_source",
-        "anno_gtf_path",
-        "anno_adjust",
-        "anno_xshift",
-        "anno_max_iter",
-        "arrow_kwargs",
-        "arm_offset",
-        "arm_scale",
-        "anno_height",
-        "arm_scale_d",
-        "density_color",
-        "density_range",
-        "density_trange",
-        "density_threshold",
-        "density_tpalette",
-        "density_palette",
-        "bwindowsizekb",
-        "chrom",
-        "pos",
-        "p",
-        "mlog10p",
-        "scaled",
-        "mode",
-        "scatter_args",
-        "qq_scatter_args",
-        "qq_line_color",
-        "qq_xlabels",
-        "qq_xlim",
-        "highlight",
-        "highlight_chrpos",
-        "highlight_color",
-        "highlight_windowkb",
-        "pinpoint",
-        "pinpoint_color",
-        "sig_line",
-        "sig_level_plot",
-        "suggestive_sig_line",
-        "suggestive_sig_level",
-        "additional_line",
-        "additional_line_color",
-        "sc_linewidth",
-        "ylim",
-        "chrpad",
-        "title",
-        "ylabel",
-        "xlabel",
-        "title_pad",
-        "title_fontsize",
-        "fontsize",
-        "font_family",
-        "fig_args",
-        "figax",
-        "colors",
-        "marker_size",
-        "use_rank",
-        "build",
-        "dpi",
-        "save",
-        "save_args",
-        "expected_min_mlog10p",
-        "log",
-        "verbose"
-      ],
-      "defaults": {
-        "bwindowsizekb": 100,
-        "density_color": false,
-        "density_trange": [
-          0,
-          10
-        ],
-        "density_threshold": 5,
-        "density_tpalette": "Blues",
-        "density_palette": "Reds"
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_trumpet:q": {
-      "allowed": [
-        "mode",
-        "n",
-        "ts",
-        "anno",
-        "p_level",
-        "anno_y",
-        "anno_x",
-        "size",
-        "hue",
-        "style",
-        "xlabel",
-        "ylabel",
-        "title",
-        "font_family",
-        "fontsize",
-        "marker_size",
-        "scatter_args",
-        "fig_args",
-        "save",
-        "save_args",
-        "build",
-        "log",
-        "verbose"
-      ],
-      "defaults": {
-        "mode": "q"
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_trumpet:b": {
-      "allowed": [
-        "mode",
-        "prevalence",
-        "ncase",
-        "ncontrol",
-        "or_to_rr",
-        "ts",
-        "anno",
-        "p_level",
-        "anno_y",
-        "anno_x",
-        "size",
-        "hue",
-        "style",
-        "xlabel",
-        "ylabel",
-        "title",
-        "font_family",
-        "fontsize",
-        "marker_size",
-        "scatter_args",
-        "fig_args",
-        "save",
-        "save_args",
-        "build",
-        "log",
-        "verbose"
-      ],
-      "defaults": {
-        "mode": "b"
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_daf": {
-      "allowed": [
-        "threshold",
-        "xlabel",
-        "ylabel",
-        "is_reg",
-        "r2",
-        "is_45_helper_line",
-        "is_threshold",
-        "helper_line_args",
-        "threshold_line_args",
-        "reg_line_args",
-        "plt_args",
-        "scatter_args",
-        "scatter_args_outlier",
-        "histplot_args",
-        "font_args",
-        "r2_args",
-        "legend1",
-        "legend2",
-        "save",
-        "save_args",
-        "verbose",
-        "log"
-      ],
-      "defaults": {
-        "is_45_helper_line": true
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_effect": {
-      "allowed": [
-        "y",
-        "y_sort",
-        "group",
-        "x",
-        "se",
-        "eaf",
-        "snpr2",
-        "ylabel",
-        "eaf_panel",
-        "snpvar_panel",
-        "rename_dic",
-        "err_args",
-        "font_args",
-        "save",
-        "title",
-        "save_args",
-        "eaf_args",
-        "snpr2_args",
-        "fig_args",
-        "scatter_args",
-        "effect_label",
-        "eaf_label",
-        "snpr2_label",
-        "xlim_eaf",
-        "xlim_snpr2",
-        "legend_mode",
-        "ncol",
-        "gap",
-        "fontsize",
-        "font_family",
-        "size",
-        "hue",
-        "style",
-        "sort_args",
-        "log",
-        "verbose"
-      ],
-      "defaults": {
-        "legend_mode": "auto",
-        "ncol": 1,
-        "gap": 0.3
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_pipcs": {
-      "allowed": [
-        "region",
-        "locus",
-        "marker_size",
-        "palette",
-        "edgecolor",
-        "fig_args",
-        "scatter_kwargs",
-        "fontsize",
-        "font_family",
-        "save",
-        "save_args",
-        "log",
-        "verbose"
-      ],
-      "defaults": {
-        "marker_size": 40
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_manhantan": {
-      "allowed": [
-        "chrom",
-        "pos",
-        "p",
-        "mlog10p",
-        "scaled",
-        "mode",
-        "scatter_args",
-        "qq_scatter_args",
-        "qq_line_color",
-        "qq_xlabels",
-        "qq_xlim",
-        "highlight",
-        "highlight_chrpos",
-        "highlight_color",
-        "highlight_windowkb",
-        "pinpoint",
-        "pinpoint_color",
-        "sig_line",
-        "sig_level_plot",
-        "suggestive_sig_line",
-        "suggestive_sig_level",
-        "additional_line",
-        "additional_line_color",
-        "sc_linewidth",
-        "ylim",
-        "chrpad",
-        "title",
-        "ylabel",
-        "xlabel",
-        "title_pad",
-        "title_fontsize",
-        "fontsize",
-        "font_family",
-        "fig_args",
-        "figax",
-        "colors",
-        "marker_size",
-        "use_rank",
-        "build",
-        "dpi",
-        "save",
-        "save_args",
-        "expected_min_mlog10p",
-        "log",
-        "verbose"
-      ],
-      "defaults": {
-        "mode": "mqq",
-        "qq_line_color": "grey",
-        "highlight_color": "#CB132D",
-        "highlight_windowkb": 500,
-        "sc_linewidth": 2,
-        "sig_line": true,
-        "sig_level_plot": 5e-08,
-        "suggestive_sig_line": false,
-        "suggestive_sig_level": 5e-06
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_gwheatmap": {
-      "allowed": null,
-      "defaults": {
-        "height_ratios": [
-          1,
-          2
-        ],
-        "hspace": 0.1,
-        "colors": [
-          "#CB132D",
-          "#597FBD"
-        ],
-        "save": true,
-        "grid_linewidth": 1,
-        "grid_linecolor": "grey"
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_associations": {
-      "allowed": null,
-      "defaults": {
-        "values": "Beta",
-        "sort": "P-value",
-        "fontsize": 12,
-        "font_family": "Arial",
-        "ylabel": "Traits",
-        "xlabel": "rsID - Gene Name"
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    },
-    "plot_rg": {
-      "allowed": [
-        "p1",
-        "p2",
-        "rg",
-        "p",
-        "sig_levels",
-        "rganno",
-        "panno",
-        "corrections",
-        "panno_texts",
-        "equal_aspect",
-        "cmap",
-        "full_cell",
-        "log",
-        "panno_args",
-        "rganno_args",
-        "verbose",
-        "asize",
-        "sort_key",
-        "square",
-        "colorbar_args",
-        "fig_args",
-        "xticklabel_args",
-        "yticklabel_args",
-        "fdr_method",
-        "fontsize",
-        "save",
-        "save_args"
-      ],
-      "defaults": {
-        "sig_levels": [
-          0.05
-        ],
-        "rganno": "non",
-        "panno": true,
-        "corrections": [
-          "non",
-          "fdr",
-          "bon"
-        ],
-        "equal_aspect": true,
-        "full_cell": [
-          "fdr",
-          0.05
-        ],
-        "colorbar_args": {
-          "shrink": 0.82
-        },
-        "fig_args": {
-          "dpi": 300
-        },
-        "yticklabel_args": {
-          "fontsize": 10,
-          "fontfamily": "Arial"
-        },
-        "xticklabel_args": {
-          "rotation": 45,
-          "horizontalalignment": "left",
-          "verticalalignment": "bottom",
-          "fontsize": 10,
-          "fontfamily": "Arial"
-        },
-        "fdr_method": "bh",
-        "fontsize": 10
-      },
-      "banned_keys": {
-        "fig_args": [],
-        "fig_kwargs": [],
-        "save_args": [],
-        "save_kwargs": [],
-        "scatter_args": [],
-        "scatter_kwargs": [],
-        "qq_scatter_args": [],
-        "panno_args": [],
-        "rganno_args": [],
-        "colorbar_args": [],
-        "xticklabel_args": [],
-        "yticklabel_args": []
-      }
-    }
-  }
+  "registry": {}
 }

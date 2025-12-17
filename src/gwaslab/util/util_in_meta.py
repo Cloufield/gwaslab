@@ -216,13 +216,13 @@ def process_sumstats(sumstats_path, results_df, index, extract_index=None, match
 def get_sumstats(input_path,usekeys=None):
     if isinstance(input_path, tuple):
         path = input_path[0]
-        path_args = input_path[1]
+        path_kwargs = input_path[1]
     else:
         path = input_path
-        path_args={}
+        path_kwargs={}
         
     if isinstance(path, pd.DataFrame):
-        sumstats = Sumstats(path,fmt="auto",verbose=False,usekeys=usekeys,**path_args).data
+        sumstats = Sumstats(path,fmt="auto",verbose=False,usekeys=usekeys,**path_kwargs).data
     elif isinstance(path, Sumstats):
         sumstats = path.data
         if usekeys is not None:
@@ -232,7 +232,7 @@ def get_sumstats(input_path,usekeys=None):
         if usekeys is not None:
             sumstats = sumstats[usekeys]
     else:
-        sumstats = Sumstats(path,fmt="auto",verbose=False,usekeys=usekeys,**path_args).data
+        sumstats = Sumstats(path,fmt="auto",verbose=False,usekeys=usekeys,**path_kwargs).data
     return sumstats
 
 

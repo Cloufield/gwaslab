@@ -2,8 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.g_Log import Log
-from gwaslab.io.io_process_args import _extract_kwargs
+from gwaslab.io.io_process_kwargs import _extract_kwargs
 import seaborn as sns
+from gwaslab.viz.viz_aux_style_options import set_plot_style
 
 def _plot_effect(to_plot, 
                  y=None, 
@@ -17,15 +18,15 @@ def _plot_effect(to_plot,
                  eaf_panel=True, 
                  snpvar_panel=True, 
                  rename_dic=None, 
-                 err_args=None,
-                 font_args=None,
+                 err_kwargs=None,
+                 font_kwargs=None,
                  save=None,
                  title=None,
-                 save_args=None,
-                 eaf_args=None,
-                 snpr2_args=None,
-                 fig_args=None,
-                 scatter_args=None,
+                 save_kwargs=None,
+                 eaf_kwargs=None,
+                 snpr2_kwargs=None,
+                 fig_kwargs=None,
+                 scatter_kwargs=None,
                  effect_label=None,
                  eaf_label=None,
                  snpr2_label=None,
@@ -40,8 +41,8 @@ def _plot_effect(to_plot,
                  font_family="Arial",
                  size=None,
                  hue=None,
-                 style=None,
-                 sort_args=None,
+                 style_col=None,
+                 sort_kwargs=None,
                  **args):
     """Plot effect sizes with optional panels for EAF and SNPR2.
 
@@ -71,23 +72,23 @@ def _plot_effect(to_plot,
         Whether to include SNP variance panel.
     rename_dic : dict, optional
         Dictionary for renaming labels. Default is None.
-    err_args : dict, optional
+    err_kwargs : dict, optional
         Arguments for error bars. Default is None.
-    font_args : dict, optional
+    font_kwargs : dict, optional
         Font-related arguments. Default is None.
     save : str, optional
         File path to save the figure. Default is None.
     title : str, optional
         Title of the plot. Default is None.
-    save_args : dict, optional
+    save_kwargs : dict, optional
         Additional arguments for saving. Default is None.
-    eaf_args : dict, optional
+    eaf_kwargs : dict, optional
         Arguments for EAF panel. Default is None.
-    snpr2_args : dict, optional
+    snpr2_kwargs : dict, optional
         Arguments for SNPR2 panel. Default is None.
-    fig_args : dict, optional
+    fig_kwargs : dict, optional
         Figure size and DPI settings. Default is None.
-    scatter_args : dict, optional
+    scatter_kwargs : dict, optional
         Scatter plot arguments. Default is None.
     effect_label : str, optional
         Custom label for effect size axis. Default is None.
@@ -117,9 +118,9 @@ def _plot_effect(to_plot,
         Column name for marker size. Default is None.
     hue : str, optional
         Column name for color encoding. Default is None.
-    style : str, optional
+    style_col : str, optional
         Column name for marker style. Default is None.
-    sort_args : dict, optional
+    sort_kwargs : dict, optional
         Additional sorting arguments. Default is None.
     **args : dict
         Additional arguments passed to scatterplot.
@@ -129,23 +130,32 @@ def _plot_effect(to_plot,
     matplotlib.figure.Figure
         The generated figure object.
     """
-    if err_args is None:
-        err_args={"ecolor":"#cccccc",
-                  "linewidth":0,
-                  "zorder":90,
-                  "elinewidth":1}
-    if eaf_args is None:
-        eaf_args={"color":"#74BAD3"}
-    if snpr2_args is None:
-        snpr2_args={"color":"#74BAD3"}
-    if font_args is None:
-        font_args={'fontsize':12,'family':'sans','fontname':'Arial'}
-    if fig_args is None:
-        fig_args={"figsize":(8,8),"dpi":300}
-    if scatter_args is None:
-        scatter_args={"s":20}
-    if sort_args is None:
-        sort_args={}
+    style = set_plot_style(
+        plot="plot_effect",
+        fig_kwargs=fig_kwargs if fig_kwargs is not None else fig_kwargs,
+        save_kwargs=save_kwargs if save_kwargs is not None else save_kwargs,
+        save=save,
+        scatter_kwargs=scatter_kwargs if scatter_kwargs is not None else scatter_kwargs,
+        err_kwargs=err_kwargs,
+        eaf_kwargs=eaf_kwargs,
+        snpr2_kwargs=snpr2_kwargs,
+        font_kwargs=font_kwargs,
+        fontsize=fontsize,
+        fontfamily=font_family,
+        verbose=verbose,
+        log=log,
+    )
+    fig_kwargs = style.get("fig_kwargs", style.get("fig_kwargs", {}))
+    save_kwargs = style.get("save_kwargs", style.get("save_kwargs", {}))
+    scatter_kwargs = style.get("scatter_kwargs", style.get("scatter_kwargs", {}))
+    err_kwargs = style["err_kwargs"]
+    eaf_kwargs = style["eaf_kwargs"]
+    snpr2_kwargs = style["snpr2_kwargs"]
+    font_kwargs = style["font_kwargs"]
+    fontsize = style["fontsize"]
+    font_family = style["font_family"]
+    if sort_kwargs is None:
+        sort_kwargs={}
 
     legend_titles=[]
     if hue is not None:
@@ -156,15 +166,15 @@ def _plot_effect(to_plot,
         args["size"] = size
         legend_titles.append(size)
 
-    if style is not None:
-        args["style"] = style
-        legend_titles.append(style)
+    if style_col is not None:
+        args["style_col"] = style_col
+        legend_titles.append(style_col)
 
         
-    save_kwargs =      _extract_kwargs("save", save_args, locals())
-    err_kwargs =       _extract_kwargs("err", err_args, locals())
-    scatter_kwargs =   _extract_kwargs("scatter", scatter_args, locals())
-    font_kwargs =      _extract_kwargs("font",font_args, locals())
+    save_kwargs =      _extract_kwargs("save", save_kwargs, locals())
+    err_kwargs =       _extract_kwargs("err", err_kwargs, locals())
+    scatter_kwargs =   _extract_kwargs("scatter", scatter_kwargs, locals())
+    font_kwargs =      _extract_kwargs("font", font_kwargs, locals())
     
     def concat_cols(cols):
         string = "-".join(map(str,cols))
@@ -191,7 +201,7 @@ def _plot_effect(to_plot,
     
     sort_columns= group + y_sort
 
-    to_plot = to_plot.sort_values(by=sort_columns,**sort_args)
+    to_plot = to_plot.sort_values(by=sort_columns,**sort_kwargs)
     
     # calculate cum sum
     cum_sizes = to_plot.groupby(group).size()
@@ -217,23 +227,25 @@ def _plot_effect(to_plot,
         ncols+=1
 
     if ncols==1:
-        fig,ax1 = plt.subplots(ncols=ncols, **fig_args)
+        fig,ax1 = plt.subplots(ncols=ncols, **fig_kwargs)
     elif ncols==2:
         if eaf_panel==True and eaf in to_plot.columns:
-            fig,axes = plt.subplots(ncols=ncols,sharey=True, **fig_args)
+            fig,axes = plt.subplots(ncols=ncols,sharey=True, **fig_kwargs)
             ax1=axes[0]
             ax2=axes[1]
         else:
-            fig,axes = plt.subplots(ncols=ncols,sharey=True, **fig_args)
+            fig,axes = plt.subplots(ncols=ncols,sharey=True, **fig_kwargs)
             ax1=axes[0]
             ax3=axes[1]
     else:
-        fig,axes = plt.subplots(ncols=ncols,sharey=True, **fig_args)
+        fig,axes = plt.subplots(ncols=ncols,sharey=True, **fig_kwargs)
         ax1=axes[0]
         ax2=axes[1]
         ax3=axes[2]
 
-    sns.scatterplot(data=to_plot, x=x, y=y, ax=ax1, zorder=100, **args)
+    # 上方已通过 set_plot_style 合并，无需再次调用
+
+    sns.scatterplot(data=to_plot, x=x, y=y, ax=ax1, zorder=100, **{**args, **scatter_kwargs})
 
     ax1.errorbar(y=to_plot[y], x=to_plot[x], xerr=to_plot[se], 
                   **err_kwargs)
@@ -247,13 +259,13 @@ def _plot_effect(to_plot,
         ax1.set_title(title,fontsize=fontsize, family=font_family)
 
     if eaf_panel==True and eaf in to_plot.columns:
-        ax2.barh(y=to_plot[y], width=to_plot[eaf], zorder=100, **eaf_args)
+        ax2.barh(y=to_plot[y], width=to_plot[eaf], zorder=100, **eaf_kwargs)
         ax2.set_xlabel(eaf, fontsize=fontsize, family=font_family)
         if xlim_eaf is not None:
             ax3.set_xlim(xlim_eaf)
 
     if snpvar_panel==True and snpr2 in to_plot.columns:
-        ax3.barh(y=to_plot[y], width=to_plot[snpr2], zorder=100,**snpr2_args)
+        ax3.barh(y=to_plot[y], width=to_plot[snpr2], zorder=100,**snpr2_kwargs)
         ax3.set_xlabel(snpr2, fontsize=fontsize, family=font_family)
         if xlim_snpr2 is not None:
             ax3.set_xlim(xlim_snpr2)
@@ -348,6 +360,6 @@ def _plot_effect(to_plot,
         ax3.tick_params(axis='x', 
                         labelsize=fontsize,
                         labelfontfamily=font_family)
-    save_figure(fig, save, keyword="forest",save_args=save_kwargs, log=log, verbose=verbose)   
+    save_figure(fig, save, keyword="forest",save_kwargs=save_kwargs, log=log, verbose=verbose)   
     
     return fig

@@ -1,60 +1,130 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.colors import to_hex
-import seaborn as sns
-from gwaslab.io.io_process_args import _update_arg
-import numpy as np
-import scipy as sp
 import copy
-from math import ceil
-from shutil import which
-from pyensembl import EnsemblRelease
-from allel import GenotypeArray
-from allel import read_vcf
-from allel import rogers_huff_r_between
+import gc as garbage_collect
 import matplotlib as mpl
-from scipy import stats
+import numpy as np
+import pandas as pd
+import scipy as sp
+from math import ceil
+import matplotlib.pyplot as plt
+import seaborn as sns
+from adjustText import adjust_text
+from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
-from matplotlib.ticker import MaxNLocator
-import gc as garbage_collect
-from adjustText import adjust_text
-
-from gwaslab.g_Log import Log
-from gwaslab.g_version import _get_version
-from gwaslab.hm.hm_harmonize_sumstats import auto_check_vcf_chr_dict
-from gwaslab.qc.qc_build import _process_build
-from gwaslab.viz.viz_aux_annotate_plot import annotate_single
-from gwaslab.viz.viz_plot_qqplot import _plot_qq
-from gwaslab.viz.viz_plot_regional2 import _plot_regional
-from gwaslab.viz.viz_plot_regional2 import process_vcf
-from gwaslab.viz.viz_plot_regional2 import _get_lead_id
-from gwaslab.viz.viz_plot_density import _process_density
-from gwaslab.viz.viz_aux_quickfix import _quick_fix_p_value
-from gwaslab.viz.viz_aux_quickfix import _quick_fix_pos
-from gwaslab.viz.viz_aux_quickfix import _quick_fix_chr
-from gwaslab.viz.viz_aux_quickfix import _quick_fix_eaf
-from gwaslab.viz.viz_aux_quickfix import _quick_fix_mlog10p
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank
-from gwaslab.viz.viz_aux_quickfix import _cut
-from gwaslab.viz.viz_aux_quickfix import _set_yticklabels
-from gwaslab.viz.viz_aux_quickfix import _jagged_y
-from gwaslab.viz.viz_aux_save_figure import save_figure
-
-from gwaslab.io.io_load_ld import process_ld
-from gwaslab.io.io_process_args import _update_args
-
-
-from gwaslab.util.util_in_filter_value import _filter_region
-from gwaslab.util.util_in_get_sig import getsig
-from gwaslab.util.util_in_get_sig import gettop
-from gwaslab.util.util_in_get_sig import annogene
+from scipy import stats
 
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
-from gwaslab.viz.viz_aux_save_figure import safefig
+from gwaslab.g_Log import Log
+from gwaslab.g_version import _get_version
+from gwaslab.io.io_process_kwargs import _update_arg
+from gwaslab.io.io_process_kwargs import _update_kwargs
+from gwaslab.qc.qc_build import _process_build
+from gwaslab.util.util_in_filter_value import _filter_region
+from gwaslab.util.util_in_get_sig import getsig, annogene
+from gwaslab.viz.viz_aux_annotate_plot import annotate_single
+from gwaslab.viz.viz_aux_quickfix import _cut
+from gwaslab.viz.viz_aux_quickfix import _jagged_y
+from gwaslab.viz.viz_aux_quickfix import _set_yticklabels
 from gwaslab.viz.viz_aux_quickfix import _normalize_region
+from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank
+from gwaslab.viz.viz_aux_quickfix import _quick_fix_chr
+from gwaslab.viz.viz_aux_quickfix import _quick_fix_eaf
+from gwaslab.viz.viz_aux_quickfix import _quick_fix_mlog10p
+from gwaslab.viz.viz_aux_quickfix import _quick_fix_p_value
+from gwaslab.viz.viz_aux_quickfix import _quick_fix_pos
+from gwaslab.viz.viz_aux_save_figure import safefig
+from gwaslab.viz.viz_aux_save_figure import save_figure
+from gwaslab.viz.viz_aux_style_options import set_plot_style
+from gwaslab.viz.viz_plot_density import _process_density
+from gwaslab.viz.viz_plot_manhattan_like import _configure_fig_save_kwargs, _add_pad_to_x_axis, _configure_cols_to_use, _sanity_check, _process_p_value, _process_highlight, _process_line, _process_cbar, _process_xtick, _process_ytick, _process_xlabel, _process_ylabel, _process_spine, _process_layout
+import gwaslab.viz.viz_plot_manhattan_like as manlike
+from gwaslab.viz.viz_plot_manhattan_mode import draw_manhattan_panel
+from gwaslab.viz.viz_plot_qqplot import _plot_qq
+from gwaslab.viz.viz_plot_regional2 import _get_lead_id, _plot_regional, prepare_vcf_context, process_ld, process_vcf
+from gwaslab.io.io_process_kwargs import normalize_series_inputs
+
+@normalize_series_inputs(keys=["highlight","pinpoint","anno_set"])
+def _setup_and_log_mqq_info(
+    insumstats,
+    mode,
+    sig_level_plot,
+    anno_set,
+    highlight,
+    highlight_chrpos,
+    highlight_color,
+    highlight_windowkb,
+    pinpoint,
+    pinpoint_color,
+    region,
+    build,
+    log,
+    verbose,
+):
+    # Derive a concise label for the chosen mode
+    if "m" in mode and "qq" in mode:
+        plot_label = "Manhattan-QQ plot"
+    elif mode == "m":
+        plot_label = "Manhattan plot"
+    elif mode == "qq":
+        plot_label = "QQ plot"
+    elif mode == "r":
+        plot_label = "Region plot"
+    elif mode == "b":
+        plot_label = "Density plot"
+    else:
+        plot_label = "MQQ plot"
+
+    # Header and build info
+    log.write("Starting {} creation (Version {})".format(plot_label, _get_version()), verbose=verbose)
+    build = _update_arg(build, "19")
+    build = _process_build(build, log=log, verbose=verbose)
+    log.write(" - Genomic coordinates version: {} ...".format(build), verbose=verbose)
+    if build is None or build == "99":
+        log.warning("Genomic coordinates version is unknown.")
+
+    # Basic stats and mode
+    log.write(" - Genome-wide significance level to plot is set to " + str(sig_level_plot) + " ...", verbose=verbose)
+    log.write(" - Input sumstats contains {} variants...".format(len(insumstats)), verbose=verbose)
+    log.write(" - {} layout mode selected: {}".format(plot_label, mode), verbose=verbose)
+
+    # Annotation set (only meaningful when Manhattan panel is present)
+    if len(anno_set) > 0 and ("m" in mode):
+        log.write(" -Variants to annotate : " + ",".join(anno_set), verbose=verbose)
+
+    # Highlight configuration (supports lists of loci or direct chr:pos sets)
+    if len(highlight) > 0 and ("m" in mode):
+        is_grouped = pd.api.types.is_list_like(highlight[0])
+        if is_grouped and (highlight_chrpos is False):
+            if len(highlight) != len(highlight_color):
+                log.warning("Number of locus groups does not match number of provided colors.")
+            for i, highlight_set in enumerate(highlight):
+                color_i = highlight_color[i % len(highlight_color)]
+                log.write(" -Set {} loci to highlight ({}) : ".format(i + 1, color_i) + ",".join(highlight_set), verbose=verbose)
+        else:
+            log.write(" -Loci to highlight ({}): {}".format(highlight_color, highlight if is_grouped else ",".join(highlight)), verbose=verbose)
+        log.write("  -highlight_windowkb is set to: {} kb".format(highlight_windowkb), verbose=verbose)
+
+    # Pinpoint variants
+    if len(pinpoint) > 0:
+        is_grouped = pd.api.types.is_list_like(pinpoint[0])
+        if is_grouped:
+            if len(pinpoint) != len(pinpoint_color):
+                log.warning("Number of variant groups does not match number of provided colors.")
+            for i, pinpoint_set in enumerate(pinpoint):
+                color_i = pinpoint_color[i % len(pinpoint_color)]
+                log.write(" -Set {} variants to pinpoint ({}) : ".format(i + 1, color_i) + ",".join(pinpoint_set), verbose=verbose)
+        else:
+            log.write(" -Variants to pinpoint ({}): ".format(pinpoint_color) + ",".join(pinpoint), verbose=verbose)
+
+    # Region specification
+    if region is not None:
+        chr_, start_, end_ = region[0], region[1], region[2]
+        log.write(" -Region to plot : chr{}:{}-{}.".format(chr_, start_, end_), verbose=verbose)
+
+    return plot_label, build
+
+@normalize_series_inputs(keys=["highlight","pinpoint","anno_set"])
 @safefig
 def mqqplot(insumstats,            
           chrom="CHR",
@@ -80,16 +150,14 @@ def mqqplot(insumstats,
           mlog10p="MLOG10P",
           scaled=False,
           mode="mqq",
-          scatter_args=None,
-          scatterargs=None,
-          qq_scatter_args=None,
-          qqscatterargs=None,
+          scatter_kwargs=None,
+          qq_scatter_kwargs=None,
           qq_line_color = "grey",
           qq_xlabels = None,
           qq_xlim = None,
           region = None,
           region_title=None,
-          region_title_args=None,
+          region_title_kwargs=None,
           region_ref=None,
           region_ref_second=None,
           region_step = 21,
@@ -105,7 +173,7 @@ def mqqplot(insumstats,
           region_recombination = True,
           region_protein_coding = True,
           region_flank_factor = 0.05,
-          region_anno_bbox_args = None,
+          region_anno_bbox_kwargs = None,
           region_marker_shapes=None,
           region_legend_marker=True,
           region_ref_alias = None,
@@ -147,8 +215,8 @@ def mqqplot(insumstats,
           anno_set=None,
           anno_alias=None,
           anno_d=None,
-          anno_args=None,
-          anno_args_single=None,
+          anno_kwargs=None,
+          anno_kwargs_single=None,
           anno_style="right",  # Default annotation style
           anno_fixed_arm_length=None,
           anno_source = "ensembl",  # Default annotation source
@@ -187,7 +255,7 @@ def mqqplot(insumstats,
           highlight_chrpos = False,
           highlight_color="#CB132D",  # Default highlight color
           highlight_windowkb = 500,  # Default window size for highlighting (kb)
-          highlight_anno_args = None,  # Default to no additional highlight annotation arguments
+          highlight_anno_kwargs = None,  # Default to no additional highlight annotation arguments
           highlight_lim = None,  # Default to no custom highlight limits
           highlight_lim_mode = "absolute",  # Default highlight limit mode
           pinpoint= None,
@@ -213,16 +281,16 @@ def mqqplot(insumstats,
           xlabel=None,
           title_pad=1.08, 
           title_fontsize=13,
+          title_kwargs=None,
           fontsize = 9,
           font_family=None,
           fontfamily="Arial",
           math_fontfamily="dejavusans",
           anno_fontsize = 9,
-          figargs=None,
-          fig_args= None,
+          fig_kwargs=None,
           figax=None,
           colors=None,
-          marker_size=(5,20),
+          marker_size=None,
           use_rank=False,
           verbose=True,
           repel_force=0.03,
@@ -230,8 +298,7 @@ def mqqplot(insumstats,
           _posdiccul=None,
           dpi=200,
           save=None,
-          save_args=None,
-          saveargs=None,
+          save_kwargs=None,
           _invert=False,
           _chrom_df_for_i=None,
           _if_quick_qc=True,
@@ -246,30 +313,25 @@ def mqqplot(insumstats,
     ----------
     check : bool, default=True
         Whether to perform input data quality checks.
-    mlog10p : str, default='MLOG10P'
-        Column name for -log10(P) values. 
-    scaled : bool, default=False
-        Whether P-values are already scaled.
-    mode : str, default='mqq'
-        Plotting mode. Options:
+    mode : str, default='m'
+        Plotting mode. 
         - 'm' : Manhattan plot
-        - 'mqq' : 'm' and 'qq' can be combined to create Manhattan-QQ layout (default)
-    scatter_args : {dict, None}, optional
-        Arguments for scatter plot styling. Banned arguments include "edgecolor","edgecolors", "linewidth", "ax","palette","hue","data","legend","style","size","sizes","zorder","s".
-        Default is None.
-    qq_scatter_args : dict, optional
-        Arguments for QQ plot scatter styling. Default is None. (Used in 'qq' mode)
+        - 'mqq' : Manhattan-QQ layout 
+    scatter_kwargs : {dict, None}, optional
+        Arguments for scatter plot styling. Default is None.
+    qq_scatter_kwargs : dict, optional
+        Arguments for QQ plot scatter styling. Default is None.
     qq_line_color : str, default='grey'
-        Color for QQ plot reference line. (Used in 'qq' mode)
+        Color for QQ plot reference line.
     qq_xlabels : list, optional
-        Custom x-axis labels for QQ plot. Default is None. (Used in 'qq' mode)
+        Custom x-axis labels for QQ plot. Default is None.
     qq_xlim : tuple or list, optional
-        X-axis limits for QQ plot. Default is None. (Used in 'qq' mode)
+        X-axis limits for QQ plot. Default is None.
     region : tuple or list, optional
         Genomic region specification (chr, start, end). 
         Region can be determined using `get_region_start_and_end`.(Required in 'r' mode)
     mqqratio : int, default=3
-        Ratio for MQQ plot layout. (Used in 'mqq', 'qqm' modes)
+        Ratio for MQQ plot layout.
     windowsizekb : int, default=500
         Window size in kb for obtainning significant variant. 
     anno :{None, bool, str, "GENENAME"}, default=None
@@ -286,9 +348,9 @@ def mqqplot(insumstats,
     anno_d : {dict, None}, optional
        Dictionary mapping annotation indices to custom positioning options ( "l" or "r").
        For example, {"0":"l"} means adjust the direction of the 1st arm end to left. Default is None. 
-    anno_args : dict, optional
+    anno_kwargs : dict, optional
         ictionary of default styling arguments for annotations. Default is None. 
-    anno_args_single : dict, optional
+    anno_kwargs_single : dict, optional
         Dictionary mapping SNP IDs to custom styling arguments. Default is None.
     anno_style : 'right' or 'tight' or 'expand', default='right'
         Style of annotation ('right', 'tight', 'expand'). Default is 'right'.
@@ -352,33 +414,33 @@ def mqqplot(insumstats,
         Line width for significance lines. 
     highlight : list, default=None
         A list of variant identifiers (e.g., SNPIDs). Each specified variant will be treated as a focal point, 
-        and all variants in surrounding loci will be highlighted in distinct colors. (Used in 'm' and 'b' modes)
+        and all variants in surrounding loci will be highlighted in distinct colors.
     highlight_chrpos : bool, default=False
-        Whether to highlight by chromosome position. (Used in 'm' modes)
+        Whether to highlight by chromosome position.
     highlight_color : str, default='#CB132D'
-        Color for highlighted variants. (Used in 'm' modes)
+        Color for highlighted variants.
     highlight_windowkb : int, default=500
-        Window size for highlighting variants in kb. (Used in 'm' modes)
-    highlight_anno_args : dict, optional
-        Arguments for highlight annotations. Default is None. (Used in 'm' modes)
+        Window size for highlighting variants in kb.
+    highlight_anno_kwargs : dict, optional
+        Arguments for highlight annotations. Default is None.
     highlight_lim : list, optional
-        Custom limits for highlighting. Default is None. (Used in 'm' modes)
+        Custom limits for highlighting. Default is None.
     highlight_lim_mode : str, default='absolute'
-        Mode for highlight limits ('absolute' or 'relative'). (Used in 'm' modes)
+        Mode for highlight limits ('absolute' or 'relative').
     pinpoint : list, optional
-        List of variants to pinpoint. Default is None. (Used in all modes)
+        List of variants to pinpoint. Default is None. 
     pinpoint_color : str, default='red'
-        Color for pinpointed variants. (Used in all modes)
+        Color for pinpointed variants. 
     stratified : bool, default=False
-        Whether to create stratified QQ plots by MAF. (Used in 'qq' mode)
+        Whether to create stratified QQ plots by MAF. 
     maf_bins : list of lists, optional
         Bins for MAF stratification [[lower1, upper1], ...]. Default is [[0, 0.01], [0.01, 0.05], [0.05, 0.25],[0.25,0.5]]
     maf_bin_colors : list, optional
-        Colors for MAF bins. Default is None. (Used in 'qq' mode)
+        Colors for MAF bins. Default is None. 
     gc : bool, default=True
-        Whether to calculate genomic control lambda. (Used in 'qq' mode)
+        Whether to calculate genomic control lambda. 
     include_chrXYMT : bool, default=True
-        Whether to include sex chromosomes in QQ plot. (Used in 'qq' mode)
+        Whether to include sex chromosomes in QQ plot. 
     ylim : tuple, optional
         Y-axis limits for plot. Default is None. 
     xpad : float, optional
@@ -419,12 +481,12 @@ def mqqplot(insumstats,
         Font size for annotations.
     figargs : dict, optional
         Figure arguments for subplots. Default is None. 
-    fig_args : dict, optional
+    fig_kwargs : dict, optional
         Alternative name for figure arguments. Default is None. 
     colors : list, default=['#597FBD','#74BAD3']
         Color palette for plot. 
     marker_size : tuple, default=(5,20)
-        Size range for markers. Passed to sns.scatterplot(). Pass like [20,20] for a fixed size. Overwrite "s" in scatter_args.
+        Size range for markers. Passed to sns.scatterplot(). Pass like [20,20] for a fixed size. Overwrite "s" in scatter_kwargs.
     use_rank : bool, default=False
         Whether to use rank for plotting.
     verbose : bool, default=True
@@ -435,7 +497,7 @@ def mqqplot(insumstats,
         Dots per inch for figure resolution. 
     save : str, optional
         File path to save plot. Default is None. 
-    save_args : dict, default={"dpi":600,"transparent":True}
+    save_kwargs : dict, default={"dpi":600,"transparent":True}
         Arguments for saving the plot. 
 
     
@@ -454,33 +516,36 @@ def mqqplot(insumstats,
         Path to GTF file for annotations when anno is 'GENENAME'. Same as gtf_path in `get_lead` method.
         If none, auto-detected (preferred). Default is None. 
     chr_dict : dict, default=None
-        Mapping dictionary for chromosome names. Only used when chromosomes in reference files are not standardized (Used in 'm' and 'r' modes)
+        Mapping dictionary for chromosome names. Only used when chromosomes in reference files are not standardized
     xtick_chr_dict : dict, default=None
-        Chromosome number to name mapping for x-axis ticks. Only used when chromosomes in sumstats are not standardized (Used in 'm' and 'r' modes)
+        Chromosome number to name mapping for x-axis ticks. Only used when chromosomes in sumstats are not standardized
     ylabel : str, default="$\mathregular{-log_{10}(P)}$"
-        Y-axis label. Default is "$\mathregular{-log_{10}(P)}$". (Used in all modes)
+        Y-axis label. Default is "$\mathregular{-log_{10}(P)}$".
         b mode: default="Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb"
     xlabel : str, optional
-        X-axis label. Default is None. (Used in all modes)
+        X-axis label. Default is None.
     repel_force : float, default=0.03
-        Force for repelling overlapping labels. (Used in 'm' and 'r' modes)
+        Force for repelling overlapping labels.
     anno_adjust : bool, optional
-        Whether to automatically adjust text positions to prevent overlap. (Used in 'm' and 'r' modes)
+        Whether to automatically adjust text positions to prevent overlap.
     figax : dict, optional
-        Existing figure and axes for plot. Default is None. (Used in all modes)
+        Existing figure and axes for plot. Default is None.
     jagged : bool, default=False
-        Whether to make y-axis jagged. (Used in all modes)
+        Whether to make y-axis jagged.
     jagged_len : float, default=0.01
-        Length of jagged line. (Used in all modes)
+        Length of jagged line.
     jagged_wid : float, default=0.01
-        Width of jagged line. (Used in all modes)
-    scatterargs : dict, optional
-        Alternative name for scatter plot styling. Default is None. (Used in all modes)
-    qqscatterargs : dict, optional
-        Alternative name for QQ plot scatter styling. Default is None. (Used in 'qq' mode)
-    saveargs : dict, optional
-        Alternative name for save arguments. Default is None. 
+        Width of jagged line.
+    mlog10p : str, default='MLOG10P'
+        Column name for -log10(P) values. 
+    scaled : bool, default=False
+        Whether P-values are already scaled.
     """
+    # scan all local args for series and convert to list for further processing
+    for arg in locals().values():
+        if isinstance(arg, pd.Series):
+            arg = arg.tolist()
+
     if snpid in insumstats.columns:
         snpid=snpid
     elif "SNPID" in insumstats.columns:
@@ -491,34 +556,56 @@ def mqqplot(insumstats,
     if "EAF" not in insumstats.columns:
         eaf=None
     
-    chr_dict = _update_args(chr_dict, get_chr_to_number())
-    xtick_chr_dict = _update_args(xtick_chr_dict, get_number_to_chr())
-    gtf_chr_dict = _update_args(gtf_chr_dict, get_number_to_chr())
-    rr_chr_dict = _update_args(rr_chr_dict, get_number_to_chr())
+    chr_dict = _update_kwargs(chr_dict, get_chr_to_number())
+    xtick_chr_dict = _update_kwargs(xtick_chr_dict, get_number_to_chr())
+    gtf_chr_dict = _update_kwargs(gtf_chr_dict, get_number_to_chr())
+    rr_chr_dict = _update_kwargs(rr_chr_dict, get_number_to_chr())
 
-    fig_args = _update_args(fig_args, dict(figsize=(15,5)))
-    fig_args = _update_args(figargs, fig_args)
-    if "dpi" not in fig_args.keys():
-        fig_args["dpi"] = dpi
+    style = set_plot_style(
+        plot="plot_mqq",
+        mode=mode,
+        fig_kwargs=fig_kwargs,
+        save_kwargs=save_kwargs,
+        save=save,
+        scatter_kwargs=scatter_kwargs,
+        qq_scatter_kwargs=qq_scatter_kwargs,
+        title_kwargs=title_kwargs,
+        fontsize=fontsize,
+        fontfamily=fontfamily,
+        colors=colors,
+        marker_size=marker_size,
+        dpi=dpi,
+        verbose=verbose,
+        log=log,
+    )
+    fig_kwargs =style["fig_kwargs"]
+    save_kwargs =style["save_kwargs"]
+    scatter_kwargs =style["scatter_kwargs"]
+    qq_scatter_kwargs = style["qq_scatter_kwargs"]
+    fontsize = style["fontsize"]
+    font_family = style["font_family"]
+    colors = style["colors"]
+    marker_size = style["marker_size"]
+    dpi = style["dpi"]
+    title_kwargs = style["title_kwargs"]
 
-    anno_set = _update_arg(anno_set, list())
-    anno_alias = _update_args(anno_alias, dict())
-    anno_d = _update_args(anno_d,dict())
-    anno_args = _update_args(anno_args,dict())
-    anno_args_single = _update_args(anno_args_single,dict())
-    arrow_kwargs = _update_args(arrow_kwargs,dict())
+    # Auto-detect scaled input when -log10(P) column is present with valid values
+    try:
+        if (scaled is False) and (mlog10p in insumstats.columns):
+            if _mlog10p_series.notna().sum() > 0:
+                scaled = True
+                log.write(f"Auto-detected scaled input using column '{mlog10p}'.", verbose=verbose)
+    except Exception:
+        pass
+
+    taf = _update_arg(taf, [track_n,track_n_offset,track_fontsize_ratio,track_exon_ratio,track_text_offset])
+    font_family = _update_arg(font_family, fontfamily)
+
     
-
-
-    colors = _update_arg(colors, ["#597FBD","#74BAD3"])
-
-    ld_map_kwargs = _update_args(ld_map_kwargs,dict())
-
+    # Step 1: Set arguments and normalize inputs
     if region is not None:
         if region[1] == region[2]:
             raise ValueError("Region should be [chr, start, end] with start < end")
-        if marker_size == (5,20):
-            marker_size=(45,65)
     
     # make region_ref a list of ref variants
     if pd.api.types.is_list_like(region_ref):
@@ -531,37 +618,14 @@ def mqqplot(insumstats,
         if region_ref_second is not None:
             region_ref.append(region_ref_second)
     region_ref_index_dic = {value: index for index,value in enumerate(region_ref)}
-    # track_n, track_n_offset,font_ratio,exon_ratio,text_offset
-    taf = _update_arg(taf, [track_n,track_n_offset,track_fontsize_ratio,track_exon_ratio,track_text_offset])
-    region_marker_shapes = _update_arg(region_marker_shapes, ['o', '^','s','D','*','P','X','h','8'])
-    region_grid_line = _update_args(region_grid_line,  {"linewidth": 2,"linestyle":"--"})
-    region_lead_grid_line = _update_args(region_lead_grid_line, {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"})
-    region_ld_threshold = _update_arg(region_ld_threshold, [0.2,0.4,0.6,0.8])
-    region_anno_bbox_args = _update_args(region_anno_bbox_args, {"ec":"None","fc":"None"})
-    region_ld_colors = _update_arg(region_ld_colors, ["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"])
-    region_ld_colors_m = _update_arg(region_ld_colors_m,  ["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"])
-    region_title_args = _update_args(region_title_args,  {"size":title_fontsize})
 
-    font_family = _update_arg(font_family, fontfamily)
-    cbar_fontsize = _update_arg(cbar_fontsize, fontsize)
-    cbar_font_family = _update_arg(cbar_font_family, font_family)
-    track_font_family = _update_arg(track_font_family, font_family)
-
-
-    save_args = _update_args(save_args, {"dpi":600,"transparent":True})
-    save_args = _update_args(saveargs , save_args)
-
+    # save_kwargs merged via set_plot_style
     pinpoint = _update_arg(pinpoint,list())
     highlight = _update_arg(highlight,list())
-    highlight_anno_args = _update_args(highlight_anno_args)
-    
-    maf_bins = _update_arg(maf_bins,[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)])
-    maf_bin_colors = _update_arg(maf_bin_colors,["#f0ad4e","#5cb85c", "#5bc0de","#000042"])
-    qq_scatter_args = _update_args(qq_scatter_args)
-    qq_scatter_args = _update_args(qqscatterargs, qq_scatter_args)
+    anno_d = _update_arg(anno_d, dict())
+    highlight_anno_kwargs = _update_kwargs(highlight_anno_kwargs)
 
-    scatter_args = _update_args(scatter_args)
-    scatter_args = _update_args(scatter_args, scatterargs)
+    # scatter_kwargs and qq_scatter_kwargs merged via set_plot_style
 
     if sig_level is None:
         sig_level_plot=sig_level_plot
@@ -569,8 +633,6 @@ def mqqplot(insumstats,
     else:
         sig_level_plot = sig_level
         sig_level_lead = sig_level     
-    if mode=="b":
-        sig_level_lead = None
 
     if check==True and _if_quick_qc==True:
         _if_quick_qc = True
@@ -578,71 +640,38 @@ def mqqplot(insumstats,
         _if_quick_qc = False
 
     # configure dpi if saving the plot
-    fig_args, scatter_args, qq_scatter_args, save_args = _configure_fig_save_kwargs(mode=mode,
+    fig_kwargs, scatter_kwargs, qq_scatter_kwargs, save_kwargs = _configure_fig_save_kwargs(mode=mode,
                                                                                     save = save, 
-                                                                                    fig_args = fig_args, 
-                                                                                    scatter_args = scatter_args, 
-                                                                                    qq_scatter_args = qq_scatter_args, 
-                                                                                    save_args = save_args,
+                                                                                    fig_kwargs = fig_kwargs, 
+                                                                                    scatter_kwargs = scatter_kwargs, 
+                                                                                    qq_scatter_kwargs = qq_scatter_kwargs, 
+                                                                                    save_kwargs = save_kwargs,
                                                                                     log=log,
                                                                                     verbose=verbose)
 
 
     if len(anno_d) > 0 and arm_offset is None:
         # in pixels
-        arm_offset = fig_args["dpi"] * repel_force * fig_args["figsize"][0]*0.5
+        arm_offset = fig_kwargs["dpi"] * repel_force * fig_kwargs["figsize"][0]*0.5
 
-    plot_label = (
-        "Manhattan-QQ plot" if ("m" in mode and "qq" in mode) else
-        "Manhattan plot" if mode == "m" else
-        "QQ plot" if mode == "qq" else
-        "Region plot" if mode == "r" else
-        "Density plot" if mode == "b" else
-        "MQQ plot"
+    plot_label, build = _setup_and_log_mqq_info(
+        insumstats=insumstats,
+        mode=mode,
+        sig_level_plot=sig_level_plot,
+        anno_set=anno_set,
+        highlight=highlight,
+        highlight_chrpos=highlight_chrpos,
+        highlight_color=highlight_color,
+        highlight_windowkb=highlight_windowkb,
+        pinpoint=pinpoint,
+        pinpoint_color=pinpoint_color,
+        region=region,
+        build=build,
+        log=log,
+        verbose=verbose,
     )
-
-    log.write("Starting {} creation (Version {})".format(plot_label, _get_version()),verbose=verbose)
     
-    build = _update_arg(build,"19")
-    build = _process_build(build, log=log, verbose=verbose)
-
-    log.write(" - Genomic coordinates version: {} ...".format(build),verbose=verbose)
-    if build is None or build=="99":
-        log.warning("Genomic coordinates version is unknown.")
-    log.write(" - Genome-wide significance level to plot is set to "+str(sig_level_plot)+" ...",verbose=verbose)
-    log.write(" - Input sumstats contains {} variants...".format(len(insumstats)),verbose=verbose)
-    log.write(" - {} layout mode selected: {}".format(plot_label, mode),verbose=verbose)
-    
-    if len(anno_set)>0 and ("m" in mode):
-        log.write(" -Variants to annotate : "+",".join(anno_set),verbose=verbose)    
-    
-    if len(highlight)>0 and ("m" in mode):
-        if pd.api.types.is_list_like(highlight[0]):
-            if highlight_chrpos==False:
-                if len(highlight) != len(highlight_color):
-                    log.warning("Number of locus groups in the list does not match number of provided colors.")
-                for i, highlight_set in enumerate(highlight):
-                    log.write(" -Set {} loci to highlight ({}) : ".format(i+1, highlight_color[i%len(highlight_color)])+",".join(highlight_set),verbose=verbose)
-            else:
-                log.write(" -Loci to highlight ({}): {}".format(highlight_color,highlight),verbose=verbose)
-            log.write("  -highlight_windowkb is set to: ", highlight_windowkb, " kb",verbose=verbose) 
-        else:
-            log.write(" -Loci to highlight ({}): ".format(highlight_color)+",".join(highlight),verbose=verbose)    
-            log.write("  -highlight_windowkb is set to: ", highlight_windowkb, " kb",verbose=verbose) 
-    
-    if len(pinpoint)>0 :
-        if pd.api.types.is_list_like(pinpoint[0]):
-            if len(pinpoint) != len(pinpoint_color):
-                log.warning("Number of variant groups in the list does not match number of provided colors.")
-            for i, pinpoint_set in enumerate(pinpoint):
-                  log.write(" -Set {} variants to pinpoint ({}) : ".format(i+1,pinpoint_color[i%len(pinpoint_color)])+",".join(pinpoint_set),verbose=verbose)      
-        else:
-            log.write(" -Variants to pinpoint ({}) : ".format(pinpoint_color)+",".join(pinpoint),verbose=verbose)   
-    
-    if region is not None:
-        log.write(" -Region to plot : chr"+str(region[0])+":"+str(region[1])+"-"+str(region[2])+".",verbose=verbose)  
-    
-    # construct line series for coversion
+    # Build significance threshold series and convert to -log10 scale
     if additional_line is None:
         lines_to_plot = pd.Series([sig_level_plot, suggestive_sig_level] )
     else:
@@ -651,10 +680,7 @@ def mqqplot(insumstats,
             additional_line_color = ["grey"]
     lines_to_plot = -np.log10(lines_to_plot)
 
-    vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log)
-    
-
-# Plotting mode selection : layout ####################################################################
+# Step 3: Select layout ####################################################################
     # ax1 : manhattanplot / brisbane plot
     # ax2 : qq plot 
     # ax3 : gene track
@@ -668,9 +694,10 @@ def mqqplot(insumstats,
     
     fig, ax1, ax2, ax3, ax4, cbar = _process_layout(mode=mode, 
                                          figax=figax, 
-                                         fig_args=fig_args, 
+                                         fig_kwargs=fig_kwargs, 
                                          mqqratio=mqqratio, 
                                          region_hspace=region_hspace)
+    highlight_i = []
     
 # mode specific settings ####################################################################
     if mode=="b":
@@ -678,10 +705,10 @@ def mqqplot(insumstats,
         sig_line=False,
         #windowsizekb = 100000000   
         mode="mb"
-        scatter_args={"marker":"s"}
+        scatter_kwargs={"marker":"s"}
         marker_size= (marker_size[1],marker_size[1])
 
-# Read sumstats #################################################################################################
+# Step 4: Load sumstats #################################################################################################
 
     usecols = _configure_cols_to_use(insumstats=insumstats, 
                                      snpid=snpid,  
@@ -707,11 +734,12 @@ def mqqplot(insumstats,
     
     #################################################################################################
     
+    # Step 5: Standardize and QC
     #Standardize
     ## Annotation
     if (anno == "GENENAME"):
         anno_sig=True
-    elif (anno is not None) and (anno is not True):
+    elif isinstance(anno,str):
         sumstats["Annotation"]=sumstats[anno].astype("string")   
       
     ## P value
@@ -769,6 +797,7 @@ def mqqplot(insumstats,
                                  log=log, 
                                  verbose=verbose)
             
+    # Step 6: Transform data (highlight/density/p/mlog10p)
     ## configure highlight regions
     if len(highlight)>0 and ("m" in mode):
         # add HUE
@@ -782,16 +811,18 @@ def mqqplot(insumstats,
                                                     chrom=chrom, 
                                                     pos=pos)
 
-# Density #####################################################################################################              
+# Density mode setup #####################################################################################################              
     if "b" in mode:
-        # add DENSITY
-        sumstats, bmean, bmedian = _process_density(sumstats=sumstats, 
-                                                    mode=mode, 
-                                                    bwindowsizekb=bwindowsizekb, 
-                                                    chrom=chrom, 
-                                                    pos=pos, 
-                                                    verbose=verbose, 
-                                                    log=log)
+        from gwaslab.viz.viz_plot_density_mode import b_mode_setup
+        sumstats, bmean, bmedian = b_mode_setup(
+            sumstats=sumstats,
+            mode=mode,
+            bwindowsizekb=bwindowsizekb,
+            chrom=chrom,
+            pos=pos,
+            log=log,
+            verbose=verbose,
+        )
         lines_to_plot = pd.Series(lines_to_plot.to_list() + [bmean, bmedian])
     
     else:
@@ -808,14 +839,14 @@ def mqqplot(insumstats,
                                  log=log, 
                                  verbose=verbose )
     
-    # raw p for calculate lambda
+    # raw -log10(P) per chromosome for QQ panel
     p_toplot_raw = sumstats[["CHR","scaled_P"]].copy()
     
     # filter out variants with -log10p < skip
     sumstats = sumstats.loc[sumstats["scaled_P"]>=skip,:]
     garbage_collect.collect()
     
-    # shrink variants above cut line #########################################################################################
+    # Shrink variants above cut line #########################################################################################
     try:
         sumstats["scaled_P"], maxy, maxticker, cut, cutfactor,ylabels_converted, lines_to_plot = _cut(series = sumstats["scaled_P"], 
                                                                         mode =mode, 
@@ -834,14 +865,15 @@ def mqqplot(insumstats,
     
     log.write("Finished data conversion and sanity check.",verbose=verbose)
     
-    # Manhattan plot ##########################################################################################################
+    # default: no annotations when not creating Manhattan/Regional panel
+    to_annotate = []
+    
+    # Step 7: Assign x-axis index (i) and create panels ##########################################################################################################
     log.write("Start to create {} with ".format(plot_label)+str(len(sumstats))+" variants...",verbose=verbose)
-    ## regional plot ->rsq
-        #calculate rsq]
+    ## regional data sources
     if vcf_path is not None:
         if tabix is None:
-            tabix = which("tabix")
-            log.write(" -tabix will be used: {}".format(tabix),verbose=verbose)
+            vcf_chr_dict, tabix = prepare_vcf_context(vcf_path=vcf_path, vcf_chr_dict=vcf_chr_dict, log=log, verbose=verbose)
         sumstats = process_vcf(sumstats=sumstats, 
                                vcf_path=vcf_path,
                                region=region, 
@@ -876,7 +908,7 @@ def mqqplot(insumstats,
     #sort & add id
     ## Manhatann plot ###################################################
     if ("m" in mode) or ("r" in mode): 
-        # assign index i and tick position
+        # Assign index i and tick positions for x-axis
         if _chrom_df_for_i is None:
             sumstats,chrom_df=_quick_assign_i_with_rank(sumstats, chrpad=chrpad, use_rank=use_rank, chrom="CHR",pos="POS",drop_chr_start=drop_chr_start,_posdiccul=_posdiccul)
         else:
@@ -906,173 +938,52 @@ def mqqplot(insumstats,
         edgecolor="black"
         # if regional plot assign colors
         if "r" in mode:
-            #if vcf_path is not None: 
-            legend=None
-            linewidth=1
-            if len(region_ref) == 1:
-                # hide lead variants -> add back in region plot 
-                palette = {100+i:region_ld_colors[i] for i in range(len(region_ld_colors))}
-                scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:2])}
-                if region_ref[0] is None:
-                    id_to_hide = sumstats["scaled_P"].idxmax()
-                    to_plot = sumstats.drop(id_to_hide, axis=0)
-                else:
-                    #id_to_hide = sumstats[sumstats["SNPID"]==region_ref[0],"scaled_P"].idxmax()
-                    id_to_hide = _get_lead_id(sumstats, region_ref, log=log, verbose=verbose)
-                    if id_to_hide is not None:
-                        to_plot = sumstats.drop(id_to_hide, axis=0)
-                style="SHAPE"
-            else:
-                palette = {}
-                region_color_maps = []
-                for group_index, colorgroup in enumerate(region_ld_colors_m):
-                    color_map_len = len(region_ld_threshold)+2   # default 6
-                    rgba = LinearSegmentedColormap.from_list("custom", ["white",colorgroup], color_map_len)(range(1,color_map_len)) # skip white
-                    output_hex_colors=[]
-                    for i in range(len(rgba)):
-                        output_hex_colors.append(to_hex(rgba[i]))
-                        # 1 + 5 + 1
-                        region_ld_colors_single = [region_ld_colors[0]] + output_hex_colors + [output_hex_colors[-1]]
-                    region_color_maps.append(region_ld_colors_single)
-                
-                # gradient color dict
-                for i, hex_colors in enumerate(region_color_maps):
-                    for j, hex_color in enumerate(hex_colors):
-                        palette[(i+1)*100 + j ] = hex_color
+            from gwaslab.viz.viz_plot_regional2 import regional_mode_setup
+            legend, linewidth, palette, style, markers, to_plot, edgecolor = regional_mode_setup(
+                sumstats=sumstats,
+                region_ref=region_ref,
+                region_ld_colors=region_ld_colors,
+                region_marker_shapes=region_marker_shapes,
+                region_ld_colors_m=region_ld_colors_m,
+                region_ld_threshold=region_ld_threshold,
+                chrom=chrom,
+                pos=pos,
+                vcf_path=vcf_path,
+                ld_path=ld_path,
+                log=log,
+                verbose=verbose,
+            )
+            scatter_kwargs["markers"] = markers
 
-                edgecolor="none"
-                # create a marker shape dict
-                scatter_args["markers"]= {(i+1):m for i,m in enumerate(region_marker_shapes[:len(region_ref)])}
-                style="SHAPE"
-
-        explicit = {"edgecolor","edgecolors", "linewidth", "ax","palette","hue","data","legend","style","size","sizes","zorder","s"}
-        scatter_args = {k: v for k, v in scatter_args.items() if k not in explicit}
-        ## if highlight 
-        highlight_i = pd.DataFrame()
-        if len(highlight) >0:
-            to_plot = sumstats
-            log.write(" -Creating background plot...",verbose=verbose)
-
-            plot = sns.scatterplot(data=to_plot, x='i', y='scaled_P',
-                               hue='chr_hue',
-                               palette=palette,
-                               legend=legend,
-                               style=style,
-                               size="s",
-                               sizes=marker_size,
-                               linewidth=linewidth,
-                               zorder=2,ax=ax1,edgecolor=edgecolor, **scatter_args)   
-            if pd.api.types.is_list_like(highlight[0]) and highlight_chrpos==False:
-                for i, highlight_set in enumerate(highlight):
-                    log.write(" -Highlighting set {} target loci...".format(i+1),verbose=verbose)
-                    sns.scatterplot(data=to_plot.loc[to_plot["HUE"]==i], x='i', y='scaled_P',
-                        hue="HUE",
-                        palette={i:highlight_color[i%len(highlight_color)]},
-                        legend=legend,
-                        style=style,
-                        size="s",
-                        sizes=(marker_size[0]+1,marker_size[1]+1),
-                        linewidth=linewidth,
-                        zorder=3+i,ax=ax1,edgecolor=edgecolor,**scatter_args)  
-                highlight_i = to_plot.loc[~to_plot["HUE"].isna(),"i"].values
-            else:
-                log.write(" -Highlighting target loci...",verbose=verbose)
-                sns.scatterplot(data=to_plot.loc[to_plot["HUE"]==0], x='i', y='scaled_P',
-                    hue="HUE",
-                    palette={0:highlight_color},
-                    legend=legend,
-                    style=style,
-                    size="s",
-                    sizes=(marker_size[0]+1,marker_size[1]+1),
-                    linewidth=linewidth,
-                    zorder=3,ax=ax1,edgecolor=edgecolor,**scatter_args)  
-                # for annotate
-                if highlight_chrpos==False:
-                    highlight_i = to_plot.loc[to_plot[snpid].isin(highlight),"i"].values
-                else:
-                    highlight_i = []
-        
-        ## if not highlight    
-        else:
-            ## density plot
-            if density_color == True:
-                hue = "DENSITY_hue"
-                s = "DENSITY"
-                to_plot = sumstats.sort_values("DENSITY")
-                to_plot["DENSITY_hue"] = to_plot["DENSITY"].astype("float")
-                if density_range is None:
-                    density_range = (to_plot["DENSITY"].min(), to_plot["DENSITY"].max())
-                if type(density_trange) is list:
-                    density_trange = tuple(density_trange)
-                if type(density_range) is list:
-                    density_range = tuple(density_range)
-                plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]<=density_threshold,:], x='i', y='scaled_P',
-                       hue=hue,
-                       palette= density_tpalette,
-                       legend=legend,
-                       style=style,
-                       size=s,
-                       sizes=(marker_size[0]+1,marker_size[0]+1),
-                       linewidth=linewidth,
-                       hue_norm=density_trange,
-                       zorder=2,ax=ax1,edgecolor=edgecolor,**scatter_args) 
-
-                plot = sns.scatterplot(data=to_plot.loc[to_plot["DENSITY"]>density_threshold,:], x='i', y='scaled_P',
-                   hue=hue,
-                   palette= density_palette,
-                   legend=legend,
-                   style=style,
-                   size=s,
-                   sizes=marker_size,
-                   hue_norm=density_range,
-                   linewidth=linewidth,
-                   zorder=2,ax=ax1,edgecolor=edgecolor,**scatter_args)   
-            else:
-                # major / regional
-                s = "s"
-                hue = 'chr_hue'
-                hue_norm=None
-                if to_plot is None:
-                    to_plot = sumstats
-                log.write(" -Creating background plot...",verbose=verbose)
-                plot = sns.scatterplot(data=to_plot, x='i', y='scaled_P',
-                       hue=hue,
-                       palette= palette,
-                       legend=legend,
-                       style=style,
-                       size=s,
-                       sizes=marker_size,
-                       hue_norm=hue_norm,
-                       linewidth=linewidth,
-                       edgecolor = edgecolor, 
-                       zorder=2,ax=ax1,**scatter_args)   
-        
-        ax1.set_rasterization_zorder(0)
-        
-        ## if pinpoint variants
-        if (len(pinpoint)>0):
-            if pd.api.types.is_list_like(pinpoint[0]):
-                for i, pinpoint_set in enumerate(pinpoint):
-                    if sum(sumstats[snpid].isin(pinpoint_set))>0:
-                        to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint_set),:]
-                        log.write(" -Pinpointing set {} target vairants...".format(i+1),verbose=verbose)
-                        ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color[i%len(pinpoint_color)],zorder=100,s=marker_size[1]+1)
-                    else:
-                        log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
-            else:
-                if sum(sumstats[snpid].isin(pinpoint))>0:
-                    to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
-                    log.write(" -Pinpointing target vairants...",verbose=verbose)
-                    ax1.scatter(to_pinpoint["i"],to_pinpoint["scaled_P"],color=pinpoint_color,zorder=100,s=marker_size[1]+1)
-                else:
-                    log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
+        # Step 8: Create Manhattan panel
+        highlight_i = draw_manhattan_panel(
+            ax1=ax1,
+            sumstats=sumstats,
+            snpid=snpid,
+            palette=palette,
+            marker_size=marker_size,
+            style=style,
+            linewidth=linewidth,
+            edgecolor=edgecolor,
+            legend=legend,
+            scatter_kwargs=scatter_kwargs,
+            highlight=highlight,
+            highlight_chrpos=highlight_chrpos,
+            highlight_color=highlight_color,
+            density_color=density_color,
+            density_range=density_range,
+            density_trange=density_trange,
+            density_threshold=density_threshold,
+            density_tpalette=density_tpalette,
+            density_palette=density_palette,
+            pinpoint=pinpoint,
+            pinpoint_color=pinpoint_color,
+            chrom=chrom,
+            log=log,
+            verbose=verbose,
+        )
             
-
-        
-        #ax1.set_xticks(chrom_df.astype("float64"))
-        #ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)
-        
-        # if regional plot : pinpoint lead , add color bar ##################################################
+        # Step 9: Add region panel if specified ##################################################
         if (region is not None) and ("r" in mode):
             
             ax1, ax3, ax4, cbar, lead_snp_is, lead_snp_is_color =_plot_regional(
@@ -1112,7 +1023,7 @@ def mqqplot(insumstats,
                                 region_lead_grid = region_lead_grid,
                                 region_lead_grid_line = region_lead_grid_line,
                                 region_title=region_title,
-                                region_title_args=region_title_args,
+                                region_title_kwargs=region_title_kwargs,
                                 region_ld_legend = region_ld_legend,
                                 region_legend_marker=region_legend_marker,
                                 region_ld_threshold = region_ld_threshold,
@@ -1135,210 +1046,180 @@ def mqqplot(insumstats,
         log.write("Finished creating {} successfully".format(plot_label),verbose=verbose)
         
         if "b" in mode:
-            scaled_threhosld = None
+            from gwaslab.viz.viz_plot_density_mode import b_scaled_threshold
+            scaled_threhosld = b_scaled_threshold(sig_level_lead)
         else:
             scaled_threhosld = float(-np.log10(sig_level_lead))
         # Get top variants for annotation #######################################################
-        to_annotate = pd.DataFrame()
-        log.write("Start to extract variants for annotation...",verbose=verbose)
-        if (anno and anno!=True) or (len(anno_set)>0):
-            if len(anno_set)>0:
-                to_annotate=sumstats.loc[sumstats[snpid].isin(anno_set),:]
-                if to_annotate.empty is not True:
-                    log.write(" -Found "+str(len(to_annotate))+" specified variants to annotate...",verbose=verbose)
-            else:
-                if "b" in mode:
-                    to_annotate=gettop(sumstats,
-                               id=snpid,
-                               chrom=chrom,
-                               pos=pos,
-                               by="scaled_P",
-                               windowsizekb=windowsizekb,
-                               verbose=True)
-                               
-                else:
-                    to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> scaled_threhosld ,:],
-                               snpid,
-                               chrom,
-                               pos,
-                               "raw_P",
-                               sig_level=sig_level_lead,
-                               windowsizekb=windowsizekb,
-                               scaled=scaled,
-                               mlog10p="scaled_P",
-                               verbose=False)
-                    if (to_annotate.empty is not True) and ("b" not in mode):
-                        log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
-                
-        else:
-            if "b" not in mode:
-                to_annotate=getsig(sumstats.loc[sumstats["scaled_P"]> scaled_threhosld,:],
-                                "i",
-                                chrom,
-                                pos,
-                                "raw_P",
-                                windowsizekb=windowsizekb,
-                                scaled=scaled,
-                                verbose=False,
-                                mlog10p="scaled_P",
-                                sig_level=sig_level_lead)
-    
-                if (to_annotate.empty is not True):
-                    log.write(" -Found "+str(len(to_annotate))+" significant variants with a sliding window size of "+str(windowsizekb)+" kb...",verbose=verbose)
-        if (to_annotate.empty is not True) and anno=="GENENAME":
-            to_annotate = annogene(to_annotate,
-                                   id=snpid,
-                                   chrom=chrom,
-                                   pos=pos,
-                                   log=log,
-                                   build=build,
-                                   source=anno_source,
-                                   gtf_path=anno_gtf_path,
-                                   verbose=verbose).rename(columns={"GENE":"Annotation"})
-            if "b" in mode and (to_annotate.empty is not True):
-                for index, row in to_annotate.iterrows():
-                    log.write(" -Annotated {} with {} at density {}".format(row[snpid],row["Annotation"],row["DENSITY"]),verbose=verbose)
-        log.write("Finished extracting variants for annotation...",verbose=verbose)
+        from gwaslab.viz.viz_plot_manhattan_like import _extract_to_annotate
+        to_annotate = _extract_to_annotate(
+            sumstats=sumstats,
+            snpid=snpid,
+            chrom=chrom,
+            pos=pos,
+            scaled_threhosld=scaled_threhosld,
+            sig_level_lead=sig_level_lead,
+            windowsizekb=windowsizekb,
+            scaled=scaled,
+            anno=anno,
+            anno_set=anno_set,
+            anno_source=anno_source,
+            anno_gtf_path=anno_gtf_path,
+            build=build,
+            mode=mode,
+            log=log,
+            verbose=verbose,
+        )
 
-        # Configure X, Y axes #######################################################
-        log.write("Start to process figure arts.",verbose=verbose)
+        # Manhatann-like plot Finished #####################################################################
 
-        ax1, ax3 = _process_xtick(ax1=ax1, 
-                                  ax3=ax3,
-                                  mode=mode,
-                                 chrom_df=chrom_df, 
-                                 xtick_chr_dict=xtick_chr_dict, 
-                                 fontsize = fontsize, 
-                                 font_family=font_family,
-                                 log=log, 
-                                 verbose=verbose)   
+    # Step 10: Process labels and figure arts
+    if ("m" in mode) or ("r" in mode):
+        ax1, ax3 = _process_xtick(
+            ax1=ax1,
+            ax3=ax3,
+            mode=mode,
+            chrom_df=chrom_df,
+            xtick_chr_dict=xtick_chr_dict,
+            fontsize=fontsize,
+            font_family=font_family,
+            log=log,
+            verbose=verbose,
+        )
 
-        ax1, ax3 = _process_xlabel(region=region, 
-                                   xlabel=xlabel, 
-                                   ax1=ax1, 
-                                   gtf_path=gtf_path, 
-                                   mode=mode, 
-                                   fontsize=fontsize, 
-                                   font_family=font_family,  
-                                   ax3=ax3,
-                                   log=log, 
-                                   verbose=verbose)      
-        
-        ax1, ax4 = _process_ylabel(ylabel=ylabel, 
-                                   ax1=ax1,  
-                                   mode=mode, 
-                                   bwindowsizekb=bwindowsizekb, 
-                                   fontsize=fontsize, 
-                                   font_family=font_family,
-                                   math_fontfamily=math_fontfamily, 
-                                   ax4=ax4,
-                                   log=log, 
-                                   verbose=verbose)      
-        
+        ax1, ax3 = _process_xlabel(
+            region=region,
+            xlabel=xlabel,
+            ax1=ax1,
+            gtf_path=gtf_path,
+            mode=mode,
+            fontsize=fontsize,
+            font_family=font_family,
+            ax3=ax3,
+            log=log,
+            verbose=verbose,
+        )
 
-        ax1 = _set_yticklabels(cut=cut,
-                     cutfactor=cutfactor,
-                     cut_log=cut_log,
-                     ax1=ax1,
-                     skip=skip,
-                     maxy=maxy,
-                     maxticker=maxticker,
-                     ystep=ystep,
-                     sc_linewidth=sc_linewidth,
-                     cut_line_color=cut_line_color,
-                     fontsize=fontsize,
-                     font_family=font_family,
-                     ytick3=ytick3,
-                     ylabels=ylabels,
-                     ylabels_converted=ylabels_converted,
-                     log=log, 
-                     verbose=verbose)  
-        
-        ax1, ax4 = _process_ytick(ax1=ax1,  
-                                   fontsize=fontsize, 
-                                   font_family=font_family, 
-                                   ax4=ax4, 
-                                   log=log, 
-                                   verbose=verbose)  
-        
-        # regional plot cbar
-        if cbar is not None:    
-            cbar = _process_cbar(cbar, 
-                                 cbar_fontsize=cbar_fontsize, 
-                                 cbar_font_family=cbar_font_family, 
-                                 cbar_title=cbar_title, 
-                                 log=log, 
-                                 verbose=verbose)         
-        
+        ax1, ax4 = _process_ylabel(
+            ylabel=ylabel,
+            ax1=ax1,
+            mode=mode,
+            bwindowsizekb=bwindowsizekb,
+            fontsize=fontsize,
+            font_family=font_family,
+            math_fontfamily=math_fontfamily,
+            ax4=ax4,
+            log=log,
+            verbose=verbose,
+        )
+
+        ax1 = _set_yticklabels(
+            cut=cut,
+            cutfactor=cutfactor,
+            cut_log=cut_log,
+            ax1=ax1,
+            skip=skip,
+            maxy=maxy,
+            maxticker=maxticker,
+            ystep=ystep,
+            sc_linewidth=sc_linewidth,
+            cut_line_color=cut_line_color,
+            fontsize=fontsize,
+            font_family=font_family,
+            ytick3=ytick3,
+            ylabels=ylabels,
+            ylabels_converted=ylabels_converted,
+            log=log,
+            verbose=verbose,
+        )
+
+        ax1, ax4 = _process_ytick(
+            ax1=ax1,
+            fontsize=fontsize,
+            font_family=font_family,
+            ax4=ax4,
+            log=log,
+            verbose=verbose,
+        )
+
+        if cbar is not None:
+            cbar = _process_cbar(
+                cbar,
+                cbar_fontsize=cbar_fontsize,
+                cbar_font_family=cbar_font_family,
+                cbar_title=cbar_title,
+                log=log,
+                verbose=verbose,
+            )
+
         ax1 = _process_spine(ax1, mode)
-        
-        # genomewide significant line
-        ax1 = _process_line(ax1, 
-                            sig_line, 
-                            suggestive_sig_line, 
-                            additional_line, 
-                            lines_to_plot , 
-                            sc_linewidth, 
-                            sig_line_color, 
-                            suggestive_sig_line_color, 
-                            additional_line_color,
-                            mode, 
-                            bmean, 
-                            bmedian,
-                            log=log,
-                            verbose=verbose )  
 
-        
-        if mtitle and anno and len(to_annotate)>0: 
-            pad=(ax1.transData.transform((skip, mtitle_pad*maxy))[1]-ax1.transData.transform((skip, maxy)))[1]
-            ax1.set_title(mtitle,pad=pad,fontsize=title_fontsize,family=font_family)
+        ax1 = _process_line(
+            ax1,
+            sig_line,
+            suggestive_sig_line,
+            additional_line,
+            lines_to_plot,
+            sc_linewidth,
+            sig_line_color,
+            suggestive_sig_line_color,
+            additional_line_color,
+            mode,
+            bmean,
+            bmedian,
+            log=log,
+            verbose=verbose,
+        )
+
+        if mtitle and anno and len(to_annotate) > 0:
+            pad = (ax1.transData.transform((skip, mtitle_pad * maxy))[1] - ax1.transData.transform((skip, maxy)))[1]
+            _ax_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
+            if "family" not in _ax_title_kwargs:
+                _ax_title_kwargs["family"] = font_family
+            if "fontsize" not in _ax_title_kwargs:
+                _ax_title_kwargs["fontsize"] = title_fontsize
+            ax1.set_title(mtitle, pad=pad, **_ax_title_kwargs)
         elif mtitle:
-            ax1.set_title(mtitle,fontsize=title_fontsize,family=font_family)
-        log.write("Finished processing figure arts.",verbose=verbose)
+            _ax_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
+            if "family" not in _ax_title_kwargs:
+                _ax_title_kwargs["family"] = font_family
+            if "fontsize" not in _ax_title_kwargs:
+                _ax_title_kwargs["fontsize"] = title_fontsize
+            ax1.set_title(mtitle, **_ax_title_kwargs)
 
-        ## Add annotation arrows and texts
-        log.write("Start to annotate variants...",verbose=verbose)
-        ax1 = annotate_single(
-                                sumstats=sumstats,
-                                anno=anno,
-                                mode=mode,
-                                ax1=ax1,
-                                highlight_i=highlight_i,
-                                highlight_chrpos=highlight_chrpos,
-                                highlight_anno_args=highlight_anno_args,
-                                to_annotate=to_annotate,
-                                anno_d=anno_d,
-                                anno_alias=anno_alias,
-                                anno_style=anno_style,
-                                anno_args=anno_args,
-                                anno_args_single=anno_args_single,
-                                arm_scale=arm_scale,
-                                anno_max_iter=anno_max_iter,
-                                arm_scale_d=arm_scale_d,
-                                arm_offset=arm_offset,
-                                anno_adjust=anno_adjust,
-                                anno_xshift=anno_xshift,
-                                anno_fixed_arm_length=anno_fixed_arm_length,
-                                maxy=maxy,
-                                anno_fontsize= anno_fontsize,
-                                font_family=font_family,
-                                region=region,
-                                region_anno_bbox_args=region_anno_bbox_args,
-                                skip=skip,
-                                anno_height=anno_height,
-                                arrow_kwargs=arrow_kwargs,
-                                snpid=snpid,
-                                chrom=chrom,
-                                pos=pos,
-                                repel_force=repel_force,
-                                verbose=verbose,
-                                log=log,
-                               _invert=_invert
-                            )  
-        log.write("Finished annotating variants.",verbose=verbose)
-    # Manhatann-like plot Finished #####################################################################
+        # Y axis jagged
+        if jagged==True:
+            ax1 = _jagged_y(cut=cut,skip=skip,ax1=ax1,mode=1,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid,log=log, verbose=verbose)
+            if "qq" in mode:
+                ax2 = _jagged_y(cut=cut,skip=skip,ax1=ax2,mode=2,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid,log=log, verbose=verbose)
+        
+        # XY lim
+        if ylim is not None:
+            ax1.set_ylim(ylim)
+            if "qq" in mode:
+                ax2.set_ylim(ylim)
+        
+        ax1 = _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, log = log, verbose=verbose)
 
-    # QQ plot #########################################################################################################
+    # Titles 
+    has_annotations = ("m" in mode or "r" in mode) and anno and len(to_annotate) > 0
+    if title and has_annotations:
+        _fig_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
+        if "family" not in _fig_title_kwargs:
+            _fig_title_kwargs["family"] = font_family
+        if "fontsize" not in _fig_title_kwargs:
+            _fig_title_kwargs["fontsize"] = title_fontsize
+        fig.suptitle(title, x=0.5, y=title_pad, **_fig_title_kwargs)
+    else:
+        title_pad = title_pad -0.05
+        _fig_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
+        if "family" not in _fig_title_kwargs:
+            _fig_title_kwargs["family"] = font_family
+        if "fontsize" not in _fig_title_kwargs:
+            _fig_title_kwargs["fontsize"] = title_fontsize
+        fig.suptitle(title, x=0.5, y=title_pad, **_fig_title_kwargs)
+
+    # Step 11: Add QQ panel if specified #########################################################################################################
     if "qq" in mode:
         # ax2 qqplot
         ax2 =_plot_qq(
@@ -1374,38 +1255,54 @@ def mqqplot(insumstats,
                     xlim = qq_xlim,
                     ylabels_converted = ylabels_converted,
                     verbose=verbose,
-                    qq_scatter_args=qq_scatter_args,
+                    qq_scatter_kwargs=qq_scatter_kwargs,
                     expected_min_mlog10p=expected_min_mlog10p,
                     log=log
                 )
     
-    # QQ plot Finished #######################################################################################################
+    # Step 12: Annotation
+    if (anno is not None):
+        ax1 = annotate_single(
+            sumstats=sumstats,
+            anno=anno,
+            mode=mode,
+            ax1=ax1,
+            highlight_i=highlight_i,
+            highlight_chrpos=highlight_chrpos,
+            highlight_anno_kwargs=highlight_anno_kwargs,
+            to_annotate=to_annotate,
+            anno_d=anno_d,
+            anno_alias=anno_alias,
+            anno_style=anno_style,
+            anno_kwargs=anno_kwargs,
+            anno_kwargs_single=anno_kwargs_single,
+            arm_scale=arm_scale,
+            anno_max_iter=anno_max_iter,
+            arm_scale_d=arm_scale_d,
+            arm_offset=arm_offset,
+            anno_adjust=anno_adjust,
+            anno_xshift=anno_xshift,
+            anno_fixed_arm_length=anno_fixed_arm_length,
+            maxy=maxy,
+            anno_fontsize=anno_fontsize,
+            font_family=font_family,
+            region=region,
+            region_anno_bbox_kwargs=region_anno_bbox_kwargs,
+            skip=skip,
+            anno_height=anno_height,
+            arrow_kwargs=arrow_kwargs,
+            snpid=snpid,
+            chrom=chrom,
+            pos=pos,
+            repel_force=repel_force,
+            verbose=verbose,
+            log=log,
+            _invert=_invert,
+        )
 
-    # Y axis jagged
-    if jagged==True:
-        ax1 = _jagged_y(cut=cut,skip=skip,ax1=ax1,mode=1,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid,log=log, verbose=verbose)
-        if "qq" in mode:
-            ax2 = _jagged_y(cut=cut,skip=skip,ax1=ax2,mode=2,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid,log=log, verbose=verbose)
     
-    # XY lim
-    if ylim is not None:
-        ax1.set_ylim(ylim)
-        if "qq" in mode:
-            ax2.set_ylim(ylim)
-    
-    ax1 = _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, log = log, verbose=verbose)
-
-    # Titles 
-    if title and anno and len(to_annotate)>0:
-        # increase height if annotation 
-        fig.suptitle(title , fontsize = title_fontsize ,x=0.5, y=title_pad)
-    else:
-        title_pad = title_pad -0.05
-        fig.suptitle(title , fontsize = title_fontsize, x=0.5,y=title_pad)
-        ## Add annotation arrows and texts
-    
-    # Saving figure
-    save_figure(fig = fig, save = save, keyword=mode, save_args=save_args, log = log, verbose=verbose)
+    # Step 13: Save figure
+    save_figure(fig = fig, save = save, keyword=mode, save_kwargs=save_kwargs, log = log, verbose=verbose)
 
     garbage_collect.collect()
     # Return matplotlib figure object #######################################################################################
@@ -1416,479 +1313,17 @@ def mqqplot(insumstats,
     return fig, log
 
 ##############################################################################################################################################################################
-
-def _configure_fig_save_kwargs(mode="m",
-                                save=None, 
-                               fig_args=None, 
-                               scatter_args=None, 
-                               qq_scatter_args=None, 
-                               save_args=None,
-                               log=Log(),
-                               verbose=True):
-    if fig_args is None:
-        fig_args = dict()
-    if scatter_args is None:
-        scatter_args = dict()
-    if qq_scatter_args is None:
-        qq_scatter_args = dict()
-    if save_args is None:
-        save_args = dict()
-
-    if save is not None:
-        if type(save) is not bool:
-            if len(save)>3:
-                if save[-3:]=="pdf" or save[-3:]=="svg":
-                    # to save as vectorized plot
-                    fig_args["dpi"]=72
-                    
-                    if mode!="r":
-                        scatter_args["rasterized"]=True
-                        qq_scatter_args["rasterized"]=True
-                        qq_scatter_args["antialiased"]=False,
-                        log.write("Saving as pdf/svg: scatter plot will be rasterized for mqq...", verbose=verbose)
-                    else:
-                        scatter_args["rasterized"]=False
-                        qq_scatter_args["rasterized"]=False
-                else:
-                    fig_args["dpi"] = save_args["dpi"]
-    return fig_args, scatter_args, qq_scatter_args, save_args
-
-
-def _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, log, verbose):
-    
-    if xtight==True:
-        log.write(" -Adjusting X padding on both side : tight mode", verbose=verbose)
-        xmax = sumstats["i"].max()
-        xmin=  sumstats["i"].min()
-        ax1.set_xlim([xmin, xmax])
-    
-    else:
-        chrpad_to_remove = sumstats[pos].max()*chrpad
-        
-        if ax1 is not None:
-            #xmin, xmax = ax1.get_xlim() 
-            xmax = sumstats["i"].max()
-            xmin=  sumstats["i"].min()
-            
-            #length = xmax - xmin
-            length = xmax - xmin
-            
-            if xpad is not None:
-                log.write(" -Adjusting X padding on both side: {}".format(xpad), verbose=verbose)
-                pad = xpad* length #sumstats["i"].max()
-                ax1.set_xlim([xmin - pad + chrpad_to_remove, xmax + pad - chrpad_to_remove])
-
-            if xpad is None and xpadl is not None:
-                log.write(" -Adjusting X padding on left side: {}".format(xpadl), verbose=verbose)
-                
-                xmax =  ax1.get_xlim()[1] 
-
-                pad = xpadl*length # sumstats["i"].max()
-                ax1.set_xlim([xmin - pad + chrpad_to_remove ,xmax])
-            
-            if xpad is None and xpadr is not None:
-                log.write(" -Adjusting X padding on right side: {}".format(xpadr), verbose=verbose)
-                
-                xmin = ax1.get_xlim()[0] 
-
-                pad = xpadr*length # sumstats["i"].max()
-                ax1.set_xlim([xmin, xmax + pad - chrpad_to_remove])
-
-    return ax1
-
-
-##############################################################################################################################################################################
-def _configure_cols_to_use(insumstats, snpid,  chrom, pos, ea, nea, eaf, p, mlog10p,scaled, mode,stratified,anno, anno_set, anno_alias,_chrom_df_for_i,highlight ,pinpoint,density_color):
-    usecols=[]
-    #  P ###############################################################################
-    if mlog10p in insumstats.columns and scaled is True:
-        usecols.append(mlog10p)
-    elif p in insumstats.columns:
-        # p value is necessary for all modes.
-        usecols.append(p)  
-    elif "b" in mode:
-        pass
-    else :
-        raise ValueError("Please make sure "+p+" column is in input sumstats.")
-    
-    # CHR and POS ########################################################################
-    # chrom and pos exists && (m || r mode)
-    if (chrom is not None) and (pos is not None) and (("qq" in mode) or ("m" in mode) or ("r" in mode)):
-        # when manhattan plot, chrom and pos is needed.
-        if chrom in insumstats.columns:
-            usecols.append(chrom)
-        else:
-            raise ValueError("Please make sure "+chrom+" column is in input sumstats.")
-        if pos in insumstats.columns:
-            usecols.append(pos)
-        else:
-            raise ValueError("Please make sure "+pos+" column is in input sumstats.")
-    
-    # for regional plot ea and nea
-    if ("r" in mode) and (ea in insumstats.columns) and (nea in insumstats.columns):
-        try:
-            usecols.append(ea)
-            usecols.append(nea)
-        except:
-            raise ValueError("Please make sure {} and {} columns are in input sumstats.".format(nea,ea))
-    # SNPID ###############################################################################
-    if len(highlight)>0 or len(pinpoint)>0 or (snpid is not None):
-        # read snpid when highlight/pinpoint is needed.
-        if snpid in insumstats.columns:
-            usecols.append(snpid)
-        else:
-            raise ValueError("Please make sure "+snpid+" column is in input sumstats.")
-    
-    # EAF #################################################################################
-    if (stratified is True) and (eaf is not None):
-        # read eaf when stratified qq plot is needed.
-        if eaf in insumstats.columns:
-            usecols.append(eaf)
-        else:
-            raise ValueError("Please make sure "+eaf+" column is in input sumstats.")
-    ## i ##################################################################################
-    if _chrom_df_for_i is not None:
-        usecols.append("i")
-    # ANNOTATion ##########################################################################
-    #
-    if len(anno_set)>0 or len(anno_alias)>0:
-        if anno is None:
-            anno=True
-    if (anno is not None) and (anno is not True):
-        if anno=="GENENAME":
-            pass
-        elif (anno in insumstats.columns):
-            if (anno not in usecols):
-                usecols.append(anno)
-        else:
-            raise ValueError("Please make sure "+anno+" column is in input sumstats.")
-    
-    if (density_color==True) and ("b" in mode and "DENSITY" in insumstats.columns):
-        usecols.append("DENSITY")
-    return usecols
-
-
-def _sanity_check(sumstats, mode, chrom, pos, stratified, _if_quick_qc, log, verbose):
-    if ("m" in mode or "r" in mode) and _if_quick_qc: 
-        pre_number=len(sumstats)
-        #sanity check : drop variants with na values in chr and pos df
-        sumstats = sumstats.dropna(subset=[chrom,pos])
-        after_number=len(sumstats)
-        log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in CHR or POS column ...",verbose=verbose)
-        out_of_range_chr = sumstats[chrom]<=0
-        log.write(" -Removed {} variants with CHR <=0...".format(sum(out_of_range_chr)),verbose=verbose)
-        sumstats = sumstats.loc[~out_of_range_chr,:]
-    
-    if stratified is True and _if_quick_qc: 
-        pre_number=len(sumstats)
-        sumstats = sumstats.dropna(subset=["MAF"])
-        after_number=len(sumstats)
-        log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in EAF column ...",verbose=verbose)
-    
-    if "b" not in mode and _if_quick_qc:
-        pre_number=len(sumstats)
-        sumstats = sumstats.dropna(subset=["raw_P"])
-        after_number=len(sumstats)
-        log.write(" -Removed "+ str(pre_number-after_number) +" variants with nan in P column ...",verbose=verbose)
-    return sumstats
-
-def _process_p_value(sumstats, mode,p, mlog10p, scaled, log, verbose ):
-    ## b: value to plot is density
-    if "b" in mode:
-        sumstats["scaled_P"] = sumstats["DENSITY"].copy()
-        sumstats["raw_P"] = -np.log10(sumstats["DENSITY"].copy()+2)
-    elif scaled is True:
-        log.write(" -P values are already converted to -log10(P)!",verbose=verbose)
-        sumstats["scaled_P"] = sumstats["raw_P"].copy()
-        sumstats["raw_P"] = np.power(10,-sumstats["scaled_P"].astype("float64"))
-    else:
-        if not scaled:
-            # quick fix p
-            sumstats = _quick_fix_p_value(sumstats, p=p, mlog10p=mlog10p,verbose=verbose, log=log)
-
-        # quick fix mlog10p
-        sumstats = _quick_fix_mlog10p(sumstats,p=p, mlog10p=mlog10p, scaled=scaled, verbose=verbose, log=log)
-
-    return sumstats
-
-def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb,  highlight_lim,  highlight_lim_mode, snpid, chrom, pos):
-        if pd.api.types.is_list_like(highlight[0]):
-            if highlight_chrpos == False:
-                # highlight for multiple sets
-                for i, highlight_set in enumerate(highlight):
-                    to_highlight = sumstats.loc[sumstats[snpid].isin(highlight_set),:]
-                    #assign colors: 0 is hightlight color
-                    #assign colors: i is highlight color
-                    for j, (index, row) in enumerate(to_highlight.iterrows()):
-                        target_chr = int(row[chrom])
-                        target_pos = int(row[pos])
-                        right_chr=sumstats[chrom]==target_chr
-                        # Check if highlight_lim is provided for this group and SNP
-                        if (highlight_lim is not None and 
-                            i < len(highlight_lim) and 
-                            j < len(highlight_lim[i]) and 
-                            highlight_lim[i][j] is not None):
-                            # Use custom limits for this SNP
-                            if highlight_lim_mode == "absolute":
-                                # Absolute positions: (start_pos, end_pos)
-                                start_pos, end_pos = highlight_lim[i][j]
-                                up_pos = sumstats[pos] >= start_pos
-                                low_pos = sumstats[pos] <= end_pos
-                            else:
-                                # Offset mode: (lower_kb, upper_kb) relative to SNP position
-                                lower_kb, upper_kb = highlight_lim[i][j]
-                                up_pos = sumstats[pos] > target_pos + lower_kb * 1000
-                                low_pos = sumstats[pos] < target_pos + upper_kb * 1000
-                        else:
-                            # Use default highlight_windowkb
-                            up_pos = sumstats[pos] > target_pos - highlight_windowkb * 1000
-                            low_pos = sumstats[pos] < target_pos + highlight_windowkb * 1000
-                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=i
-            else:
-                for i, highlight_chrpos_tuple in enumerate(highlight):
-                    # len 2 : chr, center
-                    # len 3 : chr, start, end
-                    if len(highlight_chrpos_tuple) ==2:
-                        target_chr = int(highlight_chrpos_tuple[0])
-                        target_pos = int(highlight_chrpos_tuple[1])
-                        right_chr=sumstats[chrom]==target_chr
-                        up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
-                        low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
-                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0
-                    elif len(highlight_chrpos_tuple) ==3:
-                        target_chr = int(highlight_chrpos_tuple[0])
-                        target_pos_low = int(highlight_chrpos_tuple[1])
-                        target_pos_up = int(highlight_chrpos_tuple[2])
-                        right_chr=sumstats[chrom]==target_chr
-                        up_pos=sumstats[pos] > target_pos_low
-                        low_pos=sumstats[pos] < target_pos_up
-                        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0                        
-        else:
-            # highlight for one set
-            to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
-            #assign colors: 0 is highlight color
-            for j, (index, row) in enumerate(to_highlight.iterrows()):
-                target_chr = int(row[chrom])
-                target_pos = int(row[pos])
-                right_chr=sumstats[chrom]==target_chr
-                # Check if highlight_lim is provided for this SNP
-                if (highlight_lim is not None and 
-                    j < len(highlight_lim) and 
-                    highlight_lim[j] is not None):
-                    # Use custom limits for this SNP
-                    if highlight_lim_mode == "absolute":
-                        # Absolute positions: (start_pos, end_pos)
-                        start_pos, end_pos = highlight_lim[j]
-                        up_pos = sumstats[pos] >= start_pos
-                        low_pos = sumstats[pos] <= end_pos
-                    else:
-                        # Offset mode: (lower_kb, upper_kb) relative to SNP position
-                        lower_kb, upper_kb = highlight_lim[j]
-                        up_pos = sumstats[pos] > target_pos + lower_kb * 1000
-                        low_pos = sumstats[pos] < target_pos + upper_kb * 1000
-                else:
-                    # Use default highlight_windowkb
-                    up_pos = sumstats[pos] > target_pos - highlight_windowkb * 1000
-                    low_pos = sumstats[pos] < target_pos + highlight_windowkb * 1000
-                sumstats.loc[right_chr&up_pos&low_pos,"HUE"]=0
-        return sumstats
-
-
-
-def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_plot , sc_linewidth, sig_line_color, suggestive_sig_line_color, additional_line_color, mode, bmean, bmedian , log=Log(),verbose=True):
-    # genomewide significant line
-    log.write(" -Processing lines...",verbose=verbose)
-    if sig_line is True:
-        sigline = ax1.axhline(y=lines_to_plot[0], 
-                                linewidth = sc_linewidth,
-                                linestyle="--",
-                                color=sig_line_color,
-                                zorder=1)
-        
-    if suggestive_sig_line is True:
-        suggestive_sig_line = ax1.axhline(y=lines_to_plot[1], 
-                                            linewidth = sc_linewidth, 
-                                            linestyle="--", 
-                                            color=suggestive_sig_line_color,
-                                            zorder=1)
-    if additional_line is not None:
-        for index, level in enumerate(lines_to_plot[2:2+len(additional_line)].values):
-            ax1.axhline(y=level, 
-                        linewidth = sc_linewidth, 
-                        linestyle="--", 
-                        color=additional_line_color[index%len(additional_line_color)],
-                        zorder=1)
-    if "b" in mode: 
-        bmean = lines_to_plot.iat[-2]
-        bmedian = lines_to_plot.iat[-1]
-        # for brisbane plot, add median and mean line 
-        log.write(" -Plotting horizontal line (  mean DENISTY): y = {}".format(bmean),verbose=verbose) 
-        meanline = ax1.axhline(y=bmean, linewidth = sc_linewidth,linestyle="-",color=sig_line_color,zorder=1000)
-
-        log.write(" -Plotting horizontal line ( median DENISTY): y = {}".format(bmedian),verbose=verbose) 
-        medianline = ax1.axhline(y=bmedian, linewidth = sc_linewidth,linestyle="--",color=sig_line_color,zorder=1000)
-    return ax1
-
-def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title, log=Log(),verbose=True):
-    log.write(" -Processing color bar...",verbose=verbose)
-
-    cbar_yticklabels = cbar.get_yticklabels()
-    cbar.set_yticklabels(cbar_yticklabels, 
-                         fontsize=cbar_fontsize, 
-                         family=cbar_font_family )
-    cbar_xticklabels = cbar.get_xticklabels()
-    cbar.set_xticklabels(cbar_xticklabels, 
-                         fontsize=cbar_fontsize, 
-                         family=cbar_font_family )
-
-    cbar.set_title(cbar_title, fontsize=cbar_fontsize, 
-                               family=cbar_font_family, 
-                               loc="center", y=1.00 )
-    return cbar
-
-def _process_xtick(ax1, mode, chrom_df, xtick_chr_dict, fontsize, font_family="Arial", ax3=None , log=Log(),verbose=True):
-    
-    log.write(" -Processing X ticks...",verbose=verbose)
-    
-    if mode!="r":
-        ax1.set_xticks(chrom_df.astype("float64"))
-        ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),
-                            fontsize=fontsize,
-                            family=font_family)    
-    
-    if ax3 is not None:
-        ax3.tick_params(axis='x', 
-                        labelsize=fontsize,
-                        labelfontfamily=font_family) 
-    
-    return ax1, ax3
-
-def _process_ytick(ax1, fontsize, font_family, ax4, log=Log(),verbose=True):
-    log.write(" -Processing Y labels...",verbose=verbose)
-    
-    ax1.tick_params(axis='y', 
-                    labelsize=fontsize,
-                    labelfontfamily=font_family)
-    
-    if ax4 is not None:
-        ax4.tick_params(axis='y', 
-                        labelsize=fontsize,
-                        labelfontfamily=font_family)
-    return ax1, ax4
-
-def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family="Arial",  ax3=None , log=Log(),verbose=True):
-    log.write(" -Processing X labels...",verbose=verbose)
-    if region is not None:
-        if xlabel is None:
-            xlabel = "Chromosome "+str(region[0])+" (MB)"
-        if (gtf_path is not None ) and ("r" in mode):
-            ax3.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
-        else:
-            ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
-    else:
-        if xlabel is None:
-            xlabel = "Chromosome"
-        ax1.set_xlabel(xlabel,fontsize=fontsize,family=font_family)
-    return ax1, ax3
-
-def _process_ylabel(ylabel, ax1,  mode, bwindowsizekb, fontsize, font_family, math_fontfamily, ax4=None, log=Log(),verbose=True):
-    log.write(" -Processing Y labels...",verbose=verbose)
-    if "b" in mode:
-        if ylabel is None:
-            ylabel ="Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb"
-        ax1.set_ylabel(ylabel,ha="center",va="bottom",
-                       fontsize=fontsize,
-                       family=font_family,
-                       math_fontfamily=math_fontfamily)
-    else:
-        if ylabel is None:
-            ylabel ="$\mathregular{-log_{10}(P)}$"
-        ax1.set_ylabel(ylabel,
-                       fontsize=fontsize,
-                       family=font_family, 
-                       math_fontfamily=math_fontfamily)
-    
-    if ax4 is not None:
-        ax4_ylabel = ax4.get_ylabel()
-        ax4.set_ylabel(ax4_ylabel, 
-                       fontsize=fontsize, 
-                       family=font_family,
-                       math_fontfamily=math_fontfamily )
-    return ax1, ax4
-
-def _process_spine(ax1, mode):
-    ax1.spines["top"].set_visible(False)
-    ax1.spines["right"].set_visible(False)
-    ax1.spines["left"].set_visible(True)
-    if mode=="r":
-        ax1.spines["top"].set_visible(True)
-        ax1.spines["top"].set_zorder(1)    
-        ax1.spines["right"].set_visible(True)
-    return ax1
-
-
-def _process_layout(mode, figax, fig_args, mqqratio, region_hspace):
-    #ax1 m / r
-    #ax2 qq
-    #ax3 gene track
-    #ax4 recombination
-
-    explicit = {"gridspec_kw"}
-    fig_args = {k: v for k, v in fig_args.items() if k not in explicit}
-    
-    if  mode=="qqm": 
-
-        fig, (ax2, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [1, mqqratio]},**fig_args)
-        ax3 = None
-
-    elif mode=="mqq":
-        if figax is not None:
-            fig = figax[0]
-            ax1 = figax[1]
-            ax2 = figax[2]        
-        else:
-            fig, (ax1, ax2) = plt.subplots(1, 2,gridspec_kw={'width_ratios': [mqqratio, 1]},**fig_args)
-        ax3 = None
-
-    elif mode=="m":
-        if figax is not None:
-            fig = figax[0]
-            ax1 = figax[1]
-        else:
-            fig, ax1 = plt.subplots(1, 1,**fig_args)
-        ax2 = None
-        ax3 = None
-
-    elif mode=="qq": 
-        fig, ax2 = plt.subplots(1, 1,**fig_args) 
-        ax1=None
-        ax3=None
-
-    elif mode=="r": 
-        if figax is not None:
-            fig = figax[0]
-            ax1 = figax[1]
-            ax3 = figax[2]
-            ax2 = None
-        else:
-            fig_args["figsize"] = (15,10)
-            fig, (ax1, ax3) = plt.subplots(2, 1, sharex=True, 
-                                       gridspec_kw={'height_ratios': [mqqratio, 1]},**fig_args)
-            ax2 = None
-            plt.subplots_adjust(hspace=region_hspace)
-    elif mode =="b" :
-        if figax is not None:
-            fig = figax[0]
-            ax1 = figax[1]
-            ax3 = None
-            ax2 = None
-        else:
-            fig_args["figsize"] = (15,5)
-            fig, ax1 = plt.subplots(1, 1,**fig_args)
-            ax2 = None
-            ax3 = None
-    else:
-        raise ValueError("Please select one from the 5 modes: mqq/qqm/m/qq/r/b")
-    ax4=None
-    cbar=None
-    return fig, ax1, ax2, ax3, ax4, cbar
+from gwaslab.viz.viz_plot_manhattan_like import _configure_fig_save_kwargs as _configure_fig_save_kwargs
+from gwaslab.viz.viz_plot_manhattan_like import _add_pad_to_x_axis as _add_pad_to_x_axis
+from gwaslab.viz.viz_plot_manhattan_like import _configure_cols_to_use as _configure_cols_to_use
+from gwaslab.viz.viz_plot_manhattan_like import _sanity_check as _sanity_check
+from gwaslab.viz.viz_plot_manhattan_like import _process_p_value as _process_p_value
+from gwaslab.viz.viz_plot_manhattan_like import _process_highlight as _process_highlight
+from gwaslab.viz.viz_plot_manhattan_like import _process_line as _process_line
+from gwaslab.viz.viz_plot_manhattan_like import _process_cbar as _process_cbar
+from gwaslab.viz.viz_plot_manhattan_like import _process_xtick as _process_xtick
+from gwaslab.viz.viz_plot_manhattan_like import _process_ytick as _process_ytick
+from gwaslab.viz.viz_plot_manhattan_like import _process_xlabel as _process_xlabel
+from gwaslab.viz.viz_plot_manhattan_like import _process_ylabel as _process_ylabel
+from gwaslab.viz.viz_plot_manhattan_like import _process_spine as _process_spine
+from gwaslab.viz.viz_plot_manhattan_like import _process_layout as _process_layout

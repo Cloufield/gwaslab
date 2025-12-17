@@ -19,6 +19,7 @@ from gwaslab.viz.viz_plot_mqqplot import _process_p_value
 from gwaslab.viz.viz_plot_mqqplot import _configure_fig_save_kwargs
 from gwaslab.viz.viz_plot_mqqplot import mqqplot
 from gwaslab.viz.viz_aux_save_figure import save_figure
+from gwaslab.viz.viz_aux_style_options import set_plot_style
 
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
@@ -75,18 +76,30 @@ def _gwheatmap(
         chr_dict = get_chr_to_number()
     if colors is None:
         colors=["#CB132D","#597FBD"]
-    if fig_kwargs is None:
-        fig_kwargs= dict(figsize=(15,15))
-    if save_kwargs is None:
-        save_kwargs = {"dpi":300,"facecolor":"white"}
-    if scatter_kwargs is None:
-        scatter_kwargs = {}
+    style = set_plot_style(
+        plot="plot_gwheatmap",
+        fig_kwargs=fig_kwargs,
+        save_kwargs=save_kwargs,
+        save=save,
+        scatter_kwargs=scatter_kwargs,
+        fontsize=fontsize,
+        fontfamily=font_family,
+        colors=colors,
+        verbose=verbose,
+        log=log,
+    )
+    fig_kwargs = style.get("fig_kwargs", {})
+    save_kwargs = style.get("save_kwargs", {})
+    scatter_kwargs = style.get("scatter_kwargs", {})
+    fontsize = style["fontsize"]
+    font_family = style["font_family"]
+    colors = style["colors"]
 
-    fig_kwargs, scatter_kwargs, qq_scatter_args, save_kwargs = _configure_fig_save_kwargs(save=save, 
-                                                                                    fig_args = fig_kwargs, 
-                                                                                    scatter_args = scatter_kwargs, 
-                                                                                    qq_scatter_args = dict(), 
-                                                                                    save_args = save_kwargs)
+    fig_kwargs, scatter_kwargs, qq_scatter_kwargs, save_kwargs = _configure_fig_save_kwargs(save=save, 
+                                                                                    fig_kwargs = fig_kwargs, 
+                                                                                    scatter_kwargs = scatter_kwargs, 
+                                                                                    qq_scatter_kwargs = dict(), 
+                                                                                    save_kwargs = save_kwargs)
 
     sumstats = insumstats.copy()
     
@@ -245,7 +258,7 @@ def _gwheatmap(
     ylabel = "location of the gene encoding the target protein"
     ax1.set_ylabel(ylabel,fontsize=fontsize,family=font_family)
     
-    save_figure(fig = fig, save = save, keyword="gwheatmap",  save_args=save_kwargs, log = log, verbose=verbose)
+    save_figure(fig = fig, save = save, keyword="gwheatmap",  save_kwargs=save_kwargs, log = log, verbose=verbose)
 
     return fig, log
 

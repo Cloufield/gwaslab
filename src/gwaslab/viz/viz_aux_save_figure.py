@@ -4,30 +4,30 @@ import time
 import os.path
 import functools
 
-def save_figure(fig, save, keyword, save_args=None, log = Log(), verbose=True):
+def save_figure(fig, save, keyword, save_kwargs=None, log = Log(), verbose=True):
     log.write("Start to save figure..." ,verbose=verbose)
-    if save_args is None:
-        save_args = {}
+    if save_kwargs is None:
+        save_kwargs = {}
         
     if save:
         if save==True:
             default_path = get_default_path(keyword)
-            fig.savefig(default_path, bbox_inches="tight",**save_args)
+            fig.savefig(default_path, bbox_inches="tight",**save_kwargs)
             log.write(" -Saved to "+ default_path + " successfully!" ,verbose=verbose)
         else:
             if save[-3:]=="pdf":
                 if os.path.exists(save):
-                    fig.savefig(save, **save_args)
+                    fig.savefig(save, **save_kwargs)
                     log.write(" -Saved to "+ save + " successfully! (pdf, overwrite)" ,verbose=verbose)
                 else:
-                    fig.savefig(save, **save_args)
+                    fig.savefig(save, **save_kwargs)
                     log.write(" -Saved to "+ save + " successfully! (pdf)" ,verbose=verbose)
             else:
                 if os.path.exists(save):
-                    fig.savefig(save,bbox_inches="tight",**save_args)
+                    fig.savefig(save,bbox_inches="tight",**save_kwargs)
                     log.write(" -Saved to "+ save + " successfully! (overwrite)" ,verbose=verbose)
                 else:
-                    fig.savefig(save,bbox_inches="tight",**save_args)
+                    fig.savefig(save,bbox_inches="tight",**save_kwargs)
                     log.write(" -Saved to "+ save + " successfully!" ,verbose=verbose)
     else:
         log.write(" -Skip saving figure!" ,verbose=verbose)

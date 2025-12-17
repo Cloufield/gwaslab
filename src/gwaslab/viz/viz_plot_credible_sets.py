@@ -1,15 +1,15 @@
+import copy
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from gwaslab.g_Log import Log
-from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank
-from gwaslab.viz.viz_plot_mqqplot import _process_xtick
-from gwaslab.viz.viz_plot_mqqplot import _process_xlabel
+import matplotlib.pyplot as plt
 from gwaslab.bd.bd_common_data import get_number_to_chr
+from gwaslab.g_Log import Log
+from gwaslab.io.io_process_kwargs import _extract_kwargs
 from gwaslab.util.util_in_filter_value import _filter_region
-from gwaslab.io.io_process_args import _extract_kwargs
-import copy
+from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank
+from gwaslab.viz.viz_aux_style_options import set_plot_style
+from gwaslab.viz.viz_plot_mqqplot import _process_xlabel, _process_xtick
 
 def _plot_cs(pipcs_raw,
             region=None, 
@@ -27,7 +27,7 @@ def _plot_cs(pipcs_raw,
             fontsize = 12,
             font_family = "Arial",
             legend_title="Credible set",
-            fig_args=None,
+            fig_kwargs=None,
             log=Log(),
             verbose=True,
             **kwargs):
@@ -38,8 +38,18 @@ def _plot_cs(pipcs_raw,
         ## parameters ############################# 
         if xtick_chr_dict is None:         
                 xtick_chr_dict = get_number_to_chr()
-        if fig_args is None:
-                fig_args={"figsize":(15,5),"dpi":400}
+                
+        style = set_plot_style(
+                plot="plot_pipcs",
+                fig_kwargs=fig_kwargs,
+                fontsize=fontsize,
+                fontfamily=font_family,
+                verbose=verbose,
+                log=log,
+        )
+        fig_kwargs = style["fig_kwargs"]
+        fontsize = style["fontsize"]
+        font_family = style["font_family"]
         scatter_kwargs =   _extract_kwargs("scatter", dict(), locals())
 
         region_marker_shapes = ['o', '^','s','D','*','P','X','h','8']
@@ -67,7 +77,7 @@ def _plot_cs(pipcs_raw,
                 ax=figax[1]
                 fig=figax[0]
         else:
-                fig, ax = plt.subplots(**fig_args)
+                fig, ax = plt.subplots(**fig_kwargs)
 
         # assign i
         pipcs,chrom_df=_quick_assign_i_with_rank(pipcs,  chrpad=0.00, 

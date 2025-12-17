@@ -203,25 +203,25 @@ def getsignaldensity2(
     log.write("Start to calculate signal DENSITY...", verbose=verbose)
     wsize = bwindowsizekb * 1000
 
-    # Select and copy only necessary columns
     sumstats = insumstats.copy()
     sumstats = sumstats.sort_values([chrom, pos], ignore_index=True)
 
-    densities = np.zeros(len(sumstats), dtype=np.int32)
+    sumstats[pos] = pd.to_numeric(sumstats[pos], errors="coerce")
 
-    for chrom_i, df_chr in sumstats.groupby(chrom, sort=False):
-        positions = df_chr[pos].to_numpy()
-        n = len(positions)
+    valid_mask = sumstats[chrom].notna() & sumstats[pos].notna()
 
+    densities = pd.Series(pd.NA, index=sumstats.index, dtype="Int32")
+
+    for chrom_i, df_chr in sumstats.loc[valid_mask, :].groupby(chrom, sort=False):
+        df_chr_valid = df_chr.loc[df_chr[pos].notna(), :]
+        positions = df_chr_valid[pos].to_numpy()
         # Use searchsorted to find right edges efficiently
         # For each variant, find the rightmost index within +window
         right_idx = np.searchsorted(positions, positions + wsize, side="right")
         left_idx = np.searchsorted(positions, positions - wsize, side="left")
-
         # Count how many fall within window (excluding itself)
         density_chr = (right_idx - left_idx - 1).astype(np.int32)
-
-        densities[df_chr.index] = density_chr
+        densities[df_chr_valid.index] = density_chr
 
     sumstats["DENSITY"] = densities
 
@@ -233,7 +233,11 @@ def getsignaldensity2(
     
     if snpid not in sumstats.columns:
         snpid = "rsID"
-    bmaxid = sumstats.loc[sumstats["DENSITY"].idxmax(), snpid]
+    if sumstats["DENSITY"].dropna().empty:
+        bmaxid = "NA"
+        bmax = pd.NA
+    else:
+        bmaxid = sumstats.loc[sumstats["DENSITY"].idxmax(), snpid]
 
     log.write(f" -Mean : {bmean:.3f} signals per {bwindowsizekb} kb", verbose=verbose)
     log.write(f" -SD : {bsd:.3f}", verbose=verbose)
