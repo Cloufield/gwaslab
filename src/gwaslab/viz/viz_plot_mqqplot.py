@@ -96,8 +96,12 @@ def _setup_and_log_mqq_info(
     if len(highlight) > 0 and ("m" in mode):
         is_grouped = pd.api.types.is_list_like(highlight[0])
         if is_grouped and (highlight_chrpos is False):
+            if not isinstance(highlight_color, list):
+                 highlight_color = [highlight_color] * len(highlight)
+            
             if len(highlight) != len(highlight_color):
                 log.warning("Number of locus groups does not match number of provided colors.")
+            
             for i, highlight_set in enumerate(highlight):
                 color_i = highlight_color[i % len(highlight_color)]
                 log.write(" -Set {} loci to highlight ({}) : ".format(i + 1, color_i) + ",".join(highlight_set), verbose=verbose)
