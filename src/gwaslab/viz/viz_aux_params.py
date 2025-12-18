@@ -293,6 +293,8 @@ class VizParamsManager:
         dict
             Parameters safe to pass to `func`.
         """
+        # 0) Enforce no_plots exclusions at filter time (defensive)
+        params = self._apply_no_plots_filter(params, key, mode)
         # 1) Look up whitelist for this plot/mode
         allowed_keys = self.allowed(key, mode)
         # 2) If whitelist exists, filter by allowed keys
@@ -301,6 +303,23 @@ class VizParamsManager:
         
         # 3) Fallback: filter by function signature
         return self._filter_by_signature(func, params, key, log, verbose)
+
+    def _apply_no_plots_filter(self, params, key, mode):
+        """Remove arguments banned by no_plots for the given plot/mode."""
+        if not hasattr(self, "_arg_map"):
+            return params
+        if key is None:
+            return params
+        p_key, m_key = key, mode
+        filtered = dict(params)
+        for arg_name in list(filtered.keys()):
+            arg_def = self._arg_map.get(arg_name)
+            if not arg_def:
+                continue
+            no_plots = arg_def.get("no_plots", set())
+            if (p_key, m_key) in no_plots or (p_key, "*") in no_plots:
+                filtered.pop(arg_name, None)
+        return filtered
 
     def _filter_by_whitelist(self, params, allowed_keys, key, mode, log, verbose):
         """Filter parameters using a whitelist and remove banned subkeys."""
@@ -797,28 +816,12 @@ def load_viz_config(pm, path=None, merge=True):
     
     # Register args
     for arg_name, arg_entry in raw_args.items():
-        # Normalize plots
         raw_plots = arg_entry.get("plots", [])
         default_value = arg_entry.get("default", None)
-        normalized_plots = []
-        
-        for plot_def in raw_plots:
-            if isinstance(plot_def, str):
-                if plot_def == "all":
-                    normalized_plots.append(("all", "*"))
-                else:
-                    normalized_plots.append((plot_def, "*"))
-            elif isinstance(plot_def, (list, tuple)):
-                if len(plot_def) == 1:
-                    if plot_def[0] == "all":
-                        normalized_plots.append(("all", "*"))
-                    else:
-                        normalized_plots.append((plot_def[0], "*"))
-                elif len(plot_def) >= 2:
-                    normalized_plots.append((plot_def[0], plot_def[1]))
 
-        # Register arg
-        pm.register_arg(arg_name, plots=normalized_plots, default=default_value, no_plots=arg_entry.get("no_plots"))
+        # Pass through raw plot specs to let register_arg handle parsing of
+        # strings like "plot:mode", singletons, and wildcards.
+        pm.register_arg(arg_name, plots=raw_plots, default=default_value, no_plots=arg_entry.get("no_plots"))
         
         # Descriptions
         pm._arg_doc[arg_name] = bool(arg_entry.get("add_to_docstring", False))

@@ -1610,11 +1610,16 @@
     "highlight": {
       "plots": [
         "plot_manhattan",
+        "plot_snp_density",
         "plot_miami2",
+        "plot_mqq",
         "plot_mqq:b",
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
+        "plot_mqq:qq",
+        "plot_qq",
+        "plot_qq:qq",
         "plot_trumpet:b",
         "plot_trumpet:q"
       ],
@@ -1624,7 +1629,7 @@
         "plot_mqq:r"
       ],
       "desc": "List of focal variants to highlight",
-      "default": null,
+      "default": [],
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -2544,17 +2549,25 @@
     "pinpoint": {
       "plots": [
         "plot_manhattan",
+        "plot_snp_density",
         "plot_miami2",
         "plot_mqq",
+        "plot_mqq:b",
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
+        "plot_mqq:qq",
+        "plot_qq",
+        "plot_qq:qq",
         "plot_mqq:r",
         "plot_trumpet:b",
-        "plot_trumpet:q"
+        "plot_trumpet:q",
+        "plot_region",
+        "plot_region:r",
+        "plot_mqq:r"
       ],
       "desc": "Variants to pinpoint",
-      "default": null,
+      "default": [],
       "ctx_defaults": {},
       "add_to_docstring": false
     },

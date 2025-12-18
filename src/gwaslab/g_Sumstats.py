@@ -98,6 +98,7 @@ from gwaslab.util.util_in_get_sig import (
     _check_novel_set,
 )
 from gwaslab.util.util_in_fill_data import filldata
+from gwaslab.view.view_sumstats import _view_sumstats
 from gwaslab.util.util_ex_phewwas import _extract_associations
 
 # ----- Utility: LDSC / PRS / LD -----
@@ -155,7 +156,6 @@ from gwaslab.io.io_process_kwargs import remove_overlapping_kwargs
 from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
 from gwaslab.hm.hm_assign_rsid import _assign_rsid
 from gwaslab.hm.hm_infer_with_af  import _infer_strand_with_annotation
-from gwaslab.view.view_sumstats import _head, _tail #_random, _info, _describe
 from datetime import datetime
 
  
@@ -342,8 +342,17 @@ class Sumstats():
     def __getitem__(self, index):
         return self.data[index]
         
+    def __setitem__(self, index, value):
+        self.data[index] = value
+
     def __len__(self):
         return len(self.data)
+        
+    def __getattr__(self, name):
+        try:
+            return getattr(self.data, name)
+        except AttributeError:
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
 #### healper #################################################################################
     #@add_doc(_update_meta)
     #def update_meta(self, **kwargs):
@@ -1419,6 +1428,8 @@ class Sumstats():
         combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
         return combined_results_summary
 
+
+
 # loading aux data
     def read_pipcs(self,prefix,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"study"})
@@ -1442,27 +1453,10 @@ class Sumstats():
         del self.data
         gc.collect()
 
-    @add_doc(_head)
-    def head(self, n=5, **kwargs):
-        kwargs = remove_overlapping_kwargs(kwargs,{"n"})
-        return _head(self.data, n=n, **kwargs)
+    @add_doc(_view_sumstats)
+    def view_sumstats(self, expr=None):
+        return _view_sumstats(self.data, expr=expr)
     
-    @add_doc(_tail)
-    def tail(self, n=5, **kwargs):
-        kwargs = remove_overlapping_kwargs(kwargs,{"n"})
-        return _tail(self.data, n=n, **kwargs)
-    
-    #@add_doc(_random)
-    #def random(self, n=5, **kwargs):
-    #    return _random(self.data, n=n, **kwargs)
-    
-    #@add_doc(_info)
-    #def info(self, **kwargs):
-    #    return _info(self.data, **kwargs)
-    
-    #@add_doc(_describe)
-    #def describe(self, **kwargs):
-    #    return _describe(self.data, **kwargs)
     
     def reload(self):
          self.data = _reload(self.tmp_path, self.log)

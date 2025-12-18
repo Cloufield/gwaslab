@@ -143,6 +143,14 @@ def annotate_single(
 
     if arrow_kwargs is None:
         arrow_kwargs=dict()
+    
+    if (anno_d is not None) and (len(anno_d) > 0) and (arm_offset is None):
+        try:
+            dpi = ax1.figure.dpi
+            width_in = ax1.figure.get_size_inches()[0]
+            arm_offset = dpi * repel_force * width_in * 0.5
+        except Exception:
+            arm_offset = 0.0
         
     if anno and (to_annotate.empty is not True):
         #initiate a list for text and a starting position

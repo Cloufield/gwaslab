@@ -171,6 +171,8 @@ def draw_manhattan_panel(
     ax1.set_rasterization_zorder(0)
 
     if len(pinpoint) > 0:
+        if isinstance(pinpoint, str):
+            pinpoint = [pinpoint]
         if pd.api.types.is_list_like(pinpoint[0]):
             for i, pinpoint_set in enumerate(pinpoint):
                 if sum(sumstats[snpid].isin(pinpoint_set)) > 0:

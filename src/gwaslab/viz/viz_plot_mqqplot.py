@@ -26,7 +26,8 @@ from gwaslab.viz.viz_aux_annotate_plot import annotate_single
 from gwaslab.viz.viz_aux_quickfix import _cut
 from gwaslab.viz.viz_aux_quickfix import _jagged_y
 from gwaslab.viz.viz_aux_quickfix import _set_yticklabels
-from gwaslab.viz.viz_aux_quickfix import _normalize_region
+from gwaslab.qc.qc_normalize_args import _normalize_group
+from gwaslab.qc.qc_normalize_args import _normalize_region
 from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_chr
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_eaf
@@ -94,39 +95,33 @@ def _setup_and_log_mqq_info(
 
     # Highlight configuration (supports lists of loci or direct chr:pos sets)
     if len(highlight) > 0 and ("m" in mode):
-        is_grouped = pd.api.types.is_list_like(highlight[0])
-        if is_grouped and (highlight_chrpos is False):
-            if not isinstance(highlight_color, list):
-                 highlight_color = [highlight_color] * len(highlight)
-            
-            if len(highlight) != len(highlight_color):
-                log.warning("Number of locus groups does not match number of provided colors.")
-            
-            for i, highlight_set in enumerate(highlight):
-                color_i = highlight_color[i % len(highlight_color)]
-                log.write(" -Set {} loci to highlight ({}) : ".format(i + 1, color_i) + ",".join(highlight_set), verbose=verbose)
-        else:
-            log.write(" -Loci to highlight ({}): {}".format(highlight_color, highlight if is_grouped else ",".join(highlight)), verbose=verbose)
+        highlight, highlight_color = _normalize_group(
+            items=highlight,
+            colors=highlight_color,
+            item_name="highlight loci",
+            log=log,
+            verbose=verbose,
+            is_chrpos_mode=highlight_chrpos
+        )
         log.write("  -highlight_windowkb is set to: {} kb".format(highlight_windowkb), verbose=verbose)
 
     # Pinpoint variants
     if len(pinpoint) > 0:
-        is_grouped = pd.api.types.is_list_like(pinpoint[0])
-        if is_grouped:
-            if len(pinpoint) != len(pinpoint_color):
-                log.warning("Number of variant groups does not match number of provided colors.")
-            for i, pinpoint_set in enumerate(pinpoint):
-                color_i = pinpoint_color[i % len(pinpoint_color)]
-                log.write(" -Set {} variants to pinpoint ({}) : ".format(i + 1, color_i) + ",".join(pinpoint_set), verbose=verbose)
-        else:
-            log.write(" -Variants to pinpoint ({}): ".format(pinpoint_color) + ",".join(pinpoint), verbose=verbose)
+        pinpoint, pinpoint_color = _normalize_group(
+            items=pinpoint,
+            colors=pinpoint_color,
+            item_name="pinpoint variant",
+            log=log,
+            verbose=verbose,
+            is_chrpos_mode=False
+        )
 
     # Region specification
     if region is not None:
         chr_, start_, end_ = region[0], region[1], region[2]
         log.write(" -Region to plot : chr{}:{}-{}.".format(chr_, start_, end_), verbose=verbose)
 
-    return plot_label, build
+    return plot_label, build, highlight, highlight_color, pinpoint, pinpoint_color
 
 @normalize_series_inputs(keys=["highlight","pinpoint","anno_set"])
 @safefig
@@ -623,12 +618,6 @@ def mqqplot(insumstats,
             region_ref.append(region_ref_second)
     region_ref_index_dic = {value: index for index,value in enumerate(region_ref)}
 
-    # save_kwargs merged via set_plot_style
-    pinpoint = _update_arg(pinpoint,list())
-    highlight = _update_arg(highlight,list())
-    anno_d = _update_arg(anno_d, dict())
-    highlight_anno_kwargs = _update_kwargs(highlight_anno_kwargs)
-
     # scatter_kwargs and qq_scatter_kwargs merged via set_plot_style
 
     if sig_level is None:
@@ -654,11 +643,9 @@ def mqqplot(insumstats,
                                                                                     verbose=verbose)
 
 
-    if len(anno_d) > 0 and arm_offset is None:
-        # in pixels
-        arm_offset = fig_kwargs["dpi"] * repel_force * fig_kwargs["figsize"][0]*0.5
+    # arm_offset default calculation moved into annotate_single
 
-    plot_label, build = _setup_and_log_mqq_info(
+    plot_label, build, highlight, highlight_color, pinpoint, pinpoint_color = _setup_and_log_mqq_info(
         insumstats=insumstats,
         mode=mode,
         sig_level_plot=sig_level_plot,
@@ -870,7 +857,7 @@ def mqqplot(insumstats,
     log.write("Finished data conversion and sanity check.",verbose=verbose)
     
     # default: no annotations when not creating Manhattan/Regional panel
-    to_annotate = []
+    
     
     # Step 7: Assign x-axis index (i) and create panels ##########################################################################################################
     log.write("Start to create {} with ".format(plot_label)+str(len(sumstats))+" variants...",verbose=verbose)
@@ -1056,6 +1043,7 @@ def mqqplot(insumstats,
             scaled_threhosld = float(-np.log10(sig_level_lead))
         # Get top variants for annotation #######################################################
         from gwaslab.viz.viz_plot_manhattan_like import _extract_to_annotate
+        to_annotate = pd.DataFrame()
         to_annotate = _extract_to_annotate(
             sumstats=sumstats,
             snpid=snpid,
@@ -1175,7 +1163,7 @@ def mqqplot(insumstats,
             verbose=verbose,
         )
 
-        if mtitle and anno and len(to_annotate) > 0:
+        if mtitle and anno and to_annotate is not None and len(to_annotate) > 0:
             pad = (ax1.transData.transform((skip, mtitle_pad * maxy))[1] - ax1.transData.transform((skip, maxy)))[1]
             _ax_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
             if "family" not in _ax_title_kwargs:
@@ -1206,7 +1194,7 @@ def mqqplot(insumstats,
         ax1 = _add_pad_to_x_axis(ax1, xpad, xpadl, xpadr, sumstats, pos, chrpad, xtight, log = log, verbose=verbose)
 
     # Titles 
-    has_annotations = ("m" in mode or "r" in mode) and anno and len(to_annotate) > 0
+    has_annotations = ("m" in mode or "r" in mode) and anno and to_annotate is not None and len(to_annotate) > 0
     if title and has_annotations:
         _fig_title_kwargs = dict(title_kwargs) if title_kwargs is not None else {}
         if "family" not in _fig_title_kwargs:

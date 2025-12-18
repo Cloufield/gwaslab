@@ -11,6 +11,7 @@ from gwaslab.g_version import _get_version
 
 from gwaslab.qc.qc_check_datatype import check_datatype_for_cols
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
+from gwaslab.qc.qc_build import _process_build
 
 def with_logging(start_to_msg, 
                  finished_msg,
@@ -90,6 +91,11 @@ def with_logging(start_to_msg,
                 log.write(" -Reference FASTA: {}".format(ref_fasta))
             if ref_tsv is not None:
                 log.write(" -Reference TSV: {}".format(ref_tsv))
+
+            if "build" in bound_kwargs.arguments:
+                bound_kwargs.arguments["build"] = _process_build(bound_kwargs.arguments["build"], log=log, verbose=verbose)
+                args = bound_kwargs.args
+                kwargs = bound_kwargs.kwargs
 
             # Log start message
             log.write(f"Start to {start_to_msg} ...({_get_version()})", verbose=verbose)
