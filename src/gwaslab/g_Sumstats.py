@@ -353,6 +353,15 @@ class Sumstats():
             return getattr(self.data, name)
         except AttributeError:
             raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+    
+    def __deepcopy__(self, memo):
+        """Custom deepcopy implementation to properly copy Sumstats objects."""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
 #### healper #################################################################################
     #@add_doc(_update_meta)
     #def update_meta(self, **kwargs):
@@ -1096,7 +1105,8 @@ class Sumstats():
     @add_doc(mqqplot)
     @suppress_display
     def plot_mqq(self, build=None, **kwargs):
-        params = self._apply_viz_params(mqqplot, kwargs, key="plot_mqq")
+        mode = kwargs.get("mode", None)
+        params = self._apply_viz_params(mqqplot, kwargs, key="plot_mqq", mode=mode)
         if "build" not in params:
             params["build"] = self.build
         plot, log = mqqplot(self.data, **params)

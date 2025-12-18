@@ -1417,7 +1417,7 @@
         "plot_effect"
       ],
       "desc": "Font configuration kwargs",
-      "default": {},
+      "default": {"fontsize":9},
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -1621,7 +1621,9 @@
         "plot_qq",
         "plot_qq:qq",
         "plot_trumpet:b",
-        "plot_trumpet:q"
+        "plot_trumpet:q",
+        "plot_stacked_mqq",
+        "compare_effect"
       ],
       "no_plots": [
         "plot_region",
@@ -2269,7 +2271,6 @@
       "plots": [
         "plot_gwheatmap",
         "plot_manhattan",
-        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -2465,7 +2466,6 @@
       "plots": [
         "plot_gwheatmap",
         "plot_manhattan",
-        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -2608,7 +2608,6 @@
       "plots": [
         "plot_gwheatmap",
         "plot_manhattan",
-        "plot_miami2",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
@@ -2952,6 +2951,7 @@
     },
     "region_ld_colors": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -2975,6 +2975,7 @@
     },
     "region_ld_colors_m": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3006,6 +3007,7 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
+      "no_plots":["plot_stacked_mqq"],
       "desc": "Whether to show LD legend/colorbar",
       "default": true,
       "ctx_defaults": {
@@ -3015,6 +3017,7 @@
     },
     "region_ld_threshold": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3043,6 +3046,7 @@
         "plot_mqq:r",
         "plot_region:r"
       ],
+      "no_plots":["plot_stacked_mqq"],
       "desc": "Show lead grid lines",
       "default": true,
       "ctx_defaults": {},
@@ -3050,6 +3054,7 @@
     },
     "region_lead_grid_line": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3077,6 +3082,7 @@
     },
     "region_legend_marker": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3092,6 +3098,7 @@
     },
     "region_marker_shapes": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3117,6 +3124,7 @@
     },
     "region_protein_coding": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3132,6 +3140,7 @@
     },
     "region_recombination": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3147,6 +3156,7 @@
     },
     "region_ref": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3162,6 +3172,7 @@
     },
     "region_ref_alias": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3177,6 +3188,7 @@
     },
     "region_ref_second": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3192,6 +3204,7 @@
     },
     "region_step": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3207,6 +3220,7 @@
     },
     "region_title": {
       "plots": [
+        "plot_stacked_mqq",
         "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
@@ -3222,6 +3236,8 @@
     },
     "region_title_kwargs": {
       "plots": [
+        "plot_stacked_mqq",
+        "plot_manhattan",
         "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",

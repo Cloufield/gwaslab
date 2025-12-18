@@ -2,7 +2,7 @@ import unittest
 import sys
 import os
 sys.path.insert(0, os.path.abspath("src"))
-from src.gwaslab.viz.viz_aux_params import VizParamsManager
+from gwaslab.viz.viz_aux_params import VizParamsManager, _apply_no_plots
 
 class TestNoPlots(unittest.TestCase):
     def setUp(self):
@@ -28,6 +28,7 @@ class TestNoPlots(unittest.TestCase):
         self.pm.register_arg("dummy_B", plots=["plot_B"])
         
         self.pm.compile_from_kwargs()
+        _apply_no_plots(self.pm)
         
         # Check plot_A (should NOT have arg1)
         allowed_A = self.pm.allowed("plot_A")
@@ -54,6 +55,7 @@ class TestNoPlots(unittest.TestCase):
         self.pm.register_arg("dummy_C2", plots=["plot_C:mode2"])
         
         self.pm.compile_from_kwargs()
+        _apply_no_plots(self.pm)
         
         # Check plot_C:mode1 (should NOT have arg2)
         allowed_C1 = self.pm.allowed("plot_C", "mode1")
@@ -76,6 +78,7 @@ class TestNoPlots(unittest.TestCase):
         )
         
         self.pm.compile_from_kwargs()
+        _apply_no_plots(self.pm)
         
         # Check plot_D (base) - should be excluded
         allowed_D = self.pm.allowed("plot_D")

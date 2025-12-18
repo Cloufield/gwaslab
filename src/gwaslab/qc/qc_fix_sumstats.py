@@ -53,9 +53,12 @@ def fixID(sumstats,
     
     '''
     Fix various aspects of genomic data including SNPID, rsID, chromosome positions, and allele information.
-        1. fx SNPid
-        2. fix chr and pos using snpid
-        3. checking rsid and chr:pos:nea:ea
+    
+    This function performs multiple data quality checks and fixes: (1) validates and fixes SNPID format
+    (CHR:POS:NEA:EA pattern), (2) extracts and fixes chromosome and position from SNPID or rsID, (3) validates
+    rsID format (rsxxxxxx pattern), (4) extracts and fixes EA and NEA from SNPID, (5) standardizes separators
+    and removes prefixes in SNPID, and (6) generates new SNPID from available CHR, POS, EA, NEA data.
+    
     Parameters
     ----------
     fixprefix : bool
@@ -377,7 +380,11 @@ def fixID(sumstats,
 )
 def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
     '''
-    Strip non-standard characters from SNPID values.
+    Strip non-standard characters from SNPID values to standardize format.
+    
+    Removes leading and trailing non-standard characters from SNPID values that match
+    the pattern (xxx:)CHR:POS:ATCG_Allele:ATCG_Allele(:xxx), keeping only the core
+    CHR:POS:NEA:EA format.
 
     Parameters
     ----------
@@ -414,8 +421,11 @@ def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
 )
 def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
     '''
-    Flip alleles in SNPID values without changing status codes.
-        flip EA and NEA SNPid   CHR:POS:EA:NEA -> CHR:POS:NEA:EA
+    Flip alleles in SNPID values without changing status codes or statistics.
+    
+    Converts SNPID from CHR:POS:EA:NEA format to CHR:POS:NEA:EA format by swapping
+    the last two allele components. This function only modifies the SNPID column and
+    does not affect EA, NEA, STATUS, or any statistics.
 
     Parameters
     ----------
@@ -457,9 +467,10 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
     """
     Remove duplicate or multiallelic variants based on user-selected criteria.
 
-    Supports multiple duplicate-identification strategies depending on variant
-    identifiers (SNPID, rsID) or allele and coordinate combinations. Can also
-    collapse multi-allelic sites by retaining a single representative variant.
+    Supports multiple duplicate-identification strategies depending on variant identifiers
+    (SNPID, rsID) or allele and coordinate combinations. Can also collapse multi-allelic
+    sites by retaining a single representative variant. Variants are sorted by a specified
+    column (e.g., P-value) before removal to ensure the best variant is kept.
 
     Parameters
     ----------
@@ -601,12 +612,12 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
 def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()):
     """
     Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
-    All chromosome notations are converted to string type first. After fix, all chromosome notations will be int.
-
-    This function normalizes chromosome labels to a consistent format, applies
-    optional prefixes, and maps special chromosomes (e.g., X, Y, mitochondrial)
-    to standardized identifiers. Invalid chromosome values can optionally be
-    removed.
+    
+    All chromosome notations are converted to string type first. After fix, all chromosome
+    notations will be int. This function normalizes chromosome labels to a consistent format,
+    extracts chromosome numbers from various formats (e.g., "chr1", "1", "chrX"), maps special
+    chromosomes (X, Y, mitochondrial) to standardized numeric identifiers, and optionally
+    removes invalid chromosome values.
 
     Parameters
     ----------
@@ -768,10 +779,11 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
 def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_limit=0 , upper_limit=None , limit=250000000, log=Log()):
     '''
     Standardize and validate genomic base-pair positions.
-
-    This function checks that reported genomic positions fall within valid
-    chromosomal bounds and optionally removes invalid entries. If explicit
-    limits are not provided, a default maximum bound is applied.
+    
+    This function checks that reported genomic positions fall within valid chromosomal bounds
+    and optionally removes invalid entries. It handles string-formatted positions with thousands
+    separators, converts positions to Int64 type, and filters out positions outside the specified
+    range. If explicit limits are not provided, a default maximum bound is applied.
 
     Parameters
     ----------
@@ -846,10 +858,11 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
 def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
     """
     Validate and standardize allele representations.
-
-    This function checks allele fields for valid nucleotide characters and
-    standardizes their format. Optionally, rows with invalid allele values can
-    be removed.
+    
+    This function checks allele fields for valid nucleotide characters (A, T, C, G), converts
+    all alleles to uppercase, standardizes their format using categorical data types, and
+    classifies variants as SNPs, indels, normalized, or not normalized. Optionally, rows with
+    invalid allele values can be removed.
 
     Parameters
     ----------
@@ -964,23 +977,19 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
 )
 def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",chunk=3000000,n_cores=1,verbose=True,log=Log()):
     '''
-    Normalize indels in parallel.
-
-    This function standardizes allele representations for insertion/deletion
-    variants by left-aligning and trimming shared sequence context. 
+    Normalize indels in parallel using left-alignment and parsimony principles.
+    
+    This function standardizes allele representations for insertion/deletion variants by
+    left-aligning and trimming shared sequence context. It removes common suffixes and
+    prefixes from both alleles and adjusts positions accordingly, following the VCF
+    normalization standard.
 
     Parameters
     ----------
-    mode : {'v', 's'}
-        Normalization mode:
-        - 'v' : vectorized mode (fast)
-        - 's' : single row mode
     chunk : int, default 10000
         Size of chunks for parallel processing.
     n_cores : int, default 1
         Number of CPU cores used for parallel processing.
-    verbose : bool, default False
-        If True, print progress and status messages.
 
     Returns
     -------
@@ -1285,7 +1294,13 @@ def flip_by_sign(sumstats, matched_index, log, verbose, cols=None):
 )
 def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     '''
-    Adjust statistics when allele direction has changed. Run after checking with reference sequence.
+    Adjust statistics when allele direction has changed based on STATUS codes.
+    
+    This function adjusts effect sizes and allele-specific statistics when variants have been
+    flipped or converted to reverse complement. It handles multiple scenarios: reverse
+    complement conversion for SNPs, allele swapping for REF/ALT mismatches, flipping for
+    standardized indels, and strand flipping for palindromic variants. Run after checking
+    with reference sequence.
 
     Parameters
     ----------
@@ -1430,7 +1445,12 @@ def liftover_variant(sumstats,
 )
 def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True,chain=None, verbose=True,log=Log()):
     '''
-    Perform parallelized liftover of variants to a new build.
+    Perform parallelized liftover of variants to a new genome build.
+    
+    Converts genomic coordinates from one genome build (e.g., hg19/GRCh37) to another
+    (e.g., hg38/GRCh38) using UCSC chain files. Only processes variants with valid
+    coordinates (status code xxx0xxx). After liftover, validates and fixes chromosome
+    and position columns.
 
     Parameters
     ----------
@@ -1442,8 +1462,6 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         Name of the target genome build (e.g., "38").
     remove : bool, default False
         If True, remove variants that fail to map.
-    chain : str, None, default None
-        Path to the chain file used for liftover. If None, automatically find the chain file.
     verbose : bool, default False
         If True, print progress messages during processing.
 
@@ -1511,7 +1529,10 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
 )
 def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()):
     '''
-    Sort variants by genomic coordinates.
+    Sort variants by genomic coordinates (chromosome, then position).
+    
+    Sorts the dataframe first by chromosome number, then by position in ascending order.
+    The index is reset to sequential integers after sorting.
 
     Parameters
     ----------
@@ -1547,6 +1568,10 @@ def sortcolumn(sumstats,verbose=True,log=Log(),order = None):
     '''
     Reorder columns according to a specified order.
     
+    Reorders the dataframe columns to match a predefined standard order, placing standard
+    GWAS columns first (SNPID, rsID, CHR, POS, EA, NEA, statistics, etc.) followed by
+    any additional columns not in the standard list.
+
     Parameters
     ----------
     verbose : bool, optional

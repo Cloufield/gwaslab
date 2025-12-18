@@ -94,6 +94,8 @@ def _setup_and_log_mqq_info(
         log.write(" -Variants to annotate : " + ",".join(anno_set), verbose=verbose)
 
     # Highlight configuration (supports lists of loci or direct chr:pos sets)
+    if highlight is None:
+        highlight = []
     if len(highlight) > 0 and ("m" in mode):
         highlight, highlight_color = _normalize_group(
             items=highlight,
@@ -106,6 +108,8 @@ def _setup_and_log_mqq_info(
         log.write("  -highlight_windowkb is set to: {} kb".format(highlight_windowkb), verbose=verbose)
 
     # Pinpoint variants
+    if pinpoint is None:
+        pinpoint = []
     if len(pinpoint) > 0:
         pinpoint, pinpoint_color = _normalize_group(
             items=pinpoint,
@@ -588,6 +592,7 @@ def mqqplot(insumstats,
     dpi = style["dpi"]
     title_kwargs = style["title_kwargs"]
 
+    anno_set = _update_arg(anno_set, [])
     # Auto-detect scaled input when -log10(P) column is present with valid values
     try:
         if (scaled is False) and (mlog10p in insumstats.columns):

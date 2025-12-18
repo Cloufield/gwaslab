@@ -1,11 +1,9 @@
 import unittest
-import unittest
 import json
 import os
 import sys
-import os
 sys.path.insert(0, os.path.abspath("src"))
-from src.gwaslab.viz.viz_aux_params import VizParamsManager
+from gwaslab.viz.viz_aux_params import VizParamsManager, _apply_no_plots
 
 class TestBannedOverrideEdgeCase(unittest.TestCase):
     def setUp(self):
@@ -32,7 +30,10 @@ class TestBannedOverrideEdgeCase(unittest.TestCase):
         # 3. Compile
         self.pm.compile_from_kwargs(merge=True)
         
-        # 4. Verify
+        # 4. Apply no_plots exclusions
+        _apply_no_plots(self.pm)
+        
+        # 5. Verify
         allowed = self.pm.allowed("plot_Orphan")
         
         # arg_orphan should be GONE

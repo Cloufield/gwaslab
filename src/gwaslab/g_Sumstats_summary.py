@@ -300,7 +300,6 @@ def lookupstatus(status):
     breakdown and frequency statistics.
     
     Status Code Structure:
-    ----------------------
     Each status code string contains 7+ digits encoding:
     - 1st 2 digits: Genome build mapping (CHM13/hg19/hg38)
     - 3rd digit: rsID and SNPID validation status

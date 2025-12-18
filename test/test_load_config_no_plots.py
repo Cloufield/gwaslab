@@ -2,10 +2,9 @@ import unittest
 import json
 import os
 import sys
-import os
 sys.path.insert(0, os.path.abspath("src"))
 from unittest.mock import patch, mock_open
-from src.gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
+from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
 class TestLoadConfigNoPlots(unittest.TestCase):
     def setUp(self):
