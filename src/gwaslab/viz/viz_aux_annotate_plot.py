@@ -322,6 +322,8 @@ def annotate_single(
             # anno args for highlight group
             if len(highlight_i) >0:
                 if row["i"] in highlight_i:
+                    if highlight_anno_kwargs is None:
+                        highlight_anno_kwargs = dict()
                     for key,value in highlight_anno_kwargs.items():
                         anno_default[key]=value
             
