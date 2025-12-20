@@ -7,7 +7,7 @@ import sys
 from unittest.mock import MagicMock, patch
 sys.path.insert(0, os.path.abspath("src"))
 from gwaslab.g_Sumstats import Sumstats
-from gwaslab.qc.qc_fix_sumstats import parallelizeliftovervariant
+from gwaslab.qc.qc_fix_sumstats import _parallelize_liftover_variant
 
 # Mock pyliftover to avoid installing/downloading chain files
 class MockConverter:
@@ -114,15 +114,15 @@ class TestLiftover(unittest.TestCase):
             with patch('gwaslab.qc.qc_fix_sumstats.get_chain', return_value="dummy_chain"), \
                  patch('gwaslab.qc.qc_fix_sumstats.ChainFile', return_value=MagicMock()), \
                  patch('gwaslab.qc.qc_fix_sumstats._process_build', return_value="hg19"), \
-                 patch('gwaslab.qc.qc_fix_sumstats.fixchr', side_effect=lambda x, **kwargs: x), \
-                 patch('gwaslab.qc.qc_fix_sumstats.fixpos', side_effect=lambda x, **kwargs: x):
+                 patch('gwaslab.qc.qc_fix_sumstats._fix_chr', side_effect=lambda x, **kwargs: x), \
+                 patch('gwaslab.qc.qc_fix_sumstats._fix_pos', side_effect=lambda x, **kwargs: x):
                  
-                 from gwaslab.qc.qc_fix_sumstats import parallelizeliftovervariant
+                 from gwaslab.qc.qc_fix_sumstats import _parallelize_liftover_variant
                  from gwaslab.g_Log import Log
                  
-                 result_df = parallelizeliftovervariant(
+                 result_df = _parallelize_liftover_variant(
                      self.sumstats.data,
-                     n_cores=1,
+                     threads=1,
                      chrom="CHR",
                      pos="POS",
                      from_build="19",

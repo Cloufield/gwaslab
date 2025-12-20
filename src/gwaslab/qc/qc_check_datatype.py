@@ -5,6 +5,7 @@ from gwaslab.g_Log import Log
 # pandas.api.types.is_int64_dtype
 # pandas.api.types.is_categorical_dtype
 
+# Base dtype dictionary
 dtype_dict ={
     "SNPID":["string","object"],
     "rsID": ["string","object"],
@@ -42,7 +43,7 @@ dtype_dict ={
     "MAF":["float64","float","float32"],
     "INFO":["float64","float","float32"],
     "DOF":["Int64","int64","int32","Int32","int"],  
-    "STATUS":["category"],  
+    "STATUS":["Int64","int64","int32","Int32","int"],  
     "DIRECTION":["string","object"],
     'PIP'               :["float64","float","float32"],
     'CREDIBLE_SET_INDEX':["Int64","int64","int32","Int32","int"],
@@ -54,6 +55,24 @@ dtype_dict ={
     'Z_RANDOM' :["float64"],
     'P_RANDOM' :["float64"]
     }
+
+def _get_preferred_dtype(header):
+    """
+    Get the preferred dtype for a column.
+    
+    Parameters
+    ----------
+    header : str
+        Column name.
+    
+    Returns
+    -------
+    str
+        Preferred dtype string.
+    """
+    if header in dtype_dict:
+        return dtype_dict[header][0]
+    return None
 
 def check_datatype(sumstats, verbose=True, log=Log()):
     """
@@ -159,8 +178,8 @@ def verify_datatype(header, dtype):
 
 def quick_convert_datatype(sumstats, log, verbose):
     """
-    Attempt to convert columns with incompatible dtypes to the first expected
-    dtype for that column, logging successes and failures.
+    Attempt to convert columns with incompatible dtypes to the preferred dtype
+    for that column. Logs successes and failures.
 
     Parameters
     ----------
@@ -178,9 +197,15 @@ def quick_convert_datatype(sumstats, log, verbose):
     """
     for col in sumstats.columns:
         if col in dtype_dict.keys():
-            if str(sumstats[col].dtypes) not in dtype_dict[col]:
-                datatype=dtype_dict[col][0]
-                log.write(" -Trying to convert datatype for {}: {} -> {}...".format(col, str(sumstats[col].dtypes), datatype), end="" ,verbose=verbose)
+            current_dtype = str(sumstats[col].dtypes)
+            # Check if conversion is needed
+            if current_dtype not in dtype_dict[col]:
+                # Current dtype is not acceptable, convert to preferred dtype
+                datatype = _get_preferred_dtype(col)
+                if datatype is None:
+                    datatype = dtype_dict[col][0]  # Fallback to first option
+                
+                log.write(" -Trying to convert datatype for {}: {} -> {}...".format(col, current_dtype, datatype), end="" ,verbose=verbose)
                 try:
                     sumstats[col] = sumstats[col].astype(datatype)
                     log.write("{}".format(datatype),show_time=False, verbose=verbose)
@@ -270,18 +295,18 @@ def check_datatype_for_cols(sumstats, cols=None, verbose=True, log=Log(), fix=Fa
         try:
             if fix is True:
                 try:
-                    from gwaslab.qc.qc_fix_sumstats import fixchr, fixpos, fixallele, fixID
+                    from gwaslab.qc.qc_fix_sumstats import _fix_chr, _fix_pos, _fix_allele, _fix_ID
                 except Exception:
-                    fixchr = None; fixpos = None; fixallele = None; fixID = None
+                    _fix_chr = None; _fix_pos = None; _fix_allele = None; _fix_ID = None
 
-                if "CHR" in failed and fixchr is not None:
-                    sumstats = fixchr(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["remove","add_prefix","x","y","mt","chrom_list","minchr"]})
-                if "POS" in failed and fixpos is not None:
-                    sumstats = fixpos(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["remove","lower_limit","upper_limit","limit"]})
-                if (set(["EA","NEA","REF","ALT"]) & set(failed)) and fixallele is not None:
-                    sumstats = fixallele(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["remove"]})
-                if ("SNPID" in failed or "rsID" in failed) and fixID is not None:
-                    sumstats = fixID(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["fixprefix","fixchrpos","fixid","fixeanea","fixeanea_flip","fixsep","reversea","overwrite","forcefixid"]})
+                if "CHR" in failed and _fix_chr is not None:
+                    sumstats = _fix_chr(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["remove","add_prefix","x","y","mt","chrom_list","minchr"]})
+                if "POS" in failed and _fix_pos is not None:
+                    sumstats = _fix_pos(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["remove","lower_limit","upper_limit","limit"]})
+                if (set(["EA","NEA","REF","ALT"]) & set(failed)) and _fix_allele is not None:
+                    sumstats = _fix_allele(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["remove"]})
+                if ("SNPID" in failed or "rsID" in failed) and _fix_ID is not None:
+                    sumstats = _fix_ID(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["fixprefix","fixchrpos","fixid","fixeanea","fixeanea_flip","fixsep","reversea","overwrite","forcefixid"]})
 
                 # Re-verify targeted columns after attempted fixes
                 re_failed = []

@@ -19,7 +19,7 @@ from gwaslab.io.io_preformat_input import print_format_info
 from gwaslab.bd.bd_common_data import get_format_dict
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_formats_list
-from gwaslab.bd.bd_get_hapmap3 import gethapmap3
+from gwaslab.bd.bd_get_hapmap3 import _get_hapmap3
 
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.util.util_in_filter_value import _exclude
@@ -189,7 +189,7 @@ def _to_format(sumstats,
     
     #extract hapmap3 SNPs
     if hapmap3==True:
-        output = gethapmap3(output,build=build,verbose=verbose)
+        output = _get_hapmap3(output,build=build,verbose=verbose)
         after = len(output)
         onetime_log.write(" -Extract {} variants in Hapmap3 datasets for build {}.".format(after, build ),verbose=verbose)
         suffix = "hapmap3."+suffix
@@ -840,8 +840,18 @@ def _process_vcf_header(sumstats, meta, meta_data, build, log, verbose):
     log.write("  -VCF header contig build:"+str(build),verbose=verbose) 
     
     # calculate meta data
-    harmonised = sum(sumstats["STATUS"].str.match( r"\w\w\w[0][0123][012][01234]", case=False, flags=0, na=False ) )
-    switchedalleles = sum(sumstats["STATUS"].str.match( r"\w\w\w[0][0123][12][24]", case=False, flags=0, na=False ) )
+    # Match patterns using integer arithmetic
+    from gwaslab.g_vchange_status import status_match
+    # Pattern: digit 4=0, digit 5=0-3, digit 6=0-2, digit 7=0-4
+    harmonised = sum(status_match(sumstats["STATUS"], 4, [0]) & 
+                     status_match(sumstats["STATUS"], 5, [0,1,2,3]) &
+                     status_match(sumstats["STATUS"], 6, [0,1,2]) &
+                     status_match(sumstats["STATUS"], 7, [0,1,2,3,4]))
+    # Pattern: digit 4=0, digit 5=0-3, digit 6=1-2, digit 7=2 or 4
+    switchedalleles = sum(status_match(sumstats["STATUS"], 4, [0]) &
+                          status_match(sumstats["STATUS"], 5, [0,1,2,3]) &
+                          status_match(sumstats["STATUS"], 6, [1,2]) &
+                          status_match(sumstats["STATUS"], 7, [2,4]))
 
     # Create vcf header
     vcf_header = meta_data["format_fixed_header"] +"\n"+ meta_data["format_contig_"+str(build)]+"\n"

@@ -49,7 +49,7 @@ Options for `plot_daf`:
     # check the difference in allele frequency with reference vcf
     mysumstats.check_af(ref_infer=gl.get_path("1kg_eas_hg19"), 
                         ref_alt_freq="AF",
-                        n_cores=2)
+                        threads=2)
     ```
     <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/8cdc53b4-f661-40d6-a61b-ab5f23af6a4c">
 

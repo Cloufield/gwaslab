@@ -6,7 +6,7 @@ from pathlib import Path
 from functools import wraps
 from gwaslab.g_Log import Log
 from gwaslab.g_vchange_status import vchange_status
-from gwaslab.qc.qc_fix_sumstats import sortcoordinate
+from gwaslab.qc.qc_fix_sumstats import _sort_coordinate
 from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_decorator import with_logging
@@ -17,6 +17,7 @@ from gwaslab.g_version import _get_version
 import gc
 
 _HAPMAP_CACHE = {}
+_HAPMAP_SET_CACHE = {}
 
 def _get_hapmap_df(build):
     if build in _HAPMAP_CACHE:
@@ -30,6 +31,16 @@ def _get_hapmap_df(build):
     df = df.rename(columns={"#CHROM": "CHR"}).astype({"CHR": "Int64", "POS": "Int64"})
     _HAPMAP_CACHE[build] = df
     return df
+
+def _get_hapmap_set(build):
+    """Get Hapmap3 coordinates as a set of (CHR, POS) tuples for fast lookup."""
+    if build in _HAPMAP_SET_CACHE:
+        return _HAPMAP_SET_CACHE[build]
+    df = _get_hapmap_df(build)
+    # Convert to set of tuples for O(1) lookup
+    hapmap_set = set(zip(df["CHR"].astype(int), df["POS"].astype(int)))
+    _HAPMAP_SET_CACHE[build] = hapmap_set
+    return hapmap_set
 
 def with_logging_filter(start_to_msg,finished_msg):
     def decorator(func):
@@ -70,7 +81,7 @@ value thresholds, genomic regions, and special variant types.
 """
 
 @with_logging_filter("filter variants by condition...","filtering variants")
-def filtervalues(sumstats, expr, remove=False, verbose=True, log=Log()):
+def _filter_values(sumstats, expr, remove=False, verbose=True, log=Log()):
     """
     Filter variants based on a query expression.
     
@@ -92,13 +103,40 @@ def filtervalues(sumstats, expr, remove=False, verbose=True, log=Log()):
         Filtered summary statistics table
     """
     log.write(" -Expression:",expr, verbose=verbose)
-    sumstats = sumstats.query(expr,engine='python').copy()
+    
+    # Try standard query first
+    try:
+        sumstats = sumstats.query(expr, engine='python').copy()
+    except Exception as e:
+        # Check if error is related to string slicing (which query() doesn't support)
+        error_msg = str(e).lower()
+        if "slice" in error_msg or "not a supported function" in error_msg:
+            # String slicing detected - use eval() with column namespace instead
+            log.write(" -String slicing detected, using alternative evaluation method...", verbose=verbose)
+            sumstats_copy = sumstats.copy()
+            
+            # Create namespace with all columns accessible
+            env = {col: sumstats_copy[col] for col in sumstats_copy.columns}
+            env.update({'pd': pd, 'np': np})
+            
+            # Evaluate expression using eval() which supports string slicing
+            try:
+                mask = eval(expr, {"__builtins__": {}}, env)
+                sumstats = sumstats_copy.loc[mask].copy()
+            except Exception as eval_error:
+                raise ValueError(f"Unable to evaluate expression with string slicing: {expr}. "
+                               f"Error: {str(eval_error)}. "
+                               f"Note: String slicing operations (e.g., .str[:2]) are not supported "
+                               f"in pandas query(). Consider using .str.slice() or creating a temporary column.")
+        else:
+            # Re-raise original error if it's not a slicing issue
+            raise
 
     gc.collect()
     return sumstats
 
 @with_logging_filter("filter out variants based on threshold values...", "filtering variants")
-def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
+def _filter_out(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
     """
     Filter out variants based on threshold values.
     
@@ -138,7 +176,7 @@ def filterout(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=
     return sumstats.copy()
 
 @with_logging_filter("filter in variants based on threshold values", "filtering variants")
-def filterin(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
+def _filter_in(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
     """
     Filter in variants based on threshold values.
     
@@ -178,7 +216,7 @@ def filterin(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log(
     return sumstats.copy()
 
 @with_logging_filter("filter in variants if in intervals defined in bed files", "filtering variants")
-def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
+def _filter_region_in(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
     """
     Keep variants located within specified genomic regions from a BED file.
     
@@ -202,7 +240,7 @@ def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, b
     pandas.DataFrame
         Filtered summary statistics table containing only variants in the specified regions
     """
-    sumstats = sortcoordinate(sumstats,verbose=verbose)
+    sumstats = _sort_coordinate(sumstats,verbose=verbose)
     if high_ld is True:
         path = get_high_ld(build=build)
         log.write(" -Loading bed format file for hg"+build, verbose=verbose)
@@ -282,7 +320,7 @@ def filterregionin(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, b
     return sumstats
 
 @with_logging_filter("filter out variants if in intervals defined in bed files", "filtering variants")
-def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
+def _filter_region_out(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
     """
     Remove variants located within specified genomic regions from a BED file.
     
@@ -305,7 +343,7 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
     pandas.DataFrame
         Filtered summary statistics table with variants in specified regions removed
     """
-    sumstats = sortcoordinate(sumstats,verbose=verbose)
+    sumstats = _sort_coordinate(sumstats,verbose=verbose)
     if high_ld is True:
         path = get_high_ld(build=build)
         log.write(" -Loading bed format file for hg"+build, verbose=verbose)
@@ -375,7 +413,7 @@ def filterregionout(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, 
               start_function=".infer_build()",
               start_cols=["CHR","POS"],
               check_dtype=True)
-def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS", 
+def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS", 
                ea="EA", nea="NEA", build="19",
                change_status=True, 
                verbose=True, log=Log()):
@@ -396,15 +434,21 @@ def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS",
 
     inferred_build = "Unknown"
     log.write(" -Loading Hapmap3 variants data...", verbose=verbose)
-    hapmap3_ref_19 = _get_hapmap_df("19")
-    hapmap3_ref_38 = _get_hapmap_df("38")
+    hapmap3_set_19 = _get_hapmap_set("19")
+    hapmap3_set_38 = _get_hapmap_set("38")
     log.write(" -CHR and POS will be used for matching...", verbose=verbose)
-    chr_series = pd.to_numeric(sumstats[chrom], errors="coerce").astype("Int64")
-    pos_series = pd.to_numeric(sumstats[pos], errors="coerce").astype("Int64")
-    coords = pd.DataFrame({"CHR": chr_series, "POS": pos_series})
-    coords = coords.dropna().astype({"CHR": "Int64", "POS": "Int64"})
-    match_count_for_19 = pd.merge(coords, hapmap3_ref_19, on=["CHR", "POS"], how="inner").shape[0]
-    match_count_for_38 = pd.merge(coords, hapmap3_ref_38, on=["CHR", "POS"], how="inner").shape[0]
+    
+    # Extract coordinates and convert to set for fast intersection
+    chr_series = pd.to_numeric(sumstats[chrom], errors="coerce")
+    pos_series = pd.to_numeric(sumstats[pos], errors="coerce")
+    
+    # Create coordinate tuples, filtering out NaN values (vectorized approach)
+    mask = chr_series.notna() & pos_series.notna()
+    coords = set(zip(chr_series[mask].astype(int), pos_series[mask].astype(int)))
+    
+    # Use set intersection for fast counting (much faster than merge)
+    match_count_for_19 = len(coords & hapmap3_set_19)
+    match_count_for_38 = len(coords & hapmap3_set_38)
     log.write(" -Matching variants for hg19: num_hg19 = ", match_count_for_19, verbose=verbose)
     log.write(" -Matching variants for hg38: num_hg38 = ", match_count_for_38, verbose=verbose)
     
@@ -427,7 +471,7 @@ def inferbuild(sumstats, status="STATUS", chrom="CHR", pos="POS",
     return sumstats, inferred_build
 
 @with_logging_filter("randomly select variants from the sumstats", "sampling")
-def sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
+def _sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
     """
     Randomly sample variants from summary statistics.
     
@@ -451,7 +495,6 @@ def sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
         Subsampled summary statistics table
     
     """
-    log.write("Start to randomly select variants from the sumstats...", verbose=verbose) 
     if p is None:
         log.write(" -Number of variants selected from the sumstats:",n, verbose=verbose)
         if n > len(sumstats):
@@ -470,7 +513,6 @@ def sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
         kwargs["random_state"] = np.random.randint(0,4294967295)
         log.write(" -Random state (seed): {}".format(kwargs["random_state"]), verbose=verbose)
     sampled = sumstats.sample(n=n,**kwargs)
-    log.write("Finished sampling...", verbose=verbose)
     gc.collect()
     return sampled
 
@@ -496,7 +538,6 @@ def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **
     pandas.DataFrame
         Variants in flanking regions
     """
-    log.write("Start to extract variants in the flanking regions:",verbose=verbose)
     log.write(" - Central variant: {}".format(snpid))
     
     row = sumstats.loc[sumstats["SNPID"]==snpid,:]
@@ -537,7 +578,6 @@ def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True, log=Log
     pandas.DataFrame
         Variants in flanking regions
     """
-    log.write("Start to extract variants in the flanking regions using rsID or SNPID...",verbose=verbose)
     log.write(" - Central variants: {}".format(snpid), verbose=verbose)
     log.write(" - Flanking windowsize in kb: {}".format(windowsizekb), verbose=verbose)
 
@@ -957,7 +997,6 @@ def _search_variants( sumstats, snplist=None,
     >>> variants = _search_variants(sumstats, snplist=["rs1234", "1:100500", [2, 202000], "19:45100000:C:T"])
     >>> print(variants.shape)
     """
-    log.write("Start to search for variants...", verbose=verbose)
     # create a boolean col with FALSE 
     if snplist is None:
         return sumstats.iloc[0:0,:].copy()

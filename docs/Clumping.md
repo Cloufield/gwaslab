@@ -15,7 +15,7 @@ clump(  plink2="plink2",
         scaled=False, 
         out="clumping_plink2", 
         overwrite=False, 
-        n_cores=2, 
+        threads=2, 
         chrom=None, 
         clump_p1=5e-8, 
         clump_p2=5e-8, 
@@ -30,10 +30,10 @@ clump(  plink2="plink2",
 |`vcf`|`string`|path to reference VCF file (it will be converted to plink binary format). You need to specify either `vcf` ,`bfile` or `bfile`|-|
 |`bfile`|`string`|path to PLINK bfile. You need to specify either `vcf` ,`bfile` or `bfile`|-|
 |`pfile`|`string`|path to PLINK bfile. You need to specify either `vcf` `bfile`， or `pfile`|-|
-|`scaled`|`boolean`|If tru, use MLOG10P instead of P|`False`|
+|`scaled`|`boolean`|If True, use MLOG10P instead of P|`False`|
 |`out`|`string`|output file prefix|`clumping_plink2`|
 |`overwrite`|`boolean`|if True, overwrite the existing bfile when vcf path is provided|`False`|
-|`n_cores`|`int`|number of cores to use|2|
+|`threads`|`int`|number of threads to use|2|
 |`memory`|`int`|number of memory to use for plink (in MB) |None|
 |`clump_p1`|`float`|clump_p1|5e-8|
 |`clump_p2`|`float`|clump_p2|5e-8|

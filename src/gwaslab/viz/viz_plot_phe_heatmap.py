@@ -17,7 +17,7 @@ from gwaslab.viz.viz_aux_quickfix import _quick_fix_mlog10p
 from gwaslab.viz.viz_aux_quickfix import _dropna_in_cols
 from gwaslab.viz.viz_plot_mqqplot import _process_p_value
 from gwaslab.viz.viz_plot_mqqplot import _configure_fig_save_kwargs
-from gwaslab.viz.viz_plot_mqqplot import mqqplot
+from gwaslab.viz.viz_plot_mqqplot import _mqqplot
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
@@ -160,7 +160,7 @@ def _gwheatmap(
     
     if add_b == True:
         sumstats["i"] = sumstats["i_x"]
-        fig,log = mqqplot(sumstats,
+        fig,log = _mqqplot(sumstats,
                         chrom=chrom,
                         pos=pos,
                         p=p,

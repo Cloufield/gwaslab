@@ -8,101 +8,197 @@ def _load_sumstats(path, fmt, nrows):
 def _cmd_version(_args):
     gl.show_version()
 
-def _cmd_check(args):
+def _process_sumstats(args):
+    """Main processing function that handles QC, harmonization, and formatting"""
+    # Load sumstats
     s = _load_sumstats(args.input, args.fmt, args.nrows)
-    s.basic_check(remove=args.remove, remove_dup=args.remove_dup, n_cores=args.n_cores, normalize=args.normalize, verbose=not args.quiet)
+    
+    # Determine what processing to do based on options
+    do_qc = args.qc or args.remove or args.remove_dup or args.normalize
+    do_harmonize = (args.ref_seq is not None or 
+                   args.ref_rsid_tsv is not None or 
+                   args.ref_rsid_vcf is not None or 
+                   args.ref_infer is not None or
+                   args.harmonize)
+    
+    # Perform QC if requested
+    if do_qc:
+        s.basic_check(
+            remove=args.remove,
+            remove_dup=args.remove_dup,
+            threads=args.threads,
+            normalize=args.normalize,
+            verbose=not args.quiet
+        )
+    
+    # Perform harmonization if requested
+    if do_harmonize:
+        harmonize_kwargs = {
+            "basic_check": args.basic_check if not do_qc else False,  # Skip if QC already done
+            "ref_seq": args.ref_seq,
+            "ref_rsid_tsv": args.ref_rsid_tsv,
+            "ref_rsid_vcf": args.ref_rsid_vcf,
+            "ref_infer": args.ref_infer,
+            "ref_alt_freq": args.ref_alt_freq,
+            "ref_maf_threshold": args.ref_maf_threshold,
+            "maf_threshold": args.maf_threshold,
+            "ref_seq_mode": args.ref_seq_mode,
+            "threads": args.threads,
+            "remove": args.remove,
+            "verbose": not args.quiet,
+            "sweep_mode": args.sweep_mode
+        }
+        # Remove None values
+        harmonize_kwargs = {k: v for k, v in harmonize_kwargs.items() if v is not None}
+        s.harmonize(**harmonize_kwargs)
+    
+    # Handle assign-rsid if specified
+    if args.assign_rsid:
+        s.assign_rsid(
+            ref_rsid_tsv=args.ref_rsid_tsv,
+            ref_rsid_vcf=args.ref_rsid_vcf,
+            threads=args.threads,
+            overwrite=args.overwrite
+        )
+    
+    # Handle rsid-to-chrpos if specified
+    if args.rsid_to_chrpos:
+        s.rsid_to_chrpos(
+            ref_rsid_to_chrpos_tsv=args.ref_rsid_tsv,
+            build=args.build,
+            overwrite=args.overwrite_rtc,
+            remove=args.remove,
+            chunksize=args.chunksize,
+            verbose=not args.quiet
+        )
+    
+    # Output formatting
     if args.out is not None:
-        s.to_format(args.out, fmt="gwaslab", verbose=not args.quiet)
-
-def _cmd_assign_rsid(args):
-    s = _load_sumstats(args.input, args.fmt, args.nrows)
-    s.assign_rsid(ref_rsid_tsv=args.ref_tsv, ref_rsid_vcf=args.ref_vcf, n_cores=args.n_cores, overwrite=args.overwrite)
-    if args.out is not None:
-        s.to_format(args.out, fmt="gwaslab", verbose=not args.quiet)
-
-def _cmd_rsid_to_chrpos(args):
-    s = _load_sumstats(args.input, args.fmt, args.nrows)
-    s.rsid_to_chrpos(ref_rsid_to_chrpos_tsv=args.ref_tsv, build=args.build, overwrite=args.overwrite, remove=args.remove, chunksize=args.chunksize, verbose=not args.quiet)
-    if args.out is not None:
-        s.to_format(args.out, fmt="gwaslab", verbose=not args.quiet)
-
-def _cmd_to_format(args):
-    s = _load_sumstats(args.input, args.fmt, args.nrows)
-    s.to_format(args.out, fmt=args.out_fmt, tab_fmt=args.tab_fmt, gzip=not args.no_gzip, bgzip=args.bgzip, tabix=args.tabix, hapmap3=args.hapmap3, exclude_hla=args.exclude_hla, hla_range=(args.hla_lower, args.hla_upper), n=args.n, chr_prefix=args.chr_prefix, xymt_number=args.xymt_number, verbose=not args.quiet)
+        to_format_kwargs = {
+            "fmt": args.to_fmt,
+            "tab_fmt": args.tab_fmt,
+            "gzip": not args.no_gzip,
+            "bgzip": args.bgzip,
+            "tabix": args.tabix,
+            "hapmap3": args.hapmap3,
+            "exclude_hla": args.exclude_hla,
+            "hla_range": (args.hla_lower, args.hla_upper) if args.exclude_hla else None,
+            "n": args.n,
+            "chr_prefix": args.chr_prefix,
+            "xymt_number": args.xymt_number,
+            "verbose": not args.quiet
+        }
+        # Remove None values
+        to_format_kwargs = {k: v for k, v in to_format_kwargs.items() if v is not None}
+        s.to_format(args.out, **to_format_kwargs)
+    
+    return s
 
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
-    commands = {"version", "check", "assign-rsid", "rsid-to-chrpos", "to-format"}
-    has_command = any((a in commands) for a in argv if not a.startswith("-"))
-    if not has_command:
-        argv = ["check"] + list(argv)
-
-    parser = argparse.ArgumentParser(prog="gwaslab", add_help=True)
-    subparsers = parser.add_subparsers(dest="command", required=True)
-
-    p_version = subparsers.add_parser("version")
-    p_version.set_defaults(func=_cmd_version)
-
-    p_check = subparsers.add_parser("check")
-    p_check.add_argument("--input", required=True)
-    p_check.add_argument("--fmt", default="auto")
-    p_check.add_argument("--nrows", type=int)
-    p_check.add_argument("--n-cores", type=int, default=1)
-    p_check.add_argument("--remove", action="store_true")
-    p_check.add_argument("--remove-dup", action="store_true")
-    p_check.add_argument("--normalize", action="store_true")
-    p_check.add_argument("--out")
-    p_check.add_argument("--quiet", action="store_true")
-    p_check.set_defaults(func=_cmd_check)
-
-    p_assign = subparsers.add_parser("assign-rsid")
-    p_assign.add_argument("--input", required=True)
-    p_assign.add_argument("--fmt", default="auto")
-    p_assign.add_argument("--nrows", type=int)
-    p_assign.add_argument("--ref-tsv")
-    p_assign.add_argument("--ref-vcf")
-    p_assign.add_argument("--overwrite", choices=["all", "invalid", "empty"], default="empty")
-    p_assign.add_argument("--n-cores", type=int, default=1)
-    p_assign.add_argument("--out")
-    p_assign.add_argument("--quiet", action="store_true")
-    p_assign.set_defaults(func=_cmd_assign_rsid)
-
-    p_rtc = subparsers.add_parser("rsid-to-chrpos")
-    p_rtc.add_argument("--input", required=True)
-    p_rtc.add_argument("--fmt", default="auto")
-    p_rtc.add_argument("--nrows", type=int)
-    p_rtc.add_argument("--ref-tsv")
-    p_rtc.add_argument("--build", default="19")
-    p_rtc.add_argument("--overwrite", action="store_true")
-    p_rtc.add_argument("--remove", action="store_true")
-    p_rtc.add_argument("--chunksize", type=int, default=5000000)
-    p_rtc.add_argument("--out")
-    p_rtc.add_argument("--quiet", action="store_true")
-    p_rtc.set_defaults(func=_cmd_rsid_to_chrpos)
-
-    p_to = subparsers.add_parser("to-format")
-    p_to.add_argument("--input", required=True)
-    p_to.add_argument("--fmt", default="auto")
-    p_to.add_argument("--nrows", type=int)
-    p_to.add_argument("--out", required=True)
-    p_to.add_argument("--out-fmt", default="gwaslab")
-    p_to.add_argument("--tab-fmt", default="tsv")
-    p_to.add_argument("--no-gzip", action="store_true")
-    p_to.add_argument("--bgzip", action="store_true")
-    p_to.add_argument("--tabix", action="store_true")
-    p_to.add_argument("--hapmap3", action="store_true")
-    p_to.add_argument("--exclude-hla", action="store_true")
-    p_to.add_argument("--hla-lower", type=int, default=25)
-    p_to.add_argument("--hla-upper", type=int, default=34)
-    p_to.add_argument("--n", type=float)
-    p_to.add_argument("--chr-prefix", default="")
-    p_to.add_argument("--xymt-number", action="store_true")
-    p_to.add_argument("--quiet", action="store_true")
-    p_to.set_defaults(func=_cmd_to_format)
-
+    
+    # Check if version command
+    if "version" in argv:
+        parser = argparse.ArgumentParser(prog="gwaslab", add_help=True)
+        parser.add_argument("version", nargs="?", help="Show version")
+        args = parser.parse_args(argv)
+        _cmd_version(args)
+        return
+    
+    parser = argparse.ArgumentParser(
+        prog="gwaslab",
+        description="GWASLab: A Python package for processing GWAS summary statistics",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Basic QC and output
+  gwaslab --input sumstats.tsv --fmt auto --qc --out cleaned.tsv --to-fmt gwaslab
+  
+  # Harmonization with reference
+  gwaslab --input sumstats.tsv --fmt auto --ref-seq ref.fasta --harmonize --out harmonized.tsv --to-fmt gwaslab
+  
+  # Format conversion only
+  gwaslab --input sumstats.tsv --fmt gwaslab --out sumstats.ldsc --to-fmt ldsc
+        """
+    )
+    
+    # Input/Output arguments
+    parser.add_argument("--input", required=True, help="Input sumstats file path")
+    parser.add_argument("--fmt", default="auto", help="Input format (default: auto)")
+    parser.add_argument("--nrows", type=int, help="Number of rows to read (for testing)")
+    parser.add_argument("--out", help="Output file path")
+    parser.add_argument("--to-fmt", default="gwaslab", help="Output format (default: gwaslab)")
+    parser.add_argument("--tab-fmt", default="tsv", choices=["tsv", "csv", "parquet"], help="Tabular format (default: tsv)")
+    
+    # Processing mode flags
+    processing_group = parser.add_argument_group("Processing Options")
+    processing_group.add_argument("--qc", action="store_true", help="Perform quality control (basic_check)")
+    processing_group.add_argument("--harmonize", action="store_true", help="Perform harmonization")
+    processing_group.add_argument("--assign-rsid", action="store_true", help="Assign rsID to variants")
+    processing_group.add_argument("--rsid-to-chrpos", action="store_true", help="Convert rsID to CHR:POS")
+    
+    # QC options
+    qc_group = parser.add_argument_group("QC Options")
+    qc_group.add_argument("--remove", action="store_true", help="Remove bad quality variants")
+    qc_group.add_argument("--remove-dup", action="store_true", help="Remove duplicated variants")
+    qc_group.add_argument("--normalize", action="store_true", help="Normalize indels")
+    
+    # Harmonization options
+    harm_group = parser.add_argument_group("Harmonization Options")
+    harm_group.add_argument("--basic-check", action="store_true", default=True, help="Run basic QC in harmonization (default: True)")
+    harm_group.add_argument("--no-basic-check", dest="basic_check", action="store_false", help="Skip basic QC in harmonization")
+    harm_group.add_argument("--ref-seq", help="Reference sequence file (FASTA) for allele flipping")
+    harm_group.add_argument("--ref-rsid-tsv", help="Reference rsID TSV file")
+    harm_group.add_argument("--ref-rsid-vcf", help="Reference rsID VCF/BCF file")
+    harm_group.add_argument("--ref-infer", help="Reference VCF/BCF file for strand inference")
+    harm_group.add_argument("--ref-alt-freq", help="Allele frequency field name in VCF INFO (default: AF)")
+    harm_group.add_argument("--ref-maf-threshold", type=float, default=0.5, help="MAF threshold for reference (default: 0.5)")
+    harm_group.add_argument("--maf-threshold", type=float, default=0.40, help="MAF threshold for sumstats (default: 0.40)")
+    harm_group.add_argument("--ref-seq-mode", choices=["v", "s"], default="v", help="Reference sequence mode: v=vectorized, s=sequential (default: v)")
+    harm_group.add_argument("--sweep-mode", action="store_true", help="Use sweep mode for large datasets")
+    
+    # Assign rsID options
+    assign_group = parser.add_argument_group("Assign rsID Options")
+    assign_group.add_argument("--overwrite", choices=["all", "invalid", "empty"], default="empty", help="Overwrite mode for rsID assignment (default: empty)")
+    
+    # rsID to CHR:POS options
+    rtc_group = parser.add_argument_group("rsID to CHR:POS Options")
+    rtc_group.add_argument("--build", default="19", help="Genome build (default: 19)")
+    rtc_group.add_argument("--overwrite-rtc", action="store_true", help="Overwrite existing CHR:POS")
+    rtc_group.add_argument("--chunksize", type=int, default=5000000, help="Chunk size for processing (default: 5000000)")
+    
+    # Output formatting options
+    format_group = parser.add_argument_group("Output Formatting Options")
+    format_group.add_argument("--no-gzip", action="store_true", help="Disable gzip compression")
+    format_group.add_argument("--bgzip", action="store_true", help="Use bgzip compression")
+    format_group.add_argument("--tabix", action="store_true", help="Create tabix index")
+    format_group.add_argument("--hapmap3", action="store_true", help="Extract HapMap3 variants only")
+    format_group.add_argument("--exclude-hla", action="store_true", help="Exclude HLA region")
+    format_group.add_argument("--hla-lower", type=int, default=25, help="HLA region lower bound (default: 25)")
+    format_group.add_argument("--hla-upper", type=int, default=34, help="HLA region upper bound (default: 34)")
+    format_group.add_argument("--n", type=float, help="Add N column with specified value")
+    format_group.add_argument("--chr-prefix", default="", help="Prefix for chromosome column (e.g., 'chr')")
+    format_group.add_argument("--xymt-number", action="store_true", help="Use numeric notation for X, Y, MT (23, 24, 25)")
+    
+    # General options
+    general_group = parser.add_argument_group("General Options")
+    general_group.add_argument("--threads", type=int, default=1, help="Number of threads for parallel processing (default: 1)")
+    general_group.add_argument("--quiet", action="store_true", help="Suppress output messages")
+    
     args = parser.parse_args(argv)
-    args.func(args)
+    
+    # If no processing is specified but output is requested, do basic check
+    # This ensures output is properly formatted
+    if not (args.qc or args.harmonize or args.assign_rsid or args.rsid_to_chrpos):
+        if args.out is not None:
+            args.qc = True
+        else:
+            # If no output and no processing, just load and return (no-op)
+            return
+    
+    # Process sumstats
+    _process_sumstats(args)
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.12
 RUN apt update
 
 # install tabix
@@ -12,5 +12,5 @@ RUN rm ttf-mscorefonts-installer_3.8_all.deb
 
 # install gwaslab and jupyter notebook
 RUN pip install --upgrade pip
-RUN python -m pip install "gwaslab==3.4.40"
+RUN python -m pip install "gwaslab==4.0.0"
 RUN python -m pip install notebook

@@ -9,7 +9,7 @@ The original [LDSC software](https://github.com/bulik/ldsc) was implemented in P
 GWASLab integrates the core functions of LDSC into the gl.Sumstats object, which makes the LD score regression much more convenient to conduct.
 
 !!! info "The difference between original LDSC and LDSC in GWASLab"
-    - GWASLab will automatically extract Hapmap3 SNPs based on CHR:POS and EA and NEA if rsID not avaiable in sumstats
+    - GWASLab will automatically extract Hapmap3 SNPs based on CHR:POS and EA and NEA if rsID not available in sumstats
     - Codes have been adjusted to be compatible with Python3. (`map`, `xrange` and so forth)
     - Sumstats were supplied by GWASLab instead of reading from files.
     - Log system has been replaced by GWASLab.Log

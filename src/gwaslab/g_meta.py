@@ -209,14 +209,14 @@ def _set_qc_status(self, args):
 
     qc_status = self.meta["gwaslab"].get("qc_and_harmonization_status", {}).get("qc", {})
     if qc_status:
-        _update_step_status(qc_status, "id", now, True, args_to_save.get("fixid_kwargs", {}))
-        _update_step_status(qc_status, "chr", now, True, args_to_save.get("fixchr_kwargs", {}))
-        _update_step_status(qc_status, "pos", now, True, args_to_save.get("fixpos_kwargs", {}))
-        _update_step_status(qc_status, "allele", now, True, args_to_save.get("fixallele_kwargs", {}))
-        _update_step_status(qc_status, "sanity", now, True, args_to_save.get("sanitycheckstats_kwargs", {}))
-        _update_step_status(qc_status, "consistency", now, True, args_to_save.get("consistencycheck_kwargs", {}))
-        _update_step_status(qc_status, "normalize", now, bool(args_to_save.get("normalize", False)), args_to_save.get("normalizeallele_kwargs", {}))
-        _update_step_status(qc_status, "remove_dup", now, bool(args_to_save.get("remove_dup", False)), args_to_save.get("removedup_kwargs", {}))
+        _update_step_status(qc_status, "id", now, True, args_to_save.get("fix_id_kwargs", {}))
+        _update_step_status(qc_status, "chr", now, True, args_to_save.get("fix_chr_kwargs", {}))
+        _update_step_status(qc_status, "pos", now, True, args_to_save.get("fix_pos_kwargs", {}))
+        _update_step_status(qc_status, "allele", now, True, args_to_save.get("fix_allele_kwargs", {}))
+        _update_step_status(qc_status, "sanity", now, True, args_to_save.get("sanity_check_stats_kwargs", {}))
+        _update_step_status(qc_status, "consistency", now, True, args_to_save.get("consistency_check_kwargs", {}))
+        _update_step_status(qc_status, "normalize", now, bool(args_to_save.get("normalize", False)), args_to_save.get("normalize_allele_kwargs", {}))
+        _update_step_status(qc_status, "remove_dup", now, bool(args_to_save.get("remove_dup", False)), args_to_save.get("remove_dup_kwargs", {}))
         _update_step_status(qc_status, "sort_coord", now, True, {})
         _update_step_status(qc_status, "sort_column", now, True, {})
 
@@ -230,13 +230,13 @@ def _set_harmonization_status(self, args):
     harm_status = self.meta["gwaslab"].get("qc_and_harmonization_status", {}).get("harmonize", {})
     if harm_status:
         if args_to_save.get("ref_seq", None) is not None:
-            _update_step_status(harm_status, "check_ref", now, True, args_to_save.get("checkref_kwargs", {}))
-            _update_step_status(harm_status, "flip_allele_stats", now, True, args_to_save.get("flipallelestats_kwargs", {}))
+            _update_step_status(harm_status, "check_ref", now, True, args_to_save.get("check_ref_kwargs", {}))
+            _update_step_status(harm_status, "flip_allele_stats", now, True, args_to_save.get("flip_allele_stats_kwargs", {}))
 
         if args_to_save.get("ref_infer", None) is not None:
-            _update_step_status(harm_status, "infer_strand", now, True, args_to_save.get("inferstrand_kwargs", {}))
+            _update_step_status(harm_status, "infer_strand", now, True, args_to_save.get("infer_strand_kwargs", {}))
 
         if args_to_save.get("ref_rsid_tsv", None) is not None or args_to_save.get("ref_rsid_vcf", None) is not None:
-            _update_step_status(harm_status, "assign_rsid", now, True, args_to_save.get("assignrsid_kwargs", {}))
+            _update_step_status(harm_status, "assign_rsid", now, True, args_to_save.get("assign_rsid_kwargs", {}))
 
         _update_step_status(harm_status, "liftover", now, False, args_to_save.get("liftover_kwargs", {}))

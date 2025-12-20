@@ -15,7 +15,7 @@ from pathlib import Path
         finished_msg="extracting HapMap3 SNPs",
         start_function=".gethapmap3"
 )
-def gethapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
+def _get_hapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
     """
     Extract HapMap3 SNPs from summary statistics based on rsID or genomic coordinates.
 

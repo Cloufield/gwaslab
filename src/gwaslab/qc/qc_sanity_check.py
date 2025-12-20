@@ -74,8 +74,13 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
     if header in coltocheck and header in sumstats.columns:
         cols_to_check.append(header)
         if header=="STATUS": 
-            log.write(" -Checking STATUS and converting STATUS to categories....", verbose=verbose) 
-            sumstats[header] = pd.Categorical(sumstats[header],categories=STATUS_CATEGORIES)
+            log.write(" -Checking STATUS and converting STATUS to Int64....", verbose=verbose) 
+            # Convert STATUS to integer (remove Categorical if present)
+            if sumstats[header].dtype.name == 'category':
+                sumstats[header] = sumstats[header].astype(str).astype(int)
+            elif sumstats[header].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
+                sumstats[header] = sumstats[header].astype(int)
+            sumstats[header] = sumstats[header].astype('Int64')
             return sumstats
         
         if dtype in ["Int64","Int32","int","int32","in64"]:
@@ -132,7 +137,7 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
         finished_msg="sanity check for statistics",
         start_function=".check_sanity()"
 )
-def sanitycheckstats(sumstats,
+def _sanity_check_stats(sumstats,
                      coltocheck=None,
                      n=(0,2**31-1),
                      ncase=(0,2**31-1),
@@ -288,7 +293,7 @@ def sanitycheckstats(sumstats,
     sumstats = check_range(sumstats, var_range=HR_95L, header="HR_95L", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
     sumstats = check_range(sumstats, var_range=HR_95U, header="HR_95U", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="float64")
     ###STATUS ###############################################################################################################################################
-    sumstats = check_range(sumstats, var_range=None, header="STATUS", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="category")
+    sumstats = check_range(sumstats, var_range=None, header="STATUS", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="Int64")
 
     after_number=len(sumstats)
     log.write(" -Removed "+str(oringinal_number - after_number)+" variants with bad statistics in total.",verbose=verbose) 

@@ -1,11 +1,15 @@
 import pandas as pd
 from gwaslab.g_Log import Log
+from gwaslab.qc.qc_decorator import with_logging
 import re
 
+@with_logging(
+        start_to_msg="initialize gl.SumstatsSet",
+        finished_msg="initializing gl.SumstatsSet"
+)
 def _extract_variant(variant_set, sumstats_dic, log=Log(), verbose=True):
     
     combined = pd.DataFrame()
-    log.write("Start to initialize gl.SumstatsSet...", verbose=verbose)
     for key, sumstats_gls in sumstats_dic.items():
         log.write(" -{} : {}".format(key, sumstats_gls), verbose=verbose)
 
@@ -47,5 +51,4 @@ def _extract_variant(variant_set, sumstats_dic, log=Log(), verbose=True):
                 to_extract_cols.append(i)
 
         combined = pd.concat([combined, to_extract[to_extract_cols]], ignore_index=True)
-    log.write("Finished initializing gl.SumstatsSet.", verbose=verbose)
     return combined

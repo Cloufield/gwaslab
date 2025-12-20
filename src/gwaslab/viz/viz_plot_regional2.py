@@ -13,7 +13,6 @@ import numpy as np
 import copy
 import re
 import scipy as sp
-from pyensembl import EnsemblRelease
 from allel import GenotypeArray
 from allel import read_vcf
 from allel import rogers_huff_r_between
@@ -22,7 +21,7 @@ from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from adjustText import adjust_text
-from gtfparse import read_gtf
+from gwaslab.io.io_gtf import read_gtf
 
 from gwaslab.g_Log import Log
 from gwaslab.bd.bd_common_data import get_chr_to_number
@@ -1286,11 +1285,11 @@ def process_gtf(gtf_path,
     else:
         # if user-provided gtf
         #gtf = pd.read_csv(gtf_path,sep="\t",header=None, comment="#", low_memory=False,dtype={0:"string"})
-        gtf = read_gtf(gtf_path)
-        gtf = gtf.loc[gtf["seqname"]==gtf_chr_dict[region[0]],:]
+        # Filter by chromosome early for speed
+        gtf = read_gtf(gtf_path, chrom=gtf_chr_dict[region[0]])
 
     # filter in region
-    genes_1mb = gtf.loc[(gtf["seqname"]==to_query_chrom)&(gtf["start"]<region[2])&(gtf["end"]>region[1]),:]
+    genes_1mb = gtf.loc[(gtf["seqname"]==to_query_chrom)&(gtf["start"]<region[2])&(gtf["end"]>region[1]),:].copy()
     
     # extract biotype
     #genes_1mb.loc[:,"gene_biotype"] = genes_1mb[8].str.extract(r'gene_biotype "([\w\.\_-]+)"')
@@ -1299,24 +1298,24 @@ def process_gtf(gtf_path,
     if gtf_gene_name is None:
         if gtf_path=="refseq":
             #genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"').astype("string")
-            genes_1mb.loc[:,"name"] = genes_1mb["gene_id"]
+            genes_1mb["name"] = genes_1mb["gene_id"]
         elif gtf_path =="default" or gtf_path =="ensembl":
             #genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_name "([\w\.-]+)"').astype("string")
-            genes_1mb.loc[:,"name"] = genes_1mb["gene_name"]
+            genes_1mb["name"] = genes_1mb["gene_name"]
         else:
             if "gene_name" in gtf.columns:
-                genes_1mb.loc[:,"name"] = genes_1mb["gene_name"]
+                genes_1mb["name"] = genes_1mb["gene_name"]
             else:
                 #genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"').astype("string")
-                genes_1mb.loc[:,"name"] = genes_1mb["gene_id"]
+                genes_1mb["name"] = genes_1mb["gene_id"]
     else:
         #pattern = r'{} "([\w\.-]+)"'.format(gtf_gene_name)
         #genes_1mb.loc[:,"name"] = genes_1mb[8].str.extract(pattern).astype("string")
-        genes_1mb.loc[:,"name"] = genes_1mb[gtf_gene_name]
+        genes_1mb["name"] = genes_1mb[gtf_gene_name]
 
     # extract gene
     #genes_1mb.loc[:,"gene"] = genes_1mb[8].str.extract(r'gene_id "([\w\.-]+)"')
-    genes_1mb.loc[:,"gene"] = genes_1mb["gene_id"]
+    genes_1mb["gene"] = genes_1mb["gene_id"]
     
 
     # extract protein coding gene

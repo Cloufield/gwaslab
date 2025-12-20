@@ -216,7 +216,10 @@ def summarize(
     for section, stats in self.meta["gwaslab"]["summary"].items():
         for key, value in list(stats.items()):
             if key != "Minimum" and isinstance(value, (int, float, np.number)):
-                stats[f"{key} percentage"] = value / total_variants
+                if total_variants > 0:
+                    stats[f"{key} percentage"] = value / total_variants
+                else:
+                    stats[f"{key} percentage"] = 0.0
 
     # -------------------------------------------------------------------------
     # Additional variant / sample metadata
@@ -327,7 +330,9 @@ def lookupstatus(status):
     for i in uniq_status:
         count = sum(status==i)
         percentage =  np.around(count*100 / len(status),2)
-        description = [status_dic_12[i[:2]] , status_dic_3[i[2]] , status_dic_4[i[3]], status_dic_5[i[4]], status_dic_6[i[5]], status_dic_7[i[6]],count,percentage]
+        # Convert integer status to string for digit extraction
+        i_str = str(int(i)).zfill(7)  # Ensure 7 digits
+        description = [status_dic_12[i_str[:2]] , status_dic_3[i_str[2]] , status_dic_4[i_str[3]], status_dic_5[i_str[4]], status_dic_6[i_str[5]], status_dic_7[i_str[6]],count,percentage]
         status_dic[i] = description
     df = pd.DataFrame.from_dict({i: status_dic[i] 
                            for i in status_dic.keys()},

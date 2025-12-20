@@ -6,7 +6,7 @@ import os
 import re
 import gc
 from gwaslab.bd.bd_common_data import get_format_dict
-from gwaslab.qc.qc_fix_sumstats import sortcolumn
+from gwaslab.qc.qc_fix_sumstats import _sort_column
 from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import quick_convert_datatype
@@ -17,7 +17,7 @@ from gwaslab.g_Log import Log
 
 
 #20221030
-def preformat(sumstats,
+def _preformat(sumstats,
           fmt=None,
           tab_fmt="tsv",
           snpid=None,
@@ -563,7 +563,7 @@ def preformat(sumstats,
         sumstats = process_neaf(sumstats=sumstats,log=log,verbose=verbose)
 
     ## reodering ###################################################################################################  
-    sumstats = sortcolumn(sumstats=sumstats,log=log,verbose=verbose)    
+    sumstats = _sort_column(sumstats=sumstats,log=log,verbose=verbose)    
     sumstats = quick_convert_datatype(sumstats,log=log,verbose=verbose)
     
     # Force create IDs if both rsID and SNPID are absent
@@ -749,9 +749,15 @@ def process_status(sumstats,build,status, log,verbose):
         log.write(" -Initiating a status column: STATUS ...",verbose=verbose)
         #sumstats["STATUS"] = int(build)*(10**5) +99999
         build = _process_build(build,log,verbose)
-        sumstats["STATUS"] = build +"99999"
+        # Create integer status code: build (2 digits) + 99999 (5 digits) = 7 digits
+        sumstats["STATUS"] = int(build + "99999")
 
-    sumstats["STATUS"] = pd.Categorical(sumstats["STATUS"],categories=STATUS_CATEGORIES)
+    # Convert STATUS to integer if it's string (for backward compatibility)
+    if sumstats["STATUS"].dtype == 'object' or sumstats["STATUS"].dtype.name == 'category':
+        sumstats["STATUS"] = sumstats["STATUS"].astype(str).astype(int)
+    elif sumstats["STATUS"].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
+        sumstats["STATUS"] = sumstats["STATUS"].astype(int)
+    
     return sumstats
 
 

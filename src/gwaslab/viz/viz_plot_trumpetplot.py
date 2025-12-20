@@ -13,15 +13,15 @@ from gwaslab.g_Log import Log
 from gwaslab.util.util_in_calculate_power import get_beta
 from gwaslab.util.util_in_calculate_power import get_beta_binary
 from gwaslab.util.util_in_calculate_power import get_power
-from gwaslab.util.util_in_fill_data import filldata
-from gwaslab.util.util_in_get_sig import annogene
+from gwaslab.util.util_in_fill_data import _fill_data
+from gwaslab.util.util_in_get_sig import _anno_gene
 from gwaslab.viz.viz_aux_annotate_plot import annotate_single
 from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_plot_mqqplot import _process_highlight
 
-def plottrumpet(mysumstats,
+def _plot_trumpet(mysumstats,
                 snpid="SNPID",
                 mode="q",
                 chrom="CHR",
@@ -334,7 +334,7 @@ def plottrumpet(mysumstats,
     
     #add maf column #################################################################################################################
     if maf not in sumstats.columns:
-        sumstats = filldata(sumstats,to_fill=["MAF"],verbose=False)
+        sumstats = _fill_data(sumstats,to_fill=["MAF"],verbose=False)
         is_filpped = (sumstats["MAF"] < sumstats[eaf]) & (sumstats[eaf] > 0.5)& (sumstats["MAF"] < 0.5)
         log.write(" -Flipping {} variants...".format(sum(is_filpped)), verbose=verbose)
         sumstats.loc[is_filpped, beta] = -sumstats.loc[is_filpped, beta]
@@ -610,7 +610,7 @@ def plottrumpet(mysumstats,
             variants_toanno = variants_toanno.loc[ variants_toanno[beta].abs() > anno_y,:]
             variants_toanno = variants_toanno.loc[ variants_toanno[maf] < anno_x,:]
             if (variants_toanno.empty is not True) and anno=="GENENAME":
-                variants_toanno = annogene(variants_toanno,
+                variants_toanno = _anno_gene(variants_toanno,
                                     id=snpid,
                                     chrom=chrom,
                                     pos=pos,

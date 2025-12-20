@@ -4,7 +4,7 @@
 
 !!! warning "Color issue"
     - gwaslab<=3.4.39 : the color assigned to each variant is actually the color for the lower LD r2 category. For example, variants with LD>0.8 will be colored with the color for 0.8>LD>0.6.
-    - gwaslab v3.4.40 : the color for regeion_ref_second was assigned based on region_ref LD.
+    - gwaslab v3.4.40 : the color for region_ref_second was assigned based on region_ref LD.
     - Solution: Update to new version (>=3.4.41) of gwaslab.
 
 GWASLab provides functions for creating regional plots.
@@ -31,8 +31,8 @@ Most options are largely the same as [Manhattan plot](https://cloufield.github.i
 | `region_ref`              | `list`       | the SNPID or rsID for reference variants; if None, lead variants will be selected; support up to 7 reference markers (since v3.4.47) | [`None`]                                                                  |
 | `region_grid`             | `boolean`    | If True, plot the grid line                                                                                                          | `False`                                                                   |
 | `region_grid_line`        | `dict`       | parameters for the grid line                                                                                                         | `{"linewidth": 2,"linestyle":"--"}`                                       |
-| `region_lead_grid`        | `string`     | If True, plot a line to show the reference variants                                                                                  | -                                                                         |
-| `region_lead_grid_line`   | `string`     | parameters for the line to show the reference variants                                                                               | {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}          |
+| `region_lead_grid`        | `boolean`    | If True, plot a line to show the reference variants                                                                                  | `True`                                                                    |
+| `region_lead_grid_line`   | `dict`       | parameters for the line to show the reference variants                                                                               | `{"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}`       |
 | `region_ld_threshold`     | `list`       | LD r2 categories                                                                                                                     | `[0.2,0.4,0.6,0.8]`                                                       |
 | `region_ld_colors`        | `list`       | LD r2 categories colors for single reference marker                                                                                  | `["#E4E4E4","#020080","#86CEF9","#24FF02","#FDA400","#FF0000","#FF0000"]` |
 | `region_ld_colors_m`      | `list`       | list of colors used for multiple reference markers (since v3.4.47)                                                                   | `["#E51819","#367EB7","green","#F07818","#AD5691","yellow","purple"]`     |
@@ -48,7 +48,7 @@ Most options are largely the same as [Manhattan plot](https://cloufield.github.i
 
 
 !!! info "Calculation of LD r2"
-    The calculation is based on [Rogers and Huff r implemented in scikit-alle](https://scikit-allel.readthedocs.io/en/stable/stats/ld.html). Variants in refernece vcf file should be biallelic format. Unphased data is acceptable. AF information is not needed. Variant ID is not required. Missing genotype is allowed.
+    The calculation is based on [Rogers and Huff r implemented in scikit-alle](https://scikit-allel.readthedocs.io/en/stable/stats/ld.html). Variants in reference vcf file should be biallelic format. Unphased data is acceptable. AF information is not needed. Variant ID is not required. Missing genotype is allowed.
 
 
 ## Examples

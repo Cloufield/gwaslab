@@ -11,7 +11,7 @@ from gwaslab.g_Log import Log
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.io.io_process_kwargs import _merge_and_sync_dic
 from gwaslab.io.io_process_kwargs import _extract_kwargs
-from gwaslab.util.util_in_get_sig import getsig, annogene
+from gwaslab.util.util_in_get_sig import _get_sig, _anno_gene
 from gwaslab.util.util_in_correct_winnerscurse import wc_correct
 from gwaslab.util.util_in_correct_winnerscurse import wc_correct_test
 from gwaslab.viz.viz_aux_save_figure import save_figure

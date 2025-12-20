@@ -112,7 +112,7 @@ class TestHarmonizeWorkflowWithReferences(unittest.TestCase):
             ref_infer=ref_infer_vcf_path,
             ref_alt_freq="AF",
             maf_threshold=0.40,
-            n_cores=4,
+            threads=4,
             remove=False,
             verbose=True
         )
@@ -177,7 +177,7 @@ class TestFixIDWorkflow(unittest.TestCase):
             ref_infer=ref_infer_vcf_path,
             ref_alt_freq="AF",
             maf_threshold=0.40,
-            n_cores=4,
+            threads=4,
             remove=False,
             verbose=True,
             sweep_mode=True,

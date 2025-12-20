@@ -7,7 +7,7 @@ from gwaslab.g_Log import Log
 from gwaslab.extension import _checking_r_version
 from gwaslab.extension import _check_susie_version
 from gwaslab.util.util_ex_calculate_ldmatrix import _extract_variants_in_locus
-from gwaslab.util.util_in_get_sig import getsig
+from gwaslab.util.util_in_get_sig import _get_sig
 
 def _run_hyprcoloc(  sumstats_multi, 
                      r="Rscript",
@@ -31,7 +31,7 @@ def _run_hyprcoloc(  sumstats_multi,
 
     if loci is None:
         log.write(" -Loci were not provided. All significant loci will be automatically extracted...",verbose=verbose)
-        sig_df = getsig(sumstats_multi,id="SNPID",chrom="CHR",pos="POS",p="P_MIN", build=build)
+        sig_df = _get_sig(sumstats_multi,variant_id="SNPID",chrom="CHR",pos="POS",p="P_MIN", build=build)
     else:
         sig_df = sumstats_multi.loc[sumstats_multi["SNPID"].isin(loci),:]
 

@@ -166,7 +166,8 @@
         "plot_mqq:r",
         "plot_region:r",
         "plot_trumpet:b",
-        "plot_trumpet:q"
+        "plot_trumpet:q",
+        "plot_stacked_mqq"
       ],
       "desc": "Annotation source or column (e.g., 'GENENAME', True, or column name)",
       "default": null,
@@ -183,7 +184,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Enable annotation position adjustment",
       "default": false,
@@ -198,7 +200,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region"
+        "plot_region",
+        "plot_stacked_mqq"
       ],
       "desc": "Mapping from SNPID to custom annotation label",
       "default": {},
@@ -213,7 +216,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Per-annotation positioning options (e.g., left/right)",
       "default": {},
@@ -237,7 +241,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Fixed arm length for annotations",
       "default": null,
@@ -251,7 +256,8 @@
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
-        "plot_mqq:r"
+        "plot_mqq:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Font size for annotation text",
       "default": 9,
@@ -269,7 +275,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Custom GTF path for annotations",
       "default": null,
@@ -284,7 +291,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Height for annotations",
       "default": 1,
@@ -310,7 +318,8 @@
         "plot_region",
         "plot_snp_density",
         "plot_miami2",
-        "plot_manhattan"
+        "plot_manhattan",
+        "plot_stacked_mqq"
       ],
       "desc": "Default styling kwargs for annotations",
       "default": {},
@@ -324,7 +333,8 @@
         "plot_region",
         "plot_snp_density",
         "plot_miami2",
-        "plot_manhattan"
+        "plot_manhattan",
+        "plot_stacked_mqq"
       ],
       "desc": "Per-SNP styling kwargs for annotations",
       "default": {},
@@ -341,7 +351,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Maximum iterations for text repulsion algorithm",
       "default": 100,
@@ -390,7 +401,8 @@
         "plot_mqq:qqm",
         "plot_region",
         "plot_snp_density:b",
-        "plot_snp_density"
+        "plot_snp_density",
+        "plot_stacked_mqq"
       ],
       "desc": "Set of variant IDs to annotate",
       "default": [],
@@ -405,7 +417,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Annotation source backend (e.g., 'ensembl', 'refseq')",
       "default": "ensembl",
@@ -423,7 +436,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Annotation style ('right', 'tight', 'expand')",
       "default": "right",
@@ -451,7 +465,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "X-axis shift applied to annotations",
       "default": null,
@@ -476,7 +491,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Offset for annotation arms",
       "default": null,
@@ -491,7 +507,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Scaling factor for arm length",
       "default": 1,
@@ -509,7 +526,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Per-annotation arm scaling dict",
       "default": {},
@@ -524,7 +542,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Arrow styling kwargs for annotations",
       "default": {},
@@ -691,7 +710,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Colorbar font size",
       "default": 12,
@@ -1348,6 +1368,9 @@
             15,
             15
           ],
+          "dpi": 200
+        },
+        "plot_stacked_mqq": {
           "dpi": 200
         }
       },
@@ -2239,6 +2262,10 @@
         "plot_mqq:mqq": [
           5,
           20
+        ],
+        "plot_miami2": [
+          5,
+          20
         ]
       },
       "add_to_docstring": false
@@ -2300,7 +2327,8 @@
         "plot_mqq:qqm",
         "plot_mqq:r",
         "plot_trumpet:b",
-        "plot_trumpet:q"
+        "plot_trumpet:q",
+        "plot_stacked_mqq"
       ],
       "desc": "Plotting mode",
       "ctx_desc": {
@@ -2311,7 +2339,8 @@
       "default": null,
       "ctx_defaults": {
         "plot_trumpet:q": "q",
-        "plot_trumpet:b": "b"
+        "plot_trumpet:b": "b",
+        "plot_stacked_mqq":"r"
       },
       "add_to_docstring": false
     },
@@ -2873,10 +2902,14 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Annotation bbox kwargs for region",
-      "default": null,
+      "default": {
+          "ec": "None",
+          "fc": "None"
+        },
       "ctx_defaults": {},
       "add_to_docstring": false
     },
@@ -2918,7 +2951,8 @@
         "plot_mqq:mqq",
         "plot_mqq:qqm",
         "plot_mqq:r",
-        "plot_region:r"
+        "plot_region:r",
+        "plot_stacked_mqq"
       ],
       "desc": "Grid line style for regional plot",
       "default": {

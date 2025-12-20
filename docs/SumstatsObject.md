@@ -71,7 +71,7 @@ All other columns and options are optional.
 | `snpr2`     | `string`              | column name for proportion of phenotypic variance explained by each variant                                                                                                                         | `SNPR2`                          |
 | `maf`       | `string`              | minor allele frequency column header                                                                                                                                                                | `MAF`                            |
 | `f`         | `string`              | F statistics column header                                                                                                                                                                          | `F`                              |
-| `status`    | `string`              | status code column name. GWASLab uses a 7-digit vairant status code. For details, please check status code page.                                                                                    | `STATUS`                         |
+| `status`    | `string`              | status code column name. GWASLab uses a 7-digit variant status code. For details, please check status code page.                                                                                    | `STATUS`                         |
 | `verbose`   | `boolean`             | if True, print log.                                                                                                                                                                                 | -                                |
 | `build`     | `string`              | genome build. `19` for hg19, `38` for hg38 and `99` for unknown.                                                                                                                                    | The first two digits of `STATUS` |
 | `**arg `    | `string`              | additional parameters for [pd.read_table()](https://pandas.pydata.org/docs/reference/api/pandas.read_table.html) function. Some common options include : `sep`,`nrows`, `skiprows` and `na_values`. | -                                |
@@ -179,7 +179,15 @@ Please check [GWASLab - Format](https://cloufield.github.io/gwaslab/Format/) for
 
 ## Saving half-finished Sumstats Object
 
-If the pipeline is very long, and you need to temporarily save the Sumstats Object, you can use the `.dump_pickle()` method to temporarily save the Sumstats Object.
+If the pipeline is very long, and you need to temporarily save the Sumstats Object, you can use the `.to_pickle()` method (recommended) or the `gl.dump_pickle()` function to temporarily save the Sumstats Object.
+
+```python
+# Recommended method (object method)
+mysumstats.to_pickle("./mysumstats.pickle", overwrite=True)
+
+# Alternative method (standalone function)
+gl.dump_pickle(mysumstats, "./mysumstats.pickle", overwrite=True)
+```
 
 Please check [GWASLab - Pickle](https://cloufield.github.io/gwaslab/Pickle/) for more details.
 

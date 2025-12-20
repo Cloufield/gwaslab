@@ -23,34 +23,34 @@ from gwaslab.g_meta_update import _update_meta
 from gwaslab.qc.qc_build import _set_build
 # ----- QC: Fix Sumstats -----
 from gwaslab.qc.qc_fix_sumstats import (
-    fixallele,
-    fixchr,
-    fixID,
-    fixpos,
-    flipallelestats,
-    flipSNPID,
-    parallelnormalizeallele,
-    parallelizeliftovervariant,
-    removedup,
-    sortcolumn,
-    sortcoordinate,
-    stripSNPID,
+    _fix_allele,
+    _fix_chr,
+    _fix_ID,
+    _fix_pos,
+    _flip_allele_stats,
+    _flip_SNPID,
+    _parallelize_normalize_allele,
+    _parallelize_liftover_variant,
+    _remove_dup,
+    _sort_column,
+    _sort_coordinate,
+    _strip_SNPID,
     _process_build
 )
 from gwaslab.qc.qc_sanity_check import (
-    sanitycheckstats,
+    _sanity_check_stats,
     _check_data_consistency,
 )
 # ----- Harmonization -----
 from gwaslab.hm.hm_harmonize_sumstats import (
-    checkref,
-    oldcheckref,
-    parallelecheckaf,
-    paralleleinferaf,
-    parallelinferstrand,
-    parallelizeassignrsid,
-    parallelrsidtochrpos,
-    rsidtochrpos,
+    _check_ref,
+    _old_check_ref,
+    _parallelize_check_af,
+    _parallelize_infer_af,
+    _parallelize_infer_strand,
+    _parallelize_assign_rsid,
+    _parallelize_rsid_to_chrpos,
+    _rsid_to_chrpos,
     _paralleleinferafwithmaf,
 )
 
@@ -61,13 +61,13 @@ from gwaslab.hm.hm_casting import (
 
 # ----- Utility: Filtering -----
 from gwaslab.util.util_in_filter_value import (
-    filterin,
-    filterout,
-    filterregionin,
-    filterregionout,
-    filtervalues,
-    inferbuild,
-    sampling,
+    _filter_in,
+    _filter_out,
+    _filter_region_in,
+    _filter_region_out,
+    _filter_values,
+    _infer_build,
+    _sampling,
     _exclude_hla,
     _filter_indel,
     _filter_palindromic,
@@ -81,28 +81,28 @@ from gwaslab.util.util_in_filter_value import (
 )
 
 # ----- Utility: Calculation -----
-from gwaslab.util.util_in_calculate_gc import lambdaGC
+from gwaslab.util.util_in_calculate_gc import _lambda_GC
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
 from gwaslab.util.util_in_estimate_ess import _get_ess
 from gwaslab.util.util_in_get_density import (
-    assigndensity,
-    getsignaldensity,
-    getsignaldensity2,
+    _assign_density,
+    _get_signal_density,
+    _get_signal_density2,
 )
 from gwaslab.util.util_in_get_sig import (
-    annogene,
-    getnovel,
-    getsig,
-    gettop,
+    _anno_gene,
+    _get_novel,
+    _get_sig,
+    _get_top,
     _check_cis,
     _check_novel_set,
 )
-from gwaslab.util.util_in_fill_data import filldata
+from gwaslab.util.util_in_fill_data import _fill_data
 from gwaslab.view.view_sumstats import _view_sumstats
 from gwaslab.util.util_ex_phewwas import _extract_associations
 
 # ----- Utility: LDSC / PRS / LD -----
-from gwaslab.util.util_ex_calculate_ldmatrix import tofinemapping
+from gwaslab.util.util_ex_calculate_ldmatrix import _to_finemapping
 from gwaslab.util.util_ex_calculate_prs import _calculate_prs
 from gwaslab.util.util_ex_infer_ancestry import _infer_ancestry
 from gwaslab.util.util_ex_ldproxyfinder import _extract_ld_proxy
@@ -119,7 +119,7 @@ from gwaslab.util.util_ex_run_scdrs import _run_scdrs
 from gwaslab.util.util_ex_run_susie import _get_cs_lead, _run_susie_rss
 
 # ----- Utility: Fine-mapping ABF -----
-from gwaslab.util.util_abf_finemapping import abf_finemapping, make_cs
+from gwaslab.util.util_abf_finemapping import _abf_finemapping, _make_cs
 
 # ----- Base Data (Reference Panels / Common Data) -----
 from gwaslab.bd.bd_common_data import (
@@ -130,7 +130,7 @@ from gwaslab.bd.bd_common_data import (
     get_high_ld,
     get_number_to_chr,
 )
-from gwaslab.bd.bd_get_hapmap3 import gethapmap3
+from gwaslab.bd.bd_get_hapmap3 import _get_hapmap3
 from gwaslab.bd.bd_path_manager import _path
 
 # ----- Visualization -----
@@ -139,19 +139,19 @@ from gwaslab.viz.viz_plot_compare_af import plotdaf
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
 from gwaslab.viz.viz_plot_density import _process_density
 from gwaslab.viz.viz_plot_effect import _plot_effect
-from gwaslab.viz.viz_plot_mqqplot import mqqplot
+from gwaslab.viz.viz_plot_mqqplot import _mqqplot
 from gwaslab.viz.viz_plot_phe_heatmap import _gwheatmap
 from gwaslab.viz.viz_plot_qqplot import _plot_qq
 from gwaslab.viz.viz_plot_regional2 import _plot_regional
-from gwaslab.viz.viz_plot_trumpetplot import plottrumpet
+from gwaslab.viz.viz_plot_trumpetplot import _plot_trumpet
 from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
 # ----- IO: Reading / Writing -----
-from gwaslab.io.io_load_ld import tofinemapping_using_ld
-from gwaslab.io.io_preformat_input import preformat
+from gwaslab.io.io_load_ld import _to_finemapping_using_ld
+from gwaslab.io.io_preformat_input import _preformat
 from gwaslab.io.io_read_pipcs import _read_pipcs
 from gwaslab.io.io_to_formats import _to_format
-from gwaslab.io.io_to_pickle import _offload, _reload
+from gwaslab.io.io_to_pickle import _offload, _reload, dump_pickle
 from gwaslab.io.io_process_kwargs import remove_overlapping_kwargs
 from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
 from gwaslab.hm.hm_assign_rsid import _assign_rsid
@@ -163,7 +163,7 @@ from datetime import datetime
 #20220309
 class Sumstats():
     
-    @add_doc(preformat)
+    @add_doc(_preformat)
     def __init__(self,
              sumstats=None,
              fmt=None,
@@ -229,7 +229,7 @@ class Sumstats():
         self.data = pd.DataFrame()
         
         #preformat the data
-        self.data  = preformat(
+        self.data  = _preformat(
           sumstats=sumstats,
           fmt=fmt,
           tab_fmt = tab_fmt,
@@ -349,8 +349,11 @@ class Sumstats():
         return len(self.data)
         
     def __getattr__(self, name):
+        # Use object.__getattribute__ to access self.data directly without triggering __getattr__ again
+        # This prevents infinite recursion during pickle loading when self.data might not be initialized yet
         try:
-            return getattr(self.data, name)
+            data = object.__getattribute__(self, 'data')
+            return getattr(data, name)
         except AttributeError:
             raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
     
@@ -380,18 +383,18 @@ class Sumstats():
         self.data, self.meta["gwaslab"]["genome_build"] = _set_build(self.data, build=build, log=self.log,verbose=verbose)
         gc.collect()
     
-    @add_doc(inferbuild)
+    @add_doc(_infer_build)
     def infer_build(self,verbose=True,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","verbose"})
-        self.data, self.meta["gwaslab"]["genome_build"] = inferbuild(self.data,log=self.log,verbose=verbose,**kwargs)
+        self.data, self.meta["gwaslab"]["genome_build"] = _infer_build(self.data,log=self.log,verbose=verbose,**kwargs)
         self.build = self.meta["gwaslab"]["genome_build"]
 
-    @add_doc(parallelizeliftovervariant)
+    @add_doc(_parallelize_liftover_variant)
     def liftover(self,to_build, from_build=None,**kwargs):
         if from_build is None:
             from_build = self.build
         kwargs = remove_overlapping_kwargs(kwargs,{"from_build","to_build","log"})
-        self.data = parallelizeliftovervariant(self.data,from_build=from_build, to_build=to_build, log=self.log,**kwargs)
+        self.data = _parallelize_liftover_variant(self.data,from_build=from_build, to_build=to_build, log=self.log,**kwargs)
         self.meta["is_sorted"] = False
         self.meta["is_harmonised"] = False
         self.meta["gwaslab"]["genome_build"]=to_build
@@ -403,16 +406,16 @@ class Sumstats():
     def basic_check(self,
                     remove=False,
                     remove_dup=False,
-                    n_cores=1,
-                    fixid_kwargs={},
-                    removedup_kwargs={},
-                    fixchr_kwargs={},
-                    fixpos_kwargs={},
-                    fixallele_kwargs={},
-                    sanitycheckstats_kwargs={},
-                    consistencycheck_kwargs={},
+                    threads=1,
+                    fix_id_kwargs={},
+                    remove_dup_kwargs={},
+                    fix_chr_kwargs={},
+                    fix_pos_kwargs={},
+                    fix_allele_kwargs={},
+                    sanity_check_stats_kwargs={},
+                    consistency_check_kwargs={},
                     normalize=True,
-                    normalizeallele_kwargs={},
+                    normalize_allele_kwargs={},
                     verbose=True):
         """
         All-in-one function for Sumstats quality control (QC), which is a wrapper of separate functions including:
@@ -426,28 +429,28 @@ class Sumstats():
         Parameters
         ----------
         remove : bool, optional
-            Whether to remove bad quality variants detected in fixchr, fixpos, and fixallele.
+            Whether to remove bad quality variants detected in _fix_chr, _fix_pos, and _fix_allele.
         remove_dup : bool, optional
             Whether to remove duplicated or multi-allelic variants using remove_dup.
-        n_cores : int, optional
-            Number of cores to use for parallel processing.
-        fixid_kwargs : dict, optional
+        threads : int, optional
+            Number of threads to use for parallel processing.
+        fix_id_kwargs : dict, optional
             Keyword arguments passed to `fix_id`.
-        removedup_kwargs : dict, optional
+        remove_dup_kwargs : dict, optional
             Keyword arguments passed to `remove_dup`.
-        fixchr_kwargs : dict, optional
+        fix_chr_kwargs : dict, optional
             Keyword arguments passed to `fix_chr`.
-        fixpos_kwargs : dict, optional
+        fix_pos_kwargs : dict, optional
             Keyword arguments passed to `fix_pos`.
-        fixallele_kwargs : dict, optional
+        fix_allele_kwargs : dict, optional
             Keyword arguments passed to `fix_allele`.
-        sanitycheckstats_kwargs : dict, optional
+        sanity_check_stats_kwargs : dict, optional
             Keyword arguments passed to `check_sanity`.
-        consistencycheck_kwargs : dict, optional
+        consistency_check_kwargs : dict, optional
             Keyword arguments passed to `check_data_consistency`.
         normalize : bool, optional
             Whether to perform indel normalization.
-        normalizeallele_kwargs : dict, optional
+        normalize_allele_kwargs : dict, optional
             Keyword arguments passed to `normalize_allele`.
         verbose : bool, optional
             Whether to print progress information.
@@ -457,43 +460,43 @@ class Sumstats():
         ###############################################
         # try to fix data without dropping any information 
         
-        fixid_kwargs = remove_overlapping_kwargs(fixid_kwargs,{"log", "remove", "verbose"})
-        self.data = fixID(self.data,log=self.log,verbose=verbose, **fixid_kwargs)
-        _update_qc_step(self, "id", fixid_kwargs, True)
+        fix_id_kwargs = remove_overlapping_kwargs(fix_id_kwargs,{"log", "remove", "verbose"})
+        self.data = _fix_ID(self.data,log=self.log,verbose=verbose, **fix_id_kwargs)
+        _update_qc_step(self, "id", fix_id_kwargs, True)
         
-        fixchr_kwargs = remove_overlapping_kwargs(fixchr_kwargs,{"log", "remove", "verbose"})
-        self.data = fixchr(self.data,log=self.log,remove=remove,verbose=verbose,**fixchr_kwargs)
-        _update_qc_step(self, "chr", fixchr_kwargs, True)
+        fix_chr_kwargs = remove_overlapping_kwargs(fix_chr_kwargs,{"log", "remove", "verbose"})
+        self.data = _fix_chr(self.data,log=self.log,remove=remove,verbose=verbose,**fix_chr_kwargs)
+        _update_qc_step(self, "chr", fix_chr_kwargs, True)
         
-        fixpos_kwargs = remove_overlapping_kwargs(fixpos_kwargs,{"log", "remove", "verbose"})
-        self.data = fixpos(self.data,log=self.log,remove=remove,verbose=verbose,**fixpos_kwargs)
-        _update_qc_step(self, "pos", fixpos_kwargs, True)
+        fix_pos_kwargs = remove_overlapping_kwargs(fix_pos_kwargs,{"log", "remove", "verbose"})
+        self.data = _fix_pos(self.data,log=self.log,remove=remove,verbose=verbose,**fix_pos_kwargs)
+        _update_qc_step(self, "pos", fix_pos_kwargs, True)
         
-        fixallele_kwargs = remove_overlapping_kwargs(fixallele_kwargs,{"log", "remove", "verbose"})
-        self.data = fixallele(self.data,log=self.log, remove=remove, verbose=verbose,**fixallele_kwargs)
-        _update_qc_step(self, "allele", fixallele_kwargs, True)
+        fix_allele_kwargs = remove_overlapping_kwargs(fix_allele_kwargs,{"log", "remove", "verbose"})
+        self.data = _fix_allele(self.data,log=self.log, remove=remove, verbose=verbose,**fix_allele_kwargs)
+        _update_qc_step(self, "allele", fix_allele_kwargs, True)
         
-        sanitycheckstats_kwargs = remove_overlapping_kwargs(sanitycheckstats_kwargs,{"log", "remove", "verbose"})
-        self.data = sanitycheckstats(self.data,log=self.log,verbose=verbose,**sanitycheckstats_kwargs)
-        _update_qc_step(self, "sanity", sanitycheckstats_kwargs, True)
+        sanity_check_stats_kwargs = remove_overlapping_kwargs(sanity_check_stats_kwargs,{"log", "remove", "verbose"})
+        self.data = _sanity_check_stats(self.data,log=self.log,verbose=verbose,**sanity_check_stats_kwargs)
+        _update_qc_step(self, "sanity", sanity_check_stats_kwargs, True)
         
-        consistencycheck_kwargs = remove_overlapping_kwargs(consistencycheck_kwargs,{"log", "remove", "verbose"})
-        _check_data_consistency(self.data,log=self.log,verbose=verbose,**consistencycheck_kwargs)
-        _update_qc_step(self, "consistency", consistencycheck_kwargs, True)
+        consistency_check_kwargs = remove_overlapping_kwargs(consistency_check_kwargs,{"log", "remove", "verbose"})
+        _check_data_consistency(self.data,log=self.log,verbose=verbose,**consistency_check_kwargs)
+        _update_qc_step(self, "consistency", consistency_check_kwargs, True)
         
         if normalize is True:
-            normalizeallele_kwargs = remove_overlapping_kwargs(normalizeallele_kwargs,{"log", "remove", "verbose","n_cores"})
-            self.data = parallelnormalizeallele(self.data,n_cores=n_cores,verbose=verbose,log=self.log,**normalizeallele_kwargs)
-            _update_qc_step(self, "normalize", normalizeallele_kwargs, True)
+            normalize_allele_kwargs = remove_overlapping_kwargs(normalize_allele_kwargs,{"log", "remove", "verbose","threads"})
+            self.data = _parallelize_normalize_allele(self.data,threads=threads,verbose=verbose,log=self.log,**normalize_allele_kwargs)
+            _update_qc_step(self, "normalize", normalize_allele_kwargs, True)
         
         if remove_dup is True:
-            removedup_kwargs = remove_overlapping_kwargs(removedup_kwargs,{"log", "remove", "verbose"})
-            self.data = removedup(self.data,log=self.log,verbose=verbose,**removedup_kwargs)
-            _update_qc_step(self, "remove_dup", removedup_kwargs, True)
+            remove_dup_kwargs = remove_overlapping_kwargs(remove_dup_kwargs,{"log", "remove", "verbose"})
+            self.data = _remove_dup(self.data,log=self.log,verbose=verbose,**remove_dup_kwargs)
+            _update_qc_step(self, "remove_dup", remove_dup_kwargs, True)
         
-        self.data = sortcoordinate(self.data,verbose=verbose,log=self.log)
+        self.data = _sort_coordinate(self.data,verbose=verbose,log=self.log)
         _update_qc_step(self, "sort_coord", {}, True)
-        self.data = sortcolumn(self.data,verbose=verbose,log=self.log)
+        self.data = _sort_column(self.data,verbose=verbose,log=self.log)
         _update_qc_step(self, "sort_column", {}, True)
         
         self.meta["is_sorted"] = True
@@ -513,20 +516,20 @@ class Sumstats():
               ref_maf_threshold = 0.5,
               maf_threshold=0.40,
               ref_seq_mode="v",
-              n_cores=1,
+              threads=1,
               remove=False,
-              checkref_kwargs={},
-              removedup_kwargs={},
-              assignrsid_kwargs={},
-              inferstrand_kwargs={},
-              flipallelestats_kwargs={},
+              check_ref_kwargs={},
+              remove_dup_kwargs={},
+              assign_rsid_kwargs={},
+              infer_strand_kwargs={},
+              flip_allele_stats_kwargs={},
               liftover_kwargs={},
-              fixid_kwargs={},
-              fixchr_kwargs={},
-              fixpos_kwargs={},
-              fixallele_kwargs={},
-              sanitycheckstats_kwargs={},
-              normalizeallele_kwargs={},
+              fix_id_kwargs={},
+              fix_chr_kwargs={},
+              fix_pos_kwargs={},
+              fix_allele_kwargs={},
+              sanity_check_stats_kwargs={},
+              normalize_allele_kwargs={},
               verbose=True,
               sweep_mode=False
               ):
@@ -540,7 +543,7 @@ class Sumstats():
         Parameters
         ----------
         basic_check : bool, optional
-            Whether to run basic QC pipeline (fixID, fixchr, fixpos, etc.)
+            Whether to run basic QC pipeline (_fix_ID, _fix_chr, _fix_pos, etc.)
         ref_seq : str or None
             Full path to reference sequence file in fasta format for allele flipping
         ref_rsid_tsv : str or None
@@ -557,31 +560,31 @@ class Sumstats():
             MAF threshold (applied to sumstats) for strand inference
         ref_seq_mode : {'v', 's'}, optional
             Reference sequence processing mode ('v' for vectorized, 's' for sequential)
-        n_cores : int, optional
-            Number of cores/threads for parallel processing
+        threads : int, optional
+            Number of threads for parallel processing
         remove : bool, optional
             Whether to remove bad variants during QC
-        checkref_kwargs : dict, optional
+        check_ref_kwargs : dict, optional
             Arguments passed to check_ref
-        removedup_kwargs : dict, optional
+        remove_dup_kwargs : dict, optional
             Arguments passed to remove_dup
-        assignrsid_kwargs : dict, optional
+        assign_rsid_kwargs : dict, optional
             Arguments passed to assign_rsid
-        inferstrand_kwargs : dict, optional
+        infer_strand_kwargs : dict, optional
             Arguments passed to infer_strand
-        flipallelestats_kwargs : dict, optional
+        flip_allele_stats_kwargs : dict, optional
             Arguments passed to flip_allele_stats
-        fixid_kwargs : dict, optional
+        fix_id_kwargs : dict, optional
             Arguments passed to fix_ID
-        fixchr_kwargs : dict, optional
+        fix_chr_kwargs : dict, optional
             Arguments passed to fix_chr
-        fixpos_kwargs : dict, optional
+        fix_pos_kwargs : dict, optional
             Arguments passed to fix_pos
-        fixallele_kwargs : dict, optional
+        fix_allele_kwargs : dict, optional
             Arguments passed to fix_allele
-        sanitycheckstats_kwargs : dict, optional
+        sanity_check_stats_kwargs : dict, optional
             Arguments passed to check_sanity
-        normalizeallele_kwargs : dict, optional
+        normalize_allele_kwargs : dict, optional
             Arguments passed to normalize_allele
         verbose : bool, optional
             Whether to print progress information.
@@ -592,29 +595,29 @@ class Sumstats():
         # prepare status helpers
 
         if basic_check is True:
-            fixid_kwargs = remove_overlapping_kwargs(fixid_kwargs,{"log", "remove", "verbose"})
-            self.data = fixID(self.data,log=self.log,verbose=verbose,**fixid_kwargs)
-            _update_qc_step(self, "id", fixid_kwargs, True)
-            fixchr_kwargs = remove_overlapping_kwargs(fixchr_kwargs,{"log", "remove", "verbose"})
-            self.data = fixchr(self.data,remove=remove,log=self.log,verbose=verbose,**fixchr_kwargs)
-            _update_qc_step(self, "chr", fixchr_kwargs, True)
-            fixpos_kwargs = remove_overlapping_kwargs(fixpos_kwargs,{"log", "remove", "verbose"})
-            self.data = fixpos(self.data,remove=remove,log=self.log,verbose=verbose,**fixpos_kwargs)
-            _update_qc_step(self, "pos", fixpos_kwargs, True)
-            fixallele_kwargs = remove_overlapping_kwargs(fixallele_kwargs,{"log", "remove", "verbose"})
-            self.data = fixallele(self.data,log=self.log,verbose=verbose,**fixallele_kwargs)
-            _update_qc_step(self, "allele", fixallele_kwargs, True)
-            sanitycheckstats_kwargs = remove_overlapping_kwargs(sanitycheckstats_kwargs,{"log", "remove", "verbose"})
-            self.data = sanitycheckstats(self.data,log=self.log,verbose=verbose,**sanitycheckstats_kwargs)
-            _update_qc_step(self, "sanity", sanitycheckstats_kwargs, True)
-            normalizeallele_kwargs = remove_overlapping_kwargs(normalizeallele_kwargs,{"log", "remove", "verbose","n_cores"})
-            self.data = parallelnormalizeallele(self.data,log=self.log,n_cores=n_cores,verbose=verbose,**normalizeallele_kwargs)
-            _update_qc_step(self, "normalize", normalizeallele_kwargs, True)
+            fix_id_kwargs = remove_overlapping_kwargs(fix_id_kwargs,{"log", "remove", "verbose"})
+            self.data = _fix_ID(self.data,log=self.log,verbose=verbose,**fix_id_kwargs)
+            _update_qc_step(self, "id", fix_id_kwargs, True)
+            fix_chr_kwargs = remove_overlapping_kwargs(fix_chr_kwargs,{"log", "remove", "verbose"})
+            self.data = _fix_chr(self.data,remove=remove,log=self.log,verbose=verbose,**fix_chr_kwargs)
+            _update_qc_step(self, "chr", fix_chr_kwargs, True)
+            fix_pos_kwargs = remove_overlapping_kwargs(fix_pos_kwargs,{"log", "remove", "verbose"})
+            self.data = _fix_pos(self.data,remove=remove,log=self.log,verbose=verbose,**fix_pos_kwargs)
+            _update_qc_step(self, "pos", fix_pos_kwargs, True)
+            fix_allele_kwargs = remove_overlapping_kwargs(fix_allele_kwargs,{"log", "remove", "verbose"})
+            self.data = _fix_allele(self.data,log=self.log,verbose=verbose,**fix_allele_kwargs)
+            _update_qc_step(self, "allele", fix_allele_kwargs, True)
+            sanity_check_stats_kwargs = remove_overlapping_kwargs(sanity_check_stats_kwargs,{"log", "remove", "verbose"})
+            self.data = _sanity_check_stats(self.data,log=self.log,verbose=verbose,**sanity_check_stats_kwargs)
+            _update_qc_step(self, "sanity", sanity_check_stats_kwargs, True)
+            normalize_allele_kwargs = remove_overlapping_kwargs(normalize_allele_kwargs,{"log", "remove", "verbose","threads"})
+            self.data = _parallelize_normalize_allele(self.data,log=self.log,threads=threads,verbose=verbose,**normalize_allele_kwargs)
+            _update_qc_step(self, "normalize", normalize_allele_kwargs, True)
             
-            self.data = sortcolumn(self.data,log=self.log,verbose=verbose)
+            self.data = _sort_column(self.data,log=self.log,verbose=verbose)
             _update_qc_step(self, "sort_column", {}, True)
 
-            self.data = sortcoordinate(self.data,log=self.log,verbose=verbose)
+            self.data = _sort_coordinate(self.data,log=self.log,verbose=verbose)
             _update_qc_step(self, "sort_coord", {}, True)
 
             _set_qc_status(self, saved_kwargs)
@@ -636,87 +639,87 @@ class Sumstats():
         if ref_seq is not None:
 
             if ref_seq_mode=="v":
-                checkref_kwargs = remove_overlapping_kwargs(checkref_kwargs,{"log", "ref_seq"})
-                self.data = checkref(self.data,ref_seq,log=self.log,**checkref_kwargs)
+                check_ref_kwargs = remove_overlapping_kwargs(check_ref_kwargs,{"log", "ref_seq"})
+                self.data = _check_ref(self.data,ref_seq,log=self.log,**check_ref_kwargs)
             elif ref_seq_mode=="s":
-                checkref_kwargs = remove_overlapping_kwargs(checkref_kwargs,{"log", "ref_seq"})
-                self.data = oldcheckref(self.data,ref_seq,log=self.log,**checkref_kwargs)
+                check_ref_kwargs = remove_overlapping_kwargs(check_ref_kwargs,{"log", "ref_seq"})
+                self.data = _old_check_ref(self.data,ref_seq,log=self.log,**check_ref_kwargs)
             else:
                 raise ValueError("ref_seq_mode should be 'v' (vectorized, faster) or 's' (sequential, slower)")
             
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
-            flipallelestats_kwargs = remove_overlapping_kwargs(flipallelestats_kwargs,{"log","verbose"})
-            self.data = flipallelestats(self.data,log=self.log,verbose=verbose,**flipallelestats_kwargs)
-            _update_harmonize_step(self, "check_ref", checkref_kwargs, True)
-            _update_harmonize_step(self, "flip_allele_stats", flipallelestats_kwargs, True)
+            flip_allele_stats_kwargs = remove_overlapping_kwargs(flip_allele_stats_kwargs,{"log","verbose"})
+            self.data = _flip_allele_stats(self.data,log=self.log,verbose=verbose,**flip_allele_stats_kwargs)
+            _update_harmonize_step(self, "check_ref", check_ref_kwargs, True)
+            _update_harmonize_step(self, "flip_allele_stats", flip_allele_stats_kwargs, True)
             
             gc.collect()
             
         if ref_infer is not None: 
-            inferstrand_kwargs = remove_overlapping_kwargs(inferstrand_kwargs,{"log","verbose","ref_infer","ref_alt_freq","maf_threshold","ref_maf_threshold","n_cores","path","assign_cols"})
+            infer_strand_kwargs = remove_overlapping_kwargs(infer_strand_kwargs,{"log","verbose","ref_infer","ref_alt_freq","maf_threshold","ref_maf_threshold","threads","path","assign_cols"})
             if sweep_mode:
                 self.data = _infer_strand_with_annotation(self.data, 
                                                         path = ref_infer, 
                                                         assign_cols = ref_alt_freq, 
-                                                        threads=n_cores,
+                                                        threads=threads,
                                                         log=self.log,
                                                         verbose=verbose,
-                                                        **inferstrand_kwargs)
+                                                        **infer_strand_kwargs)
             else:
-                self.data= parallelinferstrand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
+                self.data= _parallelize_infer_strand(self.data,ref_infer = ref_infer,ref_alt_freq=ref_alt_freq,
                                                 maf_threshold=maf_threshold, ref_maf_threshold=ref_maf_threshold,
-                                                  n_cores=n_cores,log=self.log,verbose=verbose,**inferstrand_kwargs)
+                                                  threads=threads,log=self.log,verbose=verbose,**infer_strand_kwargs)
 
             self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
-            _update_harmonize_step(self, "infer_strand", inferstrand_kwargs, True)
+            _update_harmonize_step(self, "infer_strand", infer_strand_kwargs, True)
             
-            flipallelestats_kwargs = remove_overlapping_kwargs(flipallelestats_kwargs,{"log","verbose"})
-            self.data =flipallelestats(self.data,log=self.log,verbose=verbose,**flipallelestats_kwargs)
+            flip_allele_stats_kwargs = remove_overlapping_kwargs(flip_allele_stats_kwargs,{"log","verbose"})
+            self.data =_flip_allele_stats(self.data,log=self.log,verbose=verbose,**flip_allele_stats_kwargs)
             
             gc.collect()
             
         if (ref_seq is not None or ref_infer is not None) and (ref_rsid_tsv is not None or ref_rsid_vcf is not None):
 
-            self.data = fixID(self.data, log=self.log, verbose=verbose, **{"fixid":True, "fixsep":True, "overwrite":True})
+            self.data = _fix_ID(self.data, log=self.log, verbose=verbose, **{"fixid":True, "fixsep":True, "overwrite":True})
 
             gc.collect()
         
         #####################################################
         
         if ref_rsid_tsv is not None:
-            assignrsid_kwargs = remove_overlapping_kwargs(assignrsid_kwargs,{"ref_mode","path","n_cores","log","verbose"})
-            self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
-                                                 n_cores=n_cores,log=self.log,verbose=verbose,**assignrsid_kwargs)
+            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","log","verbose"})
+            self.data = _parallelize_assign_rsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",
+                                                 threads=threads,log=self.log,verbose=verbose,**assign_rsid_kwargs)
 
             self.meta["gwaslab"]["references"]["ref_rsid_tsv"] = ref_rsid_tsv
-            _update_harmonize_step(self, "assign_rsid", assignrsid_kwargs, True)
+            _update_harmonize_step(self, "assign_rsid", assign_rsid_kwargs, True)
             gc.collect()
 
         if ref_rsid_vcf is not None:
-            assignrsid_kwargs = remove_overlapping_kwargs(assignrsid_kwargs,{"ref_mode","path","n_cores","log","verbose"})
+            assign_rsid_kwargs = remove_overlapping_kwargs(assign_rsid_kwargs,{"ref_mode","path","threads","log","verbose"})
 
             if sweep_mode:
-                self.data = _assign_rsid(self.data, path = ref_rsid_vcf, threads=n_cores,log=self.log,verbose=verbose,**assignrsid_kwargs)
+                self.data = _assign_rsid(self.data, path = ref_rsid_vcf, threads=threads,log=self.log,verbose=verbose,**assign_rsid_kwargs)
             else:
-                self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
-                                                     n_cores=n_cores,log=self.log,verbose=verbose,**assignrsid_kwargs)   
+                self.data = _parallelize_assign_rsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",
+                                                     threads=threads,log=self.log,verbose=verbose,**assign_rsid_kwargs)   
 
             self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
             
-            _update_harmonize_step(self, "assign_rsid", assignrsid_kwargs, True)
+            _update_harmonize_step(self, "assign_rsid", assign_rsid_kwargs, True)
             gc.collect()
         
         ######################################################    
         if remove is True:
-            removedup_kwargs = remove_overlapping_kwargs(removedup_kwargs,{"log","verbose"})
-            self.data = removedup(self.data,log=self.log,verbose=verbose,**removedup_kwargs)
-            _update_qc_step(self, "remove_dup", removedup_kwargs, True)
+            remove_dup_kwargs = remove_overlapping_kwargs(remove_dup_kwargs,{"log","verbose"})
+            self.data = _remove_dup(self.data,log=self.log,verbose=verbose,**remove_dup_kwargs)
+            _update_qc_step(self, "remove_dup", remove_dup_kwargs, True)
         ################################################ 
         
-        self.data = sortcoordinate(self.data,log=self.log,verbose=verbose)
+        self.data = _sort_coordinate(self.data,log=self.log,verbose=verbose)
         _update_qc_step(self, "sort_coord", {}, True)
         
-        self.data = sortcolumn(self.data,log=self.log,verbose=verbose)
+        self.data = _sort_column(self.data,log=self.log,verbose=verbose)
         _update_qc_step(self, "sort_column", {}, True)
         gc.collect()
         self.meta["is_sorted"] = True
@@ -736,55 +739,55 @@ class Sumstats():
         aligned_data = _align_with_mold(molded_sumstats)
 
         ## flip
-        self.data =flipallelestats(aligned_data, log=self.log)
+        self.data =_flip_allele_stats(aligned_data, log=self.log)
     
     @add_doc(_check_sumstats_qc_status)
     def check_sumstats_qc_status(self):
         return _check_sumstats_qc_status(self)
     ############################################################################################################
     #customizable API to build your own QC pipeline
-    @add_doc(fixID)
+    @add_doc(_fix_ID)
     def fix_id(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = fixID(self.data,log=self.log,**kwargs)
+        self.data = _fix_ID(self.data,log=self.log,**kwargs)
         _update_qc_step(self, "id", kwargs, True)
         return self
-    @add_doc(flipSNPID)
+    @add_doc(_flip_SNPID)
     def flip_snpid(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = flipSNPID(self.data,log=self.log,**kwargs)
-    @add_doc(stripSNPID)
+        self.data = _flip_SNPID(self.data,log=self.log,**kwargs)
+    @add_doc(_strip_SNPID)
     def strip_snpid(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = stripSNPID(self.data,log=self.log,**kwargs)
-    @add_doc(fixchr)
+        self.data = _strip_SNPID(self.data,log=self.log,**kwargs)
+    @add_doc(_fix_chr)
     def fix_chr(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = fixchr(self.data,log=self.log,**kwargs)
+        self.data = _fix_chr(self.data,log=self.log,**kwargs)
         _update_qc_step(self, "chr", kwargs, True)
         return self
-    @add_doc(fixpos)
+    @add_doc(_fix_pos)
     def fix_pos(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = fixpos(self.data,log=self.log,**kwargs)
+        self.data = _fix_pos(self.data,log=self.log,**kwargs)
         _update_qc_step(self, "pos", kwargs, True)
         return self
-    @add_doc(fixallele)
+    @add_doc(_fix_allele)
     def fix_allele(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = fixallele(self.data,log=self.log,**kwargs)
+        self.data = _fix_allele(self.data,log=self.log,**kwargs)
         _update_qc_step(self, "allele", kwargs, True)
         return self
-    @add_doc(removedup)
+    @add_doc(_remove_dup)
     def remove_dup(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = removedup(self.data,log=self.log,**kwargs)
+        self.data = _remove_dup(self.data,log=self.log,**kwargs)
         _update_qc_step(self, "remove_dup", kwargs, True)
         return self
-    @add_doc(sanitycheckstats)
+    @add_doc(_sanity_check_stats)
     def check_sanity(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = sanitycheckstats(self.data,log=self.log,**kwargs)
+        self.data = _sanity_check_stats(self.data,log=self.log,**kwargs)
         _update_qc_step(self, "sanity", kwargs, True)
         return self
     @add_doc(_check_data_consistency)
@@ -795,35 +798,35 @@ class Sumstats():
         return self
     def check_id(self,**kwargs):
         pass
-    @add_doc(checkref)
+    @add_doc(_check_ref)
     def check_ref(self,ref_seq,ref_seq_mode="v",**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_seq"})
         if ref_seq_mode=="v":
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
-            self.data = checkref(self.data,ref_seq,log=self.log,**kwargs)
+            self.data = _check_ref(self.data,ref_seq,log=self.log,**kwargs)
         elif ref_seq_mode=="s":
             self.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
-            self.data = oldcheckref(self.data,ref_seq,log=self.log,**kwargs)            
+            self.data = _old_check_ref(self.data,ref_seq,log=self.log,**kwargs)            
         _update_harmonize_step(self, "check_ref", kwargs, True)
         return self
-    @add_doc(parallelinferstrand)
+    @add_doc(_parallelize_infer_strand)
     def infer_strand(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
         self.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer"] , ref_infer)
-        self.data = parallelinferstrand(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+        self.data = _parallelize_infer_strand(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         _update_harmonize_step(self, "infer_strand", kwargs, True)
         return self
     
-    @add_doc(flipallelestats)
+    @add_doc(_flip_allele_stats)
     def flip_allele_stats(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = flipallelestats(self.data,log=self.log,**kwargs)
+        self.data = _flip_allele_stats(self.data,log=self.log,**kwargs)
         _update_harmonize_step(self, "flip_allele_stats", kwargs, True)
         return self
-    @add_doc(parallelnormalizeallele)
+    @add_doc(_parallelize_normalize_allele)
     def normalize_allele(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = parallelnormalizeallele(self.data,log=self.log,**kwargs)
+        self.data = _parallelize_normalize_allele(self.data,log=self.log,**kwargs)
         _update_qc_step(self, "normalize", kwargs, True)
         return self
 
@@ -841,54 +844,54 @@ class Sumstats():
     def infer_strand2(self,**kwargs):
         self.data = _infer_strand_with_annotation(self.data,**kwargs)
 
-    @add_doc(parallelizeassignrsid)
+    @add_doc(_parallelize_assign_rsid)
     def assign_rsid(self,
                     ref_rsid_tsv=None,
                     ref_rsid_vcf=None,
                     **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"ref_mode","path","log"})
         if ref_rsid_tsv is not None:
-            self.data = parallelizeassignrsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**kwargs)
+            self.data = _parallelize_assign_rsid(self.data,path=ref_rsid_tsv,ref_mode="tsv",log=self.log,**kwargs)
             self.meta["gwaslab"]["references"]["ref_rsid_tsv"] = ref_rsid_tsv
             _update_harmonize_step(self, "assign_rsid", kwargs, True)
         if ref_rsid_vcf is not None:
-            self.data = parallelizeassignrsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**kwargs)   
+            self.data = _parallelize_assign_rsid(self.data,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**kwargs)   
             self.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_rsid_vcf"] , ref_rsid_vcf)
             _update_harmonize_step(self, "assign_rsid", kwargs, True)
         return self
-    @add_doc(rsidtochrpos)
+    @add_doc(_rsid_to_chrpos)
     def rsid_to_chrpos(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = rsidtochrpos(self.data,log=self.log,**kwargs)
+        self.data = _rsid_to_chrpos(self.data,log=self.log,**kwargs)
         return self
-    @add_doc(parallelrsidtochrpos)
+    @add_doc(_parallelize_rsid_to_chrpos)
     def rsid_to_chrpos2(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = parallelrsidtochrpos(self.data,log=self.log,**kwargs)
+        self.data = _parallelize_rsid_to_chrpos(self.data,log=self.log,**kwargs)
         return self
 
     ############################################################################################################
-    @add_doc(sortcoordinate)
+    @add_doc(_sort_coordinate)
     def sort_coordinate(self,**sort_kwargs):
         sort_kwargs = remove_overlapping_kwargs(sort_kwargs,{"log"})
-        self.data = sortcoordinate(self.data,log=self.log,**sort_kwargs)
+        self.data = _sort_coordinate(self.data,log=self.log,**sort_kwargs)
         self.meta["is_sorted"] = True
         _update_qc_step(self, "sort_coord", {}, True)
         return self
 
-    @add_doc(sortcolumn)
+    @add_doc(_sort_column)
     def sort_column(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = sortcolumn(self.data,log=self.log,**kwargs)
+        self.data = _sort_column(self.data,log=self.log,**kwargs)
         _update_qc_step(self, "sort_column", {}, True)
         return self
     
     ############################################################################################################
-    @add_doc(filldata)
+    @add_doc(_fill_data)
     def fill_data(self, verbose=True, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","verbose"})
-        self.data = filldata(self.data, verbose=verbose, log=self.log, **kwargs)
-        self.data = sortcolumn(self.data, verbose=verbose, log=self.log)
+        self.data = _fill_data(self.data, verbose=verbose, log=self.log, **kwargs)
+        self.data = _sort_column(self.data, verbose=verbose, log=self.log)
 
 # utilities ############################################################################################################
     # filter series ######################################################################
@@ -928,55 +931,55 @@ class Sumstats():
         else:
             self.data = _get_flanking_by_id(self.data, snpid, **kwargs)
     
-    @add_doc(filtervalues)
+    @add_doc(_filter_values)
     def filter_value(self, expr, inplace=False, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","expr"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filtervalues(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **kwargs)
+            new_Sumstats_object.data = _filter_values(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **kwargs)
             return new_Sumstats_object
         else:
-            self.data = filtervalues(self.data, expr,log=self.log,**kwargs)
+            self.data = _filter_values(self.data, expr,log=self.log,**kwargs)
     
-    @add_doc(filterout)
+    @add_doc(_filter_out)
     def filter_out(self, inplace=False, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filterout(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
+            new_Sumstats_object.data = _filter_out(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = filterout(self.data,log=self.log,**kwargs)
+            self.data = _filter_out(self.data,log=self.log,**kwargs)
     
-    @add_doc(filterin)
+    @add_doc(_filter_in)
     def filter_in(self, inplace=False, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filterin(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
+            new_Sumstats_object.data = _filter_in(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = filterin(self.data,log=self.log,**kwargs)
+            self.data = _filter_in(self.data,log=self.log,**kwargs)
     
-    @add_doc(filterregionin)
+    @add_doc(_filter_region_in)
     def filter_region_in(self, inplace=False, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filterregionin(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
+            new_Sumstats_object.data = _filter_region_in(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = filterregionin(self.data,log=self.log,**kwargs)
+            self.data = _filter_region_in(self.data,log=self.log,**kwargs)
     
-    @add_doc(filterregionout)
+    @add_doc(_filter_region_out)
     def filter_region_out(self, inplace=False, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filterregionout(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
+            new_Sumstats_object.data = _filter_region_out(new_Sumstats_object.data,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
         else:
-            self.data = filterregionout(self.data,log=self.log,**kwargs)
+            self.data = _filter_region_out(self.data,log=self.log,**kwargs)
     
     @add_doc(_filter_palindromic)
     def filter_palindromic(self, inplace=False, **kwargs):
@@ -1040,24 +1043,24 @@ class Sumstats():
                                                             **kwargs)
         return proxy_variants
     
-    @add_doc(sampling)
+    @add_doc(_sampling)
     def random_variants(self,inplace=False,n=1,p=None,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","n","p"})
         if inplace is True:
-            self.data = sampling(self.data,n=n,p=p,log=self.log,**kwargs)
+            self.data = _sampling(self.data,n=n,p=p,log=self.log,**kwargs)
         else:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**kwargs)
+            new_Sumstats_object.data = _sampling(new_Sumstats_object.data,n=n,p=p,log=new_Sumstats_object.log,**kwargs)
             return new_Sumstats_object
     
-    @add_doc(gethapmap3)
+    @add_doc(_get_hapmap3)
     def filter_hapmap3(self, inplace=False, **kwargs ):
         kwargs = remove_overlapping_kwargs(kwargs,{"build","log"})
         if inplace is True:
-            self.data = gethapmap3(self.data, build=self.build,log=self.log, **kwargs)
+            self.data = _get_hapmap3(self.data, build=self.build,log=self.log, **kwargs)
         else:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = gethapmap3(new_Sumstats_object.data, build=self.build,log=self.log, **kwargs)
+            new_Sumstats_object.data = _get_hapmap3(new_Sumstats_object.data, build=self.build,log=self.log, **kwargs)
             return new_Sumstats_object
     
     @add_doc(_get_region_start_and_end)
@@ -1068,12 +1071,12 @@ class Sumstats():
     
     def check_af(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
-        self.data = parallelecheckaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+        self.data = _parallelize_check_af(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_daf"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_daf"] , ref_infer)
     
     def infer_af(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
-        self.data = paralleleinferaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+        self.data = _parallelize_infer_af(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         self.meta["gwaslab"]["references"]["ref_infer_af"] = ref_infer
         self.meta["gwaslab"]["references"]["ref_infer_af"] = _append_meta_record(self.meta["gwaslab"]["references"]["ref_infer_af"] , ref_infer)
     
@@ -1102,49 +1105,49 @@ class Sumstats():
         fig = _gwheatmap(self.data, **params)
         return fig
     
-    @add_doc(mqqplot)
+    @add_doc(_mqqplot)
     @suppress_display
     def plot_mqq(self, build=None, **kwargs):
         mode = kwargs.get("mode", None)
-        params = self._apply_viz_params(mqqplot, kwargs, key="plot_mqq", mode=mode)
+        params = self._apply_viz_params(_mqqplot, kwargs, key="plot_mqq", mode=mode)
         if "build" not in params:
             params["build"] = self.build
-        plot, log = mqqplot(self.data, **params)
+        plot, log = _mqqplot(self.data, **params)
         return plot
     
-    @add_doc(mqqplot)
+    @add_doc(_mqqplot)
     @suppress_display
     def plot_manhattan(self, build=None, **kwargs):
-        params = self._apply_viz_params(mqqplot, kwargs, key="plot_manhattan")
+        params = self._apply_viz_params(_mqqplot, kwargs, key="plot_manhattan")
         if "build" not in params:
             params["build"] = self.build
-        plot, log = mqqplot(self.data, **params)
+        plot, log = _mqqplot(self.data, **params)
         return plot
     
     @add_doc(_process_density)
     @suppress_display
     def plot_snp_density(self, build=None, **kwargs):
-        plot, log = mqqplot(self.data, **{**self._apply_viz_params(mqqplot, kwargs, key="plot_snp_density", mode="b"), "mode": "b", "build": kwargs.get("build", self.build)})
+        plot, log = _mqqplot(self.data, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_snp_density", mode="b"), "mode": "b", "build": kwargs.get("build", self.build)})
         return plot
     
     @add_doc(_plot_qq)
     @suppress_display
     def plot_qq(self, build=None, **kwargs):
-        plot, log = mqqplot(self.data, **{**self._apply_viz_params(mqqplot, kwargs, key="plot_qq", mode="qq"), "mode": "qq", "build": kwargs.get("build", self.build)})
+        plot, log = _mqqplot(self.data, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_qq", mode="qq"), "mode": "qq", "build": kwargs.get("build", self.build)})
         return plot
     
     @add_doc(_plot_regional)
     @suppress_display
     def plot_region(self, build=None, **kwargs):
-        plot, log = mqqplot(self.data, **{**self._apply_viz_params(mqqplot, kwargs, key="plot_region", mode="r"), "mode": "r", "build": kwargs.get("build", self.build)})
+        plot, log = _mqqplot(self.data, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_region", mode="r"), "mode": "r", "build": kwargs.get("build", self.build)})
         return plot
 
-    @add_doc(plottrumpet)
+    @add_doc(_plot_trumpet)
     @suppress_display
     def plot_trumpet(self, build=None, **kwargs):
-        fig = plottrumpet(
+        fig = _plot_trumpet(
             self.data,
-            **{**self._apply_viz_params(plottrumpet, kwargs, key="plot_trumpet", mode=("b" if kwargs.get("mode") == "b" else "q")),
+            **{**self._apply_viz_params(_plot_trumpet, kwargs, key="plot_trumpet", mode=("b" if kwargs.get("mode") == "b" else "q")),
                "build": kwargs.get("build", self.build)}
         )
         return fig
@@ -1153,10 +1156,10 @@ class Sumstats():
     def plot_effect(self,**kwargs):
         _plot_effect(self.data, **self._apply_viz_params(_plot_effect, kwargs, key="plot_effect"))
 
-    @add_doc(getsig)
+    @add_doc(_get_sig)
     def get_lead(self, gls=False, build=None, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","build"})
-        output = getsig(self.data,
+        output = _get_sig(self.data,
                         log=self.log,
                         build=self.build,
                         **kwargs)
@@ -1169,10 +1172,10 @@ class Sumstats():
             return new_Sumstats_object
         return output
     
-    @add_doc(gettop)
+    @add_doc(_get_top)
     def get_top(self, gls=False, build=None, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","build"})
-        output = gettop(self.data,
+        output = _get_top(self.data,
                         log=self.log,
                         build=self.build,
                         **kwargs)
@@ -1183,7 +1186,7 @@ class Sumstats():
             return new_Sumstats_object
         return output
 
-    @add_doc(getsignaldensity2)
+    @add_doc(_get_signal_density2)
     def get_density(self, sig_list=None, windowsizekb=100,**kwargs):
         
         if "SNPID" in self.data.columns:
@@ -1192,7 +1195,7 @@ class Sumstats():
             id_to_use = "rsID"
         
         if sig_list is None:
-            self.data = getsignaldensity2(self.data,
+            self.data = _get_signal_density2(self.data,
                                                     snpid=id_to_use,
                                                     chrom="CHR",
                                                     pos="POS",
@@ -1200,22 +1203,22 @@ class Sumstats():
                                                     log=self.log)
         else:
             if isinstance(sig_list, pd.DataFrame):
-                self.data["DENSITY"] = assigndensity(self.data,
+                self.data["DENSITY"] = _assign_density(self.data,
                                                     sig_list,
-                                                    id=id_to_use, 
+                                                    variant_id=id_to_use, 
                                                     chrom="CHR", 
                                                     pos="POS", 
                                                     bwindowsizekb=windowsizekb,
                                                     log=self.log)
 
-    @add_doc(getnovel)
+    @add_doc(_get_novel)
     def get_novel(self, **kwargs):
         """ 
-        wrapper for getnovel: 
+        wrapper for _get_novel: 
             gls (boolean): if True, return a new Sumstats object
         """
 
-        output = getnovel(self.data,
+        output = _get_novel(self.data,
                            build=self.meta["gwaslab"]["genome_build"],
                            log=self.log,
                            **kwargs)
@@ -1287,7 +1290,7 @@ class Sumstats():
             id_to_use = "SNPID"
         else:
             id_to_use = "rsID"
-        output = annogene(self.data,
+        output = _anno_gene(self.data,
                            id=id_to_use,
                            chrom="CHR",
                            pos="POS",
@@ -1304,29 +1307,29 @@ class Sumstats():
     def get_ess(self, **kwargs):
         self.data = _get_ess(self.data, log=self.log, **kwargs)
     
-    @add_doc(lambdaGC)
+    @add_doc(_lambda_GC)
     def get_gc(self, mode=None, **kwargs):
         if mode is None:
             if "P" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","P"]],mode="P",**kwargs)
+                output = _lambda_GC(self.data[["CHR","P"]],mode="P",**kwargs)
             elif "Z" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","Z"]],mode="Z",**kwargs)
+                output = _lambda_GC(self.data[["CHR","Z"]],mode="Z",**kwargs)
             elif "CHISQ" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","CHISQ"]],mode="CHISQ",**kwargs)
+                output = _lambda_GC(self.data[["CHR","CHISQ"]],mode="CHISQ",**kwargs)
             elif "MLOG10P" in self.data.columns:
-                output = lambdaGC(self.data[["CHR","MLOG10P"]],mode="MLOG10P",**kwargs)
+                output = _lambda_GC(self.data[["CHR","MLOG10P"]],mode="MLOG10P",**kwargs)
             
             #return scalar
             self.meta["Genomic inflation factor"] = output
             return output    
         else:
-            output = lambdaGC(self.data[["CHR",mode]],mode=mode,**kwargs)
+            output = _lambda_GC(self.data[["CHR",mode]],mode=mode,**kwargs)
             self.meta["Genomic inflation factor"] = output
             return output
         
     def abf_finemapping(self, region=None, chrpos=None, snpid=None,**kwargs):        
-        region_data = abf_finemapping(self.data.copy(),region=region,chrpos=chrpos,snpid=snpid,log=self.log, **kwargs)
-        credible_sets = make_cs(region_data,threshold=0.95,log=self.log)
+        region_data = _abf_finemapping(self.data.copy(),region=region,chrpos=chrpos,snpid=snpid,log=self.log, **kwargs)
+        credible_sets = _make_cs(region_data,threshold=0.95,log=self.log)
         return region_data, credible_sets
         
     def get_ld_matrix_from_vcf(self, **kwargs):
@@ -1336,7 +1339,7 @@ class Sumstats():
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+        insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
         _run_prscs(sst_file = insumstats[["rsID","CHR","POS","EA","NEA","BETA","SE"]], 
                    log=self.log, 
                    **kwargs)
@@ -1359,7 +1362,7 @@ class Sumstats():
         kwargs = remove_overlapping_kwargs(kwargs,{"insumstats","meta","log","verbose"})
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+        insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_h2, self.ldsc_h2_results = _estimate_h2_by_ldsc(insumstats=insumstats, 
                                                                   meta=self.meta,
                                                                   log=self.log, 
@@ -1372,7 +1375,7 @@ class Sumstats():
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
         if get_hm3==True:
-            insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+            insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
         else:
             insumstats = self.data
         ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats,
@@ -1388,7 +1391,7 @@ class Sumstats():
         kwargs = remove_overlapping_kwargs(kwargs,{"insumstats","log","verbose"})
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+        insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_h2_cts  = _estimate_h2_cts_by_ldsc(insumstats=insumstats, 
                                                      log=self.log,
                                                        verbose=verbose, 
@@ -1400,7 +1403,7 @@ class Sumstats():
         kwargs = remove_overlapping_kwargs(kwargs,{"insumstats","meta","log","verbose"})
         if build is None:
             build = self.meta["gwaslab"]["genome_build"]
-        insumstats = gethapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+        insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_partitioned_h2_summary, self.ldsc_partitioned_h2_results  = _estimate_partitioned_h2_by_ldsc(insumstats=insumstats, 
                                                                                                                meta=self.meta,
                                                                                                                log=self.log, 
@@ -1411,11 +1414,11 @@ class Sumstats():
     
     def calculate_ld_matrix(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"study"})
-        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping(self, study = self.meta["gwaslab"]["study_name"],**kwargs)
+        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= _to_finemapping(self, study = self.meta["gwaslab"]["study_name"],**kwargs)
         #self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
     
     def extract_ld_matrix(self,**kwargs):
-        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= tofinemapping_using_ld(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
+        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= _to_finemapping_using_ld(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
 
     def run_susie_rss(self,**kwargs):
         self.pipcs=_run_susie_rss(self, self.finemapping["path"], **kwargs)
@@ -1456,6 +1459,9 @@ class Sumstats():
             build = self.meta["gwaslab"]["genome_build"]
         kwargs = remove_overlapping_kwargs(kwargs,{"log","verbose","meta","build","path"})
         _to_format(self.data, path, log=self.log, verbose=verbose, meta=self.meta, build=build, **kwargs)
+
+    def to_pickle(self, path="~/mysumstats.pickle", overwrite=False):
+        dump_pickle(self, path=path, overwrite=overwrite)
 
 ######################################################################################
     def offload(self):

@@ -153,9 +153,9 @@ def _assign_rsid(
     # ---------------------------
     # STATUS filter (your original logic)
     # ---------------------------
-    standardized_normalized = sumstats["STATUS"].str.match(
-        r"\w\w\w[0][01234]\w\w", case=False, flags=0, na=False
-    )
+    # Match: digit 4 is 0 and digit 5 is 0-4
+    from gwaslab.g_vchange_status import status_match
+    standardized_normalized = status_match(sumstats["STATUS"], 4, [0]) & status_match(sumstats["STATUS"], 5, [0,1,2,3,4])
     to_assign_mask = standardized_normalized.copy()
 
     # ---------------------------

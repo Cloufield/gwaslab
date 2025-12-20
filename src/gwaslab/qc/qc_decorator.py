@@ -84,13 +84,13 @@ def with_logging(start_to_msg,
             ref_fasta = bound_kwargs.arguments.get('ref_fasta', None)
             ref_tsv = bound_kwargs.arguments.get('ref_tsv',None)
             if n_cores is not None:
-                log.write(" -Number of threads/cores to use: {}".format(n_cores))
+                log.write(" -Number of threads/cores to use: {}".format(n_cores), verbose=verbose)
             if ref_vcf is not None:
-                log.write(" -Reference VCF: {}".format(ref_vcf))
+                log.write(" -Reference VCF: {}".format(ref_vcf), verbose=verbose)
             if ref_fasta is not None:
-                log.write(" -Reference FASTA: {}".format(ref_fasta))
+                log.write(" -Reference FASTA: {}".format(ref_fasta), verbose=verbose)
             if ref_tsv is not None:
-                log.write(" -Reference TSV: {}".format(ref_tsv))
+                log.write(" -Reference TSV: {}".format(ref_tsv), verbose=verbose)
 
             if "build" in bound_kwargs.arguments:
                 bound_kwargs.arguments["build"] = _process_build(bound_kwargs.arguments["build"], log=log, verbose=verbose)

@@ -2,9 +2,14 @@
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
+from gwaslab.qc.qc_decorator import with_logging
 import gc
 
-def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizekb=100,log=Log(),verbose=True):    
+@with_logging(
+        start_to_msg="calculate signal DENSITY",
+        finished_msg="calculating signal DENSITY successfully!"
+)
+def _get_signal_density(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizekb=100,log=Log(),verbose=True):    
     """
     Calculate signal density in genomic data using a sliding window approach.
     
@@ -35,7 +40,6 @@ def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizek
         Column name containing genomic positions. Default is "POS".
     """
 
-    log.write("Start to calculate signal DENSITY..." ,verbose=verbose)
     sumstats = insumstats[[id,chrom,pos]].copy()
     log.write(" -Calculating DENSITY with windowsize of ",bwindowsizekb ," kb",verbose=verbose)
     #stack=[]
@@ -94,12 +98,11 @@ def getsignaldensity(insumstats, id="SNPID", chrom="CHR",pos="POS", bwindowsizek
     log.write(" -Max : {} signals per {} kb at variant(s) {}".format(bmax,bwindowsizekb,sumstats.loc[bmaxid,id]),verbose=verbose)
     
     sumstats = sumstats.drop("TCHR+POS",axis=1)
-    log.write("Finished calculating signal DENSITY successfully!",verbose=verbose)
     return sumstats["DENSITY"]
 
-def assigndensity(insumstats,
+def _assign_density(insumstats,
 				sig_sumstats,
-				id="SNPID", 
+				variant_id="SNPID", 
 				chrom="CHR", 
 				pos="POS", 
 				bwindowsizekb=100,
@@ -157,7 +160,11 @@ def assigndensity(insumstats,
 	
     return sumstats["DENSITY"]
 
-def getsignaldensity2(
+@with_logging(
+        start_to_msg="calculate signal DENSITY",
+        finished_msg="calculating signal DENSITY successfully!"
+)
+def _get_signal_density2(
     insumstats,
     snpid="SNPID",
     chrom="CHR",
@@ -199,8 +206,6 @@ def getsignaldensity2(
         class Dummy:
             def write(self, *args, **kwargs): pass
         log = Dummy()
-
-    log.write("Start to calculate signal DENSITY...", verbose=verbose)
     wsize = bwindowsizekb * 1000
 
     sumstats = insumstats.copy()
@@ -243,6 +248,5 @@ def getsignaldensity2(
     log.write(f" -SD : {bsd:.3f}", verbose=verbose)
     log.write(f" -Median : {bmedian:.3f} signals per {bwindowsizekb} kb", verbose=verbose)
     log.write(f" -Max : {bmax} signals per {bwindowsizekb} kb at variant {bmaxid}", verbose=verbose)
-    log.write("Finished calculating signal DENSITY successfully!", verbose=verbose)
 
     return sumstats

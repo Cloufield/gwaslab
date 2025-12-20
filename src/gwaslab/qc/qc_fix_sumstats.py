@@ -7,7 +7,7 @@ from liftover import get_lifter
 from liftover import ChainFile
 from functools import partial
 
-from gwaslab.g_vchange_status import vchange_status
+from gwaslab.g_vchange_status import vchange_status, set_status_digit, status_match
 from gwaslab.g_Log import Log
 from gwaslab.g_version import _get_version
 from gwaslab.g_vchange_status import STATUS_CATEGORIES
@@ -46,7 +46,7 @@ from gwaslab.util.util_in_fill_data import fill_extreme_mlog10p
         start_function= ".fix_id()",
         start_cols=[]
 )
-def fixID(sumstats,
+def _fix_ID(sumstats,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",fixprefix=False,
        fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False, reversea=False,
        overwrite=False,verbose=True,forcefixid=False,log=Log()):  
@@ -124,6 +124,10 @@ def fixID(sumstats,
         # check if SNPID is NA
         is_snpid_na = sumstats[snpid].isna()
 
+        # Ensure STATUS is integer (not Categorical) before assignment
+        if sumstats[status].dtype.name == 'category':
+            sumstats[status] = sumstats[status].astype(str).astype(int).astype('Int64')
+        
         # change STATUS code
         sumstats.loc[ is_chrposrefalt,status] = vchange_status(sumstats.loc[ is_chrposrefalt,status],3 ,"975" ,"630")
         sumstats.loc[(~is_chrposrefalt)&(~is_snpid_na),status] = vchange_status(sumstats.loc[(~is_chrposrefalt)&(~is_snpid_na),status],3 ,"975" ,"842")
@@ -201,8 +205,9 @@ def fixID(sumstats,
                 log.write(" -Filling CHR and POS columns using valid SNPID's chr:pos...", verbose=verbose)
                 # format and qc filled chr and pos
                 extracted = sumstats.loc[to_fix, snpid].str.extract(SNPID_PATTERN_EXTRACT, flags=FLAGS)
-                sumstats.loc[to_fix, chrom] = extracted["CHR"]
-                sumstats.loc[to_fix, pos] = extracted["POS"]
+                # Convert to regular pandas Series to avoid PyArrow type issues
+                sumstats.loc[to_fix, chrom] = extracted["CHR"].astype("string")
+                sumstats.loc[to_fix, pos] = pd.to_numeric(extracted["POS"], errors='coerce').astype('Int64')
                 
                 #sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,snpid].str.split(':|_|-').str[0].str.strip("chrCHR").astype("string")
                 #sumstats.loc[to_fix,pos] =np.floor(pd.to_numeric(sumstats.loc[to_fix,snpid].str.split(':|_|-').str[1], errors='coerce')).astype('Int64')
@@ -245,8 +250,9 @@ def fixID(sumstats,
             if to_fix.sum()>0:
 
                 log.write(" -Filling CHR and POS columns using chr:pos:ref:alt format variants in rsID column...", verbose=verbose)
-                sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[0]
-                sumstats.loc[to_fix,pos] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[1]
+                # Convert to regular pandas Series to avoid PyArrow type issues
+                sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[0].astype("string")
+                sumstats.loc[to_fix,pos] = pd.to_numeric(sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[1], errors='coerce').astype('Int64')
                 #sumstats.loc[to_fix,pos] = np.floor(pd.to_numeric(sumstats.loc[to_fix,rsid].str.split(':|_|-',x).get(1), errors='coerce')).astype('Int64')
                 #sumstats.loc[to_fix,status] = vchange_status(sumstats.loc[to_fix,status], 4, "98765432","00000000").astype("string")  
                 
@@ -283,13 +289,15 @@ def fixID(sumstats,
             if fixeanea_flip == True:
                 log.write(" -Flipped : CHR:POS:NEA:EA -> CHR:POS:EA:NEA ", verbose=verbose)
                 extracted = sumstats.loc[to_fix, snpid].str.extract(SNPID_PATTERN_EXTRACT, flags=FLAGS)
-                sumstats.loc[to_fix, ea] = extracted["NEA"]
-                sumstats.loc[to_fix, nea] = extracted["EA"]
+                # Convert to regular pandas Series to avoid PyArrow type issues
+                sumstats.loc[to_fix, ea] = extracted["NEA"].astype("string")
+                sumstats.loc[to_fix, nea] = extracted["EA"].astype("string")
             else:
                 log.write(" -Chr:pos:a1:a2...a1->EA , a2->NEA ", verbose=verbose)
                 extracted = sumstats.loc[to_fix, snpid].str.extract(SNPID_PATTERN_EXTRACT, flags=FLAGS)
-                sumstats.loc[to_fix, ea] = extracted["EA"]
-                sumstats.loc[to_fix, nea] = extracted["NEA"]
+                # Convert to regular pandas Series to avoid PyArrow type issues
+                sumstats.loc[to_fix, ea] = extracted["EA"].astype("string")
+                sumstats.loc[to_fix, nea] = extracted["NEA"].astype("string")
     
     #        #to_change_status = sumstats[status].str.match(r"\w\w\w[45]\w\w\w")
     #        #sumstats.loc[to_fix&to_change_status,status] = vchange_status(sumstats.loc[to_fix&to_change_status,status],4,"2")  
@@ -378,7 +386,7 @@ def fixID(sumstats,
         start_function= ".strip_snpid()",
         start_cols=["SNPID"]
 )
-def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
+def _strip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
     '''
     Strip non-standard characters from SNPID values to standardize format.
     
@@ -419,7 +427,7 @@ def stripSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
         start_function= ".flip_snpid()",
         start_cols=["SNPID"]
 )
-def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
+def _flip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
     '''
     Flip alleles in SNPID values without changing status codes or statistics.
     
@@ -463,7 +471,7 @@ def flipSNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
         start_function= ".remove_dup()",
         start_cols=None
 )
-def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove_na=False,keep_ascend=True,verbose=True,log=Log()):
+def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove_na=False,keep_ascend=True,verbose=True,log=Log()):
     """
     Remove duplicate or multiallelic variants based on user-selected criteria.
 
@@ -568,7 +576,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
     log.write(" -Removed ",total_number -after_number," variants in total.", verbose=verbose)
     if keep_col is not None : 
         log.write(" -Sort the coordinates based on CHR and POS...", verbose=verbose)
-        sumstats = sortcoordinate(sumstats,verbose=False)
+        sumstats = _sort_coordinate(sumstats,verbose=False)
     
     if "n" in mode or remove_na==True:
         # if remove==True, remove NAs
@@ -609,7 +617,7 @@ def removedup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea
         start_function= ".fix_chr()",
         start_cols=["CHR","STATUS"]
 )
-def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()):
+def _fix_chr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()):
     """
     Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
     
@@ -694,7 +702,8 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
             log.write(" -No unrecognized chromosome notations...", verbose=verbose)
         
         # Assign good chr back to sumstats
-        sumstats.loc[is_chr_fixable.index,chrom] = chr_extracted[is_chr_fixable.index]
+        # Convert to regular pandas Series to avoid PyArrow type issues
+        sumstats.loc[is_chr_fixable.index,chrom] = chr_extracted[is_chr_fixable.index].astype("string")
 
         # X, Y, MT to 23,24,25
         xymt_list = [x[0].lower(),y[0].lower(),mt[0].lower(),x[0].upper(),y[0].upper(),mt[0].upper()]
@@ -776,7 +785,7 @@ def fixchr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",
         start_function= ".fix_pos()",
         start_cols=["POS","STATUS"]
 )
-def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_limit=0 , upper_limit=None , limit=250000000, log=Log()):
+def _fix_pos(sumstats, pos="POS", status="STATUS", remove=False, verbose=True, lower_limit=0, upper_limit=None, limit=250000000, log=Log()):
     '''
     Standardize and validate genomic base-pair positions.
     
@@ -792,10 +801,10 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
     verbose : bool, default False
         If True, print progress or diagnostic messages.
     lower_limit : int, optional
-        Minimum acceptable genomic position. Deafult is 0.
+        Minimum acceptable genomic position. Default is 0.
     upper_limit : int, optional
         Maximum acceptable genomic position.
-    limit : int, default 3_000_000_000
+    limit : int, default 250000000
         Default upper limit applied when `upper_limit` is not provided.
 
     Returns
@@ -803,47 +812,54 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
     pandas.DataFrame
         Summary statistics with standardized and validated base-pair positions.
     '''
-
+    # Set default upper limit if not provided
     if upper_limit is None:
         upper_limit = limit
-        
+    
+    # Track initial number of variants for reporting
     all_var_num = len(sumstats)
-    #convert to numeric
+    
+    # Check for missing positions before processing
     is_pos_na = sumstats[pos].isna()
     
+    # Handle string/object types: remove thousands separators
     try:
-        if str(sumstats[pos].dtype) == "string" or str(sumstats[pos].dtype) == "object":
+        dtype_str = str(sumstats[pos].dtype)
+        if dtype_str == "string" or dtype_str == "object":
             sumstats[pos] = sumstats[pos].astype('string')
-            # if so, remove thousands separator
             log.write(' -Removing thousands separator "," or underbar "_" ...', verbose=verbose)
-            sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].str.replace(r'[,_]', '' ,regex=True)
-    except:
+            sumstats.loc[~is_pos_na, pos] = sumstats.loc[~is_pos_na, pos].str.replace(r'[,_]', '', regex=True)
+    except Exception:
         pass
 
-    # convert POS to integer
+    # Convert POS to integer type
     try:
         log.write(' -Converting to Int64 data type ...', verbose=verbose)
         sumstats[pos] = sumstats[pos].astype('Int64')
-    except:
+    except Exception:
         log.write(' -Force converting to Int64 data type ...', verbose=verbose)
         sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
+    
+    # Identify fixed and invalid positions
     is_pos_fixed = ~sumstats[pos].isna()
-    is_pos_invalid = (~is_pos_na)&(~is_pos_fixed)
+    is_pos_invalid = (~is_pos_na) & (~is_pos_fixed)
     
-    sumstats.loc[is_pos_fixed,status]   = vchange_status(sumstats.loc[is_pos_fixed,status]  ,4,"975","630")
-    sumstats.loc[is_pos_invalid,status] = vchange_status(sumstats.loc[is_pos_invalid,status],4,"975","842")
+    # Update status codes for fixed and invalid positions
+    sumstats.loc[is_pos_fixed, status] = vchange_status(sumstats.loc[is_pos_fixed, status], 4, "975", "630")
+    sumstats.loc[is_pos_invalid, status] = vchange_status(sumstats.loc[is_pos_invalid, status], 4, "975", "842")
     
-    # remove outlier, limit:250,000,000
+    # Remove outliers outside the specified bounds
     log.write(" -Position bound:({} , {:,})".format(lower_limit, upper_limit), verbose=verbose)
     is_pos_na = sumstats[pos].isna()
-    out_lier= ((sumstats[pos]<=lower_limit) | (sumstats[pos]>=upper_limit)) & (~is_pos_na)
-    log.write(" -Removed outliers:",sum(out_lier), verbose=verbose)
-    sumstats = sumstats.loc[~out_lier,:]
-    #remove na
-    if remove is True: 
-        sumstats = sumstats.loc[~sumstats[pos].isna(),:]
+    is_outlier = ((sumstats[pos] <= lower_limit) | (sumstats[pos] >= upper_limit)) & (~is_pos_na)
+    log.write(" -Removed outliers:", sum(is_outlier), verbose=verbose)
+    sumstats = sumstats.loc[~is_outlier, :]
+    
+    # Optionally remove remaining NA positions
+    if remove is True:
+        sumstats = sumstats.loc[~sumstats[pos].isna(), :]
         remain_var_num = len(sumstats)
-        log.write(" -Removed "+str(all_var_num - remain_var_num)+" variants with bad positions.", verbose=verbose)        
+        log.write(" -Removed " + str(all_var_num - remain_var_num) + " variants with bad positions.", verbose=verbose)
  
     return sumstats
 
@@ -855,7 +871,7 @@ def fixpos(sumstats,pos="POS",status="STATUS",remove=False, verbose=True, lower_
         start_function= ".fix_allele()",
         start_cols=["EA","NEA","STATUS"]
 )
-def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
+def _fix_allele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
     """
     Validate and standardize allele representations.
     
@@ -975,7 +991,7 @@ def fixallele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=T
         start_function= ".normalize()",
         start_cols=["EA","NEA","STATUS"]
 )
-def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",chunk=3000000,n_cores=1,verbose=True,log=Log()):
+def _parallelize_normalize_allele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",chunk=3000000,threads=1,verbose=True,log=Log()):
     '''
     Normalize indels in parallel using left-alignment and parsimony principles.
     
@@ -988,8 +1004,8 @@ def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS
     ----------
     chunk : int, default 10000
         Size of chunks for parallel processing.
-    n_cores : int, default 1
-        Number of CPU cores used for parallel processing.
+    threads : int, default 1
+        Number of threads used for parallel processing.
 
     Returns
     -------
@@ -1007,13 +1023,13 @@ def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS
     ###############################################################################################################
     if mode=="v":
         if variants_to_check.sum() < 100000:
-            n_cores=1  
-        if n_cores==1:
+            threads=1  
+        if threads==1:
             normalized_pd, changed_index = fastnormalizeallele(sumstats.loc[variants_to_check,[pos,nea,ea,status]],pos=pos ,nea=nea,ea=ea,status=status,chunk=chunk, log=log, verbose=verbose)
         else:
-            pool = Pool(n_cores)
+            pool = Pool(threads)
             map_func = partial(fastnormalizeallele,pos=pos,nea=nea,ea=ea,status=status)
-            df_split = _df_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
+            df_split = _df_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], threads)
             results = pool.map(map_func,df_split)
             normalized_pd = pd.concat([i[0] for i in results])
             changed_index = np.concatenate([i[1] for i in results])
@@ -1051,11 +1067,11 @@ def parallelnormalizeallele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS
     ##########################################################################################################################################################
     elif mode=="s":
         if variants_to_check.sum() < 10000:
-            n_cores=1  
-        pool = Pool(n_cores)
+            threads=1  
+        pool = Pool(threads)
         map_func = partial(normalizeallele,pos=pos,nea=nea,ea=ea,status=status)
-        #df_split = np.array_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
-        df_split = _df_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], n_cores)
+        #df_split = np.array_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], threads)
+        df_split = _df_split(sumstats.loc[variants_to_check,[pos,nea,ea,status]], threads)
         normalized_pd = pd.concat(pool.map(map_func,df_split))
         pool.close()
         pool.join()
@@ -1171,12 +1187,13 @@ def normalizevariant(pos,a,b,status):
     # b - alt - ea
     # status xx1xx /xx2xx /xx9xx
     
-    status_pre=status[:4]
-    status_end=status[5:]
+    # Convert status to integer if it's a string, then use set_status_digit
+    if isinstance(status, str):
+        status = int(status)
     
     if len(a)==1 or len(b)==1:
         #return pos,a,b,change_status(status,5,0) #status_pre+"0"+status_end
-        return pos,a,b,status_pre+"0"+status_end
+        return pos,a,b,set_status_digit(status, 5, 0)
     pos_change=0
     pointer_a_l, pointer_a_r = 0, len(a)-1
     pointer_b_l, pointer_b_r = 0, len(b)-1
@@ -1190,8 +1207,8 @@ def normalizevariant(pos,a,b,status):
             break
         if pointer_a_r-pointer_a_l==0 or pointer_b_r-pointer_b_l==0:
             if len(a)==1 or len(b)==1:
-                return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"0"+status_end #change_status(status,5,0) #
-            return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end #change_status(status,5,3) #
+                return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],set_status_digit(status, 5, 0) #change_status(status,5,0) #
+            return pos,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],set_status_digit(status, 5, 3) #change_status(status,5,3) #
 
     # remove from left
     for i in range(max(len(a),len(b))):
@@ -1205,8 +1222,8 @@ def normalizevariant(pos,a,b,status):
         if pointer_a_r-pointer_a_l==0 or pointer_b_r-pointer_b_l==0:
             break
     if len(a)==1 or len(b)==1:
-        return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"0"+status_end #change_status(status,5,0) #
-    return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],status_pre+"3"+status_end # change_status(status,5,3) #
+        return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],set_status_digit(status, 5, 0) #change_status(status,5,0) #
+    return pos+pos_change,a[pointer_a_l:pointer_a_r+1],b[pointer_b_l:pointer_b_r+1],set_status_digit(status, 5, 3) # change_status(status,5,3) #
 ""
 
 ###############################################################################################################
@@ -1292,7 +1309,7 @@ def flip_by_sign(sumstats, matched_index, log, verbose, cols=None):
         start_function= ".flip_allele_stats()",
         start_cols=None
 )
-def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
+def _flip_allele_stats(sumstats,status="STATUS",verbose=True,log=Log()):
     '''
     Adjust statistics when allele direction has changed based on STATUS codes.
     
@@ -1317,7 +1334,8 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
     ###################get reverse complementary####################
     pattern = r"\w\w\w\w\w[45]\w"  
     #matched_index = status_match(sumstats[status],6,[4,5]) #
-    matched_index = sumstats[status].str[5].str.match(r"4|5")
+    # Use status_match for integer status codes (digit 6, values 4 or 5)
+    matched_index = status_match(sumstats[status], 6, [4, 5])
     if matched_index.sum() > 0:
         log.write("Start to convert alleles to reverse complement for SNPs with status xxxxx[45]x...{}".format(_get_version()), verbose=verbose) 
         log.write(" -Flipping "+ str(sum(matched_index)) +" variants...", verbose=verbose) 
@@ -1394,18 +1412,24 @@ def flipallelestats(sumstats,status="STATUS",verbose=True,log=Log()):
 ###############################################################################################################
 # 20220426
 def liftover_snv(row,chrom,converter,to_build):
-    status_pre=""
-    status_end=row.iloc[1][2]+"9"+row.iloc[1][4]+"99"  
+    # Convert status to integer and extract digits
+    status_val = int(row.iloc[1]) if isinstance(row.iloc[1], (int, np.integer)) else int(str(row.iloc[1]))
+    # Extract digits: digit 3, set digit 4 to 9, digit 5, set digits 6-7 to 99
+    digit3 = (status_val // 10**4) % 10
+    digit5 = (status_val // 10**2) % 10
+    # Build status code: build (2 digits) + digit3 + 9 + digit5 + 99
+    status_end_int = digit3 * 10000 + 9 * 1000 + digit5 * 100 + 99
+    
     pos_0_based = int(row.iloc[0]) - 1
     results = converter[chrom][pos_0_based]
     if converter[chrom][pos_0_based]:
         # return chrom, pos_1_based
         if results[0][0].strip("chr")!=chrom:
-            return pd.NA,pd.NA,"97"+status_end
+            return pd.NA, pd.NA, 9700000 + status_end_int  # Build 97 (unmapped)
         else:
-            return results[0][0].strip("chr"),results[0][1]+1,to_build+status_end
+            return results[0][0].strip("chr"), results[0][1]+1, int(to_build) * 100000 + status_end_int
     else:
-        return pd.NA,pd.NA,"97"+status_end
+        return pd.NA, pd.NA, 9700000 + status_end_int  # Build 97 (unmapped)
 
 def liftover_variant(sumstats, 
              chrom="CHR", 
@@ -1432,8 +1456,11 @@ def liftover_variant(sumstats,
         chrom_to_convert = dic[i]
         variants_on_chrom_to_convert = sumstats[chrom]==i
         lifted = sumstats.loc[variants_on_chrom_to_convert,[pos,status]].apply(lambda x: liftover_snv(x[[pos,status]],chrom_to_convert,converter,to_build),axis=1)
-        sumstats.loc[variants_on_chrom_to_convert,pos]     =   lifted.str[1]
-        sumstats.loc[variants_on_chrom_to_convert,status]   =  lifted.str[2]
+        # liftover_snv returns (chrom, pos, status) tuple - extract elements
+        sumstats.loc[variants_on_chrom_to_convert,pos] = lifted.apply(lambda x: x[1] if pd.notna(x) and len(x) > 1 else pd.NA)
+        # Status is already integer from liftover_snv
+        sumstats.loc[variants_on_chrom_to_convert,status] = lifted.apply(lambda x: x[2] if pd.notna(x) and len(x) > 2 else pd.NA).astype('Int64')
+        sumstats.loc[variants_on_chrom_to_convert,status] = lifted.str[2].astype(int) if lifted.str[2].dtype == 'object' else lifted.str[2]
         sumstats.loc[variants_on_chrom_to_convert,chrom]    =  lifted.str[0].map(dic2).astype("Int64")
     return sumstats
 
@@ -1443,7 +1470,7 @@ def liftover_variant(sumstats,
         start_function= ".liftover()",
         start_cols=["CHR","POS","STATUS"]
 )
-def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True,chain=None, verbose=True,log=Log()):
+def _parallelize_liftover_variant(sumstats,threads=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True,chain=None, verbose=True,log=Log()):
     '''
     Perform parallelized liftover of variants to a new genome build.
     
@@ -1454,7 +1481,7 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
 
     Parameters
     ----------
-    n_cores : int
+    threads : int
         Number of CPU cores to use for parallel processing.
     from_build : str
         Name of the original genome build (e.g., "19").
@@ -1495,11 +1522,11 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
     ###########################################################################
     if to_lift.sum() > 0:
         if to_lift.sum() < 10000:
-            n_cores=1
+            threads=1
     
-        #df_split = np.array_split(sumstats[[chrom,pos,status]], n_cores)
-        df_split = _df_split(sumstats[[chrom,pos,status]], n_cores)
-        pool = Pool(n_cores)
+        #df_split = np.array_split(sumstats[[chrom,pos,status]], threads)
+        df_split = _df_split(sumstats[[chrom,pos,status]], threads)
+        pool = Pool(threads)
         #df = pd.concat(pool.starmap(func, df_split))
         func=liftover_variant
         sumstats[[chrom,pos,status]] = pd.concat(pool.map(partial(func,chrom=chrom,pos=pos,from_build=lifter_from_build,to_build=lifter_to_build,status=status,chain=chain),df_split))
@@ -1513,8 +1540,8 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         sumstats = sumstats.loc[~sumstats[pos].isna(),:]
     
     # after liftover check chr and pos
-    sumstats = fixchr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=True)
-    sumstats = fixpos(sumstats,pos=pos,remove=remove, verbose=True)
+    sumstats = _fix_chr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=True)
+    sumstats = _fix_pos(sumstats,pos=pos,remove=remove, verbose=True)
 
     return sumstats
 
@@ -1527,7 +1554,7 @@ def parallelizeliftovervariant(sumstats,n_cores=1,chrom="CHR", pos="POS", from_b
         start_cols=["CHR","POS"],
         show_shape=False
 )
-def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()):
+def _sort_coordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()):
     '''
     Sort variants by genomic coordinates (chromosome, then position).
     
@@ -1564,7 +1591,7 @@ def sortcoordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=
         start_cols=None,
         show_shape=False
 )
-def sortcolumn(sumstats,verbose=True,log=Log(),order = None):
+def _sort_column(sumstats,verbose=True,log=Log(),order = None):
     '''
     Reorder columns according to a specified order.
     

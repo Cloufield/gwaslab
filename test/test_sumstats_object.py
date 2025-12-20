@@ -139,9 +139,9 @@ class TestSumstatsObject(unittest.TestCase):
     def test_liftover_updates_build_without_conversion(self):
         # 测试liftover：通过猴子补丁避免外部依赖，仅验证build更新
         import gwaslab.g_Sumstats as G
-        original = G.parallelizeliftovervariant
+        original = G._parallelize_liftover_variant
         try:
-            G.parallelizeliftovervariant = lambda sumstats, **kwargs: sumstats
+            G._parallelize_liftover_variant = lambda sumstats, **kwargs: sumstats
             gl = Sumstats(sumstats=self.df.copy(), chrom="CHR", pos="POS", p="P", ea="EA", nea="NEA", snpid="SNPID", verbose=False)
             gl.data["STATUS"] = "9960099"
             gl.set_build("19", verbose=False)
@@ -149,7 +149,7 @@ class TestSumstatsObject(unittest.TestCase):
             self.assertEqual(gl.meta["gwaslab"]["genome_build"], "38")
             self.assertEqual(gl.build, "38")
         finally:
-            G.parallelizeliftovervariant = original
+            G._parallelize_liftover_variant = original
 
     def test_plot_daf_via_sumstats(self):
         # 测试plot_daf：返回图对象与异常点

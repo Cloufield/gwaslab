@@ -5,9 +5,9 @@ from pandas.api.types import CategoricalDtype
 from gwaslab.g_vchange_status import copy_status
 from gwaslab.g_vchange_status_polars import vchange_statusp
 from gwaslab.g_vchange_status_polars import copy_statusp
-from gwaslab.qc.qc_fix_sumstats import flipallelestats
+from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_check_datatype import check_datatype
-from gwaslab.util.util_in_fill_data import filldata
+from gwaslab.util.util_in_fill_data import _fill_data
 from Bio import SeqIO
 from itertools import combinations
 import polars as pl
@@ -226,7 +226,7 @@ def _align_with_moldp(sumstats, log=Log(),verbose=True, suffixes=("_MOLD","")):
     return sumstats
 
 def _fill_missing_columnsp(sumstats, columns, log=Log(),verbose=True):
-    sumstats = filldata(sumstats, to_fill=columns)
+    sumstats = _fill_data(sumstats, to_fill=columns)
     return sumstats
 
 def _renaming_colsp(sumstats, columns, log=Log(),verbose=True, suffixes=("_1","_2")):

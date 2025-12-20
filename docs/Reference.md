@@ -60,7 +60,7 @@ for i in range(1,23):
     sumstats.harmonize( basic_check=True,
                         ref_seq="./reference_genome/hg19/human_g1k_v37_decoy.fasta",
                         ref_rsid_vcf="./All_20180423.vcf.gz", 
-                        n_cores=4)
+                        threads=4)
     sumstats.data.loc[:,["SNPID","rsID","CHR","POS","NEA","EA"]].to_csv("./1kg_af_dbsnp151."+str(i)+".txt.gz","\t",index=None)
 ```
 

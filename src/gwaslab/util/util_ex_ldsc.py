@@ -9,7 +9,7 @@ from gwaslab.extension.ldsc.ldsc_sumstats import cell_type_specific
 from gwaslab.io.io_read_ldsc import parse_ldsc_summary
 from gwaslab.io.io_read_ldsc import parse_partitioned_ldsc_summary
 
-from gwaslab.util.util_in_filter_value import filtervalues
+from gwaslab.util.util_in_filter_value import _filter_values
 from gwaslab.util.util_in_filter_value import _filter_palindromic
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.util.util_in_filter_value import _exclude_sexchr
@@ -521,11 +521,11 @@ def _munge_sumstats(sumstats, log,
     
     # filter_info
     if "INFO" in sumstats.columns:
-        sumstats = filtervalues(sumstats, 'INFO >={}'.format(info) ,verbose=verbose, log=log)
+        sumstats = _filter_values(sumstats, 'INFO >={}'.format(info) ,verbose=verbose, log=log)
     
     # frequency
     if "EAF" in sumstats.columns:
-        sumstats = filtervalues(sumstats,'EAF>={} and EAF<={}'.format(maf, 1-maf),verbose=verbose, log=log)
+        sumstats = _filter_values(sumstats,'EAF>={} and EAF<={}'.format(maf, 1-maf),verbose=verbose, log=log)
     
     # N
     if "N" in sumstats.columns:
@@ -533,7 +533,7 @@ def _munge_sumstats(sumstats, log,
             min_n = sumstats.N.quantile(0.9) / 1.5
         else:
             min_n = n
-        sumstats = filtervalues(sumstats,'N>={}'.format(min_n),verbose=verbose, log=log)
+        sumstats = _filter_values(sumstats,'N>={}'.format(min_n),verbose=verbose, log=log)
     
     # remove strand-unambiguous SNPs
     if "EA" in sumstats.columns and "NEA" in sumstats.columns:

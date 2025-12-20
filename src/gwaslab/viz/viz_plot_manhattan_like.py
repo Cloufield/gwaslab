@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from gwaslab.g_Log import Log
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_p_value, _quick_fix_mlog10p
-from gwaslab.util.util_in_get_sig import getsig, gettop, annogene
+from gwaslab.util.util_in_get_sig import _get_sig, _get_top, _anno_gene
 
 
 def _configure_fig_save_kwargs(mode="m",
@@ -336,7 +336,7 @@ def _extract_to_annotate(sumstats,
                 log.write(" -Found " + str(len(to_annotate)) + " specified variants to annotate...", verbose=verbose)
         else:
             if "b" in mode:
-                to_annotate = gettop(
+                to_annotate = _get_top(
                     sumstats,
                     id="i",
                     chrom=chrom,
@@ -347,7 +347,7 @@ def _extract_to_annotate(sumstats,
                     verbose=False,
                 )
             else:
-                to_annotate = getsig(
+                to_annotate = _get_sig(
                     sumstats.loc[sumstats["scaled_P"] > scaled_threhosld, :],
                     snpid,
                     chrom,
@@ -365,9 +365,9 @@ def _extract_to_annotate(sumstats,
                 log.write(" -Found " + str(len(to_annotate)) + " significant variants with a sliding window size of " + str(windowsizekb) + " kb...", verbose=verbose)
     else:
         if "b" in mode:
-            to_annotate = gettop(
+            to_annotate = _get_top(
                 sumstats,
-                id="i",
+                variant_id="i",
                 chrom=chrom,
                 pos=pos,
                 by="DENSITY",
@@ -376,7 +376,7 @@ def _extract_to_annotate(sumstats,
                 verbose=False,
             )
         else:
-            to_annotate = getsig(
+            to_annotate = _get_sig(
                 sumstats.loc[sumstats["scaled_P"] > scaled_threhosld, :],
                 "i",
                 chrom,
@@ -393,7 +393,7 @@ def _extract_to_annotate(sumstats,
         if ("b" not in mode) and (to_annotate.empty is not True):
             log.write(" -Found " + str(len(to_annotate)) + " significant variants with a sliding window size of " + str(windowsizekb) + " kb...", verbose=verbose)
     if (to_annotate is not None) and (to_annotate.empty is not True) and anno == "GENENAME":
-        to_annotate = annogene(to_annotate,
+        to_annotate = _anno_gene(to_annotate,
                                id=snpid,
                                chrom=chrom,
                                pos=pos,

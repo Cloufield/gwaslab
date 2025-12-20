@@ -4,7 +4,7 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
-from gwaslab.util.util_in_get_sig import getsig
+from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.extension import _checking_plink_version
@@ -16,7 +16,7 @@ from gwaslab.qc.qc_decorator import with_logging
         start_cols=["SNPID","CHR","POS","EA","NEA"],
         start_function="calculate_ld_matrix"
 )
-def tofinemapping(gls, 
+def _to_finemapping(gls, 
                   study=None, 
                   bfile=None, 
                   vcf=None, 
@@ -52,7 +52,7 @@ def tofinemapping(gls,
     if loci_chrpos is None:
         if loci is None:
             log.write(" -Loci were not provided. All significant loci will be automatically extracted...",verbose=verbose)
-            sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_kwargs)
+            sig_df = _get_sig(sumstats,variant_id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_kwargs)
         else:
             sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
     else:

@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import norm
 from gwaslab.g_Log import Log
+from gwaslab.qc.qc_decorator import with_logging
 
 def h2_obs_to_liab(h2_obs, P, K, se_obs=None):
     '''
@@ -50,6 +51,10 @@ def h2_se_to_p(h2,se):
     return norm.sf(abs(z))
     
 
+@with_logging(
+        start_to_msg="calculate per-SNP heritibility",
+        finished_msg="calculating per-SNP heritibility"
+)
 def _get_per_snp_r2(sumstats,
            beta="BETA",
            af="EAF",
@@ -65,7 +70,6 @@ def _get_per_snp_r2(sumstats,
            adjuested=False,
            verbose=True):
     # Pierce, B. L., Ahsan, H., & VanderWeele, T. J. (2011). Power and instrument strength requirements for Mendelian randomization studies using multiple genetic variants. International journal of epidemiology, 40(3), 740-752.
-    log.write("Start to calculate per-SNP heritibility...", verbose=verbose)
     if type(k) is int or type(k) is float:
        pass 
     elif k =="all":

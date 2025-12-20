@@ -78,7 +78,7 @@ mysumstats.plot_mqq()
 
 ## Documentation and tutorials
 
-Documentation and tutorials for GWASLab are avaiable at [here](https://cloufield.github.io/gwaslab/).
+Documentation and tutorials for GWASLab are available at [here](https://cloufield.github.io/gwaslab/).
 
 ## Functions
 

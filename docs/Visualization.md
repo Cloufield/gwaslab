@@ -47,7 +47,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
                       highlight_windowkb =1000,
                       stratified=True,
                       marker_size=(5,10),
-                      figargs={"figsize":(15,5),"dpi":300})
+                      fig_kwargs={"figsize":(15,5),"dpi":300})
     ```
     
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196594621-840217aa-117d-49ac-ab58-15a5fa6675b1.png">
@@ -57,7 +57,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`mode`|`mqq`,`qqm`,`qq`,`m`|Determine the layout of manhattan plot and qq plot. <br/> `mqq`: left manhatan, right QQ plot <br/>`qqm`: left QQ plot, right Manhattan plot <br/>`m`: only Manhattan plot<br/> `"qq"`: only qq plot|`mqq`|
+|`mode`|`mqq`,`qqm`,`qq`,`m`|Determine the layout of Manhattan plot and QQ plot. <br/> `mqq`: left Manhattan, right QQ plot <br/>`qqm`: left QQ plot, right Manhattan plot <br/>`m`: only Manhattan plot<br/> `"qq"`: only QQ plot|`mqq`|
 |`mqqratio`|`float`|width ratio of Manhattan plot and QQ plot|`3`|
 
 !!! info "Layout"
@@ -78,7 +78,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`use_rank`|`boolean`|If True, GWASLab will use position rank instead of the physical base-pair positions for x aixs.|`False`|
+|`use_rank`|`boolean`|If True, GWASLab will use position rank instead of the physical base-pair positions for x axis.|`False`|
 
 !!! note
     If using rank, there will be no gap in the plot. If using base-pair positions, certain regions of the chromosome might be reflected in the plot like the heterochromatin.
@@ -87,11 +87,13 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`skip`|`float`|Sometimes it is not necessary to plot all variants, we can skip the variants with low -log10(P) values for plotting. For example, we can omit varints with -log10(P) lower than 3 from the plot by specifying `skip=3`. Calculation of lambda GC won't be affected by this|`None`|
-|`cut`|`float`|loci with extremly large -log10(P) value are very likely to dwarf other significant loci, so we want to scale down the -log10(P) for variants above a certain threshold. |`None`|
+|`skip`|`float`|Sometimes it is not necessary to plot all variants, we can skip the variants with low -log10(P) values for plotting. For example, we can omit variants with -log10(P) lower than 3 from the plot by specifying `skip=3`. Calculation of lambda GC won't be affected by this|`None`|
+|`cut`|`float`|loci with extremely large -log10(P) value are very likely to dwarf other significant loci, so we want to scale down the -log10(P) for variants above a certain threshold. |`None`|
 |`cutfactor`|`float`|shrinkage factor|`10`|
 |`cut_line_color`|`float`|the color of the line above which y axis is rescaled.|`500`|
-|`sig_level`|`float`|genome-wide significance threshold |`5e-8`|
+|`sig_level`|`float`|genome-wide significance threshold for extracting lead variants to annotate |`5e-8`|
+|`sig_level_plot`|`float`|significance threshold for plotting the significance line |`5e-8`|
+|`sig_level_lead`|`float`|significance threshold for extracting lead variants to annotate |`5e-8`|
 
 
 !!! info "Auxiliary lines"
@@ -106,7 +108,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`anno`|`boolean` or `string` or `"GENENAME"`|If `anno = True`, variants will anotated with chr:pos; or `string`, the column name used for annotation; or `"GENENAME"`, automatically annotate nrearest gene names, using pyensembl. (remember to specify `build`, default is `build="19"`) |`False`|
+|`anno`|`boolean` or `string` or `"GENENAME"`|If `anno = True`, variants will be annotated with chr:pos; or `string`, the column name used for annotation; or `"GENENAME"`, automatically annotate nearest gene names, using pyensembl. (remember to specify `build`, default is `build="19"`) |`False`|
 |`anno_set`|`list`|If you want to annotate only a few specific variants, you can simply provide a list of SNPIDs or rsIDs for annotation. If None, the variants to annotate will be selected automatically using a sliding window with `windowsize=500`kb.|`None`|
 |`repel_force`|`float`|when the annotation overlaps with other, try increasing the repel_force to increase the padding between annotations.|`0.01`|
 |`anno_alias`|`dict`|snpid:text dictionary for customized annotation|`None`|
@@ -174,7 +176,7 @@ GWASLab now support 3 types of annotation styles:
 |`anno_d`|`dict`|key is the number of arm starting form 0, value is the direction you want the arm to shift towards . For example, `anno_d = {4:"r"}` means shift the 4th arm to the right |`None`|
 |`arm_offset`|`float`|distance in points|`500`|
 |`arm_scale`|`float`|factors to adjust the height for all arms|`1.0`|
-|`arm_scale_d`|`dict`|factors to adjust the height for specific arms. key is the number of arm startinf form 0, value is the factor which will be multiplied to arm height.|`None`|
+|`arm_scale_d`|`dict`|factors to adjust the height for specific arms. key is the number of arm starting from 0, value is the factor which will be multiplied to arm height.|`None`|
 
 !!! example "Adjust the direction the first to left and the thrd to right"
     ```python
@@ -245,13 +247,13 @@ Pinpoint certain variants in the Manhattan plot.
 |`sig_line`|`boolean`|If True, plot the significant threshold line|`True`|
 |`sig_level`|`float`|The significance threshold|`5e-8`|
 |`sig_level_lead`|`float`|The significance threshold for extracting lead variants to annotate|`5e-8`|
-|`sig_line_color`|`string`|If True, plot the significant threshold line|`True`|
+|`sig_line_color`|`string`|Color for the significance threshold line|`"grey"`|
 |`suggestive_sig_line`|`boolean`|If True, plot the suggestive threshold line|`True`|
 |`suggestive_sig_level`|`float`|The suggestive threshold|`5e-6`|
-|`suggestive_sig_line_color`|`string`|Suggestive level line color|`"grey"`|
+|`suggestive_sig_line_color`|`string`|Color for the suggestive threshold line|`"grey"`|
 |`additional_line`|`list`|list of P values used to plot additional lines|`None`|
 |`additional_line_color`|`list`|list of colors for the additional lines|`None`|
-|`cut_line_color`|`string`|If True, plot the significant threshold line|`"#ebebeb"`|
+|`cut_line_color`|`string`|Color for the cut line|`"#ebebeb"`|
 
 !!! example "Plot lines"
     ```python
@@ -279,7 +281,7 @@ Pinpoint certain variants in the Manhattan plot.
 
 | QQ plot Option   | DataType  | Description                                                     | Default                                              |
 |------------------|-----------|-----------------------------------------------------------------|------------------------------------------------------|
-| `stratified`     | `boolean` | if True, plot MAF straitified QQ plot. Require EAF in sumstats. | `False`                                              |
+| `stratified`     | `boolean` | if True, plot MAF stratified QQ plot. Require EAF in sumstats. | `False`                                              |
 | `maf_bins`       | `list`    | MAF bins for straitification.                                   | `[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]` |
 | `maf_bin_colors` | `list`    | colors used for each MAF bin.                                   | `["#f0ad4e","#5cb85c", "#5bc0de","#000042"]`         |
 
@@ -310,7 +312,7 @@ Color-related options
 
 | Color Option      | DataType | Description                                                                          | Default                                      |
 |-------------------|----------|--------------------------------------------------------------------------------------|----------------------------------------------|
-| `colors`          | `list`   | a list of colors for chromsomes in the Manhattan plot; it will be used repetitively. | `["#597FBD","#74BAD3"]`                      |
+| `colors`          | `list`   | a list of colors for chromosomes in the Manhattan plot; it will be used repetitively. | `["#597FBD","#74BAD3"]`                      |
 | `cut_line_color`  | `string` | color for the cut line.                                                              | `"#EBEBEB"`                                  |
 | `sig_line_color`  | `string` | color for significance threshold line.                                               | `"grey"`                                     |
 | `highlight_color` | `string` | color for highlighting loci                                                          | `"#CB132D"`                                  |
@@ -368,7 +370,7 @@ figargs= {"figsize":(15,5),"dpi":100}
 
 | Figure Option | DataType | Description                                                     | Default                        |
 |---------------|----------|-----------------------------------------------------------------|--------------------------------|
-| `figargs`     | `dict`   | key-values pairs that are passed to matplotlib `plt.subplots()` | `{"figsize":(15,5),"dpi":200}` |
+| `fig_kwargs`     | `dict`   | key-values pairs that are passed to matplotlib `plt.subplots()` | `None` |
 
 Commonly used ones: 
 
@@ -379,7 +381,7 @@ Commonly used ones:
 ### Saving plots
 
 ```python
-mysumstats.plot_mqq(save="mymqqplots.png",save_args={"dpi":400,"facecolor":"white"})
+mysumstats.plot_mqq(save="mymqqplots.png", save_kwargs={"dpi":400,"facecolor":"white"})
 ```
 
 Two options for saving plots in `.plot_mqq`
@@ -387,9 +389,9 @@ Two options for saving plots in `.plot_mqq`
 | Saving Option | DataType              | Description                                                                                            | Default                           |
 |---------------|-----------------------|--------------------------------------------------------------------------------------------------------|-----------------------------------|
 | `save`        | `string` or `boolean` | If `string`, the plot will be saved to the specified path; If `True`, it will be saved to default path | `True`                            |
-| `save_args`   | `dict`                | other parameters passed to matplotlib `savefig` function.                                              | `{"dpi":300,"facecolor":"white"}` |
+| `save_kwargs`   | `dict`                | other parameters passed to matplotlib `savefig` function.                                              | `None` |
 
 !!! example
 
-    - save as png: `mysumstats.plot_mqq(save="mymqqplots.png",save_args={"dpi":300})`
-    - save as PDF: `mysumstats.plot_mqq(save="mymqqplots.pdf",save_args={"dpi":300})`
+    - save as png: `mysumstats.plot_mqq(save="mymqqplots.png", save_kwargs={"dpi":300})`
+    - save as PDF: `mysumstats.plot_mqq(save="mymqqplots.pdf", save_kwargs={"dpi":300})`

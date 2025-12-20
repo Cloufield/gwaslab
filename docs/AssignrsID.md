@@ -67,7 +67,7 @@ mysumstats.assign_rsid(
                         ref_rsid_tsv = gl.get_path("1kg_dbsnp151_hg19_auto"),
                         ref_rsid_vcf = "/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
                         chr_dict = gl.get_number_to_NC(build="19"),
-                        n_cores = 2)
+                        threads = 2)
 ```
 !!! info
     Please always run `.basic_check()` first. This will convert the data to right data type in most cases, and standardize and normalize the sumstats.
@@ -79,7 +79,7 @@ mysumstats.assign_rsid(
 | `ref_rsid_tsv`           | `string` | TSV file path for annotation of commonly used variants using SNPID (like 1:725932:G:A) as key.                                                                                                                                                                               | -       |
 | `ref_rsid_vcf`           | `string` | VCF/BCF file path for annotation of variants with rsID not assigned. .tbi/.csi file is  required.                                                                                                                                                                            | -       |
 | `chr_dict`               | `dict`   | a dictionary for converting 1-25 to CHR in the vcf files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries.   `gl.get_number_to_NC(build="19")` and `gl.get_number_to_NC(build="19")` | -       |
-| `n_cores`                | `int`    | number of cores to use.                                                                                                                                                                                                                                                      | `1`     |
+| `threads`                | `int`    | number of threads to use.                                                                                                                                                                                                                                                      | `1`     |
 
 !!! note "Conversion for RefSeq sequence"
 
@@ -128,7 +128,7 @@ mysumstats.assign_rsid(
     
     ```
     # rsID annotation
-    mysumstats.assign_rsid( n_cores = 2,
+    mysumstats.assign_rsid( threads = 2,
                             ref_rsid_tsv = gl.get_path("1kg_dbsnp151_hg19_auto"),
                             ref_rsid_vcf ="/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
                             chr_dict = gl.get_number_to_NC(build="19"))

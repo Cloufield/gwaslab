@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import gwaslab as gl
 from gwaslab.g_Log import Log
+from gwaslab.qc.qc_decorator import with_logging
 from datetime import datetime
 import os
 
@@ -13,6 +14,10 @@ def find_efo_cache(efo, path):
                 return os.path.join(root, file)
     return False
 
+@with_logging(
+        start_to_msg="retrieve data from GWASCatalog",
+        finished_msg="retrieving data from GWASCatalog"
+)
 def gwascatalog_trait(efo,
                       source="NCBI",
                       sig_level=5e-8,
@@ -24,7 +29,6 @@ def gwascatalog_trait(efo,
     #https://www.ebi.ac.uk/gwas/rest/docs/api
     
     base_url = "https://www.ebi.ac.uk/gwas/rest/api/efoTraits/"+efo
-    log.write("Start to retrieve data from GWASCatalog...", verbose=verbose)
     
     
     if use_cache==True:

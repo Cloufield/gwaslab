@@ -33,6 +33,7 @@ def draw_manhattan_panel(
     explicit = {"edgecolor", "edgecolors", "linewidth", "ax", "palette", "hue", "data", "legend", "style", "size", "sizes", "zorder", "s"}
     scatter_kwargs = {k: v for k, v in scatter_kwargs.items() if k not in explicit}
 
+    marker_size = (marker_size[0], marker_size[1])
     highlight_i = pd.DataFrame()
     to_plot = None
 

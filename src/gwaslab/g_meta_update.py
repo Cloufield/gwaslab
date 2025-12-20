@@ -1,5 +1,5 @@
 import numpy as np
-from gwaslab.util.util_in_filter_value import inferbuild
+from gwaslab.util.util_in_filter_value import _infer_build
 from gwaslab.g_Log import Log
 import time
 
@@ -44,7 +44,7 @@ def _update_meta(meta, sumstats, object="Sumstats",log=Log(), verbose=True):
                 meta["gwaslab"]["variants"][i_form_1]["min_minor_allele_freq"]=min (np.min(sumstats[eaf]) , 1- np.max(sumstats[eaf]))
 
     if meta["gwaslab"]["genome_build"] == "99":
-        _, meta["gwaslab"]["genome_build"] = inferbuild(sumstats, change_status=False, log=log, verbose=verbose)
+        _, meta["gwaslab"]["genome_build"] = _infer_build(sumstats, change_status=False, log=log, verbose=verbose)
     
     meta["date_last_modified"] = str(time.strftime('%Y/%m/%d'))
     

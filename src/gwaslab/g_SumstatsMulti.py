@@ -23,7 +23,7 @@ from gwaslab.hm.hm_casting_polars import _fill_missing_columnsp
 from gwaslab.hm.hm_casting_polars import _renaming_colsp
 from gwaslab.hm.hm_casting_polars import _sort_pair_colsp
 
-from gwaslab.qc.qc_fix_sumstats import flipallelestats
+from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_fix_sumstats_polars import flipallelestatsp
 
 from gwaslab.qc.qc_check_datatype_polars import check_datatype_polars
@@ -33,9 +33,9 @@ from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_fix_sumstats import _process_build
 
-from gwaslab.util.util_ex_calculate_ldmatrix import tofinemapping
+from gwaslab.util.util_ex_calculate_ldmatrix import _to_finemapping
 from gwaslab.util.util_ex_run_coloc import _run_coloc_susie
-from gwaslab.util.util_in_filter_value import filtervalues
+from gwaslab.util.util_in_filter_value import _filter_values
 from gwaslab.util.util_ex_run_2samplemr import _run_two_sample_mr
 from gwaslab.util.util_ex_run_clumping import _clump
 from gwaslab.util.util_ex_ldproxyfinder import _extract_with_ld_proxy
@@ -43,7 +43,7 @@ from gwaslab.util.util_ex_match_ldmatrix import tofinemapping_m
 from gwaslab.util.util_ex_run_mesusie import _run_mesusie
 from gwaslab.util.util_in_meta import meta_analyze_multi
 from gwaslab.util.util_ex_run_hyprcoloc import _run_hyprcoloc
-from gwaslab.util.util_in_get_sig import getsig
+from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.util.util_in_fill_data import _get_multi_min
 from gwaslab.util.util_ex_run_mtag import _run_mtag
 
@@ -228,7 +228,7 @@ class SumstatsMulti( ):
                                                         suffixes=("_1",""),
                                                         return_not_matched_mold = False)    
             molded_sumstats = _align_with_mold(molded_sumstats, log=self.log, verbose=verbose,suffixes=("_1",""))
-            molded_sumstats = flipallelestats(molded_sumstats, log=self.log, verbose=verbose)        
+            molded_sumstats = _flip_allele_stats(molded_sumstats, log=self.log, verbose=verbose)        
             molded_sumstats = molded_sumstats.drop(columns=["EA","NEA"] )
             molded_sumstats = molded_sumstats.rename(columns={"EA_1":"EA","NEA_1":"NEA"})
             
@@ -258,8 +258,10 @@ class SumstatsMulti( ):
 
     def run_meta_analysis(self, **kwargs):
         if self.engine == "polars":
-            from gwaslab.util_in_meta_polars import meta_analyze_polars
-            return meta_analyze_polars(self.data,nstudy = self.meta["gwaslab"]["number_of_studies"] ,**kwargs)
+            from gwaslab.util.util_in_meta_polars import meta_analyze_polars
+            # Filter out verbose and log from kwargs as meta_analyze_polars doesn't accept them
+            filtered_kwargs = {k: v for k, v in kwargs.items() if k not in ["verbose", "log"]}
+            return meta_analyze_polars(self.data, nstudy=self.meta["gwaslab"]["number_of_studies"], log=self.log, **filtered_kwargs)
         else:
             return meta_analyze_multi(self.data,nstudy = self.meta["gwaslab"]["number_of_studies"] ,**kwargs)
     
@@ -292,7 +294,7 @@ class SumstatsMulti( ):
                                    col="P", 
                                    nstudy=self.meta["gwaslab"]["number_of_studies"])
 
-        output = getsig(self.data,
+        output = _get_sig(self.data,
                             id=id_to_use,
                             chrom="CHR",
                             pos="POS",

@@ -6,7 +6,6 @@ import matplotlib.patches as patches
 import seaborn as sns
 import numpy as np
 import scipy as sp
-from pyensembl import EnsemblRelease
 from allel import GenotypeArray
 from allel import read_vcf
 from allel import rogers_huff_r_between
@@ -15,12 +14,10 @@ from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from adjustText import adjust_text
-from gtfparse import read_gtf
 from gwaslab.g_Log import Log
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
-from gwaslab.io.io_gtf import get_gtf
 from gwaslab.util.util_in_filter_value import _get_flanking
 from gwaslab.hm.hm_harmonize_sumstats import auto_check_vcf_chr_dict
 # unmatched SNP list 1 

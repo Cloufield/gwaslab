@@ -5,9 +5,6 @@ import requests
 import pandas as pd
 from os import path
 from pathlib import Path
-from pyensembl import Genome
-from gtfparse import read_gtf
-# read_gtf -> v1.3.0
 from gwaslab.g_Log import Log
 from gwaslab.bd.bd_download import download_ref
 from gwaslab.bd.bd_download import check_and_download
@@ -355,7 +352,6 @@ def get_chain(from_build="19", to_build="38"):
     chain_path = check_and_download("{}to{}".format(from_build, to_build))
     return chain_path
 ####################################################################################################################
-from gwaslab.io.io_gtf import get_gtf
 from gwaslab.io.io_gtf import gtf_to_protein_coding
 from gwaslab.io.io_gtf import gtf_to_all_gene
 

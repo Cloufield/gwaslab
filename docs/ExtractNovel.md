@@ -17,7 +17,7 @@ sumstats.get_novel(
 ```
 
 
-GWASLab checks overlap with a local file of variants or records in GWASCatalog.
+GWASLab checks overlap with a local file of variants or records in GWAS Catalog.
 
 Required (either):
 
@@ -25,7 +25,12 @@ Required (either):
 
 or 
 
-- `efo` : `string`, EFO id for the target trait, which is used for querying the GWASCatalog.
+- `efo` : `string`, EFO ID, MONDO ID, or trait name for the target trait, which is used for querying the GWAS Catalog API v2.
+  
+  Examples:
+  - EFO ID: `"EFO_0001360"` (type 2 diabetes)
+  - MONDO ID: `"MONDO_0005148"` (type 2 diabetes)
+  - Trait name: `"type 2 diabetes mellitus"`
 
 ## Options
 
@@ -47,6 +52,14 @@ or
 ## Example
 
 !!! warning "Only works when your sumstats are based on GRCh38" 
+
+!!! info "EFO ID, MONDO ID, or Trait Name"
+    The `efo` parameter now supports multiple formats:
+    - **EFO ID**: `"EFO_0001360"` (e.g., for type 2 diabetes)
+    - **MONDO ID**: `"MONDO_0005148"` (e.g., for type 2 diabetes)
+    - **Trait name**: `"type 2 diabetes mellitus"` (e.g., for type 2 diabetes)
+    
+    The function automatically handles MONDO to EFO conversion and trait name lookups. If a MONDO ID is provided, it will attempt to find the corresponding EFO ID. If that fails, it will try using the trait name.
 
 !!! warning "Only associations with the EFO trait will be obtained. This does not include associations with child traits." 
 

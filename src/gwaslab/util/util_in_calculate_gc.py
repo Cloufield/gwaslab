@@ -3,7 +3,7 @@ import numpy as np
 import scipy as sp
 from gwaslab.g_Log import Log
 #20220312
-def lambdaGC(insumstats,include_chrXYMT=True, x=23 ,y=24, mt=25, mode="P",level=0.5,verbose=True,log=Log()):
+def _lambda_GC(insumstats,include_chrXYMT=True, x=23 ,y=24, mt=25, mode="P",level=0.5,verbose=True,log=Log()):
     """
     Calculate the Genomic Inflation Factor (LambdaGC) for genomic control in GWAS.
     

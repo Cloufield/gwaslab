@@ -7,7 +7,7 @@ from math import ceil
 from gwaslab.g_Log import Log
 
 from gwaslab.viz.viz_aux_quickfix import _set_yticklabels
-from gwaslab.util.util_in_calculate_gc import lambdaGC
+from gwaslab.util.util_in_calculate_gc import _lambda_GC
 
 # qq plot module for mqqplot
 from gwaslab.viz.viz_aux_save_figure import safefig
@@ -172,7 +172,7 @@ def _plot_qq(
             log.write(" -Level for calculating lambda GC : {}".format(1 - level),verbose=verbose)
 
         if not include_chrXYMT : log.write(" -Excluding chrX,Y, MT from calculation of lambda GC.",verbose=verbose)
-        lambdagc = lambdaGC(p_toplot_raw, 
+        lambdagc = _lambda_GC(p_toplot_raw, 
                             mode="MLOG10P", 
                             level=level, 
                             include_chrXYMT=include_chrXYMT,

@@ -44,6 +44,7 @@ def annotate_single(
     region,
     region_anno_bbox_kwargs,
     skip,
+    anno_max_rows=40,
     arrow_kwargs=None,
     anno_height=1,
     amode="int",
@@ -90,6 +91,8 @@ def annotate_single(
         Scaling factor for annotation arm length. Default is 1.0
     anno_max_iter : int, optional
         Maximum iterations for text repulsion algorithm. Default is 50
+    anno_max_rows : int, optional
+        Maximum number of annotation rows to display. If more variants are provided, they will be sorted by p-value or -log10(p-value) and only the top ones will be shown. Default is 40
     arm_scale_d : dict, optional
         Dictionary mapping annotation indices to custom arm scaling factors. Default is None
     arm_offset : float, optional
@@ -153,6 +156,34 @@ def annotate_single(
             arm_offset = 0.0
         
     if anno and (to_annotate.empty is not True):
+        # Limit number of annotations if exceeding anno_max_rows
+        if len(to_annotate) > anno_max_rows:
+            log.write(" -Found {} variants to annotate, limiting to top {} by significance...".format(len(to_annotate), anno_max_rows), verbose=verbose)
+            # Try to sort by p-value or -log10(p-value)
+            sort_column = None
+            ascending = True
+            
+            if "scaled_P" in to_annotate.columns:
+                sort_column = "scaled_P"
+                ascending = False  # Higher -log10(p) is more significant
+            elif "MLOG10P" in to_annotate.columns:
+                sort_column = "MLOG10P"
+                ascending = False  # Higher -log10(p) is more significant
+            elif "raw_P" in to_annotate.columns:
+                sort_column = "raw_P"
+                ascending = True  # Lower p-value is more significant
+            elif "P" in to_annotate.columns:
+                sort_column = "P"
+                ascending = True  # Lower p-value is more significant
+            
+            if sort_column is not None:
+                to_annotate = to_annotate.sort_values(by=sort_column, ascending=ascending).head(anno_max_rows)
+                log.write(" -Sorted by {} and selected top {} variants...".format(sort_column, anno_max_rows), verbose=verbose)
+            else:
+                # If no p-value column found, just take first anno_max_rows
+                to_annotate = to_annotate.head(anno_max_rows)
+                log.write(" -No p-value column found, selecting first {} variants...".format(anno_max_rows), verbose=verbose)
+        
         #initiate a list for text and a starting position
         text = []
         last_pos=0

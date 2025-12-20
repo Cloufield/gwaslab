@@ -11,19 +11,19 @@ import re
 import os
 import gc
 from gwaslab.g_Log import Log
-from gwaslab.qc.qc_fix_sumstats import fixchr
-from gwaslab.qc.qc_fix_sumstats import fixpos
-from gwaslab.qc.qc_fix_sumstats import sortcolumn
+from gwaslab.qc.qc_fix_sumstats import _fix_chr
+from gwaslab.qc.qc_fix_sumstats import _fix_pos
+from gwaslab.qc.qc_fix_sumstats import _sort_column
 from gwaslab.qc.qc_fix_sumstats import _df_split
 from gwaslab.qc.qc_decorator import with_logging
-from gwaslab.qc.qc_fix_sumstats import sortcoordinate
+from gwaslab.qc.qc_fix_sumstats import _sort_coordinate
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_chr_list
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_NC
 from gwaslab.bd.bd_common_data import _maketrans
-from gwaslab.g_vchange_status import vchange_status
+from gwaslab.g_vchange_status import vchange_status, set_status_digit, status_match, match_status
 from gwaslab.g_version import _get_version
 from gwaslab.cache_manager import CacheManager, PALINDROMIC_INDEL, NON_PALINDROMIC
 from gwaslab.g_vchange_status import STATUS_CATEGORIES
@@ -71,7 +71,7 @@ TRANSLATE_TABLE_COMPL = _maketrans(COMPLEMENTARY_MAPPING)
     start_cols=["rsID"],
     start_function=".rsid_to_chrpos()"
 )
-def rsidtochrpos(sumstats,
+def _rsid_to_chrpos(sumstats,
          path=None, ref_rsid_to_chrpos_tsv=None, snpid="SNPID",
          rsid="rsID", chrom="CHR",pos="POS",ref_rsid="rsID",ref_chr="CHR",ref_pos="POS", build="19",
               overwrite=False,remove=False,chunksize=5000000,verbose=True,log=Log()):
@@ -159,9 +159,9 @@ def rsidtochrpos(sumstats,
     sumstats = sumstats.reset_index()
     sumstats = sumstats.rename(columns = {'index':rsid})
     log.write(" -Updating CHR and POS finished.Start to re-fixing CHR and POS... ",verbose=verbose)
-    sumstats = fixchr(sumstats,verbose=verbose)
-    sumstats = fixpos(sumstats,verbose=verbose)
-    sumstats = sortcolumn(sumstats,verbose=verbose)
+    sumstats = _fix_chr(sumstats,verbose=verbose)
+    sumstats = _fix_pos(sumstats,verbose=verbose)
+    sumstats = _sort_column(sumstats,verbose=verbose)
 
     return sumstats
     #################################################################################################### 
@@ -210,7 +210,7 @@ def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
     start_cols=["rsID"],
     start_function=".rsid_to_chrpos2()"
 )
-def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None, ref_rsid_to_chrpos_vcf = None, ref_rsid_to_chrpos_hdf5 = None, build="99",status="STATUS",
+def _parallelize_rsid_to_chrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None, ref_rsid_to_chrpos_vcf = None, ref_rsid_to_chrpos_hdf5 = None, build="99",status="STATUS",
                          n_cores=4,block_size=20000000,verbose=True,log=Log()):
     """
     Assign chromosome and position (CHR:POS) based on rsID using parallel HDF5 processing.
@@ -348,9 +348,9 @@ def parallelrsidtochrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None
     gc.collect()
     
     # check
-    sumstats = fixchr(sumstats,verbose=verbose)
-    sumstats = fixpos(sumstats,verbose=verbose)
-    sumstats = sortcolumn(sumstats,verbose=verbose)
+    sumstats = _fix_chr(sumstats,verbose=verbose)
+    sumstats = _fix_pos(sumstats,verbose=verbose)
+    sumstats = _sort_column(sumstats,verbose=verbose)
 
     pool.close()
     pool.join()
@@ -372,8 +372,8 @@ def _old_check_status(row,record):
     #8 / -----> not on ref genome
     #9 / ------> unchecked
     
-    status_pre=row.iloc[3][:5]
-    status_end=row.iloc[3][6:]
+    # Convert status to integer
+    status_val = int(row.iloc[3]) if isinstance(row.iloc[3], (int, np.integer)) else int(str(row.iloc[3]))
     
     ## nea == ref
     if row.iloc[2] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[2])-1].seq.upper():
@@ -382,15 +382,15 @@ def _old_check_status(row,record):
             ## len(nea) >len(ea):
             if len(row.iloc[2])!=len(row.iloc[1]):
                 # indels both on ref, unable to identify
-                return status_pre+"6"+status_end 
+                return set_status_digit(status_val, 6, 6)  # Set digit 6 to 6
         else:
             #nea == ref & ea != ref
-            return status_pre+"0"+status_end 
+            return set_status_digit(status_val, 6, 0)  # Set digit 6 to 0
     ## nea!=ref
     else:
         # ea == ref_seq -> need to flip
         if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
-            return status_pre+"3"+status_end 
+            return set_status_digit(status_val, 6, 3)  # Set digit 6 to 3
         # ea !=ref
         else:
             #_reverse_complementary
@@ -402,15 +402,15 @@ def _old_check_status(row,record):
                 if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
                     ## len(nea) >len(ea):
                     if len(row.iloc[2])!=len(row.iloc[1]):
-                        return status_pre+"8"+status_end  # indel reverse complementary
+                        return set_status_digit(status_val, 6, 8)  # indel reverse complementary
                 else:
-                    return status_pre+"4"+status_end 
+                    return set_status_digit(status_val, 6, 4)  # Set digit 6 to 4
             else:
                 # ea == ref_seq -> need to flip
                 if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
-                    return status_pre+"5"+status_end 
+                    return set_status_digit(status_val, 6, 5)  # Set digit 6 to 5
             # ea !=ref
-            return status_pre+"8"+status_end
+            return set_status_digit(status_val, 6, 8)  # Set digit 6 to 8
 
 @with_logging(
     start_to_msg="check if NEA is aligned with reference sequence",
@@ -418,7 +418,7 @@ def _old_check_status(row,record):
     start_cols=["CHR","POS","EA","NEA","STATUS"],
     start_function=".check_ref()"
 )
-def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
+def _old_check_ref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
     log.write(" -Reference genome FASTA file: "+ ref_seq,verbose=verbose)  
     log.write(" -Checking records: ", end="",verbose=verbose)  
     chromlist = get_chr_list(add_number=True)
@@ -438,19 +438,23 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
     
     log.write("\n",end="",show_time=False,verbose=verbose) 
         
-    #CATEGORIES = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
-    sumstats[status] = pd.Categorical(sumstats[status],categories=STATUS_CATEGORIES)
-    #sumstats[status] = sumstats[status].astype("string")
+    # Convert STATUS to integer (remove Categorical if present)
+    if sumstats[status].dtype.name == 'category':
+        sumstats[status] = sumstats[status].astype(str).astype(int)
+    elif sumstats[status].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
+        sumstats[status] = sumstats[status].astype(int)
+    sumstats[status] = sumstats[status].astype('Int64')
 
 
     available_to_check = ((~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())).sum()
-    status_0 = sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False).sum()
-    status_3 = sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False).sum()
-    status_4 = sumstats["STATUS"].str.match("\w\w\w\w\w[4]\w", case=False, flags=0, na=False).sum()
-    status_5 = sumstats["STATUS"].str.match("\w\w\w\w\w[5]\w", case=False, flags=0, na=False).sum()
-    status_6 = sumstats["STATUS"].str.match("\w\w\w\w\w[6]\w", case=False, flags=0, na=False).sum()
-    #status_7 = sumstats["STATUS"].str.match("\w\w\w\w\w[7]\w", case=False, flags=0, na=False).sum()
-    status_8 = sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w", case=False, flags=0, na=False).sum()
+    # Use status_match for integer status codes (digit 6)
+    status_0 = status_match(sumstats["STATUS"], 6, [0]).sum()
+    status_3 = status_match(sumstats["STATUS"], 6, [3]).sum()
+    status_4 = status_match(sumstats["STATUS"], 6, [4]).sum()
+    status_5 = status_match(sumstats["STATUS"], 6, [5]).sum()
+    status_6 = status_match(sumstats["STATUS"], 6, [6]).sum()
+    #status_7 = status_match(sumstats["STATUS"], 6, [7]).sum()
+    status_8 = status_match(sumstats["STATUS"], 6, [8]).sum()
     
     log.write(" -Variants allele on given reference sequence : ",status_0,verbose=verbose)
     log.write(" -Variants flipped : ",status_3,verbose=verbose)
@@ -469,7 +473,7 @@ def oldcheckref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status=
     log.write(" -Variants not on given reference sequence : ",status_8,verbose=verbose)
     
     if remove is True:
-        sumstats = sumstats.loc[~sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w"),:]
+        sumstats = sumstats.loc[~status_match(sumstats["STATUS"], 6, [8]),:]
         log.write(" -Variants not on given reference sequence were removed.",verbose=verbose)
     
     return sumstats
@@ -589,14 +593,17 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     rev_ea = rev_ea[:, ::-1]
 
 
-    # Convert the status (which are integers represented as strings) to a numpy array of integers.
-    # Again, use the same concept as before to do this in a very fast way.
-    # e.g. ["9999999", "9939999", "9929999"] -> [[9, 9, 9, 9, 9, 9, 9], [9, 9, 3, 9, 9, 9, 9], [9, 9, 2, 9, 9, 9, 9]]
-    assert _status.str.len().value_counts().nunique() == 1 # all the status strings should have the same length, let's be sure of that.
-    status_len = len(_status.iloc[0])
+    # Convert the status (which are integers) to a numpy array of integers.
+    # Status codes are always 7-digit integers, so convert to string first
+    # e.g. [9999999, 9939999, 9929999] -> [[9, 9, 9, 9, 9, 9, 9], [9, 9, 3, 9, 9, 9, 9], [9, 9, 2, 9, 9, 9, 9]]
+    # Status is now integer, so check that all values are 7-digit integers
+    assert (_status >= 1000000).all() and (_status <= 9999999).all(), "All status codes should be 7-digit integers"
+    status_len = 7
+    # Convert integer status to string with zero-padding to ensure 7 digits
+    _status_str = _status.astype(str).str.zfill(7)
     mapping_status = {str(v): chr(v) for v in range(10)}
     table_stats = _maketrans(mapping_status)
-    status = _status.str.translate(table_stats).to_numpy().astype(f'<U{status_len}')
+    status = _status_str.str.translate(table_stats).to_numpy().astype(f'<U{status_len}')
     status = status.view('<u4').reshape(-1, status_len).astype(np.uint8)
 
 
@@ -767,7 +774,7 @@ def load_fasta_auto(path: str):
     start_cols=["CHR","POS","EA","NEA","STATUS"],
     start_function=".check_ref()"
 )
-def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", status="STATUS", chr_dict=get_chr_to_number(), remove=False, verbose=True, log=Log()):
+def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", status="STATUS", chr_dict=get_chr_to_number(), remove=False, verbose=True, log=Log()):
     """
     Check if non-effect allele (NEA) is aligned with reference genome.
 
@@ -822,7 +829,7 @@ def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", stat
     chromlist = get_chr_list(add_number=True)
     records = load_fasta_auto(ref_seq)
     
-    sumstats = sortcoordinate(sumstats,verbose=False)
+    sumstats = _sort_coordinate(sumstats,verbose=False)
 
     all_records_dict = {}
     chroms_in_sumstats = sumstats[chrom].unique() # load records from Fasta file only for the chromosomes present in the sumstats
@@ -847,18 +854,22 @@ def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", stat
         sumstats.loc[to_check_ref,status] = check_status(sumstats_to_check, all_records_dict, log=log, verbose=verbose)
         log.write(" -Finished checking records", verbose=verbose) 
     
-    #CATEGORIES = {str(j+i) for j in [1300000,1800000,1900000,3800000,9700000,9800000,9900000] for i in range(0,100000)}
-    sumstats[status] = pd.Categorical(sumstats[status],categories=STATUS_CATEGORIES)
-    #sumstats[status] = sumstats[status].astype("string")
+    # Convert STATUS to integer (remove Categorical if present)
+    if sumstats[status].dtype.name == 'category':
+        sumstats[status] = sumstats[status].astype(str).astype(int)
+    elif sumstats[status].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
+        sumstats[status] = sumstats[status].astype(int)
+    sumstats[status] = sumstats[status].astype('Int64')
 
     available_to_check = ((~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())).sum()
-    status_0 = sumstats["STATUS"].str.match("\w\w\w\w\w[0]\w", case=False, flags=0, na=False).sum()
-    status_3 = sumstats["STATUS"].str.match("\w\w\w\w\w[3]\w", case=False, flags=0, na=False).sum()
-    status_4 = sumstats["STATUS"].str.match("\w\w\w\w\w[4]\w", case=False, flags=0, na=False).sum()
-    status_5 = sumstats["STATUS"].str.match("\w\w\w\w\w[5]\w", case=False, flags=0, na=False).sum()
-    status_6 = sumstats["STATUS"].str.match("\w\w\w\w\w[6]\w", case=False, flags=0, na=False).sum()
-    #status_7 = sumstats["STATUS"].str.match("\w\w\w\w\w[7]\w", case=False, flags=0, na=False).sum()
-    status_8 = sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w", case=False, flags=0, na=False).sum()
+    # Use status_match for integer status codes (digit 6)
+    status_0 = status_match(sumstats["STATUS"], 6, [0]).sum()
+    status_3 = status_match(sumstats["STATUS"], 6, [3]).sum()
+    status_4 = status_match(sumstats["STATUS"], 6, [4]).sum()
+    status_5 = status_match(sumstats["STATUS"], 6, [5]).sum()
+    status_6 = status_match(sumstats["STATUS"], 6, [6]).sum()
+    #status_7 = status_match(sumstats["STATUS"], 6, [7]).sum()
+    status_8 = status_match(sumstats["STATUS"], 6, [8]).sum()
     
     log.write(" -Variants allele on given reference sequence : ",status_0,verbose=verbose)
     log.write(" -Variants flipped : ",status_3,verbose=verbose)
@@ -877,7 +888,7 @@ def checkref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", stat
     log.write(" -Variants not on given reference sequence : ",status_8,verbose=verbose)
     
     if remove is True:
-        sumstats = sumstats.loc[~sumstats["STATUS"].str.match("\w\w\w\w\w[8]\w"),:]
+        sumstats = sumstats.loc[~status_match(sumstats["STATUS"], 6, [8]),:]
         log.write(" -Variants not on given reference sequence were removed.",verbose=verbose)
 
     return sumstats
@@ -955,8 +966,8 @@ def assign_rsid_single(sumstats,path,rsid="rsID",chr="CHR",pos="POS",ref="NEA",a
     start_cols=["CHR","POS","EA","NEA","STATUS"],
     start_function=".assign_rsid()"
 )
-def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="rsID", chr="CHR", pos="POS", ref="NEA", alt="EA", status="STATUS",
-                          n_cores=1, chunksize=5000000, ref_snpid="SNPID", ref_rsid="rsID",
+def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="rsID", chr="CHR", pos="POS", ref="NEA", alt="EA", status="STATUS",
+                          threads=1, chunksize=5000000, ref_snpid="SNPID", ref_rsid="rsID",
                           overwrite="empty", verbose=True, log=Log(), chr_dict=None):
     """
     Assign rsID to variants by matching with reference file.
@@ -987,7 +998,7 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
         Column name for alternative allele (effect allele).
     status : str, default="STATUS"
         Column name for status codes.
-    n_cores : int, default=1
+    threads : int, default=1
         Number of CPU cores to use for parallel processing.
     chunksize : int, default=5000000
         Size of chunks for processing large reference files.
@@ -1033,7 +1044,8 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
         pre_number = (~sumstats[rsid].isna()).sum()
 
         ##################################################################################################################
-        standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
+        # Match: digit 4 is 0 and digit 5 is 0-4
+        standardized_normalized = status_match(sumstats["STATUS"], 4, [0]) & status_match(sumstats["STATUS"], 5, [0,1,2,3,4])
         if overwrite=="all":
             to_assign = standardized_normalized
         if overwrite=="invalid":
@@ -1044,10 +1056,10 @@ def parallelizeassignrsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid="r
         # multicore arrangement
 
         if to_assign.sum()>0:
-            if to_assign.sum()<10000: n_cores=1
-            #df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], n_cores)
-            df_split = _df_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], n_cores)
-            pool = Pool(n_cores)
+            if to_assign.sum()<10000: threads=1
+            #df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], threads)
+            df_split = _df_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], threads)
+            pool = Pool(threads)
             map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,chr_dict=chr_dict) 
             assigned_rsid = pd.concat(pool.map(map_func,df_split))
             sumstats.loc[to_assign,rsid] = assigned_rsid.values 
@@ -1117,25 +1129,26 @@ def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_th
     ### 5 : palindromic -strand -> need to flip
     ### 8 : no ref data
     if chr_dict is not None: chr=chr_dict[chr]
-    status_pre=status[:6]
-    status_end=""
+    # Convert status to integer
+    status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
+    
     try:
         chr_seq = vcf_reader.fetch(chr,start,end)
     except:
-        return status_pre+"8"+status_end
+        return set_status_digit(status_val, 7, 8)  # Set digit 7 to 8
         
     
     for record in chr_seq:
         if record.pos==end and record.ref==ref and (alt in record.alts):
             if min(record.info[alt_freq][0] > ref_maf_threshold, 1- record.info[alt_freq][0]) > ref_maf_threshold:
-                return status_pre+"8"+status_end
+                return set_status_digit(status_val, 7, 8)  # Set digit 7 to 8
             if  (record.info[alt_freq][0]<0.5) and (eaf<0.5):
-                return status_pre+"1"+status_end
+                return set_status_digit(status_val, 7, 1)  # Set digit 7 to 1
             elif (record.info[alt_freq][0]>0.5) and (eaf>0.5):
-                return status_pre+"1"+status_end
+                return set_status_digit(status_val, 7, 1)  # Set digit 7 to 1
             else:
-                return status_pre+"5"+status_end
-    return status_pre+"8"+status_end
+                return set_status_digit(status_val, 7, 5)  # Set digit 7 to 5
+    return set_status_digit(status_val, 7, 8)  # Set digit 7 to 8
 
 def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_maf_threshold=0.4,chr_dict=get_number_to_chr(),trust_cache=True,log=Log(),verbose=True):
     if not trust_cache:
@@ -1159,10 +1172,10 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_ma
         
         if chr_dict is not None: chrom=chr_dict[chrom]
         
-        status_pre=status[:6]
-        status_end=""
+        # Convert status to integer
+        status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
         
-        new_status = status_pre+"8"+status_end # default value
+        new_status = set_status_digit(status_val, 7, 8)  # default value: set digit 7 to 8
         
         cache_key = f"{chrom}:{pos}:{ref}:{alt}"
         if cache_key in cache:
@@ -1171,16 +1184,16 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_ma
 
 
             if record is None:
-                new_status = status_pre+"8"+status_end
+                new_status = set_status_digit(status_val, 7, 8)
             else:
                 if min(record, 1- record) > ref_maf_threshold:
-                    return status_pre+"8"+status_end
+                    return set_status_digit(status_val, 7, 8)
                 if (record<0.5) and (eaf<0.5):
-                    new_status = status_pre+"1"+status_end
+                    new_status = set_status_digit(status_val, 7, 1)
                 elif (record>0.5) and (eaf>0.5):
-                    new_status = status_pre+"1"+status_end
+                    new_status = set_status_digit(status_val, 7, 1)
                 else:
-                    new_status = status_pre+"5"+status_end
+                    new_status = set_status_digit(status_val, 7, 5)
         else:
             if not trust_cache:
                 # If we don't trust the cache as a not complete cache, we should perform the check reading from the VCF file
@@ -1199,26 +1212,26 @@ def check_unkonwn_indel(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_th
     ### 6 flip
     
     if chr_dict is not None: chr=chr_dict[chr]
-    status_pre=status[:6]
-    status_end=""
+    # Convert status to integer
+    status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
     
     try:
         chr_seq = vcf_reader.fetch(chr,start,end)
     except:
-        return status_pre+"8"+status_end
+        return set_status_digit(status_val, 7, 8)
 
     for record in chr_seq:
         if min(record.info[alt_freq][0] > ref_maf_threshold, 1- record.info[alt_freq][0]) > ref_maf_threshold:
-                return status_pre+"8"+status_end
+                return set_status_digit(status_val, 7, 8)
         if record.pos==end and record.ref==ref and (alt in record.alts):
             if  abs(record.info[alt_freq][0] - eaf)<daf_tolerance:
-                return status_pre+"3"+status_end
+                return set_status_digit(status_val, 7, 3)
    
         elif record.pos==end and record.ref==alt and (ref in record.alts):
             if  abs(record.info[alt_freq][0] - (1 - eaf))<daf_tolerance:
-                return status_pre+"6"+status_end
+                return set_status_digit(status_val, 7, 6)
 
-    return status_pre+"8"+status_end
+    return set_status_digit(status_val, 7, 8)
 
 
 def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_maf_threshold=None, chr_dict=get_number_to_chr(),daf_tolerance=0.2,trust_cache=True,log=Log(),verbose=True):
@@ -1243,10 +1256,10 @@ def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_m
         start = pos - 1
         end = pos
         
-        status_pre=status[:6]
-        status_end=""
+        # Convert status to integer
+        status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
         
-        new_status = status_pre+"8"+status_end # default value
+        new_status = set_status_digit(status_val, 7, 8)  # default value: set digit 7 to 8
         
         cache_key_ref_alt = f"{chrom}:{pos}:{ref}:{alt}"
         cache_key_alt_ref = f"{chrom}:{pos}:{alt}:{ref}"
@@ -1256,23 +1269,23 @@ def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_m
             record = cache[cache_key_ref_alt]
 
             if record is None:
-                new_status = status_pre+"8"+status_end
+                new_status = set_status_digit(status_val, 7, 8)
             else:
                 if min(record, 1- record) > ref_maf_threshold:
-                    return status_pre+"8"+status_end
+                    return set_status_digit(status_val, 7, 8)
                 if  abs(record - eaf)<daf_tolerance:
-                    new_status = status_pre+"3"+status_end
+                    new_status = set_status_digit(status_val, 7, 3)
 
         elif cache_key_alt_ref in cache:
             in_cache += 1
             record = cache[cache_key_alt_ref]
             if record is None:
-                new_status = status_pre+"8"+status_end
+                new_status = set_status_digit(status_val, 7, 8)
             else:
                 if min(record, 1- record) > ref_maf_threshold:
-                    return status_pre+"8"+status_end
+                    return set_status_digit(status_val, 7, 8)
                 if  abs(record - (1 - eaf))<daf_tolerance:
-                    new_status = status_pre+"6"+status_end
+                    new_status = set_status_digit(status_val, 7, 6)
 
         else:
             if not trust_cache:
@@ -1331,7 +1344,7 @@ def check_indel_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_thresho
     start_function=".infer_strand()",
     must_kwargs=["ref_alt_freq"]
 )
-def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,ref_maf_threshold=0.5,daf_tolerance=0.20,remove_snp="",mode="pi",n_cores=1,remove_indel="",
+def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,ref_maf_threshold=0.5,daf_tolerance=0.20,remove_snp="",mode="pi",threads=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
                        chr_dict=None,cache_options={},verbose=True,log=Log()):
     """
@@ -1358,13 +1371,14 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
     cache_loader = cache_options.get("cache_loader", None)
     cache_process = cache_options.get("cache_process", None)
     use_cache = any(c is not None for c in [cache_manager, cache_loader, cache_process]) or cache_options.get('use_cache', False)
-    _n_cores = n_cores # backup n_cores
+    _threads = threads # backup threads
     
     log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)  
 
     if "p" in mode:
         ## checking \w\w\w\w[0]\w\w -> standardized and normalized snp
-        good_chrpos =  sumstats[status].str.match(r'\w\w\w[0][0]\w\w', case=False, flags=0, na=False) 
+        # Match: digit 4 is 0 and digit 5 is 0
+        good_chrpos = status_match(sumstats[status], 4, [0]) & status_match(sumstats[status], 5, [0]) 
         palindromic = good_chrpos & is_palindromic(sumstats[[ref,alt]],a1=ref,a2=alt)   
         not_palindromic_snp = good_chrpos & (~palindromic)
 
@@ -1378,7 +1392,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
         sumstats.loc[palindromic&(~maf_can_infer),status] = vchange_status(sumstats.loc[palindromic&(~maf_can_infer),status],7,"9","7")
         
         #palindromic WITH UNKNWON OR UNCHECKED STATUS
-        unknow_palindromic = sumstats[status].str.match(r'\w\w\w\w\w[012][89]', case=False, flags=0, na=False) 
+        # Match: digit 6 is 0,1,2 and digit 7 is 8,9
+        unknow_palindromic = status_match(sumstats[status], 6, [0,1,2]) & status_match(sumstats[status], 7, [8,9]) 
 
         unknow_palindromic_to_check = palindromic & maf_can_infer & unknow_palindromic
         
@@ -1387,12 +1402,12 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
         ######################################################################################### 
         if unknow_palindromic_to_check.sum()>0:
             if unknow_palindromic_to_check.sum()<10000:
-                n_cores=1
+                threads=1
 
             if use_cache and cache_manager is None:
                 cache_manager = CacheManager(base_path=ref_infer, cache_loader=cache_loader, cache_process=cache_process,
                                              ref_alt_freq=ref_alt_freq, category=PALINDROMIC_INDEL,
-                                             n_cores=_n_cores, log=log, verbose=verbose)
+                                             threads=_threads, log=log, verbose=verbose)
 
             log.write(" -Starting strand inference for palindromic SNPs...",verbose=verbose)
             df_to_check = sumstats.loc[unknow_palindromic_to_check,[chr,pos,ref,alt,eaf,status]]
@@ -1402,9 +1417,9 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
                 status_inferred = cache_manager.apply_fn(check_strand_cache, sumstats=df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq, ref_maf_threshold=ref_maf_threshold, chr_dict=chr_dict, trust_cache=trust_cache, log=log, verbose=verbose)
                 sumstats.loc[unknow_palindromic_to_check,status] = status_inferred
             else:
-                #df_split = np.array_split(df_to_check, n_cores)
-                df_split = _df_split(df_to_check, n_cores)
-                pool = Pool(n_cores)
+                #df_split = np.array_split(df_to_check, threads)
+                df_split = _df_split(df_to_check, threads)
+                pool = Pool(threads)
                 map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,chr_dict=chr_dict) 
                 status_inferred = pd.concat(pool.map(map_func,df_split))
                 sumstats.loc[unknow_palindromic_to_check,status] = status_inferred.values
@@ -1425,11 +1440,12 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
         #8 Not matching or No information
         #9 Unchecked
 
-        status0 = sumstats[status].str.match(r'\w\w\w\w\w\w[0]', case=False, flags=0, na=False)  
-        status1 = sumstats[status].str.match(r'\w\w\w\w\w\w[1]', case=False, flags=0, na=False)  
-        status5 = sumstats[status].str.match(r'\w\w\w\w\w\w[5]', case=False, flags=0, na=False)  
-        status7 = sumstats[status].str.match(r'\w\w\w\w\w\w[7]', case=False, flags=0, na=False)  
-        status8 = sumstats[status].str.match(r'\w\w\w\w\w\w[8]', case=False, flags=0, na=False)  
+        # Match digit 7
+        status0 = status_match(sumstats[status], 7, [0])
+        status1 = status_match(sumstats[status], 7, [1])
+        status5 = status_match(sumstats[status], 7, [5])
+        status7 = status_match(sumstats[status], 7, [7])
+        status8 = status_match(sumstats[status], 7, [8])  
 
         log.write("  -Non-palindromic : ",sum(status0),verbose=verbose)
         log.write("  -Palindromic SNPs on + strand: ",sum(status1),verbose=verbose)
@@ -1449,7 +1465,8 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
     ### unknow_indel
     if "i" in mode:
-        unknow_indel = sumstats[status].str.match(r'\w\w\w\w\w[6][89]', case=False, flags=0, na=False)   
+        # Match: digit 6 is 6 and digit 7 is 8,9
+        unknow_indel = status_match(sumstats[status], 6, [6]) & status_match(sumstats[status], 7, [8,9])   
         log.write(" -Identified ", unknow_indel.sum(), " indistinguishable Indels...", verbose=verbose)
         if unknow_indel.sum()>0:
             log.write(" -Indistinguishable indels will be inferred from reference vcf REF and ALT...",verbose=verbose)
@@ -1461,12 +1478,12 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
                          
             if unknow_indel.sum()>0:
                 if unknow_indel.sum()<10000:
-                    n_cores=1
+                    threads=1
 
                 if use_cache and cache_manager is None:
                     cache_manager = CacheManager(base_path=ref_infer, cache_loader=cache_loader, cache_process=cache_process,
                                                 ref_alt_freq=ref_alt_freq, category=PALINDROMIC_INDEL,
-                                                n_cores=_n_cores, log=log, verbose=verbose)
+                                                threads=_threads, log=log, verbose=verbose)
 
                 log.write(" -Starting indistinguishable indel inference...",verbose=verbose)
                 df_to_check = sumstats.loc[unknow_indel,[chr,pos,ref,alt,eaf,status]]
@@ -1476,9 +1493,9 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
                     status_inferred = cache_manager.apply_fn(check_indel_cache, sumstats=df_to_check, ref_infer=ref_infer, ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold, chr_dict=chr_dict, daf_tolerance=daf_tolerance, trust_cache=trust_cache, log=log, verbose=verbose)
                     sumstats.loc[unknow_indel,status] = status_inferred
                 else:
-                    #df_split = np.array_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], n_cores)
-                    df_split = _df_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], n_cores)
-                    pool = Pool(n_cores)
+                    #df_split = np.array_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], threads)
+                    df_split = _df_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], threads)
+                    pool = Pool(threads)
                     map_func = partial(check_indel,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,chr_dict=chr_dict,daf_tolerance=daf_tolerance) 
                     status_inferred = pd.concat(pool.map(map_func,df_split))
                     sumstats.loc[unknow_indel,status] = status_inferred.values 
@@ -1488,9 +1505,9 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
 
             #########################################################################################
 
-            status3 =  sumstats[status].str.match(r'\w\w\w\w\w\w[3]', case=False, flags=0, na=False)  
-            status6 =  sumstats[status].str.match(r'\w\w\w\w\w\w[6]', case=False, flags=0, na=False)  
-            status8 =  sumstats[status].str.match(r'\w\w\w\w\w[6][8]', case=False, flags=0, na=False)  
+            status3 = status_match(sumstats[status], 7, [3])
+            status6 = status_match(sumstats[status], 7, [6])
+            status8 = status_match(sumstats[status], 6, [6]) & status_match(sumstats[status], 7, [8])  
 
             log.write("  -Indels ea/nea match reference : ", status3.sum(), verbose=verbose)
             log.write("  -Indels ea/nea need to be flipped : ", status6.sum(), verbose=verbose)
@@ -1531,7 +1548,7 @@ def parallelinferstrand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,
     start_function=".check_daf()",
     must_kwargs=["ref_alt_freq"]
 )
-def parallelecheckaf(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Check the difference between effect allele frequency (EAF) in summary statistics and alternative allele frequency in reference VCF.
 
@@ -1553,7 +1570,7 @@ def parallelecheckaf(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, 
         Name of the column to store the difference values.
     suffix : str, default=""
         Suffix to append to the column name.
-    n_cores : int, default=1
+    threads : int, default=1
         Number of CPU cores to use for parallel processing.
     chr : str, default="CHR"
         Column name for chromosome information.
@@ -1601,7 +1618,8 @@ def parallelecheckaf(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, 
     if ref_alt_freq is not None:
         log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)  
         if not force:
-            good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
+            # Match: digit 4 is 0
+            good_chrpos = status_match(sumstats[status], 4, [0])  
         log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose)
         sumstats[column_name]=np.nan
     
@@ -1660,7 +1678,7 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
     start_function=".check_daf()",
     must_kwargs=["ref_alt_freq"]
 )
-def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Infer effect allele frequency (EAF) in summary statistics using reference VCF ALT frequency.
 
@@ -1676,7 +1694,7 @@ def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR
         Path to the reference VCF file.
     ref_alt_freq : str, optional
         Field name for alternative allele frequency in VCF INFO section.
-    n_cores : int, default=1
+    threads : int, default=1
         Number of CPU cores to use for parallel processing.
     chr : str, default="CHR"
         Column name for chromosome information.
@@ -1724,7 +1742,8 @@ def paralleleinferaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR
     if ref_alt_freq is not None:
         log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)   
         if not force:
-            good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
+            # Match: digit 4 is 0
+            good_chrpos = status_match(sumstats[status], 4, [0])  
         log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose) 
     
     ########################  
@@ -1795,7 +1814,7 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
         Path to the reference VCF file.
     ref_alt_freq : str, optional
         Field name for alternative allele frequency in VCF INFO section.
-    n_cores : int, default=1
+    threads : int, default=1
         Number of CPU cores to use for parallel processing.
     chr : str, default="CHR"
         Column name for chromosome information.
@@ -1851,7 +1870,8 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
     if ref_alt_freq is not None:
         log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)   
         if not force:
-            good_chrpos =  sumstats[status].str.match(r'\w\w\w[0]\w\w\w', case=False, flags=0, na=False)  
+            # Match: digit 4 is 0
+            good_chrpos = status_match(sumstats[status], 4, [0])  
         log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose)
     
         ########################  

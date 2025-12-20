@@ -41,7 +41,7 @@ def calc_PIP(insumstats,log=Log(),verbose=True,**kwargs):
     insumstats.loc[:, "PIP"] = np.exp(insumstats['log_PIP'])
     return insumstats
 
-def abf_finemapping(insumstats,region=None,chrpos=None,snpid=None, log=Log(),**kwargs):
+def _abf_finemapping(insumstats,region=None,chrpos=None,snpid=None, log=Log(),**kwargs):
 
     if region is not None:
         region_data = insumstats[(insumstats["CHR"] == region[0]) & (insumstats["POS"] >= region[1]) & (insumstats["POS"] <= region[2])]
@@ -54,7 +54,7 @@ def abf_finemapping(insumstats,region=None,chrpos=None,snpid=None, log=Log(),**k
     region_data = calc_PIP(region_data,log=log,**kwargs)
     return region_data
 
-def make_cs(insumstats,threshold=0.95,log=Log(),verbose=True):
+def _make_cs(insumstats,threshold=0.95,log=Log(),verbose=True):
     insumstats = insumstats.sort_values(by="PIP",ascending=False)
     pip_sum = 0
     cs = pd.DataFrame()

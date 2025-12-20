@@ -12,7 +12,7 @@ from gwaslab.g_Sumstats import Sumstats
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
-from gwaslab.util.util_in_get_sig import getsig, annogene
+from gwaslab.util.util_in_get_sig import _get_sig, _anno_gene
 from gwaslab.util.util_in_correct_winnerscurse import wc_correct
 from gwaslab.util.util_in_correct_winnerscurse import wc_correct_test
 from gwaslab.viz.viz_plot_scatter_with_reg import jackknife_r as scatter_jackknife_r
@@ -577,11 +577,11 @@ def extract_snp_for_comparison(sumstats, snplist, label,
         log.write(" -Extract variants in the given list from "+label+"...")
         sig_list = sumstats.loc[sumstats["SNPID"].isin(snplist),:].copy()
         if anno=="GENENAME":
-            sig_list = annogene(sig_list,"SNPID","CHR","POS", build=build, verbose=verbose, **get_lead_kwargs)
+            sig_list = _anno_gene(sig_list,"SNPID","CHR","POS", build=build, verbose=verbose, **get_lead_kwargs)
     else:
         ######### 8,2 otherwise use the automatically detected lead SNPs
         log.write(" -Extract lead variants from "+label +"...", verbose=verbose)
-        sig_list = getsig(sumstats,"SNPID","CHR","POS","P","MLOG10P", build=build, verbose=verbose,sig_level=sig_level,**get_lead_kwargs)
+        sig_list = _get_sig(sumstats,"SNPID","CHR","POS","P","MLOG10P", build=build, verbose=verbose,sig_level=sig_level,**get_lead_kwargs)
     
     if drop==True:
         if scaled==True:

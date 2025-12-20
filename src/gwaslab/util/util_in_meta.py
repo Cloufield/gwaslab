@@ -6,8 +6,13 @@ from scipy.stats import norm
 from gwaslab.g_Log import Log
 from gwaslab.io.io_to_pickle import load_data_from_pickle
 from gwaslab.g_Sumstats import Sumstats
+from gwaslab.qc.qc_decorator import with_logging
 import gc
 
+@with_logging(
+        start_to_msg="perform meta-analysis",
+        finished_msg="meta-analysis successfully"
+)
 def meta_analyze(sumstats_list,
                  random_effects=False, 
                  match_allele=True, 
@@ -17,7 +22,6 @@ def meta_analyze(sumstats_list,
     columns=["SNPID","CHR","POS","EA","NEA"]
     results_df = pd.DataFrame(columns=columns)
 
-    log.write("Start to perform meta-analysis...")
     log.write(" -Datasets:")
 
     for index,sumstats_path in enumerate(sumstats_list):
@@ -171,7 +175,6 @@ def meta_analyze(sumstats_list,
     ###########################################################################
     results_df = results_df.drop(columns=["_BETAW_SUM","_BETA2W_SUM","_W_SUM","_R2","_W2_SUM"]).sort_values(by=["CHR","POS"])
     gc.collect()
-    log.write("Finished meta-analysis successfully!")
     
     return results_df
      
@@ -238,12 +241,15 @@ def get_sumstats(input_path,usekeys=None):
 
 ############################################################################################################################################################################
 
+@with_logging(
+        start_to_msg="perform meta-analysis",
+        finished_msg="meta-analysis successfully"
+)
 def meta_analyze_multi(sumstats_multi,
                        random_effects=False,
                        nstudy=1, 
                        match_allele=True, 
                        log=Log()):
-    log.write("Start to perform meta-analysis...")
     ###########################################################################
     log.write(" -Initiating result DataFrame...")
     sumstats_multi["_INDEX"] = range(len(sumstats_multi))
@@ -350,7 +356,6 @@ def meta_analyze_multi(sumstats_multi,
     ###########################################################################
     results_df = results_df.drop(columns=["_BETAW_SUM","_BETA2W_SUM","_W_SUM","_R2","_W2_SUM"]).sort_values(by=["CHR","POS"]).reset_index()
     gc.collect()
-    log.write("Finished meta-analysis successfully!")
 
     if random_effects==True:
         other_cols = ["BETA_RANDOM","SE_RANDOM","Z_RANDOM","P_RANDOM"]

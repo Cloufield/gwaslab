@@ -13,7 +13,7 @@ from gwaslab.extension import _checking_plink_version
 
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 
-from gwaslab.util.util_in_get_sig import getsig
+from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.util.util_ex_calculate_ldmatrix import _extract_variants_in_locus
@@ -64,7 +64,7 @@ def tofinemapping_m(sumstats,
     
     if loci is None:
         log.write(" -Loci were not provided. All significant loci will be automatically extracted...",verbose=verbose)
-        sig_df = getsig(sumstats,id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_kwargs)
+        sig_df = _get_sig(sumstats,variant_id="SNPID",chrom="CHR",pos="POS",p="P"+suffixes[0],**getlead_kwargs)
     else:
         sig_df = sumstats.loc[sumstats["SNPID"].isin(loci),:]
 

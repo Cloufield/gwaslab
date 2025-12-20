@@ -17,11 +17,11 @@ from gwaslab.hm.hm_casting import _assign_warning_code
 from gwaslab.hm.hm_casting import _renaming_cols
 from gwaslab.hm.hm_casting import _sort_pair_cols
 
-from gwaslab.qc.qc_fix_sumstats import flipallelestats
+from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 
-from gwaslab.util.util_ex_calculate_ldmatrix import tofinemapping
+from gwaslab.util.util_ex_calculate_ldmatrix import _to_finemapping
 from gwaslab.util.util_ex_run_coloc import _run_coloc_susie
 from gwaslab.util.util_ex_run_ccgwas import _run_ccgwas
 from gwaslab.util.util_ex_run_2samplemr import _run_two_sample_mr
@@ -29,7 +29,7 @@ from gwaslab.util.util_ex_run_clumping import _clump
 from gwaslab.util.util_ex_ldproxyfinder import _extract_with_ld_proxy
 from gwaslab.util.util_ex_match_ldmatrix import tofinemapping_m
 from gwaslab.util.util_ex_run_mesusie import _run_mesusie
-from gwaslab.util.util_in_filter_value import filtervalues
+from gwaslab.util.util_in_filter_value import _filter_values
 
 from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq
 from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
@@ -178,7 +178,7 @@ class SumstatsPair( ):
         molded_sumstats = _align_with_mold(molded_sumstats, log=self.log, verbose=verbose,suffixes=(suffixes[0],""))
         
         # flip sumstats2 statistics
-        molded_sumstats = flipallelestats(molded_sumstats, log=self.log, verbose=verbose)
+        molded_sumstats = _flip_allele_stats(molded_sumstats, log=self.log, verbose=verbose)
         
         # drop sumstats2 EA NEA
         molded_sumstats = molded_sumstats.drop(columns=["EA","NEA"])
@@ -202,7 +202,7 @@ class SumstatsPair( ):
         self.clumps["clumps"],self.clumps["clumps_raw"],self.clumps["plink_log"] = _clump(self, log=self.log, p="P_1",mlog10p="MLOG10P_1", study = self.meta["gwaslab"]["group_name"], **kwargs)
 
     def to_coloc(self,**kwargs):
-        self.coloc["path"],self.coloc["file"],self.coloc["plink_log"] = tofinemapping(self,study=self.meta["gwaslab"]["group_name"],suffixes=self.suffixes,log=self.log,**kwargs)
+        self.coloc["path"],self.coloc["file"],self.coloc["plink_log"] = _to_finemapping(self,study=self.meta["gwaslab"]["group_name"],suffixes=self.suffixes,log=self.log,**kwargs)
 
     def to_mesusie(self,**kwargs):
         self.mesusie["path"],self.mesusie["file"],self.mesusie["plink_log"] = tofinemapping_m(self.data,
@@ -250,10 +250,10 @@ class SumstatsPair( ):
     def filter_value(self, expr, inplace=False, **kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = filtervalues(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **kwargs)
+            new_Sumstats_object.data = _filter_values(new_Sumstats_object.data,expr,log=new_Sumstats_object.log, **kwargs)
             return new_Sumstats_object
         else:
-            self.data = filtervalues(self.data, expr,log=self.log,**kwargs)
+            self.data = _filter_values(self.data, expr,log=self.log,**kwargs)
         gc.collect()
 
     def _apply_viz_params(self, func, kwargs, key=None, mode=None):

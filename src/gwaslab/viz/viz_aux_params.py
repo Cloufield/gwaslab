@@ -1,12 +1,23 @@
 """Visualization parameter management for gwaslab plots.
 
-Provides a centralized registry of per-plot and per-mode parameter surfaces:
-- Allowed keys and defaults are stored under `key[:mode]`.
-- Filtering preserves only whitelisted params (or those in the target function
-  signature when no whitelist exists) and removes banned nested sub-keys inside
-  dict-type args.
-- Configuration is loaded from `viz_aux_params.txt` (argument catalog) and
-  `viz_aux_params_registry.txt` (registry) via `load_viz_config`.
+This module provides a centralized parameter management system for gwaslab visualization
+functions. It manages per-plot and per-mode parameter surfaces, allowing fine-grained
+control over which arguments are allowed, their default values, and how they are filtered
+before being passed to plotting functions.
+
+Key Features:
+- Centralized registry of allowed parameters and defaults per plot:mode combination
+- Parameter filtering with whitelist support and function signature fallback
+- Banned argument handling: banned args are replaced with defaults rather than removed
+- Nested sub-key filtering for dict-type arguments (e.g., removing 'figsize' from fig_kwargs)
+- Registry inheritance: registry entries can inherit from other entries
+- Configuration via JSON files: `viz_aux_params.txt` (argument catalog) and
+  `viz_aux_params_registry.txt` (explicit registry with inheritance support)
+- Numeric suffix support: arguments like "highlight2" match base "highlight" in filtering
+- Context-specific defaults and descriptions for mode-specific customizations
+
+The system is loaded via `load_viz_config()` which processes both configuration files
+and applies them in a specific order to build the final parameter registry.
 
 ================================================================================
 USAGE RULES AND PRIORITIES
@@ -226,7 +237,7 @@ USAGE RULES AND PRIORITIES
        }
      }
    
-   viz_aux_params_registry.txt (explicit registry):
+   viz_aux_params_registry.txt (explicit registry with inheritance):
      {
        "registry": {
          "plot:mode": {
@@ -236,10 +247,23 @@ USAGE RULES AND PRIORITIES
            },
            "banned_keys": {                    # Nested sub-key bans
              "arg_name": ["subkey1", "subkey2"]
-           }
+           },
+           "inherit": "parent_plot:mode",      # Inherit all (allowed, defaults, banned_keys)
+           "allowed_inherit": "parent",        # Inherit only allowed list
+           "defaults_inherit": "parent",        # Inherit only defaults
+           "banned_keys_inherit": "parent"     # Inherit only banned_keys
          }
        }
      }
+     
+     Inheritance directives:
+     - "inherit": Inherits allowed, defaults, and banned_keys from parent entry
+       (child values override parent, lists are merged)
+     - "allowed_inherit": Inherits only the allowed list (merged with child's allowed)
+     - "defaults_inherit": Inherits only defaults (child overrides parent)
+     - "banned_keys_inherit": Inherits only banned_keys (lists are merged)
+     - Multiple inheritance directives can be used together
+     - Inheritance is resolved recursively with cycle detection
 
 
 10. BEST PRACTICES
@@ -739,7 +763,7 @@ def load_viz_config(pm, path=None, merge=True):
 
 
 def _load_registry_file(pm):
-    """Load registry from viz_aux_params_registry.txt."""
+    """Load registry from viz_aux_params_registry.txt with inheritance support."""
     registry_file_path = os.path.join(os.path.dirname(__file__), "viz_aux_params_registry.txt")
     if not os.path.exists(registry_file_path):
         return
@@ -749,22 +773,161 @@ def _load_registry_file(pm):
             data = json.loads(rf.read())
             registry_source = data.get("registry", {})
             
+            # First pass: Load all entries without inheritance
+            raw_entries = {}
             for key, entry in registry_source.items():
                 if ":" in key:
                     plot_name, mode_name = key.split(":", 1)
                 else:
                     plot_name, mode_name = key, None
                 
+                raw_entries[key] = {
+                    "plot": plot_name,
+                    "mode": mode_name,
+                    "entry": dict(entry)  # Make a copy
+                }
+            
+            # Second pass: Resolve inheritance
+            resolved_entries = {}
+            for key, raw_data in raw_entries.items():
+                resolved = _resolve_inheritance(key, raw_data["entry"], raw_entries, resolved_entries)
+                resolved_entries[key] = resolved
+            
+            # Third pass: Apply resolved entries to registry
+            for key, resolved_entry in resolved_entries.items():
+                raw_data = raw_entries[key]
+                plot_name = raw_data["plot"]
+                mode_name = raw_data["mode"]
                 target = pm._get_registry_entry(plot_name, mode_name)
                 
-                if "allowed" in entry and entry["allowed"] is not None:
-                    target["allowed"] = set(entry["allowed"])
-                if "defaults" in entry:
-                    target["defaults"].update(entry["defaults"])
-                if "banned_keys" in entry:
-                    target.setdefault("banned_keys", {}).update(entry["banned_keys"])
+                if "allowed" in resolved_entry and resolved_entry["allowed"] is not None:
+                    target["allowed"] = set(resolved_entry["allowed"])
+                if "defaults" in resolved_entry:
+                    target["defaults"].update(resolved_entry["defaults"])
+                if "banned_keys" in resolved_entry:
+                    target.setdefault("banned_keys", {}).update(resolved_entry["banned_keys"])
     except Exception:
         pass
+
+
+def _resolve_inheritance(key, entry, raw_entries, resolved_entries, visited=None):
+    """Resolve inheritance for a registry entry.
+    
+    Supports:
+    - "inherit": inherits allowed, banned_keys, and defaults from another entry
+    - "allowed_inherit": inherits only allowed list
+    - "banned_keys_inherit": inherits only banned_keys
+    - "defaults_inherit": inherits only defaults
+    
+    Args:
+        key: Registry key (e.g., "plot_manhattan")
+        entry: Entry dictionary with potential inheritance directives
+        raw_entries: All raw entries from registry file
+        resolved_entries: Cache of already resolved entries
+        visited: Set of keys being resolved (for cycle detection)
+    
+    Returns:
+        Resolved entry dictionary with inheritance applied
+    """
+    if visited is None:
+        visited = set()
+    
+    if key in resolved_entries:
+        return resolved_entries[key]
+    
+    if key in visited:
+        # Cycle detected, return entry without inheritance
+        return dict(entry)
+    
+    visited.add(key)
+    resolved = dict(entry)  # Start with a copy
+    
+    # Handle general inheritance (inherits all)
+    if "inherit" in entry:
+        parent_key = entry["inherit"]
+        if parent_key in raw_entries:
+            parent_entry = _resolve_inheritance(parent_key, raw_entries[parent_key]["entry"], 
+                                               raw_entries, resolved_entries, visited.copy())
+            # Inherit allowed
+            if "allowed" not in resolved or resolved["allowed"] is None:
+                resolved["allowed"] = parent_entry.get("allowed", [])
+            elif isinstance(resolved["allowed"], list):
+                # Merge: combine parent and child allowed lists
+                parent_allowed = set(parent_entry.get("allowed", []))
+                child_allowed = set(resolved["allowed"])
+                resolved["allowed"] = list(parent_allowed | child_allowed)
+            
+            # Inherit defaults
+            if "defaults" not in resolved:
+                resolved["defaults"] = {}
+            parent_defaults = parent_entry.get("defaults", {})
+            # Merge defaults (child overrides parent)
+            resolved["defaults"] = {**parent_defaults, **resolved["defaults"]}
+            
+            # Inherit banned_keys
+            if "banned_keys" not in resolved:
+                resolved["banned_keys"] = {}
+            parent_banned = parent_entry.get("banned_keys", {})
+            # Merge banned_keys (child overrides parent)
+            merged_banned = dict(parent_banned)
+            for banned_key, banned_list in resolved.get("banned_keys", {}).items():
+                if banned_key in merged_banned:
+                    # Merge lists
+                    merged_banned[banned_key] = list(set(merged_banned[banned_key]) | set(banned_list))
+                else:
+                    merged_banned[banned_key] = banned_list
+            resolved["banned_keys"] = merged_banned
+        
+        # Remove inherit directive from resolved entry
+        resolved.pop("inherit", None)
+    
+    # Handle specific inheritance directives
+    if "allowed_inherit" in entry:
+        parent_key = entry["allowed_inherit"]
+        if parent_key in raw_entries:
+            parent_entry = _resolve_inheritance(parent_key, raw_entries[parent_key]["entry"],
+                                               raw_entries, resolved_entries, visited.copy())
+            parent_allowed = parent_entry.get("allowed", [])
+            if "allowed" not in resolved or resolved["allowed"] is None:
+                resolved["allowed"] = parent_allowed
+            elif isinstance(resolved["allowed"], list):
+                # Merge: combine parent and child
+                resolved["allowed"] = list(set(parent_allowed) | set(resolved["allowed"]))
+        resolved.pop("allowed_inherit", None)
+    
+    if "banned_keys_inherit" in entry:
+        parent_key = entry["banned_keys_inherit"]
+        if parent_key in raw_entries:
+            parent_entry = _resolve_inheritance(parent_key, raw_entries[parent_key]["entry"],
+                                               raw_entries, resolved_entries, visited.copy())
+            parent_banned = parent_entry.get("banned_keys", {})
+            if "banned_keys" not in resolved:
+                resolved["banned_keys"] = {}
+            # Merge banned_keys
+            merged_banned = dict(parent_banned)
+            for banned_key, banned_list in resolved.get("banned_keys", {}).items():
+                if banned_key in merged_banned:
+                    merged_banned[banned_key] = list(set(merged_banned[banned_key]) | set(banned_list))
+                else:
+                    merged_banned[banned_key] = banned_list
+            resolved["banned_keys"] = merged_banned
+        resolved.pop("banned_keys_inherit", None)
+    
+    if "defaults_inherit" in entry:
+        parent_key = entry["defaults_inherit"]
+        if parent_key in raw_entries:
+            parent_entry = _resolve_inheritance(parent_key, raw_entries[parent_key]["entry"],
+                                               raw_entries, resolved_entries, visited.copy())
+            parent_defaults = parent_entry.get("defaults", {})
+            if "defaults" not in resolved:
+                resolved["defaults"] = {}
+            # Merge defaults (child overrides parent)
+            resolved["defaults"] = {**parent_defaults, **resolved["defaults"]}
+        resolved.pop("defaults_inherit", None)
+    
+    visited.remove(key)
+    resolved_entries[key] = resolved
+    return resolved
 
 
 def _apply_ctx_defaults(pm, raw_args):

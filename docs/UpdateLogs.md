@@ -1,5 +1,60 @@
 # Update Logs
 
+# v4.0.0 (Coming soon)
+
+## Major Changes
+
+### Performance Improvements
+- **Function reimplementation for better performance**: Multiple core functions have been reimplemented with optimized algorithms and data structures
+- **GWAS Catalog API integration**: Refactored GWAS Catalog API v2 integration with improved CHR/POS extraction from locations field, better error handling, and reduced logging verbosity for pagination
+- **Status code manipulation**: Optimized status code processing using integer arithmetic for better performance
+- **Efficient data processing**: Improved memory usage and processing speed for large datasets
+
+### API Consistency
+- **Argument renaming for consistency**: Standardized parameter names across functions to maintain consistency throughout the codebase
+- **Unified naming conventions**: Parameters now follow consistent naming patterns (e.g., `inplace` instead of mixed `inplace`/`remove`, standardized `kwargs` parameter names)
+
+### Code Quality
+- **Improved code organization**: Better separation of concerns in visualization parameter management
+- **Enhanced documentation**: Extensive inline documentation explaining parameter management rules and priorities
+
+### Testing Infrastructure
+- **Comprehensive test suite**: Added and consolidated test modules for improved code quality and reliability
+- **Test coverage**: Expanded test coverage across core functionality including visualization parameters, API integration, QC operations, data processing, format conversion, and object operations
+
+### Visualization Parameter Management System (VizParamsManager)
+- **Complete redesign of visualization parameter management**: Introduced a comprehensive, centralized parameter management system for all GWASLab plotting functions
+- **New VizParamsManager class**: Provides fine-grained control over plot parameters with per-plot and per-mode configurations
+- **Registry-based configuration**: Supports two configuration files:
+  - `viz_aux_params.txt`: Argument catalog with plot associations, defaults, and exclusions
+  - `viz_aux_params_registry.txt`: Explicit registry with inheritance support
+- **Advanced parameter filtering**:
+  - Whitelist-based parameter filtering with function signature fallback
+  - Numeric suffix support (e.g., `highlight2`, `highlight10` match base `highlight`)
+  - Banned argument handling: banned args are replaced with defaults rather than removed
+  - Nested sub-key filtering for dict-type arguments (e.g., removing `figsize` from `fig_kwargs`)
+- **Registry inheritance**: Registry entries can inherit from parent entries with support for:
+  - Full inheritance (`inherit`)
+  - Selective inheritance (`allowed_inherit`, `defaults_inherit`, `banned_keys_inherit`)
+  - Recursive inheritance with cycle detection
+- **Context-specific defaults**: Mode-specific default overrides via `ctx_defaults`
+- **Wildcard expansion**: Support for `plot:*` and `all:*` wildcards in plot specifications
+- **Parameter merge priority**: Clear precedence order: registered defaults → object presets → call-time kwargs
+
+### Documentation Updates
+- **Comprehensive documentation improvements**: Updated and expanded documentation across multiple areas:
+  - **GWAS Catalog API**: Added complete documentation for `get_known_variants_for_trait()`, MONDO ID support, CHR/POS extraction improvements, and reduced logging verbosity
+  - **Pickle operations**: Added `to_pickle()` method documentation with comprehensive examples and usage patterns
+  - **Status codes**: Expanded status code documentation with complete digit meanings, usage examples, and best practices
+  - **QC and Filtering**: Enhanced filtering methods documentation, added missing methods (`filter_palindromic`, `filter_snp`, `filter_indel`, `filter_hapmap3`, `exclude_hla`), and improved examples
+  - **Standardization**: Comprehensive updates to standardization methods with complete parameter tables, usage examples, and workflow recommendations
+  - **Statistics Sanity Check**: Updated parameter ranges to match code implementation, added missing parameters (`maf`, `t`, `f`), and corrected OR/HR ranges
+- **Improved examples**: Added practical, real-world examples throughout the documentation
+- **Better organization**: Restructured documentation for improved readability and navigation
+
+
+# v3.6.12 - v3.6.16
+
 # 3.6.12 20251118
 - added infer_strand2 and assign_rsid2 for testing
 - revised some docstrings (ongoing)
@@ -165,7 +220,7 @@
 - added highlight and pinpoint for plot_trumpet()
 - fixed typo (credit to @sup3rgiu Mr. Andrea)
 - changed `**args` to `**kwargs` (credit to @sup3rgiu Mr. Andrea)
-- implemented munge-like filters `munge=True`  for ldsc in gwaslab
+- implemented munge-like filters `munge=True` for ldsc in GWASLab
 
 ## 3.4.41 20240219
 - fixed error in region_ref_second
@@ -311,7 +366,7 @@
 ## 3.4.17 2023/06/27
 - added `expected_min_mlog10p` for qq mode in `plot_mqq()`
 - added trumpet plot
-- added support for gwaslab Sumstats object for gl.compare_effect()
+- added support for GWASLab Sumstats object for gl.compare_effect()
 - added saving options for gl.compare_effect()
 - fixed bug for `is_q=False` in gl.compare_effect().
 
@@ -493,12 +548,12 @@
 
 ## v3.3.7 
 
-- updated packaging methods. Now when installing gwaslab, pip will install all dependencies as well.
+- updated packaging methods. Now when installing GWASLab, pip will install all dependencies as well.
 
 ## v3.3.6 - 2022/11/05
 
 - added download function: 
-    - now you can download reference files from predefined list via gwaslab
+    - now you can download reference files from predefined list via GWASLab
     - `gl.check_available_ref()` : list available reference files
     - `gl.check_downloaded_ref()` : list downloaded reference files
     - `gl.download_ref(name)` : download reference files
@@ -524,7 +579,7 @@
 - optimized the logic for removing duplicated and multiallelic variants 
 - added update_formatbook()
 - added functions to read vcf.gz `gl.Sumstats("myvcf.vcf.gz",fmt="vcf")`
-- gwaslab is now able to read chromosome-separated files
+- GWASLab is now able to read chromosome-separated files
 - fixed bugs
 
 ## v3.3.3

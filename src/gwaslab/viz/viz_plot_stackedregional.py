@@ -12,7 +12,6 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from allel import GenotypeArray
 from allel import read_vcf
 from allel import rogers_huff_r_between
-from pyensembl import EnsemblRelease
 
 import gwaslab as gl
 from gwaslab.bd.bd_common_data import get_chr_to_number
@@ -23,8 +22,8 @@ from gwaslab.g_Log import Log
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.io.io_to_pickle import load_data_from_pickle
 from gwaslab.io.io_to_pickle import load_pickle
-from gwaslab.util.util_in_get_sig import annogene
-from gwaslab.util.util_in_get_sig import getsig
+from gwaslab.util.util_in_get_sig import _anno_gene
+from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.viz.viz_aux_annotate_plot import annotate_pair
 from gwaslab.viz.viz_aux_chromatin import _plot_chromatin_state
 from gwaslab.viz.viz_aux_quickfix import (
@@ -41,7 +40,7 @@ from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_plot_credible_sets import _plot_cs
-from gwaslab.viz.viz_plot_mqqplot import mqqplot
+from gwaslab.viz.viz_plot_mqqplot import _mqqplot
 
 
 def plot_stacked_mqq(   objects,
@@ -64,7 +63,6 @@ def plot_stacked_mqq(   objects,
                         region_hspace=0.07,
                         subplot_height=4,
                         region_lead_grids = None,
-                        region_lead_grid_line=None,
                         region_ld_legends = None,
                         fontsize=9,
                         font_family="Arial",
@@ -81,6 +79,7 @@ def plot_stacked_mqq(   objects,
     log.write("Start to create stacked mqq plot by iteratively calling plot_mqq:",verbose=verbose)
     # load sumstats
     log.write(" -Stacked plot mode:{}...".format(mode),verbose=verbose)
+
     ##########################################################################################################################################
     # a list of modes for each panel
     if pm is None:
@@ -110,7 +109,7 @@ def plot_stacked_mqq(   objects,
         rr_ylabel=True
     
     style = set_plot_style(
-        plot="plot_stacked",
+        plot="plot_stacked_mqq",
         fig_kwargs=fig_kwargs if fig_kwargs is not None else fig_kwargs,
         save_kwargs=save_kwargs if save_kwargs is not None else save_kwargs,
         save=save,
@@ -135,8 +134,7 @@ def plot_stacked_mqq(   objects,
     if extra is not None:
         title_kwargs.update(extra)
     title_pos = mqq_kwargs.get("title_pos") or style.get("title_pos", None)
-    if region_lead_grid_line is None:
-        region_lead_grid_line = {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"}
+
     if region_chromatin_files is None:
         region_chromatin_files = []
         region_chromatin_height = len(region_chromatin_files) * region_chromatin_height
@@ -158,7 +156,6 @@ def plot_stacked_mqq(   objects,
     #
     # subplot_height : subplot height
     # figsize : Width, height in inches
-
     if mode=="r":
     ##########################################################################################################################################   
         if not (len(vcfs)==1 or len(vcfs)==len(sumstats_list)):
@@ -251,7 +248,11 @@ def plot_stacked_mqq(   objects,
         #################################################################
         if index==0:
             # plot last m and gene track 
-            fig,log,lead_snp_is,lead_snp_is_color = mqqplot(sumstats,
+            # Remove region_ld_legend and region_lead_grid from kwargs since they're set explicitly
+            plot_kwargs = dict(mqq_kwargs_for_each_plot[index])
+            plot_kwargs.pop("region_ld_legend", None)
+            plot_kwargs.pop("region_lead_grid", None)
+            fig,log,lead_snp_is,lead_snp_is_color = _mqqplot(sumstats,
                             chrom="CHR",
                             pos="POS",
                             p="P",
@@ -273,14 +274,18 @@ def plot_stacked_mqq(   objects,
                             build=build,
                             verbose=verbose,
                             log=log,
-                            **mqq_kwargs_for_each_plot[index]
+                            **plot_kwargs
                             )  
             lead_variants_is[index] = lead_snp_is
             lead_variants_is_color[index] = lead_snp_is_color
         else:
             if pm[index]=="m":
                 # plot only the scatter plot
-                fig,log,lead_snp_is,lead_snp_is_color = mqqplot(sumstats,
+                # Remove region_ld_legend and region_lead_grid from kwargs since they're set explicitly
+                plot_kwargs = dict(mqq_kwargs_for_each_plot[index])
+                plot_kwargs.pop("region_ld_legend", None)
+                plot_kwargs.pop("region_lead_grid", None)
+                fig,log,lead_snp_is,lead_snp_is_color = _mqqplot(sumstats,
                                 chrom="CHR",
                                 pos="POS",
                                 p="P",
@@ -302,7 +307,7 @@ def plot_stacked_mqq(   objects,
                                 build=build,
                                 verbose=verbose,
                                 log=log,
-                                **mqq_kwargs_for_each_plot[index]
+                                **plot_kwargs
                                 )
                 lead_variants_is[index] = lead_snp_is
                 lead_variants_is_color[index] = lead_snp_is_color
@@ -379,6 +384,7 @@ def plot_stacked_mqq(   objects,
     
     ##########################################################################################################################################
     # draw the line for lead variants
+    region_lead_grid_line = mqq_kwargs.get("region_lead_grid_line", {"alpha":0.5,"linewidth" : 2,"linestyle":"--","color":"#FF0000"})
     _draw_grid_line_for_lead_variants(mode, lead_variants_is,lead_variants_is_color, n_plot, axes, region_lead_grid_line,region_chromatin_files,region_lead_grids)
     
     ##########################################################################################################################################  

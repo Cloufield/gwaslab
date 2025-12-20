@@ -1,0 +1,331 @@
+# Common Problems and Edge Cases for Test Case Creation
+# This file documents common issues and edge cases to consider when creating test cases
+
+## Data Quality Issues
+
+### Missing/NaN Values
+- NaN values in P column
+- NaN values in MLOG10P column
+- NaN values in DENSITY column (for get_top)
+- NaN values in CHR column
+- NaN values in POS column
+- NaN values in EA column
+- NaN values in NEA column
+- NaN values in both EA and NEA columns
+- All values are NaN
+- All rows missing for a certain column (entire column is NaN/NA)
+- All rows missing for P column
+- All rows missing for MLOG10P column
+- All rows missing for DENSITY column (for get_top)
+- All rows missing for EA column
+- All rows missing for NEA column
+- Mixed NaN and valid values
+- Mixed NaN and valid values in EA/NEA
+
+### Data Type Issues
+- CHR as string instead of numeric ("1", "chr1", "X", "Y", "MT")
+- CHR as float instead of integer
+- POS as float instead of integer
+- P values as string
+- Nullable integer types (Int64) that can produce <NA> values
+- Mixed data types in same column
+
+### Allele Problems
+- Missing EA values (NaN/NA in EA column)
+- Missing NEA values (NaN/NA in NEA column)
+- All rows missing EA values
+- All rows missing NEA values
+- Invalid allele characters (non-ATCG nucleotides)
+- EA contains invalid characters (e.g., "N", "I", "D", numbers, special chars)
+- NEA contains invalid characters (e.g., "N", "I", "D", numbers, special chars)
+- EA and NEA are identical (not a variant, EA == NEA)
+- Case inconsistencies (mixed lowercase/uppercase alleles)
+- Lowercase alleles (a, t, c, g)
+- Uppercase alleles (A, T, C, G)
+- Mixed case alleles in same column
+- Empty string alleles ("")
+- Whitespace in alleles (" A", "T ", " C G")
+- Multi-character alleles (indels: "AT", "CG", "TTA")
+- Allele length mismatches (EA="A", NEA="AT")
+- REF/ALT vs EA/NEA mismatches
+- EA matches REF but should match ALT
+- EA matches ALT but should match REF
+- NEA assignment errors (NEA should be REF when EA==ALT)
+- Allele harmonization issues (strand mismatches)
+- Allele flipping problems (complement mismatches)
+- Allele frequency mismatches (EAF + RAF != 1 when alleles are correct)
+- Allele frequency conflicts with EA/NEA
+- Allele encoding issues (special characters, unicode)
+- Allele as numeric values instead of strings
+- Allele as categorical type causing issues
+- Allele columns as object type instead of category
+
+### Missing Columns
+- Missing P column (only MLOG10P available)
+- Missing MLOG10P column (only P available)
+- Missing both P and MLOG10P
+- Missing DENSITY column for get_top
+- Missing CHR or POS columns
+- Missing SNPID/rsID column
+- Missing EA column
+- Missing NEA column
+- Missing both EA and NEA columns
+- Missing REF/ALT columns (when EA/NEA not available)
+
+## Edge Cases - Data Size
+
+### Empty Data
+- Empty DataFrame (0 rows)
+- Empty DataFrame with correct columns
+- DataFrame with only header row
+
+### Single Row
+- Single variant in entire dataset
+- Single variant per chromosome
+- Single significant variant
+
+### Small Datasets
+- 2-3 variants total
+- All variants on same chromosome
+- All variants on different chromosomes
+
+### Large Datasets
+- Many variants (>1000)
+- Many significant variants
+- Many chromosomes represented
+
+## Edge Cases - Values
+
+### Identical Values
+- All P values identical
+- All MLOG10P values identical
+- All DENSITY values identical
+- All positions identical (duplicated positions)
+- All P values at exact significance threshold
+
+### Extreme Values
+- P values very close to 0 (1e-300, float32 minimum)
+- P values exactly 0
+- P values exactly 1
+- Very large MLOG10P values (>1000)
+- Very small window sizes (1kb, 10kb)
+- Very large window sizes (1000kb, 5000kb)
+
+### Boundary Values
+- P values exactly at sig_level threshold
+- P values just above sig_level
+- P values just below sig_level
+- No significant variants (all P values > sig_level)
+- No significant variants (all MLOG10P < -log10(sig_level))
+- DENSITY values exactly at threshold
+- Positions at chromosome boundaries
+- Window size exactly matching variant spacing
+
+## Data Structure Issues
+
+### Duplicates
+- Duplicated positions (same CHR:POS, different alleles)
+- Duplicated positions with same EA/NEA (true duplicates)
+- Duplicated positions with different EA/NEA (same position, different alleles)
+- Duplicated SNPIDs
+- Duplicated rows (exact duplicates)
+- Multiple variants at same position with different P values
+- Multiple variants at same position with different EA/NEA combinations
+- Same SNPID with different EA/NEA values
+- Same SNPID with different P values
+
+### Sorting Issues
+- Unsorted by CHR
+- Unsorted by POS
+- Unsorted by CHR and POS
+- Reverse sorted
+- Randomly ordered
+
+### Chromosome Issues
+- Single chromosome
+- Multiple chromosomes (1-22)
+- Non-autosomal chromosomes (X, Y, MT)
+- Mixed chromosome formats (numeric and string)
+- Missing chromosome information
+
+### Position Issues
+- Positions not in ascending order
+- Very close positions (<100bp apart)
+- Very far positions (>1Mb apart)
+- Positions spanning chromosome boundaries
+- Negative positions
+- Zero positions
+- Very large positions (>250Mb)
+
+## Parameter Combinations
+
+### Window Size
+- Very small (1kb, 10kb) - may cluster all variants
+- Default (500kb)
+- Very large (1000kb+) - may not cluster any variants
+- Window size larger than chromosome
+- Window size smaller than minimum variant spacing
+
+### Significance Threshold
+- Very strict (1e-10)
+- Default (5e-8)
+- Relaxed (1e-5, 1e-6)
+- All variants significant
+- No variants significant
+
+### Threshold for get_top
+- None (auto-calculated median)
+- Very low threshold (all variants pass)
+- Very high threshold (no variants pass)
+- Threshold exactly at some variant values
+
+### use_p Flag
+- use_p=False (use MLOG10P, default)
+- use_p=True (use P values)
+- Both P and MLOG10P available
+- Only P available
+- Only MLOG10P available
+
+## Clustering and Window Issues
+
+### Variant Clustering
+- All variants within one window
+- Each variant in separate window
+- Variants exactly at window boundaries
+- Variants spanning multiple windows
+- Clusters at chromosome boundaries
+
+### Window Boundary Cases
+- First variant in chromosome
+- Last variant in chromosome
+- Variants at exact window boundaries
+- Window size exactly matching variant spacing
+
+## Known Historical Issues (from KnownIssues.md)
+
+### P Value Conversion Issues
+- Float32 precision issues (minimum ~1e-38)
+- P values below float32 minimum becoming 0
+- Conversion from MLOG10P to P causing precision loss
+- Solution: Use MLOG10P directly (scaled=True or use_p=False)
+
+### Skipped Lead Variant
+- Last variant in significant variants being skipped
+- Edge case at end of chromosome
+- Edge case at end of sorted list
+
+### Alignment Issues
+- Unsorted coordinates causing alignment failures
+- Coordinate conversion issues
+
+## Return Value Edge Cases
+
+### Empty Results
+- No significant variants found (all P values > sig_level)
+- No significant variants found (all MLOG10P < -log10(sig_level))
+- No significant variants when using use_p=True
+- No significant variants when using use_p=False (MLOG10P)
+- All variants filtered out by threshold (for get_top)
+- Empty DataFrame returned
+- None returned
+- Function should handle gracefully without errors
+
+### Single Result
+- Only one lead variant found
+- Only one top variant found
+
+### Multiple Results
+- Multiple lead variants on same chromosome
+- Multiple lead variants across chromosomes
+- All variants returned as leads
+
+## Annotation Edge Cases (when anno=True)
+
+### Gene Annotation
+- Variants in genes
+- Variants in intergenic regions
+- Variants near gene boundaries
+- Multiple genes at same position
+- No gene annotation available
+
+### Build Issues
+- Build 19 (GRCh37)
+- Build 38 (GRCh38)
+- Wrong build specified
+- Build not specified
+
+## Threading/Parallelization Issues
+
+### Thread Count
+- threads=1 (single-threaded, recommended for tests)
+- threads>1 (multi-threaded)
+- threads=0 or negative (should handle gracefully)
+
+## Integration Issues
+
+### Column Name Variations
+- CHR vs chr vs Chromosome
+- POS vs pos vs Position
+- P vs pvalue vs p_value
+- MLOG10P vs -log10P vs LOG10P
+- SNPID vs rsID vs variant_id
+
+### DataFrame Index Issues
+- Default integer index
+- Custom index
+- Non-contiguous index
+- Index with gaps
+
+## Performance Edge Cases
+
+### Large Windows
+- Window size > chromosome length
+- Window size causing all variants to cluster
+
+### Many Clusters
+- Each variant in separate cluster
+- All variants in one cluster
+- Clusters spanning chromosome boundaries
+
+## Error Conditions to Test
+
+### Invalid Parameters
+- Negative window size
+- Zero window size
+- Negative sig_level
+- sig_level > 1
+- Invalid chromosome values
+- Invalid position values
+
+### Missing Dependencies
+- Missing annotation files (when anno=True)
+- Missing GTF files
+- Network issues (if downloading annotations)
+
+## Test Data Patterns
+
+### Realistic Patterns
+- Variants clustered in LD blocks
+- Variants with realistic P value distributions
+- Variants with realistic spacing (GWAS-like)
+
+### Synthetic Edge Cases
+- All variants at same position
+- Variants in perfect arithmetic progression
+- Variants with alternating significance
+- Variants forming perfect clusters
+
+## Output Validation
+
+### Result Structure
+- Correct columns present
+- Correct number of rows
+- Correct data types in output
+- No internal columns (__ID, __SCALEDP, etc.) in output
+
+### Result Correctness
+- Most significant variant selected in each window
+- Correct clustering behavior
+- No duplicates in output
+- Correct sorting in output
+

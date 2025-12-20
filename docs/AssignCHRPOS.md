@@ -168,7 +168,7 @@ Assign CHR POS using the HDF5 file.
 | Option    | DataType | Description                          | Default |
 |-----------|----------|--------------------------------------|---------|
 | `path`    | `string` | the path to the HDF5 file            | -       |
-| `n_cores` | `int`    | number of threads to use             | `./`    |
+| `threads` | `int`    | number of threads to use             | `./`    |
 | `build`   | `string` | genome build version for CHR and POS | `"99"`  |
 
 

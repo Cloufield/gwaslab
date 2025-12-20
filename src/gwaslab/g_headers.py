@@ -5,7 +5,7 @@ dtype_dic={
  'POS'               : 'Int64'    ,
  'EA'                : 'category' ,
  'NEA'               : 'category' ,
- 'STATUS'            : 'category' ,
+ 'STATUS'            : 'Int64'    ,
  'REF'               : 'category' ,
  'ALT'               : 'category' ,
  'EAF'               : 'float64'  ,

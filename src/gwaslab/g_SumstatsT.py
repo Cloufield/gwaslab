@@ -7,7 +7,7 @@ from gwaslab.hm.hm_casting import _fill_missing_columns
 from gwaslab.hm.hm_casting import _check_daf
 from gwaslab.hm.hm_casting import _assign_warning_code
 
-from gwaslab.qc.qc_fix_sumstats import flipallelestats
+from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 
 
 class SumstatsT( ):
@@ -38,7 +38,7 @@ class SumstatsT( ):
 
         molded_sumstats = _align_with_mold(molded_sumstats, log=sumstatsObject.log, verbose=verbose)
         
-        molded_sumstats = flipallelestats(molded_sumstats, log=sumstatsObject.log, verbose=verbose)
+        molded_sumstats = _flip_allele_stats(molded_sumstats, log=sumstatsObject.log, verbose=verbose)
 
         molded_sumstats = _fill_missing_columns(molded_sumstats, self.stats_cols, log=sumstatsObject.log, verbose=verbose)
 

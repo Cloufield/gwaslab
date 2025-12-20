@@ -35,7 +35,7 @@ def _quick_fix_p_value(sumstats, p="P", mlog10p="MLOG10P", scaled=False,verbose=
         # if scaled, add scaled P and P col 
         log.write(" -P values are already scaled...", verbose=verbose)
         log.write(" -Sumstats -log10(P) values are being converted to P...", verbose=verbose)
-        sumstats["scaled_P"] = sumstats[mlog10p].copy()
+        sumstats["scaled_P"] = sumstats[mlog10p]
         sumstats[p]= np.power(10,-sumstats[mlog10p].astype("float64"))
         return sumstats
     # bad p : na and outside (0,1]
@@ -51,18 +51,17 @@ def _quick_fix_mlog10p(insumstats,p="P", mlog10p="MLOG10P", scaled=False, log=Lo
     '''
     drop variants with bad -log10(P) values
     '''
-    sumstats = insumstats.copy()
     if scaled != True:
         log.write(" -Sumstats P values are being converted to -log10(P)...", verbose=verbose)
-        sumstats["scaled_P"] = -np.log10(sumstats[p].astype("float64"))
+        insumstats["scaled_P"] = -np.log10(insumstats[p].astype("float64"))
         
     #with pd.option_context('mode.use_inf_as_na', True):
     #    is_na = sumstats["scaled_P"].isna()
-    if_inf_na = np.isinf(sumstats["scaled_P"]) | sumstats["scaled_P"].isna()
+    if_inf_na = np.isinf(insumstats["scaled_P"]) | insumstats["scaled_P"].isna()
 
     log.write(" -Sanity check: "+str(sum(if_inf_na)) +
                   " na/inf/-inf variants will be removed...", verbose=verbose)
-    sumstats = sumstats.loc[~if_inf_na, :]
+    sumstats = insumstats.loc[~if_inf_na, :]
     return sumstats
 
 
@@ -73,16 +72,15 @@ def _quick_fix_eaf(seires,log=Log(), verbose=True):
     seires = pd.to_numeric(seires, errors='coerce')
     flipped = seires > 0.5
     seires[flipped] = 1 - seires[flipped]
-    return seires.copy()
+    return seires
 
 
 def _quick_fix_chr(seires, chr_dict,log=Log(), verbose=True):
     '''
     conversion and check for chr
     '''
-    if pd.api.types.is_string_dtype(seires) == True:
+    if pd.api.types.is_string_dtype(seires):
         # if chr is string dtype: convert using chr_dict
-        seires = seires.astype("string")
         seires = seires.map(chr_dict, na_action="ignore")
     seires = np.floor(pd.to_numeric(seires, errors='coerce')).astype('Int64')
     return seires
@@ -149,20 +147,20 @@ def _quick_assign_i(sumstats, chrom="CHR",pos="POS",log=Log(), verbose=True):
     #create a df , groupby by chromosomes , and get the maximum position
     posdic = sumstats.groupby(chrom)[pos].max()
     # convert to dictionary
-    posdiccul = dict(posdic)
+    posdiccul = posdic.to_dict()
     # fill empty chr with 0
-    for i in range(0,26):
-        if i in posdiccul: 
-            continue
-        else: 
-            posdiccul[i]=0
+    max_chr = sumstats[chrom].max()
+    posdiccul = {i: posdiccul.get(i, 0) for i in range(max_chr + 1)}
     # get interval
     interval_between_chr = sumstats[pos].max()*0.05
     # cumulative sum dictionary
-    for i in range(1,sumstats[chrom].max()+1):
-        posdiccul[i] =  posdiccul[i-1] + posdiccul[i] + interval_between_chr
+    for i in range(1, max_chr + 1):
+        posdiccul[i] = posdiccul[i-1] + posdiccul[i] + interval_between_chr
     # convert base pair postion to x axis position using the cumulative sum dictionary
-    sumstats["_ADD"] = sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
+    # Use vectorized map with pre-computed mapping Series
+    chrom_int = sumstats[chrom].astype(int)
+    add_mapping = pd.Series(posdiccul)
+    sumstats["_ADD"] = (chrom_int - 1).map(add_mapping)
     sumstats["i"]   = sumstats[pos] + sumstats["_ADD"]
     # drop add
     sumstats = sumstats.drop(labels=["_ADD"],axis=1)
@@ -189,34 +187,32 @@ def _quick_assign_i_with_rank(sumstats, chrpad, use_rank=False, chrom="CHR",pos=
     
     if _posdiccul is None:
         # convert to dictionary
-        posdiccul = dict(posdic)
+        posdiccul = posdic.to_dict()
         
         # fill empty chr with 0
-        for i in range(0,sumstats[chrom].max()+1):
-            if i in posdiccul: 
-                continue
-            else: 
-                posdiccul[i]=0
+        max_chr = sumstats[chrom].max()
+        posdiccul = {i: posdiccul.get(i, 0) for i in range(max_chr + 1)}
 
         # cumulative sum dictionary
-        for i in range(1,sumstats[chrom].max()+1):
-            posdiccul[i]= posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*chrpad
+        for i in range(1, max_chr + 1):
+            posdiccul[i] = posdiccul[i-1] + posdiccul[i] + sumstats[pos].max()*chrpad
     else:
         posdiccul = _posdiccul
     # convert base pair postion to x axis position using the cumulative sum dictionary
-    sumstats["_ADD"]=sumstats[chrom].apply(lambda x : posdiccul[int(x)-1])
+    # Use vectorized map with pre-computed mapping Series
+    chrom_int = sumstats[chrom].astype(int)
+    add_mapping = pd.Series(posdiccul)
+    sumstats["_ADD"] = (chrom_int - 1).map(add_mapping)
     
     if drop_chr_start==True:
-            posdic_min =  sumstats.groupby(chrom)[pos].min()
-            posdiccul_min= dict(posdic_min)
-            for i in range(0,sumstats[chrom].max()+1):
-                if i in posdiccul_min: 
-                    continue
-                else: 
-                    posdiccul_min[i]=0
-            for i in range(1,sumstats[chrom].max()+1):
-                posdiccul_min[i]= posdiccul_min[i-1] + posdiccul_min[i]
-            sumstats["_ADD"]=sumstats["_ADD"] - sumstats[chrom].apply(lambda x : posdiccul_min[int(x)])
+            posdic_min = sumstats.groupby(chrom)[pos].min()
+            posdiccul_min = posdic_min.to_dict()
+            max_chr = sumstats[chrom].max()
+            posdiccul_min = {i: posdiccul_min.get(i, 0) for i in range(max_chr + 1)}
+            for i in range(1, max_chr + 1):
+                posdiccul_min[i] = posdiccul_min[i-1] + posdiccul_min[i]
+            min_mapping = pd.Series(posdiccul_min)
+            sumstats["_ADD"] = sumstats["_ADD"] - (chrom_int - 1).map(min_mapping)
         
     if use_rank is True: 
         sumstats["i"]=sumstats["_POS_RANK"]+sumstats["_ADD"]
@@ -245,15 +241,30 @@ def _quick_assign_marker_relative_size(series, sig_level = 5e-8, suggestive_sig_
     return size_series
 
 def _quick_assign_highlight_hue(sumstats,highlight,highlight_windowkb, snpid="SNPID",chrom="CHR",pos="POS",log=Log(), verbose=True):
-    to_highlight = sumstats.loc[sumstats[snpid].isin(highlight),:]
-    #assign colors: 0 is hightlight color
-    for i,row in to_highlight.iterrows():
-        target_chr = int(row[chrom])
-        target_pos = int(row[pos])
-        right_chr=sumstats[chrom]==target_chr
-        up_pos=sumstats[pos]>target_pos-highlight_windowkb*1000
-        low_pos=sumstats[pos]<target_pos+highlight_windowkb*1000
-        sumstats.loc[right_chr&up_pos&low_pos,"HUE"]="0"
+    # Initialize HUE column if it doesn't exist
+    if "HUE" not in sumstats.columns:
+        sumstats["HUE"] = None
+    
+    # Get highlighted variants
+    to_highlight = sumstats.loc[sumstats[snpid].isin(highlight), [chrom, pos]]
+    
+    if len(to_highlight) == 0:
+        return sumstats
+    
+    # Vectorized approach: create mask for all highlighted regions at once
+    highlight_mask = pd.Series(False, index=sumstats.index)
+    
+    for target_chr, target_pos in zip(to_highlight[chrom], to_highlight[pos]):
+        target_chr = int(target_chr)
+        target_pos = int(target_pos)
+        window = highlight_windowkb * 1000
+        # Vectorized boolean mask
+        mask = (sumstats[chrom] == target_chr) & \
+               (sumstats[pos] > target_pos - window) & \
+               (sumstats[pos] < target_pos + window)
+        highlight_mask |= mask
+    
+    sumstats.loc[highlight_mask, "HUE"] = "0"
     return sumstats
 
 def _quick_assign_highlight_hue_pair(sumstats, highlight1, highlight2, highlight_windowkb, chrom="CHR",pos="POS",log=Log(), verbose=True):
@@ -261,27 +272,41 @@ def _quick_assign_highlight_hue_pair(sumstats, highlight1, highlight2, highlight
     to_highlight1 = pd.DataFrame()
     to_highlight2 = pd.DataFrame()
     
-    if len(highlight1)>0 :
-        to_highlight1 = sumstats.loc[sumstats["TCHR+POS"].isin(highlight1),:]
-    if len(highlight2)>0:
-        to_highlight2 = sumstats.loc[sumstats["TCHR+POS"].isin(highlight2),:]
+    if len(highlight1) > 0:
+        to_highlight1 = sumstats.loc[sumstats["TCHR+POS"].isin(highlight1), [chrom, pos]]
+    if len(highlight2) > 0:
+        to_highlight2 = sumstats.loc[sumstats["TCHR+POS"].isin(highlight2), [chrom, pos]]
     
-    if len(to_highlight1)>0:
-        for i,row in to_highlight1.iterrows():
-            target_chr = int(row[chrom])
-            target_pos = int(row[pos])
-            right_chr = sumstats["CHR"]==target_chr  
-            up_pos = sumstats["POS"]>target_pos-highlight_windowkb*1000
-            low_pos = sumstats["POS"]<target_pos+highlight_windowkb*1000
-            sumstats.loc[right_chr&up_pos&low_pos,"HUE1"]="0"
-    if len(to_highlight2)>0:
-        for i,row in to_highlight2.iterrows():
-            target_chr = int(row[chrom])
-            target_pos = int(row[pos])
-            right_chr = sumstats["CHR"]==target_chr  
-            up_pos = sumstats["POS"]>target_pos-highlight_windowkb*1000
-            low_pos = sumstats["POS"]<target_pos+highlight_windowkb*1000
-            sumstats.loc[right_chr&up_pos&low_pos,"HUE2"]="0"
+    # Initialize HUE columns if they don't exist
+    if "HUE1" not in sumstats.columns:
+        sumstats["HUE1"] = None
+    if "HUE2" not in sumstats.columns:
+        sumstats["HUE2"] = None
+    
+    window = highlight_windowkb * 1000
+    
+    if len(to_highlight1) > 0:
+        highlight1_mask = pd.Series(False, index=sumstats.index)
+        for target_chr, target_pos in zip(to_highlight1[chrom], to_highlight1[pos]):
+            target_chr = int(target_chr)
+            target_pos = int(target_pos)
+            mask = (sumstats["CHR"] == target_chr) & \
+                   (sumstats["POS"] > target_pos - window) & \
+                   (sumstats["POS"] < target_pos + window)
+            highlight1_mask |= mask
+        sumstats.loc[highlight1_mask, "HUE1"] = "0"
+    
+    if len(to_highlight2) > 0:
+        highlight2_mask = pd.Series(False, index=sumstats.index)
+        for target_chr, target_pos in zip(to_highlight2[chrom], to_highlight2[pos]):
+            target_chr = int(target_chr)
+            target_pos = int(target_pos)
+            mask = (sumstats["CHR"] == target_chr) & \
+                   (sumstats["POS"] > target_pos - window) & \
+                   (sumstats["POS"] < target_pos + window)
+            highlight2_mask |= mask
+        sumstats.loc[highlight2_mask, "HUE2"] = "0"
+    
     return sumstats, to_highlight1, to_highlight2
 
 def _quick_extract_snp_in_region(sumstats, region, chrom="CHR",pos="POS",log=Log(), verbose=True):

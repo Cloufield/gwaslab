@@ -1,6 +1,6 @@
 from gwaslab.viz.viz_aux_quickfix import _get_largenumber
 import pandas as pd
-from gwaslab.util.util_in_get_density import getsignaldensity2
+from gwaslab.util.util_in_get_density import _get_signal_density2
 
 def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
     """
@@ -94,7 +94,7 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
 
     if "b" in mode and "DENSITY" not in sumstats.columns:
         
-        sumstats =  getsignaldensity2(insumstats=sumstats,
+        sumstats =  _get_signal_density2(insumstats=sumstats,
                                                 snpid="SNPID",
                                                 chrom=chrom,
                                                 pos=pos,

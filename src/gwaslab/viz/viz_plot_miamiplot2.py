@@ -5,7 +5,6 @@ import seaborn as sns
 import numpy as np
 import scipy as sp
 import gwaslab as gl
-from pyensembl import EnsemblRelease
 from allel import GenotypeArray
 from allel import read_vcf
 from allel import rogers_huff_r_between
@@ -19,12 +18,11 @@ from gwaslab.g_Log import Log
 from gwaslab.g_version import _get_version
 from gwaslab.g_Sumstats import Sumstats
 
-from gwaslab.util.util_in_get_sig import getsig, annogene
+from gwaslab.util.util_in_get_sig import _get_sig, _anno_gene
 
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
-from gwaslab.io.io_gtf import get_gtf
 
 from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
 from gwaslab.viz.viz_aux_quickfix import (
@@ -40,7 +38,7 @@ from gwaslab.viz.viz_aux_quickfix import (
 )
 from gwaslab.viz.viz_aux_annotate_plot import annotate_pair
 from gwaslab.viz.viz_aux_save_figure import save_figure
-from gwaslab.viz.viz_plot_mqqplot import mqqplot
+from gwaslab.viz.viz_plot_mqqplot import _mqqplot
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
 from gwaslab.viz.viz_aux_save_figure import safefig
@@ -270,7 +268,7 @@ def plot_miami2(
         #maxy = merged_sumstats[["scaled_P_1","scaled_P_2"]].max().max()
 
     log.write("Start to create Manhattan plot for sumstats1...", verbose=verbose)
-    fig,log = mqqplot(merged_sumstats,
+    fig,log = _mqqplot(merged_sumstats,
                     chrom="CHR",
                     pos="POS",
                     p="P_1",
@@ -290,7 +288,7 @@ def plot_miami2(
     log.write("Finished creating Manhattan plot for sumstats1".format(_get_version()), verbose=verbose)
 
     log.write("Start to create Manhattan plot for sumstats2...", verbose=verbose)
-    fig,log = mqqplot(merged_sumstats,
+    fig,log = _mqqplot(merged_sumstats,
                       chrom="CHR",
                       pos="POS",
                       p="P_2",

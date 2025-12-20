@@ -106,7 +106,7 @@ gl.compare_effect (path1,
 | Option      | Type    | Description                                                                                                                                                                 | Default |
 |-------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | `eaf`       | `list`  | optional, a list column names for effect allele frequency, in the order of [sumstats1_eaf, sumstats2_eaf]. It is required when you need to filter by maf using `maf_level`. | `None`  |
-| `maf_level` | `float` | the maf filter for variants. Vairants with maf < maf_level will be removed from comparison.                                                                                 | `None`  |
+| `maf_level` | `float` | the maf filter for variants. Variants with maf < maf_level will be removed from comparison.                                                                                 | `None`  |
 
 ### Label
 

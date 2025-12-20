@@ -4,7 +4,7 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
-from gwaslab.util.util_in_get_sig import getsig
+from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.extension import _checking_plink_version
 

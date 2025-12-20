@@ -21,7 +21,7 @@ from gwaslab.io.io_process_kwargs import _update_arg
 from gwaslab.io.io_process_kwargs import _update_kwargs
 from gwaslab.qc.qc_build import _process_build
 from gwaslab.util.util_in_filter_value import _filter_region
-from gwaslab.util.util_in_get_sig import getsig, annogene
+from gwaslab.util.util_in_get_sig import _get_sig, _anno_gene
 from gwaslab.viz.viz_aux_annotate_plot import annotate_single
 from gwaslab.viz.viz_aux_quickfix import _cut
 from gwaslab.viz.viz_aux_quickfix import _jagged_y
@@ -129,7 +129,7 @@ def _setup_and_log_mqq_info(
 
 @normalize_series_inputs(keys=["highlight","pinpoint","anno_set"])
 @safefig
-def mqqplot(insumstats,            
+def _mqqplot(insumstats,            
           chrom="CHR",
           pos="POS",
           p="P",
@@ -227,6 +227,7 @@ def mqqplot(insumstats,
           anno_adjust=False,  # Default to no annotation adjustment
           anno_xshift=None,
           anno_max_iter=100,  # Default maximum iterations for annotation adjustment
+          anno_max_rows=40,  # Default maximum number of annotation rows to display
           arrow_kwargs=None,
           arm_offset=None,
           arm_scale=1,
@@ -365,6 +366,9 @@ def mqqplot(insumstats,
         X-axis shift for annotations. Default is None. 
     anno_max_iter : int, default=100
         Maximum iterations for text repulsion algorithm. 
+    anno_max_rows : int, default=40
+        Maximum number of annotation rows to display. If more variants are provided, 
+        they will be sorted by p-value or -log10(p-value) and only the top ones will be shown.
     arrow_kwargs : dict, optional
         Arguments for annotation arrows. Default is None.
     arm_offset : float, optional
@@ -1275,6 +1279,7 @@ def mqqplot(insumstats,
             anno_kwargs_single=anno_kwargs_single,
             arm_scale=arm_scale,
             anno_max_iter=anno_max_iter,
+            anno_max_rows=anno_max_rows,
             arm_scale_d=arm_scale_d,
             arm_offset=arm_offset,
             anno_adjust=anno_adjust,

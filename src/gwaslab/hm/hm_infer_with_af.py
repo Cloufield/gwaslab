@@ -234,7 +234,9 @@ def _infer_strand(
     # Create mask for variants with unknown strand status for palindromic SNPs
     # Pattern: 6th character is 0,1,2 and 7th character is 8 or 9
     if status_col in sumstats.columns:
-        unknown_palindromic_mask = sumstats[status_col].str.match(r'\w\w\w\w\w[012][89]', case=False, na=False)
+        # Match: digit 6 is 0,1,2 and digit 7 is 8,9
+        from gwaslab.g_vchange_status import status_match
+        unknown_palindromic_mask = status_match(sumstats[status_col], 6, [0,1,2]) & status_match(sumstats[status_col], 7, [8,9])
         valid_palindromic_mask = valid_palindromic_mask & unknown_palindromic_mask
     else:
         log.write(" -WARNING: STATUS column '{}' not found, cannot filter by strand status...".format(status_col), verbose=verbose)
@@ -322,7 +324,8 @@ def _infer_strand(
     # Create mask for variants with unknown strand status for indels
     # Pattern: 6th character is 6 and 7th character is 8 or 9
     if status_col in sumstats.columns:
-        unknown_indel_mask = sumstats[status_col].str.match(r'\w\w\w\w\w[6][89]', case=False, na=False)
+        # Match: digit 6 is 6 and digit 7 is 8,9
+        unknown_indel_mask = status_match(sumstats[status_col], 6, [6]) & status_match(sumstats[status_col], 7, [8,9])
         valid_indel_mask = valid_indel_mask & unknown_indel_mask
     else:
         log.write(" -WARNING: STATUS column '{}' not found, cannot filter by strand status...".format(status_col), verbose=verbose)

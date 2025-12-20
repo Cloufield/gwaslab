@@ -10,7 +10,7 @@ from gwaslab.g_version import _get_version
 from gwaslab.qc.qc_check_datatype import check_datatype
 from scipy.special import erfcinv
 
-def filldata( 
+def _fill_data( 
     insumstats,
     to_fill=None,
     df=None,
@@ -53,217 +53,211 @@ def filldata(
     sig_level : float, optional, default=5e-8
         Significance threshold for P-value filtering.
     """
-    # if a string is passed to to_fill, convert it to list
+    # Normalize input
     if type(to_fill) is str:
         to_fill = [to_fill]
+    if to_fill is None:
+        to_fill = []
+    
     sumstats = insumstats.copy()
     log.write("Start filling data using existing columns...{}".format(_get_version()), verbose=verbose)
+    check_datatype(sumstats, verbose=verbose, log=log)
     
-    check_datatype(sumstats,verbose=verbose,log=log)
+    # Filter out columns that already exist (unless overwrite=True)
+    valid_targets = {"OR", "OR_95L", "OR_95U", "BETA", "SE", "P", "Z", "CHISQ", "MLOG10P", "MAF", "SIG"}
+    to_fill = [col for col in to_fill if col in valid_targets]
     
-# check dupication ##############################################################################################
-    skip_cols=[]
-    log.write(" -Overwrite mode: ",overwrite, verbose=verbose)
-    if overwrite is False:
-        for i in to_fill:
-            if i in sumstats.columns:
-                skip_cols.append(i)
-        for i in skip_cols:
-            to_fill.remove(i)
-        log.write("  -Skipping columns: ",skip_cols, verbose=verbose) 
-    if len(set(to_fill) & set(["OR","OR_95L","OR_95U","BETA","SE","P","Z","CHISQ","MLOG10P","MAF","SIG"]))==0:
-        log.write(" -No available columns to fill. Skipping.", verbose=verbose)
+    if not to_fill:
+        log.write(" -No valid columns to fill.", verbose=verbose)
         log.write("Finished filling data using existing columns.", verbose=verbose)
         return sumstats
-    log.write(" -Filling columns: ",to_fill, verbose=verbose)
-    fill_iteratively(sumstats,to_fill,log,only_sig,df,extreme,verbose,sig_level)
-       
-# ###################################################################################
-    #sumstats = sortcolumn(sumstats, verbose=verbose, log=log)
+    
+    if not overwrite:
+        existing_cols = [col for col in to_fill if col in sumstats.columns]
+        to_fill = [col for col in to_fill if col not in sumstats.columns]
+        if existing_cols:
+            log.write(" -Skipping existing columns: {}".format(existing_cols), verbose=verbose)
+    
+    if not to_fill:
+        log.write(" -All target columns already exist.", verbose=verbose)
+        log.write("Finished filling data using existing columns.", verbose=verbose)
+        return sumstats
+    
+    # Perform iterative filling
+    log.write(" -Target columns: {}".format(to_fill), verbose=verbose)
+    fill_iteratively(sumstats, to_fill, log, only_sig, df, extreme, verbose, sig_level)
+    
+    # Final summary
+    still_missing = [col for col in to_fill if col not in sumstats.columns]
+    if still_missing:
+        log.write(" -Warning: Could not fill: {}".format(still_missing), verbose=verbose)
+    else:
+        log.write(" -Successfully filled all requested columns.", verbose=verbose)
+    
     gc.collect()
     log.write("Finished filling data using existing columns.", verbose=verbose)
     return sumstats
     
 ##########################################################################################################################    
     
-def fill_p(sumstats,log,df=None,only_sig=False,sig_level=5e-8,overwrite=False,verbose=True,filled_count=0):
-        # MLOG10P -> P
-    if "MLOG10P" in sumstats.columns:    
-        log.write("  - Filling P value using MLOG10P column...", verbose=verbose)
-        sumstats["P"] = np.power(10,-sumstats["MLOG10P"])
-        filled_count +=1
-
-    # Z -> P
-    elif "Z" in sumstats.columns:
-        log.write("  - Filling P value using Z column...", verbose=verbose)
+def fill_p(sumstats, log, df=None, only_sig=False, sig_level=5e-8, overwrite=False, verbose=True, filled_count=0):
+    """Fill P column from MLOG10P, Z, or CHISQ."""
+    if "MLOG10P" in sumstats.columns:
+        log.write("    Filling P from MLOG10P...", verbose=verbose)
+        sumstats["P"] = np.power(10, -sumstats["MLOG10P"])
+        return 1, filled_count + 1
+    
+    if "Z" in sumstats.columns:
+        log.write("    Filling P from Z...", verbose=verbose)
         stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
-        sumstats["P"] = ss.chisqprob(sumstats["Z"]**2,1)
-        filled_count +=1
-
-    elif "CHISQ" in sumstats.columns:
-    #CHISQ -> P
-        log.write("  - Filling P value using CHISQ column...", verbose=verbose)
+        sumstats["P"] = ss.chisqprob(sumstats["Z"]**2, 1)
+        return 1, filled_count + 1
+    
+    if "CHISQ" in sumstats.columns:
+        log.write("    Filling P from CHISQ...", verbose=verbose)
         stats.chisqprob = lambda chisq, degree_of_freedom: stats.chi2.sf(chisq, degree_of_freedom)
         if df is None:
-            if only_sig is True and overwrite is True:
-                sumstats.loc[sumstats["P"]<sig_level,"P"] = stats.chisqprob(sumstats.loc[sumstats["P"]<sig_level,"CHISQ"],1)
-                filled_count +=1
+            if only_sig and overwrite:
+                sumstats.loc[sumstats["P"] < sig_level, "P"] = stats.chisqprob(
+                    sumstats.loc[sumstats["P"] < sig_level, "CHISQ"], 1)
             else:
-                sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],1)
-                filled_count +=1
+                sumstats["P"] = stats.chisqprob(sumstats["CHISQ"], 1)
         else:
-            if only_sig is True and overwrite is True:
-                log.write("  - Filling P value using CHISQ column for variants:" , sum(sumstats["P"]<sig_level), verbose=verbose)
-                sumstats.loc[sumstats["P"]<sig_level,"P"] = stats.chisqprob(sumstats.loc[sumstats["P"]<sig_level,"CHISQ"],sumstats.loc[sumstats["P"]<sig_level,df].astype("int"))
-                filled_count +=1
+            if only_sig and overwrite:
+                sumstats.loc[sumstats["P"] < sig_level, "P"] = stats.chisqprob(
+                    sumstats.loc[sumstats["P"] < sig_level, "CHISQ"],
+                    sumstats.loc[sumstats["P"] < sig_level, df].astype("int"))
             else:
-                log.write("  - Filling P value using CHISQ column for all valid variants:", verbose=verbose)
-                sumstats["P"] = stats.chisqprob(sumstats["CHISQ"],sumstats[df].astype("int"))
-                filled_count +=1
-    else:
-        return 0,filled_count
-    return 1,filled_count
-
-def fill_z(sumstats,log,verbose=True,filled_count=0):
-    # BETA/SE -> Z
-    if ("BETA" in sumstats.columns) and ("SE" in sumstats.columns):
-        log.write("  - Filling Z using BETA/SE column...", verbose=verbose)
-        sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
-        filled_count +=1
-    else:
-        return 0,filled_count
-    return 1,filled_count
-
-def fill_chisq(sumstats,log,verbose=True,filled_count=0):
-    # Z -> CHISQ
-    if "Z" in sumstats.columns:
-        log.write("  - Filling CHISQ using Z column...", verbose=verbose)
-        sumstats["CHISQ"] = (sumstats["Z"])**2
-        filled_count +=1
-    elif "P" in sumstats.columns:
-    # P -> CHISQ
-        log.write("  - Filling CHISQ using P column...", verbose=verbose)
-        sumstats["CHISQ"] = ss.chi2.isf(sumstats["P"], 1)
-        filled_count +=1
-    else:
-        return 0,filled_count
-    return 1,filled_count
-
-def fill_or(sumstats,log,verbose=True,filled_count=0):
-    # BETA -> OR
-    if "BETA" in sumstats.columns:
-        log.write("  - Filling OR using BETA column...", verbose=verbose)
-        sumstats["OR"]   = np.exp(sumstats["BETA"])
-        filled_count +=1
-        # BETA/SE -> OR_95L / OR_95U
-        # get confidence interval 95
-        if ("BETA" in sumstats.columns) and ("SE" in sumstats.columns):
-            log.write("  - Filling OR_95L/OR_95U using BETA/SE columns...", verbose=verbose)
-            # beta - 1.96 x se , beta + 1.96 x se
-            sumstats["OR_95L"] = np.exp(sumstats["BETA"]-ss.norm.ppf(0.975)*sumstats["SE"])
-            sumstats["OR_95U"] = np.exp(sumstats["BETA"]+ss.norm.ppf(0.975)*sumstats["SE"])
-            filled_count +=1
-    else:
-        return 0,filled_count
-    return 1,filled_count
-def fill_or95(sumstats,log,verbose=True,filled_count=0):
-    # get confidence interval 95
-    if ("BETA" in sumstats.columns) and ("SE" in sumstats.columns):
-        log.write("  - Filling OR_95L/OR_95U using BETA/SE columns...", verbose=verbose)
-        # beta - 1.96 x se , beta + 1.96 x se
-        sumstats["OR_95L"] = np.exp(sumstats["BETA"]-ss.norm.ppf(0.975)*sumstats["SE"])
-        sumstats["OR_95U"] = np.exp(sumstats["BETA"]+ss.norm.ppf(0.975)*sumstats["SE"])
-        filled_count +=1
-    else:
-        return 0,filled_count
-    return 1,filled_count
+                sumstats["P"] = stats.chisqprob(sumstats["CHISQ"], sumstats[df].astype("int"))
+        return 1, filled_count + 1
     
-def fill_beta(sumstats,log,verbose=True,filled_count=0):
-    # OR -> beta
-    if "OR" in sumstats.columns:
-        log.write("  - Filling BETA value using OR column...", verbose=verbose)
-        sumstats["BETA"]  = np.log(sumstats["OR"])    
-        filled_count +=1
-    else:
-        return 0,filled_count
-    return 1,filled_count
+    return 0, filled_count
 
-def fill_se(sumstats,log,verbose=True,filled_count=0):
-    # OR / OR_95L /OR_95U -> SE
-    if ("P" in sumstats.columns) and ("BETA" in sumstats.columns):
-        log.write("  - Filling SE value using BETA and P column...", verbose=verbose)
+def fill_z(sumstats, log, verbose=True, filled_count=0):
+    """Fill Z column from BETA/SE."""
+    if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+        log.write("    Filling Z from BETA/SE...", verbose=verbose)
+        sumstats["Z"] = sumstats["BETA"] / sumstats["SE"]
+        return 1, filled_count + 1
+    return 0, filled_count
+
+def fill_chisq(sumstats, log, verbose=True, filled_count=0):
+    """Fill CHISQ column from Z or P."""
+    if "Z" in sumstats.columns:
+        log.write("    Filling CHISQ from Z...", verbose=verbose)
+        sumstats["CHISQ"] = sumstats["Z"]**2
+        return 1, filled_count + 1
+    if "P" in sumstats.columns:
+        log.write("    Filling CHISQ from P...", verbose=verbose)
+        sumstats["CHISQ"] = ss.chi2.isf(sumstats["P"], 1)
+        return 1, filled_count + 1
+    return 0, filled_count
+
+def fill_or(sumstats, log, verbose=True, filled_count=0):
+    """Fill OR and optionally OR_95L/OR_95U from BETA/SE."""
+    if "BETA" in sumstats.columns:
+        log.write("    Filling OR from BETA...", verbose=verbose)
+        sumstats["OR"] = np.exp(sumstats["BETA"])
+        filled_count += 1
+        
+        if "SE" in sumstats.columns:
+            log.write("    Filling OR_95L/OR_95U from BETA/SE...", verbose=verbose)
+            z_critical = ss.norm.ppf(0.975)
+            sumstats["OR_95L"] = np.exp(sumstats["BETA"] - z_critical * sumstats["SE"])
+            sumstats["OR_95U"] = np.exp(sumstats["BETA"] + z_critical * sumstats["SE"])
+            filled_count += 1
+        return 1, filled_count
+    return 0, filled_count
+def fill_beta(sumstats, log, verbose=True, filled_count=0):
+    """Fill BETA column from OR."""
+    if "OR" in sumstats.columns:
+        log.write("    Filling BETA from OR...", verbose=verbose)
+        sumstats["BETA"] = np.log(sumstats["OR"])
+        return 1, filled_count + 1
+    return 0, filled_count
+
+def fill_se(sumstats, log, verbose=True, filled_count=0):
+    """Fill SE column from BETA/P, OR/OR_95U, or OR/OR_95L."""
+    if "BETA" in sumstats.columns and "P" in sumstats.columns:
+        log.write("    Filling SE from BETA/P...", verbose=verbose)
         abs_z = np.sqrt(2) * erfcinv(sumstats["P"])
         sumstats["SE"] = np.abs(sumstats["BETA"] / abs_z)
-        filled_count +=1
-    elif ("OR" in sumstats.columns) and ("OR_95U" in sumstats.columns): 
-        log.write("  - Filling SE value using OR/OR_95U column...", verbose=verbose)
-        # 
-        sumstats["SE"]=(np.log(sumstats["OR_95U"]) - np.log(sumstats["OR"]))/ss.norm.ppf(0.975)
-        filled_count +=1
-    elif ("OR" in sumstats.columns) and ("OR_95L" in sumstats.columns):
-        log.write("  - Filling SE value using OR/OR_95L column...", verbose=verbose)
-        sumstats["SE"]=(np.log(sumstats["OR"]) - np.log(sumstats["OR_95L"]))/ss.norm.ppf(0.975)
-        filled_count +=1
-    else:
-        log.write("  - Not enough information to fill SE...", verbose=verbose)
-        return 0,filled_count
-    return 1,filled_count
+        return 1, filled_count + 1
+    
+    if "OR" in sumstats.columns and "OR_95U" in sumstats.columns:
+        log.write("    Filling SE from OR/OR_95U...", verbose=verbose)
+        z_critical = ss.norm.ppf(0.975)
+        sumstats["SE"] = (np.log(sumstats["OR_95U"]) - np.log(sumstats["OR"])) / z_critical
+        return 1, filled_count + 1
+    
+    if "OR" in sumstats.columns and "OR_95L" in sumstats.columns:
+        log.write("    Filling SE from OR/OR_95L...", verbose=verbose)
+        z_critical = ss.norm.ppf(0.975)
+        sumstats["SE"] = (np.log(sumstats["OR"]) - np.log(sumstats["OR_95L"])) / z_critical
+        return 1, filled_count + 1
+    
+    return 0, filled_count
 
-def fill_mlog10p(sumstats,log,verbose=True,filled_count=0):
+def fill_mlog10p(sumstats, log, verbose=True, filled_count=0):
+    """Fill MLOG10P column from P."""
     if "P" in sumstats.columns:
-        # P -> MLOG10P
-        log.write("  - Filling MLOG10P using P column...", verbose=verbose)
+        log.write("    Filling MLOG10P from P...", verbose=verbose)
         sumstats["MLOG10P"] = -np.log10(sumstats["P"])
-        filled_count +=1
-    else:
-        return 0,filled_count
-    return 1,filled_count
+        return 1, filled_count + 1
+    return 0, filled_count
 
-def fill_extreme_mlog10p(sumstats,df,log,verbose=True,filled_count=0):
-    # ref: https://stackoverflow.com/questions/46416027/how-to-compute-p-values-from-z-scores-in-r-when-the-z-score-is-large-pvalue-muc/46416222#46416222
+def fill_extreme_mlog10p(sumstats, df, log, verbose=True, filled_count=0):
+    """Fill MLOG10P using extreme value methods (for very small P-values).
+    
+    Tries extreme value methods first, falls back to P -> MLOG10P conversion as last resort.
+    """
+    # Try extreme value methods first
     if "Z" in sumstats.columns:
-        # P -> MLOG10P
-        log.write("  - Filling MLOG10P using Z column...", verbose=verbose)
+        log.write("    Filling MLOG10P from Z (extreme)...", verbose=verbose)
         sumstats = fill_extreme_mlog10(sumstats, "Z")
-        filled_count +=1
-    elif "BETA" in sumstats.columns and "SE" in sumstats.columns:
-        log.write("  - Z column not available...", verbose=verbose)
-        log.write("  - Filling Z using BETA/SE column...", verbose=verbose)
-        sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
-        log.write("  - Filling MLOG10P using Z column...", verbose=verbose)
+        return 1, filled_count + 1
+    
+    if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+        log.write("    Filling MLOG10P from BETA/SE (extreme, via Z)...", verbose=verbose)
+        sumstats["Z"] = sumstats["BETA"] / sumstats["SE"]
         sumstats = fill_extreme_mlog10(sumstats, "Z")
-        filled_count +=1
-    elif "CHISQ" in sumstats.columns and "DOF" in sumstats.columns:
-        log.write("  - Filling MLOG10P using CHISQ and DOF column...", verbose=verbose)
+        return 1, filled_count + 1
+    
+    if "CHISQ" in sumstats.columns and "DOF" in sumstats.columns:
+        log.write("    Filling MLOG10P from CHISQ/DOF (extreme)...", verbose=verbose)
         sumstats = fill_extreme_mlog10_chisq(sumstats, "CHISQ", df)
-        filled_count +=1
-    else:
-        return 0,filled_count
-    return 1,filled_count
+        return 1, filled_count + 1
+    
+    # Last resort: convert from P
+    if "P" in sumstats.columns:
+        log.write("    Filling MLOG10P from P (fallback)...", verbose=verbose)
+        sumstats["MLOG10P"] = -np.log10(sumstats["P"])
+        return 1, filled_count + 1
+    
+    return 0, filled_count
 
-def fill_maf(sumstats,log,verbose=True,filled_count=0):
+def fill_maf(sumstats, log, verbose=True, filled_count=0):
+    """Fill MAF column from EAF."""
     if "EAF" in sumstats.columns:
-        # EAF -> MAF
-        log.write("  - Filling MAF using EAF column...", verbose=verbose)
-        sumstats["MAF"] =  sumstats["EAF"].apply(lambda x: min(x,1-x) if pd.notnull(x) else np.nan)
-        filled_count +=1
-    else:
-        return 0,filled_count
-    return 1,filled_count
+        log.write("    Filling MAF from EAF...", verbose=verbose)
+        sumstats["MAF"] = sumstats["EAF"].apply(lambda x: min(x, 1-x) if pd.notnull(x) else np.nan)
+        return 1, filled_count + 1
+    return 0, filled_count
 
-def fill_sig(sumstats,log,sig_level=5e-8, verbose=True,filled_count=0):
-    if "P" in sumstats.columns or "MLOG10P" in sumstats.columns:
-        log.write("  - Determining significant using P and MLOG10P with threshold:{}".format(sig_level), verbose=verbose)
-        if "P" in sumstats.columns:
-            is_sig = sumstats["P"]<sig_level 
-        elif "MLOG10P" in sumstats.columns:
-            is_sig = sumstats["MLOG10P"]>np.log10(sig_level) 
-        sumstats["SIGNIFICANT"] = False
-        sumstats.loc[is_sig, "SIGNIFICANT"] = True
-        filled_count +=1
+def fill_sig(sumstats, log, sig_level=5e-8, verbose=True, filled_count=0):
+    """Fill SIGNIFICANT column from P or MLOG10P."""
+    if "P" in sumstats.columns:
+        log.write("    Filling SIGNIFICANT from P (threshold={})...".format(sig_level), verbose=verbose)
+        is_sig = sumstats["P"] < sig_level
+    elif "MLOG10P" in sumstats.columns:
+        log.write("    Filling SIGNIFICANT from MLOG10P (threshold={})...".format(sig_level), verbose=verbose)
+        is_sig = sumstats["MLOG10P"] > np.log10(1/sig_level)
     else:
-        return 0,filled_count
-    return 1,filled_count
+        return 0, filled_count
+    
+    sumstats["SIGNIFICANT"] = False
+    sumstats.loc[is_sig, "SIGNIFICANT"] = True
+    return 1, filled_count + 1
 
 ####################################################################################################################
 def fill_extreme_mlog10(sumstats, z):
@@ -290,57 +284,135 @@ def fill_extreme_mlog10_chisq(sumstats, chisq, df):
     return sumstats
 
 ####################################################################################################################
-def fill_iteratively(sumstats,raw_to_fill,log,only_sig,df,extreme,verbose,sig_level):
-    to_fill = raw_to_fill.copy()
-    log.write("  - Filling Columns iteratively...", verbose=verbose)
+def _try_fill_mlog10p(sumstats, to_fill, df, log, verbose):
+    """
+    Attempt to fill MLOG10P column.
+    
+    Strategy:
+    1. Try extreme value methods first (Z, BETA/SE, CHISQ/DOF)
+    2. If that fails and P doesn't exist, try to fill P first, then retry
+    3. Drop intermediate P column if it wasn't requested
+    4. Always drop P_MANTISSA and P_EXPONENT (created by extreme methods)
+    
+    Returns:
+        tuple: (success: bool, columns_to_remove: list)
+    """
+    columns_to_remove = []
+    
+    # Try extreme method first (includes P fallback)
+    status, _ = fill_extreme_mlog10p(sumstats, df, log, verbose=verbose, filled_count=0)
+    
+    if status == 1:
+        # Extreme method succeeded - always drop P_MANTISSA and P_EXPONENT
+        # (they're created by extreme methods but not needed after MLOG10P is filled)
+        columns_to_remove.extend(["P_MANTISSA", "P_EXPONENT"])
+        return True, columns_to_remove
+    
+    # If failed and P doesn't exist, try to create P first
+    if "P" not in sumstats.columns:
+        fill_p(sumstats, log, verbose=verbose, filled_count=0)
+        # Retry extreme method (will now use P as fallback)
+        status, _ = fill_extreme_mlog10p(sumstats, df, log, verbose=verbose, filled_count=0)
+        
+        # If P was created as intermediate step and not requested, mark for removal
+        if "P" not in to_fill and "P" in sumstats.columns:
+            columns_to_remove.append("P")
+        
+        # Drop P_MANTISSA and P_EXPONENT if MLOG10P was filled successfully
+        if status == 1:
+            columns_to_remove.extend(["P_MANTISSA", "P_EXPONENT"])
+        
+        return status == 1, columns_to_remove
+    
+    return False, columns_to_remove
 
-    filled_count=0
-    for i in range(len(to_fill)+1):
-    # beta to or ####################################################################################################     
-        if "OR" in to_fill:
-            status, filled_count = fill_or(sumstats,log,verbose=verbose,filled_count=filled_count)
-            if status == 1 : to_fill.remove("OR")
-    # or to beta #################################################################################################### 
-        if "BETA" in to_fill:
-            status,filled_count = fill_beta(sumstats,log,verbose=verbose,filled_count=filled_count)
-            if status == 1 : to_fill.remove("BETA")
-        if "SE" in to_fill:
-            status,filled_count = fill_se(sumstats,log,verbose=verbose,filled_count=filled_count)
-            if status == 1 : to_fill.remove("SE")
-    # z/chi2 to p ##################################################################################################
-        if "P" in to_fill:
-            status,filled_count = fill_p(sumstats,log,only_sig=only_sig,df=df,sig_level=sig_level,verbose=verbose,filled_count=filled_count)
-            if status == 1 : to_fill.remove("P")
-    # beta/se to z ##################################################################################################            
-        if "Z" in to_fill:   
-            status,filled_count = fill_z(sumstats,log,verbose=verbose,filled_count=filled_count)
-            if status == 1 : to_fill.remove("Z")
-    # z/p to chisq ##################################################################################################             
-        if "CHISQ" in to_fill:
-            status,filled_count = fill_chisq(sumstats,log,verbose=verbose,filled_count=filled_count)
-            if status == 1 : to_fill.remove("CHISQ")
-    # EAF to MAF ##################################################################################################   
-        if "MAF" in to_fill:
-            status,filled_count = fill_maf(sumstats,log,verbose=verbose,filled_count=filled_count)
-            if status == 1 : to_fill.remove("MAF")
-    # p to -log10(P)  ###############################################################################################
-        if "MLOG10P" in to_fill:
-            if extreme==True:
-                status,filled_count = fill_extreme_mlog10p(sumstats,df, log,verbose=verbose,filled_count=filled_count)
-                filled_count +=1
-            elif "P" not in sumstats.columns:
-                fill_p(sumstats,log,verbose=verbose)
-                status,filled_count = fill_mlog10p(sumstats,log,verbose=verbose,filled_count=filled_count)
-                sumstats = sumstats.drop(labels=["P"],axis=1)
-            else:
-                status,filled_count = fill_mlog10p(sumstats,log,verbose=verbose)
-            if status == 1 : to_fill.remove("MLOG10P")
 
-        if "SIG" in to_fill:
-            status,filled_count = fill_sig(sumstats,sig_level=sig_level ,log=log,verbose=verbose,filled_count=filled_count)
-            if status == 1 : to_fill.remove("SIG")
-        if filled_count == 0:
+def fill_iteratively(sumstats, to_fill, log, only_sig, df, extreme, verbose, sig_level):
+    """
+    Iteratively fill columns using available conversion pathways.
+    
+    This function attempts to fill target columns in multiple rounds, as newly filled
+    columns may enable further conversions in subsequent rounds.
+    
+    Args:
+        sumstats: DataFrame to fill
+        to_fill: Set or list of column names to fill
+        log: Log object for messages
+        only_sig: Only fill significant variants
+        df: Degrees of freedom column name
+        extreme: (deprecated, kept for compatibility)
+        verbose: Verbose logging
+        sig_level: Significance threshold
+    """
+    # Define fill functions for standard columns
+    fill_functions = {
+        "OR": lambda: fill_or(sumstats, log, verbose=verbose, filled_count=0),
+        "BETA": lambda: fill_beta(sumstats, log, verbose=verbose, filled_count=0),
+        "SE": lambda: fill_se(sumstats, log, verbose=verbose, filled_count=0),
+        "P": lambda: fill_p(sumstats, log, only_sig=only_sig, df=df, sig_level=sig_level, verbose=verbose, filled_count=0),
+        "Z": lambda: fill_z(sumstats, log, verbose=verbose, filled_count=0),
+        "CHISQ": lambda: fill_chisq(sumstats, log, verbose=verbose, filled_count=0),
+        "MAF": lambda: fill_maf(sumstats, log, verbose=verbose, filled_count=0),
+        "SIG": lambda: fill_sig(sumstats, log, sig_level=sig_level, verbose=verbose, filled_count=0),
+    }
+    
+    # Convert to set for efficient operations
+    remaining = set(to_fill)
+    max_rounds = len(remaining) + 1
+    
+    # Iterate through rounds until all columns are filled or no progress is made
+    for round_num in range(1, max_rounds + 1):
+        round_filled = []
+        columns_to_remove = []
+        
+        # Try to fill each remaining column
+        for col in list(remaining):
+            success = False
+            
+            if col == "MLOG10P":
+                # Special handling for MLOG10P (always uses extreme methods)
+                success, cols_to_remove = _try_fill_mlog10p(sumstats, remaining, df, log, verbose)
+                columns_to_remove.extend(cols_to_remove)
+                    
+            elif col in fill_functions:
+                # Standard column filling
+                status, _ = fill_functions[col]()
+                success = (status == 1)
+            
+            # Update tracking if successful
+            if success:
+                remaining.remove(col)
+                round_filled.append(col)
+        
+        # Remove intermediate columns that were created but not requested
+        # Remove duplicates and only drop columns that actually exist
+        columns_to_drop = [col for col in set(columns_to_remove) if col in sumstats.columns]
+        if columns_to_drop:
+            sumstats.drop(labels=columns_to_drop, axis=1, inplace=True)
+        
+        # Log round results
+        _log_round_results(round_num, round_filled, remaining, log, verbose)
+        
+        # Check termination conditions
+        if not remaining:
+            # All columns filled successfully
             break
+        if not round_filled:
+            # No progress made this round - cannot fill remaining columns
+            break
+
+
+def _log_round_results(round_num, round_filled, remaining, log, verbose):
+    """Log the results of a filling round."""
+    if round_filled:
+        log.write("  [Round {}] Filled: {}".format(round_num, round_filled), verbose=verbose)
+        if remaining:
+            log.write("  [Round {}] Remaining: {}".format(round_num, sorted(remaining)), verbose=verbose)
+        else:
+            log.write("  [Round {}] All columns filled!".format(round_num), verbose=verbose)
+    elif remaining:
+        log.write("  [Round {}] No progress. Unable to fill: {}".format(round_num, sorted(remaining)), verbose=verbose)
+
          
 ###Base functions########################################################################################
 

@@ -1,6 +1,6 @@
 # Statistics conversion
 
-GWASLab can convert equvalent statistics, including:
+GWASLab can convert equivalent statistics, including:
 
 | Target stats               | Original stats              | Implementation                                                                                                                                                                                                                                     |
 |----------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -17,13 +17,18 @@ GWASLab can convert equvalent statistics, including:
 
 
 !!! info "Extreme P values"
-    For extreme P, `extreme=True` can be added to overcome the limitation of extreme P values (P<1e-308). MLOG10P will be calculated using the methods described [here](https://stackoverflow.com/questions/46416027/how-to-compute-p-values-from-z-scores-in-r-when-the-z-score-is-large-pvalue-muc/46416222#46416222):
+    For extreme P values (P < 1e-308), set `extreme=True` to overcome float64 precision limitations. MLOG10P will be calculated using Z-scores (or BETA/SE) using the method described [here](https://stackoverflow.com/questions/46416027/how-to-compute-p-values-from-z-scores-in-r-when-the-z-score-is-large-pvalue-muc/46416222#46416222):
     
-    ```mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)```
+    ```python
+    mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)
+    ```
     
     <img width="446" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/7c1c96e3-f6e0-4232-a13f-af7fc551cc24">
-
-    Z socres (or BETA and SE) will be used to calculate MLOG10P, two additional columns `P_MANTISSA` and `P_EXPONENT` will be added to present p values. 
+    
+    When `extreme=True`:
+    - Z-scores (or BETA and SE) will be used to calculate MLOG10P
+    - Two additional columns `P_MANTISSA` and `P_EXPONENT` will be added to represent P values in scientific notation
+    - This allows handling of extremely small P-values that exceed standard floating-point precision
     
 
 !!! note
@@ -38,51 +43,108 @@ See examples [here.](https://cloufield.github.io/gwaslab/utility_data_conversion
 
 ```
 mysumstats.fill_data( 
-    to_fill=[],
+    to_fill=None,
     df=None,
     overwrite=False,
-    only_sig=False
-    )
+    verbose=True,
+    only_sig=False,
+    sig_level=5e-8,
+    extreme=False
+)
 ```
 
 ## Options
 
-- `to_fill`: the columns to fill. ["OR","OR_95L","OR_95U","BETA","SE","P","MLOG10P","Z","CHISQ"]
-- `df` : columns name for degree of freedom
-- `overwrite`: if overwrite when the specified column existed
-- `only_sig` : fill the data only for significant variants
+| Option      | DataType          | Description                                                                                                 | Default   |
+|-------------|-------------------|-------------------------------------------------------------------------------------------------------------|-----------|
+| `to_fill`   | `str` or `list`   | Column name(s) to fill. Valid values: `"OR"`, `"OR_95L"`, `"OR_95U"`, `"BETA"`, `"SE"`, `"P"`, `"Z"`, `"CHISQ"`, `"MLOG10P"`, `"MAF"`, `"SIG"` | `None`    |
+| `df`        | `str`             | Column name containing degrees of freedom for chi-square tests (only used when filling CHISQ)              | `None`    |
+| `overwrite` | `boolean`         | If True, overwrite existing values in target columns                                                       | `False`   |
+| `verbose`   | `boolean`         | If True, display progress messages                                                                          | `True`    |
+| `only_sig`  | `boolean`         | If True, only fill data for significant variants (P < sig_level)                                           | `False`   |
+| `sig_level` | `float`           | Significance threshold for P-value filtering (used when only_sig=True)                                        | `5e-8`    |
+| `extreme`   | `boolean`         | If True, use extreme value calculations for MLOG10P (helpful when P < 1e-300)                              | `False`   |
 
-## Priority
+## Conversion Priority
 
-- For P : using MLOG10P, Z, CHISQ 
-- For MLOG10P : using P, MLOG10P, Z, CHISQ 
-- For BETA/SE : using OR/OR_95L/OR_95U
-- For OR/OR_95L/OR_95U : using BETA/SE
-- For Z : using BETA/SE
-- For CHISQ : using  Z, P
+GWASLab uses the following priority order when multiple source columns are available:
 
-## Example
+- **For P**: MLOG10P → Z → CHISQ
+- **For MLOG10P**: P → Z → CHISQ (or BETA/SE if `extreme=True`)
+- **For BETA/SE**: OR/OR_95L/OR_95U
+- **For OR/OR_95L/OR_95U**: BETA/SE
+- **For Z**: BETA/SE
+- **For CHISQ**: Z → P
+- **For MAF**: EAF (MAF = min(EAF, 1-EAF))
 
-!!! example
+!!! note
+    - If a target column already exists and `overwrite=False`, it will be skipped
+    - The function performs iterative filling, so intermediate conversions may enable filling of other columns
+    - When `extreme=True`, MLOG10P is calculated from Z-scores (or BETA/SE) to handle P-values below float64 precision limits
+
+## Examples
+
+!!! example "Basic conversion"
+    ```python
+    # Raw data with BETA, SE, P
+    # SNPID	CHR	POS	EA	NEA	EAF	BETA	SE	P	STATUS
+    # 1:725932_G_A	1	725932	G	A	0.9960	-0.0737	0.1394	0.5970	9999999
+    
+    # Fill missing statistics
+    # GWASLab will automatically search for equivalent statistics
+    mysumstats.fill_data(to_fill=["MLOG10P", "Z", "OR", "OR_95L", "OR_95U"])
+    
+    # Output:
+    # Start filling data using existing columns...
+    #  -Raw input columns:  ['SNPID', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P', 'STATUS']
+    #  -Overwrite mode:  False
+    #  -Skipping columns:  []
+    # Filling columns:  ['MLOG10P', 'OR', 'OR_95L', 'OR_95U', 'Z']
+    #   - Filling OR using BETA column...
+    #   - Filling OR_95L/OR_95U using BETA/SE columns...
+    #   - Filling MLOG10P using P column...
+    #   - Filling Z using BETA/SE columns...
+    # Finished filling data using existing columns.
     ```
-    # raw data
-    #SNPID	CHR	POS	EA	NEA	EAF	BETA	SE	P	STATUS
-    #1:725932_G_A	1	725932	G	A	0.9960	-0.0737	0.1394	0.5970	9999999
-    #1:725933_A_G	1	725933	G	A	0.0040	0.0737	0.1394	0.5973	9999999
-    #1:737801_T_C	1	737801	C	T	0.0051	0.0490	0.1231	0.6908	9999999
-    
-    # let's fill "MLOG10P","Z","OR","OR_95L","OR_95U"
-    # gwaslab will automatically search for equivalent statistics
-    
-    mysumstats.fill_data(to_fill=["MLOG10P","Z","OR","OR_95L","OR_95U"])
-    
-    Wed Oct 19 10:13:30 2022 Start filling data using existing columns...
-    Wed Oct 19 10:13:30 2022  -Raw input columns:  ['SNPID', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P', 'STATUS']
-    Wed Oct 19 10:13:30 2022  -Overwrite mode:  False
-    Wed Oct 19 10:13:30 2022   - Skipping columns:  []
-    Wed Oct 19 10:13:30 2022 Filling columns:  ['MLOG10P', 'OR', 'OR_95L', 'OR_95U']
-    Wed Oct 19 10:13:30 2022   - Filling OR using BETA column...
-    Wed Oct 19 10:13:31 2022   - Filling OR_95L/OR_95U using BETA/SE columns...
-    Wed Oct 19 10:13:32 2022   - Filling MLOG10P using P column...
-    Wed Oct 19 10:13:38 2022 Finished filling data using existing columns.
+
+!!! example "Fill only significant variants"
+    ```python
+    # Fill statistics only for variants with P < 5e-8
+    mysumstats.fill_data(
+        to_fill=["MLOG10P", "Z"],
+        only_sig=True,
+        sig_level=5e-8
+    )
+    ```
+
+!!! example "Overwrite existing columns"
+    ```python
+    # Overwrite existing MLOG10P values
+    mysumstats.fill_data(
+        to_fill=["MLOG10P"],
+        overwrite=True
+    )
+    ```
+
+!!! example "Fill single column"
+    ```python
+    # Fill a single column (can pass string instead of list)
+    mysumstats.fill_data(to_fill="Z")
+    ```
+
+!!! example "Fill MAF from EAF"
+    ```python
+    # Calculate MAF from EAF
+    mysumstats.fill_data(to_fill=["MAF"])
+    # MAF = min(EAF, 1-EAF)
+    ```
+
+!!! example "Extreme P values"
+    ```python
+    # Handle extreme P values using Z-scores
+    mysumstats.fill_data(
+        to_fill=["MLOG10P"],
+        extreme=True
+    )
+    # Creates P_MANTISSA and P_EXPONENT columns
     ```
