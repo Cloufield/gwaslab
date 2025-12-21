@@ -5,7 +5,7 @@ import gc
 
 from gwaslab.g_Log import Log
 from math import floor
-from gwaslab.g_Sumstats import Sumstats
+from gwaslab.g_Sumstats import Sumstats, _get_id_column
 from gwaslab.g_Sumstats_polars import Sumstatsp
 
 from gwaslab.bd.bd_path_manager import _path
@@ -281,10 +281,7 @@ class SumstatsMulti( ):
 
     def get_lead(self, build=None, gls=False, **kwargs):
         
-        if "SNPID" in self.data.columns:
-            id_to_use = "SNPID"
-        else:
-            id_to_use = "rsID"
+        id_to_use = _get_id_column(self.data)
         
         # extract build information from meta data
         if build is None:

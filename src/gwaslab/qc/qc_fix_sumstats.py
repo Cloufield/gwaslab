@@ -1,5 +1,6 @@
 import re
 import gc
+from typing import Union, Tuple, List, Any
 import pandas as pd
 import numpy as np
 from multiprocessing import  Pool
@@ -24,6 +25,7 @@ from gwaslab.qc.qc_pattern import RSID_PATTERN, SNPID_PATTERN_EXTRACT, CHR_PATTE
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_build import _process_build
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 from gwaslab.util.util_in_fill_data import fill_extreme_mlog10p
 
 #process build
@@ -46,10 +48,10 @@ from gwaslab.util.util_in_fill_data import fill_extreme_mlog10p
         start_function= ".fix_id()",
         start_cols=[]
 )
-def _fix_ID(sumstats,
+def _fix_ID(sumstats_obj,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",fixprefix=False,
        fixchrpos=False,fixid=False,fixeanea=False,fixeanea_flip=False,fixsep=False, reversea=False,
-       overwrite=False,verbose=True,forcefixid=False,log=Log()):  
+       overwrite=False,verbose=True,forcefixid=False,log=Log()) -> pd.DataFrame:  
     
     '''
     Fix various aspects of genomic data including SNPID, rsID, chromosome positions, and allele information.
@@ -61,6 +63,8 @@ def _fix_ID(sumstats,
     
     Parameters
     ----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to fix.
     fixprefix : bool
         Whether to remove 'chr' prefix in SNPID.
     fixchrpos : bool
@@ -85,20 +89,30 @@ def _fix_ID(sumstats,
     Returns
     -------
     pd.DataFrame
-        Modified sumstats with fixed data.
+        Modified sumstats.data with fixed data.
     '''
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called during initialization - no Sumstats object yet
+        sumstats = sumstats_obj
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
     ############################  checking datatype ###################################################  
     if rsid in sumstats.columns:
-        log.write(" -Checking rsID data type...", verbose=verbose)
+        log.log_operation("Checking rsID data type...", verbose=verbose)
         if sumstats[rsid].dtype != "string":
-            log.write(" -Converting rsID to pd.string data type...", verbose=verbose)
+            log.log_datatype_change("rsID", str(sumstats[rsid].dtype), "string", success=True, verbose=verbose)
             sumstats[rsid] = sumstats[rsid].astype("string")
 
     if snpid in sumstats.columns:
-        log.write(" -Checking SNPID data type...", verbose=verbose)
+        log.log_operation("Checking SNPID data type...", verbose=verbose)
         if sumstats[snpid].dtype != "string":
-            log.write(" -Converting SNPID to pd.string data type...", verbose=verbose)
+            log.log_datatype_change("SNPID", str(sumstats[snpid].dtype), "string", success=True, verbose=verbose)
             sumstats[snpid] = sumstats[snpid].astype("string")
             
     ############################  checking string NA ###################################################
@@ -107,14 +121,14 @@ def _fix_ID(sumstats,
         log.write(" -Checking if SNPID contains NA strings...",verbose=verbose)
         is_snpid_string_na = sumstats[snpid].isin(NA_STRINGS)
         if is_snpid_string_na.sum() > 0:
-            log.write("  -Converting {} NA strings in SNPID to pd.NA...".format(is_snpid_string_na.sum()), verbose=verbose)
+            log.log_operation("Converting {} NA strings in SNPID to pd.NA".format(is_snpid_string_na.sum()), indent=1, verbose=verbose)
             sumstats.loc[is_snpid_string_na ,snpid] = pd.NA
 
     if rsid in sumstats.columns: 
         log.write(" -Checking if rsID contains NA strings...",verbose=verbose)
         is_rsid_string_na = sumstats[rsid].isin(NA_STRINGS)
         if is_rsid_string_na.sum() > 0:
-            log.write("  -Converting {} NA strings in rsID to pd.NA...".format(is_rsid_string_na.sum()), verbose=verbose)
+            log.log_operation("Converting {} NA strings in rsID to pd.NA".format(is_rsid_string_na.sum()), indent=1, verbose=verbose)
             sumstats.loc[is_rsid_string_na ,rsid] = pd.NA
     ############################  checking ###################################################  
     if snpid in sumstats.columns:  
@@ -174,7 +188,7 @@ def _fix_ID(sumstats,
                     log.write(" -No fixable variants. ...", verbose=verbose)
             
             elif (chrom not in sumstats.columns) and (pos in sumstats.columns):
-                log.write(" -Initiating CHR columns...", verbose=verbose)
+                log.log_column_added("CHR", verbose=verbose)
                 sumstats[chrom]=pd.Series(dtype="string")   
                 to_fix = is_chrposrefalt & sumstats[chrom].isna() & sumstats[pos].isna()
                 to_fix_num = to_fix.sum()
@@ -183,7 +197,7 @@ def _fix_ID(sumstats,
                     log.write(" -No fixable variants. ...", verbose=verbose)
             
             elif (chrom in sumstats.columns) and (pos not in sumstats.columns):
-                log.write(" -Initiating CHR and POS column...", verbose=verbose)
+                log.log_column_added("CHR and POS", verbose=verbose)
                 sumstats[pos]=pd.Series(dtype="Int64") 
                 to_fix = is_chrposrefalt & sumstats[chrom].isna() & sumstats[pos].isna() 
                 to_fix_num = to_fix.sum()
@@ -192,7 +206,7 @@ def _fix_ID(sumstats,
                     log.write(" -No fixable variants. ...", verbose=verbose)     
                 
             else:
-                log.write(" -Initiating CHR and POS columns...", verbose=verbose)
+                log.log_column_added("CHR and POS", verbose=verbose)
                 sumstats[chrom]=pd.Series(dtype="string")   
                 sumstats[pos]=pd.Series(dtype="Int64") 
                 to_fix = is_chrposrefalt
@@ -202,7 +216,7 @@ def _fix_ID(sumstats,
                     log.write(" -No fixable variants. ...", verbose=verbose)   
                     
             if to_fix.sum()>0:
-                log.write(" -Filling CHR and POS columns using valid SNPID's chr:pos...", verbose=verbose)
+                log.log_formula("CHR and POS", "from SNPID", source_columns=["SNPID"], verbose=verbose)
                 # format and qc filled chr and pos
                 extracted = sumstats.loc[to_fix, snpid].str.extract(SNPID_PATTERN_EXTRACT, flags=FLAGS)
                 # Convert to regular pandas Series to avoid PyArrow type issues
@@ -225,21 +239,21 @@ def _fix_ID(sumstats,
                 else:
                     log.write(" -No fixable variants ...", verbose=verbose)
             elif (chrom not in sumstats.columns) and (pos in sumstats.columns):
-                log.write(" -Initiating CHR columns...", verbose=verbose)
+                log.log_column_added("CHR", verbose=verbose)
                 sumstats[chrom]=pd.Series(dtype="string")   
                 to_fix = is_rs_chrpos & sumstats[chrom].isna() & sumstats[pos].isna()
                 if to_fix.sum()>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix.sum())+" ...")
                 else:
                     log.write(" -No fixable variants ...", verbose=verbose)
             elif (chrom in sumstats.columns) and (pos not in sumstats.columns):
-                log.write(" -Initiating CHR and POS column...", verbose=verbose)
+                log.log_column_added("CHR and POS", verbose=verbose)
                 sumstats[pos]=pd.Series(dtype="Int64") 
                 to_fix = is_rs_chrpos & sumstats[chrom].isna() & sumstats[pos].isna() 
                 if to_fix.sum()>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix.sum())+" ...")
                 else:
                     log.write(" -No fixable variants ...", verbose=verbose)
             else:
-                log.write(" -Initiating CHR and POS columns...", verbose=verbose)
+                log.log_column_added("CHR and POS", verbose=verbose)
                 sumstats[chrom]=pd.Series(dtype="string")   
                 sumstats[pos]=pd.Series(dtype="Int64") 
                 to_fix = is_rs_chrpos
@@ -249,7 +263,7 @@ def _fix_ID(sumstats,
             
             if to_fix.sum()>0:
 
-                log.write(" -Filling CHR and POS columns using chr:pos:ref:alt format variants in rsID column...", verbose=verbose)
+                log.log_formula("CHR and POS", "from rsID", source_columns=["rsID"], verbose=verbose)
                 # Convert to regular pandas Series to avoid PyArrow type issues
                 sumstats.loc[to_fix,chrom] = sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[0].astype("string")
                 sumstats.loc[to_fix,pos] = pd.to_numeric(sumstats.loc[to_fix,rsid].str.split(':|_|-',n=2).str[1], errors='coerce').astype('Int64')
@@ -266,17 +280,17 @@ def _fix_ID(sumstats,
             to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
             if to_fix.sum()>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix.sum())+" ...")
         elif (nea in sumstats.columns) and (ea not in sumstats.columns):
-            log.write(" -Initiating EA columns...", verbose=verbose)
+            log.log_column_added("EA", verbose=verbose)
             sumstats[ea]=pd.Series(dtype="string")
             to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
             if to_fix.sum()>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix.sum())+" ...")
         elif (nea not in sumstats.columns) and (ea in sumstats.columns):
-            log.write(" -Initiating NEA columns...", verbose=verbose)
+            log.log_column_added("NEA", verbose=verbose)
             sumstats[nea]=pd.Series(dtype="string")
             to_fix = is_chrposrefalt&(sumstats[nea].isna()|sumstats[ea].isna())
             if to_fix.sum()>0 and verbose: log.write(" -Number of variants could be fixed: "+str(to_fix.sum())+" ...")
         else:
-            log.write(" -Initiating EA and NEA columns...", verbose=verbose)
+            log.log_column_added("EA and NEA", verbose=verbose)
             sumstats[nea]=pd.Series(dtype="string")
             sumstats[ea]=pd.Series(dtype="string")
             to_fix = is_chrposrefalt
@@ -284,7 +298,7 @@ def _fix_ID(sumstats,
                 log.write(" -Number of variants could be fixed: "+str(to_fix.sum())+" ...", verbose=verbose)
     #                
         if to_fix.sum()>0:
-            log.write(" -Filling "+str(to_fix.sum())+" EA and NEA columns using SNPID's CHR:POS:NEA:EA...", verbose=verbose)
+            log.log_formula("EA and NEA", "from SNPID", source_columns=["SNPID"], verbose=verbose)
     #        
             if fixeanea_flip == True:
                 log.write(" -Flipped : CHR:POS:NEA:EA -> CHR:POS:EA:NEA ", verbose=verbose)
@@ -360,15 +374,15 @@ def _fix_ID(sumstats,
                     sumstats.loc[to_part_fix,snpid] = sumstats.loc[to_part_fix,chrom].astype("string") + ":"+sumstats.loc[to_part_fix,pos].astype("string")
                 if to_full_fix.sum() > 0:
                     sumstats.loc[to_full_fix,snpid] = sumstats.loc[to_full_fix,chrom].astype("string") + ":"+sumstats.loc[to_full_fix,pos].astype("string") +":"+ sumstats.loc[to_full_fix,nea].astype("string") +":"+ sumstats.loc[to_full_fix,ea].astype("string")
-                log.write(" -Filling "+str(to_part_fix.sum() - to_full_fix.sum()) +" SNPID using CHR:POS...", verbose=verbose)
-                log.write(" -Filling "+str(to_full_fix.sum()) +" SNPID using CHR:POS:NEA:EA...", verbose=verbose)
+                log.log_formula("SNPID", "from CHR:POS", source_columns=["CHR", "POS"], verbose=verbose)
+                log.log_formula("SNPID", "from CHR:POS:NEA:EA", source_columns=["CHR", "POS", "EA", "NEA"], verbose=verbose)
                 sumstats.loc[(to_full_fix),status] = vchange_status(sumstats.loc[(to_full_fix),status],3,"975","630") 
                 sumstats.loc[(to_part_fix),status] = vchange_status(sumstats.loc[(to_part_fix),status],3,"975","842")  
                 
             else:
             #when these is no ea or ena, just fix to chr:pos
                 to_part_fix = to_fix & sumstats[chrom].notnull() & sumstats[pos].notnull()
-                log.write(" -Filling "+str(to_part_fix.sum()) +" SNPID using CHR POS...", verbose=verbose)
+                log.log_formula("SNPID", "from CHR POS", source_columns=["CHR", "POS"], verbose=verbose)
                 if to_part_fix.sum() > 0:
                     sumstats.loc[to_part_fix,snpid] = sumstats.loc[to_part_fix,chrom].astype("string") + ":"+sumstats.loc[to_part_fix,pos].astype("string")
                     sumstats.loc[to_part_fix,status] = vchange_status(sumstats.loc[(to_part_fix),status],3,"975","842")
@@ -378,7 +392,24 @@ def _fix_ID(sumstats,
         else:
             log.write(" -ID unfixable: no CHR and POS columns or no SNPID. ", verbose=verbose)
 
-    return sumstats
+    # Update QC status only if called with Sumstats object
+    if not is_dataframe:
+        # Assign modified dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        try:
+            from gwaslab.g_meta import _update_qc_step
+            id_kwargs = {
+                'snpid': snpid, 'rsid': rsid, 'chrom': chrom, 'pos': pos, 'nea': nea, 'ea': ea, 'status': status,
+                'fixprefix': fixprefix, 'fixchrpos': fixchrpos, 'fixid': fixid, 'fixeanea': fixeanea,
+                'fixeanea_flip': fixeanea_flip, 'fixsep': fixsep, 'reversea': reversea, 'overwrite': overwrite,
+                'forcefixid': forcefixid
+            }
+            _update_qc_step(sumstats_obj, "id", id_kwargs, True)
+        except:
+            pass
+        return sumstats_obj.data
+    else:
+        return sumstats
 
 @with_logging(
         start_to_msg= "strip SNPID",
@@ -386,7 +417,7 @@ def _fix_ID(sumstats,
         start_function= ".strip_snpid()",
         start_cols=["SNPID"]
 )
-def _strip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
+def _strip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -> pd.DataFrame:  
     '''
     Strip non-standard characters from SNPID values to standardize format.
     
@@ -427,7 +458,7 @@ def _strip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
         start_function= ".flip_snpid()",
         start_cols=["SNPID"]
 )
-def _flip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):  
+def _flip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -> pd.DataFrame:  
     '''
     Flip alleles in SNPID values without changing status codes or statistics.
     
@@ -471,7 +502,7 @@ def _flip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()):
         start_function= ".remove_dup()",
         start_cols=None
 )
-def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove_na=False,keep_ascend=True,verbose=True,log=Log()):
+def _remove_dup(sumstats_obj,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",nea="NEA",rsid="rsID",keep='first',keep_col="P",remove_na=False,keep_ascend=True,verbose=True,log=Log()) -> pd.DataFrame:
     """
     Remove duplicate or multiallelic variants based on user-selected criteria.
 
@@ -482,6 +513,8 @@ def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",n
 
     Parameters
     ----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to process.
     mode : str
         String encoding the deduplication rules; may include one or more of:
         - 'ds' : Identify duplicates using SNPID.
@@ -507,12 +540,13 @@ def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",n
         according to the specified mode.
 
     """
+    sumstats = sumstats_obj.data
 
-    log.write(" -Removing mode:{}".format(mode), verbose=verbose)
+    log.log_operation("Removing mode:{}".format(mode), verbose=verbose)
     if keep_col == "P" and ("P" in sumstats.columns):
         zero_count = (sumstats["P"] == 0).sum()
         if zero_count > 1:
-            log.write(" -Detected {} variants with P=0; converting to MLOG10P and sorting descending...".format(zero_count), verbose=verbose)
+            log.log_operation("Detected {} variants with P=0; converting to MLOG10P and sorting descending".format(zero_count), verbose=verbose)
             status, _ = fill_extreme_mlog10p(sumstats, None, log, verbose=verbose, filled_count=0)
             if status == 1 and ("MLOG10P" in sumstats.columns):
                 keep_col = "MLOG10P"
@@ -520,7 +554,7 @@ def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",n
     # sort the variants using the specified column before removing
     if keep_col is not None : 
         if keep_col in sumstats.columns:
-            log.write("Start to sort the sumstats using {}...".format(keep_col), verbose=verbose)
+            log.log_operation_start("sort the sumstats using {}".format(keep_col), verbose=verbose)
             sumstats = sumstats.sort_values(by=keep_col,ascending=keep_ascend)
         else:
             log.write("Column" + keep_col +" was not detected... skipping... ", verbose=verbose)
@@ -528,7 +562,7 @@ def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",n
     
     # remove by duplicated SNPID
     if (snpid in sumstats.columns) and ("d" in mode or "s" in mode):
-        log.write("Start to remove duplicated variants based on snpid...{}".format(_get_version()), verbose=verbose)
+        log.log_operation_start("remove duplicated variants based on snpid", version=_get_version(), verbose=verbose)
         check_dataframe_shape(sumstats, log, verbose)
         log.write(" -Which variant to keep: ",  keep , verbose=verbose)   
         pre_number =len(sumstats)   
@@ -536,21 +570,21 @@ def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",n
             # keep na and remove duplicated
             sumstats = sumstats.loc[sumstats[snpid].isna() | (~sumstats.duplicated(subset=[snpid], keep=keep)),:]
             after_number=len(sumstats)   
-            log.write(" -Removed ",pre_number -after_number ," based on SNPID...", verbose=verbose)
+            log.log_variants_removed(pre_number - after_number, reason="based on SNPID", verbose=verbose)
     
     # remove by duplicated rsID
     if (rsid in sumstats.columns) and ("d" in mode or "r" in mode):
         # keep na and remove duplicated
         pre_number =len(sumstats)
-        log.write("Start to remove duplicated variants based on rsID...", verbose=verbose)
+        log.log_operation_start("remove duplicated variants based on rsID", verbose=verbose)
         check_dataframe_shape(sumstats, log, verbose)
         sumstats = sumstats.loc[sumstats[rsid].isna() | (~sumstats.duplicated(subset=rsid, keep=keep)),:]
         after_number=len(sumstats)   
-        log.write(" -Removed ",pre_number -after_number ," based on rsID...", verbose=verbose)
+        log.log_variants_removed(pre_number - after_number, reason="based on rsID", verbose=verbose)
     
     # remove by duplicated variants by CHR:POS:NEA:EA
     if (chrom in sumstats.columns) and (pos in sumstats.columns) and (nea in sumstats.columns) and (ea in sumstats.columns) and ("d" in mode or "c" in mode):
-        log.write("Start to remove duplicated variants based on CHR,POS,EA and NEA...", verbose=verbose)
+        log.log_operation_start("remove duplicated variants based on CHR,POS,EA and NEA", verbose=verbose)
         check_dataframe_shape(sumstats, log, verbose)
         log.write(" -Which variant to keep: ",  keep , verbose=verbose)   
         pre_number =len(sumstats)   
@@ -558,22 +592,22 @@ def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",n
             # keep na and remove duplicated
             sumstats = sumstats.loc[(~sumstats[[chrom,pos,ea,nea]].all(axis=1)) | (~sumstats.duplicated(subset=[chrom,pos,ea,nea], keep=keep)),:]
             after_number=len(sumstats)   
-            log.write(" -Removed ",pre_number -after_number ," based on CHR,POS,EA and NEA...", verbose=verbose) 
+            log.log_variants_removed(pre_number - after_number, reason="based on CHR,POS,EA and NEA", verbose=verbose) 
     
     # remove by multiallelic variants by CHR:POS
     if (chrom in sumstats.columns) and (pos in sumstats.columns) and "m" in mode:
         # keep na and remove duplicated
         pre_number =len(sumstats) 
-        log.write("Start to remove multiallelic variants based on chr:pos...", verbose=verbose)    
+        log.log_operation_start("remove multiallelic variants based on chr:pos", verbose=verbose)    
         check_dataframe_shape(sumstats, log, verbose)
         log.write(" -Which variant to keep: ",  keep , verbose=verbose) 
         sumstats = sumstats.loc[(~sumstats[[chrom,pos]].all(axis=1)) | (~sumstats.duplicated(subset=[chrom,pos], keep=keep)),:]
         after_number=len(sumstats)  
-        log.write(" -Removed ",pre_number -after_number," multiallelic variants...", verbose=verbose)   
+        log.log_variants_removed(pre_number - after_number, reason="multiallelic variants", verbose=verbose)   
     after_number=len(sumstats)   
     
     # resort the coordinates
-    log.write(" -Removed ",total_number -after_number," variants in total.", verbose=verbose)
+    log.log_variants_removed(total_number - after_number, reason="in total", verbose=verbose)
     if keep_col is not None : 
         log.write(" -Sort the coordinates based on CHR and POS...", verbose=verbose)
         sumstats = _sort_coordinate(sumstats,verbose=False)
@@ -605,9 +639,23 @@ def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",n
         specified_columns = list(set(specified_columns))
         sumstats = sumstats.loc[~sumstats[specified_columns].isna().any(axis=1),:]
         after_number=len(sumstats) 
-        log.write(" -Removed ",pre_number -after_number," variants with NA values in {} .".format(specified_columns), verbose=verbose)  
+        log.log_variants_removed(pre_number - after_number, reason="with NA values in {}".format(specified_columns), verbose=verbose)  
 
-    return sumstats
+    # Update the sumstats_obj.data with the filtered dataframe
+    sumstats_obj.data = sumstats
+    
+    # Update QC status
+    try:
+        from gwaslab.g_meta import _update_qc_step
+        remove_dup_kwargs = {
+            'mode': mode, 'chrom': chrom, 'pos': pos, 'snpid': snpid, 'ea': ea, 'nea': nea, 'rsid': rsid,
+            'keep': keep, 'keep_col': keep_col, 'remove_na': remove_na, 'keep_ascend': keep_ascend
+        }
+        _update_qc_step(sumstats_obj, "remove_dup", remove_dup_kwargs, True)
+    except:
+        pass
+
+    return sumstats_obj.data
 
 ###############################################################################################################
 # 20230128
@@ -617,7 +665,7 @@ def _remove_dup(sumstats,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="EA",n
         start_function= ".fix_chr()",
         start_cols=["CHR","STATUS"]
 )
-def _fix_chr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()):
+def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()) -> pd.DataFrame:
     """
     Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
     
@@ -629,6 +677,8 @@ def _fix_chr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y
 
     Parameters
     ----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to fix.
     add_prefix : str, optional, default=""
         Prefix to prepend to chromosome labels (e.g., "chr").
     x : list of [str, int], optional
@@ -654,6 +704,16 @@ def _fix_chr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y
     chrom_list : list of str or int, optional
         List of valid chromosome labels or numeric values. Default is ["1", ..., "25", "X", "Y", "MT"]
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called during initialization - no Sumstats object yet
+        sumstats = sumstats_obj
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
     #chrom_list = get_chr_list() #bottom 
     if chrom_list is None:
@@ -667,7 +727,7 @@ def _fix_chr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y
         else:
             sumstats[chrom] = sumstats[chrom].astype("string")
     except:
-        log.write(" -Force converting to pd string data type...", verbose=verbose)
+        log.log_datatype_attempt("CHR", str(sumstats[chrom].dtype), "string", verbose=verbose)
         sumstats[chrom] = sumstats[chrom].astype("string")
     ########################################################################################################################################
     # check if CHR is numeric
@@ -747,7 +807,7 @@ def _fix_chr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y
                 log.write(" -Valid CHR list: {} - {}".format(min([int(x) for x in chrom_list if x.isnumeric()]),max([int(x) for x in chrom_list if x.isnumeric()])), verbose=verbose)
             except:
                 pass
-            log.write(" -Removed "+ str(unrecognized_num)+ " variants with chromosome notations not in CHR list.", verbose=verbose) 
+            log.log_variants_removed(unrecognized_num, reason="with chromosome notations not in CHR list", verbose=verbose) 
             try:
                 log.write(" -A look at chromosome notations not in CHR list:" , set(sumstats.loc[~sumstats[chrom].isin(chrom_list),chrom].head()), verbose=verbose)
             except:
@@ -772,10 +832,25 @@ def _fix_chr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y
     out_of_range_chr = out_of_range_chr.fillna(False)
     if out_of_range_chr.sum()>0:
         log.write(" -Sanity check for CHR...", verbose=verbose) 
-        log.write(" -Removed {} variants with CHR < {}...".format(out_of_range_chr.sum(), minchr), verbose=verbose)
+        log.log_variants_removed(out_of_range_chr.sum(), reason="with CHR < {}".format(minchr), verbose=verbose)
         sumstats = sumstats.loc[~out_of_range_chr,:]
 
-    return sumstats
+    # Update QC status only if called with Sumstats object
+    if not is_dataframe:
+        # Assign filtered dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        try:
+            from gwaslab.g_meta import _update_qc_step
+            chr_kwargs = {
+                'chrom': chrom, 'status': status, 'add_prefix': add_prefix, 'x': x, 'y': y, 'mt': mt,
+                'remove': remove, 'chrom_list': chrom_list, 'minchr': minchr
+            }
+            _update_qc_step(sumstats_obj, "chr", chr_kwargs, True)
+        except:
+            pass
+        return sumstats_obj.data
+    else:
+        return sumstats
 
 ###############################################################################################################    
 # 20230128
@@ -785,7 +860,7 @@ def _fix_chr(sumstats,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y
         start_function= ".fix_pos()",
         start_cols=["POS","STATUS"]
 )
-def _fix_pos(sumstats, pos="POS", status="STATUS", remove=False, verbose=True, lower_limit=0, upper_limit=None, limit=250000000, log=Log()):
+def _fix_pos(sumstats_obj, pos="POS", status="STATUS", remove=False, verbose=True, lower_limit=0, upper_limit=None, limit=250000000, log=Log()) -> pd.DataFrame:
     '''
     Standardize and validate genomic base-pair positions.
     
@@ -796,6 +871,8 @@ def _fix_pos(sumstats, pos="POS", status="STATUS", remove=False, verbose=True, l
 
     Parameters
     ----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to fix.
     remove : bool, default False
         If True, remove records with invalid or out-of-range positions.
     verbose : bool, default False
@@ -812,6 +889,16 @@ def _fix_pos(sumstats, pos="POS", status="STATUS", remove=False, verbose=True, l
     pandas.DataFrame
         Summary statistics with standardized and validated base-pair positions.
     '''
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called during initialization - no Sumstats object yet
+        sumstats = sumstats_obj
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
+        is_dataframe = False
     # Set default upper limit if not provided
     if upper_limit is None:
         upper_limit = limit
@@ -834,10 +921,10 @@ def _fix_pos(sumstats, pos="POS", status="STATUS", remove=False, verbose=True, l
 
     # Convert POS to integer type
     try:
-        log.write(' -Converting to Int64 data type ...', verbose=verbose)
+        log.log_datatype_attempt("POS", str(sumstats[pos].dtype), "Int64", verbose=verbose)
         sumstats[pos] = sumstats[pos].astype('Int64')
     except Exception:
-        log.write(' -Force converting to Int64 data type ...', verbose=verbose)
+        log.log_datatype_attempt("POS", str(sumstats[pos].dtype), "Int64", verbose=verbose)
         sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
     
     # Identify fixed and invalid positions
@@ -852,16 +939,31 @@ def _fix_pos(sumstats, pos="POS", status="STATUS", remove=False, verbose=True, l
     log.write(" -Position bound:({} , {:,})".format(lower_limit, upper_limit), verbose=verbose)
     is_pos_na = sumstats[pos].isna()
     is_outlier = ((sumstats[pos] <= lower_limit) | (sumstats[pos] >= upper_limit)) & (~is_pos_na)
-    log.write(" -Removed outliers:", sum(is_outlier), verbose=verbose)
+    log.log_variants_removed(sum(is_outlier), reason="outliers", verbose=verbose)
     sumstats = sumstats.loc[~is_outlier, :]
     
     # Optionally remove remaining NA positions
     if remove is True:
         sumstats = sumstats.loc[~sumstats[pos].isna(), :]
         remain_var_num = len(sumstats)
-        log.write(" -Removed " + str(all_var_num - remain_var_num) + " variants with bad positions.", verbose=verbose)
+        log.log_variants_removed(all_var_num - remain_var_num, reason="with bad positions", verbose=verbose)
  
-    return sumstats
+    # Update QC status only if called with Sumstats object
+    if not is_dataframe:
+        # Assign filtered dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        try:
+            from gwaslab.g_meta import _update_qc_step
+            pos_kwargs = {
+                'pos': pos, 'status': status, 'remove': remove, 'lower_limit': lower_limit,
+                'upper_limit': upper_limit, 'limit': limit
+            }
+            _update_qc_step(sumstats_obj, "pos", pos_kwargs, True)
+        except:
+            pass
+        return sumstats_obj.data
+    else:
+        return sumstats
 
 ###############################################################################################################    
 # 20220514
@@ -871,7 +973,7 @@ def _fix_pos(sumstats, pos="POS", status="STATUS", remove=False, verbose=True, l
         start_function= ".fix_allele()",
         start_cols=["EA","NEA","STATUS"]
 )
-def _fix_allele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()):
+def _fix_allele(sumstats_obj,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()) -> pd.DataFrame:
     """
     Validate and standardize allele representations.
     
@@ -882,6 +984,8 @@ def _fix_allele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose
 
     Parameters
     ----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to fix.
     remove : bool, default False
         If True, remove variants with invalid allele representations.
     verbose : bool, default False
@@ -892,6 +996,16 @@ def _fix_allele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose
     pandas.DataFrame
         Summary statistics table with validated and standardized allele values.
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called during initialization - no Sumstats object yet
+        sumstats = sumstats_obj
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
     ############################################################################################
     #try:
@@ -906,7 +1020,7 @@ def _fix_allele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose
     #except:
     #    pass
 
-    log.write(" -Converted all bases to string datatype and UPPERCASE.", verbose=verbose)
+    log.log_operation("Converted all bases to string datatype and UPPERCASE", verbose=verbose)
     categories = set(sumstats[ea].str.upper())|set(sumstats[nea].str.upper())|set("N")
     categories = {x for x in categories if pd.notna(x)}
     sumstats[ea]=pd.Categorical(sumstats[ea].str.upper(),categories = categories) 
@@ -943,10 +1057,12 @@ def _fix_allele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose
     if remove == True:
         sumstats = sumstats.loc[(good_ea & good_nea),:].copy()
         good_eanea_num = len(sumstats)
-        log.write(" -Removed "+str(all_var_num - good_eanea_num)+" variants with NA alleles or alleles that contain bases other than A/C/T/G.", verbose=verbose)  
-        sumstats = sumstats.loc[(good_ea & good_nea & (~not_variant)),:].copy()
+        log.log_variants_removed(all_var_num - good_eanea_num, reason="with NA alleles or alleles that contain bases other than A/C/T/G", verbose=verbose)  
+        # Recalculate not_variant after filtering to ensure index alignment
+        not_variant = sumstats[nea] == sumstats[ea]
+        sumstats = sumstats.loc[~not_variant,:].copy()
         good_eanea_notsame_num = len(sumstats)
-        log.write(" -Removed "+str(good_eanea_num - good_eanea_notsame_num)+" variants with same allele for EA and NEA.", verbose=verbose) 
+        log.log_variants_removed(good_eanea_num - good_eanea_notsame_num, reason="with same allele for EA and NEA", verbose=verbose) 
     else:
         sumstats[[ea,nea]] = sumstats[[ea,nea]].fillna("N")
         log.write(" -Detected "+str(sum(exclude))+" variants with alleles that contain bases other than A/C/T/G .", verbose=verbose) 
@@ -980,7 +1096,21 @@ def _fix_allele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose
     if (is_eanea_fixed & is_normalized).sum()>0:
         sumstats.loc[is_eanea_fixed&is_normalized,status]     = vchange_status(sumstats.loc[is_eanea_fixed&is_normalized, status],  5,"4","3")
 
-    return sumstats
+    # Update QC status only if called with Sumstats object
+    if not is_dataframe:
+        # Assign filtered dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        try:
+            from gwaslab.g_meta import _update_qc_step
+            allele_kwargs = {
+                'ea': ea, 'nea': nea, 'status': status, 'remove': remove
+            }
+            _update_qc_step(sumstats_obj, "allele", allele_kwargs, True)
+        except:
+            pass
+        return sumstats_obj.data
+    else:
+        return sumstats
 
 ###############################################################################################################   
 # 20220721
@@ -991,7 +1121,7 @@ def _fix_allele(sumstats,ea="EA", nea="NEA",status="STATUS",remove=False,verbose
         start_function= ".normalize()",
         start_cols=["EA","NEA","STATUS"]
 )
-def _parallelize_normalize_allele(sumstats,mode="s",snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",chunk=3000000,threads=1,verbose=True,log=Log()):
+def _parallelize_normalize_allele(sumstats_obj,mode="s",snpid="SNPID",rsid="rsID",pos="POS",nea="NEA",ea="EA" ,status="STATUS",chunk=3000000,threads=1,verbose=True,log=Log()) -> pd.DataFrame:
     '''
     Normalize indels in parallel using left-alignment and parsimony principles.
     
@@ -1002,6 +1132,8 @@ def _parallelize_normalize_allele(sumstats,mode="s",snpid="SNPID",rsid="rsID",po
 
     Parameters
     ----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to normalize.
     chunk : int, default 10000
         Size of chunks for parallel processing.
     threads : int, default 1
@@ -1012,6 +1144,7 @@ def _parallelize_normalize_allele(sumstats,mode="s",snpid="SNPID",rsid="rsID",po
     pandas.DataFrame
         Summary statistics with normalized indel allele representations.
     '''
+    sumstats = sumstats_obj.data
     ############################################################################################
 
     #variants_to_check = status_match(sumstats[status],5,[4,5]) #
@@ -1019,7 +1152,7 @@ def _parallelize_normalize_allele(sumstats,mode="s",snpid="SNPID",rsid="rsID",po
     variants_to_check = match_status(sumstats[status], r"\w\w\w\w[45]\w\w")
     if variants_to_check.sum() == 0:
         log.write(" -No available variants to normalize..", verbose=verbose)
-        return sumstats
+        return sumstats_obj.data
     ###############################################################################################################
     if mode=="v":
         if variants_to_check.sum() < 100000:
@@ -1110,16 +1243,38 @@ def _parallelize_normalize_allele(sumstats,mode="s",snpid="SNPID",rsid="rsID",po
     except:
         sumstats[pos] = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
   
-    return sumstats
+    # Assign modified dataframe back to the Sumstats object
+    sumstats_obj.data = sumstats
+  
+    # Update QC status
+    try:
+        from gwaslab.g_meta import _update_qc_step
+        # Extract relevant kwargs for QC status tracking (exclude internal variables)
+        normalize_kwargs = {
+            'mode': mode,
+            'snpid': snpid,
+            'rsid': rsid,
+            'pos': pos,
+            'nea': nea,
+            'ea': ea,
+            'status': status,
+            'chunk': chunk,
+            'threads': threads
+        }
+        _update_qc_step(sumstats_obj, "normalize", normalize_kwargs, True)
+    except:
+        pass
+  
+    return sumstats_obj.data
 
-def normalizeallele(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
+def normalizeallele(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS") -> pd.DataFrame:
     #single df
     #normalized = sumstats.apply(lambda x: normalizevariant(x[0],x[1],x[2],x[3]),axis=1)
     normalized = sumstats.apply(lambda x: normalizevariant(x[pos],x[nea],x[ea],x[status]),axis=1)
     sumstats = pd.DataFrame(normalized.to_list(), columns=[pos,nea,ea,status],index=sumstats.index)
     return sumstats
 
-def fastnormalizeallele(insumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS",chunk=3000000,log=Log(),verbose=False):
+def fastnormalizeallele(insumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS",chunk=3000000,log=Log(),verbose=False) -> Tuple[pd.DataFrame, np.ndarray]:
     log.write(" -Number of variants to check:{}".format(len(insumstats)), verbose=verbose)
     log.write(" -Chunk size:{}".format(chunk), verbose=verbose)
     log.write(" -Processing in chunks:",end="", verbose=verbose)
@@ -1134,7 +1289,7 @@ def fastnormalizeallele(insumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS",
     log.write("\n",end="",show_time=False, verbose=verbose)   
     return insumstats, changed_index
 
-def normalizae_chunk(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
+def normalizae_chunk(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS") -> Tuple[pd.DataFrame, np.ndarray]:
     # already normalized
 
     is_same = sumstats["NEA"] == sumstats["EA"]
@@ -1180,7 +1335,7 @@ def normalizae_chunk(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS"):
     changed_index = sumstats[changed].index
     return sumstats, changed_index.values
 
-def normalizevariant(pos,a,b,status):
+def normalizevariant(pos,a,b,status) -> Tuple[int, str, str, int]:
     # single record
     # https://genome.sph.umich.edu/wiki/Variant_Normalization
     # a - ref - nea    starting -> pos
@@ -1228,7 +1383,7 @@ def normalizevariant(pos,a,b,status):
 
 ###############################################################################################################
 # 20220426
-def get_reverse_complementary_allele(a):
+def get_reverse_complementary_allele(a: str) -> str:
     dic = str.maketrans({
        "A":"T",
        "T":"A",
@@ -1236,7 +1391,7 @@ def get_reverse_complementary_allele(a):
        "G":"C"})
     return a[::-1].translate(dic)
 
-def flip_direction(string):
+def flip_direction(string: str) -> str:
     flipped_string=""
     for char in string:
         if char=="?":
@@ -1249,13 +1404,13 @@ def flip_direction(string):
             flipped_string+=char
     return flipped_string
 
-def flip_by_swap(sumstats, matched_index, log, verbose):
+def flip_by_swap(sumstats, matched_index, log, verbose) -> pd.DataFrame:
     if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
         log.write(" -Swapping column: NEA <=> EA...", verbose=verbose) 
         sumstats.loc[matched_index,['NEA','EA']] = sumstats.loc[matched_index,['EA','NEA']].values
     return sumstats
 
-def flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1):
+def flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1) -> pd.DataFrame:
     if "OR" in sumstats.columns:
         log.write(" -Flipping column: OR = 1 / OR...", verbose=verbose) 
         sumstats.loc[matched_index,"OR"] =   factor / sumstats.loc[matched_index,"OR"].values
@@ -1276,13 +1431,13 @@ def flip_by_inverse(sumstats, matched_index, log, verbose, cols=None, factor=1):
         sumstats.loc[matched_index,"HR_95L"] =   factor / sumstats.loc[matched_index,"HR_95U"].values
     return sumstats
 
-def flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1):
+def flip_by_subtract(sumstats, matched_index, log, verbose, cols=None, factor=1) -> pd.DataFrame:
     if "EAF" in sumstats.columns:
         log.write(" -Flipping column: EAF = 1 - EAF...", verbose=verbose) 
         sumstats.loc[matched_index,"EAF"] =   factor - sumstats.loc[matched_index,"EAF"].values
     return sumstats
 
-def flip_by_sign(sumstats, matched_index, log, verbose, cols=None):
+def flip_by_sign(sumstats, matched_index, log, verbose, cols=None) -> pd.DataFrame:
     if "BETA" in sumstats.columns:
         log.write(" -Flipping column: BETA = - BETA...", verbose=verbose) 
         sumstats.loc[matched_index,"BETA"] =     - sumstats.loc[matched_index,"BETA"].values
@@ -1309,7 +1464,7 @@ def flip_by_sign(sumstats, matched_index, log, verbose, cols=None):
         start_function= ".flip_allele_stats()",
         start_cols=None
 )
-def _flip_allele_stats(sumstats,status="STATUS",verbose=True,log=Log()):
+def _flip_allele_stats(sumstats_obj,status="STATUS",verbose=True,log=Log()) -> pd.DataFrame:
     '''
     Adjust statistics when allele direction has changed based on STATUS codes.
     
@@ -1321,6 +1476,8 @@ def _flip_allele_stats(sumstats,status="STATUS",verbose=True,log=Log()):
 
     Parameters
     ----------
+    sumstats_obj : Sumstats or pandas.DataFrame
+        Sumstats object or DataFrame containing the data to process.
     verbose : bool, default False
         If True, print progress messages during processing.
 
@@ -1329,6 +1486,15 @@ def _flip_allele_stats(sumstats,status="STATUS",verbose=True,log=Log()):
     pandas.DataFrame
         Summary statistics with effect sizes and alleles flipped where required.
     '''
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called with DataFrame
+        sumstats = sumstats_obj
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
     if_stats_flipped = False
     ###################get reverse complementary####################
@@ -1337,10 +1503,10 @@ def _flip_allele_stats(sumstats,status="STATUS",verbose=True,log=Log()):
     # Use status_match for integer status codes (digit 6, values 4 or 5)
     matched_index = status_match(sumstats[status], 6, [4, 5])
     if matched_index.sum() > 0:
-        log.write("Start to convert alleles to reverse complement for SNPs with status xxxxx[45]x...{}".format(_get_version()), verbose=verbose) 
+        log.log_operation_start("convert alleles to reverse complement for SNPs with status xxxxx[45]x", version=_get_version(), verbose=verbose) 
         log.write(" -Flipping "+ str(sum(matched_index)) +" variants...", verbose=verbose) 
         if ("NEA" in sumstats.columns) and ("EA" in sumstats.columns) :
-            log.write(" -Converting to reverse complement : EA and NEA...", verbose=verbose) 
+            log.log_operation("Converting to reverse complement: EA and NEA", verbose=verbose) 
             reverse_complement_nea = sumstats.loc[matched_index,'NEA'].apply(lambda x :get_reverse_complementary_allele(x)) 
             reverse_complement_ea = sumstats.loc[matched_index,'EA'].apply(lambda x :get_reverse_complementary_allele(x)) 
             categories = set(sumstats['EA'])|set(sumstats['NEA']) |set(reverse_complement_ea) |set(reverse_complement_nea)
@@ -1406,12 +1572,25 @@ def _flip_allele_stats(sumstats,status="STATUS",verbose=True,log=Log()):
 
     if if_stats_flipped != True:
         log.write(" -No statistics have been changed.")
-    return sumstats
+    
+    # Update harmonization status only if called with Sumstats object
+    if not is_dataframe:
+        # Assign modified dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        try:
+            from gwaslab.g_meta import _update_harmonize_step
+            flip_kwargs = {'status': status}
+            _update_harmonize_step(sumstats_obj, "flip_allele_stats", flip_kwargs, True)
+        except:
+            pass
+        return sumstats_obj.data
+    else:
+        return sumstats
 
 
 ###############################################################################################################
 # 20220426
-def liftover_snv(row,chrom,converter,to_build):
+def liftover_snv(row,chrom,converter,to_build) -> Tuple[Any, Any, int]:
     # Convert status to integer and extract digits
     status_val = int(row.iloc[1]) if isinstance(row.iloc[1], (int, np.integer)) else int(str(row.iloc[1]))
     # Extract digits: digit 3, set digit 4 to 9, digit 5, set digits 6-7 to 99
@@ -1437,7 +1616,7 @@ def liftover_variant(sumstats,
              status="STATUS",
              from_build="19", 
              to_build="38",
-             chain=None):
+             chain=None) -> pd.DataFrame:
     
     try:
         if chain is None:
@@ -1470,7 +1649,7 @@ def liftover_variant(sumstats,
         start_function= ".liftover()",
         start_cols=["CHR","POS","STATUS"]
 )
-def _parallelize_liftover_variant(sumstats,threads=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True,chain=None, verbose=True,log=Log()):
+def _parallelize_liftover_variant(sumstats_obj,threads=1,chrom="CHR", pos="POS", from_build="19", to_build="38",status="STATUS",remove=True,chain=None, verbose=True,log=Log()) -> pd.DataFrame:
     '''
     Perform parallelized liftover of variants to a new genome build.
     
@@ -1481,6 +1660,8 @@ def _parallelize_liftover_variant(sumstats,threads=1,chrom="CHR", pos="POS", fro
 
     Parameters
     ----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to liftover.
     threads : int
         Number of CPU cores to use for parallel processing.
     from_build : str
@@ -1497,28 +1678,38 @@ def _parallelize_liftover_variant(sumstats,threads=1,chrom="CHR", pos="POS", fro
     pandas.DataFrame
         Summary statistics table with updated genomic coordinates.
     '''
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called during initialization - no Sumstats object yet
+        sumstats = sumstats_obj
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
+        is_dataframe = False
     
     lifter_from_build = _process_build(from_build,log=log,verbose=False)
     lifter_to_build = _process_build(to_build,log=log,verbose=False)
 
     if chain is not None:
-        log.write(" -Creating converter using ChainFile: {}".format(chain), verbose=verbose)
+        log.log_operation("Creating converter using ChainFile: {}".format(chain), verbose=verbose)
     else:
         try:
             chain = get_chain(from_build=from_build, to_build=to_build)
             if chain is None or chain==False:
                 raise ValueError("No available chain file for {} -> {}".format(lifter_from_build, lifter_to_build))
-            log.write(" -Creating converter using provided ChainFile: {}".format(chain), verbose=verbose)
+            log.log_operation("Creating converter using provided ChainFile: {}".format(chain), verbose=verbose)
         except:
             chain = None
-            log.write(" -Try creating converter using liftover package", verbose=verbose)
+            log.log_operation("Try creating converter using liftover package", verbose=verbose)
 
-    log.write(" -Creating converter : {} -> {}".format(lifter_from_build, lifter_to_build), verbose=verbose)
+    log.log_operation("Creating converter: {} -> {}".format(lifter_from_build, lifter_to_build), verbose=verbose)
     # valid chr and pos
     pattern = r"\w\w\w0\w\w\w"  
     to_lift = match_status(sumstats[status], pattern)
     sumstats = sumstats.loc[to_lift,:].copy()
-    log.write(" -Converting variants with status code xxx0xxx :"+str(len(sumstats))+"...", verbose=verbose)
+    log.log_operation("Converting variants with status code xxx0xxx: {}".format(len(sumstats)), verbose=verbose)
     ###########################################################################
     if to_lift.sum() > 0:
         if to_lift.sum() < 10000:
@@ -1536,14 +1727,46 @@ def _parallelize_liftover_variant(sumstats,threads=1,chrom="CHR", pos="POS", fro
     unmap_num = len(sumstats.loc[sumstats[pos].isna(),:])    
     
     if remove is True:
-        log.write(" -Removed unmapped variants: "+str(unmap_num), verbose=verbose)
+        log.log_variants_removed(unmap_num, reason="unmapped variants", verbose=verbose)
         sumstats = sumstats.loc[~sumstats[pos].isna(),:]
     
     # after liftover check chr and pos
-    sumstats = _fix_chr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=True)
-    sumstats = _fix_pos(sumstats,pos=pos,remove=remove, verbose=True)
+    if is_dataframe:
+        sumstats = _fix_chr(sumstats,chrom=chrom,add_prefix="",remove=remove, verbose=True)
+        sumstats = _fix_pos(sumstats,pos=pos,remove=remove, verbose=True)
+    else:
+        # Assign filtered dataframe back before calling fix functions
+        sumstats_obj.data = sumstats
+        sumstats_obj.data = _fix_chr(sumstats_obj,chrom=chrom,add_prefix="",remove=remove, verbose=True)
+        sumstats_obj.data = _fix_pos(sumstats_obj,pos=pos,remove=remove, verbose=True)
 
-    return sumstats
+    # Helper function to update metadata for Sumstats object
+    def _update_liftover_metadata(sumstats_obj_ref, to_build, from_build, remove, chain, threads, log):
+        """Update metadata after liftover operation."""
+        try:
+            from gwaslab.g_meta import _update_harmonize_step
+            from gwaslab.qc.qc_build import _process_build
+            sumstats_obj_ref.meta["is_sorted"] = False
+            sumstats_obj_ref.meta["is_harmonised"] = False
+            sumstats_obj_ref.meta["gwaslab"]["genome_build"] = _process_build(to_build, log=log, verbose=False)
+            sumstats_obj_ref.build = to_build
+            liftover_kwargs = {
+                'from_build': from_build, 'to_build': to_build, 'remove': remove, 'chain': chain, 'threads': threads
+            }
+            _update_harmonize_step(sumstats_obj_ref, "liftover", liftover_kwargs, True)
+        except:
+            pass
+    
+    # Set metadata and update harmonization status if called with Sumstats object
+    # This handles both normal execution and mocked/test scenarios
+    if not is_dataframe:
+        # Update metadata on the Sumstats object
+        _update_liftover_metadata(sumstats_obj, to_build, from_build, remove, chain, threads, log)
+        # Always return DataFrame (sumstats_obj.data contains the processed DataFrame)
+        return sumstats_obj.data
+    else:
+        # Always return DataFrame
+        return sumstats
 
 ###############################################################################################################
 # 20220426
@@ -1554,7 +1777,7 @@ def _parallelize_liftover_variant(sumstats,threads=1,chrom="CHR", pos="POS", fro
         start_cols=["CHR","POS"],
         show_shape=False
 )
-def _sort_coordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()):
+def _sort_coordinate(sumstats_obj,chrom="CHR",pos="POS",reindex=True,verbose=True,log=Log()) -> pd.DataFrame:
     '''
     Sort variants by genomic coordinates (chromosome, then position).
     
@@ -1563,6 +1786,8 @@ def _sort_coordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,lo
 
     Parameters
     ----------
+    sumstats_obj : Sumstats or pandas.DataFrame
+        Sumstats object or DataFrame containing the data to sort.
     verbose : bool, default False
         If True, print progress messages.
 
@@ -1571,17 +1796,41 @@ def _sort_coordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,lo
     pandas.DataFrame
         DataFrame with sorted genomic coordinates.
     '''
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called with DataFrame
+        sumstats = sumstats_obj
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
+        is_dataframe = False
     
     try:
         if sumstats[pos].dtype == "Int64":
             pass
         else:
-            log.write(" -Force converting POS to Int64...", verbose=verbose)
+            log.log_datatype_attempt("POS", str(sumstats[pos].dtype), "Int64", verbose=verbose)
             sumstats[pos]  = np.floor(pd.to_numeric(sumstats[pos], errors='coerce')).astype('Int64')
     except:
         pass
     sumstats = sumstats.sort_values(by=[chrom,pos],ascending=True,ignore_index=True)
-    return sumstats
+    
+    # Update QC status and metadata only if called with Sumstats object
+    if not is_dataframe:
+        # Assign sorted dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        try:
+            from gwaslab.g_meta import _update_qc_step
+            sort_coord_kwargs = {'chrom': chrom, 'pos': pos, 'reindex': reindex}
+            _update_qc_step(sumstats_obj, "sort_coord", sort_coord_kwargs, True)
+            # Set metadata
+            sumstats_obj.meta["is_sorted"] = True
+        except:
+            pass
+        return sumstats_obj.data
+    else:
+        return sumstats
 ###############################################################################################################
 # 20230430 added HR HR_95 BETA_95 N_CASE N_CONTROL
 @with_logging(
@@ -1591,7 +1840,7 @@ def _sort_coordinate(sumstats,chrom="CHR",pos="POS",reindex=True,verbose=True,lo
         start_cols=None,
         show_shape=False
 )
-def _sort_column(sumstats,verbose=True,log=Log(),order = None):
+def _sort_column(sumstats_obj,verbose=True,log=Log(),order = None) -> pd.DataFrame:
     '''
     Reorder columns according to a specified order.
     
@@ -1601,6 +1850,8 @@ def _sort_column(sumstats,verbose=True,log=Log(),order = None):
 
     Parameters
     ----------
+    sumstats_obj : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame containing the data to reorder.
     verbose : bool, optional
         Whether to print progress. Default is True.
 
@@ -1609,11 +1860,24 @@ def _sort_column(sumstats,verbose=True,log=Log(),order = None):
     pd.DataFrame
         Modified sumstats with reordered columns.
     '''
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called during initialization - no Sumstats object yet
+        sumstats = sumstats_obj
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
     if order is None:
-        order = [
-        "SNPID","rsID", "CHR", "POS", "EA", "NEA", "EAF", "MAF", "BETA", "SE","BETA_95L","BETA_95U", "Z","T","F",
-        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U","HR", "HR_95L", "HR_95U","INFO", "N","N_CASE","N_CONTROL","DIRECTION","I2","P_HET","DOF","SNPR2","STATUS"]
+        order = DEFAULT_COLUMN_ORDER.copy()
+        # Add non-reserved columns that may exist in sumstats
+        additional_cols = ["DIRECTION", "I2"]  # I2 is an alias for I2_HET
+        for col in additional_cols:
+            if col not in order:
+                order.append(col)
     output_columns = []
     for i in order:
         if i in sumstats.columns: output_columns.append(i)
@@ -1622,10 +1886,24 @@ def _sort_column(sumstats,verbose=True,log=Log(),order = None):
     log.write(" -Reordering columns to    :", ",".join(output_columns), verbose=verbose)
     sumstats = sumstats[ output_columns]
 
-    return sumstats
+    # Update QC status and metadata only if called with Sumstats object
+    if not is_dataframe:
+        # Assign reordered dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        try:
+            from gwaslab.g_meta import _update_qc_step
+            sort_column_kwargs = {'order': order}
+            _update_qc_step(sumstats_obj, "sort_column", sort_column_kwargs, True)
+            # Set metadata
+            sumstats_obj.meta["is_sorted"] = True
+        except:
+            pass
+        return sumstats_obj.data
+    else:
+        return sumstats
 
 
 ###############################################################################################################
-def _df_split(dataframe, n):
+def _df_split(dataframe: pd.DataFrame, n: int) -> List[pd.DataFrame]:
     k, m = divmod(len(dataframe), n)
     return [dataframe.iloc[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n)]

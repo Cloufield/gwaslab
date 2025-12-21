@@ -563,7 +563,7 @@ def _preformat(sumstats,
         sumstats = process_neaf(sumstats=sumstats,log=log,verbose=verbose)
 
     ## reodering ###################################################################################################  
-    sumstats = _sort_column(sumstats=sumstats,log=log,verbose=verbose)    
+    sumstats = _sort_column(sumstats_obj=sumstats,log=log,verbose=verbose)    
     sumstats = quick_convert_datatype(sumstats,log=log,verbose=verbose)
     
     # Force create IDs if both rsID and SNPID are absent

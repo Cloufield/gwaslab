@@ -40,6 +40,8 @@ def _infer_strand_with_annotation(
     
     Parameters
     ----------
+    sumstats : pd.DataFrame or Sumstats
+        Summary statistics DataFrame or Sumstats object.
     path : str or None, optional
         Path to reference file (VCF/BCF or TSV). Overrides `tsv_path`.
     vcf_path : str or None, optional
@@ -66,6 +68,15 @@ def _infer_strand_with_annotation(
     pd.DataFrame
         Annotated and strand-inferred summary statistics.
     """
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats, pd.DataFrame):
+        # Called with DataFrame
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats_obj = sumstats
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
     if isinstance(assign_cols, str):
         assign_cols = [assign_cols]
@@ -101,7 +112,7 @@ def _infer_strand_with_annotation(
     annotated_sumstats = annotated_sumstats.rename(columns={assign_cols[0]:raf})
 
     # Then infer strand using the annotated AF as RAF
-    return _infer_strand(
+    result = _infer_strand(
         sumstats=annotated_sumstats,
         chrom=chrom,
         pos=pos,
@@ -114,6 +125,28 @@ def _infer_strand_with_annotation(
         log=log,
         verbose=verbose,
     )
+    
+    # Set metadata and update harmonization status if Sumstats object is available
+    # Update harmonization status only if called with Sumstats object
+    if not is_dataframe:
+        # Assign modified dataframe back to the Sumstats object
+        sumstats_obj.data = result
+        try:
+            from gwaslab.g_meta import _append_meta_record, _update_harmonize_step
+            if path is not None:
+                sumstats_obj.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(
+                    sumstats_obj.meta["gwaslab"]["references"]["ref_infer"], path)
+            infer_strand_kwargs = {
+                'path': path, 'vcf_path': vcf_path, 'tsv_path': tsv_path, 'assign_cols': assign_cols,
+                'chr_dict': chr_dict, 'threads': threads, 'reuse_lookup': reuse_lookup,
+                'convert_to_bcf': convert_to_bcf, 'strip_info': strip_info
+            }
+            _update_harmonize_step(sumstats_obj, "infer_strand", infer_strand_kwargs, True)
+        except:
+            pass
+        return sumstats_obj.data
+    else:
+        return result
 
 @with_logging(
     start_to_msg="infer strand orientation using allele frequencies",

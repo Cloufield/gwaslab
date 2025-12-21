@@ -315,13 +315,39 @@ def _mqqplot(insumstats,
     
     Parameters
     ----------
+    insumstats : pandas.DataFrame
+        Input summary statistics dataframe containing GWAS results.
+    chrom : str, default='CHR'
+        Column name for chromosome.
+    pos : str, default='POS'
+        Column name for genomic position.
+    p : str, default='P'
+        Column name for p-values.
+    snpid : str, default='SNPID'
+        Column name for variant identifier. Will auto-detect 'SNPID' or 'rsID' if present.
+    eaf : str, default='EAF'
+        Column name for effect allele frequency.
+    ea : str, default='EA'
+        Column name for effect allele.
+    nea : str, default='NEA'
+        Column name for non-effect allele.
+    mlog10p : str, default='MLOG10P'
+        Column name for -log10(P) values.
+    mode : str, default='mqq'
+        Plotting mode. Options:
+        - 'm' : Manhattan plot only
+        - 'qq' : QQ plot only
+        - 'mqq' : Manhattan-QQ layout (default)
+        - 'r' : Regional plot (requires region parameter)
+        - 'b' : Brisbane/density plot
+        - 'mb' : Manhattan-Brisbane layout
+    mqqratio : int, default=3
+        Ratio for MQQ plot layout (Manhattan to QQ width ratio).
+    scaled : bool, default=False
+        Whether P-values are already in -log10 scale. Auto-detected if mlog10p column exists.
     check : bool, default=True
         Whether to perform input data quality checks.
-    mode : str, default='m'
-        Plotting mode. 
-        - 'm' : Manhattan plot
-        - 'mqq' : Manhattan-QQ layout 
-    scatter_kwargs : {dict, None}, optional
+    scatter_kwargs : dict, optional
         Arguments for scatter plot styling. Default is None.
     qq_scatter_kwargs : dict, optional
         Arguments for QQ plot scatter styling. Default is None.
@@ -331,182 +357,357 @@ def _mqqplot(insumstats,
         Custom x-axis labels for QQ plot. Default is None.
     qq_xlim : tuple or list, optional
         X-axis limits for QQ plot. Default is None.
+    colors : list, default=['#597FBD','#74BAD3']
+        Color palette for plot. Alternates by chromosome.
+    marker_size : tuple, default=(5,20)
+        Size range for markers. Passed to sns.scatterplot(). Pass like [20,20] for a fixed size. 
+        Overwrites "s" in scatter_kwargs.
+    use_rank : bool, default=False
+        Whether to use rank for plotting instead of position.
     region : tuple or list, optional
-        Genomic region specification (chr, start, end). 
-        Region can be determined using `get_region_start_and_end`.(Required in 'r' mode)
-    mqqratio : int, default=3
-        Ratio for MQQ plot layout.
-    windowsizekb : int, default=500
-        Window size in kb for obtainning significant variant. 
-    anno :{None, bool, str, "GENENAME"}, default=None
-        Specify which data to use for annotation. Default is None. 
-        anno options:
-            - None: no annotation
-            - True: annotate variants with chromosome and position like chr:pos
-            - 'GENENAME': annotate variants with closest gene names
-            - str: annotate variants with values in Column with the header 
+        Genomic region specification (chr, start, end). Required in 'r' mode.
+        Region can be determined using `get_region_start_and_end`.
+    region_title : str, optional
+        Title text for regional plot. Default is None.
+    region_title_kwargs : dict, optional
+        Regional plot title styling args. Default is {'family': 'Arial', 'size': 12}.
+    region_ref : str or list, optional
+        Reference variant(s) for LD calculation in regional plot. Default is None.
+    region_ref_second : str, optional
+        Second reference variant for LD calculation. Default is None.
+    region_ref_alias : dict, optional
+        Dictionary mapping reference variant IDs to display aliases. Default is None.
+    region_step : int, default=21
+        Step size for regional plot grid lines.
+    region_grid : bool, default=False
+        Whether to show grid lines in regional plot.
+    region_grid_line : dict, optional
+        Styling arguments for region grid lines. Default is {'linewidth': 2, 'linestyle': '--'}.
+    region_lead_grid : bool, default=True
+        Whether to show grid lines at lead variant position.
+    region_lead_grid_line : dict, optional
+        Styling arguments for lead variant grid lines. 
+        Default is {'alpha': 0.5, 'linewidth': 2, 'linestyle': '--', 'color': '#FF0000'}.
+    region_hspace : float, default=0.02
+        Horizontal spacing between regional plot panels.
+    region_ld_threshold : list, optional
+        LD r^2 thresholds list for color stratification. Default is [0.2, 0.4, 0.6, 0.8].
+    region_ld_legend : bool, default=True
+        Whether to show LD legend in regional plot.
+    region_ld_colors : list, optional
+        LD colors (list or palette) aligned with thresholds. 
+        Default is ['#E4E4E4', '#020080', '#86CEF9', '#24FF02', '#FDA400', '#FF0000', '#FF0000'].
+    region_ld_colors_m : list, optional
+        LD colors for multi-lead mode. 
+        Default is ['#E51819', '#367EB7', 'green', '#F07818', '#AD5691', 'yellow', 'purple'].
+    region_recombination : bool, default=True
+        Whether to show recombination rate track in regional plot.
+    region_protein_coding : bool, default=True
+        Whether to show only protein-coding genes in gene track.
+    region_flank_factor : float, default=0.05
+        Flanking region factor for regional plot (proportion of region size).
+    region_anno_bbox_kwargs : dict, optional
+        Bounding box arguments for region annotations. Default is {'ec': 'None', 'fc': 'None'}.
+    region_marker_shapes : list, optional
+        Marker shapes for different LD bins. 
+        Default is ['o', '^', 's', 'D', '*', 'P', 'X', 'h', '8'].
+    region_legend_marker : bool, default=True
+        Whether to show marker legend in regional plot.
+    vcf_path : str, optional
+        Path to VCF file for LD calculation. Default is None. For regional plot with LD, it is required.
+    vcf_chr_dict : dict, optional
+        Chromosome name mapping dictionary for VCF file. Default is None.
+    ld_path : str, optional
+        Path to pre-computed LD file. Default is None.
+    ld_map_path : str, optional
+        Path to LD map file. Default is None.
+    ld_fmt : str, default='npz'
+        Format of LD file ('npz', 'txt', etc.). Default is 'npz'.
+    ld_if_square : bool, default=False
+        Whether LD matrix is square format.
+    ld_if_add_T : bool, default=False
+        Whether to transpose LD matrix.
+    ld_map_rename_dic : dict, optional
+        Dictionary for renaming LD map columns. Default is None.
+    ld_map_kwargs : dict, optional
+        Additional arguments for LD map processing. Default is None.
+    tabix : pysam.TabixFile, optional
+        Tabix file handle for VCF. Auto-created if vcf_path provided. Default is None.
+    gtf_path : str, default='default'
+        Path to GTF file for gene annotations. 'default' uses auto-detected path.
+    gtf_chr_dict : dict, optional
+        Chromosome name mapping dictionary for GTF file. Default is None.
+    gtf_gene_name : str, optional
+        Column name for gene names in GTF. Default is None.
+    rr_path : str, default='default'
+        Path to recombination rate file. 'default' uses auto-detected path.
+    rr_header_dict : dict, optional
+        Header mapping dictionary for recombination rate file. Default is None.
+    rr_chr_dict : dict, optional
+        Chromosome name mapping dictionary for recombination rate file. Default is None.
+    rr_lim : tuple, default=(0,100)
+        Limits for recombination rate y-axis (cM/Mb).
+    rr_ylabel : bool, default=True
+        Whether to show y-axis label for recombination rate track.
+    cbar_title : str, default='LD $\\mathregular{r^2}$ with variant'
+        Title for LD colorbar.
+    cbar_fontsize : int, optional
+        Font size for colorbar. Default is None (uses fontsize).
+    cbar_font_family : str, optional
+        Font family for colorbar. Default is None.
+    cbar_scale : bool, default=True
+        Whether to scale colorbar.
+    cbar_bbox_to_anchor : tuple, default=(0,0,1,1)
+        Bounding box anchor for colorbar positioning.
+    cbar_equal_aspect : bool, default=True
+        Whether colorbar has equal aspect ratio.
+    cbar_w_scale : float, default=1
+        Width scale factor for colorbar.
+    cbar_h_scale : float, default=1
+        Height scale factor for colorbar.
+    cbar_downward_offset : float, default=1.3
+        Downward offset for colorbar positioning.
+    cbar_borderpad : float, optional
+        Border padding for colorbar. Default is None.
+    track_n : int, default=4
+        Number of gene tracks to display.
+    track_n_offset : int, default=0
+        Offset for gene track numbering.
+    track_fontsize_ratio : float, default=0.95
+        Font size ratio for gene track labels.
+    track_exon_ratio : float, default=1
+        Ratio for exon display size.
+    track_text_offset : int, default=1
+        Text offset for gene track labels.
+    track_font_family : str, optional
+        Font family for gene track. Default is None.
+    taf : list, optional
+        Track appearance factors [n, n_offset, fontsize_ratio, exon_ratio, text_offset]. 
+        Default is None (uses individual parameters).
+    bwindowsizekb : int, default=100
+        Window size in kb for density calculation.
+    density_color : bool, default=False
+        Whether to color variants by density.
+    density_range : tuple, optional
+        Range for density coloring. Default is None.
+    density_trange : tuple, default=(0,10)
+        Threshold range for density coloring.
+    density_threshold : float, default=5
+        Density threshold value.
+    density_tpalette : str, default='Blues'
+        Color palette for density below threshold.
+    density_palette : str, default='Reds'
+        Color palette for density above threshold.
+    anno : {None, bool, str, 'GENENAME'}, default=None
+        Specify which data to use for annotation. Options:
+        - None: no annotation
+        - True: annotate variants with chromosome and position like chr:pos
+        - 'GENENAME': annotate variants with closest gene names
+        - str: annotate variants with values in column with the header
     anno_set : list, optional
-        Set of variants IDs to annotate. Default is None. 
+        Set of variant IDs to annotate. Default is None.
     anno_alias : dict, optional
-        Dictionary mapping SNP IDs to custom annotation labels. Default is None. 
-    anno_d : {dict, None}, optional
-       Dictionary mapping annotation indices to custom positioning options ( "l" or "r").
-       For example, {"0":"l"} means adjust the direction of the 1st arm end to left. Default is None. 
+        Dictionary mapping SNP IDs to custom annotation labels. Default is None.
+    anno_d : dict, optional
+        Dictionary mapping annotation indices to custom positioning options ('l' or 'r').
+        For example, {"0":"l"} means adjust the direction of the 1st arm end to left. 
+        Default is None.
     anno_kwargs : dict, optional
-        ictionary of default styling arguments for annotations. Default is None. 
+        Dictionary of default styling arguments for annotations. Default is None.
     anno_kwargs_single : dict, optional
         Dictionary mapping SNP IDs to custom styling arguments. Default is None.
-    anno_style : 'right' or 'tight' or 'expand', default='right'
-        Style of annotation ('right', 'tight', 'expand'). Default is 'right'.
+    anno_style : {'right', 'tight', 'expand'}, default='right'
+        Style of annotation placement.
     anno_fixed_arm_length : float, optional
-        Fixed arm length for annotations. Default is None. 
+        Fixed arm length for annotations. Default is None.
     anno_source : str, default='ensembl'
-        Source for annotations.
+        Source for gene name annotations.
+    anno_gtf_path : str, optional
+        Path to GTF file for annotations when anno is 'GENENAME'. 
+        If None, auto-detected (preferred). Default is None.
+    anno_adjust : bool, default=False
+        Whether to automatically adjust text positions to prevent overlap.
     anno_xshift : float, optional
-        X-axis shift for annotations. Default is None. 
+        X-axis shift for annotations. Default is None.
     anno_max_iter : int, default=100
-        Maximum iterations for text repulsion algorithm. 
+        Maximum iterations for text repulsion algorithm.
     anno_max_rows : int, default=40
-        Maximum number of annotation rows to display. If more variants are provided, 
+        Maximum number of annotation rows to display. If more variants are provided,
         they will be sorted by p-value or -log10(p-value) and only the top ones will be shown.
     arrow_kwargs : dict, optional
         Arguments for annotation arrows. Default is None.
     arm_offset : float, optional
-        Offset for annotation arms. Default is None. 
+        Offset for annotation arms. Default is None.
     arm_scale : float, default=1
-        Scaling factor for annotation arm length. 
-    anno_height : float, default=1
-        Height for annotations. 
+        Scaling factor for annotation arm length.
     arm_scale_d : dict, optional
-        Dictionary mapping annotation indices to custom arm scaling factors.
-    cut : float, default=0
-        Threshold for shrinking extremely large -log10(P) values. Variants with MLOG10P greater than this threshold will be shrunk by a factor of `cutfactor`. 
-        Useful when the top signal is very strong and dominates the plot.
-    skip : float, default=0
-        Minimum -log10(P) value required for a variant to be plotted. Variants with MLOG10P < skip will be omitted. This is helpful for fast plotting or focusing on stronger signals.
-    ystep : float, default=0
-        Step size for y-axis. 
-    ylabels : list, optional
-        Custom y-axis tick labels. Default is None.
-    ytick3 : bool, default=True
-        Whether to use 3 y-axis ticks.
-    cutfactor : int, default=10
-        Factor for shrinking cut line. 
-    cut_line_color : str, default='#ebebeb'
-        Color for cut line. 
-    cut_log : bool, default=False
-        Whether to use log scale for cut line. 
+        Dictionary mapping annotation indices to custom arm scaling factors. Default is None.
+    anno_height : float, default=1
+        Height for annotations.
+    repel_force : float, default=0.03
+        Force for repelling overlapping labels.
     sig_line : bool, default=True
-        Whether to show significance line. 
+        Whether to show significance line.
     sig_level : float, optional
-        Significance level for variants. Overrides sig_level_plot and sig_level_lead. Default is None.
+        Significance level for variants. Overrides sig_level_plot and sig_level_lead. 
+        Default is None.
     sig_level_plot : float, default=5e-8
-        Significance level threshold to plot a line on the Manhattan plot. When sig_level is None, sig_level_plot will be used.
+        Significance level threshold to plot a line on the Manhattan plot. 
+        When sig_level is None, sig_level_plot will be used.
     sig_level_lead : float, default=5e-8
-        Significance level for extracting lead variants to annotate on the plot.  When sig_level is None, sig_level_plot will be used.
+        Significance level for extracting lead variants to annotate on the plot.
+        When sig_level is None, sig_level_plot will be used.
         When too many lead variants, it is helpful to set sig_level_lead to a more strict value.
     sig_line_color : str, default='grey'
-        Color for significance line. 
+        Color for significance line.
     suggestive_sig_line : bool, default=False
-        Whether to show suggestive significance line. 
+        Whether to show suggestive significance line.
     suggestive_sig_level : float, default=5e-6
-        Suggestive significance level. 
+        Suggestive significance level.
     suggestive_sig_line_color : str, default='grey'
-        Color for suggestive significance line. 
+        Color for suggestive significance line.
     additional_line : list, optional
-        Additional lines to plot. Default is None. 
+        Additional significance lines to plot (as p-values). Default is None.
     additional_line_color : list, optional
         Colors for additional lines. Default is None.
     sc_linewidth : int, default=2
-        Line width for significance lines. 
-    highlight : list, default=None
-        A list of variant identifiers (e.g., SNPIDs). Each specified variant will be treated as a focal point, 
-        and all variants in surrounding loci will be highlighted in distinct colors.
+        Line width for significance lines.
+    highlight : list, optional
+        A list of variant identifiers (e.g., SNPIDs). Each specified variant will be treated 
+        as a focal point, and all variants in surrounding loci will be highlighted in distinct colors.
     highlight_chrpos : bool, default=False
-        Whether to highlight by chromosome position.
-    highlight_color : str, default='#CB132D'
-        Color for highlighted variants.
+        Whether to interpret highlight as chromosome:position format instead of SNP IDs.
+    highlight_color : str or list, default='#CB132D'
+        Color(s) for highlighted variants. Can be a single color or list of colors.
     highlight_windowkb : int, default=500
         Window size for highlighting variants in kb.
     highlight_anno_kwargs : dict, optional
         Arguments for highlight annotations. Default is None.
     highlight_lim : list, optional
         Custom limits for highlighting. Default is None.
-    highlight_lim_mode : str, default='absolute'
-        Mode for highlight limits ('absolute' or 'relative').
+    highlight_lim_mode : {'absolute', 'relative'}, default='absolute'
+        Mode for highlight limits.
     pinpoint : list, optional
-        List of variants to pinpoint. Default is None. 
-    pinpoint_color : str, default='red'
-        Color for pinpointed variants. 
-    stratified : bool, default=False
-        Whether to create stratified QQ plots by MAF. 
-    maf_bins : list of lists, optional
-        Bins for MAF stratification [[lower1, upper1], ...]. Default is [[0, 0.01], [0.01, 0.05], [0.05, 0.25],[0.25,0.5]]
-    maf_bin_colors : list, optional
-        Colors for MAF bins. Default is None. 
-    gc : bool, default=True
-        Whether to calculate genomic control lambda. 
-    include_chrXYMT : bool, default=True
-        Whether to include sex chromosomes in QQ plot. 
+        List of variants to pinpoint (mark with special styling). Default is None.
+    pinpoint_color : str or list, default='red'
+        Color(s) for pinpointed variants. Can be a single color or list of colors.
+    cut : float, default=0
+        Threshold for shrinking extremely large -log10(P) values. Variants with MLOG10P 
+        greater than this threshold will be shrunk by a factor of `cutfactor`.
+        Useful when the top signal is very strong and dominates the plot.
+    skip : float, default=0
+        Minimum -log10(P) value required for a variant to be plotted. Variants with 
+        MLOG10P < skip will be omitted. This is helpful for fast plotting or focusing on stronger signals.
+    cutfactor : int, default=10
+        Factor for shrinking cut line.
+    cut_line_color : str, default='#ebebeb'
+        Color for cut line.
+    cut_log : bool, default=False
+        Whether to use log scale for cut line.
+    ystep : float, default=0
+        Step size for y-axis ticks.
+    ylabels : list, optional
+        Custom y-axis tick labels. Default is None.
+    ytick3 : bool, default=True
+        Whether to use 3 y-axis ticks.
     ylim : tuple, optional
-        Y-axis limits for plot. Default is None. 
+        Y-axis limits for plot. Default is None.
+    jagged : bool, default=False
+        Whether to make y-axis jagged (break axis for cut values).
+    jagged_len : float, default=0.01
+        Length of jagged line segment.
+    jagged_wid : float, default=0.01
+        Width of jagged line segment.
     xpad : float, optional
-        X-axis padding proportion. Default is None. 
+        X-axis padding proportion (applies to both sides). Default is None.
     xpadl : float, optional
-        Left X-axis padding proportion. Default is None. 
+        Left X-axis padding proportion. Default is None.
     xpadr : float, optional
         Right X-axis padding proportion. Default is None.
     xtight : bool, default=False
-        Whether to use tight X-axis padding. 
+        Whether to use tight X-axis padding.
     chrpad : float, default=0.03
-        Chromosome padding factor. 
+        Chromosome padding factor (spacing between chromosomes).
     drop_chr_start : bool, default=False
-        Whether to drop chromosome start. 
+        Whether to drop chromosome start position from x-axis.
+    xlabel : str, optional
+        X-axis label. Default is None (auto-generated).
     title : str, optional
-        Plot title. Default is None. Only used when both Manhattan and QQ plot are created. 
+        Overall plot title. Only used when both Manhattan and QQ plot are created. Default is None.
     mtitle : str, optional
-        Title for Manhattan plot. Default is None. 
+        Title for Manhattan plot. Default is None.
     mtitle_pad : float, default=1.08
-        Padding for Manhattan title. 
+        Padding for Manhattan title.
     qtitle : str, optional
-        Title for QQ plot. Default is None. 
+        Title for QQ plot. Default is None.
     qtitle_pad : float, default=1.08
-        Padding for QQ plot title. 
+        Padding for QQ plot title.
     title_pad : float, default=1.08
-        Padding for plot title. 
+        Padding for overall plot title.
     title_fontsize : int, default=13
-        Font size for title. 
+        Font size for titles.
+    title_kwargs : dict, optional
+        Additional styling arguments for titles. Default is None.
+    ylabel : str, optional
+        Y-axis label. Default is "$\\mathregular{-log_{10}(P)}$".
+        In 'b' mode: default is "Density of GWAS \\n SNPs within "+str(bwindowsizekb)+" kb".
     fontsize : int, default=9
-        Base font size for plot elements. 
+        Base font size for plot elements.
     font_family : str, optional
-        Font family for text elements. Default is None. 
+        Font family for text elements. Default is None.
     fontfamily : str, default='Arial'
-        Alternative name for font family. 
+        Alternative name for font family (used if font_family is None).
     math_fontfamily : str, default='dejavusans'
-        Font family for math text. 
+        Font family for math text rendering.
     anno_fontsize : int, default=9
         Font size for annotations.
-    figargs : dict, optional
-        Figure arguments for subplots. Default is None. 
     fig_kwargs : dict, optional
-        Alternative name for figure arguments. Default is None. 
-    colors : list, default=['#597FBD','#74BAD3']
-        Color palette for plot. 
-    marker_size : tuple, default=(5,20)
-        Size range for markers. Passed to sns.scatterplot(). Pass like [20,20] for a fixed size. Overwrite "s" in scatter_kwargs.
-    use_rank : bool, default=False
-        Whether to use rank for plotting.
-    verbose : bool, default=True
-        Whether to show progress. 
+        Figure arguments for subplots (e.g., figsize). Default is None.
+    figax : dict, optional
+        Existing figure and axes for plot. Default is None.
+    stratified : bool, default=False
+        Whether to create stratified QQ plots by MAF.
+    maf_bins : list of lists, optional
+        Bins for MAF stratification [[lower1, upper1], ...]. 
+        Default is [[0, 0.01], [0.01, 0.05], [0.05, 0.25], [0.25, 0.5]].
+    maf_bin_colors : list, optional
+        Colors for MAF bins. Default is None.
+    gc : bool, default=True
+        Whether to calculate and display genomic control lambda.
+    include_chrXYMT : bool, default=True
+        Whether to include sex chromosomes (X, Y) and mitochondrial chromosome (MT) in QQ plot.
+    expected_min_mlog10p : float, default=0
+        Expected minimum -log10(P) value for QQ plot.
+    windowsizekb : int, default=500
+        Window size in kb for obtaining significant variants (lead variant detection).
+    chr_dict : dict, optional
+        Mapping dictionary for chromosome names. Only used when chromosomes in reference 
+        files are not standardized. Default is None.
+    xtick_chr_dict : dict, optional
+        Chromosome number to name mapping for x-axis ticks. Only used when chromosomes 
+        in sumstats are not standardized. Default is None.
     build : str, optional
-        Genomic build version. Default is None. 
+        Genomic build version (e.g., '19', '38'). Default is None (auto-detected).
     dpi : int, default=200
-        Dots per inch for figure resolution. 
+        Dots per inch for figure resolution.
     save : str, optional
-        File path to save plot. Default is None. 
-    save_kwargs : dict, default={"dpi":600,"transparent":True}
-        Arguments for saving the plot. 
-
+        File path to save plot. Default is None.
+    save_kwargs : dict, default={'dpi':600, 'transparent':True}
+        Arguments for saving the plot.
+    verbose : bool, default=True
+        Whether to show progress messages.
+    log : gwaslab.Log, default=Log()
+        Logging object for operation records.
+    _posdiccul : dict, optional
+        Internal parameter for position dictionary. Default is None.
+    _chrom_df_for_i : pandas.DataFrame, optional
+        Internal parameter for chromosome dataframe. Default is None.
+    _if_quick_qc : bool, default=True
+        Internal parameter for quick QC flag. Default is True.
+    _get_region_lead : bool, default=False
+        Whether to return lead SNP information in regional mode. Default is False.
+    _invert : bool, default=False
+        Internal parameter for axis inversion. Default is False.
     
     Returns
     -------
@@ -514,39 +715,17 @@ def _mqqplot(insumstats,
         The created matplotlib figure object.
     log : gwaslab.Log
         Updated logging object with operation records.
-    lead_snp_is, lead_snp_is_color : tuple (optional)
-        Lead SNP positions and colors returned only in regional ('r') mode.
-
-    Less used parameters
-    -------
-    anno_gtf_path : str, default=None
-        Path to GTF file for annotations when anno is 'GENENAME'. Same as gtf_path in `get_lead` method.
-        If none, auto-detected (preferred). Default is None. 
-    chr_dict : dict, default=None
-        Mapping dictionary for chromosome names. Only used when chromosomes in reference files are not standardized
-    xtick_chr_dict : dict, default=None
-        Chromosome number to name mapping for x-axis ticks. Only used when chromosomes in sumstats are not standardized
-    ylabel : str, default="$\mathregular{-log_{10}(P)}$"
-        Y-axis label. Default is "$\mathregular{-log_{10}(P)}$".
-        b mode: default="Density of GWAS \n SNPs within "+str(bwindowsizekb)+" kb"
-    xlabel : str, optional
-        X-axis label. Default is None.
-    repel_force : float, default=0.03
-        Force for repelling overlapping labels.
-    anno_adjust : bool, optional
-        Whether to automatically adjust text positions to prevent overlap.
-    figax : dict, optional
-        Existing figure and axes for plot. Default is None.
-    jagged : bool, default=False
-        Whether to make y-axis jagged.
-    jagged_len : float, default=0.01
-        Length of jagged line.
-    jagged_wid : float, default=0.01
-        Width of jagged line.
-    mlog10p : str, default='MLOG10P'
-        Column name for -log10(P) values. 
-    scaled : bool, default=False
-        Whether P-values are already scaled.
+    lead_snp_is, lead_snp_is_color : tuple, optional
+        Lead SNP positions and colors returned only when _get_region_lead=True in regional ('r') mode.
+    
+    Notes
+    -----
+    - The function supports multiple plotting modes: Manhattan plots, QQ plots, regional plots, 
+      and density (Brisbane) plots.
+    - Regional plots require LD data (VCF or pre-computed LD files) and a region specification.
+    - Annotation can be done using gene names, custom columns, or variant IDs.
+    - The function automatically handles chromosome name standardization and coordinate conversion.
+    - For large datasets, use `skip` parameter to filter low-significance variants for faster plotting.
     """
     # scan all local args for series and convert to list for further processing
     for arg in locals().values():

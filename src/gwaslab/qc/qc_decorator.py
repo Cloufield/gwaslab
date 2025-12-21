@@ -84,13 +84,13 @@ def with_logging(start_to_msg,
             ref_fasta = bound_kwargs.arguments.get('ref_fasta', None)
             ref_tsv = bound_kwargs.arguments.get('ref_tsv',None)
             if n_cores is not None:
-                log.write(" -Number of threads/cores to use: {}".format(n_cores), verbose=verbose)
+                log.log_threads(n_cores, verbose=verbose)
             if ref_vcf is not None:
-                log.write(" -Reference VCF: {}".format(ref_vcf), verbose=verbose)
+                log.log_reference_path("VCF", ref_vcf, verbose=verbose)
             if ref_fasta is not None:
-                log.write(" -Reference FASTA: {}".format(ref_fasta), verbose=verbose)
+                log.log_reference_path("FASTA", ref_fasta, verbose=verbose)
             if ref_tsv is not None:
-                log.write(" -Reference TSV: {}".format(ref_tsv), verbose=verbose)
+                log.log_reference_path("TSV", ref_tsv, verbose=verbose)
 
             if "build" in bound_kwargs.arguments:
                 bound_kwargs.arguments["build"] = _process_build(bound_kwargs.arguments["build"], log=log, verbose=verbose)
@@ -98,7 +98,7 @@ def with_logging(start_to_msg,
                 kwargs = bound_kwargs.kwargs
 
             # Log start message
-            log.write(f"Start to {start_to_msg} ...({_get_version()})", verbose=verbose)
+            log.log_operation_start(start_to_msg, version=_get_version(), verbose=verbose)
             
             # must_arg can not be None
             #############################################################################################
@@ -110,6 +110,28 @@ def with_logging(start_to_msg,
                 raise ValueError("{} must be provided.".format(must_kwargs))
 
             #############################################################################################
+            # Try to find Sumstats object instance for shape/memory tracking
+            # Since functions now take sumstats_obj as first parameter, args[0] should be the Sumstats object
+            sumstats_obj = None
+            try:
+                from gwaslab.g_Sumstats import Sumstats
+                # Check if first argument is a Sumstats instance (most common case after refactoring)
+                if args and isinstance(args[0], Sumstats):
+                    sumstats_obj = args[0]
+                # Fallback: check if log has a reference to Sumstats object
+                if sumstats_obj is None:
+                    sumstats_obj = getattr(log, '_sumstats_obj', None)
+                # Fallback: check if any kwarg is a Sumstats instance
+                if sumstats_obj is None:
+                    for value in bound_kwargs.arguments.values():
+                        if isinstance(value, Sumstats):
+                            sumstats_obj = value
+                            break
+            except:
+                # If import fails, try log reference as fallback
+                if sumstats_obj is None:
+                    sumstats_obj = getattr(log, '_sumstats_obj', None)
+            
             if sumstats is not None:
                 # check sumstats shape, columns
                 initial_shape = None
@@ -117,7 +139,8 @@ def with_logging(start_to_msg,
                     initial_shape = (len(sumstats), len(sumstats.columns))
                     check_dataframe_shape(sumstats=sumstats, 
                                         log=log, 
-                                        verbose=verbose)  
+                                        verbose=verbose,
+                                        sumstats_obj=sumstats_obj)  
                 
                 is_enough_col = check_col(sumstats.columns, 
                                         verbose=verbose, 
@@ -125,7 +148,13 @@ def with_logging(start_to_msg,
                                         cols=start_cols, 
                                         function=start_function)
                 if check_dtype:
-                    check_datatype_for_cols(sumstats=sumstats, cols=start_cols, fix=fix)
+                    if sumstats_obj is not None:
+                        check_datatype_for_cols(sumstats_obj=sumstats_obj, cols=start_cols, fix=fix, verbose=verbose, log=log)
+                    else:
+                        # Fallback: if sumstats_obj not found, create a temporary wrapper or skip
+                        log.warning("Cannot update qc_status: Sumstats object not found", verbose=verbose)
+                        # For backward compatibility, we could still call with sumstats, but it won't update qc_status
+                        pass
 
                 if is_enough_col==True:
                     # Execute the original function
@@ -140,9 +169,9 @@ def with_logging(start_to_msg,
             if sumstats is not None and show_shape:
                 final_shape = (len(sumstats), len(sumstats.columns))
                 if initial_shape != final_shape:
-                    check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose)
+                    check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose, sumstats_obj=sumstats_obj)
             # Log finish message
-            log.write(f"Finished {finished_msg}.", verbose=verbose)
+            log.log_operation_finish(finished_msg, verbose=verbose)
             return result
         return wrapper
     return decorator

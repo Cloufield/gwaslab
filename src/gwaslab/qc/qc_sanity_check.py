@@ -34,6 +34,32 @@ from gwaslab.util.util_in_fill_data import _convert_betase_to_p
 from gwaslab.util.util_in_fill_data import _convert_mlog10p_to_p
 
 
+# ----- Internal Helper Functions -----
+def _get_id_column(sumstats_or_dataframe):
+    """
+    Internal helper function to select the appropriate ID column (SNPID or rsID).
+    
+    Parameters
+    ----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to check for ID columns.
+    
+    Returns
+    -------
+    str
+        Column name to use: "SNPID" if available, otherwise "rsID".
+    """
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        data = sumstats_or_dataframe
+    else:
+        data = sumstats_or_dataframe.data
+    
+    if "SNPID" in data.columns:
+        return "SNPID"
+    else:
+        return "rsID"
+
+
 def check_na_columns(sumstats, coltocheck=None, log=Log(), verbose=True):
     """
     Check for columns with all NA values and drop them.
@@ -83,6 +109,10 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
             sumstats[header] = sumstats[header].astype('Int64')
             return sumstats
         
+        # Skip range checking if var_range is None or contains None values
+        if var_range is None or var_range[0] is None or var_range[1] is None:
+            return sumstats
+        
         if dtype in ["Int64","Int32","int","int32","in64"]:
             log.write(" -Checking if {} <= {} <= {} ...".format( var_range[0] ,header, var_range[1]), verbose=verbose) 
             # Remove commas for string representations of numbers before conversion
@@ -111,10 +141,7 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
 
         if sum(~is_valid)>0:
             try:
-                if "SNPID" in sumstats.columns:
-                    id_to_use = "SNPID"
-                elif "rsID" in sumstats.columns:
-                    id_to_use = "rsID"
+                id_to_use = _get_id_column(sumstats)
                 invalid_ids = sumstats.loc[~is_valid, id_to_use].head().astype("string")
                 invalid_values = sumstats.loc[~is_valid, header].head().astype("string").fillna("NA")
                 log.write("  -Examples of invalid variants({}): {} ...".format(id_to_use, ",".join(invalid_ids.to_list()) ), verbose=verbose) 
@@ -137,7 +164,7 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
         finished_msg="sanity check for statistics",
         start_function=".check_sanity()"
 )
-def _sanity_check_stats(sumstats,
+def _sanity_check_stats(sumstats_obj,
                      coltocheck=None,
                      n=(0,2**31-1),
                      ncase=(0,2**31-1),
@@ -262,6 +289,17 @@ def _sanity_check_stats(sumstats,
     if coltocheck is None:
         coltocheck = ["P","MLOG10P","INFO","Z","BETA","SE","EAF","CHISQ","F","N","N_CASE","N_CONTROL","OR","OR_95L","OR_95U","HR","HR_95L","HR_95U","STATUS"]
     
+    # Handle both DataFrame and Sumstats object
+    import pandas as pd
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called with DataFrame
+        sumstats = sumstats_obj
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
+        is_dataframe = False
+    
     cols_to_check=[]
     oringinal_number=len(sumstats)
     sumstats = sumstats.copy()
@@ -299,7 +337,31 @@ def _sanity_check_stats(sumstats,
     log.write(" -Removed "+str(oringinal_number - after_number)+" variants with bad statistics in total.",verbose=verbose) 
     log.write(" -Data types for each column:",verbose=verbose)
     
-    return sumstats
+    # Handle both DataFrame and Sumstats object
+    import pandas as pd
+    is_dataframe = isinstance(sumstats_obj, pd.DataFrame)
+    
+    if not is_dataframe:
+        # Assign filtered dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+    
+    # Update QC status
+    try:
+        from gwaslab.g_meta import _update_qc_step
+        sanity_kwargs = {
+            'coltocheck': coltocheck, 'n': n, 'ncase': ncase, 'ncontrol': ncontrol, 'eaf': eaf,
+            'mac': mac, 'maf': maf, 'chisq': chisq, 'z': z, 't': t, 'f': f, 'p': p, 'mlog10p': mlog10p,
+            'beta': beta, 'se': se, 'OR': OR, 'OR_95L': OR_95L, 'OR_95U': OR_95U, 'HR': HR,
+            'HR_95L': HR_95L, 'HR_95U': HR_95U, 'info': info, 'float_tolerance': float_tolerance
+        }
+        _update_qc_step(sumstats_obj, "sanity", sanity_kwargs, True)
+    except:
+        pass
+    
+    if not is_dataframe:
+        return sumstats_obj.data
+    else:
+        return sumstats
 
 ### check consistency #############################################################################################################################################
 
@@ -308,12 +370,14 @@ def _sanity_check_stats(sumstats,
         finished_msg="checking data consistency across columns",
         start_function=".check_data_consistency()"
 )
-def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG10P",rtol=1e-3, atol=1e-3, equal_nan=True, verbose=True,log=Log()):
+def _check_data_consistency(sumstats_obj, beta="BETA", se="SE", p="P",mlog10p="MLOG10P",rtol=1e-3, atol=1e-3, equal_nan=True, verbose=True,log=Log()):
     '''
     Check consistency between related statistical values. Minor inconsistencies are likely due to rounding.
 
     Parameters
     ----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to check.
     rtol : float, default 1e-05
         Relative tolerance for comparisons (fractional).
     atol : float, default 1e-08
@@ -328,15 +392,14 @@ def _check_data_consistency(sumstats, beta="BETA", se="SE", p="P",mlog10p="MLOG1
     pandas.DataFrame
         Summary statistics table including annotations for detected inconsistencies.
     '''
+    sumstats = sumstats_obj.data
 
     log.write(" -Tolerance: {} (Relative) and {} (Absolute)".format(rtol, atol),verbose=verbose)
     check_status = 0
     
-    if "SNPID" in sumstats.columns:
-        id_to_use = "SNPID"
-    elif "rsID" in sumstats.columns:
-        id_to_use = "rsID"
-    else:
+    try:
+        id_to_use = _get_id_column(sumstats)
+    except (KeyError, AttributeError):
         log.write(" -SNPID/rsID not available...SKipping",verbose=verbose)
         log.write("Finished checking data consistency across columns.",verbose=verbose) 
         return 0

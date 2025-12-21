@@ -53,19 +53,57 @@ def with_logging_filter(start_to_msg,finished_msg):
             
             log = bound_kwargs.arguments.get('log', Log())
             verbose = bound_kwargs.arguments.get('verbose', True)
-            sumstats = bound_kwargs.arguments.get('sumstats', pd.DataFrame)
             
             # Log start message
-            log.write(f"Start to {start_to_msg} ...({_get_version()})", verbose=verbose)
-            check_dataframe_shape(sumstats=sumstats,log=log, verbose=verbose)
+            log.log_operation_start(start_to_msg, version=_get_version(), verbose=verbose)
+            
+            # Try to find Sumstats object instance for shape/memory tracking
+            # First check if log has a reference to Sumstats object
+            sumstats_obj = getattr(log, '_sumstats_obj', None)
+            
+            # If not found, try to find it in arguments
+            if sumstats_obj is None:
+                try:
+                    from gwaslab.g_Sumstats import Sumstats
+                    # Check if 'self' is a Sumstats instance (for methods)
+                    if args and isinstance(args[0], Sumstats):
+                        sumstats_obj = args[0]
+                    # Check if 'sumstats_obj' is in arguments
+                    elif 'sumstats_obj' in bound_kwargs.arguments:
+                        potential_obj = bound_kwargs.arguments['sumstats_obj']
+                        if isinstance(potential_obj, Sumstats):
+                            sumstats_obj = potential_obj
+                    # Check if any kwarg is a Sumstats instance
+                    else:
+                        for value in bound_kwargs.arguments.values():
+                            if isinstance(value, Sumstats):
+                                sumstats_obj = value
+                                break
+                except:
+                    pass
+            
+            # Extract sumstats DataFrame
+            # First try to get sumstats directly from arguments
+            sumstats = bound_kwargs.arguments.get('sumstats', None)
+            # If not found and we have a sumstats_obj, extract its data
+            if sumstats is None and sumstats_obj is not None:
+                try:
+                    sumstats = sumstats_obj.data
+                except:
+                    pass
+            # If still not found, default to empty DataFrame
+            if sumstats is None:
+                sumstats = pd.DataFrame()
+            
+            check_dataframe_shape(sumstats=sumstats, log=log, verbose=verbose, sumstats_obj=sumstats_obj)
             prenum = len(sumstats)
 
             # Execute the original function
             result = func(*args, **kwargs)
 
             afternum = len(result)
-            log.write(" -Filtered out "+ str(prenum-afternum) +" variants", verbose=verbose)
-            check_dataframe_shape(sumstats=result, log=log, verbose=verbose)
+            log.log_variants_filtered(prenum - afternum, verbose=verbose)
+            check_dataframe_shape(sumstats=result, log=log, verbose=verbose, sumstats_obj=sumstats_obj)
             # Log finish message
             log.write(f"Finished {finished_msg}.", verbose=verbose)
             
@@ -81,12 +119,14 @@ value thresholds, genomic regions, and special variant types.
 """
 
 @with_logging_filter("filter variants by condition...","filtering variants")
-def _filter_values(sumstats, expr, remove=False, verbose=True, log=Log()):
+def _filter_values(sumstats_obj, expr, remove=False, verbose=True, log=Log()):
     """
     Filter variants based on a query expression.
     
     Parameters:
     -----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to filter.
     expr : str
         Query expression using pandas.DataFrame.query syntax
     remove : bool, default=False
@@ -102,46 +142,121 @@ def _filter_values(sumstats, expr, remove=False, verbose=True, log=Log()):
     pandas.DataFrame
         Filtered summary statistics table
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called with DataFrame directly
+        sumstats = sumstats_obj
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data
     log.write(" -Expression:",expr, verbose=verbose)
+    
+    # Extract @ variables from caller's frame and prepare local_dict for query()
+    import inspect
+    local_dict = {}
+    if '@' in expr:
+        # Find variables referenced with @ syntax (e.g., @odd_chromosomes)
+        pattern = r'@(\w+)'
+        matches = re.findall(pattern, expr)
+        if matches:
+            # Search through call stack to find variables
+            frame = inspect.currentframe()
+            try:
+                # Start from the frame that called this function (skip current frame)
+                current_frame = frame.f_back
+                # Search up to 5 frames deep to find the variables
+                for _ in range(5):
+                    if current_frame is None:
+                        break
+                    frame_locals = current_frame.f_locals
+                    frame_globals = current_frame.f_globals
+                    # Extract variables referenced with @
+                    for var_name in matches:
+                        if var_name not in local_dict:  # Don't override if already found
+                            if var_name in frame_locals:
+                                local_dict[var_name] = frame_locals[var_name]
+                            elif var_name in frame_globals:
+                                local_dict[var_name] = frame_globals[var_name]
+                    # Move to next frame up
+                    current_frame = current_frame.f_back
+            finally:
+                del frame
     
     # Try standard query first
     try:
-        sumstats = sumstats.query(expr, engine='python').copy()
+        if local_dict:
+            sumstats = sumstats.query(expr, engine='python', local_dict=local_dict).copy()
+        else:
+            sumstats = sumstats.query(expr, engine='python').copy()
     except Exception as e:
         # Check if error is related to string slicing (which query() doesn't support)
         error_msg = str(e).lower()
-        if "slice" in error_msg or "not a supported function" in error_msg:
-            # String slicing detected - use eval() with column namespace instead
-            log.write(" -String slicing detected, using alternative evaluation method...", verbose=verbose)
+        if "slice" in error_msg or "not a supported function" in error_msg or ".str" in expr:
+            # String slicing or .str accessor detected - use eval() with column namespace instead
+            log.write(" -String slicing or .str accessor detected, using alternative evaluation method...", verbose=verbose)
             sumstats_copy = sumstats.copy()
+            
+            # Detect columns used with .str accessor in the expression
+            str_columns = set()
+            # Pattern to match column names before .str (e.g., "STATUS.str" -> "STATUS")
+            pattern = r'(\w+)\.str\b'
+            matches = re.findall(pattern, expr)
+            str_columns.update(matches)
+            
+            # Convert columns that use .str accessor to string type
+            for col in str_columns:
+                if col in sumstats_copy.columns:
+                    # Convert to string, handling NaN values
+                    sumstats_copy[col] = sumstats_copy[col].astype(str).replace('nan', '')
             
             # Create namespace with all columns accessible
             env = {col: sumstats_copy[col] for col in sumstats_copy.columns}
             env.update({'pd': pd, 'np': np})
+            # Add local variables from caller (for @ variable references)
+            env.update(local_dict)
+            
+            # Replace @variable with variable in expression for eval()
+            eval_expr = expr
+            for var_name in local_dict.keys():
+                eval_expr = re.sub(r'@' + re.escape(var_name) + r'\b', var_name, eval_expr)
             
             # Evaluate expression using eval() which supports string slicing
             try:
-                mask = eval(expr, {"__builtins__": {}}, env)
+                mask = eval(eval_expr, {"__builtins__": {}}, env)
                 sumstats = sumstats_copy.loc[mask].copy()
             except Exception as eval_error:
-                raise ValueError(f"Unable to evaluate expression with string slicing: {expr}. "
-                               f"Error: {str(eval_error)}. "
-                               f"Note: String slicing operations (e.g., .str[:2]) are not supported "
-                               f"in pandas query(). Consider using .str.slice() or creating a temporary column.")
+                error_str = str(eval_error)
+                # Check if error is about .str accessor on non-string values
+                if "can only use .str accessor" in error_str.lower():
+                    raise ValueError(f"Column used with .str accessor must be convertible to string. "
+                                   f"Expression: {expr}. "
+                                   f"Error: {error_str}. "
+                                   f"Note: Ensure the column can be converted to string type.")
+                else:
+                    raise ValueError(f"Unable to evaluate expression with string slicing: {expr}. "
+                                   f"Error: {str(eval_error)}. "
+                                   f"Note: String slicing operations (e.g., .str[:2]) are not supported "
+                                   f"in pandas query(). Consider using .str.slice() or creating a temporary column.")
         else:
             # Re-raise original error if it's not a slicing issue
             raise
 
     gc.collect()
+    # Update sumstats_obj.data with filtered result only if called with Sumstats object
+    if not isinstance(sumstats_obj, pd.DataFrame):
+        sumstats_obj.data = sumstats
     return sumstats
 
 @with_logging_filter("filter out variants based on threshold values...", "filtering variants")
-def _filter_out(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
+def _filter_out(sumstats_obj, interval={}, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
     """
     Filter out variants based on threshold values.
     
     Parameters:
     -----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to filter.
     lt : dict, default={}
         Dictionary of {column: threshold} for lower bounds (variant values < threshold will be removed)
     gt : dict, default={}
@@ -160,6 +275,14 @@ def _filter_out(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbos
     pandas.DataFrame
         Filtered summary statistics table
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called with DataFrame directly
+        sumstats = sumstats_obj.copy()
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data.copy()
     for key,threshold in gt.items():
         num = len(sumstats.loc[sumstats[key]>threshold,:])
         log.write(" -Removing "+ str(num) +" variants with "+key+" > "+ str(threshold)+" ...", verbose=verbose)
@@ -173,15 +296,20 @@ def _filter_out(sumstats, interval={}, lt={}, gt={}, eq={}, remove=False, verbos
         log.write(" -Removing "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...", verbose=verbose)
         sumstats = sumstats.loc[sumstats[key]!=threshold,:]
     gc.collect()
-    return sumstats.copy()
+    # Update sumstats_obj.data with filtered result only if called with Sumstats object
+    if not isinstance(sumstats_obj, pd.DataFrame):
+        sumstats_obj.data = sumstats
+    return sumstats
 
 @with_logging_filter("filter in variants based on threshold values", "filtering variants")
-def _filter_in(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
+def _filter_in(sumstats_obj, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Log()):
     """
     Filter in variants based on threshold values.
     
     Parameters:
     -----------
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to filter.
     lt : dict, default={}
         Dictionary of {column: threshold} for lower bounds (variant values < threshold will be kept)
     gt : dict, default={}
@@ -200,6 +328,14 @@ def _filter_in(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Lo
     pandas.DataFrame
         Filtered summary statistics table
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called with DataFrame directly
+        sumstats = sumstats_obj.copy()
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data.copy()
     for key,threshold in gt.items():
         num = len(sumstats.loc[sumstats[key]>threshold,:])
         log.write(" -Keeping "+ str(num) +" variants with "+key+" > "+ str(threshold)+" ...", verbose=verbose)
@@ -213,7 +349,10 @@ def _filter_in(sumstats, lt={}, gt={}, eq={}, remove=False, verbose=True, log=Lo
         log.write(" -Keeping "+ str(num) +" variants with "+key+" = "+ str(threshold)+" ...", verbose=verbose)
         sumstats = sumstats.loc[sumstats[key]==threshold,:]
     gc.collect()
-    return sumstats.copy()
+    # Update sumstats_obj.data with filtered result only if called with Sumstats object
+    if not isinstance(sumstats_obj, pd.DataFrame):
+        sumstats_obj.data = sumstats
+    return sumstats
 
 @with_logging_filter("filter in variants if in intervals defined in bed files", "filtering variants")
 def _filter_region_in(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
@@ -420,6 +559,11 @@ def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS",
     """
     Infer genome build version using Hapmap3 SNPs.
     
+    Parameters
+    ----------
+    sumstats : pd.DataFrame or Sumstats
+        Summary statistics DataFrame or Sumstats object.
+    
     Returns:
     --------
     tuple
@@ -430,7 +574,15 @@ def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS",
     change_status : bool, default=True
         If True, updates status codes in the table
     """
-    # Function implementation remains unchanged
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats, pd.DataFrame):
+        sumstats_data = sumstats
+        is_dataframe = True
+    else:
+        sumstats_obj = sumstats
+        sumstats_data = sumstats_obj.data
+        is_dataframe = False
 
     inferred_build = "Unknown"
     log.write(" -Loading Hapmap3 variants data...", verbose=verbose)
@@ -439,8 +591,8 @@ def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS",
     log.write(" -CHR and POS will be used for matching...", verbose=verbose)
     
     # Extract coordinates and convert to set for fast intersection
-    chr_series = pd.to_numeric(sumstats[chrom], errors="coerce")
-    pos_series = pd.to_numeric(sumstats[pos], errors="coerce")
+    chr_series = pd.to_numeric(sumstats_data[chrom], errors="coerce")
+    pos_series = pd.to_numeric(sumstats_data[pos], errors="coerce")
     
     # Create coordinate tuples, filtering out NaN values (vectorized approach)
     mask = chr_series.notna() & pos_series.notna()
@@ -458,17 +610,24 @@ def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS",
     if match_count_for_19 > match_count_for_38:
         log.write(" -Since num_hg19 >> num_hg38, set the genome build to hg19 for the STATUS code....", verbose=verbose) 
         if change_status==True:
-            sumstats[status] = vchange_status(sumstats[status],1,"9","1")
+            sumstats_data[status] = vchange_status(sumstats_data[status],1,"9","1")
         inferred_build="19"
     elif match_count_for_19 < match_count_for_38:
         log.write(" -Since num_hg19 << num_hg38, set the genome build to hg38 for the STATUS code....", verbose=verbose) 
         if change_status==True:
-            sumstats[status] = vchange_status(sumstats[status],1,"9","3")
-            sumstats[status] = vchange_status(sumstats[status],2,"9","8")
+            sumstats_data[status] = vchange_status(sumstats_data[status],1,"9","3")
+            sumstats_data[status] = vchange_status(sumstats_data[status],2,"9","8")
         inferred_build="38"
     else:
         log.write(" -Since num_hg19 = num_hg38, unable to infer...", verbose=verbose) 
-    return sumstats, inferred_build
+    
+    # Update Sumstats object if called with one
+    if not is_dataframe:
+        sumstats_obj.data = sumstats_data
+        sumstats_obj.meta["gwaslab"]["genome_build"] = inferred_build
+        sumstats_obj.build = inferred_build
+    
+    return sumstats_data
 
 @with_logging_filter("randomly select variants from the sumstats", "sampling")
 def _sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):

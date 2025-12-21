@@ -65,7 +65,6 @@ researved_header_json="""
   "POS":{"Keyword":"pos","Datatype":"Int64","Description":"base pair position","Note":"-"},
   "EA":{"Keyword":"ea","Datatype":"category","Description":"effect allele","Note":"-"},
   "NEA":{"Keyword":"nea","Datatype":"category","Description":"non-effect allele","Note":"-"},
-  "STATUS":{"Keyword":"status","Datatype":"category","Description":"7-digit variant status","Note":"lookup_status() to check"},
   "REF":{"Keyword":"ref","Datatype":"category","Description":"reference allele in reference genome","Note":"-"},
   "ALT":{"Keyword":"alt","Datatype":"category","Description":"alternative allele","Note":"-"},
   "EAF":{"Keyword":"eaf","Datatype":"float64","Description":"effect allele frequency","Note":"-"},
@@ -98,6 +97,7 @@ researved_header_json="""
   "N":{"Keyword":"n","Datatype":"Int64","Description":"total sample size","Note":"-"},
   "N_CASE":{"Keyword":"ncase","Datatype":"Int64","Description":"number of cases","Note":"-"},
   "N_CONTROL":{"Keyword":"ncontrol","Datatype":"Int64","Description":"number of controls","Note":"-"},
+  "STATUS":{"Keyword":"status","Datatype":"category","Description":"7-digit variant status","Note":"lookup_status() to check"},
   "GENENAME":{"Keyword":"","Datatype":"string","Description":"nearest gene symbol","Note":"-"},
   "CIS/TRANS":{"Keyword":"","Datatype":"string","Description":"whether the variant is in cis or trans region","Note":"Cis,Trans,NoReference"},
   "DISTANCE_TO_KNOWN":{"Keyword":"","Datatype":"Int64","Description":"distance to nearest known variants","Note":"-"},
@@ -135,4 +135,9 @@ def _build_reserved_header(j):
         rows.append(f"| `{k}` | {kw} | {dt} | {description} | {note} |")
     rows.append("")
     return "\n".join(rows)
+
+# Extract default column order from reserved headers JSON
+_reserved_headers_dict = json.loads(researved_header_json)
+DEFAULT_COLUMN_ORDER = list(_reserved_headers_dict.keys())
+
 researved_header = _build_reserved_header(researved_header_json)

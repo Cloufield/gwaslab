@@ -30,6 +30,8 @@ def _fill_data(
     
     Parameters
     ----------
+    insumstats : pandas.DataFrame or Sumstats
+        Summary statistics DataFrame or Sumstats object.
     to_fill : str or list of str
         Column name(s) to fill. Common values include "OR","OR_95L","OR_95U","BETA","SE","P","Z","CHISQ","MLOG10P","MAF", etc.
     overwrite : bool, optional, default=False
@@ -53,6 +55,17 @@ def _fill_data(
     sig_level : float, optional, default=5e-8
         Significance threshold for P-value filtering.
     """
+    # Handle both DataFrame and Sumstats object
+    import pandas as pd
+    if isinstance(insumstats, pd.DataFrame):
+        # Called with DataFrame
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats_obj = insumstats
+        insumstats = sumstats_obj.data
+        is_dataframe = False
+    
     # Normalize input
     if type(to_fill) is str:
         to_fill = [to_fill]
@@ -96,7 +109,14 @@ def _fill_data(
     
     gc.collect()
     log.write("Finished filling data using existing columns.", verbose=verbose)
-    return sumstats
+    
+    # Update only if called with Sumstats object
+    if not is_dataframe:
+        # Assign modified dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        return sumstats_obj.data
+    else:
+        return sumstats
     
 ##########################################################################################################################    
     

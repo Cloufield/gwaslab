@@ -43,6 +43,8 @@ def _assign_rsid(
 
     Parameters
     ----------
+    sumstats : pd.DataFrame or Sumstats
+        Summary statistics DataFrame or Sumstats object.
     path : str or None, optional
         Path to reference file (VCF/BCF or TSV). Overrides `tsv_path`.
     vcf_path : str or None, optional
@@ -91,6 +93,16 @@ def _assign_rsid(
     """
     import os
     import re
+
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats, pd.DataFrame):
+        # Called with DataFrame
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats_obj = sumstats
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
     # Ensure rsID exists
     if rsid not in sumstats.columns:
@@ -196,7 +208,30 @@ def _assign_rsid(
     log.write(" -rsID count: {} → {} / {}...".format(had_rsid_before, had_rsid_after, total_before), verbose=verbose)
     log.write(" -Finished assigning rsID from reference.", verbose=verbose)
 
-    return sumstats
+    # Update harmonization status only if called with Sumstats object
+    if not is_dataframe:
+        # Assign modified dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        try:
+            from gwaslab.g_meta import _append_meta_record, _update_harmonize_step
+            # Determine which path was used (path_to_use is already determined above)
+            if path_to_use is not None:
+                if ref_mode == "vcf/bcf":
+                    sumstats_obj.meta["gwaslab"]["references"]["ref_rsid_vcf"] = _append_meta_record(
+                        sumstats_obj.meta["gwaslab"]["references"]["ref_rsid_vcf"], path_to_use)
+                else:
+                    sumstats_obj.meta["gwaslab"]["references"]["ref_rsid_tsv"] = path_to_use
+                assign_rsid_kwargs = {
+                    'path': path, 'vcf_path': vcf_path, 'tsv_path': tsv_path, 'lookup_path': lookup_path,
+                    'threads': threads, 'rsid': rsid, 'chrom': chrom, 'pos': pos, 'ea': ea, 'nea': nea,
+                    'overwrite': overwrite, 'convert_to_bcf': convert_to_bcf, 'strip_info': strip_info
+                }
+                _update_harmonize_step(sumstats_obj, "assign_rsid", assign_rsid_kwargs, True)
+        except:
+            pass
+        return sumstats_obj.data
+    else:
+        return sumstats
 
 @with_logging(
     start_to_msg="annotate GWAS summary statistics",
@@ -233,8 +268,8 @@ def _annotate_sumstats(
 
     Parameters
     ----------
-    sumstats : pd.DataFrame
-        Must contain CHR, POS, EA, NEA.
+    sumstats : pd.DataFrame or Sumstats
+        Summary statistics DataFrame or Sumstats object. Must contain CHR, POS, EA, NEA.
     vcf_path : str or None
         Required if lookup table needs to be generated.
     tsv_path : str
@@ -256,6 +291,16 @@ def _annotate_sumstats(
     tsv_path : str
     """
     import os
+
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats, pd.DataFrame):
+        # Called with DataFrame
+        is_dataframe = True
+    else:
+        # Called with Sumstats object
+        sumstats_obj = sumstats
+        sumstats = sumstats_obj.data
+        is_dataframe = False
 
     # ----------------------------------------------
     # Step 1 — reuse or extract lookup table
@@ -320,7 +365,13 @@ def _annotate_sumstats(
         rm_tmp_lookup=rm_tmp_lookup
     )
 
-    return sumstats
+    # Update only if called with Sumstats object
+    if not is_dataframe:
+        # Assign modified dataframe back to the Sumstats object
+        sumstats_obj.data = sumstats
+        return sumstats_obj.data
+    else:
+        return sumstats
 
 @with_logging(
     start_to_msg="extract lookup table from vcf/bcf",

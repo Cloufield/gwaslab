@@ -7,6 +7,7 @@ Status codes are 7-digit integers where:
 
 All functions use integer arithmetic for optimal performance.
 """
+from typing import Union, Tuple, Optional, List
 import pandas as pd
 import re
 
@@ -26,7 +27,7 @@ INTEGER_DTYPES = ['int64', 'Int64', 'int32', 'Int32']
 # Helper Functions
 # ============================================================================
 
-def _normalize_to_integer_series(status):
+def _normalize_to_integer_series(status: Union[int, pd.Series, List[int]]) -> pd.Series:
     """
     Convert status to integer Series, handling various input types.
     
@@ -52,7 +53,7 @@ def _normalize_to_integer_series(status):
         return pd.Series(status).astype(int)
 
 
-def _calculate_powers(digit):
+def _calculate_powers(digit: int) -> Tuple[int, int]:
     """
     Calculate powers of 10 for extracting/replacing digits at position.
     
@@ -71,7 +72,7 @@ def _calculate_powers(digit):
     return power_left, power_right
 
 
-def _extract_digit(status_int, digit):
+def _extract_digit(status_int: Union[int, pd.Series], digit: int) -> Union[int, pd.Series]:
     """
     Extract a specific digit from integer status code(s).
     
@@ -91,7 +92,7 @@ def _extract_digit(status_int, digit):
     return (status_int // power_right) % 10
 
 
-def _parse_pattern_for_digit_constraints(pattern):
+def _parse_pattern_for_digit_constraints(pattern: str) -> Optional[List[Tuple[int, List[int]]]]:
     """
     Parse regex pattern to extract digit position constraints.
     
@@ -135,7 +136,7 @@ def _parse_pattern_for_digit_constraints(pattern):
 # Core Status Manipulation Functions
 # ============================================================================
 
-def status_match(status, digit, to_match):
+def status_match(status: Union[int, pd.Series], digit: int, to_match: Union[int, List[int]]) -> Union[bool, pd.Series]:
     """
     Check if a specific digit in status code(s) matches given value(s).
     
@@ -171,7 +172,7 @@ def status_match(status, digit, to_match):
         return middle.isin(to_match_set)
 
 
-def vchange_status(status, digit, before, after):
+def vchange_status(status: Union[int, pd.Series], digit: int, before: Union[str, List[str]], after: Union[str, List[str]]) -> Union[int, pd.Series]:
     """
     Change specific digits in status code(s) based on mapping.
     
@@ -240,7 +241,7 @@ def vchange_status(status, digit, before, after):
     return result
 
 
-def set_status_digit(status, digit, value):
+def set_status_digit(status: Union[int, pd.Series], digit: int, value: Union[int, str]) -> Union[int, pd.Series]:
     """
     Set a specific digit in status code(s) to a given value.
     
@@ -287,7 +288,7 @@ def set_status_digit(status, digit, value):
         return result
 
 
-def copy_status(from_status, to_status, digit):
+def copy_status(from_status: Union[int, pd.Series], to_status: Union[int, pd.Series], digit: int) -> Union[int, pd.Series]:
     """
     Copy a specific digit from one status code to another.
     
@@ -327,7 +328,7 @@ def copy_status(from_status, to_status, digit):
     return result
 
 
-def get_status_prefix(status, digit):
+def get_status_prefix(status: Union[int, pd.Series], digit: int) -> Union[int, pd.Series]:
     """
     Get the prefix (left part) of status code before a specific digit.
     
@@ -360,7 +361,7 @@ def get_status_prefix(status, digit):
         return status_int // power_left
 
 
-def get_status_suffix(status, digit):
+def get_status_suffix(status: Union[int, pd.Series], digit: int) -> Union[int, pd.Series]:
     """
     Get the suffix (right part) of status code after a specific digit.
     
@@ -397,7 +398,7 @@ def get_status_suffix(status, digit):
 # Pattern Matching Functions
 # ============================================================================
 
-def match_status(status, pattern, na=False):
+def match_status(status: Union[int, pd.Series, List[int]], pattern: str, na: bool = False) -> Union[bool, pd.Series]:
     """
     Match status codes against a regex pattern using integer arithmetic.
     
@@ -475,7 +476,7 @@ def match_status(status, pattern, na=False):
 # Legacy Functions (kept for backward compatibility)
 # ============================================================================
 
-def change_status(status, digit, after):
+def change_status(status: int, digit: int, after: int) -> int:
     """
     Legacy function: Set a specific digit in status code.
     
@@ -487,7 +488,7 @@ def change_status(status, digit, after):
     return prefix * power_left + after * power_right + suffix
 
 
-def schange_status(status, digit, after):
+def schange_status(status: pd.Series, digit: int, after: int) -> pd.Series:
     """
     Legacy function: Set digit using pandas eval (slower).
     

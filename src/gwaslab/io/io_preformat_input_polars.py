@@ -14,6 +14,7 @@ from gwaslab.qc.qc_check_datatype_polars import check_dataframe_memory_usage
 from gwaslab.g_headers import _check_overlap_with_reserved_keys
 from gwaslab.g_vchange_status import STATUS_CATEGORIES
 from gwaslab.g_Log import Log
+from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 #20221030
 def preformatp(sumstats,
           fmt=None,

@@ -6,6 +6,7 @@ from gwaslab.g_vchange_status import copy_status
 from gwaslab.g_vchange_status import vchange_status
 from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_check_datatype import check_datatype
+from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 from gwaslab.util.util_in_fill_data import _fill_data
 from Bio import SeqIO
 from itertools import combinations
@@ -177,9 +178,16 @@ def _renaming_cols_r(sumstats, columns, log=Log(),verbose=True, suffix=""):
 
 def _sort_pair_cols(molded_sumstats, verbose=True, log=Log(), order=None, stats_order=None,suffixes=("_1","_2")):
     if stats_order is None:
-        order = ["SNPID","rsID", "CHR", "POS", "EA", "NEA"]
-        stats_order = ["EAF", "MAF", "BETA", "SE","BETA_95L","BETA_95U", "Z",
-        "CHISQ", "P", "MLOG10P", "OR", "OR_95L", "OR_95U","HR", "HR_95L", "HR_95U","INFO", "N","N_CASE","N_CONTROL","DIRECTION","I2","P_HET","DOF","SNPR2","STATUS"]
+        # Base order: first 6 columns from DEFAULT_COLUMN_ORDER
+        base_cols = ["SNPID","rsID", "CHR", "POS", "EA", "NEA"]
+        # Stats order: remaining columns from DEFAULT_COLUMN_ORDER (excluding base columns)
+        stats_order = [col for col in DEFAULT_COLUMN_ORDER if col not in base_cols]
+        # Add non-reserved columns that may exist in sumstats
+        additional_cols = ["DIRECTION", "I2"]  # I2 is an alias for I2_HET
+        for col in additional_cols:
+            if col not in stats_order:
+                stats_order.append(col)
+        order = base_cols.copy()
         
     for suffix in suffixes:
         for i in stats_order:

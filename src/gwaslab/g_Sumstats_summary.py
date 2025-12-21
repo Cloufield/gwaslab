@@ -175,25 +175,28 @@ def summarize(
     # -------------------------------------------------------------------------
     # P-value significance thresholds
     # -------------------------------------------------------------------------
-    if p in sumstats.columns:
-        p_info = {
-            "Minimum": sumstats[p].min(),
-            "P<5e-8": (sumstats[p] < 5e-8).sum(),
-            "P<5e-6": (sumstats[p] < 5e-6).sum(),
-        }
-        self.meta["gwaslab"]["summary"]["p_values"] = p_info
-        output["P"] = p_info
+    if p in sumstats.columns and len(sumstats) > 0:
+        p_values = sumstats[p].dropna()
+        if len(p_values) > 0:
+            p_info = {
+                "Minimum": float(p_values.min()),
+                "P<5e-8": (p_values < 5e-8).sum(),
+                "P<5e-6": (p_values < 5e-6).sum(),
+            }
+            self.meta["gwaslab"]["summary"]["p_values"] = p_info
+            output["P"] = p_info
 
     # Beta magnitude among significant variants
-    if p in sumstats.columns and beta in sumstats.columns:
+    if p in sumstats.columns and beta in sumstats.columns and len(sumstats) > 0:
         sig = sumstats.loc[sumstats[p] < 5e-8, beta].abs()
-        beta_info = {
-            f"P<5e-8 with ABS(BETA)>{thr}": (sig > thr).sum()
-            for thr in [10, 3, 1, 0.5, 0.3, 0.2, 0.1, 0.05]
-        }
+        if len(sig) > 0:
+            beta_info = {
+                f"P<5e-8 with ABS(BETA)>{thr}": (sig > thr).sum()
+                for thr in [10, 3, 1, 0.5, 0.3, 0.2, 0.1, 0.05]
+            }
 
-        self.meta["gwaslab"]["summary"]["beta_for_significant_variants"] = beta_info
-        output["BETA"] = beta_info
+            self.meta["gwaslab"]["summary"]["beta_for_significant_variants"] = beta_info
+            output["BETA"] = beta_info
 
     # -------------------------------------------------------------------------
     # STATUS categories
@@ -227,19 +230,25 @@ def summarize(
     self.meta["gwaslab"]["summary"].setdefault("variants", {})
     self.meta["gwaslab"]["summary"]["variants"]["variant_number"] = total_variants
 
-    if p in sumstats.columns:
-        self.meta["gwaslab"]["summary"]["variants"]["min_P"] = np.nanmin(sumstats[p])
+    if p in sumstats.columns and len(sumstats) > 0:
+        p_values = sumstats[p].dropna()
+        if len(p_values) > 0:
+            self.meta["gwaslab"]["summary"]["variants"]["min_P"] = float(np.nanmin(p_values))
 
-    if eaf in sumstats.columns:
-        self.meta["gwaslab"]["summary"]["variants"]["min_minor_allele_freq"] = min(
-            np.nanmin(sumstats[eaf]), 1 - np.nanmax(sumstats[eaf])
-        )
+    if eaf in sumstats.columns and len(sumstats) > 0:
+        eaf_values = sumstats[eaf].dropna()
+        if len(eaf_values) > 0:
+            self.meta["gwaslab"]["summary"]["variants"]["min_minor_allele_freq"] = float(min(
+                np.nanmin(eaf_values), 1 - np.nanmax(eaf_values)
+            ))
 
-    if n in sumstats.columns:
-        self.meta["gwaslab"]["summary"].setdefault("samples", {})
-        self.meta["gwaslab"]["summary"]["samples"]["sample_size"] = int(sumstats[n].max())
-        self.meta["gwaslab"]["summary"]["samples"]["sample_size_median"] = float(sumstats[n].median())
-        self.meta["gwaslab"]["summary"]["samples"]["sample_size_min"] = int(sumstats[n].min())
+    if n in sumstats.columns and len(sumstats) > 0:
+        n_values = sumstats[n].dropna()
+        if len(n_values) > 0:
+            self.meta["gwaslab"]["summary"].setdefault("samples", {})
+            self.meta["gwaslab"]["summary"]["samples"]["sample_size"] = int(n_values.max())
+            self.meta["gwaslab"]["summary"]["samples"]["sample_size_median"] = float(n_values.median())
+            self.meta["gwaslab"]["summary"]["samples"]["sample_size_min"] = int(n_values.min())
 
 
 

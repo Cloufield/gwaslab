@@ -214,9 +214,10 @@ def quick_convert_datatype(sumstats, log, verbose):
                     pass
     return sumstats
 
-def check_dataframe_shape(sumstats, log, verbose):
+def check_dataframe_shape(sumstats, log, verbose, sumstats_obj=None):
     """
     Log DataFrame shape and estimated memory usage in megabytes.
+    Only logs if shape has changed from the last check.
 
     Parameters
     ----------
@@ -226,12 +227,15 @@ def check_dataframe_shape(sumstats, log, verbose):
         Logger used for messages.
     verbose : bool
         Whether to print log messages to stdout.
+    sumstats_obj : Sumstats, optional
+        Sumstats object instance. If provided, checks _last_shape attribute
+        to skip logging if shape is unchanged. If None, will try to get from log._sumstats_obj.
     """
-    memory_in_mb = sumstats.memory_usage().sum()/1024/1024
-    try:
-        log.write(" -Current Dataframe shape : {} x {} ; Memory usage: {:.2f} MB".format(len(sumstats),len(sumstats.columns),memory_in_mb), verbose=verbose)
-    except:
-        log.warning("Error: cannot get Dataframe shape...")
+    # If sumstats_obj not provided, try to get it from log object
+    if sumstats_obj is None:
+        sumstats_obj = getattr(log, '_sumstats_obj', None)
+    # Use the standardized logging method which handles change detection
+    log.log_dataframe_shape(sumstats, verbose=verbose, sumstats_obj=sumstats_obj)
     
 def check_dataframe_memory_usage(sumstats, log, verbose):
     """
@@ -252,20 +256,24 @@ def check_dataframe_memory_usage(sumstats, log, verbose):
     except:
         log.warning("Error: cannot get Memory usage...")
 
-def check_datatype_for_cols(sumstats, cols=None, verbose=True, log=Log(), fix=False, **fix_kwargs):
+def check_datatype_for_cols(sumstats_obj, cols=None, verbose=True, log=Log(), fix=False, **fix_kwargs):
     """
     Verify dtypes for a specified subset of columns and emit fix suggestions.
 
     Parameters
     ----------
-    sumstats : pandas.DataFrame
-        Summary statistics table to check.
+    sumstats_obj : Sumstats
+        Sumstats object containing the data to check.
     cols : list[str] or None, default None
         Column names to verify. If None, no columns are checked.
     verbose : bool, default True
         Whether to print log messages to stdout.
     log : gwaslab.g_Log.Log
         Logger used for messages and warnings.
+    fix : bool, default False
+        If True, attempt to fix incompatible dtypes automatically.
+    **fix_kwargs : dict
+        Additional keyword arguments to pass to fix functions.
 
     Behavior
     --------
@@ -277,6 +285,7 @@ def check_datatype_for_cols(sumstats, cols=None, verbose=True, log=Log(), fix=Fa
     - Raises `ValueError` listing failing columns to encourage corrective
       actions via Sumstats methods.
     """
+    sumstats = sumstats_obj.data
     if cols is None:
         cols = []
     try:
@@ -296,17 +305,34 @@ def check_datatype_for_cols(sumstats, cols=None, verbose=True, log=Log(), fix=Fa
             if fix is True:
                 try:
                     from gwaslab.qc.qc_fix_sumstats import _fix_chr, _fix_pos, _fix_allele, _fix_ID
+                    from gwaslab.g_meta import _update_qc_step
                 except Exception:
                     _fix_chr = None; _fix_pos = None; _fix_allele = None; _fix_ID = None
+                    _update_qc_step = None
 
                 if "CHR" in failed and _fix_chr is not None:
-                    sumstats = _fix_chr(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["remove","add_prefix","x","y","mt","chrom_list","minchr"]})
+                    chr_kwargs = {k:v for k,v in fix_kwargs.items() if k in ["remove","add_prefix","x","y","mt","chrom_list","minchr"]}
+                    sumstats_obj.data = _fix_chr(sumstats_obj, log=log, verbose=verbose, **chr_kwargs)
+                    if _update_qc_step is not None:
+                        _update_qc_step(sumstats_obj, "chr", chr_kwargs, True)
                 if "POS" in failed and _fix_pos is not None:
-                    sumstats = _fix_pos(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["remove","lower_limit","upper_limit","limit"]})
+                    pos_kwargs = {k:v for k,v in fix_kwargs.items() if k in ["remove","lower_limit","upper_limit","limit"]}
+                    sumstats_obj.data = _fix_pos(sumstats_obj, log=log, verbose=verbose, **pos_kwargs)
+                    if _update_qc_step is not None:
+                        _update_qc_step(sumstats_obj, "pos", pos_kwargs, True)
                 if (set(["EA","NEA","REF","ALT"]) & set(failed)) and _fix_allele is not None:
-                    sumstats = _fix_allele(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["remove"]})
+                    allele_kwargs = {k:v for k,v in fix_kwargs.items() if k in ["remove"]}
+                    sumstats_obj.data = _fix_allele(sumstats_obj, log=log, verbose=verbose, **allele_kwargs)
+                    if _update_qc_step is not None:
+                        _update_qc_step(sumstats_obj, "allele", allele_kwargs, True)
                 if ("SNPID" in failed or "rsID" in failed) and _fix_ID is not None:
-                    sumstats = _fix_ID(sumstats, log=log, verbose=verbose, **{k:v for k,v in fix_kwargs.items() if k in ["fixprefix","fixchrpos","fixid","fixeanea","fixeanea_flip","fixsep","reversea","overwrite","forcefixid"]})
+                    id_kwargs = {k:v for k,v in fix_kwargs.items() if k in ["fixprefix","fixchrpos","fixid","fixeanea","fixeanea_flip","fixsep","reversea","overwrite","forcefixid"]}
+                    sumstats_obj.data = _fix_ID(sumstats_obj, log=log, verbose=verbose, **id_kwargs)
+                    if _update_qc_step is not None:
+                        _update_qc_step(sumstats_obj, "id", id_kwargs, True)
+                
+                # Update sumstats reference after fixes
+                sumstats = sumstats_obj.data
 
                 # Re-verify targeted columns after attempted fixes
                 re_failed = []
@@ -318,7 +344,7 @@ def check_datatype_for_cols(sumstats, cols=None, verbose=True, log=Log(), fix=Fa
 
                 if len(re_failed) == 0:
                     log.write(" -Dtype fixes applied successfully for requested columns.", verbose=verbose)
-                    return sumstats
+                    return sumstats_obj.data
                 else:
                     log.warning("Some columns still have incompatible dtypes after fixes: {}".format(",".join(re_failed)), verbose=verbose)
 
