@@ -423,7 +423,7 @@ class Log():
             Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
         """
         indent_str = self._get_indent(indent)
-        self.write(f"{indent_str} -Trying to convert datatype for {column}: {from_dtype} -> {to_dtype}...", end="", verbose=verbose)
+        self.write(f"{indent_str} -Trying to convert datatype for {column}: {from_dtype} -> {to_dtype}...",  verbose=verbose)
     
     def log_formula(self, target_column, formula, source_columns=None, verbose=True, indent=0):
         """

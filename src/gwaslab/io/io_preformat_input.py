@@ -11,7 +11,7 @@ from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import quick_convert_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_memory_usage
-from gwaslab.g_headers import _check_overlap_with_reserved_keys
+from gwaslab.qc.qc_reserved_headers import _check_overlap_with_reserved_keys
 from gwaslab.g_vchange_status import STATUS_CATEGORIES
 from gwaslab.g_Log import Log
 

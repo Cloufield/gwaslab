@@ -19,7 +19,7 @@ from gwaslab.g_meta import (
     _update_qc_step,
     _update_harmonize_step,
 )
-from gwaslab.g_meta_update import _update_meta
+from gwaslab.g_meta import _update_meta
 from gwaslab.qc.qc_build import _set_build
 # ----- QC: Fix Sumstats -----
 from gwaslab.qc.qc_fix_sumstats import (
@@ -44,7 +44,6 @@ from gwaslab.qc.qc_sanity_check import (
 # ----- Harmonization -----
 from gwaslab.hm.hm_harmonize_sumstats import (
     _check_ref,
-    _old_check_ref,
     _parallelize_check_af,
     _parallelize_infer_af,
     _parallelize_infer_strand,
@@ -534,7 +533,6 @@ class Sumstats():
               ref_alt_freq=None,
               ref_maf_threshold = 0.5,
               maf_threshold=0.40,
-              ref_seq_mode="v",
               threads=1,
               remove=False,
               check_ref_kwargs={},
@@ -577,8 +575,6 @@ class Sumstats():
             MAF threshold (applied to reference VCF/BCF) for strand inference
         maf_threshold : float
             MAF threshold (applied to sumstats) for strand inference
-        ref_seq_mode : {'v', 's'}, optional
-            Reference sequence processing mode ('v' for vectorized, 's' for sequential)
         threads : int, optional
             Number of threads for parallel processing
         remove : bool, optional
@@ -648,17 +644,9 @@ class Sumstats():
         #   3.2 infer strand for palindromic SNP (target build)
         #####################################################
         if ref_seq is not None:
-
-            if ref_seq_mode=="v":
-                check_ref_kwargs = remove_overlapping_kwargs(check_ref_kwargs,{"log", "ref_seq"})
-                self.data = _check_ref(self,ref_seq,log=self.log,**check_ref_kwargs)
-            elif ref_seq_mode=="s":
-                check_ref_kwargs = remove_overlapping_kwargs(check_ref_kwargs,{"log", "ref_seq"})
-                self.data = _old_check_ref(self,ref_seq,log=self.log,**check_ref_kwargs)
-            else:
-                raise ValueError("ref_seq_mode should be 'v' (vectorized, faster) or 's' (sequential, slower)")
-            
-            # Metadata and harmonization status are already set by _check_ref or _old_check_ref
+            check_ref_kwargs = remove_overlapping_kwargs(check_ref_kwargs,{"log", "ref_seq"})
+            self.data = _check_ref(self,ref_seq,log=self.log,**check_ref_kwargs)
+            # Metadata and harmonization status are already set by _check_ref
             flip_allele_stats_kwargs = remove_overlapping_kwargs(flip_allele_stats_kwargs,{"log","verbose"})
             self.data = _flip_allele_stats(self,log=self.log,verbose=verbose,**flip_allele_stats_kwargs)
             # Harmonization status is already set by _flip_allele_stats
@@ -798,13 +786,10 @@ class Sumstats():
     def check_id(self,**kwargs):
         pass
     @add_doc(_check_ref)
-    def check_ref(self,ref_seq,ref_seq_mode="v",**kwargs):
+    def check_ref(self,ref_seq,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_seq"})
-        if ref_seq_mode=="v":
-            self.data = _check_ref(self,ref_seq,log=self.log,**kwargs)
-        elif ref_seq_mode=="s":
-            self.data = _old_check_ref(self,ref_seq,log=self.log,**kwargs)
-        # Harmonization status is already set by _check_ref or _old_check_ref
+        self.data = _check_ref(self,ref_seq,log=self.log,**kwargs)
+        # Harmonization status is already set by _check_ref
         return self
     @add_doc(_parallelize_infer_strand)
     def infer_strand(self,ref_infer,**kwargs):

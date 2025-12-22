@@ -28,6 +28,7 @@ from gwaslab.qc.qc_check_datatype import check_dataframe_shape
 from gwaslab.qc.qc_build import _process_build
 from gwaslab.qc.qc_build import _set_build
 from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.qc.qc_reserved_headers import get_default_sanity_ranges
 
 from gwaslab.util.util_in_fill_data import _convert_betase_to_mlog10p
 from gwaslab.util.util_in_fill_data import _convert_betase_to_p
@@ -90,14 +91,17 @@ def check_na_columns(sumstats, coltocheck=None, log=Log(), verbose=True):
 
 def add_tolerence(stats, float_tolerance, mode):
     if "l" in mode:
-        stats = (stats[0] - float_tolerance if stats[0]!=float("Inf") else float("Inf"), stats[1])
+        stats = (stats[0] - float_tolerance if stats[0] != float("Inf") else float("Inf"), stats[1])
     if "r" in mode:
-        stats = (stats[0] , stats[1] + float_tolerance if stats[0]!=float("Inf") else float("Inf"))
+        # Bug fix: Check stats[1] for right side, not stats[0]
+        stats = (stats[0], stats[1] + float_tolerance if stats[1] != float("Inf") else float("Inf"))
     return stats
 
 def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, verbose, dtype="Int64"):
     pre_number=len(sumstats)
-    if header in coltocheck and header in sumstats.columns:
+    # Performance optimization: Cache column existence check
+    has_header = header in sumstats.columns
+    if header in coltocheck and has_header:
         cols_to_check.append(header)
         if header=="STATUS": 
             log.write(" -Checking STATUS and converting STATUS to Int64....", verbose=verbose) 
@@ -127,23 +131,30 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
         is_valid = is_valid.fillna(False)
 
         if header=="P":
-            is_low_p =  sumstats["P"] == 0 
-            if sum(is_low_p) >0:
-                log.warning("Extremely low P detected (P=0 or P < minimum positive value of float64) : {}".format(sum(is_low_p)))
+            is_low_p = sumstats["P"] == 0 
+            # Performance optimization: Use .any() instead of sum() > 0
+            if is_low_p.any():
+                low_p_num = is_low_p.sum()
+                log.warning("Extremely low P detected (P=0 or P < minimum positive value of float64) : {}".format(low_p_num))
                 log.warning("Please consider using MLOG10P instead.")
         
         if header=="INFO":
-            is_high_info =  sumstats["INFO"]>1 
-            if sum(is_high_info) >0:
-                log.warning("High INFO detected (INFO>1) : {}".format(sum(is_high_info)))
+            is_high_info = sumstats["INFO"] > 1 
+            # Performance optimization: Use .any() instead of sum() > 0
+            if is_high_info.any():
+                high_info_num = is_high_info.sum()
+                log.warning("High INFO detected (INFO>1) : {}".format(high_info_num))
                 log.warning("max(INFO): {}".format(sumstats["INFO"].max()))
                 log.warning("Please check if this is as expected.")
 
-        if sum(~is_valid)>0:
+        # Performance optimization: Use .any() instead of sum() > 0 for boolean check
+        invalid = ~is_valid
+        if invalid.any():
             try:
                 id_to_use = _get_id_column(sumstats)
-                invalid_ids = sumstats.loc[~is_valid, id_to_use].head().astype("string")
-                invalid_values = sumstats.loc[~is_valid, header].head().astype("string").fillna("NA")
+                # Performance optimization: Reuse invalid mask instead of recomputing
+                invalid_ids = sumstats.loc[invalid, id_to_use].head().astype("string")
+                invalid_values = sumstats.loc[invalid, header].head().astype("string").fillna("NA")
                 log.write("  -Examples of invalid variants({}): {} ...".format(id_to_use, ",".join(invalid_ids.to_list()) ), verbose=verbose) 
                 log.write("  -Examples of invalid values ({}): {} ...".format(header, ",".join(invalid_values.to_list()) ), verbose=verbose) 
             except:
@@ -166,27 +177,27 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
 )
 def _sanity_check_stats(sumstats_obj,
                      coltocheck=None,
-                     n=(0,2**31-1),
-                     ncase=(0,2**31-1),
-                     ncontrol=(0,2**31-1),
-                     eaf=(0,1),
-                     mac=(0,2**31-1),
-                     maf=(0,0.5),
-                     chisq=(0,float("Inf")),
-                     z=(-9999,9999),
-                     t=(-99999,99999),
-                     f=(0,float("Inf")),
-                     p=(0,1),
-                     mlog10p=(0,99999),
-                     beta=(-100,100),
-                     se=(0,float("Inf")),
-                     OR=(0,100),
-                     OR_95L=(0,float("Inf")),
-                     OR_95U=(0,float("Inf")),
-                     HR=(0,100),
-                     HR_95L=(0,float("Inf")),
-                     HR_95U=(0,float("Inf")),
-                     info=(0,2),
+                     n=None,
+                     ncase=None,
+                     ncontrol=None,
+                     eaf=None,
+                     mac=None,
+                     maf=None,
+                     chisq=None,
+                     z=None,
+                     t=None,
+                     f=None,
+                     p=None,
+                     mlog10p=None,
+                     beta=None,
+                     se=None,
+                     OR=None,
+                     OR_95L=None,
+                     OR_95U=None,
+                     HR=None,
+                     HR_95L=None,
+                     HR_95U=None,
+                     info=None,
                      float_tolerance = 1e-7,
                      verbose=True,
                      log=Log()):
@@ -200,73 +211,86 @@ def _sanity_check_stats(sumstats_obj,
     Parameters
     ----------
     n : tuple of (float, float), optional
-        Valid range for sample size (N).
+        Valid range for sample size (N). Default from qc_researved_header_json: (0, 2147483647).
     ncase : tuple of (float, float), optional
-        Valid range for number of cases (N_CASE).
+        Valid range for number of cases (N_CASE). Default from qc_researved_header_json: (0, 2147483647).
     ncontrol : tuple of (float, float), optional
-        Valid range for number of controls (N_CONTROL).
+        Valid range for number of controls (N_CONTROL). Default from qc_researved_header_json: (0, 2147483647).
     eaf : tuple of (float, float), optional
-        Valid range for effect allele frequency (EAF).
+        Valid range for effect allele frequency (EAF). Default from qc_researved_header_json: (0, 1).
     mac : tuple of (float, float), optional
-        Valid range for minor allele count (MAC).
+        Valid range for minor allele count (MAC). Default: (0, 2**31-1).
     maf : tuple of (float, float), optional
-        Valid range for minor allele frequency (MAF).
+        Valid range for minor allele frequency (MAF). Default from qc_researved_header_json: (0, 0.5).
     chisq : tuple of (float, float), optional
-        Valid range for chi-square statistics (CHISQ).
+        Valid range for chi-square statistics (CHISQ). Default from qc_researved_header_json: (0, inf).
     z : tuple of (float, float), optional
-        Valid range for z-scores (Z).
+        Valid range for z-scores (Z). Default from qc_researved_header_json: (-9999, 9999).
     t : tuple of (float, float), optional
-        Valid range for t-statistics (T).
+        Valid range for t-statistics (T). Default from qc_researved_header_json: (-99999, 99999).
     f : tuple of (float, float), optional
-        Valid range for F-statistics (F).
+        Valid range for F-statistics (F). Default from qc_researved_header_json: (0, inf).
     p : tuple of (float, float), optional
-        Valid range for p-values (P).
+        Valid range for p-values (P). Default from qc_researved_header_json: (0, 1).
     mlog10p : tuple of (float, float), optional
-        Valid range for negative log10 p-values (MLOG10P).
+        Valid range for negative log10 p-values (MLOG10P). Default from qc_researved_header_json: (0, 99999).
     beta : tuple of (float, float), optional
-        Valid range for effect size estimates (BETA).
+        Valid range for effect size estimates (BETA). Default from qc_researved_header_json: (-100, 100).
     se : tuple of (float, float), optional
-        Valid range for standard errors (SE).
+        Valid range for standard errors (SE). Default from qc_researved_header_json: (0, inf).
     OR : tuple of (float, float), optional
-        Valid range for odds ratios (OR).
+        Valid range for odds ratios (OR). Default from qc_researved_header_json: (0, 100).
     OR_95L : tuple of (float, float), optional
-        Valid range for lower bound of 95% CI for OR.
+        Valid range for lower bound of 95% CI for OR. Default from qc_researved_header_json: (0, inf).
     OR_95U : tuple of (float, float), optional
-        Valid range for upper bound of 95% CI for OR.
+        Valid range for upper bound of 95% CI for OR. Default from qc_researved_header_json: (0, inf).
     HR : tuple of (float, float), optional
-        Valid range for hazard ratios (HR).
+        Valid range for hazard ratios (HR). Default from qc_researved_header_json: (0, 100).
     HR_95L : tuple of (float, float), optional
-        Valid range for lower bound of 95% CI for HR.
+        Valid range for lower bound of 95% CI for HR. Default from qc_researved_header_json: (0, inf).
     HR_95U : tuple of (float, float), optional
-        Valid range for upper bound of 95% CI for HR.
+        Valid range for upper bound of 95% CI for HR. Default from qc_researved_header_json: (0, inf).
     info : tuple of (float, float), optional
-        Valid range for imputation info score (INFO).
-    float_tolerance : float, default 0.0
+        Valid range for imputation info score (INFO). Default from qc_researved_header_json: (0, 2).
+    float_tolerance : float, default 1e-7
         Numerical tolerance applied when comparing floating-point values.
-    verbose : bool, default False
+    verbose : bool, default True
         If True, print progress and warnings.
 
     Note:
-    Sanity check ranges (default; v3.4.33):
-        N:      Int32    , N>0 , 
-        EAF:    float32  , 0 <= EAF <=1, 
-        P:      float64  , 0 <= P <= 1, 
-        BETA:   float64  , abs(BETA) <100
-        SE:     float64  , SE > 0
-        OR:     float64  , np.exp(-100) <OR < np.exp(100)
-        OR_95L: float64  , OR_95L >0
-        OR_95U: float64  , OR_95L >0
-        HR:     float64  , np.exp(-100) <log(HR) <np.exp(100)
-        HR_95L: float64  , HR_95L >0
-        HR_95U: float64  , HR_95L >0
-        INFO:   float32  , 1>=INFO>0
-        Z       float64  , -9999 < Z < 9999
-        T       float64  , -99999 < T < 99999
-        F       float64  , F > 0 
+    Default sanity check ranges are loaded from qc_researved_header_json (single source of truth).
+    All range parameters default to None and are automatically loaded from the JSON file if not provided.
+    Users can override any range by explicitly passing a tuple value. 
 
     Returns:
         pd.DataFrame: Modified sumstats with invalid variants removed.
     '''
+    # Load default ranges from JSON file (single source of truth)
+    default_ranges = get_default_sanity_ranges()
+    
+    # Use provided values or defaults from JSON
+    n = n if n is not None else default_ranges.get('N', (0, 2**31-1))
+    ncase = ncase if ncase is not None else default_ranges.get('N_CASE', (0, 2**31-1))
+    ncontrol = ncontrol if ncontrol is not None else default_ranges.get('N_CONTROL', (0, 2**31-1))
+    eaf = eaf if eaf is not None else default_ranges.get('EAF', (0, 1))
+    mac = mac if mac is not None else (0, 2**31-1)  # MAC not in JSON, use default
+    maf = maf if maf is not None else default_ranges.get('MAF', (0, 0.5))
+    chisq = chisq if chisq is not None else default_ranges.get('CHISQ', (0, float("Inf")))
+    z = z if z is not None else default_ranges.get('Z', (-9999, 9999))
+    t = t if t is not None else default_ranges.get('T', (-99999, 99999))
+    f = f if f is not None else default_ranges.get('F', (0, float("Inf")))
+    p = p if p is not None else default_ranges.get('P', (0, 1))
+    mlog10p = mlog10p if mlog10p is not None else default_ranges.get('MLOG10P', (0, 99999))
+    beta = beta if beta is not None else default_ranges.get('BETA', (-100, 100))
+    se = se if se is not None else default_ranges.get('SE', (0, float("Inf")))
+    OR = OR if OR is not None else default_ranges.get('OR', (0, 100))
+    OR_95L = OR_95L if OR_95L is not None else default_ranges.get('OR_95L', (0, float("Inf")))
+    OR_95U = OR_95U if OR_95U is not None else default_ranges.get('OR_95U', (0, float("Inf")))
+    HR = HR if HR is not None else default_ranges.get('HR', (0, 100))
+    HR_95L = HR_95L if HR_95L is not None else default_ranges.get('HR_95L', (0, float("Inf")))
+    HR_95U = HR_95U if HR_95U is not None else default_ranges.get('HR_95U', (0, float("Inf")))
+    info = info if info is not None else default_ranges.get('INFO', (0, 2))
+    
     log.write(" -Comparison tolerance for floats: {}".format(float_tolerance), verbose=verbose) 
     eaf = add_tolerence(eaf, float_tolerance, "lr")
     maf = add_tolerence(maf, float_tolerance, "lr")
@@ -301,7 +325,7 @@ def _sanity_check_stats(sumstats_obj,
         is_dataframe = False
     
     cols_to_check=[]
-    oringinal_number=len(sumstats)
+    original_number=len(sumstats)
     sumstats = sumstats.copy()
     sumstats = check_na_columns(sumstats, coltocheck = coltocheck, log=log, verbose=verbose)
     
@@ -334,12 +358,10 @@ def _sanity_check_stats(sumstats_obj,
     sumstats = check_range(sumstats, var_range=None, header="STATUS", coltocheck=coltocheck, cols_to_check=cols_to_check, log=log, verbose=verbose, dtype="Int64")
 
     after_number=len(sumstats)
-    log.write(" -Removed "+str(oringinal_number - after_number)+" variants with bad statistics in total.",verbose=verbose) 
+    log.write(" -Removed "+str(original_number - after_number)+" variants with bad statistics in total.",verbose=verbose) 
     log.write(" -Data types for each column:",verbose=verbose)
     
-    # Handle both DataFrame and Sumstats object
-    import pandas as pd
-    is_dataframe = isinstance(sumstats_obj, pd.DataFrame)
+    # Performance optimization: is_dataframe already determined above, no need to recompute
     
     if not is_dataframe:
         # Assign filtered dataframe back to the Sumstats object
@@ -404,57 +426,78 @@ def _check_data_consistency(sumstats_obj, beta="BETA", se="SE", p="P",mlog10p="M
         log.write("Finished checking data consistency across columns.",verbose=verbose) 
         return 0
     
+    # Performance optimization: Cache column existence checks
+    has_beta = "BETA" in sumstats.columns
+    has_se = "SE" in sumstats.columns
+    has_mlog10p = "MLOG10P" in sumstats.columns
+    has_p = "P" in sumstats.columns
+    has_n = "N" in sumstats.columns
+    has_n_case = "N_CASE" in sumstats.columns
+    has_n_control = "N_CONTROL" in sumstats.columns
     
-    if "BETA" in sumstats.columns and "SE" in sumstats.columns:
-        if "MLOG10P" in sumstats.columns:
+    if has_beta and has_se:
+        if has_mlog10p:
             log.write(" -Checking if BETA/SE-derived-MLOG10P is consistent with MLOG10P...",verbose=verbose)
             betase_derived_mlog10p =  _convert_betase_to_mlog10p(sumstats["BETA"], sumstats["SE"])
             is_close = np.isclose(betase_derived_mlog10p, sumstats["MLOG10P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
-            diff = betase_derived_mlog10p - sumstats["MLOG10P"]
-            if sum(~is_close)>0:
-                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
+            # Performance optimization: Use .any() instead of sum() > 0 for boolean check
+            inconsistent = ~is_close
+            if inconsistent.any():
+                inconsistent_num = inconsistent.sum()
+                diff = betase_derived_mlog10p - sumstats["MLOG10P"]
+                log.write("  -Potentially inconsistent (likely due to rounding): {} variant(s)".format(inconsistent_num),verbose=verbose)
                 log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
             else:
                 log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
             check_status=1
         
-        if "P" in sumstats.columns:
+        if has_p:
             log.write(" -Checking if BETA/SE-derived-P is consistent with P...",verbose=verbose)
             betase_derived_p =  _convert_betase_to_p(sumstats["BETA"], sumstats["SE"])
             is_close = np.isclose(betase_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
-            diff = betase_derived_p - sumstats["P"]
-            if sum(~is_close)>0:
-                log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
+            # Performance optimization: Use .any() instead of sum() > 0 for boolean check
+            inconsistent = ~is_close
+            if inconsistent.any():
+                inconsistent_num = inconsistent.sum()
+                diff = betase_derived_p - sumstats["P"]
+                log.write("  -Potentially inconsistent (likely due to rounding): {} variant(s)".format(inconsistent_num),verbose=verbose)
                 log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
             else:
                 log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
             check_status=1
     
-    if "MLOG10P" in sumstats.columns and "P" in sumstats.columns:
+    if has_mlog10p and has_p:
         log.write(" -Checking if MLOG10P-derived-P is consistent with P...",verbose=verbose)
         mlog10p_derived_p = _convert_mlog10p_to_p(sumstats["MLOG10P"])
         is_close = np.isclose(mlog10p_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
-        diff = mlog10p_derived_p - sumstats["P"]
-        if sum(~is_close)>0:
-            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
+        # Performance optimization: Use .any() instead of sum() > 0 for boolean check
+        inconsistent = ~is_close
+        if inconsistent.any():
+            inconsistent_num = inconsistent.sum()
+            diff = mlog10p_derived_p - sumstats["P"]
+            log.write("  -Potentially inconsistent (likely due to rounding): {} variant(s)".format(inconsistent_num),verbose=verbose)
             log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
         else:
             log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
         check_status=1
 
-    if "N" in sumstats.columns and "N_CONTROL" in sumstats.columns and "N_CASE" in sumstats.columns:
+    if has_n and has_n_control and has_n_case:
         log.write(" -Checking if N is consistent with N_CASE + N_CONTROL ...", verbose=verbose) 
-        is_close = sumstats["N"] == sumstats["N_CASE"] + sumstats["N_CONTROL"] 
-        #is_close = np.isclose(sumstats["N"], sumstats["N_CASE"] + sumstats["N_CONTROL"] , rtol=rtol, atol=atol, equal_nan=equal_nan)
-        diff = abs(sumstats["N"] - (sumstats["N_CASE"] + sumstats["N_CONTROL"] ))
-        if sum(~is_close)>0:
-            log.write("  -Not consistent: {} variant(s)".format(sum(~is_close)),verbose=verbose)
+        n_expected = sumstats["N_CASE"] + sumstats["N_CONTROL"]
+        is_close = sumstats["N"] == n_expected
+        # Performance optimization: Use .any() instead of sum() > 0, and only compute diff when needed
+        inconsistent = ~is_close
+        if inconsistent.any():
+            inconsistent_num = inconsistent.sum()
+            # Performance optimization: Only compute diff when inconsistencies are found
+            diff = abs(sumstats["N"] - n_expected)
+            log.write("  -Potentially inconsistent: {} variant(s)".format(inconsistent_num),verbose=verbose)
             log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
         else:
             log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
         check_status=1
         
     if check_status==1:
-        log.write(" -Note: if the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
+        log.write(" -Note: Minor differences are typically due to rounding. If the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
     else:
         log.write(" -No availalbe columns for data consistency checking...Skipping...",verbose=verbose)

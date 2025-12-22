@@ -50,9 +50,9 @@ from gwaslab.util.util_ex_run_mtag import _run_mtag
 from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
 from gwaslab.viz.viz_plot_compare_af import  plotdaf
 
-from gwaslab.g_headers import _get_headers
+from gwaslab.qc.qc_reserved_headers import _get_headers
 from gwaslab.g_meta import _init_meta
-from gwaslab.g_meta_update import _update_meta
+from gwaslab.g_meta import _update_meta
 
 from gwaslab.io.io_to_pickle import _offload
 from gwaslab.io.io_to_pickle import _reload

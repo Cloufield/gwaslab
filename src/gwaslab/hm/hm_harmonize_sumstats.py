@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
 from pysam import VariantFile
-from Bio import SeqIO
-from Bio import bgzf
 import gzip
+from gwaslab.io.io_fasta import load_fasta_auto, build_fasta_records, load_fasta_filtered, load_and_build_fasta_records
 from itertools import repeat
 from multiprocessing import Pool
 from functools import partial
@@ -23,10 +22,11 @@ from gwaslab.bd.bd_common_data import get_chr_list
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_NC
 from gwaslab.bd.bd_common_data import _maketrans
-from gwaslab.g_vchange_status import vchange_status, set_status_digit, status_match, match_status
+from gwaslab.g_vchange_status import vchange_status, set_status_digit, status_match
 from gwaslab.g_version import _get_version
 from gwaslab.cache_manager import CacheManager, PALINDROMIC_INDEL, NON_PALINDROMIC
 from gwaslab.g_vchange_status import STATUS_CATEGORIES
+from gwaslab.io.io_vcf import auto_check_vcf_chr_dict, check_vcf_chr_prefix, check_vcf_chr_NC
 #rsidtochrpos
 #checkref
 #parallelizeassignrsid
@@ -34,6 +34,31 @@ from gwaslab.g_vchange_status import STATUS_CATEGORIES
 #parallelecheckaf
 
 ### CONSTANTS AND MAPPINGS ###
+
+### HELPER FUNCTIONS FOR STATUS OPTIMIZATION ###
+def _extract_status_digit(status_series, digit):
+    """
+    Extract a specific digit from status codes (optimized version).
+    
+    Parameters
+    ----------
+    status_series : pd.Series
+        Series of status codes (7-digit integers)
+    digit : int
+        Digit position (1-indexed from left: 1=leftmost, 7=rightmost)
+    
+    Returns
+    -------
+    pd.Series
+        Series of extracted digits (0-9)
+    """
+    status_int = status_series.astype('int64')
+    # For 7-digit number: digit 7 (rightmost) = status_int % 10
+    #                    digit 6 = (status_int // 10) % 10
+    #                    digit 5 = (status_int // 100) % 10
+    #                    digit 4 = (status_int // 1000) % 10
+    power = 10 ** (7 - digit)
+    return (status_int // power) % 10
 
 PADDING_VALUE = 100
 
@@ -411,155 +436,8 @@ def _parallelize_rsid_to_chrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", pa
         return sumstats
 ####################################################################################################################
 # old version
-def _old_check_status(row,record):
-    #pos,ea,nea
-    # status 
-    #0 /  ----->  match
-    #1 /  ----->  Flipped Fixed
-    #2 /  ----->  Reverse_complementary Fixed
-    #3 /  ----->  flipped
-    #4 /  ----->  reverse_complementary 
-    #5 / ------>  reverse_complementary + flipped
-    #6 /  ----->  both allele on genome + unable to distinguish
-    #7 /  ----> reverse_complementary + both allele on genome + unable to distinguish
-    #8 / -----> not on ref genome
-    #9 / ------> unchecked
-    
-    # Convert status to integer
-    status_val = int(row.iloc[3]) if isinstance(row.iloc[3], (int, np.integer)) else int(str(row.iloc[3]))
-    
-    ## nea == ref
-    if row.iloc[2] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[2])-1].seq.upper():
-        ## ea == ref
-        if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
-            ## len(nea) >len(ea):
-            if len(row.iloc[2])!=len(row.iloc[1]):
-                # indels both on ref, unable to identify
-                return set_status_digit(status_val, 6, 6)  # Set digit 6 to 6
-        else:
-            #nea == ref & ea != ref
-            return set_status_digit(status_val, 6, 0)  # Set digit 6 to 0
-    ## nea!=ref
-    else:
-        # ea == ref_seq -> need to flip
-        if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
-            return set_status_digit(status_val, 6, 3)  # Set digit 6 to 3
-        # ea !=ref
-        else:
-            #_reverse_complementary
-            row.iloc[1] = get_reverse_complementary_allele(row.iloc[1])
-            row.iloc[2] = get_reverse_complementary_allele(row.iloc[2])
-            ## nea == ref
-            if row.iloc[2] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[2])-1].seq.upper():
-                ## ea == ref
-                if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
-                    ## len(nea) >len(ea):
-                    if len(row.iloc[2])!=len(row.iloc[1]):
-                        return set_status_digit(status_val, 6, 8)  # indel reverse complementary
-                else:
-                    return set_status_digit(status_val, 6, 4)  # Set digit 6 to 4
-            else:
-                # ea == ref_seq -> need to flip
-                if row.iloc[1] == record[row.iloc[0]-1: row.iloc[0]+len(row.iloc[1])-1].seq.upper():
-                    return set_status_digit(status_val, 6, 5)  # Set digit 6 to 5
-            # ea !=ref
-            return set_status_digit(status_val, 6, 8)  # Set digit 6 to 8
-
-@with_logging(
-    start_to_msg="check if NEA is aligned with reference sequence",
-    finished_msg="checking if NEA is aligned with reference sequence",
-    start_cols=["CHR","POS","EA","NEA","STATUS"],
-    start_function=".check_ref()"
-)
-def _old_check_ref(sumstats,ref_seq,chrom="CHR",pos="POS",ea="EA",nea="NEA",status="STATUS",chr_dict=get_chr_to_number(),remove=False,verbose=True,log=Log()):
-    # Handle both DataFrame and Sumstats object
-    import pandas as pd
-    if isinstance(sumstats, pd.DataFrame):
-        # Called with DataFrame
-        is_dataframe = True
-    else:
-        # Called with Sumstats object
-        sumstats_obj = sumstats
-        sumstats = sumstats_obj.data
-        is_dataframe = False
-    
-    log.write(" -Reference genome FASTA file: "+ ref_seq,verbose=verbose)  
-    log.write(" -Checking records: ", end="",verbose=verbose)  
-    chromlist = get_chr_list(add_number=True)
-    records = SeqIO.parse(ref_seq, "fasta")
-    for record in records:
-        #record = next(records)
-        if record is not None:
-            record_chr = str(record.id).strip("chrCHR").upper()
-            if record_chr in chr_dict.keys():
-                i = chr_dict[record_chr]
-            else:
-                i = record_chr
-            if i in chromlist:
-                log.write(record_chr," ", end="",show_time=False,verbose=verbose) 
-                to_check_ref = (sumstats[chrom]==i) & (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())
-                sumstats.loc[to_check_ref,status] = sumstats.loc[to_check_ref,[pos,ea,nea,status]].apply(lambda x:_old_check_status(x,record),axis=1)
-    
-    log.write("\n",end="",show_time=False,verbose=verbose) 
-        
-    # Convert STATUS to integer (remove Categorical if present)
-    if sumstats[status].dtype.name == 'category':
-        sumstats[status] = sumstats[status].astype(str).astype(int)
-    elif sumstats[status].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
-        sumstats[status] = sumstats[status].astype(int)
-    sumstats[status] = sumstats[status].astype('Int64')
-
-
-    available_to_check = ((~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())).sum()
-    # Use status_match for integer status codes (digit 6)
-    status_0 = status_match(sumstats["STATUS"], 6, [0]).sum()
-    status_3 = status_match(sumstats["STATUS"], 6, [3]).sum()
-    status_4 = status_match(sumstats["STATUS"], 6, [4]).sum()
-    status_5 = status_match(sumstats["STATUS"], 6, [5]).sum()
-    status_6 = status_match(sumstats["STATUS"], 6, [6]).sum()
-    #status_7 = status_match(sumstats["STATUS"], 6, [7]).sum()
-    status_8 = status_match(sumstats["STATUS"], 6, [8]).sum()
-    
-    log.write(" -Variants allele on given reference sequence : ",status_0,verbose=verbose)
-    log.write(" -Variants flipped : ",status_3,verbose=verbose)
-    raw_matching_rate = (status_3+status_0)/available_to_check
-    flip_rate = status_3/available_to_check
-    log.write("  -Raw Matching rate : ","{:.2f}%".format(raw_matching_rate*100),verbose=verbose)
-    if raw_matching_rate <0.8:
-        log.warning("Matching rate is low, please check if the right reference genome is used.")
-    if flip_rate > 0.85 :
-        log.write("  -Flipping variants rate > 0.85, it is likely that the EA is aligned with REF in the original dataset.",verbose=verbose)
-    
-    log.write(" -Variants inferred reverse_complement : ",status_4,verbose=verbose)
-    log.write(" -Variants inferred reverse_complement_flipped : ",status_5,verbose=verbose)
-    log.write(" -Both allele on genome + unable to distinguish : ",status_6,verbose=verbose)
-    #log.write(" -Reverse_complementary + both allele on genome + unable to distinguish: ",status_7)
-    log.write(" -Variants not on given reference sequence : ",status_8,verbose=verbose)
-    
-    if remove is True:
-        sumstats = sumstats.loc[~status_match(sumstats["STATUS"], 6, [8]),:]
-        log.write(" -Variants not on given reference sequence were removed.",verbose=verbose)
-    
-    # Update harmonization status only if called with Sumstats object
-    if not is_dataframe:
-        # Assign modified dataframe back to the Sumstats object
-        sumstats_obj.data = sumstats
-        try:
-            from gwaslab.g_meta import _append_meta_record, _update_harmonize_step
-            sumstats_obj.meta["gwaslab"]["references"]["ref_seq"] = ref_seq
-            check_ref_kwargs = {
-                'ref_seq': ref_seq, 'chrom': chrom, 'pos': pos, 'ea': ea, 'nea': nea, 
-                'status': status, 'remove': remove
-            }
-            _update_harmonize_step(sumstats_obj, "check_ref", check_ref_kwargs, True)
-        except:
-            pass
-        return sumstats_obj.data
-    else:
-        return sumstats
-
 #20240320 check if non-effect allele is aligned with reference genome         
-def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array, records_len: np.array):
+def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np.array, records_len: np.array, powers_of_10: np.array, chrom_order: np.array):
     """
     Check if non-effect allele (NEA) is aligned with reference genome using vectorized operations.
 
@@ -574,12 +452,20 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
         Note: Column names are not explicitly checked - the function expects specific column ordering.
     record : np.array
         Concatenated reference genome sequence as a 1D numpy array of integers (after translation).
+        Note: This should already be padded in the caller to avoid out-of-bounds errors.
     starting_positions : np.array
         1D array containing the starting index in `record` for each chromosome in `x`.
-        Must correspond to chromosomes in np.unique(x['CHR'].values) and be ordered accordingly.
+        Must correspond to chromosomes in `chrom_order` and be ordered accordingly (sorted).
     records_len : np.array
         1D array containing the length of each chromosome's sequence in `record`.
-        Must correspond to chromosomes in np.unique(x['CHR'].values) and be ordered accordingly.
+        Must correspond to chromosomes in `chrom_order` and be ordered accordingly (sorted).
+    powers_of_10 : np.array
+        Pre-computed array of powers of 10 for status digit extraction: [1000000, 100000, ..., 1].
+        This avoids recreating it for each call.
+    chrom_order : np.array
+        Sorted array of unique chromosome values in `x`. This ensures alignment between
+        chromosome values and array indices in `starting_positions` and `records_len`.
+        This avoids recomputing np.unique() and fixes a correctness bug.
 
     Returns
     -------
@@ -623,9 +509,9 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     # rebase the chromosome numbers to 0-based indexing to index the correct record portion when we do starting_positions[chrom]
     # Note that in x there are only the rows for the same chromosomes for which we have the records in record
     # (i.e. we don't have rows for chr3 if we don't have the record for chr3). This filtering is done in the caller function
+    # Use precomputed chrom_order from caller to avoid recomputing np.unique() and ensure correct alignment
     _chrom = _chrom.values
-    unique_values, _ = np.unique(_chrom, return_inverse=True) # Get the sorted unique values and their indices
-    chrom = np.searchsorted(unique_values, _chrom) # Replace each value in '_chrom' with its corresponding index in the sorted unique values
+    chrom = np.searchsorted(chrom_order, _chrom) # Replace each value in '_chrom' with its corresponding index in chrom_order
  
     max_len_nea = _nea.str.len().max()
     max_len_ea = _ea.str.len().max()
@@ -651,14 +537,6 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     # Create a mask holding True at the position of non-padding values
     mask_nea = nea != PADDING_VALUE
 
-    # Create the reverse complement of NEA
-    # In this case, we manually left-pad the translated string with the padding value, since the padding done by view('<u4') would be right-padded
-    # and that will make hard the reverse operation (because we would have e.g. [2, 2, 4, 100, ..., 100] which will be hard to convert into [4, 2, 2, 100, ..., 100])
-    rev_nea = _nea.str.translate(TRANSLATE_TABLE_COMPL).str.pad(max_len_nea, 'left', chr(PADDING_VALUE)).to_numpy().astype(f'<U{max_len_nea}')
-    rev_nea = rev_nea.view('<u4').reshape(-1, max_len_nea).astype(np.uint8)
-    rev_nea = rev_nea[:, ::-1]
-
-
     # Let's do everything again for EA
     ea = _ea.str.translate(TRANSLATE_TABLE).to_numpy().astype(f'<U{max_len_ea}')
     ea = ea.view('<u4').reshape(-1, max_len_ea).astype(np.uint8)
@@ -668,23 +546,18 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     ###########################################
     mask_ea = ea != PADDING_VALUE
 
-    rev_ea = _ea.str.translate(TRANSLATE_TABLE_COMPL).str.pad(max_len_ea, 'left', chr(PADDING_VALUE)).to_numpy().astype(f'<U{max_len_ea}')
-    rev_ea = rev_ea.view('<u4').reshape(-1, max_len_ea).astype(np.uint8)
-    rev_ea = rev_ea[:, ::-1]
 
-
-    # Convert the status (which are integers) to a numpy array of integers.
-    # Status codes are always 7-digit integers, so convert to string first
-    # e.g. [9999999, 9939999, 9929999] -> [[9, 9, 9, 9, 9, 9, 9], [9, 9, 3, 9, 9, 9, 9], [9, 9, 2, 9, 9, 9, 9]]
-    # Status is now integer, so check that all values are 7-digit integers
+    # Optimized status conversion: work directly with integers instead of string conversion
+    # Status codes are always 7-digit integers
+    # Extract digits directly using integer operations (much faster than string conversion)
     assert (_status >= 1000000).all() and (_status <= 9999999).all(), "All status codes should be 7-digit integers"
-    status_len = 7
-    # Convert integer status to string with zero-padding to ensure 7 digits
-    _status_str = _status.astype(str).str.zfill(7)
-    mapping_status = {str(v): chr(v) for v in range(10)}
-    table_stats = _maketrans(mapping_status)
-    status = _status_str.str.translate(table_stats).to_numpy().astype(f'<U{status_len}')
-    status = status.view('<u4').reshape(-1, status_len).astype(np.uint8)
+    status_len = len(powers_of_10)  # Use length from pre-computed powers_of_10
+    
+    # Convert status to numpy array and extract digits using vectorized operations
+    # powers_of_10 is pre-computed in check_status to avoid duplication
+    status_vals = _status.values.astype(np.int64)
+    # Extract all digits at once using broadcasting: (status // power) % 10
+    status = ((status_vals[:, np.newaxis] // powers_of_10[np.newaxis, :]) % 10).astype(np.uint8)
 
 
     # Expand the position to a 2D array and subtract 1 to convert to 0-based indexing
@@ -705,10 +578,8 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     # Modify indices to select the correct absolute position in the concatenated record array
     indices = indices + modified_indices
 
-    # Let's pad the fasta records array because if there is a (pos, chrom) for which (pos+starting_position[chrom]+max_len_nea > len(record) we get out of bounds error.
-    # This basically happens if there is a pos for the last chromosome for which pos+max_len_nea > len(record for that chrom).
-    # This is very unlikely to happen but we should handle this case.
-    record = np.pad(record, (0, max_len_nea), constant_values=PADDING_VALUE)
+    # Note: record is already padded in check_status() to avoid out-of-bounds errors
+    # This avoids duplicating the padding operation for each call
     
     # Index the record array using the computed indices.
     # Since we use np.take, indices must all have the same length, and this is why we added the padding to NEA
@@ -735,7 +606,6 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     #  -> np.all(nea == output_nea + ~mask, 1): [True, True]
 
     nea_eq_ref = np.all((nea == output_nea) + ~mask_nea, 1)
-    rev_nea_eq_ref = np.all((rev_nea == output_nea) + ~mask_nea, 1)
 
     # Let's do everything again for EA
     indices_range = np.arange(max_len_ea)
@@ -746,9 +616,44 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     output_ea[mask_outlier] = PADDING_VALUE
     ##################################################################
 
-
     ea_eq_ref = np.all((ea == output_ea) + ~mask_ea, 1)
-    rev_ea_eq_ref = np.all((rev_ea == output_ea) + ~mask_ea, 1)
+
+    # Only compute reverse complements for rows where both nea and ea don't match reference
+    # This optimization avoids unnecessary computation for most straightforward SNP matches
+    need_rev = (~nea_eq_ref) & (~ea_eq_ref)
+    
+    # Initialize reverse complement arrays with False (will be updated only for need_rev rows)
+    rev_nea_eq_ref = np.zeros(len(nea_eq_ref), dtype=bool)
+    rev_ea_eq_ref = np.zeros(len(ea_eq_ref), dtype=bool)
+    
+    if need_rev.any():
+        # Build reverse complements only for rows that need it
+        _nea_need_rev = _nea[need_rev]
+        _ea_need_rev = _ea[need_rev]
+        output_nea_need_rev = output_nea[need_rev]
+        output_ea_need_rev = output_ea[need_rev]
+        mask_nea_need_rev = mask_nea[need_rev]
+        mask_ea_need_rev = mask_ea[need_rev]
+        
+        # Create the reverse complement of NEA for rows that need it
+        # In this case, we manually left-pad the translated string with the padding value, since the padding done by view('<u4') would be right-padded
+        # and that will make hard the reverse operation (because we would have e.g. [2, 2, 4, 100, ..., 100] which will be hard to convert into [4, 2, 2, 100, ..., 100])
+        rev_nea_subset = _nea_need_rev.str.translate(TRANSLATE_TABLE_COMPL).str.pad(max_len_nea, 'left', chr(PADDING_VALUE)).to_numpy().astype(f'<U{max_len_nea}')
+        rev_nea_subset = rev_nea_subset.view('<u4').reshape(-1, max_len_nea).astype(np.uint8)
+        rev_nea_subset = rev_nea_subset[:, ::-1]
+        
+        # Create the reverse complement of EA for rows that need it
+        rev_ea_subset = _ea_need_rev.str.translate(TRANSLATE_TABLE_COMPL).str.pad(max_len_ea, 'left', chr(PADDING_VALUE)).to_numpy().astype(f'<U{max_len_ea}')
+        rev_ea_subset = rev_ea_subset.view('<u4').reshape(-1, max_len_ea).astype(np.uint8)
+        rev_ea_subset = rev_ea_subset[:, ::-1]
+        
+        # Check reverse complements only for the subset
+        rev_nea_eq_ref_subset = np.all((rev_nea_subset == output_nea_need_rev) + ~mask_nea_need_rev, 1)
+        rev_ea_eq_ref_subset = np.all((rev_ea_subset == output_ea_need_rev) + ~mask_ea_need_rev, 1)
+        
+        # Update the full arrays with results for the subset
+        rev_nea_eq_ref[need_rev] = rev_nea_eq_ref_subset
+        rev_ea_eq_ref[need_rev] = rev_ea_eq_ref_subset
 
     masks_max_len = max(mask_nea.shape[1], mask_ea.shape[1])
 
@@ -782,25 +687,72 @@ def _fast_check_status(x: pd.DataFrame, record: np.array, starting_positions: np
     # nea != ref && ea != ref && rev_nea != ref && rev_ea != ref
     status[~nea_eq_ref * ~ea_eq_ref * ~rev_nea_eq_ref * ~rev_ea_eq_ref, status_flip_idx] = 8
 
-    # Convert back the (now modified) 2D status array to a numpy array of strings in a very fast way.
+    # Convert back the (now modified) 2D status digit array to integers efficiently
     # Since 'status' is a 2D array of integers ranging from 0 to 9, we can build the integer representation
-    # of each row using the efficent operation below (e.g. [1, 2, 3, 4, 5] -> [12345]).
-    # Then we convert this integer to a string using the f'<U{status.shape[1]}' dtype (e.g. 12345 -> '12345')
-    # The "naive" way would be:
-    #   status_str = [''.join(map(str, l)) for l in status]
-    #   status_arr = np.array(status_str)
-    status_flat = np.sum(status * 10**np.arange(status.shape[1]-1, -1, -1), axis=1)
-    status_arr = status_flat.astype(f'<U{status.shape[1]}')
+    # of each row using the efficient operation below (e.g. [1, 2, 3, 4, 5, 6, 7] -> 1234567).
+    # This avoids the string conversion overhead we had before
+    # Then convert to string array for compatibility with existing code
+    status_flat = np.sum(status * powers_of_10[np.newaxis, :], axis=1)
+    status_arr = status_flat.astype(f'<U{status_len}')
 
     return status_arr
 
 
-def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=True):
-
+def check_status(
+    sumstats: pd.DataFrame, 
+    fasta_records_dict=None, 
+    record=None,
+    starting_positions_dict=None,
+    records_len_dict=None,
+    log=Log(), 
+    verbose=True
+):
+    """
+    Check status of variants against reference genome.
+    
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Summary statistics DataFrame
+    fasta_records_dict : dict, optional
+        Dictionary of FastaRecord objects (for backward compatibility)
+    record : np.ndarray, optional
+        Pre-built concatenated numpy array of sequences (if provided, skips building)
+    starting_positions_dict : dict, optional
+        Pre-built dictionary of starting positions (if provided, skips building)
+    records_len_dict : dict, optional
+        Pre-built dictionary of record lengths (if provided, skips building)
+    log : Log, optional
+        Logging object
+    verbose : bool, optional
+        Verbose output
+        
+    Returns
+    -------
+    np.ndarray
+        Status values
+    """
     chrom,pos,ea,nea,status = sumstats.columns
 
-    # First, convert the fasta records to a single numpy array of integers
-    record, starting_positions_dict, records_len_dict = build_fasta_records(fasta_records_dict, pos_as_dict=True, log=log, verbose=verbose)
+    # Use pre-built records if provided, otherwise build from dict
+    if record is None or starting_positions_dict is None or records_len_dict is None:
+        # Backward compatibility: build from dict
+        record, starting_positions_dict, records_len_dict = build_fasta_records(fasta_records_dict, pos_as_dict=True, log=log, verbose=verbose)
+
+    # Pre-compute maximum padding needed across both groups to avoid padding twice
+    # This is more efficient than padding the record separately for each call
+    max_len_nea_all = sumstats[nea].str.len().max()
+    max_len_ea_all = sumstats[ea].str.len().max()
+    max_padding_needed = max(max_len_nea_all, max_len_ea_all)
+    
+    # Pad the record once based on maximum needed padding
+    # This avoids duplicating the padding operation in _fast_check_status
+    record = np.pad(record, (0, max_padding_needed), constant_values=PADDING_VALUE)
+    
+    # Pre-compute powers_of_10 for status conversion (used in both calls)
+    # Status codes are always 7-digit integers
+    status_len = 7
+    powers_of_10 = 10 ** np.arange(status_len - 1, -1, -1, dtype=np.int64)
 
     # In _fast_check_status(), several 2D numpy arrays are created and they are padded to have shape[1] == max_len_nea or max_len_ea
     # Since most of the NEA and EA strings are short, we perform the check first on the records having short NEA and EA strings,
@@ -811,42 +763,25 @@ def check_status(sumstats: pd.DataFrame, fasta_records_dict, log=Log(), verbose=
 
     log.write(f"   -Checking records for ( len(NEA) <= {max_len} and len(EA) <= {max_len} )", verbose=verbose)
     sumstats_cond = sumstats[condition]
-    unique_chrom_cond = sumstats_cond[chrom].unique()
-    starting_pos_cond = np.array([starting_positions_dict[k] for k in unique_chrom_cond])
-    records_len_cond = np.array([records_len_dict[k] for k in unique_chrom_cond])
+    # Sort chromosomes to ensure alignment with np.unique() inside _fast_check_status
+    # This fixes a correctness bug where unsorted unique_chrom_cond could mismatch with sorted np.unique(_chrom)
+    chrom_order_cond = np.sort(sumstats_cond[chrom].unique())
+    starting_pos_cond = np.array([starting_positions_dict[k] for k in chrom_order_cond], dtype=np.int64)
+    records_len_cond = np.array([records_len_dict[k] for k in chrom_order_cond], dtype=np.int64)
 
-    sumstats.loc[condition, status] = _fast_check_status(sumstats_cond, record=record, starting_positions=starting_pos_cond, records_len=records_len_cond)
+    sumstats.loc[condition, status] = _fast_check_status(sumstats_cond, record=record, starting_positions=starting_pos_cond, records_len=records_len_cond, powers_of_10=powers_of_10, chrom_order=chrom_order_cond)
 
     log.write(f"   -Checking records for ( len(NEA) > {max_len} or len(EA) > {max_len} )", verbose=verbose)
     sumstats_not_cond = sumstats[~condition]
-    unique_chrom_not_cond = sumstats_not_cond[chrom].unique()
-    starting_not_pos_cond = np.array([starting_positions_dict[k] for k in unique_chrom_not_cond])
-    records_len_not_cond = np.array([records_len_dict[k] for k in unique_chrom_not_cond])
-    sumstats.loc[~condition, status] = _fast_check_status(sumstats_not_cond, record=record, starting_positions=starting_not_pos_cond, records_len=records_len_not_cond)
+    # Sort chromosomes to ensure alignment with np.unique() inside _fast_check_status
+    chrom_order_not_cond = np.sort(sumstats_not_cond[chrom].unique())
+    starting_not_pos_cond = np.array([starting_positions_dict[k] for k in chrom_order_not_cond], dtype=np.int64)
+    records_len_not_cond = np.array([records_len_dict[k] for k in chrom_order_not_cond], dtype=np.int64)
+    sumstats.loc[~condition, status] = _fast_check_status(sumstats_not_cond, record=record, starting_positions=starting_not_pos_cond, records_len=records_len_not_cond, powers_of_10=powers_of_10, chrom_order=chrom_order_not_cond)
 
     return sumstats[status].values
 
-def load_fasta_auto(path: str):
-    """
-    Automatically load FASTA or gzipped/bgzipped FASTA files.
-    Supports: .fa, .fasta, .fa.gz, .fa.bgz
-    Returns a SeqIO iterator.
-    """
-    lower = path.lower()
-
-    # BGZF (bgzip) detection
-    if lower.endswith(".bgz") or lower.endswith(".bgzf"):
-        handle = bgzf.open(path, "rt")
-
-    # Standard gzipped FASTA
-    elif lower.endswith(".gz"):
-        handle = gzip.open(path, "rt")
-
-    # Plain FASTA
-    else:
-        handle = open(path, "r")
-
-    return SeqIO.parse(handle, "fasta")       
+# load_fasta_auto is now imported from gwaslab.io.io_fasta       
 
 @with_logging(
     start_to_msg="check if NEA is aligned with reference sequence",
@@ -916,61 +851,113 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
         is_dataframe = False
     
     log.write(" -Reference genome FASTA file: "+ ref_seq,verbose=verbose)  
-    log.write(" -Loading fasta records:",end="", verbose=verbose)
-    chromlist = get_chr_list(add_number=True)
-    records = load_fasta_auto(ref_seq)
     
     sumstats = _sort_coordinate(sumstats,verbose=False)
+    
+    # Convert chromlist to set for O(1) lookup instead of O(n)
+    chromlist = get_chr_list(add_number=True)
+    chromlist_set = set(chromlist)
+    
+    # Cache chr_dict keys for faster lookup
+    chr_dict_keys = set(chr_dict.keys()) if chr_dict else set()
+    
+    # Convert chroms_in_sumstats to set for O(1) lookup (compute set directly from unique)
+    chroms_in_sumstats_set = set(sumstats[chrom].unique())  # load records from Fasta file only for the chromosomes present in the sumstats
+    
+    # Load, filter, and build FASTA records in a single pass for maximum performance
+    # This avoids creating intermediate FastaRecord objects
+    record, starting_positions_dict, records_len_dict = load_and_build_fasta_records(
+        ref_seq,
+        chromlist_set,
+        chroms_in_sumstats_set,
+        chr_dict,
+        chr_dict_keys,
+        pos_as_dict=True,
+        log=log,
+        verbose=verbose
+    )
 
-    all_records_dict = {}
-    chroms_in_sumstats = sumstats[chrom].unique() # load records from Fasta file only for the chromosomes present in the sumstats
-    for record in records:
-        #record = next(records)
-        if record is not None:
-            record_chr = str(record.id).strip("chrCHR").upper()
-            if record_chr in chr_dict.keys():
-                i = chr_dict[record_chr]
-            else:
-                i = record_chr
-            if (i in chromlist) and (i in chroms_in_sumstats):
-                log.write(record_chr," ", end="",show_time=False,verbose=verbose)
-                all_records_dict.update({i: record})
-    log.write("",show_time=False,verbose=verbose)
-
-    if len(all_records_dict) > 0:
+    # Early filtering: combine all conditions in one pass
+    # Cache these masks for reuse later in status counting and available_to_check computation
+    valid_pos_mask = ~sumstats[pos].isna() & (sumstats[pos] > 0)
+    valid_alleles_mask = ~sumstats[nea].isna() & ~sumstats[ea].isna()
+    
+    # Track if we actually checked any records
+    checked_any_records = False
+    
+    if len(records_len_dict) > 0:
         log.write(" -Checking records", verbose=verbose)
-        all_records_dict = dict(sorted(all_records_dict.items())) # sort by key in case the fasta records are not already ordered by chromosome
-        to_check_ref = (sumstats[chrom].isin(list(all_records_dict.keys()))) & (~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())
-        sumstats_to_check = sumstats.loc[to_check_ref,[chrom,pos,ea,nea,status]]
-        sumstats.loc[to_check_ref,status] = check_status(sumstats_to_check, all_records_dict, log=log, verbose=verbose)
+        # Convert dict keys to set for faster isin() operation
+        all_records_keys_set = set(records_len_dict.keys())
+        valid_chrom_mask = sumstats[chrom].isin(all_records_keys_set)
+        
+        to_check_ref = valid_chrom_mask & valid_pos_mask & valid_alleles_mask
+        
+        if to_check_ref.any():
+            sumstats_to_check = sumstats.loc[to_check_ref,[chrom,pos,ea,nea,status]]
+            # Pass pre-built records directly to check_status for better performance
+            sumstats.loc[to_check_ref,status] = check_status(
+                sumstats_to_check, 
+                record=record,
+                starting_positions_dict=starting_positions_dict,
+                records_len_dict=records_len_dict,
+                log=log, 
+                verbose=verbose
+            )
+            checked_any_records = True
         log.write(" -Finished checking records", verbose=verbose) 
     
-    # Convert STATUS to integer (remove Categorical if present)
-    if sumstats[status].dtype.name == 'category':
-        sumstats[status] = sumstats[status].astype(str).astype(int)
-    elif sumstats[status].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
-        sumstats[status] = sumstats[status].astype(int)
-    sumstats[status] = sumstats[status].astype('Int64')
+    # Convert STATUS to integer only if we checked records or need to compute statistics
+    # Optimize: check dtype once and convert directly, reuse status_int for digit extraction
+    if checked_any_records or not remove:
+        status_dtype = sumstats[status].dtype
+        if status_dtype.name == 'category':
+            status_int = sumstats[status].astype(str).astype('int64')
+            sumstats[status] = status_int.astype('Int64')
+        elif status_dtype not in ['int64', 'Int64', 'int32', 'Int32']:
+            status_int = sumstats[status].astype('int64')
+            sumstats[status] = status_int.astype('Int64')
+        else:
+            # Already integer type, just ensure Int64
+            status_int = sumstats[status].astype('int64')
+            if status_dtype != 'Int64':
+                sumstats[status] = status_int.astype('Int64')
+    else:
+        # No records checked, but we still need status_int for remove operation
+        status_int = sumstats[status].astype('int64')
 
-    available_to_check = ((~sumstats[pos].isna()) & (~sumstats[nea].isna()) & (~sumstats[ea].isna())).sum()
-    # Use status_match for integer status codes (digit 6)
-    status_0 = status_match(sumstats["STATUS"], 6, [0]).sum()
-    status_3 = status_match(sumstats["STATUS"], 6, [3]).sum()
-    status_4 = status_match(sumstats["STATUS"], 6, [4]).sum()
-    status_5 = status_match(sumstats["STATUS"], 6, [5]).sum()
-    status_6 = status_match(sumstats["STATUS"], 6, [6]).sum()
-    #status_7 = status_match(sumstats["STATUS"], 6, [7]).sum()
-    status_8 = status_match(sumstats["STATUS"], 6, [8]).sum()
+    # Compute available_to_check: variants with valid pos, nea, and ea
+    # Reuse the masks we already computed
+    available_to_check = (valid_pos_mask & valid_alleles_mask).sum()
+    
+    # Optimize: Extract 6th digit once instead of calling status_match 7 times
+    # Digit 6 is the 2nd from right (1-indexed: 7=rightmost, 6=2nd from right)
+    # For 7-digit number: extract using (status // 10) % 10
+    digit_6 = (status_int // 10) % 10  # Extract 6th digit (2nd from right)
+    
+    # Use vectorized comparisons instead of multiple status_match calls
+    status_0 = (digit_6 == 0).sum()
+    status_3 = (digit_6 == 3).sum()
+    status_4 = (digit_6 == 4).sum()
+    status_5 = (digit_6 == 5).sum()
+    status_6 = (digit_6 == 6).sum()
+    #status_7 = (digit_6 == 7).sum()
+    status_8 = (digit_6 == 8).sum()
     
     log.write(" -Variants allele on given reference sequence : ",status_0,verbose=verbose)
     log.write(" -Variants flipped : ",status_3,verbose=verbose)
-    raw_matching_rate = (status_3+status_0)/available_to_check
-    flip_rate = status_3/available_to_check
-    log.write("  -Raw Matching rate : ","{:.2f}%".format(raw_matching_rate*100),verbose=verbose)
-    if raw_matching_rate <0.8:
-        log.warning("Matching rate is low, please check if the right reference genome is used.")
-    if flip_rate > 0.85 :
-        log.write("  -Flipping variants rate > 0.85, it is likely that the EA is aligned with REF in the original dataset.",verbose=verbose)
+    
+    # Avoid division by zero
+    if available_to_check > 0:
+        raw_matching_rate = (status_3+status_0)/available_to_check
+        flip_rate = status_3/available_to_check
+        log.write("  -Raw Matching rate : ","{:.2f}%".format(raw_matching_rate*100),verbose=verbose)
+        if raw_matching_rate <0.8:
+            log.warning("Matching rate is low, please check if the right reference genome is used.")
+        if flip_rate > 0.85 :
+            log.write("  -Flipping variants rate > 0.85, it is likely that the EA is aligned with REF in the original dataset.",verbose=verbose)
+    else:
+        log.write("  -No variants available to check against reference.",verbose=verbose)
     
     log.write(" -Variants inferred reverse_complement : ",status_4,verbose=verbose)
     log.write(" -Variants inferred reverse_complement_flipped : ",status_5,verbose=verbose)
@@ -979,7 +966,8 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
     log.write(" -Variants not on given reference sequence : ",status_8,verbose=verbose)
     
     if remove is True:
-        sumstats = sumstats.loc[~status_match(sumstats["STATUS"], 6, [8]),:]
+        # Use the pre-computed digit_6 instead of calling status_match again
+        sumstats = sumstats.loc[digit_6 != 8, :]
         log.write(" -Variants not on given reference sequence were removed.",verbose=verbose)
 
     # Update harmonization status only if called with Sumstats object
@@ -999,40 +987,6 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
     else:
         return sumstats
 
-def build_fasta_records(fasta_records_dict, pos_as_dict=True, log=Log(), verbose=True):
-    log.write("   -Building numpy fasta records from dict", verbose=verbose)
-
-    # Let's do some magic to convert the fasta record to a numpy array of integers in a very fast way.
-    # fasta_record.seq._data is a byte-string, so we can use the bytes.maketrans to apply a translation.
-    # Here we map the bytes to the unicode character representing the desired integer as defined in the mapping dict
-    # (i.e. b'A' -> '\x02', b'T' -> '\x03', b'C' -> '\x04', b'G' -> '\x05', b'N' -> '\x06')
-    # Then, using np.array(... dtype=<U..) we convert the string to a numpy array of unicode characters.
-    # Then, we do a magic with view('<u4') to convert the unicode characters to 4-byte integers, so we obtain the actual integer representation of the characters
-    # Lastly, we cast the array to np.uint8 to convert the 4-byte integers to 1-byte integers to save memory
-    # Full example:
-    # fasta_record.seq._data = b'ACTGN' -> b'\x02\x04\x03\x05\x06' -> np.array(['\x02\x04\x03\x05\x06'], dtype='<U5') -> np.array([2, 4, 3, 5, 6], dtype=uint32) -> np.array([2, 4, 3, 5, 6], dtype=uint8)
-    all_r = []
-    for r in fasta_records_dict.values():
-        r = r.seq._data.translate(TRANSLATE_TABLE)
-        r = np.array([r], dtype=f'<U{len(r)}').view('<u4').astype(np.uint8)
-        all_r.append(r)
-    
-    # We've just created a list of numpy arrays, so we can concatenate them to obtain a single numpy array
-    # Then we keep track of the starting position of each record in the concatenated array. This will be useful later
-    # to index the record array depending on the position of the variant and the chromosome
-    records_len = np.array([len(r) for r in all_r])
-
-    starting_positions = np.cumsum(records_len) - records_len
-
-    
-    if pos_as_dict:
-        starting_positions = {k: v for k, v in zip(fasta_records_dict.keys(), starting_positions)}
-        records_len_dict =  {k: v for k, v in zip(fasta_records_dict.keys(), records_len)}
-    record = np.concatenate(all_r)
-    del all_r # free memory
-    
-
-    return record, starting_positions,records_len_dict
 
 #######################################################################################################################################
 
@@ -1160,8 +1114,10 @@ def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid
         pre_number = (~sumstats[rsid].isna()).sum()
 
         ##################################################################################################################
-        # Match: digit 4 is 0 and digit 5 is 0-4
-        standardized_normalized = status_match(sumstats["STATUS"], 4, [0]) & status_match(sumstats["STATUS"], 5, [0,1,2,3,4])
+        # Match: digit 4 is 0 and digit 5 is 0-4 - Optimized: extract digits once
+        digit_4 = _extract_status_digit(sumstats[status], 4)
+        digit_5 = _extract_status_digit(sumstats[status], 5)
+        standardized_normalized = (digit_4 == 0) & (digit_5.isin([0,1,2,3,4]))
         if overwrite=="all":
             to_assign = standardized_normalized
         if overwrite=="invalid":
@@ -1191,8 +1147,8 @@ def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid
     ##################################################################################################################
     elif ref_mode=="tsv":
         
-        #standardized_normalized = sumstats["STATUS"].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
-        standardized_normalized = sumstats["STATUS"] == sumstats["STATUS"]
+        #standardized_normalized = sumstats[status].str.match("\w\w\w[0][01234]\w\w", case=False, flags=0, na=False)
+        standardized_normalized = sumstats[status] == sumstats[status]
 
         if rsid not in sumstats.columns:
             sumstats[rsid]=pd.Series(dtype="string")
@@ -1524,8 +1480,10 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
 
     if "p" in mode:
         ## checking \w\w\w\w[0]\w\w -> standardized and normalized snp
-        # Match: digit 4 is 0 and digit 5 is 0
-        good_chrpos = status_match(sumstats[status], 4, [0]) & status_match(sumstats[status], 5, [0]) 
+        # Match: digit 4 is 0 and digit 5 is 0 - Optimized: extract digits once
+        digit_4 = _extract_status_digit(sumstats[status], 4)
+        digit_5 = _extract_status_digit(sumstats[status], 5)
+        good_chrpos = (digit_4 == 0) & (digit_5 == 0) 
         palindromic = good_chrpos & is_palindromic(sumstats[[ref,alt]],a1=ref,a2=alt)   
         not_palindromic_snp = good_chrpos & (~palindromic)
 
@@ -1539,8 +1497,10 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
         sumstats.loc[palindromic&(~maf_can_infer),status] = vchange_status(sumstats.loc[palindromic&(~maf_can_infer),status],7,"9","7")
         
         #palindromic WITH UNKNWON OR UNCHECKED STATUS
-        # Match: digit 6 is 0,1,2 and digit 7 is 8,9
-        unknow_palindromic = status_match(sumstats[status], 6, [0,1,2]) & status_match(sumstats[status], 7, [8,9]) 
+        # Match: digit 6 is 0,1,2 and digit 7 is 8,9 - Optimized: extract digits once
+        digit_6 = _extract_status_digit(sumstats[status], 6)
+        digit_7 = _extract_status_digit(sumstats[status], 7)
+        unknow_palindromic = (digit_6.isin([0,1,2])) & (digit_7.isin([8,9])) 
 
         unknow_palindromic_to_check = palindromic & maf_can_infer & unknow_palindromic
         
@@ -1587,12 +1547,13 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
         #8 Not matching or No information
         #9 Unchecked
 
-        # Match digit 7
-        status0 = status_match(sumstats[status], 7, [0])
-        status1 = status_match(sumstats[status], 7, [1])
-        status5 = status_match(sumstats[status], 7, [5])
-        status7 = status_match(sumstats[status], 7, [7])
-        status8 = status_match(sumstats[status], 7, [8])  
+        # Match digit 7 - Optimized: extract digit once, then use vectorized comparisons
+        digit_7 = _extract_status_digit(sumstats[status], 7)
+        status0 = (digit_7 == 0)
+        status1 = (digit_7 == 1)
+        status5 = (digit_7 == 5)
+        status7 = (digit_7 == 7)
+        status8 = (digit_7 == 8)  
 
         log.write("  -Non-palindromic : ",sum(status0),verbose=verbose)
         log.write("  -Palindromic SNPs on + strand: ",sum(status1),verbose=verbose)
@@ -1612,8 +1573,10 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
 
     ### unknow_indel
     if "i" in mode:
-        # Match: digit 6 is 6 and digit 7 is 8,9
-        unknow_indel = status_match(sumstats[status], 6, [6]) & status_match(sumstats[status], 7, [8,9])   
+        # Match: digit 6 is 6 and digit 7 is 8,9 - Optimized: extract digits once
+        digit_6 = _extract_status_digit(sumstats[status], 6)
+        digit_7 = _extract_status_digit(sumstats[status], 7)
+        unknow_indel = (digit_6 == 6) & (digit_7.isin([8,9]))   
         log.write(" -Identified ", unknow_indel.sum(), " indistinguishable Indels...", verbose=verbose)
         if unknow_indel.sum()>0:
             log.write(" -Indistinguishable indels will be inferred from reference vcf REF and ALT...",verbose=verbose)
@@ -1652,9 +1615,12 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
 
             #########################################################################################
 
-            status3 = status_match(sumstats[status], 7, [3])
-            status6 = status_match(sumstats[status], 7, [6])
-            status8 = status_match(sumstats[status], 6, [6]) & status_match(sumstats[status], 7, [8])  
+            # Optimized: extract digits once, then use vectorized comparisons
+            digit_6 = _extract_status_digit(sumstats[status], 6)
+            digit_7 = _extract_status_digit(sumstats[status], 7)
+            status3 = (digit_7 == 3)
+            status6 = (digit_7 == 6)
+            status8 = (digit_6 == 6) & (digit_7 == 8)  
 
             log.write("  -Indels ea/nea match reference : ", status3.sum(), verbose=verbose)
             log.write("  -Indels ea/nea need to be flipped : ", status6.sum(), verbose=verbose)
@@ -1781,8 +1747,9 @@ def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=
     if ref_alt_freq is not None:
         log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)  
         if not force:
-            # Match: digit 4 is 0
-            good_chrpos = status_match(sumstats[status], 4, [0])  
+            # Match: digit 4 is 0 - Optimized: extract digit once
+            digit_4 = _extract_status_digit(sumstats[status], 4)
+            good_chrpos = (digit_4 == 0)  
         log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose)
         sumstats[column_name]=np.nan
     
@@ -1916,8 +1883,9 @@ def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr
     if ref_alt_freq is not None:
         log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)   
         if not force:
-            # Match: digit 4 is 0
-            good_chrpos = status_match(sumstats[status], 4, [0])  
+            # Match: digit 4 is 0 - Optimized: extract digit once
+            digit_4 = _extract_status_digit(sumstats[status], 4)
+            good_chrpos = (digit_4 == 0)  
         log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose) 
     
     ########################  
@@ -2054,8 +2022,9 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
     if ref_alt_freq is not None:
         log.write(" -Field for alternative allele frequency in VCF INFO: {}".format(ref_alt_freq), verbose=verbose)   
         if not force:
-            # Match: digit 4 is 0
-            good_chrpos = status_match(sumstats[status], 4, [0])  
+            # Match: digit 4 is 0 - Optimized: extract digit once
+            digit_4 = _extract_status_digit(sumstats[status], 4)
+            good_chrpos = (digit_4 == 0)  
         log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose)
     
         ########################  
@@ -2118,79 +2087,3 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
             elif record.ref==alt and (ref in record.alts):
                 return 1 - record.info[alt_freq][0]
     return np.nan
-
-##############################################################################################################################################################################################
-def auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log):
-    """
-    Automatically determine chromosome naming convention used in VCF/BCF files.
-
-    This function checks the chromosome naming convention used in VCF/BCF files and
-    returns an appropriate chromosome dictionary mapping. It first checks if the
-    chromosome IDs match RefSeq IDs (for hg19 or hg38 builds), then checks for
-    common prefixes like "chr", and finally defaults to standard numeric chromosomes.
-
-    Parameters
-    ----------
-    vcf_path : str or None
-        Path to the VCF/BCF file to check. If None, the function returns vcf_chr_dict.
-    vcf_chr_dict : dict or None
-        Optional pre-defined chromosome dictionary. If None, the function will
-        attempt to determine the appropriate dictionary.
-    verbose : bool
-        If True, print detailed progress messages.
-    log : gwaslab.g_Log.Log
-        Logging object for recording process information.
-
-    Returns
-    -------
-    dict
-        A chromosome dictionary mapping that matches the chromosome naming
-        convention used in the VCF/BCF file. This dictionary maps standard
-        chromosome numbers to the format used in the VCF/BCF file.
-
-    Notes
-    -----
-    The function checks for chromosome naming conventions in the following order:
-    1. RefSeq IDs (for hg19 or hg38 builds)
-    2. Chromosome prefixes (e.g., "chr1", "Chr1", "CHR1")
-    3. Standard numeric chromosomes (e.g., 1, 2, 3, ...)
-
-    If no specific convention is detected, it defaults to standard numeric
-    chromosomes without any prefix.
-    """
-    if vcf_path is not None:
-        if vcf_chr_dict is None:
-            log.write(" -Checking chromosome notations in VCF/BCF files..." ,verbose=verbose)  
-            vcf_chr_dict = check_vcf_chr_NC(vcf_path, log, verbose)
-            if vcf_chr_dict is not None:
-                return vcf_chr_dict
-            log.write(" -Checking prefix for chromosomes in VCF/BCF files..." ,verbose=verbose)  
-            prefix = check_vcf_chr_prefix(vcf_path, log,verbose) 
-            if prefix is not None:
-                log.write(" -Prefix for chromosomes: ",prefix) 
-                vcf_chr_dict = get_number_to_chr(prefix=prefix)
-            else:
-                log.write(" -No prefix for chromosomes in the VCF/BCF files." ,verbose=verbose)  
-                vcf_chr_dict = get_number_to_chr()
-    return vcf_chr_dict
-
-def check_vcf_chr_prefix(vcf_bcf_path,log,verbose):
-    vcf_bcf = VariantFile(vcf_bcf_path)
-    for i in list(vcf_bcf.header.contigs):
-        m = re.search('(chr|Chr|CHR)([0-9xXyYmM]+)', i)
-        if m is not None:
-            return m.group(1)
-    else:
-        return None
-
-def check_vcf_chr_NC(vcf_bcf_path,log,verbose):
-    vcf_bcf = VariantFile(vcf_bcf_path)
-    for i in list(vcf_bcf.header.contigs):
-        if i in get_number_to_NC(build="19").values():
-            log.write("  -RefSeq ID detected (hg19) in VCF/BCF...",verbose=verbose) 
-            return get_number_to_NC(build="19")
-        elif i in get_number_to_NC(build="38").values():
-            log.write("  -RefSeq ID detected (hg38) in VCF/BCF...",verbose=verbose) 
-            return get_number_to_NC(build="38")
-    else:
-        return None

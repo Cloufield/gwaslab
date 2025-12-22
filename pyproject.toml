@@ -17,7 +17,6 @@ dependencies = [
   "seaborn>=0.12",
   "scipy>=1.12",
   "pysam==0.22.1",
-  "biopython>=1.79",
   "adjustText>=0.7.3,<=0.8",
   "liftover>=1.1.13,<=1.3.1",
   "scikit-allel>=1.3.5",
@@ -48,6 +47,7 @@ gwaslab = [
   "data/chrX_par/*",
   "data/chrx_par/*",
   "data/high_ld/*",
-  "data/hapmap3_SNPs/*"
+  "data/hapmap3_SNPs/*",
+  "qc/qc_researved_header_json"
 ]
 

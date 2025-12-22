@@ -4,7 +4,6 @@ from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_NC
 from gwaslab.bd.bd_common_data import _maketrans
 from pysam import VariantFile
-from Bio import SeqIO
 import re
 import numpy as np
 import pandas as pd
@@ -13,7 +12,6 @@ from allel import GenotypeArray
 from allel import read_vcf
 from allel import rogers_huff_r_between
 from gwaslab.g_Log import Log
-from gwaslab.util.util_in_filter_value import _filter_region
 from shutil import which
 
 def auto_check_vcf_chr_dict(
@@ -205,6 +203,7 @@ def _get_ld_matrix_from_vcf(sumstats,
     log.write("Start to load reference genotype...", verbose=verbose)
     log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)
     log.write(" -region : chr{}:{}-{}".format(region[0], region[1], region[2]), verbose=verbose)
+    from gwaslab.util.util_in_filter_value import _filter_region
     sumstats = _filter_region(sumstats.copy(), region, log=log, verbose=verbose)
 
     if tabix is None:

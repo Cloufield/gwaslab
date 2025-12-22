@@ -9,7 +9,6 @@ from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 from gwaslab.util.util_in_fill_data import _fill_data
-from Bio import SeqIO
 from itertools import combinations
 import polars as pl
 

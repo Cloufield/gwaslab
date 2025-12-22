@@ -8,7 +8,6 @@ from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 from gwaslab.util.util_in_fill_data import _fill_data
-from Bio import SeqIO
 from itertools import combinations
 
 def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None,add_raw_index=False, stats_cols1=None, stats_cols2=None,
@@ -226,7 +225,8 @@ def _assign_warning_code(sumstats, threshold=0.2, log=Log(),verbose=True):
 
 #def _match_two_sumstats(mold,sumstats,ref_path,windowsizeb=25,verbose=True,log=Log()):
 #    
-#    records = SeqIO.parse(ref_path, "fasta")
+#    from gwaslab.io.io_fasta import load_fasta_auto
+#    records = load_fasta_auto(ref_path, as_seqrecord=True)
 #
 #    chromlist = list(set(mold["CHR"].values) & set(sumstats["CHR"].values))
 #    

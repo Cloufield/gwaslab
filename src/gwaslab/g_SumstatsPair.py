@@ -5,7 +5,7 @@ import gc
 from math import floor
 
 from gwaslab.g_meta import _init_meta
-from gwaslab.g_headers import _get_headers
+from gwaslab.qc.qc_reserved_headers import _get_headers
 from gwaslab.g_Log import Log
 from gwaslab.g_Sumstats import Sumstats
 

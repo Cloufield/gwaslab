@@ -42,7 +42,6 @@ def _process_sumstats(args):
             "ref_alt_freq": args.ref_alt_freq,
             "ref_maf_threshold": args.ref_maf_threshold,
             "maf_threshold": args.maf_threshold,
-            "ref_seq_mode": args.ref_seq_mode,
             "threads": args.threads,
             "remove": args.remove,
             "verbose": not args.quiet,
@@ -155,7 +154,6 @@ Examples:
     harm_group.add_argument("--ref-alt-freq", help="Allele frequency field name in VCF INFO (default: AF)")
     harm_group.add_argument("--ref-maf-threshold", type=float, default=0.5, help="MAF threshold for reference (default: 0.5)")
     harm_group.add_argument("--maf-threshold", type=float, default=0.40, help="MAF threshold for sumstats (default: 0.40)")
-    harm_group.add_argument("--ref-seq-mode", choices=["v", "s"], default="v", help="Reference sequence mode: v=vectorized, s=sequential (default: v)")
     harm_group.add_argument("--sweep-mode", action="store_true", help="Use sweep mode for large datasets")
     
     # Assign rsID options

@@ -2,59 +2,9 @@ import gc
 import pandas as pd
 import numpy as np
 from gwaslab.g_Log import Log
+from gwaslab.qc.qc_reserved_headers import dtype_dict
 # pandas.api.types.is_int64_dtype
 # pandas.api.types.is_categorical_dtype
-
-# Base dtype dictionary
-dtype_dict ={
-    "SNPID":["string","object"],
-    "rsID": ["string","object"],
-    "CHR":  ["Int64","int64","int32","Int32","int"],
-    "POS":  ["int64","Int64","int"],
-    "EA":   ["category"],  
-    "NEA":["category"],  
-    "REF":["category"],  
-    "ALT":["category"],  
-    "BETA":["float64"],
-    "BETA_95L":["float64"],
-    "BETA_95U":["float64"],
-    "SE":["float64"],
-    "N":["Int64","int64","int32","Int32","int"],
-    "N_CASE":["Int64","int64","int32","Int32","int"],
-    "N_CONTROL":["Int64","int64","int32","Int32","int"],
-    "OR":["float64"],
-    "OR_95L":["float64"],
-    "OR_95U":["float64"],
-    "HR":["float64"],
-    "HR_95L":["float64"],
-    "HR_95U":["float64"],
-    "P":["float64"],
-    "MLOG10P":["float64"],
-    "Z":["float64"],
-    "F":["float64"],
-    "T":["float64"],
-    "TEST":["string","object","category"],
-    "CHISQ":["float64"],
-    "I2":["float64"],
-    "P_HET":["float64"],
-    "SNPR2":["float64"],
-    "EAF":["float64","float","float32"],
-    "NEAF":["float64","float","float32"],
-    "MAF":["float64","float","float32"],
-    "INFO":["float64","float","float32"],
-    "DOF":["Int64","int64","int32","Int32","int"],  
-    "STATUS":["Int64","int64","int32","Int32","int"],  
-    "DIRECTION":["string","object"],
-    'PIP'               :["float64","float","float32"],
-    'CREDIBLE_SET_INDEX':["Int64","int64","int32","Int32","int"],
-    'N_SNP'             :["Int64","int64","int32","Int32","int"],
-    'LOCUS'             :["string","object","category"],
-    'STUDY'             :["string","object","category"],
-    'BETA_RANDOM' :["float64"],
-    'SE_RANDOM' :["float64"],
-    'Z_RANDOM' :["float64"],
-    'P_RANDOM' :["float64"]
-    }
 
 def _get_preferred_dtype(header):
     """

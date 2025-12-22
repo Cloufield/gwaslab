@@ -26,7 +26,6 @@ from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_check_af
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_infer_af
 from gwaslab.hm.hm_harmonize_sumstats import _check_ref
-from gwaslab.hm.hm_harmonize_sumstats import _old_check_ref
 from gwaslab.hm.hm_harmonize_sumstats import _rsid_to_chrpos
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_assign_rsid
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_infer_strand
@@ -69,7 +68,7 @@ from gwaslab.g_version import _show_version
 from gwaslab.g_version import gwaslab_info
 from gwaslab.g_meta import _init_meta
 from gwaslab.g_meta import _append_meta_record
-from gwaslab.g_meta_update import _update_meta
+from gwaslab.g_meta import _update_meta
 from gwaslab.util.util_ex_run_clumping import _clump
 from gwaslab.util.util_ex_calculate_ldmatrix import _to_finemapping
 from gwaslab.io.io_load_ld import _to_finemapping_using_ld

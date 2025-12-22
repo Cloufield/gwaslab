@@ -3,58 +3,12 @@ import pandas as pd
 import polars as pl
 import numpy as np
 from gwaslab.g_Log import Log
+from gwaslab.qc.qc_reserved_headers import get_dtype_dict_polars
 # pandas.api.types.is_int64_dtype
 # pandas.api.types.is_categorical_dtype
 
-dtype_dict ={
-    "SNPID":[pl.String()],
-    "rsID": [pl.String()],
-    "CHR":  [pl.Int64()],
-    "POS":  [pl.Int64()],
-    "EA":   [pl.String()],  
-    "NEA":[pl.String()],  
-    "REF":[pl.String()],  
-    "ALT":[pl.String()],  
-    "BETA":[pl.Float64()],
-    "BETA_95L":[pl.Float64()],
-    "BETA_95U":[pl.Float64()],
-    "SE":[pl.Float64()],
-    "N":[pl.Int64()],
-    "N_CASE":[pl.Int64()],
-    "N_CONTROL":[pl.Int64()],
-    "OR":[pl.Float64()],
-    "OR_95L":[pl.Float64()],
-    "OR_95U":[pl.Float64()],
-    "HR":[pl.Float64()],
-    "HR_95L":[pl.Float64()],
-    "HR_95U":[pl.Float64()],
-    "P":[pl.Float64()],
-    "MLOG10P":[pl.Float64()],
-    "Z":[pl.Float64()],
-    "F":[pl.Float64()],
-    "T":[pl.Float64()],
-    "TEST":[pl.String()],
-    "CHISQ":[pl.Float64()],
-    "I2":[pl.Float64()],
-    "P_HET":[pl.Float64()],
-    "SNPR2":[pl.Float64()],
-    "EAF":[pl.Float64()],
-    "NEAF":[pl.Float64()],
-    "MAF":[pl.Float64()],
-    "INFO":[pl.Float64()],
-    "DOF":[pl.Int64()],  
-    "STATUS":[pl.String()],  
-    "DIRECTION":[pl.String()],
-    'PIP'               :[pl.Float64()],
-    'CREDIBLE_SET_INDEX':[pl.Int64()],
-    'N_SNP'             :[pl.Int64()],
-    'LOCUS'             :[pl.String()],
-    'STUDY'             :[pl.String()],
-    'BETA_RANDOM' :[pl.Float64()],
-    'SE_RANDOM' :[pl.Float64()],
-    'Z_RANDOM' :[pl.Float64()],
-    'P_RANDOM' :[pl.Float64()]
-    }
+# Get dtype_dict from reserved headers JSON (single source of truth)
+dtype_dict = get_dtype_dict_polars()
 
 def check_datatype_polars(sumstats, verbose=True, log=Log()):
     

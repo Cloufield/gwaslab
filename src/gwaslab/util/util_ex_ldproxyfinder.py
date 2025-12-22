@@ -19,7 +19,7 @@ from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
 from gwaslab.util.util_in_filter_value import _get_flanking
-from gwaslab.hm.hm_harmonize_sumstats import auto_check_vcf_chr_dict
+from gwaslab.io.io_vcf import auto_check_vcf_chr_dict
 # unmatched SNP list 1 
 
 # for each SNP in unmatched SNP list 1:

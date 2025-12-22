@@ -1219,7 +1219,7 @@ def process_vcf(sumstats,
 
 def prepare_vcf_context(vcf_path, vcf_chr_dict=None, log=Log(), verbose=True):
     from shutil import which
-    from gwaslab.hm.hm_harmonize_sumstats import auto_check_vcf_chr_dict
+    from gwaslab.io.io_vcf import auto_check_vcf_chr_dict
     tabix = which("tabix")
     log.write(" -tabix will be used: {}".format(tabix), verbose=verbose)
     vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path, vcf_chr_dict, verbose, log)
