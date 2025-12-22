@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 
 import gwaslab
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 
 def make_sumstats(n=500, with_eaf=True, with_density=False):

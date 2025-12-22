@@ -12,7 +12,7 @@ from liftover import get_lifter
 from liftover import ChainFile
 
 from gwaslab.info.g_Log import Log
-from gwaslab.info.g_vchange_status import match_status
+from gwaslab.info.g_vchange_status import match_status, ensure_status_int
 from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
@@ -865,6 +865,8 @@ def _liftover2_variant(sumstats_obj,
     
     # Update status codes if STATUS column exists (mimic original liftover behavior)
     if status in sumstats.columns:
+        # Ensure STATUS column is integer type before processing
+        sumstats = ensure_status_int(sumstats, status)
         # Extract status digits for all variants
         status_vals = sumstats[status].astype(str)
         

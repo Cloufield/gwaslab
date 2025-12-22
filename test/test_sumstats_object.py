@@ -147,7 +147,7 @@ class TestSumstatsObject(unittest.TestCase):
                 import pandas as pd
                 if not isinstance(sumstats_obj, pd.DataFrame):
                     try:
-                        from gwaslab.g_meta import _update_harmonize_step
+                        from gwaslab.info.g_meta import _update_harmonize_step
                         from gwaslab.qc.qc_build import _process_build
                         to_build = kwargs.get('to_build', '38')
                         from_build = kwargs.get('from_build', '19')

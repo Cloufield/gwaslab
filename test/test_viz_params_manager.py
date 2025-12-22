@@ -38,7 +38,7 @@ if SRC not in sys.path:
 
 from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config, _apply_no_plots, _resolve_inheritance
 from gwaslab.viz.viz_plot_mqqplot import _mqqplot
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 
 class TestNumericSuffixFiltering(unittest.TestCase):

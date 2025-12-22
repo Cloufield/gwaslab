@@ -7,7 +7,7 @@ import sys
 from unittest.mock import MagicMock, patch
 sys.path.insert(0, os.path.abspath("src"))
 from gwaslab.g_Sumstats import Sumstats
-from gwaslab.qc.qc_fix_sumstats import _parallelize_liftover_variant
+from gwaslab.hm.hm_liftover_v2 import _parallelize_liftover_variant
 
 # Mock pyliftover to avoid installing/downloading chain files
 class MockConverter:
@@ -69,8 +69,8 @@ class TestLiftover(unittest.TestCase):
         })
         self.sumstats = Sumstats(self.data, fmt="gwaslab")
 
-    @patch('gwaslab.qc.qc_fix_sumstats.get_lifter')
-    @patch('gwaslab.qc.qc_fix_sumstats.ChainFile') 
+    @patch('gwaslab.hm.hm_liftover_v2.get_lifter')
+    @patch('gwaslab.hm.hm_liftover_v2.ChainFile') 
     def test_liftover_basic(self, mock_chainfile, mock_get_lifter):
         # Mock the converter
         mock_converter = MockConverter('hg19', 'hg38')
@@ -93,8 +93,8 @@ class TestLiftover(unittest.TestCase):
         self.assertTrue(pd.api.types.is_categorical_dtype(self.sumstats.data['STATUS']))
         
         # Mock Pool to avoid multiprocessing pickling issues with mocks
-        with patch('gwaslab.qc.qc_fix_sumstats.Pool', side_effect=MockPool), \
-             patch('gwaslab.qc.qc_fix_sumstats.liftover_variant') as mock_worker:
+        with patch('gwaslab.hm.hm_liftover_v2.Pool', side_effect=MockPool), \
+             patch('gwaslab.hm.hm_liftover_v2.liftover_variant') as mock_worker:
             
             # The worker should return a dataframe with the same index but potentially new values
             def side_effect(df, **kwargs):
@@ -111,14 +111,14 @@ class TestLiftover(unittest.TestCase):
             self.sumstats.data['CHR'] = self.sumstats.data['CHR'].astype('category')
             self.sumstats.data['STATUS'] = self.sumstats.data['STATUS'].astype('category')
 
-            with patch('gwaslab.qc.qc_fix_sumstats.get_chain', return_value="dummy_chain"), \
-                 patch('gwaslab.qc.qc_fix_sumstats.ChainFile', return_value=MagicMock()), \
-                 patch('gwaslab.qc.qc_fix_sumstats._process_build', return_value="hg19"), \
-                 patch('gwaslab.qc.qc_fix_sumstats._fix_chr', side_effect=lambda x, **kwargs: x), \
-                 patch('gwaslab.qc.qc_fix_sumstats._fix_pos', side_effect=lambda x, **kwargs: x):
+            with patch('gwaslab.hm.hm_liftover_v2.get_chain', return_value="dummy_chain"), \
+                 patch('gwaslab.hm.hm_liftover_v2.ChainFile', return_value=MagicMock()), \
+                 patch('gwaslab.hm.hm_liftover_v2._process_build', return_value="hg19"), \
+                 patch('gwaslab.hm.hm_liftover_v2._fix_chr', side_effect=lambda x, **kwargs: x), \
+                 patch('gwaslab.hm.hm_liftover_v2._fix_pos', side_effect=lambda x, **kwargs: x):
                  
-                 from gwaslab.qc.qc_fix_sumstats import _parallelize_liftover_variant
-                 from gwaslab.g_Log import Log
+                 from gwaslab.hm.hm_liftover_v2 import _parallelize_liftover_variant
+                 from gwaslab.info.g_Log import Log
                  
                  result_df = _parallelize_liftover_variant(
                      self.sumstats.data,

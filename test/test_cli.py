@@ -196,7 +196,6 @@ class TestCLIUnifiedInterface(unittest.TestCase):
             "--input", test_input,
             "--fmt", "auto",
             "--harmonize",
-            "--ref-seq-mode", "s",
             "--quiet"
         ]
         try:
@@ -229,7 +228,6 @@ class TestCLIUnifiedInterface(unittest.TestCase):
             "--basic-check",
             "--maf-threshold", "0.35",
             "--ref-maf-threshold", "0.45",
-            "--ref-seq-mode", "v",
             "--threads", "1",
             "--remove",
             "--out", self.output_path,

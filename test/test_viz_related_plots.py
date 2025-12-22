@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
 from gwaslab.viz.viz_plot_regional2 import _plot_regional
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_plot_mqqplot import _mqqplot
 from gwaslab.viz.viz_plot_trumpetplot import _plot_trumpet
 from gwaslab.viz.viz_plot_stackedregional import plot_stacked_mqq

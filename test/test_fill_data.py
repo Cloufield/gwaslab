@@ -10,7 +10,7 @@ if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
 from gwaslab.util.util_in_fill_data import _fill_data
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 
 class TestFillData(unittest.TestCase):
