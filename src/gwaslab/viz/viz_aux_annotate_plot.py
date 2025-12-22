@@ -12,7 +12,7 @@ Annotate significant variants in a single Manhattan/QQ plot with customizable st
 
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from adjustText import adjust_text
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_aux_reposition_text import adjust_text_position
 from pandas.api.types import is_string_dtype
 

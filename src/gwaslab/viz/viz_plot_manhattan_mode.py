@@ -1,7 +1,7 @@
 import pandas as pd
 import seaborn as sns
 
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 
 def draw_manhattan_panel(

@@ -5,12 +5,12 @@ import json
 import requests
 import shutil
 import hashlib
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_config import options
 import re
 from copy import deepcopy
 from pathlib import Path
-from gwaslab.g_version import _get_version
+from gwaslab.info.g_version import _get_version
 
 """
 Update configuration by deep-merging metadata into config["downloaded"][key].

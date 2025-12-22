@@ -1,5 +1,5 @@
 import copy
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 from gwaslab.extension.ldsc.ldsc_sumstats import estimate_h2
 from gwaslab.extension.ldsc.ldsc_sumstats import estimate_rg

@@ -7,7 +7,7 @@ import re
 import gc
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.extension import _checking_plink_version
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.util.util_in_get_sig import _get_sig

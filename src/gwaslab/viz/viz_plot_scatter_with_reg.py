@@ -7,7 +7,7 @@ import seaborn as sns
 import scipy.stats as ss
 from matplotlib.patches import Rectangle
 from adjustText import adjust_text
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.io.io_process_kwargs import _merge_and_sync_dic
 from gwaslab.io.io_process_kwargs import _extract_kwargs

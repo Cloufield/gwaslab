@@ -4,9 +4,9 @@ import copy
 import gc
 from math import floor
 
-from gwaslab.g_meta import _init_meta
+from gwaslab.info.g_meta import _init_meta
 from gwaslab.qc.qc_reserved_headers import _get_headers
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.g_Sumstats import Sumstats
 
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos

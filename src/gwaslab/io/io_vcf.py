@@ -11,7 +11,7 @@ import copy
 from allel import GenotypeArray
 from allel import read_vcf
 from allel import rogers_huff_r_between
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from shutil import which
 
 def auto_check_vcf_chr_dict(

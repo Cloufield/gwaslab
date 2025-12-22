@@ -8,7 +8,7 @@ import numpy as np
 from scipy import linalg 
 from numpy import random
 from gwaslab.extension.prscs.prscs_gigrnd import gigrnd
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import time
 def mcmc(a, b, phi, sst_dict, n, ld_blk, blk_size, n_iter, n_burnin, thin, chrom, out_dir, beta_std, write_psi, write_pst, seed, log):
     log.write('... MCMC ...')

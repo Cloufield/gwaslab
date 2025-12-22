@@ -1,8 +1,8 @@
-from gwaslab.g_version import gwaslab_info
+from gwaslab.info.g_version import gwaslab_info
 from datetime import datetime
 import numpy as np
 from gwaslab.util.util_in_filter_value import _infer_build
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import time
 
 

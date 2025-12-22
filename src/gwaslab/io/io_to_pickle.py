@@ -1,10 +1,10 @@
 import pickle
 import os
 import gc
-from gwaslab.g_Log import Log 
+from gwaslab.info.g_Log import Log 
 import sys
 from gwaslab import g_Sumstats
-from gwaslab import g_Log
+from gwaslab.info import g_Log
 def dump_pickle(glsumstats,path="~/mysumstats.pickle",overwrite=False):
     glsumstats.log.write("Start to dump the Sumstats Object.")
     if overwrite==False and os.path.exists(path):

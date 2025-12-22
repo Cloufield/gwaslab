@@ -14,7 +14,7 @@ from scipy import stats
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from adjustText import adjust_text
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate

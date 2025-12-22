@@ -3,7 +3,7 @@ import numpy as np
 import copy
 import gc
 
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from math import floor
 from gwaslab.g_Sumstats import Sumstats, _get_id_column
 from gwaslab.g_Sumstats_polars import Sumstatsp
@@ -51,8 +51,8 @@ from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
 from gwaslab.viz.viz_plot_compare_af import  plotdaf
 
 from gwaslab.qc.qc_reserved_headers import _get_headers
-from gwaslab.g_meta import _init_meta
-from gwaslab.g_meta import _update_meta
+from gwaslab.info.g_meta import _init_meta
+from gwaslab.info.g_meta import _update_meta
 
 from gwaslab.io.io_to_pickle import _offload
 from gwaslab.io.io_to_pickle import _reload

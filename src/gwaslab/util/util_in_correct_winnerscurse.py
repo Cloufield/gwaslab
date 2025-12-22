@@ -1,6 +1,6 @@
 import scipy as sp
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 def wc_correct(beta, se, sig_level=5e-8, log=Log(), verbose=True):
     """winner's curse correction

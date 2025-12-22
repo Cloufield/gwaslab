@@ -10,12 +10,12 @@ from liftover import ChainFile
 from functools import partial
 from functools import wraps
 
-from gwaslab.g_vchange_status import vchange_status
-from gwaslab.g_vchange_status import status_match
-from gwaslab.g_vchange_status import change_status
-from gwaslab.g_Log import Log
-from gwaslab.g_version import _get_version
-from gwaslab.g_vchange_status import STATUS_CATEGORIES
+from gwaslab.info.g_vchange_status import vchange_status
+from gwaslab.info.g_vchange_status import status_match
+from gwaslab.info.g_vchange_status import change_status
+from gwaslab.info.g_Log import Log
+from gwaslab.info.g_version import _get_version
+from gwaslab.info.g_vchange_status import STATUS_CATEGORIES
 
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
@@ -369,7 +369,7 @@ def _sanity_check_stats(sumstats_obj,
     
     # Update QC status
     try:
-        from gwaslab.g_meta import _update_qc_step
+        from gwaslab.info.g_meta import _update_qc_step
         sanity_kwargs = {
             'coltocheck': coltocheck, 'n': n, 'ncase': ncase, 'ncontrol': ncontrol, 'eaf': eaf,
             'mac': mac, 'maf': maf, 'chisq': chisq, 'z': z, 't': t, 'f': f, 'p': p, 'mlog10p': mlog10p,
@@ -498,6 +498,7 @@ def _check_data_consistency(sumstats_obj, beta="BETA", se="SE", p="P",mlog10p="M
         check_status=1
         
     if check_status==1:
-        log.write(" -Note: Minor differences are typically due to rounding. If the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
+        log.write(" -Note: Minor differences are typically due to rounding.",verbose=verbose)
+        log.write("  -If the max difference is greater than expected, please check your original sumstats.",verbose=verbose)
     else:
         log.write(" -No availalbe columns for data consistency checking...Skipping...",verbose=verbose)

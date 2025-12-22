@@ -2,7 +2,7 @@ import pandas as pd
 import polars as pl
 from os import path
 from os.path import exists
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_download import check_and_download
 
 # GTF required columns

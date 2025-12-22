@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from scipy.stats.distributions import chi2
 from scipy.stats import norm
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.io.io_to_pickle import load_data_from_pickle
 from gwaslab.g_Sumstats import Sumstats
 import polars as pl

@@ -9,7 +9,7 @@ from functools import partial
 import re
 import os
 import gc
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_fix_sumstats import _fix_chr
 from gwaslab.qc.qc_fix_sumstats import _fix_pos
 from gwaslab.qc.qc_fix_sumstats import _sort_column
@@ -22,10 +22,10 @@ from gwaslab.bd.bd_common_data import get_chr_list
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_NC
 from gwaslab.bd.bd_common_data import _maketrans
-from gwaslab.g_vchange_status import vchange_status, set_status_digit, status_match
-from gwaslab.g_version import _get_version
+from gwaslab.info.g_vchange_status import vchange_status, set_status_digit, status_match
+from gwaslab.info.g_version import _get_version
 from gwaslab.cache_manager import CacheManager, PALINDROMIC_INDEL, NON_PALINDROMIC
-from gwaslab.g_vchange_status import STATUS_CATEGORIES
+from gwaslab.info.g_vchange_status import STATUS_CATEGORIES
 from gwaslab.io.io_vcf import auto_check_vcf_chr_dict, check_vcf_chr_prefix, check_vcf_chr_NC
 #rsidtochrpos
 #checkref
@@ -203,7 +203,7 @@ def _rsid_to_chrpos(sumstats,
         # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
         try:
-            from gwaslab.g_meta import _update_harmonize_step
+            from gwaslab.info.g_meta import _update_harmonize_step
             rsid_to_chrpos_kwargs = {
                 'path': path, 'ref_rsid_to_chrpos_tsv': ref_rsid_to_chrpos_tsv, 'snpid': snpid,
                 'rsid': rsid, 'chrom': chrom, 'pos': pos, 'ref_rsid': ref_rsid, 'ref_chr': ref_chr,
@@ -248,6 +248,8 @@ def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
             to_merge=pd.read_hdf(path, key="group_"+str(group)).drop_duplicates(subset="rsn")
             to_merge = to_merge.set_index("rsn")
             is_chrpos_fixable = sumstats_part.index.isin(to_merge.index)
+            # Ensure STATUS is integer before assignment
+            sumstats_part = ensure_status_int(sumstats_part, status)
             sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  1,"139",3*build[0])
             sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  2,"987",3*build[1])
             sumstats_part.update(to_merge)
@@ -421,7 +423,7 @@ def _parallelize_rsid_to_chrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", pa
         # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
         try:
-            from gwaslab.g_meta import _update_harmonize_step
+            from gwaslab.info.g_meta import _update_harmonize_step
             rsid_to_chrpos_kwargs = {
                 'rsid': rsid, 'chrom': chrom, 'pos': pos, 'path': path,
                 'ref_rsid_to_chrpos_vcf': ref_rsid_to_chrpos_vcf,
@@ -850,6 +852,9 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
         sumstats = sumstats_obj.data
         is_dataframe = False
     
+    # Ensure STATUS is integer type before any operations
+    sumstats = ensure_status_int(sumstats, status)
+    
     log.write(" -Reference genome FASTA file: "+ ref_seq,verbose=verbose)  
     
     sumstats = _sort_coordinate(sumstats,verbose=False)
@@ -975,7 +980,7 @@ def _check_ref(sumstats, ref_seq, chrom="CHR", pos="POS", ea="EA", nea="NEA", st
         # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
         try:
-            from gwaslab.g_meta import _update_harmonize_step
+            from gwaslab.info.g_meta import _update_harmonize_step
             check_ref_kwargs = {
                 'ref_seq': ref_seq, 'chrom': chrom, 'pos': pos, 'ea': ea, 'nea': nea,
                 'status': status, 'chr_dict': chr_dict, 'remove': remove
@@ -1195,7 +1200,7 @@ def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid
         # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
         try:
-            from gwaslab.g_meta import _append_meta_record, _update_harmonize_step
+            from gwaslab.info.g_meta import _append_meta_record, _update_harmonize_step
             if ref_mode == "tsv":
                 sumstats_obj.meta["gwaslab"]["references"]["ref_rsid_tsv"] = path
             elif ref_mode == "vcf":
@@ -1636,7 +1641,7 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
         # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
         try:
-            from gwaslab.g_meta import _update_harmonize_step
+            from gwaslab.info.g_meta import _update_harmonize_step
             infer_strand_kwargs = {
                 'ref_infer': ref_infer, 'ref_alt_freq': ref_alt_freq, 'maf_threshold': maf_threshold,
                 'ref_maf_threshold': ref_maf_threshold, 'daf_tolerance': daf_tolerance,
@@ -1782,7 +1787,7 @@ def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=
     try:
         sumstats_obj = getattr(log, '_sumstats_obj', None)
         if sumstats_obj is not None:
-            from gwaslab.g_meta import _append_meta_record
+            from gwaslab.info.g_meta import _append_meta_record
             sumstats_obj.meta["gwaslab"]["references"]["ref_infer_daf"] = _append_meta_record(
                 sumstats_obj.meta["gwaslab"]["references"]["ref_infer_daf"], ref_infer)
     except:
@@ -1908,7 +1913,7 @@ def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr
     try:
         sumstats_obj = getattr(log, '_sumstats_obj', None)
         if sumstats_obj is not None:
-            from gwaslab.g_meta import _append_meta_record
+            from gwaslab.info.g_meta import _append_meta_record
             sumstats_obj.meta["gwaslab"]["references"]["ref_infer_af"] = _append_meta_record(
                 sumstats_obj.meta["gwaslab"]["references"]["ref_infer_af"], ref_infer)
     except:
@@ -2057,7 +2062,7 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
     try:
         sumstats_obj = getattr(log, '_sumstats_obj', None)
         if sumstats_obj is not None:
-            from gwaslab.g_meta import _append_meta_record
+            from gwaslab.info.g_meta import _append_meta_record
             sumstats_obj.meta["gwaslab"]["references"]["ref_infer_maf"] = _append_meta_record(
                 sumstats_obj.meta["gwaslab"]["references"]["ref_infer_maf"], ref_infer)
     except:

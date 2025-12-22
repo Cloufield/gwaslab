@@ -2,7 +2,7 @@ import requests
 import json
 import pandas as pd
 import gwaslab as gl
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 from datetime import datetime
 import os

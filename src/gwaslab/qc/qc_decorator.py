@@ -3,11 +3,11 @@ import pandas as pd
 from functools import partial
 from functools import wraps
 
-from gwaslab.g_vchange_status import vchange_status
-from gwaslab.g_vchange_status import status_match
-from gwaslab.g_vchange_status import change_status
-from gwaslab.g_Log import Log
-from gwaslab.g_version import _get_version
+from gwaslab.info.g_vchange_status import vchange_status
+from gwaslab.info.g_vchange_status import status_match
+from gwaslab.info.g_vchange_status import change_status
+from gwaslab.info.g_Log import Log
+from gwaslab.info.g_version import _get_version
 
 from gwaslab.qc.qc_check_datatype import check_datatype_for_cols
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape

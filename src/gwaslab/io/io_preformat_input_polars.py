@@ -12,8 +12,8 @@ from gwaslab.qc.qc_check_datatype_polars import check_datatype_polars
 from gwaslab.qc.qc_check_datatype_polars import quick_convert_datatype
 from gwaslab.qc.qc_check_datatype_polars import check_dataframe_memory_usage
 from gwaslab.qc.qc_reserved_headers import _check_overlap_with_reserved_keys
-from gwaslab.g_vchange_status import STATUS_CATEGORIES
-from gwaslab.g_Log import Log
+from gwaslab.info.g_vchange_status import STATUS_CATEGORIES
+from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 #20221030
 def preformatp(sumstats,
@@ -278,7 +278,7 @@ def preformatp(sumstats,
     if status and status not in rename_dictionary:
         usecols.append(status)
         rename_dictionary[status]="STATUS"
-        dtype_dictionary[status]=pl.String()
+        dtype_dictionary[status]=pl.Int64()
     if other:
         overlapped = _check_overlap_with_reserved_keys(other)
         log.warning("Columns with headers overlapping with GWASLab reserved keywords:{}".format(overlapped),verbose=verbose)
@@ -662,15 +662,15 @@ def process_status(sumstats,build,status, log,verbose):
         log.write(" -Initiating a status column: STATUS ...",verbose=verbose)
         #sumstats["STATUS"] = int(build)*(10**5) +99999
         build = _process_build(build,log,verbose)
+        # Create integer status code: build (2 digits) + 99999 (5 digits) = 7 digits
         sumstats = sumstats.with_columns(
-            pl.lit(build +"99999").alias("STATUS")
+            pl.lit(int(build + "99999")).alias("STATUS")
         )
 
-    # Convert STATUS to categorical - polars doesn't have Categorical like pandas,
-    # but we can ensure the values are strings
+    # Convert STATUS to Int64 (integer type)
     if "STATUS" in sumstats.columns:
         sumstats = sumstats.with_columns(
-            pl.col("STATUS").cast(pl.String)
+            pl.col("STATUS").cast(pl.Int64)
         )
     return sumstats
 

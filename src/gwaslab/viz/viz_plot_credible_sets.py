@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from gwaslab.bd.bd_common_data import get_number_to_chr
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.io.io_process_kwargs import _extract_kwargs
 from gwaslab.util.util_in_filter_value import _filter_region
 from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from gwaslab.io.io_process_kwargs import _update_kwargs
 from gwaslab.io.io_process_kwargs import _update_arg
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 
 def _plot_associations(associations, 

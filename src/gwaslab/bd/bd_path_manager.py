@@ -1,5 +1,5 @@
 import os
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 
 def _path( *args,

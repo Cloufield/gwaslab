@@ -2,7 +2,7 @@ import subprocess
 import numpy as np
 import os
 import pandas as pd
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.extension import _checking_plink_version
 from gwaslab.qc.qc_decorator import with_logging

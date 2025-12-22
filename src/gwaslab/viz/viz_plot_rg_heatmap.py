@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.patches as patches
 import matplotlib
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import scipy.stats as ss
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style

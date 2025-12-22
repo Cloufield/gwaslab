@@ -1,4 +1,4 @@
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import sys
 
 def _show_version(log=Log(), verbose=True):

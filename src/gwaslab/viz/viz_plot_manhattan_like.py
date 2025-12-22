@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_aux_quickfix import _quick_fix_p_value, _quick_fix_mlog10p
 from gwaslab.util.util_in_get_sig import _get_sig, _get_top, _anno_gene
 

@@ -13,7 +13,7 @@ import pandas as pd
 import json
 import time
 from typing import Optional, Dict, List, Any, Union
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 
 class GWASCatalogClient:

@@ -1,5 +1,5 @@
 import pandas as pd
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 import re
 

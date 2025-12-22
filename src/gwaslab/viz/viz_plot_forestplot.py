@@ -13,7 +13,7 @@ from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 from matplotlib.axes import Axes
 from typing import Union, Optional, Dict, List, Tuple
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_aux_style_options import set_plot_style
 from gwaslab.viz.viz_aux_save_figure import save_figure
 

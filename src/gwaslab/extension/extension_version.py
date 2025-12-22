@@ -1,4 +1,4 @@
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import shutil
 import subprocess
 import os

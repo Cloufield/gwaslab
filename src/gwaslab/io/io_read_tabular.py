@@ -1,6 +1,6 @@
 import pandas as pd
 from gwaslab.bd.bd_common_data import get_formats_list
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_common_data import get_format_dict
 
 def _read_tabular(path, fmt, **kwargs):

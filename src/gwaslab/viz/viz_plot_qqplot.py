@@ -4,7 +4,7 @@ import seaborn as sns
 import numpy as np
 import scipy as sp
 from math import ceil
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 from gwaslab.viz.viz_aux_quickfix import _set_yticklabels
 from gwaslab.util.util_in_calculate_gc import _lambda_GC

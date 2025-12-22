@@ -1,5 +1,5 @@
 import pandas as pd
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_memory_usage
 import re

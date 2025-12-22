@@ -8,7 +8,7 @@ and align them with summary statistics data.
 import pandas as pd
 import numpy as np
 from typing import Tuple, Optional, Any, Union
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 
 # ============================================================================

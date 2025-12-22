@@ -3,10 +3,10 @@ import numpy as np
 import scipy.stats as ss
 from scipy.stats import norm
 from scipy import stats
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import gc
 #from gwaslab.qc_fix_sumstats import sortcolumn
-from gwaslab.g_version import _get_version
+from gwaslab.info.g_version import _get_version
 from gwaslab.qc.qc_check_datatype import check_datatype
 from scipy.special import erfcinv
 

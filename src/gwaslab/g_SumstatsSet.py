@@ -1,12 +1,12 @@
 import pandas as pd
-from gwaslab.g_version import _show_version
-from gwaslab.g_version import gwaslab_info
-from gwaslab.g_meta import _init_meta
+from gwaslab.info.g_version import _show_version
+from gwaslab.info.g_version import gwaslab_info
+from gwaslab.info.g_meta import _init_meta
 from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.util.util_in_merge import _extract_variant
 from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 from gwaslab.viz.viz_plot_effect import _plot_effect
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.g_Sumstats import Sumstats
 
 

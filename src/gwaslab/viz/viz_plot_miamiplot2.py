@@ -14,8 +14,8 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import gc as garbage_collect
 from adjustText import adjust_text
 
-from gwaslab.g_Log import Log
-from gwaslab.g_version import _get_version
+from gwaslab.info.g_Log import Log
+from gwaslab.info.g_version import _get_version
 from gwaslab.g_Sumstats import Sumstats
 
 from gwaslab.util.util_in_get_sig import _get_sig, _anno_gene

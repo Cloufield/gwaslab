@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import scipy.stats as ss
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import scipy as sp
 
 def get_power(

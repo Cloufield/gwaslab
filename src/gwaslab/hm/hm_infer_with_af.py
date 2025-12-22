@@ -1,6 +1,7 @@
 import pandas as pd
-from gwaslab.g_Log import Log
-from gwaslab.g_vchange_status import vchange_status
+from gwaslab.info.g_Log import Log
+from gwaslab.info.g_vchange_status import vchange_status
+from gwaslab.info.g_vchange_status import ensure_status_int
 from .hm_assign_rsid import _annotate_sumstats
 from gwaslab.qc.qc_decorator import with_logging
 
@@ -132,7 +133,7 @@ def _infer_strand_with_annotation(
         # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = result
         try:
-            from gwaslab.g_meta import _append_meta_record, _update_harmonize_step
+            from gwaslab.info.g_meta import _append_meta_record, _update_harmonize_step
             if path is not None:
                 sumstats_obj.meta["gwaslab"]["references"]["ref_infer"] = _append_meta_record(
                     sumstats_obj.meta["gwaslab"]["references"]["ref_infer"], path)
@@ -231,6 +232,9 @@ def _infer_strand(
         existing_strand_count = sumstats[strand_col].notna().sum()
         log.write(" -Found existing {} column with {} non-NA values...".format(strand_col, existing_strand_count), verbose=verbose)
     
+    # Ensure STATUS is integer type before any operations
+    sumstats = ensure_status_int(sumstats, status_col)
+    
     # Identify non-palindromic variants (not A/T, T/A, G/C, C/G) and not indels
     non_palindromic_mask = ~(
         ((sumstats[ea] == "A") & (sumstats[nea] == "T")) |
@@ -268,7 +272,7 @@ def _infer_strand(
     # Pattern: 6th character is 0,1,2 and 7th character is 8 or 9
     if status_col in sumstats.columns:
         # Match: digit 6 is 0,1,2 and digit 7 is 8,9
-        from gwaslab.g_vchange_status import status_match
+        from gwaslab.info.g_vchange_status import status_match
         unknown_palindromic_mask = status_match(sumstats[status_col], 6, [0,1,2]) & status_match(sumstats[status_col], 7, [8,9])
         valid_palindromic_mask = valid_palindromic_mask & unknown_palindromic_mask
     else:

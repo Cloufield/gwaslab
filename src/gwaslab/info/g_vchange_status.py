@@ -53,6 +53,33 @@ def _normalize_to_integer_series(status: Union[int, pd.Series, List[int]]) -> pd
         return pd.Series(status).astype(int)
 
 
+def ensure_status_int(sumstats: pd.DataFrame, status_col: str = "STATUS") -> pd.DataFrame:
+    """
+    Ensure STATUS column is integer type (Int64), converting from categorical or other types if needed.
+    
+    Parameters:
+    -----------
+    sumstats : pd.DataFrame
+        DataFrame with STATUS column
+    status_col : str, default="STATUS"
+        Name of the status column
+        
+    Returns:
+    --------
+    pd.DataFrame
+        DataFrame with STATUS column as Int64
+    """
+    if status_col in sumstats.columns:
+        if sumstats[status_col].dtype.name == 'category':
+            sumstats[status_col] = sumstats[status_col].astype(str).astype('Int64')
+        elif sumstats[status_col].dtype not in ['int64', 'Int64', 'int32', 'Int32']:
+            sumstats[status_col] = sumstats[status_col].astype('Int64')
+        else:
+            # Ensure it's Int64 (nullable integer)
+            sumstats[status_col] = sumstats[status_col].astype('Int64')
+    return sumstats
+
+
 def _calculate_powers(digit: int) -> Tuple[int, int]:
     """
     Calculate powers of 10 for extracting/replacing digits at position.

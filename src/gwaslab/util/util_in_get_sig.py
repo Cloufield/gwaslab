@@ -4,7 +4,7 @@ import numpy as np
 import scipy as sp
 import gc
 from os import path
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr

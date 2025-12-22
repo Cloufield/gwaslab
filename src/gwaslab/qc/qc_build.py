@@ -7,8 +7,8 @@ from multiprocessing import  Pool
 from liftover import get_lifter
 from liftover import ChainFile
 from functools import partial
-from gwaslab.g_vchange_status import vchange_status
-from gwaslab.g_Log import Log
+from gwaslab.info.g_vchange_status import vchange_status
+from gwaslab.info.g_Log import Log
 
 def _process_build(build,  
                    log=Log(), 

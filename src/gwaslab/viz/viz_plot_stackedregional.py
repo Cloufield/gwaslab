@@ -18,7 +18,7 @@ from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.io.io_gtf import get_gtf
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.io.io_to_pickle import load_data_from_pickle
 from gwaslab.io.io_to_pickle import load_pickle

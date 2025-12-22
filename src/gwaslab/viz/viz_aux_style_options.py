@@ -1,6 +1,6 @@
 import matplotlib
 from gwaslab.io.io_process_kwargs import _update_kwargs, _update_arg
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
 def set_plot_style(

@@ -9,7 +9,7 @@ import scipy as sp
 import seaborn as sns
 from adjustText import adjust_text
 from matplotlib.collections import LineCollection
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_calculate_power import get_beta
 from gwaslab.util.util_in_calculate_power import get_beta_binary
 from gwaslab.util.util_in_calculate_power import get_power

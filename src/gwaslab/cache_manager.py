@@ -7,7 +7,7 @@ import multiprocessing as mp
 import time
 import h5py
 
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 from platformdirs import user_cache_dir
 from pysam import VariantFile

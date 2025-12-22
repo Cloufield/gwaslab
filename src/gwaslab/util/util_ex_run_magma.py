@@ -3,7 +3,7 @@ import os
 import gc
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_filter_value import _exclude_hla
 
 def _run_magma(gls, 

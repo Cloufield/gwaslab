@@ -12,8 +12,8 @@ from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_check_datatype import quick_convert_datatype
 from gwaslab.qc.qc_check_datatype import check_dataframe_memory_usage
 from gwaslab.qc.qc_reserved_headers import _check_overlap_with_reserved_keys
-from gwaslab.g_vchange_status import STATUS_CATEGORIES
-from gwaslab.g_Log import Log
+from gwaslab.info.g_vchange_status import STATUS_CATEGORIES
+from gwaslab.info.g_Log import Log
 
 
 #20221030
@@ -409,7 +409,7 @@ def _preformat(sumstats,
     if status:
         usecols.append(status)
         rename_dictionary[status]="STATUS"
-        dtype_dictionary[status]="string"
+        dtype_dictionary[status]="Int64"
     if other:
         overlapped = _check_overlap_with_reserved_keys(other)
         log.warning("Columns with headers overlapping with GWASLab reserved keywords:{}".format(overlapped),verbose=verbose)

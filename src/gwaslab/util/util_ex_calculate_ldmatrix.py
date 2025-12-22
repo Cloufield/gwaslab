@@ -3,7 +3,7 @@ import os
 import gc
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.util.util_in_filter_value import _exclude_hla

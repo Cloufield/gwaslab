@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.io.io_process_kwargs import _update_arg
 from gwaslab.io.io_process_kwargs import _update_kwargs
 from gwaslab.viz.viz_aux_save_figure import save_figure

@@ -1,7 +1,7 @@
 import gc
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_reserved_headers import dtype_dict
 # pandas.api.types.is_int64_dtype
 # pandas.api.types.is_categorical_dtype
@@ -255,7 +255,7 @@ def check_datatype_for_cols(sumstats_obj, cols=None, verbose=True, log=Log(), fi
             if fix is True:
                 try:
                     from gwaslab.qc.qc_fix_sumstats import _fix_chr, _fix_pos, _fix_allele, _fix_ID
-                    from gwaslab.g_meta import _update_qc_step
+                    from gwaslab.info.g_meta import _update_qc_step
                 except Exception:
                     _fix_chr = None; _fix_pos = None; _fix_allele = None; _fix_ID = None
                     _update_qc_step = None

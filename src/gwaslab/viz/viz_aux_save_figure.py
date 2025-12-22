@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import time
 import os
 import functools

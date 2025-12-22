@@ -4,8 +4,8 @@ import seaborn as sns
 import numpy as np
 import scipy as sp
 import copy
-from gwaslab.g_Log import Log
-from gwaslab.g_version import _get_version
+from gwaslab.info.g_Log import Log
+from gwaslab.info.g_version import _get_version
 
 from gwaslab.viz.viz_aux_quickfix import _quick_assign_i_with_rank
 from gwaslab.viz.viz_aux_quickfix import _get_largenumber

@@ -379,9 +379,12 @@ class Log():
         
         self.write(" ".join(msg_parts), verbose=verbose)
     
-    def log_datatype_change(self, column, from_dtype, to_dtype, success=True, verbose=True, indent=0):
+    def log_datatype_change(self, column, from_dtype, to_dtype, success=True, status=None, verbose=True, indent=0):
         """
         Log datatype conversion for a column.
+        
+        This function handles both conversion attempts (before conversion) and 
+        conversion results (after conversion, with success/failure status).
         
         Parameters
         ----------
@@ -392,38 +395,31 @@ class Log():
         to_dtype : str
             Target datatype
         success : bool, default True
-            Whether the conversion was successful
+            Whether the conversion was successful (used when status is None)
+        status : str, optional
+            Status of conversion: "attempt" (before conversion), "success" (after successful conversion),
+            or "failed" (after failed conversion). If None, uses success parameter to determine status.
         verbose : bool, default True
             Whether to print to stdout
         indent : int, default 0
             Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
         """
         indent_str = self._get_indent(indent)
-        if success:
-            self.write(f"{indent_str} -Converted datatype for {column}: {from_dtype} -> {to_dtype}", verbose=verbose)
-        else:
-            self.write(f"{indent_str} -Failed to convert datatype for {column}: {from_dtype} -> {to_dtype}", verbose=verbose)
-    
-    def log_datatype_attempt(self, column, from_dtype, to_dtype, verbose=True, indent=0):
-        """
-        Log datatype conversion attempt (before knowing success/failure).
-        Used when conversion result is logged separately.
         
-        Parameters
-        ----------
-        column : str
-            Column name being converted
-        from_dtype : str
-            Original datatype
-        to_dtype : str
-            Target datatype
-        verbose : bool, default True
-            Whether to print to stdout
-        indent : int, default 0
-            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
-        """
-        indent_str = self._get_indent(indent)
-        self.write(f"{indent_str} -Trying to convert datatype for {column}: {from_dtype} -> {to_dtype}...",  verbose=verbose)
+        # Determine status
+        if status is None:
+            status = "success" if success else "failed"
+        
+        # Log based on status
+        if status == "attempt":
+            self.write(f"{indent_str} -Trying to convert datatype for {column}: {from_dtype} -> {to_dtype}...", verbose=verbose)
+        elif status == "success":
+            self.write(f"{indent_str} -Converted datatype for {column}: {from_dtype} -> {to_dtype}", verbose=verbose)
+        elif status == "failed":
+            self.write(f"{indent_str} -Failed to convert datatype for {column}: {from_dtype} -> {to_dtype}", verbose=verbose)
+        else:
+            # Fallback for unknown status
+            self.write(f"{indent_str} -Datatype conversion for {column}: {from_dtype} -> {to_dtype} ({status})", verbose=verbose)
     
     def log_formula(self, target_column, formula, source_columns=None, verbose=True, indent=0):
         """
@@ -482,3 +478,39 @@ class Log():
         """
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Number of threads/cores to use: {n_cores}", verbose=verbose)
+    
+    def log_variants_with_condition(self, condition, count, verbose=True, indent=0):
+        """
+        Log count of variants matching a specific condition.
+        
+        Parameters
+        ----------
+        condition : str
+            Condition description (e.g., "standardized chromosome notation", "fixable chromosome notations")
+        count : int
+            Number of variants matching the condition
+        verbose : bool, default True
+            Whether to print to stdout
+        indent : int, default 0
+            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+        """
+        indent_str = self._get_indent(indent)
+        self.write(f"{indent_str} -Variants with {condition}: {count}", verbose=verbose)
+    
+    def log_variants_count(self, count, description="variants", verbose=True, indent=0):
+        """
+        Log a count of variants with optional description.
+        
+        Parameters
+        ----------
+        count : int
+            Number of variants
+        description : str, default "variants"
+            Description of what is being counted (e.g., "variants could be fixed", "variants to check")
+        verbose : bool, default True
+            Whether to print to stdout
+        indent : int, default 0
+            Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
+        """
+        indent_str = self._get_indent(indent)
+        self.write(f"{indent_str} -Number of {description}: {count}", verbose=verbose)

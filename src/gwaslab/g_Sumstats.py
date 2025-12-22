@@ -3,13 +3,13 @@ import gc
 import time
 import numpy as np
 import pandas as pd
-from gwaslab.g_object_helper import add_doc, suppress_display
+from gwaslab.info.g_object_helper import add_doc, suppress_display
 
 # ----- Version / Metadata / Logging -----
-from gwaslab.g_Log import Log
-from gwaslab.g_Sumstats_summary import lookupstatus, summarize
-from gwaslab.g_version import _show_version, gwaslab_info
-from gwaslab.g_meta import (
+from gwaslab.info.g_Log import Log
+from gwaslab.info.g_Sumstats_summary import lookupstatus, summarize
+from gwaslab.info.g_version import _show_version, gwaslab_info
+from gwaslab.info.g_meta import (
     _append_meta_record,
     _check_sumstats_qc_status,
     _init_meta,
@@ -19,7 +19,7 @@ from gwaslab.g_meta import (
     _update_qc_step,
     _update_harmonize_step,
 )
-from gwaslab.g_meta import _update_meta
+from gwaslab.info.g_meta import _update_meta
 from gwaslab.qc.qc_build import _set_build
 # ----- QC: Fix Sumstats -----
 from gwaslab.qc.qc_fix_sumstats import (
@@ -30,13 +30,13 @@ from gwaslab.qc.qc_fix_sumstats import (
     _flip_allele_stats,
     _flip_SNPID,
     _parallelize_normalize_allele,
-    _parallelize_liftover_variant,
     _remove_dup,
     _sort_column,
     _sort_coordinate,
     _strip_SNPID,
     _process_build
 )
+from gwaslab.hm.hm_liftover_v2 import _liftover2_variant, _parallelize_liftover_variant
 from gwaslab.qc.qc_sanity_check import (
     _sanity_check_stats,
     _check_data_consistency,
@@ -429,6 +429,26 @@ class Sumstats():
         # _parallelize_liftover_variant always returns a DataFrame
         self.data = _parallelize_liftover_variant(self,from_build=from_build, to_build=to_build, log=self.log,**kwargs)
 
+    @add_doc(_liftover2_variant)
+    def liftover2(self, chain_path, **kwargs):
+        """
+        Perform fast chain-based liftover using a UCSC chain file.
+        
+        This method uses a fast chain-based liftover implementation that directly
+        parses UCSC chain files and performs vectorized coordinate conversion.
+        
+        Parameters
+        ----------
+        chain_path : str
+            Path to UCSC chain file (can be .chain or .chain.gz).
+        **kwargs
+            Additional arguments passed to _liftover2_variant.
+            See _liftover2_variant for full parameter list.
+        """
+        kwargs = remove_overlapping_kwargs(kwargs, {"chain_path", "log"})
+        # _liftover2_variant always returns a DataFrame
+        self.data = _liftover2_variant(self, chain_path=chain_path, log=self.log, **kwargs)
+
 # QC ######################################################################################
     #clean the sumstats with one line
     def basic_check(self,
@@ -486,6 +506,7 @@ class Sumstats():
         saved_kwargs = {**locals()}
         # prepare status section
         ###############################################
+        # Sequential version (original implementation)
         # try to fix data without dropping any information 
         
         fix_id_kwargs = remove_overlapping_kwargs(fix_id_kwargs,{"log", "remove", "verbose"})

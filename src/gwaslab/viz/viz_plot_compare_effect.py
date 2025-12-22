@@ -7,7 +7,7 @@ import seaborn as sns
 import scipy.stats as ss
 from matplotlib.patches import Rectangle
 from adjustText import adjust_text
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.viz.viz_aux_save_figure import save_figure
 from gwaslab.viz.viz_aux_style_options import set_plot_style

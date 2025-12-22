@@ -1,5 +1,5 @@
 import pandas as pd
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.io.io_process_kwargs import normalize_series_inputs
 

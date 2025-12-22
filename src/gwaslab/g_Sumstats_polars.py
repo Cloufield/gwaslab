@@ -2,11 +2,11 @@ import pandas as pd
 import numpy as np
 import time
 import copy
-from gwaslab.g_Sumstats_summary import summarize
-from gwaslab.g_Sumstats_summary import lookupstatus
+from gwaslab.info.g_Sumstats_summary import summarize
+from gwaslab.info.g_Sumstats_summary import lookupstatus
 from gwaslab.io.io_preformat_input_polars import preformatp
 from gwaslab.io.io_to_formats import _to_format
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_fix_sumstats import _fix_ID
 from gwaslab.qc.qc_fix_sumstats import _flip_SNPID
 from gwaslab.qc.qc_fix_sumstats import _strip_SNPID
@@ -17,7 +17,7 @@ from gwaslab.qc.qc_fix_sumstats import _fix_allele
 from gwaslab.qc.qc_fix_sumstats import _parallelize_normalize_allele
 from gwaslab.qc.qc_sanity_check import _sanity_check_stats
 
-from gwaslab.qc.qc_fix_sumstats import _parallelize_liftover_variant
+from gwaslab.hm.hm_liftover_v2 import _parallelize_liftover_variant
 from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_fix_sumstats import _sort_coordinate
 from gwaslab.qc.qc_fix_sumstats import _sort_column
@@ -64,11 +64,11 @@ from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_high_ld
 from gwaslab.bd.bd_common_data import get_format_dict
 from gwaslab.bd.bd_common_data import get_formats_list
-from gwaslab.g_version import _show_version
-from gwaslab.g_version import gwaslab_info
-from gwaslab.g_meta import _init_meta
-from gwaslab.g_meta import _append_meta_record
-from gwaslab.g_meta import _update_meta
+from gwaslab.info.g_version import _show_version
+from gwaslab.info.g_version import gwaslab_info
+from gwaslab.info.g_meta import _init_meta
+from gwaslab.info.g_meta import _append_meta_record
+from gwaslab.info.g_meta import _update_meta
 from gwaslab.util.util_ex_run_clumping import _clump
 from gwaslab.util.util_ex_calculate_ldmatrix import _to_finemapping
 from gwaslab.io.io_load_ld import _to_finemapping_using_ld

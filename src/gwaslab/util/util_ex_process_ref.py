@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import subprocess
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import os
 from gwaslab.extension import _checking_plink_version
 

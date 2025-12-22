@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from pandas.api.types import CategoricalDtype
-from gwaslab.g_vchange_status import copy_status
-from gwaslab.g_vchange_status import vchange_status
+from gwaslab.info.g_vchange_status import copy_status
+from gwaslab.info.g_vchange_status import vchange_status
+from gwaslab.info.g_vchange_status import ensure_status_int
 from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
@@ -143,6 +144,9 @@ def _align_with_mold(sumstats, log=Log(),verbose=True, suffixes=("_MOLD","")):
     log.write(" -Aligning alleles with reference: ", verbose=verbose)
     log.write("  -Perfect match: {}".format(sum(is_perfect_match)), verbose=verbose)
     log.write("  -Flipped match: {}".format(sum(is_flipped_match)), verbose=verbose)
+    
+    # Ensure status columns are integer type before assignment
+    sumstats = ensure_status_int(sumstats, status2)
     
     log.write("  -For perfect match: copy STATUS from reference...", verbose=verbose)
     sumstats.loc[is_perfect_match,status2] = copy_status(sumstats.loc[is_perfect_match,status1], sumstats.loc[is_perfect_match,status2],6)

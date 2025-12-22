@@ -4,7 +4,7 @@ from gwaslab.g_SumstatsT import SumstatsT
 from gwaslab.g_SumstatsPair import SumstatsPair
 from gwaslab.g_SumstatsMulti import SumstatsMulti
 from gwaslab.g_SumstatsSet import SumstatsSet
-from gwaslab.g_version import _show_version as show_version
+from gwaslab.info.g_version import _show_version as show_version
 
 from gwaslab.util.util_in_convert_h2 import h2_obs_to_liab
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
@@ -58,7 +58,7 @@ from gwaslab.bd.bd_download import add_local_data
 from gwaslab.bd.bd_download import remove_local_record
 from gwaslab.bd.bd_config import options
 from gwaslab.qc.qc_reserved_headers import researved_header
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
 

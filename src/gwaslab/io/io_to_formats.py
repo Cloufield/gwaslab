@@ -11,8 +11,8 @@ from pysam import tabix_compress
 from pysam import tabix_index
 from datetime import datetime
 from datetime import date
-from gwaslab.g_Log import Log
-from gwaslab.g_version import gwaslab_info
+from gwaslab.info.g_Log import Log
+from gwaslab.info.g_version import gwaslab_info
 
 from gwaslab.io.io_preformat_input import print_format_info
 
@@ -841,7 +841,7 @@ def _process_vcf_header(sumstats, meta, meta_data, build, log, verbose):
     
     # calculate meta data
     # Match patterns using integer arithmetic
-    from gwaslab.g_vchange_status import status_match
+    from gwaslab.info.g_vchange_status import status_match
     # Pattern: digit 4=0, digit 5=0-3, digit 6=0-2, digit 7=0-4
     harmonised = sum(status_match(sumstats["STATUS"], 4, [0]) & 
                      status_match(sumstats["STATUS"], 5, [0,1,2,3]) &

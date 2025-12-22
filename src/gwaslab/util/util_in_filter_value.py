@@ -4,8 +4,8 @@ import numpy as np
 from os import path
 from pathlib import Path
 from functools import wraps
-from gwaslab.g_Log import Log
-from gwaslab.g_vchange_status import vchange_status
+from gwaslab.info.g_Log import Log
+from gwaslab.info.g_vchange_status import vchange_status
 from gwaslab.qc.qc_fix_sumstats import _sort_coordinate
 from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
@@ -13,7 +13,7 @@ from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.bd.bd_common_data import get_high_ld
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.hm.hm_harmonize_sumstats import is_palindromic
-from gwaslab.g_version import _get_version
+from gwaslab.info.g_version import _get_version
 import gc
 
 _HAPMAP_CACHE = {}

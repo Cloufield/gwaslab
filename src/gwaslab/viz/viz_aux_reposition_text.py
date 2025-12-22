@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 def adjust_text_position(positions, yspan, repel_force=0.01, max_iter=100,amode="int",log=Log(),verbose=True, min_factor=None):
     # check the number of variants to annotate 

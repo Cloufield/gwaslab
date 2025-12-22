@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 
 #STATE NO.	MNEMONIC	DESCRIPTION	COLOR NAME	COLOR CODE
 #1	TssA	Active TSS	Red	255,0,0

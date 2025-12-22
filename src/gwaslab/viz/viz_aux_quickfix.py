@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from matplotlib import ticker
 import matplotlib.pyplot as plt
 from gwaslab.bd.bd_common_data import get_chr_to_number

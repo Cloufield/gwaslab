@@ -4,7 +4,7 @@ import os
 import gc
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.extension import _checking_r_version
 from gwaslab.extension import _check_susie_version
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2

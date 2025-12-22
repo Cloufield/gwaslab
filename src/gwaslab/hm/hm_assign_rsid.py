@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 import subprocess
 import shutil
 import os
@@ -166,7 +166,7 @@ def _assign_rsid(
     # STATUS filter (your original logic)
     # ---------------------------
     # Match: digit 4 is 0 and digit 5 is 0-4
-    from gwaslab.g_vchange_status import status_match
+    from gwaslab.info.g_vchange_status import status_match
     standardized_normalized = status_match(sumstats["STATUS"], 4, [0]) & status_match(sumstats["STATUS"], 5, [0,1,2,3,4])
     to_assign_mask = standardized_normalized.copy()
 
@@ -213,7 +213,7 @@ def _assign_rsid(
         # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
         try:
-            from gwaslab.g_meta import _append_meta_record, _update_harmonize_step
+            from gwaslab.info.g_meta import _append_meta_record, _update_harmonize_step
             # Determine which path was used (path_to_use is already determined above)
             if path_to_use is not None:
                 if ref_mode == "vcf/bcf":

@@ -15,8 +15,8 @@ from scipy import stats
 
 from gwaslab.bd.bd_common_data import get_chr_to_number
 from gwaslab.bd.bd_common_data import get_number_to_chr
-from gwaslab.g_Log import Log
-from gwaslab.g_version import _get_version
+from gwaslab.info.g_Log import Log
+from gwaslab.info.g_version import _get_version
 from gwaslab.io.io_process_kwargs import _update_arg
 from gwaslab.io.io_process_kwargs import _update_kwargs
 from gwaslab.qc.qc_build import _process_build

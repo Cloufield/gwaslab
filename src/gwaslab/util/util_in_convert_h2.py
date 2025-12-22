@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import norm
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_decorator import with_logging
 
 def h2_obs_to_liab(h2_obs, P, K, se_obs=None):

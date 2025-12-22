@@ -2,7 +2,7 @@ import gc
 import pandas as pd
 import polars as pl
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.qc.qc_reserved_headers import get_dtype_dict_polars
 # pandas.api.types.is_int64_dtype
 # pandas.api.types.is_categorical_dtype

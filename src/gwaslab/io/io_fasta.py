@@ -7,7 +7,7 @@ This module provides simplified functions for reading and writing FASTA format f
 import gzip
 import numpy as np
 from typing import Iterator, TextIO, Union, Dict, Tuple, Optional
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_common_data import _maketrans
 
 # Constants for FASTA sequence translation

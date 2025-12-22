@@ -3,7 +3,7 @@ import os
 import gc
 import pandas as pd
 import numpy as np
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_path_manager import _path
 
 def _run_mtag(       sumstats_multi, 

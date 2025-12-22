@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.viz.viz_plot_density import _process_density
 
 

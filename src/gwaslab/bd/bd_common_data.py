@@ -5,7 +5,7 @@ import requests
 import pandas as pd
 from os import path
 from pathlib import Path
-from gwaslab.g_Log import Log
+from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_download import download_ref
 from gwaslab.bd.bd_download import check_and_download
 from gwaslab.bd.bd_download import update_formatbook
