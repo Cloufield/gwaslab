@@ -63,7 +63,7 @@ class TestRelatedPlots(unittest.TestCase):
             highlight_windowkb=200,
             pinpoint=[merged.iloc[2]["SNPID"]],
             pinpoint_color="red",
-            sig_level_plot=1e-6,
+            anno_sig_level=1e-6,
         )
         self.assertIsInstance(log, Log)
 
@@ -221,7 +221,7 @@ class TestRelatedPlots(unittest.TestCase):
             objects=[df1, df2],
             mode="m",
             sig_line=True,
-            sig_level_plot=1e-6,
+            anno_sig_level=1e-6,
             suggestive_sig_line=True,
             suggestive_sig_level=1e-5,
             ylim=(0, 8),
@@ -524,7 +524,7 @@ class TestRelatedPlots(unittest.TestCase):
             highlight_windowkb=500,
             pinpoint=[targets[0]],
             pinpoint_color="red",
-            sig_level_plot=5e-8,
+            anno_sig_level=5e-8,
             fig_kwargs={"figsize": (15, 10), "dpi": 300},
             verbose=False,
         )
