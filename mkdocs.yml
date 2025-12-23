@@ -3,7 +3,7 @@ site_author: HE Yunye
 repo_name: 'GitHub'
 repo_url: https://github.com/Cloufield/gwaslab/
 edit_uri: ""
-copyright: "GWASLab is licensed under the MIT license"
+copyright: "GWASLab is licensed under the GPL-3.0-only license. See LICENSE file for details."
 theme:
   name: material
   features:
@@ -23,6 +23,7 @@ nav:
        - "Update logs" : UpdateLogs.md
        - "Known Issues" : KnownIssues.md
        - "Reserved Headers": reserved_header.md
+       - "License" : LICENSE
     - Tutorial: 
        - Tutorial: tutorial_3.6.ipynb
        - Archive: tutorial.ipynb 
@@ -81,13 +82,11 @@ nav:
        - "Correlation heatmap" : visualization_plot_genetic_correlation.ipynb
        - "Download reference": Download_reference.ipynb
 
-
 markdown_extensions:
   - toc:
       toc_depth: 3
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.highlight:
@@ -95,8 +94,8 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.snippets
   - tables
 
 extra_javascript:

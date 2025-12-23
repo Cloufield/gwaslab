@@ -1466,7 +1466,6 @@
         "plot_gwheatmap",
         "plot_manhattan",
         "plot_miami2",
-        "plot_mqq",
         "plot_mqq:m",
         "plot_mqq:mqq",
         "plot_mqq:qqm",
@@ -1481,7 +1480,10 @@
       ],
       "desc": "Font size for ticks, labels, etc.",
       "default": 12,
-      "ctx_defaults": {},
+      "ctx_defaults": {
+        "plot_mqq:mqq":10,
+        "plot_mqq:qqm":10
+      },
       "add_to_docstring": false
     },
     "full_cell": {
@@ -3616,12 +3618,12 @@
         "plot_trumpet:b",
         "plot_trumpet:q"
       ],
-      "desc": "Significance threshold",
+      "desc": "Significance threshold for reference line and marker sizing",
       "default": 5e-08,
       "ctx_defaults": {},
       "add_to_docstring": false
     },
-    "sig_level_lead": {
+    "anno_sig_level": {
       "plots": [
         "plot_manhattan",
         "plot_mqq",
@@ -3633,24 +3635,6 @@
       "desc": "",
       "default": 5e-08,
       "ctx_defaults": {},
-      "add_to_docstring": false
-    },
-    "sig_level_plot": {
-      "plots": [
-        "plot_manhattan",
-        "plot_miami2",
-        "plot_mqq",
-        "plot_mqq:m",
-        "plot_mqq:mqq",
-        "plot_mqq:qqm",
-        "plot_mqq:r"
-      ],
-      "desc": "Significance threshold for reference line, default 5e-8",
-      "default": 5e-08,
-      "ctx_defaults": {
-        "plot_mqq": 5e-08,
-        "plot_region:r": 5e-08
-      },
       "add_to_docstring": false
     },
     "sig_levels": {
