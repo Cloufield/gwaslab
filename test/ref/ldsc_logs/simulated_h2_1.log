@@ -1,0 +1,28 @@
+********************************************************************************
+* LD Score Regression (LDSC)
+********************************************************************************
+* Version 1.0.1
+* (C) 2014-2019 Brendan Bulik-Sullivan and Hilary Finucane
+*
+* GNU General Public License v3
+********************************************************************************
+
+Call:
+./ldsc.py --h2 simulated_sumstats_1.sumstats.gz --ref-ld-chr eas_ldscores/ --w-ld-chr eas_ldscores/ --out simulated_h2_1
+
+Beginning analysis at Mon Jan 15 10:30:00 2024
+Reading summary statistics from simulated_sumstats_1.sumstats.gz...
+Read 50000 SNPs
+After filtering, 45000 SNPs remain
+Reading LD scores from eas_ldscores/...
+Read LD scores for 45000 SNPs
+After merging, 45000 SNPs remain
+
+Total Observed scale h2: 0.1583 (0.0281)
+Lambda GC: 1.1523
+Mean Chi^2: 1.2843
+Intercept: 1.0563 (0.0114)
+Ratio: 0.1981 (0.0402)
+
+Analysis finished at Mon Jan 15 10:35:00 2024
+

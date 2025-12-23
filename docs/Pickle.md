@@ -64,7 +64,7 @@ gl.load_pickle(path)
 ## Examples
 
 !!! example "Using to_pickle() method (recommended)"
-    ```python
+    ```
     import gwaslab as gl
     
     # Load and process sumstats
@@ -81,7 +81,7 @@ gl.load_pickle(path)
     ```
 
 !!! example "Using dump_pickle() function"
-    ```python
+    ```
     import gwaslab as gl
     
     # Process sumstats
@@ -96,7 +96,7 @@ gl.load_pickle(path)
     ```
 
 !!! example "Save with custom path"
-    ```python
+    ```
     # Save to home directory
     mysumstats.to_pickle("~/my_analysis/sumstats.pickle")
     

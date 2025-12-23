@@ -130,6 +130,10 @@ def _plot_effect(to_plot,
     matplotlib.figure.Figure
         The generated figure object.
     """
+    # Extract dataframe if Sumstats object is passed
+    if hasattr(to_plot, 'data') and not isinstance(to_plot, pd.DataFrame):
+        to_plot = to_plot.data
+    
     style = set_plot_style(
         plot="plot_effect",
         fig_kwargs=fig_kwargs if fig_kwargs is not None else fig_kwargs,

@@ -11,22 +11,33 @@
 * Each process is modularized and can be customized to your needs.
 * Sumstats-specific manipulations are designed as methods of a Python object, `gwaslab.Sumstats`.
 
+!!! info "GWASLab v4.0.0"
+    GWASLab v4.0.0 introduces major improvements including:
+    - **Command Line Interface (CLI)**: Process sumstats directly from the command line
+    - **Performance Improvements**: Optimized algorithms and data structures for faster processing
+    - **Visualization Parameter Management**: Centralized parameter management system for all plotting functions
+    - **API Consistency**: Standardized parameter names across functions
+    - **Enhanced Documentation**: Comprehensive documentation and tutorials
+
 ## Installation
 
-### install via pip
+### Install via pip
 
 The latest version of GWASLab now supports Python 3.9, 3.10, 3.11, and 3.12.
+
+!!! tip "Recommended: Python 3.12"
+    We recommend using **Python 3.12** for the best performance and compatibility with GWASLab v4.0.0.
 
 ```bash
 pip install gwaslab
 ```
 
-### install in conda environment
+### Install in conda environment
 
-Create a Python 3.9, 3.10, 3.11 or 3.12 environment and install gwaslab using pip:
+Create a Python 3.9, 3.10, 3.11 or 3.12 environment and install gwaslab using pip. We recommend Python 3.12:
 
 ```bash
-conda env create -n gwaslab -c conda-forge python=3.12
+conda create -n gwaslab -c conda-forge python=3.12
 
 conda activate gwaslab
 
@@ -36,17 +47,18 @@ pip install gwaslab
 or create a new environment using yml file [environment.yml](https://github.com/Cloufield/gwaslab/blob/main/environment.yml)
 
 ```bash
-conda env create -n gwaslab -f environment.yml
+conda env create -n gwaslab -f environment.yml -c conda-forge
 ```
 
-### install using docker (deprecated)
+### Install using docker (deprecated)
 
 A docker file is available [here](https://github.com/Cloufield/gwaslab/blob/main/docker/Dockerfile) for building local images.
 
-## Quick start
+## Quick Start
 
-```python
+### Python API
 
+```
 import gwaslab as gl
 
 # load plink2 output
@@ -71,16 +83,39 @@ mysumstats = gl.Sumstats("sumstats.txt.gz",
              n="N",
              build="19")
 
+# basic quality control
+mysumstats.basic_check()
+
 # manhattan and qq plot
 mysumstats.plot_mqq()
-...
+
+# extract lead variants
+lead_variants = mysumstats.get_lead()
 ```
 
-## Documentation and tutorials
+### Command Line Interface (CLI) - New in v4.0.0
 
-Documentation and tutorials for GWASLab are available at [here](https://cloufield.github.io/gwaslab/).
+```bash
+# Show version
+gwaslab version
 
-## Functions
+# Basic QC and output
+gwaslab --input sumstats.tsv --fmt auto --qc --out cleaned.tsv --to-fmt gwaslab
+
+# Harmonization with reference
+gwaslab --input sumstats.tsv --fmt auto --ref-seq ref.fasta --harmonize --out harmonized.tsv --to-fmt gwaslab
+
+# Format conversion
+gwaslab --input sumstats.tsv --fmt gwaslab --out sumstats.ldsc --to-fmt ldsc
+```
+
+See [CLI documentation](CLI.md) for more details.
+
+## Documentation and Tutorials
+
+Documentation and tutorials for GWASLab are available at [https://cloufield.github.io/gwaslab/](https://cloufield.github.io/gwaslab/).
+
+## Features
 
 ### Loading and Formatting
 
@@ -89,7 +124,7 @@ Documentation and tutorials for GWASLab are available at [here](https://cloufiel
   - LDSC / MAGMA / METAL / PLINK / SAIGE / REGENIE / MR-MEGA / GWAS-SSF / FUMA / GWAS-VCF / BED... 
   - [check available formats](https://github.com/Cloufield/formatbook)
 - Optional filtering of variants in commonly used genomic regions: Hapmap3 SNPs / High-LD regions / MHC region 
- 
+
 ### Standardization & Normalization
 
 - Variant ID standardization
@@ -97,7 +132,7 @@ Documentation and tutorials for GWASLab are available at [here](https://cloufiel
 - Variant POS and allele normalization
 - Genome build : Inference and Liftover 
 
-### Quality control, Value conversion & Filtering
+### Quality Control, Value Conversion & Filtering
 
 - Statistics sanity check
 - Extreme value removal
@@ -106,9 +141,9 @@ Documentation and tutorials for GWASLab are available at [here](https://cloufiel
     - P, Z, CHISQ, MLOG10P
 - Customizable value filtering
 
-###  Harmonization
+### Harmonization
 
-- rsID assignment based on CHR, POS, and REF/ALT
+- rsID assignment based on CHR, POS, and REF/ALT (with sweep mode for large datasets)
 - CHR POS assignment based on rsID using a reference text file
 - Palindromic SNPs and indels strand inference using a reference VCF
 - Check allele frequency discrepancy using a reference VCF
@@ -116,14 +151,18 @@ Documentation and tutorials for GWASLab are available at [here](https://cloufiel
 
 ### Visualization
 
-- Mqq plot: Manhattan plot, QQ plot or MQQ plot (with a bunch of customizable features including auto-annotate nearest gene names)
-- Miami plot: mirrored Manhattan plot
-- Brisbane plot:  GWAS hits density plot
-- Regional plot: GWAS regional plot
-- Genetic correlation heatmap: ldsc-rg genetic correlation matrix
-- Scatter plot: variant effect size comparison
-- Scatter plot: allele frequency comparison 
-- Scatter plot: trumpet plot (plot of MAF and effect size with power lines)
+- **MQQ plot**: Manhattan plot, QQ plot or MQQ plot (with a bunch of customizable features including auto-annotate nearest gene names)
+- **Miami plot**: Mirrored Manhattan plot
+- **Brisbane plot**: GWAS hits density plot
+- **Regional plot**: GWAS regional plot with LD information
+- **Genetic correlation heatmap**: LDSC-rg genetic correlation matrix
+- **Scatter plots**: 
+  - Variant effect size comparison
+  - Allele frequency comparison 
+  - Trumpet plot (plot of MAF and effect size with power lines)
+
+!!! info "New in v4.0.0: Visualization Parameter Management"
+    GWASLab v4.0.0 introduces a comprehensive visualization parameter management system that provides centralized parameter control, automatic parameter validation, and mode-specific defaults for all plotting functions.
 
 #### Visualization Examples
 
@@ -134,22 +173,45 @@ Documentation and tutorials for GWASLab are available at [here](https://cloufiel
 
 ### Other Utilities
 
-- Read ldsc h2 or rg outputs directly as DataFrames (auto-parsing).
+- Read LDSC h2 or rg outputs directly as DataFrames (auto-parsing).
 - Extract lead variants given a sliding window size.
-- Extract novel loci given a list of known lead variants / or known loci obtained from GWAS Catalog.
+- Extract novel loci given a list of known lead variants or known loci obtained from GWAS Catalog.
+- Clumping and fine-mapping utilities.
+- LD score regression (LDSC) integration for heritability estimation.
 - Logging: keep a complete record of manipulations applied to the sumstats.
-- Sumstats summary: give you a quick overview of the sumstats. 
+- Sumstats summary: give you a quick overview of the sumstats.
 - ...
+
+## Command Line Interface (CLI) - New in v4.0.0
+
+GWASLab now provides a unified command-line interface for processing GWAS summary statistics. The CLI supports:
+
+- Quality control (QC)
+- Harmonization
+- Format conversion
+- Batch processing
+- Various output formatting options
+
+See [CLI documentation](CLI.md) for complete details and examples.
+
+## Performance Improvements in v4.0.0
+
+- **Optimized algorithms**: Core functions have been reimplemented with optimized algorithms and data structures
+- **Sweep mode**: New sweep mode for rsID assignment and strand inference, significantly faster for large datasets
+- **Efficient data processing**: Improved memory usage and processing speed for large datasets
+- **Better parallelization**: Enhanced multi-threading support
 
 ## Issues
 
 - GWASLab is currently under active development, with frequent updates.
 - Note: Known issues are documented at https://cloufield.github.io/gwaslab/KnownIssues/.
 
-## How to cite
+## How to Cite
+
 - GWASLab preprint: He, Y., Koido, M., Shimmori, Y., Kamatani, Y. (2023). GWASLab: a Python package for processing and visualizing GWAS summary statistics. Preprint at Jxiv, 2023-5. https://doi.org/10.51094/jxiv.370
 
-## Sample data used for tutorial
+## Sample Data Used for Tutorial
+
 - Sample GWAS data used in GWASLab is obtained from: http://jenger.riken.jp/ (Suzuki, Ken, et al. "Identification of 28 new susceptibility loci for type 2 diabetes in the Japanese population." Nature genetics 51.3 (2019): 379-386.).
 
 ## Acknowledgement
@@ -157,6 +219,7 @@ Documentation and tutorials for GWASLab are available at [here](https://cloufiel
 Thanks to @sup3rgiu, @soumickmj and @gmauro for their contributions to the source codes.
 
 ## Contacts
+
 * Github: [https://github.com/Cloufield/gwaslab](https://github.com/Cloufield/gwaslab)
 * Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
 * Email: gwaslab@gmail.com

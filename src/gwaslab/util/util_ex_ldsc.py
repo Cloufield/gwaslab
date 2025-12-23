@@ -1,4 +1,7 @@
 import copy
+import numpy as np
+import pandas as pd
+import scipy.stats as ss
 from gwaslab.info.g_Log import Log
 
 from gwaslab.extension.ldsc.ldsc_sumstats import estimate_h2
@@ -330,10 +333,23 @@ def _estimate_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, munge=False,
     
     default_kwargs = ARGS(kwargs = kwargs)
 
+    # Create Z if not present (munging may have created it from P)
     if "Z" not in sumstats.columns:
-        sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
+        if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+            sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
+        else:
+            raise ValueError("Cannot create Z: need either Z column, or BETA and SE columns")
 
-    sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
+    # Rename columns to LDSC format if not already renamed (munging may have done this)
+    rename_dict = {}
+    if "A1" not in sumstats.columns and "EA" in sumstats.columns:
+        rename_dict["EA"] = "A1"
+    if "A2" not in sumstats.columns and "NEA" in sumstats.columns:
+        rename_dict["NEA"] = "A2"
+    if "SNP" not in sumstats.columns and "rsID" in sumstats.columns:
+        rename_dict["rsID"] = "SNP"
+    if rename_dict:
+        sumstats = sumstats.rename(columns=rename_dict)
 
     log.write(" -LDSC log:", verbose=verbose)
     summary = estimate_h2(sumstats, args = default_kwargs, log = log)
@@ -377,10 +393,23 @@ def _estimate_partitioned_h2_by_ldsc(insumstats,  log,  meta=None,verbose=True, 
     
     default_kwargs = ARGS(kwargs = kwargs)
 
+    # Create Z if not present (munging may have created it from P)
     if "Z" not in sumstats.columns:
-        sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
+        if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+            sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
+        else:
+            raise ValueError("Cannot create Z: need either Z column, or BETA and SE columns")
 
-    sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
+    # Rename columns to LDSC format if not already renamed (munging may have done this)
+    rename_dict = {}
+    if "A1" not in sumstats.columns and "EA" in sumstats.columns:
+        rename_dict["EA"] = "A1"
+    if "A2" not in sumstats.columns and "NEA" in sumstats.columns:
+        rename_dict["NEA"] = "A2"
+    if "SNP" not in sumstats.columns and "rsID" in sumstats.columns:
+        rename_dict["rsID"] = "SNP"
+    if rename_dict:
+        sumstats = sumstats.rename(columns=rename_dict)
     
     log.write(" -LDSC log:", verbose=verbose)
     summary,results = estimate_h2(sumstats, default_kwargs, log)
@@ -433,22 +462,50 @@ def _estimate_rg_by_ldsc(insumstats,  other_traits ,log, meta=None, verbose=True
 
     default_kwargs = ARGS(kwargs = kwargs)
 
+    # Create Z if not present (munging may have created it from P)
     if "Z" not in sumstats.columns:
-        sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
+        if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+            sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
+        else:
+            raise ValueError("Cannot create Z: need either Z column, or BETA and SE columns")
 
-    sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
+    # Rename columns to LDSC format if not already renamed (munging may have done this)
+    rename_dict = {}
+    if "A1" not in sumstats.columns and "EA" in sumstats.columns:
+        rename_dict["EA"] = "A1"
+    if "A2" not in sumstats.columns and "NEA" in sumstats.columns:
+        rename_dict["NEA"] = "A2"
+    if "SNP" not in sumstats.columns and "rsID" in sumstats.columns:
+        rename_dict["rsID"] = "SNP"
+    if rename_dict:
+        sumstats = sumstats.rename(columns=rename_dict)
 
     other_traits_to_use = []
 
     for index, each_other_sumstats in enumerate(other_traits):
         log.write(" -Processing sumstats with alias {} ({})".format(alias[index], each_other_sumstats.meta["gwaslab"]["study_name"]))
         if "rsID" not in each_other_sumstats.data.columns:
-            to_append = each_other_sumstats.filter_hapmap3(verbose=False).data.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
+            to_append = each_other_sumstats.filter_hapmap3(verbose=False).data
         else:        
-            to_append = each_other_sumstats.data.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
+            to_append = each_other_sumstats.data.copy()
         
+        # Rename columns if needed
+        rename_dict_other = {}
+        if "A1" not in to_append.columns and "EA" in to_append.columns:
+            rename_dict_other["EA"] = "A1"
+        if "A2" not in to_append.columns and "NEA" in to_append.columns:
+            rename_dict_other["NEA"] = "A2"
+        if "SNP" not in to_append.columns and "rsID" in to_append.columns:
+            rename_dict_other["rsID"] = "SNP"
+        if rename_dict_other:
+            to_append = to_append.rename(columns=rename_dict_other)
+        
+        # Create Z if not present
         if "Z" not in to_append.columns:
-            to_append["Z"] = to_append["BETA"]/to_append["SE"]
+            if "BETA" in to_append.columns and "SE" in to_append.columns:
+                to_append["Z"] = to_append["BETA"]/to_append["SE"]
+            else:
+                raise ValueError("Cannot create Z for other trait: need either Z column, or BETA and SE columns")
 
         other_traits_to_use.append(to_append[["SNP","A1","A2","Z","N"]])    
         
@@ -493,10 +550,23 @@ def _estimate_h2_cts_by_ldsc(insumstats, log, verbose=True, **raw_kwargs):
     
     default_kwargs = ARGS(kwargs = kwargs)
 
+    # Create Z if not present (munging may have created it from P)
     if "Z" not in sumstats.columns:
-        sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
+        if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+            sumstats["Z"] = sumstats["BETA"]/sumstats["SE"]
+        else:
+            raise ValueError("Cannot create Z: need either Z column, or BETA and SE columns")
 
-    sumstats = sumstats.rename(columns={"EA":"A1","NEA":"A2","rsID":"SNP"})
+    # Rename columns to LDSC format if not already renamed (munging may have done this)
+    rename_dict = {}
+    if "A1" not in sumstats.columns and "EA" in sumstats.columns:
+        rename_dict["EA"] = "A1"
+    if "A2" not in sumstats.columns and "NEA" in sumstats.columns:
+        rename_dict["NEA"] = "A2"
+    if "SNP" not in sumstats.columns and "rsID" in sumstats.columns:
+        rename_dict["rsID"] = "SNP"
+    if rename_dict:
+        sumstats = sumstats.rename(columns=rename_dict)
     
     log.write(" -LDSC log:", verbose=verbose)
     summary = cell_type_specific(sumstats, default_kwargs, log)
@@ -511,33 +581,187 @@ def _munge_sumstats(sumstats, log,
                     n=None, nopalindromic=True,
                     exclude_hla=True, exclude_sexchr=True,  
                     verbose=True, **kwargs):
-    if "CHR" in sumstats.columns and "POS" in sumstats.columns:
-        if exclude_hla == True:
-            sumstats = _exclude_hla(sumstats, verbose=verbose, log=log)
+    """
+    Munge (filter and harmonize) summary statistics following LDSC workflow.
     
-    if "CHR" in sumstats.columns:
-        if exclude_sexchr == True:
-            sumstats = _exclude_sexchr(sumstats, verbose=verbose, log=log)
+    Based on https://github.com/bulik/ldsc/blob/master/munge_sumstats.py
     
-    # filter_info
+    Parameters
+    ----------
+    sumstats : pd.DataFrame
+        Summary statistics DataFrame
+    log : Log
+        Logging object
+    info : float, default=0.9
+        Minimum INFO score threshold
+    maf : float, default=0.01
+        Minimum minor allele frequency threshold
+    n : float or None, default=None
+        Minimum sample size. If None, uses 90th percentile / 1.5
+    nopalindromic : bool, default=True
+        If True, remove palindromic SNPs
+    exclude_hla : bool, default=True
+        If True, exclude HLA region
+    exclude_sexchr : bool, default=True
+        If True, exclude sex chromosomes
+    verbose : bool, default=True
+        If True, print progress messages
+    **kwargs
+        Additional arguments (ignored for compatibility)
+    
+    Returns
+    -------
+    pd.DataFrame
+        Munge'd summary statistics
+    """
+    sumstats = sumstats.copy()
+    original_len = len(sumstats)
+    
+    # Step 1: Map column names to LDSC standard (EA->A1, NEA->A2, EAF->FRQ)
+    rename_dict = {}
+    if "EA" in sumstats.columns and "A1" not in sumstats.columns:
+        rename_dict["EA"] = "A1"
+    if "NEA" in sumstats.columns and "A2" not in sumstats.columns:
+        rename_dict["NEA"] = "A2"
+    if "EAF" in sumstats.columns and "FRQ" not in sumstats.columns:
+        rename_dict["EAF"] = "FRQ"
+    if "rsID" in sumstats.columns and "SNP" not in sumstats.columns:
+        rename_dict["rsID"] = "SNP"
+    if rename_dict:
+        sumstats = sumstats.rename(columns=rename_dict)
+        log.write(" -Renamed columns: {}".format(rename_dict), verbose=verbose)
+    
+    # Step 2: Filter P-values (must be > 0 and <= 1)
+    if "P" in sumstats.columns:
+        valid_p = (sumstats["P"] > 0) & (sumstats["P"] <= 1) & sumstats["P"].notna()
+        bad_p = (~valid_p).sum()
+        if bad_p > 0:
+            log.write(" -WARNING: {} SNPs had P outside of (0,1]. The P column may be mislabeled.".format(bad_p), verbose=verbose)
+        sumstats = sumstats.loc[valid_p].copy()
+        log.write(" -After P-value filtering: {} SNPs remain".format(len(sumstats)), verbose=verbose)
+    
+    # Step 3: Filter INFO (>= info_min, warn if outside [0,1.5])
     if "INFO" in sumstats.columns:
-        sumstats = _filter_values(sumstats, 'INFO >={}'.format(info) ,verbose=verbose, log=log)
+        if isinstance(sumstats["INFO"], pd.Series):
+            bad_info = ((sumstats["INFO"] > 2.0) | (sumstats["INFO"] < 0)) & sumstats["INFO"].notna()
+            valid_info = sumstats["INFO"] >= info
+        else:
+            # Multiple INFO columns (DataFrame)
+            bad_info = (((sumstats["INFO"] > 2.0) & sumstats["INFO"].notna()).any(axis=1) | 
+                       ((sumstats["INFO"] < 0) & sumstats["INFO"].notna()).any(axis=1))
+            valid_info = (sumstats["INFO"].sum(axis=1) >= info * len(sumstats["INFO"].columns))
+        
+        bad_info_count = bad_info.sum()
+        if bad_info_count > 0:
+            log.write(" -WARNING: {} SNPs had INFO outside of [0,1.5]. The INFO column may be mislabeled.".format(bad_info_count), verbose=verbose)
+        
+        sumstats = sumstats.loc[valid_info].copy()
+        log.write(" -After INFO filtering (>= {}): {} SNPs remain".format(info, len(sumstats)), verbose=verbose)
     
-    # frequency
-    if "EAF" in sumstats.columns:
-        sumstats = _filter_values(sumstats,'EAF>={} and EAF<={}'.format(maf, 1-maf),verbose=verbose, log=log)
+    # Step 4: Filter FRQ/MAF (>= maf_min, warn if outside [0,1], convert to MAF)
+    if "FRQ" in sumstats.columns:
+        bad_frq = (sumstats["FRQ"] < 0) | (sumstats["FRQ"] > 1)
+        bad_frq_count = bad_frq.sum()
+        if bad_frq_count > 0:
+            log.write(" -WARNING: {} SNPs had FRQ outside of [0,1]. The FRQ column may be mislabeled.".format(bad_frq_count), verbose=verbose)
+        
+        # Convert to MAF (minor allele frequency)
+        sumstats["FRQ"] = np.minimum(sumstats["FRQ"], 1 - sumstats["FRQ"])
+        valid_frq = (sumstats["FRQ"] > maf) & ~bad_frq
+        sumstats = sumstats.loc[valid_frq].copy()
+        log.write(" -After MAF filtering (>= {}): {} SNPs remain".format(maf, len(sumstats)), verbose=verbose)
     
-    # N
+    # Step 5: Filter alleles (strand-unambiguous SNPs only)
+    # Valid SNPs: A/T, C/G, A/C, A/G, T/C, T/G
+    # Use A1/A2 if available, otherwise EA/NEA
+    allele1_col = "A1" if "A1" in sumstats.columns else ("EA" if "EA" in sumstats.columns else None)
+    allele2_col = "A2" if "A2" in sumstats.columns else ("NEA" if "NEA" in sumstats.columns else None)
+    
+    if allele1_col and allele2_col:
+        valid_snps = {'AT', 'TA', 'CG', 'GC', 'AC', 'CA', 'AG', 'GA', 'TC', 'CT', 'TG', 'GT'}
+        # Create allele pair string
+        allele_pair = (sumstats[allele1_col].astype(str) + sumstats[allele2_col].astype(str)).str.upper()
+        valid_alleles = allele_pair.isin(valid_snps)
+        sumstats = sumstats.loc[valid_alleles].copy()
+        log.write(" -After allele filtering (strand-unambiguous): {} SNPs remain".format(len(sumstats)), verbose=verbose)
+    
+    # Step 6: Filter palindromic SNPs if requested
+    # _filter_palindromic expects EA/NEA, so use those column names
+    if nopalindromic and allele1_col and allele2_col:
+        # Temporarily rename back to EA/NEA for _filter_palindromic if needed
+        temp_rename = {}
+        if allele1_col == "A1":
+            temp_rename["A1"] = "EA"
+        if allele2_col == "A2":
+            temp_rename["A2"] = "NEA"
+        if temp_rename:
+            sumstats = sumstats.rename(columns=temp_rename)
+        
+        sumstats = _filter_palindromic(sumstats, mode="out", verbose=verbose, log=log)
+        
+        # Rename back to A1/A2 if we renamed them
+        if temp_rename:
+            reverse_rename = {v: k for k, v in temp_rename.items()}
+            sumstats = sumstats.rename(columns=reverse_rename)
+        
+        log.write(" -After removing palindromic SNPs: {} SNPs remain".format(len(sumstats)), verbose=verbose)
+    
+    # Step 7: Process N (filter on sample size)
     if "N" in sumstats.columns:
         if n is None:
-            min_n = sumstats.N.quantile(0.9) / 1.5
+            # Use 90th percentile / 1.5 as threshold (LDSC default)
+            min_n = sumstats["N"].quantile(0.9) / 1.5
         else:
             min_n = n
-        sumstats = _filter_values(sumstats,'N>={}'.format(min_n),verbose=verbose, log=log)
+        valid_n = sumstats["N"] >= min_n
+        sumstats = sumstats.loc[valid_n].copy()
+        log.write(" -After N filtering (>= {}): {} SNPs remain".format(min_n, len(sumstats)), verbose=verbose)
     
-    # remove strand-unambiguous SNPs
-    if "EA" in sumstats.columns and "NEA" in sumstats.columns:
-        if nopalindromic==True:
-            sumstats = _filter_palindromic(sumstats, mode="out", verbose=verbose, log=log)
+    # Step 8: Exclude HLA region if requested
+    if exclude_hla and "CHR" in sumstats.columns and "POS" in sumstats.columns:
+        sumstats = _exclude_hla(sumstats, verbose=verbose, log=log)
+        log.write(" -After excluding HLA: {} SNPs remain".format(len(sumstats)), verbose=verbose)
+    
+    # Step 9: Exclude sex chromosomes if requested
+    if exclude_sexchr and "CHR" in sumstats.columns:
+        sumstats = _exclude_sexchr(sumstats, verbose=verbose, log=log)
+        log.write(" -After excluding sex chromosomes: {} SNPs remain".format(len(sumstats)), verbose=verbose)
+    
+    # Step 10: Convert P to Z if P exists and Z doesn't
+    # Note: If BETA and SE exist, Z should be calculated from them instead
+    if "Z" not in sumstats.columns:
+        if "BETA" in sumstats.columns and "SE" in sumstats.columns:
+            # Prefer BETA/SE for Z calculation (more accurate)
+            sumstats["Z"] = sumstats["BETA"] / sumstats["SE"]
+            log.write(" -Calculated Z from BETA/SE", verbose=verbose)
+        elif "P" in sumstats.columns:
+            # Convert P to Z using two-sided test
+            # Z = sign(BETA) * sqrt(chi2.isf(P, 1))
+            # If we have BETA, use its sign; otherwise use absolute value
+            if "BETA" in sumstats.columns:
+                z_sign = np.sign(sumstats["BETA"])
+                z_abs = ss.norm.isf(sumstats["P"] / 2.0)
+                sumstats["Z"] = z_sign * np.abs(z_abs)
+            elif "OR" in sumstats.columns:
+                # For OR, sign is based on whether OR > 1
+                z_sign = np.sign(np.log(sumstats["OR"]))
+                z_abs = ss.norm.isf(sumstats["P"] / 2.0)
+                sumstats["Z"] = z_sign * np.abs(z_abs)
+            else:
+                # No sign information, use absolute Z
+                sumstats["Z"] = ss.norm.isf(sumstats["P"] / 2.0)
+            log.write(" -Converted P to Z scores", verbose=verbose)
+    
+    # Step 11: Remove duplicates on SNP ID
+    if "SNP" in sumstats.columns:
+        old_len = len(sumstats)
+        sumstats = sumstats.drop_duplicates(subset="SNP", keep="first").reset_index(drop=True)
+        new_len = len(sumstats)
+        if old_len != new_len:
+            log.write(" -Removed {} SNPs with duplicated SNP IDs ({} SNPs remain)".format(old_len - new_len, new_len), verbose=verbose)
+    
+    # Final summary
+    log.write(" -Munging complete: {} SNPs removed, {} SNPs remain (from original {})".format(
+        original_len - len(sumstats), len(sumstats), original_len), verbose=verbose)
     
     return sumstats

@@ -36,6 +36,10 @@ def plotdaf(sumstats,
              log=Log()
            ):
     
+    # Extract dataframe if Sumstats object is passed
+    if hasattr(sumstats, 'data') and not isinstance(sumstats, pd.DataFrame):
+        sumstats = sumstats.data
+    
     if font_kwargs is None:
         font_kwargs={'family':'sans','fontname':'Arial','fontsize':8}
     if scatter_kwargs is None:

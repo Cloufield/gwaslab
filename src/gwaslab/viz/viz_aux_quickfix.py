@@ -53,13 +53,18 @@ def _quick_fix_mlog10p(insumstats,p="P", mlog10p="MLOG10P", scaled=False, log=Lo
     '''
     if scaled != True:
         log.write(" -Sumstats P values are being converted to -log10(P)...", verbose=verbose)
-        insumstats["scaled_P"] = -np.log10(insumstats[p].astype("float64"))
-        
-    #with pd.option_context('mode.use_inf_as_na', True):
-    #    is_na = sumstats["scaled_P"].isna()
-    if_inf_na = np.isinf(insumstats["scaled_P"]) | insumstats["scaled_P"].isna()
+        # Use pd.to_numeric for better performance and error handling
+        p_values = pd.to_numeric(insumstats[p], errors='coerce')
+        insumstats["scaled_P"] = -np.log10(p_values)
+    elif "scaled_P" not in insumstats.columns:
+        # If scaled but scaled_P doesn't exist, create it from mlog10p
+        insumstats["scaled_P"] = pd.to_numeric(insumstats[mlog10p], errors='coerce')
+    
+    # More efficient: use np.isfinite to check for both inf and nan in one operation
+    scaled_P = insumstats["scaled_P"]
+    if_inf_na = ~np.isfinite(scaled_P)
 
-    log.write(" -Sanity check: "+str(sum(if_inf_na)) +
+    log.write(" -Sanity check: "+str(if_inf_na.sum()) +
                   " na/inf/-inf variants will be removed...", verbose=verbose)
     sumstats = insumstats.loc[~if_inf_na, :]
     return sumstats
@@ -69,6 +74,16 @@ def _quick_fix_eaf(seires,log=Log(), verbose=True):
     '''
     conversion of eaf to maf
     '''
+    # Early exit: Check if already numeric
+    if pd.api.types.is_numeric_dtype(seires):
+        if verbose:
+            log.write(" -EAF data type is already numeric. Skipping conversion...", verbose=verbose)
+        # Still need to flip values > 0.5
+        flipped = seires > 0.5
+        seires = seires.copy()
+        seires[flipped] = 1 - seires[flipped]
+        return seires
+    
     seires = pd.to_numeric(seires, errors='coerce')
     flipped = seires > 0.5
     seires[flipped] = 1 - seires[flipped]
@@ -79,6 +94,12 @@ def _quick_fix_chr(seires, chr_dict,log=Log(), verbose=True):
     '''
     conversion and check for chr
     '''
+    # Early exit: Check if already numeric
+    if pd.api.types.is_numeric_dtype(seires):
+        if verbose:
+            log.write(" -CHR data type is already numeric. Skipping conversion...", verbose=verbose)
+        return seires.astype('Int64')
+    
     if pd.api.types.is_string_dtype(seires):
         # if chr is string dtype: convert using chr_dict
         seires = seires.map(chr_dict, na_action="ignore")
@@ -90,6 +111,12 @@ def _quick_fix_pos(seires,log=Log(), verbose=True):
     '''
     force conversion for pos
     '''
+    # Early exit: Check if already numeric
+    if pd.api.types.is_numeric_dtype(seires):
+        if verbose:
+            log.write(" -POS data type is already numeric. Skipping conversion...", verbose=verbose)
+        return np.floor(seires).astype('Int64')
+    
     seires = np.floor(pd.to_numeric(seires, errors='coerce')).astype('Int64')
     return seires
 
@@ -320,67 +347,133 @@ def _quick_extract_snp_in_region(sumstats, region, chrom="CHR",pos="POS",log=Log
     return sumstats
 
 def _cut(series, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, lines_to_plot, log):
+    """
+    Shrink/compress extremely large y-axis values to prevent them from dominating the plot.
+    
+    This function applies a "cut" transformation to values above a threshold, compressing them
+    so that very high values (e.g., extremely significant p-values) don't take up most of the
+    plot space. Two modes are available:
+    - Linear mode: Values above cut are shrunk by dividing by cutfactor
+    - Log mode: Values above cut are compressed using logarithmic scaling
+    
+    Parameters
+    ----------
+    series : pd.Series
+        The y-axis values to transform (typically -log10(P) values)
+    mode : str
+        Plot mode (e.g., "mqq", "b" for density plot)
+    cutfactor : float
+        Shrinkage factor for linear mode (default 10)
+    cut : float or bool
+        Threshold above which values are shrunk. If True, auto-determines cut value
+    skip : float
+        Minimum value to plot (values below skip are omitted)
+    ylabels : list or None
+        Custom y-axis tick labels to also transform
+    cut_log : bool
+        If True, use logarithmic compression; if False, use linear shrinkage
+    verbose : bool
+        Whether to print progress messages
+    lines_to_plot : array-like
+        Additional lines (e.g., significance thresholds) to also transform
+    log : Log
+        Logging object
+    
+    Returns
+    -------
+    tuple
+        (transformed_series, maxy, maxticker, cut, cutfactor, ylabels, lines_to_plot)
+    """
     log.write(" -Converting data above cut line...",verbose=verbose)
+    
+    # Step 1: Prepare inputs - convert ylabels to Series if provided
     if ylabels is not None:
         ylabels = pd.Series(ylabels)
+    
+    # Step 2: Create a copy of the series to avoid modifying the original
     series = series.copy()
     
+    # Step 3: Find the maximum value in the series for reporting and calculations
     maxy = series.max()
     if "b" not in mode:
         log.write(" -Maximum -log10(P) value is "+str(maxy) +" .", verbose=verbose)
     elif "b" in mode:
         log.write(" -Maximum DENSITY value is "+str(maxy) +" .", verbose=verbose)
     
+    # Step 4: Calculate the maximum ticker value (rounded integer for display purposes)
     maxticker=int(np.round(series.max(skipna=True)))
     
+    # Step 5: Process cut transformation if cut is specified
     if cut:
-        # auto mode : determine curline and cut factor
+        # Step 5a: Auto mode - automatically determine cut threshold and cutfactor
         if cut==True:
             log.write(" -Cut Auto mode is activated...", verbose=verbose)
+            # If maximum value is less than 30, no need to cut (values are not extreme)
             if maxy<30:
                 log.write(" - maxy <30 , no need to cut.", verbose=verbose)
                 cut=0
             else:
+                # Set cut threshold to 20 and calculate cutfactor to fit remaining range
+                # Formula: cutfactor = (maxy - cut) / 8 ensures compressed range fits in ~8 units
                 cut = 20
                 cutfactor = ( maxy - cut )/8
         
+        # Step 5b: Apply the cut transformation if cut threshold is still set
         if cut:
-            #cut log mode
+            # Step 5b-i: Logarithmic compression mode
             if cut_log==True:
+                # Recalculate maxticker for log mode calculations
                 maxticker=int(np.round(series.max(skipna=True)))
                 
+                # Calculate amplitude factor for logarithmic scaling
+                # This factor determines how much the log-compressed range will span
+                # Formula: amp = (cut - skip) / 2 / log2(maxticker/cut)
+                # The division by 2 ensures the compressed range is half the original range
                 amp = (cut - skip)/ 2 / np.log2(maxticker/cut)
                 
-                # scaled_P
+                # Transform data values above cut using log2 compression
+                # Formula: new_value = log2(old_value/cut) * amp + cut
+                # This compresses values logarithmically while keeping cut as the baseline
                 series[series>cut] = (np.log2(series[series>cut]/cut)) * amp + cut
                 
-                # y labels
+                # Transform y-axis labels if provided (same log compression)
                 if ylabels is not None:
                     ylabels[ylabels>cut] = (np.log2(ylabels[ylabels>cut]/cut)) * amp +cut 
                 
-                # lines
+                # Transform additional lines (e.g., significance thresholds) using same compression
                 lines_to_plot[lines_to_plot>cut] = (np.log2(lines_to_plot[lines_to_plot>cut]/cut)) * amp +cut 
                 
+                # Calculate the new maximum y value after log compression
+                # This represents the compressed maximum value for setting y-axis limits
                 maxy = (np.log2(maxticker) - np.log2(cut)) * amp + cut
             else:
-                # cut linear mode
+                # Step 5b-ii: Linear shrinkage mode (default)
                 if "b" not in mode:
                     log.write(" -Minus log10(P) values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...", verbose=verbose)
                 else:
                     log.write(" -DENSITY values above " + str(cut)+" will be shrunk with a shrinkage factor of " + str(cutfactor)+"...", verbose=verbose)
 
+                # Recalculate maxticker for linear mode
                 maxticker=int(np.round(series.max(skipna=True)))
 
+                # Transform data values above cut using linear shrinkage
+                # Formula: new_value = (old_value - cut) / cutfactor + cut
+                # This shrinks values by dividing the excess (above cut) by cutfactor
+                # Example: if cut=20, cutfactor=10, value=100 becomes (100-20)/10+20 = 28
                 series[series>cut] = (series[series>cut]-cut)/cutfactor+cut
                 
+                # Transform y-axis labels if provided (same linear shrinkage)
                 if ylabels is not None:
                     ylabels[ylabels>cut] = (ylabels[ylabels>cut]-cut)/cutfactor+cut
                 
+                # Transform additional lines using same linear shrinkage
                 lines_to_plot[lines_to_plot>cut] = (lines_to_plot[lines_to_plot>cut]-cut)/cutfactor+cut
-                #sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"] = (sumstats.loc[sumstats["scaled_P"]>cut,"scaled_P"]-cut)/cutfactor +  cut
                 
+                # Calculate the new maximum y value after linear shrinkage
+                # Formula: maxy = (maxticker - cut) / cutfactor + cut
                 maxy = (maxticker-cut)/cutfactor + cut
 
+    # Step 6: Return transformed values and parameters
     return series, maxy, maxticker, cut, cutfactor,ylabels,lines_to_plot
 
 #def _cut_line(level, mode,cutfactor,cut,skip, ylabels, cut_log, verbose, log):
@@ -406,68 +499,167 @@ def _set_yticklabels(cut,
                      log=Log(),
                      verbose=True
                      ):
+    """
+    Set y-axis tick positions and labels for plots with optional cut transformation.
+    
+    This function handles the complex task of setting y-axis ticks and labels when a "cut"
+    transformation has been applied. It creates separate tick sets for:
+    - The region below the cut threshold (normal scale)
+    - The region above the cut threshold (compressed scale)
+    
+    For the compressed region, labels are reverse-transformed to show original values,
+    while tick positions use the compressed coordinates.
+    
+    Parameters
+    ----------
+    cut : float
+        Threshold above which values were compressed (0 means no cut)
+    cutfactor : float
+        Shrinkage factor used in linear compression mode
+    cut_log : bool
+        Whether logarithmic compression was used (True) or linear (False)
+    ax1 : matplotlib.axes.Axes
+        The axes object to modify
+    skip : float
+        Minimum y-axis value (values below this are not plotted)
+    maxy : float
+        Maximum y-axis value after transformation
+    maxticker : int
+        Maximum original value before transformation (for label reverse-transformation)
+    ystep : float
+        Step size for y-axis ticks (0 means auto-calculate)
+    sc_linewidth : float
+        Line width for the cut line
+    cut_line_color : str
+        Color for the cut line
+    fontsize : float
+        Font size for tick labels
+    font_family : str
+        Font family for tick labels
+    ytick3 : bool
+        Whether to show intermediate ticks in the compressed region
+    ylabels : list or None
+        Custom y-axis labels (if provided, overrides auto-generated labels)
+    ylabels_converted : array-like
+        Converted positions for custom ylabels (if ylabels is provided)
+    log : Log
+        Logging object
+    verbose : bool
+        Whether to print progress messages
+    
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The modified axes object
+    """
     log.write(" -Processing Y tick lables...",verbose=verbose)
-    # if no cut
+    
+    # Step 1: Handle case with no cut transformation
+    # If cut==0, no compression was applied, so just set simple y-axis limits
     if cut == 0: 
-            ax1.set_ylim((skip, ceil(maxy*1.2)) )
-    # if cut     
+        # Set y-axis limits from skip to maxy with 20% padding at top
+        ax1.set_ylim((skip, ceil(maxy*1.2)) )
+    
+    # Step 2: Handle case with cut transformation
     if cut!=0:
-        # add cut line
-        
+        # Step 2a: Draw a horizontal line at the cut threshold to visually indicate the compression
+        # This line shows where the scale changes from normal to compressed
         cutline = ax1.axhline(y=cut, linewidth = sc_linewidth,linestyle="--",color=cut_line_color,zorder=1)
         
-        # default step
+        # Step 2b: Determine step size for tick spacing
+        # Default step is 2, but can be auto-calculated or user-specified
         step=2
 
         if ystep == 0:
+            # Auto-calculate step: if there would be more than 8 ticks, increase step size
+            # This prevents too many ticks from cluttering the axis
             if (cut - skip ) // step > 8:
                 step = (cut - skip ) // 8
         else:
+            # Use user-specified step size
             step = ystep
 
+        # Step 2c: Determine upper bound for ticks below cut threshold
+        # If (cut-skip) is evenly divisible by step, set upper to cut-1 to avoid overlap
+        # Otherwise, set upper to cut to include the cut line
         if (cut-skip)%step==0:
             upper = cut - 1
         else:
             upper = cut
         
+        # Step 2d: Generate ticks and labels for the region BELOW the cut threshold (normal scale)
+        # ticks1: Regular ticks from skip to upper with step spacing
         ticks1= [x for x in range(skip,upper,step)]
+        # ticks2: The cut line itself (always shown)
         ticks2= [cut]
+        # Labels are the same as tick positions for the normal scale region
         tickslabel1= [x for x in range(skip,upper,step)]
         tickslabel2= [cut]
         
+        # Step 2e: Generate ticks for the region ABOVE the cut threshold (compressed scale)
         if cut_log==True:
+            # Logarithmic compression mode: calculate tick spacing based on log scale
+            # Step size is determined by log2 of the ratio between max and cut
+            # max(..., 1) ensures at least 1 step to avoid division by zero
             ticks3= [x for x in range(cut,int(maxy),max(int(np.log2(maxticker//(cut-skip))),1))] 
-            ticks4= [int(maxy)]
+            ticks4= [int(maxy)]  # Always include the maximum value
         elif ytick3 == True:
+            # Linear compression mode with intermediate ticks enabled
+            # Calculate compressed maximum: (maxticker-cut)/cutfactor + cut
+            # Generate ticks from cut to compressed max using step spacing
             ticks3= [x for x in range(cut,int((maxticker-cut)/cutfactor + cut),int(step))]
-            ticks4= [(maxticker-cut)/cutfactor + cut]
+            ticks4= [(maxticker-cut)/cutfactor + cut]  # Compressed maximum
         else:
-            ticks3= []
-            ticks4= [(maxticker-cut)/cutfactor + cut]
+            # Linear compression mode without intermediate ticks
+            # Only show the compressed maximum, no intermediate ticks
+            ticks3= []  # No intermediate ticks
+            ticks4= [(maxticker-cut)/cutfactor + cut]  # Only the compressed maximum
         
-        #tickslabel3= [x for x in range(cut,int(maxticker),int(step*cutfactor))]
+        # Step 2f: Generate LABELS for the compressed region (reverse-transform to show original values)
+        # Labels show the original values, not the compressed positions
         if cut_log==True:
+            # Logarithmic mode: reverse the log transformation to get original values
+            # Formula: original = 2^((compressed_pos - cut) / amp) * cut
+            # amp is the same amplitude factor used in _cut function
             amp = (cut - skip)/ 2 / np.log2(maxticker/cut) 
+            # For each compressed tick position, calculate the original value it represents
             tickslabel3 = list(map(lambda x: int(2**((x-cut)/amp)* cut) ,ticks3))
         elif ytick3 == True:
+            # Linear mode: reverse the linear transformation to get original values
+            # Formula: original = (compressed_pos - cut) * cutfactor + cut
+            # This is the inverse of the compression formula: (value-cut)/cutfactor+cut
             tickslabel3 = list(map(lambda x: int((x-cut)*cutfactor + cut) ,ticks3))
         else:
+            # No intermediate ticks, so no intermediate labels
             tickslabel3=[]
+        # Label for the maximum is always the original maxticker value
         tickslabel4= [maxticker]
 
+        # Step 2g: Apply ticks and labels to the axis
         if maxy > cut:
+            # If there are values above cut, show all tick sets (below + at + above cut)
             ax1.set_yticks(ticks1+ticks2+ticks3+ticks4)
             ax1.set_yticklabels(tickslabel1+tickslabel2+tickslabel3+tickslabel4,fontsize=fontsize,family=font_family)
         else:
+            # If no values above cut, only show ticks for the region below cut
             ax1.set_yticks(ticks1+ticks2)
             ax1.set_yticklabels(tickslabel1+tickslabel2,fontsize=fontsize,family=font_family)
     
+    # Step 3: Handle custom y-axis labels if provided
+    # Custom labels override the auto-generated labels
     if ylabels is not None:  
+        # Use the converted positions (already transformed) for tick positions
         ax1.set_yticks(ylabels_converted)
+        # Use the original labels (user-provided) for tick labels
         ax1.set_yticklabels(ylabels,fontsize=fontsize,family=font_family)
     
+    # Step 4: Set final y-axis bounds
+    # Get the current top limit (may have been set by previous operations)
     ylim_top = ax1.get_ylim()[1]
+    # Set lower bound to skip and keep the existing upper bound
     ax1.set_ybound(lower=skip,upper=ylim_top)
+    
+    # Step 5: Apply font size to y-axis tick labels
     ax1.tick_params(axis='y', labelsize=fontsize)
 
     return ax1

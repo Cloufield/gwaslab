@@ -33,7 +33,11 @@ def _plot_cs(pipcs_raw,
             **kwargs):
         '''
         pipcs : a DataFrame of finemapping results
-        '''   
+        '''
+        # Extract dataframe if Sumstats object is passed
+        if hasattr(pipcs_raw, 'data') and not isinstance(pipcs_raw, pd.DataFrame):
+            pipcs_raw = pipcs_raw.data
+        
         pipcs = pipcs_raw.copy()
         ## parameters ############################# 
         if xtick_chr_dict is None:         

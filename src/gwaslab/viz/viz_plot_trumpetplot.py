@@ -219,6 +219,10 @@ def _plot_trumpet(mysumstats,
         Highlight limit mode. Default is "absolute"
     """
     
+    # Extract dataframe if Sumstats object is passed
+    if hasattr(mysumstats, 'data') and not isinstance(mysumstats, pd.DataFrame):
+        mysumstats = mysumstats.data
+    
     #Checking columns#################################################################################################################
     matplotlib.rc('font', family=font_family)
     if sizes is None:

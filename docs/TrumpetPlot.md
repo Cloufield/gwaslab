@@ -88,7 +88,7 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 ## example
 
 !!! example "Trumpet plot for quantitative traits"
-    ```python
+    ```
     mysumstats.plot_trumpet(
         mode="q",
         ts=[0.2,0.4,0.6,0.8],
@@ -114,7 +114,7 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 
 
 !!! example "Trumpet plot for binary traits"
-    ```python
+    ```
     mysumstats.get_lead(sig_level=5e-6, gls=True).plot_trumpet(
         mode="b",
         ncase=36614,

@@ -41,12 +41,67 @@
 | `.check_daf()`         | ref_infer="" , ref_alt_freq=None,                     | calculate difference in allele frequencies                                 |
 | `.flip_allele_stats()` |                                                       | After alignment and inferring, flip the alleles to harmonise the variants. |
 | `.liftover()`          | threads=1,from_build="19", to_build="38"              | perform liftover                                                           |
+| `.infer_build()`       | verbose=True                                           | infer genome build (hg19/hg38) from CHR:POS coordinates                     |
+| `.set_build()`         | build, verbose=True                                    | manually set the genome build                                              |
+
+##  Data Conversion
+
+| Sumstats Methods       | Options                                               | Description                                                                |
+| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
+| `.fill_data()`         | to_fill, extreme=False                                 | convert equivalent statistics (P, MLOG10P, Z, CHISQ, BETA, SE, OR, etc.)  |
+| `.convert_odds_to_beta()` |                                                      | convert OR to BETA                                                         |
+| `.convert_beta_to_odds()` |                                                      | convert BETA to OR                                                          |
+
+##  Visualization
+
+| Sumstats Methods       | Options                                               | Description                                                                |
+| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
+| `.plot_mqq()`          | mode="m", ...                                          | create Manhattan and Q-Q plots                                             |
+| `.plot_mqq(mode="r")`  | ...                                                    | create regional plot                                                       |
+| `.plot_mqq(mode="b")`  | ...                                                    | create Brisbane plot (signal density plot)                                 |
+| `.plot_trumpet()`      | ...                                                    | create Trumpet plot                                                         |
+| `.plot_effect()`       | ...                                                    | create effect size comparison plot                                         |
+| `.check_af()`          | ref_path, ...                                          | check allele frequency                                                     |
+| `.plot_daf()`          | ref_path, ...                                          | plot difference in allele frequencies                                      |
+
+##  Format and Output
+
+| Sumstats Methods       | Options                                               | Description                                                                |
+| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
+| `.to_format()`         | path, fmt, tab_fmt, cols, extract, exclude, ...       | output sumstats in specified format (plink, ldsc, saige, etc.)             |
+| `.save()`              | path, ...                                              | save Sumstats object to pickle file                                        |
+
+##  Utilities
+
+| Sumstats Methods       | Options                                               | Description                                                                |
+| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
+| `.get_lead()`          | scaled=False, use_p=False, windowsizekb=500, ...      | extract lead variants from significant loci                                |
+| `.get_novel()`         | ref_path, ...                                         | extract novel variants not present in reference                            |
+| `.summary()`           |                                                        | print summary statistics of the sumstats                                   |
+| `.lookup_status()`     | status="STATUS"                                        | lookup and display STATUS code information                                 |
+| `.copy()`              |                                                        | create a copy of the Sumstats object                                       |
+
+##  Clumping
+
+| Sumstats Methods       | Options                                               | Description                                                                |
+| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
+| `.clump()`             | plink2, vcf, bfile, pfile, scaled, threads, ...       | perform clumping using PLINK2                                              |
+
+##  LD Score Regression
+
+| Sumstats Methods       | Options                                               | Description                                                                |
+| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------- |
+| `.estimate_h2_by_ldsc()` | ldscore_path, maf_path, n, ...                        | estimate heritability using LD score regression                            |
+| `.estimate_rg_by_ldsc()` | sumstats2, ldscore_path, maf_path, ...                | estimate genetic correlation using LD score regression                     |
+| `.load_ldsc_log()`     | log_path                                               | load LDSC log file and parse results                                       |
 
 
 
 
 # Standalone functions
-| function | catagory | description |
-|-|-|-|
-||||
-||||
+
+| Function               | Category      | Description                                                                |
+| ---------------------- | ------------- | -------------------------------------------------------------------------- |
+| `gl.plot_miami2()`     | Visualization | create Miami plot from two sumstats files                                 |
+| `gl.clump()`           | Clumping      | standalone clumping function (alternative to method)                       |
+| `gl.convert_heritability()` | Conversion | convert heritability between different scales                             |

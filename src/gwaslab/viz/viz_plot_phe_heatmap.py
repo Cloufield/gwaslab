@@ -65,6 +65,10 @@ def _gwheatmap(
     grid_linecolor="grey",
     **mqq_kwargs
 ):
+    # Extract dataframe if Sumstats object is passed
+    if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
+        insumstats = insumstats.data
+    
     log.write("Start to create genome-wide scatter plot...{}:".format(_get_version()),verbose=verbose)
     if height_ratios is None:
         height_ratios = [1, 2]

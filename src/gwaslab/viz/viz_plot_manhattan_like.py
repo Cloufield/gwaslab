@@ -316,7 +316,7 @@ def _extract_to_annotate(sumstats,
                          chrom,
                          pos,
                          scaled_threhosld,
-                         sig_level_lead,
+                         anno_sig_level,
                          windowsizekb,
                          scaled,
                          anno,
@@ -328,13 +328,21 @@ def _extract_to_annotate(sumstats,
                          log=Log(),
                          verbose=True):
     log.write("Start to extract variants for annotation...", verbose=verbose)
+    # Initialize empty DataFrame to store variants to annotate
     to_annotate = pd.DataFrame()
+    
+    # Check if annotation is enabled (anno is a string/column name) or if specific annotation set is provided
     if (anno and anno != True) or (len(anno_set) > 0):
+        # Case 1: User provided a specific set of variants to annotate
         if len(anno_set) > 0:
+            # Filter sumstats to only include variants in the specified annotation set
             to_annotate = sumstats.loc[sumstats[snpid].isin(anno_set), :]
+            # Log the number of specified variants found
             if (to_annotate.empty is not True):
                 log.write(" -Found " + str(len(to_annotate)) + " specified variants to annotate...", verbose=verbose)
         else:
+            # Case 2: Annotation is enabled but no specific set provided - auto-detect variants
+            # For bubble plot mode: get top variants by density
             if "b" in mode:
                 to_annotate = _get_top(
                     sumstats,
@@ -347,23 +355,30 @@ def _extract_to_annotate(sumstats,
                     verbose=False,
                 )
             else:
+                # For regular Manhattan plot mode: get significant variants using sliding window
+                # Filter to variants at or above threshold, then find lead variants
+                # Use >= instead of > to ensure anno_sig_level threshold is properly applied
                 to_annotate = _get_sig(
-                    sumstats.loc[sumstats["scaled_P"] > scaled_threhosld, :],
+                    sumstats.loc[sumstats["scaled_P"] >= scaled_threhosld, :],
                     snpid,
                     chrom,
                     pos,
                     "raw_P",
-                    sig_level=sig_level_lead,
+                    sig_level=anno_sig_level,
                     windowsizekb=windowsizekb,
                     scaled=scaled,
                     mlog10p="scaled_P",
                     verbose=False,
                 )
+            # Handle case where _get_top or _get_sig returns None
             if to_annotate is None:
                 to_annotate = pd.DataFrame()
+            # Log the number of significant variants found (only for non-bubble mode)
             if ("b" not in mode) and (to_annotate.empty is not True):
                 log.write(" -Found " + str(len(to_annotate)) + " significant variants with a sliding window size of " + str(windowsizekb) + " kb...", verbose=verbose)
     else:
+        # Case 3: Annotation not explicitly enabled, but still extract variants for potential annotation
+        # For bubble plot mode: get top variants by density
         if "b" in mode:
             to_annotate = _get_top(
                 sumstats,
@@ -376,8 +391,11 @@ def _extract_to_annotate(sumstats,
                 verbose=False,
             )
         else:
+            # For regular Manhattan plot mode: get significant variants using sliding window
+            # Use "i" (index column) instead of snpid for variant identification
+            # Use >= instead of > to ensure anno_sig_level threshold is properly applied
             to_annotate = _get_sig(
-                sumstats.loc[sumstats["scaled_P"] > scaled_threhosld, :],
+                sumstats.loc[sumstats["scaled_P"] >= scaled_threhosld, :],
                 "i",
                 chrom,
                 pos,
@@ -386,7 +404,7 @@ def _extract_to_annotate(sumstats,
                 scaled=scaled,
                 verbose=False,
                 mlog10p="scaled_P",
-                sig_level=sig_level_lead,
+                sig_level=anno_sig_level,
             )
         if to_annotate is None:
             to_annotate = pd.DataFrame()

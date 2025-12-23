@@ -2,6 +2,17 @@
 
 GWASLab provides a customizable plotting function for Manhattan and Q-Q plots.
 
+!!! info "New in v4.0.0: Visualization Parameter Management System"
+    GWASLab v4.0.0 introduces a comprehensive visualization parameter management system (`VizParamsManager`) that provides:
+    
+    - **Centralized parameter control**: Fine-grained control over plot parameters with per-plot and per-mode configurations
+    - **Parameter filtering**: Automatic filtering of invalid parameters with whitelist support
+    - **Default value management**: Context-specific defaults that can be inherited and overridden
+    - **Banned argument handling**: Invalid parameters are automatically replaced with defaults
+    - **Registry-based configuration**: Supports configuration files for custom parameter management
+    
+    This system ensures consistent parameter handling across all visualization functions and provides better error prevention and parameter validation. For most users, this works transparently in the background, but advanced users can customize parameter behavior through the registry system.
+
 ## .plot_mqq()
 
 ```
@@ -11,7 +22,7 @@ GWASLab provides a customizable plotting function for Manhattan and Q-Q plots.
 ## A simple example
 
 !!! example "Quick Manhattan and Q-Q plot without any options"
-    ```python
+    ```
     mysumstats.plot_mqq()
     ```
     
@@ -36,7 +47,7 @@ See other examples [here](https://cloufield.github.io/gwaslab/visualization_mqq/
 By setting the options, you can create highly customized Manhattan plots and Q-Q plots.
 
 !!! example "A customized Manhattan and QQ plot"
-    ```python
+    ```
     mysumstats.plot_mqq(
                       mode="qqm",
                       cut=14,
@@ -69,10 +80,10 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`scaled`|`boolean`|By default, GWASLab uses P values for mqq plot. But you can set `scaled=Ture` to use MLOG10P to plot.|`False`|
+|`scaled`|`boolean`|By default, GWASLab uses P values for mqq plot. But you can set `scaled=True` to use MLOG10P to plot.|`False`|
 
 !!! note "Variant with extreme P values"
-    To plot the variant with extreme P values (P < 1e-300), you can use `scaled=False` to create the plot with MLOG10P instead of raw P values. To calculate MLOG10P for extreme P values from BETA/SE or Z scores, you can use `mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)`. For details, please refer to the "Extreme P values" section in [https://cloufield.github.io/gwaslab/Conversion/](https://cloufield.github.io/gwaslab/Conversion/).
+    To plot the variant with extreme P values (P < 1e-300), you can use `scaled=True` to create the plot with MLOG10P instead of raw P values. To calculate MLOG10P for extreme P values from BETA/SE or Z scores, you can use `mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)`. For details, please refer to the "Extreme P values" section in [https://cloufield.github.io/gwaslab/Conversion/](https://cloufield.github.io/gwaslab/Conversion/).
 
 ### X axis: Physical position or rank
 
@@ -90,7 +101,7 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 |`skip`|`float`|Sometimes it is not necessary to plot all variants, we can skip the variants with low -log10(P) values for plotting. For example, we can omit variants with -log10(P) lower than 3 from the plot by specifying `skip=3`. Calculation of lambda GC won't be affected by this|`None`|
 |`cut`|`float`|loci with extremely large -log10(P) value are very likely to dwarf other significant loci, so we want to scale down the -log10(P) for variants above a certain threshold. |`None`|
 |`cutfactor`|`float`|shrinkage factor|`10`|
-|`cut_line_color`|`float`|the color of the line above which y axis is rescaled.|`500`|
+|`cut_line_color`|`string`|the color of the line above which y axis is rescaled.|`"#ebebeb"`|
 |`sig_level`|`float`|genome-wide significance threshold for extracting lead variants to annotate |`5e-8`|
 |`sig_level_plot`|`float`|significance threshold for plotting the significance line |`5e-8`|
 |`sig_level_lead`|`float`|significance threshold for extracting lead variants to annotate |`5e-8`|
@@ -109,9 +120,11 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 |Option|DataType|Description|Default|
 |-|-|-|-|
 |`anno`|`boolean` or `string` or `"GENENAME"`|If `anno = True`, variants will be annotated with chr:pos; or `string`, the column name used for annotation; or `"GENENAME"`, automatically annotate nearest gene names, using pyensembl. (remember to specify `build`, default is `build="19"`) |`False`|
-|`anno_set`|`list`|If you want to annotate only a few specific variants, you can simply provide a list of SNPIDs or rsIDs for annotation. If None, the variants to annotate will be selected automatically using a sliding window with `windowsize=500`kb.|`None`|
-|`repel_force`|`float`|when the annotation overlaps with other, try increasing the repel_force to increase the padding between annotations.|`0.01`|
+|`anno_set`|`list`|If you want to annotate only a few specific variants, you can simply provide a list of SNPIDs or rsIDs for annotation. If None, the variants to annotate will be selected automatically using a sliding window with `windowsizekb=500`kb.|`None`|
+|`repel_force`|`float`|when the annotation overlaps with other, try increasing the repel_force to increase the padding between annotations.|`0.03`|
 |`anno_alias`|`dict`|snpid:text dictionary for customized annotation|`None`|
+|`anno_style`|`string`|Style of annotation placement. Options: `"right"`, `"tight"`, `"expand"`|`"right"`|
+|`anno_max_rows`|`int`|Maximum number of annotation rows to display. If more variants are provided, they will be sorted by p-value or -log10(p-value) and only the top ones will be shown.|`40`|
 
 
 !!! info "Repel force"
@@ -121,28 +134,28 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 !!! example "Skip variants with -log10P<3 and annotate the lead variants with chr:pos"
 
-    ```python
+    ```
     mysumstats.plot_mqq(skip=3,anno=True)
     ```
 
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591270-592ce820-c541-4b84-a766-0b58bc6423ee.png">
 
 !!! example "Skip variants with -log10P<3 and annotate the lead variants with GENENAME"
-    ```python
+    ```
     mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19")
     ```
 
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591371-262d31d5-9640-474f-af0d-d6c511c77280.png">
 
 !!! example "Skip variants with -log10P<3 and annotate the variants in `anno_set`"
-    ```python
+    ```
     mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"])
     ```
 
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591966-c9618c45-456b-4eb8-991b-66420f847a97.png">
 
 !!! example "Skip variants with -log10P<3 and annotate the variants in `anno_set` with alias in `anno_alias`" 
-    ```python
+    ```
     mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"], anno_alias={"rs12509595":"anything you want here"})
     ```
     
@@ -173,19 +186,19 @@ GWASLab now support 3 types of annotation styles:
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`anno_d`|`dict`|key is the number of arm starting form 0, value is the direction you want the arm to shift towards . For example, `anno_d = {4:"r"}` means shift the 4th arm to the right |`None`|
+|`anno_d`|`dict`|key is the number of arm starting from 0, value is the direction you want the arm to shift towards. For example, `anno_d = {4:"r"}` means shift the 4th arm to the right |`None`|
 |`arm_offset`|`float`|distance in points|`500`|
 |`arm_scale`|`float`|factors to adjust the height for all arms|`1.0`|
 |`arm_scale_d`|`dict`|factors to adjust the height for specific arms. key is the number of arm starting from 0, value is the factor which will be multiplied to arm height.|`None`|
 
-!!! example "Adjust the direction the first to left and the thrd to right"
-    ```python
+!!! example "Adjust the direction the first to left and the third to right"
+    ```
     mysumstats.plot_mqq(skip=2,anno=True)
     ```
     
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197342763-ffd4b3c1-d57a-4351-8f42-fb91ae282d32.png">
     
-    ```python
+    ```
     mysumstats.plot_mqq(skip=2,anno=True,          
                         anno_d={1:"l",3:"r"},
                         arm_offset=50)
@@ -194,14 +207,14 @@ GWASLab now support 3 types of annotation styles:
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png">
 
 !!! example "Adjust the length of arm"
-    ```python
+    ```
     mysumstats.plot_mqq(skip=2,anno=True,arm_scale=1.5)
     ```
 
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345571-6a6ccb4e-6837-475d-ae3b-3c59fb447c56.png">
 
 !!! example "Adjust the length of arm for each variant"
-    ```python
+    ```
     mysumstats.plot_mqq(skip=2,anno=True,arm_scale_d={1:1.5,2:1.2,3:1.1})
     ```
     
@@ -215,9 +228,9 @@ Highlight specified loci (color all variants in a region by specifying variants 
 
 |Highlighting Option|DataType|Description|Default|
 |-|-|-|-|
-|`highlight`|`list`|a list of SNPID or rsID; these loci (all variants in the specified variants positions +/- `highlight_windowkb`) will be highlighted in `pinpoint_color`|`True`|
+|`highlight`|`list`|a list of SNPID or rsID; these loci (all variants in the specified variants positions +/- `highlight_windowkb`) will be highlighted in `highlight_color`|`None`|
 |`highlight_windowkb`|`int`|Specify the span of highlighted region in kbp|`500`|
-|`highlight_color`|`list`|Color for highlighting loci|`"#CB132D"`|
+|`highlight_color`|`string` or `list`|Color for highlighting loci|`"#CB132D"`|
 
 ### Pinpoint variants
 
@@ -225,12 +238,12 @@ Pinpoint certain variants in the Manhattan plot.
 
 |Pinpointing Option|DataType|Description|Default|
 |-|-|-|-|
-|`pinpoint`|`list`|a list of SNPID or rsID; these variants will be highlighted in `pinpoint_color`|`True`|
-|`pinpoint_color`|`list`|color for pinpointing variants|`"red"`|
+|`pinpoint`|`list`|a list of SNPID or rsID; these variants will be highlighted in `pinpoint_color`|`None`|
+|`pinpoint_color`|`string` or `list`|color for pinpointing variants|`"red"`|
 
 !!! example "Highlight loci and pinpoint variants"
 
-    ```python
+    ```
     mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19",
                        highlight=["rs12509595","rs7989823"],
                        pinpoint=["rs671","19:15040733:T:C"])
@@ -256,11 +269,11 @@ Pinpoint certain variants in the Manhattan plot.
 |`cut_line_color`|`string`|Color for the cut line|`"#ebebeb"`|
 
 !!! example "Plot lines"
-    ```python
+    ```
     mysumstats.plot_mqq(skip=3,
                     build="19",
                     anno="GENENAME",
-                    windowsizekb=1000000,
+                    windowsizekb=1000,
                     cut=20,
                     cut_line_color="purple",
                     sig_level=5e-8,  
@@ -282,7 +295,7 @@ Pinpoint certain variants in the Manhattan plot.
 | QQ plot Option   | DataType  | Description                                                     | Default                                              |
 |------------------|-----------|-----------------------------------------------------------------|------------------------------------------------------|
 | `stratified`     | `boolean` | if True, plot MAF stratified QQ plot. Require EAF in sumstats. | `False`                                              |
-| `maf_bins`       | `list`    | MAF bins for straitification.                                   | `[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]` |
+| `maf_bins`       | `list`    | MAF bins for stratification.                                   | `[(0, 0.01), (0.01, 0.05), (0.05, 0.25),(0.25,0.5)]` |
 | `maf_bin_colors` | `list`    | colors used for each MAF bin.                                   | `["#f0ad4e","#5cb85c", "#5bc0de","#000042"]`         |
 
 !!! example "MAF-stratified Q-Q plot"
@@ -292,7 +305,7 @@ Pinpoint certain variants in the Manhattan plot.
 
 ### Colors and Fontsizes
 
-```python
+```
 mysumstats.plot_mqq(
           colors=["#597FBD","#74BAD3"],
           cut_line_color="#ebebeb",
@@ -324,13 +337,13 @@ Font-related options
 
 | Font Option      | DataType | Description              | Default   |
 |------------------|----------|--------------------------|-----------|
-| `fontsize`       | `list`   | fontsize for ticklabels. | `9`       |
-| `title_fontsize` | `13`     | fontsize for title.      | `13`      |
-| `anno_fontsize`  | `10`     | fontsize for annotation. | `9`       |
+| `fontsize`       | `int` or `float`   | fontsize for ticklabels. | `9`       |
+| `title_fontsize` | `int`     | fontsize for title.      | `13`      |
+| `anno_fontsize`  | `int` or `float`     | fontsize for annotation. | `9`       |
 | `font_family`    | `string` | font family              | `"Arial"` |
 
 !!! example
-    ```python
+    ```
     mysumstats.plot_mqq(skip=2,
                         cut=20,
                         colors=sns.color_palette("Set3"),
@@ -342,7 +355,7 @@ Font-related options
 
 ### Titles
 
-```python
+```
 mysumstats.plot_mqq(
           title =None,
           mtitle=None,
@@ -365,7 +378,7 @@ mysumstats.plot_mqq(
 ### Figure settings
 
 ```
-figargs= {"figsize":(15,5),"dpi":100}
+fig_kwargs={"figsize":(15,5),"dpi":100}
 ```
 
 | Figure Option | DataType | Description                                                     | Default                        |
@@ -375,12 +388,12 @@ figargs= {"figsize":(15,5),"dpi":100}
 Commonly used ones: 
 
 - `figsize` : figure size
-- `dpi` : dots per inch. For pulications, dpi>=300 is on of the common criteria.
+- `dpi` : dots per inch. For publications, dpi>=300 is one of the common criteria.
 
 
 ### Saving plots
 
-```python
+```
 mysumstats.plot_mqq(save="mymqqplots.png", save_kwargs={"dpi":400,"facecolor":"white"})
 ```
 
@@ -395,3 +408,43 @@ Two options for saving plots in `.plot_mqq`
 
     - save as png: `mysumstats.plot_mqq(save="mymqqplots.png", save_kwargs={"dpi":300})`
     - save as PDF: `mysumstats.plot_mqq(save="mymqqplots.pdf", save_kwargs={"dpi":300})`
+
+----------------------------------------------------------------
+
+## Visualization Parameter Management (v4.0.0)
+
+GWASLab v4.0.0 includes a sophisticated parameter management system that automatically handles parameter validation, filtering, and default value assignment for all visualization functions.
+
+### How It Works
+
+The parameter management system operates transparently in the background:
+
+1. **Parameter Validation**: Invalid parameters are automatically filtered out or replaced with defaults
+2. **Mode-Specific Defaults**: Different plot modes (e.g., `mode="r"` for regional plots) can have different allowed parameters and defaults
+3. **Parameter Inheritance**: Mode-specific configurations inherit from base plot configurations
+4. **Banned Arguments**: Parameters that don't apply to certain plot modes are automatically replaced with appropriate defaults
+
+### Benefits
+
+- **Error Prevention**: Invalid parameters are caught before they cause errors
+- **Consistency**: Parameter handling is consistent across all visualization functions
+- **Flexibility**: Advanced users can customize parameter behavior through configuration files
+- **Backward Compatibility**: Existing code continues to work without changes
+
+### For Users
+
+Most users don't need to interact with the parameter management system directly. Simply use `.plot_mqq()` and other plotting functions as before. The system will:
+
+- Automatically filter out invalid parameters
+- Apply appropriate defaults for your plot mode
+- Provide clear error messages if critical parameters are missing
+
+### Advanced Configuration
+
+Advanced users who want to customize parameter behavior can:
+
+1. **Access the parameter manager**: Available through `mysumstats.viz_params` (if exposed)
+2. **Set object-level presets**: Use `set()` or `update()` methods to set default parameters for specific plots/modes
+3. **Modify configuration files**: Edit `viz_aux_params.txt` and `viz_aux_params_registry.txt` for custom parameter definitions
+
+For more details on the parameter management system, see the source code documentation in `gwaslab/viz/viz_aux_params.py`.

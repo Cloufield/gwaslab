@@ -6,7 +6,7 @@ To load any sumstats into the object, simply specify the column name and load th
 
 ## gl.Sumstats()
 
-```py
+```
 mysumstats = gl.Sumstats(
              sumstats,
              fmt=None,
@@ -157,7 +157,7 @@ GWASLab supports loading sumstats from chromosome-separated files (file names ne
 After loading, the raw data columns will be renamed to new columns without ambiguity and the DataFrame is stored in `.data` :
 
 !!! example
-    ```python
+    ```
     mysumstats.data
     ```
 
@@ -181,7 +181,7 @@ Please check [GWASLab - Format](https://cloufield.github.io/gwaslab/Format/) for
 
 If the pipeline is very long, and you need to temporarily save the Sumstats Object, you can use the `.to_pickle()` method (recommended) or the `gl.dump_pickle()` function to temporarily save the Sumstats Object.
 
-```python
+```
 # Recommended method (object method)
 mysumstats.to_pickle("./mysumstats.pickle", overwrite=True)
 
@@ -209,7 +209,7 @@ The log is stored in a `gl.Log()` object. You can check it by `.log.show() `and 
 You can check the meta information of sumstats by:
 
 !!! example 
-    ```python
+    ```
     mysumstats.summary()
     ```
 
@@ -218,7 +218,7 @@ You can check the meta information of sumstats by:
 Other functions of GWASLab are implemented as the methods of Sumstats Object.
 
 !!! example
-    ```python
+    ```
     mysumstats.basic_check()
     
     mysumstats.plot_mqq()

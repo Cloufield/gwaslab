@@ -1080,7 +1080,7 @@ class Sumstats():
     
     @suppress_display
     def plot_daf(self, **kwargs):
-        fig, outliers = plotdaf(self.data, **self._apply_viz_params(plotdaf, kwargs, key="plot_daf"))
+        fig, outliers = plotdaf(self, **self._apply_viz_params(plotdaf, kwargs, key="plot_daf"))
         return fig, outliers
     
     @add_doc(_infer_ancestry)
@@ -1094,7 +1094,7 @@ class Sumstats():
     @suppress_display
     def plot_gwheatmap(self, **kwargs):
         params = self._apply_viz_params(_gwheatmap, kwargs, key="plot_gwheatmap")
-        fig = _gwheatmap(self.data, **params)
+        fig = _gwheatmap(self, **params)
         return fig
     
     @add_doc(_mqqplot)
@@ -1104,7 +1104,7 @@ class Sumstats():
         params = self._apply_viz_params(_mqqplot, kwargs, key="plot_mqq", mode=mode)
         if "build" not in params:
             params["build"] = self.build
-        plot, log = _mqqplot(self.data, **params)
+        plot, log = _mqqplot(self, **params)
         return plot
     
     @add_doc(_mqqplot)
@@ -1113,32 +1113,32 @@ class Sumstats():
         params = self._apply_viz_params(_mqqplot, kwargs, key="plot_manhattan")
         if "build" not in params:
             params["build"] = self.build
-        plot, log = _mqqplot(self.data, **params)
+        plot, log = _mqqplot(self, **params)
         return plot
     
     @add_doc(_process_density)
     @suppress_display
     def plot_snp_density(self, build=None, **kwargs):
-        plot, log = _mqqplot(self.data, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_snp_density", mode="b"), "mode": "b", "build": kwargs.get("build", self.build)})
+        plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_snp_density", mode="b"), "mode": "b", "build": kwargs.get("build", self.build)})
         return plot
     
     @add_doc(_plot_qq)
     @suppress_display
     def plot_qq(self, build=None, **kwargs):
-        plot, log = _mqqplot(self.data, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_qq", mode="qq"), "mode": "qq", "build": kwargs.get("build", self.build)})
+        plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_qq", mode="qq"), "mode": "qq", "build": kwargs.get("build", self.build)})
         return plot
     
     @add_doc(_plot_regional)
     @suppress_display
     def plot_region(self, build=None, **kwargs):
-        plot, log = _mqqplot(self.data, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_region", mode="r"), "mode": "r", "build": kwargs.get("build", self.build)})
+        plot, log = _mqqplot(self, **{**self._apply_viz_params(_mqqplot, kwargs, key="plot_region", mode="r"), "mode": "r", "build": kwargs.get("build", self.build)})
         return plot
 
     @add_doc(_plot_trumpet)
     @suppress_display
     def plot_trumpet(self, build=None, **kwargs):
         fig = _plot_trumpet(
-            self.data,
+            self,
             **{**self._apply_viz_params(_plot_trumpet, kwargs, key="plot_trumpet", mode=("b" if kwargs.get("mode") == "b" else "q")),
                "build": kwargs.get("build", self.build)}
         )
@@ -1146,7 +1146,7 @@ class Sumstats():
 
     @add_doc(_plot_effect)
     def plot_effect(self,**kwargs):
-        _plot_effect(self.data, **self._apply_viz_params(_plot_effect, kwargs, key="plot_effect"))
+        _plot_effect(self, **self._apply_viz_params(_plot_effect, kwargs, key="plot_effect"))
 
     @add_doc(_get_sig)
     def get_lead(self, gls=False, build=None, **kwargs):

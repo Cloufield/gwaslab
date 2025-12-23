@@ -18,8 +18,8 @@ def b_mode_setup(sumstats, mode, bwindowsizekb, chrom, pos, log=Log(), verbose=T
     return sumstats, bmean, bmedian
 
 
-def b_scaled_threshold(sig_level_lead):
-    return sig_level_lead
+def b_scaled_threshold(anno_sig_level):
+    return anno_sig_level
 
 
 def b_annotation_log(to_annotate, snpid, log=Log(), verbose=True):

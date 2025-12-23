@@ -233,11 +233,9 @@ def _plot_regional(
         Whether to use log scale for cut line.
     sig_line : bool, optional,default=True
         Whether to show significance line.
-    sig_level : float, optional
-        Significance level for variants. Default is None.
-    sig_level_plot : float,optional, default=5e-8
-        Significance level to plot.
-    sig_level_lead : float,optional, default=5e-8
+    sig_level : float, optional, default=5e-8
+        Significance level threshold to plot a line on the plot.
+    anno_sig_level : float,optional, default=5e-8
         Significance level for lead variants.
     sig_line_color : str, optional,default='grey'
         Color for significance line.

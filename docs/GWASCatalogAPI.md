@@ -15,7 +15,7 @@ The GWAS Catalog API integration in GWASLab provides two main ways to access ass
 
 Query the GWAS Catalog API v2 directly to retrieve associations.
 
-```python
+```
 import gwaslab as gl
 
 # Get associations for a specific variant
@@ -52,7 +52,7 @@ associations = gl.get_associations(accession_id="GCST000001")
 #### Examples
 
 !!! example "Get associations for a specific variant"
-    ```python
+    ```
     import gwaslab as gl
     
     # Get all associations for rs1050316
@@ -61,7 +61,7 @@ associations = gl.get_associations(accession_id="GCST000001")
     ```
 
 !!! example "Get associations for a trait"
-    ```python
+    ```
     # Get associations for type 2 diabetes
     associations = gl.get_associations(
         efo_trait="type 2 diabetes mellitus",
@@ -72,7 +72,7 @@ associations = gl.get_associations(accession_id="GCST000001")
     ```
 
 !!! example "Get all associations for a study"
-    ```python
+    ```
     # Get all associations from a specific study
     associations = gl.get_associations(
         accession_id="GCST000001",
@@ -84,7 +84,7 @@ associations = gl.get_associations(accession_id="GCST000001")
 
 For more advanced usage, you can use the `GWASCatalogClient` class directly:
 
-```python
+```
 from gwaslab.extension.gwascatalog import GWASCatalogClient
 
 # Create a client
@@ -104,7 +104,7 @@ variants = client.get_variants(rs_id="rs1050316")
 
 A specialized method for retrieving known variants from GWAS Catalog for use with `get_novel()`. This method handles MONDO to EFO conversion, extracts CHR/POS from locations, and returns data in the format expected by `get_novel()`.
 
-```python
+```
 # Get known variants for a trait (supports EFO ID, MONDO ID, or trait name)
 known_variants = client.get_known_variants_for_trait(
     efo="EFO_0001360",  # or "MONDO_0005148" or "type 2 diabetes mellitus"
@@ -137,7 +137,7 @@ Extract GWAS Catalog associations for variants in your summary statistics. This 
 !!! warning "Input Limit"
     The input is limited to **100 unique variants**. If your sumstats contains more than 100 unique variants, only the first 100 will be processed and a warning will be issued. This limit prevents excessive API calls and ensures reasonable processing times.
 
-```python
+```
 import gwaslab as gl
 
 # Load your sumstats
@@ -175,7 +175,7 @@ associations_summary = mysumstats.get_associations()
 #### Examples
 
 !!! example "Basic usage - get associations only"
-    ```python
+    ```
     import gwaslab as gl
     
     mysumstats = gl.Sumstats("sumstats.txt.gz", fmt="plink2")
@@ -191,7 +191,7 @@ associations_summary = mysumstats.get_associations()
     ```
 
 !!! example "Get associations with metadata"
-    ```python
+    ```
     # Get associations with traits, studies, and variants
     associations = mysumstats.get_associations(
         fetch_metadata=True,
@@ -202,7 +202,7 @@ associations_summary = mysumstats.get_associations()
     ```
 
 !!! example "Use GCV2 format (default)"
-    ```python
+    ```
     # Get associations in GCV2 format (merged with sumstats)
     associations = mysumstats.get_associations(
         use_gcv2_format=True,
@@ -214,7 +214,7 @@ associations_summary = mysumstats.get_associations()
     ```
 
 !!! example "Plot associations"
-    ```python
+    ```
     # After getting associations, you can plot them
     mysumstats.get_associations()
     mysumstats.plot_associations()

@@ -1,0 +1,32 @@
+********************************************************************************
+* LD Score Regression (LDSC)
+********************************************************************************
+* Version 1.0.1
+* (C) 2014-2019 Brendan Bulik-Sullivan and Hilary Finucane
+*
+* GNU General Public License v3
+********************************************************************************
+
+Call:
+./ldsc.py --rg trait1.sumstats.gz,trait2.sumstats.gz,trait3.sumstats.gz --ref-ld-chr eas_ldscores/ --w-ld-chr eas_ldscores/ --out simulated_rg_multiple
+
+Beginning analysis at Mon Jan 15 10:30:00 2024
+Reading summary statistics from trait1.sumstats.gz...
+Read 50000 SNPs
+Reading summary statistics from trait2.sumstats.gz...
+Read 50000 SNPs
+Reading summary statistics from trait3.sumstats.gz...
+Read 50000 SNPs
+After filtering, 45000 SNPs remain
+Reading LD scores from eas_ldscores/...
+Read LD scores for 45000 SNPs
+After merging, 45000 SNPs remain
+
+Summary of Genetic Correlation Results
+p1                          p2                          rg      se      z       p       h2_obs  h2_obs_se       h2_int  h2_int_se       gcov_int        gcov_int_se
+trait1.sumstats.gz          trait2.sumstats.gz          0.1601  0.1821  0.8794  0.3792  0.0543  0.0211   1.0583  0.0335  -0.0198        0.0121
+trait1.sumstats.gz          trait3.sumstats.gz          0.4523  0.1234  3.6656  0.0002  0.0543  0.0211   1.0583  0.0335  -0.0156        0.0102
+trait2.sumstats.gz          trait3.sumstats.gz          -0.1234 0.1456  -0.8478 0.3967  0.0743  0.0123   1.0296  0.0107  -0.0123        0.0089
+
+Analysis finished at Mon Jan 15 10:35:00 2024
+

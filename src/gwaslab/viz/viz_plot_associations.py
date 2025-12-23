@@ -69,6 +69,10 @@ def _plot_associations(associations,
         Additional arguments for y-axis tick labels. Default: None
     """
     
+    # Extract dataframe if Sumstats object is passed
+    if hasattr(associations, 'data') and not isinstance(associations, pd.DataFrame):
+        associations = associations.data
+    
     log.write("Start to create heatmap for associations...", verbose=verbose)
     
     cmap = _update_arg(cmap, "RdBu")

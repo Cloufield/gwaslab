@@ -49,7 +49,7 @@ from gwaslab.io.io_process_kwargs import normalize_series_inputs
 def _setup_and_log_mqq_info(
     insumstats,
     mode,
-    sig_level_plot,
+    sig_level,
     anno_set,
     highlight,
     highlight_chrpos,
@@ -85,7 +85,7 @@ def _setup_and_log_mqq_info(
         log.warning("Genomic coordinates version is unknown.")
 
     # Basic stats and mode
-    log.write(" - Genome-wide significance level to plot is set to " + str(sig_level_plot) + " ...", verbose=verbose)
+    log.write(" - Genome-wide significance level to plot is set to " + str(sig_level) + " ...", verbose=verbose)
     log.write(" - Input sumstats contains {} variants...".format(len(insumstats)), verbose=verbose)
     log.write(" - {} layout mode selected: {}".format(plot_label, mode), verbose=verbose)
 
@@ -245,9 +245,8 @@ def _mqqplot(insumstats,
           jagged_len=0.01,
           jagged_wid=0.01,
           sig_line=True,
-          sig_level=None,
-          sig_level_plot=5e-8,
-          sig_level_lead=5e-8,
+          sig_level=5e-8,
+          anno_sig_level=5e-8,
           sig_line_color="grey",  # Default color for significance line
           suggestive_sig_line=False,  # Default to no suggestive significance line
           suggestive_sig_level=5e-6,  # Default suggestive significance level
@@ -548,16 +547,13 @@ def _mqqplot(insumstats,
         Force for repelling overlapping labels.
     sig_line : bool, default=True
         Whether to show significance line.
-    sig_level : float, optional
-        Significance level for variants. Overrides sig_level_plot and sig_level_lead. 
-        Default is None.
-    sig_level_plot : float, default=5e-8
-        Significance level threshold to plot a line on the Manhattan plot. 
-        When sig_level is None, sig_level_plot will be used.
-    sig_level_lead : float, default=5e-8
+    sig_level : float, default=5e-8
+        Significance level threshold to plot a line on the Manhattan plot and for marker sizing.
+        Controls the reference line position and marker sizes for variants above this threshold.
+    anno_sig_level : float, default=5e-8
         Significance level for extracting lead variants to annotate on the plot.
-        When sig_level is None, sig_level_plot will be used.
-        When too many lead variants, it is helpful to set sig_level_lead to a more strict value.
+        Can be set independently from sig_level to control annotation separately from visualization.
+        When too many lead variants, it is helpful to set anno_sig_level to a more strict value.
     sig_line_color : str, default='grey'
         Color for significance line.
     suggestive_sig_line : bool, default=False
@@ -727,6 +723,13 @@ def _mqqplot(insumstats,
     - The function automatically handles chromosome name standardization and coordinate conversion.
     - For large datasets, use `skip` parameter to filter low-significance variants for faster plotting.
     """
+    # Extract dataframe if Sumstats object is passed
+    # Store reference to original object to check meta
+    sumstats_obj = None
+    if hasattr(insumstats, 'data') and not isinstance(insumstats, pd.DataFrame):
+        sumstats_obj = insumstats
+        insumstats = insumstats.data
+    
     # scan all local args for series and convert to list for further processing
     for arg in locals().values():
         if isinstance(arg, pd.Series):
@@ -807,18 +810,23 @@ def _mqqplot(insumstats,
     region_ref_index_dic = {value: index for index,value in enumerate(region_ref)}
 
     # scatter_kwargs and qq_scatter_kwargs merged via set_plot_style
-
-    if sig_level is None:
-        sig_level_plot=sig_level_plot
-        sig_level_lead=sig_level_lead 
+        
+    # Check if QC is finished in Sumstats meta, skip quick QC if so
+    if sumstats_obj is not None:
+        qc_performed = sumstats_obj.meta.get("gwaslab", {}).get("basic_check", {}).get("performed", False)
+        if qc_performed:
+            _if_quick_qc = False
+            log.write(" -QC is finished according to meta. Quick QC will be skipped.", verbose=verbose)
+        elif check==True and _if_quick_qc==True:
+            _if_quick_qc = True
+        else:
+            _if_quick_qc = False
     else:
-        sig_level_plot = sig_level
-        sig_level_lead = sig_level     
-
-    if check==True and _if_quick_qc==True:
-        _if_quick_qc = True
-    else:
-        _if_quick_qc = False
+        # If not a Sumstats object, use original logic
+        if check==True and _if_quick_qc==True:
+            _if_quick_qc = True
+        else:
+            _if_quick_qc = False
 
     # configure dpi if saving the plot
     fig_kwargs, scatter_kwargs, qq_scatter_kwargs, save_kwargs = _configure_fig_save_kwargs(mode=mode,
@@ -836,7 +844,7 @@ def _mqqplot(insumstats,
     plot_label, build, highlight, highlight_color, pinpoint, pinpoint_color = _setup_and_log_mqq_info(
         insumstats=insumstats,
         mode=mode,
-        sig_level_plot=sig_level_plot,
+        sig_level=sig_level,
         anno_set=anno_set,
         highlight=highlight,
         highlight_chrpos=highlight_chrpos,
@@ -851,10 +859,11 @@ def _mqqplot(insumstats,
     )
     
     # Build significance threshold series and convert to -log10 scale
+    # Add anno_sig_level as last item so it gets transformed by _cut, then remove it after
     if additional_line is None:
-        lines_to_plot = pd.Series([sig_level_plot, suggestive_sig_level] )
+        lines_to_plot = pd.Series([sig_level, suggestive_sig_level, anno_sig_level] )
     else:
-        lines_to_plot = pd.Series([sig_level_plot, suggestive_sig_level] + additional_line ) 
+        lines_to_plot = pd.Series([sig_level, suggestive_sig_level, anno_sig_level] + additional_line ) 
         if additional_line_color is None:
             additional_line_color = ["grey"]
     lines_to_plot = -np.log10(lines_to_plot)
@@ -1026,6 +1035,8 @@ def _mqqplot(insumstats,
     garbage_collect.collect()
     
     # Shrink variants above cut line #########################################################################################
+    # Initialize transformed_anno_sig_level (will be updated after _cut if successful)
+    transformed_anno_sig_level = -np.log10(anno_sig_level)
     try:
         sumstats["scaled_P"], maxy, maxticker, cut, cutfactor,ylabels_converted, lines_to_plot = _cut(series = sumstats["scaled_P"], 
                                                                         mode =mode, 
@@ -1038,6 +1049,14 @@ def _mqqplot(insumstats,
                                                                         lines_to_plot=lines_to_plot,
                                                                         log = log
                                                                         )
+        # Extract transformed anno_sig_level from lines_to_plot (it's at index 2)
+        # Then remove it so it doesn't get drawn as a line
+        transformed_anno_sig_level = lines_to_plot.iloc[2]
+        # Remove anno_sig_level (index 2), keep sig_level (0), suggestive_sig_level (1), and additional_line (3+)
+        if additional_line is None:
+            lines_to_plot = lines_to_plot.iloc[:2]
+        else:
+            lines_to_plot = pd.Series(list(lines_to_plot.iloc[:2]) + list(lines_to_plot.iloc[3:])).reset_index(drop=True)
     except:
         log.warning("No valid data! Please check the input.")
         return None
@@ -1097,7 +1116,7 @@ def _mqqplot(insumstats,
         if "b" not in mode:
             sumstats.loc[sumstats["scaled_P"]>-np.log10(5e-4),"s"]=2
             sumstats.loc[sumstats["scaled_P"]>-np.log10(suggestive_sig_level),"s"]=3
-            sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level_plot),"s"]=4
+            sumstats.loc[sumstats["scaled_P"]>-np.log10(sig_level),"s"]=4
         sumstats["chr_hue"]=sumstats[chrom].astype("string")
 
         if "r" in mode:
@@ -1224,11 +1243,15 @@ def _mqqplot(insumstats,
         
         log.write("Finished creating {} successfully".format(plot_label),verbose=verbose)
         
+        # Use transformed anno_sig_level threshold (after _cut transformation) for annotation
         if "b" in mode:
             from gwaslab.viz.viz_plot_density_mode import b_scaled_threshold
-            scaled_threhosld = b_scaled_threshold(sig_level_lead)
+            # For bubble mode, use original threshold since density uses different scaling
+            scaled_threhosld = b_scaled_threshold(anno_sig_level)
         else:
-            scaled_threhosld = float(-np.log10(sig_level_lead))
+            # Use the transformed threshold that matches the scaled_P scale after _cut
+            scaled_threhosld = transformed_anno_sig_level
+            anno_sig_level = np.power(10, -scaled_threhosld)
         # Get top variants for annotation #######################################################
         from gwaslab.viz.viz_plot_manhattan_like import _extract_to_annotate
         to_annotate = pd.DataFrame()
@@ -1238,7 +1261,7 @@ def _mqqplot(insumstats,
             chrom=chrom,
             pos=pos,
             scaled_threhosld=scaled_threhosld,
-            sig_level_lead=sig_level_lead,
+            anno_sig_level=anno_sig_level,
             windowsizekb=windowsizekb,
             scaled=scaled,
             anno=anno,

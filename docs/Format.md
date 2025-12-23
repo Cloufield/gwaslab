@@ -71,7 +71,7 @@ GWASLab supports commonly used tabular formats, which are listed in a companion 
     For more details, please check [formatbook](https://github.com/Cloufield/formatbook)
 
 !!! example "Basic format conversion"
-    ```python
+    ```
     # Convert to LDSC format
     mysumstats.to_format(path="./output", fmt="ldsc")
     # Output: output.ldsc.tsv.gz
@@ -86,7 +86,7 @@ GWASLab supports commonly used tabular formats, which are listed in a companion 
     ```
 
 !!! example "Filtering and formatting"
-    ```python
+    ```
     # Extract HapMap3 SNPs only
     mysumstats.to_format(path="./hapmap3", fmt="ldsc", hapmap3=True)
     
@@ -101,7 +101,7 @@ GWASLab supports commonly used tabular formats, which are listed in a companion 
     ```
 
 !!! example "Advanced options"
-    ```python
+    ```
     # Custom float formatting
     float_formats = {'P': '{:.2e}', 'BETA': '{:.6f}', 'SE': '{:.6f}'}
     mysumstats.to_format(path="./formatted", fmt="gwaslab", float_formats=float_formats)

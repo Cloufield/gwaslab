@@ -54,7 +54,7 @@ The processed dataset can then be used for:
 Since GWASLab will check chr:pos and ea/nea to match rsID, it would take a little bit longer if we only use vcf. 
 
 But we can use a pre-annotated conversion table for common SNPs, and then annotate the rest of SNPs using large VCF file from dbSNP. 
-```python
+```
 for i in range(1,23):
     sumstats = gl.Sumstats("./EAS.chr"+str(i)+".split_norm_af.vcf.gz",snpid="ID",fmt="vcf")
     sumstats.harmonize( basic_check=True,

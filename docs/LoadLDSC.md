@@ -19,7 +19,7 @@ gl.read_ldsc(filelist, mode="h2")
 
 !!! example ldsc - h2
 
-    ```python
+    ```
     #mode=h2
     paths = [
         '/home/he/work/GWASTutorial/08_LDSC/BBJ_HDLC.log',
@@ -57,6 +57,6 @@ gl.read_ldsc(filelist, mode="h2")
 
 For genetic correlation, after loading, you can use `gl.plot_rg()` to plot a heat map to visualize the results. No extra manipulation needed.
 
-```python
+```
 gl.plot_rg(myldscrg)
 ```

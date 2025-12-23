@@ -4,11 +4,16 @@
 
 | Functions                   | Options | Datatype | Description                                       |
 |-----------------------------|---------|----------|---------------------------------------------------|
-| `gl.check_available_ref()`  |         |          | list available reference datasets GWASLab can use |
+| `gl.check_available_ref()`  | `show_all=False`, `verbose=True` | `boolean` | list available reference datasets GWASLab can use |
 | `gl.check_downloaded_ref()` |         |          | list downloaded reference dataset                 |
-| `gl.download_ref(keyword)`  | keyword | `string` | download the reference dataset                    |
+| `gl.download_ref(keyword)`  | `keyword`, `directory=None`, `local_filename=None`, `overwrite=False` | `string` | download the reference dataset                    |
 | `gl.remove_file(keyword)`   | keyword | `string` | remove the downloaded dataset                     |
-| `gl.get_path(keyword)`      | keyword | `string` | get the path to the refernce dataset              |
+| `gl.get_path(keyword)`      | keyword, `verbose=True` | `string` | get the path to the reference dataset              |
+| `gl.set_default_directory(path)` | path | `string` | set the default directory for downloaded files |
+| `gl.get_default_directory()` | | | get the default directory path |
+| `gl.scan_downloaded_files()` | `verbose=True` | `boolean` | scan data directory for unregistered files and match with available references |
+| `gl.add_local_data(keyword, local_path, ...)` | keyword, local_path, format, description, md5sum, suggested_use, tbi, csi | | register a local file without downloading |
+| `gl.remove_local_record(keyword)` | keyword | `string` | remove a local data record from configuration (does not delete the file) |
 
 You can download the following files using GWASLab with the keywords:
 
@@ -26,8 +31,8 @@ Datasets you need to download explicitly if needed.
 | `1kg_pan_hg19`,`1kg_pan_hg19_tbi`     | Autosomes; 1KGp3v5 low-coverage VCF and index (hg19); all ancestries | Processed, Dropbox |
 | `1kg_eas_hg38`,`1kg_eas_hg38_tbi`     | Autosomes; 1KGp3v5 30x EAS VCF and index (hg38)                      | Processed, Dropbox |
 | `1kg_eur_hg38`,`1kg_eur_hg38_tbi`     | Autosomes; 1KGp3v5 30x EUR VCF and index (hg38)                      | Processed, Dropbox |
-| `1kg_afr_hg38`,`1kg_eas_hg38_tbi`     | Autosomes; 1KGp3v5 30x AFR VCF and index (hg38)                      | Processed, Dropbox |
-| `1kg_amr_hg38`,`1kg_eur_hg38_tbi`     | Autosomes; 1KGp3v5 30x AMR VCF and index (hg38)                      | Processed, Dropbox |
+| `1kg_afr_hg38`,`1kg_afr_hg38_tbi`     | Autosomes; 1KGp3v5 30x AFR VCF and index (hg38)                      | Processed, Dropbox |
+| `1kg_amr_hg38`,`1kg_amr_hg38_tbi`     | Autosomes; 1KGp3v5 30x AMR VCF and index (hg38)                      | Processed, Dropbox |
 | `1kg_sas_hg38`,`1kg_sas_hg38_tbi`     | Autosomes; 1KGp3v5 30x SAS VCF and index (hg38)                      | Processed, Dropbox |
 | `1kg_pan_hg38`,`1kg_pan_hg38_tbi`     | Autosomes; 1KGp3v5 30x VCF and index (hg38); all ancestries          | Processed, Dropbox |
 | `1kg_eas_x_hg19`,`1kg_eas_x_hg19_tbi` | ChrX; 1KGp3v5 low-coverage EAS VCF and index (hg19)                  | Processed, Dropbox |
@@ -38,8 +43,8 @@ Datasets you need to download explicitly if needed.
 | `1kg_pan_x_hg19`,`1kg_pan_x_hg19_tbi` | ChrX; 1KGp3v5 low-coverage VCF and index (hg19); all ancestries      | Processed, Dropbox |
 | `1kg_eas_x_hg38`,`1kg_eas_x_hg38_tbi` | ChrX; 1KGp3v5 30x EAS VCF and index (hg38)                           | Processed, Dropbox |
 | `1kg_eur_x_hg38`,`1kg_eur_x_hg38_tbi` | ChrX; 1KGp3v5 30x EUR VCF and index (hg38)                           | Processed, Dropbox |
-| `1kg_afr_x_hg38`,`1kg_eas_x_hg38_tbi` | ChrX; 1KGp3v5 30x AFR VCF and index (hg38)                           | Processed, Dropbox |
-| `1kg_amr_x_hg38`,`1kg_eur_x_hg38_tbi` | ChrX; 1KGp3v5 30x AMR VCF and index (hg38)                           | Processed, Dropbox |
+| `1kg_afr_x_hg38`,`1kg_afr_x_hg38_tbi` | ChrX; 1KGp3v5 30x AFR VCF and index (hg38)                           | Processed, Dropbox |
+| `1kg_amr_x_hg38`,`1kg_amr_x_hg38_tbi` | ChrX; 1KGp3v5 30x AMR VCF and index (hg38)                           | Processed, Dropbox |
 | `1kg_sas_x_hg38`,`1kg_sas_x_hg38_tbi` | ChrX; 1KGp3v5 30x SAS VCF and index (hg38)                           | Processed, Dropbox |
 | `1kg_pan_x_hg38`,`1kg_pan_x_hg38_tbi` | ChrX; 1KGp3v5 30x VCF and index (hg38); all ancestries               | Processed, Dropbox |
 | `dbsnp_v151_hg19`                     | dbSNP151 (hg19, !!very large)                                        | Original source    |
@@ -63,6 +68,23 @@ Datasets you need to download explicitly if needed.
     '/Users/he/work/gwaslab/src/gwaslab/data/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz'
     ```
 
+!!! example "Download to a custom directory"
+    ```
+    gl.set_default_directory("/path/to/custom/directory")
+    gl.download_ref("1kg_eas_hg19")
+    ```
+
+!!! example "Register a local file"
+    ```
+    gl.add_local_data(
+        keyword="my_custom_ref",
+        local_path="/path/to/my/file.vcf.gz",
+        format="vcf",
+        description="My custom reference file",
+        suggested_use="Harmonization"
+    )
+    ```
+
 Other reference datasets GWASLab uses to create regional plot and annotate variants (GWASLab will automatically download and process these files when needed): 
 
 | Keyword              | Description                                                   | Note               |
@@ -72,7 +94,7 @@ Other reference datasets GWASLab uses to create regional plot and annotate varia
 | `ensembl_hg19_gtf`   | GTF file for genes from Ensembl (hg19)                        | Original source    |
 | `ensembl_hg38_gtf`   | GTF file for genes from Ensembl (hg38)                        | Original source    |
 | `refseq_hg19_gtf`    | GTF file for genes from Refseq (hg19)                         | Original source    |
-| `refseq_hg38_gtf`    | GTF file for genes from Refseq (hg19)                         | Original source    |
+| `refseq_hg38_gtf`    | GTF file for genes from Refseq (hg38)                         | Original source    |
 
 
 ## Configurations
@@ -94,7 +116,7 @@ gl.options.paths
  'data_directory': '/Users/he/.gwaslab/'}
 ```
 
-Sometimes you might need to use your own files, which can be done using `gl.options.set_option(key, newpath)` (simply run this after loadnig the gwaslab package):
+Sometimes you might need to use your own files, which can be done using `gl.options.set_option(key, newpath)` (simply run this after loading the gwaslab package):
 
 ```
 # change the path for formatbook

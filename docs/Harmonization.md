@@ -24,7 +24,7 @@ GWASLab provides reference-dependent harmonization functions.
 | `chr_dict`                              | `dict`     | a conversion dictionary for chromosome notations in reference FASTA and those in sumstats | `gl.get_chr_to_number()`           |
 
 !!! example
-    ```python
+    ```
     mysumstats.check_ref(ref_path="ref_genome.fa")
     mysumstats.flip_allele_stats()
     ```
@@ -38,7 +38,7 @@ GWASLab provides reference-dependent harmonization functions.
 See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.io/gwaslab/AssignrsID/)
 
 !!! example
-    ```python
+    ```
     mysumstats.assign_rsid(ref_rsid_tsv = gl.get_path("1kg_dbsnp151_hg19_auto"), 
                            ref_rsid_vcf = "/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
                            chr_dict = gl.get_number_to_NC(build="19") 
@@ -85,7 +85,7 @@ See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.i
 | `use_cache`     | `bool`                                      | If any of the cache_manager, cache_loader or cache_process is not None, this will be set to True automatically. If set to True and all between cache_manager, cache_loader and cache_process are None, the cache will be loaded (or built) on the spot. | False   |
 
 !!! example
-    ```python
+    ```
     mysumstats.infer_strand()
     mysumstats.flip_allele_stats()
 
@@ -129,7 +129,7 @@ GWASLab will simply calculate DAF = EAF (sumstats) - frequency in VCF file, and 
 DAF can then be used for plotting (`.plot_daf()`) or filter variants.
 
 !!! example
-    ```python
+    ```
     mysumstats.plot_daf(threshold=0.12)
     ```
 ![image](https://github.com/Cloufield/gwaslab/assets/40289485/0c607470-bbb6-4f11-93fe-038a53f6eebb)
@@ -139,7 +139,7 @@ DAF can then be used for plotting (`.plot_daf()`) or filter variants.
 `.flip_allele_stats()` :  Flip allele-specific statistics to harmonize the variants based on the tracking status code in STATUS. 
 
 !!! example
-    ```python 
+    ``` 
     mysumstats.check_ref(ref_path="ref_genome.fa")
     mysumstats.flip_allele_stats()
     
@@ -198,7 +198,7 @@ Use normal mode when:
 ### Usage Example
 
 !!! example
-    ```python
+    ```
     # Harmonization with sweep mode for large dataset
     mysumstats.harmonize(
         ref_seq="/path/to/reference.fasta",
@@ -221,7 +221,7 @@ Use normal mode when:
 
 ## Assign CHR and POS according to rsID and reference data
 
-```python
+```
 mysumstats.rsid_to_chrpos()  
 
 mysumstats.rsid_to_chrpos2()  
