@@ -240,6 +240,14 @@
         "tbi": "",
         "md5sum": ""
     },
+    "38to19": {
+        "url": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToHg19.over.chain.gz",
+        "description": "LiftOver chain file for converting genomic coordinates from hg38 (GRCh38) to hg19 (GRCh37) reference builds, enabling cross-reference genome analysis.",
+        "suggested_use": "Genome build conversion and coordinate remapping",
+        "related_files": "",
+        "tbi": "",
+        "md5sum": ""
+    },
     "1kg_hm3_hg38_eaf": {
         "url": "https://www.dropbox.com/scl/fi/ymkqfsaec6mwjzlvxsm45/PAN.hapmap3.hg38.EAF.tsv.gz?rlkey=p1auef5y1kk7ui41k6j3s8b0z&dl=1",
         "description": "1KG HapMap3 hg38 EAF (GRCh38) provides allele frequency estimates for the HapMap3 populations on the hg38 reference genome, derived from 1000 Genomes Project data.",

@@ -349,6 +349,38 @@ def get_recombination_rate(chrom, build="19"):
     return recombination_rate
 ####################################################################################################################
 def get_chain(from_build="19", to_build="38"):    
+    """
+    Get the path to a chain file for liftover between genome builds.
+    
+    First checks for built-in chain files in the package data directory.
+    If not found, falls back to downloading from reference.json.
+    
+    Parameters
+    ----------
+    from_build : str
+        Source genome build (e.g., "19" for hg19/GRCh37)
+    to_build : str
+        Target genome build (e.g., "38" for hg38/GRCh38)
+    
+    Returns
+    -------
+    str
+        Path to the chain file
+    """
+    # Map build numbers to chain file names
+    chain_files = {
+        ("19", "38"): "hg19ToHg38.over.chain.gz",
+        ("38", "19"): "hg38ToHg19.over.chain.gz",
+    }
+    
+    # Check for built-in chain file first
+    chain_filename = chain_files.get((str(from_build), str(to_build)))
+    if chain_filename:
+        builtin_chain_path = path.join(Path(__file__).parents[1], "data", "chains", chain_filename)
+        if path.exists(builtin_chain_path):
+            return builtin_chain_path
+    
+    # Fall back to download mechanism
     chain_path = check_and_download("{}to{}".format(from_build, to_build))
     return chain_path
 ####################################################################################################################

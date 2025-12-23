@@ -36,7 +36,7 @@ from gwaslab.qc.qc_fix_sumstats import (
     _strip_SNPID,
     _process_build
 )
-from gwaslab.hm.hm_liftover_v2 import _liftover2_variant, _parallelize_liftover_variant
+from gwaslab.hm.hm_liftover_v2 import _liftover_variant
 from gwaslab.qc.qc_sanity_check import (
     _sanity_check_stats,
     _check_data_consistency,
@@ -420,34 +420,31 @@ class Sumstats():
         # _infer_build now handles updating self.build and self.meta internally
         self.data = _infer_build(self,log=self.log,verbose=verbose,**kwargs)
 
-    @add_doc(_parallelize_liftover_variant)
-    def liftover(self,to_build, from_build=None,**kwargs):
-        if from_build is None:
-            from_build = self.build
-        kwargs = remove_overlapping_kwargs(kwargs,{"from_build","to_build","log"})
-        # Metadata update logic is now handled inside _parallelize_liftover_variant
-        # _parallelize_liftover_variant always returns a DataFrame
-        self.data = _parallelize_liftover_variant(self,from_build=from_build, to_build=to_build, log=self.log,**kwargs)
-
-    @add_doc(_liftover2_variant)
-    def liftover2(self, chain_path, **kwargs):
+    @add_doc(_liftover_variant)
+    def liftover(self, to_build=None, from_build=None, chain_path=None, **kwargs):
         """
-        Perform fast chain-based liftover using a UCSC chain file.
+        Perform liftover of variants to a new genome build.
         
-        This method uses a fast chain-based liftover implementation that directly
-        parses UCSC chain files and performs vectorized coordinate conversion.
+        Can be called with either:
+        - from_build and to_build (chain file will be automatically found)
+        - chain_path (direct path to chain file)
         
         Parameters
         ----------
-        chain_path : str
-            Path to UCSC chain file (can be .chain or .chain.gz).
+        to_build : str, optional
+            Target genome build (e.g., "38"). Required if chain_path is not provided.
+        from_build : str, optional
+            Source genome build (e.g., "19"). If None, uses self.build.
+        chain_path : str, optional
+            Path to UCSC chain file. If provided, from_build and to_build are optional.
         **kwargs
-            Additional arguments passed to _liftover2_variant.
-            See _liftover2_variant for full parameter list.
+            Additional arguments passed to _liftover_variant.
         """
-        kwargs = remove_overlapping_kwargs(kwargs, {"chain_path", "log"})
-        # _liftover2_variant always returns a DataFrame
-        self.data = _liftover2_variant(self, chain_path=chain_path, log=self.log, **kwargs)
+        if from_build is None:
+            from_build = self.build
+        kwargs = remove_overlapping_kwargs(kwargs, {"from_build", "to_build", "chain_path", "log"})
+        self.data = _liftover_variant(self, from_build=from_build, to_build=to_build, chain_path=chain_path, log=self.log, **kwargs)
+
 
 # QC ######################################################################################
     #clean the sumstats with one line

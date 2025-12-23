@@ -1,0 +1,917 @@
+{
+  "SNPID": {
+    "Keyword": "snpid",
+    "Datatype": "string",
+    "Category": "info",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "variant ID (CHR:POS:NEA:EA)",
+    "Note": "GWASLab assumes EA=ALT and NEA=REF",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "rsID": {
+    "Keyword": "rsid",
+    "Datatype": "string",
+    "Category": "info",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "dbSNP rsID",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "CHR": {
+    "Keyword": "chrom",
+    "Datatype": "Int64",
+    "Category": "info",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "chromosome number (X 23, Y 24, MT 25)",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ]
+  },
+  "POS": {
+    "Keyword": "pos",
+    "Datatype": "Int64",
+    "Category": "info",
+    "ValidDtypes": [
+      "int64",
+      "Int64",
+      "int"
+    ],
+    "Description": "base pair position",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ]
+  },
+  "EA": {
+    "Keyword": "ea",
+    "Datatype": "category",
+    "Category": "info",
+    "ValidDtypes": [
+      "category"
+    ],
+    "Description": "effect allele",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "NEA": {
+    "Keyword": "nea",
+    "Datatype": "category",
+    "Category": "info",
+    "ValidDtypes": [
+      "category"
+    ],
+    "Description": "non-effect allele",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "STATUS": {
+    "Keyword": "status",
+    "Datatype": "category",
+    "Category": "info",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "7-digit variant status",
+    "Note": "lookup_status() to check",
+    "ValidDtypesPolars": [
+      "String"
+    ],
+    "ValidRange": null
+  },
+  "REF": {
+    "Keyword": "ref",
+    "Datatype": "category",
+    "Category": "others",
+    "ValidDtypes": [
+      "category"
+    ],
+    "Description": "reference allele in reference genome",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "ALT": {
+    "Keyword": "alt",
+    "Datatype": "category",
+    "Category": "others",
+    "ValidDtypes": [
+      "category"
+    ],
+    "Description": "alternative allele",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "EAF": {
+    "Keyword": "eaf",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "effect allele frequency",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      1
+    ]
+  },
+  "NEAF": {
+    "Keyword": "neaf",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "non-effect allele frequency",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "MAF": {
+    "Keyword": "maf",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "minor allele frequency",
+    "Note": "if EAF, use fill_data to get MAF",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      0.5
+    ]
+  },
+  "INFO": {
+    "Keyword": "info",
+    "Datatype": "float32",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "imputation INFO/RSQ",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      2
+    ]
+  },
+  "BETA": {
+    "Keyword": "beta",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "effect size beta",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      -100,
+      100
+    ]
+  },
+  "SE": {
+    "Keyword": "se",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "standard error of beta",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      "Inf"
+    ]
+  },
+  "BETA_95U": {
+    "Keyword": "beta_95U",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "upper bound of beta 95% condidence interval",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "BETA_95L": {
+    "Keyword": "beta_95L",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "lower bound of beta 95% condidence interval",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "OR": {
+    "Keyword": "OR",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "odds ratio",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      100
+    ]
+  },
+  "OR_95U": {
+    "Keyword": "OR_95U",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "upper bound of OR 95% condidence interval",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      "Inf"
+    ]
+  },
+  "OR_95L": {
+    "Keyword": "OR_95L",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "lower bound of OR 95% condidence interval",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      "Inf"
+    ]
+  },
+  "HR": {
+    "Keyword": "HR",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "hazard ratio",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      100
+    ]
+  },
+  "HR_95U": {
+    "Keyword": "HR_95U",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "upper bound of HR 95% condidence interval",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      "Inf"
+    ]
+  },
+  "HR_95L": {
+    "Keyword": "HR_95L",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "lower bound of HR 95% condidence interval",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      "Inf"
+    ]
+  },
+  "CHISQ": {
+    "Keyword": "chisq",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "chi square",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      "Inf"
+    ]
+  },
+  "Z": {
+    "Keyword": "z",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "z score",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      -9999,
+      9999
+    ]
+  },
+  "T": {
+    "Keyword": "t",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "t statistics",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      -99999,
+      99999
+    ]
+  },
+  "F": {
+    "Keyword": "f",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "F statistics",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      "Inf"
+    ]
+  },
+  "P": {
+    "Keyword": "p",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "P value",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      1
+    ]
+  },
+  "P_MANTISSA": {
+    "Keyword": "p_mantissa",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "P mantissa",
+    "Note": "-"
+  },
+  "P_EXPONENT": {
+    "Keyword": "p_exponent",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "P exponent",
+    "Note": "-"
+  },
+  "MLOG10P": {
+    "Keyword": "mlog10p",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "-log10(P)",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      99999
+    ]
+  },
+  "SNPR2": {
+    "Keyword": "snpr2",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "per variant R2",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "DOF": {
+    "Keyword": "dof",
+    "Datatype": "Int64",
+    "Category": "others",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "degree of freedom",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ]
+  },
+  "P_HET": {
+    "Keyword": "phet",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "heterogeneity test P value",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "I2_HET": {
+    "Keyword": "i2",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "heterogeneity I2",
+    "Note": "-"
+  },
+  "I2": {
+    "Keyword": "i2",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "heterogeneity I2 (alias for I2_HET)",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "DIRECTION": {
+    "Keyword": "direction",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "direction of effect (+, -, ?)",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "DENSITY": {
+    "Keyword": "density",
+    "Datatype": "Int64",
+    "Category": "others",
+    "ValidDtypes": [
+      "Int64"
+    ],
+    "Description": "signal density",
+    "Note": "-"
+  },
+  "N": {
+    "Keyword": "n",
+    "Datatype": "Int64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "total sample size",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ],
+    "ValidRange": [
+      0,
+      2147483647
+    ]
+  },
+  "N_CASE": {
+    "Keyword": "ncase",
+    "Datatype": "Int64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "number of cases",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ],
+    "ValidRange": [
+      0,
+      2147483647
+    ]
+  },
+  "N_CONTROL": {
+    "Keyword": "ncontrol",
+    "Datatype": "Int64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "number of controls",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ],
+    "ValidRange": [
+      0,
+      2147483647
+    ]
+  },
+  "N_EFF": {
+    "Keyword": "neff",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "Effective sample size",
+    "Note": "-"
+  },
+  "GENENAME": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "nearest gene symbol",
+    "Note": "-"
+  },
+  "CIS/TRANS": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "whether the variant is in cis or trans region",
+    "Note": "Cis,Trans,NoReference"
+  },
+  "DISTANCE_TO_KNOWN": {
+    "Keyword": "",
+    "Datatype": "Int64",
+    "Category": "others",
+    "ValidDtypes": [
+      "Int64"
+    ],
+    "Description": "distance to nearest known variants",
+    "Note": "-"
+  },
+  "LOCATION_OF_KNOWN": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "relative location to nearest known variants",
+    "Note": "Same,Upstream,Downstream,NoReference"
+  },
+  "KNOWN_ID": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "nearest known variant ID",
+    "Note": "-"
+  },
+  "KNOWN_PUBMED_ID": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "pubmed ID of the known variant",
+    "Note": "-"
+  },
+  "KNOWN_AUTHOR": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "author of the study",
+    "Note": "-"
+  },
+  "KNOWN_SET_VARIANT": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "known set and overlapping variant",
+    "Note": "-"
+  },
+  "KNOWN_VARIANT": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "known variant overlapping with the variant",
+    "Note": "-"
+  },
+  "KNOWN_SET": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "variant set of the known variant",
+    "Note": "-"
+  },
+  "NOVEL": {
+    "Keyword": "",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object"
+    ],
+    "Description": "if the identified variants are novel",
+    "Note": "-"
+  },
+  "PIP": {
+    "Keyword": "pip",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "Posterior Inclusion Probability",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "CREDIBLE_SET_INDEX": {
+    "Keyword": "credible_set_index",
+    "Datatype": "Int64",
+    "Category": "others",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "credible sets index",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ]
+  },
+  "N_SNP": {
+    "Keyword": "n_snp",
+    "Datatype": "Int64",
+    "Category": "others",
+    "ValidDtypes": [
+      "Int64",
+      "int64",
+      "int32",
+      "Int32",
+      "int"
+    ],
+    "Description": "number of variants included in this locus for finemapping",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Int64"
+    ]
+  },
+  "LOCUS": {
+    "Keyword": "locus",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object",
+      "category"
+    ],
+    "Description": "locus name, usually the lead variant of the locus",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "STUDY": {
+    "Keyword": "study",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object",
+      "category"
+    ],
+    "Description": "study name",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "TEST": {
+    "Keyword": "test",
+    "Datatype": "string",
+    "Category": "others",
+    "ValidDtypes": [
+      "string",
+      "object",
+      "category"
+    ],
+    "Description": "test type",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "String"
+    ]
+  },
+  "BETA_RANDOM": {
+    "Keyword": "beta_random",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "random effects beta",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "SE_RANDOM": {
+    "Keyword": "se_random",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "random effects standard error",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "Z_RANDOM": {
+    "Keyword": "z_random",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "random effects z score",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  },
+  "P_RANDOM": {
+    "Keyword": "p_random",
+    "Datatype": "float64",
+    "Category": "others",
+    "ValidDtypes": [
+      "float64"
+    ],
+    "Description": "random effects P value",
+    "Note": "-",
+    "ValidDtypesPolars": [
+      "Float64"
+    ]
+  }
+}

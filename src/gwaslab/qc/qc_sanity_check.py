@@ -5,8 +5,6 @@ import pandas as pd
 import numpy as np
 from itertools import repeat
 from multiprocessing import  Pool
-from liftover import get_lifter
-from liftover import ChainFile
 from functools import partial
 from functools import wraps
 

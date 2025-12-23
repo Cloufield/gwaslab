@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 from itertools import repeat
 from multiprocessing import  Pool
-from liftover import get_lifter
-from liftover import ChainFile
 from functools import partial
 from gwaslab.info.g_vchange_status_polars import vchange_statusp
 from gwaslab.info.g_vchange_status import status_match

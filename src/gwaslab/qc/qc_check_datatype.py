@@ -147,7 +147,7 @@ def quick_convert_datatype(sumstats, log, verbose):
     """
     for col in sumstats.columns:
         if col in dtype_dict.keys():
-            current_dtype = str(sumstats[col].dtypes)
+            current_dtype = str(sumstats[col].dtype)
             # Check if conversion is needed
             if current_dtype not in dtype_dict[col]:
                 # Current dtype is not acceptable, convert to preferred dtype
@@ -158,7 +158,7 @@ def quick_convert_datatype(sumstats, log, verbose):
                 log.write(" -Trying to convert datatype for {}: {} -> {}...".format(col, current_dtype, datatype), end="" ,verbose=verbose)
                 try:
                     sumstats[col] = sumstats[col].astype(datatype)
-                    log.write("{}".format(datatype),show_time=False, verbose=verbose)
+                    log.write("Success",show_time=False, verbose=verbose)
                 except:
                     log.write("Failed...",show_time=False,verbose=verbose)
                     pass

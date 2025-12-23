@@ -17,7 +17,7 @@ from gwaslab.qc.qc_fix_sumstats import _fix_allele
 from gwaslab.qc.qc_fix_sumstats import _parallelize_normalize_allele
 from gwaslab.qc.qc_sanity_check import _sanity_check_stats
 
-from gwaslab.hm.hm_liftover_v2 import _parallelize_liftover_variant
+from gwaslab.hm.hm_liftover_v2 import _liftover_variant
 from gwaslab.qc.qc_fix_sumstats import _flip_allele_stats
 from gwaslab.qc.qc_fix_sumstats import _sort_coordinate
 from gwaslab.qc.qc_fix_sumstats import _sort_column

@@ -1053,10 +1053,8 @@ def _fix_allele(sumstats_obj,ea="EA", nea="NEA",status="STATUS",remove=False,ver
     all_var_num = len(sumstats)
     
     ## check ATCG
-    # Performance optimization: Since alleles are already uppercase, use simpler pattern
-    # Only allow A, T, C, G (N is not a valid allele)
-    bad_ea = sumstats[ea].str.contains("[^ATCG]", na=True, regex=True) | (sumstats[ea] == "N")
-    bad_nea = sumstats[nea].str.contains("[^ATCG]", na=True, regex=True) | (sumstats[nea] == "N")
+    bad_ea = sumstats[ea].str.contains("[^ATCG]", na=True, regex=True)
+    bad_nea = sumstats[nea].str.contains("[^ATCG]", na=True, regex=True)
     good_ea = ~bad_ea
     good_nea = ~bad_nea
     
@@ -1086,15 +1084,26 @@ def _fix_allele(sumstats_obj,ea="EA", nea="NEA",status="STATUS",remove=False,ver
     if len(set(sumstats.loc[bad_nea,nea].head())) >0:
         log.write(" -A look at the non-ATCG NEA:",set(sumstats.loc[bad_nea,nea].head()),"...", verbose=verbose) 
     
+    # Compute is_eanea_fixed BEFORE filtering (consistent with previous code)
+    is_eanea_fixed = good_ea | good_nea
+    
     if remove == True:
         sumstats = sumstats.loc[(good_ea & good_nea),:].copy()
         good_eanea_num = len(sumstats)
         log.log_variants_removed(all_var_num - good_eanea_num, reason="with NA alleles or alleles that contain bases other than A/C/T/G", verbose=verbose)  
+        # Filter masks to align with filtered dataframe
+        is_eanea_fixed = is_eanea_fixed.loc[sumstats.index]
+        is_invalid = is_invalid.loc[sumstats.index]
+        is_eanea_na = is_eanea_na.loc[sumstats.index]
         # Recalculate not_variant after filtering to ensure index alignment
         not_variant = sumstats[nea] == sumstats[ea]
         sumstats = sumstats.loc[~not_variant,:].copy()
         good_eanea_notsame_num = len(sumstats)
         log.log_variants_removed(good_eanea_num - good_eanea_notsame_num, reason="with same allele for EA and NEA", verbose=verbose) 
+        # Filter masks again after second filtering
+        is_eanea_fixed = is_eanea_fixed.loc[sumstats.index]
+        is_invalid = is_invalid.loc[sumstats.index]
+        is_eanea_na = is_eanea_na.loc[sumstats.index]
     else:
         sumstats[[ea,nea]] = sumstats[[ea,nea]].fillna("N")
         log.write(" -Detected "+str(exclude_num)+" variants with alleles that contain bases other than A/C/T/G .", verbose=verbose) 
@@ -1108,44 +1117,29 @@ def _fix_allele(sumstats_obj,ea="EA", nea="NEA",status="STATUS",remove=False,ver
     # Performance optimization: Compute lengths once and reuse
     ea_len = sumstats[ea].str.len()
     nea_len = sumstats[nea].str.len()
-    # Performance optimization: Recompute is_eanea_fixed after potential filtering to ensure index alignment
-    # After filtering, all remaining alleles are good, so is_eanea_fixed = True for all
-    is_eanea_fixed = pd.Series(True, index=sumstats.index) if remove else (good_ea | good_nea)
     is_snp = (ea_len == 1) & (nea_len == 1)
     is_indel = (ea_len != nea_len)
     is_not_normalized = (ea_len > 1) & (nea_len > 1)
-    is_normalized = (ea_len == 1) ^ (nea_len == 1)
-    
-    #is_snp = (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()==1)
-    #is_indel = (sumstats[ea].str.len()!=sumstats[nea].str.len())
-    #is_not_normalized = (sumstats[ea].str.len()>1) &(sumstats[nea].str.len()>1)
-    #is_normalized = is_indel &( (sumstats[ea].str.len()==1) &(sumstats[nea].str.len()>1) | (sumstats[ea].str.len()>1) &(sumstats[nea].str.len()==1) )
-
-    # Performance optimization: Compute boolean masks once and check sums before updating status
-    # Note: is_invalid and is_eanea_na are computed before filtering, so only use if remove=False
-    if not remove:
-        is_invalid_num = is_invalid.sum()
-        is_eanea_na_num = is_eanea_na.sum()
-    else:
-        is_invalid_num = 0
-        is_eanea_na_num = 0
+    # Match previous code logic: normalized = indel AND (one length is 1 and other is >1)
+    is_normalized = is_indel & ((ea_len == 1) & (nea_len > 1) | (ea_len > 1) & (nea_len == 1))
         
     is_eanea_fixed_not_norm = is_eanea_fixed & is_not_normalized
     is_eanea_fixed_snp = is_eanea_fixed & is_snp
     is_eanea_fixed_indel = is_eanea_fixed & is_indel
     is_eanea_fixed_norm = is_eanea_fixed & is_normalized
     
-    if is_invalid_num > 0:
+    # Status updates should always happen (consistent with previous code)
+    if sum(is_invalid) > 0:
         sumstats.loc[is_invalid, status] = vchange_status(sumstats.loc[is_invalid, status], 5, "9", "6") 
-    if is_eanea_na_num > 0:
+    if sum(is_eanea_na) > 0:
         sumstats.loc[is_eanea_na, status] = vchange_status(sumstats.loc[is_eanea_na, status], 5, "9", "7")
-    if is_eanea_fixed_not_norm.sum() > 0:
+    if sum(is_eanea_fixed_not_norm) > 0:
         sumstats.loc[is_eanea_fixed_not_norm, status] = vchange_status(sumstats.loc[is_eanea_fixed_not_norm, status], 5, "9", "5")
-    if is_eanea_fixed_snp.sum() > 0:
+    if sum(is_eanea_fixed_snp) > 0:
         sumstats.loc[is_eanea_fixed_snp, status] = vchange_status(sumstats.loc[is_eanea_fixed_snp, status], 5, "9", "0")
-    if is_eanea_fixed_indel.sum() > 0:
+    if sum(is_eanea_fixed_indel) > 0:
         sumstats.loc[is_eanea_fixed_indel, status] = vchange_status(sumstats.loc[is_eanea_fixed_indel, status], 5, "9", "4")
-    if is_eanea_fixed_norm.sum() > 0:
+    if sum(is_eanea_fixed_norm) > 0:
         sumstats.loc[is_eanea_fixed_norm, status] = vchange_status(sumstats.loc[is_eanea_fixed_norm, status], 5, "4", "3")
 
     # Update QC status only if called with Sumstats object
@@ -1392,8 +1386,14 @@ def normalizae_chunk(sumstats,pos="POS" ,nea="NEA",ea="EA",status="STATUS") -> T
         is_normalized = ((nea_len == 1) | (ea_len == 1)) & (~is_same)
     
     # Update status
+    # Update variants that were previously classified as indel (digit 5 = 4) to SNP (0) or normalized indel (3)
     sumstats.loc[is_normalized, status] = vchange_status(sumstats.loc[is_normalized, status], 5, "4", "0")
     sumstats.loc[is_same, status] = vchange_status(sumstats.loc[is_same, status], 5, "4", "3")
+    # Also update variants that were previously classified as not normalized (digit 5 = 5) to normalized indel (3)
+    # This handles cases where variants like AT/GT get normalized to A/G
+    # Note: These variants get status 3 (normalized indel) even if they become SNPs after normalization,
+    # because they were originally not normalized and got normalized
+    sumstats.loc[is_normalized, status] = vchange_status(sumstats.loc[is_normalized, status], 5, "5", "3")
     
     # Return changed indices
     changed_index = sumstats.index[changed]

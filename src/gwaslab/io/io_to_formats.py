@@ -14,7 +14,7 @@ from datetime import date
 from gwaslab.info.g_Log import Log
 from gwaslab.info.g_version import gwaslab_info
 
-from gwaslab.io.io_preformat_input import print_format_info
+from gwaslab.io.io_preformat_input import _print_format_info
 
 from gwaslab.bd.bd_common_data import get_format_dict
 from gwaslab.bd.bd_common_data import get_number_to_chr
@@ -61,6 +61,7 @@ def _to_format(sumstats,
               to_csvargs=None,
               to_tabular_kwargs=None,
               validate=False,
+              gwas_ssf_path=None,
               log=Log(),
               verbose=True):
     """
@@ -125,6 +126,8 @@ def _to_format(sumstats,
         Whether to print progress messages. Default is True
     validate : bool, optional
          Whether to use the gwas-ssf CLI tool for validation (only for SSF format). Default is False
+    gwas_ssf_path : str, optional
+         Path to gwas-ssf CLI executable. If None, will try default paths. Default is None
 
     Returns
     -------
@@ -282,33 +285,84 @@ def _to_format(sumstats,
         except:
             pass
 
-    # Check if we should validate the output using gwas-ssf CLI for SSF format
-    if fmt == "ssf" and validate:
-         try:
-             import os
-             import subprocess
-                 
-             if os.path.exists(output_file):
-                  log.write("Validating output with gwas-ssf CLI...", verbose=verbose)
-                  # Call gwas-ssf validate command
-                  result = subprocess.run(["gwas-ssf", "validate", output_file], 
-                                        capture_output=True, text=True)
-                  # Log the full output for debugging
-                  if result.stdout:
-                      log.write(f"gwas-ssf stdout:\n{result.stdout}", verbose=verbose)
-                  if result.stderr:
-                      log.write(f"gwas-ssf stderr:\n{result.stderr}", verbose=verbose)
-                      
-                  if result.returncode == 0:
-                      log.write("Output validation successful.", verbose=verbose)
-                  else:
-                      log.write(f"Output validation failed with return code {result.returncode}.", verbose=verbose)
-             else:
-                 log.write(f"Output file not found for validation: {output_file}", verbose=verbose)
-         except FileNotFoundError:
-             log.write("Warning: gwas-ssf command not found.", verbose=verbose)
-         except Exception as e:
-             log.write(f"Warning: Error during gwas-ssf validation: {e}", verbose=verbose)
+    # Validate SSF format output if requested
+    if fmt == "ssf":
+        try:
+            import os
+            import subprocess
+            from pathlib import Path
+            
+            output_path = Path(output_file)
+            if not output_path.exists():
+                log.write(f"Output file not found for validation: {output_file}", verbose=verbose)
+                return
+            
+            log.write("Validating SSF format output...", verbose=verbose)
+            
+            # Try to use gwas-ssf CLI first
+            if gwas_ssf_path:
+                # Use user-specified path
+                gwas_ssf_paths = [gwas_ssf_path]
+            else:
+                # Default: try system PATH
+                gwas_ssf_paths = ["gwas-ssf"]
+            
+            cli_available = False
+            for cli_path in gwas_ssf_paths:
+                if os.path.exists(cli_path) or cli_path == "gwas-ssf":
+                    try:
+                        result = subprocess.run(
+                            [cli_path, "validate", str(output_path)],
+                            capture_output=True,
+                            text=True,
+                            timeout=120
+                        )
+                        cli_available = True
+                        
+                        if result.returncode == 0:
+                            log.write("✓ SSF validation successful (via gwas-ssf CLI)", verbose=verbose)
+                            if result.stdout:
+                                log.write(result.stdout.strip(), verbose=verbose)
+                        else:
+                            log.warning("✗ SSF validation failed (via gwas-ssf CLI)", verbose=verbose)
+                            if result.stderr:
+                                log.warning(result.stderr.strip()[:500], verbose=verbose)
+                            if result.stdout:
+                                log.write(result.stdout.strip()[:500], verbose=verbose)
+                        break
+                    except (FileNotFoundError, subprocess.TimeoutExpired, Exception) as e:
+                        continue
+            
+            # Fallback to new validator if CLI not available
+            if not cli_available:
+                try:
+                    from gwaslab.extension.gwas_sumstats_tools.validate_ssf import validate_ssf_file
+                    
+                    log.write("Using built-in SSF validator (gwas-ssf CLI not available)...", verbose=verbose)
+                    is_valid, message, errors = validate_ssf_file(
+                        filename=output_path,
+                        log=log,
+                        verbose=verbose,
+                        minimum_rows=100_000,
+                        pval_zero=False
+                    )
+                    
+                    if is_valid:
+                        log.write(f"✓ SSF validation successful: {message}", verbose=verbose)
+                    else:
+                        log.warning(f"✗ SSF validation failed: {message}", verbose=verbose)
+                        if errors:
+                            for error in errors[:10]:  # Show first 10 errors
+                                log.warning(f"  - {error}", verbose=verbose)
+                            if len(errors) > 10:
+                                log.warning(f"  ... and {len(errors) - 10} more errors", verbose=verbose)
+                except ImportError as e:
+                    log.write(f"Warning: SSF validation not available (CLI and built-in validator both unavailable): {e}", verbose=verbose)
+                except Exception as e:
+                    log.warning(f"Error during SSF validation: {e}", verbose=verbose)
+                    
+        except Exception as e:
+            log.warning(f"Error during SSF validation: {e}", verbose=verbose)
 
 
 ###################################################################################################################################################
@@ -403,7 +457,7 @@ def tofmt(sumstats,
         # GWAS-VCF
         log.write(" -"+fmt+" format will be loaded...",verbose=verbose)
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
-        print_format_info(fmt=fmt, meta_data=meta_data,rename_dictionary=rename_dictionary,verbose=verbose, log=log, output=True, skip_meta_records=["format_fixed_header","format_contig_19","format_contig_38"])
+        _print_format_info(fmt=fmt, meta_data=meta_data,rename_dictionary=rename_dictionary,verbose=verbose, log=log, output=True, skip_meta_records=["format_fixed_header","format_contig_19","format_contig_38"])
         
         # determine which ID to use
         if "rsID" in sumstats.columns:
@@ -473,7 +527,7 @@ def tofmt(sumstats,
         # tabular 
         log.write(" -"+fmt+" format will be loaded...",verbose=verbose)
         meta_data,rename_dictionary = get_format_dict(fmt,inverse=True)
-        print_format_info(fmt=fmt, meta_data=meta_data,rename_dictionary=rename_dictionary,verbose=verbose, log=log, output=True)
+        _print_format_info(fmt=fmt, meta_data=meta_data,rename_dictionary=rename_dictionary,verbose=verbose, log=log, output=True)
         
         # determine if gzip or not / create path for output
         if gzip ==True and tab_fmt not in non_gzip_tab_fmt:

@@ -60,7 +60,7 @@ def quick_convert_datatype(sumstats, log, verbose):
                 log.write(" -Trying to convert datatype for {}: {} -> {}...".format(col, str(sumstats[col].dtype), datatype), end="" ,verbose=verbose)
                 try:
                     sumstats = sumstats.cast({col: datatype})
-                    log.write("{}".format(datatype),show_time=False, verbose=verbose)
+                    log.write("Success",show_time=False, verbose=verbose)
                 except:
                     log.write("Failed...",show_time=False,verbose=verbose)
                     pass

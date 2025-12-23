@@ -138,45 +138,43 @@ class TestSumstatsObject(unittest.TestCase):
 
     def test_liftover_updates_build_without_conversion(self):
         # 测试liftover：通过猴子补丁避免外部依赖，仅验证build更新
-        import gwaslab.g_Sumstats as G
-        original = G._parallelize_liftover_variant
-        try:
-            # Mock to return DataFrame but still allow metadata update to happen
-            def mock_liftover(sumstats_obj, **kwargs):
-                # Call the metadata update logic that happens in the real function
-                import pandas as pd
-                if not isinstance(sumstats_obj, pd.DataFrame):
-                    try:
-                        from gwaslab.info.g_meta import _update_harmonize_step
-                        from gwaslab.qc.qc_build import _process_build
-                        to_build = kwargs.get('to_build', '38')
-                        from_build = kwargs.get('from_build', '19')
-                        remove = kwargs.get('remove', True)
-                        chain = kwargs.get('chain', None)
-                        threads = kwargs.get('threads', 1)
-                        log = kwargs.get('log', sumstats_obj.log)
-                        sumstats_obj.meta["is_sorted"] = False
-                        sumstats_obj.meta["is_harmonised"] = False
-                        sumstats_obj.meta["gwaslab"]["genome_build"] = _process_build(to_build, log=log, verbose=False)
-                        sumstats_obj.build = to_build
-                        liftover_kwargs = {
-                            'from_build': from_build, 'to_build': to_build, 'remove': remove, 'chain': chain, 'threads': threads
-                        }
-                        _update_harmonize_step(sumstats_obj, "liftover", liftover_kwargs, True)
-                    except:
-                        pass
-                    return sumstats_obj.data
-                else:
-                    return sumstats_obj
-            G._parallelize_liftover_variant = mock_liftover
+        from gwaslab.hm.hm_liftover_v2 import _liftover_variant
+        from unittest.mock import patch
+        
+        # Mock to return DataFrame but still allow metadata update to happen
+        def mock_liftover(sumstats_obj, **kwargs):
+            # Call the metadata update logic that happens in the real function
+            import pandas as pd
+            if not isinstance(sumstats_obj, pd.DataFrame):
+                try:
+                    from gwaslab.info.g_meta import _update_harmonize_step
+                    from gwaslab.qc.qc_build import _process_build
+                    to_build = kwargs.get('to_build', '38')
+                    from_build = kwargs.get('from_build', '19')
+                    remove = kwargs.get('remove', True)
+                    chain_path = kwargs.get('chain_path', None)
+                    log = kwargs.get('log', sumstats_obj.log)
+                    sumstats_obj.meta["is_sorted"] = False
+                    sumstats_obj.meta["is_harmonised"] = False
+                    sumstats_obj.meta["gwaslab"]["genome_build"] = _process_build(to_build, log=log, verbose=False)
+                    sumstats_obj.build = to_build
+                    liftover_kwargs = {
+                        'from_build': from_build, 'to_build': to_build, 'remove': remove, 'chain_path': chain_path
+                    }
+                    _update_harmonize_step(sumstats_obj, "liftover", liftover_kwargs, True)
+                except:
+                    pass
+                return sumstats_obj.data
+            else:
+                return sumstats_obj
+        
+        with patch('gwaslab.hm.hm_liftover_v2._liftover_variant', side_effect=mock_liftover):
             gl = Sumstats(sumstats=self.df.copy(), chrom="CHR", pos="POS", p="P", ea="EA", nea="NEA", snpid="SNPID", verbose=False)
             gl.data["STATUS"] = "9960099"
             gl.set_build("19", verbose=False)
             gl.liftover(to_build="38")
             self.assertEqual(gl.meta["gwaslab"]["genome_build"], "38")
             self.assertEqual(gl.build, "38")
-        finally:
-            G._parallelize_liftover_variant = original
 
     def test_plot_daf_via_sumstats(self):
         # 测试plot_daf：返回图对象与异常点

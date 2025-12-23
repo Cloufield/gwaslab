@@ -119,7 +119,7 @@ This JSON file is used to:
 """
 
 # Load reserved headers JSON from separate file
-_json_file_path = os.path.join(os.path.dirname(__file__), "qc_researved_header_json")
+_json_file_path = os.path.join(os.path.dirname(__file__), "qc_researved_header.json")
 with open(_json_file_path, 'r') as f:
     researved_header_json = f.read()
 def _build_reserved_header(j):
