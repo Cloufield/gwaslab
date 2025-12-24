@@ -1,0 +1,49 @@
+# GWASLab Development Principles
+
+## Data Prioritization
+- Always prioritize SNPID over rsID (checking IDs first)
+- Always prioritize MLOG10P over P
+
+## Code Quality & Architecture
+
+### Logging Standards
+- Always use standardized logging decorator (@with_logging) for QC/processing functions
+- Always use Log() class for all logging operations (write, warning, log)
+- Always log operation start and finish messages with version information
+- Always provide verbose parameter for controlling log output
+
+### Validation & Error Handling
+- Always use @with_logging decorator with start_cols parameter to check necessary columns before execution
+  - Specify required columns in start_cols list (e.g., start_cols=["EA","NEA","STATUS"])
+  - The decorator automatically validates columns and skips execution if missing
+  - No need to manually check columns inside the function when using the decorator
+- Always validate required arguments (must_kwargs) before function execution
+- Always handle missing columns gracefully (skip execution, return early)
+- Always use standardized error messages with function context
+
+### Function Design
+- Always preserve function metadata using functools.wraps in decorators
+- Always handle both DataFrame and Sumstats object inputs where applicable
+  - Functions should accept both pd.DataFrame and Sumstats object as the first parameter (sumstats_obj)
+  - Check isinstance(sumstats_obj, pd.DataFrame) to determine input type
+  - Extract sumstats = sumstats_obj.data when working with Sumstats object
+  - Return sumstats_obj.data when called with Sumstats object, or sumstats when called with DataFrame
+- Always standardize parameter names across functions (e.g., use 'inplace' consistently, not mixed 'inplace'/'remove')
+
+### Data Monitoring
+- The @with_logging decorator automatically handles data monitoring when properly configured:
+  - DataFrame shape changes are automatically checked and logged (show_shape=True by default)
+  - Data type checking can be enabled with check_dtype=True parameter
+  - Data type fixing can be enabled with fix=True parameter (automatically enables check_dtype)
+  - No need to manually check shapes or data types inside functions when using the decorator
+
+## Data Standards
+
+### Variant Identification
+- Always use status code system for variant quality tracking (7-digit code, traceable)
+- Always follow status code principle: higher value = higher uncertainty
+
+### Data Format Standards
+- Always validate genome build format before processing (_process_build)
+- Always follow standardized column order (DEFAULT_COLUMN_ORDER)
+- Always use standardized chromosome notation (integers for autosomes, X=23, Y=24, MT=25)

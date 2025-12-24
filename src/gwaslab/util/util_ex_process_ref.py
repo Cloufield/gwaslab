@@ -24,21 +24,32 @@ def _process_plink_input_files(chrlist,
     """
     Process input files (bfile,pfile,vcf,bgen) to either PLINK1 bed/bim/fam or PLINK2 pgen/psam/pvar. 
     
-    Returns:
+    Parameters:
+    -----------
+    load_bim : bool, default=False
+        If True, load BIM/PVAR variant information into ref_bims list.
+        If False (default), ref_bims will be an empty list.
+        **Important**: Pass load_bim=True to populate ref_bims when using VCF or BGEN inputs.
     
+    Returns:
+    --------
     ref_file_prefix : prefix for either bfile or pfile.
     plink_log : if plink was used, return the log. Otherwise, return an empty string.
     ref_bims : if load_bim is True, return bim files as a list of pd.DataFrame. Otherwise, empty list.
     filetype : either bfile or pfile.
     """
 
+    # Step 1: Initialize list to store BIM/PVAR dataframes if load_bim is True
     ref_bims = []
-    # No change: bfile, pfile
-    # Need to convert to bfile or pfile
-    # file prefix : single or with @
-    #
+    
+    # Step 2: Determine the input file type and check if it uses wildcard pattern (@)
+    # Returns: filetype (bfile/pfile/vcf/bgen), ref_file_prefix, and is_wild_card flag
+    # Note: bfile and pfile require no conversion, while vcf and bgen need to be converted
+    # File prefix can be single file or wildcard pattern with @ for chromosome-specific files
     filetype, ref_file_prefix, is_wild_card = _check_file_type(bfile,  pfile,  vcf,  bgen, sample)
 
+    # Step 3: Process bfile format (PLINK1 bed/bim/fam)
+    # No conversion needed, just validate files exist and optionally load BIM data
     if filetype == "bfile": 
         ref_file_prefix, ref_bims = _process_bfile(chrlist=chrlist,
                                                    ref_file_prefix=ref_file_prefix, 
@@ -47,6 +58,8 @@ def _process_plink_input_files(chrlist,
                                                    log=log, 
                                                    load_bim=load_bim)
 
+    # Step 4: Process pfile format (PLINK2 pgen/pvar/psam)
+    # No conversion needed, just validate files exist and optionally load PVAR data
     elif filetype == "pfile": 
         ref_file_prefix, ref_bims = _process_pfile(chrlist=chrlist,
                                                    ref_file_prefix=ref_file_prefix, 
@@ -55,6 +68,8 @@ def _process_plink_input_files(chrlist,
                                                    log=log, 
                                                    load_bim=load_bim)
 
+    # Step 5: Process VCF format - convert to bfile or pfile using PLINK2
+    # VCF files need conversion, so filetype is updated to the target format (convert parameter)
     elif filetype == "vcf": 
         ref_file_prefix, plink_log, ref_bims = _process_vcf(ref_file_prefix=ref_file_prefix, 
                                                             chrlist=chrlist, 
@@ -69,7 +84,11 @@ def _process_plink_input_files(chrlist,
                                                             load_bim=load_bim,
                                                             plink=plink,
                                                             plink2=plink2)
+        # Update filetype to the converted format (bfile or pfile)
         filetype = convert
+    
+    # Step 6: Process BGEN format - convert to bfile or pfile using PLINK2
+    # BGEN files need conversion, so filetype is updated to the target format (convert parameter)
     elif filetype == "bgen": 
         ref_file_prefix, plink_log, ref_bims = _process_bgen(ref_file_prefix=ref_file_prefix, 
                                                             chrlist=chrlist, 
@@ -86,7 +105,11 @@ def _process_plink_input_files(chrlist,
                                                             load_bim=load_bim,
                                                             plink=plink,
                                                             plink2=plink2)
+        # Update filetype to the converted format (bfile or pfile)
         filetype = convert
+    
+    # Step 7: Return processed file prefix, PLINK log (if conversion occurred), 
+    #         list of BIM/PVAR dataframes (if load_bim=True), and final filetype
     return ref_file_prefix, plink_log, ref_bims, filetype
 
 def _load_single_bim_to_ref_bims(bpfile_prefix, ref_bims, log):
@@ -247,6 +270,7 @@ def _process_vcf(ref_file_prefix,
             memory_flag = ""
         
         #if not existing or overwrite is True
+        conversion_success = True
         if (not is_file_exist) or overwrite:
             script_vcf_to_bfile = """
             {} \
@@ -263,7 +287,7 @@ def _process_vcf(ref_file_prefix,
                        n_cores, memory_flag,
                        bpfile_prefix)
         
-            # execute 
+            # execute conversion
             try:
                 if convert=="bfile":
                     log.write("  -Converting VCF to bfile: {}.bim/bed/fam...".format(bpfile_prefix))
@@ -271,16 +295,31 @@ def _process_vcf(ref_file_prefix,
                     log.write("  -Converting VCF to pfile: {}.pgen/pvar/psam...".format(bpfile_prefix))
                 output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
                 plink_log+=output + "\n"
+                # Verify conversion succeeded by checking if output file exists
+                if convert=="bfile":
+                    conversion_success = os.path.exists(bpfile_prefix+".bed")
+                else:
+                    conversion_success = os.path.exists(bpfile_prefix+".pgen")
             except subprocess.CalledProcessError as e:
-                log.write(e.output)    
+                log.write(e.output)
+                conversion_success = False
         else:
             log.write("  -Plink {} for CHR {} exists: {}. Skipping...".format(convert ,i, bpfile_prefix))
         
+        # Load BIM/PVAR data if requested and conversion was successful
+        # Note: load_bim must be True to populate ref_bims, otherwise it remains empty
         if load_bim == True:
+            # Only load if file exists (either from successful conversion or pre-existing)
             if convert == "bfile":
-                ref_bims = _load_single_bim_to_ref_bims(bpfile_prefix, ref_bims, log)
+                if os.path.exists(bpfile_prefix+".bim"):
+                    ref_bims = _load_single_bim_to_ref_bims(bpfile_prefix, ref_bims, log)
+                else:
+                    log.write("  -Warning: BIM file not found for CHR {}: {}.bim. Skipping load.".format(i, bpfile_prefix))
             else:
-                ref_bims = _load_single_pvar_to_ref_bims(bpfile_prefix, ref_bims, log)
+                if os.path.exists(bpfile_prefix+".pvar") or os.path.exists(bpfile_prefix+".pvar.zst"):
+                    ref_bims = _load_single_pvar_to_ref_bims(bpfile_prefix, ref_bims, log)
+                else:
+                    log.write("  -Warning: PVAR file not found for CHR {}: {}.pvar. Skipping load.".format(i, bpfile_prefix))
     return ref_file_prefix_converted, plink_log, ref_bims
 
 def _process_bgen(ref_file_prefix, 
@@ -345,6 +384,7 @@ def _process_bgen(ref_file_prefix,
             memory_flag = ""
 
         #if not existing or overwrite is True
+        conversion_success = True
         if (not is_file_exist) or overwrite:
             script_vcf_to_bfile = """
             {} \
@@ -359,22 +399,37 @@ def _process_bgen(ref_file_prefix,
                        make_flag,
                        n_cores, memory_flag,
                        bpfile_prefix)
-            # execute 
+            # execute conversion
             try:
                 if convert=="bfile":
-                    log.write("  -Converting VCF to bfile: {}.bim/bed/fam...".format(bpfile_prefix))
+                    log.write("  -Converting BGEN to bfile: {}.bim/bed/fam...".format(bpfile_prefix))
                 else:
-                    log.write("  -Converting VCF to pfile: {}.pgen/pvar/psam...".format(bpfile_prefix))
+                    log.write("  -Converting BGEN to pfile: {}.pgen/pvar/psam...".format(bpfile_prefix))
                 output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
                 plink_log+=output + "\n"
+                # Verify conversion succeeded by checking if output file exists
+                if convert=="bfile":
+                    conversion_success = os.path.exists(bpfile_prefix+".bed")
+                else:
+                    conversion_success = os.path.exists(bpfile_prefix+".pgen")
             except subprocess.CalledProcessError as e:
-                log.write(e.output)    
+                log.write(e.output)
+                conversion_success = False
         else:
             log.write("  -PLINK {} for CHR {} exists. Skipping...".format(convert ,i))
         
+        # Load BIM/PVAR data if requested and conversion was successful
+        # Note: load_bim must be True to populate ref_bims, otherwise it remains empty
         if load_bim == True:
+            # Only load if file exists (either from successful conversion or pre-existing)
             if convert == "bfile":
-                ref_bims = _load_single_bim_to_ref_bims(bpfile_prefix, ref_bims, log)
+                if os.path.exists(bpfile_prefix+".bim"):
+                    ref_bims = _load_single_bim_to_ref_bims(bpfile_prefix, ref_bims, log)
+                else:
+                    log.write("  -Warning: BIM file not found for CHR {}: {}.bim. Skipping load.".format(i, bpfile_prefix))
             else:
-                ref_bims = _load_single_pvar_to_ref_bims(bpfile_prefix, ref_bims, log)
+                if os.path.exists(bpfile_prefix+".pvar") or os.path.exists(bpfile_prefix+".pvar.zst"):
+                    ref_bims = _load_single_pvar_to_ref_bims(bpfile_prefix, ref_bims, log)
+                else:
+                    log.write("  -Warning: PVAR file not found for CHR {}: {}.pvar. Skipping load.".format(i, bpfile_prefix))
     return ref_file_prefix_converted, plink_log, ref_bims

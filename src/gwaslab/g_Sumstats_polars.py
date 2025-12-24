@@ -26,7 +26,6 @@ from gwaslab.qc.qc_fix_sumstats import _process_build
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_check_af
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_infer_af
 from gwaslab.hm.hm_harmonize_sumstats import _check_ref
-from gwaslab.hm.hm_harmonize_sumstats import _rsid_to_chrpos
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_assign_rsid
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_infer_strand
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_rsid_to_chrpos

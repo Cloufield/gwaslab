@@ -304,5 +304,13 @@ class SumstatsPair( ):
         del self.data
         gc.collect()
 
-    def reload(self):
-         self.data = _reload(self.tmp_path, self.log)
+    def reload(self, delete_files=None):
+        """
+        Reload data from temporary pickle file.
+        
+        Parameters
+        ----------
+        delete_files : list of str, optional
+            Additional files to delete after successful reload
+        """
+        self.data = _reload(self.tmp_path, self.log, delete_files=delete_files)

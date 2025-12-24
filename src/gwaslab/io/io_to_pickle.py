@@ -51,7 +51,24 @@ def _offload(df,path,log):
         pickle.dump(df, file)
         log.write("Dumpping dataframe to : ", path)
 
-def _reload(path,log):
+def _reload(path,log, delete_files=None):
+    """
+    Reload dataframe from pickle file.
+    
+    Parameters
+    ----------
+    path : str
+        Path to the pickle file to reload
+    log : Log
+        Logger instance
+    delete_files : list of str, optional
+        Additional files to delete after successful reload
+        
+    Returns
+    -------
+    pd.DataFrame
+        Reloaded dataframe
+    """
     with open(path, 'rb') as file:
         df =  pickle.load(file)
         log.write("Loaded dataframe back from : ", path)
@@ -59,4 +76,18 @@ def _reload(path,log):
         os.remove(path)
     except:
         pass
+    
+    # Delete additional files if provided
+    if delete_files is not None:
+        n_deleted = 0
+        for file_path in delete_files:
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    n_deleted += 1
+                except Exception as e:
+                    log.write(" -Warning: Could not delete file {}: {}".format(file_path, str(e)))
+        if n_deleted > 0:
+            log.write(" -Cleaned up {} additional file(s) after successful reload...".format(n_deleted))
+    
     return df

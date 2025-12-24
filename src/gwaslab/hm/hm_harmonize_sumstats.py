@@ -89,172 +89,131 @@ TRANSLATE_TABLE_COMPL = _maketrans(COMPLEMENTARY_MAPPING)
 #20220808
 #################################################################################################################
 
-###~!!!!
-@with_logging(
-    start_to_msg="assign CHR and POS using rsIDs",
-    finished_msg="assigning CHR and POS using rsIDs",
-    start_cols=["rsID"],
-    start_function=".rsid_to_chrpos()"
-)
-def _rsid_to_chrpos(sumstats,
-         path=None, ref_rsid_to_chrpos_tsv=None, snpid="SNPID",
-         rsid="rsID", chrom="CHR",pos="POS",ref_rsid="rsID",ref_chr="CHR",ref_pos="POS", build="19",
-              overwrite=False,remove=False,chunksize=5000000,verbose=True,log=Log()):
-    """
-    Assign CHR:POS based on rsID.
-
-    Parameters
-    ----------
-    sumstats : DataFrame or Sumstats
-        Summary statistics DataFrame or Sumstats object.
-    path : str, optional
-        Path to the reference file.
-    ref_rsid_to_chrpos_tsv : str, optional
-        Path to the TSV file containing rsID to CHR:POS mapping.
-    snpid : str, default='SNPID'
-        Column name for SNP IDs.
-    rsid : str, default='rsID'
-        Column name for rsIDs.
-    chrom : str, default='CHR'
-        Column name for chromosomes.
-    pos : str, default='POS'
-        Column name for positions.
-    ref_rsid : str, default='rsID'
-        Reference column name for rsIDs in the TSV file.
-    ref_chr : str, default='CHR'
-        Reference column name for chromosomes in the TSV file.
-    ref_pos : str, default='POS'
-        Reference column name for positions in the TSV file.
-    build : str, default='19'
-        Reference genome build.
-    overwrite : bool, default=False
-        Whether to overwrite existing CHR and POS values.
-    remove : bool, default=False
-        Whether to remove variants not found in the reference.
-    chunksize : int, default=5000000
-        Size of chunks to process the TSV file in.
-    verbose : bool, default=True
-        Whether to print progress information.
-    log : Log, default=Log()
-        Logging object to write to.
-
-    Returns
-    -------
-    DataFrame
-        Updated summary statistics DataFrame with CHR and POS values assigned based on rsIDs.
-    """
-    # Handle both DataFrame and Sumstats object
-    import pandas as pd
-    if isinstance(sumstats, pd.DataFrame):
-        # Called with DataFrame
-        is_dataframe = True
-    else:
-        # Called with Sumstats object
-        sumstats_obj = sumstats
-        sumstats = sumstats_obj.data
-        is_dataframe = False
-
-    log.write(" -rsID dictionary file: "+ path,verbose=verbose)  
-    
-    if ref_rsid_to_chrpos_tsv is not None:
-        path = ref_rsid_to_chrpos_tsv
-
-    if snpid in sumstats.columns and sumstats[rsid].isna().sum()>0:
-        log.write(" -Filling na in rsID columns with SNPID...",verbose=verbose)  
-        sumstats.loc[sumstats[rsid].isna(),rsid] = sumstats.loc[sumstats[rsid].isna(),snpid]
-    
-    if sumstats[rsid].isna().sum()>0:
-        log.write(" -Filling na in rsID columns with NA_xxx for {} variants...".format(sumstats[rsid].isna().sum()), verbose=verbose)  
-        sumstats.loc[sumstats[rsid].isna(),rsid] = ["NA_" + str(x+1) for x in range(len(sumstats.loc[sumstats[rsid].isna(),rsid]))]
-
-    dic_chuncks = pd.read_csv(path,sep="\t",usecols=[ref_rsid,ref_chr,ref_pos],
-                      chunksize=chunksize,index_col = ref_rsid,
-                      dtype={ref_rsid:"string",ref_chr:"Int64",ref_pos:"Int64"})
-    
-    sumstats = sumstats.set_index(rsid)
-    
-    #if chr or pos columns not in sumstats
-    if chrom not in sumstats.columns:
-        sumstats[chrom] =pd.Series(dtype="Int64")
-    if pos not in sumstats.columns:    
-        sumstats[pos] =pd.Series(dtype="Int64")
-    
-    log.write(" -Setting block size: ",chunksize,verbose=verbose)
-    log.write(" -Loading block: ",end="",verbose=verbose)     
-    for i,dic in enumerate(dic_chuncks): 
-        dic_to_update = dic[dic.index.notnull()]
-        log.write(i," ",end=" ",show_time=False)  
-        dic_to_update = dic_to_update.rename(index={ref_rsid:rsid})
-        dic_to_update = dic_to_update.rename(columns={ref_chr:chrom,ref_pos:pos})  
-        dic_to_update = dic_to_update[~dic_to_update.index.duplicated(keep='first')]
-        sumstats.update(dic_to_update,overwrite="True")
-        gc.collect()
-    
-    log.write("\n",end="",show_time=False,verbose=verbose) 
-    sumstats = sumstats.reset_index()
-    sumstats = sumstats.rename(columns = {'index':rsid})
-    log.write(" -Updating CHR and POS finished.Start to re-fixing CHR and POS... ",verbose=verbose)
-    sumstats = _fix_chr(sumstats,verbose=verbose)
-    sumstats = _fix_pos(sumstats,verbose=verbose)
-    sumstats = _sort_column(sumstats_obj=sumstats,verbose=verbose)
-
-    # Update harmonization status only if called with Sumstats object
-    if not is_dataframe:
-        # Assign modified dataframe back to the Sumstats object
-        sumstats_obj.data = sumstats
-        try:
-            from gwaslab.info.g_meta import _update_harmonize_step
-            rsid_to_chrpos_kwargs = {
-                'path': path, 'ref_rsid_to_chrpos_tsv': ref_rsid_to_chrpos_tsv, 'snpid': snpid,
-                'rsid': rsid, 'chrom': chrom, 'pos': pos, 'ref_rsid': ref_rsid, 'ref_chr': ref_chr,
-                'ref_pos': ref_pos, 'build': build, 'overwrite': overwrite, 'remove': remove
-            }
-            _update_harmonize_step(sumstats_obj, "rsid_to_chrpos", rsid_to_chrpos_kwargs, True)
-        except:
-            pass
-        return sumstats_obj.data
-    else:
-        return sumstats
-    #################################################################################################### 
-
-
 ####################################################################################################################
-    
-def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
-    """
-    Merge chromosome position data from HDF5 group into sumstats_part.
 
+def _process_chrpos_task(task):
+    """
+    Helper function for parallel processing of chromosome position tasks.
+    This must be a module-level function to be picklable for multiprocessing.
+    
     Parameters
     ----------
-    sumstats_part : DataFrame
-        Subset of summary statistics to update.
-    all_groups_max : int
-        Maximum group index in the HDF5 file.
-    path : str
-        Path to the HDF5 file.
-    build : str
-        Genome build version.
-    status : str
-        Column name for status codes.
-
+    task : tuple
+        (dataframe, h5_file_path, chr_num, group, build, status, chrom, pos, log, task_num, verbose)
+    
     Returns
     -------
     DataFrame
         Updated subset of summary statistics with merged data.
     """
-    group=str(sumstats_part["group"].mode(dropna=True)[0])
-    if group in [str(i) for i in range(all_groups_max+1)]:
-        try:
-            to_merge=pd.read_hdf(path, key="group_"+str(group)).drop_duplicates(subset="rsn")
-            to_merge = to_merge.set_index("rsn")
-            is_chrpos_fixable = sumstats_part.index.isin(to_merge.index)
-            # Ensure STATUS is integer before assignment
-            sumstats_part = ensure_status_int(sumstats_part, status)
-            sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  1,"139",3*build[0])
-            sumstats_part.loc[is_chrpos_fixable,status] = vchange_status(sumstats_part.loc[is_chrpos_fixable, status],  2,"987",3*build[1])
-            sumstats_part.update(to_merge)
-        except:
-            pass
+    df, h5_file, chr_num, group, build, status, chrom, pos, log, task_num, verbose = task
+    return merge_chrpos(df, h5_file, chr_num, group, build, status, chrom, pos, log, task_num, verbose)
+    
+def merge_chrpos(sumstats_part, h5_file_path, chr_num, group, build, status, chrom="CHR", pos="POS", log=None, task_num=None, verbose=True):
+    """
+    Merge chromosome position data from HDF5 group into sumstats_part using index-based matching.
+    
+    Simple and efficient version using pandas index operations:
+    - Loads reference data from HDF5 with rsn as index
+    - Uses pandas index intersection for fast matching
+    - Vectorized assignment
+    - Supports modulo 10 grouping (group_0 through group_9)
+    - CHR extracted from filename (not stored in HDF5 since each file is chromosome-specific)
+    - Uses rsn as index for efficient matching
+
+    Parameters
+    ----------
+    sumstats_part : DataFrame
+        Subset of summary statistics to update. Must have "rsn" as index.
+    h5_file_path : str
+        Path to the chromosome-specific HDF5 file.
+    chr_num : int or None
+        Chromosome number (extracted from filename). None for old single-file format.
+    group : int
+        Group number (0-9 for mod10 grouping).
+    build : str
+        Genome build version.
+    status : str
+        Column name for status codes.
+    chrom : str, default="CHR"
+        Column name for chromosome values.
+    pos : str, default="POS"
+        Column name for position values.
+    log : Log, optional
+        Logging object for progress output.
+    task_num : int, optional
+        Task number for progress tracking.
+    verbose : bool, default=True
+        Verbose output.
+
+    Returns
+    -------
+    DataFrame
+        Updated subset of summary statistics with merged data (rsn as index).
+    """
+    # Print task number if provided (no time, space at end)
+    if log is not None and task_num is not None:
+        log.write("{}".format(task_num), verbose=verbose, show_time=False, end=" ")
+    
+    # Validate group is within expected range (0-9 for mod10 grouping)
+    if group is None or not (0 <= group <= 9):
+        return sumstats_part
+    
+    # Ensure rsn is the index
+    if sumstats_part.index.name != "rsn":
+        if "rsn" in sumstats_part.columns:
+            sumstats_part = sumstats_part.set_index("rsn")
+        else:
+            # Cannot proceed without rsn
+            return sumstats_part
+    
+    try:
+        # Use HDFStore context manager for efficient reading
+        with pd.HDFStore(h5_file_path, mode='r') as store:
+            key = "group_{}".format(group)
+            if key in store:
+                # Read reference data as DataFrame
+                ref_df = store[key]
+                
+                # Ensure rsn is the index in reference DataFrame
+                if ref_df.index.name != "rsn":
+                    if "rsn" in ref_df.columns:
+                        ref_df = ref_df.set_index("rsn")
+                    else:
+                        # Cannot find rsn, skip this group
+                        return sumstats_part
+                
+                # Find intersection of indices (matched variants)
+                matched_rsn = sumstats_part.index.intersection(ref_df.index)
+                
+                if len(matched_rsn) > 0:
+                    # Ensure STATUS is integer before assignment
+                    sumstats_part = ensure_status_int(sumstats_part, status)
+                    
+                    # Update status codes for fixable variants
+                    sumstats_part.loc[matched_rsn, status] = vchange_status(
+                        sumstats_part.loc[matched_rsn, status], 1, "139", 3*int(build[0]))
+                    sumstats_part.loc[matched_rsn, status] = vchange_status(
+                        sumstats_part.loc[matched_rsn, status], 2, "987", 3*int(build[1]))
+                    
+                    # Assign CHR from parameter (only if chr_num is provided)
+                    if chr_num is not None:
+                        if chrom in sumstats_part.columns:
+                            sumstats_part.loc[matched_rsn, chrom] = chr_num
+                        else:
+                            sumstats_part[chrom] = pd.Series(dtype="Int64", index=sumstats_part.index)
+                            sumstats_part.loc[matched_rsn, chrom] = chr_num
+                    
+                    # Assign POS values from reference DataFrame (convert to pandas nullable Int64)
+                    if pos in sumstats_part.columns:
+                        sumstats_part.loc[matched_rsn, pos] = ref_df.loc[matched_rsn, "POS"].astype("Int64")
+                    else:
+                        sumstats_part[pos] = pd.Series(dtype="Int64", index=sumstats_part.index)
+                        sumstats_part.loc[matched_rsn, pos] = ref_df.loc[matched_rsn, "POS"].astype("Int64")
+    except Exception as e:
+        # Silently pass on errors (group might not exist or other issues)
+        # In production, you might want to log this for debugging
+        pass
     return sumstats_part
 
 @with_logging(
@@ -263,15 +222,30 @@ def merge_chrpos(sumstats_part,all_groups_max,path,build,status):
     start_cols=["rsID"],
     start_function=".rsid_to_chrpos2()"
 )
-def _parallelize_rsid_to_chrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", path=None, ref_rsid_to_chrpos_vcf = None, ref_rsid_to_chrpos_hdf5 = None, build="99",status="STATUS",
-                         n_cores=4,block_size=20000000,verbose=True,log=Log()):
+def _parallelize_rsid_to_chrpos(
+    sumstats,
+    rsid="rsID",
+    chrom="CHR",
+    pos="POS",
+    path=None,
+    ref_rsid_to_chrpos_vcf=None,
+    ref_rsid_to_chrpos_hdf5=None,
+    build="99",
+    status="STATUS",
+    threads=4,
+    block_size=None,
+    verbose=True,
+    log=Log()
+):
     """
     Assign chromosome and position (CHR:POS) based on rsID using parallel HDF5 processing.
 
-    This function assigns CHR and POS values to summary statistics by matching rsIDs against a reference 
-    HDF5 file containing rsID to CHR:POS mappings. The HDF5 file is typically generated from a VCF file 
-    and contains precomputed CHR:POS values grouped by rsID blocks. The function processes data in parallel 
-    using multiple CPU cores for improved performance on large datasets.
+    This function assigns CHR and POS values to summary statistics by matching rsIDs against
+    reference HDF5 files (one per chromosome) containing rsID to POS mappings. The HDF5 files
+    are typically generated from a VCF file using `process_vcf_to_hfd5()` and contain
+    precomputed POS values grouped by modulo 10 (rsID % 10). CHR is extracted from the filename.
+    The function processes data in parallel using multiple CPU cores for improved performance
+    on large datasets.
 
     Parameters
     ----------
@@ -288,7 +262,7 @@ def _parallelize_rsid_to_chrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", pa
         or `ref_rsid_to_chrpos_hdf5`.
     ref_rsid_to_chrpos_vcf : str, optional
         Path to VCF file containing rsID to CHR:POS mappings. If provided, the corresponding HDF5 file 
-        path will be automatically generated.
+        path will be automatically generated using the mod10 naming convention.
     ref_rsid_to_chrpos_hdf5 : str, optional
         Path to pre-generated HDF5 file containing rsID to CHR:POS mappings. Takes precedence over 
         `ref_rsid_to_chrpos_vcf`.
@@ -296,11 +270,11 @@ def _parallelize_rsid_to_chrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", pa
         Reference genome build identifier. "99" indicates unknown or unspecified build.
     status : str, default="STATUS"
         Column name for status codes in `sumstats`.
-    n_cores : int, default=4
-        Number of CPU cores to use for parallel processing.
-    block_size : int, default=20000000
-        Size of data blocks for parallel processing. Must match the block size used when generating 
-        the HDF5 reference file.
+    threads : int, default=4
+        Number of threads to use for parallel processing.
+    block_size : int, optional
+        **Deprecated**: This parameter is ignored. The function now uses modulo 10 grouping 
+        (rsID % 10) to match the HDF5 file structure created by `process_vcf_to_hfd5()`.
     verbose : bool, default=True
         If True, print progress messages.
     log : gwaslab.g_Log.Log, default=Log()
@@ -315,120 +289,218 @@ def _parallelize_rsid_to_chrpos(sumstats, rsid="rsID", chrom="CHR",pos="POS", pa
 
     Notes
     -----
-    - The HDF5 reference file should be structured with groups named as "group_X" where X is the block 
-      index (0,1,2,...), each containing a DataFrame with columns "rsn", "CHR", and "POS".
-    - This function first attempts to use `ref_rsid_to_chrpos_hdf5` if provided, otherwise generates 
-      the HDF5 path from `ref_rsid_to_chrpos_vcf`.
-    - Non-valid rsIDs (containing non-numeric characters after "rs") and duplicated rsIDs are processed 
-      separately and not updated.
+    - The HDF5 reference files are organized as one file per chromosome with groups named
+      "group_0" through "group_9" (based on rsID % 10), each containing a DataFrame with
+      columns "rsn" (int64) and "POS" (int32). CHR is extracted from the filename.
+    - This function uses modulo 10 grouping to match the HDF5 structure created by
+      `process_vcf_to_hfd5()`.
+    - The HDF5 files follow the naming convention:
+      `{vcf_file_name}.chr{chr_num}.rsID_CHR_POS_mod10.h5`
+    - Non-valid rsIDs (containing non-numeric characters after "rs") are processed separately.
+    - Optimized with vectorized operations and efficient HDF5 access using pandas index operations.
     """
-    # Handle both DataFrame and Sumstats object
     import pandas as pd
+    import os
+    import glob
+    import re
+    from multiprocessing import Pool
+    
+    # ============================================================================
+    # Step 1: Handle input format (DataFrame or Sumstats object)
+    # ============================================================================
     if isinstance(sumstats, pd.DataFrame):
-        # Called with DataFrame
         is_dataframe = True
     else:
-        # Called with Sumstats object
         sumstats_obj = sumstats
         sumstats = sumstats_obj.data
         is_dataframe = False
 
+    # ============================================================================
+    # Step 2: Determine HDF5 file/directory path
+    # ============================================================================
     if ref_rsid_to_chrpos_hdf5 is not None:
         path = ref_rsid_to_chrpos_hdf5
     elif ref_rsid_to_chrpos_vcf is not None:
         vcf_file_name = os.path.basename(ref_rsid_to_chrpos_vcf)
         vcf_dir_path = os.path.dirname(ref_rsid_to_chrpos_vcf)
-        path = "{}/{}.rsID_CHR_POS_groups_{}.h5".format(vcf_dir_path,vcf_file_name,int(block_size))
+        if vcf_dir_path == "":
+            vcf_dir_path = "."
+        # process_vcf_to_hfd5 returns a directory with separate files per chromosome
+        path = vcf_dir_path
     
     if path is None:
-        raise ValueError("Please provide path to hdf5 file.")
+        raise ValueError(
+            "Please provide path to HDF5 file or VCF file "
+            "(via ref_rsid_to_chrpos_hdf5 or ref_rsid_to_chrpos_vcf)."
+        )
     
-    sumstats["rsn"] = pd.to_numeric(sumstats[rsid].str.strip("rs"),errors="coerce").astype("Int64")
+    # ============================================================================
+    # Step 3: Preprocess rsIDs - extract numeric part
+    # ============================================================================
+    # Strip first 2 characters and convert to numeric (simple and fast)
+    rsid_processed = sumstats[rsid].astype(str).str[2:]
+    sumstats["rsn"] = pd.to_numeric(rsid_processed, errors="coerce").astype("Int64")
     
-    log.write(" -Source hdf5 file: ",path,verbose=verbose)
-    log.write(" -Cores to use : ",n_cores,verbose=verbose)
-    log.write(" -Blocksize (make sure it is the same as hdf5 file ): ",block_size,verbose=verbose)
+    # Log processing parameters
+    log.write(" -Source hdf5 file: ", path, verbose=verbose)
+    log.write(" -Threads to use: ", threads, verbose=verbose)
+    log.write(" -Grouping method: modulo 10 (rsID % 10)", verbose=verbose)
     
-    input_columns= sumstats.columns
-    sumstats_nonrs = sumstats.loc[sumstats["rsn"].isna()|sumstats["rsn"].duplicated(keep='first') ,:].copy()
-    sumstats_rs  = sumstats.loc[sumstats["rsn"].notnull(),:].copy()
+    # ============================================================================
+    # Step 4: Separate valid and invalid rsIDs
+    # ============================================================================
+    input_columns = sumstats.columns
+    rsn_isna = sumstats["rsn"].isna()
     
-    log.write(" -Non-Valid rsIDs: ", sumstats["rsn"].isna().sum(), verbose=verbose)
-    log.write(" -Duplicated rsIDs except for the first occurrence: ", sumstats.loc[~sumstats["rsn"].isna(), "rsn"].duplicated(keep='first').sum(), verbose=verbose)
-    log.write(" -Valid rsIDs: ", len(sumstats_rs),verbose=verbose)
+    sumstats_nonrs = sumstats.loc[rsn_isna, :].copy()
+    sumstats_rs = sumstats.loc[~rsn_isna, :].copy()
     
-    del sumstats
-    gc.collect()
+    log.write(" -Non-Valid rsIDs: ", sumstats_nonrs.shape[0], verbose=verbose)
+    log.write(" -Valid rsIDs: ", len(sumstats_rs), verbose=verbose)
     
-    # assign group number
-    sumstats_rs.loc[:,"group"]= sumstats_rs.loc[:,"rsn"]//block_size
+    # Early return if no valid rsIDs
+    if len(sumstats_rs) == 0:
+        log.write(" -No valid rsIDs to process", verbose=verbose)
+        sumstats_nonrs = sumstats_nonrs.drop(columns=["rsn"], errors='ignore')
+        if not is_dataframe:
+            sumstats_obj.data = sumstats_nonrs
+            return sumstats_obj.data
+        else:
+            return sumstats_nonrs
     
-    # all groups
+    # ============================================================================
+    # Step 5: Find HDF5 chromosome files and create mapping
+    # ============================================================================
+    # Build mapping of chromosome number -> HDF5 file path
+    chr_to_h5_file = {}
+    if os.path.isdir(path):
+        # Look for chromosome-specific files (new design)
+        h5_files = glob.glob(os.path.join(path, "*.chr*.rsID_CHR_POS_mod10.h5"))
+        if h5_files:
+            # New format: extract chromosome number from each filename
+            for h5_file in h5_files:
+                match = re.search(r'\.chr(\d+)\.', os.path.basename(h5_file))
+                if match:
+                    chr_to_h5_file[int(match.group(1))] = h5_file
+        else:
+            # Fallback: try old single-file format
+            h5_files = glob.glob(os.path.join(path, "*.rsID_CHR_POS_mod10.h5"))
+            if h5_files:
+                chr_to_h5_file[None] = h5_files[0]
+        if not chr_to_h5_file:
+            raise ValueError(f"No HDF5 files found in directory: {path}")
+    else:
+        # Path is a single file (backward compatibility)
+        chr_to_h5_file[None] = path
     
+    log.write(" -Found HDF5 files for {} chromosome(s)".format(len(chr_to_h5_file)), verbose=verbose)
     
-    # set index
+    # ============================================================================
+    # Step 6: Initialize columns and prepare for processing
+    # ============================================================================
+    # Initialize CHR and POS columns if they don't exist
+    if chrom not in input_columns:
+        log.write(" -Initiating CHR ... ", verbose=verbose)
+        sumstats_rs[chrom] = pd.Series(dtype="Int64", index=sumstats_rs.index)
+    if pos not in input_columns:
+        log.write(" -Initiating POS ... ", verbose=verbose)
+        sumstats_rs[pos] = pd.Series(dtype="Int64", index=sumstats_rs.index)
+    
+    # Assign groups and set rsn as index for efficient matching
+    sumstats_rs["group"] = sumstats_rs["rsn"] % 10
     sumstats_rs = sumstats_rs.set_index("rsn")
     
-    #
-    pool = Pool(n_cores)
-    if chrom not in input_columns:
-        log.write(" -Initiating CHR ... ",verbose=verbose)
-        sumstats_rs[chrom]=pd.Series(dtype="Int64") 
+    # ============================================================================
+    # Step 7: Create processing tasks
+    # ============================================================================
+    # Check if CHR column has values
+    has_chr = chrom in sumstats_rs.columns and sumstats_rs[chrom].notna().any()
+    
+    tasks = []
+    if has_chr and None not in chr_to_h5_file:
+        # Process by chromosome: group data by chromosome, then by group
+        log.write(" -Processing by chromosome (CHR column available)", verbose=verbose)
+        for chr_num, chr_df in sumstats_rs.groupby(chrom):
+            if chr_num in chr_to_h5_file:
+                h5_file = chr_to_h5_file[chr_num]
+                for group_id, group_df in chr_df.groupby("group"):
+                    tasks.append((group_df, h5_file, int(chr_num), int(group_id), build, status, chrom, pos, log, len(tasks) + 1, verbose))
+    else:
+        # Search across all chromosomes: group by group, try all chromosome files
+        log.write(" -Searching across all chromosomes (CHR column not available or single-file format)", verbose=verbose)
+        for group_id, group_df in sumstats_rs.groupby("group"):
+            for chr_num, h5_file in chr_to_h5_file.items():
+                tasks.append((group_df, h5_file, chr_num, int(group_id), build, status, chrom, pos, log, len(tasks) + 1, verbose))
+    
+    log.write(" -Created {} processing tasks: ".format(len(tasks)), verbose=verbose)
+    
+    # ============================================================================
+    # Step 8: Parallel lookup and assignment
+    # ============================================================================
+    if tasks:
+        with Pool(threads) as pool:
+            sumstats_rs_list = pool.map(_process_chrpos_task, tasks)
         
-    if pos not in input_columns:
-        log.write(" -Initiating POS ... ",verbose=verbose)
-        sumstats_rs[pos]=pd.Series(dtype="Int64") 
+        # Print newline after all tasks complete
+        log.write("", verbose=verbose, show_time=False, end="\n")
+        
+        # Concatenate preserving rsn index
+        sumstats_rs = pd.concat(sumstats_rs_list)
+        
+        # Deduplicate if we searched across all chromosomes (keep matches with CHR/POS)
+        if not has_chr or None in chr_to_h5_file:
+            # Sort by match status (matched variants first), then deduplicate
+            if chrom in sumstats_rs.columns and pos in sumstats_rs.columns:
+                sumstats_rs['_match_priority'] = (sumstats_rs[chrom].notna() & sumstats_rs[pos].notna()).astype(int)
+                sumstats_rs = sumstats_rs.sort_values(by='_match_priority', ascending=False, kind='mergesort')
+                sumstats_rs = sumstats_rs.drop(columns=['_match_priority'])
+            sumstats_rs = sumstats_rs[~sumstats_rs.index.duplicated(keep='first')]
+        
+        # Log match statistics
+        if chrom in sumstats_rs.columns and pos in sumstats_rs.columns:
+            matched = (sumstats_rs[chrom].notna() & sumstats_rs[pos].notna()).sum()
+            log.write(" -Variants matched: {} / {}".format(matched, len(sumstats_rs)), verbose=verbose)
+    else:
+        log.write(" -No tasks to process", verbose=verbose)
     
-    df_split=[y for x, y in sumstats_rs.groupby('group', as_index=False)]
-    log.write(" -Divided into groups: ",len(df_split),verbose=verbose)
-    log.write("  -",set(sumstats_rs.loc[:,"group"].unique()),verbose=verbose)
+    # ============================================================================
+    # Step 9: Merge results and cleanup
+    # ============================================================================
+    log.write(" -Merging group data... ", verbose=verbose)
     
-    # check keys
-    store = pd.HDFStore(path, 'r')
-    all_groups = store.keys()
-    all_groups_len = len(all_groups)
-    store.close()
-    all_groups_max = max(map(lambda x: int(x.split("_")[1]), all_groups))
-    log.write(" -Number of groups in HDF5: ",all_groups_len,verbose=verbose)
-    log.write(" -Max index of groups in HDF5: ",all_groups_max,verbose=verbose)
+    # Drop temporary columns and reset index
+    sumstats_rs = sumstats_rs.drop(columns=["group"], errors='ignore').reset_index()
+    sumstats_nonrs = sumstats_nonrs.drop(columns=["rsn"], errors='ignore')
+    
+    # Merge back valid and invalid rsIDs
+    log.write(" -Append data... ", verbose=verbose)
+    sumstats = pd.concat([sumstats_rs, sumstats_nonrs], ignore_index=True)
+    
+    # ============================================================================
+    # Step 10: Post-processing and validation
+    # ============================================================================
+    sumstats = _fix_chr(sumstats, verbose=verbose)
+    sumstats = _fix_pos(sumstats, verbose=verbose)
+    sumstats = _sort_column(sumstats_obj=sumstats, verbose=verbose)
 
-    # update CHR and POS using rsID with multiple threads
-    sumstats_rs = pd.concat(pool.map(partial(merge_chrpos,all_groups_max=all_groups_max,path=path,build=build,status=status),df_split),ignore_index=True)
-    sumstats_rs[["CHR","POS"]] = sumstats_rs[["CHR","POS"]].astype("Int64")
-    del df_split
-    gc.collect()
-    log.write(" -Merging group data... ",verbose=verbose)
-    # drop group and rsn
-    sumstats_rs = sumstats_rs.drop(columns=["group"])
-    sumstats_nonrs = sumstats_nonrs.drop(columns=["rsn"])
-    
-    # merge back
-    log.write(" -Append data... ",verbose=verbose)
-    sumstats = pd.concat([sumstats_rs,sumstats_nonrs],ignore_index=True)
-    
-    del sumstats_rs
-    del sumstats_nonrs
-    gc.collect()
-    
-    # check
-    sumstats = _fix_chr(sumstats,verbose=verbose)
-    sumstats = _fix_pos(sumstats,verbose=verbose)
-    sumstats = _sort_column(sumstats_obj=sumstats,verbose=verbose)
-
-    pool.close()
-    pool.join()
-
-    # Update harmonization status only if called with Sumstats object
+    # ============================================================================
+    # Step 11: Update metadata and return results
+    # ============================================================================
     if not is_dataframe:
-        # Assign modified dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
         try:
             from gwaslab.info.g_meta import _update_harmonize_step
             rsid_to_chrpos_kwargs = {
-                'rsid': rsid, 'chrom': chrom, 'pos': pos, 'path': path,
+                'rsid': rsid,
+                'chrom': chrom,
+                'pos': pos,
+                'path': path,
                 'ref_rsid_to_chrpos_vcf': ref_rsid_to_chrpos_vcf,
                 'ref_rsid_to_chrpos_hdf5': ref_rsid_to_chrpos_hdf5,
-                'build': build, 'status': status, 'n_cores': n_cores, 'block_size': block_size
+                'build': build,
+                'status': status,
+                'threads': threads,
+                'block_size': block_size
             }
             _update_harmonize_step(sumstats_obj, "rsid_to_chrpos", rsid_to_chrpos_kwargs, True)
         except:

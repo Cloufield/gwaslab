@@ -132,6 +132,13 @@ def with_logging(start_to_msg,
                 if sumstats_obj is None:
                     sumstats_obj = getattr(log, '_sumstats_obj', None)
             
+            # Extract sumstats DataFrame from sumstats_obj if sumstats is None
+            if sumstats is None and sumstats_obj is not None:
+                try:
+                    sumstats = sumstats_obj.data
+                except:
+                    pass
+            
             if sumstats is not None:
                 # check sumstats shape, columns
                 initial_shape = None

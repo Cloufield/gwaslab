@@ -49,7 +49,6 @@ from gwaslab.hm.hm_harmonize_sumstats import (
     _parallelize_infer_strand,
     _parallelize_assign_rsid,
     _parallelize_rsid_to_chrpos,
-    _rsid_to_chrpos,
     _paralleleinferafwithmaf,
 )
 
@@ -855,10 +854,18 @@ class Sumstats():
             self.data = _parallelize_assign_rsid(self,path=ref_rsid_vcf,ref_mode="vcf",log=self.log,**kwargs)   
             # Metadata and harmonization status are already set by _parallelize_assign_rsid
         return self
-    @add_doc(_rsid_to_chrpos)
+    @add_doc(_parallelize_rsid_to_chrpos)
     def rsid_to_chrpos(self,**kwargs):
+        """
+        Assign CHR and POS using rsIDs (uses fast HDF5-based parallel processing).
+        
+        This method uses the optimized _parallelize_rsid_to_chrpos function which is
+        much faster than the old TSV-based approach. It requires an HDF5 reference file
+        (generated from VCF using process_vcf_to_hfd5) or will auto-generate the path
+        from a VCF reference file.
+        """
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = _rsid_to_chrpos(self,log=self.log,**kwargs)
+        self.data = _parallelize_rsid_to_chrpos(self,log=self.log,**kwargs)
         return self
     @add_doc(_parallelize_rsid_to_chrpos)
     def rsid_to_chrpos2(self,**kwargs):
@@ -1451,5 +1458,13 @@ class Sumstats():
         return _view_sumstats(self.data, expr=expr)
     
     
-    def reload(self):
-         self.data = _reload(self.tmp_path, self.log)
+    def reload(self, delete_files=None):
+        """
+        Reload data from temporary pickle file.
+        
+        Parameters
+        ----------
+        delete_files : list of str, optional
+            Additional files to delete after successful reload
+        """
+        self.data = _reload(self.tmp_path, self.log, delete_files=delete_files)

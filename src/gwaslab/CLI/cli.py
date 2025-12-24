@@ -62,12 +62,13 @@ def _process_sumstats(args):
     
     # Handle rsid-to-chrpos if specified
     if args.rsid_to_chrpos:
+        # Use HDF5-based parallel processing (faster than old TSV approach)
+        # Accepts VCF file (will auto-generate HDF5 path) or direct HDF5 path
         s.rsid_to_chrpos(
-            ref_rsid_to_chrpos_tsv=args.ref_rsid_tsv,
+            ref_rsid_to_chrpos_vcf=args.ref_rsid_vcf if args.ref_rsid_vcf else None,
+            ref_rsid_to_chrpos_hdf5=args.ref_rsid_tsv if args.ref_rsid_tsv else None,  # Reuse TSV arg for HDF5 path
             build=args.build,
-            overwrite=args.overwrite_rtc,
-            remove=args.remove,
-            chunksize=args.chunksize,
+            threads=args.threads if args.threads else 4,
             verbose=not args.quiet
         )
     
@@ -148,7 +149,7 @@ Examples:
     harm_group.add_argument("--basic-check", action="store_true", default=True, help="Run basic QC in harmonization (default: True)")
     harm_group.add_argument("--no-basic-check", dest="basic_check", action="store_false", help="Skip basic QC in harmonization")
     harm_group.add_argument("--ref-seq", help="Reference sequence file (FASTA) for allele flipping")
-    harm_group.add_argument("--ref-rsid-tsv", help="Reference rsID TSV file")
+    harm_group.add_argument("--ref-rsid-tsv", help="Reference rsID HDF5 file (legacy name, accepts HDF5 path)")
     harm_group.add_argument("--ref-rsid-vcf", help="Reference rsID VCF/BCF file")
     harm_group.add_argument("--ref-infer", help="Reference VCF/BCF file for strand inference")
     harm_group.add_argument("--ref-alt-freq", help="Allele frequency field name in VCF INFO (default: AF)")
