@@ -196,17 +196,29 @@ def merge_chrpos(sumstats_part, h5_file_path, chr_num, group, build, status, chr
                     sumstats_part.loc[matched_rsn, status] = vchange_status(
                         sumstats_part.loc[matched_rsn, status], 2, "987", 3*int(build[1]))
                     
-                    # Assign CHR from parameter (only if chr_num is provided)
+                    # Assign CHR from parameter (only if chr_num is provided and CHR is missing)
                     if chr_num is not None:
                         if chrom in sumstats_part.columns:
-                            sumstats_part.loc[matched_rsn, chrom] = chr_num
+                            # Only assign CHR if it's missing (preserve existing values)
+                            # Get CHR values for matched variants
+                            matched_chr = sumstats_part.loc[matched_rsn, chrom]
+                            # Find which ones are missing
+                            missing_chr_indices = matched_chr[matched_chr.isna()].index
+                            if len(missing_chr_indices) > 0:
+                                sumstats_part.loc[missing_chr_indices, chrom] = chr_num
                         else:
                             sumstats_part[chrom] = pd.Series(dtype="Int64", index=sumstats_part.index)
                             sumstats_part.loc[matched_rsn, chrom] = chr_num
                     
-                    # Assign POS values from reference DataFrame (convert to pandas nullable Int64)
+                    # Assign POS values from reference DataFrame (only if POS is missing)
                     if pos in sumstats_part.columns:
-                        sumstats_part.loc[matched_rsn, pos] = ref_df.loc[matched_rsn, "POS"].astype("Int64")
+                        # Only assign POS if it's missing (preserve existing values)
+                        # Get POS values for matched variants
+                        matched_pos = sumstats_part.loc[matched_rsn, pos]
+                        # Find which ones are missing
+                        missing_pos_indices = matched_pos[matched_pos.isna()].index
+                        if len(missing_pos_indices) > 0:
+                            sumstats_part.loc[missing_pos_indices, pos] = ref_df.loc[missing_pos_indices, "POS"].astype("Int64")
                     else:
                         sumstats_part[pos] = pd.Series(dtype="Int64", index=sumstats_part.index)
                         sumstats_part.loc[matched_rsn, pos] = ref_df.loc[matched_rsn, "POS"].astype("Int64")
