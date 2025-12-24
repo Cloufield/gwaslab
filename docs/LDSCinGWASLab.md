@@ -22,30 +22,31 @@ GWASLab integrates the core functions of LDSC into the gl.Sumstats object, which
 
 ## Munging (Filtering and Harmonization)
 
-!!! info "Munging workflow"
+!!! quote "Munging workflow"
     GWASLab implements the LDSC munging workflow based on the original [munge_sumstats.py](https://github.com/bulik/ldsc/blob/master/munge_sumstats.py). Munging applies standard filtering and harmonization procedures to prepare summary statistics for LDSC analysis.
 
 The munging process includes:
 
 1. **Column name mapping**: Automatically maps GWASLab column names to LDSC standard format:
-   - `EA` → `A1` (effect allele)
-   - `NEA` → `A2` (non-effect allele)
-   - `EAF` → `FRQ` (frequency)
-   - `rsID` → `SNP` (variant ID)
 
-2. **P-value filtering**: Removes SNPs with P-values outside (0, 1] with warnings
+   - `**EA**` → `A1` (effect allele)
+   - `**NEA**` → `A2` (non-effect allele)
+   - `**EAF**` → `FRQ` (frequency)
+   - `**rsID**` → `SNP` (variant ID)
 
-3. **INFO score filtering**: Filters SNPs with INFO < threshold (default 0.9), warns if INFO outside [0, 1.5]
+2. **P-value filtering**: Removes SNPs with **P**-values outside (0, 1] with warnings
 
-4. **MAF filtering**: Converts EAF to MAF (minor allele frequency) and filters by MAF threshold (default 0.01), warns if frequency outside [0, 1]
+3. **INFO score filtering**: Filters SNPs with **INFO** < threshold (default 0.9), warns if **INFO** outside [0, 1.5]
+
+4. **MAF filtering**: Converts **EAF** to **MAF** (minor allele frequency) and filters by **MAF** threshold (default 0.01), warns if frequency outside [0, 1]
 
 5. **Allele filtering**: Keeps only strand-unambiguous SNPs (A/T, C/G, A/C, A/G, T/C, T/G)
 
 6. **Palindromic SNP removal**: Optionally removes palindromic SNPs (default: True)
 
-7. **Sample size filtering**: Filters by N using 90th percentile / 1.5 threshold (LDSC default) or user-specified value
+7. **Sample size filtering**: Filters by **N** using 90th percentile / 1.5 threshold (LDSC default) or user-specified value
 
-8. **P to Z conversion**: Creates Z-scores from P-values (prefers BETA/SE if available for more accurate conversion)
+8. **P to Z conversion**: Creates **Z**-scores from **P**-values (prefers **BETA**/**SE** if available for more accurate conversion)
 
 9. **Duplicate removal**: Removes duplicate SNPs based on SNP ID
 

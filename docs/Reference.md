@@ -22,7 +22,7 @@ Process the 1000 genome vcf file for EAS sample:
 - Tabix index
 
 ### Sample code:
-```bash
+```
 #!/bin/bash
 # extract EAS sample ID
 awk '$3=="EAS"{print $1}' integrated_call_samples_v3.20130502.ALL.panel >EAS.sample

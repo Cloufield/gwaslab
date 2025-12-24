@@ -23,11 +23,14 @@ nav:
        - "Update logs" : UpdateLogs.md
        - "Known Issues" : KnownIssues.md
        - "Reserved Headers": reserved_header.md
-       - "License" : LICENSE
-    - Tutorial: 
+       - "License" : LICENSE.md
+    - Start: 
        - Tutorial: tutorial_3.6.ipynb
-       - Archive: tutorial.ipynb 
-    - Sumstats manipulation:
+       - "Tutorial Archive": tutorial.ipynb 
+    - CLI:
+       - "Command Line Interface": CLI.md
+       - "CLI Workflow Examples": CLIWorkflowExamples.md
+    - DataProcessing:
        - "Sumstats Object": SumstatsObject.md
        - "Status Code": StatusCode.md
        - "Standardization and Normalization": Standardization.md
@@ -37,7 +40,7 @@ nav:
        - "Assign CHR/POS using rsID" : AssignCHRPOS.md
        - Liftover: LiftOver.md
        - "Data conversion": Conversion.md
-    - Visualization:
+    - Plotting:
        - "Manhattan and QQ plot": Visualization.md
        - "Regional Plot": RegionalPlot.md
        - "Brisbane Plot": BrisbanePlot.md
@@ -45,26 +48,29 @@ nav:
        - "Trumpet Plot (testing)": TrumpetPlot.md
        - "Effect Size Comparison": EffectSize.md
        - "Allele Frequency Comparison": AlleleFrequency.md
-       - "Genetic correlation heatmap" : GeneticCorrelation.md
+       - "Genetic Correlation Heatmap" : GeneticCorrelation.md
        - "Gallery" : Gallery.md
-    - Utilities: 
-       - "Extract Lead Variants": ExtractLead.md
+    - Analysis:
+       - "Extract Lead Variants":  ExtractLead.md
        - "Extract Novel Variants": ExtractNovel.md
+       - "LDSC in GWASLab": LDSCinGWASLab.md
+       - "Clumping" : Clumping.md
+       - "GWAS Catalog API": GWASCatalogAPI.md
+       - "Infer Genome Build": InferBuild.md
+       - "Infer Ancestry": InferAncestry.md
+       - "Per-SNP R2 and F" : PerSNPh2.md
+       - "Convert Heritability": HeritabilityConversion.md
+    - IO:
        - "Format and Save": Format.md
        - "Save Sumstats Object": Pickle.md 
        - "Load LDSC log": LoadLDSC.md
-       - "Convert Heritability": HeritabilityConversion.md
-       - "Per-SNP R2 and F" : PerSNPh2.md
-       - "Infer Genome Build": InferBuild.md
-    - Downstream:
-       - "LDSC in GWASLab": LDSCinGWASLab.md
-       - "Clumping" : Clumping.md
-    - References:
+    - Reference:
        - "Download": Download.md 
        - "Reference data" : Reference.md
        - "Common data": CommonData.md
        - "Hapmap3": Hapmap3.md
        - "HLA region": HLA.md
+       - "Paper Reference": PaperReference.md
     - Examples:
        - "Standardization": standardization_workflow.ipynb
        - "Harmonization" : harmonization_workflow.ipynb
@@ -81,6 +87,7 @@ nav:
        - "Brisbane plot" : visualization_brisbane.ipynb
        - "Correlation heatmap" : visualization_plot_genetic_correlation.ipynb
        - "Download reference": Download_reference.ipynb
+       
 
 markdown_extensions:
   - toc:
@@ -104,6 +111,7 @@ extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort.js
+  - javascripts/hide-sidebar-tutorial.js
 
 extra_css:
   - stylesheets/extra.css

@@ -1770,60 +1770,108 @@ def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=
     """
     Check the difference between effect allele frequency (EAF) in summary statistics and alternative allele frequency in reference VCF.
 
-    This function calculates the difference between the effect allele frequency (EAF) in the summary statistics
-    and the alternative allele frequency (ALT_AF) in the reference VCF file. The difference (DAF) is stored in
-    a new column in the summary statistics DataFrame.
+    This function calculates the difference between the effect allele frequency (EAF) in the summary 
+    statistics and the alternative allele frequency (ALT_AF) in the reference VCF file. The difference 
+    (DAF) is stored in a new column in the summary statistics DataFrame.
+
+    **Purpose:**
+    - Quality control: Identify variants with large differences in allele frequency between sumstats 
+      and reference, which may indicate:
+      - Population differences
+      - Allele mismatches or strand flips
+      - Data quality issues
+    - Validation: Verify that EAF values in sumstats are consistent with reference population frequencies.
+
+    **DAF Calculation:**
+    - DAF = EAF (sumstats) - ALT_AF (reference VCF)
+    - Positive DAF: EAF in sumstats is higher than reference
+    - Negative DAF: EAF in sumstats is lower than reference
+    - Large |DAF| values (> 0.2) may indicate issues requiring investigation
+
+    **When to use:**
+    - After `infer_af()` to validate inferred EAF values
+    - Before harmonization to identify potential allele mismatches
+    - For quality control to flag variants with unusual frequency differences
 
     Parameters
     ----------
     sumstats : pd.DataFrame
-        Summary statistics DataFrame containing variant data.
+        Summary statistics DataFrame containing variant data. Must have columns: CHR, POS, EA, NEA, EAF.
     ref_infer : str
-        Path to the reference VCF file.
+        Path to the reference VCF file. Must be indexed (tabix) for efficient querying.
     ref_alt_freq : str, optional
-        Field name for alternative allele frequency in VCF INFO section.
+        Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax", 
+        "gnomAD_AF"). If None, the function will attempt to auto-detect common AF field names.
     maf_threshold : float, default=0.4
-        Minor allele frequency threshold for filtering variants.
+        Minor allele frequency threshold for filtering variants. Only variants with MAF ≤ threshold 
+        in both sumstats and reference are included in DAF statistics. This helps focus on common 
+        variants where frequency differences are more meaningful.
     column_name : str, default="DAF"
-        Name of the column to store the difference values.
+        Name of the column to store the difference values. The final column name will be 
+        `column_name + suffix`.
     suffix : str, default=""
-        Suffix to append to the column name.
-    threads : int, default=1
-        Number of CPU cores to use for parallel processing.
+        Suffix to append to the column name (e.g., "_pop1", "_gnomad"). Useful when comparing 
+        multiple reference populations.
+    n_cores : int, default=1
+        Number of CPU cores to use for parallel processing. Set to 1 if processing < 10,000 variants.
     chr : str, default="CHR"
-        Column name for chromosome information.
+        Column name for chromosome in sumstats.
     pos : str, default="POS"
-        Column name for position information.
+        Column name for position in sumstats.
     ref : str, default="NEA"
-        Column name for reference allele (non-effect allele).
+        Column name for reference/non-effect allele in sumstats.
     alt : str, default="EA"
-        Column name for alternative allele (effect allele).
+        Column name for alternative/effect allele in sumstats.
     eaf : str, default="EAF"
-        Column name for effect allele frequency.
+        Column name for effect allele frequency in sumstats.
     status : str, default="STATUS"
-        Column name for status codes.
+        Column name for status codes. By default, only processes variants with STATUS digit 4 = 0 
+        (standardized and normalized), unless `force=True`.
     chr_dict : dict, optional
-        Dictionary for mapping chromosome names to standardized format.
+        Dictionary for mapping chromosome names between sumstats and reference VCF 
+        (e.g., {1: "chr1", 2: "chr2"}). If None, automatic detection is attempted.
     force : bool, default=False
-        If True, check all variants regardless of status.
+        If True, check all variants regardless of STATUS codes. If False, only processes variants 
+        with valid harmonization status (STATUS digit 4 = 0).
     verbose : bool, default=True
-        If True, print progress messages.
+        If True, print progress messages and DAF statistics (max, min, mean, std, abs statistics).
     log : gwaslab.g_Log.Log, default=Log()
         Logging object for recording process information.
 
     Returns
     -------
     pd.DataFrame
-        Updated summary statistics DataFrame with a new column containing
-        the difference between EAF (sumstats) and ALT_AF (reference VCF).
+        Updated summary statistics DataFrame with a new column (`column_name + suffix`) containing 
+        the difference between EAF (sumstats) and ALT_AF (reference VCF). Variants that could not 
+        be matched in the reference VCF will have DAF = NaN.
 
     Notes
     -----
     - The difference in allele frequency (DAF) is calculated as: DAF = EAF (sumstats) - ALT_AF (reference VCF)
-    - This DAF is not the derived allele frequency.
-    - The function provides statistics about the DAF values including max, min, standard deviation,
-      and absolute value statistics.
+    - **Important**: This DAF is NOT the derived allele frequency. It is simply the difference in 
+      allele frequencies between two datasets.
+    - The function requires the reference VCF to be indexed (tabix) for efficient chromosome-based 
+      querying. Use `tabix -p vcf reference.vcf.gz` to create an index.
+    - By default, only processes variants with valid harmonization status (STATUS digit 4 = 0) to 
+      ensure alleles are standardized and normalized.
+    - The function provides comprehensive statistics about DAF values including:
+      - Maximum and minimum DAF
+      - Mean and standard deviation of DAF
+      - Statistics for absolute DAF values
+      - Count of variants with |DAF| > 0.2 (potential issues)
     - Only variants with valid chromosome position and allele information are checked by default.
+    - For small datasets (< 10,000 variants), the function automatically sets `n_cores=1` to avoid overhead.
+    - Large |DAF| values (> 0.2) may indicate:
+      - Population differences (expected for population-specific variants)
+      - Allele mismatches (check EA/NEA alignment)
+      - Strand flips (use `infer_strand()` to resolve)
+      - Data quality issues (verify EAF calculation in sumstats)
+
+    See Also
+    --------
+    infer_af : Infer EAF from reference VCF before checking differences.
+    plot_daf : Visualize DAF distribution to identify outliers.
+    infer_strand : Resolve strand orientation issues that may cause large DAF values.
     """
 
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
@@ -1913,53 +1961,83 @@ def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr
     Infer effect allele frequency (EAF) in summary statistics using reference VCF ALT frequency.
 
     This function infers the effect allele frequency (EAF) in the summary statistics by matching
-    variants with a reference VCF file. It calculates the ALT frequency from the reference VCF
-    and updates the EAF values in the summary statistics DataFrame.
+    variants with a reference VCF file. It extracts the alternative allele frequency (ALT_AF) from 
+    the reference VCF INFO field and updates the EAF values in the summary statistics DataFrame.
+
+    **Workflow:**
+    1. Matches variants in sumstats with reference VCF by CHR:POS:EA:NEA.
+    2. Extracts ALT frequency from VCF INFO field (specified by `ref_alt_freq`).
+    3. Handles allele matching: If EA matches ALT in VCF, uses ALT_AF directly. If EA matches REF 
+       in VCF, uses 1 - ALT_AF.
+    4. Updates EAF column in sumstats with inferred values.
+
+    **When to use:**
+    - When sumstats are missing EAF values but have valid CHR, POS, EA, NEA.
+    - When you want to fill in EAF from a reference population (e.g., 1000 Genomes, gnomAD).
+    - As a preprocessing step before strand inference or allele frequency comparison.
 
     Parameters
     ----------
     sumstats : pd.DataFrame
-        Summary statistics DataFrame containing variant data.
+        Summary statistics DataFrame containing variant data. Must have columns: CHR, POS, EA, NEA.
     ref_infer : str
-        Path to the reference VCF file.
+        Path to the reference VCF file. Must be indexed (tabix) for efficient querying.
     ref_alt_freq : str, optional
-        Field name for alternative allele frequency in VCF INFO section.
-    threads : int, default=1
-        Number of CPU cores to use for parallel processing.
+        Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax", 
+        "gnomAD_AF"). If None, the function will attempt to auto-detect common AF field names.
+    n_cores : int, default=1
+        Number of CPU cores to use for parallel processing. Set to 1 if processing < 10,000 variants.
     chr : str, default="CHR"
-        Column name for chromosome information.
+        Column name for chromosome in sumstats.
     pos : str, default="POS"
-        Column name for position information.
+        Column name for position in sumstats.
     ref : str, default="NEA"
-        Column name for reference allele (non-effect allele).
+        Column name for reference/non-effect allele in sumstats.
     alt : str, default="EA"
-        Column name for alternative allele (effect allele).
+        Column name for alternative/effect allele in sumstats.
     eaf : str, default="EAF"
-        Column name for effect allele frequency.
+        Column name for effect allele frequency. This column will be created if it doesn't exist, 
+        and existing values will be updated where inference is successful.
     status : str, default="STATUS"
-        Column name for status codes.
+        Column name for status codes. By default, only processes variants with STATUS digit 4 = 0 
+        (standardized and normalized), unless `force=True`.
     chr_dict : dict, optional
-        Dictionary for mapping chromosome names to standardized format.
+        Dictionary for mapping chromosome names between sumstats and reference VCF 
+        (e.g., {1: "chr1", 2: "chr2"}). If None, automatic detection is attempted.
     force : bool, default=False
-        If True, infer EAF for all variants regardless of status.
+        If True, infer EAF for all variants regardless of STATUS codes. If False, only processes 
+        variants with valid harmonization status (STATUS digit 4 = 0).
     verbose : bool, default=True
-        If True, print progress messages.
+        If True, print progress messages and statistics about inference success rate.
     log : gwaslab.g_Log.Log, default=Log()
         Logging object for recording process information.
 
     Returns
     -------
     pd.DataFrame
-        Updated summary statistics DataFrame with inferred EAF values.
+        Updated summary statistics DataFrame with inferred EAF values. Variants that could not be 
+        matched in the reference VCF will have EAF = NaN.
 
     Notes
     -----
-    - The function first checks if the required columns are present in the summary statistics.
-    - By default, it only processes variants with valid status codes (standardized and normalized).
-    - The function uses parallel processing to improve performance on large datasets.
-    - After inference, it provides statistics about the number of variants for which EAF was
-      successfully inferred and those still missing EAF values.
-    - The inferred EAF values are stored in the specified EAF column of the summary statistics.
+    - The function requires the reference VCF to be indexed (tabix) for efficient chromosome-based 
+      querying. Use `tabix -p vcf reference.vcf.gz` to create an index.
+    - By default, only processes variants with valid harmonization status (STATUS digit 4 = 0) to 
+      ensure alleles are standardized and normalized.
+    - The function uses parallel processing to improve performance on large datasets. For small 
+      datasets (< 10,000 variants), it automatically sets `n_cores=1` to avoid overhead.
+    - After inference, the function reports statistics about:
+      - Number of variants with EAF successfully inferred
+      - Number of variants still missing EAF (not found in reference or missing ref_alt_freq field)
+    - The inferred EAF values are stored in the specified EAF column, overwriting existing values 
+      where inference is successful.
+    - If the reference VCF uses different chromosome naming (e.g., "chr1" vs "1"), provide `chr_dict` 
+      for proper matching.
+
+    See Also
+    --------
+    check_af : Calculate difference between EAF (sumstats) and ALT_AF (reference) after inference.
+    infer_eaf_from_maf : Infer EAF from MAF using reference VCF (alternative method).
     """
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
     
@@ -2037,7 +2115,7 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
     start_function=".infer_af()",
     must_kwargs=["ref_alt_freq"]
 )
-def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
+def _parallele_infer_af_with_maf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
                             eaf="EAF", maf="MAF", ref_eaf="_REF_EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Infer effect allele frequency (EAF) in summary statistics from MAF using reference VCF ALT frequency.
@@ -2113,13 +2191,18 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
         if not force:
             # Match: digit 4 is 0 - Optimized: extract digit once
             digit_4 = _extract_status_digit(sumstats[status], 4)
-            good_chrpos = (digit_4 == 0)  
+            good_chrpos = (digit_4 == 0)
+        else:
+            good_chrpos = pd.Series([True] * len(sumstats), index=sumstats.index)
+        
+        # Only process variants with valid MAF (required for EAF inference)
+        good_chrpos = good_chrpos & sumstats[maf].notna()
         log.write(" -Checking variants:", good_chrpos.sum(), verbose=verbose)
     
         ########################  
         #extract ref af
-        if sumstats[eaf].isna().sum()<10000:
-            n_cores=1       
+        if good_chrpos.sum() < 10000:
+            n_cores = 1       
         #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
         pool = Pool(n_cores)
@@ -2131,10 +2214,17 @@ def _paralleleinferafwithmaf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, 
         ###########################
         # infer sumstats EAF 
         # based on sumstats MAF and reference EAF
-        is_filpped = ((sumstats[ref_eaf]>=0.5)&(sumstats[maf]<=0.5)) |((sumstats[ref_eaf]<0.5)&(sumstats[maf]>0.5)) 
-        sumstats[eaf] = sumstats[maf]
-        log.write(" -Flipping MAF to obtain EAF for {} variants".format(sum(is_filpped)),verbose=verbose) 
-        sumstats.loc[is_filpped,eaf] = 1 - sumstats.loc[is_filpped,maf]
+        # Optimized: Use XOR logic - flip when ref_eaf and maf indicate different major/minor alleles
+        # (ref_eaf >= 0.5) means ref allele is major, (maf <= 0.5) means maf is minor
+        # If ref is major and maf is minor, or ref is minor and maf is major, we need to flip
+        is_flipped = (sumstats[ref_eaf] >= 0.5) != (sumstats[maf] > 0.5)
+        # Vectorized assignment: use np.where for efficient conditional assignment
+        sumstats.loc[good_chrpos, eaf] = np.where(
+            is_flipped[good_chrpos],
+            1 - sumstats.loc[good_chrpos, maf],
+            sumstats.loc[good_chrpos, maf]
+        )
+        log.write(" -Flipping MAF to obtain EAF for {} variants".format(is_flipped[good_chrpos].sum()),verbose=verbose)
 
         ###########################    
         afternumber = sumstats[eaf].isna().sum()

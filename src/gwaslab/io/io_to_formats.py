@@ -2,7 +2,6 @@ import pandas as pd
 import yaml
 import hashlib
 import copy
-import gzip
 """
 Convert summary statistics to specified output format with various processing options.
 """
@@ -542,16 +541,6 @@ def tofmt(sumstats,
         
         log.write(" -Writing sumstats to: {}...".format(path),verbose=verbose)
         
-        #if tab_fmt=="tsv" or tab_fmt=="csv":
-        #    try:
-        #        log.write(f"  -Fast to csv mode...",verbose=verbose)
-        #        fast_to_csv(sumstats, path, to_csvargs=to_csvargs, compress=True, write_in_chunks=True)
-        #    except:
-        #        log.write(f"Error in using fast_to_csv. Falling back to original implementation.",verbose=verbose)
-        #        sumstats.to_csv(path, index=None, **to_csvargs)
-#
-        #elif tab_fmt=="parquet":
-        #    sumstats.to_parquet(path, index=None, **to_tabular_kwargs)
         _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose, gzip)
         
         if tab_fmt not in non_md5sum_tab_fmt and "@" not in path:
@@ -572,79 +561,19 @@ def tofmt(sumstats,
 ####################################################################################################################
 def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tabular_kwargs, log, verbose, gzip):
     if tab_fmt=="tsv" or tab_fmt=="csv":
-        try:
-            log.write(f"  -Fast to csv mode...",verbose=verbose)
-            if "@" in path:
-                chr_header = rename_dictionary["CHR"]
-                log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)
-                log.write("  -Chromosomes:{}...".format(list(sumstats["CHR"].unique())),verbose=verbose)
-                for single_chr in list(sumstats["CHR"].unique()):
-                    single_path = path.replace("@","{}".format(single_chr))
-
-                    fast_to_csv(sumstats.loc[sumstats[chr_header]==single_chr,:],
-                                 single_path, 
-                                 to_csvargs=to_csvargs, compress=gzip, write_in_chunks=True)
-            else:
-                fast_to_csv(sumstats, path, to_csvargs=to_csvargs, compress=gzip, write_in_chunks=True)
-        except:
-            log.write(f"Error in using fast_to_csv. Falling back to original implementation.",verbose=verbose)
-            if "@" in path:
-                chr_header = rename_dictionary["CHR"]
-                log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)
-                log.write("  -Chromosomes:{}...".format(list(sumstats["CHR"].unique())),verbose=verbose)
-                for single_chr in list(sumstats["CHR"].unique()):
-                    single_path = path.replace("@","{}".format(single_chr))
-
-                    sumstats.loc[sumstats[chr_header]==single_chr,:].to_csv(path, index=None, **to_csvargs)
-            else:
-                sumstats.to_csv(path, index=None, **to_csvargs)
+        # pandas automatically detects compression when path ends with .gz
+        if "@" in path:
+            chr_header = rename_dictionary["CHR"]
+            log.write(f"  -@ detected: writing each chromosome to a single file...",verbose=verbose)
+            log.write("  -Chromosomes:{}...".format(list(sumstats["CHR"].unique())),verbose=verbose)
+            for single_chr in list(sumstats["CHR"].unique()):
+                single_path = path.replace("@","{}".format(single_chr))
+                sumstats.loc[sumstats[chr_header]==single_chr,:].to_csv(single_path, index=False, **to_csvargs)
+        else:
+            sumstats.to_csv(path, index=False, **to_csvargs)
 
     elif tab_fmt=="parquet":
         sumstats.to_parquet(path, index=None, **to_tabular_kwargs)
-
-
-
-def fast_to_csv(dataframe, path, to_csvargs=None, compress=True, write_in_chunks=True):
-        df_numpy = dataframe.to_numpy()
-
-        if path.endswith(".gz"):
-            path = path[:-3]
-        else:
-            compress = False
-        if to_csvargs is None:
-            to_csvargs = {}
-
-        if 'sep' in to_csvargs:
-            sep = to_csvargs['sep']
-        else:
-            sep = '\t'
-
-        # this operation slows down a bit the process, but it is necessary to be consistent with the pandas.to_csv() behavior
-        if 'na_rep' in to_csvargs:
-            df_numpy[pd.isna(df_numpy)] = to_csvargs['na_rep'] # replace NaNs. We have to use pd.isna because np.isnan does not work with 'object' and 'string' dtypes
-
-        # np.savetext() is faster than df.to_csv, however it loops through the rows of X and formats each row individually:
-        # https://github.com/numpy/numpy/blob/d35cd07ea997f033b2d89d349734c61f5de54b0d/numpy/lib/npyio.py#L1613
-        # We can speed up the process building the whole format string and then appling the formatting in one single call
-        out_string = sep.join(dataframe.columns) + '\n'
-        fmt = sep.join(['%s']*dataframe.shape[1]) # build formatting for one single row
-        fmt = '\n'.join([fmt]*dataframe.shape[0]) # add newline and replicate the formatting for all rows
-        out_string += fmt % tuple(df_numpy.ravel()) # flatten the array and then apply formatting
-        out_string += '\n'
-
-        if write_in_chunks:
-            chunk_size = 50000000
-            lines = [out_string[i:i+chunk_size] for i in range(0, len(out_string), chunk_size)]
-        else:
-            lines = [out_string]
-
-        if compress:
-            lines = [line.encode() for line in lines]
-            with gzip.open(path+".gz", 'wb', compresslevel=1) as f:
-                f.writelines(lines)
-        else:
-            with open(path, 'w') as f:
-                f.writelines(lines)
 
 
 def fast_to_vcf(dataframe, path, vcf_header, output_format, meta_data, meta):
@@ -756,7 +685,9 @@ def _output_bed_like(sumstats, path, fmt, suffix, ouput_cols,to_csvargs,bgzip, t
     path = path + "."+suffix
     log.write(" -Output columns: {}".format(",".join(sumstats.columns)),verbose=verbose)
     log.write(" -Writing sumstats to: {}...".format(path),verbose=verbose)
-    sumstats.to_csv(path,sep="\t",index=None,header=None,**to_csvargs)
+    if to_csvargs is None:
+        to_csvargs = {}
+    sumstats.to_csv(path,sep="\t",index=False,header=None,**to_csvargs)
     _bgzip_tabix_md5sum(path, fmt, bgzip, md5sum, tabix, tabix_indexargs, log, verbose)
 
 
@@ -820,70 +751,77 @@ def get_format_date_and_time():
 
 def _adjust_position(sumstats, fmt,is_snp, is_insert, is_delete, log, verbose):
     log.write(" -Adjusting positions in format-specific manner..",verbose=verbose) 
-    if fmt=="bed":
-        sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"]-1 
-        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"]-1 + sumstats.loc[is_snp,"NEA"].str.len()
-        sumstats.loc[is_snp,"NEA/EA"] = sumstats.loc[is_snp,"NEA"].astype("string")+"/"+sumstats.loc[is_snp,"EA"].astype("string")
-        
-        # for insertion
-        # start = pos : end = pos
-        # A/ATC -> -/TC
-        sumstats.loc[is_insert,"START"]  = sumstats.loc[is_insert,"POS"]
-        sumstats.loc[is_insert,"END"]    = sumstats.loc[is_insert,"POS"]
-        sumstats.loc[is_insert,"NEA/EA"] = "-/"+sumstats.loc[is_insert,"EA"].str.slice(start=1)
-        
-        # for deletion 
-        # start = pos - 1 +1; end = pos -1 +1+ len(Ref)
-        # ATC/A -> TC/-
-        sumstats.loc[is_delete,"START"]  = sumstats.loc[is_delete,"POS"]
-        sumstats.loc[is_delete,"END"]    = sumstats.loc[is_delete,"POS"] + sumstats.loc[is_delete,"NEA"].str.len() - 1
-        sumstats.loc[is_delete,"NEA/EA"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)+"/-"
-        sumstats["STRAND"]="+"
-    elif fmt=="vep":
-        sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"] + (sumstats.loc[is_snp,"NEA"].str.len() - 1 )
-        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"] + (sumstats.loc[is_snp,"NEA"].str.len() - 1 )
-        sumstats.loc[is_snp,"NEA/EA"] = sumstats.loc[is_snp,"NEA"].astype("string")+"/"+sumstats.loc[is_snp,"EA"].astype("string")
-        
-        # for insertion
-        # start = pos+1 ; end = pos
-        # A/ATC -> -/TC
-        sumstats.loc[is_insert,"START"]  = sumstats.loc[is_insert,"POS"] + 1
-        sumstats.loc[is_insert,"END"]    = sumstats.loc[is_insert,"POS"]
-        sumstats.loc[is_insert,"NEA/EA"] = "-/" + sumstats.loc[is_insert,"EA"].str.slice(start=1)
-        
-        # for deletion 
-        # start = pos ; end = pos + len(Ref) -1
-        # ATC/A -> TC/-
-        sumstats.loc[is_delete,"START"]  = sumstats.loc[is_delete,"POS"] + 1
-        sumstats.loc[is_delete,"END"]    = sumstats.loc[is_delete,"POS"] + (sumstats.loc[is_delete,"NEA"].str.len() -1)
-        sumstats.loc[is_delete,"NEA/EA"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)+"/-"
-        sumstats["STRAND"]="+"
-    elif fmt=="annovar":
-        # for snp  
-        # start = pos ; end = pos
-        # A/G
-        # AT/CG
-        sumstats.loc[is_snp,"START"]  = sumstats.loc[is_snp,"POS"]
-        sumstats.loc[is_snp,"END"]    = sumstats.loc[is_snp,"POS"]-1 + sumstats.loc[is_snp,"NEA"].str.len()
-        sumstats.loc[is_snp,"NEA_out"] = sumstats.loc[is_snp,"NEA"].astype("string")
-        sumstats.loc[is_snp,"EA_out"] = sumstats.loc[is_snp,"EA"].astype("string")
-        # for insertion
-        # start = pos : end = pos
-        # A/ATC -> -/TC
-        sumstats.loc[is_insert,"START"]  = sumstats.loc[is_insert,"POS"]+1
-        sumstats.loc[is_insert,"END"]   = sumstats.loc[is_insert,"POS"]+1
-        sumstats.loc[is_insert,"NEA_out"] = "-"
-        sumstats.loc[is_insert,"EA_out"] = sumstats.loc[is_insert,"EA"].str.slice(start=1)
-        
-        # for deletion 
-        # start = pos - 1 +1; end = pos -1 +1+ len(Ref)
-        # ATC/A -> TC/-
-        sumstats.loc[is_delete,"START"] = sumstats.loc[is_delete,"POS"]
-        sumstats.loc[is_delete,"END"]  = sumstats.loc[is_delete,"POS"]- 1 + sumstats.loc[is_delete,"NEA"].str.len() 
-        sumstats.loc[is_delete,"NEA_out"] = sumstats.loc[is_delete,"NEA"].str.slice(start=1)
-        sumstats.loc[is_delete,"EA_out"] = "-"
-
     
+    # Pre-compute common values to avoid repeated operations
+    pos = sumstats["POS"]
+    nea_len = sumstats["NEA"].str.len()
+    nea_str = sumstats["NEA"].astype("string")
+    ea_str = sumstats["EA"].astype("string")
+    ea_slice = sumstats["EA"].str.slice(start=1)
+    nea_slice = sumstats["NEA"].str.slice(start=1)
+    
+    # Initialize START and END columns
+    sumstats["START"] = pd.NA
+    sumstats["END"] = pd.NA
+    
+    if fmt=="bed":
+        # SNPs: 0-based coordinates
+        sumstats.loc[is_snp,"START"] = pos[is_snp] - 1
+        sumstats.loc[is_snp,"END"] = pos[is_snp] - 1 + nea_len[is_snp]
+        sumstats.loc[is_snp,"NEA/EA"] = nea_str[is_snp] + "/" + ea_str[is_snp]
+        
+        # Insertions: START = END = POS (0-based)
+        sumstats.loc[is_insert,"START"] = pos[is_insert]
+        sumstats.loc[is_insert,"END"] = pos[is_insert]
+        sumstats.loc[is_insert,"NEA/EA"] = "-/" + ea_slice[is_insert]
+        
+        # Deletions: START = POS, END = POS + len(NEA) - 1 (0-based)
+        sumstats.loc[is_delete,"START"] = pos[is_delete]
+        sumstats.loc[is_delete,"END"] = pos[is_delete] + nea_len[is_delete] - 1
+        sumstats.loc[is_delete,"NEA/EA"] = nea_slice[is_delete] + "/-"
+        
+        sumstats["STRAND"] = "+"
+        
+    elif fmt=="vep":
+        # SNPs: 1-based coordinates
+        nea_len_snp = nea_len[is_snp] - 1
+        sumstats.loc[is_snp,"START"] = pos[is_snp] + nea_len_snp
+        sumstats.loc[is_snp,"END"] = pos[is_snp] + nea_len_snp
+        sumstats.loc[is_snp,"NEA/EA"] = nea_str[is_snp] + "/" + ea_str[is_snp]
+        
+        # Insertions: START = POS + 1, END = POS (VEP convention: START > END)
+        sumstats.loc[is_insert,"START"] = pos[is_insert] + 1
+        sumstats.loc[is_insert,"END"] = pos[is_insert]
+        sumstats.loc[is_insert,"NEA/EA"] = "-/" + ea_slice[is_insert]
+        
+        # Deletions: START = POS + 1, END = POS + len(NEA) - 1 (1-based)
+        nea_len_del = nea_len[is_delete] - 1
+        sumstats.loc[is_delete,"START"] = pos[is_delete] + 1
+        sumstats.loc[is_delete,"END"] = pos[is_delete] + nea_len_del
+        sumstats.loc[is_delete,"NEA/EA"] = nea_slice[is_delete] + "/-"
+        
+        sumstats["STRAND"] = "+"
+        
+    elif fmt=="annovar":
+        # SNPs: 1-based coordinates
+        sumstats.loc[is_snp,"START"] = pos[is_snp]
+        sumstats.loc[is_snp,"END"] = pos[is_snp] - 1 + nea_len[is_snp]
+        sumstats.loc[is_snp,"NEA_out"] = nea_str[is_snp]
+        sumstats.loc[is_snp,"EA_out"] = ea_str[is_snp]
+        
+        # Insertions: START = END = POS (ANNOVAR convention)
+        sumstats.loc[is_insert,"START"] = pos[is_insert]
+        sumstats.loc[is_insert,"END"] = pos[is_insert]
+        sumstats.loc[is_insert,"NEA_out"] = "-"
+        sumstats.loc[is_insert,"EA_out"] = ea_slice[is_insert]
+        
+        # Deletions: START = POS, END = POS - 1 + len(NEA) (1-based)
+        sumstats.loc[is_delete,"START"] = pos[is_delete]
+        sumstats.loc[is_delete,"END"] = pos[is_delete] - 1 + nea_len[is_delete]
+        sumstats.loc[is_delete,"NEA_out"] = nea_slice[is_delete]
+        sumstats.loc[is_delete,"EA_out"] = "-"
+    
+    # Convert to Int64 at the end (more efficient than per-assignment)
     sumstats["START"] = sumstats["START"].astype("Int64")
     sumstats["END"] = sumstats["END"].astype("Int64")
     return sumstats

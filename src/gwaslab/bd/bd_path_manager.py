@@ -27,11 +27,14 @@ def _path( *args,
                  pid = None,
                  build = None,
                  suffix = None,
+                 result_type = None,
+                 subdirectory = None,
                  log = Log(),
                  verbose=True
                  ):
     """
     Create a file path for gwaslab-generated files based on various components.
+    Supports both general file paths and downstream analysis result files.
 
     Parameters:
     out (str): Full path to output file or directory. If provided, it takes precedence over other path components.
@@ -48,7 +51,7 @@ def _path( *args,
     snpid (str): SNP identifier.
     locus (str): Locus name.
     loci (str): Multiple loci names.
-    analysis (str): Analysis type.
+    analysis (str): Analysis type (e.g., 'mtag', 'clumping', 'prs').
     mode (str): Mode of operation.
     method (str): Method used.
     ancestry (str): Ancestry information.
@@ -57,7 +60,11 @@ def _path( *args,
     genotyping (str): Genotyping platform.
     pid (str): Process ID.
     build (str): Genome build version.
-    suffix (str): File extension to be appended.
+    suffix (str): File extension to be appended (e.g., 'tsv', 'csv', 'png').
+    result_type (str): Type of result file (e.g., 'summary', 'plot', 'table', 'log', 'report', 'intermediate').
+                      Useful for organizing downstream analysis results.
+    subdirectory (str): Subdirectory name to create nested directory structures for results.
+                       If provided, creates a subdirectory within the main directory.
     log (Log): Logging object for progress messages.
     verbose (bool): If True, logs progress messages.
 
@@ -81,11 +88,11 @@ def _path( *args,
         ###############################################################################################################################################
         path_list = []
 
-        # ordered components excluding directory, suffix
+        # ordered components excluding directory, suffix, result_type, subdirectory
         path_order = [
             "prefix", "study", "nstudy", "trait", "exposure", "outcome", 
-            "chrom", "rsid", "snpid", "locus", "loci", "analysis", "mode_methods", 
-            "ancestry", "population","sample_size", "genotyping", "pid", "build"
+            "chrom", "rsid", "snpid", "locus", "loci", "analysis", "mode", "method", 
+            "ancestry", "population","sample_size", "genotyping", "pid", "build", "result_type"
         ]
         
         # create default path
@@ -116,11 +123,32 @@ def _path( *args,
         path = out_basename
     ###############################################################################################################################################
 
-    # add directory
+    # add directory and subdirectory for result files
     if directory is not None:
+        # Create subdirectory structure for downstream analysis results if specified
+        if subdirectory is not None:
+            directory = os.path.join(directory, subdirectory)
+            # Create subdirectory if it doesn't exist (for result file organization)
+            if not os.path.exists(directory):
+                try:
+                    os.makedirs(directory, exist_ok=True)
+                    log.write("Created subdirectory for results: {}".format(directory), verbose=verbose)
+                except OSError:
+                    log.write("Warning: Could not create subdirectory: {}".format(directory), verbose=verbose)
         path = os.path.join(directory, path)
     else:
-        path = os.path.join("./", path)
+        # Handle subdirectory even when main directory is not specified
+        if subdirectory is not None:
+            subdir_path = os.path.join("./", subdirectory)
+            if not os.path.exists(subdir_path):
+                try:
+                    os.makedirs(subdir_path, exist_ok=True)
+                    log.write("Created subdirectory for results: {}".format(subdir_path), verbose=verbose)
+                except OSError:
+                    log.write("Warning: Could not create subdirectory: {}".format(subdir_path), verbose=verbose)
+            path = os.path.join(subdir_path, path)
+        else:
+            path = os.path.join("./", path)
     ###############################################################################################################################################
 
     # add file extension

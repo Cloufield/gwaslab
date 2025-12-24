@@ -33,7 +33,7 @@ GWASLab checks overlap with a local file of variants or records in GWAS Catalog.
 
 **Either `known` or `efo` must be provided:**
 
-- **`known`**: `string` or `pandas.DataFrame`, path to the local file of reported variants or a DataFrame containing known variants with CHR/POS columns
+- **`known`**: `string` or `pandas.DataFrame`, path to the local file of reported variants or a DataFrame containing known variants with **CHR**/**POS** columns
 
 - **`efo`**: `string` or `list`, EFO ID, MONDO ID, or trait name for the target trait, which is used for querying the GWAS Catalog API v2.
   
@@ -47,7 +47,7 @@ GWASLab checks overlap with a local file of variants or records in GWAS Catalog.
 
 | Parameter | Type | Description | Default |
 |-----------|------|-------------|---------|
-| `known` | `string` or `DataFrame` | Path to local file of reported variants or DataFrame with CHR/POS columns | `None` |
+| `known` | `string` or `DataFrame` | Path to local file of reported variants or DataFrame with **CHR**/**POS** columns | `None` |
 | `efo` | `string` or `list` | EFO ID, MONDO ID, or trait name(s) for querying GWAS Catalog | `None` |
 | `only_novel` | `boolean` | If True, output only novel variants | `False` |
 | `windowsizekb_for_novel` | `int` | Window size (kb) for determining if lead variants overlap with reported variants in GWAS Catalog | `1000` |
@@ -90,10 +90,10 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
     
     The function automatically handles MONDO to EFO conversion and trait name lookups. If a MONDO ID is provided, it will attempt to find the corresponding EFO ID. If that fails, it will try using the trait name.
 
-!!! warning "Genome Build"
+!!! note "Genome Build"
     When using GWAS Catalog (`efo` parameter), ensure your sumstats are based on the correct genome build. GWAS Catalog data is available for both GRCh37 (build="19") and GRCh38 (build="38"). Make sure to specify the correct `build` parameter.
 
-!!! warning "GWAS Catalog Trait Associations"
+!!! note "GWAS Catalog Trait Associations"
     Only associations with the specified EFO trait will be obtained. This does not include associations with child traits.
 
 ## Examples

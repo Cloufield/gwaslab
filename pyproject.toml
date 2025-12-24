@@ -48,6 +48,6 @@ gwaslab = [
   "data/chrx_par/*",
   "data/high_ld/*",
   "data/hapmap3_SNPs/*",
-  "qc/qc_researved_header_json"
+  "qc/qc_researved_header.json"
 ]
 

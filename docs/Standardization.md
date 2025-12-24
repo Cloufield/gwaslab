@@ -5,7 +5,8 @@ After loading raw sumstats into a GWASLab Sumstats object, the first step is typ
 ## Overview
 
 Standardization ensures that your sumstats data follows consistent formats and conventions:
-- **IDs**: SNPID and rsID validation and formatting
+
+- **IDs**: **SNPID** and **rsID** validation and formatting
 - **Chromosomes**: Standardized notation (integers for autosomes, special handling for X, Y, MT)
 - **Positions**: Validated base-pair positions within expected ranges
 - **Alleles**: Standardized to ATCG notation, normalized for indels
@@ -18,51 +19,55 @@ Standardization ensures that your sumstats data follows consistent formats and c
 
 | Method | Key Options | Description |
 |--------|------------|-------------|
-| `.fix_id()` | `fixchrpos=False`, `fixid=False`, `fixsep=False`, `overwrite=False`, `forcefixid=False` | Check and fix rsID or SNPID (chr:pos:ref:alt), or use SNPID to fix CHR and POS |
+| `.fix_id()` | `fixchrpos=False`, `fixid=False`, `fixsep=False`, `overwrite=False`, `forcefixid=False` | Check and fix **rsID** or **SNPID** (chr:pos:ref:alt), or use **SNPID** to fix **CHR** and **POS** |
 | `.fix_chr()` | `remove=False`, `x=("X",23)`, `y=("Y",24)`, `mt=("MT",25)`, `chrom_list=None` | Standardize chromosome notation |
 | `.fix_pos()` | `remove=False`, `limit=250000000`, `lower_limit=0`, `upper_limit=None` | Standardize base-pair position notation and filter out bad values |
 | `.fix_allele()` | `remove=False` | Standardize base notations to ATCG |
 | `.normalize_allele()` | `threads=1`, `mode="s"`, `chunk=3000000` | Normalize indels (left-alignment and parsimony principle) |
-| `.sort_coordinate()` | | Sort variants by genomic coordinates (CHR, POS) |
+| `.sort_coordinate()` | | Sort variants by genomic coordinates (**CHR**, **POS**) |
 | `.sort_column()` | `order=None` | Sort columns to GWASLab default order |
 | `.basic_check()` | `remove=False`, `remove_dup=False`, `normalize=True`, `threads=1`, ... | All-in-one function to perform the complete standardization pipeline |
 
 ## IDs - SNPID and rsID
 
-GWASLab requires at least one ID column for sumstats, either in the form of SNPID or rsID (or both). GWASLab will automatically check if SNPID is mixed in rsID.
+GWASLab requires at least one ID column for sumstats, either in the form of **SNPID** or **rsID** (or both). GWASLab will automatically check if **SNPID** is mixed in **rsID**.
 
 ### ID Formats
 
-- **SNPID**: User-provided IDs, or in `CHR:POS:REF:ALT` format. Delimiters can be `":"`, `"_"`, or `"-"`.
+- **SNPID**: User-provided IDs, or in `**CHR**:**POS**:**REF**:**ALT**` format. Delimiters can be `":"`, `"_"`, or `"-"`.
+
   - Examples: `"1:12345:A:G"`, `"1_12345_A_G"`, `"1-12345-A-G"`
-- **rsID**: dbSNP rsIDs in the format `rs[numbers]`
+- **rsID**: dbSNP **rsID**s in the format `rs[numbers]`
+
   - Examples: `"rs123456"`, `"rs789012"`
 
 ### `.fix_id()`
 
-Check or fix SNPID and rsID. This method can:
-- Extract CHR and POS information from `CHR:POS:REF:ALT` formatted SNPIDs
-- Reconstruct SNPID from CHR, POS, EA, and NEA
-- Standardize SNPID delimiters
-- Validate rsID format
+Check or fix **SNPID** and **rsID**. This method can:
+
+- Extract **CHR** and **POS** information from `**CHR**:**POS**:**REF**:**ALT**` formatted **SNPID**s
+- Reconstruct **SNPID** from **CHR**, **POS**, **EA**, and **NEA**
+- Standardize **SNPID** delimiters
+- Validate **rsID** format
 
 **Parameters:**
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `fixchrpos` | `bool` | `False` | If `True`, extract CHR and POS from SNPID (CHR:POS:NEA:EA) to fill CHR and POS columns |
-| `fixid` | `bool` | `False` | If `True`, use CHR/POS/NEA/EA to reconstruct SNPID. For variants not aligned with reference genome, only CHR/POS will be used |
-| `forcefixid` | `bool` | `False` | If `True`, use CHR/POS/NEA/EA to reconstruct SNPID without checking if the variant is aligned |
-| `fixsep` | `bool` | `False` | If `True`, fix SNPID delimiter (e.g., `1:123_A_C` to `1:123:A:C`) |
+| `fixchrpos` | `bool` | `False` | If `True`, extract **CHR** and **POS** from **SNPID** (**CHR**:**POS**:**NEA**:**EA**) to fill **CHR** and **POS** columns |
+| `fixid` | `bool` | `False` | If `True`, use **CHR**/**POS**/**NEA**/**EA** to reconstruct **SNPID**. For variants not aligned with reference genome, only **CHR**/**POS** will be used |
+| `forcefixid` | `bool` | `False` | If `True`, use **CHR**/**POS**/**NEA**/**EA** to reconstruct **SNPID** without checking if the variant is aligned |
+| `fixsep` | `bool` | `False` | If `True`, fix **SNPID** delimiter (e.g., `1:123_A_C` to `1:123:A:C`) |
 | `overwrite` | `bool` | `False` | If `True`, overwrite existing data |
-| `fixprefix` | `bool` | `False` | If `True`, remove 'chr' prefix in SNPID |
-| `fixeanea` | `bool` | `False` | If `True`, extract EA and NEA from SNPID |
-| `reversea` | `bool` | `False` | If `True`, reverse alleles in SNPID |
+| `fixprefix` | `bool` | `False` | If `True`, remove 'chr' prefix in **SNPID** |
+| `fixeanea` | `bool` | `False` | If `True`, extract **EA** and **NEA** from **SNPID** |
+| `reversea` | `bool` | `False` | If `True`, reverse alleles in **SNPID** |
 
 **Notes:**
-- SNPID will be fixed to `CHR:POS:NEA:EA` format only when variants are already aligned with the reference genome
-- Otherwise, a temporary SNPID in the format `CHR:POS` will be assigned
-- The method automatically validates rsID format (must start with "rs" followed by numbers)
+
+- **SNPID** will be fixed to `**CHR**:**POS**:**NEA**:**EA**` format only when variants are already aligned with the reference genome
+- Otherwise, a temporary **SNPID** in the format `**CHR**:**POS**` will be assigned
+- The method automatically validates **rsID** format (must start with "rs" followed by numbers)
 
 !!! example "Extract CHR and POS from SNPID"
     ```
@@ -157,11 +162,12 @@ mysumstats.fix_chr(
 
 ### `.fix_pos()`
 
-Check and fix values in POS. This method:
-- Validates that POS values are positive integers
+Check and fix values in **POS**. This method:
+
+- Validates that **POS** values are positive integers
 - Converts base-pair positions to integers (handles string formats with thousands separators)
-- Converts invalid POS values to NA
-- Removes POS outliers outside the specified range
+- Converts invalid **POS** values to NA
+- Removes **POS** outliers outside the specified range
 - Updates status codes to reflect position validation state
 
 **Parameters:**
@@ -174,6 +180,7 @@ Check and fix values in POS. This method:
 | `upper_limit` | `int` | `None` | Maximum acceptable genomic position. If `None`, uses `limit` value |
 
 **Notes:**
+
 - Handles string-formatted positions with thousands separators (e.g., `"1,234,567"` → `1234567`)
 - The default limit of 250,000,000 bp covers the longest human chromosome (chromosome 1)
 - For other species, adjust `limit` or `upper_limit` as needed
@@ -211,6 +218,7 @@ Standardize allele representations to ATCG notation. This method:
 | `remove` | `bool` | `False` | If `True`, remove variants with invalid allele representations |
 
 **Notes:**
+
 - Currently supports SNPs and INDELs only
 - Copy number variants (CNV) like `<CN0>` won't be recognized
 - Variants with invalid alleles (containing characters other than A, T, C, G) are flagged
@@ -357,6 +365,7 @@ The `basic_check()` method executes the following steps in order:
 | `verbose` | `bool` | `True` | If `True`, print log messages |
 
 **Notes:**
+
 - By default, `basic_check()` does not remove any variants (`remove=False`, `remove_dup=False`)
 - All operations update the STATUS column to reflect data quality
 - For details on `remove_dup()` and `check_sanity()`, see [QC and Filtering](https://cloufield.github.io/gwaslab/QC%26Filtering/)

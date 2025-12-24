@@ -5,10 +5,37 @@
 
 ## .check_af()
 
+Calculate the difference in allele frequency (**DAF**) between the effect allele frequency (**EAF**) in your sumstats and the alternative allele frequency (**ALT_AF**) in a reference VCF/BCF file.
+
+**Purpose:**
+
+- Quality control: Identify variants with large differences in allele frequency
+- Validation: Verify **EAF** values are consistent with reference population frequencies
+- Detect issues: Large |**DAF**| values (> 0.2) may indicate allele mismatches, strand flips, or data quality issues
+
+**DAF Calculation:**
+
+- **DAF** = **EAF** (sumstats) - **ALT_AF** (reference VCF)
+- Positive **DAF**: **EAF** in sumstats is higher than reference
+- Negative **DAF**: **EAF** in sumstats is lower than reference
+
 ```
-#check the difference between the EAF in the sumstats and the allele frequency in VCF files
-sumstats.check_af()
+# Check the difference between the EAF in the sumstats and the allele frequency in VCF files
+sumstats.check_af(ref_infer="path/to/reference.vcf.gz",
+                  ref_alt_freq="AF",
+                  maf_threshold=0.40,
+                  n_cores=2)
 ```
+
+**Parameters:**
+
+- `ref_infer`: Path to reference VCF/BCF file (must be tabix-indexed)
+- `ref_alt_freq`: Field name for ALT frequency in VCF INFO (e.g., "AF", "AF_popmax", "gnomAD_AF")
+- `maf_threshold`: **MAF** threshold for filtering variants (default: 0.40)
+- `column_name`: Column name to store **DAF** values (default: "DAF")
+- `n_cores`: Number of CPU threads (default: 1)
+
+For more details, see [Harmonization documentation](https://cloufield.github.io/gwaslab/Harmonization/#check-the-difference-in-allele-frequency).
 
 ## .plot_daf()
 
@@ -19,7 +46,7 @@ sumstats.plot_daf()
 
 You need to run 'check_af()' first before plotting. For check_af(), see [here](https://cloufield.github.io/gwaslab/Harmonization/#check-the-difference-in-allele-frequency).
 
-Options for `plot_daf`:
+**Options for `plot_daf`:**
 `threshold`: `float`, the threshold used to determine outliers.
 
 ## Examples
@@ -64,5 +91,4 @@ Options for `plot_daf`:
     ```
     outliers[1]
     ```
-    <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/c99d91cb-f1f8-4412-bfbf-960457fc9d0e">
 

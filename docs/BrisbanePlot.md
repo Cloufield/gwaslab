@@ -5,6 +5,7 @@
 GWASLab can create the [Brisbane plot](https://www.nature.com/articles/s41586-022-05275-y/figures/2) (GWAS signal density plot). Brisbane plot is a scatter plot that shows the signal density (number of variants within a specified window around each variant) for each variant, which is very useful for presenting the independent signals obtained from large-scale GWAS of complex traits. The signals are usually determined by other statistical methods such as conditional analysis.
 
 **Key features:**
+
 - **X-axis**: Genomic position (same as Manhattan plot)
 - **Y-axis**: Signal density (number of neighboring variants within the window)
 - **Purpose**: Visualize the density of independent signals across the genome

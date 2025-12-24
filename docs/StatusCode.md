@@ -40,15 +40,15 @@ Each status code is a 7-digit integer where:
 
 | Code | Description |
 |------|-------------|
-| `0` | rsID valid & SNPID valid |
-| `1` | rsID valid & SNPID invalid |
-| `2` | rsID invalid & SNPID valid |
-| `3` | rsID invalid & SNPID invalid |
-| `4` | rsID valid & SNPID valid (alternative) |
-| `5` | rsID valid & SNPID unknown |
-| `6` | rsID unknown & SNPID valid |
-| `7` | rsID invalid & SNPID unknown |
-| `8` | rsID unknown & SNPID invalid |
+| `0` | rsid valid & SNPID valid |
+| `1` | rsid valid & SNPID invalid |
+| `2` | rsid invalid & SNPID valid |
+| `3` | rsid invalid & SNPID invalid |
+| `4` | rsid valid & SNPID valid |
+| `5` | rsid valid & SNPID unknown |
+| `6` | rsid unknown & SNPID valid |
+| `7` | rsid invalid & SNPID unknown |
+| `8` | rsid unknown & SNPID invalid |
 | `9` | Unchecked |
 
 ### Digit 4: CHR & POS Validation
@@ -65,17 +65,19 @@ Each status code is a 7-digit integer where:
 | `8` | CHR unknown & POS invalid |
 | `9` | Unchecked |
 
+**Note:** Code `1` is not used in this digit.
+
 ### Digit 5: EA & NEA Standardization
 
 | Code | Description |
 |------|-------------|
-| `0` | Standardized SNP |
-| `1` | Standardized & normalized insertion |
-| `2` | Standardized & normalized deletion |
-| `3` | Standardized & normalized indel |
-| `4` | Standardized indel |
-| `5` | Indistinguishable or not normalized allele |
-| `6` | Invalid allele notation |
+| `0` | standardized SNP |
+| `1` | standardized & normalized insertion |
+| `2` | standardized & normalized deletion |
+| `3` | standardized & normalized indel |
+| `4` | standardized indel |
+| `5` | indistinguishable or not normalized allele |
+| `6` | invalid allele notation |
 | `7` | Unknown |
 | `9` | Unchecked |
 
@@ -92,6 +94,8 @@ Each status code is a 7-digit integer where:
 | `6` | Both_alleles_on_ref+indistinguishable |
 | `8` | Not_on_reference_genome |
 | `9` | Unchecked |
+
+**Note:** Code `7` is not used in this digit.
 
 ### Digit 7: Palindromic SNPs & Indels
 
@@ -134,24 +138,19 @@ status_df = mysumstats.lookup_status()
 print(status_df)
 ```
 
-This returns a DataFrame with columns:
-- **Genome_Build**: Reference genome build information
+**Returns:** `pandas.DataFrame`
+
+The method returns a pandas DataFrame with columns:
+- **Genome_Build**: Reference genome build information (CHM13, hg19, hg38, Unmapped, Unknown, or Unchecked)
 - **rsID&SNPID**: Validation status of ID fields
 - **CHR&POS**: Chromosome/position validation status
-- **Stadardize&Normalize**: Standardization status
+- **Stadardize&Normalize**: Standardization and normalization status
 - **Align**: Reference alignment status
 - **Panlidromic_SNP&Indel**: Variant type characteristics
 - **Count**: Absolute count of each status code
 - **Percentage(%)**: Relative percentage of total variants
 
-![image](https://user-images.githubusercontent.com/40289485/211861846-8309be9f-05ea-456e-ad8a-3265872826f9.png)
 
-
-## Reference Table
-
-For a complete visual reference of all status code combinations:
-
-![image](https://user-images.githubusercontent.com/40289485/196681586-eb79707c-d866-4393-a0f5-b825686c9b04.png)
 
 ## Notes
 

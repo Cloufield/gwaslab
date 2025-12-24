@@ -9,6 +9,7 @@ GWASLab integrates a few pre-defined datasets for quick conversion and access, w
 `gl.get_chr_list()`: Get a full list of chromosomes (string datatype):
 
 **Parameters:**
+
 - `add_number=False`: If True, include both string and numeric representations
 - `n=25`: Maximum chromosome number to include
 - `only_number=False`: If True, return only numeric chromosome numbers
@@ -37,6 +38,7 @@ These functions convert between chromosome identifiers and NCBI accession IDs.
 **`gl.get_chr_to_NC(build, inverse=False)`**: Convert chromosome string to NCBI accession ID
 
 **Parameters:**
+
 - `build`: Genome build version ('19' for hg19/GRCh37 or '38' for hg38/GRCh38)
 - `inverse`: If True, return NCBI ID to chromosome mapping (equivalent to `get_NC_to_chr`)
 
@@ -50,6 +52,7 @@ gl.get_chr_to_NC(build="19")
 **`gl.get_number_to_NC(build, inverse=False)`**: Convert chromosome number (int) to NCBI accession ID
 
 **Parameters:**
+
 - `build`: Genome build version ('19' or '38')
 - `inverse`: If True, return NCBI ID to chromosome number mapping (equivalent to `get_NC_to_number`)
 
@@ -63,6 +66,7 @@ gl.get_number_to_NC(build="19")
 **`gl.get_NC_to_chr(build)`**: Convert NCBI accession ID to chromosome string
 
 **Parameters:**
+
 - `build`: Genome build version ('19' or '38')
 
 **Example:**
@@ -75,6 +79,7 @@ gl.get_NC_to_chr(build="19")
 **`gl.get_NC_to_number(build)`**: Convert NCBI accession ID to chromosome number (int)
 
 **Parameters:**
+
 - `build`: Genome build version ('19' or '38')
 
 **Example:**
@@ -89,6 +94,7 @@ gl.get_NC_to_number(build="19")
 **`gl.get_chr_to_number(out_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25])`**: Convert chromosome string to number
 
 **Parameters:**
+
 - `out_chr`: If True, returns dictionary with string keys and string values
 - `xymt`: List of non-numeric chromosome identifiers (default: ["X","Y","MT"])
 - `xymt_num`: Corresponding numeric values for xymt (default: [23,24,25])
@@ -103,6 +109,7 @@ gl.get_chr_to_number()
 **`gl.get_number_to_chr(in_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], prefix="")`**: Convert chromosome number to string
 
 **Parameters:**
+
 - `in_chr`: If True, returns dictionary with string keys and values
 - `xymt`: List of non-numeric chromosome identifiers (default: ["X","Y","MT"])
 - `xymt_num`: Corresponding numeric values for xymt (default: [23,24,25])
@@ -121,6 +128,7 @@ gl.get_number_to_chr()
 **`gl.get_high_ld(build="19")`**: Get the path to the BED file of high-LD regions
 
 **Parameters:**
+
 - `build`: Genome build version ('19' for hg19/GRCh37 or '38' for hg38/GRCh38)
 
 **Returns:**
@@ -138,6 +146,7 @@ gl.get_high_ld("19")
 **`gl.get_format_dict(fmt, inverse=False)`**: Get format dictionary and metadata for a specified format
 
 **Parameters:**
+
 - `fmt`: Format name to look up in the format book
 - `inverse`: If True, return inverted dictionary with value-key mapping
 

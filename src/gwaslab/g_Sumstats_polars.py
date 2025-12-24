@@ -29,7 +29,7 @@ from gwaslab.hm.hm_harmonize_sumstats import _check_ref
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_assign_rsid
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_infer_strand
 from gwaslab.hm.hm_harmonize_sumstats import _parallelize_rsid_to_chrpos
-from gwaslab.hm.hm_harmonize_sumstats import _paralleleinferafwithmaf
+from gwaslab.hm.hm_harmonize_sumstats import _parallele_infer_af_with_maf
 from gwaslab.util.util_in_filter_value import _filter_values
 from gwaslab.util.util_in_filter_value import _filter_out
 from gwaslab.util.util_in_filter_value import _filter_in

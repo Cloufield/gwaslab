@@ -13,6 +13,7 @@
 
 !!! info "GWASLab v4.0.0"
     GWASLab v4.0.0 introduces major improvements including:
+    
     - **Command Line Interface (CLI)**: Process sumstats directly from the command line
     - **Performance Improvements**: Optimized algorithms and data structures for faster processing
     - **Visualization Parameter Management**: Centralized parameter management system for all plotting functions
@@ -28,15 +29,23 @@ The latest version of GWASLab now supports Python 3.9, 3.10, 3.11, and 3.12.
 !!! tip "Recommended: Python 3.12"
     We recommend using **Python 3.12** for the best performance and compatibility with GWASLab v4.0.0.
 
-```bash
+```
 pip install gwaslab
+```
+
+### Install via uv
+
+[uv](https://github.com/astral-sh/uv) is a fast Python package installer and resolver written in Rust.
+
+```
+uv pip install gwaslab
 ```
 
 ### Install in conda environment
 
 Create a Python 3.9, 3.10, 3.11 or 3.12 environment and install gwaslab using pip. We recommend Python 3.12:
 
-```bash
+```
 conda create -n gwaslab -c conda-forge python=3.12
 
 conda activate gwaslab
@@ -46,7 +55,7 @@ pip install gwaslab
 
 or create a new environment using yml file [environment.yml](https://github.com/Cloufield/gwaslab/blob/main/environment.yml)
 
-```bash
+```
 conda env create -n gwaslab -f environment.yml -c conda-forge
 ```
 
@@ -95,7 +104,7 @@ lead_variants = mysumstats.get_lead()
 
 ### Command Line Interface (CLI) - New in v4.0.0
 
-```bash
+```
 # Show version
 gwaslab version
 
@@ -160,9 +169,6 @@ Documentation and tutorials for GWASLab are available at [https://cloufield.gith
   - Variant effect size comparison
   - Allele frequency comparison 
   - Trumpet plot (plot of MAF and effect size with power lines)
-
-!!! info "New in v4.0.0: Visualization Parameter Management"
-    GWASLab v4.0.0 introduces a comprehensive visualization parameter management system that provides centralized parameter control, automatic parameter validation, and mode-specific defaults for all plotting functions.
 
 #### Visualization Examples
 

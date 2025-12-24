@@ -2,7 +2,7 @@
 
 <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197126045-b1c55adf-3391-4c3d-b2f6-eaeac7c26024.png">
 
-!!! warning "Color issue"
+!!! note "Color issue"
     - gwaslab<=3.4.39 : the color assigned to each variant is actually the color for the lower LD r2 category. For example, variants with LD>0.8 will be colored with the color for 0.8>LD>0.6.
     - gwaslab v3.4.40 : the color for region_ref_second was assigned based on region_ref LD.
     - Solution: Update to new version (>=3.4.41) of gwaslab.
@@ -47,7 +47,7 @@ Most options are largely the same as [Manhattan plot](https://cloufield.github.i
 | `build`                   | `19` or `38` | reference genome build; `99` for unknown                                                                                             | `99`                                                                      |
 
 
-!!! info "Calculation of LD r2"
+!!! quote "Calculation of LD r2"
     The calculation is based on [Rogers and Huff r implemented in scikit-alle](https://scikit-allel.readthedocs.io/en/stable/stats/ld.html). Variants in reference vcf file should be biallelic format. Unphased data is acceptable. AF information is not needed. Variant ID is not required. Missing genotype is allowed.
 
 
@@ -61,7 +61,7 @@ Most options are largely the same as [Manhattan plot](https://cloufield.github.i
 
 Creates stacked Manhattan-QQ plots or regional plots for multiple GWAS datasets, allowing side-by-side comparison of multiple studies or traits.
 
-```python
+```
 gl.plot_stacked_mqq(objects, **kwargs)
 ```
 
@@ -128,6 +128,7 @@ gl.plot_stacked_mqq(objects, **kwargs)
 #### Additional Parameters
 
 All parameters from `plot_mqq()` can be passed via `**mqq_kwargs` to customize individual panels. These include:
+
 - `highlight`, `anno_set`, `pinpoint` for variant annotation
 - `colors`, `scatter_kwargs` for styling
 - `sig_line`, `suggestive_sig_line` for significance lines
@@ -139,6 +140,7 @@ All parameters from `plot_mqq()` can be passed via `**mqq_kwargs` to customize i
 #### Regional Mode (`mode="r"`)
 
 Creates stacked regional plots with LD information and gene tracks. Each panel shows a regional plot for a specific genomic region. Requires:
+
 - `region` parameter specifying the genomic region
 - `vcfs` parameter for LD reference (optional but recommended)
 
@@ -153,6 +155,7 @@ Creates stacked panels with Manhattan plot on the left and QQ plot on the right 
 ### Panel Types
 
 The function automatically detects panel types based on input data:
+
 - **Manhattan panels** (`pm="m"`): For DataFrames with `P` or `MLOG10P` columns
 - **Credible set panels** (`pm="pip"`): For DataFrames with `PIP` column (e.g., from fine-mapping)
 
@@ -160,7 +163,7 @@ The function automatically detects panel types based on input data:
 
 **Stacked regional plots for multiple studies:**
 
-```python
+```
 import gwaslab as gl
 
 # Load multiple sumstats
@@ -180,7 +183,7 @@ gl.plot_stacked_mqq(
 
 **Stacked Manhattan plots:**
 
-```python
+```
 # Compare multiple traits genome-wide
 gl.plot_stacked_mqq(
     objects=[trait1_sumstats, trait2_sumstats, trait3_sumstats],
@@ -194,7 +197,7 @@ gl.plot_stacked_mqq(
 
 **Stacked Manhattan-QQ plots:**
 
-```python
+```
 # Quality control comparison
 gl.plot_stacked_mqq(
     objects=[study1, study2],
@@ -206,7 +209,7 @@ gl.plot_stacked_mqq(
 
 **Regional plot with credible sets:**
 
-```python
+```
 # Include fine-mapping results
 sumstats = gl.Sumstats("gwas.txt.gz")
 finemap_results = pd.read_csv("finemap_results.txt")  # Contains PIP column
@@ -223,7 +226,7 @@ gl.plot_stacked_mqq(
 
 **Custom styling per panel:**
 
-```python
+```
 # Different colors and styles for each panel
 gl.plot_stacked_mqq(
     objects=[sumstats1, sumstats2],

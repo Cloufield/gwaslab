@@ -114,11 +114,13 @@ known_variants = client.get_known_variants_for_trait(
 ```
 
 **Parameters:**
+
 - `efo` (str): EFO trait ID (e.g., "EFO_0001360"), MONDO ID (e.g., "MONDO_0005148"), or trait name (e.g., "type 2 diabetes mellitus")
 - `sig_level` (float): P-value threshold for filtering associations (default: 5e-8)
 - `verbose` (bool): Whether to print log messages (default: True)
 
 **Returns:**
+
 - `pandas.DataFrame`: DataFrame with columns: SNPID, CHR, POS, P, BETA, SE, OR, TRAIT, REPORT_GENENAME, PUBMEDID, AUTHOR, STUDY
 
 **Features:**

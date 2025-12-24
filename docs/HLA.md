@@ -65,7 +65,7 @@ The classical HLA region spans from GABBR1 to KIFC1, covering approximately 3.78
 
 ## Usage
 
-```python
+```
 # Exclude extended MHC region (default, 25-34 Mb)
 mysumstats.exclude_hla()
 

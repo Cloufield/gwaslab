@@ -2,16 +2,8 @@
 
 GWASLab provides a customizable plotting function for Manhattan and Q-Q plots.
 
-!!! info "New in v4.0.0: Visualization Parameter Management System"
-    GWASLab v4.0.0 introduces a comprehensive visualization parameter management system (`VizParamsManager`) that provides:
-    
-    - **Centralized parameter control**: Fine-grained control over plot parameters with per-plot and per-mode configurations
-    - **Parameter filtering**: Automatic filtering of invalid parameters with whitelist support
-    - **Default value management**: Context-specific defaults that can be inherited and overridden
-    - **Banned argument handling**: Invalid parameters are automatically replaced with defaults
-    - **Registry-based configuration**: Supports configuration files for custom parameter management
-    
-    This system ensures consistent parameter handling across all visualization functions and provides better error prevention and parameter validation. For most users, this works transparently in the background, but advanced users can customize parameter behavior through the registry system.
+!!! info "New in v4.0.0"
+    Improved parameter management for visualization functions.
 
 ## .plot_mqq()
 
@@ -32,17 +24,17 @@ See other examples [here](https://cloufield.github.io/gwaslab/visualization_mqq/
 
 ## Options
 
-- [Using P or MLOG10P](#22-use-mlog10p-for-extreme-p-values)
-- [Adjusting x axis](#23-x-axis-physical-position-or-rank)
-- [Adjusting y axis](#24-y-axis-skip-low-and-shrink-high)
-- [Changing layout](#21-manhattan-and-qq-plot-layout)
-- [Annotation](#25-annotation)
-- [Adding lines](#210-lines)
-- [Highlight loci and Pinpoint variants](#28-highlight-specified-loci) 
-- [Colors and fonts](#212-colors-and-fontsizes)
-- [MAF-stratified QQ plot](#211-maf-stratified-qq-plot).
-- [Changing titles](#213-titles)
-- [Saving figures](#215-saving-plots)
+- [Plot layout](#plot-layout)
+- [Using P or MLOG10P](#use-mlog10p-for-extreme-p-values)
+- [Adjusting x axis](#x-axis-physical-position-or-rank)
+- [Adjusting y axis](#y-axis-skip-low-and-shrink-high)
+- [Annotation](#annotation)
+- [Highlight loci and Pinpoint variants](#highlight-loci) 
+- [Adding lines](#lines)
+- [MAF-stratified QQ plot](#maf-stratified-qq-plot)
+- [Colors and fonts](#colors-and-fontsizes)
+- [Changing titles](#titles)
+- [Saving figures](#saving-plots)
 
 By setting the options, you can create highly customized Manhattan plots and Q-Q plots.
 
@@ -80,10 +72,10 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 |Option|DataType|Description|Default|
 |-|-|-|-|
-|`scaled`|`boolean`|By default, GWASLab uses P values for mqq plot. But you can set `scaled=True` to use MLOG10P to plot.|`False`|
+|`scaled`|`boolean`|By default, GWASLab uses **P** values for mqq plot. But you can set `scaled=True` to use **MLOG10P** to plot.|`False`|
 
 !!! note "Variant with extreme P values"
-    To plot the variant with extreme P values (P < 1e-300), you can use `scaled=True` to create the plot with MLOG10P instead of raw P values. To calculate MLOG10P for extreme P values from BETA/SE or Z scores, you can use `mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)`. For details, please refer to the "Extreme P values" section in [https://cloufield.github.io/gwaslab/Conversion/](https://cloufield.github.io/gwaslab/Conversion/).
+    To plot the variant with extreme **P** values (**P** < 1e-300), you can use `scaled=True` to create the plot with **MLOG10P** instead of raw **P** values. To calculate **MLOG10P** for extreme **P** values from **BETA**/**SE** or **Z** scores, you can use `mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)`. For details, please refer to the "Extreme P values" section in [https://cloufield.github.io/gwaslab/Conversion/](https://cloufield.github.io/gwaslab/Conversion/).
 
 ### X axis: Physical position or rank
 
@@ -410,41 +402,3 @@ Two options for saving plots in `.plot_mqq`
     - save as PDF: `mysumstats.plot_mqq(save="mymqqplots.pdf", save_kwargs={"dpi":300})`
 
 ----------------------------------------------------------------
-
-## Visualization Parameter Management (v4.0.0)
-
-GWASLab v4.0.0 includes a sophisticated parameter management system that automatically handles parameter validation, filtering, and default value assignment for all visualization functions.
-
-### How It Works
-
-The parameter management system operates transparently in the background:
-
-1. **Parameter Validation**: Invalid parameters are automatically filtered out or replaced with defaults
-2. **Mode-Specific Defaults**: Different plot modes (e.g., `mode="r"` for regional plots) can have different allowed parameters and defaults
-3. **Parameter Inheritance**: Mode-specific configurations inherit from base plot configurations
-4. **Banned Arguments**: Parameters that don't apply to certain plot modes are automatically replaced with appropriate defaults
-
-### Benefits
-
-- **Error Prevention**: Invalid parameters are caught before they cause errors
-- **Consistency**: Parameter handling is consistent across all visualization functions
-- **Flexibility**: Advanced users can customize parameter behavior through configuration files
-- **Backward Compatibility**: Existing code continues to work without changes
-
-### For Users
-
-Most users don't need to interact with the parameter management system directly. Simply use `.plot_mqq()` and other plotting functions as before. The system will:
-
-- Automatically filter out invalid parameters
-- Apply appropriate defaults for your plot mode
-- Provide clear error messages if critical parameters are missing
-
-### Advanced Configuration
-
-Advanced users who want to customize parameter behavior can:
-
-1. **Access the parameter manager**: Available through `mysumstats.viz_params` (if exposed)
-2. **Set object-level presets**: Use `set()` or `update()` methods to set default parameters for specific plots/modes
-3. **Modify configuration files**: Edit `viz_aux_params.txt` and `viz_aux_params_registry.txt` for custom parameter definitions
-
-For more details on the parameter management system, see the source code documentation in `gwaslab/viz/viz_aux_params.py`.

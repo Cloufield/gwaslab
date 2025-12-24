@@ -1,6 +1,6 @@
 # Extract Lead Variants
 
-GWASLab can extract the lead variants based on MLOG10P values or P values (by default, GWASLab will use MLOG10P first since v3.4.37) from identified significant loci using a sliding window, and return the result as a pandas.DataFrame or gl.Sumstats Object.
+GWASLab can extract the lead variants based on **MLOG10P** values or **P** values (by default, GWASLab will use **MLOG10P** first since v3.4.37) from identified significant loci using a sliding window, and return the result as a pandas.DataFrame or gl.Sumstats Object.
 
 ## .get_lead()
 
@@ -24,10 +24,10 @@ mysumstats.get_lead(
 
 | Parameter | Type | Description | Default |
 |-----------|------|-------------|---------|
-| `scaled` | `boolean` | (deprecated since v3.4.37) If True, use MLOG10P for extraction instead of P values | `False` |
-| `use_p` | `boolean` | (available since v3.4.37) If True, use P for extraction instead of MLOG10P values | `False` |
+| `scaled` | `boolean` | (deprecated since v3.4.37) If True, use **MLOG10P** for extraction instead of **P** values | `False` |
+| `use_p` | `boolean` | (available since v3.4.37) If True, use **P** for extraction instead of **MLOG10P** values | `False` |
 | `windowsizekb` | `int` | Specify the sliding window size in **kb** | `500` |
-| `sig_level` | `float` | Specify the P value threshold | `5e-8` |
+| `sig_level` | `float` | Specify the **P** value threshold | `5e-8` |
 | `anno` | `boolean` | If True, annotate the lead variants with nearest gene names | `False` |
 | `source` | `"ensembl"` or `"refseq"` | When `anno=True`, annotate variants using GTF files from `ensembl` or `refseq` | `"ensembl"` |
 | `gtf_path` | `string` | Path to custom GTF file for annotation. If provided, overrides `source` | `None` |
@@ -107,7 +107,7 @@ mysumstats.get_lead(
 
 ## Notes
 
-- By default, GWASLab uses MLOG10P for extraction (since v3.4.37). Use `use_p=True` to use P values instead.
+- By default, GWASLab uses **MLOG10P** for extraction (since v3.4.37). Use `use_p=True` to use **P** values instead.
 - The `scaled` parameter is deprecated but still supported for backward compatibility.
 - Gene annotation requires internet connection to download GTF files (unless `gtf_path` is provided).
 - Winner's Curse correction adjusts effect sizes for variants that are significant due to sampling variability.

@@ -18,8 +18,8 @@ GWASLab's QC and filtering capabilities include:
 | Method | Options | Description |
 |--------|---------|-------------|
 | `.basic_check()` | `remove=False`, `remove_dup=False`, `normalize=True`, `threads=1`, ... | All-in-one QC function that performs multiple checks and fixes |
-| `.check_sanity()` | `n`, `ncase`, `ncontrol`, `beta`, `se`, `eaf`, `p`, `mlog10p`, ... | Sanity check for statistics including BETA, SE, Z, CHISQ, EAF, OR, N... |
-| `.check_data_consistency()` | | Check if `BETA/SE-derived P/MLOG10P = original P/MLOG10P`, `N = N_CASE + N_CONTROL`... |
+| `.check_sanity()` | `n`, `ncase`, `ncontrol`, `beta`, `se`, `eaf`, `p`, `mlog10p`, ... | Sanity check for statistics including **BETA**, **SE**, **Z**, **CHISQ**, **EAF**, **OR**, **N**... |
+| `.check_data_consistency()` | | Check if `**BETA**/**SE**-derived **P**/**MLOG10P** = original **P**/**MLOG10P**`, `**N** = **N_CASE** + **N_CONTROL**`... |
 | `.remove_dup()` | `mode="md"`, `keep='first'`, `keep_col="P"`, `remove=False` | Remove duplicated, multiallelic or NA variants |
 
 ### Filtering Methods
@@ -28,7 +28,7 @@ GWASLab's QC and filtering capabilities include:
 |--------|---------|-------------|
 | `.filter_value()` | `expr`, `inplace=False` | Filter variants based on expression (pandas query syntax) |
 | `.filter_flanking_by_id()` | `snpid`, `windowsizekb=500`, `inplace=False` | Filter variants in flanking regions around specified SNPID/rsID |
-| `.filter_flanking_by_chrpos()` | `chrpos`, `windowsizekb=500`, `inplace=False` | Filter variants in flanking regions around specified CHR:POS coordinates |
+| `.filter_flanking_by_chrpos()` | `chrpos`, `windowsizekb=500`, `inplace=False` | Filter variants in flanking regions around specified **CHR**:**POS** coordinates |
 | `.filter_region_in()` | `path`, `high_ld=False`, `build="19"`, `inplace=False` | Filter in variants in regions defined by BED file |
 | `.filter_region_out()` | `path`, `high_ld=False`, `build="19"`, `inplace=False` | Filter out variants in regions defined by BED file |
 | `.filter_palindromic()` | `mode="out"`, `inplace=False` | Filter palindromic variants (keep or remove) |
@@ -86,6 +86,7 @@ mysumstats.check_sanity(
 ```
 
 **Notes:**
+
 - Columns not present in the sumstats are automatically skipped
 - Invalid values are flagged but not automatically removed (use with `basic_check(remove=True)` to remove)
 - The `direction` column is checked to ensure it only contains `"+"`, `"-"`, `"0"`, or `"?"`
@@ -171,6 +172,7 @@ mysumstats.filter_value(expr, inplace=False)
 | `inplace` | `bool` | If `False`, return a new Sumstats object. If `True`, filter in place. | `False` |
 
 **Features:**
+
 - Supports method chaining (returns new object by default)
 - Uses pandas `DataFrame.query()` syntax
 - Can combine multiple conditions with `&` (and), `|` (or), `~` (not)
@@ -399,17 +401,24 @@ mysumstats.basic_check(
 ```
 
 **What it does:**
-- Fixes SNPID and rsID (`fix_id`)
-- Standardizes chromosome notation (`fix_chr`)
-- Standardizes position notation (`fix_pos`)
-- Standardizes allele notation (`fix_allele`)
-- Performs sanity checks on statistics (`check_sanity`)
-- Checks data consistency (`check_data_consistency`)
-- Normalizes indels (`normalize_allele`)
-- Removes duplicates (if `remove_dup=True`)
-- Sorts coordinates and columns
+
+The function performs the following checks in sequence:
+
+| Check Step | Function | Description |
+|------------|----------|-------------|
+| **1. ID Check** | `fix_id` | - Validates and fixes SNPID format (CHR:POS:NEA:EA pattern)<br>- Extracts CHR and POS from SNPID if available<br>- Reconstructs SNPID from CHR, POS, EA, and NEA if missing<br>- Standardizes SNPID delimiters (converts "_" and "-" to ":")<br>- Validates rsID format (rs[numbers] pattern)<br>- Removes 'chr' prefix from SNPID if present<br>- Extracts EA and NEA from SNPID if needed |
+| **2. Chromosome Check** | `fix_chr` | - Standardizes chromosome notation (converts to integer type)<br>- Extracts chromosome numbers from various formats (e.g., "chr1", "1", "chrX")<br>- Maps special chromosomes: X→23, Y→24, MT→25<br>- Validates chromosome values (removes invalid or out-of-range values if remove=True)<br>- Checks for missing chromosome values |
+| **3. Position Check** | `fix_pos` | - Validates basepair positions fall within valid chromosomal bounds<br>- Removes thousands separators ("," or "_") from position strings<br>- Converts positions to Int64 type<br>- Filters out positions outside valid range (default: 0 to 250,000,000)<br>- Removes invalid or missing positions if remove=True |
+| **4. Allele Check** | `fix_allele` | - Validates allele fields contain valid nucleotide characters (A, T, C, G)<br>- Converts all alleles to uppercase<br>- Standardizes allele format using categorical data types<br>- Checks for missing EA or NEA values<br>- Identifies variants where EA == NEA (non-variant)<br>- Classifies variants as SNPs, indels, normalized, or not normalized<br>- Removes invalid alleles if remove=True |
+| **5. Statistics Sanity Check** | `check_sanity` | - Validates numerical summary statistics fall within valid ranges:<br>  * Sample sizes (N, N_CASE, N_CONTROL): 0 to 2,147,483,647<br>  * Allele frequencies (EAF, MAF): EAF in (0, 1), MAF in (0, 0.5)<br>  * Effect sizes (BETA): -100 to 100<br>  * Standard errors (SE): > 0<br>  * P-values (P): 0 to 1<br>  * Negative log10 p-values (MLOG10P): 0 to 99,999<br>  * Z-scores (Z): -9,999 to 9,999<br>  * Chi-square (CHISQ): ≥ 0<br>  * Odds ratios (OR, HR): exp(-100) to exp(100)<br>  * Imputation info (INFO): 0 to 2<br>- Checks and fixes data types for all statistical columns<br>- Removes variants with invalid statistics |
+| **6. Data Consistency** | `check_data_consistency` | - Checks consistency between BETA/SE and Z-score (if Z = BETA/SE)<br>- Checks consistency between BETA/SE and P-value (if P derived from BETA/SE)<br>- Checks consistency between MLOG10P and P-value (if P = 10^(-MLOG10P))<br>- Checks consistency between N and N_CASE + N_CONTROL (if all present)<br>- Reports inconsistencies (likely due to rounding) but does not remove variants |
+| **7. Indel Normalization** (if normalize=True) | `normalize_allele` | - Normalizes indels using left-alignment and parsimony principles (VCF standard)<br>- Left-aligns variants by removing common sequence context<br>- Adjusts positions to reflect normalized representation<br>- Only processes variants that need normalization (indels)<br>- Updates status codes to indicate normalization state |
+| **8. Duplicate Removal** (if remove_dup=True) | `remove_dup` | - Removes duplicate variants based on SNPID (if mode includes 'd' or 's')<br>- Removes duplicate variants based on rsID (if mode includes 'd' or 'r')<br>- Removes duplicate variants based on CHR:POS:EA:NEA (if mode includes 'd' or 'c')<br>- Removes multi-allelic variants (same CHR:POS, if mode includes 'm')<br>- Keeps best variant based on specified column (default: P-value) |
+| **9. Coordinate Sorting** | `sort_coordinate` | - Sorts variants by genomic coordinates (CHR, then POS) |
+| **10. Column Sorting** | `sort_column` | - Sorts columns to GWASLab default order |
 
 **Parameters:**
+
 - `remove` (bool): Remove bad quality variants detected during fixing
 - `remove_dup` (bool): Remove duplicated or multiallelic variants
 - `normalize` (bool): Perform indel normalization

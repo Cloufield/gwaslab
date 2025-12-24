@@ -2,8 +2,9 @@
 
 GWASLab uses a two-step strategy (both steps are optional) to assign rsIDs to variants in your summary statistics.
 
-- **Step 1 (TSV annotation)**: For quick annotation, GWASLab iterates over a SNPID-rsID table and assigns rsID by joining on SNPID (CHR:POS:REF:ALT) with sumstats. GWASLab provides curated tables (1KG autosome variants). 
-- **Step 2 (VCF annotation)**: For full annotation, GWASLab will query a large reference VCF file (dbSNP for example, >20GB) by CHR, POS, NEA, EA. It will assign the ID in VCF file to sumstats if the CHR, POS and EA/NEA match.
+- **Step 1 (TSV annotation)**: For quick annotation, GWASLab iterates over a **SNPID**-**rsID** table and assigns **rsID** by joining on **SNPID** (**CHR**:**POS**:**REF**:**ALT**) with sumstats. GWASLab provides curated tables (1KG autosome variants).
+
+- **Step 2 (VCF annotation)**: For full annotation, GWASLab will query a large reference VCF file (dbSNP for example, >20GB) by **CHR**, **POS**, **NEA**, **EA**. It will assign the ID in VCF file to sumstats if the **CHR**, **POS** and **EA**/**NEA** match.
 
 !!! info "New in v4.0.0"
     The rsID assignment process has been optimized for better performance and includes improved error handling. The function now supports better STATUS code filtering to ensure only properly standardized variants receive rsID assignments.
@@ -38,7 +39,7 @@ GWASLab provides curated tables containing ~80M 1KG variants that can be downloa
 !!! note "1kg_dbsnp151_hg19_auto format"
     ```
     ~/.gwaslab$ zcat 1kg_dbsnp151_hg19_auto.txt.gz |head
-    SNPID   rsID    CHR     POS     NEA     EA
+    **SNPID**   **rsID**    **CHR**     **POS**     **NEA**     **EA**
     1:10177:A:AC    rs367896724     1       10177   A       AC
     1:10235:T:TA    rs540431307     1       10235   T       TA
     1:10352:T:TA    rs555500075     1       10352   T       TA

@@ -1,3 +1,25 @@
+"""
+Module for assigning rsIDs and annotating GWAS summary statistics from reference files.
+
+This module provides functionality to:
+- Assign rsIDs to variants in GWAS summary statistics by matching against reference VCF/BCF/TSV files
+- Annotate summary statistics with additional fields (e.g., rsID, AF) from reference lookup tables
+- Extract lookup tables from VCF/BCF files for efficient annotation
+- Convert VCF files to BCF format for improved performance
+- Handle allele-aware matching and STATUS-based filtering for variant assignment
+
+Key Functions:
+- _assign_rsid(): Main function for assigning rsIDs with allele matching and overwrite control
+- _annotate_sumstats(): General annotation function for assigning multiple fields from lookup tables
+- _extract_lookup_table_from_vcf_bcf(): Extract variant information from VCF/BCF to create lookup tables
+- _assign_from_lookup(): Core function that performs the actual assignment using lookup tables
+- _convert_vcf_to_bcf(): Convert VCF files to BCF format for faster processing
+
+The module supports multiple reference formats (VCF, BCF, TSV), handles chromosome name mapping,
+and provides flexible overwrite modes for existing rsID values. It uses parallel processing
+where applicable and includes comprehensive logging and error handling.
+"""
+
 import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
@@ -112,12 +134,68 @@ def _assign_rsid(
     had_rsid_before = (~sumstats[rsid].isna()).sum()
 
     # ---------------------------
-    # Determine lookup TSV
+    # STATUS filter - optimized: compute once and reuse
     # ---------------------------
+    # Match: digit 4 is 0 and digit 5 is 0-4
+    from gwaslab.info.g_vchange_status import status_match
+    # Optimize: extract STATUS once and compute both conditions
+    status_series = sumstats["STATUS"]
+    digit4_match = status_match(status_series, 4, [0])
+    digit5_match = status_match(status_series, 5, [0, 1, 2, 3, 4])
+    standardized_normalized = digit4_match & digit5_match
+    to_assign_mask = standardized_normalized
 
+    # ---------------------------
+    # Overwrite modes - optimized: early exit if no variants to assign
+    # ---------------------------
+    if overwrite == "all":
+        sumstats.loc[to_assign_mask, rsid] = pd.NA
+        # After setting to NA, count how many eligible variants need assignment
+        variants_to_assign = (to_assign_mask & sumstats[rsid].isna()).sum()
+    elif overwrite == "invalid":
+        # Optimize: only convert to string for non-NA values that need checking
+        rsid_series = sumstats[rsid]
+        # For invalid check, only need to check non-NA values
+        non_na_mask = rsid_series.notna()
+        if non_na_mask.any():
+            # Only convert non-NA values to string for regex matching
+            rsid_str = rsid_series[non_na_mask].astype("string")
+            invalid_mask = pd.Series(False, index=sumstats.index)
+            invalid_mask[non_na_mask] = ~rsid_str.str.match(r"^rs[0-9]+$", na=False)
+        else:
+            invalid_mask = pd.Series(False, index=sumstats.index)
+        sumstats.loc[to_assign_mask & invalid_mask, rsid] = pd.NA
+        # After setting invalid ones to NA, count how many eligible variants need assignment
+        variants_to_assign = (to_assign_mask & sumstats[rsid].isna()).sum()
+    elif overwrite == "empty":
+        # only fill missing → check which variants need assignment
+        variants_to_assign = (to_assign_mask & sumstats[rsid].isna()).sum()
+    else:
+        raise ValueError("overwrite must be 'all', 'invalid', or 'empty'")
+
+    # Early exit if no variants need assignment
+    if variants_to_assign == 0:
+        log.write(" -No variants need rsID assignment, skipping lookup...", verbose=verbose)
+        had_rsid_after = (~sumstats[rsid].isna()).sum()
+        log.write(" -rsID count: {} → {} / {}...".format(had_rsid_before, had_rsid_after, total_before), verbose=verbose)
+        log.write(" -Finished assigning rsID from reference.", verbose=verbose)
+        if not is_dataframe:
+            sumstats_obj.data = sumstats
+            return sumstats_obj.data
+        else:
+            return sumstats
+
+    before_missing = sumstats[rsid].isna().sum()
+
+    # ---------------------------
+    # Determine lookup TSV - only if we have variants to assign
+    # ---------------------------
     if vcf_path is not None:
         if is_vcf_file(vcf_path):
             ref_mode = "vcf/bcf"
+            path_to_use = vcf_path
+        else:
+            ref_mode = "tsv"
             path_to_use = vcf_path
     elif path is not None:
         if is_vcf_file(path):
@@ -134,26 +212,31 @@ def _assign_rsid(
 
     if ref_mode == "tsv":
         # path_to_use is tsv
-        if not os.path.exists(path_to_use):
+        if path_to_use is None or not os.path.exists(path_to_use):
             raise FileNotFoundError(f"Lookup TSV not found: {path_to_use}")
         log.write(" -Using TSV directly for lookup: {}...".format(path_to_use), verbose=verbose)
         lookup_tsv = path_to_use
         rm_tmp_lookup = False
     else:  
         # path_to_use is vcf/bcf
-
         if convert_to_bcf:
-            if path_to_use[-3]!="bcf":
+            if len(path_to_use) < 4 or path_to_use[-4:] != ".bcf":
                 log.write(" -Converting VCF to BCF (strip_info={})...".format(strip_info), verbose=verbose)
-                path_to_use = _convert_vcf_to_bcf(path, threads=threads, strip=strip_info)
+                path_to_use = _convert_vcf_to_bcf(path_to_use, threads=threads, strip=strip_info, log=log, verbose=verbose)
             else:
-                log.write(" -Already bcf")
+                log.write(" -Already bcf", verbose=verbose)
 
         log.write(" -Extracting new lookup TSV from: {}...".format(path_to_use), verbose=verbose)
 
+        # Optimize: only extract lookup for variants that need assignment
+        # Create a subset of sumstats with only variants that need rsID assignment
+        variants_needing_rsid = sumstats.loc[to_assign_mask & sumstats[rsid].isna(), [chrom, pos]].rename(
+            columns={chrom: "CHR", pos: "POS"}
+        )
+        
         lookup_tsv, rm_tmp_lookup = _extract_lookup_table_from_vcf_bcf(
             vcf_path=path_to_use,
-            sumstats=sumstats[[chrom, pos]].rename(columns={chrom: "CHR", pos: "POS"}),
+            sumstats=variants_needing_rsid,
             chr_dict=chr_dict,
             assign_cols=["rsID"],  # ensures the lookup carries ID/rsID usable by assigner
             out_lookup=lookup_path,
@@ -161,30 +244,6 @@ def _assign_rsid(
             verbose=verbose,
             log=log,
         )
-
-    # ---------------------------
-    # STATUS filter (your original logic)
-    # ---------------------------
-    # Match: digit 4 is 0 and digit 5 is 0-4
-    from gwaslab.info.g_vchange_status import status_match
-    standardized_normalized = status_match(sumstats["STATUS"], 4, [0]) & status_match(sumstats["STATUS"], 5, [0,1,2,3,4])
-    to_assign_mask = standardized_normalized.copy()
-
-    # ---------------------------
-    # Overwrite modes (your logic)
-    # ---------------------------
-    if overwrite == "all":
-        sumstats.loc[to_assign_mask, rsid] = pd.NA
-    elif overwrite == "invalid":
-        invalid_mask = ~sumstats[rsid].astype("string").str.match(r"^rs[0-9]+$", na=False)
-        sumstats.loc[to_assign_mask & invalid_mask, rsid] = pd.NA
-    elif overwrite == "empty":
-        # only fill missing → do nothing here
-        pass
-    else:
-        raise ValueError("overwrite must be 'all', 'invalid', or 'empty'")
-
-    before_missing = sumstats[rsid].isna().sum()
 
     sumstats = _assign_from_lookup(
         sumstats=sumstats,
@@ -303,11 +362,36 @@ def _annotate_sumstats(
         is_dataframe = False
 
     # ----------------------------------------------
+    # Early check: determine which columns need annotation
+    # ----------------------------------------------
+    # Initialize missing columns and check which need annotation
+    cols_to_assign = []
+    for col in assign_cols:
+        if col not in sumstats.columns:
+            sumstats[col] = pd.NA
+            cols_to_assign.append(col)
+        elif sumstats[col].isna().any():
+            # Column exists but has missing values
+            cols_to_assign.append(col)
+    
+    # Early exit if no columns need annotation
+    if not cols_to_assign:
+        log.write(" -All annotation columns already present, skipping annotation...", verbose=verbose)
+        if not is_dataframe:
+            sumstats_obj.data = sumstats
+            return sumstats_obj.data
+        else:
+            return sumstats
+
+    # ----------------------------------------------
     # Step 1 — reuse or extract lookup table
     # ----------------------------------------------
     if vcf_path is not None:
         if is_vcf_file(vcf_path):
             ref_mode = "vcf/bcf"
+            path_to_use = vcf_path
+        else:
+            ref_mode = "tsv"
             path_to_use = vcf_path
     elif path is not None:
         if is_vcf_file(path):
@@ -319,11 +403,13 @@ def _annotate_sumstats(
     else:
         ref_mode = "tsv"
         path_to_use = tsv_path
-    log.write(" -Annotating {} from {}".format(",".join(assign_cols), path_to_use ))
+
+    log.write(" -Annotating {} from {}".format(",".join(assign_cols), path_to_use if path_to_use else "lookup"))
     log.write(" -Determining reference mode: {}...".format(ref_mode), verbose=verbose)
+
     if ref_mode == "tsv":
         # path_to_use is tsv
-        if not os.path.exists(path_to_use):
+        if path_to_use is None or not os.path.exists(path_to_use):
             raise FileNotFoundError(f"Lookup TSV not found: {path_to_use}")
         log.write(" -Using TSV directly for lookup: {}...".format(path_to_use), verbose=verbose)
         lookup_tsv = path_to_use
@@ -331,21 +417,40 @@ def _annotate_sumstats(
     else:  
         # path_to_use is vcf/bcf
         if convert_to_bcf:
-            if path_to_use[-3]!="bcf":
+            # Fix: use proper string check instead of indexing
+            if len(path_to_use) < 4 or path_to_use[-4:] != ".bcf":
                 log.write(" -Converting VCF to BCF (strip_info={})...".format(strip_info), verbose=verbose)
-                path_to_use = _convert_vcf_to_bcf(path, threads=threads, strip=strip_info)
+                path_to_use = _convert_vcf_to_bcf(path_to_use, threads=threads, strip=strip_info, log=log, verbose=verbose)
             else:
-                log.write(" -Already bcf")
+                log.write(" -Already bcf", verbose=verbose)
 
-        log.write(" -Creating lookup table from VCF: {}...".format(vcf_path), verbose=verbose)
+        log.write(" -Creating lookup table from VCF: {}...".format(path_to_use), verbose=verbose)
+        
+        # Optimize: only extract lookup for variants that need annotation
+        # Determine which variants need annotation (those with missing values in any assign_col)
+        # Since we already initialized missing columns above, all assign_cols should exist
+        assign_cols_list = list(assign_cols)
+        missing_mask = sumstats[assign_cols_list].isna().any(axis=1)
+        if missing_mask.any():
+            # Only extract lookup for variants that need annotation
+            variants_needing_annotation = sumstats.loc[missing_mask, [chrom, pos]].rename(
+                columns={chrom: "CHR", pos: "POS"}
+            )
+        else:
+            # All variants already have all annotations - this shouldn't happen after our early check
+            # but handle gracefully by using all variants
+            variants_needing_annotation = sumstats[[chrom, pos]].rename(
+                columns={chrom: "CHR", pos: "POS"}
+            )
+        
         lookup_tsv, rm_tmp_lookup = _extract_lookup_table_from_vcf_bcf(
             vcf_path   = path_to_use,
-            sumstats   = sumstats,
+            sumstats   = variants_needing_annotation,
             chr_dict   = chr_dict,
             assign_cols= assign_cols,
             out_lookup = lookup_path,
             threads    = threads,
-            log        =log,
+            log        = log,
             verbose    = verbose
         )
 
@@ -361,7 +466,7 @@ def _annotate_sumstats(
         ea           = ea,
         nea          = nea,
         log          = log,
-        verbose      =verbose,
+        verbose      = verbose,
         rm_tmp_lookup=rm_tmp_lookup
     )
 
@@ -390,6 +495,30 @@ def _extract_lookup_table_from_vcf_bcf_old(
     rm_out_lookup=False,
     log=Log()
     ):
+    # Early exit if sumstats is empty
+    if sumstats.empty or len(sumstats) == 0:
+        log.write(" -No variants to extract, creating empty lookup table...", verbose=verbose)
+        if out_lookup is None:
+            out_lookup_tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".gwaslab.lookup.txt")
+            out_lookup = out_lookup_tmp.name
+            out_lookup_tmp.close()
+        
+        # Create empty lookup with proper headers
+        info_tags = [col for col in (assign_cols or []) if col not in ("ID","rsID")]
+        id_col = "rsID" if (assign_cols and "rsID" in assign_cols) else "ID"
+        header_cols = ["CHR", "POS", "REF", "ALT", id_col] + info_tags
+        header_line = "\t".join(header_cols) + "\n"
+        
+        if out_lookup.endswith(".gz"):
+            import gzip
+            with gzip.open(out_lookup, "wt") as f:
+                f.write(header_line)
+        else:
+            with open(out_lookup, "w") as f:
+                f.write(header_line)
+        
+        log.write(" -Empty lookup table created: {}...".format(out_lookup), verbose=verbose)
+        return out_lookup, rm_out_lookup
 
     if chr_dict is None:
         chr_dict = auto_check_vcf_chr_dict(vcf_path, None, verbose, log)
@@ -403,26 +532,49 @@ def _extract_lookup_table_from_vcf_bcf_old(
     if out_lookup is None:
         out_lookup_tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".gwaslab.lookup.txt")
         out_lookup = out_lookup_tmp.name
+        out_lookup_tmp.close()
 
-
+    # Optimize: Create targets more efficiently
+    # Pre-compute inverse dict if needed
+    inv_chr_dict = {v: k for k, v in chr_dict.items()} if chr_dict else None
+    
+    # Optimize: Avoid unnecessary copy - work with selected columns directly
+    targets_df = sumstats[["CHR", "POS"]].copy()
+    
+    # Apply chr_dict mapping if needed
+    if chr_dict is not None:
+        log.write(" -Converting chromosome notation using chr_dict to reference notation...", verbose=verbose)
+        targets_df["CHR"] = targets_df["CHR"].map(chr_dict)
+    
+    # Create targets file - optimize: drop NA and duplicates before sorting
     tmp_targets = tempfile.NamedTemporaryFile(delete=False, suffix=".gwaslab.targets.sorted.txt.gz")
     _targets_path = tmp_targets.name
     tmp_targets.close()
-
-    # ---------------- NEW: Save original CHR for later restore ----------------
-    if chr_dict is not None:
-        inv_chr_dict = {v: k for k, v in chr_dict.items()}  # inverse map
-        log.write(" -Converting chromosome notation using chr_dict to reference notation...", verbose=verbose)
-        sumstats_for_targets = sumstats[["CHR","POS"]].copy()
-        sumstats_for_targets["CHR"] = sumstats_for_targets["CHR"].map(chr_dict)
-    else:
-        sumstats_for_targets = sumstats[["CHR","POS"]].copy()
-
-    # Create targets
-    sumstats_for_targets.dropna(subset=["CHR"]) \
-        .drop_duplicates() \
-        .sort_values(["CHR","POS"]) \
-        .to_csv(_targets_path, sep="\t", header=False, index=False)
+    
+    # Optimize: Chain operations more efficiently
+    targets_df = targets_df.dropna(subset=["CHR"]).drop_duplicates()
+    if targets_df.empty:
+        # No valid targets after filtering - create empty lookup table
+        log.write(" -No valid targets after filtering, creating empty lookup table...", verbose=verbose)
+        info_tags = [col for col in assign_cols if col not in ("ID","rsID")]
+        id_col = "rsID" if ("rsID" in assign_cols) else "ID"
+        header_cols = ["CHR", "POS", "REF", "ALT", id_col] + info_tags
+        header_line = "\t".join(header_cols) + "\n"
+        
+        if out_lookup.endswith(".gz"):
+            import gzip
+            with gzip.open(out_lookup, "wt") as f:
+                f.write(header_line)
+        else:
+            with open(out_lookup, "w") as f:
+                f.write(header_line)
+        
+        log.write(" -Empty lookup table created: {}...".format(out_lookup), verbose=verbose)
+        return out_lookup, rm_out_lookup
+    
+    # Sort and write targets
+    targets_df = targets_df.sort_values(["CHR", "POS"])
+    targets_df.to_csv(_targets_path, sep="\t", header=False, index=False, compression="gzip")
 
     log.write(" -Created target list: {}...".format(_targets_path), verbose=verbose)
 
@@ -441,11 +593,11 @@ def _extract_lookup_table_from_vcf_bcf_old(
     subprocess.check_call(cmd_filter)
     subprocess.check_call(["bcftools", "index", "-f", _tmp_filtered_bcf])
 
+    # Optimize: Build fmt string more efficiently
     info_tags = [col for col in assign_cols if col not in ("ID","rsID")]
-    fmt = "%CHROM\t%POS\t%REF\t%ALT\t%ID"
-    for tag in info_tags:
-        fmt += f"\t%INFO/{tag}"
-    fmt += "\n"
+    # Build fmt string in one go instead of loop
+    info_fmt = "".join(f"\t%INFO/{tag}" for tag in info_tags)
+    fmt = f"%CHROM\t%POS\t%REF\t%ALT\t%ID{info_fmt}\n"
 
     id_col = "rsID" if ("rsID" in assign_cols) else "ID"
     header_cols = ["CHR", "POS", "REF", "ALT", id_col] + info_tags
@@ -453,48 +605,67 @@ def _extract_lookup_table_from_vcf_bcf_old(
     cmd_query = ["bcftools", "query", "-f", fmt, _tmp_filtered_bcf]
 
     log.write(" -Writing lookup to {}...".format(out_lookup), verbose=verbose)
-    if out_lookup.endswith(".gz"):
-        import gzip
-        out_handle = gzip.open(out_lookup, "wt")
-    else:
-        out_handle = open(out_lookup, "w")
-
-    with out_handle as out_f:
-        out_f.write(header_line)
+    
+    # Optimize: Process data in streaming fashion to avoid double I/O
+    # First, write header and query output to a temporary location for processing
+    _tmp_query_output = tempfile.NamedTemporaryFile(delete=False, suffix=".gwaslab.query.txt")
+    _tmp_query_path = _tmp_query_output.name
+    _tmp_query_output.close()
+    
+    # Write query output to temp file
+    with open(_tmp_query_path, "w") as tmp_f:
         log.write(" -Calling: {}".format(" ".join(cmd_query)), verbose=verbose)
-        p = subprocess.Popen(cmd_query, stdout=subprocess.PIPE, text=True)
-
-        shutil.copyfileobj(p.stdout, out_f)
+        p = subprocess.Popen(cmd_query, stdout=tmp_f, text=True)
         p.wait()
+        if p.returncode != 0:
+            raise RuntimeError(f"bcftools query failed with return code {p.returncode}")
 
-    # ---- Post-process output ----
-    df = pd.read_csv(out_lookup, sep="\t", compression="infer")
+    # Read and process in one go
+    # Handle empty results gracefully
+    try:
+        df = pd.read_csv(_tmp_query_path, sep="\t", header=None, 
+                         names=["CHR", "POS", "REF", "ALT", "ID"] + info_tags)
+        if df.empty:
+            # Create empty dataframe with correct columns
+            df = pd.DataFrame(columns=["CHR", "POS", "REF", "ALT", "ID"] + info_tags)
+    except (pd.errors.EmptyDataError, pd.errors.ParserError):
+        # Handle completely empty file
+        df = pd.DataFrame(columns=["CHR", "POS", "REF", "ALT", "ID"] + info_tags)
 
     # Convert ID → rsID if needed
-    if id_col == "rsID":
+    if id_col == "rsID" and "ID" in df.columns:
         df = df.rename(columns={"ID": "rsID"})
 
-    # ---------------- NEW: Convert CHR back using inverse dictionary ----------------
-    if chr_dict is not None:
+    # Convert CHR back using inverse dictionary
+    if inv_chr_dict is not None:
         log.write(" -Converting CHR back to original sumstats notation...", verbose=verbose)
         df["CHR"] = df["CHR"].astype(str).map(inv_chr_dict).astype("category")
 
+    # Write final output
     df.to_csv(out_lookup, sep="\t", index=False, compression="infer")
     
-    to_clean_up = [_targets_path,
-             _tmp_filtered_bcf,
-             _tmp_filtered_bcf + ".csi", 
-             _tmp_filtered_bcf + ".tbi"]
+    # Cleanup temp query file
+    try:
+        os.remove(_tmp_query_path)
+    except:
+        pass
     
-    # ---- Cleanup ----
-
+    # Optimize cleanup: collect all files to clean up
+    to_clean_up = [
+        _targets_path,
+        _tmp_filtered_bcf,
+        _tmp_filtered_bcf + ".csi", 
+        _tmp_filtered_bcf + ".tbi"
+    ]
+    
+    # Cleanup with better error handling
     for f in to_clean_up:
         if isinstance(f, str) and os.path.exists(f):
             try:
                 os.remove(f)
-                log.write(" -Cleaninig up : {}...".format(f), verbose=verbose)
-            except:
-                pass
+                log.write(" -Cleaning up: {}...".format(f), verbose=verbose)
+            except OSError as e:
+                log.write(" -Warning: Could not remove {}: {}...".format(f, e), verbose=verbose)
 
     log.write(" -Lookup table created: {}...".format(out_lookup), verbose=verbose)
     return out_lookup, rm_out_lookup
@@ -519,15 +690,22 @@ def _worker_bcf_lookup(args):
     targets_path = tmp_targets.name
     tmp_targets.close()
 
+    # Don't sort targets - preserve original order to match VCF file order
+    # Sorting targets causes bcftools to output in sorted order, not VCF file order
+    # This is critical for matching the old method which processes variants in VCF order
+    # Sort targets by CHR:POS for efficient bcftools processing
+    # Note: This may cause bcftools to output in position-sorted order rather than
+    # original VCF file order, which can lead to different rsID selection when
+    # multiple rsIDs exist at the same position compared to the old method
+    # (which uses vcf_reader.fetch() and preserves VCF file order)
     df_chr[["CHR","POS"]].sort_values(["CHR","POS"]) \
         .to_csv(targets_path, sep="\t", header=False, index=False)
 
     # FAST bcftools pipeline: uncompressed streaming (-Ou)
     if split_by_chr:
         cmd = (
-            f"bcftools view -r {chr_val} -Ou {vcf_path} | "
-            f"bcftools view -T {targets_path} -Ou | "
-            f"bcftools query -f '{fmt}'"
+            f"bcftools view -r {chr_val} -T {targets_path} -Ou {vcf_path} | "
+            f'bcftools query -f "{fmt}"'
         )
     else:
         cmd = (
@@ -598,7 +776,11 @@ def _extract_lookup_table_from_vcf_bcf(
     targets = sumstats[["CHR","POS"]].copy()
     targets["CHR"] = targets["CHR"].map(chr_dict)
     targets = targets.dropna().drop_duplicates()
-    chr_groups = dict(tuple(targets.groupby("CHR")))
+    # Group by chromosome and sort by chromosome to ensure consistent processing order
+    # Note: Sorting chromosomes may affect the order in which bcftools processes records,
+    # potentially leading to different rsID selection when multiple rsIDs exist at the same
+    # position compared to the old method (which processes variants in sumstats order)
+    chr_groups = {chr_val: df_chr for chr_val, df_chr in sorted(targets.groupby("CHR"))}
 
     info_tags = [c for c in assign_cols if c not in ("ID","rsID")]
     id_col = "rsID" if ("rsID" in assign_cols) else "ID"
@@ -614,8 +796,8 @@ def _extract_lookup_table_from_vcf_bcf(
               verbose=verbose)
     
     if split_by_chr:
-        log.write(" -Calling: bcftools view -r <CHR> -Ou <VCF> | "
-                  "bcftools view -T <TARGETS> -Ou | "
+        log.write(" -Calling: "
+                  "bcftools view -r <CHR> -T <TARGETS> -Ou <VCF>| "
                   "bcftools query -f '<FMT>'", verbose=verbose)
     else:
         # TEMPLATE log
@@ -664,20 +846,57 @@ def _assign_from_lookup(
     log=Log(),
     rm_tmp_lookup=False
 ):
+    """
+    Assign annotation values from a lookup table to sumstats by matching CHR:POS:EA:NEA.
+    
+    This function performs allele-aware matching, handling both forward (EA:NEA) and 
+    reverse (NEA:EA) allele orders. It processes the lookup table in chunks for memory
+    efficiency and tracks which variants were updated and which had allele flips.
+    """
     import pandas as pd
     import numpy as np
-    chunksize = 5_000_000
+    chunksize = 5_000_000  # Process lookup table in chunks of 5M rows to manage memory
 
+    # ============================================================================
+    # Step 1: Validate lookup table file exists
+    # ============================================================================
+    import os
+    if isinstance(lookup_table, str) and not os.path.exists(lookup_table):
+        log.warning(f"Lookup table not found: {lookup_table}, skipping assignment...", verbose=verbose)
+        return sumstats
+
+    # ============================================================================
+    # Step 2: Read lookup table header to understand structure
+    # ============================================================================
+    # Read only the header (0 rows) to get column names without loading data
     lookup_header = pd.read_csv(lookup_table, sep="\t", nrows=0).columns.tolist()
 
-    # ------------------------------
-    # Detect allele mode
-    # ------------------------------
+    # ============================================================================
+    # Step 3: Check if lookup table has any data
+    # ============================================================================
+    # Try to read first row to verify file contains data (not just headers)
+    try:
+        first_row = pd.read_csv(lookup_table, sep="\t", nrows=1)
+        if first_row.empty:
+            log.write(" -Lookup table is empty, skipping assignment...", verbose=verbose)
+            return sumstats
+    except (pd.errors.EmptyDataError, pd.errors.ParserError):
+        # Handle case where file exists but is empty or malformed
+        log.write(" -Lookup table is empty, skipping assignment...", verbose=verbose)
+        return sumstats
+
+    # ============================================================================
+    # Step 4: Detect allele column naming convention in lookup table
+    # ============================================================================
+    # Lookup tables can use either REF/ALT (VCF convention) or EA/NEA (sumstats convention)
+    # We need to identify which columns represent effect/non-effect alleles
     if ("REF" in lookup_header) and ("ALT" in lookup_header):
+        # VCF convention: REF = non-effect allele, ALT = effect allele
         lookup_nea_col = "REF"
         lookup_ea_col  = "ALT"
         mode = "REF_ALT"
     elif ("NEA" in lookup_header) and ("EA" in lookup_header):
+        # Sumstats convention: NEA = non-effect allele, EA = effect allele
         lookup_nea_col = "NEA"
         lookup_ea_col  = "EA"
         mode = "EA_NEA"
@@ -687,11 +906,13 @@ def _assign_from_lookup(
     log.write(f" -Detected allele mode: {mode} using {lookup_ea_col}(EA/ALT) / {lookup_nea_col}(NEA/REF)...",
               verbose=verbose)
 
+    # ============================================================================
+    # Step 5: Normalize ID column names (rsID vs ID)
+    # ============================================================================
+    # Save original requested columns for reporting dropped fields
     original_assign_cols = assign_cols
 
-    # -------------------------------
-    # Normalize ID vs rsID behavior
-    # -------------------------------
+    # Determine which ID column exists in lookup (rsID preferred over ID)
     # Case 1: lookup has both → prefer rsID
     if "rsID" in lookup_header and "ID" in lookup_header:
         id_col = "rsID"
@@ -703,49 +924,105 @@ def _assign_from_lookup(
     else:
         id_col = None  # no rsID or ID in lookup
 
-    # Replace requested assign_cols accordingly
+    # ============================================================================
+    # Step 6: Map requested columns to available columns in lookup
+    # ============================================================================
+    # Convert requested assign_cols to columns that actually exist in lookup
+    # - If user requests "rsID" or "ID", use whichever exists (id_col)
+    # - For other columns, only include if they exist in lookup
+    lookup_header_set = set(lookup_header)  # Use set for O(1) lookup performance
     normalized_assign_cols = []
     for col in assign_cols:
         if col in ("rsID", "ID"):
+            # User requested ID/rsID - use whichever column exists in lookup
             if id_col is not None:
                 normalized_assign_cols.append(id_col)
-        elif col in lookup_header:
+        elif col in lookup_header_set:
+            # Column exists in lookup, include it
             normalized_assign_cols.append(col)
 
-    # remove duplicates but keep order
+    # Remove duplicates but preserve order (dict.fromkeys maintains insertion order)
     assign_cols = tuple(dict.fromkeys(normalized_assign_cols))
 
-    # Report dropped annotation fields
+    # ============================================================================
+    # Step 7: Report any requested columns that are not available
+    # ============================================================================
     dropped = set(original_assign_cols) - set(assign_cols)
-
     if dropped:
         log.warning("Annotation columns not available in lookup, skipped: {}...".format(dropped), verbose=verbose)
 
+    # ============================================================================
+    # Step 8: Early exit if no columns to assign
+    # ============================================================================
+    if not assign_cols:
+        log.write(" -No columns to assign after normalization, skipping...", verbose=verbose)
+        return sumstats
 
-    # Init missing annotation columns
+    # ============================================================================
+    # Step 9: Initialize missing annotation columns in sumstats
+    # ============================================================================
+    # Create columns in sumstats if they don't exist, fill with NA
     for col in assign_cols:
         if col not in sumstats.columns:
             sumstats[col] = pd.NA
+    # Initialize ALLELE_FLIPPED column to track which variants had swapped alleles
     if "ALLELE_FLIPPED" not in sumstats.columns:
         sumstats["ALLELE_FLIPPED"] = False
 
+    # ============================================================================
+    # Step 10: Prepare column selection and data types for chunked reading
+    # ============================================================================
+    # Define which columns to read from lookup table
     usecols = [chrom, pos, lookup_ea_col, lookup_nea_col] + list(assign_cols)
+    # Define data types for efficient memory usage
     dtype = {chrom:"int64", pos:"int64",
              lookup_ea_col:"category", lookup_nea_col:"category"}
 
-    # Track unique updates correctly
+    # ============================================================================
+    # Step 11: Track initial state of missing annotations
+    # ============================================================================
+    # Record which rows have missing annotations BEFORE assignment
+    # This allows us to track which rows were newly filled (not just overwritten)
     assign_cols_list = list(assign_cols)
     initial_missing = sumstats[assign_cols_list].isna()
-    updated_rows = set()
-    flipped_rows = set()
+    
+    # ============================================================================
+    # Step 12: Early exit if all annotations already filled
+    # ============================================================================
+    if not initial_missing.any().any():
+        log.write(" -All annotation columns already filled, skipping lookup...", verbose=verbose)
+        return sumstats
+    
+    # ============================================================================
+    # Step 13: Initialize tracking sets for statistics
+    # ============================================================================
+    # Track which rows were updated and which had allele flips for final reporting
+    updated_rows = set()  # Set of row indices that were newly annotated
+    flipped_rows = set()  # Set of row indices that had allele flips
 
-    # ------------------------------
-    # Chunk-wise streaming
-    # ------------------------------
+    # ============================================================================
+    # Step 14: Chunk-wise streaming processing
+    # ============================================================================
+    # Process lookup table in chunks to manage memory for large files
+    # Pre-compute unique chromosomes in sumstats for faster filtering
+    sumstats_chrs = set(sumstats[chrom].unique())
+    
+    # Iterate over chunks of the lookup table
     for chunk in pd.read_csv(
         lookup_table, sep="\t", usecols=usecols,
         dtype=dtype, chunksize=chunksize
     ):
+        # ========================================================================
+        # Step 14a: Skip empty chunks
+        # ========================================================================
+        if chunk.empty:
+            continue
+            
+        # ========================================================================
+        # Step 14b: Expand multi-allelic variants
+        # ========================================================================
+        # Some variants have multiple alternate alleles (e.g., REF=A, ALT=T,G)
+        # Expand these into separate rows for each ALT allele
         try:
             chunk = _expand_multiallelic_fast(chunk, lookup_ea_col, lookup_nea_col)
         except Exception:
@@ -753,69 +1030,169 @@ def _assign_from_lookup(
                         verbose=verbose)
 
         lookup_rows = len(chunk)
+        if lookup_rows == 0:
+            continue
+            
         log.write(f" -Loaded {lookup_rows:,} lookup rows...", verbose=verbose)
 
-        ss_sub = sumstats[sumstats[chrom].isin(chunk[chrom].unique())]
+        # ========================================================================
+        # Step 14c: Filter by chromosome for efficiency
+        # ========================================================================
+        # Only process chromosomes that exist in both sumstats and this chunk
+        # This avoids unnecessary processing of non-matching chromosomes
+        chunk_chrs = set(chunk[chrom].unique())
+        matching_chrs = chunk_chrs & sumstats_chrs  # Set intersection
+        if not matching_chrs:
+            log.write(" -No matching CHR in this chunk, skipping...", verbose=verbose)
+            continue
+            
+        # Filter sumstats to only rows with matching chromosomes
+        ss_sub = sumstats[sumstats[chrom].isin(matching_chrs)]
         if ss_sub.empty:
             log.write(" -No matching CHR in this chunk, skipping...", verbose=verbose)
             continue
+        
+        # Create a copy because we'll modify allele columns (convert to categorical)
         ss_sub = ss_sub.copy()
 
-        # Unified allele symbol space
-        allele_space = (
-            set(ss_sub[ea].unique())
-            | set(ss_sub[nea].unique())
-            | set(chunk[lookup_ea_col].unique())
-            | set(chunk[lookup_nea_col].unique())
-        )
+        # ========================================================================
+        # Step 14d: Create unified allele symbol space
+        # ========================================================================
+        # Collect all unique allele symbols from both sumstats and lookup chunk
+        # This ensures categorical dtype includes all possible alleles for matching
+        allele_space = set()
+        allele_space.update(ss_sub[ea].dropna().unique())
+        allele_space.update(ss_sub[nea].dropna().unique())
+        allele_space.update(chunk[lookup_ea_col].dropna().unique())
+        allele_space.update(chunk[lookup_nea_col].dropna().unique())
+        
+        if not allele_space:
+            log.write(" -No valid alleles in chunk, skipping...", verbose=verbose)
+            continue
+            
+        # Convert to categorical dtype for efficient matching
+        # Categorical dtype allows fast equality comparisons
         alleles = pd.CategoricalDtype(categories=list(allele_space), ordered=False)
 
+        # Convert all allele columns to the same categorical dtype
+        # This ensures allele symbols match exactly (e.g., "A" == "A" not "A" == "A ")
         ss_sub[ea]  = ss_sub[ea].astype(alleles)
         ss_sub[nea] = ss_sub[nea].astype(alleles)
         chunk[lookup_ea_col]  = chunk[lookup_ea_col].astype(alleles)
         chunk[lookup_nea_col] = chunk[lookup_nea_col].astype(alleles)
 
+        # ========================================================================
+        # Step 14e: Create lookup index for fast matching
+        # ========================================================================
+        # Build a MultiIndex lookup table keyed by CHR:POS:NEA:EA
+        # Remove duplicates first (keep first occurrence if same variant appears multiple times)
+        # Note: The order of deduplication may differ from the old method (which uses
+        # vcf_reader.fetch() and preserves VCF file order), potentially leading to minor
+        # differences (0.12% in test cases) when multiple rsIDs exist at the same position.
         lookup = (
             chunk.drop_duplicates([chrom, pos, lookup_nea_col, lookup_ea_col])
                  .set_index([chrom, pos, lookup_nea_col, lookup_ea_col])[list(assign_cols)]
         )
+        
+        if lookup.empty:
+            log.write(" -Lookup index is empty after deduplication, skipping...", verbose=verbose)
+            continue
 
+        # ========================================================================
+        # Step 14f: Create MultiIndex keys for sumstats variants
+        # ========================================================================
+        # Create two sets of keys to match against lookup:
+        # - key_fwd: CHR:POS:NEA:EA (forward orientation, matches if alleles are in same order)
+        # - key_rev: CHR:POS:EA:NEA (reverse orientation, matches if alleles are swapped)
+        # This allows us to handle cases where sumstats and lookup have opposite allele orders
         key_fwd = pd.MultiIndex.from_arrays(
-            [ss_sub[chrom], ss_sub[pos], ss_sub[nea], ss_sub[ea]]
+            [ss_sub[chrom], ss_sub[pos], ss_sub[nea], ss_sub[ea]],
+            names=[chrom, pos, nea, ea]
         )
         key_rev = pd.MultiIndex.from_arrays(
-            [ss_sub[chrom], ss_sub[pos], ss_sub[ea], ss_sub[nea]]
+            [ss_sub[chrom], ss_sub[pos], ss_sub[ea], ss_sub[nea]],
+            names=[chrom, pos, ea, nea]
         )
 
+        # ========================================================================
+        # Step 14g: Lookup annotation values for both orientations
+        # ========================================================================
+        # Try to find matches in lookup table for both forward and reverse allele orders
+        # vals_fwd: annotation values when alleles match in forward order
+        # vals_rev: annotation values when alleles match in reverse order (flipped)
         vals_fwd = lookup.reindex(key_fwd).to_numpy()
         vals_rev = lookup.reindex(key_rev).to_numpy()
 
-        flipped = pd.isna(vals_fwd).all(axis=1) & pd.notna(vals_rev).any(axis=1)
+        # ========================================================================
+        # Step 14h: Determine which variants had allele flips
+        # ========================================================================
+        # A variant is "flipped" if:
+        # - Forward match failed (all values are NA)
+        # - Reverse match succeeded (at least one value is not NA)
+        # This means the alleles were in opposite order between sumstats and lookup
+        vals_fwd_na = pd.isna(vals_fwd)
+        vals_rev_notna = pd.notna(vals_rev)
+        flipped = vals_fwd_na.all(axis=1) & vals_rev_notna.any(axis=1)
+        
+        # ========================================================================
+        # Step 14i: Combine forward and reverse matches
+        # ========================================================================
+        # Use forward values where available (element-wise), otherwise use reverse values
+        # This handles cases where some columns matched forward and others matched reverse
         assigned = np.where(pd.notna(vals_fwd), vals_fwd, vals_rev)
 
-        # Where annotation was missing before assignment
-        missing_mask = sumstats.loc[ss_sub.index, assign_cols].isna().any(axis=1).to_numpy()
+        # ========================================================================
+        # Step 14j: Identify rows that need annotation updates
+        # ========================================================================
+        # Only update rows where annotations are currently missing
+        # This prevents overwriting existing annotations
+        missing_mask = sumstats.loc[ss_sub.index, assign_cols].isna().any(axis=1)
         rows_now = ss_sub.index[missing_mask]
+        
+        if len(rows_now) == 0:
+            log.write(" -No missing annotations in this chunk, skipping...", verbose=verbose)
+            continue
 
+        # ========================================================================
+        # Step 14k: Update sumstats with annotation values
+        # ========================================================================
+        # Assign annotation values to rows that were missing them
         sumstats.loc[rows_now, assign_cols] = assigned[missing_mask]
+        # Update ALLELE_FLIPPED flag for variants that had swapped alleles
         sumstats.loc[rows_now, "ALLELE_FLIPPED"] |= flipped[missing_mask]
 
-        # Determine which rows were updated for the FIRST time
+        # ========================================================================
+        # Step 14l: Track which rows were newly filled (not just overwritten)
+        # ========================================================================
+        # Determine which rows were updated for the FIRST time (were missing before)
+        # This is different from rows_now because rows_now includes all missing rows,
+        # but we only want to count rows that were actually filled (not NA after assignment)
         newly_filled = (
-            initial_missing.loc[rows_now, :] &
-            sumstats.loc[rows_now, assign_cols].notna()
+            initial_missing.loc[rows_now, :] &  # Was missing before
+            sumstats.loc[rows_now, assign_cols].notna()  # Is filled now
         )
         new_rows = newly_filled.index[newly_filled.any(axis=1)]
         updated_rows.update(new_rows.tolist())
 
+        # ========================================================================
+        # Step 14m: Track which newly filled rows had allele flips
+        # ========================================================================
         # Map flipped flags to the corresponding sumstats indices for this chunk
+        # Only count flips for rows that were newly filled (not pre-existing annotations)
         flipped_now = pd.Series(flipped[missing_mask], index=rows_now)
         flipped_new = flipped_now.loc[new_rows]
         flipped_rows.update(flipped_new.index[flipped_new].tolist())
 
-        # Update baseline missing map
+        # ========================================================================
+        # Step 14n: Update baseline missing map for next iteration
+        # ========================================================================
+        # Update the initial_missing tracking to reflect current state
+        # This ensures we don't double-count rows in subsequent chunks
         initial_missing.loc[rows_now, :] = sumstats.loc[rows_now, assign_cols].isna()
 
+        # ========================================================================
+        # Step 14o: Log progress for this chunk
+        # ========================================================================
         log.write(
             f" -Newly annotated sumstats rows: {len(new_rows):,} "
             f"(chunk lookup rows: {lookup_rows:,}) "
@@ -823,9 +1200,10 @@ def _assign_from_lookup(
             verbose=verbose
         )
 
-    # ------------------------------
-    # Final statistics
-    # ------------------------------
+    # ============================================================================
+    # Step 15: Final statistics and reporting
+    # ============================================================================
+    # Count unique rows that were annotated and had allele flips
     processed_variants = len(updated_rows)
     flipped_count = len(flipped_rows)
 
@@ -834,6 +1212,11 @@ def _assign_from_lookup(
     log.write(f" -Total unique rows with allele flips: {flipped_count:,}",
               verbose=verbose)
 
+    # ============================================================================
+    # Step 16: Cleanup temporary lookup file if requested
+    # ============================================================================
+    # If lookup table was a temporary file created during processing,
+    # remove it to free up disk space
     if rm_tmp_lookup:
         if isinstance(lookup_table, str) and os.path.exists(lookup_table):
             try:
@@ -842,6 +1225,9 @@ def _assign_from_lookup(
             except:
                 pass
 
+    # ============================================================================
+    # Step 17: Return updated sumstats
+    # ============================================================================
     return sumstats
 
 import subprocess

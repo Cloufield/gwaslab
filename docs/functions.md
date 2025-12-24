@@ -37,8 +37,10 @@
 | `.rsid_to_chrpos()`    | path, threads                                         | use rsid to fill CHR and POS                                               |
 | `.rsid_to_chrpos2()`   | path                                                  | use rsid to fill CHR and POS (muilti-thread, need hd5 file)                |
 | `.assign_rsid()`       | path                                                  | annotate rsid using a reference vcf file                                   |
-| `.infer_strand()`      | ref_infer="" , ref_alt_freq=None,  maf_threshold=0.43 | infer the strand of a variant using reference vcf file with EAF in INFO    |
-| `.check_af()`         | ref_infer, ref_alt_freq=None,                     | calculate difference in allele frequencies                                 |
+| `.infer_strand()`      | ref_infer="" , ref_alt_freq=None,  maf_threshold=0.40, daf_tolerance=0.20 | infer the strand of palindromic SNPs and indels using reference vcf file with allele frequency in INFO    |
+| `.infer_strand2()`     | path/vcf_path/tsv_path, maf_threshold=0.40, ref_maf_threshold=0.40, daf_tolerance=0.20 | optimized strand inference using pre-annotated RAF from lookup table (faster for large datasets) |
+| `.check_af()`         | ref_infer, ref_alt_freq=None, maf_threshold=0.40 | calculate difference in allele frequencies (DAF) between sumstats EAF and reference VCF ALT frequency |
+| `.infer_af()`          | ref_infer, ref_alt_freq=None | infer effect allele frequency (EAF) in sumstats using reference VCF ALT frequency |
 | `.flip_allele_stats()` |                                                       | After alignment and inferring, flip the alleles to harmonise the variants. |
 | `.liftover()`          | threads=1,from_build="19", to_build="38"              | perform liftover                                                           |
 | `.infer_build()`       | verbose=True                                           | infer genome build (hg19/hg38) from CHR:POS coordinates                     |

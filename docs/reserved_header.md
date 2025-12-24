@@ -14,8 +14,10 @@ Here is a list of all headers (gl.Sumstats.data) used in GWASLab functions. Thes
 | `REF` | ref | `category` | reference allele in reference genome | - |
 | `ALT` | alt | `category` | alternative allele | - |
 | `EAF` | eaf | `float64` | effect allele frequency | - |
+| `RAF` | raf | `float64` | reference allele frequency (from reference VCF/BCF file) | typically annotated by infer_strand2() or annotate_sumstats() |
 | `NEAF` | neaf | `float64` | non-effect allele frequency | - |
 | `MAF` | maf | `float64` | minor allele frequency | if EAF, use fill_data to get MAF |
+| `DAF` | daf | `float64` | difference in allele frequency (EAF - ALT_AF from reference VCF) | this DAF is not the derived allele frequency |
 | `INFO` | info | `float32` | imputation INFO/RSQ | - |
 | `BETA` | beta | `float64` | effect size beta | - |
 | `SE` | se | `float64` | standard error of beta | - |

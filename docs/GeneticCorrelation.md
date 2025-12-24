@@ -19,7 +19,7 @@ gl.plot_rg(ldsc)
     
     ![image](https://github.com/Cloufield/gwaslab/assets/40289485/46ea20c5-5e4d-4ad4-86ea-965f3a953518)
 
-Options:
+**Options:**
 
 - `ldscrg` : `DataFrame`, results from ldsc-rg. 4 columns are required, `p1`,`p2`,`p`,`rg`.
 - `p1`: `string`, column name for trait1, defaul: `p1`

@@ -7,15 +7,15 @@ GWASLab provides reference-dependent harmonization functions.
 | Sumstats Methods       | Options                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Description                                                                                                                       |
 |------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
 | `.check_ref()`         | `ref_path`,<br /> `chr_dict=get_chr_to_number()`                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Check alignment with a reference genome FASTA file                                                                                |
-| `.assign_rsid()`       | `ref_rsid_tsv`,<br /> `ref_rsid_vcf`,<br /> `threads=1`, <br />`chunksize=5000000`, <br />`chr_dict=get_number_to_chr()`, <br />`overwrite="empty"`                                                                                                                                                                                                                                                                                                                                                                       | Annotate rsID using a reference tabular file or VCF/BCF file                                                                      |
-| `.infer_strand()`      | `ref_infer`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`remove_snp=""`,<br />`daf_tolerance=0.2`, ,<br />`mode="pi"`,<br />`threads=1`,<br />`remove_indel=""`                                                                                                                                                                                                                                                                                                                                            | Infer the strand of palindromic variants/indistinguishable indels using reference VCF/BCF files based on allele frequency in INFO |
-| `.check_daf()`         | `ref_infer`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`threads=1`                                                                                                                                                                                                                                                                                                                                                                                                                                        | Calculate difference in allele frequencies  with a reference VCF/BCF file                                                         |
+| `.assign_rsid()`       | `ref_rsid_tsv`,<br /> `ref_rsid_vcf`,<br /> `threads=1`, <br />`chunksize=5000000`, <br />`chr_dict=get_number_to_chr()`, <br />`overwrite="empty"`                                                                                                                                                                                                                                                                                                                                                                       | Annotate **rsID** using a reference tabular file or VCF/BCF file                                                                      |
+| `.infer_strand()`      | `ref_infer`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`remove_snp=""`,<br />`daf_tolerance=0.2`, ,<br />`mode="pi"`,<br />`threads=1`,<br />`remove_indel=""`                                                                                                                                                                                                                                                                                                                                            | Infer the strand of palindromic variants/indistinguishable indels using reference VCF/BCF files based on allele frequency in **INFO** |
+| `.check_af()`         | `ref_infer`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`n_cores=1`                                                                                                                                                                                                                                                                                                                                                                                                                                        | Calculate difference in allele frequencies (**DAF**) between sumstats **EAF** and reference VCF **ALT** frequency                                                         |
 | `.flip_allele_stats()` |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | After alignment and inferring, flip the alleles and allele-specific statistics to harmonize the variants.                         |
 | `.harmonize()`         | `basic_check=True`, <br /> `ref_seq=None`,<br />`ref_rsid_tsv=None`,<br />`ref_rsid_vcf=None`,<br />`ref_infer=None`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`threads=1`,<br />`remove=False`,<br />`sweep_mode=False`,<br />`checkref_args={}`,<br />`removedup_args={}`,<br />`assignrsid_args={}`,<br />`inferstrand_args={}`,<br />`flipallelestats_args={}`,<br />`fixid_args={}`,<br />`fixchr_agrs={}`,<br />`fixpos_args={}`,<br />`fixallele_args={}`,<br />`sanitycheckstats_args={}`,<br />`normalizeallele_args={}` | All-in-one function for harmonization                                                                                             |
 
 ## Align NEA with REF in the reference genome
 
-`.check_ref()`:  Check if NEA is aligned with the reference sequence. After checking, the tracking status code will be changed accordingly. 
+`.check_ref()`:  Check if **NEA** is aligned with the reference sequence. After checking, the tracking status code will be changed accordingly.
 
 | `.check_ref()` options                  | DataType   | Description                                                                               | Default                            |
 |-----------------------------------------|------------|-------------------------------------------------------------------------------------------|------------------------------------|
@@ -29,11 +29,11 @@ GWASLab provides reference-dependent harmonization functions.
     mysumstats.flip_allele_stats()
     ```
 !!! note
-    `check_ref()` only change the status code. Use [flip function](#flipping-based-on-status-code) `.flip_allele_stats()` to flip the allele-specific stats.
+    `check_ref()` only change the status code. Use [flip function](#flip-allele-specific-statistics) `.flip_allele_stats()` to flip the allele-specific stats.
 
 ## Assign rsID according to CHR, POS, REF/ALT
 
-`.assign_rsid()` : Annotated variants with rsID using a reference tsv file (1KG variants) and reference vcf file (tabix indexed, entire dbSNP).
+`.assign_rsid()` : Annotated variants with **rsID** using a reference tsv file (1KG variants) and reference vcf file (tabix indexed, entire dbSNP).
 
 See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.io/gwaslab/AssignrsID/)
 
@@ -45,35 +45,49 @@ See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.i
                            threads=1)
     ```
 
-- For TSV file, variants will be matched using SNPID (CHR:POS:NEA:EA) for quick assigning.
-- For VCF file, GWASLab will first extract all variants in the reference file with matching CHR and POS. And then compare EA/NEA in sumstats with REF/ALT in reference vcf. When matching, it will annotate the variant in sumstats with the matching rsID in reference vcf.  
+- For TSV file, variants will be matched using **SNPID** (**CHR**:**POS**:**NEA**:**EA**) for quick assigning.
+- For VCF file, GWASLab will first extract all variants in the reference file with matching **CHR** and **POS**. And then compare **EA**/**NEA** in sumstats with **REF**/**ALT** in reference vcf. When matching, it will annotate the variant in sumstats with the matching **rsID** in reference vcf.  
 
 ## Check palindromic SNPs or indistinguishable Indels
 
-`.infer_strand()`:
+`.infer_strand()` and `.infer_strand2()`:
 
-- Infer the strand for palindromic SNPs (AT, or CG) with MAF <`maf_threshold`. 
-- Checking the alignment status of indels with the REF allele in a reference VCF/BCF file and check if the allele frequencies are consistent (DAF < `daf_tolerance`).
+- Infer the strand for palindromic SNPs (A/T, T/A, G/C, C/G) with **MAF** ≤ `maf_threshold`. 
+- Check the alignment status of indels with the **REF** allele in a reference VCF/BCF file and verify if the allele frequencies are consistent (**DAF** ≤ `daf_tolerance`).
+- Update **STATUS** code 7th digit to reflect strand inference results (0=non-palindromic, 1=forward, 2=reverse, 3=indel forward, 4=ambiguous indel, 6=indel reverse, 7=**MAF** too high, 8=not found, 9=unchecked).
 
-!!! info 
-    "DAF in GWASLab: Difference between effect allele frequency (EAF) in sumstats and ALT frequency in reference VCF/BCF file"
+!!! info "DAF in GWASLab"
+    **DAF** in GWASLab: Difference between effect allele frequency (**EAF**) in sumstats and **ALT** frequency in reference VCF/BCF file
 
-!!! warning
-    This DAF in GWASLab is not the derived allele frequency in evolutionary genetics.
+!!! note
+    This **DAF** in GWASLab is not the derived allele frequency in evolutionary genetics.
 
 | `.infer_strand()` options | DataType          | Description                                                                                                                 | Default                  |
 |---------------------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------|--------------------------|
-| `ref_infer`               | `string`          | path to the reference VCF/BCF file (index file is required).                                                                |                          |
-| `ref_alt_freq`            | `string`          | the field for alternative allele frequency in INFO                                                                          |                          |
+| `ref_infer`               | `string`          | path to the reference VCF/BCF file (must be tabix-indexed for efficient querying).                                                                |                          |
+| `ref_alt_freq`            | `string`          | the field for alternative allele frequency in VCF INFO (e.g., "AF", "AF_popmax", "gnomAD_AF"). If None, auto-detection is attempted.                                                                          |                          |
 | `chr_dict`                | `dict`            | a conversion dictionary for chromosome notations in sumstats and those in reference VCF/BCF                                 | `gl.get_number_to_chr()` |
-| `maf_threshold`           | `string`          | only palindromic SNPs with MAF < `maf_threshold` will be inferred                                                          | `0.4`                    |
-| `daf_tolerance`           | `string`          | only indistinguishable indels with difference in allele frequency < `daf_tolerance` will be inferred                       | `0.2`                    |
-| `remove_snp`              | ` `, `7` or `8`   | `7` remove palindromic SNPs with MAF unable to infer. `8`: remove palindromic SNPs with No information in reference VCF/BCF | ``                       |
+| `maf_threshold`           | `float`          | maximum minor allele frequency threshold. Only palindromic SNPs with **MAF** ≤ `maf_threshold` will be inferred                                                          | `0.4`                    |
+| `ref_maf_threshold`       | `float`          | maximum minor allele frequency threshold for reference **RAF**. Used as additional filter for both palindromic SNPs and indels. | `0.4`                    |
+| `daf_tolerance`           | `float`          | difference in allele frequency tolerance for indels. Only indels with |**EAF** - **RAF**| or |**EAF** - (1-**RAF**)| ≤ `daf_tolerance` will be inferred                       | `0.2`                    |
+| `remove_snp`              | ` `, `7` or `8`   | `7` remove palindromic SNPs with **MAF** unable to infer. `8`: remove palindromic SNPs with No information in reference VCF/BCF | ``                       |
 | `remove_indel`            | ` ` or `8`        | `8`: indistinguishable indels with No information in reference VCF/BCF                                                      | ``                       |
-| `mode`                    | `p`, `i`, or `pi` | `p`: infer palindromic SNPs. `i`: infer indels.                                                                            | `pi`                     |
-| `threads`                 | `int`             | number of CPU threads to use                                                                                                | `1`                      |
+| `mode`                    | `p`, `i`, or `pi` | `p`: infer palindromic SNPs only. `i`: infer indels only. `pi`: infer both (default).                                                                            | `pi`                     |
 | `threads`                 | `int`             | number of CPU threads to use                                                                                                | `1`                      |
 | `cache_options` (available since v3.4.42)           | `dict`            | options for using cache to speed up this step                                                                                                     | `None`                   |
+
+| `.infer_strand2()` options | DataType          | Description                                                                                                                 | Default                  |
+|----------------------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------|--------------------------|
+| `path` / `vcf_path` / `tsv_path` | `string` | path to reference file (VCF/BCF or TSV). `vcf_path` overrides `path`, `tsv_path` overrides both. If TSV not provided, generated from VCF. |                          |
+| `assign_cols`              | `tuple` or `str`  | column names to extract from reference (default: ("AF",)). First column will be renamed to RAF.                            | `("AF",)`                |
+| `maf_threshold`           | `float`          | maximum minor allele frequency threshold for sumstats EAF                                                          | `0.4`                    |
+| `ref_maf_threshold`       | `float`          | maximum minor allele frequency threshold for reference RAF                                 | `0.4`                    |
+| `daf_tolerance`           | `float`          | difference in allele frequency tolerance for indels                       | `0.2`                    |
+| `threads`                 | `int`             | number of CPU threads for processing                                                                                                | `6`                      |
+| `reuse_lookup`            | `bool`            | if True, reuse existing lookup table TSV file if found                                                                     | `True`                   |
+| `convert_to_bcf`          | `bool`            | if True, convert VCF to BCF format for faster processing                                                                   | `False`                  |
+| `strip_info`              | `bool`            | if True, strip INFO fields from VCF during lookup table generation                                                          | `True`                   |
+| `chr_dict`                | `dict`            | chromosome name mapping dictionary                                                                                           | `None`                   |
 
 
 | `cache_options` | DataType                                  | Description                                                                                                                                                                                                                                             | Default |
@@ -86,39 +100,89 @@ See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.i
 
 !!! example
     ```
-    mysumstats.infer_strand()
+    # Old method: per-variant VCF queries (good for small datasets)
+    mysumstats.infer_strand(ref_infer=gl.get_path("1kg_eas_hg19"),
+                            ref_alt_freq="AF",
+                            maf_threshold=0.40,
+                            daf_tolerance=0.20,
+                            threads=4)
     mysumstats.flip_allele_stats()
 
-    # using cache to speed up this method
-    mysumstats.infer_strand(cache_options={"use_cache":True})
+    # New optimized method: bulk lookup table (faster for large datasets)
+    mysumstats.infer_strand2(vcf_path=gl.get_path("1kg_eas_hg19"),
+                             maf_threshold=0.40,
+                             ref_maf_threshold=0.40,
+                             daf_tolerance=0.20,
+                             threads=6)
+    mysumstats.flip_allele_stats()
+
+    # Using cache to speed up old method
+    mysumstats.infer_strand(ref_infer=gl.get_path("1kg_eas_hg19"),
+                            cache_options={"use_cache":True})
     mysumstats.flip_allele_stats()
     ```
     
 !!! note
-    `infer_strand()` only change the status code. Use [flip function](#flipping-based-on-status-code) `.flip_allele_stats()` to flip the allele-specific stats.
+    `infer_strand()` and `infer_strand2()` only change the status code. Use [flip function](#flip-allele-specific-statistics) `.flip_allele_stats()` to flip the allele-specific stats.
+    
+!!! tip "When to use infer_strand2()"
+    Use `.infer_strand2()` for:
+    - Large datasets (millions of variants)
+    - When you have `bcftools` installed
+    - When you want faster processing with reduced I/O operations
+    - When you plan to reuse lookup tables for multiple runs
+    
+    Use `.infer_strand()` for:
+    - Small to medium datasets (< 1 million variants)
+    - When `bcftools` is not available
+    - When you need maximum parallelization across CPU cores
 
 
 ## Check the difference in allele frequency
 
-`.check_daf()` : check the allele frequency discrepancy with a reference vcf. Please make sure your sumstats are already harmonized, and the variants in reference VCF are also aligned. GWASLab will retrieve information only for matched variants (CHR, POS, EA-ALT, and NEA-REF).
+`.check_af()` : Check the allele frequency discrepancy with a reference VCF/BCF file. This function calculates the difference (**DAF**) between the effect allele frequency (**EAF**) in your sumstats and the alternative allele frequency (**ALT_AF**) in the reference VCF.
 
-| `.check_daf()` options | DataType | Description                                                                                 | Default                  |
+**Purpose:**
+
+- Quality control: Identify variants with large differences in allele frequency between sumstats and reference
+- Validation: Verify that **EAF** values in sumstats are consistent with reference population frequencies
+- Detect potential issues: Large |**DAF**| values (> 0.2) may indicate allele mismatches, strand flips, or data quality issues
+
+**Important:** Please make sure your sumstats are already harmonized, and the variants in reference VCF are also aligned. GWASLab will retrieve information only for matched variants (**CHR**, **POS**, **EA**-**ALT**, and **NEA**-**REF**).
+
+| `.check_af()` options | DataType | Description                                                                                 | Default                  |
 |------------------------|----------|---------------------------------------------------------------------------------------------|--------------------------|
-| `ref_infer`            | `string` | path to the reference VCF/BCF file (index file is required).                                |                          |
-| `ref_alt_freq`         | `string` | the field for alternative allele frequency in INFO                                          |                          |
+| `ref_infer`            | `string` | path to the reference VCF/BCF file (must be tabix-indexed for efficient querying).                                |                          |
+| `ref_alt_freq`         | `string` | the field for alternative allele frequency in VCF INFO (e.g., "AF", "AF_popmax", "gnomAD_AF"). If None, auto-detection is attempted.                                          |                          |
+| `maf_threshold`        | `float`  | minor allele frequency threshold for filtering variants. Only variants with MAF ≤ threshold in both sumstats and reference are included in DAF statistics. | `0.4`                    |
+| `column_name`           | `string` | name of the column to store DAF values                                                      | `"DAF"`                  |
+| `suffix`               | `string` | suffix to append to column name (useful when comparing multiple reference populations)      | `""`                     |
 | `chr_dict`             | `dict`   | a conversion dictionary for chromosome notations in sumstats and those in reference VCF/BCF | `gl.get_number_to_chr()` |
-| `threads`              | `int`    | number of CPU threads to use                                                                | `1`                      |
+| `n_cores`              | `int`    | number of CPU threads to use                                                                | `1`                      |
+| `force`                | `bool`   | if True, check all variants regardless of STATUS codes                                       | `False`                  |
 
 !!! example
     ```
     mysumstats.check_af(ref_infer=gl.get_path("1kg_eas_hg19"), 
                         ref_alt_freq="AF",
-                        threads=2)
+                        n_cores=2)
     ```
 
-- DAF : Difference between Effect allele frequency (EAF) in sumstats and the ALT allele frequency in reference VCF file (RAF)
-- EAF: Effect allele frequency
-- RAF: Reference ALT allele frequency
+**Terminology:**
+
+- **DAF**: Difference in Allele Frequency = **EAF** (sumstats) - **ALT_AF** (reference VCF)
+- **EAF**: Effect allele frequency (from your sumstats)
+- **RAF**: Reference **ALT** allele frequency (from reference VCF/BCF file)
+
+**Interpretation:**
+
+- Positive **DAF**: **EAF** in sumstats is higher than reference
+- Negative **DAF**: **EAF** in sumstats is lower than reference
+- Large |**DAF**| values (> 0.2) may indicate:
+  - Population differences (expected for population-specific variants)
+  - Allele mismatches (check **EA**/**NEA** alignment)
+  - Strand flips (use `infer_strand()` to resolve)
+  - Data quality issues (verify EAF calculation in sumstats)
 
 You may want to check the allele frequency discrepancy with a reference VCF. Just specify the path and the right allele frequency for your target ancestry in INFO field.
 

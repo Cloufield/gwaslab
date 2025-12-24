@@ -49,7 +49,7 @@ from gwaslab.hm.hm_harmonize_sumstats import (
     _parallelize_infer_strand,
     _parallelize_assign_rsid,
     _parallelize_rsid_to_chrpos,
-    _paralleleinferafwithmaf,
+    _parallele_infer_af_with_maf,
 )
 
 from gwaslab.hm.hm_casting import (
@@ -469,6 +469,8 @@ class Sumstats():
         `check_data_consistency` for checking if convitable data are consistent (e.g., if the calculated BETA/SE is close to the original Z),
         `normalize_allele` for indel normalization, `remove_dup` for removal of multi-allelic variants, indels, and duplicated variants,
         `sort_coordinate` for sorting the genomic coordinates, and `sort_column` for sorting the order of columns in the dataframe.
+
+        For a detailed description of all checks performed, see the documentation in docs/QC&Filtering.md.
 
         Parameters
         ----------
@@ -1082,8 +1084,8 @@ class Sumstats():
     
     def infer_eaf_from_maf(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
-        self.data = _paralleleinferafwithmaf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
-        # Metadata is already set by _paralleleinferafwithmaf    
+        self.data = _parallele_infer_af_with_maf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+        # Metadata is already set by _parallele_infer_af_with_maf    
     
     @suppress_display
     def plot_daf(self, **kwargs):

@@ -1,19 +1,19 @@
 # Assigning CHR/POS
 
-GWASLab can update CHR/POS using a pre-processed rsID-to-CHR:POS mapping table stored in HDF5 format. The HDF5-based approach provides optimized performance for processing large datasets with parallel processing capabilities.
+GWASLab can update **CHR**/**POS** using a pre-processed **rsID**-to-**CHR**:**POS** mapping table stored in HDF5 format. The HDF5-based approach provides optimized performance for processing large datasets with parallel processing capabilities.
 
-!!! warning "Note on .rsid_to_chrpos()"
+!!! note "Note on .rsid_to_chrpos()"
     The old TSV-based implementation of `.rsid_to_chrpos()` has been removed due to poor performance. Please use `.rsid_to_chrpos2()` with HDF5 files instead, which provides significantly better performance for large datasets.
 
 ## .rsid_to_chrpos2()
 
 **Available since v3.4.31**
 
-`.rsid_to_chrpos2()` is a high-performance function to assign CHR and POS based on rsID using a HDF5 file derived from dbSNP reference VCF files. This method is optimized for large datasets and uses parallel processing for fast lookups.
+`.rsid_to_chrpos2()` is a high-performance function to assign **CHR** and **POS** based on **rsID** using a HDF5 file derived from dbSNP reference VCF files. This method is optimized for large datasets and uses parallel processing for fast lookups.
 
 ### How it works
 
-The function uses pre-processed HDF5 files (one per chromosome) that contain rsID-to-POS mappings organized into 10 groups based on modulo 10 grouping (`rsID % 10`). This grouping strategy:
+The function uses pre-processed HDF5 files (one per chromosome) that contain **rsID**-to-**POS** mappings organized into 10 groups based on modulo 10 grouping (`rsID % 10`). This grouping strategy:
 
 - **Creates approximately equal-sized groups** for balanced data distribution
 - **Enables efficient parallel lookups** by processing chromosome-group combinations independently
@@ -22,7 +22,7 @@ The function uses pre-processed HDF5 files (one per chromosome) that contain rsI
 - **Separate files per chromosome** allow true parallel writes without locking overhead
 - **CHR not stored** - assigned from chromosome number (extracted from filename or provided parameter)
 - **Index-based matching** - uses pandas index intersection for fast O(1) average-case lookups
-- **Smart processing** - if CHR column is available, only processes relevant chromosome files (much faster)
+- **Smart processing** - if **CHR** column is available, only processes relevant chromosome files (much faster)
 
 ### Reference VCF from dbSNP
 
@@ -35,6 +35,7 @@ GCF_000001405.25.gz.tbi (2.9M)
 ```
 
 **Requirements:**
+
 - The VCF file must be indexed (`.tbi` for bgzip-compressed VCF, or `.csi` for BCF format)
 - **`bcftools` must be installed and available in your PATH** - the function uses `bcftools query` to extract data from VCF files
   - Install bcftools: `conda install -c bioconda bcftools` or download from https://www.htslib.org/download/
@@ -49,6 +50,7 @@ gl.process_vcf_to_hfd5()
 ```
 
 **Prerequisites:**
+
 - **`bcftools` must be installed** - this function uses `bcftools query` to extract POS and rsID data from VCF files
   - Install: `conda install -c bioconda bcftools` or from https://www.htslib.org/download/
   - Verify: `bcftools --version`
@@ -102,11 +104,13 @@ gl.process_vcf_to_hfd5(vcf=vcf,
 The generated HDF5 files are organized as **one file per chromosome**, each containing 10 groups (group_0 through group_9):
 
 **File Organization:**
+
 - One HDF5 file per chromosome: `{vcf_file_name}.chr{chr_num}.rsID_CHR_POS_mod10.h5`
 - Example: `GCF_000001405.25.chr1.rsID_CHR_POS_mod10.h5`, `GCF_000001405.25.chr2.rsID_CHR_POS_mod10.h5`, etc.
 - CHR is **not stored** in the HDF5 file - it's encoded in the filename (e.g., `chr1` → CHR = 1)
 
 **Group Organization:**
+
 - Groups are named `group_0`, `group_1`, ..., `group_9`
 - Each rsID is assigned to a group based on: `group_id = rsID_number % 10`
 - For example: `rs123456789` → `789 % 10 = 9` → stored in `group_9`
@@ -160,7 +164,7 @@ HDF5 Directory: /path/to/dbsnp/
 
 You can inspect the HDF5 file structure using pandas:
 
-```python
+```
 import pandas as pd
 import glob
 import os
@@ -227,8 +231,8 @@ This results in approximately **12 bytes per variant** (8 + 4), plus HDF5 overhe
 | `ref_rsid_to_chrpos_hdf5`| `string` | Path to HDF5 directory/file (takes precedence over VCF path)        | `None`  |
 | `ref_rsid_to_chrpos_vcf` | `string` | Path to VCF file (auto-generates HDF5 path from VCF location)      | `None`  |
 | `threads`                 | `int`    | number of threads to use for parallel processing                     | `4`     |
-| `build`                   | `string` | genome build version for CHR and POS (e.g., "19", "38")              | `"99"`  |
-| `rsid`                    | `string` | column name containing rsID values                                  | `"rsID"`|
+| `build`                   | `string` | genome build version for **CHR** and **POS** (e.g., "19", "38")              | `"99"`  |
+| `rsid`                    | `string` | column name containing **rsID** values                                  | `"rsID"`|
 | `chrom`                   | `string` | column name for chromosome values to be updated                      | `"CHR"` |
 | `pos`                     | `string` | column name for position values to be updated                        | `"POS"` |
 | `status`                  | `string` | column name for status codes                                         | `"STATUS"`|
@@ -238,12 +242,13 @@ This results in approximately **12 bytes per variant** (8 + 4), plus HDF5 overhe
 
 The function automatically chooses the optimal processing strategy based on your data:
 
-- **If CHR column has values**: Processes by chromosome first (much faster)
+- **If **CHR** column has values**: Processes by chromosome first (much faster)
+
   - Groups data by chromosome, then by group (modulo 10)
   - Only processes relevant chromosome HDF5 files
-  - Example: If data has CHR=1, only checks `*.chr1.rsID_CHR_POS_mod10.h5`
+  - Example: If data has **CHR**=1, only checks `*.chr1.rsID_CHR_POS_mod10.h5`
   
-- **If CHR column is missing/empty**: Searches across all chromosomes
+- **If **CHR** column is missing/empty**: Searches across all chromosomes
   - Groups by group (modulo 10), then tries all chromosome files
   - Automatically deduplicates results (keeps best match per variant)
   - Slower but necessary when CHR is unknown
@@ -297,17 +302,18 @@ mysumstats.data[['rsID', 'CHR', 'POS']].head()
 
 **Processing workflow:**
 
-1. **rsID preprocessing**: Extracts numeric rsID values (strips first 2 characters) and identifies valid rsIDs
-2. **HDF5 file discovery**: Finds all chromosome-specific HDF5 files in the directory (e.g., `*.chr*.rsID_CHR_POS_mod10.h5`)
+1. **rsID preprocessing**: Extracts numeric **rsID** values (strips first 2 characters) and identifies valid **rsID**s
+2. **HDF5 file discovery**: Finds all chromosome-specific HDF5 files in the directory (e.g., `*.chr*.**rsID**_**CHR**_**POS**_mod10.h5`)
 3. **Processing strategy**:
-   - **If CHR column available**: Groups data by chromosome first, then by group (modulo 10), processes each chromosome-group combination
-   - **If CHR column not available**: Groups by group, searches across all chromosome files, then deduplicates results
-4. **Group assignment**: Each rsID is assigned to one of 10 groups based on `rsID % 10`
+
+   - **If **CHR** column available**: Groups data by chromosome first, then by group (modulo 10), processes each chromosome-group combination
+   - **If **CHR** column not available**: Groups by group, searches across all chromosome files, then deduplicates results
+4. **Group assignment**: Each **rsID** is assigned to one of 10 groups based on `rsID % 10`
 5. **Parallel lookup**: Multiple threads process tasks in parallel (each task = chromosome + group combination)
 6. **Index-based matching**: Uses pandas index intersection for fast matching (rsn as index in both sumstats and reference data)
-7. **CHR assignment**: CHR is assigned from the chromosome number (extracted from filename or provided parameter)
-8. **POS assignment**: POS is extracted from the matched reference data
-9. **Deduplication**: When searching across all chromosomes, keeps the first match per variant (prioritizes matches with both CHR and POS)
+7. **CHR assignment**: **CHR** is assigned from the chromosome number (extracted from filename or provided parameter)
+8. **POS assignment**: **POS** is extracted from the matched reference data
+9. **Deduplication**: When searching across all chromosomes, keeps the first match per variant (prioritizes matches with both **CHR** and **POS**)
 
 **Performance characteristics:**
 

@@ -8,7 +8,7 @@ GWASLab provides a function to calculate the variance explained by each SNP (per
 
 Calculates the proportion of variance explained by each SNP and optionally computes F-statistics for instrument strength assessment.
 
-```python
+```
 mysumstats.get_per_snp_r2(**kwargs)
 ```
 
@@ -53,8 +53,8 @@ The function adds the following columns to the sumstats:
 
 - **`SNPR2`**: Proportion of variance explained by each SNP (R²)
 - **`ADJUESTED_SNPR2`**: Adjusted R² (only if `adjuested=True`)
-- **`F`**: F-statistic for instrument strength (only if `N` column is available)
-- **`_VAR(BETAX)`**: Variance of beta × X (intermediate calculation for quantitative traits)
+- **`F`**: F-statistic for instrument strength (only if **N** column is available)
+- **`_VAR(BETAX)`**: Variance of **BETA** × X (intermediate calculation for quantitative traits)
 - **`_SIGMA2`**: Error variance (intermediate calculation when `vary="se"`)
 - **`_POPAF`**: Population allele frequency (intermediate calculation for binary traits)
 - **`_VG`**: Genetic variance (intermediate calculation for binary traits)
@@ -66,10 +66,12 @@ For quantitative traits, the variance explained by SNP $i$ is calculated as:
 $$ R^2_i = \frac{Var(\beta_i \times X_i)}{Var(Y)} $$
 
 Where:
-- $Var(\beta_i \times X_i) = 2 \times \beta_i^2 \times EAF_i \times (1 - EAF_i)$
+
+- $Var(\beta_i \times X_i) = 2 \times \beta_i^2 \times **EAF**_i \times (1 - **EAF**_i)$
 - $Var(Y)$ depends on the `vary` parameter:
+
   - If `vary` is a number: $Var(Y) = \text{vary}$
-  - If `vary="se"`: $Var(Y) = Var(\beta_i \times X_i) + SE_i^2 \times 2 \times N \times EAF_i \times (1 - EAF_i)$
+  - If `vary="se"`: $Var(Y) = Var(\beta_i \times X_i) + **SE**_i^2 \times 2 \times **N** \times **EAF**_i \times (1 - **EAF**_i)$
 
 **F-statistic** (when `N` is available):
 
@@ -94,6 +96,7 @@ Where $k$ is the number of parameters (default: 1).
 For binary traits, the function estimates the variance of liability explained by each variant using a liability threshold model.
 
 The calculation involves:
+
 1. Estimating population allele frequency from sample allele frequency, case-control ratio, odds ratio, and population prevalence
 2. Calculating genetic variance: $V_G = \beta^2 \times p \times (1-p)$ where $p$ is the population allele frequency
 3. Calculating R²: $R^2 = \frac{V_G}{V_G + V_E}$ where $V_E = \frac{\pi^2}{3} \approx 3.29$ (error variance for logistic regression)
@@ -108,7 +111,7 @@ The calculation involves:
 
 **Basic usage for quantitative trait:**
 
-```python
+```
 import gwaslab as gl
 
 # Load sumstats
@@ -132,21 +135,21 @@ print(mysumstats.data[["SNP", "BETA", "EAF", "SNPR2", "F"]].head())
 
 **Quantitative trait with estimated Var(Y):**
 
-```python
+```
 # Estimate Var(Y) from SE, N, and MAF
 mysumstats.get_per_snp_r2(vary="se")
 ```
 
 **Quantitative trait with custom Var(Y):**
 
-```python
+```
 # Provide known variance of the phenotype
 mysumstats.get_per_snp_r2(vary=2.5)
 ```
 
 **Binary trait:**
 
-```python
+```
 # For binary traits, provide case/control counts and prevalence
 mysumstats.get_per_snp_r2(mode="b",
                           ncase=8500,
@@ -156,14 +159,14 @@ mysumstats.get_per_snp_r2(mode="b",
 
 **With adjusted R²:**
 
-```python
+```
 # Calculate adjusted R²
 mysumstats.get_per_snp_r2(adjuested=True)
 ```
 
 **Custom k for F-statistic:**
 
-```python
+```
 # Use k=10 for F-statistic calculation
 mysumstats.get_per_snp_r2(k=10)
 
