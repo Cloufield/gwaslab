@@ -83,3 +83,31 @@ height: auto;
     font-size: px2rem(11px);
     border-spacing:  px2em(1px);
 }
+
+/* Hide left navigation sidebar for tutorial pages (handled by JavaScript) */
+body.tutorial-page .md-sidebar--primary {
+    display: none !important;
+}
+
+/* Let main content area expand into sidebar space */
+body.tutorial-page .md-main__inner {
+    margin-left: 0 !important;
+}
+
+/* Ensure content width matches exactly with other pages - don't override Material theme defaults */
+/* The key is to NOT set max-width, but ensure proper centering */
+body.tutorial-page .md-content {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+body.tutorial-page .md-content__inner {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Ensure the grid system doesn't expand beyond normal width */
+body.tutorial-page .md-grid {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}

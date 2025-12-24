@@ -138,10 +138,10 @@ class TestIOToFormats(unittest.TestCase):
         self.assertEqual(nea_out, "A")
         self.assertEqual(ea_out, "G")
         self.assertEqual(snpid, "1:100_A_G")
-        # Insertion row: start=end=POS+1, NEA_out="-", EA_out without first base
+        # Insertion row: start=end=POS (ANNOVAR convention), NEA_out="-", EA_out without first base
         _, start_ins, end_ins, nea_out_ins, ea_out_ins, _ = lines[1]
-        self.assertEqual(int(start_ins), 201)
-        self.assertEqual(int(end_ins), 201)
+        self.assertEqual(int(start_ins), 200)
+        self.assertEqual(int(end_ins), 200)
         self.assertEqual(nea_out_ins, "-")
         self.assertEqual(ea_out_ins, "TC")
         # Deletion row: start=POS, end=POS-1 + len(NEA), NEA_out removed first base, EA_out="-"

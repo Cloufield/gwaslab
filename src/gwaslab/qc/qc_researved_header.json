@@ -148,6 +148,25 @@
       1
     ]
   },
+  "RAF": {
+    "Keyword": "raf",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "reference allele frequency (from reference VCF/BCF file)",
+    "Note": "typically annotated by infer_strand2() or annotate_sumstats()",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      0,
+      1
+    ]
+  },
   "NEAF": {
     "Keyword": "neaf",
     "Datatype": "float64",
@@ -180,6 +199,25 @@
     "ValidRange": [
       0,
       0.5
+    ]
+  },
+  "DAF": {
+    "Keyword": "daf",
+    "Datatype": "float64",
+    "Category": "stats",
+    "ValidDtypes": [
+      "float64",
+      "float",
+      "float32"
+    ],
+    "Description": "difference in allele frequency (EAF - ALT_AF from reference VCF)",
+    "Note": "this DAF is not the derived allele frequency",
+    "ValidDtypesPolars": [
+      "Float64"
+    ],
+    "ValidRange": [
+      -1,
+      1
     ]
   },
   "INFO": {
