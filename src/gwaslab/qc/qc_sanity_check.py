@@ -135,6 +135,35 @@ def check_range(sumstats, var_range, header, coltocheck, cols_to_check, log, ver
                 low_p_num = is_low_p.sum()
                 log.warning("Extremely low P detected (P=0 or P < minimum positive value of float64) : {}".format(low_p_num))
                 log.warning("Please consider using MLOG10P instead.")
+            
+            # Check for bounded P values (many identical minimum values)
+            non_na_p = sumstats["P"].dropna()
+            if len(non_na_p) > 0:
+                min_p = non_na_p.min()
+                is_min_p = (sumstats["P"] == min_p) & sumstats["P"].notna()
+                if is_min_p.any():
+                    min_p_count = is_min_p.sum()
+                    min_p_proportion = min_p_count / len(non_na_p)
+                    # Warn if more than 1% of values are at the minimum (excluding the P=0 case already handled above)
+                    if min_p_proportion > 0.01 and min_p > 0:
+                        log.warning("Bounded P values detected: {} ({:.2%}) variants have P = {} (minimum value)".format(
+                            min_p_count, min_p_proportion, min_p))
+                        log.warning("This suggests P values may be truncated/capped at a lower limit.")
+        
+        if header=="MLOG10P":
+            # Check for bounded MLOG10P values (many identical maximum values)
+            non_na_mlog10p = sumstats["MLOG10P"].dropna()
+            if len(non_na_mlog10p) > 0:
+                max_mlog10p = non_na_mlog10p.max()
+                is_max_mlog10p = (sumstats["MLOG10P"] == max_mlog10p) & sumstats["MLOG10P"].notna()
+                if is_max_mlog10p.any():
+                    max_mlog10p_count = is_max_mlog10p.sum()
+                    max_mlog10p_proportion = max_mlog10p_count / len(non_na_mlog10p)
+                    # Warn if more than 1% of values are at the maximum
+                    if max_mlog10p_proportion > 0.01:
+                        log.warning("Bounded MLOG10P values detected: {} ({:.2%}) variants have MLOG10P = {} (maximum value)".format(
+                            max_mlog10p_count, max_mlog10p_proportion, max_mlog10p))
+                        log.warning("This suggests MLOG10P values may be truncated/capped at an upper limit.")
         
         if header=="INFO":
             is_high_info = sumstats["INFO"] > 1 

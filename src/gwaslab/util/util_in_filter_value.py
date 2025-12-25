@@ -18,6 +18,7 @@ from gwaslab.info.g_version import _get_version
 import gc
 
 _HAPMAP_DF_CACHE = {}
+_HAPMAP_FULL_CACHE = {}
 
 def _get_hapmap_df_polars(build):
     """Get Hapmap3 coordinates as a Polars DataFrame for fast lookup."""
@@ -48,6 +49,61 @@ def _get_hapmap_df_polars(build):
         hapmap_df = pl.from_pandas(df[["CHR", "POS"]])
     
     _HAPMAP_DF_CACHE[build] = hapmap_df
+    return hapmap_df
+
+def _get_hapmap_full_polars(build, include_alleles=True):
+    """Get full Hapmap3 data as a Polars DataFrame with rsid, CHR, POS, and optionally A1, A2.
+    
+    Parameters
+    ----------
+    build : str
+        Genome build version ("19" or "38")
+    include_alleles : bool, default=True
+        If True, includes A1 and A2 columns. If False, only includes rsid, CHR, POS.
+    
+    Returns
+    -------
+    pl.DataFrame
+        Polars DataFrame with hapmap3 data
+    """
+    cache_key = f"{build}_{include_alleles}"
+    if cache_key in _HAPMAP_FULL_CACHE:
+        return _HAPMAP_FULL_CACHE[cache_key]
+    
+    # Read directly with Polars - no pandas conversion
+    base = Path(__file__).parents[1] / "data" / "hapmap3_SNPs"
+    if build == "19":
+        p = base / "hapmap3_db150_hg19.snplist.gz"
+    else:
+        p = base / "hapmap3_db151_hg38.snplist.gz"
+    
+    # Determine columns to read
+    columns = ["#CHROM", "POS", "rsid"]
+    if include_alleles:
+        columns.extend(["A1", "A2"])
+    
+    # Read with pandas first (handles whitespace-separated files with \s+)
+    # Then convert to Polars for fast operations
+    # This is still much faster than reading from disk every time due to caching
+    df = pd.read_csv(
+        p, 
+        sep=r"\s+", 
+        usecols=columns, 
+        dtype={"#CHROM": "Int64", "POS": "Int64", "rsid": "string"}
+    )
+    df = df.rename(columns={"#CHROM": "CHR"})
+    
+    # Convert to Polars
+    hapmap_df = pl.from_pandas(df)
+    
+    # Ensure A1 and A2 are strings if included
+    if include_alleles:
+        hapmap_df = hapmap_df.with_columns([
+            pl.col("A1").cast(pl.Utf8),
+            pl.col("A2").cast(pl.Utf8)
+        ])
+    
+    _HAPMAP_FULL_CACHE[cache_key] = hapmap_df
     return hapmap_df
 
 def with_logging_filter(start_to_msg,finished_msg):

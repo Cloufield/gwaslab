@@ -49,6 +49,7 @@ from gwaslab.util.util_ex_run_mtag import _run_mtag
 
 from gwaslab.viz.viz_plot_miamiplot2 import plot_miami2
 from gwaslab.viz.viz_plot_compare_af import  plotdaf
+from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
 from gwaslab.qc.qc_reserved_headers import _get_headers
 from gwaslab.info.g_meta import _init_meta
@@ -78,6 +79,8 @@ class SumstatsMulti( ):
         self.tmp_path = _path(pid=self.id, 
                               log = self.log, 
                               verbose=verbose)
+        self.viz_params = VizParamsManager()
+        load_viz_config(self.viz_params)
         
         if engine=="polars":
             import polars as pl
@@ -253,6 +256,10 @@ class SumstatsMulti( ):
         molded_sumstats = _sort_pair_cols(molded_sumstats, verbose=verbose, log=self.log, suffixes=["_{}".format(j) for j in range(1,i+2)])
         return molded_sumstats
     
+    def _apply_viz_params(self, func, kwargs, key=None, mode=None):
+        params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
+        return self.viz_params.filter(func, params, key=key or func.__name__, mode=mode, log=self.log, verbose=kwargs.get("verbose", True))
+
     def update_meta(self,**kwargs):
         self.meta = _update_meta(self.meta, self.data, log = self.log, **kwargs)
 
