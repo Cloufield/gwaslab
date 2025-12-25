@@ -88,6 +88,7 @@ The following external command-line tools are used by various `util_ex_*` functi
 | **TwoSampleMR** | `util_ex_run_2samplemr` | MIT | Mendelian Randomization using two-sample summary data |
 | **MESuSiE** | `util_ex_run_mesusie` | GPL-2.0-or-later | Multivariate extension of SuSiE for fine-mapping |
 | **PLINK/PLINK2** | `util_ex_run_clumping`, `util_ex_calculate_ldmatrix`, `util_ex_process_ref` | GPL-3.0 | PLINK whole genome association analysis toolset |
+| **BCFtools** | `hm_assign_rsid`, `util_ex_process_h5` | MIT/Expat License | Variant calling and manipulation utilities. Part of samtools/htslib |
 | **MAGMA** | `util_ex_run_magma` | GPL v3.0 (v1.0 only); Proprietary (v1.01+, free for academic use) | Multi-marker Analysis of GenoMic Annotation. Original v1.0 is GPL v3.0; subsequent versions use standard copyright |
 | **tabix** | `util_ex_ldproxyfinder` | MIT License | Part of samtools/htslib |
 | **SCDRS** | `util_ex_run_scdrs` | MIT | Single-cell Deconvolution and Regression for Summary statistics |

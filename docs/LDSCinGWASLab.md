@@ -9,7 +9,7 @@ The original [LDSC software](https://github.com/bulik/ldsc) was implemented in P
 GWASLab integrates the core functions of LDSC into the gl.Sumstats object, which makes the LD score regression much more convenient to conduct.
 
 !!! info "The difference between original LDSC and LDSC in GWASLab"
-    - GWASLab will automatically extract Hapmap3 SNPs based on CHR:POS and EA and NEA if rsID not available in sumstats
+    - GWASLab will automatically extract Hapmap3 SNPs based on **CHR**:**POS** and **EA** and **NEA** if **rsID** not available in sumstats
     - Codes have been adjusted to be compatible with Python3. (`map`, `xrange` and so forth)
     - Sumstats were supplied by GWASLab instead of reading from files.
     - Log system has been replaced by GWASLab.Log
@@ -81,7 +81,7 @@ When `munge=True`, you can customize munging behavior using `munge_kwargs`:
     Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.
 
 ```
-.estimate_h2_by_ldsc(build=None, verbose=True, match_allele=True, how="right", **kwargs)
+mysumstats.estimate_h2_by_ldsc(build=None, verbose=True, match_allele=True, how="right", **kwargs)
 ```
 
 | `.estimate_h2_by_ldsc()` options | DataType | Description                              | Default |
@@ -158,7 +158,7 @@ For more examples, see [LDSC in gwaslab](https://cloufield.github.io/gwaslab/lds
     Bulik-Sullivan, B., et al. An Atlas of Genetic Correlations across Human Diseases and Traits. Nature Genetics, 2015.
 
 ```
-.estimate_rg_by_ldsc(build=None, verbose=True, match_allele=True, how="right", get_hm3=True, **kwargs)
+mysumstats.estimate_rg_by_ldsc(build=None, verbose=True, match_allele=True, how="right", get_hm3=True, **kwargs)
 ```
 
 | `.estimate_rg_by_ldsc()` options | DataType | Description                                    | Default |
@@ -229,7 +229,7 @@ For more examples, see [LDSC in gwaslab](https://cloufield.github.io/gwaslab/lds
     Finucane, H. K., Reshef, Y. A., Anttila, V., Slowikowski, K., Gusev, A., Byrnes, A., ... & Price, A. L. (2018). Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types. Nature genetics, 50(4), 621-629.
 
 ```
-.estimate_h2_cts_by_ldsc(build=None, verbose=True, match_allele=True, how="right", **kwargs)
+mysumstats.estimate_h2_cts_by_ldsc(build=None, verbose=True, match_allele=True, how="right", **kwargs)
 ```
 
 | `.estimate_h2_cts_by_ldsc()` options | DataType | Description                              | Default |
@@ -256,7 +256,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_h2_cts`.
     Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.
 
 ```
-.estimate_partitioned_h2_by_ldsc(build=None, verbose=True, match_allele=True, how="right", **kwargs)
+mysumstats.estimate_partitioned_h2_by_ldsc(build=None, verbose=True, match_allele=True, how="right", **kwargs)
 ```
 
 | `.estimate_partitioned_h2_by_ldsc()` options | DataType | Description                              | Default |

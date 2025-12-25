@@ -179,6 +179,11 @@ def _assign_rsid(
         had_rsid_after = (~sumstats[rsid].isna()).sum()
         log.write(" -rsID count: {} → {} / {}...".format(had_rsid_before, had_rsid_after, total_before), verbose=verbose)
         log.write(" -Finished assigning rsID from reference.", verbose=verbose)
+        
+        # Drop ALLELE_FLIPPED as it's an internal temporary column
+        if "ALLELE_FLIPPED" in sumstats.columns:
+            sumstats = sumstats.drop(columns=["ALLELE_FLIPPED"])
+        
         if not is_dataframe:
             sumstats_obj.data = sumstats
             return sumstats_obj.data
@@ -362,6 +367,15 @@ def _annotate_sumstats(
         is_dataframe = False
 
     # ----------------------------------------------
+    # Initialize ALLELE_FLIPPED column early (before early exit check)
+    # ----------------------------------------------
+    # Initialize ALLELE_FLIPPED column to track which variants had swapped alleles
+    # This must be done before the early exit check to ensure it's always present
+    if "ALLELE_FLIPPED" not in sumstats.columns:
+        sumstats["ALLELE_FLIPPED"] = False
+        log.write(f" -Initialized ALLELE_FLIPPED column (early initialization)", verbose=verbose)
+    
+    # ----------------------------------------------
     # Early check: determine which columns need annotation
     # ----------------------------------------------
     # Initialize missing columns and check which need annotation
@@ -375,13 +389,30 @@ def _annotate_sumstats(
             cols_to_assign.append(col)
     
     # Early exit if no columns need annotation
+    # However, we still need to check for ALLELE_FLIPPED if it's all False
+    # (meaning it was just initialized and hasn't been set based on matching yet)
     if not cols_to_assign:
-        log.write(" -All annotation columns already present, skipping annotation...", verbose=verbose)
-        if not is_dataframe:
-            sumstats_obj.data = sumstats
-            return sumstats_obj.data
+        # Check if ALLELE_FLIPPED needs to be set based on matching
+        # If ALLELE_FLIPPED exists but is all False, we should still do matching
+        # to determine which variants are flipped
+        need_flip_check = (
+            "ALLELE_FLIPPED" in sumstats.columns and 
+            sumstats["ALLELE_FLIPPED"].fillna(False).sum() == 0 and
+            sumstats["ALLELE_FLIPPED"].notna().all()
+        )
+        if not need_flip_check:
+            log.write(" -All annotation columns already present, skipping annotation...", verbose=verbose)
+            if not is_dataframe:
+                sumstats_obj.data = sumstats
+                return sumstats_obj.data
+            else:
+                return sumstats
         else:
-            return sumstats
+            log.write(" -All annotation columns already present, but checking for allele flips...", verbose=verbose)
+            # Continue to matching logic to set ALLELE_FLIPPED
+            # We'll skip annotation updates but still do matching
+            # Set a flag to indicate we only need to update ALLELE_FLIPPED, not annotation columns
+            only_update_flip = True
 
     # ----------------------------------------------
     # Step 1 — reuse or extract lookup table
@@ -872,7 +903,16 @@ def _assign_from_lookup(
     lookup_header = pd.read_csv(lookup_table, sep="\t", nrows=0).columns.tolist()
 
     # ============================================================================
-    # Step 3: Check if lookup table has any data
+    # Step 3: Initialize ALLELE_FLIPPED column if not present
+    # ============================================================================
+    # ALLELE_FLIPPED is used to track which variants had swapped alleles during matching
+    # It should be initialized before we start processing
+    if "ALLELE_FLIPPED" not in sumstats.columns:
+        sumstats["ALLELE_FLIPPED"] = False
+        log.write(" -Initialized ALLELE_FLIPPED column", verbose=verbose)
+    
+    # ============================================================================
+    # Step 4: Check if lookup table has any data
     # ============================================================================
     # Try to read first row to verify file contains data (not just headers)
     try:
@@ -965,9 +1005,7 @@ def _assign_from_lookup(
     for col in assign_cols:
         if col not in sumstats.columns:
             sumstats[col] = pd.NA
-    # Initialize ALLELE_FLIPPED column to track which variants had swapped alleles
-    if "ALLELE_FLIPPED" not in sumstats.columns:
-        sumstats["ALLELE_FLIPPED"] = False
+    # ALLELE_FLIPPED column is already initialized earlier (before early exit check)
 
     # ============================================================================
     # Step 10: Prepare column selection and data types for chunked reading
@@ -1126,12 +1164,22 @@ def _assign_from_lookup(
         # ========================================================================
         # Step 14h: Determine which variants had allele flips
         # ========================================================================
-        # A variant is "flipped" if:
-        # - Forward match failed (all values are NA)
-        # - Reverse match succeeded (at least one value is not NA)
-        # This means the alleles were in opposite order between sumstats and lookup
+        # A variant is "flipped" if reverse match succeeded.
+        # This matches the old method's logic which checks:
+        #   1. if record.ref == NEA and EA in record.alts → return ALT_AF (forward)
+        #   2. elif record.ref == EA and NEA in record.alts → return 1-ALT_AF (reverse/flipped)
+        # The old method returns the FIRST match, so if reverse matches, it uses 1-ALT_AF.
+        # To match this behavior, we mark as flipped if reverse match succeeded,
+        # regardless of whether forward also succeeded (we'll prefer forward if both succeed,
+        # but the ALLELE_FLIPPED flag indicates that reverse was a valid match).
+        # However, to match the old method exactly, we should mark as flipped ONLY if
+        # forward failed and reverse succeeded (old method's elif condition).
+        # But actually, if both succeed, the old method would use forward (first condition),
+        # so we should NOT mark as flipped. Only mark as flipped if forward failed.
         vals_fwd_na = pd.isna(vals_fwd)
         vals_rev_notna = pd.notna(vals_rev)
+        # Mark as flipped if forward failed AND reverse succeeded
+        # This matches the old method's elif condition (only checked if first condition failed)
         flipped = vals_fwd_na.all(axis=1) & vals_rev_notna.any(axis=1)
         
         # ========================================================================
@@ -1149,8 +1197,23 @@ def _assign_from_lookup(
         missing_mask = sumstats.loc[ss_sub.index, assign_cols].isna().any(axis=1)
         rows_now = ss_sub.index[missing_mask]
         
+        # Also identify rows that have matches in lookup (for ALLELE_FLIPPED update)
+        # This includes rows with matches even if annotations are already present
+        has_match = pd.notna(vals_fwd).any(axis=1) | pd.notna(vals_rev).any(axis=1)
+        rows_with_match = ss_sub.index[has_match]
+        
+        # Debug: Count flipped variants in this chunk
+        flipped_count = flipped.sum()
+        if flipped_count > 0:
+            log.write(f" -Found {flipped_count} flipped variants in this chunk", verbose=verbose)
+        
         if len(rows_now) == 0:
-            log.write(" -No missing annotations in this chunk, skipping...", verbose=verbose)
+            log.write(" -No missing annotations in this chunk, skipping annotation updates...", verbose=verbose)
+            # Even if no annotations to update, we should still update ALLELE_FLIPPED
+            # for rows that have matches in the lookup table
+            if len(rows_with_match) > 0:
+                sumstats.loc[rows_with_match, "ALLELE_FLIPPED"] |= flipped[has_match]
+                log.write(f" -Updated ALLELE_FLIPPED for {len(rows_with_match)} variants (no missing annotations)", verbose=verbose)
             continue
 
         # ========================================================================
@@ -1159,7 +1222,12 @@ def _assign_from_lookup(
         # Assign annotation values to rows that were missing them
         sumstats.loc[rows_now, assign_cols] = assigned[missing_mask]
         # Update ALLELE_FLIPPED flag for variants that had swapped alleles
-        sumstats.loc[rows_now, "ALLELE_FLIPPED"] |= flipped[missing_mask]
+        # Update for all rows with matches, not just rows with missing annotations
+        if len(rows_with_match) > 0:
+            sumstats.loc[rows_with_match, "ALLELE_FLIPPED"] |= flipped[has_match]
+            flipped_updated = flipped[has_match].sum()
+            if flipped_updated > 0:
+                log.write(f" -Updated ALLELE_FLIPPED=True for {flipped_updated} variants in this chunk", verbose=verbose)
 
         # ========================================================================
         # Step 14l: Track which rows were newly filled (not just overwritten)

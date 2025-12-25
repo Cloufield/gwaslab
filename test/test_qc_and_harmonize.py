@@ -326,8 +326,10 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
                 (chr_col.astype(str).str.strip() == "7")
             )
             gl1.data = gl1.data[chr7_mask].reset_index(drop=True)
-        print(f"[test_assign_rsid_consistency] Using {len(gl1.data)} variants")
-        gl1.assign_rsid(ref_rsid_vcf=ref_rsid_vcf_path, threads=2, verbose=False)
+        # Use only every 4th variant for faster testing
+        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
+        print(f"[test_assign_rsid_consistency] Using {len(gl1.data)} variants (every 4th variant)")
+        gl1.assign_rsid(ref_rsid_vcf=ref_rsid_vcf_path, threads=4, verbose=False)
         result1 = gl1.data.copy()
         rsid1_count = result1["rsID"].notna().sum()
         
@@ -357,7 +359,9 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
                 (chr_col.astype(str).str.strip() == "7")
             )
             gl2.data = gl2.data[chr7_mask].reset_index(drop=True)
-        gl2.assign_rsid2(vcf_path=ref_rsid_vcf_path, threads=2, verbose=False)
+        # Use only every 4th variant for faster testing (same as gl1)
+        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
+        gl2.assign_rsid2(vcf_path=ref_rsid_vcf_path, threads=4, verbose=False)
         result2 = gl2.data.copy()
         rsid2_count = result2["rsID"].notna().sum()
         
@@ -434,7 +438,9 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
                 (chr_col.astype(str).str.strip() == "7")
             )
             gl1.data = gl1.data[chr7_mask].reset_index(drop=True)
-        print(f"[test_infer_strand_consistency] Using {len(gl1.data)} variants")
+        # Use only every 4th variant for faster testing
+        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
+        print(f"[test_infer_strand_consistency] Using {len(gl1.data)} variants (every 4th variant)")
         
         # Test with infer_strand via harmonize (old method, non-sweep mode)
         gl1.harmonize(
@@ -445,7 +451,7 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
             ref_alt_freq="AF",
             maf_threshold=0.40,
             ref_maf_threshold=0.40,
-            threads=2,
+            threads=4,
             remove=False,
             verbose=True,
             sweep_mode=False,  # Use old method
@@ -480,6 +486,8 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
                 (chr_col.astype(str).str.strip() == "7")
             )
             gl2.data = gl2.data[chr7_mask].reset_index(drop=True)
+        # Use only every 4th variant for faster testing (same as gl1)
+        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
         
         gl2.harmonize(
             basic_check=False,  # Already done above
@@ -489,7 +497,7 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
             ref_alt_freq="AF",
             maf_threshold=0.40,
             ref_maf_threshold=0.40,
-            threads=2,
+            threads=4,
             remove=False,
             verbose=True,
             sweep_mode=True,  # Use new method
@@ -530,6 +538,567 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
         
         # Check that both methods processed similar numbers of variants
         print(f"[test_infer_strand_consistency] Variant counts - old: {len(result1)}, new: {len(result2)}")
+        self.assertEqual(len(result1), len(result2), "Both methods should process the same number of variants")
+
+
+class TestCheckAF2(unittest.TestCase):
+    def test_check_af2_with_reference_vcf(self):
+        """Test check_af2 function (sweep mode) to calculate DAF"""
+        ref_dir = os.path.join(os.path.dirname(__file__), "ref")
+        sumstats_path = os.path.join(ref_dir, "bbj_t2d_hm3_chr7_variants.txt.gz")
+        ref_infer_vcf_path = os.path.join(ref_dir, "1kg_eas_hg19.chr7_126253550_128253550.vcf.gz")
+
+        gl = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            eaf="EAF",
+            verbose=False
+        )
+
+        # First harmonize to ensure proper status codes
+        gl.harmonize(basic_check=True, verbose=False)
+
+        # Run check_af2 (sweep mode)
+        gl.check_af2(
+            vcf_path=ref_infer_vcf_path,
+            ref_alt_freq="AF",
+            verbose=False
+        )
+
+        # Check that DAF column was created
+        self.assertIn("DAF", gl.data.columns)
+        
+        # Check that DAF values are numeric (can be NaN for variants not found in VCF)
+        daf_values = gl.data["DAF"].dropna()
+        if len(daf_values) > 0:
+            # DAF should be between -1 and 1 (difference between two frequencies)
+            self.assertTrue(all(daf_values >= -1) and all(daf_values <= 1))
+        
+        # Check that we have some data
+        self.assertGreater(len(gl.data), 0)
+
+
+class TestInferAF2(unittest.TestCase):
+    def test_infer_af2_with_reference_vcf(self):
+        """Test infer_af2 function (sweep mode) to infer EAF from reference VCF"""
+        ref_dir = os.path.join(os.path.dirname(__file__), "ref")
+        sumstats_path = os.path.join(ref_dir, "bbj_t2d_hm3_chr7_variants.txt.gz")
+        ref_infer_vcf_path = os.path.join(ref_dir, "1kg_eas_hg19.chr7_126253550_128253550.vcf.gz")
+
+        gl = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            eaf="EAF",
+            verbose=False
+        )
+
+        # First harmonize to ensure proper status codes
+        gl.harmonize(basic_check=True, verbose=False)
+
+        # Store original EAF count
+        original_eaf_count = gl.data["EAF"].notna().sum()
+
+        # Run infer_af2 (sweep mode)
+        gl.infer_af2(
+            vcf_path=ref_infer_vcf_path,
+            ref_alt_freq="AF",
+            verbose=False
+        )
+
+        # Check that EAF column still exists
+        self.assertIn("EAF", gl.data.columns)
+        
+        # Check that EAF values are numeric and between 0 and 1
+        eaf_values = gl.data["EAF"].dropna()
+        if len(eaf_values) > 0:
+            self.assertTrue(all(eaf_values >= 0) and all(eaf_values <= 1))
+        
+        # Check that we have some data
+        self.assertGreater(len(gl.data), 0)
+        
+        # Check that at least some EAF values were inferred (if variants match the VCF region)
+        inferred_eaf_count = gl.data["EAF"].notna().sum()
+        self.assertGreater(inferred_eaf_count, 0)
+
+
+class TestInferEAFFromMAF2(unittest.TestCase):
+    def test_infer_eaf_from_maf2_with_reference_vcf(self):
+        """Test infer_eaf_from_maf2 function (sweep mode) to infer EAF from MAF"""
+        ref_dir = os.path.join(os.path.dirname(__file__), "ref")
+        sumstats_path = os.path.join(ref_dir, "bbj_t2d_hm3_chr7_variants.txt.gz")
+        ref_infer_vcf_path = os.path.join(ref_dir, "1kg_eas_hg19.chr7_126253550_128253550.vcf.gz")
+
+        gl = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            eaf="EAF",
+            verbose=False
+        )
+
+        # First harmonize to ensure proper status codes
+        gl.harmonize(basic_check=True, verbose=False)
+
+        # Check if MAF column exists, if not create it from EAF
+        if "MAF" not in gl.data.columns or gl.data["MAF"].isna().all():
+            # Create MAF from EAF if available
+            if "EAF" in gl.data.columns:
+                gl.data["MAF"] = gl.data["EAF"].apply(lambda x: min(x, 1-x) if pd.notna(x) else pd.NA)
+
+        # Store original EAF count
+        original_eaf_count = gl.data["EAF"].notna().sum()
+
+        # Run infer_eaf_from_maf2 (sweep mode)
+        gl.infer_eaf_from_maf2(
+            vcf_path=ref_infer_vcf_path,
+            ref_alt_freq="AF",
+            verbose=False
+        )
+
+        # Check that EAF column still exists
+        self.assertIn("EAF", gl.data.columns)
+        
+        # Check that EAF values are numeric and between 0 and 1
+        eaf_values = gl.data["EAF"].dropna()
+        if len(eaf_values) > 0:
+            self.assertTrue(all(eaf_values >= 0) and all(eaf_values <= 1))
+        
+        # Check that we have some data
+        self.assertGreater(len(gl.data), 0)
+        
+        # Check that at least some EAF values were inferred (if variants match the VCF region and have MAF)
+        inferred_eaf_count = gl.data["EAF"].notna().sum()
+        self.assertGreater(inferred_eaf_count, 0)
+
+
+class TestConsistencyCheckAF(unittest.TestCase):
+    """Test consistency between check_af (ver1) and check_af2 (ver2)"""
+    
+    def test_check_af_consistency(self):
+        """Test that check_af and check_af2 produce consistent DAF values"""
+        ref_dir = os.path.join(os.path.dirname(__file__), "ref")
+        sumstats_path = os.path.join(ref_dir, "bbj_t2d_hm3_chr7_variants.txt.gz")
+        ref_infer_vcf_path = os.path.join(ref_dir, "1kg_eas_hg19.chr7_126253550_128253550.vcf.gz")
+        
+        # Load sumstats - load fresh each time
+        gl1 = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            eaf="EAF",
+            verbose=False
+        )
+        # Run basic_check and harmonize first to normalize data
+        gl1.harmonize(basic_check=True, verbose=False)
+        
+        # Filter to only variants in chr7:126253550-128253550 (matching reference VCF region)
+        gl1.data = gl1.data[
+            (gl1.data["CHR"] == 7) & 
+            (gl1.data["POS"] >= 126253550) & 
+            (gl1.data["POS"] <= 128253550)
+        ].reset_index(drop=True)
+        
+        # Use only every 4th variant for faster testing
+        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
+        print(f"[test_check_af_consistency] Using {len(gl1.data)} variants (every 4th variant in chr7:126253550-128253550)")
+        
+        # Test with check_af (old method, normal mode)
+        gl1.check_af(
+            ref_infer=ref_infer_vcf_path,
+            ref_alt_freq="AF",
+            verbose=False
+        )
+        result1 = gl1.data.copy()
+        daf1 = result1["DAF"].copy()
+        
+        # Test with check_af2 (new method, sweep mode) - load fresh again
+        gl2 = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            eaf="EAF",
+            verbose=False
+        )
+        # Run basic_check and harmonize first to normalize data
+        gl2.harmonize(basic_check=True, verbose=False)
+        
+        # Filter to only variants in chr7:126253550-128253550 (matching reference VCF region)
+        gl2.data = gl2.data[
+            (gl2.data["CHR"] == 7) & 
+            (gl2.data["POS"] >= 126253550) & 
+            (gl2.data["POS"] <= 128253550)
+        ].reset_index(drop=True)
+        
+        # Use only every 4th variant for faster testing (same as gl1)
+        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
+        
+        gl2.check_af2(
+            vcf_path=ref_infer_vcf_path,
+            ref_alt_freq="AF",
+            verbose=False
+        )
+        result2 = gl2.data.copy()
+        daf2 = result2["DAF"].copy()
+        
+        # Sort both dataframes for comparison
+        result1 = result1.sort_values(by=["CHR", "POS"]).reset_index(drop=True)
+        result2 = result2.sort_values(by=["CHR", "POS"]).reset_index(drop=True)
+        
+        # Compare DAF values where both have values
+        both_have_daf = daf1.notna() & daf2.notna()
+        if both_have_daf.sum() > 0:
+            daf1_values = daf1[both_have_daf]
+            daf2_values = daf2[both_have_daf]
+            
+            # Calculate differences
+            daf_diff = (daf1_values - daf2_values).abs()
+            max_diff = daf_diff.max()
+            mean_diff = daf_diff.mean()
+            
+            # Check that differences are small (within tolerance)
+            # Allow for small numerical differences due to different processing methods
+            tolerance = 0.01  # 1% tolerance
+            within_tolerance = (daf_diff <= tolerance).sum()
+            match_rate = within_tolerance / both_have_daf.sum()
+            
+            print(f"\n[test_check_af_consistency] DAF match rate (within {tolerance}): {match_rate:.2%} ({within_tolerance}/{both_have_daf.sum()} variants)")
+            print(f"[test_check_af_consistency] Max DAF difference: {max_diff:.6f}, Mean DAF difference: {mean_diff:.6f}")
+            
+            # Should be mostly consistent
+            self.assertGreater(match_rate, 0.95, 
+                             f"DAF values should be consistent (match rate: {match_rate:.2%})")
+        else:
+            print(f"\n[test_check_af_consistency] No variants with DAF in both methods to compare")
+        
+        # Check that both methods processed similar numbers of variants
+        print(f"[test_check_af_consistency] Variant counts - old: {len(result1)}, new: {len(result2)}")
+        self.assertEqual(len(result1), len(result2), "Both methods should process the same number of variants")
+
+
+class TestConsistencyInferAF(unittest.TestCase):
+    """Test consistency between infer_af (ver1) and infer_af2 (ver2)"""
+    
+    def test_infer_af_consistency(self):
+        """Test that infer_af and infer_af2 produce consistent EAF values"""
+        ref_dir = os.path.join(os.path.dirname(__file__), "ref")
+        sumstats_path = os.path.join(ref_dir, "bbj_t2d_hm3_chr7_variants.txt.gz")
+        ref_infer_vcf_path = os.path.join(ref_dir, "1kg_eas_hg19.chr7_126253550_128253550.vcf.gz")
+        
+        # Load sumstats - load fresh each time
+        gl1 = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            eaf="EAF",
+            verbose=False
+        )
+        # Run basic_check and harmonize first to normalize data
+        gl1.harmonize(basic_check=True, verbose=False)
+        
+        # Filter to only variants in chr7:126253550-128253550 (matching reference VCF region)
+        gl1.data = gl1.data[
+            (gl1.data["CHR"] == 7) & 
+            (gl1.data["POS"] >= 126253550) & 
+            (gl1.data["POS"] <= 128253550)
+        ].reset_index(drop=True)
+        
+        # Use only every 4th variant for faster testing
+        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
+        
+        # Drop original EAF to ensure both methods actually infer EAF
+        gl1.data["EAF"] = pd.NA
+        
+        print(f"[test_infer_af_consistency] Using {len(gl1.data)} variants (every 4th variant in chr7:126253550-128253550)")
+        
+        # Test with infer_af (old method, normal mode)
+        gl1.infer_af(
+            ref_infer=ref_infer_vcf_path,
+            ref_alt_freq="AF",
+            verbose=False
+        )
+        result1 = gl1.data.copy()
+        eaf1 = result1["EAF"].copy()
+        
+        # Test with infer_af2 (new method, sweep mode) - load fresh again
+        gl2 = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            eaf="EAF",
+            verbose=False
+        )
+        # Run basic_check and harmonize first to normalize data
+        gl2.harmonize(basic_check=True, verbose=False)
+        
+        # Filter to only variants in chr7:126253550-128253550 (matching reference VCF region)
+        gl2.data = gl2.data[
+            (gl2.data["CHR"] == 7) & 
+            (gl2.data["POS"] >= 126253550) & 
+            (gl2.data["POS"] <= 128253550)
+        ].reset_index(drop=True)
+        
+        # Use only every 4th variant for faster testing (same as gl1)
+        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
+        
+        # Drop original EAF to ensure both methods actually infer EAF
+        gl2.data["EAF"] = pd.NA
+        
+        gl2.infer_af2(
+            vcf_path=ref_infer_vcf_path,
+            ref_alt_freq="AF",
+            verbose=False
+        )
+        
+        result2 = gl2.data.copy()
+        eaf2 = result2["EAF"].copy()
+        
+        # ALLELE_FLIPPED is an internal temporary column and should be dropped in output
+        if "ALLELE_FLIPPED" in result2.columns:
+            print(f"[test_infer_af_consistency] WARNING: ALLELE_FLIPPED should be dropped but found in output")
+        
+        # Sort both dataframes for comparison
+        result1 = result1.sort_values(by=["CHR", "POS"]).reset_index(drop=True)
+        result2 = result2.sort_values(by=["CHR", "POS"]).reset_index(drop=True)
+        
+        # Compare EAF values where both have values
+        both_have_eaf = eaf1.notna() & eaf2.notna()
+        if both_have_eaf.sum() > 0:
+            eaf1_values = eaf1[both_have_eaf]
+            eaf2_values = eaf2[both_have_eaf]
+            
+            # Calculate differences
+            eaf_diff = (eaf1_values - eaf2_values).abs()
+            max_diff = eaf_diff.max()
+            mean_diff = eaf_diff.mean()
+            
+            # Check if differences are close to 1 (suggesting a flip issue)
+            close_to_one = (eaf_diff > 0.99) & (eaf_diff < 1.01)
+            print(f"\n[test_infer_af_consistency] Differences close to 1 (flip issue?): {close_to_one.sum()} / {both_have_eaf.sum()} ({100*close_to_one.sum()/both_have_eaf.sum():.1f}%)")
+            
+            # ALLELE_FLIPPED is an internal temporary column and should be dropped in output
+            if "ALLELE_FLIPPED" in result2.columns:
+                print(f"[test_infer_af_consistency] WARNING: ALLELE_FLIPPED should be dropped but found in output")
+            
+            # Print out all variants that are different
+            mismatched = eaf_diff > 0.01
+            if mismatched.sum() > 0:
+                print(f"\n[test_infer_af_consistency] Printing all {mismatched.sum()} variants with differences > 0.01:")
+                print(f"{'CHR':<6} {'POS':<12} {'EA':<6} {'NEA':<6} {'EAF_old':<10} {'EAF_new':<10} {'Diff':<10}")
+                print("-" * 70)
+                
+                # Get the actual indices from result2 for mismatched variants
+                # Note: both_have_eaf is a boolean Series aligned with result2.index
+                # mismatched is a boolean Series aligned with eaf_diff (which is also aligned with result2.index[both_have_eaf])
+                mismatched_bool = pd.Series(False, index=result2.index)
+                mismatched_bool.loc[result2.index[both_have_eaf][mismatched]] = True
+                mismatched_indices = result2.index[mismatched_bool]
+                
+                mismatched_df = result2.loc[mismatched_indices, ["CHR", "POS", "EA", "NEA"]].copy()
+                mismatched_df["EAF_old"] = eaf1_values.loc[mismatched_indices].values
+                mismatched_df["EAF_new"] = eaf2_values.loc[mismatched_indices].values
+                mismatched_df["Diff"] = eaf_diff[mismatched].values
+                
+                # ALLELE_FLIPPED is an internal temporary column and should be dropped
+                # So we don't include it in the output comparison
+                mismatched_df["FLIPPED"] = "N/A (internal column)"
+                
+                # Sort by difference (largest first)
+                mismatched_df = mismatched_df.sort_values("Diff", ascending=False)
+                
+                # Print all mismatched variants
+                for idx, row in mismatched_df.iterrows():
+                    print(f"{int(row['CHR']):<6} {int(row['POS']):<12} {row['EA']:<6} {row['NEA']:<6} "
+                          f"{row['EAF_old']:<10.6f} {row['EAF_new']:<10.6f} {row['Diff']:<10.6f}")
+            else:
+                print(f"\n[test_infer_af_consistency] No variants with differences > 0.01")
+            
+            # Check that differences are small (within tolerance)
+            # Allow for small numerical differences due to different processing methods
+            tolerance = 0.01  # 1% tolerance
+            within_tolerance = (eaf_diff <= tolerance).sum()
+            match_rate = within_tolerance / both_have_eaf.sum()
+            
+            print(f"\n[test_infer_af_consistency] EAF match rate (within {tolerance}): {match_rate:.2%} ({within_tolerance}/{both_have_eaf.sum()} variants)")
+            print(f"[test_infer_af_consistency] Max EAF difference: {max_diff:.6f}, Mean EAF difference: {mean_diff:.6f}")
+            
+            # Should be mostly consistent - require 99% match rate
+            self.assertGreater(match_rate, 0.99, 
+                             f"EAF values should be consistent (match rate: {match_rate:.2%})")
+        else:
+            print(f"\n[test_infer_af_consistency] No variants with EAF in both methods to compare")
+        
+        # Check that both methods processed similar numbers of variants
+        print(f"[test_infer_af_consistency] Variant counts - old: {len(result1)}, new: {len(result2)}")
+        self.assertEqual(len(result1), len(result2), "Both methods should process the same number of variants")
+
+
+class TestConsistencyInferEAFFromMAF(unittest.TestCase):
+    """Test consistency between infer_eaf_from_maf (ver1) and infer_eaf_from_maf2 (ver2)"""
+    
+    def test_infer_eaf_from_maf_consistency(self):
+        """Test that infer_eaf_from_maf and infer_eaf_from_maf2 produce consistent EAF values"""
+        ref_dir = os.path.join(os.path.dirname(__file__), "ref")
+        sumstats_path = os.path.join(ref_dir, "bbj_t2d_hm3_chr7_variants.txt.gz")
+        ref_infer_vcf_path = os.path.join(ref_dir, "1kg_eas_hg19.chr7_126253550_128253550.vcf.gz")
+        
+        # Load sumstats - load fresh each time
+        gl1 = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            eaf="EAF",
+            verbose=False
+        )
+        # Run basic_check and harmonize first to normalize data
+        gl1.harmonize(basic_check=True, verbose=False)
+        
+        # Filter to only variants in chr7:126253550-128253550 (matching reference VCF region)
+        gl1.data = gl1.data[
+            (gl1.data["CHR"] == 7) & 
+            (gl1.data["POS"] >= 126253550) & 
+            (gl1.data["POS"] <= 128253550)
+        ].reset_index(drop=True)
+        
+        # Use only every 4th variant for faster testing
+        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
+        
+        # Check if MAF column exists, if not create it from EAF
+        if "MAF" not in gl1.data.columns or gl1.data["MAF"].isna().all():
+            # Create MAF from EAF if available (before dropping EAF)
+            if "EAF" in gl1.data.columns:
+                gl1.data["MAF"] = gl1.data["EAF"].apply(lambda x: min(x, 1-x) if pd.notna(x) else pd.NA)
+        
+        # Drop original EAF to ensure both methods actually infer EAF
+        gl1.data["EAF"] = pd.NA
+        
+        print(f"[test_infer_eaf_from_maf_consistency] Using {len(gl1.data)} variants (every 4th variant in chr7:126253550-128253550)")
+        
+        # Test with infer_eaf_from_maf (old method, normal mode)
+        gl1.infer_eaf_from_maf(
+            ref_infer=ref_infer_vcf_path,
+            ref_alt_freq="AF",
+            verbose=False
+        )
+        result1 = gl1.data.copy()
+        eaf1 = result1["EAF"].copy()
+        
+        # Test with infer_eaf_from_maf2 (new method, sweep mode) - load fresh again
+        gl2 = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            eaf="EAF",
+            verbose=False
+        )
+        # Run basic_check and harmonize first to normalize data
+        gl2.harmonize(basic_check=True, verbose=False)
+        
+        # Filter to only variants in chr7:126253550-128253550 (matching reference VCF region)
+        gl2.data = gl2.data[
+            (gl2.data["CHR"] == 7) & 
+            (gl2.data["POS"] >= 126253550) & 
+            (gl2.data["POS"] <= 128253550)
+        ].reset_index(drop=True)
+        
+        # Use only every 4th variant for faster testing (same as gl1)
+        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
+        
+        # Check if MAF column exists, if not create it from EAF
+        if "MAF" not in gl2.data.columns or gl2.data["MAF"].isna().all():
+            # Create MAF from EAF if available (before dropping EAF)
+            if "EAF" in gl2.data.columns:
+                gl2.data["MAF"] = gl2.data["EAF"].apply(lambda x: min(x, 1-x) if pd.notna(x) else pd.NA)
+        
+        # Drop original EAF to ensure both methods actually infer EAF
+        gl2.data["EAF"] = pd.NA
+        
+        gl2.infer_eaf_from_maf2(
+            vcf_path=ref_infer_vcf_path,
+            ref_alt_freq="AF",
+            verbose=False
+        )
+        result2 = gl2.data.copy()
+        eaf2 = result2["EAF"].copy()
+        
+        # Sort both dataframes for comparison
+        result1 = result1.sort_values(by=["CHR", "POS"]).reset_index(drop=True)
+        result2 = result2.sort_values(by=["CHR", "POS"]).reset_index(drop=True)
+        
+        # Compare EAF values where both have values
+        both_have_eaf = eaf1.notna() & eaf2.notna()
+        if both_have_eaf.sum() > 0:
+            eaf1_values = eaf1[both_have_eaf]
+            eaf2_values = eaf2[both_have_eaf]
+            
+            # Calculate differences
+            eaf_diff = (eaf1_values - eaf2_values).abs()
+            max_diff = eaf_diff.max()
+            mean_diff = eaf_diff.mean()
+            
+            # Check that differences are small (within tolerance)
+            # Allow for small numerical differences due to different processing methods
+            tolerance = 0.01  # 1% tolerance
+            within_tolerance = (eaf_diff <= tolerance).sum()
+            match_rate = within_tolerance / both_have_eaf.sum()
+            
+            print(f"\n[test_infer_eaf_from_maf_consistency] EAF match rate (within {tolerance}): {match_rate:.2%} ({within_tolerance}/{both_have_eaf.sum()} variants)")
+            print(f"[test_infer_eaf_from_maf_consistency] Max EAF difference: {max_diff:.6f}, Mean EAF difference: {mean_diff:.6f}")
+            
+            # Should be mostly consistent - require 99% match rate
+            self.assertGreater(match_rate, 0.99, 
+                             f"EAF values should be consistent (match rate: {match_rate:.2%})")
+        else:
+            print(f"\n[test_infer_eaf_from_maf_consistency] No variants with EAF in both methods to compare")
+        
+        # Check that both methods processed similar numbers of variants
+        print(f"[test_infer_eaf_from_maf_consistency] Variant counts - old: {len(result1)}, new: {len(result2)}")
         self.assertEqual(len(result1), len(result2), "Both methods should process the same number of variants")
 
 

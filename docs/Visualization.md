@@ -8,7 +8,7 @@ GWASLab provides a customizable plotting function for Manhattan and Q-Q plots.
 ## .plot_mqq()
 
 ```
-.plot_mqq()
+mysumstats.plot_mqq()
 ```
 
 ## A simple example

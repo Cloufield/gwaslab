@@ -40,9 +40,10 @@ def _quick_fix_p_value(sumstats, p="P", mlog10p="MLOG10P", scaled=False,verbose=
         return sumstats
     # bad p : na and outside (0,1]
     bad_p_value = (sumstats[p].isna()) | (sumstats[p] > 1) | (sumstats[p] <= 0)
+    bad_p_count = sum(bad_p_value)
 
-    log.write(" -Sanity check after conversion: " + str(sum(bad_p_value)) +
-                  " variants with P value outside of (0,1] will be removed...", verbose=verbose)
+    log.write(" -Sanity check after conversion: " + str(bad_p_count) +
+                  " variants with P value outside of (0,1] will be removed...", verbose=verbose if bad_p_count > 0 else False)
     sumstats = sumstats.loc[~bad_p_value, :]
     return sumstats
 
@@ -63,9 +64,10 @@ def _quick_fix_mlog10p(insumstats,p="P", mlog10p="MLOG10P", scaled=False, log=Lo
     # More efficient: use np.isfinite to check for both inf and nan in one operation
     scaled_P = insumstats["scaled_P"]
     if_inf_na = ~np.isfinite(scaled_P)
+    inf_na_count = if_inf_na.sum()
 
-    log.write(" -Sanity check: "+str(if_inf_na.sum()) +
-                  " na/inf/-inf variants will be removed...", verbose=verbose)
+    log.write(" -Sanity check: "+str(inf_na_count) +
+                  " na/inf/-inf variants will be removed...", verbose=verbose if inf_na_count > 0 else False)
     sumstats = insumstats.loc[~if_inf_na, :]
     return sumstats
 
@@ -552,7 +554,7 @@ def _set_yticklabels(cut,
     matplotlib.axes.Axes
         The modified axes object
     """
-    log.write(" -Processing Y tick lables...",verbose=verbose)
+    log.write(" -Processing Y tick lables...",verbose=False)
     
     # Step 1: Handle case with no cut transformation
     # If cut==0, no compression was applied, so just set simple y-axis limits

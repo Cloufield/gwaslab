@@ -21,7 +21,7 @@ mysumstats.infer_build(verbose=True)
 
 ## Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `verbose` | `boolean` | If True, print detailed logs including match counts for each build | `True` |
 

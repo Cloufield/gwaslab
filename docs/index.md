@@ -74,7 +74,7 @@ import gwaslab as gl
 mysumstats = gl.Sumstats("sumstats.txt.gz", fmt="plink2")
 
 # or load sumstats with auto mode (auto-detecting commonly used headers) 
-# assuming ALT/A1 is EA, and frq is EAF
+# assuming ALT/A1 is **EA**, and frq is **EAF**
 mysumstats = gl.Sumstats("sumstats.txt.gz", fmt="auto")
 
 # or you can specify the columns:

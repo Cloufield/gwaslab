@@ -222,6 +222,10 @@ def _infer_strand_with_annotation(
         verbose=verbose,
     )
     
+    # Drop ALLELE_FLIPPED as it's an internal temporary column
+    if "ALLELE_FLIPPED" in result.columns:
+        result = result.drop(columns=["ALLELE_FLIPPED"])
+    
     # Set metadata and update harmonization status if Sumstats object is available
     # Update harmonization status only if called with Sumstats object
     if not is_dataframe:
@@ -738,8 +742,6 @@ def _infer_strand(
     
     # Optimize: Only drop columns if they exist
     cols_to_drop = []
-    if flipped_col in sumstats.columns:
-        cols_to_drop.append(flipped_col)
     if strand_col in sumstats.columns:
         cols_to_drop.append(strand_col)
     

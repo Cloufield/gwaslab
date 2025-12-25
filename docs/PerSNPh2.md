@@ -22,7 +22,7 @@ mysumstats.get_per_snp_r2(**kwargs)
 
 #### General Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `mode` | `str` | Trait type: `"q"` for quantitative, `"b"` for binary | `"q"` |
 | `beta` | `str` | Column name for effect size (beta coefficient) | `"BETA"` |
@@ -34,14 +34,14 @@ mysumstats.get_per_snp_r2(**kwargs)
 
 #### Parameters for Quantitative Traits (`mode="q"`)
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `vary` | `float` or `"se"` | Variance of the phenotype Y. If `"se"`, Var(Y) is estimated from SE, N, and MAF | `1` |
 | `k` | `int` or `"all"` | Number of parameters for F-statistic calculation. Use `"all"` to set k = number of SNPs | `1` |
 
 #### Parameters for Binary Traits (`mode="b"`)
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `ncase` | `int` | Number of cases in the study | Required |
 | `ncontrol` | `int` | Number of controls in the study | Required |

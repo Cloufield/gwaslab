@@ -64,6 +64,9 @@ nav:
        - "Format and Save": Format.md
        - "Save Sumstats Object": Pickle.md 
        - "Load LDSC log": LoadLDSC.md
+       - "FASTA I/O": FASTA.md
+       - "GTF I/O": GTF.md
+       - "VCF I/O": VCF.md
     - Reference:
        - "Download": Download.md 
        - "Reference data" : Reference.md

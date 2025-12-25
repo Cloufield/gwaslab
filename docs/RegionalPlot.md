@@ -11,7 +11,7 @@ GWASLab provides functions for creating regional plots.
 
 ## .plot_mqq(mode="r")
 ```
-.plot_mqq(mode="r",
+mysumstats.plot_mqq(mode="r",
           region = None,
           ...
           ):
@@ -69,13 +69,13 @@ gl.plot_stacked_mqq(objects, **kwargs)
 
 #### Required Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `objects` | `list` | List of `gl.Sumstats` objects or pandas DataFrames containing GWAS summary statistics | Required |
 
 #### Plot Mode Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `mode` | `str` | Plot mode: `"r"` for regional plots, `"m"` for Manhattan plots, `"mqq"` for Manhattan-QQ plots | `"r"` |
 | `pm` | `list` | List of panel modes for each object: `"m"` for Manhattan, `"pip"` for PIP/credible sets | `None` (auto-detected) |
@@ -84,7 +84,7 @@ gl.plot_stacked_mqq(objects, **kwargs)
 
 #### Layout Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `titles` | `list` | List of titles for each panel | `None` |
 | `title_pos` | `str` or `tuple` | Position of titles | `None` |
@@ -100,7 +100,7 @@ gl.plot_stacked_mqq(objects, **kwargs)
 
 #### Regional Plot Specific Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `region_chromatin_files` | `list` | List of paths to Roadmap `15_coreMarks_mnemonics.bed.gz` files | `[]` |
 | `region_chromatin_labels` | `list` | List of labels for chromatin tracks | `[]` |
@@ -111,7 +111,7 @@ gl.plot_stacked_mqq(objects, **kwargs)
 
 #### Styling Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `fontsize` | `float` | Font size for labels and text | `9` |
 | `font_family` | `str` | Font family name | `"Arial"` |
@@ -119,7 +119,7 @@ gl.plot_stacked_mqq(objects, **kwargs)
 
 #### Output Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `save` | `str` | Path to save the figure | `None` |
 | `save_kwargs` | `dict` | Keyword arguments for saving (dpi, bbox_inches, etc.) | `None` |
@@ -211,11 +211,11 @@ gl.plot_stacked_mqq(
 
 ```
 # Include fine-mapping results
-sumstats = gl.Sumstats("gwas.txt.gz")
+mysumstats = gl.Sumstats("gwas.txt.gz")
 finemap_results = pd.read_csv("finemap_results.txt")  # Contains PIP column
 
 gl.plot_stacked_mqq(
-    objects=[sumstats, finemap_results],
+    objects=[mysumstats, finemap_results],
     mode="r",
     region=(7, 156538803, 157538803),
     vcfs=["ld_ref.vcf.gz"],

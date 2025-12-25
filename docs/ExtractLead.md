@@ -22,7 +22,7 @@ mysumstats.get_lead(
 
 ## Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `scaled` | `boolean` | (deprecated since v3.4.37) If True, use **MLOG10P** for extraction instead of **P** values | `False` |
 | `use_p` | `boolean` | (available since v3.4.37) If True, use **P** for extraction instead of **MLOG10P** values | `False` |

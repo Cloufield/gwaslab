@@ -29,7 +29,7 @@ mysumstats.assign_rsid(
 
 Before assigning rsIDs, you need reference data. GWASLab supports two types:
 
-### SNPID-rsID Table (Recommended for Common Variants)
+### **SNPID**-**rsID** Table (Recommended for Common Variants)
 
 GWASLab provides curated tables containing ~80M 1KG variants that can be downloaded automatically:
 
@@ -124,13 +124,13 @@ mysumstats.assign_rsid(
 
 ### Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
-| `ref_rsid_tsv` | `string` | TSV file path for annotation of commonly used variants using SNPID (like 1:725932:G:A) as key. This is the first step and is faster for common variants. | `None` |
-| `ref_rsid_vcf` | `string` | VCF/BCF file path for annotation of variants with rsID not assigned. .tbi/.csi file is required for indexed VCF files. This is the second step for rare variants not in the TSV file. | `None` |
+| `ref_rsid_tsv` | `string` | TSV file path for annotation of commonly used variants using **SNPID** (like 1:725932:G:A) as key. This is the first step and is faster for common variants. | `None` |
+| `ref_rsid_vcf` | `string` | VCF/BCF file path for annotation of variants with **rsID** not assigned. .tbi/.csi file is required for indexed VCF files. This is the second step for rare variants not in the TSV file. | `None` |
 | `chr_dict` | `dict` | A dictionary for converting chromosome numbers (1-25) to chromosome names in the VCF files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries: `gl.get_number_to_NC(build="19")` for hg19 and `gl.get_number_to_NC(build="38")` for hg38. | `None` |
 | `threads` | `int` | Number of threads to use for parallel processing. More threads can speed up processing for large VCF files. | `1` |
-| `overwrite` | `string` | Overwrite mode for rsID assignment. Options: `"all"`, `"invalid"`, or `"empty"`. See [Overwrite Modes](#overwrite-modes) for details. | `"empty"` |
+| `overwrite` | `string` | Overwrite mode for **rsID** assignment. Options: `"all"`, `"invalid"`, or `"empty"`. See [Overwrite Modes](#overwrite-modes) for details. | `"empty"` |
 | `chunksize` | `int` | Size of chunks for processing large reference TSV files. Larger chunks use more memory but may be faster. | `5000000` |
 
 ## Method 2: .assign_rsid2() - Sweep Mode
@@ -149,7 +149,7 @@ mysumstats.assign_rsid2(
 
 ### Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `path` | `string` | Path to reference file (VCF/BCF or TSV). If both `path` and `vcf_path`/`tsv_path` are provided, `vcf_path` takes precedence, then `path`, then `tsv_path`. | `None` |
 | `vcf_path` | `string` | VCF/BCF file path. Overrides `path` and `tsv_path`. For sweep mode, this is the recommended way to specify VCF/BCF files. | `None` |
@@ -157,7 +157,7 @@ mysumstats.assign_rsid2(
 | `lookup_path` | `string` | Path to save/load the extracted lookup table. If the file exists and is valid, it will be reused. Useful for caching lookup tables between runs. | `None` |
 | `chr_dict` | `dict` | A dictionary for converting chromosome numbers (1-25) to chromosome names in the VCF files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries: `gl.get_number_to_NC(build="19")` for hg19 and `gl.get_number_to_NC(build="38")` for hg38. | `None` |
 | `threads` | `int` | Number of threads for bcftools operations and parallel processing. More threads can significantly speed up lookup table extraction. | `6` |
-| `overwrite` | `string` | Overwrite mode for rsID assignment. Options: `"all"`, `"invalid"`, or `"empty"`. See [Overwrite Modes](#overwrite-modes) for details. | `"empty"` |
+| `overwrite` | `string` | Overwrite mode for **rsID** assignment. Options: `"all"`, `"invalid"`, or `"empty"`. See [Overwrite Modes](#overwrite-modes) for details. | `"empty"` |
 | `convert_to_bcf` | `bool` | If True, convert VCF to BCF before processing. BCF format is more efficient for large files. | `False` |
 | `strip_info` | `bool` | If True, strip INFO fields when converting VCF to BCF. Reduces file size and speeds up processing. | `True` |
 
@@ -184,21 +184,21 @@ These dictionaries map chromosome numbers (1-25) to RefSeq chromosome names used
 
 ## Overwrite Modes
 
-The `overwrite` parameter controls which existing rsID values should be replaced:
+The `overwrite` parameter controls which existing **rsID** values should be replaced:
 
-- **`"empty"`** (default): Only assign rsID for variants with missing/NA rsID values. This is the safest option and preserves existing rsID assignments.
-- **`"invalid"`**: Assign rsID for variants with invalid rsID format (not matching the pattern `rs[0-9]+`). Useful for fixing incorrectly formatted rsIDs.
-- **`"all"`**: Overwrite all rsIDs for eligible variants, regardless of existing values. Use with caution as this will replace all existing rsID assignments.
+- **`"empty"`** (default): Only assign **rsID** for variants with missing/NA **rsID** values. This is the safest option and preserves existing **rsID** assignments.
+- **`"invalid"`**: Assign **rsID** for variants with invalid **rsID** format (not matching the pattern `rs[0-9]+`). Useful for fixing incorrectly formatted **rsID**s.
+- **`"all"`**: Overwrite all **rsID**s for eligible variants, regardless of existing values. Use with caution as this will replace all existing **rsID** assignments.
 
 !!! note "STATUS Code Filtering"
-    Only variants with proper STATUS codes (digit 4 = 0, digit 5 = 0-4) are eligible for rsID assignment. This ensures that only standardized and normalized variants receive rsID assignments. Run `.basic_check()` first to ensure proper STATUS codes.
+    Only variants with proper **STATUS** codes (digit 4 = 0, digit 5 = 0-4) are eligible for **rsID** assignment. This ensures that only standardized and normalized variants receive **rsID** assignments. Run `.basic_check()` first to ensure proper **STATUS** codes.
 
 ## Examples
 
-### Example 1: Basic rsID Assignment with TSV File
+### Example 1: Basic **rsID** Assignment with TSV File
 
 ```
-# Download reference SNPID-rsID table first
+# Download reference **SNPID**-**rsID** table first
 gl.download_ref("1kg_dbsnp151_hg19_auto") 
 
 # Load sumstats
@@ -218,7 +218,7 @@ mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
 # Run basic_check first to standardize and normalize
 mysumstats.basic_check() 
 
-# If your SNPID is like 1:725932_G_A, you can use fix_id to fix the separator
+# If your **SNPID** is like 1:725932_G_A, you can use fix_id to fix the separator
 mysumstats.fix_id(fixsep=True)
 
 # rsID annotation using TSV file (fast, covers common variants)
@@ -232,7 +232,7 @@ mysumstats.assign_rsid(
 
 ![image](https://user-images.githubusercontent.com/40289485/211799561-dddf7649-09fc-4eb5-b8e3-d7301a8944d1.png)
 
-### Example 2: Complete rsID Assignment with Both TSV and VCF Files
+### Example 2: Complete **rsID** Assignment with Both TSV and VCF Files
 
 ```
 # rsID annotation using both TSV and VCF files
@@ -266,7 +266,7 @@ Start to assign rsID using reference file...
  -Annotated 57 rsID successfully!
 ```
 
-As you can see, the SNPID-rsID table (`1kg_dbsnp151_hg19_auto`) annotated 9942 rsIDs, and the large reference VCF file (from dbSNP) annotated an additional 57 rare rsIDs that were not in the TSV file.
+As you can see, the **SNPID**-**rsID** table (`1kg_dbsnp151_hg19_auto`) annotated 9942 **rsID**s, and the large reference VCF file (from dbSNP) annotated an additional 57 rare **rsID**s that were not in the TSV file.
 
 ![image](https://user-images.githubusercontent.com/40289485/211800319-68f33eaa-4c48-4ba4-aa52-afb9ac145dee.png)
 
@@ -279,7 +279,7 @@ mysumstats.assign_rsid(
     overwrite="empty"
 )
 
-# Fix invalid rsID formats (e.g., "rs123" -> "rs123456")
+# Fix invalid **rsID** formats (e.g., "rs123" -> "rs123456")
 mysumstats.assign_rsid(
     ref_rsid_tsv=gl.get_path("1kg_dbsnp151_hg19_auto"),
     overwrite="invalid"

@@ -268,7 +268,7 @@ def _gwheatmap(
 
 ################################################################################################################
 def _process_xtick(ax1, chrom_df, xtick_chr_dict, fontsize, font_family, log=Log(),verbose=True):
-    log.write(" -Processing X ticks...",verbose=verbose)
+    log.write(" -Processing X ticks...",verbose=False)
     ax1.set_xticks(chrom_df.astype("float64"))
     ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict),fontsize=fontsize,family=font_family)    
     return ax1

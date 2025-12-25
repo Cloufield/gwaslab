@@ -769,13 +769,13 @@ def _process_neaf(sumstats,log,verbose):
     log.write(" -Checking if 0<= NEAF <=1 ...",verbose=verbose) 
     if "NEAF" in sumstats.columns:
         sumstats["NEAF"] = pd.to_numeric(sumstats["NEAF"], errors='coerce')
-        sumstats = sumstats.loc[(sumstats["NEAF"]>=0) & (sumstats["NEAF"]<=1),:]
-        sumstats["EAF"] = 1- sumstats["NEAF"]
+        sumstats = sumstats.loc[(sumstats["NEAF"]>=0) & (sumstats["NEAF"]<=1),:].copy()
+        sumstats.loc[:, "EAF"] = 1 - sumstats["NEAF"]
         sumstats.drop(columns=["NEAF"], inplace=True)
     else:
         sumstats["EAF"] = pd.to_numeric(sumstats["EAF"], errors='coerce')
-        sumstats = sumstats.loc[(sumstats["EAF"]>=0) & (sumstats["EAF"]<=1),:]
-        sumstats["EAF"] = 1- sumstats["EAF"]
+        sumstats = sumstats.loc[(sumstats["EAF"]>=0) & (sumstats["EAF"]<=1),:].copy()
+        sumstats.loc[:, "EAF"] = 1 - sumstats["EAF"]
     log.write(" -Converted NEAF to EAF.",verbose=verbose) 
     after_number=len(sumstats)
     log.write(" -Removed "+str(pre_number - after_number)+" variants with bad NEAF.",verbose=verbose) 

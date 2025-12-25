@@ -13,12 +13,12 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 ## .plot_trumpet()
 
 ```
-.plot_trumpet()
+mysumstats.plot_trumpet()
 ```
 
 ### "q" mode for quantitative traits
 
-| Option      | Type              | Description                                               | Default             |
+| Option      | DataType              | Description                                               | Default             |
 |-------------|-------------------|-----------------------------------------------------------|---------------------|
 | `sig_level` | `float`           | signiifcance level for power calculation                  | `5e-8`              |
 | `n`         | `string` or `int` | column name for sample size or an integer for sample size | required            |
@@ -26,7 +26,7 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 
 ### "b" mode for binary traits
 
-| Option       | Type      | Description                                                                           | Default             |
+| Option       | DataType      | Description                                                                           | Default             |
 |--------------|-----------|---------------------------------------------------------------------------------------|---------------------|
 | `sig_level`  | `float`   | signiifcance level for power calculation                                              | `5e-8`              |
 | `ncase`      | `int`     | number of cases                                                                       | required            |
@@ -37,7 +37,7 @@ Scatter plot for visualization of the relationship between Minor Allele Frequenc
 
 ### Other options
 
-| Option                | Type              | Description                                                                                     | Default                                |
+| Option                | DataType              | Description                                                                                     | Default                                |
 |-----------------------|-------------------|-------------------------------------------------------------------------------------------------|----------------------------------------|
 | `build`               | `string`          | `19` or `38`, which build to use for annotation                                                 | `"99"`                                 |
 | `p_level`             | `float`           | upper limit of p values; variants with p values higher than this will be excluded from plotting | `5e-8`                                 |

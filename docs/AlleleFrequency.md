@@ -21,7 +21,7 @@ Calculate the difference in allele frequency (**DAF**) between the effect allele
 
 ```
 # Check the difference between the EAF in the sumstats and the allele frequency in VCF files
-sumstats.check_af(ref_infer="path/to/reference.vcf.gz",
+mysumstats.check_af(ref_infer="path/to/reference.vcf.gz",
                   ref_alt_freq="AF",
                   maf_threshold=0.40,
                   n_cores=2)
@@ -41,7 +41,7 @@ For more details, see [Harmonization documentation](https://cloufield.github.io/
 
 ```
 #allele frequnecy correlation plot
-sumstats.plot_daf()
+mysumstats.plot_daf()
 ```
 
 You need to run 'check_af()' first before plotting. For check_af(), see [here](https://cloufield.github.io/gwaslab/Harmonization/#check-the-difference-in-allele-frequency).

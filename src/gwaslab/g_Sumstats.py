@@ -154,6 +154,7 @@ from gwaslab.io.io_process_kwargs import remove_overlapping_kwargs
 from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
 from gwaslab.hm.hm_assign_rsid import _assign_rsid
 from gwaslab.hm.hm_infer_with_af  import _infer_strand_with_annotation
+from gwaslab.hm.hm_check_af import _check_af_with_annotation, _infer_af_with_annotation, _infer_af_with_maf_annotation
 from datetime import datetime
 
 # ----- Internal Helper Functions -----
@@ -1077,15 +1078,30 @@ class Sumstats():
         self.data = _parallelize_check_af(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         # Metadata is already set by _parallelize_check_af
     
+    def check_af2(self,**kwargs):
+        kwargs = remove_overlapping_kwargs(kwargs,{"log"})
+        self.data = _check_af_with_annotation(self,**kwargs)
+        # Metadata is already set by _check_af_with_annotation
+    
     def infer_af(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
         self.data = _parallelize_infer_af(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
         # Metadata is already set by _parallelize_infer_af
     
+    def infer_af2(self,**kwargs):
+        kwargs = remove_overlapping_kwargs(kwargs,{"log"})
+        self.data = _infer_af_with_annotation(self,**kwargs)
+        # Metadata is already set by _infer_af_with_annotation
+    
     def infer_eaf_from_maf(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
         self.data = _parallele_infer_af_with_maf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
-        # Metadata is already set by _parallele_infer_af_with_maf    
+        # Metadata is already set by _parallele_infer_af_with_maf
+    
+    def infer_eaf_from_maf2(self,**kwargs):
+        kwargs = remove_overlapping_kwargs(kwargs,{"log"})
+        self.data = _infer_af_with_maf_annotation(self,**kwargs)
+        # Metadata is already set by _infer_af_with_maf_annotation    
     
     @suppress_display
     def plot_daf(self, **kwargs):

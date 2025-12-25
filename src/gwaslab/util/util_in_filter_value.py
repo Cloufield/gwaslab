@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 import numpy as np
+import polars as pl
 from os import path
 from pathlib import Path
 from functools import wraps
@@ -16,31 +17,38 @@ from gwaslab.hm.hm_harmonize_sumstats import is_palindromic
 from gwaslab.info.g_version import _get_version
 import gc
 
-_HAPMAP_CACHE = {}
-_HAPMAP_SET_CACHE = {}
+_HAPMAP_DF_CACHE = {}
 
-def _get_hapmap_df(build):
-    if build in _HAPMAP_CACHE:
-        return _HAPMAP_CACHE[build]
+def _get_hapmap_df_polars(build):
+    """Get Hapmap3 coordinates as a Polars DataFrame for fast lookup."""
+    if build in _HAPMAP_DF_CACHE:
+        return _HAPMAP_DF_CACHE[build]
+    
+    # Read directly with Polars - no pandas conversion
     base = Path(__file__).parents[1] / "data" / "hapmap3_SNPs"
     if build == "19":
         p = base / "hapmap3_db150_hg19.snplist.gz"
     else:
         p = base / "hapmap3_db151_hg38.snplist.gz"
-    df = pd.read_csv(p, sep=r"\s+", usecols=["#CHROM", "POS"], dtype={"#CHROM": "Int64", "POS": "Int64"})
-    df = df.rename(columns={"#CHROM": "CHR"}).astype({"CHR": "Int64", "POS": "Int64"})
-    _HAPMAP_CACHE[build] = df
-    return df
-
-def _get_hapmap_set(build):
-    """Get Hapmap3 coordinates as a set of (CHR, POS) tuples for fast lookup."""
-    if build in _HAPMAP_SET_CACHE:
-        return _HAPMAP_SET_CACHE[build]
-    df = _get_hapmap_df(build)
-    # Convert to set of tuples for O(1) lookup
-    hapmap_set = set(zip(df["CHR"].astype(int), df["POS"].astype(int)))
-    _HAPMAP_SET_CACHE[build] = hapmap_set
-    return hapmap_set
+    
+    # Read with Polars - keep as Polars DataFrame
+    # File is tab-separated, so we use "\t" as separator
+    try:
+        hapmap_df = pl.read_csv(
+            p,
+            separator="\t",
+            columns=["#CHROM", "POS"],
+            schema={"#CHROM": pl.Int64, "POS": pl.Int64},
+            null_values=["", "NA", "N/A"]
+        ).rename({"#CHROM": "CHR"})
+    except Exception:
+        # Fallback to pandas if Polars fails, then convert to Polars
+        df = pd.read_csv(p, sep="\t", usecols=["#CHROM", "POS"], dtype={"#CHROM": "Int64", "POS": "Int64"})
+        df = df.rename(columns={"#CHROM": "CHR"})
+        hapmap_df = pl.from_pandas(df[["CHR", "POS"]])
+    
+    _HAPMAP_DF_CACHE[build] = hapmap_df
+    return hapmap_df
 
 def with_logging_filter(start_to_msg,finished_msg):
     def decorator(func):
@@ -586,21 +594,31 @@ def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS",
 
     inferred_build = "Unknown"
     log.write(" -Loading Hapmap3 variants data...", verbose=verbose)
-    hapmap3_set_19 = _get_hapmap_set("19")
-    hapmap3_set_38 = _get_hapmap_set("38")
+    hapmap3_df_19 = _get_hapmap_df_polars("19")
+    hapmap3_df_38 = _get_hapmap_df_polars("38")
     log.write(" -CHR and POS will be used for matching...", verbose=verbose)
     
-    # Extract coordinates and convert to set for fast intersection
-    chr_series = pd.to_numeric(sumstats_data[chrom], errors="coerce")
-    pos_series = pd.to_numeric(sumstats_data[pos], errors="coerce")
+    # Convert sumstats to Polars for fast matching (no pandas operations)
+    # with_logging decorator with check_dtype=True ensures CHR and POS are Int64
+    sumstats_pl = pl.from_pandas(sumstats_data[[chrom, pos]])
     
-    # Create coordinate tuples, filtering out NaN values (vectorized approach)
-    mask = chr_series.notna() & pos_series.notna()
-    coords = set(zip(chr_series[mask].astype(int), pos_series[mask].astype(int)))
+    # Filter out null values and ensure correct types
+    sumstats_pl = sumstats_pl.filter(
+        pl.col(chrom).is_not_null() & pl.col(pos).is_not_null()
+    ).with_columns([
+        pl.col(chrom).cast(pl.Int64).alias("CHR"),
+        pl.col(pos).cast(pl.Int64).alias("POS")
+    ])
     
-    # Use set intersection for fast counting (much faster than merge)
-    match_count_for_19 = len(coords & hapmap3_set_19)
-    match_count_for_38 = len(coords & hapmap3_set_38)
+    # Use Polars semi_join for fast counting - more efficient than full join
+    # semi_join only checks existence without creating full join result
+    # This is highly optimized in Polars and avoids pandas conversions
+    match_count_for_19 = sumstats_pl.join(
+        hapmap3_df_19, on=["CHR", "POS"], how="semi"
+    ).height
+    match_count_for_38 = sumstats_pl.join(
+        hapmap3_df_38, on=["CHR", "POS"], how="semi"
+    ).height
     log.write(" -Matching variants for hg19: num_hg19 = ", match_count_for_19, verbose=verbose)
     log.write(" -Matching variants for hg38: num_hg38 = ", match_count_for_38, verbose=verbose)
     

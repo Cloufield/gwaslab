@@ -30,7 +30,7 @@ associations = gl.get_associations(accession_id="GCST000001")
 
 #### Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `efo_trait` | `str`, optional | EFO trait name to filter associations (e.g., "type 2 diabetes mellitus") | `None` |
 | `rs_id` | `str`, optional | Variant rsID to filter associations (e.g., "rs1050316") | `None` |
@@ -151,7 +151,7 @@ associations_summary = mysumstats.get_associations()
 
 #### Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `rsid` | `str` | Name of the rsID column in sumstats | `"rsID"` |
 | `fetch_metadata` | `bool` | If True, fetch additional metadata (traits, studies, variants). If False, only fetch associations (faster) | `False` |

@@ -52,7 +52,7 @@ Check or fix **SNPID** and **rsID**. This method can:
 
 **Parameters:**
 
-| Parameter | Type | Default | Description |
+| Parameter | DataType | Default | Description |
 |-----------|------|---------|-------------|
 | `fixchrpos` | `bool` | `False` | If `True`, extract **CHR** and **POS** from **SNPID** (**CHR**:**POS**:**NEA**:**EA**) to fill **CHR** and **POS** columns |
 | `fixid` | `bool` | `False` | If `True`, use **CHR**/**POS**/**NEA**/**EA** to reconstruct **SNPID**. For variants not aligned with reference genome, only **CHR**/**POS** will be used |
@@ -106,7 +106,7 @@ Standardize chromosome notation. This method:
 
 **Parameters:**
 
-| Parameter | Type | Default | Description |
+| Parameter | DataType | Default | Description |
 |-----------|------|---------|-------------|
 | `remove` | `bool` | `False` | If `True`, remove variants with invalid or unrecognized chromosome labels |
 | `x` | `tuple` | `("X", 23)` | Mapping for X chromosome: `(label, numeric_value)` |
@@ -172,7 +172,7 @@ Check and fix values in **POS**. This method:
 
 **Parameters:**
 
-| Parameter | Type | Default | Description |
+| Parameter | DataType | Default | Description |
 |-----------|------|---------|-------------|
 | `remove` | `bool` | `False` | If `True`, remove variants with invalid or out-of-range positions |
 | `limit` | `int` | `250000000` | Default upper limit for position validation (longest human chromosome is ~250 Mb) |
@@ -213,7 +213,7 @@ Standardize allele representations to ATCG notation. This method:
 
 **Parameters:**
 
-| Parameter | Type | Default | Description |
+| Parameter | DataType | Default | Description |
 |-----------|------|---------|-------------|
 | `remove` | `bool` | `False` | If `True`, remove variants with invalid allele representations |
 
@@ -243,7 +243,7 @@ Normalize indels according to the left-alignment and parsimony principle. This f
 
 **Parameters:**
 
-| Parameter | Type | Default | Description |
+| Parameter | DataType | Default | Description |
 |-----------|------|---------|-------------|
 | `threads` | `int` | `1` | Number of threads to use for parallel processing |
 | `mode` | `str` | `"s"` | Normalization mode (`"s"` for standard, `"v"` for variant) |
@@ -314,7 +314,7 @@ Additional columns are appended after the default columns.
 
 **Parameters:**
 
-| Parameter | Type | Default | Description |
+| Parameter | DataType | Default | Description |
 |-----------|------|---------|-------------|
 | `order` | `list` | `None` | Custom column order. If `None`, uses GWASLab default order |
 
@@ -348,7 +348,7 @@ The `basic_check()` method executes the following steps in order:
 
 **Parameters:**
 
-| Parameter | Type | Default | Description |
+| Parameter | DataType | Default | Description |
 |-----------|------|---------|-------------|
 | `remove` | `bool` | `False` | If `True`, remove bad quality variants detected in `fix_chr()`, `fix_pos()`, and `fix_allele()` |
 | `remove_dup` | `bool` | `False` | If `True`, remove duplicated or multi-allelic variants using `remove_dup()` |

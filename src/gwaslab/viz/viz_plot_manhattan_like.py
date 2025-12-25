@@ -137,9 +137,11 @@ def _sanity_check(sumstats, mode, chrom, pos, stratified, _if_quick_qc, log, ver
         pre_number = len(sumstats)
         sumstats = sumstats.dropna(subset=[chrom, pos])
         after_number = len(sumstats)
-        log.write(" -Removed " + str(pre_number - after_number) + " variants with nan in CHR or POS column ...", verbose=verbose)
+        removed_count = pre_number - after_number
+        log.write(" -Removed " + str(removed_count) + " variants with nan in CHR or POS column ...", verbose=verbose if removed_count > 0 else False)
         out_of_range_chr = sumstats[chrom] <= 0
-        log.write(" -Removed {} variants with CHR <=0...".format(sum(out_of_range_chr)), verbose=verbose)
+        removed_chr_count = sum(out_of_range_chr)
+        log.write(" -Removed {} variants with CHR <=0...".format(removed_chr_count), verbose=verbose if removed_chr_count > 0 else False)
         sumstats = sumstats.loc[~out_of_range_chr, :]
 
     if stratified is True and _if_quick_qc:
@@ -152,7 +154,8 @@ def _sanity_check(sumstats, mode, chrom, pos, stratified, _if_quick_qc, log, ver
         pre_number = len(sumstats)
         sumstats = sumstats.dropna(subset=["raw_P"])
         after_number = len(sumstats)
-        log.write(" -Removed " + str(pre_number - after_number) + " variants with nan in P column ...", verbose=verbose)
+        removed_count = pre_number - after_number
+        log.write(" -Removed " + str(removed_count) + " variants with nan in P column ...", verbose=verbose if removed_count > 0 else False)
     return sumstats
 
 
@@ -233,7 +236,7 @@ def _process_highlight(sumstats, highlight, highlight_chrpos, highlight_windowkb
 
 
 def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_plot, sc_linewidth, sig_line_color, suggestive_sig_line_color, additional_line_color, mode, bmean, bmedian, log=Log(), verbose=True):
-    log.write(" -Processing lines...", verbose=verbose)
+    log.write(" -Processing lines...", verbose=False)
     if sig_line is True:
         ax1.axhline(y=lines_to_plot[0], linewidth=sc_linewidth, linestyle="--", color=sig_line_color, zorder=1)
     if suggestive_sig_line is True:
@@ -252,7 +255,7 @@ def _process_line(ax1, sig_line, suggestive_sig_line, additional_line, lines_to_
 
 
 def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title, log=Log(), verbose=True):
-    log.write(" -Processing color bar...", verbose=verbose)
+    log.write(" -Processing color bar...", verbose=False)
     cbar_yticklabels = cbar.get_yticklabels()
     cbar.set_yticklabels(cbar_yticklabels, fontsize=cbar_fontsize, family=cbar_font_family)
     cbar_xticklabels = cbar.get_xticklabels()
@@ -262,7 +265,7 @@ def _process_cbar(cbar, cbar_fontsize, cbar_font_family, cbar_title, log=Log(), 
 
 
 def _process_xtick(ax1, mode, chrom_df, xtick_chr_dict, fontsize, font_family="Arial", ax3=None, log=Log(), verbose=True):
-    log.write(" -Processing X ticks...", verbose=verbose)
+    log.write(" -Processing X ticks...", verbose=False)
     if mode != "r":
         ax1.set_xticks(chrom_df.astype("float64"))
         ax1.set_xticklabels(chrom_df.index.astype("Int64").map(xtick_chr_dict), fontsize=fontsize, family=font_family)
@@ -272,7 +275,7 @@ def _process_xtick(ax1, mode, chrom_df, xtick_chr_dict, fontsize, font_family="A
 
 
 def _process_ytick(ax1, fontsize, font_family, ax4, log=Log(), verbose=True):
-    log.write(" -Processing Y labels...", verbose=verbose)
+    log.write(" -Processing Y labels...", verbose=False)
     ax1.tick_params(axis='y', labelsize=fontsize, labelfontfamily=font_family)
     if ax4 is not None:
         ax4.tick_params(axis='y', labelsize=fontsize, labelfontfamily=font_family)
@@ -280,7 +283,7 @@ def _process_ytick(ax1, fontsize, font_family, ax4, log=Log(), verbose=True):
 
 
 def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family="Arial", ax3=None, log=Log(), verbose=True):
-    log.write(" -Processing X labels...", verbose=verbose)
+    log.write(" -Processing X labels...", verbose=False)
     if region is not None:
         if xlabel is None:
             xlabel = "Chromosome " + str(region[0]) + " (MB)"
@@ -296,7 +299,7 @@ def _process_xlabel(region, xlabel, ax1, gtf_path, mode, fontsize, font_family="
 
 
 def _process_ylabel(ylabel, ax1, mode, bwindowsizekb, fontsize, font_family, math_fontfamily, ax4=None, log=Log(), verbose=True):
-    log.write(" -Processing Y labels...", verbose=verbose)
+    log.write(" -Processing Y labels...", verbose=False)
     if "b" in mode:
         if ylabel is None:
             ylabel = "Density of GWAS \n SNPs within " + str(bwindowsizekb) + " kb"

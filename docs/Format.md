@@ -5,7 +5,7 @@ GWASLab provides a flexible formatting and saving function.
 ## .to_format()
 
 ```
-.to_format(
+mysumstats.to_format(
           path="./sumstats",
           fmt="ldsc",   
           ...
@@ -143,7 +143,7 @@ The BED (Browser Extensible Data) format is used by the UCSC Genome Browser and 
 - **Deletions**: `START = POS`, `END = POS + len(NEA) - 1` (0-based)
 
 **Example:**
-```python
+```
 mysumstats.to_format(path="./output", fmt="bed", bgzip=True, tabix=True)
 # Output: output.bed.gz (bgzipped and tabix-indexed)
 ```
@@ -167,7 +167,7 @@ The VEP (Variant Effect Predictor) format is used by Ensembl's VEP tool for vari
     VEP format uses `START > END` for insertions as a special convention to indicate an insertion between positions. This is intentional and correct according to VEP specifications.
 
 **Example:**
-```python
+```
 mysumstats.to_format(path="./output", fmt="vep", bgzip=True, tabix=True)
 # Output: output.vep.gz (bgzipped and tabix-indexed)
 ```
@@ -208,7 +208,7 @@ According to the [ANNOVAR documentation](https://annovar.openbioinformatics.org/
 ```
 
 **Example:**
-```python
+```
 mysumstats.to_format(path="./output", fmt="annovar", bgzip=True, tabix=True)
 # Output: output.annovar.gz (bgzipped and tabix-indexed)
 ```
@@ -262,7 +262,7 @@ The SSF (Summary Statistics Format) is a standardized format for GWAS summary st
 **Column order:** SSF format has a strict column order requirement. GWASLab automatically orders columns according to the SSF specification.
 
 **Example:**
-```python
+```
 # Output in SSF format
 mysumstats.to_format(path="./output", fmt="ssf")
 
@@ -297,7 +297,7 @@ GWASLab provides built-in validation for SSF format files to ensure compliance w
 8. **Minimum rows**: Requires at least 100,000 variants (configurable)
 
 **Usage:**
-```python
+```
 # Validate SSF file during output
 mysumstats.to_format(path="./output", fmt="ssf", validate=True)
 

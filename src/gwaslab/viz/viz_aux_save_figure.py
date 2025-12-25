@@ -25,6 +25,10 @@ def save_figure(fig, save, keyword, save_kwargs=None, log = Log(), verbose=True)
     verbose : bool, optional
         Whether to print verbose messages
     """
+    # Set verbose to False when save is None
+    if save is None:
+        verbose = False
+    
     log.write("Start to save figure..." ,verbose=verbose)
     if save_kwargs is None:
         save_kwargs = {}

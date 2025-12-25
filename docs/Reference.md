@@ -56,12 +56,12 @@ Since GWASLab will check chr:pos and ea/nea to match rsID, it would take a littl
 But we can use a pre-annotated conversion table for common SNPs, and then annotate the rest of SNPs using large VCF file from dbSNP. 
 ```
 for i in range(1,23):
-    sumstats = gl.Sumstats("./EAS.chr"+str(i)+".split_norm_af.vcf.gz",snpid="ID",fmt="vcf")
-    sumstats.harmonize( basic_check=True,
+    mysumstats = gl.Sumstats("./EAS.chr"+str(i)+".split_norm_af.vcf.gz",snpid="ID",fmt="vcf")
+    mysumstats.harmonize( basic_check=True,
                         ref_seq="./reference_genome/hg19/human_g1k_v37_decoy.fasta",
                         ref_rsid_vcf="./All_20180423.vcf.gz", 
                         threads=4)
-    sumstats.data.loc[:,["SNPID","rsID","CHR","POS","NEA","EA"]].to_csv("./1kg_af_dbsnp151."+str(i)+".txt.gz","\t",index=None)
+    mysumstats.data.loc[:,["SNPID","rsID","CHR","POS","NEA","EA"]].to_csv("./1kg_af_dbsnp151."+str(i)+".txt.gz","\t",index=None)
 ```
 
 In terminal, combine the files:

@@ -45,30 +45,30 @@ Comparison is performed with `float_tolerance = 1e-7` for any float type statist
 
 **Default Parameter Ranges:**
 
-| Parameter | Type | Default Range | Description |
+| Parameter | DataType | Default Range | Description |
 |-----------|------|--------------|-------------|
 | `float_tolerance` | `float` | `1e-7` | Tolerance for floating-point comparisons |
-| `n` | `tuple` | `(0, 2**31-1)` | Sample size: 0 < N < 2³¹-1 |
-| `ncase` | `tuple` | `(0, 2**31-1)` | Number of cases: 0 < N_CASE < 2³¹-1 |
-| `ncontrol` | `tuple` | `(0, 2**31-1)` | Number of controls: 0 < N_CONTROL < 2³¹-1 |
+| `n` | `tuple` | `(0, 2**31-1)` | Sample size: 0 < **N** < 2³¹-1 |
+| `ncase` | `tuple` | `(0, 2**31-1)` | Number of cases: 0 < **N_CASE** < 2³¹-1 |
+| `ncontrol` | `tuple` | `(0, 2**31-1)` | Number of controls: 0 < **N_CONTROL** < 2³¹-1 |
 | `mac` | `tuple` | `(0, 2**31-1)` | Minor allele count: MAC ≥ 0 |
-| `eaf` | `tuple` | `(0, 1)` | Effect allele frequency: 0 < EAF < 1 |
-| `maf` | `tuple` | `(0, 0.5)` | Minor allele frequency: 0 < MAF < 0.5 |
-| `chisq` | `tuple` | `(0, float("Inf"))` | Chi-square statistic: CHISQ > 0 |
-| `z` | `tuple` | `(-9999, 9999)` | Z-score: -9999 < Z < 9999 |
-| `t` | `tuple` | `(-99999, 99999)` | T-statistic: -99999 < T < 99999 |
-| `f` | `tuple` | `(0, float("Inf"))` | F-statistic: F > 0 |
-| `p` | `tuple` | `(0, 1)` | P-value: 0 < P < 1 (P=0 will cause a warning) |
-| `mlog10p` | `tuple` | `(0, 99999)` | Negative log10 p-value: 0 < MLOG10P < 99999 |
-| `beta` | `tuple` | `(-100, 100)` | Effect size: -100 < BETA < 100 |
-| `se` | `tuple` | `(0, float("Inf"))` | Standard error: SE > 0 |
-| `OR` | `tuple` | `(0, 100)` | Odds ratio: 0 < OR < 100 |
-| `OR_95L` | `tuple` | `(0, float("Inf"))` | OR 95% CI lower bound: OR_95L > 0 |
-| `OR_95U` | `tuple` | `(0, float("Inf"))` | OR 95% CI upper bound: OR_95U > 0 |
-| `HR` | `tuple` | `(0, 100)` | Hazard ratio: 0 < HR < 100 |
-| `HR_95L` | `tuple` | `(0, float("Inf"))` | HR 95% CI lower bound: HR_95L > 0 |
-| `HR_95U` | `tuple` | `(0, float("Inf"))` | HR 95% CI upper bound: HR_95U > 0 |
-| `info` | `tuple` | `(0, 2)` | Imputation info score: 0 < INFO < 2 |
+| `eaf` | `tuple` | `(0, 1)` | Effect allele frequency: 0 < **EAF** < 1 |
+| `maf` | `tuple` | `(0, 0.5)` | Minor allele frequency: 0 < **MAF** < 0.5 |
+| `chisq` | `tuple` | `(0, float("Inf"))` | Chi-square statistic: **CHISQ** > 0 |
+| `z` | `tuple` | `(-9999, 9999)` | Z-score: -9999 < **Z** < 9999 |
+| `t` | `tuple` | `(-99999, 99999)` | T-statistic: -99999 < **T** < 99999 |
+| `f` | `tuple` | `(0, float("Inf"))` | F-statistic: **F** > 0 |
+| `p` | `tuple` | `(0, 1)` | P-value: 0 < **P** < 1 (**P**=0 will cause a warning) |
+| `mlog10p` | `tuple` | `(0, 99999)` | Negative log10 p-value: 0 < **MLOG10P** < 99999 |
+| `beta` | `tuple` | `(-100, 100)` | Effect size: -100 < **BETA** < 100 |
+| `se` | `tuple` | `(0, float("Inf"))` | Standard error: **SE** > 0 |
+| `OR` | `tuple` | `(0, 100)` | Odds ratio: 0 < **OR** < 100 |
+| `OR_95L` | `tuple` | `(0, float("Inf"))` | **OR** 95% CI lower bound: **OR_95L** > 0 |
+| `OR_95U` | `tuple` | `(0, float("Inf"))` | **OR** 95% CI upper bound: **OR_95U** > 0 |
+| `HR` | `tuple` | `(0, 100)` | Hazard ratio: 0 < **HR** < 100 |
+| `HR_95L` | `tuple` | `(0, float("Inf"))` | **HR** 95% CI lower bound: **HR_95L** > 0 |
+| `HR_95U` | `tuple` | `(0, float("Inf"))` | **HR** 95% CI upper bound: **HR_95U** > 0 |
+| `info` | `tuple` | `(0, 2)` | Imputation info score: 0 < **INFO** < 2 |
 
 **Usage:**
 
@@ -96,12 +96,12 @@ mysumstats.check_sanity(
 After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using:
 
 ```
-.remove_dup(mode="md")
+mysumstats.remove_dup(mode="md")
 ```
 
 - `mode=d` , remove duplicate variants.
-    - remove duplicate SNPs based on  1. SNPID, 
-    - remove duplicate SNPs based on  2. CHR, POS, EA, and NEA
+    - remove duplicate SNPs based on  1. **SNPID**, 
+    - remove duplicate SNPs based on  2. **CHR**, **POS**, **EA**, and **NEA**
     - remove duplicate SNPs based on  3. rsID
 - `mode=s` ,remove duplicate variants.
     - remove duplicate SNPs based on  1. SNPID
@@ -117,7 +117,7 @@ After standardizing and normalizing the sumstats, you can also remove duplicated
 
 !!! example
     ```
-    sumstats.remove_dup(mode="md",keep='first',keep_col="P",remove=False)
+    mysumstats.remove_dup(mode="md",keep='first',keep_col="P",remove=False)
         
     Fri Jan 13 17:34:38 2023 Start to sort the sumstats using P...
     Fri Jan 13 17:34:38 2023 Start to remove duplicated variants based on snpid...
@@ -151,7 +151,7 @@ After standardizing and normalizing the sumstats, you can also remove duplicated
 ## Check_data consistency
 
 ```
-.check_data_consistency()
+mysumstats.check_data_consistency()
 ```
 
 GWASLab checks if `BETA/SE-derived P/MLOG10P = original P/MLOG10P` or `N = N_CASE + N_CONTROL`.
@@ -166,7 +166,7 @@ mysumstats.filter_value(expr, inplace=False)
 
 **Parameters:**
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `expr` | `str` | Query string using pandas syntax. For example: `'BETA > 0 & N > 10000'` | Required |
 | `inplace` | `bool` | If `False`, return a new Sumstats object. If `True`, filter in place. | `False` |
@@ -223,7 +223,7 @@ mysumstats.filter_flanking_by_id(
 
 **Parameters:**
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `snpid` | `list` | List of SNPID or rsID. Examples: `["rs123"]`, `["1:12345:A:G"]`, `["rs123", "rs456"]` | Required |
 | `windowsizekb` | `int` | Flanking window size in kilobases (kb) on each side | `500` |
@@ -243,7 +243,7 @@ mysumstats.filter_flanking_by_chrpos(
 
 **Parameters:**
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `chrpos` | `list` | List of (CHR, POS) tuples. Example: `[(1, 12345), (2, 67891)]` | Required |
 | `windowsizekb` | `int` | Flanking window size in kilobases (kb) on each side | `500` |
@@ -296,7 +296,7 @@ mysumstats.filter_region_out(
 
 **Parameters:**
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `path` | `str` | Path to BED file. BED format: `chr\tstart\tend` (0-based, half-open) | `None` |
 | `high_ld` | `bool` | If `True`, use built-in high-LD regions (commonly excluded regions) | `False` |
@@ -406,15 +406,15 @@ The function performs the following checks in sequence:
 
 | Check Step | Function | Description |
 |------------|----------|-------------|
-| **1. ID Check** | `fix_id` | - Validates and fixes SNPID format (CHR:POS:NEA:EA pattern)<br>- Extracts CHR and POS from SNPID if available<br>- Reconstructs SNPID from CHR, POS, EA, and NEA if missing<br>- Standardizes SNPID delimiters (converts "_" and "-" to ":")<br>- Validates rsID format (rs[numbers] pattern)<br>- Removes 'chr' prefix from SNPID if present<br>- Extracts EA and NEA from SNPID if needed |
+| **1. ID Check** | `fix_id` | - Validates and fixes **SNPID** format (**CHR**:**POS**:**NEA**:**EA** pattern)<br>- Extracts **CHR** and **POS** from **SNPID** if available<br>- Reconstructs **SNPID** from **CHR**, **POS**, **EA**, and **NEA** if missing<br>- Standardizes **SNPID** delimiters (converts "_" and "-" to ":")<br>- Validates **rsID** format (rs[numbers] pattern)<br>- Removes 'chr' prefix from **SNPID** if present<br>- Extracts **EA** and **NEA** from **SNPID** if needed |
 | **2. Chromosome Check** | `fix_chr` | - Standardizes chromosome notation (converts to integer type)<br>- Extracts chromosome numbers from various formats (e.g., "chr1", "1", "chrX")<br>- Maps special chromosomes: X→23, Y→24, MT→25<br>- Validates chromosome values (removes invalid or out-of-range values if remove=True)<br>- Checks for missing chromosome values |
 | **3. Position Check** | `fix_pos` | - Validates basepair positions fall within valid chromosomal bounds<br>- Removes thousands separators ("," or "_") from position strings<br>- Converts positions to Int64 type<br>- Filters out positions outside valid range (default: 0 to 250,000,000)<br>- Removes invalid or missing positions if remove=True |
-| **4. Allele Check** | `fix_allele` | - Validates allele fields contain valid nucleotide characters (A, T, C, G)<br>- Converts all alleles to uppercase<br>- Standardizes allele format using categorical data types<br>- Checks for missing EA or NEA values<br>- Identifies variants where EA == NEA (non-variant)<br>- Classifies variants as SNPs, indels, normalized, or not normalized<br>- Removes invalid alleles if remove=True |
-| **5. Statistics Sanity Check** | `check_sanity` | - Validates numerical summary statistics fall within valid ranges:<br>  * Sample sizes (N, N_CASE, N_CONTROL): 0 to 2,147,483,647<br>  * Allele frequencies (EAF, MAF): EAF in (0, 1), MAF in (0, 0.5)<br>  * Effect sizes (BETA): -100 to 100<br>  * Standard errors (SE): > 0<br>  * P-values (P): 0 to 1<br>  * Negative log10 p-values (MLOG10P): 0 to 99,999<br>  * Z-scores (Z): -9,999 to 9,999<br>  * Chi-square (CHISQ): ≥ 0<br>  * Odds ratios (OR, HR): exp(-100) to exp(100)<br>  * Imputation info (INFO): 0 to 2<br>- Checks and fixes data types for all statistical columns<br>- Removes variants with invalid statistics |
-| **6. Data Consistency** | `check_data_consistency` | - Checks consistency between BETA/SE and Z-score (if Z = BETA/SE)<br>- Checks consistency between BETA/SE and P-value (if P derived from BETA/SE)<br>- Checks consistency between MLOG10P and P-value (if P = 10^(-MLOG10P))<br>- Checks consistency between N and N_CASE + N_CONTROL (if all present)<br>- Reports inconsistencies (likely due to rounding) but does not remove variants |
+| **4. Allele Check** | `fix_allele` | - Validates allele fields contain valid nucleotide characters (A, T, C, G)<br>- Converts all alleles to uppercase<br>- Standardizes allele format using categorical data types<br>- Checks for missing **EA** or **NEA** values<br>- Identifies variants where **EA** == **NEA** (non-variant)<br>- Classifies variants as SNPs, indels, normalized, or not normalized<br>- Removes invalid alleles if remove=True |
+| **5. Statistics Sanity Check** | `check_sanity` | - Validates numerical summary statistics fall within valid ranges:<br>  * Sample sizes (**N**, **N_CASE**, **N_CONTROL**): 0 to 2,147,483,647<br>  * Allele frequencies (**EAF**, **MAF**): **EAF** in (0, 1), **MAF** in (0, 0.5)<br>  * Effect sizes (**BETA**): -100 to 100<br>  * Standard errors (**SE**): > 0<br>  * P-values (**P**): 0 to 1<br>  * Negative log10 p-values (**MLOG10P**): 0 to 99,999<br>  * Z-scores (**Z**): -9,999 to 9,999<br>  * Chi-square (**CHISQ**): ≥ 0<br>  * Odds ratios (**OR**, **HR**): exp(-100) to exp(100)<br>  * Imputation info (**INFO**): 0 to 2<br>- Checks and fixes data types for all statistical columns<br>- Removes variants with invalid statistics |
+| **6. Data Consistency** | `check_data_consistency` | - Checks consistency between **BETA**/**SE** and **Z**-score (if **Z** = **BETA**/**SE**)<br>- Checks consistency between **BETA**/**SE** and **P**-value (if **P** derived from **BETA**/**SE**)<br>- Checks consistency between **MLOG10P** and **P**-value (if **P** = 10^(-**MLOG10P**))<br>- Checks consistency between **N** and **N_CASE** + **N_CONTROL** (if all present)<br>- Reports inconsistencies (likely due to rounding) but does not remove variants |
 | **7. Indel Normalization** (if normalize=True) | `normalize_allele` | - Normalizes indels using left-alignment and parsimony principles (VCF standard)<br>- Left-aligns variants by removing common sequence context<br>- Adjusts positions to reflect normalized representation<br>- Only processes variants that need normalization (indels)<br>- Updates status codes to indicate normalization state |
-| **8. Duplicate Removal** (if remove_dup=True) | `remove_dup` | - Removes duplicate variants based on SNPID (if mode includes 'd' or 's')<br>- Removes duplicate variants based on rsID (if mode includes 'd' or 'r')<br>- Removes duplicate variants based on CHR:POS:EA:NEA (if mode includes 'd' or 'c')<br>- Removes multi-allelic variants (same CHR:POS, if mode includes 'm')<br>- Keeps best variant based on specified column (default: P-value) |
-| **9. Coordinate Sorting** | `sort_coordinate` | - Sorts variants by genomic coordinates (CHR, then POS) |
+| **8. Duplicate Removal** (if remove_dup=True) | `remove_dup` | - Removes duplicate variants based on **SNPID** (if mode includes 'd' or 's')<br>- Removes duplicate variants based on **rsID** (if mode includes 'd' or 'r')<br>- Removes duplicate variants based on **CHR**:**POS**:**EA**:**NEA** (if mode includes 'd' or 'c')<br>- Removes multi-allelic variants (same **CHR**:**POS**, if mode includes 'm')<br>- Keeps best variant based on specified column (default: **P**-value) |
+| **9. Coordinate Sorting** | `sort_coordinate` | - Sorts variants by genomic coordinates (**CHR**, then **POS**) |
 | **10. Column Sorting** | `sort_column` | - Sorts columns to GWASLab default order |
 
 **Parameters:**

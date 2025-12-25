@@ -45,7 +45,7 @@ GWASLab checks overlap with a local file of variants or records in GWAS Catalog.
 
 ## Parameters
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `known` | `string` or `DataFrame` | Path to local file of reported variants or DataFrame with **CHR**/**POS** columns | `None` |
 | `efo` | `string` or `list` | EFO ID, MONDO ID, or trait name(s) for querying GWAS Catalog | `None` |

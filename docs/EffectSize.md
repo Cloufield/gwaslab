@@ -74,7 +74,7 @@ gl.compare_effect(path1,
 - `path1` and `path2` : **Required** `gl.Sumstats` objects. The function will automatically extract the necessary columns (SNPID, P/MLOG10P, EA, NEA, CHR, POS, BETA/OR, SE, EAF if available) from the Sumstats objects.
 - `mode` : use beta or OR 
 
-| Option               | Type                                      | Description                                                               | Default |
+| Option               | DataType                                      | Description                                                               | Default |
 |----------------------|-------------------------------------------|---------------------------------------------------------------------------|---------|
 | `path1`              | `gl.Sumstats`                             | GWASLab Sumstats object for the first dataset                             | Required |
 | `path2`              | `gl.Sumstats`                             | GWASLab Sumstats object for the second dataset                            | Required |
@@ -84,26 +84,26 @@ gl.compare_effect(path1,
     The function automatically detects whether sumstats use P or MLOG10P, and whether EAF columns are available. No need to specify column names manually.
 
 ### Save figures
-| Option      | Type     | Description                 | Default                                            |
+| Option      | DataType     | Description                 | Default                                            |
 |-------------|----------|-----------------------------|----------------------------------------------------|
 | `save`      | `string` or `bool` | path to the saved file or True to use default name | `False` |
 | `save_kwargs` | `dict`   | parameters for plt.savefig() | `{"dpi":300,"facecolor":"white"}`                  |
 
 ### SNP List
 
-| Option    | Type   | Description                                                                                                                       | Default |
+| Option    | DataType   | Description                                                                                                                       | Default |
 |-----------|--------|-----------------------------------------------------------------------------------------------------------------------------------|---------|
 | `snplist` | `list` | optional, specify the variants you want to compare. If None, GWASLab will automatically extract lead variants from both sumstats. | None    |
 
 ### Filter by MAF
 
-| Option      | Type    | Description                                                                                                                                                                 | Default |
+| Option      | DataType    | Description                                                                                                                                                                 | Default |
 |-------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | `maf_level` | `float` | the maf filter for variants. Variants with maf < maf_level will be removed from comparison. Requires EAF columns in both sumstats.                                         | `None`  |
 
 ### Label and styling
 
-| Option           | Type     | Description                                                                                                              | Default                                     |
+| Option           | DataType     | Description                                                                                                              | Default                                     |
 |------------------|----------|--------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|
 | `label`          | `list`   | a list of labels for the legend , in the order of ["Sumstats_1","Sumstats_2","Both","None"]                              | `["Sumstats_1","Sumstats_2","Both","None"]` |
 | `sig_level`      | `float`  | the significance level for auto-extracting lead variants. If `snplist` is provided, the auto-extraction will be skipped. | `5e-8`                                      |
@@ -121,7 +121,7 @@ gl.compare_effect(path1,
 
 ### Annotation
 
-| Option              | Type      | Description                                                         | Default |
+| Option              | DataType      | Description                                                         | Default |
 |---------------------|-----------|---------------------------------------------------------------------|---------|
 | `is_reg`            | `boolean` | if true, draw regression line.                                      | `True`  |
 | `is_45_helper_line` | `boolean` | if true, draw 45 degree line.                                       | `True`  |
@@ -137,7 +137,7 @@ gl.compare_effect(path1,
 
 ### Heterogeneity test
 
-| Option     | Type      | Description                                                    | Default |
+| Option     | DataType      | Description                                                    | Default |
 |------------|-----------|----------------------------------------------------------------|---------|
 | `is_q`     | `boolean` | if true, apply the heterogeneity tests by Cochran's Q test.    | `False`  |
 | `is_q_mc`  | `str` or `bool` | multiple correction method: `"fdr"` for FDR, `"bon"` for Bonferroni, `False`/`"non"` for no correction. If set to `"fdr"` or `"bon"`, `is_q` will be automatically set to `True`. | `False`  |
@@ -146,7 +146,7 @@ gl.compare_effect(path1,
 
 ### Regression and correlation
 
-| Option      | Type      | Description                                                                                    | Default |
+| Option      | DataType      | Description                                                                                    | Default |
 |-------------|-----------|------------------------------------------------------------------------------------------------|---------|
 | `reg_text`  | `str`     | regression text format: `"full"` for full equation, `"r"` for correlation only, `"r2"` for r² only | `"full"` |
 | `r_se`      | `boolean` | If True, SE for r will be estimated using the jackknife method. (Note: available from v3.4.17) | `False` |
@@ -157,14 +157,14 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
 
 ### Winner's Curse correction
 
-| Option         | Type      | Description                                                                                    | Default |
+| Option         | DataType      | Description                                                                                    | Default |
 |----------------|-----------|------------------------------------------------------------------------------------------------|---------|
 | `wc_correction` | `bool` or `str` | Winner's Curse correction: `False` for no correction, `"all"` for all variants, `"sig"` for significant variants only, `"sumstats1"` for sumstats1 only, `"sumstats2"` for sumstats2 only | `False` |
 | `wc_sig_level`  | `float`   | significance threshold for Winner's Curse correction (when `wc_correction` is `"sig"`, `"sumstats1"`, or `"sumstats2"`) | `5e-8`  |
 
 ### Additional options
 
-| Option            | Type      | Description                                                                                    | Default |
+| Option            | DataType      | Description                                                                                    | Default |
 |-------------------|-----------|------------------------------------------------------------------------------------------------|---------|
 | `get_lead_kwargs` | `dict`    | additional parameters for lead SNP extraction (passed to `_get_sig`)                          | `None`  |
 | `drop`            | `boolean` | if True, drop duplicates and NA values                                                       | `False` |

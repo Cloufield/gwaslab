@@ -119,7 +119,7 @@ The generated HDF5 files are organized as **one file per chromosome**, each cont
 
 Each group contains a DataFrame with **rsn as index** and **POS as column** (CHR is not stored):
 
-| Structure | Data Type | Description                                    | Example      |
+| Structure | DataType | Description                                    | Example      |
 |-----------|-----------|------------------------------------------------|--------------|
 | Index: `rsn` | `int64`   | rsID number (without "rs" prefix) - used as index for fast matching | `123456789`  |
 | Column: `POS` | `int32`   | Base pair position                             | `10177`      |
@@ -221,7 +221,7 @@ This results in approximately **12 bytes per variant** (8 + 4), plus HDF5 overhe
 ### .rsid_to_chrpos2()
 
 ```
-.rsid_to_chrpos2()
+mysumstats.rsid_to_chrpos2()
 ```
 
 ### Options

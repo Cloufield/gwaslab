@@ -18,7 +18,7 @@ mysumstats.to_pickle(path="~/mysumstats.pickle",
 
 **Parameters:**
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `path` | `str` | File path for the pickle file. Supports `~` for home directory expansion. | `"~/mysumstats.pickle"` |
 | `overwrite` | `bool` | If `True`, overwrite the file if it already exists. If `False`, skip saving if file exists. | `False` |
@@ -37,7 +37,7 @@ gl.dump_pickle(SumstatsObject,
 
 **Parameters:**
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `SumstatsObject` | `gl.Sumstats` | GWASLab Sumstats Object to save. | Required |
 | `path` | `str` | File path for the pickle file. | Required |
@@ -55,7 +55,7 @@ gl.load_pickle(path)
 
 **Parameters:**
 
-| Parameter | Type | Description | Default |
+| Parameter | DataType | Description | Default |
 |-----------|------|-------------|---------|
 | `path` | `str` | File path to the pickle file. | Required |
 
