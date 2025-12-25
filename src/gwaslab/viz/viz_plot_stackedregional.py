@@ -133,7 +133,7 @@ def plot_stacked_mqq(   objects,
     extra = mqq_kwargs.get("title_kwargs") or mqq_kwargs.get("title_kwargs")
     if extra is not None:
         title_kwargs.update(extra)
-    title_pos = mqq_kwargs.get("title_pos") or style.get("title_pos", None)
+    #title_pos = mqq_kwargs.get("title_pos") or style.get("title_pos", None)
 
     if region_chromatin_files is None:
         region_chromatin_files = []

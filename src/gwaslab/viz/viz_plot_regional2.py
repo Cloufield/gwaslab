@@ -493,6 +493,11 @@ def _plot_regional(
                 lead_snp_is_colors.append(lead_color)
 
     if gtf_path is not None:
+        # For gene coloring, only use the first reference variant (region_ref[0]), not region_ref_second
+        # lead_snp_is_for_gene_coloring will only contain the first lead SNP
+        lead_snp_is_for_gene_coloring = []
+        if len(lead_ids) > 0 and lead_ids[0] is not None:
+            lead_snp_is_for_gene_coloring.append(sumstats.loc[lead_ids[0],"i"])
         # load gtf
         ax3, texts_to_adjust_middle =_plot_gene_track(
                         ax3=ax3,
@@ -503,7 +508,7 @@ def _plot_regional(
                         region_protein_coding=region_protein_coding,
                         region_lead_grid=region_lead_grid,
                         region_lead_grid_line=region_lead_grid_line,
-                        lead_snp_is=lead_snp_is,
+                        lead_snp_is=lead_snp_is_for_gene_coloring,
                         gene_track_start_i=gene_track_start_i,
                         gtf_chr_dict=gtf_chr_dict,
                         gtf_gene_name=gtf_gene_name, 
