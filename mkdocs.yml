@@ -25,7 +25,7 @@ nav:
        - "Reserved Headers": reserved_header.md
        - "License" : LICENSE.md
     - Start: 
-       - Tutorial: tutorial_v4.ipynb
+       - Tutorial: tutorial_v4.md
     - CLI:
        - "Command Line Interface": CLI.md
        - "CLI Workflow Examples": CLIWorkflowExamples.md
@@ -74,38 +74,39 @@ nav:
        - "HLA region": HLA.md
        - "Paper Reference": PaperReference.md
     - Examples:
-       - "Standardization": standardization_workflow.ipynb
-       - "Harmonization" : harmonization_workflow.ipynb
-       - "Output sumstats" : format_load_save.ipynb
-       - "Liftover" : harmonization_liftover.ipynb
-       - "LD score regression" : ldsc_in_gwaslab.ipynb
-       - "Clumping" : util_ex_clumping.ipynb
-       - "Lead and novel variants" : utility_get_lead_novel.ipynb
-       - "Data conversion" : utility_data_conversion.ipynb
-       - "Manhattan and QQ plot": visualization_mqq.ipynb     
-       - "Regional plot" : visualization_regional.ipynb
-       - "Miami plot": visualization_miami2.ipynb
-       - "Stacked MQQ plot": visualization_stacked_mqq.ipynb
-       - "Brisbane plot" : visualization_brisbane.ipynb
-       - "Correlation heatmap" : visualization_plot_genetic_correlation.ipynb
-       - "Download reference": Download_reference.ipynb
+       - "Standardization": standardization_workflow.md
+       - "Harmonization" : harmonization_workflow.md
+       - "Output sumstats" : format_load_save.md
+       - "Liftover" : harmonization_liftover.md
+       - "LD score regression" : ldsc_in_gwaslab.md
+       - "Clumping" : util_ex_clumping.md
+       - "Lead and novel variants" : utility_get_lead_novel.md
+       - "Data conversion" : utility_data_conversion.md
+       - "Manhattan and QQ plot": visualization_mqq.md     
+       - "Regional plot" : visualization_regional.md
+       - "Miami plot": visualization_miami2.md
+       - "Stacked MQQ plot": visualization_stacked_mqq.md
+       - "Brisbane plot" : visualization_brisbane.md
+       - "Correlation heatmap" : visualization_plot_genetic_correlation.md
+       - "Download reference": Download_reference.md
        
-
 markdown_extensions:
   - toc:
       toc_depth: 3
   - admonition
+  - tables
+  - abbr
   - pymdownx.details
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.highlight:
       anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.superfences
+  - pymdownx.superfences 
   - pymdownx.snippets
-  - tables
+
+
+extra_css:
+  - stylesheets/extra.css
 
 extra_javascript:
   - javascripts/mathjax.js
@@ -115,10 +116,6 @@ extra_javascript:
   - javascripts/tablesort.js
   - javascripts/hide-sidebar-tutorial.js
 
-extra_css:
-  - stylesheets/extra.css
-
 plugins:
-  - mkdocs-jupyter
   - search
 
