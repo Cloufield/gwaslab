@@ -15,7 +15,7 @@ The function compares the CHR:POS coordinates in your sumstats against Hapmap3 S
 
 ## .infer_build()
 
-```
+```python
 mysumstats.infer_build(verbose=True)
 ```
 
@@ -45,7 +45,7 @@ The function updates the Sumstats object in place:
 ## Examples
 
 !!! example "Basic usage"
-    ```
+    ```python
     # Infer genome build
     mysumstats.infer_build()
     
@@ -55,7 +55,7 @@ The function updates the Sumstats object in place:
 
 
 !!! example "Quiet mode"
-    ```
+    ```python
     # Infer build without verbose output
     mysumstats.infer_build(verbose=False)
     ```
@@ -64,7 +64,7 @@ The function updates the Sumstats object in place:
 
 The function provides detailed logging output:
 
-```
+```python
  -Loading Hapmap3 variants data...
  -CHR and POS will be used for matching...
  -Matching variants for hg19: num_hg19 = 12345
@@ -73,7 +73,7 @@ The function provides detailed logging output:
 ```
 
 If fewer than 10,000 matches are found:
-```
+```python
 ⚠️ Please be cautious due to the limited number of variants.
 ```
 

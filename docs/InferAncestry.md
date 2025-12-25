@@ -15,7 +15,7 @@ The function compares the effective allele frequencies from your sumstats agains
 
 ## .infer_ancestry()
 
-```
+```python
 mysumstats.infer_ancestry(build="19", verbose=True)
 ```
 
@@ -104,7 +104,7 @@ The function compares against 26 populations from the 1000 Genomes Project:
 ## Examples
 
 !!! example "Basic usage"
-    ```
+    ```python
     # Infer ancestry (build will be taken from mysumstats.build)
     mysumstats.infer_ancestry()
     
@@ -113,7 +113,7 @@ The function compares against 26 populations from the 1000 Genomes Project:
     ```
 
 !!! example "Specify build explicitly"
-    ```
+    ```python
     # Infer ancestry for hg19 data
     mysumstats.infer_ancestry(build="19")
     
@@ -122,13 +122,13 @@ The function compares against 26 populations from the 1000 Genomes Project:
     ```
 
 !!! example "Quiet mode"
-    ```
+    ```python
     # Infer ancestry without verbose output
     mysumstats.infer_ancestry(build="19", verbose=False)
     ```
 
 !!! example "Custom reference file"
-    ```
+    ```python
     # Use a custom allele frequency file
     mysumstats.infer_ancestry(build="19", ancestry_af="/path/to/custom_af.tsv")
     ```
@@ -137,7 +137,7 @@ The function compares against 26 populations from the 1000 Genomes Project:
 
 The function provides detailed logging output showing Fst values for all populations:
 
-```
+```python
 Start to infer ancestry based on Fst ...(version)
  -Estimating Fst using 12345 variants...
  -FST_GBR : 0.001234

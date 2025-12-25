@@ -10,7 +10,7 @@
 
 ## gl.compare_effect()
 
-```
+```python
 gl.compare_effect(path1,
                    path2,
                    maf_level=None,
@@ -180,7 +180,7 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
 
 
 !!! example "Use gl.Sumstats object (Recommended)"
-    ```
+    ```python
     gl1 = gl.Sumstats("bbj_bmi_female.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")
     gl2 = gl.Sumstats("bbj_bmi_male.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")
 
@@ -193,7 +193,7 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
     <img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/258d3316-7d73-408a-8e20-e560b831861c">
 
 !!! example "Heterogeneity test"
-    ```
+    ```python
     gl1 = gl.Sumstats("bbj_bmi_female.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")
     gl2 = gl.Sumstats("bbj_bmi_male.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")
 
@@ -212,7 +212,7 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
      <img width="500" alt="image" src="https://github.com/Cloufield/gwaslab/assets/40289485/b9c4511c-c1eb-4c36-8b72-788d2b21b790">
      
 !!! example "Annotation"
-    ```
+    ```python
     gl1 = gl.Sumstats("bbj_bmi_female.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")
     gl2 = gl.Sumstats("bbj_bmi_male.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")
 
@@ -234,14 +234,14 @@ $$ s.e.(\hat{r}_{jack}) = \sqrt{ {{n-1}\over{n}} \sum_{i=1}^n(\hat{r_i} -\bar{r}
     
 !!! example "Male-specific and female-specific BMI Sumstats from JENGER"
     
-    ```
+    ```python
     !wget -O bbj_bmi_male.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
     !wget -O bbj_bmi_female.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
 
     Headers of the files : # SNP    CHR	POS	REF	ALT	Frq	Rsq	BETA	SE	P
     ```
     
-    ```
+    ```python
     # Load sumstats as Sumstats objects
     gl1 = gl.Sumstats("bbj_bmi_female.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")
     gl2 = gl.Sumstats("bbj_bmi_male.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t")

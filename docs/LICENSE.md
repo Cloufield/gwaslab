@@ -10,7 +10,7 @@ See the root `LICENSE` file for the full GPL-3.0 license text.
 
 **Note**: Prior to version 3.4.39, GWASLab was licensed under the MIT License. The license was changed to GPL-3.0-only starting with version 3.4.39. The previous MIT license text is preserved below for reference:
 
-```
+```python
 MIT License
 
 Copyright (c) 2022 Cloufield

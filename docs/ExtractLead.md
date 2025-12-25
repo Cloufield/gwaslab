@@ -4,7 +4,7 @@ GWASLab can extract the lead variants based on **MLOG10P** values or **P** value
 
 ## .get_lead()
 
-```
+```python
 mysumstats.get_lead(
     scaled=False,
     use_p=False,
@@ -54,7 +54,7 @@ mysumstats.get_lead(
 ## Examples
 
 !!! example "Basic lead variant extraction"
-    ```
+    ```python
     # Extract lead variants
     lead_variants = mysumstats.get_lead(
         windowsizekb=500,
@@ -63,7 +63,7 @@ mysumstats.get_lead(
     ```
 
 !!! example "Extract lead variants with gene annotation"
-    ```
+    ```python
     # Extract lead variants with gene annotation
     lead_variants = mysumstats.get_lead(
         windowsizekb=500,
@@ -75,7 +75,7 @@ mysumstats.get_lead(
     ```
 
 !!! example "Extract lead variants with Winner's Curse correction"
-    ```
+    ```python
     # Extract lead variants with Winner's Curse correction
     lead_variants = mysumstats.get_lead(
         windowsizekb=500,
@@ -85,7 +85,7 @@ mysumstats.get_lead(
     ```
 
 !!! example "Return as Sumstats object"
-    ```
+    ```python
     # Return as Sumstats object instead of DataFrame
     lead_sumstats = mysumstats.get_lead(
         windowsizekb=500,
@@ -95,7 +95,7 @@ mysumstats.get_lead(
     ```
 
 !!! example "Using custom GTF file"
-    ```
+    ```python
     # Use custom GTF file for annotation
     lead_variants = mysumstats.get_lead(
         windowsizekb=500,

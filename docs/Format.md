@@ -4,7 +4,7 @@ GWASLab provides a flexible formatting and saving function.
 
 ## .to_format()
 
-```
+```python
 mysumstats.to_format(
           path="./sumstats",
           fmt="ldsc",   
@@ -50,7 +50,7 @@ mysumstats.to_format(
 Using `float_formats`, you can specify the formats for numbers.
 
 !!! info "Default formats for floating-point numbers"
-    ```
+    ```python
     {'EAF': '{:.4g}', 'BETA': '{:.4f}', 'Z': '{:.4f}','CHISQ': '{:.4f}','SE': '{:.4f}','OR': '{:.4f}','OR_95U': '{:.4f}','OR_95L': '{:.4f}','INFO': '{:.4f}','P': '{:.4e}','MLOG10P': '{:.4f}','DAF': '{:.4f}'}
     ```
 
@@ -71,7 +71,7 @@ GWASLab supports commonly used tabular formats, which are listed in a companion 
     For more details, please check [formatbook](https://github.com/Cloufield/formatbook)
 
 !!! example "Basic format conversion"
-    ```
+    ```python
     # Convert to LDSC format
     mysumstats.to_format(path="./output", fmt="ldsc")
     # Output: output.ldsc.tsv.gz
@@ -86,7 +86,7 @@ GWASLab supports commonly used tabular formats, which are listed in a companion 
     ```
 
 !!! example "Filtering and formatting"
-    ```
+    ```python
     # Extract HapMap3 SNPs only
     mysumstats.to_format(path="./hapmap3", fmt="ldsc", hapmap3=True)
     
@@ -101,7 +101,7 @@ GWASLab supports commonly used tabular formats, which are listed in a companion 
     ```
 
 !!! example "Advanced options"
-    ```
+    ```python
     # Custom float formatting
     float_formats = {'P': '{:.2e}', 'BETA': '{:.6f}', 'SE': '{:.6f}'}
     mysumstats.to_format(path="./formatted", fmt="gwaslab", float_formats=float_formats)
@@ -114,7 +114,7 @@ GWASLab supports commonly used tabular formats, which are listed in a companion 
     ```
 
 !!! example "CLI usage"
-    ```
+    ```python
     # Basic format conversion
     gwaslab --input sumstats.tsv --fmt gwaslab --out output --to-fmt ldsc
     
@@ -143,7 +143,7 @@ The BED (Browser Extensible Data) format is used by the UCSC Genome Browser and 
 - **Deletions**: `START = POS`, `END = POS + len(NEA) - 1` (0-based)
 
 **Example:**
-```
+```python
 mysumstats.to_format(path="./output", fmt="bed", bgzip=True, tabix=True)
 # Output: output.bed.gz (bgzipped and tabix-indexed)
 ```
@@ -167,7 +167,7 @@ The VEP (Variant Effect Predictor) format is used by Ensembl's VEP tool for vari
     VEP format uses `START > END` for insertions as a special convention to indicate an insertion between positions. This is intentional and correct according to VEP specifications.
 
 **Example:**
-```
+```python
 mysumstats.to_format(path="./output", fmt="vep", bgzip=True, tabix=True)
 # Output: output.vep.gz (bgzipped and tabix-indexed)
 ```
@@ -201,14 +201,14 @@ According to the [ANNOVAR documentation](https://annovar.openbioinformatics.org/
   - Matches ANNOVAR example: `1 13211293 13211294 TC -` (2-bp deletion)
 
 **Examples from ANNOVAR documentation:**
-```
+```python
 1 948921 948921 T C comments: rs15842, a SNP in 5' UTR
 1 13211293 13211294 TC - comments: rs59770105, a 2-bp deletion
 1 11403596 11403596 - AT comments: rs35561142, a 2-bp insertion
 ```
 
 **Example:**
-```
+```python
 mysumstats.to_format(path="./output", fmt="annovar", bgzip=True, tabix=True)
 # Output: output.annovar.gz (bgzipped and tabix-indexed)
 ```
@@ -262,7 +262,7 @@ The SSF (Summary Statistics Format) is a standardized format for GWAS summary st
 **Column order:** SSF format has a strict column order requirement. GWASLab automatically orders columns according to the SSF specification.
 
 **Example:**
-```
+```python
 # Output in SSF format
 mysumstats.to_format(path="./output", fmt="ssf")
 
@@ -297,7 +297,7 @@ GWASLab provides built-in validation for SSF format files to ensure compliance w
 8. **Minimum rows**: Requires at least 100,000 variants (configurable)
 
 **Usage:**
-```
+```python
 # Validate SSF file during output
 mysumstats.to_format(path="./output", fmt="ssf", validate=True)
 
@@ -314,13 +314,13 @@ mysumstats.to_format(path="./output", fmt="ssf", validate=True)
 - Failure: Lists specific validation errors and issues found
 
 **Example validation output:**
-```
+```python
 ✓ SSF validation successful: File passes all validation checks
 ```
 
 or
 
-```
+```python
 ✗ SSF validation failed: Missing required columns: ['standard_error']
   - Missing required columns: ['standard_error']
 ```

@@ -14,7 +14,7 @@ GWASLab supports:
 
 Fast GTF file reader using Polars for improved performance. Returns a pandas DataFrame for compatibility.
 
-```
+```python
 from gwaslab.io.io_gtf import read_gtf
 
 # Read entire GTF file
@@ -75,14 +75,14 @@ When `expand_attribute_column=True`, common attributes from the attribute column
 
 Convenience function to read a GTF file with commonly used columns.
 
-```
+```python
 from gwaslab.io.io_gtf import read_gtf_file
 
 gtf = read_gtf_file("annotation.gtf.gz")
 ```
 
 This is equivalent to:
-```
+```python
 read_gtf(
     gtf_path,
     usecols=[
@@ -104,7 +104,7 @@ read_gtf(
 
 Get GTF data for a specific chromosome from built-in reference datasets. Optimized to filter by chromosome early during file reading for speed.
 
-```
+```python
 from gwaslab.io.io_gtf import get_gtf
 
 # Get Ensembl hg19 GTF for chromosome 1
@@ -143,7 +143,7 @@ gtf = get_gtf(chrom="1", build="38", source="refseq")
 
 Extract protein-coding genes from a GTF file and save to a new file.
 
-```
+```python
 from gwaslab.io.io_gtf import gtf_to_protein_coding
 from gwaslab.info.g_Log import Log
 
@@ -173,7 +173,7 @@ protein_coding_path = gtf_to_protein_coding(
 
 Extract all gene records from a GTF file and save to a new file.
 
-```
+```python
 from gwaslab.io.io_gtf import gtf_to_all_gene
 from gwaslab.info.g_Log import Log
 
@@ -209,7 +209,7 @@ GWASLab automatically handles different chromosome naming conventions:
 - **RefSeq IDs**: For RefSeq GTF files, chromosome names are automatically converted to standard format
 
 When filtering by chromosome, you can use any of these formats:
-```
+```python
 # All of these work for chromosome X:
 gtf = read_gtf("annotation.gtf.gz", chrom="X")
 gtf = read_gtf("annotation.gtf.gz", chrom="chrX")
@@ -221,7 +221,7 @@ gtf = read_gtf("annotation.gtf.gz", chrom="23")
 ## Examples
 
 !!! example "Basic GTF reading"
-    ```
+    ```python
     from gwaslab.io.io_gtf import read_gtf
     
     # Read entire GTF file
@@ -231,7 +231,7 @@ gtf = read_gtf("annotation.gtf.gz", chrom="23")
     ```
 
 !!! example "Filter by chromosome and feature"
-    ```
+    ```python
     from gwaslab.io.io_gtf import read_gtf
     
     # Read only genes from chromosome 1
@@ -244,7 +244,7 @@ gtf = read_gtf("annotation.gtf.gz", chrom="23")
     ```
 
 !!! example "Select specific columns"
-    ```
+    ```python
     from gwaslab.io.io_gtf import read_gtf
     
     # Read only essential columns
@@ -255,7 +255,7 @@ gtf = read_gtf("annotation.gtf.gz", chrom="23")
     ```
 
 !!! example "Get reference GTF data"
-    ```
+    ```python
     from gwaslab.io.io_gtf import get_gtf
     
     # Get Ensembl hg38 GTF for chromosome 1
@@ -267,7 +267,7 @@ gtf = read_gtf("annotation.gtf.gz", chrom="23")
     ```
 
 !!! example "Extract protein-coding genes"
-    ```
+    ```python
     from gwaslab.io.io_gtf import gtf_to_protein_coding
     from gwaslab.info.g_Log import Log
     
@@ -284,7 +284,7 @@ gtf = read_gtf("annotation.gtf.gz", chrom="23")
     ```
 
 !!! example "Gene annotation workflow"
-    ```
+    ```python
     from gwaslab.io.io_gtf import read_gtf
     
     # Read genes with essential information
@@ -322,7 +322,7 @@ gtf = read_gtf("annotation.gtf.gz", chrom="23")
 
 GTF (Gene Transfer Format) is a tab-delimited text format for storing gene annotations. Each line represents one feature (gene, transcript, exon, etc.) with the following structure:
 
-```
+```python
 seqname    source    feature    start    end    score    strand    frame    attribute
 ```
 

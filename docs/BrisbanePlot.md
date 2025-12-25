@@ -15,7 +15,7 @@ GWASLab can create the [Brisbane plot](https://www.nature.com/articles/s41586-02
 
 ## .plot_mqq(mode="b")
 
-```
+```python
 mysumstats.plot_mqq(mode="b")
 ```
 
@@ -40,17 +40,17 @@ Creates a Brisbane plot showing signal density across the genome.
 ### Example
 
 !!! example "Basic Brisbane plot"
-    ```
+    ```python
     mysumstats.plot_mqq(mode="b")
     ```
 
 !!! example "Brisbane plot with custom window size"
-    ```
+    ```python
     mysumstats.plot_mqq(mode="b", bwindowsizekb=250)
     ```
 
 !!! example "Brisbane plot with density coloring"
-    ```
+    ```python
     mysumstats.plot_mqq(
         mode="b",
         density_color=True,
@@ -59,12 +59,12 @@ Creates a Brisbane plot showing signal density across the genome.
     ```
 
 !!! example "Manhattan-Brisbane layout"
-    ```
+    ```python
     mysumstats.plot_mqq(mode="mb")
     ```
 
 !!! example "Brisbane plot with annotations"
-    ```
+    ```python
     mysumstats.plot_mqq(
         mode="b",
         anno="GENENAME",
@@ -79,7 +79,7 @@ See more examples [here](https://cloufield.github.io/gwaslab/visualization_brisb
 
 You can use `.get_density()` to calculate the density without creating a plot. This adds a `DENSITY` column to your sumstats.
 
-```
+```python
 mysumstats.get_density(windowsizekb=100)
 ```
 
@@ -106,7 +106,7 @@ The function adds a `DENSITY` column to `mysumstats.data` and prints summary sta
 - Maximum density and the variant with maximum density
 
 !!! example "Calculate signal density"
-    ```
+    ```python
     mysumstats.get_density(windowsizekb=100)
     
     # Output:
@@ -132,7 +132,7 @@ The function adds a `DENSITY` column to `mysumstats.data` and prints summary sta
     ```
 
 !!! example "Calculate density from significant variants list"
-    ```
+    ```python
     # For conditional analysis: calculate density based on pre-identified significant variants
     significant_variants = mysumstats.data[mysumstats.data["P"] < 5e-8]
     mysumstats.get_density(windowsizekb=100, sig_list=significant_variants)
@@ -142,7 +142,7 @@ The function adds a `DENSITY` column to `mysumstats.data` and prints summary sta
 
 You can use `.get_top()` to extract variants with the highest density values within sliding windows. This is useful for identifying the most dense signal regions in your Brisbane plot.
 
-```
+```python
 mysumstats.get_top(by="DENSITY", windowsizekb=500)
 ```
 
@@ -173,7 +173,7 @@ This is similar to `.get_lead()` but doesn't rely on P-values - it can use any m
 - **If `gls=True`**: Returns a new Sumstats object containing the selected top variants
 
 !!! example "Extract top density variants"
-    ```
+    ```python
     # Extract variants with highest density in 500kb windows
     top_density_variants = mysumstats.get_top(by="DENSITY", windowsizekb=500)
     
@@ -184,7 +184,7 @@ This is similar to `.get_lead()` but doesn't rely on P-values - it can use any m
     ```
 
 !!! example "Extract top density variants with custom threshold"
-    ```
+    ```python
     # Only consider variants with density >= 5
     top_variants = mysumstats.get_top(
         by="DENSITY",
@@ -194,7 +194,7 @@ This is similar to `.get_lead()` but doesn't rely on P-values - it can use any m
     ```
 
 !!! example "Extract top variants by other metrics"
-    ```
+    ```python
     # Extract top variants by MLOG10P instead of DENSITY
     top_p_variants = mysumstats.get_top(by="MLOG10P", windowsizekb=500)
     
@@ -203,14 +203,14 @@ This is similar to `.get_lead()` but doesn't rely on P-values - it can use any m
     ```
 
 !!! example "Return as Sumstats object"
-    ```
+    ```python
     # Get top density variants as a new Sumstats object
     top_sumstats = mysumstats.get_top(by="DENSITY", gls=True)
     top_sumstats.plot_mqq(mode="b")
     ```
 
 !!! example "Extract top variants with gene annotation"
-    ```
+    ```python
     # Extract top density variants and annotate with gene names
     top_variants = mysumstats.get_top(
         by="DENSITY",

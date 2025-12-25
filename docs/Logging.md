@@ -53,7 +53,7 @@ The `Log` class maintains:
 ### Initialization
 
 Log objects are created per `Sumstats` instance:
-```
+```python
 self.log = Log()  # Created in Sumstats.__init__()
 ```
 
@@ -80,7 +80,7 @@ Two main decorators add standardized logging:
 
 ### Typical Log Message Flow
 
-```
+```python
 Start to [operation] ...(version)
  -Reference VCF: [path]
  -Number of threads/cores to use: [n]
@@ -125,7 +125,7 @@ Finished [operation].
 To unify logging format across the codebase, the `Log` class provides standardized methods for common operations:
 
 ### Variant Operations
-```
+```python
 # Filtering variants
 log.log_variants_filtered(150, reason="with P > 0.05")
 # Output: " -Filtered out 150 variants with P > 0.05"
@@ -140,7 +140,7 @@ log.log_variants_kept(1000, reason="in specified regions")
 ```
 
 ### Column Operations
-```
+```python
 # Adding columns
 log.log_column_added("MLOG10P")
 # Output: " -Added column: MLOG10P"
@@ -151,7 +151,7 @@ log.log_column_dropped("INFO", reason="all values are invalid")
 ```
 
 ### Shape and Data Operations
-```
+```python
 # Shape changes
 log.log_shape_change((1000, 20), (850, 21))
 # Output: " -Shape changed: 1000 x 20 -> 850 x 21 (-150 rows, +1 columns)"
@@ -166,14 +166,14 @@ log.log_operation_finish("filtering variants")
 ```
 
 ### Filtering Conditions
-```
+```python
 # Filtering conditions
 log.log_filtering_condition("P", ">", 0.05, 150, action="Removing")
 # Output: " -Removing 150 variants with P > 0.05 ..."
 ```
 
 ### General Operations
-```
+```python
 # General operation logging
 log.log_operation("Sorting variants by chromosome and position")
 # Output: " -Sorting variants by chromosome and position"
@@ -186,7 +186,7 @@ log.log_operation("Processing batch 1 of 10", prefix="   ")
 
 All standardized logging methods support an `indent` parameter to show hierarchical structure:
 
-```
+```python
 # Main operation (indent=0, default)
 log.log_operation_start("process data", version="v3.4.38")
 # Output: "Start to process data ...(v3.4.38)"
@@ -212,7 +212,7 @@ log.log_operation_finish("processing data")
 ```
 
 **Example with nested function calls:**
-```
+```python
 def process_data(log, verbose=True):
     log.log_operation_start("process data", verbose=verbose)
     log.log_dataframe_shape(sumstats, verbose=verbose)
@@ -233,7 +233,7 @@ def filter_variants(sumstats, log, verbose=True, indent=0):
 ```
 
 **Output:**
-```
+```python
 Start to process data ...
  -Current Dataframe shape : 1000 x 20 ; Memory usage: 19.95 MB
   Start to filter variants ...
@@ -244,7 +244,7 @@ Finished processing data.
 ```
 
 ### Status Changes
-```
+```python
 # STATUS column digit changes
 log.log_status_change(digit=1, before="9", after="1", count=5000, reason="genome build update")
 # Output: " -Updated STATUS digit 1: 9 -> 1 (5000 variants) - genome build update"
@@ -254,7 +254,7 @@ log.log_status_change(digit=6, before=["4", "5"], after=["1", "2"])
 ```
 
 ### Datatype Changes
-```
+```python
 # Datatype conversions
 log.log_datatype_change("CHR", "object", "Int64", success=True)
 # Output: " -Converted datatype for CHR: object -> Int64"
@@ -268,7 +268,7 @@ log.log_datatype_attempt("CHR", "object", "Int64")
 ```
 
 ### Formulas and Calculations
-```
+```python
 # Formula/calculation logging
 log.log_formula("MLOG10P", "from P")
 # Output: "    Filling MLOG10P from P..."
@@ -281,7 +281,7 @@ log.log_formula("OR", "from BETA")
 ```
 
 ### Reference Paths and Resources
-```
+```python
 # Reference file paths
 log.log_reference_path("VCF", "/path/to/reference.vcf.gz")
 # Output: " -Reference VCF: /path/to/reference.vcf.gz"

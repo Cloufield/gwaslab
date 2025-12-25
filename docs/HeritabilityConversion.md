@@ -25,7 +25,7 @@ For binary (case-control) traits, heritability estimates depend on the case-cont
 
 Converts heritability on the observed scale in an ascertained sample to heritability on the liability scale in the population.
 
-```
+```python
 gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)
 ```
 
@@ -51,7 +51,7 @@ gl.h2_obs_to_liab(h2_obs, P, K, se_obs=None)
 
 **Basic conversion without standard error:**
 
-```
+```python
 import gwaslab as gl
 
 # Example: Type 2 diabetes
@@ -71,7 +71,7 @@ print(f"Liability-scale heritability: {h2_liab:.4f}")
 
 **Conversion with standard error:**
 
-```
+```python
 # With standard error
 h2_obs = 0.15
 se_obs = 0.02
@@ -95,7 +95,7 @@ If both `P` and `K` are `NaN`, the function returns `h2_obs` unchanged (no conve
 
 Converts a heritability estimate and its standard error to a p-value using a one-sided test.
 
-```
+```python
 gl.h2_se_to_p(h2, se)
 ```
 
@@ -113,7 +113,7 @@ gl.h2_se_to_p(h2, se)
 
 ### Example
 
-```
+```python
 import gwaslab as gl
 
 # Heritability estimate and standard error

@@ -15,7 +15,7 @@ GWASLab integrates a few pre-defined datasets for quick conversion and access, w
 - `only_number=False`: If True, return only numeric chromosome numbers
 
 **Examples:**
-```
+```python
 gl.get_chr_list()
 
 ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','X','Y','M','MT']
@@ -43,7 +43,7 @@ These functions convert between chromosome identifiers and NCBI accession IDs.
 - `inverse`: If True, return NCBI ID to chromosome mapping (equivalent to `get_NC_to_chr`)
 
 **Example:**
-```
+```python
 gl.get_chr_to_NC(build="19")
 
 {'1': 'NC_000001.10', '2': 'NC_000002.11', '3': 'NC_000003.11', '4': 'NC_000004.11', '5': 'NC_000005.9', '6': 'NC_000006.11', '7': 'NC_000007.13', '8': 'NC_000008.10', '9': 'NC_000009.11', '10': 'NC_000010.10', '11': 'NC_000011.9', '12': 'NC_000012.11', '13': 'NC_000013.10', '14': 'NC_000014.8', '15': 'NC_000015.9', '16': 'NC_000016.9', '17': 'NC_000017.10', '18': 'NC_000018.9', '19': 'NC_000019.9', '20': 'NC_000020.10', '21': 'NC_000021.8', '22': 'NC_000022.10', 'X': 'NC_000023.10', 'Y': 'NC_000024.9', 'MT': 'NC_012920.1'}
@@ -57,7 +57,7 @@ gl.get_chr_to_NC(build="19")
 - `inverse`: If True, return NCBI ID to chromosome number mapping (equivalent to `get_NC_to_number`)
 
 **Example:**
-```
+```python
 gl.get_number_to_NC(build="19")
 
 {1: 'NC_000001.10', 2: 'NC_000002.11', 3: 'NC_000003.11', 4: 'NC_000004.11', 5: 'NC_000005.9', 6: 'NC_000006.11', 7: 'NC_000007.13', 8: 'NC_000008.10', 9: 'NC_000009.11', 10: 'NC_000010.10', 11: 'NC_000011.9', 12: 'NC_000012.11', 13: 'NC_000013.10', 14: 'NC_000014.8', 15: 'NC_000015.9', 16: 'NC_000016.9', 17: 'NC_000017.10', 18: 'NC_000018.9', 19: 'NC_000019.9', 20: 'NC_000020.10', 21: 'NC_000021.8', 22: 'NC_000022.10', 23: 'NC_000023.10', 24: 'NC_000024.9', 25: 'NC_012920.1'}
@@ -70,7 +70,7 @@ gl.get_number_to_NC(build="19")
 - `build`: Genome build version ('19' or '38')
 
 **Example:**
-```
+```python
 gl.get_NC_to_chr(build="19")
 
 {'NC_000001.10': '1', 'NC_000002.11': '2', 'NC_000003.11': '3', 'NC_000004.11': '4', 'NC_000005.9': '5', 'NC_000006.11': '6', 'NC_000007.13': '7', 'NC_000008.10': '8', 'NC_000009.11': '9', 'NC_000010.10': '10', 'NC_000011.9': '11', 'NC_000012.11': '12', 'NC_000013.10': '13', 'NC_000014.8': '14', 'NC_000015.9': '15', 'NC_000016.9': '16', 'NC_000017.10': '17', 'NC_000018.9': '18', 'NC_000019.9': '19', 'NC_000020.10': '20', 'NC_000021.8': '21', 'NC_000022.10': '22', 'NC_000023.10': 'X', 'NC_000024.9': 'Y', 'NC_012920.1': 'MT'}
@@ -83,7 +83,7 @@ gl.get_NC_to_chr(build="19")
 - `build`: Genome build version ('19' or '38')
 
 **Example:**
-```
+```python
 gl.get_NC_to_number(build="19")
 
 {'NC_000001.10': 1, 'NC_000002.11': 2, 'NC_000003.11': 3, 'NC_000004.11': 4, 'NC_000005.9': 5, 'NC_000006.11': 6, 'NC_000007.13': 7, 'NC_000008.10': 8, 'NC_000009.11': 9, 'NC_000010.10': 10, 'NC_000011.9': 11, 'NC_000012.11': 12, 'NC_000013.10': 13, 'NC_000014.8': 14, 'NC_000015.9': 15, 'NC_000016.9': 16, 'NC_000017.10': 17, 'NC_000018.9': 18, 'NC_000019.9': 19, 'NC_000020.10': 20, 'NC_000021.8': 21, 'NC_000022.10': 22, 'NC_000023.10': 23, 'NC_000024.9': 24, 'NC_012920.1': 25}
@@ -100,7 +100,7 @@ gl.get_NC_to_number(build="19")
 - `xymt_num`: Corresponding numeric values for xymt (default: [23,24,25])
 
 **Example:**
-```
+```python
 gl.get_chr_to_number()
 
 {'1': 1, '2': 2, ..., 'X': 23, 'Y': 24, 'MT': 25, 'M': 25}
@@ -116,7 +116,7 @@ gl.get_chr_to_number()
 - `prefix`: Optional prefix for chromosome identifiers
 
 **Example:**
-```
+```python
 gl.get_number_to_chr()
 
 {1: '1', 2: '2', ..., 23: 'X', 24: 'Y', 25: 'MT'}
@@ -135,7 +135,7 @@ gl.get_number_to_chr()
 - `str`: Path to the high LD region BED file
 
 **Example:**
-```
+```python
 gl.get_high_ld("19")
 
 '/home/yunye/anaconda3/envs/gwaslab/lib/python3.8/site-packages/gwaslab/data/high_ld/high_ld_hla_hg19.bed.gz'
@@ -154,7 +154,7 @@ gl.get_high_ld("19")
 - `tuple`: (metadata_dict, format_dict) - Metadata and format dictionary mapping fields
 
 **Example:**
-```
+```python
 gl.get_format_dict(fmt="gwaslab")
 
 ({'format_name': 'ldsc',
@@ -181,7 +181,7 @@ gl.get_format_dict(fmt="gwaslab")
 - `list`: Format names available in the format book
 
 **Example:**
-```
+```python
 gl.get_formats_list()
 
 ['auto',

@@ -4,7 +4,7 @@ GWASLab can directly liftover the positions of variants in sumstats using a fast
 
 ## .liftover()
 
-```
+```python
 mysumstats.liftover(from_build="19", 
                     to_build="38",
                     remove=True)
@@ -38,7 +38,7 @@ The liftover implementation uses the `sumstats_liftover` package, which directly
 
 !!!example
     
-    ```
+    ```python
     # Basic usage with build numbers
     mysumstats.liftover(from_build="19", to_build="38")
     

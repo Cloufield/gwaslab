@@ -29,7 +29,7 @@ The latest version of GWASLab now supports Python 3.9, 3.10, 3.11, and 3.12.
 !!! tip "Recommended: Python 3.12"
     We recommend using **Python 3.12** for the best performance and compatibility with GWASLab v4.0.0.
 
-```
+```python
 pip install gwaslab
 ```
 
@@ -37,7 +37,7 @@ pip install gwaslab
 
 [uv](https://github.com/astral-sh/uv) is a fast Python package installer and resolver written in Rust.
 
-```
+```python
 uv pip install gwaslab
 ```
 
@@ -45,7 +45,7 @@ uv pip install gwaslab
 
 Create a Python 3.9, 3.10, 3.11 or 3.12 environment and install gwaslab using pip. We recommend Python 3.12:
 
-```
+```python
 conda create -n gwaslab -c conda-forge python=3.12
 
 conda activate gwaslab
@@ -55,7 +55,7 @@ pip install gwaslab
 
 or create a new environment using yml file [environment.yml](https://github.com/Cloufield/gwaslab/blob/main/environment.yml)
 
-```
+```python
 conda env create -n gwaslab -f environment.yml -c conda-forge
 ```
 
@@ -67,7 +67,7 @@ A docker file is available [here](https://github.com/Cloufield/gwaslab/blob/main
 
 ### Python API
 
-```
+```python
 import gwaslab as gl
 
 # load plink2 output
@@ -104,7 +104,7 @@ lead_variants = mysumstats.get_lead()
 
 ### Command Line Interface (CLI) - New in v4.0.0
 
-```
+```python
 # Show version
 gwaslab version
 

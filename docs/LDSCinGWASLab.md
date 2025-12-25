@@ -80,7 +80,7 @@ When `munge=True`, you can customize munging behavior using `munge_kwargs`:
 !!! quote "Single variate LD score regression"
     Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.
 
-```
+```python
 mysumstats.estimate_h2_by_ldsc(build=None, verbose=True, match_allele=True, how="right", **kwargs)
 ```
 
@@ -102,7 +102,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_h2`. If `print_coefficients` i
 
 !!! example "Basic heritability estimation"
 
-    ```
+    ```python
     mysumstats.basic_check()
     mysumstats.estimate_h2_by_ldsc(ref_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
                                    w_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/")
@@ -111,7 +111,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_h2`. If `print_coefficients` i
 
 !!! example "With munging and additional options"
 
-    ```
+    ```python
     mysumstats.estimate_h2_by_ldsc(ref_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
                                    w_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/",
                                    munge=True,
@@ -124,7 +124,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_h2`. If `print_coefficients` i
 
 !!! example "Custom munging parameters"
 
-    ```
+    ```python
     # Customize munging with stricter filters
     mysumstats.estimate_h2_by_ldsc(ref_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
                                    w_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/",
@@ -142,7 +142,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_h2`. If `print_coefficients` i
 
 !!! example "Case-control study with prevalence"
 
-    ```
+    ```python
     mysumstats.estimate_h2_by_ldsc(ref_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
                                    w_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/",
                                    samp_prev=0.5,  # 50% cases in sample
@@ -157,7 +157,7 @@ For more examples, see [LDSC in gwaslab](https://cloufield.github.io/gwaslab/lds
 !!! quote "Cross-trait LD score regression"
     Bulik-Sullivan, B., et al. An Atlas of Genetic Correlations across Human Diseases and Traits. Nature Genetics, 2015.
 
-```
+```python
 mysumstats.estimate_rg_by_ldsc(build=None, verbose=True, match_allele=True, how="right", get_hm3=True, **kwargs)
 ```
 
@@ -179,7 +179,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_rg`.
 
 !!! example "Basic genetic correlation"
 
-    ```
+    ```python
     # Load other traits as Sumstats objects
     bmi_female = gl.Sumstats("bmi_female.txt.gz", fmt="gwaslab")
     bmi_male = gl.Sumstats("bmi_male.txt.gz", fmt="gwaslab")
@@ -192,7 +192,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_rg`.
 
 !!! example "With custom trait aliases"
 
-    ```
+    ```python
     mysumstats.estimate_rg_by_ldsc(other_traits=[bmi_female, bmi_male], 
                                    rg="T2D,BMI_female,BMI_male",  # Custom aliases
                                    ref_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
@@ -202,7 +202,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_rg`.
 
 !!! example "Case-control studies with prevalence"
 
-    ```
+    ```python
     mysumstats.estimate_rg_by_ldsc(other_traits=[bmi_female, bmi_male], 
                                    ref_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
                                    w_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/",
@@ -213,7 +213,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_rg`.
 
 !!! example "Without HapMap3 filtering"
 
-    ```
+    ```python
     mysumstats.estimate_rg_by_ldsc(other_traits=[bmi_female, bmi_male], 
                                    ref_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
                                    w_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/",
@@ -228,7 +228,7 @@ For more examples, see [LDSC in gwaslab](https://cloufield.github.io/gwaslab/lds
 !!! quote "Cell type specific heritability"
     Finucane, H. K., Reshef, Y. A., Anttila, V., Slowikowski, K., Gusev, A., Byrnes, A., ... & Price, A. L. (2018). Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types. Nature genetics, 50(4), 621-629.
 
-```
+```python
 mysumstats.estimate_h2_cts_by_ldsc(build=None, verbose=True, match_allele=True, how="right", **kwargs)
 ```
 
@@ -245,7 +245,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_h2_cts`.
 
 !!! example "Cell type specific heritability"
 
-    ```
+    ```python
     mysumstats.estimate_h2_cts_by_ldsc(ref_ld_chr_cts="/home/yunye/tools/ldsc/eas_baseline/baseline1_2/baseline.")
     mysumstats.ldsc_h2_cts
     ```
@@ -255,7 +255,7 @@ Results (a pd.DataFrame) will be stored in `.ldsc_h2_cts`.
 !!! quote "Partitioned heritability"
     Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.
 
-```
+```python
 mysumstats.estimate_partitioned_h2_by_ldsc(build=None, verbose=True, match_allele=True, how="right", **kwargs)
 ```
 
@@ -274,7 +274,7 @@ Results will be stored in `.ldsc_partitioned_h2_summary` and `.ldsc_partitioned_
 
 !!! example "Partitioned heritability"
 
-    ```
+    ```python
     mysumstats.estimate_partitioned_h2_by_ldsc(ref_ld_chr="/home/yunye/tools/ldsc/annotations/", 
                                                 w_ld_chr="/home/yunye/tools/ldsc/ldscores/eas_ldscores/")
     mysumstats.ldsc_partitioned_h2_summary  # Summary results

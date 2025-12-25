@@ -4,7 +4,7 @@ GWASLab can check if the lead variants of your summary statistics overlap with r
 
 ## .get_novel()
 
-```
+```python
 mysumstats.get_novel(
     known=None,
     efo=None,
@@ -99,7 +99,7 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
 ## Examples
 
 !!! example "Check novelty using GWAS Catalog (EFO ID)"
-    ```
+    ```python
     # Check if lead variants are novel for type 2 diabetes
     novel_variants = mysumstats.get_novel(
         efo="EFO_0001360",
@@ -109,7 +109,7 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
     ```
 
 !!! example "Check novelty using GWAS Catalog (trait name)"
-    ```
+    ```python
     # Check if lead variants are novel using trait name
     novel_variants = mysumstats.get_novel(
         efo="type 2 diabetes mellitus",
@@ -118,7 +118,7 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
     ```
 
 !!! example "Check novelty using local file"
-    ```
+    ```python
     # Check if lead variants are novel using local file
     novel_variants = mysumstats.get_novel(
         known="/path/to/known_variants.txt",
@@ -127,7 +127,7 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
     ```
 
 !!! example "Check novelty using DataFrame"
-    ```
+    ```python
     # Check if lead variants are novel using DataFrame
     known_df = pd.read_csv("/path/to/known_variants.txt")
     novel_variants = mysumstats.get_novel(
@@ -137,7 +137,7 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
     ```
 
 !!! example "Get only novel variants"
-    ```
+    ```python
     # Return only novel variants
     novel_only = mysumstats.get_novel(
         efo="EFO_0001360",
@@ -147,7 +147,7 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
     ```
 
 !!! example "Output known variants as well"
-    ```
+    ```python
     # Also output the known variants for comparison
     result = mysumstats.get_novel(
         efo="EFO_0001360",
@@ -157,7 +157,7 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
     ```
 
 !!! example "Skip lead variant extraction"
-    ```
+    ```python
     # If you already have lead variants extracted
     novel_variants = mysumstats.get_novel(
         efo="EFO_0001360",
@@ -167,7 +167,7 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
     ```
 
 !!! example "Multiple traits"
-    ```
+    ```python
     # Check novelty against multiple traits
     novel_variants = mysumstats.get_novel(
         efo=["EFO_0001360", "EFO_0001361"],  # Multiple traits
@@ -176,7 +176,7 @@ Returns a pandas.DataFrame containing variants with novelty status and metadata:
     ```
 
 !!! example "Custom cache directory"
-    ```
+    ```python
     # Use custom cache directory for GWAS catalog data
     novel_variants = mysumstats.get_novel(
         efo="EFO_0001360",

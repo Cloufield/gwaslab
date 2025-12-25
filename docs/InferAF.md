@@ -40,7 +40,7 @@ Infers Effect Allele Frequency (EAF) in summary statistics by matching variants 
 
 **Basic usage:**
 
-```
+```python
 import gwaslab as gl
 
 # Load sumstats
@@ -69,7 +69,7 @@ mysumstats.infer_af2(
 
 **Example:**
 
-```
+```python
 # Sumstats variant: CHR=7, POS=123456, EA=C, NEA=A, EAF=NaN
 # VCF record: CHR=7, POS=123456, REF=A, ALT=C, AF=0.3
 
@@ -107,7 +107,7 @@ Calculates the difference between EAF in sumstats and ALT_AF in reference VCF (D
 
 **Basic usage:**
 
-```
+```python
 # Check EAF difference (normal mode)
 mysumstats.check_af(
     ref_infer="reference.vcf.gz",
@@ -141,7 +141,7 @@ mysumstats.check_af2(
 
 **Example:**
 
-```
+```python
 # Sumstats: EAF=0.4
 # Reference: ALT_AF=0.3, EA matches ALT
 # DAF = 0.4 - 0.3 = 0.1
@@ -168,7 +168,7 @@ Infers EAF from Minor Allele Frequency (MAF) in sumstats using reference VCF ALT
 
 **Basic usage:**
 
-```
+```python
 # Infer EAF from MAF (normal mode)
 mysumstats.infer_eaf_from_maf(
     ref_infer="reference.vcf.gz",
@@ -194,7 +194,7 @@ mysumstats.infer_eaf_from_maf2(
 
 **Example:**
 
-```
+```python
 # Sumstats: MAF=0.2
 # Reference: ALT_AF=0.8, EA matches ALT → EA_freq = 0.8
 # Since EA_freq=0.8 (major) and MAF=0.2 (minor), they agree
@@ -226,7 +226,7 @@ The functions automatically detect and handle cases where alleles in sumstats ar
 - **When EA matches REF**: Uses 1-ALT_AF for EA frequency (since ALT_AF is the frequency of NEA)
 
 **Example:**
-```
+```python
 Sumstats: EA=C, NEA=A
 VCF:      REF=A, ALT=C, ALT_AF=0.3
 → EA=C matches ALT=C
@@ -269,7 +269,7 @@ Both versions produce **identical results** but differ in performance:
 
 **Example workflow:**
 
-```
+```python
 import gwaslab as gl
 
 mysumstats = gl.Sumstats("sumstats.txt.gz")

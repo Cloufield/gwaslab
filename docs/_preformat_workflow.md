@@ -205,7 +205,7 @@ The `_preformat` function loads and standardizes summary statistics data into GW
 
 ## Example Flow
 
-```
+```python
 Input: sumstats="data.tsv", fmt="gwaslab", chrom="CHR", beta="BETA"
 
 Step 1: Initialize → readargs={}, log=Log(), other=[], exclude=[], include=[]

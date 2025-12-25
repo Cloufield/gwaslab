@@ -6,7 +6,7 @@ GWASLab uses regular expression to match the values and fill them into a datafra
 
 ## gl.read_ldsc()
 
-```
+```python
 gl.read_ldsc(filelist, mode="h2")
 ```
 
@@ -19,7 +19,7 @@ gl.read_ldsc(filelist, mode="h2")
 
 !!! example ldsc - h2
 
-    ```
+    ```python
     #mode=h2
     paths = [
         '/home/he/work/GWASTutorial/08_LDSC/BBJ_HDLC.log',
@@ -37,7 +37,7 @@ gl.read_ldsc(filelist, mode="h2")
     BBJ_LDLC.log	0.0743	0.0123	1.0833	1.1465	1.0296	0.0107	0.2019	0.0727
     ```
 !!! example ldsc - rg    
-    ```
+    ```python
     #mode=rg
     
     paths = [
@@ -57,6 +57,6 @@ gl.read_ldsc(filelist, mode="h2")
 
 For genetic correlation, after loading, you can use `gl.plot_rg()` to plot a heat map to visualize the results. No extra manipulation needed.
 
-```
+```python
 gl.plot_rg(myldscrg)
 ```

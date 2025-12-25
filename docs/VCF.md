@@ -16,7 +16,7 @@ GWASLab supports:
 
 Check if a file is a VCF or BCF file by examining headers.
 
-```
+```python
 from gwaslab.io.io_vcf import is_vcf_file
 
 if is_vcf_file("variants.vcf.gz"):
@@ -36,7 +36,7 @@ if is_vcf_file("variants.vcf.gz"):
 
 Automatically determine chromosome naming convention used in VCF/BCF files.
 
-```
+```python
 from gwaslab.io.io_vcf import auto_check_vcf_chr_dict
 from gwaslab.info.g_Log import Log
 
@@ -73,7 +73,7 @@ vcf_chr_dict = auto_check_vcf_chr_dict(
 
 Check for chromosome prefix in VCF/BCF file headers.
 
-```
+```python
 from gwaslab.io.io_vcf import check_vcf_chr_prefix
 from gwaslab.info.g_Log import Log
 
@@ -98,7 +98,7 @@ if prefix:
 
 Check for RefSeq chromosome IDs in VCF/BCF file headers.
 
-```
+```python
 from gwaslab.io.io_vcf import check_vcf_chr_NC
 from gwaslab.info.g_Log import Log
 
@@ -125,7 +125,7 @@ if chr_dict:
 
 Calculate full LD matrix from VCF file and return both the LD matrix and corresponding sumstats.
 
-```
+```python
 from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
 from gwaslab.info.g_Log import Log
 import pandas as pd
@@ -198,7 +198,7 @@ The function matches variants between sumstats and VCF using:
 
 GWASLab can output summary statistics in GWAS-VCF format using the `.to_format()` method. See the [Format documentation](Format.md) for details.
 
-```
+```python
 # Output sumstats as VCF
 mysumstats.to_format(path="./output", fmt="vcf", bgzip=True, tabix=True)
 ```
@@ -215,7 +215,7 @@ mysumstats.to_format(path="./output", fmt="vcf", bgzip=True, tabix=True)
 ## Examples
 
 !!! example "Check VCF file and detect chromosome format"
-    ```
+    ```python
     from gwaslab.io.io_vcf import is_vcf_file, auto_check_vcf_chr_dict
     from gwaslab.info.g_Log import Log
     
@@ -233,7 +233,7 @@ mysumstats.to_format(path="./output", fmt="vcf", bgzip=True, tabix=True)
     ```
 
 !!! example "Calculate LD matrix from VCF"
-    ```
+    ```python
     from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
     from gwaslab.info.g_Log import Log
     import pandas as pd
@@ -265,7 +265,7 @@ mysumstats.to_format(path="./output", fmt="vcf", bgzip=True, tabix=True)
     ```
 
 !!! example "Export LD results"
-    ```
+    ```python
     from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
     from gwaslab.info.g_Log import Log
     import pandas as pd
@@ -296,7 +296,7 @@ mysumstats.to_format(path="./output", fmt="vcf", bgzip=True, tabix=True)
     ```
 
 !!! example "Output sumstats as VCF"
-    ```
+    ```python
     # Output in GWAS-VCF format
     mysumstats.to_format(
         path="./output",
@@ -311,7 +311,7 @@ mysumstats.to_format(path="./output", fmt="vcf", bgzip=True, tabix=True)
     ```
 
 !!! example "Workflow: VCF to LD matrix for regional plot"
-    ```
+    ```python
     from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf, auto_check_vcf_chr_dict
     from gwaslab.info.g_Log import Log
     import pandas as pd

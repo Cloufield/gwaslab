@@ -19,7 +19,7 @@ GWASLab can convert equivalent statistics, including:
 !!! quote "Extreme P values"
     For extreme **P** values (**P** < 1e-308), set `extreme=True` to overcome float64 precision limitations. **MLOG10P** will be calculated using **Z**-scores (or **BETA**/**SE**) or **CHISQ** using the method described [here](https://stackoverflow.com/questions/46416027/how-to-compute-p-values-from-z-scores-in-r-when-the-z-score-is-large-pvalue-muc/46416222#46416222):
     
-    ```
+    ```python
     mysumstats.fill_data(to_fill=["MLOG10P"], extreme=True)
     ```
     
@@ -34,7 +34,7 @@ GWASLab can convert equivalent statistics, including:
     **Formulas for Extreme MLOG10P Calculation:**
     
     **From Z-scores (or BETA/SE):**
-    ```
+    ```python
     log_pvalue = log(2) + norm.logsf(|Z|)  # two-sided test
     log10_pvalue = log_pvalue / log(10)
     MLOG10P = -log10_pvalue
@@ -49,7 +49,7 @@ GWASLab can convert equivalent statistics, including:
     - `P_MANTISSA` and `P_EXPONENT` represent **P** in scientific notation: **P** = P_MANTISSA × 10^P_EXPONENT
     
     **From CHISQ (with degrees of freedom):**
-    ```
+    ```python
     log_pvalue = chi2.logsf(CHISQ, df)
     log10_pvalue = log_pvalue / log(10)
     MLOG10P = -log10_pvalue
@@ -73,7 +73,7 @@ See examples [here.](https://cloufield.github.io/gwaslab/utility_data_conversion
 
 ## fill_data()
 
-```
+```python
 mysumstats.fill_data( 
     to_fill=None,
     df=None,
@@ -127,7 +127,7 @@ GWASLab uses the following priority order when multiple source columns are avail
 ## Examples
 
 !!! example "Basic conversion"
-    ```
+    ```python
     # Raw data with **BETA**, **SE**, **P**
     # **SNPID**	**CHR**	**POS**	**EA**	**NEA**	**EAF**	**BETA**	**SE**	**P**	**STATUS**
     # 1:725932_G_A	1	725932	G	A	0.9960	-0.0737	0.1394	0.5970	9999999
@@ -150,7 +150,7 @@ GWASLab uses the following priority order when multiple source columns are avail
     ```
 
 !!! example "Fill only significant variants"
-    ```
+    ```python
     # Fill statistics only for variants with **P** < 5e-8
     mysumstats.fill_data(
         to_fill=["MLOG10P", "Z"],
@@ -160,7 +160,7 @@ GWASLab uses the following priority order when multiple source columns are avail
     ```
 
 !!! example "Overwrite existing columns"
-    ```
+    ```python
     # Overwrite existing **MLOG10P** values
     mysumstats.fill_data(
         to_fill=["MLOG10P"],
@@ -169,20 +169,20 @@ GWASLab uses the following priority order when multiple source columns are avail
     ```
 
 !!! example "Fill single column"
-    ```
+    ```python
     # Fill a single column (can pass string instead of list)
     mysumstats.fill_data(to_fill="Z")
     ```
 
 !!! example "Fill MAF from EAF"
-    ```
+    ```python
     # Calculate **MAF** from **EAF**
     mysumstats.fill_data(to_fill=["MAF"])
     # **MAF** = min(**EAF**, 1-**EAF**)
     ```
 
 !!! example "Extreme P values"
-    ```
+    ```python
     # Handle extreme **P** values using **Z**-scores
     mysumstats.fill_data(
         to_fill=["MLOG10P"],
@@ -193,7 +193,7 @@ GWASLab uses the following priority order when multiple source columns are avail
     ```
 
 !!! example "Fill SIGNIFICANT column"
-    ```
+    ```python
     # Create a SIGNIFICANT column based on **P**-value threshold
     mysumstats.fill_data(
         to_fill=["SIG"],

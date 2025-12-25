@@ -7,14 +7,14 @@ GWASLab provides a customizable plotting function for Manhattan and Q-Q plots.
 
 ## .plot_mqq()
 
-```
+```python
 mysumstats.plot_mqq()
 ```
 
 ## A simple example
 
 !!! example "Quick Manhattan and Q-Q plot without any options"
-    ```
+    ```python
     mysumstats.plot_mqq()
     ```
     
@@ -39,7 +39,7 @@ See other examples [here](https://cloufield.github.io/gwaslab/visualization_mqq/
 By setting the options, you can create highly customized Manhattan plots and Q-Q plots.
 
 !!! example "A customized Manhattan and QQ plot"
-    ```
+    ```python
     mysumstats.plot_mqq(
                       mode="qqm",
                       cut=14,
@@ -126,28 +126,28 @@ By setting the options, you can create highly customized Manhattan plots and Q-Q
 
 !!! example "Skip variants with -log10P<3 and annotate the lead variants with chr:pos"
 
-    ```
+    ```python
     mysumstats.plot_mqq(skip=3,anno=True)
     ```
 
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591270-592ce820-c541-4b84-a766-0b58bc6423ee.png">
 
 !!! example "Skip variants with -log10P<3 and annotate the lead variants with GENENAME"
-    ```
+    ```python
     mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19")
     ```
 
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591371-262d31d5-9640-474f-af0d-d6c511c77280.png">
 
 !!! example "Skip variants with -log10P<3 and annotate the variants in `anno_set`"
-    ```
+    ```python
     mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"])
     ```
 
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/196591966-c9618c45-456b-4eb8-991b-66420f847a97.png">
 
 !!! example "Skip variants with -log10P<3 and annotate the variants in `anno_set` with alias in `anno_alias`" 
-    ```
+    ```python
     mysumstats.plot_mqq(skip=3, anno_set=["rs12509595","19:15040733:T:C"], anno_alias={"rs12509595":"anything you want here"})
     ```
     
@@ -184,13 +184,13 @@ GWASLab now support 3 types of annotation styles:
 |`arm_scale_d`|`dict`|factors to adjust the height for specific arms. key is the number of arm starting from 0, value is the factor which will be multiplied to arm height.|`None`|
 
 !!! example "Adjust the direction the first to left and the third to right"
-    ```
+    ```python
     mysumstats.plot_mqq(skip=2,anno=True)
     ```
     
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197342763-ffd4b3c1-d57a-4351-8f42-fb91ae282d32.png">
     
-    ```
+    ```python
     mysumstats.plot_mqq(skip=2,anno=True,          
                         anno_d={1:"l",3:"r"},
                         arm_offset=50)
@@ -199,14 +199,14 @@ GWASLab now support 3 types of annotation styles:
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197344117-2dc1261f-7784-48b2-9015-bdb0e73fce02.png">
 
 !!! example "Adjust the length of arm"
-    ```
+    ```python
     mysumstats.plot_mqq(skip=2,anno=True,arm_scale=1.5)
     ```
 
     <img width="600" alt="image" src="https://user-images.githubusercontent.com/40289485/197345571-6a6ccb4e-6837-475d-ae3b-3c59fb447c56.png">
 
 !!! example "Adjust the length of arm for each variant"
-    ```
+    ```python
     mysumstats.plot_mqq(skip=2,anno=True,arm_scale_d={1:1.5,2:1.2,3:1.1})
     ```
     
@@ -235,7 +235,7 @@ Pinpoint certain variants in the Manhattan plot.
 
 !!! example "Highlight loci and pinpoint variants"
 
-    ```
+    ```python
     mysumstats.plot_mqq(skip=3,anno="GENENAME",build="19",
                        highlight=["rs12509595","rs7989823"],
                        pinpoint=["rs671","19:15040733:T:C"])
@@ -261,7 +261,7 @@ Pinpoint certain variants in the Manhattan plot.
 |`cut_line_color`|`string`|Color for the cut line|`"#ebebeb"`|
 
 !!! example "Plot lines"
-    ```
+    ```python
     mysumstats.plot_mqq(skip=3,
                     build="19",
                     anno="GENENAME",
@@ -297,7 +297,7 @@ Pinpoint certain variants in the Manhattan plot.
 
 ### Colors and Fontsizes
 
-```
+```python
 mysumstats.plot_mqq(
           colors=["#597FBD","#74BAD3"],
           cut_line_color="#ebebeb",
@@ -335,7 +335,7 @@ Font-related options
 | `font_family`    | `string` | font family              | `"Arial"` |
 
 !!! example
-    ```
+    ```python
     mysumstats.plot_mqq(skip=2,
                         cut=20,
                         colors=sns.color_palette("Set3"),
@@ -347,7 +347,7 @@ Font-related options
 
 ### Titles
 
-```
+```python
 mysumstats.plot_mqq(
           title =None,
           mtitle=None,
@@ -369,7 +369,7 @@ mysumstats.plot_mqq(
 
 ### Figure settings
 
-```
+```python
 fig_kwargs={"figsize":(15,5),"dpi":100}
 ```
 
@@ -385,7 +385,7 @@ Commonly used ones:
 
 ### Saving plots
 
-```
+```python
 mysumstats.plot_mqq(save="mymqqplots.png", save_kwargs={"dpi":400,"facecolor":"white"})
 ```
 

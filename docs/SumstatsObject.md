@@ -6,7 +6,7 @@ To load any sumstats into the object, simply specify the column name and load th
 
 ## gl.Sumstats()
 
-```
+```python
 mysumstats = gl.Sumstats(
              sumstats,
              fmt=None,
@@ -83,7 +83,7 @@ All other columns and options are optional.
 You can load the sumstats by specifying the columns like:
 
 !!! example "Load sumstats by manually specifying columns"
-    ```
+    ```python
     mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
                  snpid="SNPID",
                  chrom="CHR",
@@ -122,7 +122,7 @@ GWASLab uses a manually curated format conversion dictionary in [https://github.
 | `bolt_lmm`    | output format        |
 
 !!! info "Update Formatbook using `gl.update_formaybook()`"
-    ```
+    ```python
     gl.update_formatbook()
     Mon Jul 17 17:38:11 2023 Updating formatbook from: https://raw.github.com/Cloufield/formatbook/main/formatbook.json
     Mon Jul 17 17:38:12 2023 Overwrite formatbook to :  /home/yunye/gwaslab/gwaslab/src/gwaslab/data/formatbook.json
@@ -131,7 +131,7 @@ GWASLab uses a manually curated format conversion dictionary in [https://github.
     ```
 
 !!! example "Load sumstats by simply specifying the format"
-    ```
+    ```python
     mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="saige")
     ```
 
@@ -140,7 +140,7 @@ GWASLab uses a manually curated format conversion dictionary in [https://github.
 GWASLab also provides an auto mode (`fmt="auto"`; available since v3.4.21) which assumes A1 or alternative allele (ALT) is the effect allele (EA) and Frq refers to the allele frequency of effect allele (EAF). Common headers will be detected. You can find the conversion table [here](https://github.com/Cloufield/formatbook/blob/main/formats/auto.json)
 
 !!! example "Load sumstats with auto mode"
-    ```
+    ```python
     mysumstats = gl.Sumstats("t2d_bbj.txt.gz", fmt="auto")
     ```
     
@@ -148,7 +148,7 @@ GWASLab also provides an auto mode (`fmt="auto"`; available since v3.4.21) which
 GWASLab supports loading sumstats from chromosome-separated files (file names need to be in the same pattern.). Just use @ to replace the chromosome numbers. 
 
 !!! example
-    ```
+    ```python
     mysumstats = gl.Sumstats("t2d.chr@.txt.gz",fmt="metal")
     ```
 
@@ -157,21 +157,21 @@ GWASLab supports loading sumstats from chromosome-separated files (file names ne
 After loading, the raw data columns will be renamed to new columns without ambiguity and the DataFrame is stored in `.data` :
 
 !!! example
-    ```
+    ```python
     mysumstats.data
     ```
 
 You can simply save the processed data using pandas saving functions, for example:
 
 !!! example
-    ```
+    ```python
     mysumstats.data.to_csv("./mysumstats.csv")
-    ```  
+    ```
     
 or convert the sumstats to other sumstats using GWASLab `to_format()` function (recommended):
 
 !!! example 
-    ```
+    ```python
     mysumstats.to_format("./mysumstats", fmt="ldsc",hapmap3=True, exclude_hla=True, build="19")
     ```
     
@@ -181,7 +181,7 @@ Please check [GWASLab - Format](https://cloufield.github.io/gwaslab/Format/) for
 
 If the pipeline is very long, and you need to temporarily save the Sumstats Object, you can use the `.to_pickle()` method (recommended) or the `gl.dump_pickle()` function to temporarily save the Sumstats Object.
 
-```
+```python
 # Recommended method (object method)
 mysumstats.to_pickle("./mysumstats.pickle", overwrite=True)
 
@@ -198,7 +198,7 @@ All manipulation conducted to the sumstats will be logged for reproducibility an
 The log is stored in a `gl.Log()` object. You can check it by `.log.show() `and save it using `.log.save()`
 
 !!! example 
-    ```
+    ```python
     mysumstats.log.show()
     
     mysumstats.log.save()
@@ -209,7 +209,7 @@ The log is stored in a `gl.Log()` object. You can check it by `.log.show() `and 
 You can check the meta information of sumstats by:
 
 !!! example 
-    ```
+    ```python
     mysumstats.summary()
     ```
 
@@ -218,7 +218,7 @@ You can check the meta information of sumstats by:
 Other functions of GWASLab are implemented as the methods of Sumstats Object.
 
 !!! example
-    ```
+    ```python
     mysumstats.basic_check()
     
     mysumstats.plot_mqq()

@@ -51,31 +51,38 @@ height: auto;
 }
 
 .md-typeset p > code {
-    color: #E33D70;
+    color: #333;
+    font-weight: bold;
   }
 
 .md-typeset li > code {
-    color: #E33D70;
+    color: #333;
+    font-weight: bold;
   }
 
 .md-typeset td > code {
-    color: #E33D70;
+    color: #333;
+    font-weight: bold;
 }
 
 .md-typeset th > code {
-    color: #E33D70;
+    color: #333;
+    font-weight: bold;
 }
 
 .md-typeset h2 > code {
-    color: #E33D70;
+    color: #333;
+    font-weight: bold;
 }
 
 .md-typeset h3 > code {
-    color: #E33D70;
+    color: #333;
+    font-weight: bold;
 }
 
 .md-typeset h4 > code {
-    color: #E33D70;
+    color: #333;
+    font-weight: bold;
 }
 
 .md-typeset table:not([class]) {

@@ -70,13 +70,13 @@ Check or fix **SNPID** and **rsID**. This method can:
 - The method automatically validates **rsID** format (must start with "rs" followed by numbers)
 
 !!! example "Extract CHR and POS from SNPID"
-    ```
+    ```python
     # Extract chromosome and position from SNPID
     mysumstats.fix_id(fixchrpos=True)
     ```
 
 !!! example "Reconstruct SNPID from coordinates and alleles"
-    ```
+    ```python
     # Reconstruct SNPID from CHR, POS, EA, NEA
     mysumstats.fix_id(fixid=True)
     
@@ -85,7 +85,7 @@ Check or fix **SNPID** and **rsID**. This method can:
     ```
 
 !!! example "Standardize SNPID format"
-    ```
+    ```python
     # Fix delimiter separators
     mysumstats.fix_id(fixsep=True)
     
@@ -126,7 +126,7 @@ For human chromosomes, CHR will be converted to:
 **For Other Species:**
 You can customize the chromosome mappings:
 
-```
+```python
 # Example for a species with different chromosome numbering
 mysumstats.fix_chr(
     x=("X", 26),
@@ -137,7 +137,7 @@ mysumstats.fix_chr(
 ```
 
 !!! example "Standard chromosome fixing"
-    ```
+    ```python
     # Use default human chromosome mappings
     mysumstats.fix_chr()
     
@@ -148,7 +148,7 @@ mysumstats.fix_chr(
 !!! tip "gl.get_chr_list()"
     Get a chromosome list for n autosomes plus 'X', 'Y', 'M', 'MT' (string data type).
     
-    ```
+    ```python
     # Default (human: 22 autosomes)
     gl.get_chr_list()
     # ['1','2','3',...,'22','23','24','25','X','Y','M','MT']
@@ -187,7 +187,7 @@ Check and fix values in **POS**. This method:
 - Invalid positions are flagged in the STATUS column
 
 !!! example "Standard position fixing"
-    ```
+    ```python
     # Use default limits (0 to 250,000,000)
     mysumstats.fix_pos()
     
@@ -225,7 +225,7 @@ Standardize allele representations to ATCG notation. This method:
 - Status codes are updated to indicate allele quality
 
 !!! example "Standardize alleles"
-    ```
+    ```python
     # Standardize allele notation
     mysumstats.fix_allele()
     
@@ -262,7 +262,7 @@ Normalize indels according to the left-alignment and parsimony principle. This f
     For details on variant normalization principles, see: [Variant Normalization](https://genome.sph.umich.edu/wiki/Variant_Normalization)
 
 !!! example "Normalize indels"
-    ```
+    ```python
     # Normalize with single thread
     mysumstats.normalize_allele(threads=1)
     
@@ -289,7 +289,7 @@ Sort variants by genomic coordinates (CHR, then POS). This is essential for many
 - CHR and POS must be fixed beforehand (use `fix_chr()` and `fix_pos()` first)
 
 !!! example "Sort by coordinates"
-    ```
+    ```python
     # Fix coordinates first
     mysumstats.fix_chr()
     mysumstats.fix_pos()
@@ -303,7 +303,7 @@ Sort variants by genomic coordinates (CHR, then POS). This is essential for many
 Sort columns to GWASLab default order. This ensures consistent column ordering across different datasets.
 
 **Default Column Order:**
-```
+```python
 "SNPID", "rsID", "CHR", "POS", "EA", "NEA", "EAF", "MAF", 
 "BETA", "SE", "BETA_95L", "BETA_95U", "Z", "CHISQ", "P", "MLOG10P", 
 "OR", "OR_95L", "OR_95U", "HR", "HR_95L", "HR_95U", 
@@ -319,7 +319,7 @@ Additional columns are appended after the default columns.
 | `order` | `list` | `None` | Custom column order. If `None`, uses GWASLab default order |
 
 !!! example "Sort columns"
-    ```
+    ```python
     # Use default GWASLab column order
     mysumstats.sort_column()
     
@@ -371,7 +371,7 @@ The `basic_check()` method executes the following steps in order:
 - For details on `remove_dup()` and `check_sanity()`, see [QC and Filtering](https://cloufield.github.io/gwaslab/QC%26Filtering/)
 
 !!! example "Basic QC workflow"
-    ```
+    ```python
     import gwaslab as gl
     
     # Load sumstats
@@ -399,7 +399,7 @@ The `basic_check()` method executes the following steps in order:
 
 ### Recommended Pipeline
 
-```
+```python
 import gwaslab as gl
 
 # Load sumstats

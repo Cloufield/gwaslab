@@ -7,7 +7,7 @@ You can get clumping results without worrying about the file format.
 
 !!! warning "You need to install PLINK2 first and add to your environment."
 
-```
+```python
 clump(  plink2="plink2",
         vcf=None, 
         bfile=None,
@@ -45,7 +45,7 @@ clump(  plink2="plink2",
 
 !!! example
 
-```
+```python
 clumps = mysumstats.clump(vcf= "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz")
 
 ```
@@ -55,7 +55,7 @@ clumps = mysumstats.clump(vcf= "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3
 
 !!! info "Plink2 script for clumping" 
 
-    ```
+    ```python
     # using P
     plink2 \
         --bfile {}\
@@ -73,7 +73,7 @@ clumps = mysumstats.clump(vcf= "/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3
 
     or
 
-    ```
+    ```python
     # using MLOG10P
     plink2 \
         --bfile {}\

@@ -1,0 +1,359 @@
+# Download reference data
+
+```python
+import gwaslab as gl
+```
+
+## Check availble reference data
+
+Processed files are hosted on Dropbox. Other files will be downloaded form its original source.
+
+A list of keywords and urls.
+
+```python
+gl.check_available_ref()
+```
+
+**stdout:**
+```python
+Sat Feb  3 13:45:00 2024 Start to check available reference files...
+Sat Feb  3 13:45:00 2024  - 1kg_eas_hg19  :  https://www.dropbox.com/s/lztaxqhy2o6dpxw/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eas_hg19_md5  :  c8c97434843c0da3113fc06879ead472
+Sat Feb  3 13:45:00 2024  - 1kg_eas_hg19_tbi  :  https://www.dropbox.com/s/k9klefl8m9fcfo1/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eur_hg19  :  https://www.dropbox.com/s/1nbgqshknevseks/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eur_hg19_md5  :  734069d895009d38c2f962bfbb6fab52
+Sat Feb  3 13:45:00 2024  - 1kg_eur_hg19_tbi  :  https://www.dropbox.com/s/vscvkrflh6fc5a0/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eas_hg38  :  https://www.dropbox.com/s/3dstbbb1el9r3au/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eas_hg38_md5  :  f45e80bca9ef7b29e6b1832e6ac15375
+Sat Feb  3 13:45:00 2024  - 1kg_eas_hg38_tbi  :  https://www.dropbox.com/s/vwnp5vd8dcqksn4/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eur_hg38  :  https://www.dropbox.com/s/z0mkehg17lryapv/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eur_hg38_md5  :  228d3285fa99132cc6321e2925e0768d
+Sat Feb  3 13:45:00 2024  - 1kg_eur_hg38_tbi  :  https://www.dropbox.com/s/ze8g58x75x9qbf0/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_sas_hg19  :  https://www.dropbox.com/scl/fi/fubqvuj3p4ii4y35zknv8/SAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=5z50f66iltjchcaszznq5bczt&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_sas_hg19_md5  :  e2d3f9e2e6580d05e877e9effd435c4e
+Sat Feb  3 13:45:00 2024  - 1kg_sas_hg19_tbi  :  https://www.dropbox.com/scl/fi/icnmrnzee7ofdpx5l96tg/SAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=st8t88snby26q37rqi6zh5zck&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_amr_hg19  :  https://www.dropbox.com/scl/fi/bxa4zfngsxsc38rhtiv8c/AMR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=ibcn8hb1n8n36j3u0jfzci267&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_amr_hg19_md5  :  68d3cdf01cbabdae6e74a07795fa881c
+Sat Feb  3 13:45:00 2024  - 1kg_amr_hg19_tbi  :  https://www.dropbox.com/scl/fi/1zk16x7h4r89jurzwu05u/AMR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=b4cere4w38zvzyfitfge3r8n0&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_sas_hg38  :  https://www.dropbox.com/scl/fi/jr3l5zz42py3kny2bccmj/SAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=x0t6tsy71jxzf021wfqdn8k5q&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_sas_hg38_md5  :  e5d79bea1958aa50c23f618d342ccc83
+Sat Feb  3 13:45:00 2024  - 1kg_sas_hg38_tbi  :  https://www.dropbox.com/scl/fi/02oia4ur5r7w9qgiuf6i9/SAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=00p9rxe0xzfs6hr1rg4d8oadm&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_amr_hg38  :  https://www.dropbox.com/scl/fi/4t4tyuhzp78uyb6tgkroq/AMR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=p96gbs1tcdia31jnjv1b82kuz&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_amr_hg38_md5  :  229fbd610001cf6f137b7f738352a44a
+Sat Feb  3 13:45:00 2024  - 1kg_amr_hg38_tbi  :  https://www.dropbox.com/scl/fi/x0dby543tr9xpaqj2i0ba/AMR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=uj8o7j0cy0spipe174jn54sqs&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_afr_hg19  :  https://www.dropbox.com/scl/fi/tq4w9lyt5z47ym7grtrxg/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=k3bimeu3yr5loq8hohba5mr6k&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_afr_hg19_md5  :  f7b4425f39e8292dce6f13711e7f6c50
+Sat Feb  3 13:45:00 2024  - 1kg_afr_hg19_tbi  :  https://www.dropbox.com/scl/fi/0giiptu0btwj1kfm6jdzr/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=ucb5weprsc5prcg8hvtgmruxx&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_pan_hg19  :  https://www.dropbox.com/scl/fi/6b4j9z9knmllfnbx86aw6/PAN.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=eento8vg06zyrkvooc9wd4cvu&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_pan_hg19_md5  :  fed846482204487b60d33b21ddb18106
+Sat Feb  3 13:45:00 2024  - 1kg_pan_hg19_tbi  :  https://www.dropbox.com/scl/fi/stco946scio5tvto0ln4j/PAN.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=hfh53beb627lmqwv3d8mzqy0c&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_afr_hg38  :  https://www.dropbox.com/scl/fi/239xmm7qijtnsks97chc9/AFR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=47en5fk1icbekpg7we3uot9g8&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_afr_hg38_md5  :  3bb7923be0809a324d7b7633b8d58a3b
+Sat Feb  3 13:45:00 2024  - 1kg_afr_hg38_tbi  :  https://www.dropbox.com/scl/fi/3y3pg4yqwo2jaaamx1c8f/AFR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=say0ihfwa51z3otgn4bjtze8p&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_pan_hg38  :  https://www.dropbox.com/scl/fi/nf01487smtmeq243ihfwm/PAN.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=3pefbkzxwcnejx4inynifpft7&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_pan_hg38_md5  :  23bb86d748c4a66e85e087f647e8b60e
+Sat Feb  3 13:45:00 2024  - 1kg_pan_hg38_tbi  :  https://www.dropbox.com/scl/fi/hu7cttr4cenw5yjsm2775/PAN.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=568u7bkvkybm4wt2q9284o198&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eas_x_hg19  :  https://www.dropbox.com/scl/fi/1inmw09rk35ncuq7tibmp/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=vcjpukgsb7gt4tizg1fvr7tr2&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eas_x_hg19_md5  :  b2aced2a1522ed23818989b3153b7e91
+Sat Feb  3 13:45:00 2024  - 1kg_eas_x_hg19_tbi  :  https://www.dropbox.com/scl/fi/uyxb9lfi88dqjp5l3vrzf/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=vt196d16h690dmzox5jyc33xx&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eur_x_hg19  :  https://www.dropbox.com/scl/fi/6r4sc2yax8pk644piew2d/EUR.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=l5towjhyl733nrd1msjr1d8gl&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eur_x_hg19_md5  :  6380cb71eafe985d7b894029e979139b
+Sat Feb  3 13:45:00 2024  - 1kg_eur_x_hg19_tbi  :  https://www.dropbox.com/scl/fi/yuid87x398yc9n8nc4bb1/EUR.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=01skm13sk6099y34zy6qvweqj&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eas_x_hg38  :  https://www.dropbox.com/scl/fi/2m6i93vv1ooano0muukck/EAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=y6087mmt9kmls066mzobjeqp7&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eas_x_hg38_md5  :  8c6a35da51621f952a5b97cbcc832046
+Sat Feb  3 13:45:00 2024  - 1kg_eas_x_hg38_tbi  :  https://www.dropbox.com/scl/fi/l6jpt86edarb4emehxwcy/EAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=ddr1fcijb1bh2nso0q0updolh&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eur_x_hg38  :  https://www.dropbox.com/scl/fi/ceoff4p95ftef6yldhl67/EUR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=yyt9u11dk6kyha0cvturvrtvf&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_eur_x_hg38_md5  :  b9a4b8553dec202109f72281f33cb454
+Sat Feb  3 13:45:00 2024  - 1kg_eur_x_hg38_tbi  :  https://www.dropbox.com/scl/fi/tux32myi6g18bx7nd1rdq/EUR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=m4f0v3rblnzv7dj0lo6hsd0hb&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_sas_x_hg19  :  https://www.dropbox.com/scl/fi/592lbmrkfjn80twnvlt2q/SAS.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=zrar7nmltpsuznlyuqw9k77q6&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_sas_x_hg19_md5  :  f4f370274fe586d209ca6fddc4eceaaf
+Sat Feb  3 13:45:00 2024  - 1kg_sas_x_hg19_tbi  :  https://www.dropbox.com/scl/fi/rmaybun6v248nmjmaz2tj/SAS.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=izv96vfajgdd5wsyuvx98ntvk&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_amr_x_hg19  :  https://www.dropbox.com/scl/fi/gwryyxs0ilgoazqvp39be/AMR.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=z46we3kshi9t96x7issl36bda&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_amr_x_hg19_md5  :  ead838f7059a80118e949959cf1a3ff3
+Sat Feb  3 13:45:00 2024  - 1kg_amr_x_hg19_tbi  :  https://www.dropbox.com/scl/fi/r6g5893smgmnsir5r0v5n/AMR.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=sel2f4p7ctggf30udrhcy0psu&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_sas_x_hg38  :  https://www.dropbox.com/scl/fi/r6qa9l6h9rc5rvenjsdqo/SAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=mucn2zizrlkebn1e5q7rtzu8e&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_sas_x_hg38_md5  :  31c60999ebb9a13d17d21e02fd9d1f4c
+Sat Feb  3 13:45:00 2024  - 1kg_sas_x_hg38_tbi  :  https://www.dropbox.com/scl/fi/5ktxs24sq6v8hvaowr4xv/SAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=5y2z66b3s6bgzoikdjvr46ccw&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_amr_x_hg38  :  https://www.dropbox.com/scl/fi/5brd1nh7u20oigtb17mkb/AMR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=zt0d0nqmlq3u5uu6ukwvof6ta&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_amr_x_hg38_md5  :  bc7de683d603c8bbff02f5bec8d3469a
+Sat Feb  3 13:45:00 2024  - 1kg_amr_x_hg38_tbi  :  https://www.dropbox.com/scl/fi/8bz6uwjgw8bj16uaz6kye/AMR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=pkc2mepgosxdijpfru4vhum5v&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_afr_x_hg19  :  https://www.dropbox.com/scl/fi/kz5j4532pyaigceww0vg5/AFR.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=sti0g2ri004chu8b12pqgicvw&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_afr_x_hg19_md5  :  77807e5e315a6e47504c175b0aaece88
+Sat Feb  3 13:45:00 2024  - 1kg_afr_x_hg19_tbi  :  https://www.dropbox.com/scl/fi/oadjwamy5pe1ilv2237gq/AFR.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=a10bhxrfa904dasrcuc40njq4&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_pan_x_hg19  :  https://www.dropbox.com/scl/fi/rwov9vszj8rx78u65dxnk/PAN.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=ej33zb9ulwdfseur1surz653z&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_pan_x_hg19_md5  :  389d474984ff82df79efd25c0dd66fc9
+Sat Feb  3 13:45:00 2024  - 1kg_pan_x_hg19_tbi  :  https://www.dropbox.com/scl/fi/x0n1htmkbulqybr5cc2cb/PAN.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=8rga64u5gm9vp9whqwlj37hre&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_afr_x_hg38  :  https://www.dropbox.com/scl/fi/ef8h09lhg8vmdxfxsayv4/AFR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=96xjxu546sbbq5hbgaihh84l8&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_afr_x_hg38_md5  :  b1410bb21e389a0f08fc2741d33fcc51
+Sat Feb  3 13:45:00 2024  - 1kg_afr_x_hg38_tbi  :  https://www.dropbox.com/scl/fi/tlwhui80cy32mtx6hc8f6/AFR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=ana497w8is840ygarx3w1v5pc&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_pan_x_hg38  :  https://www.dropbox.com/scl/fi/tf7j5540jyzxz2oo7jtho/PAN.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=e872ihg5477mlu30vet1e5lvk&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_pan_x_hg38_md5  :  8ae424786a6bfe64c92ca6b9f96ee5e6
+Sat Feb  3 13:45:00 2024  - 1kg_pan_x_hg38_tbi  :  https://www.dropbox.com/scl/fi/u28zo2sjbcmtfs69zqaya/PAN.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=t5psxvoewd1oog2hwzellc78p&dl=1
+Sat Feb  3 13:45:00 2024  - dbsnp_v151_hg19  :  https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz
+Sat Feb  3 13:45:00 2024  - dbsnp_v151_hg19_tbi  :  https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz.tbi
+Sat Feb  3 13:45:00 2024  - dbsnp_v151_hg38  :  https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/00-All.vcf.gz
+Sat Feb  3 13:45:00 2024  - dbsnp_v151_hg38_tbi  :  https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/00-All.vcf.gz.tbi
+Sat Feb  3 13:45:00 2024  - dbsnp_v156_hg19  :  https://ftp.ncbi.nih.gov/snp/archive/b156/VCF/GCF_000001405.25.gz
+Sat Feb  3 13:45:00 2024  - dbsnp_v156_hg19_tbi  :  https://ftp.ncbi.nih.gov/snp/archive/b156/VCF/GCF_000001405.25.gz.tbi
+Sat Feb  3 13:45:00 2024  - dbsnp_v156_hg38  :  https://ftp.ncbi.nih.gov/snp/archive/b156/VCF/GCF_000001405.40.gz
+Sat Feb  3 13:45:00 2024  - dbsnp_v156_hg38_tbi  :  https://ftp.ncbi.nih.gov/snp/archive/b156/VCF/GCF_000001405.40.gz.tbi
+Sat Feb  3 13:45:00 2024  - ucsc_genome_hg19  :  http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/hg19.fa.gz
+Sat Feb  3 13:45:00 2024  - ucsc_genome_hg38  :  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz
+Sat Feb  3 13:45:00 2024  - 1kg_dbsnp151_hg19_auto  :  https://www.dropbox.com/s/37p2u1xwmux4gwo/1kg_dbsnp151_hg19_auto.txt.gz?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_dbsnp151_hg19_auto_md5  :  7d1e7624fb6e4df7a2f6f05558d436b4
+Sat Feb  3 13:45:00 2024  - 1kg_dbsnp151_hg38_auto  :  https://www.dropbox.com/s/ouf60n7gdz6cm0g/1kg_dbsnp151_hg38_auto.txt.gz?dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_dbsnp151_hg38_auto_md5  :  4c7ef2d2415c18c286219e970fdda972
+Sat Feb  3 13:45:00 2024  - 1kg_dbsnp151_hg19_x  :  https://www.dropbox.com/scl/fi/ghwq2yh5bi7o411m1mw15/1kg_dbsnp151_hg19_X.txt.gz?rlkey=50du8e42qjdgzge0lcdiu7tv2&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_dbsnp151_hg19_x_md5  :  cbf0e3518ab73d6d8a96bab9d55c094d
+Sat Feb  3 13:45:00 2024  - 1kg_dbsnp151_hg38_x  :  https://www.dropbox.com/scl/fi/bqdrfh0dx561ir210tu92/1kg_dbsnp151_hg38_X.txt.gz?rlkey=jjetkirbflt02f3w8mrxdqa4g&dl=1
+Sat Feb  3 13:45:00 2024  - 1kg_dbsnp151_hg38_x_md5  :  48c05eeb1454c0dd4cbee3cb26382e8e
+Sat Feb  3 13:45:00 2024  - recombination_hg19  :  https://www.dropbox.com/s/wbesl8haxknonuc/recombination_hg19.tar.gz?dl=1
+Sat Feb  3 13:45:00 2024  - recombination_hg38  :  https://www.dropbox.com/s/vuo8mvqx0fpibzj/recombination_hg38.tar.gz?dl=1
+Sat Feb  3 13:45:00 2024  - ensembl_hg19_gtf  :  https://ftp.ensembl.org/pub/grch37/current/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.chr.gtf.gz
+Sat Feb  3 13:45:00 2024  - ensembl_hg38_gtf  :  https://ftp.ensembl.org/pub/release-109/gtf/homo_sapiens//Homo_sapiens.GRCh38.109.chr.gtf.gz
+Sat Feb  3 13:45:00 2024  - refseq_hg19_gtf  :  https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh37_latest/refseq_identifiers/GRCh37_latest_genomic.gtf.gz
+Sat Feb  3 13:45:00 2024  - refseq_hg38_gtf  :  https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
+Sat Feb  3 13:45:00 2024  - testlink  :  https://www.dropbox.com/s/8u7capwge0ihshu/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz?dl=1
+Sat Feb  3 13:45:00 2024  - testlink_tbi  :  https://www.dropbox.com/s/hdneg53t6u1j6ib/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi?dl=1
+```
+
+```python
+{'1kg_eas_hg19': 'https://www.dropbox.com/s/lztaxqhy2o6dpxw/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1',
+ '1kg_eas_hg19_md5': 'c8c97434843c0da3113fc06879ead472',
+ '1kg_eas_hg19_tbi': 'https://www.dropbox.com/s/k9klefl8m9fcfo1/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1',
+ '1kg_eur_hg19': 'https://www.dropbox.com/s/1nbgqshknevseks/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1',
+ '1kg_eur_hg19_md5': '734069d895009d38c2f962bfbb6fab52',
+ '1kg_eur_hg19_tbi': 'https://www.dropbox.com/s/vscvkrflh6fc5a0/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1',
+ '1kg_eas_hg38': 'https://www.dropbox.com/s/3dstbbb1el9r3au/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1',
+ '1kg_eas_hg38_md5': 'f45e80bca9ef7b29e6b1832e6ac15375',
+ '1kg_eas_hg38_tbi': 'https://www.dropbox.com/s/vwnp5vd8dcqksn4/EAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1',
+ '1kg_eur_hg38': 'https://www.dropbox.com/s/z0mkehg17lryapv/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?dl=1',
+ '1kg_eur_hg38_md5': '228d3285fa99132cc6321e2925e0768d',
+ '1kg_eur_hg38_tbi': 'https://www.dropbox.com/s/ze8g58x75x9qbf0/EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?dl=1',
+ '1kg_sas_hg19': 'https://www.dropbox.com/scl/fi/fubqvuj3p4ii4y35zknv8/SAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=5z50f66iltjchcaszznq5bczt&dl=1',
+ '1kg_sas_hg19_md5': 'e2d3f9e2e6580d05e877e9effd435c4e',
+ '1kg_sas_hg19_tbi': 'https://www.dropbox.com/scl/fi/icnmrnzee7ofdpx5l96tg/SAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=st8t88snby26q37rqi6zh5zck&dl=1',
+ '1kg_amr_hg19': 'https://www.dropbox.com/scl/fi/bxa4zfngsxsc38rhtiv8c/AMR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=ibcn8hb1n8n36j3u0jfzci267&dl=1',
+ '1kg_amr_hg19_md5': '68d3cdf01cbabdae6e74a07795fa881c',
+ '1kg_amr_hg19_tbi': 'https://www.dropbox.com/scl/fi/1zk16x7h4r89jurzwu05u/AMR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=b4cere4w38zvzyfitfge3r8n0&dl=1',
+ '1kg_sas_hg38': 'https://www.dropbox.com/scl/fi/jr3l5zz42py3kny2bccmj/SAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=x0t6tsy71jxzf021wfqdn8k5q&dl=1',
+ '1kg_sas_hg38_md5': 'e5d79bea1958aa50c23f618d342ccc83',
+ '1kg_sas_hg38_tbi': 'https://www.dropbox.com/scl/fi/02oia4ur5r7w9qgiuf6i9/SAS.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=00p9rxe0xzfs6hr1rg4d8oadm&dl=1',
+ '1kg_amr_hg38': 'https://www.dropbox.com/scl/fi/4t4tyuhzp78uyb6tgkroq/AMR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=p96gbs1tcdia31jnjv1b82kuz&dl=1',
+ '1kg_amr_hg38_md5': '229fbd610001cf6f137b7f738352a44a',
+ '1kg_amr_hg38_tbi': 'https://www.dropbox.com/scl/fi/x0dby543tr9xpaqj2i0ba/AMR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=uj8o7j0cy0spipe174jn54sqs&dl=1',
+ '1kg_afr_hg19': 'https://www.dropbox.com/scl/fi/tq4w9lyt5z47ym7grtrxg/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=k3bimeu3yr5loq8hohba5mr6k&dl=1',
+ '1kg_afr_hg19_md5': 'f7b4425f39e8292dce6f13711e7f6c50',
+ '1kg_afr_hg19_tbi': 'https://www.dropbox.com/scl/fi/0giiptu0btwj1kfm6jdzr/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=ucb5weprsc5prcg8hvtgmruxx&dl=1',
+ '1kg_pan_hg19': 'https://www.dropbox.com/scl/fi/6b4j9z9knmllfnbx86aw6/PAN.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=eento8vg06zyrkvooc9wd4cvu&dl=1',
+ '1kg_pan_hg19_md5': 'fed846482204487b60d33b21ddb18106',
+ '1kg_pan_hg19_tbi': 'https://www.dropbox.com/scl/fi/stco946scio5tvto0ln4j/PAN.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?rlkey=hfh53beb627lmqwv3d8mzqy0c&dl=1',
+ '1kg_afr_hg38': 'https://www.dropbox.com/scl/fi/239xmm7qijtnsks97chc9/AFR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=47en5fk1icbekpg7we3uot9g8&dl=1',
+ '1kg_afr_hg38_md5': '3bb7923be0809a324d7b7633b8d58a3b',
+ '1kg_afr_hg38_tbi': 'https://www.dropbox.com/scl/fi/3y3pg4yqwo2jaaamx1c8f/AFR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=say0ihfwa51z3otgn4bjtze8p&dl=1',
+ '1kg_pan_hg38': 'https://www.dropbox.com/scl/fi/nf01487smtmeq243ihfwm/PAN.ALL.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=3pefbkzxwcnejx4inynifpft7&dl=1',
+ '1kg_pan_hg38_md5': '23bb86d748c4a66e85e087f647e8b60e',
+ '1kg_pan_hg38_tbi': 'https://www.dropbox.com/scl/fi/hu7cttr4cenw5yjsm2775/PAN.ALL.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=568u7bkvkybm4wt2q9284o198&dl=1',
+ '1kg_eas_x_hg19': 'https://www.dropbox.com/scl/fi/1inmw09rk35ncuq7tibmp/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=vcjpukgsb7gt4tizg1fvr7tr2&dl=1',
+ '1kg_eas_x_hg19_md5': 'b2aced2a1522ed23818989b3153b7e91',
+ '1kg_eas_x_hg19_tbi': 'https://www.dropbox.com/scl/fi/uyxb9lfi88dqjp5l3vrzf/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=vt196d16h690dmzox5jyc33xx&dl=1',
+ '1kg_eur_x_hg19': 'https://www.dropbox.com/scl/fi/6r4sc2yax8pk644piew2d/EUR.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=l5towjhyl733nrd1msjr1d8gl&dl=1',
+ '1kg_eur_x_hg19_md5': '6380cb71eafe985d7b894029e979139b',
+ '1kg_eur_x_hg19_tbi': 'https://www.dropbox.com/scl/fi/yuid87x398yc9n8nc4bb1/EUR.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=01skm13sk6099y34zy6qvweqj&dl=1',
+ '1kg_eas_x_hg38': 'https://www.dropbox.com/scl/fi/2m6i93vv1ooano0muukck/EAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=y6087mmt9kmls066mzobjeqp7&dl=1',
+ '1kg_eas_x_hg38_md5': '8c6a35da51621f952a5b97cbcc832046',
+ '1kg_eas_x_hg38_tbi': 'https://www.dropbox.com/scl/fi/l6jpt86edarb4emehxwcy/EAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=ddr1fcijb1bh2nso0q0updolh&dl=1',
+ '1kg_eur_x_hg38': 'https://www.dropbox.com/scl/fi/ceoff4p95ftef6yldhl67/EUR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=yyt9u11dk6kyha0cvturvrtvf&dl=1',
+ '1kg_eur_x_hg38_md5': 'b9a4b8553dec202109f72281f33cb454',
+ '1kg_eur_x_hg38_tbi': 'https://www.dropbox.com/scl/fi/tux32myi6g18bx7nd1rdq/EUR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=m4f0v3rblnzv7dj0lo6hsd0hb&dl=1',
+ '1kg_sas_x_hg19': 'https://www.dropbox.com/scl/fi/592lbmrkfjn80twnvlt2q/SAS.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=zrar7nmltpsuznlyuqw9k77q6&dl=1',
+ '1kg_sas_x_hg19_md5': 'f4f370274fe586d209ca6fddc4eceaaf',
+ '1kg_sas_x_hg19_tbi': 'https://www.dropbox.com/scl/fi/rmaybun6v248nmjmaz2tj/SAS.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=izv96vfajgdd5wsyuvx98ntvk&dl=1',
+ '1kg_amr_x_hg19': 'https://www.dropbox.com/scl/fi/gwryyxs0ilgoazqvp39be/AMR.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=z46we3kshi9t96x7issl36bda&dl=1',
+ '1kg_amr_x_hg19_md5': 'ead838f7059a80118e949959cf1a3ff3',
+ '1kg_amr_x_hg19_tbi': 'https://www.dropbox.com/scl/fi/r6g5893smgmnsir5r0v5n/AMR.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=sel2f4p7ctggf30udrhcy0psu&dl=1',
+ '1kg_sas_x_hg38': 'https://www.dropbox.com/scl/fi/r6qa9l6h9rc5rvenjsdqo/SAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=mucn2zizrlkebn1e5q7rtzu8e&dl=1',
+ '1kg_sas_x_hg38_md5': '31c60999ebb9a13d17d21e02fd9d1f4c',
+ '1kg_sas_x_hg38_tbi': 'https://www.dropbox.com/scl/fi/5ktxs24sq6v8hvaowr4xv/SAS.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=5y2z66b3s6bgzoikdjvr46ccw&dl=1',
+ '1kg_amr_x_hg38': 'https://www.dropbox.com/scl/fi/5brd1nh7u20oigtb17mkb/AMR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=zt0d0nqmlq3u5uu6ukwvof6ta&dl=1',
+ '1kg_amr_x_hg38_md5': 'bc7de683d603c8bbff02f5bec8d3469a',
+ '1kg_amr_x_hg38_tbi': 'https://www.dropbox.com/scl/fi/8bz6uwjgw8bj16uaz6kye/AMR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=pkc2mepgosxdijpfru4vhum5v&dl=1',
+ '1kg_afr_x_hg19': 'https://www.dropbox.com/scl/fi/kz5j4532pyaigceww0vg5/AFR.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=sti0g2ri004chu8b12pqgicvw&dl=1',
+ '1kg_afr_x_hg19_md5': '77807e5e315a6e47504c175b0aaece88',
+ '1kg_afr_x_hg19_tbi': 'https://www.dropbox.com/scl/fi/oadjwamy5pe1ilv2237gq/AFR.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=a10bhxrfa904dasrcuc40njq4&dl=1',
+ '1kg_pan_x_hg19': 'https://www.dropbox.com/scl/fi/rwov9vszj8rx78u65dxnk/PAN.chrX.split_norm_af.1kgp3v5.vcf.gz?rlkey=ej33zb9ulwdfseur1surz653z&dl=1',
+ '1kg_pan_x_hg19_md5': '389d474984ff82df79efd25c0dd66fc9',
+ '1kg_pan_x_hg19_tbi': 'https://www.dropbox.com/scl/fi/x0n1htmkbulqybr5cc2cb/PAN.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi?rlkey=8rga64u5gm9vp9whqwlj37hre&dl=1',
+ '1kg_afr_x_hg38': 'https://www.dropbox.com/scl/fi/ef8h09lhg8vmdxfxsayv4/AFR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=96xjxu546sbbq5hbgaihh84l8&dl=1',
+ '1kg_afr_x_hg38_md5': 'b1410bb21e389a0f08fc2741d33fcc51',
+ '1kg_afr_x_hg38_tbi': 'https://www.dropbox.com/scl/fi/tlwhui80cy32mtx6hc8f6/AFR.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=ana497w8is840ygarx3w1v5pc&dl=1',
+ '1kg_pan_x_hg38': 'https://www.dropbox.com/scl/fi/tf7j5540jyzxz2oo7jtho/PAN.chrX.split_norm_af.1kg_30x.hg38.vcf.gz?rlkey=e872ihg5477mlu30vet1e5lvk&dl=1',
+ '1kg_pan_x_hg38_md5': '8ae424786a6bfe64c92ca6b9f96ee5e6',
+ '1kg_pan_x_hg38_tbi': 'https://www.dropbox.com/scl/fi/u28zo2sjbcmtfs69zqaya/PAN.chrX.split_norm_af.1kg_30x.hg38.vcf.gz.tbi?rlkey=t5psxvoewd1oog2hwzellc78p&dl=1',
+ 'dbsnp_v151_hg19': 'https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz',
+ 'dbsnp_v151_hg19_tbi': 'https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh37p13/VCF/00-All.vcf.gz.tbi',
+ 'dbsnp_v151_hg38': 'https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/00-All.vcf.gz',
+ 'dbsnp_v151_hg38_tbi': 'https://ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/00-All.vcf.gz.tbi',
+ 'dbsnp_v156_hg19': 'https://ftp.ncbi.nih.gov/snp/archive/b156/VCF/GCF_000001405.25.gz',
+ 'dbsnp_v156_hg19_tbi': 'https://ftp.ncbi.nih.gov/snp/archive/b156/VCF/GCF_000001405.25.gz.tbi',
+ 'dbsnp_v156_hg38': 'https://ftp.ncbi.nih.gov/snp/archive/b156/VCF/GCF_000001405.40.gz',
+ 'dbsnp_v156_hg38_tbi': 'https://ftp.ncbi.nih.gov/snp/archive/b156/VCF/GCF_000001405.40.gz.tbi',
+ 'ucsc_genome_hg19': 'http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/hg19.fa.gz',
+ 'ucsc_genome_hg38': 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz',
+ '1kg_dbsnp151_hg19_auto': 'https://www.dropbox.com/s/37p2u1xwmux4gwo/1kg_dbsnp151_hg19_auto.txt.gz?dl=1',
+ '1kg_dbsnp151_hg19_auto_md5': '7d1e7624fb6e4df7a2f6f05558d436b4',
+ '1kg_dbsnp151_hg38_auto': 'https://www.dropbox.com/s/ouf60n7gdz6cm0g/1kg_dbsnp151_hg38_auto.txt.gz?dl=1',
+ '1kg_dbsnp151_hg38_auto_md5': '4c7ef2d2415c18c286219e970fdda972',
+ '1kg_dbsnp151_hg19_x': 'https://www.dropbox.com/scl/fi/ghwq2yh5bi7o411m1mw15/1kg_dbsnp151_hg19_X.txt.gz?rlkey=50du8e42qjdgzge0lcdiu7tv2&dl=1',
+ '1kg_dbsnp151_hg19_x_md5': 'cbf0e3518ab73d6d8a96bab9d55c094d',
+ '1kg_dbsnp151_hg38_x': 'https://www.dropbox.com/scl/fi/bqdrfh0dx561ir210tu92/1kg_dbsnp151_hg38_X.txt.gz?rlkey=jjetkirbflt02f3w8mrxdqa4g&dl=1',
+ '1kg_dbsnp151_hg38_x_md5': '48c05eeb1454c0dd4cbee3cb26382e8e',
+ 'recombination_hg19': 'https://www.dropbox.com/s/wbesl8haxknonuc/recombination_hg19.tar.gz?dl=1',
+ 'recombination_hg38': 'https://www.dropbox.com/s/vuo8mvqx0fpibzj/recombination_hg38.tar.gz?dl=1',
+ 'ensembl_hg19_gtf': 'https://ftp.ensembl.org/pub/grch37/current/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.chr.gtf.gz',
+ 'ensembl_hg38_gtf': 'https://ftp.ensembl.org/pub/release-109/gtf/homo_sapiens//Homo_sapiens.GRCh38.109.chr.gtf.gz',
+ 'refseq_hg19_gtf': 'https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh37_latest/refseq_identifiers/GRCh37_latest_genomic.gtf.gz',
+ 'refseq_hg38_gtf': 'https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz',
+ 'testlink': 'https://www.dropbox.com/s/8u7capwge0ihshu/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz?dl=1',
+ 'testlink_tbi': 'https://www.dropbox.com/s/hdneg53t6u1j6ib/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi?dl=1'}
+```
+
+## Download reference data
+
+GWASLab default directory for saving reference data is `~/.gwaslab`
+
+```python
+gl.download_ref("testlink")
+```
+
+**stdout:**
+```python
+Sat Feb  3 13:45:00 2024 Start to download  testlink  ...
+Sat Feb  3 13:45:00 2024  -Downloading to: /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz
+Sat Feb  3 13:46:24 2024  -Updating record in config file...
+Sat Feb  3 13:46:24 2024  -File /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi exists.
+Sat Feb  3 13:46:24 2024  -Updating record in config file...
+Sat Feb  3 13:46:24 2024  -Downloading to: /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi
+Sat Feb  3 13:46:24 2024 Downloaded  testlink  successfully!
+```
+
+## Check downloaded reference data 
+
+```python
+gl.check_downloaded_ref()
+```
+
+**stdout:**
+```python
+Sat Feb  3 13:46:24 2024 Start to check downloaded reference files...
+Sat Feb  3 13:46:24 2024  -Checking the config file:/home/yunye/work/gwaslab/src/gwaslab/data/config.json
+Sat Feb  3 13:46:24 2024  -Config file exists.
+Sat Feb  3 13:46:24 2024  -Updating config.json...
+Sat Feb  3 13:46:24 2024   - ensembl_hg19_gtf  :  /home/yunye/.gwaslab/Homo_sapiens.GRCh37.87.chr.gtf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_eas_hg19  :  /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_eas_hg19_tbi  :  /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi
+Sat Feb  3 13:46:24 2024   - recombination_hg38  :  /home/yunye/.gwaslab/recombination/hg38/recombination_hg38.tar.gz
+Sat Feb  3 13:46:24 2024   - ensembl_hg38_gtf  :  /home/yunye/.gwaslab/Homo_sapiens.GRCh38.109.chr.gtf.gz
+Sat Feb  3 13:46:24 2024   - ucsc_genome_hg19  :  /home/yunye/.gwaslab/hg19.fa
+Sat Feb  3 13:46:24 2024   - ucsc_genome_hg38  :  /home/yunye/.gwaslab/hg38.fa
+Sat Feb  3 13:46:24 2024   - refseq_hg19_gtf  :  /home/yunye/.gwaslab/GRCh37_latest_genomic.gtf.gz
+Sat Feb  3 13:46:24 2024   - refseq_hg38_gtf  :  /home/yunye/.gwaslab/GRCh38_latest_genomic.gtf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_dbsnp151_hg19_auto  :  /home/yunye/.gwaslab/1kg_dbsnp151_hg19_auto.txt.gz
+Sat Feb  3 13:46:24 2024   - 1kg_eas_x_hg19  :  /home/yunye/.gwaslab/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_eas_x_hg19_tbi  :  /home/yunye/.gwaslab/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi
+Sat Feb  3 13:46:24 2024   - 1kg_afr_hg19  :  /home/yunye/.gwaslab/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_afr_hg19_tbi  :  /home/yunye/.gwaslab/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi
+Sat Feb  3 13:46:24 2024   - testlink_tbi  :  /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi
+Sat Feb  3 13:46:24 2024   - testlink  :  /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz
+```
+
+```python
+{'ensembl_hg19_gtf': '/home/yunye/.gwaslab/Homo_sapiens.GRCh37.87.chr.gtf.gz',
+ '1kg_eas_hg19': '/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz',
+ '1kg_eas_hg19_tbi': '/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi',
+ 'recombination_hg38': '/home/yunye/.gwaslab/recombination/hg38/recombination_hg38.tar.gz',
+ 'ensembl_hg38_gtf': '/home/yunye/.gwaslab/Homo_sapiens.GRCh38.109.chr.gtf.gz',
+ 'ucsc_genome_hg19': '/home/yunye/.gwaslab/hg19.fa',
+ 'ucsc_genome_hg38': '/home/yunye/.gwaslab/hg38.fa',
+ 'refseq_hg19_gtf': '/home/yunye/.gwaslab/GRCh37_latest_genomic.gtf.gz',
+ 'refseq_hg38_gtf': '/home/yunye/.gwaslab/GRCh38_latest_genomic.gtf.gz',
+ '1kg_dbsnp151_hg19_auto': '/home/yunye/.gwaslab/1kg_dbsnp151_hg19_auto.txt.gz',
+ '1kg_eas_x_hg19': '/home/yunye/.gwaslab/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz',
+ '1kg_eas_x_hg19_tbi': '/home/yunye/.gwaslab/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi',
+ '1kg_afr_hg19': '/home/yunye/.gwaslab/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz',
+ '1kg_afr_hg19_tbi': '/home/yunye/.gwaslab/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi',
+ 'testlink_tbi': '/home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi',
+ 'testlink': '/home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz'}
+```
+
+## Remove downloaded reference data
+
+```python
+gl.remove_file("testlink")
+```
+
+**stdout:**
+```python
+Sat Feb  3 13:46:24 2024 Start to remove  testlink  ...
+Sat Feb  3 13:46:24 2024 Removed : /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz
+Sat Feb  3 13:46:24 2024 Start to check downloaded reference files...
+Sat Feb  3 13:46:24 2024  -Checking the config file:/home/yunye/work/gwaslab/src/gwaslab/data/config.json
+Sat Feb  3 13:46:24 2024  -Config file exists.
+Sat Feb  3 13:46:24 2024  -Updating config.json...
+Sat Feb  3 13:46:24 2024   - ensembl_hg19_gtf  :  /home/yunye/.gwaslab/Homo_sapiens.GRCh37.87.chr.gtf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_eas_hg19  :  /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_eas_hg19_tbi  :  /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi
+Sat Feb  3 13:46:24 2024   - recombination_hg38  :  /home/yunye/.gwaslab/recombination/hg38/recombination_hg38.tar.gz
+Sat Feb  3 13:46:24 2024   - ensembl_hg38_gtf  :  /home/yunye/.gwaslab/Homo_sapiens.GRCh38.109.chr.gtf.gz
+Sat Feb  3 13:46:24 2024   - ucsc_genome_hg19  :  /home/yunye/.gwaslab/hg19.fa
+Sat Feb  3 13:46:24 2024   - ucsc_genome_hg38  :  /home/yunye/.gwaslab/hg38.fa
+Sat Feb  3 13:46:24 2024   - refseq_hg19_gtf  :  /home/yunye/.gwaslab/GRCh37_latest_genomic.gtf.gz
+Sat Feb  3 13:46:24 2024   - refseq_hg38_gtf  :  /home/yunye/.gwaslab/GRCh38_latest_genomic.gtf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_dbsnp151_hg19_auto  :  /home/yunye/.gwaslab/1kg_dbsnp151_hg19_auto.txt.gz
+Sat Feb  3 13:46:24 2024   - 1kg_eas_x_hg19  :  /home/yunye/.gwaslab/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_eas_x_hg19_tbi  :  /home/yunye/.gwaslab/EAS.chrX.split_norm_af.1kgp3v5.vcf.gz.tbi
+Sat Feb  3 13:46:24 2024   - 1kg_afr_hg19  :  /home/yunye/.gwaslab/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz
+Sat Feb  3 13:46:24 2024   - 1kg_afr_hg19_tbi  :  /home/yunye/.gwaslab/AFR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi
+Sat Feb  3 13:46:24 2024   - testlink_tbi  :  /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi
+```
+
+or you can simply delete files in `~/.gwaslab`
+
+## Get the path of reference data
+
+Get the path using keywords. The path can be passed to other functions.
+
+```python
+gl.get_path("1kg_eas_hg19")
+```
+
+```python
+'/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz'
+```
+
+If you haven't downloaded it. It will return False.
+
+```python
+gl.get_path("1kg_eur_hg19")
+```
+
+**stdout:**
+```python
+Sat Feb  3 13:46:24 2024 No records in config file. Please download first.
+```
+
+```python
+False
+```
+
+## Update available reference list
+
+```python
+gl.update_available_ref()
+```
+
+**stdout:**
+```python
+Sat Feb  3 13:46:24 2024 Updating available_ref list from: https://raw.github.com/Cloufield/gwaslab/main/src/gwaslab/data/reference.json
+Sat Feb  3 13:46:25 2024 Available_ref list has been updated!
+```

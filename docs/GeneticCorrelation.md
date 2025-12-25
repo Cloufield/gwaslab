@@ -3,12 +3,12 @@
 
 Available since v3.4.15
 
-```
+```python
 gl.plot_rg(ldsc)
 ```
 
 !!! example "Simple plot"
-    ```
+    ```python
     # load ldsc log files
     ldsc_log_file_list = ["ldscrg.log"] 
     
@@ -43,7 +43,7 @@ gl.plot_rg(ldsc)
 
 
 !!! example "Customized plot"
-    ```
+    ```python
     # or load from tabular files
     ldsc = pd.read_csv("toy_data/input_rg.txt",sep="\t")
     ldsc

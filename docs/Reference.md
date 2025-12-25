@@ -22,7 +22,7 @@ Process the 1000 genome vcf file for EAS sample:
 - Tabix index
 
 ### Sample code:
-```
+```python
 #!/bin/bash
 # extract EAS sample ID
 awk '$3=="EAS"{print $1}' integrated_call_samples_v3.20130502.ALL.panel >EAS.sample
@@ -54,7 +54,7 @@ The processed dataset can then be used for:
 Since GWASLab will check chr:pos and ea/nea to match rsID, it would take a little bit longer if we only use vcf. 
 
 But we can use a pre-annotated conversion table for common SNPs, and then annotate the rest of SNPs using large VCF file from dbSNP. 
-```
+```python
 for i in range(1,23):
     mysumstats = gl.Sumstats("./EAS.chr"+str(i)+".split_norm_af.vcf.gz",snpid="ID",fmt="vcf")
     mysumstats.harmonize( basic_check=True,
@@ -65,7 +65,7 @@ for i in range(1,23):
 ```
 
 In terminal, combine the files:
-```
+```python
 # get header
 zcat 1kg_af_dbsnp151.1.txt.gz | head -1 > 1kg_af_dbsnp151_auto.txt
 

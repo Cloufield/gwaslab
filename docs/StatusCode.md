@@ -118,7 +118,7 @@ Each status code is a 7-digit integer where:
 
 The `summary()` method provides an overview of status codes in your dataset:
 
-```
+```python
 mysumstats.summary()
 ```
 
@@ -133,7 +133,7 @@ This displays:
 
 Use `lookup_status()` to decode and analyze all status codes in your dataset:
 
-```
+```python
 status_df = mysumstats.lookup_status()
 print(status_df)
 ```

@@ -15,7 +15,7 @@ GWASLab supports the following FASTA file extensions:
 
 Parse a FASTA file and return records as a dictionary or iterator.
 
-```
+```python
 from gwaslab.io.io_fasta import parse_fasta
 
 # Load as dictionary (default)
@@ -45,7 +45,7 @@ for title, seq in parse_fasta("reference.fasta", as_dict=False):
 
 Automatically load FASTA or gzipped FASTA files, returning FastaRecord objects or tuples.
 
-```
+```python
 from gwaslab.io.io_fasta import load_fasta_auto
 
 # Get FastaRecord objects (default)
@@ -74,7 +74,7 @@ for title, seq in load_fasta_auto("reference.fasta.gz", as_seqrecord=False):
 
 Load and filter FASTA records in a single pass for better performance. Only creates records for chromosomes that are needed.
 
-```
+```python
 from gwaslab.io.io_fasta import load_fasta_filtered
 from gwaslab.info.g_Log import Log
 
@@ -114,7 +114,7 @@ records = load_fasta_filtered(
 
 Get a specific FASTA record by title.
 
-```
+```python
 from gwaslab.io.io_fasta import get_fasta_record
 
 seq = get_fasta_record("reference.fasta", "chr1")
@@ -138,7 +138,7 @@ if seq:
 
 Write FASTA records to a file.
 
-```
+```python
 from gwaslab.io.io_fasta import write_fasta
 
 # Write from dictionary
@@ -170,7 +170,7 @@ write_fasta(records, "output.fasta.gz", wrap=80)
 
 Load, filter, and build numpy FASTA records in a single pass for maximum performance. This function combines loading, filtering, and numpy array conversion in one pass, avoiding the creation of intermediate FastaRecord objects.
 
-```
+```python
 from gwaslab.io.io_fasta import load_and_build_fasta_records
 from gwaslab.info.g_Log import Log
 
@@ -215,7 +215,7 @@ record, starting_positions, records_len_dict = load_and_build_fasta_records(
 
 Build numpy FASTA records from a dictionary of FastaRecord objects. This function converts FASTA records to a single numpy array of integers for fast lookup.
 
-```
+```python
 from gwaslab.io.io_fasta import build_fasta_records, load_fasta_filtered
 from gwaslab.info.g_Log import Log
 
@@ -250,7 +250,7 @@ record, starting_positions, records_len_dict = build_fasta_records(
 
 The `FastaRecord` class provides compatibility with code that expects FASTA record objects with `.id` and `.seq._data` attributes.
 
-```
+```python
 from gwaslab.io.io_fasta import FastaRecord
 
 record = FastaRecord(id="chr1", seq="ATCGATCG")
@@ -267,7 +267,7 @@ print(len(record.seq._data))  # 8
 ## Examples
 
 !!! example "Basic FASTA reading"
-    ```
+    ```python
     from gwaslab.io.io_fasta import parse_fasta
     
     # Load entire file as dictionary
@@ -277,7 +277,7 @@ print(len(record.seq._data))  # 8
     ```
 
 !!! example "Memory-efficient iteration"
-    ```
+    ```python
     from gwaslab.io.io_fasta import parse_fasta
     
     # Process large file without loading everything into memory
@@ -289,7 +289,7 @@ print(len(record.seq._data))  # 8
     ```
 
 !!! example "Writing FASTA files"
-    ```
+    ```python
     from gwaslab.io.io_fasta import write_fasta
     
     # Write from dictionary
@@ -304,7 +304,7 @@ print(len(record.seq._data))  # 8
     ```
 
 !!! example "Filtered loading for harmonization"
-    ```
+    ```python
     from gwaslab.io.io_fasta import load_fasta_filtered
     from gwaslab.info.g_Log import Log
     
@@ -326,7 +326,7 @@ print(len(record.seq._data))  # 8
     ```
 
 !!! example "High-performance numpy array conversion"
-    ```
+    ```python
     from gwaslab.io.io_fasta import load_and_build_fasta_records
     from gwaslab.info.g_Log import Log
     

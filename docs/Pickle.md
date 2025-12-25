@@ -11,7 +11,7 @@ GWASLab provides functions to save and load unfinished `gl.Sumstats` objects. Th
 
 Save a Sumstats object to a pickle file. This is the recommended method as it's called directly on the Sumstats object.
 
-```
+```python
 mysumstats.to_pickle(path="~/mysumstats.pickle", 
                      overwrite=False)
 ```
@@ -29,7 +29,7 @@ mysumstats.to_pickle(path="~/mysumstats.pickle",
 
 Alternative function-based approach to save a Sumstats object.
 
-```
+```python
 gl.dump_pickle(SumstatsObject, 
                 path, 
                 overwrite=False)
@@ -49,7 +49,7 @@ gl.dump_pickle(SumstatsObject,
 
 Load a previously saved Sumstats object from a pickle file.
 
-```
+```python
 gl.load_pickle(path)
 ```
 
@@ -64,7 +64,7 @@ gl.load_pickle(path)
 ## Examples
 
 !!! example "Using to_pickle() method (recommended)"
-    ```
+    ```python
     import gwaslab as gl
     
     # Load and process sumstats
@@ -81,7 +81,7 @@ gl.load_pickle(path)
     ```
 
 !!! example "Using dump_pickle() function"
-    ```
+    ```python
     import gwaslab as gl
     
     # Process sumstats
@@ -96,7 +96,7 @@ gl.load_pickle(path)
     ```
 
 !!! example "Save with custom path"
-    ```
+    ```python
     # Save to home directory
     mysumstats.to_pickle("~/my_analysis/sumstats.pickle")
     

@@ -10,7 +10,7 @@
 GWASLab provides functions for creating regional plots.
 
 ## .plot_mqq(mode="r")
-```
+```python
 mysumstats.plot_mqq(mode="r",
           region = None,
           ...
@@ -61,7 +61,7 @@ Most options are largely the same as [Manhattan plot](https://cloufield.github.i
 
 Creates stacked Manhattan-QQ plots or regional plots for multiple GWAS datasets, allowing side-by-side comparison of multiple studies or traits.
 
-```
+```python
 gl.plot_stacked_mqq(objects, **kwargs)
 ```
 
@@ -163,7 +163,7 @@ The function automatically detects panel types based on input data:
 
 **Stacked regional plots for multiple studies:**
 
-```
+```python
 import gwaslab as gl
 
 # Load multiple sumstats
@@ -183,7 +183,7 @@ gl.plot_stacked_mqq(
 
 **Stacked Manhattan plots:**
 
-```
+```python
 # Compare multiple traits genome-wide
 gl.plot_stacked_mqq(
     objects=[trait1_sumstats, trait2_sumstats, trait3_sumstats],
@@ -197,7 +197,7 @@ gl.plot_stacked_mqq(
 
 **Stacked Manhattan-QQ plots:**
 
-```
+```python
 # Quality control comparison
 gl.plot_stacked_mqq(
     objects=[study1, study2],
@@ -209,7 +209,7 @@ gl.plot_stacked_mqq(
 
 **Regional plot with credible sets:**
 
-```
+```python
 # Include fine-mapping results
 mysumstats = gl.Sumstats("gwas.txt.gz")
 finemap_results = pd.read_csv("finemap_results.txt")  # Contains PIP column
@@ -226,7 +226,7 @@ gl.plot_stacked_mqq(
 
 **Custom styling per panel:**
 
-```
+```python
 # Different colors and styles for each panel
 gl.plot_stacked_mqq(
     objects=[sumstats1, sumstats2],

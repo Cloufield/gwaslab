@@ -28,7 +28,7 @@ The function uses pre-processed HDF5 files (one per chromosome) that contain **r
 
 First, download reference VCF file from dbSNP ftp site.
 
-```
+```python
 # For example, dbSNP v155 hg19
 GCF_000001405.25.gz (24G)
 GCF_000001405.25.gz.tbi (2.9M)
@@ -45,7 +45,7 @@ GCF_000001405.25.gz.tbi (2.9M)
 
 **From gwaslab v3.4.42,  `process_ref_vcf()` was renamed to `process_vcf_to_hfd5()`**
 
-```
+```python
 gl.process_vcf_to_hfd5()
 ```
 
@@ -69,7 +69,7 @@ Process the VCF file and convert it to HDF5 files (one per chromosome) using `.p
 
 **Example:**
 
-```
+```python
 directory="/home/yunye/work/gwaslab/examples/vcf_hd5/"
 vcf = "/home/yunye/CommonData/Reference/ncbi_dbsnp/ncbi_dbsnp/db155/GCF_000001405.25.gz"
 
@@ -128,7 +128,7 @@ Each group contains a DataFrame with **rsn as index** and **POS as column** (CHR
 
 **Example of data storage:**
 
-```
+```python
 HDF5 Directory: /path/to/dbsnp/
 ├── GCF_000001405.25.chr1.rsID_CHR_POS_mod10.h5
 │   ├── group_0
@@ -164,7 +164,7 @@ HDF5 Directory: /path/to/dbsnp/
 
 You can inspect the HDF5 file structure using pandas:
 
-```
+```python
 import pandas as pd
 import glob
 import os
@@ -220,7 +220,7 @@ This results in approximately **12 bytes per variant** (8 + 4), plus HDF5 overhe
 
 ### .rsid_to_chrpos2()
 
-```
+```python
 mysumstats.rsid_to_chrpos2()
 ```
 
@@ -255,7 +255,7 @@ The function automatically chooses the optimal processing strategy based on your
 
 ### Example
 
-```
+```python
 # Load summary statistics
 mysumstats = gl.Sumstats("my_sumstats.txt")
 
@@ -327,7 +327,7 @@ mysumstats.data[['rsID', 'CHR', 'POS']].head()
 
 **Log output example:**
 
-```
+```python
 2025/12/24 17:30:44 Start to assign CHR and POS using rsIDs ...(v4.0.0)
 2025/12/24 17:30:44  -Current Dataframe shape : 10000 x 11 ; Memory usage: 0.64 MB
 2025/12/24 17:30:44  -Source hdf5 file: /path/to/dbsnp/

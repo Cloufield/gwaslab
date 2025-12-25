@@ -19,7 +19,7 @@ Calculate the difference in allele frequency (**DAF**) between the effect allele
 - Positive **DAF**: **EAF** in sumstats is higher than reference
 - Negative **DAF**: **EAF** in sumstats is lower than reference
 
-```
+```python
 # Check the difference between the EAF in the sumstats and the allele frequency in VCF files
 mysumstats.check_af(ref_infer="path/to/reference.vcf.gz",
                   ref_alt_freq="AF",
@@ -39,7 +39,7 @@ For more details, see [Harmonization documentation](https://cloufield.github.io/
 
 ## .plot_daf()
 
-```
+```python
 #allele frequnecy correlation plot
 mysumstats.plot_daf()
 ```
@@ -52,7 +52,7 @@ You need to run 'check_af()' first before plotting. For check_af(), see [here](h
 ## Examples
 
 !!! example
-    ```
+    ```python
     mysumstats = gl.Sumstats("t2d_bbj.txt.gz",
                  snpid="SNP",
                  chrom="CHR",
@@ -72,7 +72,7 @@ You need to run 'check_af()' first before plotting. For check_af(), see [here](h
     ```
     <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/dc3716d6-1b85-42dd-99ca-d0a38a3ad6a1">
 
-    ```
+    ```python
     # check the difference in allele frequency with reference vcf
     mysumstats.check_af(ref_infer=gl.get_path("1kg_eas_hg19"), 
                         ref_alt_freq="AF",
@@ -80,7 +80,7 @@ You need to run 'check_af()' first before plotting. For check_af(), see [here](h
     ```
     <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/8cdc53b4-f661-40d6-a61b-ab5f23af6a4c">
 
-    ```
+    ```python
     plot and get the outliers
     outliers = mysumstats.plot_daf(threshold=0.12, 
                                     save="af_correlation.png",
@@ -88,7 +88,7 @@ You need to run 'check_af()' first before plotting. For check_af(), see [here](h
     ```
     <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/0e9c92d4-3bea-4734-8ba6-76f7fc6e329b">
 
-    ```
+    ```python
     outliers[1]
     ```
 

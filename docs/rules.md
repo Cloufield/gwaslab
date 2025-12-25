@@ -4,7 +4,7 @@ This document outlines the style and formatting rules for GWASLab documentation.
 
 ## Code Examples
 
-- **Use plain code blocks**: Use ` ``` ` (plain code block) instead of ` ```python ` or other language identifiers
+- **Use python code blocks**
 - **Variable naming**: When sample code is needed, use `mysumstats.function()` instead of `.function()` or other variable names
 - **Consistency**: Always use `mysumstats` as the standard variable name for Sumstats objects
 
@@ -27,17 +27,17 @@ Use appropriate MkDocs Material admonition blocks for different types of content
 ## Examples
 
 ### Code Block Format
-```
+````python
 # Correct
-```
-mysumstats.plot_mqq()
-```
-
-# Incorrect
 ```python
 mysumstats.plot_mqq()
 ```
+
+# Incorrect  
 ```
+mysumstats.plot_mqq()
+```
+````
 
 ### Variable Naming
 ```
@@ -49,7 +49,7 @@ mysumstats.plot_mqq()
 sumstats.basic_check()
 .plot_mqq()
 .function()
-```
+```python
 
 ### Reserved Headers
 ```
@@ -60,7 +60,7 @@ Use **CHR** and **POS** for genomic coordinates.
 # Incorrect
 The SNPID column contains variant identifiers.
 Use CHR and POS for genomic coordinates.
-```
+```python
 
 ### Table Format
 ```
@@ -70,4 +70,4 @@ Use CHR and POS for genomic coordinates.
 # Incorrect
 | Parameter | Type | Description | Default |
 | Parameter | Data Type | Description | Default |
-```
+```python

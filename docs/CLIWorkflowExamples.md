@@ -4,7 +4,7 @@ This document provides complete workflow examples for using the GWASLab command-
 
 ## Example 1: Basic QC Pipeline
 
-```
+```python
 # Load, QC, and save sumstats
 gwaslab --input raw_sumstats.tsv \
   --fmt auto \
@@ -28,7 +28,7 @@ This will:
 
 ## Example 2: Harmonization Pipeline
 
-```
+```python
 # Full harmonization with all reference files
 gwaslab --input sumstats.tsv \
   --fmt auto \
@@ -57,7 +57,7 @@ This will:
 
 ## Example 3: Format Conversion for LDSC
 
-```
+```python
 # Convert to LDSC format for heritability analysis
 gwaslab --input sumstats.tsv \
   --fmt gwaslab \
@@ -68,7 +68,7 @@ gwaslab --input sumstats.tsv \
 
 ## Example 4: Prepare Data for Meta-analysis
 
-```
+```python
 # QC, harmonize, and format for meta-analysis
 gwaslab --input study1.tsv \
   --fmt auto \
@@ -85,7 +85,7 @@ gwaslab --input study1.tsv \
 
 ## Example 5: Extract HapMap3 Variants
 
-```
+```python
 # Extract only HapMap3 variants for replication
 gwaslab --input discovery_sumstats.tsv \
   --fmt gwaslab \
@@ -97,7 +97,7 @@ gwaslab --input discovery_sumstats.tsv \
 
 ## Example 6: Multi-step Processing
 
-```
+```python
 # Step 1: QC
 gwaslab --input raw.tsv --fmt auto --qc --remove-dup --out step1_qc --to-fmt gwaslab
 
@@ -112,7 +112,7 @@ gwaslab --input step2_harmonized.gwaslab.tsv.gz --fmt gwaslab \
 
 ## Example 7: Assign rsID Only
 
-```
+```python
 # Assign rsID from VCF file
 gwaslab --input sumstats.tsv \
   --fmt auto \
@@ -126,7 +126,7 @@ gwaslab --input sumstats.tsv \
 
 ## Example 8: Convert rsID to CHR:POS
 
-```
+```python
 # Convert rsID to CHR:POS using VCF (auto-generates HDF5)
 gwaslab --input sumstats.tsv \
   --fmt auto \
@@ -140,7 +140,7 @@ gwaslab --input sumstats.tsv \
 
 ## Example 9: Complete Pipeline with All Options
 
-```
+```python
 # Complete pipeline: QC + Harmonization + Format conversion
 gwaslab --input raw_sumstats.tsv \
   --fmt auto \
@@ -169,7 +169,7 @@ gwaslab --input raw_sumstats.tsv \
 
 ## Example 10: Testing with Small Sample
 
-```
+```python
 # Test command on first 1000 rows
 gwaslab --input large_sumstats.tsv \
   --fmt auto \
@@ -182,7 +182,7 @@ gwaslab --input large_sumstats.tsv \
 
 ## Example 11: Output with bgzip and tabix
 
-```
+```python
 # Create bgzip-compressed file with tabix index
 gwaslab --input sumstats.tsv \
   --fmt gwaslab \
@@ -194,7 +194,7 @@ gwaslab --input sumstats.tsv \
 
 ## Example 12: Custom HLA Region Exclusion
 
-```
+```python
 # Exclude custom HLA region (chr6:20-30 Mbp)
 gwaslab --input sumstats.tsv \
   --fmt gwaslab \

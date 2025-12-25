@@ -6,7 +6,7 @@ GWASLab provides a function to create forest plots for meta-analysis results, di
 
 ## gl.plot_forest()
 
-```
+```python
 gl.plot_forest(
     data,
     study_col,
@@ -39,7 +39,7 @@ gl.plot_forest(
 ## Examples
 
 !!! example "Basic forest plot"
-    ```
+    ```python
     import pandas as pd
     import gwaslab as gl
     
@@ -55,7 +55,7 @@ gl.plot_forest(
     ```
 
 !!! example "Forest plot with grouping"
-    ```
+    ```python
     # Add grouping column
     data['group'] = ['Cohort1', 'Cohort1', 'Cohort2', 'Cohort2']
     
@@ -70,7 +70,7 @@ gl.plot_forest(
     ```
 
 !!! example "Customized forest plot"
-    ```
+    ```python
     fig, axes = gl.plot_forest(
         data,
         study_col='study',
@@ -87,7 +87,7 @@ gl.plot_forest(
     ```
 
 !!! example "Load from file"
-    ```
+    ```python
     # Load data from file
     fig, axes = gl.plot_forest(
         data="meta_analysis_results.txt",

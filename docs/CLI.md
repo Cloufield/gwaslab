@@ -6,13 +6,13 @@ GWASLab provides a unified command-line interface for processing GWAS summary st
 
 The CLI follows a unified interface pattern:
 
-```
+```bash
 gwaslab --input <file> --fmt <format> [--options] --to-fmt <format> --out <file>
 ```
 
 ### Quick Examples
 
-```
+```bash
 # Show version
 gwaslab version
 
@@ -52,7 +52,7 @@ gwaslab --input sumstats.tsv --fmt gwaslab --out sumstats.ldsc --to-fmt ldsc
 
 Perform quality control on sumstats using `basic_check()`:
 
-```
+```bash
 # Basic QC
 gwaslab --input sumstats.tsv --fmt auto --qc --out cleaned.tsv --to-fmt gwaslab
 
@@ -82,7 +82,7 @@ gwaslab --input sumstats.tsv --fmt auto --qc --remove --remove-dup --normalize -
 
 Harmonize sumstats with reference data:
 
-```
+```bash
 # Basic harmonization (without reference files)
 gwaslab --input sumstats.tsv --fmt auto --harmonize --out harmonized.tsv --to-fmt gwaslab
 
@@ -127,7 +127,7 @@ gwaslab --input sumstats.tsv --fmt auto \
 
 Assign rsID to variants using reference data:
 
-```
+```bash
 # Assign rsID from HDF5 file
 gwaslab --input sumstats.tsv --fmt auto --assign-rsid --ref-rsid-tsv /path/to/rsid.hdf5 --out output.tsv --to-fmt gwaslab
 
@@ -149,7 +149,7 @@ gwaslab --input sumstats.tsv --fmt auto --assign-rsid --ref-rsid-vcf /path/to/rs
 
 Convert rsID to CHR:POS coordinates:
 
-```
+```bash
 # Convert rsID to CHR:POS using VCF (auto-generates HDF5)
 gwaslab --input sumstats.tsv --fmt auto --rsid-to-chrpos --ref-rsid-vcf /path/to/reference.vcf.gz --build 19 --out output.tsv --to-fmt gwaslab
 
@@ -173,7 +173,7 @@ gwaslab --input sumstats.tsv --fmt auto --rsid-to-chrpos --ref-rsid-tsv /path/to
 
 ### Basic Formatting
 
-```
+```bash
 # Output in gwaslab format (default)
 gwaslab --input sumstats.tsv --fmt auto --out output --to-fmt gwaslab
 
@@ -192,7 +192,7 @@ gwaslab --input sumstats.tsv --fmt gwaslab --out output --to-fmt gwaslab --no-gz
 
 ### Advanced Formatting
 
-```
+```bash
 # Output with bgzip compression and tabix index
 gwaslab --input sumstats.tsv --fmt gwaslab --out output --to-fmt gwaslab --bgzip --tabix
 
@@ -257,7 +257,7 @@ The CLI follows a consistent naming pattern for output files:
 
 Use `--fmt auto` to let GWASLab automatically detect the input format:
 
-```
+```bash
 gwaslab --input sumstats.tsv --fmt auto --qc --out output --to-fmt gwaslab
 ```
 
@@ -265,7 +265,7 @@ gwaslab --input sumstats.tsv --fmt auto --qc --out output --to-fmt gwaslab
 
 Use `--threads` to speed up processing for large files:
 
-```
+```bash
 gwaslab --input large_sumstats.tsv --fmt auto --qc --threads 8 --out output --to-fmt gwaslab
 ```
 
@@ -273,7 +273,7 @@ gwaslab --input large_sumstats.tsv --fmt auto --qc --threads 8 --out output --to
 
 Use `--quiet` to suppress verbose output in scripts:
 
-```
+```bash
 gwaslab --input sumstats.tsv --fmt auto --qc --out output --to-fmt gwaslab --quiet
 ```
 
@@ -281,7 +281,7 @@ gwaslab --input sumstats.tsv --fmt auto --qc --out output --to-fmt gwaslab --qui
 
 Use `--nrows` to test commands on a subset of data:
 
-```
+```bash
 gwaslab --input large_sumstats.tsv --fmt auto --nrows 1000 --qc --out test_output --to-fmt gwaslab
 ```
 
@@ -289,7 +289,7 @@ gwaslab --input large_sumstats.tsv --fmt auto --nrows 1000 --qc --out test_outpu
 
 You can combine multiple processing steps in a single command:
 
-```
+```bash
 # QC + Harmonization + Format conversion
 gwaslab --input sumstats.tsv --fmt auto \
   --qc --remove-dup \
@@ -320,14 +320,14 @@ For very large files:
 
 ### Use Case 1: Quick Format Check
 
-```
+```bash
 # Just load and check the file (no output)
 gwaslab --input sumstats.tsv --fmt auto
 ```
 
 ### Use Case 2: Standard QC Workflow
 
-```
+```bash
 gwaslab --input sumstats.tsv --fmt auto \
   --qc --remove --remove-dup --normalize \
   --out qc_sumstats --to-fmt gwaslab
@@ -335,14 +335,14 @@ gwaslab --input sumstats.tsv --fmt auto \
 
 ### Use Case 3: Prepare for LDSC
 
-```
+```bash
 gwaslab --input sumstats.tsv --fmt gwaslab \
   --out ldsc_input --to-fmt ldsc --no-gzip
 ```
 
 ### Use Case 4: Prepare for Meta-analysis
 
-```
+```bash
 gwaslab --input sumstats.tsv --fmt auto \
   --qc --remove-dup \
   --harmonize --ref-seq ref.fasta --ref-rsid-vcf dbsnp.vcf.gz \
@@ -351,7 +351,7 @@ gwaslab --input sumstats.tsv --fmt auto \
 
 ### Use Case 5: Extract Replication Set
 
-```
+```bash
 gwaslab --input discovery.tsv --fmt gwaslab \
   --out replication --to-fmt gwaslab --hapmap3 --build 19
 ```
@@ -369,7 +369,7 @@ gwaslab --input discovery.tsv --fmt gwaslab \
 **Error**: Format auto-detection doesn't work
 
 **Solution**: Specify the format explicitly with `--fmt`:
-```
+```bash
 gwaslab --input sumstats.tsv --fmt gwaslab --qc --out output --to-fmt gwaslab
 ```
 
@@ -395,7 +395,7 @@ gwaslab --input sumstats.tsv --fmt gwaslab --qc --out output --to-fmt gwaslab
 
 For more information:
 
-```
+```bash
 # Show help message
 gwaslab --help
 

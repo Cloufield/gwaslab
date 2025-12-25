@@ -8,7 +8,7 @@ GWASLab provides a function to calculate the variance explained by each SNP (per
 
 Calculates the proportion of variance explained by each SNP and optionally computes F-statistics for instrument strength assessment.
 
-```
+```python
 mysumstats.get_per_snp_r2(**kwargs)
 ```
 
@@ -111,7 +111,7 @@ The calculation involves:
 
 **Basic usage for quantitative trait:**
 
-```
+```python
 import gwaslab as gl
 
 # Load sumstats
@@ -135,21 +135,21 @@ print(mysumstats.data[["SNP", "BETA", "EAF", "SNPR2", "F"]].head())
 
 **Quantitative trait with estimated Var(Y):**
 
-```
+```python
 # Estimate Var(Y) from SE, N, and MAF
 mysumstats.get_per_snp_r2(vary="se")
 ```
 
 **Quantitative trait with custom Var(Y):**
 
-```
+```python
 # Provide known variance of the phenotype
 mysumstats.get_per_snp_r2(vary=2.5)
 ```
 
 **Binary trait:**
 
-```
+```python
 # For binary traits, provide case/control counts and prevalence
 mysumstats.get_per_snp_r2(mode="b",
                           ncase=8500,
@@ -159,14 +159,14 @@ mysumstats.get_per_snp_r2(mode="b",
 
 **With adjusted R²:**
 
-```
+```python
 # Calculate adjusted R²
 mysumstats.get_per_snp_r2(adjuested=True)
 ```
 
 **Custom k for F-statistic:**
 
-```
+```python
 # Use k=10 for F-statistic calculation
 mysumstats.get_per_snp_r2(k=10)
 

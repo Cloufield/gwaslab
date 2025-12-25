@@ -11,7 +11,7 @@ GWASLab uses a two-step strategy (both steps are optional) to assign rsIDs to va
 
 ## Quick Start
 
-```
+```python
 # 1. Download reference data (one-time setup)
 gl.download_ref("1kg_dbsnp151_hg19_auto")
 
@@ -37,7 +37,7 @@ GWASLab provides curated tables containing ~80M 1KG variants that can be downloa
 - **hg38 (GRCh38)**: `gl.download_ref("1kg_dbsnp151_hg38_auto")`
 
 !!! note "1kg_dbsnp151_hg19_auto format"
-    ```
+    ```python
     ~/.gwaslab$ zcat 1kg_dbsnp151_hg19_auto.txt.gz |head
     **SNPID**   **rsID**    **CHR**     **POS**     **NEA**     **EA**
     1:10177:A:AC    rs367896724     1       10177   A       AC
@@ -64,7 +64,7 @@ For comprehensive annotation including rare variants, you can download dbSNP VCF
 - Index (tbi): https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz.tbi
 
 !!! note "VCF file from dbSNP"
-    ```
+    ```python
      zcat GCF_000001405.25.vcf.gz | head -100 | tail -10
     NC_000001.10    10059   rs1570391745    C       G       .       .       RS=1570391745;dbSNPBuildID=154;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=SNV;R5;GNO;FREQ=KOREAN:0.9997,0.0003425|dbGaP_PopFreq:1,0
     NC_000001.10    10060   rs1639544146    C       CT      .       .       RS=1639544146;SSR=0;PSEUDOGENEINFO=DDX11L1:100287102;VC=INDEL;R5;GNO;FREQ=dbGaP_PopFreq:1,0
@@ -112,7 +112,7 @@ GWASLab provides two methods for assigning rsIDs:
 
 ### Basic Usage
 
-```
+```python
 mysumstats.basic_check()
 mysumstats.assign_rsid( 
     ref_rsid_tsv=gl.get_path("1kg_dbsnp151_hg19_auto"),
@@ -137,7 +137,7 @@ mysumstats.assign_rsid(
 
 ### Basic Usage
 
-```
+```python
 mysumstats.basic_check()
 mysumstats.assign_rsid2(
     vcf_path="/path/to/dbsnp/GCF_000001405.25.vcf.gz",
@@ -170,7 +170,7 @@ mysumstats.assign_rsid2(
 
 For VCF files from dbSNP, you need to convert chromosome notation from numbers (1-25) to RefSeq names (NC_000001.10, etc.). GWASLab provides built-in conversion dictionaries:
 
-```
+```python
 # For hg19 (GRCh37)
 gl.get_number_to_NC(build="19")
 # {1: 'NC_000001.10', 2: 'NC_000002.11', 3: 'NC_000003.11', ...}
@@ -197,7 +197,7 @@ The `overwrite` parameter controls which existing **rsID** values should be repl
 
 ### Example 1: Basic **rsID** Assignment with TSV File
 
-```
+```python
 # Download reference **SNPID**-**rsID** table first
 gl.download_ref("1kg_dbsnp151_hg19_auto") 
 
@@ -234,7 +234,7 @@ mysumstats.assign_rsid(
 
 ### Example 2: Complete **rsID** Assignment with Both TSV and VCF Files
 
-```
+```python
 # rsID annotation using both TSV and VCF files
 # This maximizes annotation coverage
 mysumstats.assign_rsid(
@@ -248,7 +248,7 @@ mysumstats.assign_rsid(
 
 The log output shows the annotation process:
 
-```
+```python
 Start to assign rsID using reference file...
  -Current Dataframe shape : 10000 x 12
  -SNPID-rsID text file: /home/yunye/.gwaslab/1kg_dbsnp151_hg19_auto.txt.gz
@@ -272,7 +272,7 @@ As you can see, the **SNPID**-**rsID** table (`1kg_dbsnp151_hg19_auto`) annotate
 
 ### Example 3: Using Overwrite Modes
 
-```
+```python
 # Only fill missing rsIDs (default, safest)
 mysumstats.assign_rsid(
     ref_rsid_tsv=gl.get_path("1kg_dbsnp151_hg19_auto"),
@@ -294,7 +294,7 @@ mysumstats.assign_rsid(
 
 ### Example 4: Using .assign_rsid2() with Sweep Mode
 
-```
+```python
 # For large datasets with VCF/BCF files, use sweep mode
 mysumstats.basic_check()
 
@@ -330,7 +330,7 @@ mysumstats.assign_rsid2(
 
 ### Example 5: Using .assign_rsid2() with BCF Conversion
 
-```
+```python
 # Convert VCF to BCF first for better performance
 mysumstats.basic_check()
 mysumstats.assign_rsid2(

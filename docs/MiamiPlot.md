@@ -6,7 +6,7 @@ As a standalone function, GWASLab can plot Miami plot given a pair of sumstats f
 
 ## gl.plot_miami2()
 
-```
+```python
 gl.plot_miami2( 
           path1=None,
           path2=None,
@@ -52,7 +52,7 @@ GWASLab creates Miami plot by iteratively calling `.plot_mqq()`. The function na
 ## Example
 
 !!! example "Basic Miami plot"
-    ```
+    ```python
     import gwaslab as gl
     
     # Load two sumstats
@@ -64,7 +64,7 @@ GWASLab creates Miami plot by iteratively calling `.plot_mqq()`. The function na
     ```
 
 !!! example "Customized Miami plot with annotations"
-    ```
+    ```python
     gl.plot_miami2(
         path1=gl1,
         path2=gl2,
@@ -91,7 +91,7 @@ GWASLab creates Miami plot by iteratively calling `.plot_mqq()`. The function na
     ```
 
 !!! example "Using merged sumstats"
-    ```
+    ```python
     # Merge two sumstats with suffixes
     merged = gl.merge_sumstats([gl1, gl2], suffixes=["_1", "_2"])
     

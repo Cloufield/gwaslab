@@ -72,7 +72,7 @@ Comparison is performed with `float_tolerance = 1e-7` for any float type statist
 
 **Usage:**
 
-```
+```python
 # Use default ranges
 mysumstats.check_sanity()
 
@@ -95,7 +95,7 @@ mysumstats.check_sanity(
 
 After standardizing and normalizing the sumstats, you can also remove duplicated or multiallelic variants using:
 
-```
+```python
 mysumstats.remove_dup(mode="md")
 ```
 
@@ -116,7 +116,7 @@ mysumstats.remove_dup(mode="md")
 - `keep`: keep 'first' or 'last'.
 
 !!! example
-    ```
+    ```python
     mysumstats.remove_dup(mode="md",keep='first',keep_col="P",remove=False)
         
     Fri Jan 13 17:34:38 2023 Start to sort the sumstats using P...
@@ -150,7 +150,7 @@ mysumstats.remove_dup(mode="md")
 
 ## Check_data consistency
 
-```
+```python
 mysumstats.check_data_consistency()
 ```
 
@@ -160,7 +160,7 @@ GWASLab checks if `BETA/SE-derived P/MLOG10P = original P/MLOG10P` or `N = N_CAS
 
 Filter variants using pandas query syntax. This is the most flexible filtering method and allows complex conditional filtering.
 
-```
+```python
 mysumstats.filter_value(expr, inplace=False)
 ```
 
@@ -181,7 +181,7 @@ mysumstats.filter_value(expr, inplace=False)
     For detailed query syntax, see: https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html
 
 !!! example "Filter by p-value and effect size"
-    ```
+    ```python
     # Keep only significant variants with positive effect
     significant = mysumstats.filter_value('P < 5e-8 & BETA > 0')
     
@@ -190,7 +190,7 @@ mysumstats.filter_value(expr, inplace=False)
     ```
 
 !!! example "Complex filtering"
-    ```
+    ```python
     # Multiple conditions
     filtered = mysumstats.filter_value(
         'P < 1e-5 & INFO > 0.8 & N > 5000 & EAF > 0.01 & EAF < 0.99'
@@ -213,7 +213,7 @@ Extract variants within a specified window around target variants. Useful for re
 
 Filter variants in flanking regions around specified SNPID or rsID.
 
-```
+```python
 mysumstats.filter_flanking_by_id(
     snpid=["rs123", "rs456", "1:12345:A:G"],
     windowsizekb=500,
@@ -233,7 +233,7 @@ mysumstats.filter_flanking_by_id(
 
 Filter variants in flanking regions around specified chromosome and position coordinates.
 
-```
+```python
 mysumstats.filter_flanking_by_chrpos(
     chrpos=[(1, 12345), (2, 67891)],
     windowsizekb=500,
@@ -250,7 +250,7 @@ mysumstats.filter_flanking_by_chrpos(
 | `inplace` | `bool` | If `False`, return a new Sumstats object. If `True`, filter in place. | `False` |
 
 !!! example "Extract variants around lead SNPs"
-    ```
+    ```python
     # Extract variants ±500kb around a lead SNP
     regional = mysumstats.filter_flanking_by_id(
         snpid=["rs123456"],
@@ -272,7 +272,7 @@ Filter variants based on genomic regions defined in BED (Browser Extensible Data
 
 Keep only variants within specified regions.
 
-```
+```python
 mysumstats.filter_region_in(
     path="regions.bed",
     high_ld=False,
@@ -285,7 +285,7 @@ mysumstats.filter_region_in(
 
 Remove variants within specified regions.
 
-```
+```python
 mysumstats.filter_region_out(
     path="regions.bed",
     high_ld=False,
@@ -304,14 +304,14 @@ mysumstats.filter_region_out(
 | `inplace` | `bool` | If `False`, return a new Sumstats object. If `True`, filter in place. | `False` |
 
 **BED File Format:**
-```
+```python
 chr1    1000000    2000000
 chr2    5000000    6000000
 chr3    10000000   11000000
 ```
 
 !!! example "Filter by BED file"
-    ```
+    ```python
     # Keep variants in regions defined by BED file
     in_regions = mysumstats.filter_region_in(path="my_regions.bed")
     
@@ -323,7 +323,7 @@ chr3    10000000   11000000
     ```
 
 !!! example "Common use cases"
-    ```
+    ```python
     # Exclude high-LD regions (often done before LDSC)
     mysumstats.filter_region_out(high_ld=True, build="38")
     
@@ -335,7 +335,7 @@ chr3    10000000   11000000
 
 ### Standard QC Pipeline
 
-```
+```python
 import gwaslab as gl
 
 # Load sumstats
@@ -355,7 +355,7 @@ mysumstats.summary()
 
 ### Pre-LDSC Filtering
 
-```
+```python
 # Standard filtering for LDSC
 mysumstats.filter_hapmap3()                 # HapMap3 variants only
 mysumstats.filter_palindromic(mode="out")   # Remove palindromic
@@ -366,7 +366,7 @@ mysumstats.filter_value('INFO > 0.9 & MAF > 0.01')      # Quality filters
 
 ### Regional Analysis
 
-```
+```python
 # Extract variants around lead SNPs for regional plots
 regional = mysumstats.filter_flanking_by_id(
     snpid=["rs123456", "rs789012"],
@@ -390,7 +390,7 @@ regional.plot_regional()
 
 The `basic_check()` method is a comprehensive QC function that performs multiple quality control steps in a single call. It's recommended for initial QC of your sumstats.
 
-```
+```python
 mysumstats.basic_check(
     remove=False,           # Remove bad quality variants
     remove_dup=False,       # Remove duplicated variants
@@ -426,7 +426,7 @@ The function performs the following checks in sequence:
 - `fix_id_kwargs`, `fix_chr_kwargs`, etc.: Keyword arguments passed to individual functions
 
 !!! example "Basic QC workflow"
-    ```
+    ```python
     import gwaslab as gl
     
     # Load sumstats
@@ -447,7 +447,7 @@ The function performs the following checks in sequence:
 
 Filter palindromic variants (e.g., A/T, C/G SNPs that are ambiguous on the reverse strand).
 
-```
+```python
 # Remove palindromic variants (recommended for most analyses)
 mysumstats.filter_palindromic(mode="out", inplace=False)
 
@@ -463,7 +463,7 @@ mysumstats.filter_palindromic(mode="in", inplace=False)
 
 Filter variants by type (SNPs vs indels).
 
-```
+```python
 # Keep only SNPs (remove indels)
 mysumstats.filter_snp(mode="in", inplace=False)
 
@@ -481,7 +481,7 @@ mysumstats.filter_indel(mode="out", inplace=False)
 
 Filter to variants present in HapMap3 reference panel (commonly used for LDSC and other analyses).
 
-```
+```python
 mysumstats.filter_hapmap3(inplace=False)
 ```
 
@@ -494,7 +494,7 @@ mysumstats.filter_hapmap3(inplace=False)
 
 Exclude variants in the HLA (Human Leukocyte Antigen) region on chromosome 6 (chr6:25-35 Mb). This region has complex LD structure and is often excluded from certain analyses.
 
-```
+```python
 mysumstats.exclude_hla(inplace=False)
 ```
 
@@ -502,7 +502,7 @@ mysumstats.exclude_hla(inplace=False)
 - `inplace` (bool): If `False`, return a new Sumstats object. If `True`, filter in place.
 
 !!! example "Common filtering workflow"
-    ```
+    ```python
     # Remove palindromic variants
     mysumstats.filter_palindromic(mode="out")
     
@@ -520,7 +520,7 @@ mysumstats.exclude_hla(inplace=False)
 
 These methods provide a convenient way to filter variants based on threshold values.
 
-```
+```python
 # Filter in variants (keep variants meeting criteria)
 mysumstats.filter_in(
     gt={"INFO": 0.9, "N": 10000},      # Keep variants with INFO > 0.9 and N > 10000
