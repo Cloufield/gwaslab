@@ -56,7 +56,7 @@ This document summarizes the licenses of all third-party packages and extensions
 | **h5py** (>=3.10.0) | BSD-3-Clause | ✅ Compatible | Permissive license, can be used with GPL |
 | **pyarrow** | Apache-2.0 | ✅ Compatible | Apache-2.0 is GPL-3.0 compatible |
 | **polars** (>=1.27.0) | MIT License | ✅ Compatible | MIT is GPL-compatible |
-| **sumstats-liftover** (==1.0.0) | MIT License | ✅ Compatible | MIT is GPL-compatible |
+| **sumstats-liftover** (==1.1.0) | MIT License | ✅ Compatible | MIT is GPL-compatible |
 | **requests** | Apache-2.0 | ✅ Compatible | Used for GWAS Catalog API access |
 
 ### Build System Dependencies

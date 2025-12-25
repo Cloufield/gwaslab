@@ -59,6 +59,8 @@ def read_gtf(
         Filter by chromosome/seqname early for speed. If None, load all chromosomes.
         Can be chromosome number (e.g., "1", "23" for X) or name (e.g., "X", "chr1").
         For X chromosome, can use "X", "chrX", or "23".
+        For Y chromosome, can use "Y", "chrY", or "24".
+        For MT chromosome, can use "MT", "chrMT", "M", "chrM", or "25".
     
     expand_attribute_column : bool
         Expand the 'attribute' column into separate columns (default: True)
@@ -107,31 +109,41 @@ def read_gtf(
         return pd.DataFrame(columns=REQUIRED_COLUMNS)
     
     # Convert sex chromosomes to numeric in seqname column
-    # X -> 23, Y -> 24, also handle chrX, chrY formats
+    # X -> 23, Y -> 24, MT -> 25, also handle chrX, chrY, chrMT, chrM formats
     df = df.with_columns(
         pl.when(pl.col("seqname").is_in(["X", "chrX"]))
         .then(pl.lit("23"))
         .when(pl.col("seqname").is_in(["Y", "chrY"]))
         .then(pl.lit("24"))
+        .when(pl.col("seqname").is_in(["MT", "chrMT", "M", "chrM"]))
+        .then(pl.lit("25"))
         .otherwise(pl.col("seqname"))
         .alias("seqname")
     )
     
     # Early chromosome filtering for speed (before processing attributes)
     if chrom is not None:
-        # Convert chrom to string and handle X/Y chromosomes
+        # Convert chrom to string and handle X/Y/MT chromosomes
         chrom_str = str(chrom)
         if chrom_str == "23":
             chrom_str = "X"
         elif chrom_str == "24":
             chrom_str = "Y"
+        elif chrom_str == "25":
+            chrom_str = "MT"
+        elif chrom_str in ["chrMT", "chrM", "M"]:
+            chrom_str = "MT"
         
         # Filter by chromosome - check both original format and converted format
+        # Note: After conversion above, X/Y/MT are already converted to 23/24/25 in seqname
         chrom_values = [chrom_str, str(chrom)]
         if chrom_str == "X":
             chrom_values.extend(["23", "chrX"])
         elif chrom_str == "Y":
             chrom_values.extend(["24", "chrY"])
+        elif chrom_str == "MT":
+            # MT variants are converted to "25" above, so filter for "25"
+            chrom_values.extend(["25", "chrMT", "chrM", "M"])
         
         df = df.filter(pl.col("seqname").is_in(chrom_values))
         if len(df) == 0:

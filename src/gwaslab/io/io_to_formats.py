@@ -2,6 +2,7 @@ import pandas as pd
 import yaml
 import hashlib
 import copy
+import os
 """
 Convert summary statistics to specified output format with various processing options.
 """
@@ -573,6 +574,14 @@ def _write_tabular(sumstats,rename_dictionary, path, tab_fmt, to_csvargs, to_tab
             sumstats.to_csv(path, index=False, **to_csvargs)
 
     elif tab_fmt=="parquet":
+        # When partition_cols is provided, PyArrow expects a directory path, not a file path
+        if to_tabular_kwargs and "partition_cols" in to_tabular_kwargs and to_tabular_kwargs["partition_cols"]:
+            # Convert file path to directory path by removing .parquet extension
+            if path.endswith(".parquet"):
+                path = path[:-8]  # Remove ".parquet" extension
+            # Create directory if it doesn't exist
+            os.makedirs(path, exist_ok=True)
+            log.write("  -Partitioned parquet will be written to directory: {}".format(path), verbose=verbose)
         sumstats.to_parquet(path, index=None, **to_tabular_kwargs)
 
 

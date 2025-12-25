@@ -25,8 +25,7 @@ nav:
        - "Reserved Headers": reserved_header.md
        - "License" : LICENSE.md
     - Start: 
-       - Tutorial: tutorial_3.6.ipynb
-       - "Tutorial Archive": tutorial.ipynb 
+       - Tutorial: tutorial_v4.ipynb
     - CLI:
        - "Command Line Interface": CLI.md
        - "CLI Workflow Examples": CLIWorkflowExamples.md

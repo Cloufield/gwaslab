@@ -22,7 +22,7 @@ dependencies = [
   "h5py>=3.10.0",
   "pyarrow",
   "polars>=1.27.0",
-  "sumstats-liftover==1.0.0"
+  "sumstats-liftover==1.1.0"
 ]
 
 [project.urls]
