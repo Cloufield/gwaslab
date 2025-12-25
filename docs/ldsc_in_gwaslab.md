@@ -9,7 +9,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 22:12:30 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
 2025/12/25 22:12:30 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/12/25 22:12:30 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -37,7 +37,7 @@ t2d.filter_hapmap3(inplace=True)
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 22:12:53  -Genomic coordinates are based on GRCh37/hg19...
 2025/12/25 22:12:53 Start to extract HapMap3 SNPs ...(v4.0.0)
 2025/12/25 22:12:53  -Current Dataframe shape : 12557761 x 11 ; Memory usage: 937.22 MB
@@ -59,7 +59,7 @@ t2d.estimate_h2_by_ldsc(ref_ld_chr = "../../test/ref/eas_ldscores/",
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 22:13:15  -Genomic coordinates are based on GRCh37/hg19...
 2025/12/25 22:13:15 Start to extract HapMap3 SNPs ...(v4.0.0)
 2025/12/25 22:13:15  -Current Dataframe shape : 1092430 x 12 ; Memory usage: 101.03 MB
@@ -95,7 +95,7 @@ t2d.estimate_h2_by_ldsc(ref_ld_chr = "../../test/ref/eas_ldscores/",
 t2d.ldsc_h2
 ```
 
-```python
+```
 | h2_obs | h2_se | Lambda_gc | Mean_chi2 | Intercept Intercept_se | \ |
 | --- | --- | --- | --- | --- | --- |
 | 0 | 0.10394433 | 0.00650644 | 1.32982693 | 1.49125406 | 1.09147712 |
@@ -122,7 +122,7 @@ t2d.estimate_rg_by_ldsc(other_traits=[bmi_female,bmi_male],
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 22:14:08  -Genomic coordinates are based on GRCh37/hg19...
 2025/12/25 22:14:08 Start to extract HapMap3 SNPs ...(v4.0.0)
 2025/12/25 22:14:08  -Current Dataframe shape : 1092430 x 12 ; Memory usage: 101.03 MB
@@ -203,7 +203,7 @@ T2D   BMI_male 0.209849 0.060088 3.492357 4.787786e-04 0.175952   0.011384 1.047
 2025/12/25 22:14:36 Finished running LD score regression for genetic correlation.
 ```
 
-```python
+```
 | p1 | p2 | rg | se | z | p | h2_obs | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | T2D | BMI_female | 0.320668 | 0.062279 | 5.148882 | 2.620433e-07 | 0.193199 |
@@ -217,7 +217,7 @@ T2D   BMI_male 0.209849 0.060088 3.492357 4.787786e-04 0.175952   0.011384 1.047
 t2d.ldsc_rg
 ```
 
-```python
+```
 | p1 | p2 | rg | se | z | p | h2_obs | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | T2D | BMI_female | 0.320668 | 0.062279 | 5.148882 | 2.620433e-07 | 0.193199 |
@@ -234,7 +234,7 @@ fig, ax, log, df = gl.plot_rg(t2d.ldsc_rg, p="p")
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 22:15:04 Start to create ldsc genetic correlation heatmap...
 2025/12/25 22:15:04 Configured plot style for plot_rg:None
 2025/12/25 22:15:04 Raw dataset records: 2
@@ -269,7 +269,7 @@ t2d.estimate_partitioned_h2_by_ldsc(       ref_ld_chr = "/home/yunye/tools/ldsc/
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 22:15:07  -Genomic coordinates are based on GRCh37/hg19...
 2025/12/25 22:15:07 Start to extract HapMap3 SNPs ...(v4.0.0)
 2025/12/25 22:15:07  -Current Dataframe shape : 1092430 x 12 ; Memory usage: 101.03 MB
@@ -311,7 +311,7 @@ t2d.estimate_partitioned_h2_by_ldsc(       ref_ld_chr = "/home/yunye/tools/ldsc/
 ```
 
 **stdout:**
-```python
+```
 2024/12/20 12:55:59 Start to extract HapMap3 SNPs...v3.5.4
 2024/12/20 12:55:59  -Current Dataframe shape : 1092430 x 12 ; Memory usage: 118.32 MB
 2024/12/20 12:55:59  -Loading Hapmap3 variants from built-in datasets...
@@ -349,7 +349,7 @@ t2d.estimate_partitioned_h2_by_ldsc(       ref_ld_chr = "/home/yunye/tools/ldsc/
 t2d.ldsc_partitioned_h2_summary
 ```
 
-```python
+```
 | h2_obs | h2_se | Lambda_gc | Mean_chi2 | Intercept Intercept_se | \ |
 | --- | --- | --- | --- | --- | --- |
 | 0 | 0.11773265 | 0.00727336 | 1.33210306 | 1.47668034 | 1.07649298 |
@@ -361,7 +361,7 @@ t2d.ldsc_partitioned_h2_summary
 t2d.ldsc_partitioned_h2_results
 ```
 
-```python
+```
 | Category | Prop._SNPs | Prop._h2 | \ |
 | --- | --- | --- | --- |
 | 0 | baseL2_0 | 1.000000 | 1.000000 |
@@ -389,7 +389,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/eas_baseline/ba
 ```
 
 **stdout:**
-```python
+```
 2024/12/20 12:57:14 Start to extract HapMap3 SNPs...v3.5.4
 2024/12/20 12:57:14  -Current Dataframe shape : 1092430 x 12 ; Memory usage: 118.32 MB
 2024/12/20 12:57:14  -Loading Hapmap3 variants from built-in datasets...
@@ -456,7 +456,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/eas_baseline/ba
 ```
 
 **stdout:**
-```python
+```
 2024/12/20 12:58:59   -Reading cts reference panel LD Score from /home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/GTEx.EAS.21.,/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/GTEx.EAS.control.[1-22] ... (ldscore_fromlist)
 2024/12/20 12:59:01   -Performing regression.
 2024/12/20 12:59:04   -Reading cts reference panel LD Score from /home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/GTEx.EAS.22.,/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/GTEx.EAS.control.[1-22] ... (ldscore_fromlist)
@@ -513,7 +513,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/eas_baseline/ba
 ```
 
 **stdout:**
-```python
+```
 2024/12/20 13:00:53   -Performing regression.
 2024/12/20 13:00:55   -Reading cts reference panel LD Score from /home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/GTEx.EAS.48.,/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/GTEx.EAS.control.[1-22] ... (ldscore_fromlist)
 2024/12/20 13:00:58   -Performing regression.
@@ -571,7 +571,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/eas_baseline/ba
 ```
 
 **stdout:**
-```python
+```
 2024/12/20 13:02:58   -Performing regression.
 2024/12/20 13:03:01   -Reading cts reference panel LD Score from /home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.22.,/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.control.[1-22] ... (ldscore_fromlist)
 2024/12/20 13:03:04   -Performing regression.
@@ -629,7 +629,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/eas_baseline/ba
 ```
 
 **stdout:**
-```python
+```
 2024/12/20 13:05:11   -Performing regression.
 2024/12/20 13:05:13   -Reading cts reference panel LD Score from /home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.49.,/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.control.[1-22] ... (ldscore_fromlist)
 2024/12/20 13:05:15   -Performing regression.
@@ -687,7 +687,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/eas_baseline/ba
 ```
 
 **stdout:**
-```python
+```
 2024/12/20 13:07:10   -Performing regression.
 2024/12/20 13:07:12   -Reading cts reference panel LD Score from /home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.76.,/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.control.[1-22] ... (ldscore_fromlist)
 2024/12/20 13:07:15   -Performing regression.
@@ -745,7 +745,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/eas_baseline/ba
 ```
 
 **stdout:**
-```python
+```
 2024/12/20 13:09:06   -Performing regression.
 2024/12/20 13:09:08   -Reading cts reference panel LD Score from /home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.103.,/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.control.[1-22] ... (ldscore_fromlist)
 2024/12/20 13:09:10   -Performing regression.
@@ -803,7 +803,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/eas_baseline/ba
 ```
 
 **stdout:**
-```python
+```
 2024/12/20 13:11:10   -Performing regression.
 2024/12/20 13:11:11   -Reading cts reference panel LD Score from /home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.130.,/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Franke.EAS.control.[1-22] ... (ldscore_fromlist)
 2024/12/20 13:11:13   -Performing regression.
@@ -859,7 +859,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/eas_baseline/ba
 t2d.ldsc_h2_cts
 ```
 
-```python
+```
 | Name | Coefficient | \ |
 | --- | --- | --- |
 | 40 | Pancreas | 9.460678e-09 |

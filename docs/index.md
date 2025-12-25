@@ -230,3 +230,8 @@ Thanks to @sup3rgiu, @soumickmj and @gmauro for their contributions to the sourc
 * Blog (in Chinese): [https://gwaslab.com/](https://gwaslab.com/)
 * Email: gwaslab@gmail.com
 * Stats: [https://pypistats.org/packages/gwaslab](https://pypistats.org/packages/gwaslab)
+
+
+## AI Era
+
+With assistance from LLM-powered IDEs, I was finally able to restructure the package as I had long intended. This includes reimplementing functions to reduce overhead, adding comprehensive test modules, writing optimized functions, and improving overall code quality and maintainability. I could not imagine how long it would have taken to accomplish all of this without AI assistance.  

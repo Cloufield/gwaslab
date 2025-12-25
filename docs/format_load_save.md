@@ -9,7 +9,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:52:10 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
 2025/12/25 21:52:10 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/12/25 21:52:10 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -41,7 +41,7 @@ mysumstats.random_variants(n=1000, inplace=True, random_state=123,verbose=False)
 mysumstats.basic_check(verbose=False)
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7f10939b73b0>
 ```
 
@@ -49,7 +49,7 @@ mysumstats.basic_check(verbose=False)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:2005486_C_T | 1 | 2005486 | C | T | 1960099 | 0.9863 -0.0969 |
@@ -80,7 +80,7 @@ mysumstats_snp2.data
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:52:37 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
 2025/12/25 21:52:37 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/12/25 21:52:37 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -113,7 +113,7 @@ mysumstats_snp2.data
 2025/12/25 21:52:53 Finished loading data successfully!
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 967172 | 2:12320_AAT_A | 2 | 12320 | AAT | A | 1999999 | 0.0572 -0.0158 |
@@ -142,7 +142,7 @@ mysumstats_chr22.data
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:52:53 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
 2025/12/25 21:52:53 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/12/25 21:52:53 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -176,14 +176,14 @@ mysumstats_chr22.data
 ```
 
 **stderr:**
-```python
+```
 /home/yunye/anaconda3/envs/py312/lib/python3.12/site-packages/gwaslab/io/io_preformat_input.py:860: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
   sumstats_filtered = pd.concat([chunk[chunk[chunk_chrom].str.match(chrom_pat, case=False,na=False) ] for chunk in sumstats_iter])
 /home/yunye/anaconda3/envs/py312/lib/python3.12/site-packages/gwaslab/io/io_preformat_input.py:860: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
   sumstats_filtered = pd.concat([chunk[chunk[chunk_chrom].str.match(chrom_pat, case=False,na=False) ] for chunk in sumstats_iter])
 ```
 
-```python
+```
 | SNPID | CHR | POS EA NEA | STATUS | EAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- |
 | 12071920 | 22:16847963_A_G | 22 | 16847963 | G | A | 1999999 |
@@ -210,7 +210,7 @@ mysumstats.to_format("./mysumstats",fmt="gwaslab",xymt_number=True)
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:09 Start to convert the output sumstats in:  gwaslab  format
 2025/12/25 21:53:09  -Formatting statistics ...
 2025/12/25 21:53:09  -Float statistics formats:
@@ -234,7 +234,7 @@ mysumstats.to_format("./mysumstats",fmt="gwaslab",xymt_number=True)
 ```
 
 **stdout:**
-```python
+```
 SNPID	CHR	POS	EA	NEA	STATUS	EAF	BETA	SE	P	DIRECTION	N
 1:2005486_C_T	1	2005486	C	T	1960099	0.9863	-0.0969	0.0471	3.9820e-02	+---	191764
 1:2247939_AAGG_A	1	2247939	AAGG	A	1960399	0.9966	0.0330	0.1249	7.9190e-01	++--	191764
@@ -254,7 +254,7 @@ gzip: stdout: Broken pipe
 ```
 
 **stdout:**
-```python
+```
 X:121023171_A_ACTT	23	121023171	ACTT	A	1960399	0.5117	0.0096	0.0071	1.7390e-01	++++	191764
 X:134838698_C_CTA	23	134838698	C	CTA	1960399	0.9355	0.0060	0.0145	6.8080e-01	++-+	191764
 X:135939006_G_T	23	135939006	G	T	1960099	0.2068	-0.0037	0.0085	6.6300e-01	-+-+	191764
@@ -274,7 +274,7 @@ mysumstats.to_format("./mysumstats.@",fmt="gwaslab",xymt_number=True)
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:09 Start to convert the output sumstats in:  gwaslab  format
 2025/12/25 21:53:09  -Formatting statistics ...
 2025/12/25 21:53:09  -Float statistics formats:
@@ -303,7 +303,7 @@ mysumstats = gl.Sumstats("./mysumstats.@.gwaslab.tsv.gz",
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:09 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
 2025/12/25 21:53:09 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/12/25 21:53:09 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -364,7 +364,7 @@ formats = gl.list_formats()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:09 Available formats: auto,auto_0,auto_1,auto_2,auto_neaf,auto_ref,bolt_lmm,ccgwas,cojo,fastgwa,genomicsem,gwascatalog,gwascatalog_hm,gwaslab,ldsc,mesusie,metal,mrmega,mtag,pgscatalog,pgscatalog_hm,pheweb,plink,plink2,plink2_firth,plink2_linear,plink2_logistic,plink_assoc,plink_bim,plink_dosage,plink_fam,plink_fisher,plink_linear,plink_logistic,plink_psam,plink_pvar,popcorn,regenie,regenie_gene,saige,ssf,template,vcf
 ```
 
@@ -375,7 +375,7 @@ ssf_format_dict = gl.check_format("ssf")
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:09 Available formats:2025/12/25 21:53:09 meta_data2025/12/25 21:53:09 format_dict2025/12/25 21:53:09 
 2025/12/25 21:53:09 {'format_name': 'ssf', 'format_source': 'https://www.biorxiv.org/content/10.1101/2022.07.15.500230v1.full', 'format_cite_name': 'GWAS-SSF v0.1', 'format_separator': '\t', 'format_na': '#NA', 'format_comment': None, 'format_col_order': ['chromosome', 'base_pair_location', 'effect_allele', 'other_allele', 'beta', 'odds_ratio', 'hazard_ratio', 'standard_error', 'effect_allele_frequency', 'p_value', 'neg_log_10_p_value', 'ci_upper', 'ci_lower', 'rsid', 'variant_id', 'info', 'ref_allele', 'n'], 'format_version': 20230328}2025/12/25 21:53:09 {'variant_id': 'SNPID', 'rsid': 'rsID', 'chromosome': 'CHR', 'base_pair_location': 'POS', 'other_allele': 'NEA', 'effect_allele': 'EA', 'effect_allele_frequency': 'EAF', 'n': 'N', 'beta': 'BETA', 'standard_error': 'SE', 'p_value': 'P', 'neg_log_10_p_value': 'MLOG10P', 'info': 'INFO', 'odds_ratio': 'OR', 'hazard_ratio': 'HR', 'ci_lower': 'OR_95L', 'ci_upper': 'OR_95U'}
 ```
@@ -393,7 +393,7 @@ mysumstats.to_format("./mysumstats", fmt="ssf", ssfmeta=True, md5sum=True)
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:09 Start to convert the output sumstats in:  ssf  format
 2025/12/25 21:53:09  -Formatting statistics ...
 2025/12/25 21:53:09  -Float statistics formats:
@@ -440,7 +440,7 @@ mysumstats.to_format("./mysumstats", fmt="ssf", ssfmeta=True, md5sum=True)
 ```
 
 **stdout:**
-```python
+```
 chromosome	base_pair_location	effect_allele	other_allele	beta	standard_error	effect_allele_frequency	p_value	variant_id	n
 1	2005486	C	T	-0.0969	0.0471	0.9863	3.9820e-02	1_2005486_C_T	191764
 1	2247939	AAGG	A	0.0330	0.1249	0.9966	7.9190e-01	1_2247939_AAGG_A	191764
@@ -458,7 +458,7 @@ chromosome	base_pair_location	effect_allele	other_allele	beta	standard_error	eff
 ```
 
 **stdout:**
-```python
+```
 e8e9b4cf01d7b0166d0cd9a208a2808f
 ```
 
@@ -467,7 +467,7 @@ e8e9b4cf01d7b0166d0cd9a208a2808f
 ```
 
 **stdout:**
-```python
+```
 coordinate_system: 1-based
 data_file_md5sum: e8e9b4cf01d7b0166d0cd9a208a2808f
 data_file_name: ./mysumstats.ssf.tsv.gz
@@ -490,7 +490,7 @@ mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True,bui
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:10 Start to convert the output sumstats in:  ldsc  format
 2025/12/25 21:53:10 Start to exclude variants in HLA regions ...(v4.0.0)
 2025/12/25 21:53:10  -Current Dataframe shape : 1000 x 12 ; Memory usage: 0.08 MB
@@ -535,7 +535,7 @@ mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True,bui
 ```
 
 **stdout:**
-```python
+```
 CHR	POS	A1	A2	Frq	Beta	P	N	SNP
 1	14900419	G	A	0.3952	0.0144	1.3750e-01	191764	rs6703840
 1	19593199	C	T	0.1323	-0.0127	3.2570e-01	191764	rs7527253
@@ -558,7 +558,7 @@ mysumstats.to_format("./mysumstats",fmt="vcf",bgzip=True,tabix=True,build="19")
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:12 Start to convert the output sumstats in:  vcf  format
 2025/12/25 21:53:12  -Formatting statistics ...
 2025/12/25 21:53:12  -Float statistics formats:
@@ -605,7 +605,7 @@ mysumstats.to_format("./mysumstats",
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:12 Start to convert the output sumstats in:  gwaslab  format
 2025/12/25 21:53:12  -Start outputting sumstats in gwaslab format...
 2025/12/25 21:53:12  -gwaslab format will be loaded...
@@ -630,7 +630,7 @@ mysumstats.to_format("./mysumstats",fmt="bed")
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:13 Start to convert the output sumstats in:  bed  format
 2025/12/25 21:53:13  -Formatting statistics ...
 2025/12/25 21:53:13  -Float statistics formats:
@@ -654,7 +654,7 @@ mysumstats.to_format("./mysumstats",fmt="bed")
 ```
 
 **stdout:**
-```python
+```
 1	2005485	2005486	T/C	+	1:2005486_C_T
 1	2247939	2247939	-/AGG	+	1:2247939_AAGG_A
 1	3741852	3741853	A/G	+	1:3741853_G_A
@@ -674,7 +674,7 @@ mysumstats.to_format("./mysumstats",fmt="vep")
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:13 Start to convert the output sumstats in:  vep  format
 2025/12/25 21:53:13  -Formatting statistics ...
 2025/12/25 21:53:13  -Float statistics formats:
@@ -698,7 +698,7 @@ mysumstats.to_format("./mysumstats",fmt="vep")
 ```
 
 **stdout:**
-```python
+```
 1	2005486	2005486	T/C	+	1:2005486_C_T
 1	2247940	2247939	-/AGG	+	1:2247939_AAGG_A
 1	3741853	3741853	A/G	+	1:3741853_G_A
@@ -718,7 +718,7 @@ mysumstats.to_format("./mysumstats",fmt="annovar")
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:13 Start to convert the output sumstats in:  annovar  format
 2025/12/25 21:53:13  -Formatting statistics ...
 2025/12/25 21:53:13  -Float statistics formats:
@@ -742,7 +742,7 @@ mysumstats.to_format("./mysumstats",fmt="annovar")
 ```
 
 **stdout:**
-```python
+```
 1	2005486	2005486	T	C	1:2005486_C_T
 1	2247939	2247939	-	AGG	1:2247939_AAGG_A
 1	3741853	3741853	A	G	1:3741853_G_A
@@ -762,7 +762,7 @@ mysumstats.filter_value("EAF >0.05 and EAF < 0.95").to_format("./mysumstats_maf0
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:53:13 Start to filter variants by condition... ...(v4.0.0)
 2025/12/25 21:53:13  -Current Dataframe shape : 1000 x 12 ; Memory usage: 0.08 MB
 2025/12/25 21:53:13  -Expression: EAF >0.05 and EAF < 0.95

@@ -15,7 +15,7 @@ gl.check_available_ref()
 ```
 
 **stdout:**
-```python
+```
 Sat Feb  3 13:45:00 2024 Start to check available reference files...
 Sat Feb  3 13:45:00 2024  - 1kg_eas_hg19  :  https://www.dropbox.com/s/lztaxqhy2o6dpxw/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1
 Sat Feb  3 13:45:00 2024  - 1kg_eas_hg19_md5  :  c8c97434843c0da3113fc06879ead472
@@ -117,7 +117,7 @@ Sat Feb  3 13:45:00 2024  - testlink  :  https://www.dropbox.com/s/8u7capwge0ihs
 Sat Feb  3 13:45:00 2024  - testlink_tbi  :  https://www.dropbox.com/s/hdneg53t6u1j6ib/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz.tbi?dl=1
 ```
 
-```python
+```
 {'1kg_eas_hg19': 'https://www.dropbox.com/s/lztaxqhy2o6dpxw/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?dl=1',
  '1kg_eas_hg19_md5': 'c8c97434843c0da3113fc06879ead472',
  '1kg_eas_hg19_tbi': 'https://www.dropbox.com/s/k9klefl8m9fcfo1/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi?dl=1',
@@ -227,7 +227,7 @@ gl.download_ref("testlink")
 ```
 
 **stdout:**
-```python
+```
 Sat Feb  3 13:45:00 2024 Start to download  testlink  ...
 Sat Feb  3 13:45:00 2024  -Downloading to: /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz
 Sat Feb  3 13:46:24 2024  -Updating record in config file...
@@ -244,7 +244,7 @@ gl.check_downloaded_ref()
 ```
 
 **stdout:**
-```python
+```
 Sat Feb  3 13:46:24 2024 Start to check downloaded reference files...
 Sat Feb  3 13:46:24 2024  -Checking the config file:/home/yunye/work/gwaslab/src/gwaslab/data/config.json
 Sat Feb  3 13:46:24 2024  -Config file exists.
@@ -267,7 +267,7 @@ Sat Feb  3 13:46:24 2024   - testlink_tbi  :  /home/yunye/.gwaslab/EAS.chr22.spl
 Sat Feb  3 13:46:24 2024   - testlink  :  /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz
 ```
 
-```python
+```
 {'ensembl_hg19_gtf': '/home/yunye/.gwaslab/Homo_sapiens.GRCh37.87.chr.gtf.gz',
  '1kg_eas_hg19': '/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz',
  '1kg_eas_hg19_tbi': '/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz.tbi',
@@ -293,7 +293,7 @@ gl.remove_file("testlink")
 ```
 
 **stdout:**
-```python
+```
 Sat Feb  3 13:46:24 2024 Start to remove  testlink  ...
 Sat Feb  3 13:46:24 2024 Removed : /home/yunye/.gwaslab/EAS.chr22.split_norm_af.1kgp3v5.vcf.gz
 Sat Feb  3 13:46:24 2024 Start to check downloaded reference files...
@@ -327,7 +327,7 @@ Get the path using keywords. The path can be passed to other functions.
 gl.get_path("1kg_eas_hg19")
 ```
 
-```python
+```
 '/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz'
 ```
 
@@ -338,11 +338,11 @@ gl.get_path("1kg_eur_hg19")
 ```
 
 **stdout:**
-```python
+```
 Sat Feb  3 13:46:24 2024 No records in config file. Please download first.
 ```
 
-```python
+```
 False
 ```
 
@@ -353,7 +353,7 @@ gl.update_available_ref()
 ```
 
 **stdout:**
-```python
+```
 Sat Feb  3 13:46:24 2024 Updating available_ref list from: https://raw.github.com/Cloufield/gwaslab/main/src/gwaslab/data/reference.json
 Sat Feb  3 13:46:25 2024 Available_ref list has been updated!
 ```

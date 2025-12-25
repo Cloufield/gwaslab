@@ -9,7 +9,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:45 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
 2025/12/25 21:54:45 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/12/25 21:54:45 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -22,7 +22,7 @@ mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwa
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:45 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
 2025/12/25 21:54:45 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/12/25 21:54:45 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -59,7 +59,7 @@ Dirty sumstats with issues specified in NOTE column
 mysumstats.data
 ```
 
-```python
+```
 | SNPID CHR POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1_G_A | 1 | 1 | A | G | 9999999 | 0.004 | 0.0603 | 0.0103 |
@@ -84,7 +84,7 @@ mysumstats.basic_check(remove=True,remove_dup=True)
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:45 Start to check SNPID/rsID ...(v4.0.0)
 2025/12/25 21:54:46  -Current Dataframe shape : 63 x 21 ; Memory usage: 0.01 MB
 2025/12/25 21:54:46  -Checking SNPID data type...
@@ -233,7 +233,7 @@ mysumstats.basic_check(remove=True,remove_dup=True)
 2025/12/25 21:54:46 Finished reordering the columns.
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fef521b7980>
 ```
 
@@ -241,7 +241,7 @@ mysumstats.basic_check(remove=True,remove_dup=True)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1_G_A | 1 | 1 | A | G | 9960099 | 0.004 | 0.0603 | 0.0103 |
@@ -267,7 +267,7 @@ mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwa
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
 2025/12/25 21:54:46 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/12/25 21:54:46 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -305,7 +305,7 @@ mysumstats.fix_id(fixsep=True)
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to check SNPID/rsID ...(v4.0.0)
 2025/12/25 21:54:46  -Current Dataframe shape : 63 x 21 ; Memory usage: 0.01 MB
 2025/12/25 21:54:46  -Checking SNPID data type...
@@ -317,7 +317,7 @@ mysumstats.fix_id(fixsep=True)
 2025/12/25 21:54:46 Finished checking SNPID/rsID.
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```
 
@@ -325,7 +325,7 @@ mysumstats.fix_id(fixsep=True)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID CHR POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1:G:A | 1 | 1 | A | G | 9969999 | 0.004 | 0.0603 | 0.0103 |
@@ -350,7 +350,7 @@ mysumstats.fix_chr(remove=True)
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to fix chromosome notation (CHR) ...(v4.0.0)
 2025/12/25 21:54:46  -Checking CHR data type...
 2025/12/25 21:54:46  -Variants with standardized chromosome notation: 56
@@ -367,7 +367,7 @@ mysumstats.fix_chr(remove=True)
 2025/12/25 21:54:46 Finished fixing chromosome notation (CHR).
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```
 
@@ -375,7 +375,7 @@ mysumstats.fix_chr(remove=True)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1:G:A | 1 | 1 | A | G | 9965999 | 0.004 | 0.0603 |
@@ -400,7 +400,7 @@ mysumstats.fix_pos(remove=True)
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to fix basepair positions (POS) ...(v4.0.0)
 2025/12/25 21:54:46  -Current Dataframe shape : 58 x 21 ; Memory usage: 0.01 MB
 2025/12/25 21:54:46  -Removing thousands separator "," or underbar "_" ...
@@ -412,7 +412,7 @@ mysumstats.fix_pos(remove=True)
 2025/12/25 21:54:46 Finished fixing basepair positions (POS).
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```
 
@@ -420,7 +420,7 @@ mysumstats.fix_pos(remove=True)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1:G:A | 1 | 1 | A | G | 9960999 | 0.004 | 0.0603 |
@@ -445,7 +445,7 @@ mysumstats.fix_allele(remove=True)
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to fix alleles (EA and NEA) ...(v4.0.0)
 2025/12/25 21:54:46  -Current Dataframe shape : 54 x 21 ; Memory usage: 0.01 MB
 2025/12/25 21:54:46  -Converted all bases to string datatype and UPPERCASE
@@ -460,7 +460,7 @@ mysumstats.fix_allele(remove=True)
 2025/12/25 21:54:46 Finished fixing alleles (EA and NEA).
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```
 
@@ -468,7 +468,7 @@ mysumstats.fix_allele(remove=True)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1:G:A | 1 | 1 | A | G | 9960099 | 0.004 | 0.0603 | 0.0103 |
@@ -493,7 +493,7 @@ mysumstats.check_sanity()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to perform sanity check for statistics ...(v4.0.0)
 2025/12/25 21:54:46  -Current Dataframe shape : 48 x 21 ; Memory usage: 0.01 MB
 2025/12/25 21:54:46  -Comparison tolerance for floats: 1e-07
@@ -556,7 +556,7 @@ mysumstats.check_sanity()
 2025/12/25 21:54:46 Finished sanity check for statistics.
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```
 
@@ -564,7 +564,7 @@ mysumstats.check_sanity()
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1:G:A | 1 | 1 | A | G | 9960099 | 0.004 | 0.0603 | 0.0103 |
@@ -589,7 +589,7 @@ mysumstats.check_data_consistency()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to check data consistency across columns ...(v4.0.0)
 2025/12/25 21:54:46  -Current Dataframe shape : 22 x 21 ; Memory usage: 0.00 MB
 2025/12/25 21:54:46  -Tolerance: 0.001 (Relative) and 0.001 (Absolute)
@@ -608,7 +608,7 @@ mysumstats.check_data_consistency()
 2025/12/25 21:54:46 Finished checking data consistency across columns.
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```
 
@@ -619,7 +619,7 @@ mysumstats.normalize_allele()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to normalize indels ...(v4.0.0)
 2025/12/25 21:54:46  -Number of variants to check:1
 2025/12/25 21:54:46  -Chunk size:3000000
@@ -627,7 +627,7 @@ mysumstats.normalize_allele()
 2025/12/25 21:54:46 Finished normalizing indels.
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```
 
@@ -635,7 +635,7 @@ mysumstats.normalize_allele()
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1:G:A | 1 | 1 | A | G | 9960099 | 0.004 | 0.0603 | 0.0103 |
@@ -660,7 +660,7 @@ mysumstats.remove_dup(mode="md")
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to remove duplicated/multiallelic variants ...(v4.0.0)
 2025/12/25 21:54:46  -Removing mode:md
 2025/12/25 21:54:46 Start to sort the sumstats using P ...
@@ -680,7 +680,7 @@ mysumstats.remove_dup(mode="md")
 2025/12/25 21:54:46 Finished removing duplicated/multiallelic variants.
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```
 
@@ -688,7 +688,7 @@ mysumstats.remove_dup(mode="md")
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1:G:A | 1 | 1 | A | G | 9960099 | 0.004 | 0.0603 | 0.0103 |
@@ -713,12 +713,12 @@ mysumstats.sort_coordinate()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to sort the genome coordinates ...(v4.0.0)
 2025/12/25 21:54:46 Finished sorting coordinates.
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```
 
@@ -729,12 +729,12 @@ mysumstats.sort_column()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 21:54:46 Start to reorder the columns ...(v4.0.0)
 2025/12/25 21:54:46  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,EAF,BETA,SE,OR,OR_95U,OR_95L,CHISQ,Z,P,MLOG10P,DIRECTION,N,N_CASE,N_CONTROL,NOTE
 2025/12/25 21:54:46 Finished reordering the columns.
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fefb5f106b0>
 ```

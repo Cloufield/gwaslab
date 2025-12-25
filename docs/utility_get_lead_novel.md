@@ -9,7 +9,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:40:34 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
 2024/12/22 22:40:34 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
 ```
@@ -43,7 +43,7 @@ mysumstats.get_lead()
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:40:58 Start to extract lead variants...v3.5.4
 2024/12/22 22:40:58  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
 2024/12/22 22:40:58  -Processing 1000000 variants...
@@ -55,7 +55,7 @@ mysumstats.get_lead()
 2024/12/22 22:40:58 Finished extracting lead variants.
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 96739 | 1:22068326_A_G | 1 | 22068326 | G | A | 0.0621 | 0.0103 |
@@ -76,7 +76,7 @@ mysumstats.get_lead(anno=True)
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:40:58 Start to extract lead variants...v3.5.4
 2024/12/22 22:40:58  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
 2024/12/22 22:40:58  -Processing 1000000 variants...
@@ -93,7 +93,7 @@ mysumstats.get_lead(anno=True)
 2024/12/22 22:40:58 Finished extracting lead variants.
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 96739 | 1:22068326_A_G | 1 | 22068326 | G | A | 0.0621 | 0.0103 |
@@ -114,7 +114,7 @@ mysumstats.get_lead(windowsizekb=1000)
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:40:59 Start to extract lead variants...v3.5.4
 2024/12/22 22:40:59  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
 2024/12/22 22:40:59  -Processing 1000000 variants...
@@ -126,7 +126,7 @@ mysumstats.get_lead(windowsizekb=1000)
 2024/12/22 22:40:59 Finished extracting lead variants.
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 96739 | 1:22068326_A_G | 1 | 22068326 | G | A | 0.0621 | 0.0103 |
@@ -147,7 +147,7 @@ mysumstats.get_lead(sig_level=1e-10)
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:40:59 Start to extract lead variants...v3.5.4
 2024/12/22 22:40:59  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
 2024/12/22 22:40:59  -Processing 1000000 variants...
@@ -159,7 +159,7 @@ mysumstats.get_lead(sig_level=1e-10)
 2024/12/22 22:40:59 Finished extracting lead variants.
 ```
 
-```python
+```
 | SNPID | CHR | POS EA NEA | BETA | SE | P | \ |
 | --- | --- | --- | --- | --- | --- | --- |
 | 213860 | 1:51103268_T_C | 1 | 51103268 | C | T -0.0802 | 0.012 |
@@ -174,7 +174,7 @@ novel = mysumstats.get_novel(known="../0_sample_data//toy_data/known_loci.txt")
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:40:59 Start to check if lead variants are known...v3.5.4
 2024/12/22 22:40:59  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
 2024/12/22 22:40:59 Start to extract lead variants...v3.5.4
@@ -197,7 +197,7 @@ novel = mysumstats.get_novel(known="../0_sample_data//toy_data/known_loci.txt")
 novel
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | BETA | SE | P | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:22068326_A_G | 1 | 22068326 | G | A | 0.0621 | 0.0103 | 1.629000e-09 |
@@ -219,7 +219,7 @@ mysumstats.get_novel(efo="MONDO_0005148")
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:41:00 Start to check if lead variants are known...v3.5.4
 2024/12/22 22:41:00  -Current Dataframe shape : 1000000 x 9 ; Memory usage: 77.42 MB
 2024/12/22 22:41:00 Start to extract lead variants...v3.5.4
@@ -256,7 +256,7 @@ mysumstats.get_novel(efo="MONDO_0005148")
 2024/12/22 22:51:03 Finished checking if lead variants are known.
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA | NEA | BETA | SE | P | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:22068326_A_G | 1 | 22068326 | G | A | 0.0621 | 0.0103 | 1.629000e-09 |

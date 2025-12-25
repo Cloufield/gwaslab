@@ -16,7 +16,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 13:00:30 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
 2024/12/23 13:00:30 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
 ```
@@ -31,7 +31,7 @@ gl1.get_lead()
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 13:00:43 Start to extract lead variants...v3.5.4
 2024/12/23 13:00:43  -Current Dataframe shape : 5961600 x 9 ; Memory usage: 328.48 MB
 2024/12/23 13:00:43  -Processing 5961600 variants...
@@ -43,7 +43,7 @@ gl1.get_lead()
 2024/12/23 13:00:45 Finished extracting lead variants.
 ```
 
-```python
+```
 | SNPID | CHR | POS EA NEA | BETA | SE | P | \ |
 | --- | --- | --- | --- | --- | --- | --- |
 | 5629059 | rs860295 | 1 | 155767708 | A | G | 0.04005 |
@@ -114,7 +114,7 @@ a = gl.plot_miami2(path1= gl1,
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 13:00:45 Start to create miami plot v3.5.4:
 2024/12/23 13:00:45  -Obtaining Sumstats1 CHR, POS, P and annotation from: ['CHR', 'POS', 'P', 'SNPID']
 2024/12/23 13:00:45  -Loading Sumstats1 from gwaslab.Sumstats Object

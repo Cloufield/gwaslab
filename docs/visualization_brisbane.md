@@ -10,7 +10,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 12:19:09 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
 2024/12/23 12:19:09 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
 ```
@@ -25,7 +25,7 @@ Fig. 2: Brisbane plot
 ```
 
 **stdout:**
-```python
+```
 --2024-12-23 12:19:13--  https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-022-05275-y/MediaObjects/41586_2022_5275_MOESM3_ESM.xlsx
 Resolving static-content.springer.com (static-content.springer.com)... 146.75.112.95
 Connecting to static-content.springer.com (static-content.springer.com)|146.75.112.95|:443... connected.
@@ -46,12 +46,12 @@ data
 ```
 
 **stderr:**
-```python
+```
 /home/yunye/anaconda3/envs/gwaslab_py39/lib/python3.9/site-packages/openpyxl/worksheet/_reader.py:329: UserWarning: Unknown extension is not supported and will be removed
   warn(msg)
 ```
 
-```python
+```
 | Locus | Chr | SNP | BP (HG19) | BP (HG38) Effect Allele (A1) | \ |
 | --- | --- | --- | --- | --- | --- |
 | 0 | 1:METAFE | 1 | rs2710888 | 959842 | 1024462 |
@@ -76,7 +76,7 @@ sumstats = gl.Sumstats(data,snpid="SNP",chrom="Chr",pos="BP (HG19)",p="b P-value
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 12:19:16 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
 2024/12/23 12:19:16 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
 2024/12/23 12:19:16 Start to initialize gl.Sumstats from pandas DataFrame ...
@@ -106,7 +106,7 @@ sumstats.plot_mqq(mode="b")
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 12:19:17 Start to create MQQ plot...v3.5.4:
 2024/12/23 12:19:17  -Genomic coordinates version: 99...
 2024/12/23 12:19:17  #WARNING! Genomic coordinates version is unknown.
@@ -145,7 +145,7 @@ sumstats.plot_mqq(mode="b")
 2024/12/23 12:19:17 Finished creating plot successfully!
 ```
 
-```python
+```
 (<Figure size 3000x1000 with 1 Axes>, <gwaslab.g_Log.Log at 0x7f1446bc8b80>)
 ```
 
@@ -158,11 +158,11 @@ sumstats.plot_mqq(mode="b",anno=True,sig_line_color="red", windowsizekb=100000, 
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 12:19:18  #WARNING! Genomic coordinates version is unknown.
 ```
 
-```python
+```
 (<Figure size 3000x1000 with 1 Axes>, <gwaslab.g_Log.Log at 0x7f1446bc8b80>)
 ```
 
@@ -174,7 +174,7 @@ sumstats.plot_mqq(mode="b",anno=True,sig_line_color="red", windowsizekb=100000, 
 sumstats.plot_mqq(mode="b",anno="GENENAME",sig_line_color="red",build="19",windowsizekb=100000, verbose=False)
 ```
 
-```python
+```
 (<Figure size 3000x1000 with 1 Axes>, <gwaslab.g_Log.Log at 0x7f1446bc8b80>)
 ```
 

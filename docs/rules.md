@@ -2,11 +2,13 @@
 
 This document outlines the style and formatting rules for GWASLab documentation.
 
+!!! note "Documentation System Migration"
+    The documentation system is transitioning from mkdocs-material to zensical. From now on, use zensical for all new documentation work.
+
 ## Code Examples
 
-- **Use python code blocks**
-- **Variable naming**: When sample code is needed, use `mysumstats.function()` instead of `.function()` or other variable names
-- **Consistency**: Always use `mysumstats` as the standard variable name for Sumstats objects
+- **Code block types**: Use Python code blocks for GWASLab Python API code; use bash code blocks for GWASLab CLI commands.
+- **Variable naming**: Always use `mysumstats` as the standard variable name for Sumstats objects in sample code. Use `mysumstats.function()` instead of `.function()` or other variable names.
 
 ## Formatting
 
@@ -14,9 +16,10 @@ This document outlines the style and formatting rules for GWASLab documentation.
 - **Reserved headers**: Column names and reserved headers (like `SNPID`, `CHR`, `POS`, `EA`, `NEA`, `BETA`, `SE`, `P`, etc.) should be in **bold** format: `**SNPID**`, `**CHR**`, etc.
 - **Table headers**: Use `DataType` (camelCase, no space) consistently in all parameter/option tables, not `Type` or `Data Type`
 
-## MkDocs Material Admonitions
+## Admonitions
 
-Use appropriate MkDocs Material admonition blocks for different types of content:
+!!! note "Note on Admonitions"
+    The documentation system is transitioning from mkdocs-material to zensical. Use appropriate admonition blocks for different types of content:
 
 - **Examples**: Use `!!! example` blocks for code examples and usage demonstrations
 - **Citations/References**: Use `!!! quote` blocks for citations, references, and quoted material

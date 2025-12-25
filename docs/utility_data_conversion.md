@@ -9,7 +9,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:17 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
 2024/12/22 22:33:17 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
 ```
@@ -30,7 +30,7 @@ mysumstats.basic_check(verbose=False)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | BETA | SE | STATUS |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 |
@@ -47,7 +47,7 @@ mysumstats.fill_data(to_fill=["OR"])
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
 2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      STATUS  
 2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 category
@@ -69,7 +69,7 @@ mysumstats.fill_data(to_fill=["OR"])
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | BETA | SE | OR | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 | 0.928950 |
@@ -95,7 +95,7 @@ mysumstats.data.drop(labels=["BETA","SE"],axis=1,inplace=True)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | OR | OR_95L | OR_95U | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 | 0.928950 | 0.706863 |
@@ -116,7 +116,7 @@ mysumstats.fill_data(to_fill=["BETA","SE"])
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
 2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     OR      OR_95L  OR_95U  STATUS  
 2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 float64 category
@@ -138,7 +138,7 @@ mysumstats.fill_data(to_fill=["BETA","SE"])
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | BETA | SE | OR | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 | 0.928950 |
@@ -161,7 +161,7 @@ mysumstats.fill_data(to_fill=["Z"])
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
 2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      OR      OR_95L  OR_95U  STATUS  
 2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 category
@@ -182,7 +182,7 @@ mysumstats.fill_data(to_fill=["Z"])
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | BETA | SE | Z | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 -0.528694 |  |
@@ -205,7 +205,7 @@ mysumstats.fill_data(to_fill=["MLOG10P"])
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
 2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       OR      OR_95L  OR_95U  STATUS  
 2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 category
@@ -230,7 +230,7 @@ mysumstats.fill_data(to_fill=["P"])
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:33 Start filling data using existing columns...v3.5.4
 2024/12/22 22:33:33  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
 2024/12/22 22:33:33  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
@@ -249,7 +249,7 @@ mysumstats.fill_data(to_fill=["P"])
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | BETA | SE | Z | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 -0.528694 |  |
@@ -272,7 +272,7 @@ mysumstats.fill_data(to_fill=["MAF"])
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:33 Start filling data using existing columns...v3.5.4
 2024/12/22 22:33:33  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
 2024/12/22 22:33:33  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
@@ -293,7 +293,7 @@ mysumstats.fill_data(to_fill=["MAF"])
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | MAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 | 0.0040 -0.0737 | 0.1394 |
@@ -323,7 +323,7 @@ mysumstats.data["SE"] = mysumstats.data["SE"]/100
 mysumstats.data
 ```
 
-```python
+```
 | SNPID CHR | POS | BETA | SE | STATUS |
 | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 -0.0737 | 0.001394 |
@@ -342,7 +342,7 @@ mysumstats.fill_data(to_fill=["Z","P"])
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:34 Start filling data using existing columns...v3.5.4
 2024/12/22 22:33:34  -Column  : SNPID  CHR    POS   BETA    SE      STATUS  
 2024/12/22 22:33:34  -DType   : object string int64 float64 float64 category
@@ -365,7 +365,7 @@ mysumstats.fill_data(to_fill=["Z","P"])
 mysumstats.data
 ```
 
-```python
+```
 | SNPID CHR | POS | BETA | SE | Z | P | STATUS |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 -0.0737 | 0.001394 | -52.869440 | 0.0 |
@@ -382,7 +382,7 @@ mysumstats.fill_data(to_fill=["MLOG10P"],extreme=True)
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:34 Start filling data using existing columns...v3.5.4
 2024/12/22 22:33:34  -Column  : SNPID  CHR    POS   BETA    SE      Z       P       STATUS  
 2024/12/22 22:33:34  -DType   : object string int64 float64 float64 float64 float64 category
@@ -404,7 +404,7 @@ mysumstats.fill_data(to_fill=["MLOG10P"],extreme=True)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID CHR | POS | BETA | SE | Z | P | MLOG10P | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 -0.0737 | 0.001394 | -52.869440 | 0.0 | 608.786553 |
@@ -436,7 +436,7 @@ mysumstats.basic_check(verbose=False)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | BETA | SE | N | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 | 170000 |
@@ -457,7 +457,7 @@ mysumstats.get_per_snp_r2()
 ```
 
 **stdout:**
-```python
+```
 2024/12/22 22:33:49 Start to calculate per-SNP heritibility...
 2024/12/22 22:33:49  -Calculating per-SNP rsq by 2 * (BETA**2) * AF * (1-AF) / Var(y)...
 2024/12/22 22:33:49  -Var(y) is provided: 1...
@@ -470,7 +470,7 @@ mysumstats.get_per_snp_r2()
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | BETA | SE | N | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 | 170000 |

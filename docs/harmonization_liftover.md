@@ -9,7 +9,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 22:07:57 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
 2025/12/25 22:07:57 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/12/25 22:07:57 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -33,7 +33,7 @@ mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
 mysumstats.basic_check(verbose=False)
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7fb73278db20>
 ```
 
@@ -41,7 +41,7 @@ mysumstats.basic_check(verbose=False)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 -0.0737 |
@@ -66,7 +66,7 @@ mysumstats.liftover(from_build="19", to_build="38")
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 22:07:59 Start to perform liftover ...(v4.0.0)
 2025/12/25 22:07:59  -Using built-in chain file: /home/yunye/anaconda3/envs/py312/lib/python3.12/site-packages/gwaslab/data/chains/hg19ToHg38.over.chain.gz
 2025/12/25 22:07:59  -Converting variants with status code xxx0xxx: 5,000
@@ -101,7 +101,7 @@ mysumstats.liftover(from_build="19", to_build="38")
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 790552 | G | A | 3860099 | 0.9960 -0.0737 |
@@ -130,7 +130,7 @@ mysumstats.data
 ```
 
 **stdout:**
-```python
+```
 --2025-12-25 22:08:00--  https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/chain/v1_nflo/grch38-chm13v2.chain
 Resolving s3-us-west-2.amazonaws.com (s3-us-west-2.amazonaws.com)... 52.92.233.24, 52.92.131.48, 52.92.233.136, ...
 Connecting to s3-us-west-2.amazonaws.com (s3-us-west-2.amazonaws.com)|52.92.233.24|:443... connected.
@@ -147,7 +147,7 @@ grch38-chm13v2.chai 100%[===================>]   6.00M  3.44MB/s    in 1.7s
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 790552 | G | A | 3860099 | 0.9960 -0.0737 |
@@ -170,7 +170,7 @@ mysumstats.liftover(from_build="38", to_build="13",chain_path="./grch38-chm13v2.
 ```
 
 **stdout:**
-```python
+```
 2025/12/25 22:08:02 Start to perform liftover ...(v4.0.0)
 2025/12/25 22:08:02  -Using provided chain file: ./grch38-chm13v2.chain
 2025/12/25 22:08:02  -Converting variants with status code xxx0xxx: 4,992
@@ -205,7 +205,7 @@ mysumstats.liftover(from_build="38", to_build="13",chain_path="./grch38-chm13v2.
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932_G_A | 1 | 219468 | G | A | 1360099 | 0.9960 -0.0737 |

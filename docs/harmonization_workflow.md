@@ -11,7 +11,7 @@ mysumstats = gl.Sumstats("/home/yunye/work/gwaslab/examples/toy_data/to_harmoniz
 ```
 
 **stdout:**
-```python
+```
 Fri Feb  2 19:36:24 2024 GWASLab v3.4.38 https://cloufield.github.io/gwaslab/
 Fri Feb  2 19:36:24 2024 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
 Fri Feb  2 19:36:24 2024 Start to load format from formatbook....
@@ -43,7 +43,7 @@ A list of variants that needs to be harmonized. Issues are described in NOTE col
 mysumstats.data
 ```
 
-```python
+```
 | SNPID CHR | POS | EA | NEA | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1066403:T:C | 1 | 1066403 | C | T | 0.5276 | 0.0043 |
@@ -110,7 +110,7 @@ mysumstats.harmonize(   basic_check=True,
 ```
 
 **stdout:**
-```python
+```
 Fri Feb  2 19:36:24 2024 Start to check SNPID/rsID...v3.4.38
 Fri Feb  2 19:36:24 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 19.94 MB
 Fri Feb  2 19:36:24 2024  -Checking SNPID data type...
@@ -232,7 +232,7 @@ Fri Feb  2 19:36:47 2024 Finished adjusting.
 ```
 
 **stdout:**
-```python
+```
 Fri Feb  2 19:36:48 2024 Start to sort the genome coordinates...v3.4.38
 Fri Feb  2 19:36:48 2024  -Current Dataframe shape : 15 x 13 ; Memory usage: 0.00 MB
 Fri Feb  2 19:36:48 2024 Finished sorting coordinates.
@@ -242,7 +242,7 @@ Fri Feb  2 19:36:48 2024  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,B
 Fri Feb  2 19:36:48 2024 Finished reordering the columns.
 ```
 
-```python
+```
 <gwaslab.g_Sumstats.Sumstats at 0x7f6c69f86550>
 ```
 
@@ -252,7 +252,7 @@ All variants were checked and harmonized based on the reference datasets. The ma
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | EA NEA | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0 | 1:1066403:T:C | 1 | 1066403 | C | T | 0.5276 | 0.0043 |
@@ -310,7 +310,7 @@ mysumstats.data
 mysumstats.summary()
 ```
 
-```python
+```
 | Values | \ |
 | --- | --- |
 | Category Items |  |
@@ -374,7 +374,7 @@ mysumstats.summary()
 mysumstats.lookup_status()
 ```
 
-```python
+```
 | Genome_Build | rsID&SNPID | CHR&POS | \ |
 | --- | --- | --- | --- |
 | 9960000 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
@@ -462,7 +462,7 @@ NC_000001.10    10060   rs1639544159    CT      C       .       .       RS=16395
 gl.get_number_to_NC(build="19")
 ```
 
-```python
+```
 {1: 'NC_000001.10',
  2: 'NC_000002.11',
  3: 'NC_000003.11',

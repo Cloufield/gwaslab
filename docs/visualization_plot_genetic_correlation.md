@@ -10,7 +10,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 12:20:37 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
 2024/12/23 12:20:37 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
 ```
@@ -26,7 +26,7 @@ ldsc = pd.read_csv("../0_sample_data/toy_data/input_rg.txt",sep="\t")
 ldsc
 ```
 
-```python
+```
 | p1_category | p1 | p2_category | p2 | rg | \ |
 | --- | --- | --- | --- | --- | --- |
 | 0 | Anthropometric | Height | Anthropometric | BMI -0.0587 |  |
@@ -63,7 +63,7 @@ df = gl.plot_rg( ldsc,
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 12:20:37 Start to create ldsc genetic correlation heatmap...
 2024/12/23 12:20:37 Raw dataset records: 3916
 2024/12/23 12:20:37  -Raw dataset non-NA records: 3916
@@ -114,7 +114,7 @@ print(map_dic)
 ```
 
 **stdout:**
-```python
+```
 {'Height': 1, 'BMI': 2, 'TC': 3, 'HDL-C': 4, 'LDL-C': 5, 'TG': 6, 'BS': 7, 'HbA1c': 8, 'TP': 9, 'Alb': 10, 'NAP': 11, 'A/G': 12, 'BUN': 13, 'sCr': 14, 'eGFR': 15, 'UA': 16, 'Na': 17, 'K': 18, 'Cl': 19, 'Ca': 20, 'P': 21, 'TBil': 22, 'ZTT': 23, 'AST': 24, 'ALT': 25, 'ALP': 26, 'GGT': 27, 'APTT': 28, 'PT': 29, 'Fbg': 30, 'CK': 31, 'LDH': 32, 'CRP': 33, 'WBC': 34, 'Neutro': 35, 'Eosino': 36, 'Baso': 37, 'Mono': 38, 'Lym': 39, 'RBC': 40, 'Hb': 41, 'Ht': 42, 'MCV': 43, 'MCH': 44, 'MCHC': 45, 'Plt': 46, 'SBP': 47, 'DBP': 48, 'MAP': 49, 'PP': 50, 'IVS': 51, 'PW': 52, 'LVDd': 53, 'LVDs': 54, 'LVM': 55, 'LVMI': 56, 'RWT': 57, 'FS': 58, 'EF': 59, 'T2D': 60, 'IS': 61, 'CeAn': 62, 'MI': 63, 'PAD': 64, 'AF': 65, 'Asthma': 66, 'AD': 67, 'GD': 68, 'RA': 69, 'CHB': 70, 'CHC': 71, 'Anemia': 72, 'BD': 73, 'SCZ': 74, 'AIS': 75, 'Osteoporosis': 76, 'LuCa': 77, 'GaCa': 78, 'EsCa': 79, 'CoCa': 80, 'PrCa': 81, 'BrCa': 82, 'EnCa': 83, 'UF': 84, 'Glaucoma': 85, 'COPD': 86, 'Epilepsy': 87, 'Pollinosis': 88, 'Urolithiasis': 89}
 ```
 
@@ -138,7 +138,7 @@ df = gl.plot_rg( ldsc,
 ```
 
 **stdout:**
-```python
+```
 2024/12/23 12:20:43 Start to create ldsc genetic correlation heatmap...
 2024/12/23 12:20:43 Raw dataset records: 1770
 2024/12/23 12:20:43  -Raw dataset non-NA records: 1770

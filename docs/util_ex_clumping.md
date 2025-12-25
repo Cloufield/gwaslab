@@ -9,7 +9,7 @@ gl.show_version()
 ```
 
 **stdout:**
-```python
+```
 2025/05/11 19:15:52 GWASLab v3.6.3 https://cloufield.github.io/gwaslab/
 2025/05/11 19:15:52 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/05/11 19:15:52 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -31,7 +31,7 @@ mysumstats.fix_id(fixsep=True)
 ```
 
 **stdout:**
-```python
+```
 2025/05/11 19:13:45 GWASLab v3.6.2 https://cloufield.github.io/gwaslab/
 2025/05/11 19:13:45 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2025/05/11 19:13:45 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
@@ -65,7 +65,7 @@ mysumstats.fix_id(fixsep=True)
 mysumstats.data
 ```
 
-```python
+```
 | SNPID | CHR | POS | SE | P | STATUS |
 | --- | --- | --- | --- | --- | --- |
 | 0 | 1:725932:G:A | 1 | 725932 | 0.1394 | 0.59700 |
@@ -109,7 +109,7 @@ mysumstats.clump(   plink2="plink2", # default
 ```
 
 **stdout:**
-```python
+```
 2025/05/11 19:14:05 Start to perfrom clumping...v3.6.2
 2025/05/11 19:14:05  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 65.33 MB
 2025/05/11 19:14:05 Start to perform clumping...
@@ -159,7 +159,7 @@ if using multiple bfile or pfile, @ can be used to indicate each chromosome.
 mysumstats.clumps["clumps"]
 ```
 
-```python
+```
 | SNPID | CHR | POS | SE | P | STATUS |
 | --- | --- | --- | --- | --- | --- |
 | 96739 | 1:22068326:A:G | 1 | 22068326 | 0.0103 | 1.629000e-09 |
@@ -173,7 +173,7 @@ mysumstats.clumps["clumps"]
 mysumstats.clumps["clumps_raw"]
 ```
 
-```python
+```
 | CHR | POS | SNPID | P | TOTAL | NONSIG | S0.05 | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | 1 | 22068326 | 1:22068326:A:G | 1.629000e-09 | 89 | 0 | 0 |
@@ -194,7 +194,7 @@ print(mysumstats.clumps["plink_log"])
 ```
 
 **stdout:**
-```python
+```
 PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)       www.cog-genomics.org/plink/2.0/
 (C) 2005-2023 Shaun Purcell, Christopher Chang   GNU General Public License v3
 Logging to clumping_plink2.1.log.
