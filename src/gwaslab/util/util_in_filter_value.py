@@ -1334,3 +1334,159 @@ def _get_region_start_and_end(
         pass
 
     return [chrom, start, end]
+
+@with_logging_filter("filter duplicate/multiallelic variants", "filtering variants")
+def _filter_dup(sumstats_obj, mode="dm", chrom="CHR", pos="POS", snpid="SNPID", ea="EA", nea="NEA", rsid="rsID", 
+keep='first', keep_col="P", remove_na=False, keep_ascend=True, verbose=True, log=Log()):
+    """
+    Filter to keep only duplicate or multiallelic variants based on user-selected criteria.
+    
+    This function works like remove_dup but keeps only the duplicate rows instead of removing them.
+    Useful for inspecting duplicate variants before removal.
+
+    Parameters
+    ----------
+    sumstats_obj : Sumstats or pandas.DataFrame
+        Sumstats object or DataFrame containing the data to filter.
+    mode : str, default="dm"
+        String encoding the deduplication rules; may include one or more of:
+        - 'ds' : Identify duplicates using SNPID.
+        - 'dr' : Identify duplicates using rsID.
+        - 'dc' : Identify duplicates using chromosome, position, effect allele, and non-effect allele.
+        - 'm' : Identify multi-allelic variants (same chromosome + position).
+    keep : {'first', 'last', False}, default 'first'
+        Which duplicates to show:
+        - 'first': Show all duplicates except the first occurrence (the ones that would be removed)
+        - 'last': Show all duplicates except the last occurrence (the ones that would be removed)
+        - False: Show all duplicate rows (all occurrences)
+    keep_col : str, default="P"
+        Column to sort by before filtering (for consistency with remove_dup).
+    remove_na : bool, default=False
+        If True, remove rows containing missing values in deduplication-relevant columns.
+    keep_ascend : bool, default=True
+        If True, sort in ascending order.
+    verbose : bool, default=True
+        If True, writes progress to log
+
+    Returns
+    -------
+    pandas.DataFrame
+        Summary statistics containing only duplicate and multi-allelic variants
+        according to the specified mode.
+    """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_obj, pd.DataFrame):
+        # Called with DataFrame directly
+        sumstats = sumstats_obj.copy()
+    else:
+        # Called with Sumstats object
+        sumstats = sumstats_obj.data.copy()
+    
+    log.write(" -Filtering mode: {}".format(mode), verbose=verbose)
+    log.write(" -Which duplicates to show: {}".format(keep), verbose=verbose)
+    
+    # Sort the variants using the specified column before filtering (for consistency)
+    if keep_col is not None:
+        if keep_col in sumstats.columns:
+            log.write(" -Sorting the sumstats using {}...".format(keep_col), verbose=verbose)
+            sumstats = sumstats.sort_values(by=keep_col, ascending=keep_ascend)
+        else:
+            log.write(" -Column {} was not detected... skipping...".format(keep_col), verbose=verbose)
+    
+    total_number = len(sumstats)
+    is_duplicate = pd.Series([False] * len(sumstats), index=sumstats.index)
+    
+    # Filter by duplicated SNPID
+    if (snpid in sumstats.columns) and ("d" in mode or "s" in mode):
+        log.write(" -Filtering duplicated variants based on SNPID...", verbose=verbose)
+        if snpid in sumstats.columns:
+            # Use keep parameter: False shows all duplicates, 'first'/'last' exclude first/last
+            is_dup_snpid = sumstats.duplicated(subset=[snpid], keep=keep)
+            # Exclude NA values
+            is_dup_snpid = is_dup_snpid & sumstats[snpid].notna()
+            is_duplicate = is_duplicate | is_dup_snpid
+            log.write(" -Found {} duplicate variants based on SNPID...".format(is_dup_snpid.sum()), verbose=verbose)
+    
+    # Filter by duplicated rsID
+    if (rsid in sumstats.columns) and ("d" in mode or "r" in mode):
+        log.write(" -Filtering duplicated variants based on rsID...", verbose=verbose)
+        if rsid in sumstats.columns:
+            # Use keep parameter
+            is_dup_rsid = sumstats.duplicated(subset=[rsid], keep=keep)
+            # Exclude NA values
+            is_dup_rsid = is_dup_rsid & sumstats[rsid].notna()
+            is_duplicate = is_duplicate | is_dup_rsid
+            log.write(" -Found {} duplicate variants based on rsID...".format(is_dup_rsid.sum()), verbose=verbose)
+    
+    # Filter by duplicated variants by CHR:POS:NEA:EA
+    if (chrom in sumstats.columns) and (pos in sumstats.columns) and (nea in sumstats.columns) and (ea in sumstats.columns) and ("d" in mode or "c" in mode):
+        log.write(" -Filtering duplicated variants based on CHR,POS,EA and NEA...", verbose=verbose)
+        # Check for any NA values in the subset columns
+        subset_cols = [chrom, pos, ea, nea]
+        has_na = sumstats[subset_cols].isna().any(axis=1)
+        # Use keep parameter, excluding rows with NA
+        is_dup_chrpos = sumstats.duplicated(subset=[chrom, pos, ea, nea], keep=keep)
+        is_dup_chrpos = is_dup_chrpos & ~has_na
+        is_duplicate = is_duplicate | is_dup_chrpos
+        log.write(" -Found {} duplicate variants based on CHR,POS,EA and NEA...".format(is_dup_chrpos.sum()), verbose=verbose)
+    
+    # Filter by multiallelic variants by CHR:POS
+    if (chrom in sumstats.columns) and (pos in sumstats.columns) and "m" in mode:
+        log.write(" -Filtering multiallelic variants based on CHR:POS...", verbose=verbose)
+        # Check for any NA values in the subset columns
+        subset_cols = [chrom, pos]
+        has_na = sumstats[subset_cols].isna().any(axis=1)
+        # Use keep parameter, excluding rows with NA
+        is_dup_multiallelic = sumstats.duplicated(subset=[chrom, pos], keep=keep)
+        is_dup_multiallelic = is_dup_multiallelic & ~has_na
+        is_duplicate = is_duplicate | is_dup_multiallelic
+        log.write(" -Found {} multiallelic variants based on CHR:POS...".format(is_dup_multiallelic.sum()), verbose=verbose)
+    
+    # Filter to keep only duplicates
+    sumstats = sumstats.loc[is_duplicate, :]
+    after_number = len(sumstats)
+    
+    log.write(" -Found {} duplicate/multiallelic variants in total...".format(after_number), verbose=verbose)
+    
+    # Remove NAs if requested
+    if "n" in mode or remove_na == True:
+        log.write(" -Removing NAs...", verbose=verbose)
+        pre_number = len(sumstats)
+        specified_columns = []
+        if "d" in mode:
+            if rsid in sumstats.columns: specified_columns.append(rsid)
+            if snpid in sumstats.columns: specified_columns.append(snpid)
+            if chrom in sumstats.columns: specified_columns.append(chrom)
+            if pos in sumstats.columns: specified_columns.append(pos)
+            if ea in sumstats.columns: specified_columns.append(ea)
+            if nea in sumstats.columns: specified_columns.append(nea)
+        if "r" in mode:
+            if rsid in sumstats.columns: specified_columns.append(rsid)
+        if "s" in mode:
+            if snpid in sumstats.columns: specified_columns.append(snpid)
+        if "m" in mode:
+            if chrom in sumstats.columns: specified_columns.append(chrom)
+            if pos in sumstats.columns: specified_columns.append(pos)
+        if "c" in mode:
+            if chrom in sumstats.columns: specified_columns.append(chrom)
+            if pos in sumstats.columns: specified_columns.append(pos)
+            if ea in sumstats.columns: specified_columns.append(ea)
+            if nea in sumstats.columns: specified_columns.append(nea)
+        specified_columns = list(set(specified_columns))
+        if specified_columns:
+            sumstats = sumstats.loc[~sumstats[specified_columns].isna().any(axis=1), :]
+            after_number = len(sumstats)
+            log.write(" -Removed {} variants with NA values in {}...".format(pre_number - after_number, specified_columns), verbose=verbose)
+    
+    # Sort the coordinates
+    if keep_col is not None:
+        log.write(" -Sorting the coordinates based on CHR and POS...", verbose=verbose)
+        sumstats = _sort_coordinate(sumstats, verbose=False)
+    
+    gc.collect()
+    # Update sumstats_obj.data with filtered result only if called with Sumstats object
+    if not isinstance(sumstats_obj, pd.DataFrame):
+        sumstats_obj.data = sumstats
+    
+    return sumstats

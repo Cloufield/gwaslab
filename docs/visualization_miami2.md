@@ -57,8 +57,6 @@ gl1.get_lead()
 | rs6567160 | 18 | 57829135 | T | C | 0.05420 | 0.006344 | 1.299000e-17 | 1999999 |
 | rs35560038 | 19 | 46175046 | A | T | -0.05872 | 0.005473 | 7.421000e-27 | 1999999 |
 
-*[20 rows x 9 columns]*
-
 ## Most options in plot_mqq() are available for plot_miami2()
 
 ```python

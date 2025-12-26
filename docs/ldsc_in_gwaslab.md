@@ -47,8 +47,6 @@ t2d.basic_check(verbose=False)
 | X:154880669_T_A | 23 | 154880669 | T | A | 1960099 | 0.0071 | 0.0122 | 0.5618 | +-+- | 191764 |
 | X:154880917_C_T | 23 | 154880917 | C | T | 1960099 | 0.0072 | 0.0122 | 0.5570 | +-+- | 191764 |
 
-*[11 rows x 11 columns]*
-
 ```python
 t2d.filter_hapmap3(inplace=True)
 ```
@@ -113,8 +111,6 @@ t2d.ldsc_h2
 | h2_obs | h2_se | Lambda_gc | Mean_chi2 | Intercept | Intercept_se | Ratio | Ratio_se | Catagories |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0.10394433 | 0.00650644 | 1.32982693 | 1.49125406 | 1.09147712 | 0.01056279 | 0.18621142 | 0.02150169 | NA |
-
-*[1 rows x 9 columns]*
 
 ## Genetic correlation
 
@@ -222,8 +218,6 @@ T2D   BMI_male 0.209849 0.060088 3.492357 4.787786e-04 0.175952   0.011384 1.047
 | T2D | BMI_female | 0.320668 | 0.062279 | 5.148882 | 2.620433e-07 | 0.193199 | 0.012133 | 1.030609 | 0.010226 | 0.019184 | 0.009454 |
 | T2D | BMI_male | 0.209849 | 0.060088 | 3.492357 | 4.787786e-04 | 0.175952 | 0.011384 | 1.047687 | 0.010717 | 0.005353 | 0.011893 |
 
-*[2 rows x 12 columns]*
-
 ```python
 t2d.ldsc_rg
 ```
@@ -232,8 +226,6 @@ t2d.ldsc_rg
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2D | BMI_female | 0.320668 | 0.062279 | 5.148882 | 2.620433e-07 | 0.193199 | 0.012133 | 1.030609 | 0.010226 | 0.019184 | 0.009454 |
 | T2D | BMI_male | 0.209849 | 0.060088 | 3.492357 | 4.787786e-04 | 0.175952 | 0.011384 | 1.047687 | 0.010717 | 0.005353 | 0.011893 |
-
-*[2 rows x 12 columns]*
 
 ### visualization using plot_rg
 
@@ -329,7 +321,7 @@ t2d.estimate_partitioned_h2_by_ldsc(       ref_ld_chr = "/home/yunye/tools/ldsc/
 | Human_Promoter_Villar_ExACL2_0 | 0.002439 | 0.056685 | 0.041189 | 23.242748 | 16.889064 | 0.187759 | 2.645270e-07 | 3.249973e-07 | 0.813936 |
 | Human_Promoter_Villar_ExAC.flanking.500L2_0 | 0.000567 | -0.009555 | 0.017212 | -16.857889 | 30.365859 | 0.556254 | -1.734589e-08 | 6.804492e-07 | -0.025492 |
 
-*[11 rows x 10 columns]*
+*[97 rows x 10 columns]*
 
 ```python
 t2d.ldsc_partitioned_h2_summary
@@ -338,8 +330,6 @@ t2d.ldsc_partitioned_h2_summary
 | h2_obs | h2_se | Lambda_gc | Mean_chi2 | Intercept | Intercept_se | Ratio | Ratio_se |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0.11773265 | 0.00727336 | 1.33210306 | 1.47668034 | 1.07649298 | 0.01228635 | 0.16047018 | 0.02577482 |
-
-*[1 rows x 8 columns]*
 
 ```python
 t2d.ldsc_partitioned_h2_results
@@ -359,7 +349,7 @@ t2d.ldsc_partitioned_h2_results
 | Human_Promoter_Villar_ExACL2_0 | 0.002439 | 0.056685 | 0.041189 | 23.242748 | 16.889064 | 0.187759 | 2.645270e-07 | 3.249973e-07 | 0.813936 |
 | Human_Promoter_Villar_ExAC.flanking.500L2_0 | 0.000567 | -0.009555 | 0.017212 | -16.857889 | 30.365859 | 0.556254 | -1.734589e-08 | 6.804492e-07 | -0.025492 |
 
-*[11 rows x 10 columns]*
+*[97 rows x 10 columns]*
 
 ## Cell type specific 
 
@@ -854,7 +844,7 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ba
 | A10.690.467.Muscle..Smooth | -7.479103e-09 | 2.721569e-09 | 0.997003 |
 | A07.541.510.110.Aortic.Valve | -7.363194e-09 | 2.520982e-09 | 0.998254 |
 
-*[11 rows x 4 columns]*
+*[205 rows x 4 columns]*
 
 ```python
 t2d.ldsc_h2_cts
@@ -874,4 +864,4 @@ t2d.ldsc_h2_cts
 | A10.690.467.Muscle..Smooth | -7.479103e-09 | 2.721569e-09 | 0.997003 |
 | A07.541.510.110.Aortic.Valve | -7.363194e-09 | 2.520982e-09 | 0.998254 |
 
-*[11 rows x 4 columns]*
+*[205 rows x 4 columns]*

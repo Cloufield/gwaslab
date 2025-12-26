@@ -40,7 +40,7 @@ ldsc
 | Other | Urolithiasis | Allergic disease | AD | -0.0821 | 0.1592 | -0.5159 | 0.605890 | 0.863730 |
 | Other | Urolithiasis | Tumor | UF | 0.1980 | 0.1292 | 1.5324 | 0.125410 | 0.456418 |
 
-*[11 rows x 9 columns]*
+*[3916 rows x 9 columns]*
 
 ## Full heatmap
 

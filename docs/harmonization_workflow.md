@@ -57,8 +57,6 @@ mysumstats.data
 | X:4206466:G:C | X | 4206466 | G | C | 0.8727 | -0.0055 | 0.0104 | 0.59840 | 191764 | -+-- | 9999999 | Palindromic + Flip + No information |
 | X:5053229:A:T | X | 5053229 | T | A | 0.9747 | 0.0218 | 0.0225 | 0.33180 | 191764 | ++++ | 9999999 | Palindromic + No information |
 
-*[15 rows x 13 columns]*
-
 ## Perform harmonization
 
 - ref_seq : reference genome fasta file for allele alignment
@@ -230,8 +228,6 @@ mysumstats.data
 | X:4206466:G:C | 23 | 4206466 | C | G | 0.1273 | 0.0055 | 0.0104 | 0.59840 | 191764 | +-++ | 9960018 | Palindromic + Flip + No information |
 | X:5053229:A:T | 23 | 5053229 | T | A | 0.9747 | 0.0218 | 0.0225 | 0.33180 | 191764 | ++++ | 9960008 | Palindromic + No information |
 
-*[15 rows x 13 columns]*
-
 ## Check summary
 
 ```python
@@ -252,8 +248,6 @@ mysumstats.summary()
 | 6.67 |  |
 | 6.67 |  |
 
-*[26 rows x 2 columns]*
-
 ```python
 mysumstats.lookup_status()
 ```
@@ -271,8 +265,6 @@ mysumstats.lookup_status()
 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Both_alleles_on_ref+indistinguishable | Indel_match | 1 | 6.67 |
 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Both_alleles_on_ref+indistinguishable | Indel_flipped_fixed | 1 | 6.67 |
 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Both_alleles_on_ref+indistinguishable | No_matching_or_no_info | 1 | 6.67 |
-
-*[15 rows x 8 columns]*
 
 ## VCF : NCBI Sequence Identifiers
 

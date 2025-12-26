@@ -113,16 +113,46 @@ def parse_html_table(html: str) -> Optional[Tuple[List[str], List[List[str]]]]:
     return None
 
 
-def html_table_to_markdown(html: str, max_rows: int = 10) -> Optional[str]:
-    """Convert HTML table to markdown table format."""
-    # Try to extract table size info from HTML (Jupyter format: [N rows x M columns])
+def html_table_to_markdown(html: str, max_rows: int = 10, text_plain: Optional[str] = None) -> Optional[str]:
+    """Convert HTML table to markdown table format.
+    
+    Parameters
+    ----------
+    html : str
+        HTML content containing the table
+    max_rows : int
+        Maximum number of rows to show in preview
+    text_plain : str, optional
+        Text/plain output that might contain table size info
+    """
+    # Try to extract table size info from HTML or text/plain (Jupyter format: [N rows x M columns])
+    # This should be the original dataframe size, not the number of rows displayed
     table_size_info = None
-    size_pattern = r'\[(\d+)\s+rows?\s+x\s+(\d+)\s+columns?\]'
-    match = re.search(size_pattern, html, re.IGNORECASE)
-    if match:
-        num_rows = int(match.group(1))
-        num_cols = int(match.group(2))
-        table_size_info = f"[{num_rows} rows x {num_cols} columns]"
+    # Try multiple patterns to find the size info
+    size_patterns = [
+        r'\[(\d+)\s+rows?\s+x\s+(\d+)\s+columns?\]',  # Standard format
+        r'(\d+)\s+rows?\s+x\s+(\d+)\s+columns?',  # Without brackets
+        r'\[(\d+)\s+rows?,\s+(\d+)\s+columns?\]',  # With comma
+    ]
+    
+    # First try HTML
+    for pattern in size_patterns:
+        match = re.search(pattern, html, re.IGNORECASE)
+        if match:
+            num_rows = int(match.group(1))
+            num_cols = int(match.group(2))
+            table_size_info = f"[{num_rows} rows x {num_cols} columns]"
+            break
+    
+    # If not found in HTML, try text/plain output
+    if not table_size_info and text_plain:
+        for pattern in size_patterns:
+            match = re.search(pattern, text_plain, re.IGNORECASE)
+            if match:
+                num_rows = int(match.group(1))
+                num_cols = int(match.group(2))
+                table_size_info = f"[{num_rows} rows x {num_cols} columns]"
+                break
     
     table_data = parse_html_table(html)
     if not table_data:
@@ -222,12 +252,8 @@ def html_table_to_markdown(html: str, max_rows: int = 10) -> Optional[str]:
             md_lines.append('| ' + ' | '.join(row) + ' |')
     
     # Add table size footer (like Jupyter notebooks)
-    if not table_size_info:
-        # Calculate from parsed data if not found in HTML
-        num_rows = len(rows)
-        num_cols = len(headers)
-        table_size_info = f"[{num_rows} rows x {num_cols} columns]"
-    
+    # Only show if we found the original dataframe size from HTML
+    # Don't use parsed row count as it might be a preview
     if table_size_info:
         md_lines.append('')
         md_lines.append(f'*{table_size_info}*')
@@ -380,8 +406,12 @@ def convert_output(output: Dict[str, Any], notebook_name: str, image_index: int,
         html = ''.join(output['data']['text/html'])
         # Check if it's an HTML table
         if '<table' in html.lower():
+            # Get text/plain output if available (for table size info)
+            text_plain = None
+            if 'text/plain' in output.get('data', {}):
+                text_plain = ''.join(output['data']['text/plain'])
             # Parse HTML table and convert to markdown
-            markdown_table = html_table_to_markdown(html, max_rows=10)
+            markdown_table = html_table_to_markdown(html, max_rows=10, text_plain=text_plain)
             if markdown_table:
                 result.append(markdown_table)
                 return '\n'.join(result)

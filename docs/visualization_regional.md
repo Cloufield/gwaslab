@@ -86,8 +86,6 @@ mysumstats.basic_check(verbose = False)
 | 7:159126810_G_A | 7 | 159126810 | G | A | 1960099 | 0.9951 | 0.0262 | 0.0784 | 0.7386 | -+-+ | 191764 |
 | 7:159127586_T_G | 7 | 159127586 | G | T | 1960099 | 0.1087 | -0.0066 | 0.0193 | 0.7315 | +-+- | 191764 |
 
-*[11 rows x 12 columns]*
-
 ## Create Manhattan plot with sumstats on a single chromosome
 
 ```python
@@ -162,8 +160,6 @@ mysumstats.get_lead()
 | 7:127253550_C_T | 7 | 127253550 | C | T | 1960099 | 0.9081 | 0.2761 | 0.0152 | 4.101000e-74 | ++++ | 191764 |
 | 7:130025713_G_A | 7 | 130025713 | G | A | 1960099 | 0.9530 | -0.1365 | 0.0230 | 3.068000e-09 | ---- | 191764 |
 | 7:157038803_A_G | 7 | 157038803 | G | A | 1960099 | 0.4626 | -0.0502 | 0.0088 | 1.127000e-08 | ---- | 191764 |
-
-*[7 rows x 12 columns]*
 
 ## Create a regional plot with no additional information
 
@@ -367,8 +363,6 @@ mysumstats.filter_flanking_by_chrpos((7,156738803),windowsizekb=100).get_lead(si
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P | DIRECTION | N |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 7:156793450_G_GA | 7 | 156793450 | GA | G | 1960399 | 0.1168 | 0.0838 | 0.0167 | 5.686000e-07 | ++++ | 191764 |
-
-*[1 rows x 12 columns]*
 
 ```python
 mysumstats.plot_mqq(mode="r",

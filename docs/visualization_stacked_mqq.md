@@ -39,8 +39,6 @@ gl2.basic_check(verbose=False)
 | rs3810648 | 22 | 51175626 | G | A | 1980099 | 0.2884 |
 | rs2285395 | 22 | 51178090 | A | G | 1980099 | 0.3223 |
 
-*[11 rows x 7 columns]*
-
 ```python
 gl.plot_stacked_mqq(objects=[gl1,gl2],
                     vcfs=[gl.get_path("1kg_eas_hg19"), gl.get_path("1kg_eas_hg19")],
@@ -248,8 +246,6 @@ gl2.filter_flanking_by_chrpos((19,46214297)).filter_value("P <1e-20").data
 | rs9676912 | 19 | 46212182 | T | C | 1980099 | 5.247000e-22 |
 | rs8101428 | 19 | 46212952 | C | T | 1980099 | 1.094000e-22 |
 | rs1055220 | 19 | 46214297 | T | C | 1980099 | 5.731000e-24 |
-
-*[6 rows x 7 columns]*
 
 ## stacked regional plots with single reference SNP
 

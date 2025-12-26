@@ -8,9 +8,6 @@
 
 ## Download sample data
 
-📖 **Documentation**: [Download sample data](https://cloufield.github.io/gwaslab/Download/)
-
-
 - Using a Jupyter notebook, we first download a sample dataset.
 - The sample dataset we will use as an example (File size: ~40M):
   1. Sample sumstats `bbj_t2d_hm3_chr7_variants.txt.gz`: processed sumstats (only HapMap3 variants and chr7 region) of type 2 diabetes from BBJ (K. Suzuki et al., Nature Genetics. 51, 379–386 (2019).)
@@ -20,7 +17,7 @@
     
 
 ```python
-#!git clone https://github.com/Cloufield/gwaslab-sample-data.git
+!git clone https://github.com/Cloufield/gwaslab-sample-data.git
 ```
 
 ```python
@@ -154,7 +151,7 @@ mysumstats.data
 | X:154763036_A_G | X | 154763036 | G | A | 9999999 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 |
 | X:154816439_A_C | X | 154816439 | C | A | 9999999 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 |
 
-*[11 rows x 11 columns]*
+*[1103020 rows x 11 columns]*
 
 - For details on the GWASLab Sumstats object, see: https://cloufield.github.io/gwaslab/SumstatsObject/
 
@@ -252,8 +249,6 @@ mysumstats.basic_check()
 | X:154536836_C_T | 23 | 154536836 | C | T | 9960099 | 0.2196 | -0.0084 | 0.0085 | 0.3192 | 191764 |
 | X:154763036_A_G | 23 | 154763036 | G | A | 9960099 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 |
 | X:154816439_A_C | 23 | 154816439 | C | A | 9960099 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 |
-
-*[11 rows x 11 columns]*
 
 ## Infer genome build
 
@@ -464,7 +459,7 @@ mysumstats.data
 | X:154763036_A_G | 23 | 154763036 | G | A | 1960099 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 |
 | X:154816439_A_C | 23 | 154816439 | C | A | 1960099 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 |
 
-*[11 rows x 11 columns]*
+*[1103020 rows x 11 columns]*
 
 By checking the log, we can see that the sumstats look good. However, we still found several variants that were not normalized. GWASLab fixed the position and alleles for the unnormalized indels. GWASLab also standardized the notation for chromosome X to 23.
 
@@ -557,7 +552,7 @@ mysumstats.get_lead(anno=True)
 | X:57150010_C_T | 23 | 57150010 | C | T | 1960099 | 0.3012 | 0.0443 | 0.0076 | 6.427000e-09 | 191764 | 1000000 | Unknown |
 | X:117916520_A_G | 23 | 117916520 | G | A | 1960099 | 0.5681 | -0.0507 | 0.0069 | 2.330000e-13 | 191764 | 1000000 | Unknown |
 
-*[11 rows x 13 columns]*
+*[75 rows x 13 columns]*
 
 We extracted a total of 75 lead variants with a sliding window size of 500 kb from this processed dataset.
 
@@ -1018,8 +1013,6 @@ mysumstats.assign_rsid(ref_rsid_tsv="gwaslab-sample-data/1kg_dbsnp151_hg19_auto_
 | X:154763036_A_G | 23 | 154763036 | G | A | 1960099 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 | <NA> |
 | X:154816439_A_C | 23 | 154816439 | C | A | 1960099 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 | <NA> |
 
-*[11 rows x 12 columns]*
-
 For the annotation of less common variants, we can use VCF files downloaded from NCBI dbSNP (https://ftp.ncbi.nih.gov/snp/latest_release/VCF/).
 
 **Note**:
@@ -1068,8 +1061,6 @@ mysumstats.assign_rsid(threads=1,
 | X:154763036_A_G | 23 | 154763036 | G | A | 1960099 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 | rs5940466 |
 | X:154816439_A_C | 23 | 154816439 | C | A | 1960099 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 | rs1084451 |
 
-*[11 rows x 12 columns]*
-
 After this, only 98 variants were not annotated, mostly indels that are not available in the reference VCF.
 
 ```python
@@ -1090,7 +1081,7 @@ mysumstats.data.loc[mysumstats.data["rsID"].isna(),:]
 | X:152032452_A_AT | 23 | 152032452 | AT | A | 1960399 | 0.9633 | 0.0111 | 0.0239 | 0.6411 | 191764 | <NA> |
 | X:153254566_C_CTTT | 23 | 153254566 | C | CTTT | 1960399 | 0.6664 | -0.0014 | 0.0084 | 0.8677 | 191764 | <NA> |
 
-*[11 rows x 12 columns]*
+*[1100554 rows x 12 columns]*
 
 ### fast implementation using bcftools: sweep mode
 
@@ -1144,8 +1135,6 @@ mysumstats.assign_rsid2(path="gwaslab-sample-data/b157_2564.vcf.gz",overwrite="a
 | X:154536836_C_T | 23 | 154536836 | C | T | 1960099 | 0.2196 | -0.0084 | 0.0085 | 0.3192 | 191764 | rs12013168 | True |
 | X:154763036_A_G | 23 | 154763036 | G | A | 1960099 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 | rs5940466 | False |
 | X:154816439_A_C | 23 | 154816439 | C | A | 1960099 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 | rs1084451 | False |
-
-*[11 rows x 13 columns]*
 
 ## Harmonization
 
@@ -1271,8 +1260,6 @@ mysumstats.harmonize(basic_check=False,
 | X:154763036_A_G | rs5940466 | 23 | 154763036 | G | A | 1960090 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 | False |
 | X:154816439_A_C | rs1084451 | 23 | 154816439 | C | A | 1960090 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 | False |
 
-*[11 rows x 13 columns]*
-
 ```python
 mysumstats.data
 ```
@@ -1291,7 +1278,7 @@ mysumstats.data
 | X:154763036_A_G | rs5940466 | 23 | 154763036 | G | A | 1960090 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 | False |
 | X:154816439_A_C | rs1084451 | 23 | 154816439 | C | A | 1960090 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 | False |
 
-*[11 rows x 13 columns]*
+*[1103020 rows x 13 columns]*
 
 Check the data again. It looks good!
 
@@ -1717,8 +1704,6 @@ mysumstats.lookup_status()
 | hg19 | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Both_alleles_on_ref+indistinguishable | No_matching_or_no_info | 635 | 0.06 |
 | hg19 | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Unchecked | Unchecked | 254 | 0.02 |
 
-*[16 rows x 8 columns]*
-
 ## Formatting and saving : to_format()
 
 📖 **Documentation**: [Formatting and saving : to_format()](https://cloufield.github.io/gwaslab/Format/)
@@ -1940,7 +1925,7 @@ mysumstats.data
 | X:154763036_A_G | rs5940466 | 23 | 155533375 | G | A | 3860099 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 | False |
 | X:154816439_A_C | rs1084451 | 23 | 155586778 | C | A | 3860099 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 | False |
 
-*[11 rows x 13 columns]*
+*[1102446 rows x 13 columns]*
 
 For details, see https://cloufield.github.io/gwaslab/LiftOver/
 
@@ -2020,7 +2005,5 @@ mysumstats.ldsc_h2
 | h2_obs | h2_se | Lambda_gc | Mean_chi2 | Intercept | Intercept_se | Ratio | Ratio_se | Catagories |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0.10394433 | 0.00650644 | 1.32982693 | 1.49125406 | 1.09147712 | 0.01056279 | 0.18621142 | 0.02150169 | NA |
-
-*[1 rows x 9 columns]*
 
 For details, see https://cloufield.github.io/gwaslab/LDSCinGWASLab/

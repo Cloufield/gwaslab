@@ -49,8 +49,6 @@ mysumstats.basic_check(verbose=False)
 | 2:6348490_G_C | 2 | 6348490 | G | C | 1960099 | -0.3180 | 0.2032 | 0.11750 |
 | 2:6348754_A_C | 2 | 6348754 | C | A | 1960099 | 0.0297 | 0.0126 | 0.01846 |
 
-*[11 rows x 9 columns]*
-
 ## Get lead variants
 
 GWASLab will use MLOG10P first by default. If MLOG10P is not avaiable, it will look for P column.
@@ -78,8 +76,6 @@ mysumstats.get_lead()
 | 1:51103268_T_C | 1 | 51103268 | C | T | 1960099 | -0.0802 | 0.0120 | 2.519000e-11 |
 | 1:154309595_TA_T | 1 | 154309595 | TA | T | 1960399 | -0.0915 | 0.0166 | 3.289000e-08 |
 | 2:640986_CACAT_C | 2 | 640986 | C | CACAT | 1960399 | -0.0946 | 0.0150 | 2.665000e-10 |
-
-*[4 rows x 9 columns]*
 
 ## Get lead variants with gene name annotation
 
@@ -119,8 +115,6 @@ mysumstats.get_lead(anno=True)
 | 1:154309595_TA_T | 1 | 154309595 | TA | T | 1960399 | -0.0915 | 0.0166 | 3.289000e-08 | 0 | ATP8B2 |
 | 2:640986_CACAT_C | 2 | 640986 | C | CACAT | 1960399 | -0.0946 | 0.0150 | 2.665000e-10 | -26349 | TMEM18 |
 
-*[4 rows x 11 columns]*
-
 ## Different window sizes
 
 ```python
@@ -148,8 +142,6 @@ mysumstats.get_lead(windowsizekb=1000)
 | 1:154309595_TA_T | 1 | 154309595 | TA | T | 1960399 | -0.0915 | 0.0166 | 3.289000e-08 |
 | 2:640986_CACAT_C | 2 | 640986 | C | CACAT | 1960399 | -0.0946 | 0.0150 | 2.665000e-10 |
 
-*[4 rows x 9 columns]*
-
 ## Different thresholds
 
 ```python
@@ -172,8 +164,6 @@ mysumstats.get_lead(sig_level=1e-10)
 | SNPID | CHR | POS | EA | NEA | STATUS | BETA | SE | P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1:51103268_T_C | 1 | 51103268 | C | T | 1960099 | -0.0802 | 0.012 | 2.519000e-11 |
-
-*[1 rows x 9 columns]*
 
 ## Check if novel against a tabular file
 
@@ -211,8 +201,6 @@ novel
 | 1:51103268_T_C | 1 | 51103268 | C | T | 1960099 | -0.0802 | 0.0120 | 2.519000e-11 | 0.0 | 1:51103268 | False | Same |
 | 1:154309595_TA_T | 1 | 154309595 | TA | T | 1960399 | -0.0915 | 0.0166 | 3.289000e-08 | 0.0 | 1:154309595 | False | Same |
 | 2:640986_CACAT_C | 2 | 640986 | C | CACAT | 1960399 | -0.0946 | 0.0150 | 2.665000e-10 | NaN | <NA> | True | NoneOnThisChr |
-
-*[4 rows x 13 columns]*
 
 ## Ccheck against GWAS Catalog using EFO ID
 
@@ -330,5 +318,3 @@ mysumstats.get_novel(efo="MONDO_0005148")
 | 1:51103268_T_C | 1 | 50637596 | C | T | 3860099 | -0.0802 | 0.0120 | 2.519000e-11 | 0 | rs12031188 | 30718926 | Suzuki K | False | Same |
 | 1:154309595_TA_T | 1 | 154337119 | TA | T | 3860399 | -0.0915 | 0.0166 | 3.289000e-08 | 1 | rs68062313 | 30718926 | Suzuki K | False | Upstream |
 | 2:640986_CACAT_C | 2 | 640986 | C | CACAT | 3860399 | -0.0946 | 0.0150 | 2.665000e-10 | -1931 | rs7564708 | 34594039 | Sakaue S | False | Downstream |
-
-*[4 rows x 15 columns]*

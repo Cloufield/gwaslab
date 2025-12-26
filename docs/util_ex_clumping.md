@@ -74,8 +74,6 @@ mysumstats.fix_id(fixsep=True)
 | 2:6348490:G:C | 2 | 6348490 | G | C | 9960099 | 0.2032 | 0.11750 |
 | 2:6348754:A:C | 2 | 6348754 | C | A | 9960099 | 0.0126 | 0.01846 |
 
-*[11 rows x 8 columns]*
-
 ```python
 mysumstats.data
 ```
@@ -94,7 +92,7 @@ mysumstats.data
 | 2:6348490:G:C | 2 | 6348490 | G | C | 9960099 | 0.2032 | 0.11750 |
 | 2:6348754:A:C | 2 | 6348754 | C | A | 9960099 | 0.0126 | 0.01846 |
 
-*[11 rows x 8 columns]*
+*[1000000 rows x 8 columns]*
 
 ## Run clumping by calling plink2
 
@@ -191,8 +189,6 @@ mysumstats.clumps["clumps"]
 | 1:154309595:TA:T | 1 | 154309595 | TA | T | 9960399 | 0.0166 | 3.289000e-08 | 1:154309595:TA:T |
 | 2:640986:CACAT:C | 2 | 640986 | C | CACAT | 9960399 | 0.0150 | 2.665000e-10 | 2:640986:CACAT:C |
 
-*[5 rows x 9 columns]*
-
 ```python
 mysumstats.clumps["clumps_raw"]
 ```
@@ -204,8 +200,6 @@ mysumstats.clumps["clumps_raw"]
 | 1 | 51401146 | 1:51401146:CT:C | 6.090000e-10 | 134 | 0 | 0 | 0 | 0 | 134 | 1:51353720:C:G,1:51355823:A:G,1:51356091:G:T,1... |
 | 1 | 154309595 | 1:154309595:TA:T | 3.289000e-08 | 5 | 0 | 0 | 0 | 0 | 5 | 1:154264194:G:A,1:154321382:C:T,1:154345344:G:... |
 | 2 | 640986 | 2:640986:CACAT:C | 2.665000e-10 | 232 | 0 | 0 | 0 | 0 | 232 | 2:601905:T:G,2:605176:T:A,2:609177:A:G,2:61060... |
-
-*[5 rows x 11 columns]*
 
 ```python
 print(mysumstats.clumps["plink_log"])

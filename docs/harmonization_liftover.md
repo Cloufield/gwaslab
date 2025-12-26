@@ -47,8 +47,6 @@ mysumstats.basic_check(verbose=False)
 | 1:2151290_AAAAAC_A | 1 | 2151290 | AAAAAC | A | 9960399 | 0.8980 | 0.0158 | 0.0152 | 0.2977 |
 | 1:2151579_C_A | 1 | 2151579 | C | A | 9960099 | 0.8980 | 0.0156 | 0.0152 | 0.3028 |
 
-*[11 rows x 10 columns]*
-
 ```python
 mysumstats.data
 ```
@@ -67,7 +65,7 @@ mysumstats.data
 | 1:2151290_AAAAAC_A | 1 | 2151290 | AAAAAC | A | 9960399 | 0.8980 | 0.0158 | 0.0152 | 0.2977 |
 | 1:2151579_C_A | 1 | 2151579 | C | A | 9960099 | 0.8980 | 0.0156 | 0.0152 | 0.3028 |
 
-*[11 rows x 10 columns]*
+*[5000 rows x 10 columns]*
 
 ## Liftover
 
@@ -125,7 +123,7 @@ mysumstats.data
 | 1:2151290_AAAAAC_A | 1 | 2219851 | AAAAAC | A | 3860399 | 0.8980 | 0.0158 | 0.0152 | 0.2977 |
 | 1:2151579_C_A | 1 | 2220140 | C | A | 3860099 | 0.8980 | 0.0156 | 0.0152 | 0.3028 |
 
-*[11 rows x 10 columns]*
+*[4992 rows x 10 columns]*
 
 # Liftover using user-provided chain
 
@@ -169,7 +167,7 @@ mysumstats.data
 | 1:2151290_AAAAAC_A | 1 | 2219851 | AAAAAC | A | 3860399 | 0.8980 | 0.0158 | 0.0152 | 0.2977 |
 | 1:2151579_C_A | 1 | 2220140 | C | A | 3860099 | 0.8980 | 0.0156 | 0.0152 | 0.3028 |
 
-*[11 rows x 10 columns]*
+*[4992 rows x 10 columns]*
 
 ```python
 mysumstats.liftover(from_build="38", to_build="13",chain_path="./grch38-chm13v2.chain")
@@ -225,4 +223,4 @@ mysumstats.data
 | 1:2151290_AAAAAC_A | 1 | 1655260 | AAAAAC | A | 1360399 | 0.8980 | 0.0158 | 0.0152 | 0.2977 |
 | 1:2151579_C_A | 1 | 1655549 | C | A | 1360099 | 0.8980 | 0.0156 | 0.0152 | 0.3028 |
 
-*[11 rows x 10 columns]*
+*[4947 rows x 10 columns]*

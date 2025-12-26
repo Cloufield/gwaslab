@@ -11,6 +11,9 @@
 * Each process is modularized and can be customized to your needs.
 * Sumstats-specific manipulations are designed as methods of a Python object, `gwaslab.Sumstats`.
 
+!!! note "4th Anniversary & Major Upgrade"
+    This year marks the 4th year since GWASLab launched. To celebrate this milestone, we will release a major upgrade **v4** with significant improvements and new features.
+
 !!! info "GWASLab v4.0.0"
     GWASLab v4.0.0 introduces major improvements including:
     

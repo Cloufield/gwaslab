@@ -36,8 +36,6 @@ mysumstats.fix_chr(verbose=False)
 | X:154880669_T_A | 23 | 154880669 | T | A | 1995999 | 0.2558 | 0.5618 |
 | X:154880917_C_T | 23 | 154880917 | C | T | 1995999 | 0.2558 | 0.5570 |
 
-*[11 rows x 8 columns]*
-
 ## Create Manhattan plot and QQ plot
 
 ```python
@@ -429,7 +427,7 @@ mysumstats.get_lead(verbose=False).sort_values(by="P")
 | 1:154309595_TA_T | 1 | 154309595 | TA | T | 1995999 | 0.0947 | 3.289000e-08 |
 | 17:40913366_C_T | 17 | 40913366 | C | T | 1995999 | 0.4707 | 4.159000e-08 |
 
-*[11 rows x 8 columns]*
+*[89 rows x 8 columns]*
 
 This time, let's annotate 1:154309595_TA_T and 2:27734972_G_A with its nearest gene names!
 
