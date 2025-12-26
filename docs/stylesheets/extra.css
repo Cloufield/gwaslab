@@ -90,3 +90,8 @@ height: auto;
     font-size: px2rem(11px);
     border-spacing:  px2em(1px);
 }
+
+.md-typeset pre {
+    max-height: 360px;
+    overflow: auto;
+}
