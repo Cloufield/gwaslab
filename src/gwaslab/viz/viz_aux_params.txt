@@ -2510,7 +2510,7 @@
       ],
       "desc": "P-value column",
       "default": "P",
-      "ctx_defaults": {},
+      "ctx_defaults": {"plot_rg":"p"},
       "add_to_docstring": false
     },
     "p1": {

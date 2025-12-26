@@ -10,8 +10,9 @@ gl.show_version()
 
 **stdout:**
 ```
-2024/12/22 22:33:17 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
-2024/12/22 22:33:17 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+2025/12/26 11:37:56 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
+2025/12/26 11:37:56 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
+2025/12/26 11:37:56 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
 ```
 
 ## Loading sample data
@@ -31,13 +32,13 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | EA NEA | EAF | BETA | SE | STATUS |
+| SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | SE |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 |
-| 1 | 1:725933_A_G | 1 | 725933 | G | A | 0.0040 | 0.0737 |
-| 2 | 1:737801_T_C | 1 | 737801 | C | T | 0.0051 | 0.0490 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 0.8374 | 0.0213 |
-| 4 | 1:751343_T_A | 1 | 751343 | T | A | 0.8593 | 0.0172 |
+| 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 -0.0737 |
+| 1 | 1:725933_A_G | 1 | 725933 | G | A | 9960099 | 0.0040 |
+| 2 | 1:737801_T_C | 1 | 737801 | C | T | 9960099 | 0.0051 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 |
+| 4 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 |
 ```
 
 ## BETA -> OR
@@ -48,21 +49,20 @@ mysumstats.fill_data(to_fill=["OR"])
 
 **stdout:**
 ```
-2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
-2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      STATUS  
-2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 category
-2024/12/22 22:33:32  -Verified: T      T     T     T        T        T       T       T       T       
-2024/12/22 22:33:32  -Overwrite mode:  False
-2024/12/22 22:33:32   -Skipping columns:  []
-2024/12/22 22:33:32  -Filling columns:  ['OR']
-2024/12/22 22:33:32   - Filling Columns iteratively...
-2024/12/22 22:33:32   - Filling OR using BETA column...
-2024/12/22 22:33:32   - Filling OR_95L/OR_95U using BETA/SE columns...
-2024/12/22 22:33:32 Finished filling data using existing columns.
-2024/12/22 22:33:32 Start to reorder the columns...v3.5.4
-2024/12/22 22:33:32  -Current Dataframe shape : 5 x 12 ; Memory usage: 21.47 MB
-2024/12/22 22:33:32  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,OR,OR_95L,OR_95U,STATUS
-2024/12/22 22:33:32 Finished reordering the columns.
+2025/12/26 11:37:56 Start filling data using existing columns...v4.0.0
+2025/12/26 11:37:56  -Column  : SNPID  CHR   POS   EA       NEA      STATUS EAF     BETA    SE     
+2025/12/26 11:37:56  -DType   : string Int64 Int64 category category Int64  float32 float64 float64
+2025/12/26 11:37:56  -Verified: T      T     T     T        T        T      T       T       T      
+2025/12/26 11:37:56  -Target columns: ['OR']
+2025/12/26 11:37:56     Filling OR from BETA...
+2025/12/26 11:37:56     Filling OR_95L/OR_95U from BETA/SE...
+2025/12/26 11:37:56   [Round 1] Filled: ['OR']
+2025/12/26 11:37:56   [Round 1] All columns filled!
+2025/12/26 11:37:56  -Successfully filled all requested columns.
+2025/12/26 11:37:56 Finished filling data using existing columns.
+2025/12/26 11:37:56 Start to reorder the columns ...(v4.0.0)
+2025/12/26 11:37:56  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,EAF,BETA,SE,OR,OR_95U,OR_95L
+2025/12/26 11:37:56 Finished reordering the columns.
 ```
 
 ```python
@@ -70,19 +70,19 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | EA NEA | EAF | BETA | SE | OR | \ |
+| SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 | 0.928950 |
-| 1 | 1:725933_A_G | 1 | 725933 | G | A | 0.0040 | 0.0737 | 0.1394 |
-| 2 | 1:737801_T_C | 1 | 737801 | C | T | 0.0051 | 0.0490 | 0.1231 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 0.8374 | 0.0213 | 0.0199 |
-| 4 | 1:751343_T_A | 1 | 751343 | T | A | 0.8593 | 0.0172 | 0.0156 |
-|  | OR_95L | OR_95U | STATUS |  |  |  |  |  |
-| 0 | 0.706863 | 1.220815 | 9960099 |  |  |  |  |  |
-| 1 | 0.819125 | 1.414702 | 9960099 |  |  |  |  |  |
-| 2 | 0.825083 | 1.336790 | 9960099 |  |  |  |  |  |
-| 3 | 0.982452 | 1.062159 | 9960399 |  |  |  |  |  |
-| 4 | 0.986714 | 1.048935 | 9960099 |  |  |  |  |  |
+| 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 -0.0737 | 0.1394 |
+| 1 | 1:725933_A_G | 1 | 725933 | G | A | 9960099 | 0.0040 | 0.0737 |
+| 2 | 1:737801_T_C | 1 | 737801 | C | T | 9960099 | 0.0051 | 0.0490 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 0.0213 |
+| 4 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 0.0172 |
+|  | OR | OR_95U | OR_95L |  |  |  |  |  |
+| 0 | 0.928950 | 1.220815 | 0.706863 |  |  |  |  |  |
+| 1 | 1.076484 | 1.414702 | 0.819125 |  |  |  |  |  |
+| 2 | 1.050220 | 1.336790 | 0.825083 |  |  |  |  |  |
+| 3 | 1.021528 | 1.062159 | 0.982452 |  |  |  |  |  |
+| 4 | 1.017349 | 1.048935 | 0.986714 |  |  |  |  |  |
 ```
 
 ## OR -> BETA
@@ -96,19 +96,19 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | EA NEA | EAF | OR | OR_95L | OR_95U | \ |
+| SNPID | CHR | POS | EA NEA | STATUS | EAF | OR | OR_95U | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 | 0.928950 | 0.706863 |
-| 1 | 1:725933_A_G | 1 | 725933 | G | A | 0.0040 | 1.076484 | 0.819125 |
-| 2 | 1:737801_T_C | 1 | 737801 | C | T | 0.0051 | 1.050220 | 0.825083 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 0.8374 | 1.021528 | 0.982452 |
-| 4 | 1:751343_T_A | 1 | 751343 | T | A | 0.8593 | 1.017349 | 0.986714 |
-|  | STATUS |  |  |  |  |  |  |  |
-| 0 | 9960099 |  |  |  |  |  |  |  |
-| 1 | 9960099 |  |  |  |  |  |  |  |
-| 2 | 9960099 |  |  |  |  |  |  |  |
-| 3 | 9960399 |  |  |  |  |  |  |  |
-| 4 | 9960099 |  |  |  |  |  |  |  |
+| 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 | 0.928950 |
+| 1 | 1:725933_A_G | 1 | 725933 | G | A | 9960099 | 0.0040 | 1.076484 |
+| 2 | 1:737801_T_C | 1 | 737801 | C | T | 9960099 | 0.0051 | 1.050220 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 1.021528 |
+| 4 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 1.017349 |
+|  | OR_95L |  |  |  |  |  |  |  |
+| 0 | 0.706863 |  |  |  |  |  |  |  |
+| 1 | 0.819125 |  |  |  |  |  |  |  |
+| 2 | 0.825083 |  |  |  |  |  |  |  |
+| 3 | 0.982452 |  |  |  |  |  |  |  |
+| 4 | 0.986714 |  |  |  |  |  |  |  |
 ```
 
 ```python
@@ -117,21 +117,20 @@ mysumstats.fill_data(to_fill=["BETA","SE"])
 
 **stdout:**
 ```
-2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
-2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     OR      OR_95L  OR_95U  STATUS  
-2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 float64 category
-2024/12/22 22:33:32  -Verified: T      T     T     T        T        T       T       T       T       T       
-2024/12/22 22:33:32  -Overwrite mode:  False
-2024/12/22 22:33:32   -Skipping columns:  []
-2024/12/22 22:33:32  -Filling columns:  ['BETA', 'SE']
-2024/12/22 22:33:32   - Filling Columns iteratively...
-2024/12/22 22:33:32   - Filling BETA value using OR column...
-2024/12/22 22:33:32   - Filling SE value using OR/OR_95U column...
-2024/12/22 22:33:32 Finished filling data using existing columns.
-2024/12/22 22:33:32 Start to reorder the columns...v3.5.4
-2024/12/22 22:33:32  -Current Dataframe shape : 5 x 12 ; Memory usage: 21.47 MB
-2024/12/22 22:33:32  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,OR,OR_95L,OR_95U,STATUS
-2024/12/22 22:33:32 Finished reordering the columns.
+2025/12/26 11:37:56 Start filling data using existing columns...v4.0.0
+2025/12/26 11:37:56  -Column  : SNPID  CHR   POS   EA       NEA      STATUS EAF     OR      OR_95U  OR_95L 
+2025/12/26 11:37:56  -DType   : string Int64 Int64 category category Int64  float32 float64 float64 float64
+2025/12/26 11:37:56  -Verified: T      T     T     T        T        T      T       T       T       T      
+2025/12/26 11:37:56  -Target columns: ['BETA', 'SE']
+2025/12/26 11:37:56     Filling SE from OR/OR_95U...
+2025/12/26 11:37:56     Filling BETA from OR...
+2025/12/26 11:37:56   [Round 1] Filled: ['SE', 'BETA']
+2025/12/26 11:37:56   [Round 1] All columns filled!
+2025/12/26 11:37:56  -Successfully filled all requested columns.
+2025/12/26 11:37:56 Finished filling data using existing columns.
+2025/12/26 11:37:56 Start to reorder the columns ...(v4.0.0)
+2025/12/26 11:37:56  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,EAF,BETA,SE,OR,OR_95U,OR_95L
+2025/12/26 11:37:56 Finished reordering the columns.
 ```
 
 ```python
@@ -139,19 +138,19 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | EA NEA | EAF | BETA | SE | OR | \ |
+| SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 | 0.928950 |
-| 1 | 1:725933_A_G | 1 | 725933 | G | A | 0.0040 | 0.0737 | 0.1394 |
-| 2 | 1:737801_T_C | 1 | 737801 | C | T | 0.0051 | 0.0490 | 0.1231 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 0.8374 | 0.0213 | 0.0199 |
-| 4 | 1:751343_T_A | 1 | 751343 | T | A | 0.8593 | 0.0172 | 0.0156 |
-|  | OR_95L | OR_95U | STATUS |  |  |  |  |  |
-| 0 | 0.706863 | 1.220815 | 9960099 |  |  |  |  |  |
-| 1 | 0.819125 | 1.414702 | 9960099 |  |  |  |  |  |
-| 2 | 0.825083 | 1.336790 | 9960099 |  |  |  |  |  |
-| 3 | 0.982452 | 1.062159 | 9960399 |  |  |  |  |  |
-| 4 | 0.986714 | 1.048935 | 9960099 |  |  |  |  |  |
+| 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 -0.0737 | 0.1394 |
+| 1 | 1:725933_A_G | 1 | 725933 | G | A | 9960099 | 0.0040 | 0.0737 |
+| 2 | 1:737801_T_C | 1 | 737801 | C | T | 9960099 | 0.0051 | 0.0490 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 0.0213 |
+| 4 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 0.0172 |
+|  | OR | OR_95U | OR_95L |  |  |  |  |  |
+| 0 | 0.928950 | 1.220815 | 0.706863 |  |  |  |  |  |
+| 1 | 1.076484 | 1.414702 | 0.819125 |  |  |  |  |  |
+| 2 | 1.050220 | 1.336790 | 0.825083 |  |  |  |  |  |
+| 3 | 1.021528 | 1.062159 | 0.982452 |  |  |  |  |  |
+| 4 | 1.017349 | 1.048935 | 0.986714 |  |  |  |  |  |
 ```
 
 ## BETA/SE -> Z
@@ -162,20 +161,19 @@ mysumstats.fill_data(to_fill=["Z"])
 
 **stdout:**
 ```
-2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
-2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      OR      OR_95L  OR_95U  STATUS  
-2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 category
-2024/12/22 22:33:32  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       
-2024/12/22 22:33:32  -Overwrite mode:  False
-2024/12/22 22:33:32   -Skipping columns:  []
-2024/12/22 22:33:32  -Filling columns:  ['Z']
-2024/12/22 22:33:32   - Filling Columns iteratively...
-2024/12/22 22:33:32   - Filling Z using BETA/SE column...
-2024/12/22 22:33:32 Finished filling data using existing columns.
-2024/12/22 22:33:32 Start to reorder the columns...v3.5.4
-2024/12/22 22:33:32  -Current Dataframe shape : 5 x 13 ; Memory usage: 21.47 MB
-2024/12/22 22:33:32  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,OR,OR_95L,OR_95U,STATUS
-2024/12/22 22:33:32 Finished reordering the columns.
+2025/12/26 11:37:57 Start filling data using existing columns...v4.0.0
+2025/12/26 11:37:57  -Column  : SNPID  CHR   POS   EA       NEA      STATUS EAF     BETA    SE      OR      OR_95U  OR_95L 
+2025/12/26 11:37:57  -DType   : string Int64 Int64 category category Int64  float32 float64 float64 float64 float64 float64
+2025/12/26 11:37:57  -Verified: T      T     T     T        T        T      T       T       T       T       T       T      
+2025/12/26 11:37:57  -Target columns: ['Z']
+2025/12/26 11:37:57     Filling Z from BETA/SE...
+2025/12/26 11:37:57   [Round 1] Filled: ['Z']
+2025/12/26 11:37:57   [Round 1] All columns filled!
+2025/12/26 11:37:57  -Successfully filled all requested columns.
+2025/12/26 11:37:57 Finished filling data using existing columns.
+2025/12/26 11:37:57 Start to reorder the columns ...(v4.0.0)
+2025/12/26 11:37:57  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,EAF,BETA,SE,OR,OR_95U,OR_95L,Z
+2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
 ```python
@@ -183,19 +181,19 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | EA NEA | EAF | BETA | SE | Z | \ |
+| SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 -0.528694 |  |
-| 1 | 1:725933_A_G | 1 | 725933 | G | A | 0.0040 | 0.0737 | 0.1394 |
-| 2 | 1:737801_T_C | 1 | 737801 | C | T | 0.0051 | 0.0490 | 0.1231 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 0.8374 | 0.0213 | 0.0199 |
-| 4 | 1:751343_T_A | 1 | 751343 | T | A | 0.8593 | 0.0172 | 0.0156 |
-|  | OR | OR_95L | OR_95U | STATUS |  |  |  |  |
-| 0 | 0.928950 | 0.706863 | 1.220815 | 9960099 |  |  |  |  |
-| 1 | 1.076484 | 0.819125 | 1.414702 | 9960099 |  |  |  |  |
-| 2 | 1.050220 | 0.825083 | 1.336790 | 9960099 |  |  |  |  |
-| 3 | 1.021528 | 0.982452 | 1.062159 | 9960399 |  |  |  |  |
-| 4 | 1.017349 | 0.986714 | 1.048935 | 9960099 |  |  |  |  |
+| 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 -0.0737 | 0.1394 |
+| 1 | 1:725933_A_G | 1 | 725933 | G | A | 9960099 | 0.0040 | 0.0737 |
+| 2 | 1:737801_T_C | 1 | 737801 | C | T | 9960099 | 0.0051 | 0.0490 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 0.0213 |
+| 4 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 0.0172 |
+|  | OR | OR_95U | OR_95L | Z |  |  |  |  |
+| 0 | 0.928950 | 1.220815 | 0.706863 -0.528694 |  |  |  |  |  |
+| 1 | 1.076484 | 1.414702 | 0.819125 | 0.528694 |  |  |  |  |
+| 2 | 1.050220 | 1.336790 | 0.825083 | 0.398050 |  |  |  |  |
+| 3 | 1.021528 | 1.062159 | 0.982452 | 1.070352 |  |  |  |  |
+| 4 | 1.017349 | 1.048935 | 0.986714 | 1.102564 |  |  |  |  |
 ```
 
 ## P -> MLOG10P
@@ -206,21 +204,19 @@ mysumstats.fill_data(to_fill=["MLOG10P"])
 
 **stdout:**
 ```
-2024/12/22 22:33:32 Start filling data using existing columns...v3.5.4
-2024/12/22 22:33:32  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       OR      OR_95L  OR_95U  STATUS  
-2024/12/22 22:33:32  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 category
-2024/12/22 22:33:32  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       
-2024/12/22 22:33:32  -Overwrite mode:  False
-2024/12/22 22:33:32   -Skipping columns:  []
-2024/12/22 22:33:32  -Filling columns:  ['MLOG10P']
-2024/12/22 22:33:32   - Filling Columns iteratively...
-2024/12/22 22:33:32   - Filling P value using Z column...
-2024/12/22 22:33:32   - Filling MLOG10P using P column...
-2024/12/22 22:33:32 Finished filling data using existing columns.
-2024/12/22 22:33:32 Start to reorder the columns...v3.5.4
-2024/12/22 22:33:32  -Current Dataframe shape : 5 x 15 ; Memory usage: 21.47 MB
-2024/12/22 22:33:32  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
-2024/12/22 22:33:32 Finished reordering the columns.
+2025/12/26 11:37:57 Start filling data using existing columns...v4.0.0
+2025/12/26 11:37:57  -Column  : SNPID  CHR   POS   EA       NEA      STATUS EAF     BETA    SE      OR      OR_95U  OR_95L  Z      
+2025/12/26 11:37:57  -DType   : string Int64 Int64 category category Int64  float32 float64 float64 float64 float64 float64 float64
+2025/12/26 11:37:57  -Verified: T      T     T     T        T        T      T       T       T       T       T       T       T      
+2025/12/26 11:37:57  -Target columns: ['MLOG10P']
+2025/12/26 11:37:57     Filling MLOG10P from Z (extreme)...
+2025/12/26 11:37:57   [Round 1] Filled: ['MLOG10P']
+2025/12/26 11:37:57   [Round 1] All columns filled!
+2025/12/26 11:37:57  -Successfully filled all requested columns.
+2025/12/26 11:37:57 Finished filling data using existing columns.
+2025/12/26 11:37:57 Start to reorder the columns ...(v4.0.0)
+2025/12/26 11:37:57  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,EAF,BETA,SE,OR,OR_95U,OR_95L,Z,MLOG10P
+2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
 ## MLOG10P -> P 
@@ -231,18 +227,19 @@ mysumstats.fill_data(to_fill=["P"])
 
 **stdout:**
 ```
-2024/12/22 22:33:33 Start filling data using existing columns...v3.5.4
-2024/12/22 22:33:33  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
-2024/12/22 22:33:33  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
-2024/12/22 22:33:33  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       
-2024/12/22 22:33:33  -Overwrite mode:  False
-2024/12/22 22:33:33   -Skipping columns:  ['P']
-2024/12/22 22:33:33  -No available columns to fill. Skipping.
-2024/12/22 22:33:33 Finished filling data using existing columns.
-2024/12/22 22:33:33 Start to reorder the columns...v3.5.4
-2024/12/22 22:33:33  -Current Dataframe shape : 5 x 15 ; Memory usage: 21.47 MB
-2024/12/22 22:33:33  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
-2024/12/22 22:33:33 Finished reordering the columns.
+2025/12/26 11:37:57 Start filling data using existing columns...v4.0.0
+2025/12/26 11:37:57  -Column  : SNPID  CHR   POS   EA       NEA      STATUS EAF     BETA    SE      OR      OR_95U  OR_95L  Z       MLOG10P
+2025/12/26 11:37:57  -DType   : string Int64 Int64 category category Int64  float32 float64 float64 float64 float64 float64 float64 float64
+2025/12/26 11:37:57  -Verified: T      T     T     T        T        T      T       T       T       T       T       T       T       T      
+2025/12/26 11:37:57  -Target columns: ['P']
+2025/12/26 11:37:57     Filling P from MLOG10P...
+2025/12/26 11:37:57   [Round 1] Filled: ['P']
+2025/12/26 11:37:57   [Round 1] All columns filled!
+2025/12/26 11:37:57  -Successfully filled all requested columns.
+2025/12/26 11:37:57 Finished filling data using existing columns.
+2025/12/26 11:37:57 Start to reorder the columns ...(v4.0.0)
+2025/12/26 11:37:57  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,EAF,BETA,SE,OR,OR_95U,OR_95L,Z,P,MLOG10P
+2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
 ```python
@@ -250,19 +247,19 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | EA NEA | EAF | BETA | SE | Z | \ |
+| SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 -0.528694 |  |
-| 1 | 1:725933_A_G | 1 | 725933 | G | A | 0.0040 | 0.0737 | 0.1394 |
-| 2 | 1:737801_T_C | 1 | 737801 | C | T | 0.0051 | 0.0490 | 0.1231 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 0.8374 | 0.0213 | 0.0199 |
-| 4 | 1:751343_T_A | 1 | 751343 | T | A | 0.8593 | 0.0172 | 0.0156 |
-|  | P | MLOG10P | OR | OR_95L | OR_95U | STATUS |  |  |
-| 0 | 0.597017 | 0.224013 | 0.928950 | 0.706863 | 1.220815 | 9960099 |  |  |
-| 1 | 0.597017 | 0.224013 | 1.076484 | 0.819125 | 1.414702 | 9960099 |  |  |
-| 2 | 0.690593 | 0.160778 | 1.050220 | 0.825083 | 1.336790 | 9960099 |  |  |
-| 3 | 0.284461 | 0.545977 | 1.021528 | 0.982452 | 1.062159 | 9960399 |  |  |
-| 4 | 0.270217 | 0.568288 | 1.017349 | 0.986714 | 1.048935 | 9960099 |  |  |
+| 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 -0.0737 | 0.1394 |
+| 1 | 1:725933_A_G | 1 | 725933 | G | A | 9960099 | 0.0040 | 0.0737 |
+| 2 | 1:737801_T_C | 1 | 737801 | C | T | 9960099 | 0.0051 | 0.0490 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 0.0213 |
+| 4 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 0.0172 |
+|  | OR | OR_95U | OR_95L | Z | P | MLOG10P |  |  |
+| 0 | 0.928950 | 1.220815 | 0.706863 -0.528694 | 0.597017 | 0.224013 |  |  |  |
+| 1 | 1.076484 | 1.414702 | 0.819125 | 0.528694 | 0.597017 | 0.224013 |  |  |
+| 2 | 1.050220 | 1.336790 | 0.825083 | 0.398050 | 0.690593 | 0.160778 |  |  |
+| 3 | 1.021528 | 1.062159 | 0.982452 | 1.070352 | 0.284461 | 0.545977 |  |  |
+| 4 | 1.017349 | 1.048935 | 0.986714 | 1.102564 | 0.270217 | 0.568288 |  |  |
 ```
 
 ## EAF -> MAF
@@ -273,20 +270,19 @@ mysumstats.fill_data(to_fill=["MAF"])
 
 **stdout:**
 ```
-2024/12/22 22:33:33 Start filling data using existing columns...v3.5.4
-2024/12/22 22:33:33  -Column  : SNPID  CHR   POS   EA       NEA      EAF     BETA    SE      Z       P       MLOG10P OR      OR_95L  OR_95U  STATUS  
-2024/12/22 22:33:33  -DType   : string Int64 Int64 category category float32 float64 float64 float64 float64 float64 float64 float64 float64 category
-2024/12/22 22:33:33  -Verified: T      T     T     T        T        T       T       T       T       T       T       T       T       T       T       
-2024/12/22 22:33:33  -Overwrite mode:  False
-2024/12/22 22:33:33   -Skipping columns:  []
-2024/12/22 22:33:33  -Filling columns:  ['MAF']
-2024/12/22 22:33:33   - Filling Columns iteratively...
-2024/12/22 22:33:33   - Filling MAF using EAF column...
-2024/12/22 22:33:33 Finished filling data using existing columns.
-2024/12/22 22:33:33 Start to reorder the columns...v3.5.4
-2024/12/22 22:33:33  -Current Dataframe shape : 5 x 16 ; Memory usage: 21.47 MB
-2024/12/22 22:33:33  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,EAF,MAF,BETA,SE,Z,P,MLOG10P,OR,OR_95L,OR_95U,STATUS
-2024/12/22 22:33:33 Finished reordering the columns.
+2025/12/26 11:37:57 Start filling data using existing columns...v4.0.0
+2025/12/26 11:37:57  -Column  : SNPID  CHR   POS   EA       NEA      STATUS EAF     BETA    SE      OR      OR_95U  OR_95L  Z       P       MLOG10P
+2025/12/26 11:37:57  -DType   : string Int64 Int64 category category Int64  float32 float64 float64 float64 float64 float64 float64 float64 float64
+2025/12/26 11:37:57  -Verified: T      T     T     T        T        T      T       T       T       T       T       T       T       T       T      
+2025/12/26 11:37:57  -Target columns: ['MAF']
+2025/12/26 11:37:57     Filling MAF from EAF...
+2025/12/26 11:37:57   [Round 1] Filled: ['MAF']
+2025/12/26 11:37:57   [Round 1] All columns filled!
+2025/12/26 11:37:57  -Successfully filled all requested columns.
+2025/12/26 11:37:57 Finished filling data using existing columns.
+2025/12/26 11:37:57 Start to reorder the columns ...(v4.0.0)
+2025/12/26 11:37:57  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,EAF,MAF,BETA,SE,OR,OR_95U,OR_95L,Z,P,MLOG10P
+2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
 ```python
@@ -294,19 +290,19 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | EA NEA | EAF | MAF | BETA | SE | \ |
+| SNPID | CHR | POS | EA NEA | STATUS | EAF | MAF | BETA | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 | 0.0040 -0.0737 | 0.1394 |
-| 1 | 1:725933_A_G | 1 | 725933 | G | A | 0.0040 | 0.0040 | 0.0737 |
-| 2 | 1:737801_T_C | 1 | 737801 | C | T | 0.0051 | 0.0051 | 0.0490 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 0.8374 | 0.1626 | 0.0213 |
-| 4 | 1:751343_T_A | 1 | 751343 | T | A | 0.8593 | 0.1407 | 0.0172 |
-|  | Z | P | MLOG10P | OR | OR_95L | OR_95U | STATUS |  |
-| 0 -0.528694 | 0.597017 | 0.224013 | 0.928950 | 0.706863 | 1.220815 | 9960099 |  |  |
-| 1 | 0.528694 | 0.597017 | 0.224013 | 1.076484 | 0.819125 | 1.414702 | 9960099 |  |
-| 2 | 0.398050 | 0.690593 | 0.160778 | 1.050220 | 0.825083 | 1.336790 | 9960099 |  |
-| 3 | 1.070352 | 0.284461 | 0.545977 | 1.021528 | 0.982452 | 1.062159 | 9960399 |  |
-| 4 | 1.102564 | 0.270217 | 0.568288 | 1.017349 | 0.986714 | 1.048935 | 9960099 |  |
+| 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 | 0.0040 -0.0737 |
+| 1 | 1:725933_A_G | 1 | 725933 | G | A | 9960099 | 0.0040 | 0.0040 |
+| 2 | 1:737801_T_C | 1 | 737801 | C | T | 9960099 | 0.0051 | 0.0051 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 0.1626 |
+| 4 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 0.1407 |
+|  | SE | OR | OR_95U | OR_95L | Z | P | MLOG10P |  |
+| 0 | 0.1394 | 0.928950 | 1.220815 | 0.706863 -0.528694 | 0.597017 | 0.224013 |  |  |
+| 1 | 0.1394 | 1.076484 | 1.414702 | 0.819125 | 0.528694 | 0.597017 | 0.224013 |  |
+| 2 | 0.1231 | 1.050220 | 1.336790 | 0.825083 | 0.398050 | 0.690593 | 0.160778 |  |
+| 3 | 0.0199 | 1.021528 | 1.062159 | 0.982452 | 1.070352 | 0.284461 | 0.545977 |  |
+| 4 | 0.0156 | 1.017349 | 1.048935 | 0.986714 | 1.102564 | 0.270217 | 0.568288 |  |
 ```
 
 ## Simulation of extreme P values
@@ -324,13 +320,13 @@ mysumstats.data
 ```
 
 ```
-| SNPID CHR | POS | BETA | SE | STATUS |
-| --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 -0.0737 | 0.001394 |
-| 1 | 1:725933_A_G | 1 | 725933 | 0.0737 |
-| 2 | 1:737801_T_C | 1 | 737801 | 0.0490 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | 0.0213 |
-| 4 | 1:751343_T_A | 1 | 751343 | 0.0172 |
+| SNPID | CHR | POS | STATUS | BETA | SE |
+| --- | --- | --- | --- | --- | --- |
+| 0 | 1:725932_G_A | 1 | 725932 | 9999999 -0.0737 | 0.001394 |
+| 1 | 1:725933_A_G | 1 | 725933 | 9999999 | 0.0737 |
+| 2 | 1:737801_T_C | 1 | 737801 | 9999999 | 0.0490 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | 9999999 | 0.0213 |
+| 4 | 1:751343_T_A | 1 | 751343 | 9999999 | 0.0172 |
 ```
 
 ## Limited precision of float64
@@ -343,22 +339,22 @@ mysumstats.fill_data(to_fill=["Z","P"])
 
 **stdout:**
 ```
-2024/12/22 22:33:34 Start filling data using existing columns...v3.5.4
-2024/12/22 22:33:34  -Column  : SNPID  CHR    POS   BETA    SE      STATUS  
-2024/12/22 22:33:34  -DType   : object string int64 float64 float64 category
-2024/12/22 22:33:34  -Verified: T      F      T     T       T       T       
-2024/12/22 22:33:34  #WARNING! Columns with possibly incompatible dtypes: CHR
-2024/12/22 22:33:34  -Overwrite mode:  False
-2024/12/22 22:33:34   -Skipping columns:  []
-2024/12/22 22:33:34  -Filling columns:  ['Z', 'P']
-2024/12/22 22:33:34   - Filling Columns iteratively...
-2024/12/22 22:33:34   - Filling Z using BETA/SE column...
-2024/12/22 22:33:34   - Filling P value using Z column...
-2024/12/22 22:33:34 Finished filling data using existing columns.
-2024/12/22 22:33:34 Start to reorder the columns...v3.5.4
-2024/12/22 22:33:34  -Current Dataframe shape : 5 x 8 ; Memory usage: 21.47 MB
-2024/12/22 22:33:34  -Reordering columns to    : SNPID,CHR,POS,BETA,SE,Z,P,STATUS
-2024/12/22 22:33:34 Finished reordering the columns.
+2025/12/26 11:37:57 Start filling data using existing columns...v4.0.0
+2025/12/26 11:37:57  -Column  : SNPID  CHR   POS   STATUS BETA    SE     
+2025/12/26 11:37:57  -DType   : object Int64 int64 int64  float64 float64
+2025/12/26 11:37:57  -Verified: T      T     T     T      T       T      
+2025/12/26 11:37:57  -Target columns: ['Z', 'P']
+2025/12/26 11:37:57     Filling Z from BETA/SE...
+2025/12/26 11:37:57   [Round 1] Filled: ['Z']
+2025/12/26 11:37:57   [Round 1] Remaining: ['P']
+2025/12/26 11:37:57     Filling P from Z...
+2025/12/26 11:37:57   [Round 2] Filled: ['P']
+2025/12/26 11:37:57   [Round 2] All columns filled!
+2025/12/26 11:37:57  -Successfully filled all requested columns.
+2025/12/26 11:37:57 Finished filling data using existing columns.
+2025/12/26 11:37:57 Start to reorder the columns ...(v4.0.0)
+2025/12/26 11:37:57  -Reordering columns to    : SNPID,CHR,POS,STATUS,BETA,SE,Z,P
+2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
 ```python
@@ -366,13 +362,13 @@ mysumstats.data
 ```
 
 ```
-| SNPID CHR | POS | BETA | SE | Z | P | STATUS |
-| --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 -0.0737 | 0.001394 | -52.869440 | 0.0 |
-| 1 | 1:725933_A_G | 1 | 725933 | 0.0737 | 0.001394 | 52.869440 |
-| 2 | 1:737801_T_C | 1 | 737801 | 0.0490 | 0.001231 | 39.805037 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | 0.0213 | 0.000199 | 107.035176 |
-| 4 | 1:751343_T_A | 1 | 751343 | 0.0172 | 0.000156 | 110.256410 |
+| SNPID | CHR | POS | STATUS | BETA | SE | Z | P |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 1:725932_G_A | 1 | 725932 | 9999999 -0.0737 | 0.001394 | -52.869440 | 0.0 |
+| 1 | 1:725933_A_G | 1 | 725933 | 9999999 | 0.0737 | 0.001394 | 52.869440 |
+| 2 | 1:737801_T_C | 1 | 737801 | 9999999 | 0.0490 | 0.001231 | 39.805037 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | 9999999 | 0.0213 | 0.000199 | 107.035176 |
+| 4 | 1:751343_T_A | 1 | 751343 | 9999999 | 0.0172 | 0.000156 | 110.256410 |
 ```
 
 ## Recalculate MLOG10P with extreme P value mode
@@ -383,21 +379,19 @@ mysumstats.fill_data(to_fill=["MLOG10P"],extreme=True)
 
 **stdout:**
 ```
-2024/12/22 22:33:34 Start filling data using existing columns...v3.5.4
-2024/12/22 22:33:34  -Column  : SNPID  CHR    POS   BETA    SE      Z       P       STATUS  
-2024/12/22 22:33:34  -DType   : object string int64 float64 float64 float64 float64 category
-2024/12/22 22:33:34  -Verified: T      F      T     T       T       T       T       T       
-2024/12/22 22:33:34  #WARNING! Columns with possibly incompatible dtypes: CHR
-2024/12/22 22:33:34  -Overwrite mode:  False
-2024/12/22 22:33:34   -Skipping columns:  []
-2024/12/22 22:33:34  -Filling columns:  ['MLOG10P']
-2024/12/22 22:33:34   - Filling Columns iteratively...
-2024/12/22 22:33:34   - Filling MLOG10P using Z column...
-2024/12/22 22:33:34 Finished filling data using existing columns.
-2024/12/22 22:33:34 Start to reorder the columns...v3.5.4
-2024/12/22 22:33:34  -Current Dataframe shape : 5 x 11 ; Memory usage: 21.47 MB
-2024/12/22 22:33:34  -Reordering columns to    : SNPID,CHR,POS,BETA,SE,Z,P,MLOG10P,STATUS,P_MANTISSA,P_EXPONENT
-2024/12/22 22:33:34 Finished reordering the columns.
+2025/12/26 11:37:57 Start filling data using existing columns...v4.0.0
+2025/12/26 11:37:57  -Column  : SNPID  CHR   POS   STATUS BETA    SE      Z       P      
+2025/12/26 11:37:57  -DType   : object Int64 int64 int64  float64 float64 float64 float64
+2025/12/26 11:37:57  -Verified: T      T     T     T      T       T       T       T      
+2025/12/26 11:37:57  -Target columns: ['MLOG10P']
+2025/12/26 11:37:57     Filling MLOG10P from Z (extreme)...
+2025/12/26 11:37:57   [Round 1] Filled: ['MLOG10P']
+2025/12/26 11:37:57   [Round 1] All columns filled!
+2025/12/26 11:37:57  -Successfully filled all requested columns.
+2025/12/26 11:37:57 Finished filling data using existing columns.
+2025/12/26 11:37:57 Start to reorder the columns ...(v4.0.0)
+2025/12/26 11:37:57  -Reordering columns to    : SNPID,CHR,POS,STATUS,BETA,SE,Z,P,MLOG10P
+2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
 ```python
@@ -405,19 +399,19 @@ mysumstats.data
 ```
 
 ```
-| SNPID CHR | POS | BETA | SE | Z | P | MLOG10P | \ |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 -0.0737 | 0.001394 | -52.869440 | 0.0 | 608.786553 |
-| 1 | 1:725933_A_G | 1 | 725933 | 0.0737 | 0.001394 | 52.869440 | 0.0 |
-| 2 | 1:737801_T_C | 1 | 737801 | 0.0490 | 0.001231 | 39.805037 | 0.0 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | 0.0213 | 0.000199 | 107.035176 | 0.0 |
-| 4 | 1:751343_T_A | 1 | 751343 | 0.0172 | 0.000156 | 110.256410 | 0.0 |
-|  | STATUS | P_MANTISSA | P_EXPONENT |  |  |  |  |
-| 0 | 9999999 | 1.634734 | -609.0 |  |  |  |  |
-| 1 | 9999999 | 1.634734 | -609.0 |  |  |  |  |
-| 2 | 9999999 | 1.756915 | -346.0 |  |  |  |  |
-| 3 | 9999999 | 1.314436 | -2490.0 |  |  |  |  |
-| 4 | 9999999 | 1.300999 | -2642.0 |  |  |  |  |
+| SNPID | CHR | POS | STATUS | BETA | SE | Z | P | \ |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 1:725932_G_A | 1 | 725932 | 9999999 -0.0737 | 0.001394 | -52.869440 | 0.0 |  |
+| 1 | 1:725933_A_G | 1 | 725933 | 9999999 | 0.0737 | 0.001394 | 52.869440 | 0.0 |
+| 2 | 1:737801_T_C | 1 | 737801 | 9999999 | 0.0490 | 0.001231 | 39.805037 | 0.0 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | 9999999 | 0.0213 | 0.000199 | 107.035176 | 0.0 |
+| 4 | 1:751343_T_A | 1 | 751343 | 9999999 | 0.0172 | 0.000156 | 110.256410 | 0.0 |
+|  | MLOG10P |  |  |  |  |  |  |  |
+| 0 | 608.786553 |  |  |  |  |  |  |  |
+| 1 | 608.786553 |  |  |  |  |  |  |  |
+| 2 | 345.755249 |  |  |  |  |  |  |  |
+| 3 | 2489.881261 |  |  |  |  |  |  |  |
+| 4 | 2641.885723 |  |  |  |  |  |  |  |
 ```
 
 ## Calculate Per-SNP r2
@@ -437,19 +431,19 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | EA NEA | EAF | BETA | SE | N | \ |
+| SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 | 170000 |
-| 1 | 1:725933_A_G | 1 | 725933 | G | A | 0.0040 | 0.0737 | 0.1394 |
-| 2 | 1:737801_T_C | 1 | 737801 | C | T | 0.0051 | 0.0490 | 0.1231 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 0.8374 | 0.0213 | 0.0199 |
-| 4 | 1:751343_T_A | 1 | 751343 | T | A | 0.8593 | 0.0172 | 0.0156 |
-|  | STATUS |  |  |  |  |  |  |  |
-| 0 | 9960099 |  |  |  |  |  |  |  |
-| 1 | 9960099 |  |  |  |  |  |  |  |
-| 2 | 9960099 |  |  |  |  |  |  |  |
-| 3 | 9960399 |  |  |  |  |  |  |  |
-| 4 | 9960099 |  |  |  |  |  |  |  |
+| 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 -0.0737 | 0.1394 |
+| 1 | 1:725933_A_G | 1 | 725933 | G | A | 9960099 | 0.0040 | 0.0737 |
+| 2 | 1:737801_T_C | 1 | 737801 | C | T | 9960099 | 0.0051 | 0.0490 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 0.0213 |
+| 4 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 0.0172 |
+|  | N |  |  |  |  |  |  |  |
+| 0 | 170000 |  |  |  |  |  |  |  |
+| 1 | 170000 |  |  |  |  |  |  |  |
+| 2 | 170000 |  |  |  |  |  |  |  |
+| 3 | 170000 |  |  |  |  |  |  |  |
+| 4 | 170000 |  |  |  |  |  |  |  |
 ```
 
 ```python
@@ -458,12 +452,14 @@ mysumstats.get_per_snp_r2()
 
 **stdout:**
 ```
-2024/12/22 22:33:49 Start to calculate per-SNP heritibility...
-2024/12/22 22:33:49  -Calculating per-SNP rsq by 2 * (BETA**2) * AF * (1-AF) / Var(y)...
-2024/12/22 22:33:49  -Var(y) is provided: 1...
-2024/12/22 22:33:49  -Calculating F-statistic: F = [(N-k-1)/k] * (r2/1-r2)... where k = 1
-2024/12/22 22:33:49  -For r2, SNPR2 is used.
-2024/12/22 22:33:49 Finished calculating per-SNP heritability!
+2025/12/26 11:37:57 Start to calculate per-SNP heritibility ...(v4.0.0)
+2025/12/26 11:37:57  -Calculating per-SNP rsq by 2 * (BETA**2) * AF * (1-AF) / Var(y)...
+2025/12/26 11:37:57  -Var(y) is provided: 1...
+2025/12/26 11:37:57  -Calculating F-statistic: F = [(N-k-1)/k] * (r2/1-r2)... where k = 1
+2025/12/26 11:37:57  -For r2, SNPR2 is used.
+2025/12/26 11:37:57 Finished calculating per-SNP heritability!
+2025/12/26 11:37:57  -Current Dataframe shape : 5 x 13 ; Memory usage: 0.00 MB
+2025/12/26 11:37:57 Finished calculating per-SNP heritibility.
 ```
 
 ```python
@@ -471,17 +467,17 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | EA NEA | EAF | BETA | SE | N | \ |
+| SNPID | CHR | POS | EA NEA | STATUS | EAF | BETA | SE | \ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932_G_A | 1 | 725932 | G | A | 0.9960 -0.0737 | 0.1394 | 170000 |
-| 1 | 1:725933_A_G | 1 | 725933 | G | A | 0.0040 | 0.0737 | 0.1394 |
-| 2 | 1:737801_T_C | 1 | 737801 | C | T | 0.0051 | 0.0490 | 0.1231 |
-| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 0.8374 | 0.0213 | 0.0199 |
-| 4 | 1:751343_T_A | 1 | 751343 | T | A | 0.8593 | 0.0172 | 0.0156 |
-|  | STATUS | _VAR(BETAX) | SNPR2 | F |  |  |  |  |
-| 0 | 9960099 | 0.000043 | 0.000043 | 7.357797 |  |  |  |  |
-| 1 | 9960099 | 0.000043 | 0.000043 | 7.357782 |  |  |  |  |
-| 2 | 9960099 | 0.000024 | 0.000024 | 4.142153 |  |  |  |  |
-| 3 | 9960399 | 0.000124 | 0.000124 | 21.005844 |  |  |  |  |
-| 4 | 9960099 | 0.000072 | 0.000072 | 12.161878 |  |  |  |  |
+| 0 | 1:725932_G_A | 1 | 725932 | G | A | 9960099 | 0.9960 -0.0737 | 0.1394 |
+| 1 | 1:725933_A_G | 1 | 725933 | G | A | 9960099 | 0.0040 | 0.0737 |
+| 2 | 1:737801_T_C | 1 | 737801 | C | T | 9960099 | 0.0051 | 0.0490 |
+| 3 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 0.0213 |
+| 4 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 0.0172 |
+|  | N | _VAR(BETAX) | SNPR2 | F |  |  |  |  |
+| 0 | 170000 | 0.000043 | 0.000043 | 7.357797 |  |  |  |  |
+| 1 | 170000 | 0.000043 | 0.000043 | 7.357782 |  |  |  |  |
+| 2 | 170000 | 0.000024 | 0.000024 | 4.142153 |  |  |  |  |
+| 3 | 170000 | 0.000124 | 0.000124 | 21.005844 |  |  |  |  |
+| 4 | 170000 | 0.000072 | 0.000072 | 12.161878 |  |  |  |  |
 ```

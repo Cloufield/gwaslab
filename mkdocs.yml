@@ -81,6 +81,7 @@ nav:
        - "LD score regression" : ldsc_in_gwaslab.md
        - "Clumping" : util_ex_clumping.md
        - "Lead and novel variants" : utility_get_lead_novel.md
+       - "Extract LD proxy" : extract_ld_proxy.md
        - "Data conversion" : utility_data_conversion.md
        - "Manhattan and QQ plot": visualization_mqq.md     
        - "Regional plot" : visualization_regional.md

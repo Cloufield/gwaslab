@@ -20,6 +20,8 @@ from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_recombination_rate
 from gwaslab.util.util_in_filter_value import _get_flanking
 from gwaslab.io.io_vcf import auto_check_vcf_chr_dict
+from gwaslab.qc.qc_decorator import with_logging
+from gwaslab.qc.qc_normalize_args import _normalize_region
 # unmatched SNP list 1 
 
 # for each SNP in unmatched SNP list 1:
@@ -165,6 +167,86 @@ def _extract_with_ld_proxy( snplist=None,
     return extracted_sumstats
 
 
+def _extract_vcf_proxies_not_in_sumstats(ref_genotype, vcf_proxies_df, chrom, snpid, ld_threshold, common_sumstats, log, verbose):
+    """
+    Extract proxy variants from VCF that are not in common_sumstats.
+    
+    Parameters
+    ----------
+    ref_genotype : dict
+        VCF genotype data loaded from allel.read_vcf
+    vcf_proxies_df : pandas.DataFrame
+        DataFrame with SNPID and RSQ columns for VCF variants
+    chrom : int
+        Chromosome number
+    snpid : str
+        Reference SNP ID
+    ld_threshold : float
+        LD threshold
+    common_sumstats : pandas.DataFrame
+        Summary statistics
+    log : Log
+        Logging object
+    verbose : bool
+        Verbose flag
+        
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with proxy variants from VCF not in sumstats
+    """
+    if ref_genotype is None or len(vcf_proxies_df) == 0:
+        return pd.DataFrame()
+    
+    # Filter to variants not in common_sumstats and above threshold
+    vcf_proxies_df = vcf_proxies_df.loc[
+        (vcf_proxies_df["RSQ"] > ld_threshold) & 
+        (~vcf_proxies_df["SNPID"].isin(common_sumstats["SNPID"].values)), :
+    ]
+    
+    if len(vcf_proxies_df) == 0:
+        return pd.DataFrame()
+    
+    # Create mapping from SNPID to index for efficient lookup
+    vcf_id_to_idx = {ref_genotype["variants/ID"][i]: i 
+                     for i in range(len(ref_genotype["variants/ID"]))}
+    
+    # Extract variant information from VCF
+    vcf_variants = []
+    for vcf_snpid in vcf_proxies_df["SNPID"].values:
+        if vcf_snpid in vcf_id_to_idx:
+            vcf_idx = vcf_id_to_idx[vcf_snpid]
+            rsq_value = vcf_proxies_df.loc[vcf_proxies_df["SNPID"] == vcf_snpid, "RSQ"].values[0]
+            
+            # Extract ALT allele (first ALT if available, otherwise use REF)
+            alt_alleles = ref_genotype["variants/ALT"][vcf_idx]
+            ea = alt_alleles[0] if len(alt_alleles) > 0 else ref_genotype["variants/REF"][vcf_idx]
+            
+            vcf_variants.append({
+                "SNPID": ref_genotype["variants/ID"][vcf_idx],
+                "CHR": chrom,
+                "POS": ref_genotype["variants/POS"][vcf_idx],
+                "EA": ea,
+                "NEA": ref_genotype["variants/REF"][vcf_idx],
+                "RSQ": rsq_value,
+                "LD_REF_VARIANT": snpid
+            })
+    
+    if len(vcf_variants) > 0:
+        result = pd.DataFrame(vcf_variants)
+        log.write("  -Found {} proxy variants from VCF not in sumstats (RSQ > {})".format(
+            len(result), ld_threshold), verbose=verbose)
+        return result
+    
+    return pd.DataFrame()
+
+
+@with_logging(
+        start_to_msg="find LD proxies for variants",
+        finished_msg="finding LD proxies for variants",
+        start_cols=["SNPID","CHR","POS","EA","NEA"],
+        start_function="_extract_ld_proxy"
+)
 def _extract_ld_proxy(  snplist=None,
                         common_sumstats=None,
                         vcf_path=None, 
@@ -172,8 +254,9 @@ def _extract_ld_proxy(  snplist=None,
                         tabix=None,
                         log=Log(), 
                         verbose=True, 
-                        windowsizekb=100,
-                        ld_threshold=0.8
+                        windowsizekb=500,
+                        ld_threshold=0.8,
+                        include_all=False
                             ):
     """
     Find LD proxies within the sumstats for SNPs in the list using a VCF reference.
@@ -190,6 +273,9 @@ def _extract_ld_proxy(  snplist=None,
         Size in kb for the flanking region around each SNP.
     ld_threshold : float
         Minimum R^2 value to consider a proxy valid.
+    include_all : bool, default=False
+        If True, include proxy variants from VCF that are not in common_sumstats.
+        When False, only returns proxies that are already in common_sumstats.
 
     Returns
     -------
@@ -207,71 +293,131 @@ def _extract_ld_proxy(  snplist=None,
     common_sumstats : pandas.DataFrame or None
         DataFrame with summary statistics for existing SNPs.
     """
-    ### Load vcf#######################################################################################
+    # Initialize VCF setup
     log.write("Start to load reference genotype...", verbose=verbose)
     log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)
     if tabix is None:
         tabix = which("tabix")
     vcf_chr_dict = auto_check_vcf_chr_dict(vcf_path=vcf_path, vcf_chr_dict=vcf_chr_dict, verbose=verbose, log=log)
     
-    ld_proxies  = pd.DataFrame()
-    in_sumstats = common_sumstats.loc[common_sumstats["SNPID"].isin(snplist),:]
+    # Filter input SNPs
+    in_sumstats = common_sumstats.loc[common_sumstats["SNPID"].isin(snplist), :].copy()
     
-    if len(in_sumstats)==0:
+    if len(in_sumstats) == 0:
         log.write(" -No available variants for LD proxy checking...Skipping... ", verbose=verbose)
-    else:
-        log.write(" -{} available variants for LD proxy checking... ".format(len(in_sumstats)), verbose=verbose)
+        return pd.DataFrame()
+    
+    log.write(" -{} available variants for LD proxy checking... ".format(len(in_sumstats)), verbose=verbose)
+    
+    # Pre-compute common_sumstats SNPID set for faster lookups
+    common_snpid_set = set(common_sumstats["SNPID"].values)
+    all_ld_proxies = []
 
-    for index,row in in_sumstats.iterrows():
-        # determine SNP and select region
+    # Process each SNP
+    for index, row in in_sumstats.iterrows():
         snpid = row["SNPID"]
-        chrom= int(row["CHR"])
-        start= int(row["POS"]-windowsizekb*1000)
-        end=   int(row["POS"]+windowsizekb*1000)
-
-        region = (chrom, start, end)
+        chrom = int(row["CHR"])
+        pos = int(row["POS"])
+        start = pos - windowsizekb * 1000
+        end = pos + windowsizekb * 1000
         
-        ###  #######################################################################################
-        #is_flanking = common_sumstats["CHR"] == chrom & common_sumstats["CHR"]>start & common_sumstats["CHR"]<end
-        #flanking_sumstats = common_sumstats.loc[is_flanking,:]
-        flanking_sumstats = common_sumstats.query('CHR == @chrom and @start < POS < @end',engine='python').copy()
+        # Normalize region (ensures start < end, proper chromosome format)
+        region = _normalize_region((chrom, start, end), log=log, verbose=verbose)
+        chrom, start, end = region
         
-        log.write(" -Extract {} variants in flanking region of {} for checking: {}:{}-{}".format(len(flanking_sumstats), snpid, chrom, start, end), verbose=verbose)
+        # Extract flanking variants from sumstats
+        flanking_sumstats = common_sumstats.query(
+            'CHR == @chrom and @start < POS < @end', engine='python'
+        ).copy()
+        
+        log.write(" -Extract {} variants in flanking region of {} for checking: {}:{}-{}".format(
+            len(flanking_sumstats), snpid, chrom, start, end), verbose=verbose)
 
-        if len(flanking_sumstats)==0:
-            log.write("  -No availble variants in the region...Skipping!", verbose=verbose)
+        if len(flanking_sumstats) == 0:
+            log.write("  -No available variants in the region...Skipping!", verbose=verbose)
             continue
 
-        flanking_sumstats = _get_rsq(row =in_sumstats.loc[index,["POS","NEA","EA"]],
-                                     sumstats = flanking_sumstats, 
-                                     row_pos=row["POS"], 
-                                     vcf_path=vcf_path, 
-                                     region=region,
-                                     log=log, 
-                                     verbose=verbose, 
-                                     vcf_chr_dict=vcf_chr_dict, 
-                                     tabix=tabix)
+        # Calculate LD for variants in sumstats
+        flanking_sumstats = _get_rsq(
+            row=row[["POS", "NEA", "EA"]],
+            sumstats=flanking_sumstats, 
+            row_pos=pos, 
+            vcf_path=vcf_path, 
+            region=region,
+            log=log, 
+            verbose=verbose, 
+            vcf_chr_dict=vcf_chr_dict, 
+            tabix=tabix
+        )
+        
         if flanking_sumstats is None:
-            log.write("  -{} is not found in the vcf...Skipping!".format(snpid))
+            log.write("  -{} is not found in the vcf...Skipping!".format(snpid), verbose=verbose)
             continue
-        flanking_sumstats = flanking_sumstats.loc[flanking_sumstats["RSQ"]>ld_threshold,:]
         
-        log.write("  -Variants in LD with {} (RSQ > {}): {}".format(snpid, ld_threshold,len(flanking_sumstats)), verbose=verbose)
+        # Filter by LD threshold
+        flanking_sumstats = flanking_sumstats.loc[flanking_sumstats["RSQ"] > ld_threshold, :].copy()
+        log.write("  -Variants in LD with {} (RSQ > {}): {}".format(
+            snpid, ld_threshold, len(flanking_sumstats)), verbose=verbose)
         
-        if len(flanking_sumstats)>0:
-            flanking_sumstats["LD_REF_VARIANT"]= snpid
-            for i,row_with_rsq in flanking_sumstats.iterrows():
-                if row_with_rsq["SNPID"] in common_sumstats["SNPID"].values:
-                    log.write("  -Top Proxy for {} is found: {} (LD RSQ= {})".format(snpid, row_with_rsq["SNPID"], row_with_rsq["RSQ"]))
+        # Process sumstats proxies
+        if len(flanking_sumstats) > 0:
+            flanking_sumstats["LD_REF_VARIANT"] = snpid
+            
+            # Log top proxy if found in common_sumstats
+            for _, proxy_row in flanking_sumstats.iterrows():
+                if proxy_row["SNPID"] in common_snpid_set:
+                    log.write("  -Top Proxy for {} is found: {} (LD RSQ= {})".format(
+                        snpid, proxy_row["SNPID"], proxy_row["RSQ"]), verbose=verbose)
                     break
-            #row_with_rsq = pd.DataFrame(row_with_rsq)
-            ld_proxies = pd.concat([ld_proxies, flanking_sumstats], ignore_index=True)
+            
+            all_ld_proxies.append(flanking_sumstats)
+        
+        # Get variants from VCF that are not in sumstats if option is enabled
+        if include_all:
+            try:
+                vcf_proxies_df = _get_rsq_single(
+                    row=row[["POS", "NEA", "EA"]],
+                    row_pos=pos, 
+                    vcf_path=vcf_path, 
+                    region=region,
+                    log=log, 
+                    verbose=verbose, 
+                    vcf_chr_dict=vcf_chr_dict, 
+                    tabix=tabix
+                )
+                
+                if vcf_proxies_df is not None and len(vcf_proxies_df) > 0:
+                    # Load VCF data once to extract variant information
+                    ref_genotype = read_vcf(
+                        vcf_path,
+                        region=vcf_chr_dict[chrom] + ":" + str(start) + "-" + str(end),
+                        tabix=tabix
+                    )
                     
-    if len(ld_proxies)==0:
-        log.write( "No proxy variants were found at given LD rsq threshold.")
-    else:
-        log.write("Finished loading reference genotype successfully!", verbose=verbose)
-        return ld_proxies.sort_values(by="RSQ",ascending=False)
+                    vcf_proxies = _extract_vcf_proxies_not_in_sumstats(
+                        ref_genotype, vcf_proxies_df, chrom, snpid, ld_threshold,
+                        common_sumstats, log, verbose
+                    )
+                    
+                    if len(vcf_proxies) > 0:
+                        all_ld_proxies.append(vcf_proxies)
+                        
+            except Exception as e:
+                log.write("  -Error calculating LD for VCF variants: {}".format(str(e)), verbose=verbose)
+    
+    # Combine all proxies
+    if len(all_ld_proxies) == 0:
+        log.write("No proxy variants were found at given LD rsq threshold.", verbose=verbose)
+        return pd.DataFrame()
+    
+    ld_proxies = pd.concat(all_ld_proxies, ignore_index=True)
+    
+    # Drop REFINDEX column if it exists
+    if "REFINDEX" in ld_proxies.columns:
+        ld_proxies = ld_proxies.drop(columns=["REFINDEX"])
+    
+    log.write("Finished loading reference genotype successfully!", verbose=verbose)
+    return ld_proxies.sort_values(by="RSQ", ascending=False)
 
         
 

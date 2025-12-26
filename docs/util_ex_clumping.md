@@ -10,9 +10,9 @@ gl.show_version()
 
 **stdout:**
 ```
-2025/05/11 19:15:52 GWASLab v3.6.3 https://cloufield.github.io/gwaslab/
-2025/05/11 19:15:52 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
-2025/05/11 19:15:52 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
+2025/12/26 11:38:17 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
+2025/12/26 11:38:17 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
+2025/12/26 11:38:17 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
 ```
 
 ## Load sample data and perform QC
@@ -22,6 +22,7 @@ mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
              snpid="SNP",
              chrom="CHR",
              pos="POS",
+             ea="ALT",nea="REF",
              se="SE",
              p="P",
              nrows=1000000  # Load only the first 1 million lines for demonstration purposes
@@ -32,33 +33,35 @@ mysumstats.fix_id(fixsep=True)
 
 **stdout:**
 ```
-2025/05/11 19:13:45 GWASLab v3.6.2 https://cloufield.github.io/gwaslab/
-2025/05/11 19:13:45 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
-2025/05/11 19:13:45 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
-2025/05/11 19:13:45 Start to initialize gl.Sumstats from file :../0_sample_data/t2d_bbj.txt.gz
-2025/05/11 19:13:46  -Reading columns          : SE,SNP,P,CHR,POS
-2025/05/11 19:13:46  -Renaming columns to      : SE,SNPID,P,CHR,POS
-2025/05/11 19:13:46  -Current Dataframe shape : 1000000  x  5
-2025/05/11 19:13:46  -Initiating a status column: STATUS ...
-2025/05/11 19:13:46  #WARNING! Version of genomic coordinates is unknown...
-2025/05/11 19:13:47 Start to reorder the columns...v3.6.2
-2025/05/11 19:13:47  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 63.43 MB
-2025/05/11 19:13:47  -Reordering columns to    : SNPID,CHR,POS,SE,P,STATUS
-2025/05/11 19:13:47 Finished reordering the columns.
-2025/05/11 19:13:47  -Trying to convert datatype for CHR: string -> Int64...Int64
-2025/05/11 19:13:47  -Column  : SNPID  CHR   POS   SE      P       STATUS  
-2025/05/11 19:13:47  -DType   : object Int64 int64 float64 float64 category
-2025/05/11 19:13:47  -Verified: T      T     T     T       T       T       
-2025/05/11 19:13:47  -Current Dataframe memory usage: 64.38 MB
-2025/05/11 19:13:47 Finished loading data successfully!
-2025/05/11 19:13:58  #WARNING! Necessary columns for .fix_allele() were not detected:EA,NEA
-2025/05/11 19:14:00  #WARNING! Necessary columns for .normalize() were not detected:EA,NEA
-2025/05/11 19:14:01 Start to check SNPID/rsID...v3.6.2
-2025/05/11 19:14:01  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 65.33 MB
-2025/05/11 19:14:01  -Checking SNPID data type...
-2025/05/11 19:14:01  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
-2025/05/11 19:14:04  -Replacing [_-] in SNPID with ":" ...
-2025/05/11 19:14:05 Finished checking SNPID/rsID.
+2025/12/26 11:38:17 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
+2025/12/26 11:38:17 (C) 2022-2025, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
+2025/12/26 11:38:17 Python version: 3.12.0 | packaged by conda-forge | (main, Oct  3 2023, 08:43:22) [GCC 12.3.0]
+2025/12/26 11:38:17 Start to initialize gl.Sumstats from file :../0_sample_data/t2d_bbj.txt.gz
+2025/12/26 11:38:18  -Reading columns          : P,POS,SE,SNP,ALT,REF,CHR
+2025/12/26 11:38:18  -Renaming columns to      : P,POS,SE,SNPID,EA,NEA,CHR
+2025/12/26 11:38:18  -Current Dataframe shape : 1000000  x  7
+2025/12/26 11:38:18  -Initiating a status column: STATUS ...
+2025/12/26 11:38:18 #WARNING! Version of genomic coordinates is unknown...
+2025/12/26 11:38:18 Start to reorder the columns ...(v4.0.0)
+2025/12/26 11:38:18  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,SE,P
+2025/12/26 11:38:18 Finished reordering the columns.
+2025/12/26 11:38:18  -Trying to convert datatype for CHR: string -> Int64...Success
+2025/12/26 11:38:18  -Column  : SNPID  CHR   POS   EA       NEA      STATUS SE      P      
+2025/12/26 11:38:18  -DType   : object Int64 int64 category category int64  float64 float64
+2025/12/26 11:38:18  -Verified: T      T     T     T        T        T      T       T      
+2025/12/26 11:38:18  -Current Dataframe memory usage: 50.93 MB
+2025/12/26 11:38:18 Finished loading data successfully!
+2025/12/26 11:38:19 Start to check SNPID/rsID ...(v4.0.0)
+2025/12/26 11:38:19  -Checking SNPID data type...
+2025/12/26 11:38:19  -Checking NA strings :na,NA,Na,Nan,NaN,<NA>,null,NULL,#N/A,#VALUE!,N/A,n/a,missing,
+2025/12/26 11:38:19  -Checking if SNPID contains NA strings...
+2025/12/26 11:38:19  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
+2025/12/26 11:38:20  -Replacing separators in SNPID with ":" ...
+2025/12/26 11:38:20 Finished checking SNPID/rsID.
+```
+
+```
+<gwaslab.g_Sumstats.Sumstats at 0x71c990e32e10>
 ```
 
 ```python
@@ -66,21 +69,21 @@ mysumstats.data
 ```
 
 ```
-| SNPID | CHR | POS | SE | P | STATUS |
-| --- | --- | --- | --- | --- | --- |
-| 0 | 1:725932:G:A | 1 | 725932 | 0.1394 | 0.59700 |
-| 1 | 1:725933:A:G | 1 | 725933 | 0.1394 | 0.59730 |
-| 2 | 1:737801:T:C | 1 | 737801 | 0.1231 | 0.69080 |
-| 3 | 1:749963:T:TAA | 1 | 749963 | 0.0199 | 0.28460 |
-| 4 | 1:751343:T:A | 1 | 751343 | 0.0156 | 0.27050 |
-| ... | ... | ... | ... | ... | ... |
-| 999995 | 2:6347639:C:A | 2 | 6347639 | 0.0111 | 0.15100 |
-| 999996 | 2:6347694:G:C | 2 | 6347694 | 0.0111 | 0.17250 |
-| 999997 | 2:6348478:G:A | 2 | 6348478 | 0.0111 | 0.17160 |
-| 999998 | 2:6348490:G:C | 2 | 6348490 | 0.2032 | 0.11750 |
-| 999999 | 2:6348754:A:C | 2 | 6348754 | 0.0126 | 0.01846 |
+| SNPID | CHR | POS | EA NEA | STATUS | SE | P |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | 1:725932:G:A | 1 | 725932 | G | A | 9960099 |
+| 1 | 1:725933:A:G | 1 | 725933 | G | A | 9960099 |
+| 2 | 1:737801:T:C | 1 | 737801 | C | T | 9960099 |
+| 3 | 1:749963:T:TAA | 1 | 749963 | TAA | T | 9960399 |
+| 4 | 1:751343:T:A | 1 | 751343 | T | A | 9960099 |
+| ... | ... | ... | ... | ... | ... | ... |
+| 999995 | 2:6347639:C:A | 2 | 6347639 | C | A | 9960099 |
+| 999996 | 2:6347694:G:C | 2 | 6347694 | G | C | 9960099 |
+| 999997 | 2:6348478:G:A | 2 | 6348478 | G | A | 9960099 |
+| 999998 | 2:6348490:G:C | 2 | 6348490 | G | C | 9960099 |
+| 999999 | 2:6348754:A:C | 2 | 6348754 | C | A | 9960099 |
 
-*[1000000 rows x 6 columns]*
+*[1000000 rows x 8 columns]*
 ```
 
 ## Run clumping by calling plink2
@@ -110,38 +113,49 @@ mysumstats.clump(   plink2="plink2", # default
 
 **stdout:**
 ```
-2025/05/11 19:14:05 Start to perfrom clumping...v3.6.2
-2025/05/11 19:14:05  -Current Dataframe shape : 1000000 x 6 ; Memory usage: 65.33 MB
-2025/05/11 19:14:05 Start to perform clumping...
-2025/05/11 19:14:05  -Clumping parameters for PLINK2:
-2025/05/11 19:14:05   -clump_p1 : 5e-08...
-2025/05/11 19:14:05   -clump_p2 : 1e-06...
-2025/05/11 19:14:05   -clump_kb : 250...
-2025/05/11 19:14:05   -clump_r2 : 0.1...
-2025/05/11 19:14:05  -Clumping will be performed using P
-2025/05/11 19:14:05  -Significant variants on CHR:  [1, 2]
-2025/05/11 19:14:05  -Processing VCF : /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz...
-2025/05/11 19:14:05  -PLINK version: PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)
-2025/05/11 19:14:05   -Processing VCF for CHR 1...
-2025/05/11 19:14:05   -Plink bfile for CHR 1 exists: /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.1. Skipping...
-2025/05/11 19:14:05   -Processing VCF for CHR 2...
-2025/05/11 19:14:05   -Plink bfile for CHR 2 exists: /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.2. Skipping...
-2025/05/11 19:14:05  -Processing sumstats for CHR 1...
-2025/05/11 19:14:12  -Variants in reference file: 6471908...
-2025/05/11 19:14:12  -Variants in sumstats: 624...
-2025/05/11 19:14:12  -Variants available in both reference and sumstats: 624...
-2025/05/11 19:14:12  -Processing sumstats for CHR 2...
-2025/05/11 19:14:20  -Variants in reference file: 7085910...
-2025/05/11 19:14:20  -Variants in sumstats: 233...
-2025/05/11 19:14:20  -Variants available in both reference and sumstats: 233...
-2025/05/11 19:14:20  -Performing clumping for CHR 1...
-2025/05/11 19:14:20  -PLINK version: PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)
-2025/05/11 19:14:21  -Saved results for CHR 1 to : clumping_plink2.1.clumps
-2025/05/11 19:14:21  -Performing clumping for CHR 2...
-2025/05/11 19:14:21  -PLINK version: PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)
-2025/05/11 19:14:23  -Saved results for CHR 2 to : clumping_plink2.2.clumps
-2025/05/11 19:14:23 Finished clumping.
-2025/05/11 19:14:23 Finished clumping.
+2025/12/26 11:38:20  -Number of threads/cores to use: 1
+2025/12/26 11:38:20 Start to perfrom clumping ...(v4.0.0)
+2025/12/26 11:38:20 Dumpping dataframe to :  ./125110533172752
+2025/12/26 11:38:20 Start to perform clumping...
+2025/12/26 11:38:20  -Clumping parameters for PLINK2:
+2025/12/26 11:38:20   -clump_p1 : 5e-08...
+2025/12/26 11:38:20   -clump_p2 : 1e-06...
+2025/12/26 11:38:20   -clump_kb : 250...
+2025/12/26 11:38:20   -clump_r2 : 0.1...
+2025/12/26 11:38:20  -Clumping will be performed using P
+2025/12/26 11:38:20  -Significant variants on CHR:  [1, 2]
+2025/12/26 11:38:20  -Processing VCF : /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz...
+2025/12/26 11:38:20  -PLINK version: PLINK v2.0.0-a.7LM AVX2 Intel (7 Jul 2025)
+2025/12/26 11:38:20   -Processing VCF for CHR 1...
+2025/12/26 11:38:20   -Plink bfile for CHR 1 exists: /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.1. Skipping...
+2025/12/26 11:38:24    -Variants in ref file: 6471908
+2025/12/26 11:38:24   -Processing VCF for CHR 2...
+2025/12/26 11:38:24   -Plink bfile for CHR 2 exists: /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.2. Skipping...
+2025/12/26 11:38:28    -Variants in ref file: 7085912
+2025/12/26 11:38:30  -Total variants in reference BIM: 13557820...
+2025/12/26 11:38:33  -Filtered reference BIM from 13557820 to 859 variants matching sumstats CHR/POS...
+2025/12/26 11:38:33  -Matching sumstats with reference BIM using CHR, POS, EA, NEA...
+2025/12/26 11:38:33  -Matched 857 variants using CHR, POS, EA, NEA...
+2025/12/26 11:38:33  -Created temporary directory: /tmp/gwaslab_clump_7t7vpq9m_125110533172752_
+2025/12/26 11:38:33  -Processing sumstats for CHR 1...
+2025/12/26 11:38:38  -Variants in reference file: 6471908...
+2025/12/26 11:38:38  -Variants in sumstats: 624...
+2025/12/26 11:38:38  -Variants available in both reference and sumstats: 624...
+2025/12/26 11:38:39  -Processing sumstats for CHR 2...
+2025/12/26 11:38:44  -Variants in reference file: 7085912...
+2025/12/26 11:38:44  -Variants in sumstats: 233...
+2025/12/26 11:38:44  -Variants available in both reference and sumstats: 233...
+2025/12/26 11:38:46  -Performing clumping for CHR 1...
+2025/12/26 11:38:46  -PLINK version: PLINK v2.0.0-a.7LM AVX2 Intel (7 Jul 2025)
+2025/12/26 11:38:47  -Saved results for CHR 1 to : clumping_plink2.1.clumps
+2025/12/26 11:38:47  -Performing clumping for CHR 2...
+2025/12/26 11:38:47  -PLINK version: PLINK v2.0.0-a.7LM AVX2 Intel (7 Jul 2025)
+2025/12/26 11:38:48  -Saved results for CHR 2 to : clumping_plink2.2.clumps
+2025/12/26 11:38:48  -Cleaned up temporary directory: /tmp/gwaslab_clump_7t7vpq9m_125110533172752_
+2025/12/26 11:38:48  -Mapped BIM SNPIDs back to original SNPIDs in clumping results...
+2025/12/26 11:38:48 Loaded dataframe back from :  ./125110533172752
+2025/12/26 11:38:48  -Cleaned up 2 additional file(s) after successful reload...
+2025/12/26 11:38:49 Finished clumping.
 ```
 
 if using multiple bfile or pfile, @ can be used to indicate each chromosome.
@@ -160,13 +174,19 @@ mysumstats.clumps["clumps"]
 ```
 
 ```
-| SNPID | CHR | POS | SE | P | STATUS |
-| --- | --- | --- | --- | --- | --- |
-| 96739 | 1:22068326:A:G | 1 | 22068326 | 0.0103 | 1.629000e-09 |
-| 213860 | 1:51103268:T:C | 1 | 51103268 | 0.0120 | 2.519000e-11 |
-| 214500 | 1:51401146:CT:C | 1 | 51401146 | 0.0145 | 6.090000e-10 |
-| 534095 | 1:154309595:TA:T | 1 | 154309595 | 0.0166 | 3.289000e-08 |
-| 969974 | 2:640986:CACAT:C | 2 | 640986 | 0.0150 | 2.665000e-10 |
+| SNPID | CHR | POS | EA | NEA | STATUS | SE | \ |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 96739 | 1:22068326:A:G | 1 | 22068326 | G | A | 9960099 | 0.0103 |
+| 213860 | 1:51103268:T:C | 1 | 51103268 | C | T | 9960099 | 0.0120 |
+| 214500 | 1:51401146:CT:C | 1 | 51401146 | C | CT | 9960399 | 0.0145 |
+| 534095 | 1:154309595:TA:T | 1 | 154309595 | TA | T | 9960399 | 0.0166 |
+| 969974 | 2:640986:CACAT:C | 2 | 640986 | C | CACAT | 9960399 | 0.0150 |
+|  | P | SNPID_bim |  |  |  |  |  |
+| 96739 | 1.629000e-09 | 1:22068326:A:G |  |  |  |  |  |
+| 213860 | 2.519000e-11 | 1:51103268:T:C |  |  |  |  |  |
+| 214500 | 6.090000e-10 | 1:51401146:CT:C |  |  |  |  |  |
+| 534095 | 3.289000e-08 | 1:154309595:TA:T |  |  |  |  |  |
+| 969974 | 2.665000e-10 | 2:640986:CACAT:C |  |  |  |  |  |
 ```
 
 ```python
@@ -195,13 +215,13 @@ print(mysumstats.clumps["plink_log"])
 
 **stdout:**
 ```
-PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)       www.cog-genomics.org/plink/2.0/
-(C) 2005-2023 Shaun Purcell, Christopher Chang   GNU General Public License v3
+PLINK v2.0.0-a.7LM AVX2 Intel (7 Jul 2025)         cog-genomics.org/plink/2.0/
+(C) 2005-2025 Shaun Purcell, Christopher Chang   GNU General Public License v3
 Logging to clumping_plink2.1.log.
 Options in effect:
   --bfile /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.1
   --chr 1
-  --clump _gwaslab_tmp.1.SNPIDP
+  --clump /tmp/gwaslab_clump_7t7vpq9m_125110533172752_/chr1.SNPIDP
   --clump-id-field SNPID
   --clump-kb 250
   --clump-p-field P
@@ -211,8 +231,8 @@ Options in effect:
   --out clumping_plink2.1
   --threads 1
 
-Start time: Sun May 11 19:14:20 2025
-31093 MiB RAM detected, ~10647 available; reserving 10583 MiB for main
+Start time: Fri Dec 26 11:38:46 2025
+48175 MiB RAM detected, ~38678 available; reserving 24087 MiB for main
 workspace.
 Using 1 compute thread.
 504 samples (0 females, 0 males, 504 ambiguous; 504 founders) loaded from
@@ -224,15 +244,15 @@ Note: No phenotype data present.
 --clump: 0/312 index candidates processed.
 --clump: 4 clumps formed from 312 index candidates.  
 Results written to clumping_plink2.1.clumps .
-End time: Sun May 11 19:14:21 2025
+End time: Fri Dec 26 11:38:47 2025
 
-PLINK v2.00a5.9LM AVX2 AMD (12 Dec 2023)       www.cog-genomics.org/plink/2.0/
-(C) 2005-2023 Shaun Purcell, Christopher Chang   GNU General Public License v3
+PLINK v2.0.0-a.7LM AVX2 Intel (7 Jul 2025)         cog-genomics.org/plink/2.0/
+(C) 2005-2025 Shaun Purcell, Christopher Chang   GNU General Public License v3
 Logging to clumping_plink2.2.log.
 Options in effect:
   --bfile /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.2
   --chr 2
-  --clump _gwaslab_tmp.2.SNPIDP
+  --clump /tmp/gwaslab_clump_7t7vpq9m_125110533172752_/chr2.SNPIDP
   --clump-id-field SNPID
   --clump-kb 250
   --clump-p-field P
@@ -242,18 +262,18 @@ Options in effect:
   --out clumping_plink2.2
   --threads 1
 
-Start time: Sun May 11 19:14:22 2025
-31093 MiB RAM detected, ~10619 available; reserving 10555 MiB for main
+Start time: Fri Dec 26 11:38:47 2025
+48175 MiB RAM detected, ~38701 available; reserving 24087 MiB for main
 workspace.
 Using 1 compute thread.
 504 samples (0 females, 0 males, 504 ambiguous; 504 founders) loaded from
 /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.2.fam.
-7085910 variants loaded from
+7085912 variants loaded from
 /home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.2.bim.
 Note: No phenotype data present.
 
 --clump: 0/231 index candidates processed.
 --clump: 1 clump formed from 231 index candidates.  
 Results written to clumping_plink2.2.clumps .
-End time: Sun May 11 19:14:23 2025
+End time: Fri Dec 26 11:38:48 2025
 ```
