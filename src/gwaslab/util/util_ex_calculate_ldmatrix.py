@@ -26,7 +26,7 @@ def _to_finemapping(gls,
                   plink="plink",
                   plink2="plink2",
                   windowsizekb=1000,
-                  n_cores=1, 
+                  threads=1, 
                   mode="r",
                   exclude_hla=False, 
                   getlead_kwargs=None, 
@@ -95,7 +95,7 @@ def _to_finemapping(gls,
                                                                     bfile=bfile, 
                                                                     vcf=vcf, 
                                                                     plink_log=plink_log,
-                                                                    n_cores=n_cores, 
+                                                                    threads=threads, 
                                                                     log=log,
                                                                     load_bim=True,
                                                                     overwrite=overwrite,
@@ -128,7 +128,7 @@ def _to_finemapping(gls,
                                                             matched_sumstats_snpid= matched_sumstats["SNPID"],
                                                             row=row, 
                                                             bfile_prefix=bfile_prefix, 
-                                                            n_cores=n_cores, 
+                                                            threads=threads, 
                                                             windowsizekb=windowsizekb,
                                                             out=out,
                                                             plink_log=plink_log,
@@ -171,7 +171,7 @@ def _to_finemapping(gls,
 
 
 
-def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, windowsizekb,out,plink_log,log,memory,mode,filetype,plink,plink2,ref_allele_path, extra_plink_option="",verbose=True):
+def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, threads, windowsizekb,out,plink_log,log,memory,mode,filetype,plink,plink2,ref_allele_path, extra_plink_option="",verbose=True):
     '''
     Calculate LD r matrix by calling PLINK; return file name and log
     '''
@@ -203,7 +203,7 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
         #    --make-bed \
         #    --out {}
 
-        #""".format(plink2, bfile_to_use, snplist_path,  row["CHR"],ref_allele_path, n_cores, memory_flag if memory is not None else "", output_prefix+"_gwaslab_tmp")
+        #""".format(plink2, bfile_to_use, snplist_path,  row["CHR"],ref_allele_path, threads, memory_flag if memory is not None else "", output_prefix+"_gwaslab_tmp")
 
         log.write(" -Calculating r matrix...",verbose=verbose)
         script_vcf_to_bfile = """
@@ -217,7 +217,7 @@ def _calculate_ld_r(study, matched_sumstats_snpid, row, bfile_prefix, n_cores, w
             --threads {} {}\
             --write-snplist \
             --out {} {}
-        """.format(plink, bfile_to_use, ref_allele_path,  snplist_path , row["CHR"], mode, n_cores, memory_flag if memory is not None else "", output_prefix, extra_plink_option)
+        """.format(plink, bfile_to_use, ref_allele_path,  snplist_path , row["CHR"], mode, threads, memory_flag if memory is not None else "", output_prefix, extra_plink_option)
 
         try:
             output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)

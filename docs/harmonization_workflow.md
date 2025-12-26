@@ -65,7 +65,7 @@ mysumstats.data
 
 ```python
 mysumstats.harmonize(   basic_check=True,
-                        n_cores=1,
+                        threads=1,
                         ref_seq=gl.get_path("ucsc_genome_hg19"),
                         ref_infer=gl.get_path("1kg_eas_hg19"),
                         ref_alt_freq="AF")
@@ -318,7 +318,7 @@ Specify it in assignrsid_args and inferstrand_args for the all-in-one function:
 
 ```python
 mysumstats.harmonize(   basic_check=False,
-                        n_cores=3,
+                        threads=3,
                         ref_infer="/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
                         inferstrand_args= {"chr_dict" : gl.get_number_to_NC(build="19")})
 ```

@@ -133,7 +133,7 @@ def _match_sumstats_with_ref_bim(sumstats, ref_bim_all, has_allele_info, log, ve
 )
 def _clump(gls, vcf=None, scaled=False, out="clumping_plink2", 
            p="P",mlog10p="MLOG10P", overwrite=False, study=None, bfile=None, pfile=None,
-           n_cores=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
+           threads=1, memory=None, chrom=None, clump_p1=5e-8, clump_p2=5e-8, clump_r2=0.01, clump_kb=250,
            log=Log(),verbose=True,plink="plink",plink2="plink2"):
     """
     Perform LD clumping of GWAS summary statistics using PLINK2.
@@ -163,7 +163,7 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
         preparing inputs.
     study : str or None, optional
         Study name used when `out` is None.
-    n_cores : int, optional
+    threads : int, optional
         Number of threads to pass to PLINK2 via `--threads`.
     memory : int or None, optional
         Memory limit (MB) for PLINK2 via `--memory`.
@@ -239,7 +239,7 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
     ...     clump_p2=1e-5,
     ...     clump_r2=0.1,
     ...     clump_kb=250,
-    ...     n_cores=4
+    ...     threads=4
     ... )
     """
     ##start function with col checking##########################################################
@@ -286,7 +286,7 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
                                                        bfile=bfile, 
                                                        pfile=pfile,
                                                        vcf=vcf, 
-                                                       n_cores=n_cores,
+                                                       threads=threads,
                                                        plink_log=plink_log, 
                                                        log=log,
                                                        load_bim=True,
@@ -408,7 +408,7 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
                     --clump-kb {} \
                     --threads {} {}\
                     --out {}
-                """.format(plink2, file_flag, chrom, clump, mlog10p,clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, n_cores, memory_flag, out_single_chr)    
+                """.format(plink2, file_flag, chrom, clump, mlog10p,clump_log10_p1, clump_log10_p2, clump_r2, clump_kb, threads, memory_flag, out_single_chr)    
             else:
                 # clumping using P
                 script = """
@@ -424,7 +424,7 @@ def _clump(gls, vcf=None, scaled=False, out="clumping_plink2",
                     --clump-kb {} \
                     --threads {} {}\
                     --out {}
-                """.format(plink2,file_flag, chrom, clump, p, clump_p1, clump_p2, clump_r2, clump_kb, n_cores, memory_flag, out_single_chr)
+                """.format(plink2,file_flag, chrom, clump, p, clump_p1, clump_p2, clump_r2, clump_kb, threads, memory_flag, out_single_chr)
             
             try:
                 output = subprocess.check_output(script, stderr=subprocess.STDOUT, shell=True,text=True)

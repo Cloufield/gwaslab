@@ -87,8 +87,8 @@ def load_h5py_cache(path, ref_alt_freq, category='all'):
             _cache.update(chrom_cache)
     return _cache
 
-def build_cache(base_path, ref_alt_freq=None, n_cores=1, return_cache=False, filter_fn=None, category='all', log=Log(), verbose=True):
-    cache_builder = CacheBuilder(base_path, ref_alt_freq=ref_alt_freq, n_cores=n_cores, log=log, verbose=verbose)
+def build_cache(base_path, ref_alt_freq=None, threads=1, return_cache=False, filter_fn=None, category='all', log=Log(), verbose=True):
+    cache_builder = CacheBuilder(base_path, ref_alt_freq=ref_alt_freq, threads=threads, log=log, verbose=verbose)
     cache_builder.start_building(filter_fn=filter_fn, category=category, set_cache=return_cache) # start_building will wait for all processes to finish building cache
     if return_cache:
         return cache_builder.get_cache()
@@ -122,12 +122,12 @@ FILTER_FN = {
 ################################################# CACHE MANAGERs #################################################
 
 class CacheMainManager:
-    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, threads=1, log=Log(), verbose=True):
         self.base_path = base_path
         self.ref_alt_freq = ref_alt_freq
         self.category = category
         self.filter_fn = filter_fn
-        self.n_cores = n_cores
+        self.threads = threads
         self.log = log
         self.verbose = verbose
 
@@ -153,7 +153,7 @@ class CacheMainManager:
     def build_cache(self):
         ''' Build and load the cache'''    
         self._cache = build_cache(
-            self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores,
+            self.base_path, ref_alt_freq=self.ref_alt_freq, threads=self.threads,
             filter_fn=self.filter_fn, category=self.category,
             return_cache=True, log=self.log, verbose=self.verbose
         )
@@ -166,10 +166,10 @@ class CacheMainManager:
 
 
 class CacheManager(CacheMainManager):
-    def __init__(self, base_path=None, cache_loader=None, cache_process=None, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, base_path=None, cache_loader=None, cache_process=None, ref_alt_freq=None, category='all', filter_fn=None, threads=1, log=Log(), verbose=True):
         none_value = sum([cache_loader is not None, cache_process is not None])
         assert none_value in [0, 1], 'Only one between cache_loader and cache_process should be provided'
-        super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, n_cores=n_cores, log=log, verbose=verbose)
+        super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, threads=threads, log=log, verbose=verbose)
         if none_value == 1:
             self.base_path = None # unset base_path if cache_loader or cache_process is provided
 
@@ -230,13 +230,13 @@ class CacheProcess(mp.Process):
     This is very useful when the cache is huge (e.g. 40GB in memory) and we want to perform operations on it based on a relatively small input
     (e.g. a "small" dataframe, where small is relative to the cache size) and the output is also relatively small.
     '''
-    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, threads=1, log=Log(), verbose=True):
         super().__init__()
         self.base_path = base_path
         self.ref_alt_freq = ref_alt_freq
         self.filter_fn = filter_fn
         self.category = category
-        self.n_cores = n_cores
+        self.threads = threads
         self.log = log
         self.verbose = verbose
 
@@ -251,15 +251,15 @@ class CacheProcess(mp.Process):
         if not cache_exists(cache_path, ref_alt_freq, category):
             self.build_cache()
         else:
-            if n_cores > 1:
-                self.log.warning('[CacheProcess: since the cache already exists, the parameter n_cores could be set to 1 without any performance loss]', verbose=self.verbose)
+            if threads > 1:
+                self.log.warning('[CacheProcess: since the cache already exists, the parameter threads could be set to 1 without any performance loss]', verbose=self.verbose)
 
     def _get_cache_path(self):
         return get_cache_path(self.base_path)
     
     def build_cache(self):
         build_cache(
-            self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores,
+            self.base_path, ref_alt_freq=self.ref_alt_freq, threads=self.threads,
             filter_fn=self.filter_fn, category=self.category,
             return_cache=False, log=self.log, verbose=self.verbose
         )
@@ -321,10 +321,10 @@ class CacheProcess(mp.Process):
 ################################################# CACHE BUILDER #################################################
 
 class CacheBuilderOld:
-    def __init__(self, ref_infer, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, ref_infer, ref_alt_freq=None, threads=1, log=Log(), verbose=True):
         self.ref_infer = ref_infer
         self.ref_alt_freq = ref_alt_freq
-        self.n_cores = n_cores
+        self.threads = threads
         self.log = log
         self.verbose = verbose
 
@@ -340,14 +340,14 @@ class CacheBuilderOld:
             print("Cache building is already running. If you want to restart, please stop the current process first.")
             return
         
-        n_cores = self.n_cores
+        threads = self.threads
         contigs = self.get_contigs()
         
         self.cancelled = False
         self.running = True
 
-        self.log.write(f" -Building cache on {n_cores} cores...", verbose=self.verbose)
-        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=n_cores)
+        self.log.write(f" -Building cache on {threads} cores...", verbose=self.verbose)
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=threads)
         self.futures = [self.executor.submit(self.build_cache, chrom) for chrom in contigs]
 
     def get_contigs(self):
@@ -417,10 +417,10 @@ class CacheBuilderOld:
 
 
 class CacheBuilder:
-    def __init__(self, ref_infer, ref_alt_freq=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, ref_infer, ref_alt_freq=None, threads=1, log=Log(), verbose=True):
         self.ref_infer = ref_infer
         self.ref_alt_freq = ref_alt_freq
-        self.n_cores = n_cores
+        self.threads = threads
         self.log = log
         self.verbose = verbose
         
@@ -457,14 +457,14 @@ class CacheBuilder:
             self.log.write(f"Cache for category '{category}' and ref_alt_freq {self.ref_alt_freq} already exists. Skipping cache building", verbose=self.verbose)
             return
         
-        n_cores = max(self.n_cores-1, 1) # leave one core for the watcher process
+        threads = max(self.threads-1, 1) # leave one core for the watcher process
         contigs = self.get_contigs()
         
         self.running = True
 
-        self.log.write(f" -Building cache for category '{category}' on {n_cores} cores...", verbose=self.verbose)
+        self.log.write(f" -Building cache for category '{category}' on {threads} cores...", verbose=self.verbose)
 
-        pool = mp.Pool(n_cores)
+        pool = mp.Pool(threads)
         manager = mp.Manager()
         queue = manager.Queue()
         jobs = []
@@ -563,12 +563,12 @@ class CacheLoader:
             raise TypeError(f"You are trying to instantiate an abstract class {cls.__name__}. Please use a concrete subclass.")
         return super().__new__(cls)
     
-    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, threads=1, log=Log(), verbose=True):
         self.base_path = base_path
         self.ref_alt_freq = ref_alt_freq
         self.category = category
         self.filter_fn = filter_fn
-        self.n_cores = n_cores
+        self.threads = threads
         self.log = log
         self.verbose = verbose
 
@@ -577,7 +577,7 @@ class CacheLoader:
     
     def build_cache(self):       
         self.cache = build_cache(
-            self.base_path, ref_alt_freq=self.ref_alt_freq, n_cores=self.n_cores,
+            self.base_path, ref_alt_freq=self.ref_alt_freq, threads=self.threads,
             filter_fn=self.filter_fn, category=self.category,
             return_cache=True, log=self.log, verbose=self.verbose
         )
@@ -600,8 +600,8 @@ class CacheLoaderThread(CacheLoader):
     copying the cache to the main process. However, due to the GIL (Global Interpreter Lock) in Python, this approach is not efficient and
     it slows down the main process.
     '''
-    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
-        super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, n_cores=n_cores, log=log, verbose=verbose)
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, threads=1, log=Log(), verbose=True):
+        super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, threads=threads, log=log, verbose=verbose)
         self.cache = {}
         self.lock = threading.Lock()  # For thread-safe cache access
         self.running = False
@@ -658,8 +658,8 @@ class CacheLoaderProcess(CacheLoader):
     Unlike CacheLoaderThread, this class is more efficient because it loads the cache in a separate process, which is not affected by the GIL.
     However, a lot of memory and time is wasted in copying the cache from the subprocess to the main process.
     '''
-    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, n_cores=1, log=Log(), verbose=True):
-        super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, n_cores=n_cores, log=log, verbose=verbose)
+    def __init__(self, base_path, ref_alt_freq=None, category='all', filter_fn=None, threads=1, log=Log(), verbose=True):
+        super().__init__(base_path, ref_alt_freq=ref_alt_freq, category=category, filter_fn=filter_fn, threads=threads, log=log, verbose=verbose)
         self.manager = mp.Manager()
         self.cache = self.manager.dict()
         self.running = False

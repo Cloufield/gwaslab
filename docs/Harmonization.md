@@ -9,7 +9,7 @@ GWASLab provides reference-dependent harmonization functions.
 | `.check_ref()`         | `ref_path`,<br /> `chr_dict=get_chr_to_number()`                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Check alignment with a reference genome FASTA file                                                                                |
 | `.assign_rsid()`       | `ref_rsid_tsv`,<br /> `ref_rsid_vcf`,<br /> `threads=1`, <br />`chunksize=5000000`, <br />`chr_dict=get_number_to_chr()`, <br />`overwrite="empty"`                                                                                                                                                                                                                                                                                                                                                                       | Annotate **rsID** using a reference tabular file or VCF/BCF file                                                                      |
 | `.infer_strand()`      | `ref_infer`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`remove_snp=""`,<br />`daf_tolerance=0.2`, ,<br />`mode="pi"`,<br />`threads=1`,<br />`remove_indel=""`                                                                                                                                                                                                                                                                                                                                            | Infer the strand of palindromic variants/indistinguishable indels using reference VCF/BCF files based on allele frequency in **INFO** |
-| `.check_af()`         | `ref_infer`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`n_cores=1`                                                                                                                                                                                                                                                                                                                                                                                                                                        | Calculate difference in allele frequencies (**DAF**) between sumstats **EAF** and reference VCF **ALT** frequency                                                         |
+| `.check_af()`         | `ref_infer`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`threads=1`                                                                                                                                                                                                                                                                                                                                                                                                                                        | Calculate difference in allele frequencies (**DAF**) between sumstats **EAF** and reference VCF **ALT** frequency                                                         |
 | `.flip_allele_stats()` |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | After alignment and inferring, flip the alleles and allele-specific statistics to harmonize the variants.                         |
 | `.harmonize()`         | `basic_check=True`, <br /> `ref_seq=None`,<br />`ref_rsid_tsv=None`,<br />`ref_rsid_vcf=None`,<br />`ref_infer=None`,<br />`ref_alt_freq=None`,<br />`maf_threshold=0.40`,<br />`threads=1`,<br />`remove=False`,<br />`sweep_mode=False`,<br />`checkref_args={}`,<br />`removedup_args={}`,<br />`assignrsid_args={}`,<br />`inferstrand_args={}`,<br />`flipallelestats_args={}`,<br />`fixid_args={}`,<br />`fixchr_agrs={}`,<br />`fixpos_args={}`,<br />`fixallele_args={}`,<br />`sanitycheckstats_args={}`,<br />`normalizeallele_args={}` | All-in-one function for harmonization                                                                                             |
 
@@ -158,14 +158,14 @@ See [https://cloufield.github.io/gwaslab/AssignrsID/](https://cloufield.github.i
 | `column_name`           | `string` | name of the column to store DAF values                                                      | `"DAF"`                  |
 | `suffix`               | `string` | suffix to append to column name (useful when comparing multiple reference populations)      | `""`                     |
 | `chr_dict`             | `dict`   | a conversion dictionary for chromosome notations in sumstats and those in reference VCF/BCF | `gl.get_number_to_chr()` |
-| `n_cores`              | `int`    | number of CPU threads to use                                                                | `1`                      |
+| `threads`              | `int`    | number of CPU threads to use                                                                | `1`                      |
 | `force`                | `bool`   | if True, check all variants regardless of STATUS codes                                       | `False`                  |
 
 !!! example
     ```python
     mysumstats.check_af(ref_infer=gl.get_path("1kg_eas_hg19"), 
                         ref_alt_freq="AF",
-                        n_cores=2)
+                        threads=2)
     ```
 
 **Terminology:**
@@ -219,6 +219,21 @@ Sweep mode is an optimized processing mode designed for large datasets that sign
 
 !!! warning "bcftools Required"
     Sweep mode requires **bcftools** to be installed and available in your PATH. If bcftools is not found, GWASLab will raise a `RuntimeError`.
+    
+    **Verify bcftools installation:**
+    ```bash
+    bcftools --version
+    ```
+    
+    **Example output:**
+    ```
+    bcftools 1.19
+    Using htslib 1.19
+    Copyright (C) 2023 Genome Research Ltd.
+    License Expat: The MIT/Expat license
+    This is free software: you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.
+    ```
 
 ### How Sweep Mode Works
 
@@ -278,7 +293,7 @@ Use normal mode when:
 !!! note
     - Sweep mode only affects processing with `ref_rsid_vcf` (VCF/BCF files) and `ref_infer` (for strand inference)
     - TSV-based rsID assignment (`ref_rsid_tsv`) always uses the same efficient method regardless of sweep mode
-    - Sweep mode uses **bcftools** for VCF/BCF processing - ensure bcftools is installed and in your PATH
+    - Sweep mode uses **bcftools** for VCF/BCF processing - ensure bcftools is installed and in your PATH (see version info above)
     - Sweep mode creates temporary lookup TSV files that can be reused if you specify `lookup_path` in the kwargs
     - The lookup table extraction step may take some time initially, but subsequent annotation is very fast
     - bcftools operations are parallelized using the `threads` parameter

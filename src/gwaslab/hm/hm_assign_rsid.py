@@ -780,7 +780,7 @@ def _extract_lookup_table_from_vcf_bcf(
     verbose=True,
     rm_out_lookup=False,
     split_by_chr=True,
-    threads=6,     # <-- n_cores for Pool
+    threads=6,     # <-- threads for Pool
     log=Log()
 ):
     import os, shutil, tempfile, pandas as pd

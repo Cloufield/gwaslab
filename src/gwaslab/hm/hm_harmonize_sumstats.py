@@ -1766,7 +1766,7 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
     start_function=".check_daf()",
     must_kwargs=["ref_alt_freq"]
 )
-def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Check the difference between effect allele frequency (EAF) in summary statistics and alternative allele frequency in reference VCF.
 
@@ -1812,7 +1812,7 @@ def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=
     suffix : str, default=""
         Suffix to append to the column name (e.g., "_pop1", "_gnomad"). Useful when comparing 
         multiple reference populations.
-    n_cores : int, default=1
+    threads : int, default=1
         Number of CPU cores to use for parallel processing. Set to 1 if processing < 10,000 variants.
     chr : str, default="CHR"
         Column name for chromosome in sumstats.
@@ -1860,7 +1860,7 @@ def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=
       - Statistics for absolute DAF values
       - Count of variants with |DAF| > 0.2 (potential issues)
     - Only variants with valid chromosome position and allele information are checked by default.
-    - For small datasets (< 10,000 variants), the function automatically sets `n_cores=1` to avoid overhead.
+    - For small datasets (< 10,000 variants), the function automatically sets `threads=1` to avoid overhead.
     - Large |DAF| values (> 0.2) may indicate:
       - Population differences (expected for population-specific variants)
       - Allele mismatches (check EA/NEA alignment)
@@ -1892,10 +1892,10 @@ def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=
     
     ########################  
         if (~sumstats[eaf].isna()).sum()<10000:
-            n_cores=1       
-        #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], n_cores)
-        df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], n_cores)
-        pool = Pool(n_cores)
+            threads=1       
+        #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], threads)
+        df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], threads)
+        pool = Pool(threads)
         if (~sumstats[eaf].isna()).sum()>0:
             map_func = partial(checkaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,column_name=column_name,chr_dict=chr_dict) 
             sumstats.loc[good_chrpos,[column_name]] = pd.concat(pool.map(map_func,df_split))
@@ -1956,7 +1956,7 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
     start_function=".check_daf()",
     must_kwargs=["ref_alt_freq"]
 )
-def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Infer effect allele frequency (EAF) in summary statistics using reference VCF ALT frequency.
 
@@ -1985,7 +1985,7 @@ def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr
     ref_alt_freq : str, optional
         Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax", 
         "gnomAD_AF"). If None, the function will attempt to auto-detect common AF field names.
-    n_cores : int, default=1
+    threads : int, default=1
         Number of CPU cores to use for parallel processing. Set to 1 if processing < 10,000 variants.
     chr : str, default="CHR"
         Column name for chromosome in sumstats.
@@ -2025,7 +2025,7 @@ def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr
     - By default, only processes variants with valid harmonization status (STATUS digit 4 = 0) to 
       ensure alleles are standardized and normalized.
     - The function uses parallel processing to improve performance on large datasets. For small 
-      datasets (< 10,000 variants), it automatically sets `n_cores=1` to avoid overhead.
+      datasets (< 10,000 variants), it automatically sets `threads=1` to avoid overhead.
     - After inference, the function reports statistics about:
       - Number of variants with EAF successfully inferred
       - Number of variants still missing EAF (not found in reference or missing ref_alt_freq field)
@@ -2057,10 +2057,10 @@ def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr
     
     ########################  
         if sumstats[eaf].isna().sum()<10000:
-            n_cores=1       
-        #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
-        df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
-        pool = Pool(n_cores)
+            threads=1       
+        #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
+        df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
+        pool = Pool(threads)
         map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
         sumstats.loc[good_chrpos,[eaf]] = pd.concat(pool.map(map_func,df_split))
         pool.close()
@@ -2115,7 +2115,7 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
     start_function=".infer_af()",
     must_kwargs=["ref_alt_freq"]
 )
-def _parallele_infer_af_with_maf(sumstats, ref_infer, ref_alt_freq=None, n_cores=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
+def _parallele_infer_af_with_maf(sumstats, ref_infer, ref_alt_freq=None, threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
                             eaf="EAF", maf="MAF", ref_eaf="_REF_EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Infer effect allele frequency (EAF) in summary statistics from MAF using reference VCF ALT frequency.
@@ -2202,10 +2202,10 @@ def _parallele_infer_af_with_maf(sumstats, ref_infer, ref_alt_freq=None, n_cores
         ########################  
         #extract ref af
         if good_chrpos.sum() < 10000:
-            n_cores = 1       
-        #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
-        df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], n_cores)
-        pool = Pool(n_cores)
+            threads = 1       
+        #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
+        df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
+        pool = Pool(threads)
         map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=ref_eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
         sumstats.loc[good_chrpos,[ref_eaf]] = pd.concat(pool.map(map_func,df_split))
         pool.close()

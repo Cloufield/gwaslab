@@ -11,7 +11,7 @@ def _process_plink_input_files(chrlist,
                                vcf=None, 
                                bgen=None,  
                                sample=None, 
-                               n_cores=1, 
+                               threads=1, 
                                plink_log="", 
                                log=Log(), 
                                overwrite=False, 
@@ -77,7 +77,7 @@ def _process_plink_input_files(chrlist,
                                                             is_wild_card=is_wild_card, 
                                                             log=log, 
                                                             plink_log=plink_log, 
-                                                            n_cores=n_cores, 
+                                                            threads=threads, 
                                                             convert=convert, 
                                                             memory=memory, 
                                                             overwrite=overwrite, 
@@ -98,7 +98,7 @@ def _process_plink_input_files(chrlist,
                                                             is_wild_card=is_wild_card, 
                                                             log=log, 
                                                             plink_log=plink_log, 
-                                                            n_cores=n_cores, 
+                                                            threads=threads, 
                                                             convert=convert, 
                                                             memory=memory, 
                                                             overwrite=overwrite, 
@@ -194,7 +194,7 @@ def _process_bfile(chrlist ,ref_file_prefix, ref_bims, is_wild_card, log, load_b
 
 def _process_pfile(chrlist, ref_file_prefix, ref_bims, is_wild_card, log, load_bim=False):
     if is_wild_card==False:
-        is_bim_exist = os.path.exists(ref_file_prefix+".pvar")
+        is_bim_exist = os.path.exists(ref_file_prefix+".pvar") or os.path.exists(ref_file_prefix+".pvar.zst")
         is_bed_exist = os.path.exists(ref_file_prefix+".pgen")
         is_fam_exist = os.path.exists(ref_file_prefix+".psam")
         if not (is_bim_exist and is_bed_exist  and is_fam_exist):
@@ -205,7 +205,7 @@ def _process_pfile(chrlist, ref_file_prefix, ref_bims, is_wild_card, log, load_b
     else:
         for i in chrlist:
             single_chr_ref_file_prefix = ref_file_prefix.replace("@",str(i))
-            is_bim_exist = os.path.exists(single_chr_ref_file_prefix+".pvar")
+            is_bim_exist = os.path.exists(single_chr_ref_file_prefix+".pvar") or os.path.exists(single_chr_ref_file_prefix+".pvar.zst")
             is_bed_exist = os.path.exists(single_chr_ref_file_prefix+".pgen")
             is_fam_exist = os.path.exists(single_chr_ref_file_prefix+".psam")
             if not (is_bim_exist and is_bed_exist  and  is_fam_exist):
@@ -222,7 +222,7 @@ def _process_vcf(ref_file_prefix,
                  is_wild_card, 
                  log, 
                  plink_log, 
-                 n_cores=1, 
+                 threads=1, 
                  convert="bfile", 
                  memory=None, 
                  overwrite=False, 
@@ -284,7 +284,7 @@ def _process_vcf(ref_file_prefix,
                         vcf_to_load, 
                        i, 
                        make_flag,
-                       n_cores, memory_flag,
+                       threads, memory_flag,
                        bpfile_prefix)
         
             # execute conversion
@@ -330,7 +330,7 @@ def _process_bgen(ref_file_prefix,
                   plink_log="",
                   sample=None, 
                   bgen_mode="ref-first", 
-                  n_cores=1, 
+                  threads=1, 
                   convert="bfile", 
                   memory=None, 
                   overwrite=False, 
@@ -397,7 +397,7 @@ def _process_bgen(ref_file_prefix,
             """.format(plink2,bgen_to_load, bgen_mode, sample_flag,
                        i, 
                        make_flag,
-                       n_cores, memory_flag,
+                       threads, memory_flag,
                        bpfile_prefix)
             # execute conversion
             try:

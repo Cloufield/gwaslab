@@ -24,7 +24,7 @@ Calculate the difference in allele frequency (**DAF**) between the effect allele
 mysumstats.check_af(ref_infer="path/to/reference.vcf.gz",
                   ref_alt_freq="AF",
                   maf_threshold=0.40,
-                  n_cores=2)
+                  threads=2)
 ```
 
 **Parameters:**
@@ -33,7 +33,7 @@ mysumstats.check_af(ref_infer="path/to/reference.vcf.gz",
 - `ref_alt_freq`: Field name for ALT frequency in VCF INFO (e.g., "AF", "AF_popmax", "gnomAD_AF")
 - `maf_threshold`: **MAF** threshold for filtering variants (default: 0.40)
 - `column_name`: Column name to store **DAF** values (default: "DAF")
-- `n_cores`: Number of CPU threads (default: 1)
+- `threads`: Number of CPU threads (default: 1)
 
 For more details, see [Harmonization documentation](https://cloufield.github.io/gwaslab/Harmonization/#check-the-difference-in-allele-frequency).
 

@@ -36,7 +36,7 @@ The `Log` class maintains:
   - `log_datatype_attempt(column, from_dtype, to_dtype, indent=0)`: Log datatype conversion attempts
   - `log_formula(target_column, formula, source_columns=None, indent=0)`: Log formulas/calculations used
   - `log_reference_path(ref_type, path, indent=0)`: Log reference file paths (VCF, FASTA, TSV, etc.)
-  - `log_threads(n_cores, indent=0)`: Log number of threads/cores being used
+  - `log_threads(threads, indent=0)`: Log number of threads/cores being used
 
 ### Key Characteristics
 

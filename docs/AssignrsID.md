@@ -165,6 +165,21 @@ mysumstats.assign_rsid2(
     - **bcftools** must be installed and available in your PATH
     - For VCF files, tabix/csi indexing is recommended for optimal performance
     - Sweep mode creates temporary lookup TSV files that can be cached using `lookup_path`
+    
+    **Verify bcftools installation:**
+    ```bash
+    bcftools --version
+    ```
+    
+    **Example output:**
+    ```
+    bcftools 1.19
+    Using htslib 1.19
+    Copyright (C) 2023 Genome Research Ltd.
+    License Expat: The MIT/Expat license
+    This is free software: you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.
+    ```
 
 ## Chromosome Dictionary
 

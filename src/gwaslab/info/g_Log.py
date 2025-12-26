@@ -463,13 +463,13 @@ class Log():
         indent_str = self._get_indent(indent)
         self.write(f"{indent_str} -Reference {ref_type}: {path}", verbose=verbose)
     
-    def log_threads(self, n_cores, verbose=True, indent=0):
+    def log_threads(self, threads, verbose=True, indent=0):
         """
         Log number of threads/cores being used.
         
         Parameters
         ----------
-        n_cores : int
+        threads : int
             Number of threads/cores
         verbose : bool, default True
             Whether to print to stdout
@@ -477,7 +477,7 @@ class Log():
             Indentation level for nested operations (0 = no indent, 1 = 2 spaces, etc.)
         """
         indent_str = self._get_indent(indent)
-        self.write(f"{indent_str} -Number of threads/cores to use: {n_cores}", verbose=verbose)
+        self.write(f"{indent_str} -Number of threads/cores to use: {threads}", verbose=verbose)
     
     def log_variants_with_condition(self, condition, count, verbose=True, indent=0):
         """

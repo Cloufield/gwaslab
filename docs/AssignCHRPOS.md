@@ -40,6 +40,16 @@ GCF_000001405.25.gz.tbi (2.9M)
 - **`bcftools` must be installed and available in your PATH** - the function uses `bcftools query` to extract data from VCF files
   - Install bcftools: `conda install -c bioconda bcftools` or download from https://www.htslib.org/download/
   - Verify installation: `bcftools --version`
+  
+  **Example output:**
+  ```
+  bcftools 1.19
+  Using htslib 1.19
+  Copyright (C) 2023 Genome Research Ltd.
+  License Expat: The MIT/Expat license
+  This is free software: you are free to change and redistribute it.
+  There is NO WARRANTY, to the extent permitted by law.
+  ```
 
 ### gl.process_vcf_to_hfd5()
 
@@ -54,6 +64,16 @@ gl.process_vcf_to_hfd5()
 - **`bcftools` must be installed** - this function uses `bcftools query` to extract POS and rsID data from VCF files
   - Install: `conda install -c bioconda bcftools` or from https://www.htslib.org/download/
   - Verify: `bcftools --version`
+  
+  **Example output:**
+  ```
+  bcftools 1.19
+  Using htslib 1.19
+  Copyright (C) 2023 Genome Research Ltd.
+  License Expat: The MIT/Expat license
+  This is free software: you are free to change and redistribute it.
+  There is NO WARRANTY, to the extent permitted by law.
+  ```
 
 Process the VCF file and convert it to HDF5 files (one per chromosome) using `.process_vcf_to_hfd5()`. This step may take 1-3 hours for a 30GB VCF file, depending on your system. Each chromosome is written to a separate HDF5 file for maximum parallel processing speed.
 

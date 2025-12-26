@@ -14,7 +14,7 @@ def _calculate_prs(sumstats,
           study=None, 
           out="./",
           id_to_use=None,
-          n_cores=1, 
+          threads=1, 
           memory=None, 
           overwrite=False,
           mode=None,delete=True,
@@ -37,7 +37,7 @@ def _calculate_prs(sumstats,
                                                                     bfile=bfile, 
                                                                     vcf=vcf, 
                                                                     plink_log=plink_log,
-                                                                    n_cores=n_cores, 
+                                                                    threads=threads, 
                                                                     log=log,
                                                                     load_bim=False,
                                                                     overwrite=overwrite,
@@ -62,7 +62,7 @@ def _calculate_prs(sumstats,
                                chrom=chrom , 
                                model_path=model_path,
                                bfile_prefix=bfile_prefix, 
-                               n_cores=n_cores, 
+                               threads=threads, 
                                out=out, 
                                plink_log=plink_log, 
                                log=log, 
@@ -77,7 +77,7 @@ def _calculate_prs(sumstats,
 
 
 
-def _run_calculate_prs(study, chrom , model_path, bfile_prefix, n_cores, out, plink_log, log, memory,filetype, plink2,mode=None):
+def _run_calculate_prs(study, chrom , model_path, bfile_prefix, threads, out, plink_log, log, memory,filetype, plink2,mode=None):
     
     log.write(" -Start to calculate PRS for Chr {}...".format(chrom))
     _checking_plink_version(plink2=plink2, log=log)
@@ -104,7 +104,7 @@ def _run_calculate_prs(study, chrom , model_path, bfile_prefix, n_cores, out, pl
         --chr {} \
         --threads {} {}\
         --out {}
-    """.format(plink2, file_flag, model_path ,  mode if mode is not None else "", chrom, n_cores, memory_flag if memory is not None else "", output_prefix)
+    """.format(plink2, file_flag, model_path ,  mode if mode is not None else "", chrom, threads, memory_flag if memory is not None else "", output_prefix)
 
     try:
         output = subprocess.check_output(script_vcf_to_bfile, stderr=subprocess.STDOUT, shell=True,text=True)
