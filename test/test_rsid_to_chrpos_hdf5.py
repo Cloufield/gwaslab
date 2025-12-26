@@ -11,11 +11,20 @@ if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
 import pandas as pd
+
+# Check if pytables is available (required for HDF5 operations)
+try:
+    import tables
+    PYTABLES_AVAILABLE = True
+except ImportError:
+    PYTABLES_AVAILABLE = False
+
 from gwaslab.g_Sumstats import Sumstats
 from gwaslab.util.util_ex_process_h5 import process_vcf_to_hfd5
 from gwaslab.bd.bd_common_data import get_NC_to_number
 
 
+@unittest.skipIf(not PYTABLES_AVAILABLE, "pytables (tables) is required for HDF5 operations")
 class TestProcessVCFToHDF5(unittest.TestCase):
     """Test VCF to HDF5 conversion."""
     
@@ -226,6 +235,7 @@ class TestProcessVCFToHDF5(unittest.TestCase):
         self.assertGreaterEqual(len(files_with_data), 0, "Some HDF5 files may be empty (no variants in chromosome)")
 
 
+@unittest.skipIf(not PYTABLES_AVAILABLE, "pytables (tables) is required for HDF5 operations")
 class TestRsidToChrposHDF5(unittest.TestCase):
     """Test rsid_to_chrpos using HDF5 files."""
     
@@ -617,6 +627,7 @@ class TestRsidToChrposHDF5(unittest.TestCase):
             )
 
 
+@unittest.skipIf(not PYTABLES_AVAILABLE, "pytables (tables) is required for HDF5 operations")
 class TestRsidToChrposWorkflow(unittest.TestCase):
     """Test complete workflow: VCF -> HDF5 -> rsid_to_chrpos."""
     
