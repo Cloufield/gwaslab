@@ -117,7 +117,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            n_cores=2,
+            threads=2,
             verbose=False
         )
         
@@ -166,7 +166,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            n_cores=2,
+            threads=2,
             verbose=False
         )
         
@@ -208,7 +208,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            n_cores=2,
+            threads=2,
             overwrite=False,  # Don't overwrite existing bfile
             verbose=False
         )
@@ -242,7 +242,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            n_cores=2,
+            threads=2,
             verbose=False
         )
         
@@ -314,7 +314,7 @@ class TestClumping(unittest.TestCase):
                 sumstats_copy.clump(
                     bfile=str(self.bfile_prefix),
                     out=output_path,
-                    n_cores=2,
+                    threads=2,
                     verbose=False,
                     **params
                 )
@@ -343,7 +343,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-10,
             clump_r2=0.2,
             clump_kb=250,
-            n_cores=2,
+            threads=2,
             verbose=False
         )
         
@@ -371,7 +371,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            n_cores=2,
+            threads=2,
             verbose=False
         )
         
@@ -432,7 +432,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            n_cores=2,
+            threads=2,
             verbose=False
         )
         results_bfile = sumstats_bfile.clumps.get("clumps", pd.DataFrame())
@@ -474,7 +474,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            n_cores=2,
+            threads=2,
             verbose=False
         )
         results_pfile = sumstats_pfile.clumps.get("clumps", pd.DataFrame())
