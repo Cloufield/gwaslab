@@ -97,6 +97,7 @@ from gwaslab.util.util_in_get_sig import (
 )
 from gwaslab.util.util_in_fill_data import _fill_data
 from gwaslab.view.view_sumstats import _view_sumstats
+from gwaslab.view.view_report import generate_qc_report
 from gwaslab.util.util_ex_phewwas import _extract_associations
 
 # ----- Utility: LDSC / PRS / LD -----
@@ -150,6 +151,7 @@ from gwaslab.io.io_preformat_input import _preformat
 from gwaslab.io.io_read_pipcs import _read_pipcs
 from gwaslab.io.io_to_formats import _to_format
 from gwaslab.io.io_to_pickle import _offload, _reload, dump_pickle
+from gwaslab.io.io_gwaslab_standard import write_gsf
 from gwaslab.io.io_process_kwargs import remove_overlapping_kwargs
 from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
 from gwaslab.hm.hm_assign_rsid import _assign_rsid
@@ -1202,6 +1204,97 @@ class Sumstats():
             gc.collect()
             return new_Sumstats_object
         return output
+    
+    def report(self, output_path="gwas_qc_report.html", **kwargs):
+        """
+        Generate a comprehensive QC report including basic QC, harmonization (optional),
+        lead variants, MQQ plots, regional plots, and output (optional).
+        
+        This is a convenience method that wraps generate_qc_report() with
+        the current Sumstats object.
+        
+        Parameters
+        ----------
+        output_path : str, optional
+            Path to save the report. Supports both HTML (.html) and PDF (.pdf) formats.
+            Default: "gwas_qc_report.html"
+        **kwargs : dict
+            Additional keyword arguments passed to generate_qc_report():
+            - basic_check_kwargs : dict, optional
+                Keyword arguments passed to basic_check()
+            - harmonize_kwargs : dict, optional
+                Keyword arguments passed to harmonize(). If provided, harmonization will be performed.
+                Set to {} to use default harmonization settings.
+            - get_lead_kwargs : dict, optional
+                Keyword arguments passed to get_lead()
+            - mqq_plot_kwargs : dict, optional
+                Keyword arguments passed to plot_mqq() for MQQ plot
+            - regional_plot_kwargs : dict, optional
+                Keyword arguments passed to plot_mqq() for regional plots
+            - output_kwargs : dict, optional
+                Keyword arguments passed to to_format() for outputting sumstats.
+                Must include 'path' key.
+            - report_title : str, optional
+                Title for the report. Default: "GWAS Quality Control Report"
+            - verbose : bool, optional
+                Whether to print progress messages. Default: True
+        
+        Returns
+        -------
+        str
+            Path to the generated report (HTML or PDF)
+        
+        Examples
+        --------
+        >>> mysumstats = gl.Sumstats("sumstats.txt.gz")
+        >>> # Generate HTML report
+        >>> mysumstats.report("my_report.html")
+        >>> # Generate PDF report
+        >>> mysumstats.report("my_report.pdf")
+        >>> # With harmonization
+        >>> mysumstats.report(
+        ...     "my_report.html",
+        ...     harmonize_kwargs={"ref_seq": "ref.fa", "ref_infer": "ref.vcf.gz"}
+        ... )
+        >>> # With output
+        >>> mysumstats.report(
+        ...     "my_report.html",
+        ...     output_kwargs={"path": "clean_sumstats", "fmt": "ldsc", "gzip": True}
+        ... )
+        """
+        # Extract specific kwargs for generate_qc_report
+        basic_check_kwargs = kwargs.pop("basic_check_kwargs", None)
+        harmonize_kwargs = kwargs.pop("harmonize_kwargs", None)
+        get_lead_kwargs = kwargs.pop("get_lead_kwargs", None)
+        mqq_plot_kwargs = kwargs.pop("mqq_plot_kwargs", None)
+        regional_plot_kwargs = kwargs.pop("regional_plot_kwargs", None)
+        output_kwargs = kwargs.pop("output_kwargs", None)
+        report_title = kwargs.pop("report_title", "GWAS Quality Control Report")
+        verbose = kwargs.pop("verbose", True)
+        
+        # Pass remaining kwargs to appropriate functions if needed
+        if basic_check_kwargs is None:
+            basic_check_kwargs = {}
+        if get_lead_kwargs is None:
+            get_lead_kwargs = {}
+        if mqq_plot_kwargs is None:
+            mqq_plot_kwargs = {}
+        if regional_plot_kwargs is None:
+            regional_plot_kwargs = {}
+        
+        # Generate the report
+        return generate_qc_report(
+            sumstats=self,
+            output_path=output_path,
+            basic_check_kwargs=basic_check_kwargs,
+            harmonize_kwargs=harmonize_kwargs,
+            get_lead_kwargs=get_lead_kwargs,
+            mqq_plot_kwargs=mqq_plot_kwargs,
+            regional_plot_kwargs=regional_plot_kwargs,
+            output_kwargs=output_kwargs,
+            report_title=report_title,
+            verbose=verbose
+        )
 
     @add_doc(_get_signal_density2)
     def get_density(self, sig_list=None, windowsizekb=100,**kwargs):
@@ -1464,6 +1557,36 @@ class Sumstats():
 
     def to_pickle(self, path="~/mysumstats.pickle", overwrite=False):
         dump_pickle(self, path=path, overwrite=overwrite)
+
+    def to_gsf(self, path, partition_cols=None, compression="zstd", verbose=True):
+        """
+        Save sumstats to GSF (GWASLab Standard Format) file.
+        
+        Parameters
+        ----------
+        path : str
+            Output path (.gsf file or directory for partitioned)
+        partition_cols : list of str, optional
+            Columns to partition by (e.g., ["CHR"])
+        compression : str, default "zstd"
+            Compression codec: "snappy", "gzip", "brotli", "zstd", "lz4"
+        verbose : bool, default True
+            Print progress messages
+            
+        Examples
+        --------
+        >>> mysumstats.to_gsf("sumstats.gsf")
+        >>> mysumstats.to_gsf("sumstats_partitioned", partition_cols=["CHR"])
+        """
+        write_gsf(
+            self.data,
+            path=path,
+            meta=self.meta,
+            partition_cols=partition_cols,
+            compression=compression,
+            log=self.log,
+            verbose=verbose
+        )
 
 ######################################################################################
     def offload(self):

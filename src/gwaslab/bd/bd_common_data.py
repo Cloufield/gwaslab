@@ -307,9 +307,14 @@ def get_formats_list():
     dicts = json.load(open(data_path))
     format_list = list(dicts.keys())
     return format_list
+# Module-level cache for recombination rate data
+_RECOMBINATION_RATE_CACHE = {}
+
 def get_recombination_rate(chrom, build="19"):
     """
     Retrieve recombination rate data for a specific chromosome and genome build.
+    
+    Results are cached for faster subsequent access.
     
     Parameters:
     chrom (str or int): Chromosome number to retrieve recombination data for
@@ -319,6 +324,13 @@ def get_recombination_rate(chrom, build="19"):
     pandas.DataFrame: Recombination rate data with columns 'Rate(cM/Mb)' and 'Position(bp)'
                      Returns empty DataFrame if build is not supported or data is unavailable
     """
+    # Create cache key
+    cache_key = f"{build}_{chrom}"
+    
+    # Check cache first
+    if cache_key in _RECOMBINATION_RATE_CACHE:
+        return _RECOMBINATION_RATE_CACHE[cache_key].copy()
+    
     #http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20110106_recombination_hotspots/
     if build=="19":
         data_path =  options.paths["data_directory"] + 'recombination/hg19/genetic_map_GRCh37_chr'+str(chrom)+'.txt.gz'
@@ -346,6 +358,10 @@ def get_recombination_rate(chrom, build="19"):
             recombination_rate = pd.read_csv(data_path,sep="\t")
     else:
         recombination_rate = pd.DataFrame(columns=["Rate(cM/Mb)","Position(bp)"])
+    
+    # Cache the result for future use
+    _RECOMBINATION_RATE_CACHE[cache_key] = recombination_rate.copy()
+    
     return recombination_rate
 ####################################################################################################################
 def get_chain(from_build="19", to_build="38"):    

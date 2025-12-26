@@ -1,12 +1,14 @@
 # LDSC in gwaslab
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -17,21 +19,22 @@ gl.show_version()
 
 ## Loading and filter in only Hapmap3 SNPs
 
-```python
-t2d = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             ea="ALT",
-             nea="REF",
-             beta="BETA",
-             se="SE",
-             p="P",
-             direction="Dir",
-             build="19",             
-             n="N", verbose=False)
-t2d.basic_check(verbose=False)
-```
+!!! example
+    ```python
+    t2d = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="ALT",
+                 nea="REF",
+                 beta="BETA",
+                 se="SE",
+                 p="P",
+                 direction="Dir",
+                 build="19",             
+                 n="N", verbose=False)
+    t2d.basic_check(verbose=False)
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | BETA | SE | P | DIRECTION | N |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -47,9 +50,10 @@ t2d.basic_check(verbose=False)
 | X:154880669_T_A | 23 | 154880669 | T | A | 1960099 | 0.0071 | 0.0122 | 0.5618 | +-+- | 191764 |
 | X:154880917_C_T | 23 | 154880917 | C | T | 1960099 | 0.0072 | 0.0122 | 0.5570 | +-+- | 191764 |
 
-```python
-t2d.filter_hapmap3(inplace=True)
-```
+!!! example
+    ```python
+    t2d.filter_hapmap3(inplace=True)
+    ```
 
 **stdout:**
 ```
@@ -65,11 +69,12 @@ t2d.filter_hapmap3(inplace=True)
 
 ## Heritability estimation
 
-```python
-# available since v3.4.39
-t2d.estimate_h2_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
-                         w_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ldscores/")
-```
+!!! example
+    ```python
+    # available since v3.4.39
+    t2d.estimate_h2_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
+                             w_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ldscores/")
+    ```
 
 **stdout:**
 ```
@@ -104,9 +109,10 @@ t2d.estimate_h2_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ldscor
 2025/12/26 11:47:17 Finished running LD score regression.
 ```
 
-```python
-t2d.ldsc_h2
-```
+!!! example
+    ```python
+    t2d.ldsc_h2
+    ```
 
 | h2_obs | h2_se | Lambda_gc | Mean_chi2 | Intercept | Intercept_se | Ratio | Ratio_se | Catagories |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -114,21 +120,23 @@ t2d.ldsc_h2
 
 ## Genetic correlation
 
-```python
-bmi_female = gl.Sumstats("../0_sample_data/bbj_bmi_female.txt.gz",fmt="auto",ea="REF",nea="ALT",rsid="SNP",n=70000, sep="\t",build="19",verbose=False)
-bmi_male = gl.Sumstats("../0_sample_data/bbj_bmi_male.txt.gz",fmt="auto",ea="REF",nea="ALT",rsid="SNP",n=80000,sep="\t",build="19",verbose=False)
-```
+!!! example
+    ```python
+    bmi_female = gl.Sumstats("../0_sample_data/bbj_bmi_female.txt.gz",fmt="auto",ea="REF",nea="ALT",rsid="SNP",n=70000, sep="\t",build="19",verbose=False)
+    bmi_male = gl.Sumstats("../0_sample_data/bbj_bmi_male.txt.gz",fmt="auto",ea="REF",nea="ALT",rsid="SNP",n=80000,sep="\t",build="19",verbose=False)
+    ```
 
 - other_traits : a list of gl.Sumstats object
 - rg : alias for each trait including the main trait
 
-```python
-# available since v3.4.39
-t2d.estimate_rg_by_ldsc(other_traits=[bmi_female,bmi_male], 
-                               rg="T2D,BMI_female,BMI_male",
-                               ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
-                               w_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ldscores/")
-```
+!!! example
+    ```python
+    # available since v3.4.39
+    t2d.estimate_rg_by_ldsc(other_traits=[bmi_female,bmi_male], 
+                                   rg="T2D,BMI_female,BMI_male",
+                                   ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ldscores/", 
+                                   w_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ldscores/")
+    ```
 
 **stdout:**
 ```
@@ -218,9 +226,10 @@ T2D   BMI_male 0.209849 0.060088 3.492357 4.787786e-04 0.175952   0.011384 1.047
 | T2D | BMI_female | 0.320668 | 0.062279 | 5.148882 | 2.620433e-07 | 0.193199 | 0.012133 | 1.030609 | 0.010226 | 0.019184 | 0.009454 |
 | T2D | BMI_male | 0.209849 | 0.060088 | 3.492357 | 4.787786e-04 | 0.175952 | 0.011384 | 1.047687 | 0.010717 | 0.005353 | 0.011893 |
 
-```python
-t2d.ldsc_rg
-```
+!!! example
+    ```python
+    t2d.ldsc_rg
+    ```
 
 | p1 | p2 | rg | se | z | p | h2_obs | h2_obs_se | h2_int | h2_int_se | gcov_int | gcov_int_se |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -229,9 +238,10 @@ t2d.ldsc_rg
 
 ### visualization using plot_rg
 
-```python
-fig, ax, log, df = gl.plot_rg(t2d.ldsc_rg)
-```
+!!! example
+    ```python
+    fig, ax, log, df = gl.plot_rg(t2d.ldsc_rg)
+    ```
 
 **stdout:**
 ```
@@ -259,15 +269,16 @@ fig, ax, log, df = gl.plot_rg(t2d.ldsc_rg)
 
 ## Partitioned h2
 
-```python
-# available since v3.4.40
-t2d.estimate_partitioned_h2_by_ldsc(       ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_baseline/baselineLD2_2/baselineLD.", 
-                               w_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_weights/weights.EAS.hm3_noMHC.",
-                               frqfile_chr= "/home/yunye/tools/ldsc/ldscores/eas_frq/1000G.EAS.QC.",
-                               overlap_annot = True, 
-                               print_coefficients = True, 
-                               print_delete_vals=True)
-```
+!!! example
+    ```python
+    # available since v3.4.40
+    t2d.estimate_partitioned_h2_by_ldsc(       ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_baseline/baselineLD2_2/baselineLD.", 
+                                   w_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_weights/weights.EAS.hm3_noMHC.",
+                                   frqfile_chr= "/home/yunye/tools/ldsc/ldscores/eas_frq/1000G.EAS.QC.",
+                                   overlap_annot = True, 
+                                   print_coefficients = True, 
+                                   print_delete_vals=True)
+    ```
 
 **stdout:**
 ```
@@ -323,17 +334,19 @@ t2d.estimate_partitioned_h2_by_ldsc(       ref_ld_chr = "/home/yunye/tools/ldsc/
 
 *[97 rows x 10 columns]*
 
-```python
-t2d.ldsc_partitioned_h2_summary
-```
+!!! example
+    ```python
+    t2d.ldsc_partitioned_h2_summary
+    ```
 
 | h2_obs | h2_se | Lambda_gc | Mean_chi2 | Intercept | Intercept_se | Ratio | Ratio_se |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 0.11773265 | 0.00727336 | 1.33210306 | 1.47668034 | 1.07649298 | 0.01228635 | 0.16047018 | 0.02577482 |
 
-```python
-t2d.ldsc_partitioned_h2_results
-```
+!!! example
+    ```python
+    t2d.ldsc_partitioned_h2_results
+    ```
 
 | Category | Prop._SNPs | Prop._h2 | Prop._h2_std_error | Enrichment | Enrichment_std_error | Enrichment_p | Coefficient | Coefficient_std_error | Coefficient_z-score |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -353,12 +366,13 @@ t2d.ldsc_partitioned_h2_results
 
 ## Cell type specific 
 
-```python
-# available since v3.4.40
-t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_baseline/baseline1_2/baseline.", 
-                            ref_ld_chr_cts = "/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Multi_tissue_gene_expr.EAS.ldcts.new",
-                            w_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_weights/weights.EAS.hm3_noMHC.")
-```
+!!! example
+    ```python
+    # available since v3.4.40
+    t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_baseline/baseline1_2/baseline.", 
+                                ref_ld_chr_cts = "/home/yunye/tools/ldsc/Multi_tissue_gene_expr_EAS_1000G_v3_ldscores/Multi_tissue_gene_expr.EAS.ldcts.new",
+                                w_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_weights/weights.EAS.hm3_noMHC.")
+    ```
 
 **stdout:**
 ```
@@ -846,9 +860,10 @@ t2d.estimate_h2_cts_by_ldsc(ref_ld_chr = "/home/yunye/tools/ldsc/ldscores/eas_ba
 
 *[205 rows x 4 columns]*
 
-```python
-t2d.ldsc_h2_cts
-```
+!!! example
+    ```python
+    t2d.ldsc_h2_cts
+    ```
 
 | Name | Coefficient | Coefficient_std_error | Coefficient_P_value |
 | --- | --- | --- | --- |

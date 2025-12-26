@@ -2,25 +2,27 @@
 
 ## Load gwaslab 
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
 ## Load data into Sumstats Object
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             ea="ALT",
-             nea="REF",
-             neaf="Frq",
-             p="P",
-             build="19",             
-             verbose=False)
-mysumstats.fix_chr(verbose=False)
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="ALT",
+                 nea="REF",
+                 neaf="Frq",
+                 p="P",
+                 build="19",             
+                 verbose=False)
+    mysumstats.fix_chr(verbose=False)
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | P |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -38,9 +40,10 @@ mysumstats.fix_chr(verbose=False)
 
 ## Create Manhattan plot and QQ plot
 
-```python
-mysumstats.plot_mqq(skip=2)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=2)
+    ```
 
 **stdout:**
 ```
@@ -90,9 +93,10 @@ Note: use verbose=False to stop printing log and use check=False to skip sanity 
 - `mode= "qq"` 
 - `mode= "m"`
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,mode="qqm",check=False, verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,mode="qqm",check=False, verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -102,9 +106,10 @@ mysumstats.plot_mqq(skip=3,cut=20,mode="qqm",check=False, verbose=False)
 
 ![Output image](images/notebooks/visualization_mqq_img_1.png)
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,mode="qqm",check=False, verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,mode="qqm",check=False, verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -114,9 +119,10 @@ mysumstats.plot_mqq(skip=3,cut=20,mode="qqm",check=False, verbose=False)
 
 ![Output image](images/notebooks/visualization_mqq_img_2.png)
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,mode="m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,mode="m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -126,9 +132,10 @@ mysumstats.plot_mqq(skip=3,cut=20,mode="m",check=False,verbose=False)
 
 ![Output image](images/notebooks/visualization_mqq_img_3.png)
 
-```python
-mysumstats.plot_mqq(mode="qq", fig_args= {"figsize":(1,1)},check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(mode="qq", fig_args= {"figsize":(1,1)},check=False,verbose=False)
+    ```
 
 ![Output image](images/notebooks/visualization_mqq_img_4.png)
 
@@ -139,9 +146,10 @@ mysumstats.plot_mqq(mode="qq", fig_args= {"figsize":(1,1)},check=False,verbose=F
 - `skip` : skip the variants with low -log10(P) values for plotting
 
 
-```python
-mysumstats.plot_mqq(skip=5,mode= "m", check=False ,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=5,mode= "m", check=False ,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -155,9 +163,10 @@ mysumstats.plot_mqq(skip=5,mode= "m", check=False ,verbose=False)
 
  `cut` : scale down the -log10(P) for variants above a certain threshold
 
-```python
-mysumstats.plot_mqq(cut=20 ,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(cut=20 ,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -171,9 +180,10 @@ Make the Y axis jagged to indicate that it has been rescale.
 
 #### jagged
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20, jagged=True,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20, jagged=True,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -191,9 +201,10 @@ mysumstats.plot_mqq(skip=3,cut=20, jagged=True,mode= "m",check=False,verbose=Fal
 
 There will be no gap if `use_rank = True`
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,use_rank=True,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,use_rank=True,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -207,9 +218,10 @@ mysumstats.plot_mqq(skip=3,cut=20,use_rank=True,mode= "m",check=False,verbose=Fa
 
 `xtight=True` can be used to remove the padding 
 
-```python
-mysumstats.plot_mqq(xtight=True, skip=3,cut=20,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(xtight=True, skip=3,cut=20,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -223,9 +235,10 @@ mysumstats.plot_mqq(xtight=True, skip=3,cut=20,mode= "m",check=False,verbose=Fal
 
 `chrpad`: adjust space between each chromosome by `max(POS) * chrpad`
 
-```python
-mysumstats.plot_mqq(chrpad=0.2,xtight=True, skip=3,cut=20,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(chrpad=0.2,xtight=True, skip=3,cut=20,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -241,9 +254,10 @@ mysumstats.plot_mqq(chrpad=0.2,xtight=True, skip=3,cut=20,mode= "m",check=False,
 
 `anno=True` : annoatate all lead variants with chr:pos
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,anno=True,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,anno=True,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -255,9 +269,10 @@ mysumstats.plot_mqq(skip=3,cut=20,anno=True,mode= "m",check=False,verbose=False)
 
 Since there are a large number of novel loci, if we annotate all loci, it will be too messy. Let's only annotate the loci with P<1e-20 by specifying `sig_level_lead=1e-20`.
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,anno=True, anno_sig_level=1e-40,mode= "m",check=False,verbose=True)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,anno=True, anno_sig_level=1e-40,mode= "m",check=False,verbose=True)
+    ```
 
 **stdout:**
 ```
@@ -297,9 +312,10 @@ mysumstats.plot_mqq(skip=3,cut=20,anno=True, anno_sig_level=1e-40,mode= "m",chec
 
 Note: remerber to set `build=19` or `build=38` when loading or plotting.
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,anno="GENENAME", sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,anno="GENENAME", sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -311,9 +327,10 @@ mysumstats.plot_mqq(skip=3,cut=20,anno="GENENAME", sig_level_lead=1e-20,mode= "m
 
 You can specify `anno_gtf_path` to use you own GTF file for GENENAME annotation
 
-```python
-# mysumstats.plot_mqq(anno_gtf_path="/home/yunye/.gwaslab/Homo_sapiens.GRCh37.87.chr.gtf.gz",anno="GENENAME")
-```
+!!! example
+    ```python
+    # mysumstats.plot_mqq(anno_gtf_path="/home/yunye/.gwaslab/Homo_sapiens.GRCh37.87.chr.gtf.gz",anno="GENENAME")
+    ```
 
 #### anno_d
 
@@ -323,9 +340,10 @@ We can use `anno_d` to slightly adjust the arrows.
 
 For example, `1:"left"` means to adjust towards left. 
 
-```python
-mysumstats.plot_mqq(anno_d={1:"left",2:"right"}, skip=3,cut=20,anno=True, sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(anno_d={1:"left",2:"right"}, skip=3,cut=20,anno=True, sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -341,9 +359,10 @@ We can also use `arm_scale` to adjust where to put the annotation texts.
 
 For example, `arm_scale=1.2` means the default length will be multiplied by a factor of 1.2.
 
-```python
-mysumstats.plot_mqq(arm_scale=1.2, skip=3,cut=20,anno=True, sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(arm_scale=1.2, skip=3,cut=20,anno=True, sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -357,13 +376,14 @@ mysumstats.plot_mqq(arm_scale=1.2, skip=3,cut=20,anno=True, sig_level_lead=1e-20
 
 For example, `1:1.2` means to adjust the arm of the second by a factor of 1.2. 
 
-```python
-mysumstats.plot_mqq(arm_scale_d={0:0.8,
-                                 1:0.7,
-                                 2:0.6,
-                                 3:0.8}, 
-                    skip=3,cut=20,anno=True, sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(arm_scale_d={0:0.8,
+                                     1:0.7,
+                                     2:0.6,
+                                     3:0.8}, 
+                        skip=3,cut=20,anno=True, sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -379,9 +399,10 @@ GWASLab provides three types of different annotation styles
 
 `anno_style="right"`, `anno_style="expand"`, and `anno_style="tight"`
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,anno=True,anno_style="expand", sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,anno=True,anno_style="expand", sig_level_lead=1e-20,mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -391,9 +412,10 @@ mysumstats.plot_mqq(skip=3,cut=20,anno=True,anno_style="expand", sig_level_lead=
 
 ![Output image](images/notebooks/visualization_mqq_img_17.png)
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,anno=True,anno_style="tight", sig_level_lead=1e-20,mode= "m", check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,anno=True,anno_style="tight", sig_level_lead=1e-20,mode= "m", check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -409,9 +431,10 @@ If we want to annotate only a subset of variants, we can pass a list of variant 
 
 Let's check all lead variants and select only two to annotate.
 
-```python
-mysumstats.get_lead(verbose=False).sort_values(by="P")
-```
+!!! example
+    ```python
+    mysumstats.get_lead(verbose=False).sort_values(by="P")
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | P |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -434,9 +457,10 @@ This time, let's annotate 1:154309595_TA_T and 2:27734972_G_A with its nearest g
 
 `anno_set` : the set of variants you want to annotate
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,anno="GENENAME",anno_set=["1:154309595_TA_T","2:27734972_G_A"],mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,anno="GENENAME",anno_set=["1:154309595_TA_T","2:27734972_G_A"],mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -450,15 +474,16 @@ mysumstats.plot_mqq(skip=3,cut=20,anno="GENENAME",anno_set=["1:154309595_TA_T","
 
 anno_alias accepts a dictionary of `SNPID`:`string`. You can use this to customized the text for annotation.
 
-```python
-mysumstats.plot_mqq(skip=3,
-                    cut=20,
-                    anno=True,
-                    anno_set=["1:154309595_TA_T","2:27734972_G_A"],
-                    anno_alias={"1:154309595_TA_T":"anything you want here"},
-                    mode= "m",
-                    verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,
+                        cut=20,
+                        anno=True,
+                        anno_set=["1:154309595_TA_T","2:27734972_G_A"],
+                        anno_alias={"1:154309595_TA_T":"anything you want here"},
+                        mode= "m",
+                        verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -473,16 +498,17 @@ mysumstats.plot_mqq(skip=3,
 - `highlight`: a variant list of loci you want to highlight
 - `pinpoint`: a variant list of variants you want to pinpoint
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,
-                    anno=True,
-                    anno_set=["2:27734972_G_A","2:27734972_G_A","7:127253550_C_T", "19:46166604_C_T"],
-                    highlight=["19:46166604_C_T","1:154309595_TA_T","7:127253550_C_T"],
-                    highlight_windowkb=1000,
-                    pinpoint=["2:27734972_G_A"],
-                    mode= "m",
-                    check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,
+                        anno=True,
+                        anno_set=["2:27734972_G_A","2:27734972_G_A","7:127253550_C_T", "19:46166604_C_T"],
+                        highlight=["19:46166604_C_T","1:154309595_TA_T","7:127253550_C_T"],
+                        highlight_windowkb=1000,
+                        pinpoint=["2:27734972_G_A"],
+                        mode= "m",
+                        check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -496,17 +522,18 @@ mysumstats.plot_mqq(skip=3,cut=20,
 
 Instead of a list, you can provide a list of lists. Each member list is then a group.
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20,
-                    highlight=[
-                               ["19:46166604_C_T","1:154309595_TA_T"],
-                               ["X:57170781_A_AT","7:127253550_C_T"]
-                              ],
-                    highlight_windowkb=1000,
-                    highlight_color=["yellow","red"],
-                    mode= "m",
-                    check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20,
+                        highlight=[
+                                   ["19:46166604_C_T","1:154309595_TA_T"],
+                                   ["X:57170781_A_AT","7:127253550_C_T"]
+                                  ],
+                        highlight_windowkb=1000,
+                        highlight_color=["yellow","red"],
+                        mode= "m",
+                        check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -518,9 +545,10 @@ mysumstats.plot_mqq(skip=3,cut=20,
 
 ### MAF-stratified QQ plot
 
-```python
-mysumstats.plot_mqq(skip=3,cut=20, mode="mqq",stratified=True,check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,cut=20, mode="mqq",stratified=True,check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -533,23 +561,24 @@ mysumstats.plot_mqq(skip=3,cut=20, mode="mqq",stratified=True,check=False,verbos
 
 ### Auxiliary lines
 
-```python
-mysumstats.plot_mqq(skip=3,
-                build="19",
-                anno="GENENAME",
-                windowsizekb=1000000,
-                cut=20,
-                cut_line_color="purple",
-                sig_level=5e-8,  
-                sig_level_lead=1e-6, 
-                sig_line_color="grey",
-                suggestive_sig_line = True,
-                suggestive_sig_level = 1e-6,
-                suggestive_sig_line_color="blue",
-                additional_line=[1e-40,1e-60],
-                additional_line_color=["yellow","green"],
-                mode= "m",check=False,verbose=False)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,
+                    build="19",
+                    anno="GENENAME",
+                    windowsizekb=1000000,
+                    cut=20,
+                    cut_line_color="purple",
+                    sig_level=5e-8,  
+                    sig_level_lead=1e-6, 
+                    sig_line_color="grey",
+                    suggestive_sig_line = True,
+                    suggestive_sig_level = 1e-6,
+                    suggestive_sig_line_color="blue",
+                    additional_line=[1e-40,1e-60],
+                    additional_line_color=["yellow","green"],
+                    mode= "m",check=False,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -566,20 +595,21 @@ mysumstats.plot_mqq(skip=3,
 - `title_fontsize`
 - `marker_size`
 
-```python
-mysumstats.plot_mqq(skip=3,
-          anno="GENENAME",
-          title= "My Manhattan Plot",
-          windowsizekb=1000000,
-          fontsize =13,
-          anno_fontsize = 15,
-          title_fontsize = 30,
-          marker_size=(5,25),
-          mode= "m", 
-          verbose=False,
-          check=False
-)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,
+              anno="GENENAME",
+              title= "My Manhattan Plot",
+              windowsizekb=1000000,
+              fontsize =13,
+              anno_fontsize = 15,
+              title_fontsize = 30,
+              marker_size=(5,25),
+              mode= "m", 
+              verbose=False,
+              check=False
+    )
+    ```
 
 **stdout:**
 ```
@@ -598,21 +628,22 @@ mysumstats.plot_mqq(skip=3,
 - `pinpoint_color`
 - `maf_bin_colors`
 
-```python
-mysumstats.plot_mqq(skip=3,
-          cut=20,
-          stratified=True,
-          highlight=["7:127253550_C_T"],
-          pinpoint=["2:27734972_G_A"],
-          colors=["orange","blue"],
-          cut_line_color="yellow",
-          sig_line_color="red",
-          highlight_color="purple",
-          pinpoint_color ="green",
-          maf_bin_colors = ["#FFE2D1","#E1F0C4", "#6BAB90","#55917F"],
-          check=False,verbose=False
-)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,
+              cut=20,
+              stratified=True,
+              highlight=["7:127253550_C_T"],
+              pinpoint=["2:27734972_G_A"],
+              colors=["orange","blue"],
+              cut_line_color="yellow",
+              sig_line_color="red",
+              highlight_color="purple",
+              pinpoint_color ="green",
+              maf_bin_colors = ["#FFE2D1","#E1F0C4", "#6BAB90","#55917F"],
+              check=False,verbose=False
+    )
+    ```
 
 **stdout:**
 ```
@@ -625,14 +656,15 @@ mysumstats.plot_mqq(skip=3,
 
 ### Save plots
 
-```python
-mysumstats.plot_mqq(skip=3,
-                    cut=20, 
-                    mode="mqq",
-                    stratified=True,
-                    save="my_maf_stratified_mqq_plot.png",
-                    save_kwargs={"dpi":300,"facecolor":"white"})
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=3,
+                        cut=20, 
+                        mode="mqq",
+                        stratified=True,
+                        save="my_maf_stratified_mqq_plot.png",
+                        save_kwargs={"dpi":300,"facecolor":"white"})
+    ```
 
 **stdout:**
 ```
@@ -676,9 +708,10 @@ mysumstats.plot_mqq(skip=3,
 
 plot_mqq will return a matplotlib figure object
 
-```python
-my_mqqplot = mysumstats.plot_mqq(skip=3,cut=20, mode="mqq",stratified=True,verbose=False)
-```
+!!! example
+    ```python
+    my_mqqplot = mysumstats.plot_mqq(skip=3,cut=20, mode="mqq",stratified=True,verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -687,8 +720,9 @@ my_mqqplot = mysumstats.plot_mqq(skip=3,cut=20, mode="mqq",stratified=True,verbo
 2025/12/25 23:44:42  -EAF data type is already numeric. Skipping conversion...
 ```
 
-```python
-my_mqqplot
-```
+!!! example
+    ```python
+    my_mqqplot
+    ```
 
 ![Output image](images/notebooks/visualization_mqq_img_28.png)

@@ -1,59 +1,36 @@
 # Update Logs
 
-# v4.0.0 (Coming soon)
+# v4.0.0 20251207
 
 ## Major Changes
 
 ### Performance Improvements
-- **Function reimplementation for better performance**: Multiple core functions have been reimplemented with optimized algorithms and data structures
-- **GWAS Catalog API integration**: Refactored GWAS Catalog API v2 integration with improved CHR/POS extraction from locations field, better error handling, and reduced logging verbosity for pagination
-- **Status code manipulation**: Optimized status code processing using integer arithmetic for better performance
-- **Efficient data processing**: Improved memory usage and processing speed for large datasets
+- Reimplemented core functions with optimized algorithms and data structures
+- Refactored GWAS Catalog API v2 integration with improved CHR/POS extraction and error handling
+- Optimized status code processing using integer arithmetic
+- Improved memory usage and processing speed for large datasets
 
 ### API Consistency
-- **Argument renaming for consistency**: Standardized parameter names across functions to maintain consistency throughout the codebase
-- **Unified naming conventions**: Parameters now follow consistent naming patterns (e.g., `inplace` instead of mixed `inplace`/`remove`, standardized `kwargs` parameter names)
+- Standardized parameter names across functions (e.g., unified `inplace` parameter usage)
+- Consistent naming conventions throughout the codebase
 
-### Code Quality
-- **Improved code organization**: Better separation of concerns in visualization parameter management
-- **Enhanced documentation**: Extensive inline documentation explaining parameter management rules and priorities
-
-### Testing Infrastructure
-- **Comprehensive test suite**: Added and consolidated test modules for improved code quality and reliability
-- **Test coverage**: Expanded test coverage across core functionality including visualization parameters, API integration, QC operations, data processing, format conversion, and object operations
+### Code Quality & Testing
+- Improved code organization and separation of concerns
+- Comprehensive test suite with expanded coverage across core functionality
 
 ### Visualization Parameter Management System (VizParamsManager)
-- **Complete redesign of visualization parameter management**: Introduced a comprehensive, centralized parameter management system for all GWASLab plotting functions
-- **New VizParamsManager class**: Provides fine-grained control over plot parameters with per-plot and per-mode configurations
-- **Registry-based configuration**: Supports two configuration files:
-  - `viz_aux_params.txt`: Argument catalog with plot associations, defaults, and exclusions
-  - `viz_aux_params_registry.txt`: Explicit registry with inheritance support
-- **Advanced parameter filtering**:
-  - Whitelist-based parameter filtering with function signature fallback
-  - Numeric suffix support (e.g., `highlight2`, `highlight10` match base `highlight`)
-  - Banned argument handling: banned args are replaced with defaults rather than removed
-  - Nested sub-key filtering for dict-type arguments (e.g., removing `figsize` from `fig_kwargs`)
-- **Registry inheritance**: Registry entries can inherit from parent entries with support for:
-  - Full inheritance (`inherit`)
-  - Selective inheritance (`allowed_inherit`, `defaults_inherit`, `banned_keys_inherit`)
-  - Recursive inheritance with cycle detection
-- **Context-specific defaults**: Mode-specific default overrides via `ctx_defaults`
-- **Wildcard expansion**: Support for `plot:*` and `all:*` wildcards in plot specifications
-- **Parameter merge priority**: Clear precedence order: registered defaults → object presets → call-time kwargs
+- New centralized parameter management system for all plotting functions
+- Registry-based configuration with inheritance support (`viz_aux_params.txt`, `viz_aux_params_registry.txt`)
+- Advanced parameter filtering with whitelist, numeric suffix support, and nested dict filtering
+- Context-specific defaults and wildcard expansion support
 
 ### Documentation Updates
-- **Comprehensive documentation improvements**: Updated and expanded documentation across multiple areas:
-  - **GWAS Catalog API**: Added complete documentation for `get_known_variants_for_trait()`, MONDO ID support, CHR/POS extraction improvements, and reduced logging verbosity
-  - **Pickle operations**: Added `to_pickle()` method documentation with comprehensive examples and usage patterns
-  - **Status codes**: Expanded status code documentation with complete digit meanings, usage examples, and best practices
-  - **QC and Filtering**: Enhanced filtering methods documentation, added missing methods (`filter_palindromic`, `filter_snp`, `filter_indel`, `filter_hapmap3`, `exclude_hla`), and improved examples
-  - **Standardization**: Comprehensive updates to standardization methods with complete parameter tables, usage examples, and workflow recommendations
-  - **Statistics Sanity Check**: Updated parameter ranges to match code implementation, added missing parameters (`maf`, `t`, `f`), and corrected OR/HR ranges
-- **Improved examples**: Added practical, real-world examples throughout the documentation
-- **Better organization**: Restructured documentation for improved readability and navigation
+- Enhanced documentation for GWAS Catalog API, pickle operations, status codes, QC/filtering, standardization, and statistics sanity check
+- Added practical examples and improved organization throughout
 
 
 # v3.6.12 - v3.6.16
+- temp bug fix
 
 # 3.6.12 20251118
 - added infer_strand2 and assign_rsid2 for testing

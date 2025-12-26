@@ -1,12 +1,14 @@
 # Data conversion
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -17,19 +19,20 @@ gl.show_version()
 
 ## Loading sample data
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             ea="ALT",
-             nea="REF",
-             neaf="Frq",
-             beta="BETA",
-             se="SE",nrows=5,verbose=False)
-mysumstats.basic_check(verbose=False)
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="ALT",
+                 nea="REF",
+                 neaf="Frq",
+                 beta="BETA",
+                 se="SE",nrows=5,verbose=False)
+    mysumstats.basic_check(verbose=False)
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -41,9 +44,10 @@ mysumstats.data
 
 ## BETA -> OR
 
-```python
-mysumstats.fill_data(to_fill=["OR"])
-```
+!!! example
+    ```python
+    mysumstats.fill_data(to_fill=["OR"])
+    ```
 
 **stdout:**
 ```
@@ -63,9 +67,10 @@ mysumstats.fill_data(to_fill=["OR"])
 2025/12/26 11:37:56 Finished reordering the columns.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | OR_95U | OR_95L |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -77,13 +82,15 @@ mysumstats.data
 
 ## OR -> BETA
 
-```python
-mysumstats.data.drop(labels=["BETA","SE"],axis=1,inplace=True)
-```
+!!! example
+    ```python
+    mysumstats.data.drop(labels=["BETA","SE"],axis=1,inplace=True)
+    ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | OR | OR_95U | OR_95L |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -93,9 +100,10 @@ mysumstats.data
 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 1.021528 | 1.062159 | 0.982452 |
 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 1.017349 | 1.048935 | 0.986714 |
 
-```python
-mysumstats.fill_data(to_fill=["BETA","SE"])
-```
+!!! example
+    ```python
+    mysumstats.fill_data(to_fill=["BETA","SE"])
+    ```
 
 **stdout:**
 ```
@@ -115,9 +123,10 @@ mysumstats.fill_data(to_fill=["BETA","SE"])
 2025/12/26 11:37:56 Finished reordering the columns.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | OR_95U | OR_95L |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -129,9 +138,10 @@ mysumstats.data
 
 ## BETA/SE -> Z
 
-```python
-mysumstats.fill_data(to_fill=["Z"])
-```
+!!! example
+    ```python
+    mysumstats.fill_data(to_fill=["Z"])
+    ```
 
 **stdout:**
 ```
@@ -150,9 +160,10 @@ mysumstats.fill_data(to_fill=["Z"])
 2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | OR_95U | OR_95L | Z |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -164,9 +175,10 @@ mysumstats.data
 
 ## P -> MLOG10P
 
-```python
-mysumstats.fill_data(to_fill=["MLOG10P"])
-```
+!!! example
+    ```python
+    mysumstats.fill_data(to_fill=["MLOG10P"])
+    ```
 
 **stdout:**
 ```
@@ -187,9 +199,10 @@ mysumstats.fill_data(to_fill=["MLOG10P"])
 
 ## MLOG10P -> P 
 
-```python
-mysumstats.fill_data(to_fill=["P"])
-```
+!!! example
+    ```python
+    mysumstats.fill_data(to_fill=["P"])
+    ```
 
 **stdout:**
 ```
@@ -208,9 +221,10 @@ mysumstats.fill_data(to_fill=["P"])
 2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | OR_95U | OR_95L | Z | P | MLOG10P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -222,9 +236,10 @@ mysumstats.data
 
 ## EAF -> MAF
 
-```python
-mysumstats.fill_data(to_fill=["MAF"])
-```
+!!! example
+    ```python
+    mysumstats.fill_data(to_fill=["MAF"])
+    ```
 
 **stdout:**
 ```
@@ -243,9 +258,10 @@ mysumstats.fill_data(to_fill=["MAF"])
 2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | MAF | BETA | SE | OR | OR_95U | OR_95L | Z | P | MLOG10P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -257,17 +273,18 @@ mysumstats.data
 
 ## Simulation of extreme P values
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             beta="BETA",
-             se="SE",nrows=5, verbose=False)
-# simulate some extreme P values by shrinking the SE
-mysumstats.data["SE"] = mysumstats.data["SE"]/100
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 beta="BETA",
+                 se="SE",nrows=5, verbose=False)
+    # simulate some extreme P values by shrinking the SE
+    mysumstats.data["SE"] = mysumstats.data["SE"]/100
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | STATUS | BETA | SE |
 | --- | --- | --- | --- | --- | --- |
@@ -281,9 +298,10 @@ mysumstats.data
 
 For P < 1e-308, they become 0 due to limnited precision of float64
 
-```python
-mysumstats.fill_data(to_fill=["Z","P"])
-```
+!!! example
+    ```python
+    mysumstats.fill_data(to_fill=["Z","P"])
+    ```
 
 **stdout:**
 ```
@@ -305,9 +323,10 @@ mysumstats.fill_data(to_fill=["Z","P"])
 2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | STATUS | BETA | SE | Z | P |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -319,9 +338,10 @@ mysumstats.data
 
 ## Recalculate MLOG10P with extreme P value mode
 
-```python
-mysumstats.fill_data(to_fill=["MLOG10P"],extreme=True)
-```
+!!! example
+    ```python
+    mysumstats.fill_data(to_fill=["MLOG10P"],extreme=True)
+    ```
 
 **stdout:**
 ```
@@ -340,9 +360,10 @@ mysumstats.fill_data(to_fill=["MLOG10P"],extreme=True)
 2025/12/26 11:37:57 Finished reordering the columns.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | STATUS | BETA | SE | Z | P | MLOG10P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -354,19 +375,20 @@ mysumstats.data
 
 ## Calculate Per-SNP r2
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             ea="ALT",
-             nea="REF",
-             neaf="Frq",
-             beta="BETA",n=170000,
-             se="SE",nrows=5,verbose=False)
-mysumstats.basic_check(verbose=False)
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="ALT",
+                 nea="REF",
+                 neaf="Frq",
+                 beta="BETA",n=170000,
+                 se="SE",nrows=5,verbose=False)
+    mysumstats.basic_check(verbose=False)
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | N |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -376,9 +398,10 @@ mysumstats.data
 | 1:749963_T_TAA | 1 | 749963 | TAA | T | 9960399 | 0.8374 | 0.0213 | 0.0199 | 170000 |
 | 1:751343_T_A | 1 | 751343 | T | A | 9960099 | 0.8593 | 0.0172 | 0.0156 | 170000 |
 
-```python
-mysumstats.get_per_snp_r2()
-```
+!!! example
+    ```python
+    mysumstats.get_per_snp_r2()
+    ```
 
 **stdout:**
 ```
@@ -392,9 +415,10 @@ mysumstats.get_per_snp_r2()
 2025/12/26 11:37:57 Finished calculating per-SNP heritibility.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | N | _VAR(BETAX) | SNPR2 | F |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

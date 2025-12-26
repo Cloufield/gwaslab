@@ -1,13 +1,15 @@
 # Correlation heatmap
 
-```python
-import gwaslab as gl
-import pandas as pd
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    import pandas as pd
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -21,10 +23,11 @@ Sample data source:
 
 - Kanai, M., Akiyama, M., Takahashi, A., Matoba, N., Momozawa, Y., Ikeda, M., ... & Kamatani, Y. (2018). Genetic analysis of quantitative traits in the Japanese population links cell types to complex human diseases. Nature genetics, 50(3), 390-400.
 
-```python
-ldsc = pd.read_csv("../0_sample_data/toy_data/input_rg.txt",sep="\t")
-ldsc
-```
+!!! example
+    ```python
+    ldsc = pd.read_csv("../0_sample_data/toy_data/input_rg.txt",sep="\t")
+    ldsc
+    ```
 
 | p1_category | p1 | p2_category | p2 | rg | se | z | p | q |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -44,21 +47,22 @@ ldsc
 
 ## Full heatmap
 
-```python
-df = gl.plot_rg( ldsc,
-            p="q",
-            p1="p2",
-            p2="p1", 
-            sig_levels=[0.05],
-            corrections =["non"],
-            full_cell=("non",0.05),
-            panno_texts=["*"],
-            panno_args={"size":12,"c":"black"},
-            fig_args={"figsize":(15,15),"dpi":300},
-            colorbar_args={"shrink":0.4},
-            fontsize=8
-            )
-```
+!!! example
+    ```python
+    df = gl.plot_rg( ldsc,
+                p="q",
+                p1="p2",
+                p2="p1", 
+                sig_levels=[0.05],
+                corrections =["non"],
+                full_cell=("non",0.05),
+                panno_texts=["*"],
+                panno_args={"size":12,"c":"black"},
+                fig_args={"figsize":(15,15),"dpi":300},
+                colorbar_args={"shrink":0.4},
+                fontsize=8
+                )
+    ```
 
 **stdout:**
 ```
@@ -87,29 +91,31 @@ df = gl.plot_rg( ldsc,
 
 ## filter and order the data
 
-```python
-# Order the data
-trait =  pd.read_csv("../0_sample_data/toy_data/trait_list.txt",sep="\t")
-trait["order"] = range(len(trait))
-trait
+!!! example
+    ```python
+    # Order the data
+    trait =  pd.read_csv("../0_sample_data/toy_data/trait_list.txt",sep="\t")
+    trait["order"] = range(len(trait))
+    trait
 
-# These steps are just used to order the traits
+    # These steps are just used to order the traits
 
-order = trait["TRAIT"].values
+    order = trait["TRAIT"].values
 
-trait_set1 = trait.loc[trait["order"]>=59,"TRAIT"].values
-trait_set2 = trait.loc[trait["order"]<59,"TRAIT"].values
+    trait_set1 = trait.loc[trait["order"]>=59,"TRAIT"].values
+    trait_set2 = trait.loc[trait["order"]<59,"TRAIT"].values
 
-ldsc = ldsc.loc[((ldsc["p1"].isin(trait_set1))&(ldsc["p2"].isin(trait_set2))) | ((ldsc["p1"].isin(trait_set2))&(ldsc["p2"].isin(trait_set1))),:]
+    ldsc = ldsc.loc[((ldsc["p1"].isin(trait_set1))&(ldsc["p2"].isin(trait_set2))) | ((ldsc["p1"].isin(trait_set2))&(ldsc["p2"].isin(trait_set1))),:]
 
-# key for sort
-map_dic={order[i]:i+1 for i in range(len(order))}
-key=lambda x:x.map(map_dic)
-```
+    # key for sort
+    map_dic={order[i]:i+1 for i in range(len(order))}
+    key=lambda x:x.map(map_dic)
+    ```
 
-```python
-print(map_dic)
-```
+!!! example
+    ```python
+    print(map_dic)
+    ```
 
 **stdout:**
 ```
@@ -118,22 +124,23 @@ print(map_dic)
 
 ## Replicate heatmap in paper
 
-```python
-df = gl.plot_rg( ldsc,
-            sig_levels=[0.05],
-            corrections =["non"],
-            p="q",
-            p1="p2",
-            p2="p1",
-            full_cell=("non",0.05),
-            panno_texts=["*"],
-            fig_args={"figsize":(15,15),"dpi":300},
-            colorbar_args={"shrink":0.4},
-            panno_args={"size":12,"c":"black"},
-            fontsize=8,
-            sort_key=key
-            )
-```
+!!! example
+    ```python
+    df = gl.plot_rg( ldsc,
+                sig_levels=[0.05],
+                corrections =["non"],
+                p="q",
+                p1="p2",
+                p2="p1",
+                full_cell=("non",0.05),
+                panno_texts=["*"],
+                fig_args={"figsize":(15,15),"dpi":300},
+                colorbar_args={"shrink":0.4},
+                panno_args={"size":12,"c":"black"},
+                fontsize=8,
+                sort_key=key
+                )
+    ```
 
 **stdout:**
 ```

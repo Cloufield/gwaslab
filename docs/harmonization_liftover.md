@@ -1,12 +1,14 @@
 # Liftover
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -17,21 +19,22 @@ gl.show_version()
 
 ## Load sample data
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             ea="ALT",
-             nea="REF",
-             neaf="Frq",
-             beta="BETA",
-             se="SE",
-             p="P",
-             nrows=5000,
-             verbose=False)
-mysumstats.basic_check(verbose=False)
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="ALT",
+                 nea="REF",
+                 neaf="Frq",
+                 beta="BETA",
+                 se="SE",
+                 p="P",
+                 nrows=5000,
+                 verbose=False)
+    mysumstats.basic_check(verbose=False)
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -47,9 +50,10 @@ mysumstats.basic_check(verbose=False)
 | 1:2151290_AAAAAC_A | 1 | 2151290 | AAAAAC | A | 9960399 | 0.8980 | 0.0158 | 0.0152 | 0.2977 |
 | 1:2151579_C_A | 1 | 2151579 | C | A | 9960099 | 0.8980 | 0.0156 | 0.0152 | 0.3028 |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -69,9 +73,10 @@ mysumstats.data
 
 ## Liftover
 
-```python
-mysumstats.liftover(from_build="19", to_build="38")
-```
+!!! example
+    ```python
+    mysumstats.liftover(from_build="19", to_build="38")
+    ```
 
 **stdout:**
 ```
@@ -105,9 +110,10 @@ mysumstats.liftover(from_build="19", to_build="38")
 2025/12/25 22:07:59 Finished liftover.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -127,13 +133,15 @@ mysumstats.data
 
 # Liftover using user-provided chain
 
-```python
-#https://github.com/marbl/CHM13
-```
+!!! example
+    ```python
+    #https://github.com/marbl/CHM13
+    ```
 
-```python
-! wget https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/chain/v1_nflo/grch38-chm13v2.chain
-```
+!!! example
+    ```python
+    ! wget https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/CHM13/assemblies/chain/v1_nflo/grch38-chm13v2.chain
+    ```
 
 **stdout:**
 ```
@@ -149,9 +157,10 @@ grch38-chm13v2.chai 100%[===================>]   6.00M  3.44MB/s    in 1.7s
 2025-12-25 22:08:02 (3.44 MB/s) - ‘grch38-chm13v2.chain.4’ saved [6288201/6288201]
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -169,9 +178,10 @@ mysumstats.data
 
 *[4992 rows x 10 columns]*
 
-```python
-mysumstats.liftover(from_build="38", to_build="13",chain_path="./grch38-chm13v2.chain")
-```
+!!! example
+    ```python
+    mysumstats.liftover(from_build="38", to_build="13",chain_path="./grch38-chm13v2.chain")
+    ```
 
 **stdout:**
 ```
@@ -205,9 +215,10 @@ mysumstats.liftover(from_build="38", to_build="13",chain_path="./grch38-chm13v2.
 2025/12/25 22:08:05 Finished liftover.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

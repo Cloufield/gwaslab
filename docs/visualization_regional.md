@@ -2,13 +2,15 @@
 
 ## load gwaslab
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -19,29 +21,31 @@ gl.show_version()
 
 ## download sample data
 
-```python
-#!wget -O t2d_bbj.txt.gz http://jenger.riken.jp/14/
-```
+!!! example
+    ```python
+    #!wget -O t2d_bbj.txt.gz http://jenger.riken.jp/14/
+    ```
 
 ## load sumstats into gwaslab.Sumstats
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             ea="ALT",
-             nea="REF",
-             neaf="Frq",
-             beta="BETA",
-             se="SE",
-             p="P",
-             direction="Dir",
-             build="19",
-             chrom_pat="7",
-             n="N")
-mysumstats.basic_check(verbose = False)
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="ALT",
+                 nea="REF",
+                 neaf="Frq",
+                 beta="BETA",
+                 se="SE",
+                 p="P",
+                 direction="Dir",
+                 build="19",
+                 chrom_pat="7",
+                 n="N")
+    mysumstats.basic_check(verbose = False)
+    ```
 
 **stdout:**
 ```
@@ -88,9 +92,10 @@ mysumstats.basic_check(verbose = False)
 
 ## Create Manhattan plot with sumstats on a single chromosome
 
-```python
-mysumstats.plot_mqq(mode="m",anno="GENENAME",anno_source="ensembl")
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(mode="m",anno="GENENAME",anno_source="ensembl")
+    ```
 
 **stdout:**
 ```
@@ -134,9 +139,10 @@ mysumstats.plot_mqq(mode="m",anno="GENENAME",anno_source="ensembl")
 
 ## Check lead variants
 
-```python
-mysumstats.get_lead()
-```
+!!! example
+    ```python
+    mysumstats.get_lead()
+    ```
 
 **stdout:**
 ```
@@ -163,9 +169,10 @@ mysumstats.get_lead()
 
 ## Create a regional plot with no additional information
 
-```python
-mysumstats.plot_mqq(region=(7,156538803,157538803))
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(region=(7,156538803,157538803))
+    ```
 
 **stdout:**
 ```
@@ -213,9 +220,10 @@ mysumstats.plot_mqq(region=(7,156538803,157538803))
 
 ## Create a regional plot with gene track
 
-```python
-mysumstats.plot_mqq(mode="r",region=(7,156538803,157538803))
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(mode="r",region=(7,156538803,157538803))
+    ```
 
 **stdout:**
 ```
@@ -266,12 +274,13 @@ mysumstats.plot_mqq(mode="r",region=(7,156538803,157538803))
 
 ## Create regional plot with gene track and LD information
 
-```python
-mysumstats.plot_mqq(mode="r",
-                    region=(7,156538803,157538803),                    
-                    vcf_path=gl.get_path("1kg_eas_hg19")
-                   )
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(mode="r",
+                        region=(7,156538803,157538803),                    
+                        vcf_path=gl.get_path("1kg_eas_hg19")
+                       )
+    ```
 
 **stdout:**
 ```
@@ -333,9 +342,10 @@ mysumstats.plot_mqq(mode="r",
 
 ## Create regional plot with two reference variants
 
-```python
-mysumstats.filter_flanking_by_chrpos((7,156738803),windowsizekb=100).get_lead(sig_level=1e-5)
-```
+!!! example
+    ```python
+    mysumstats.filter_flanking_by_chrpos((7,156738803),windowsizekb=100).get_lead(sig_level=1e-5)
+    ```
 
 **stdout:**
 ```
@@ -364,16 +374,17 @@ mysumstats.filter_flanking_by_chrpos((7,156738803),windowsizekb=100).get_lead(si
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 7:156793450_G_GA | 7 | 156793450 | GA | G | 1960399 | 0.1168 | 0.0838 | 0.0167 | 5.686000e-07 | ++++ | 191764 |
 
-```python
-mysumstats.plot_mqq(mode="r",
-                    region=(7,156538803,157538803),      
-                    region_ref_second = "7:156793450_G_GA", 
-                    vcf_path=gl.get_path("1kg_eas_hg19"),
-                    anno=True,
-                    anno_set=["7:156793450_G_GA","7:157038803_A_G"],
-                    anno_kwargs={"rotation":0}
-                   )
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(mode="r",
+                        region=(7,156538803,157538803),      
+                        region_ref_second = "7:156793450_G_GA", 
+                        vcf_path=gl.get_path("1kg_eas_hg19"),
+                        anno=True,
+                        anno_set=["7:156793450_G_GA","7:157038803_A_G"],
+                        anno_kwargs={"rotation":0}
+                       )
+    ```
 
 **stdout:**
 ```
@@ -440,20 +451,21 @@ mysumstats.plot_mqq(mode="r",
 
 ## Create stacked regional plot
 
-```python
-gl.plot_stacked_mqq(objects=[mysumstats,mysumstats],
-                    vcfs=[gl.get_path("1kg_eas_hg19"),gl.get_path("1kg_eas_hg19")],
-                    region=(7,156538803,157538803), 
-                    mode="r",
-                    build="19",
-                    anno=True,
-                    anno_style="right",
-                    anno_xshift=0.02,
-                    anno_set=["7:156793450_G_GA","7:157038803_A_G"],
-                    titles=["EAS","EUR"],
-                    title_kwargs={"size":20},
-                    anno_kwargs={"rotation":0})
-```
+!!! example
+    ```python
+    gl.plot_stacked_mqq(objects=[mysumstats,mysumstats],
+                        vcfs=[gl.get_path("1kg_eas_hg19"),gl.get_path("1kg_eas_hg19")],
+                        region=(7,156538803,157538803), 
+                        mode="r",
+                        build="19",
+                        anno=True,
+                        anno_style="right",
+                        anno_xshift=0.02,
+                        anno_set=["7:156793450_G_GA","7:157038803_A_G"],
+                        titles=["EAS","EUR"],
+                        title_kwargs={"size":20},
+                        anno_kwargs={"rotation":0})
+    ```
 
 **stdout:**
 ```
@@ -578,33 +590,36 @@ Gene track can be customized using user-provided GTF files.
 - `gtf_chr_dict`: a dictionary converting chr numbers in sumstats to chr strings in GTF
 - `gtf_gene_name`: GTF field that will be used as names for genes
 
-```python
-#mysumstats.plot_mqq(mode="r",
-#                    region=(7, 4534653 ,4734655), 
-#                    vcf_path=gl.get_path("1kg_eas_hg19"),
-#                    gtf_path="/home/yunye/.gwaslab/Canis_lupus_familiaris.ROS_Cfam_1.0.113.gtf.gz",
-#                    gtf_chr_dict = gl.get_number_to_chr(),
-#                    gtf_gene_name="gene_id",
-#                    region_recombination=False
-#                   )
-```
+!!! example
+    ```python
+    #mysumstats.plot_mqq(mode="r",
+    #                    region=(7, 4534653 ,4734655), 
+    #                    vcf_path=gl.get_path("1kg_eas_hg19"),
+    #                    gtf_path="/home/yunye/.gwaslab/Canis_lupus_familiaris.ROS_Cfam_1.0.113.gtf.gz",
+    #                    gtf_chr_dict = gl.get_number_to_chr(),
+    #                    gtf_gene_name="gene_id",
+    #                    region_recombination=False
+    #                   )
+    ```
 
 ## Create regional plots with user-provided recombination rate files
 
 Use `rr_path` to specify recombination rate file in the following format:
 
-```python
-#genetic_map_GRCh37_chr7.txt.gz
-#Chromosome      Position(bp)    Rate(cM/Mb)     Map(cM)
-#chr7    35326   0.251801        0.000000
-#chr7    35411   0.482009        0.000021
-#chr7    40483   0.598191        0.002466
-```
+!!! example
+    ```python
+    #genetic_map_GRCh37_chr7.txt.gz
+    #Chromosome      Position(bp)    Rate(cM/Mb)     Map(cM)
+    #chr7    35326   0.251801        0.000000
+    #chr7    35411   0.482009        0.000021
+    #chr7    40483   0.598191        0.002466
+    ```
 
-```python
-#mysumstats.plot_mqq(mode="r",
-#                    region=(7,156538803,157538803), 
-#                    vcf_path=gl.get_path("1kg_eas_hg19"),
-#                    rr_path="/home/yunye/.gwaslab/genetic_map_GRCh37_chr7.txt.gz"
-#                   )
-```
+!!! example
+    ```python
+    #mysumstats.plot_mqq(mode="r",
+    #                    region=(7,156538803,157538803), 
+    #                    vcf_path=gl.get_path("1kg_eas_hg19"),
+    #                    rr_path="/home/yunye/.gwaslab/genetic_map_GRCh37_chr7.txt.gz"
+    #                   )
+    ```

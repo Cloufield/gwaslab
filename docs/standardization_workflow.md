@@ -1,12 +1,14 @@
 # Standardization Workflow
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -17,9 +19,10 @@ gl.show_version()
 
 ## Load sample data
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwaslab",other=["NOTE"])
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwaslab",other=["NOTE"])
+    ```
 
 **stdout:**
 ```
@@ -55,9 +58,10 @@ mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwa
 
 Dirty sumstats with issues specified in NOTE column
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | OR_95L | CHISQ | Z | P | MLOG10P | DIRECTION | N | N_CASE | N_CONTROL | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -77,9 +81,10 @@ mysumstats.data
 
 ## All in one function
 
-```python
-mysumstats.basic_check(remove=True,remove_dup=True)
-```
+!!! example
+    ```python
+    mysumstats.basic_check(remove=True,remove_dup=True)
+    ```
 
 **stdout:**
 ```
@@ -245,9 +250,10 @@ mysumstats.basic_check(remove=True,remove_dup=True)
 | 10 | 1 | 123456789 | A | G | 9980099 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000 | 120000 | 40000 | POS with separator |
 | 1 | 23 | 4 | A | G | 9980099 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000 | 120000 | 40000 | Sex chromosomes |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | OR_95L | CHISQ | Z | P | MLOG10P | DIRECTION | N | N_CASE | N_CONTROL | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -267,10 +273,11 @@ mysumstats.data
 
 ## Separate functions
 
-```python
-#reload
-mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwaslab",other=["NOTE"])
-```
+!!! example
+    ```python
+    #reload
+    mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwaslab",other=["NOTE"])
+    ```
 
 **stdout:**
 ```
@@ -306,9 +313,10 @@ mysumstats = gl.Sumstats("../0_sample_data/toy_data/dirty_sumstats.tsv",fmt="gwa
 
 ### fix id
 
-```python
-mysumstats.fix_id(fixsep=True)
-```
+!!! example
+    ```python
+    mysumstats.fix_id(fixsep=True)
+    ```
 
 **stdout:**
 ```
@@ -337,9 +345,10 @@ mysumstats.fix_id(fixsep=True)
 | 54 | 1 | 54 | AG | A | 9989999 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000.0 | 120000 | 40000 | Clean sumstats |
 | 55 | 1 | 55 | A | G | 9989999 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000.0 | 120000 | 40000 | Clean sumstats |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | OR_95L | CHISQ | Z | P | MLOG10P | DIRECTION | N | N_CASE | N_CONTROL | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -359,9 +368,10 @@ mysumstats.data
 
 ### fix chromosome
 
-```python
-mysumstats.fix_chr(remove=True)
-```
+!!! example
+    ```python
+    mysumstats.fix_chr(remove=True)
+    ```
 
 **stdout:**
 ```
@@ -395,9 +405,10 @@ mysumstats.fix_chr(remove=True)
 | 54 | 1 | 54 | AG | A | 9985999 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 1.600000e+05 | 120000 | 40000 | Clean sumstats |
 | 55 | 1 | 55 | A | G | 9985999 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 1.600000e+05 | 120000 | 40000 | Clean sumstats |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | OR_95L | CHISQ | Z | P | MLOG10P | DIRECTION | N | N_CASE | N_CONTROL | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -417,9 +428,10 @@ mysumstats.data
 
 ### fix position
 
-```python
-mysumstats.fix_pos(remove=True)
-```
+!!! example
+    ```python
+    mysumstats.fix_pos(remove=True)
+    ```
 
 **stdout:**
 ```
@@ -448,9 +460,10 @@ mysumstats.fix_pos(remove=True)
 | 54 | 1 | 54 | AG | A | 9980999 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 1.600000e+05 | 120000 | 40000 | Clean sumstats |
 | 55 | 1 | 55 | A | G | 9980999 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 1.600000e+05 | 120000 | 40000 | Clean sumstats |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | OR_95L | CHISQ | Z | P | MLOG10P | DIRECTION | N | N_CASE | N_CONTROL | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -470,9 +483,10 @@ mysumstats.data
 
 ### fix allele
 
-```python
-mysumstats.fix_allele(remove=True)
-```
+!!! example
+    ```python
+    mysumstats.fix_allele(remove=True)
+    ```
 
 **stdout:**
 ```
@@ -504,9 +518,10 @@ mysumstats.fix_allele(remove=True)
 | 54 | 1 | 54 | AG | A | 9980399 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 1.600000e+05 | 120000 | 40000 | Clean sumstats |
 | 55 | 1 | 55 | A | G | 9980099 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 1.600000e+05 | 120000 | 40000 | Clean sumstats |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | OR_95L | CHISQ | Z | P | MLOG10P | DIRECTION | N | N_CASE | N_CONTROL | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -526,9 +541,10 @@ mysumstats.data
 
 ### sanity check for statistics
 
-```python
-mysumstats.check_sanity()
-```
+!!! example
+    ```python
+    mysumstats.check_sanity()
+    ```
 
 **stdout:**
 ```
@@ -608,9 +624,10 @@ mysumstats.check_sanity()
 | 54 | 1 | 54 | AG | A | 9980399 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000 | 120000 | 40000 | Clean sumstats |
 | 55 | 1 | 55 | A | G | 9980099 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000 | 120000 | 40000 | Clean sumstats |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | OR_95L | CHISQ | Z | P | MLOG10P | DIRECTION | N | N_CASE | N_CONTROL | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -630,9 +647,10 @@ mysumstats.data
 
 ### check data consistency
 
-```python
-mysumstats.check_data_consistency()
-```
+!!! example
+    ```python
+    mysumstats.check_data_consistency()
+    ```
 
 **stdout:**
 ```
@@ -670,9 +688,10 @@ mysumstats.check_data_consistency()
 
 ### normalize variants
 
-```python
-mysumstats.normalize_allele()
-```
+!!! example
+    ```python
+    mysumstats.normalize_allele()
+    ```
 
 **stdout:**
 ```
@@ -697,9 +716,10 @@ mysumstats.normalize_allele()
 | 54 | 1 | 54 | AG | A | 9980399 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000 | 120000 | 40000 | Clean sumstats |
 | 55 | 1 | 55 | A | G | 9980099 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000 | 120000 | 40000 | Clean sumstats |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | OR_95L | CHISQ | Z | P | MLOG10P | DIRECTION | N | N_CASE | N_CONTROL | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -719,9 +739,10 @@ mysumstats.data
 
 ### remove duplicated / multiallelic variants
 
-```python
-mysumstats.remove_dup(mode="md")
-```
+!!! example
+    ```python
+    mysumstats.remove_dup(mode="md")
+    ```
 
 **stdout:**
 ```
@@ -758,9 +779,10 @@ mysumstats.remove_dup(mode="md")
 | 10 | 1 | 123456789 | A | G | 9980099 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000 | 120000 | 40000 | POS with separator |
 | 1 | 23 | 4 | A | G | 9980099 | 0.996 | 0.0603 | 0.0103 | 1.062155 | ... | 1.040927 | 34.273636 | 5.854369 | 4.710000e-09 | 8.327348 | --++ | 160000 | 120000 | 40000 | Sex chromosomes |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | OR | ... | OR_95L | CHISQ | Z | P | MLOG10P | DIRECTION | N | N_CASE | N_CONTROL | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -780,9 +802,10 @@ mysumstats.data
 
 ### sort genome coordinate
 
-```python
-mysumstats.sort_coordinate()
-```
+!!! example
+    ```python
+    mysumstats.sort_coordinate()
+    ```
 
 **stdout:**
 ```
@@ -806,9 +829,10 @@ mysumstats.sort_coordinate()
 
 ### sort column
 
-```python
-mysumstats.sort_column()
-```
+!!! example
+    ```python
+    mysumstats.sort_column()
+    ```
 
 **stdout:**
 ```

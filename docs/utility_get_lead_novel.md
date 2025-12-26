@@ -1,12 +1,14 @@
 # Lead and novel variants
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -19,21 +21,22 @@ gl.show_version()
 
 Use only first 1000000 variants as example
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             ea="ALT",
-             nea="REF",            
-             beta="BETA",
-             se="SE",
-             p="P", 
-             build="19",
-             verbose=False, 
-             nrows=1000000)
-mysumstats.basic_check(verbose=False)
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="ALT",
+                 nea="REF",            
+                 beta="BETA",
+                 se="SE",
+                 p="P", 
+                 build="19",
+                 verbose=False, 
+                 nrows=1000000)
+    mysumstats.basic_check(verbose=False)
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | BETA | SE | P |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -53,9 +56,10 @@ mysumstats.basic_check(verbose=False)
 
 GWASLab will use MLOG10P first by default. If MLOG10P is not avaiable, it will look for P column.
 
-```python
-mysumstats.get_lead()
-```
+!!! example
+    ```python
+    mysumstats.get_lead()
+    ```
 
 **stdout:**
 ```
@@ -79,9 +83,10 @@ mysumstats.get_lead()
 
 ## Get lead variants with gene name annotation
 
-```python
-mysumstats.get_lead(anno=True)
-```
+!!! example
+    ```python
+    mysumstats.get_lead(anno=True)
+    ```
 
 **stdout:**
 ```
@@ -117,9 +122,10 @@ mysumstats.get_lead(anno=True)
 
 ## Different window sizes
 
-```python
-mysumstats.get_lead(windowsizekb=1000)
-```
+!!! example
+    ```python
+    mysumstats.get_lead(windowsizekb=1000)
+    ```
 
 **stdout:**
 ```
@@ -144,9 +150,10 @@ mysumstats.get_lead(windowsizekb=1000)
 
 ## Different thresholds
 
-```python
-mysumstats.get_lead(sig_level=1e-10)
-```
+!!! example
+    ```python
+    mysumstats.get_lead(sig_level=1e-10)
+    ```
 
 **stdout:**
 ```
@@ -167,9 +174,10 @@ mysumstats.get_lead(sig_level=1e-10)
 
 ## Check if novel against a tabular file
 
-```python
-novel = mysumstats.get_novel(known="../0_sample_data//toy_data/known_loci.txt")
-```
+!!! example
+    ```python
+    novel = mysumstats.get_novel(known="../0_sample_data//toy_data/known_loci.txt")
+    ```
 
 **stdout:**
 ```
@@ -191,9 +199,10 @@ novel = mysumstats.get_novel(known="../0_sample_data//toy_data/known_loci.txt")
 2025/12/26 11:36:36 Finished checking if lead variants are known.
 ```
 
-```python
-novel
-```
+!!! example
+    ```python
+    novel
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | BETA | SE | P | DISTANCE_TO_KNOWN | KNOWN_ID | NOVEL | LOCATION_OF_KNOWN |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -204,9 +213,10 @@ novel
 
 ## Ccheck against GWAS Catalog using EFO ID
 
-```python
-mysumstats.liftover(to_build="38")
-```
+!!! example
+    ```python
+    mysumstats.liftover(to_build="38")
+    ```
 
 **stdout:**
 ```
@@ -247,10 +257,11 @@ mysumstats.liftover(to_build="38")
 2025/12/26 11:37:20 Finished liftover.
 ```
 
-```python
-# EFO ID can be found on gwas catalog
-mysumstats.get_novel(efo="MONDO_0005148")
-```
+!!! example
+    ```python
+    # EFO ID can be found on gwas catalog
+    mysumstats.get_novel(efo="MONDO_0005148")
+    ```
 
 **stdout:**
 ```

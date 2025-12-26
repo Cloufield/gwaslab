@@ -6,6 +6,7 @@ import sys
 import unittest
 import tempfile
 import shutil
+import subprocess
 from pathlib import Path
 
 import pandas as pd
@@ -36,11 +37,80 @@ class TestClumping(unittest.TestCase):
         cls.pfile_prefix = cls.ref_dir / "1kg_eas_hg19.chr7_126253550_128253550"
         cls.sumstats_path = cls.ref_dir / "bbj_t2d_hm3_chr7_variants.txt.gz"
         
-        # Verify files exist
+        # Verify VCF file exists
         assert cls.vcf_path.exists(), f"VCF file not found: {cls.vcf_path}"
+        
+        # Create PLINK BED file from VCF if it doesn't exist
         bed_file = Path(f"{cls.bfile_prefix}.bed")
+        if not bed_file.exists():
+            print(f"Creating PLINK BED file from VCF: {bed_file}")
+            # Check if plink2 is available
+            try:
+                result = subprocess.run(
+                    ["plink2", "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                if result.returncode != 0:
+                    raise FileNotFoundError("plink2 command failed")
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                raise RuntimeError("plink2 not found. Please install PLINK2 to run clumping tests.")
+            
+            # Convert VCF to PLINK binary format
+            cmd = [
+                "plink2",
+                "--vcf", str(cls.vcf_path),
+                "--make-bed",
+                "--out", str(cls.bfile_prefix),
+                "--threads", "6",
+                "--memory", "2048"
+            ]
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                cwd=str(cls.ref_dir)
+            )
+            if result.returncode != 0:
+                raise RuntimeError(
+                    f"Failed to create BED file from VCF.\n"
+                    f"Command: {' '.join(cmd)}\n"
+                    f"Error: {result.stderr}"
+                )
+            print(f"Successfully created BED file: {bed_file}")
+        
+        # Verify BED file exists
         assert bed_file.exists(), f"BED file not found: {bed_file}"
+        
+        # Create PLINK2 pgen file from VCF if it doesn't exist
         pgen_file = Path(f"{cls.pfile_prefix}.pgen")
+        if not pgen_file.exists():
+            print(f"Creating PLINK2 pgen file from VCF: {pgen_file}")
+            # Convert VCF to PLINK2 format
+            cmd = [
+                "plink2",
+                "--vcf", str(cls.vcf_path),
+                "--make-pgen",
+                "--out", str(cls.pfile_prefix),
+                "--threads", "6",
+                "--memory", "2048"
+            ]
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                cwd=str(cls.ref_dir)
+            )
+            if result.returncode != 0:
+                raise RuntimeError(
+                    f"Failed to create pgen file from VCF.\n"
+                    f"Command: {' '.join(cmd)}\n"
+                    f"Error: {result.stderr}"
+                )
+            print(f"Successfully created pgen file: {pgen_file}")
+        
+        # Verify pgen file exists
         assert pgen_file.exists(), f"PGEN file not found: {pgen_file}"
         assert cls.sumstats_path.exists(), f"Sumstats file not found: {cls.sumstats_path}"
         
@@ -117,7 +187,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            threads=2,
+            threads=6,
             verbose=False
         )
         
@@ -166,7 +236,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            threads=2,
+            threads=6,
             verbose=False
         )
         
@@ -208,7 +278,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            threads=2,
+            threads=6,
             overwrite=False,  # Don't overwrite existing bfile
             verbose=False
         )
@@ -242,7 +312,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            threads=2,
+            threads=6,
             verbose=False
         )
         
@@ -314,7 +384,7 @@ class TestClumping(unittest.TestCase):
                 sumstats_copy.clump(
                     bfile=str(self.bfile_prefix),
                     out=output_path,
-                    threads=2,
+                    threads=6,
                     verbose=False,
                     **params
                 )
@@ -343,7 +413,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-10,
             clump_r2=0.2,
             clump_kb=250,
-            threads=2,
+            threads=6,
             verbose=False
         )
         
@@ -371,7 +441,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            threads=2,
+            threads=6,
             verbose=False
         )
         
@@ -432,7 +502,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            threads=2,
+            threads=6,
             verbose=False
         )
         results_bfile = sumstats_bfile.clumps.get("clumps", pd.DataFrame())
@@ -474,7 +544,7 @@ class TestClumping(unittest.TestCase):
             clump_p2=1e-4,
             clump_r2=0.2,
             clump_kb=250,
-            threads=2,
+            threads=6,
             verbose=False
         )
         results_pfile = sumstats_pfile.clumps.get("clumps", pd.DataFrame())

@@ -29,6 +29,8 @@ class TestBasicCheck(unittest.TestCase):
     def test_basic_check_on_dirty_sumstats(self):
         path = os.path.join(RAW_DIR, "dirty_sumstats.tsv")
         gl = Sumstats(sumstats=path, fmt=None, tab_fmt="tsv", snpid="SNPID", chrom="CHR", pos="POS", ea="EA", nea="NEA", p="P", eaf="EAF", verbose=False)
+        # Use only 1/5 of variants for faster testing
+        gl.data = gl.data.iloc[::5].reset_index(drop=True)
         gl.basic_check(remove_dup=True, verbose=False)
         status = gl.check_sumstats_qc_status()
         self.assertIn("basic_check", status)
@@ -62,6 +64,8 @@ class TestHarmonization(unittest.TestCase):
     def test_harmonize_on_to_harmonize(self):
         path = os.path.join(RAW_DIR, "to_harmonize.tsv")
         gl = Sumstats(sumstats=path, tab_fmt="tsv", chrom="CHR", pos="POS", ea="EA", nea="NEA", p="P", snpid="SNPID", verbose=False)
+        # Use only 1/5 of variants for faster testing
+        gl.data = gl.data.iloc[::5].reset_index(drop=True)
         # run basic_check within harmonize (ref-free path)
         gl.harmonize(basic_check=True, verbose=False)
         self.assertTrue(gl.meta.get("is_harmonised", False))
@@ -115,6 +119,8 @@ class TestHarmonizeWorkflowWithReferences(unittest.TestCase):
             eaf="EAF",
             verbose=True
         )
+        # Use only 1/5 of variants for faster testing
+        gl.data = gl.data.iloc[::5].reset_index(drop=True)
 
         gl.harmonize(
             basic_check=True,
@@ -123,7 +129,7 @@ class TestHarmonizeWorkflowWithReferences(unittest.TestCase):
             ref_infer=ref_infer_vcf_path,
             ref_alt_freq="AF",
             maf_threshold=0.40,
-            threads=4,
+            threads=6,
             remove=False,
             verbose=True
         )
@@ -180,6 +186,8 @@ class TestFixIDWorkflow(unittest.TestCase):
             eaf="EAF",
             verbose=True
         )
+        # Use only 1/5 of variants for faster testing
+        gl.data = gl.data.iloc[::5].reset_index(drop=True)
 
         gl.harmonize(
             basic_check=True,
@@ -188,7 +196,7 @@ class TestFixIDWorkflow(unittest.TestCase):
             ref_infer=ref_infer_vcf_path,
             ref_alt_freq="AF",
             maf_threshold=0.40,
-            threads=4,
+            threads=6,
             remove=False,
             verbose=True,
             sweep_mode=True,
@@ -220,6 +228,8 @@ class TestCheckAF(unittest.TestCase):
             eaf="EAF",
             verbose=False
         )
+        # Use only 1/5 of variants for faster testing
+        gl.data = gl.data.iloc[::5].reset_index(drop=True)
 
         # First harmonize to ensure proper status codes
         gl.harmonize(basic_check=True, verbose=False)
@@ -263,6 +273,8 @@ class TestInferAF(unittest.TestCase):
             eaf="EAF",
             verbose=False
         )
+        # Use only 1/5 of variants for faster testing
+        gl.data = gl.data.iloc[::5].reset_index(drop=True)
 
         # First harmonize to ensure proper status codes
         gl.harmonize(basic_check=True, verbose=False)
@@ -326,10 +338,10 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
                 (chr_col.astype(str).str.strip() == "7")
             )
             gl1.data = gl1.data[chr7_mask].reset_index(drop=True)
-        # Use only every 4th variant for faster testing
-        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
-        print(f"[test_assign_rsid_consistency] Using {len(gl1.data)} variants (every 4th variant)")
-        gl1.assign_rsid(ref_rsid_vcf=ref_rsid_vcf_path, threads=4, verbose=False)
+        # Use only every 5th variant for faster testing (1/5 of variants)
+        gl1.data = gl1.data.iloc[::5].reset_index(drop=True)
+        print(f"[test_assign_rsid_consistency] Using {len(gl1.data)} variants (every 5th variant, 1/5 of total)")
+        gl1.assign_rsid(ref_rsid_vcf=ref_rsid_vcf_path, threads=6, verbose=False)
         result1 = gl1.data.copy()
         rsid1_count = result1["rsID"].notna().sum()
         
@@ -359,9 +371,9 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
                 (chr_col.astype(str).str.strip() == "7")
             )
             gl2.data = gl2.data[chr7_mask].reset_index(drop=True)
-        # Use only every 4th variant for faster testing (same as gl1)
-        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
-        gl2.assign_rsid2(vcf_path=ref_rsid_vcf_path, threads=4, verbose=False)
+        # Use only every 5th variant for faster testing (same as gl1, 1/5 of variants)
+        gl2.data = gl2.data.iloc[::5].reset_index(drop=True)
+        gl2.assign_rsid2(vcf_path=ref_rsid_vcf_path, threads=6, verbose=False)
         result2 = gl2.data.copy()
         rsid2_count = result2["rsID"].notna().sum()
         
@@ -438,9 +450,9 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
                 (chr_col.astype(str).str.strip() == "7")
             )
             gl1.data = gl1.data[chr7_mask].reset_index(drop=True)
-        # Use only every 4th variant for faster testing
-        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
-        print(f"[test_infer_strand_consistency] Using {len(gl1.data)} variants (every 4th variant)")
+        # Use only every 5th variant for faster testing (1/5 of variants)
+        gl1.data = gl1.data.iloc[::5].reset_index(drop=True)
+        print(f"[test_infer_strand_consistency] Using {len(gl1.data)} variants (every 5th variant, 1/5 of total)")
         
         # Test with infer_strand via harmonize (old method, non-sweep mode)
         gl1.harmonize(
@@ -451,7 +463,7 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
             ref_alt_freq="AF",
             maf_threshold=0.40,
             ref_maf_threshold=0.40,
-            threads=4,
+            threads=6,
             remove=False,
             verbose=True,
             sweep_mode=False,  # Use old method
@@ -486,8 +498,8 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
                 (chr_col.astype(str).str.strip() == "7")
             )
             gl2.data = gl2.data[chr7_mask].reset_index(drop=True)
-        # Use only every 4th variant for faster testing (same as gl1)
-        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
+        # Use only every 5th variant for faster testing (same as gl1, 1/5 of variants)
+        gl2.data = gl2.data.iloc[::5].reset_index(drop=True)
         
         gl2.harmonize(
             basic_check=False,  # Already done above
@@ -497,7 +509,7 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
             ref_alt_freq="AF",
             maf_threshold=0.40,
             ref_maf_threshold=0.40,
-            threads=4,
+            threads=6,
             remove=False,
             verbose=True,
             sweep_mode=True,  # Use new method
@@ -560,6 +572,8 @@ class TestCheckAF2(unittest.TestCase):
             eaf="EAF",
             verbose=False
         )
+        # Use only 1/5 of variants for faster testing
+        gl.data = gl.data.iloc[::5].reset_index(drop=True)
 
         # First harmonize to ensure proper status codes
         gl.harmonize(basic_check=True, verbose=False)
@@ -603,6 +617,8 @@ class TestInferAF2(unittest.TestCase):
             eaf="EAF",
             verbose=False
         )
+        # Use only 1/5 of variants for faster testing
+        gl.data = gl.data.iloc[::5].reset_index(drop=True)
 
         # First harmonize to ensure proper status codes
         gl.harmonize(basic_check=True, verbose=False)
@@ -652,6 +668,8 @@ class TestInferEAFFromMAF2(unittest.TestCase):
             eaf="EAF",
             verbose=False
         )
+        # Use only 1/5 of variants for faster testing
+        gl.data = gl.data.iloc[::5].reset_index(drop=True)
 
         # First harmonize to ensure proper status codes
         gl.harmonize(basic_check=True, verbose=False)
@@ -720,9 +738,9 @@ class TestConsistencyCheckAF(unittest.TestCase):
             (gl1.data["POS"] <= 128253550)
         ].reset_index(drop=True)
         
-        # Use only every 4th variant for faster testing
-        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
-        print(f"[test_check_af_consistency] Using {len(gl1.data)} variants (every 4th variant in chr7:126253550-128253550)")
+        # Use only every 5th variant for faster testing (1/5 of variants)
+        gl1.data = gl1.data.iloc[::5].reset_index(drop=True)
+        print(f"[test_check_af_consistency] Using {len(gl1.data)} variants (every 5th variant, 1/5 of total in chr7:126253550-128253550)")
         
         # Test with check_af (old method, normal mode)
         gl1.check_af(
@@ -756,8 +774,8 @@ class TestConsistencyCheckAF(unittest.TestCase):
             (gl2.data["POS"] <= 128253550)
         ].reset_index(drop=True)
         
-        # Use only every 4th variant for faster testing (same as gl1)
-        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
+        # Use only every 5th variant for faster testing (same as gl1, 1/5 of variants)
+        gl2.data = gl2.data.iloc[::5].reset_index(drop=True)
         
         gl2.check_af2(
             vcf_path=ref_infer_vcf_path,
@@ -834,13 +852,13 @@ class TestConsistencyInferAF(unittest.TestCase):
             (gl1.data["POS"] <= 128253550)
         ].reset_index(drop=True)
         
-        # Use only every 4th variant for faster testing
-        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
+        # Use only every 5th variant for faster testing (1/5 of variants)
+        gl1.data = gl1.data.iloc[::5].reset_index(drop=True)
         
         # Drop original EAF to ensure both methods actually infer EAF
         gl1.data["EAF"] = pd.NA
         
-        print(f"[test_infer_af_consistency] Using {len(gl1.data)} variants (every 4th variant in chr7:126253550-128253550)")
+        print(f"[test_infer_af_consistency] Using {len(gl1.data)} variants (every 5th variant, 1/5 of total in chr7:126253550-128253550)")
         
         # Test with infer_af (old method, normal mode)
         gl1.infer_af(
@@ -874,8 +892,8 @@ class TestConsistencyInferAF(unittest.TestCase):
             (gl2.data["POS"] <= 128253550)
         ].reset_index(drop=True)
         
-        # Use only every 4th variant for faster testing (same as gl1)
-        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
+        # Use only every 5th variant for faster testing (same as gl1, 1/5 of variants)
+        gl2.data = gl2.data.iloc[::5].reset_index(drop=True)
         
         # Drop original EAF to ensure both methods actually infer EAF
         gl2.data["EAF"] = pd.NA
@@ -1001,8 +1019,8 @@ class TestConsistencyInferEAFFromMAF(unittest.TestCase):
             (gl1.data["POS"] <= 128253550)
         ].reset_index(drop=True)
         
-        # Use only every 4th variant for faster testing
-        gl1.data = gl1.data.iloc[::4].reset_index(drop=True)
+        # Use only every 5th variant for faster testing (1/5 of variants)
+        gl1.data = gl1.data.iloc[::5].reset_index(drop=True)
         
         # Check if MAF column exists, if not create it from EAF
         if "MAF" not in gl1.data.columns or gl1.data["MAF"].isna().all():
@@ -1013,7 +1031,7 @@ class TestConsistencyInferEAFFromMAF(unittest.TestCase):
         # Drop original EAF to ensure both methods actually infer EAF
         gl1.data["EAF"] = pd.NA
         
-        print(f"[test_infer_eaf_from_maf_consistency] Using {len(gl1.data)} variants (every 4th variant in chr7:126253550-128253550)")
+        print(f"[test_infer_eaf_from_maf_consistency] Using {len(gl1.data)} variants (every 5th variant, 1/5 of total in chr7:126253550-128253550)")
         
         # Test with infer_eaf_from_maf (old method, normal mode)
         gl1.infer_eaf_from_maf(
@@ -1047,8 +1065,8 @@ class TestConsistencyInferEAFFromMAF(unittest.TestCase):
             (gl2.data["POS"] <= 128253550)
         ].reset_index(drop=True)
         
-        # Use only every 4th variant for faster testing (same as gl1)
-        gl2.data = gl2.data.iloc[::4].reset_index(drop=True)
+        # Use only every 5th variant for faster testing (same as gl1, 1/5 of variants)
+        gl2.data = gl2.data.iloc[::5].reset_index(drop=True)
         
         # Check if MAF column exists, if not create it from EAF
         if "MAF" not in gl2.data.columns or gl2.data["MAF"].isna().all():

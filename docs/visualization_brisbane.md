@@ -1,13 +1,15 @@
 # Brisbane plot
 
-```python
-import gwaslab as gl
-import pandas as pd
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    import pandas as pd
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -20,9 +22,10 @@ gl.show_version()
 Yengo, L., Vedantam, S., Marouli, E., Sidorenko, J., Bartell, E., Sakaue, S., ... & Lee, J. Y. (2022). A saturated map of common genetic variants associated with human height. Nature, 1-16.
 Fig. 2: Brisbane plot
 
-```python
-!wget https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-022-05275-y/MediaObjects/41586_2022_5275_MOESM3_ESM.xlsx
-```
+!!! example
+    ```python
+    !wget https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-022-05275-y/MediaObjects/41586_2022_5275_MOESM3_ESM.xlsx
+    ```
 
 **stdout:**
 ```
@@ -40,10 +43,11 @@ Saving to: ‘41586_2022_5275_MOESM3_ESM.xlsx.1’
 
 ## Read into pandas dataframe
 
-```python
-data = pd.read_excel("41586_2022_5275_MOESM3_ESM.xlsx",sheet_name=10,skiprows=1)
-data
-```
+!!! example
+    ```python
+    data = pd.read_excel("41586_2022_5275_MOESM3_ESM.xlsx",sheet_name=10,skiprows=1)
+    data
+    ```
 
 **stderr:**
 ```
@@ -69,9 +73,10 @@ data
 
 ## Load into gwaslab Sumstats
 
-```python
-sumstats = gl.Sumstats(data,snpid="SNP",chrom="Chr",pos="BP (HG19)",p="b P-value")
-```
+!!! example
+    ```python
+    sumstats = gl.Sumstats(data,snpid="SNP",chrom="Chr",pos="BP (HG19)",p="b P-value")
+    ```
 
 **stdout:**
 ```
@@ -99,9 +104,10 @@ sumstats = gl.Sumstats(data,snpid="SNP",chrom="Chr",pos="BP (HG19)",p="b P-value
 
 - `mode=b` : Brisbane plot
 
-```python
-sumstats.plot_mqq(mode="b")
-```
+!!! example
+    ```python
+    sumstats.plot_mqq(mode="b")
+    ```
 
 **stdout:**
 ```
@@ -151,9 +157,10 @@ sumstats.plot_mqq(mode="b")
 
 ## Some customizations
 
-```python
-sumstats.plot_mqq(mode="b",anno=True,sig_line_color="red", windowsizekb=100000, verbose=False)
-```
+!!! example
+    ```python
+    sumstats.plot_mqq(mode="b",anno=True,sig_line_color="red", windowsizekb=100000, verbose=False)
+    ```
 
 **stdout:**
 ```
@@ -168,9 +175,10 @@ sumstats.plot_mqq(mode="b",anno=True,sig_line_color="red", windowsizekb=100000, 
 
 ## Annotate with gene names
 
-```python
-sumstats.plot_mqq(mode="b",anno="GENENAME",sig_line_color="red",build="19",windowsizekb=100000, verbose=False)
-```
+!!! example
+    ```python
+    sumstats.plot_mqq(mode="b",anno="GENENAME",sig_line_color="red",build="19",windowsizekb=100000, verbose=False)
+    ```
 
 ```
 (<Figure size 3000x1000 with 1 Axes>, <gwaslab.g_Log.Log at 0x7f1446bc8b80>)

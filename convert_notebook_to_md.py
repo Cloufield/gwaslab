@@ -508,9 +508,18 @@ def convert_notebook_to_markdown(notebook_path: Path, output_path: Optional[Path
                     elif 'r' in first_line or 'R' in first_line:
                         language = 'r'
                 
-                md_lines.append(f'```{language}')
-                md_lines.append(cell_content.rstrip())
-                md_lines.append('```')
+                # Wrap Python code blocks with !!! example for tutorial pages
+                if language == 'python':
+                    md_lines.append('!!! example')
+                    md_lines.append('    ```python')
+                    # Indent code content by 4 spaces
+                    indented_content = '\n'.join('    ' + line if line else '' for line in cell_content.rstrip().split('\n'))
+                    md_lines.append(indented_content)
+                    md_lines.append('    ```')
+                else:
+                    md_lines.append(f'```{language}')
+                    md_lines.append(cell_content.rstrip())
+                    md_lines.append('```')
                 md_lines.append('')
             
             # Handle outputs

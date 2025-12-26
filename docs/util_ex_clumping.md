@@ -1,12 +1,14 @@
 # Clumping by calling PLINK
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -17,19 +19,20 @@ gl.show_version()
 
 ## Load sample data and perform QC
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             ea="ALT",nea="REF",
-             se="SE",
-             p="P",
-             nrows=1000000  # Load only the first 1 million lines for demonstration purposes
-             )
-mysumstats.basic_check(verbose=False)
-mysumstats.fix_id(fixsep=True)
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="ALT",nea="REF",
+                 se="SE",
+                 p="P",
+                 nrows=1000000  # Load only the first 1 million lines for demonstration purposes
+                 )
+    mysumstats.basic_check(verbose=False)
+    mysumstats.fix_id(fixsep=True)
+    ```
 
 **stdout:**
 ```
@@ -74,9 +77,10 @@ mysumstats.fix_id(fixsep=True)
 | 2:6348490:G:C | 2 | 6348490 | G | C | 9960099 | 0.2032 | 0.11750 |
 | 2:6348754:A:C | 2 | 6348754 | C | A | 9960099 | 0.0126 | 0.01846 |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | SE | P |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -112,12 +116,13 @@ Default parameters:
 Note:
 - plink2 need to be avaialble in your environment, or you can specify the path for PLINK2.
 
-```python
-mysumstats.clump(   plink2="plink2", # default
-                    clump_r2=0.1,
-                    clump_p2=1e-6,
-                    vcf=gl.get_path("1kg_eas_hg19"))
-```
+!!! example
+    ```python
+    mysumstats.clump(   plink2="plink2", # default
+                        clump_r2=0.1,
+                        clump_p2=1e-6,
+                        vcf=gl.get_path("1kg_eas_hg19"))
+    ```
 
 **stdout:**
 ```
@@ -168,18 +173,20 @@ mysumstats.clump(   plink2="plink2", # default
 
 if using multiple bfile or pfile, @ can be used to indicate each chromosome.
 
-```python
-#mysumstats.clump(   plink2="plink2", # default
-#                    clump_r2=0.1,
-#                    clump_p2=1e-6,
-#                    bfile="/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.@")
-```
+!!! example
+    ```python
+    #mysumstats.clump(   plink2="plink2", # default
+    #                    clump_r2=0.1,
+    #                    clump_p2=1e-6,
+    #                    bfile="/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.@")
+    ```
 
 ### clump results are stored in mysumstats.clumps
 
-```python
-mysumstats.clumps["clumps"]
-```
+!!! example
+    ```python
+    mysumstats.clumps["clumps"]
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | SE | P | SNPID_bim |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -189,9 +196,10 @@ mysumstats.clumps["clumps"]
 | 1:154309595:TA:T | 1 | 154309595 | TA | T | 9960399 | 0.0166 | 3.289000e-08 | 1:154309595:TA:T |
 | 2:640986:CACAT:C | 2 | 640986 | C | CACAT | 9960399 | 0.0150 | 2.665000e-10 | 2:640986:CACAT:C |
 
-```python
-mysumstats.clumps["clumps_raw"]
-```
+!!! example
+    ```python
+    mysumstats.clumps["clumps_raw"]
+    ```
 
 | CHR | POS | SNPID | P | TOTAL | NONSIG | S0.05 | S0.01 | S0.001 | S0.0001 | SP2 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -201,9 +209,10 @@ mysumstats.clumps["clumps_raw"]
 | 1 | 154309595 | 1:154309595:TA:T | 3.289000e-08 | 5 | 0 | 0 | 0 | 0 | 5 | 1:154264194:G:A,1:154321382:C:T,1:154345344:G:... |
 | 2 | 640986 | 2:640986:CACAT:C | 2.665000e-10 | 232 | 0 | 0 | 0 | 0 | 232 | 2:601905:T:G,2:605176:T:A,2:609177:A:G,2:61060... |
 
-```python
-print(mysumstats.clumps["plink_log"])
-```
+!!! example
+    ```python
+    print(mysumstats.clumps["plink_log"])
+    ```
 
 **stdout:**
 ```

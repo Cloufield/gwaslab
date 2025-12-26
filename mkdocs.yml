@@ -83,6 +83,7 @@ nav:
        - "Lead and novel variants" : utility_get_lead_novel.md
        - "Extract LD proxy" : Extract_LD_proxy.md
        - "Data conversion" : utility_data_conversion.md
+       - "QC Report Generation": QC_Report.md
        - "Manhattan and QQ plot": visualization_mqq.md     
        - "Regional plot" : visualization_regional.md
        - "Miami plot": visualization_miami2.md
@@ -115,7 +116,6 @@ extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort.js
-  - javascripts/hide-sidebar-tutorial.js
 
 plugins:
   - search

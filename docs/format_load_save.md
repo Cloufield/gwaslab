@@ -1,12 +1,14 @@
 # Input and output sumstats
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -19,27 +21,28 @@ gl.show_version()
 
 ## Loading data
 
-```python
-mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
-             snpid="SNP",
-             chrom="CHR",
-             pos="POS",
-             ea="ALT",
-             nea="REF",
-             neaf="Frq",
-             beta="BETA",
-             se="SE",
-             p="P",
-             direction="Dir",
-             build="19",
-             n="N", verbose=False)
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",
+                 snpid="SNP",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="ALT",
+                 nea="REF",
+                 neaf="Frq",
+                 beta="BETA",
+                 se="SE",
+                 p="P",
+                 direction="Dir",
+                 build="19",
+                 n="N", verbose=False)
 
-# select just 1000 variants for example
-mysumstats.random_variants(n=1000, inplace=True, random_state=123,verbose=False)
+    # select just 1000 variants for example
+    mysumstats.random_variants(n=1000, inplace=True, random_state=123,verbose=False)
 
-# basic_check
-mysumstats.basic_check(verbose=False)
-```
+    # basic_check
+    mysumstats.basic_check(verbose=False)
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P | DIRECTION | N |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -55,9 +58,10 @@ mysumstats.basic_check(verbose=False)
 | X:146441317_G_A | 23 | 146441317 | G | A | 1960099 | 0.7345 | 0.0037 | 0.0078 | 0.635100 | ++-+ | 191764 |
 | X:152025052_A_G | 23 | 152025052 | G | A | 1960099 | 0.2417 | 0.0041 | 0.0082 | 0.622200 | -++- | 191764 |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P | DIRECTION | N |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -79,13 +83,14 @@ mysumstats.data
 
 ### Load and filtering by snp pattern
 
-```python
-mysumstats_snp2 = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",fmt="auto",
-             snpid_pat="^2:123",
-             build="19",
-             n="N", verbose=True)
-mysumstats_snp2.data
-```
+!!! example
+    ```python
+    mysumstats_snp2 = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",fmt="auto",
+                 snpid_pat="^2:123",
+                 build="19",
+                 n="N", verbose=True)
+    mysumstats_snp2.data
+    ```
 
 **stdout:**
 ```
@@ -139,13 +144,14 @@ mysumstats_snp2.data
 
 ### Load and filtering by chr pattern
 
-```python
-mysumstats_chr22 = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",fmt="auto",
-             chrom_pat="^22",
-             build="19",
-             n="N", verbose=True)
-mysumstats_chr22.data
-```
+!!! example
+    ```python
+    mysumstats_chr22 = gl.Sumstats("../0_sample_data/t2d_bbj.txt.gz",fmt="auto",
+                 chrom_pat="^22",
+                 build="19",
+                 n="N", verbose=True)
+    mysumstats_chr22.data
+    ```
 
 **stdout:**
 ```
@@ -209,9 +215,10 @@ mysumstats_chr22.data
 
 ## general output
 
-```python
-mysumstats.to_format("./mysumstats",fmt="gwaslab",xymt_number=True)
-```
+!!! example
+    ```python
+    mysumstats.to_format("./mysumstats",fmt="gwaslab",xymt_number=True)
+    ```
 
 **stdout:**
 ```
@@ -233,9 +240,10 @@ mysumstats.to_format("./mysumstats",fmt="gwaslab",xymt_number=True)
 2025/12/25 21:53:09 Finished outputting successfully!
 ```
 
-```python
-!zcat mysumstats.gwaslab.tsv.gz | head
-```
+!!! example
+    ```python
+    !zcat mysumstats.gwaslab.tsv.gz | head
+    ```
 
 **stdout:**
 ```
@@ -253,9 +261,10 @@ SNPID	CHR	POS	EA	NEA	STATUS	EAF	BETA	SE	P	DIRECTION	N
 gzip: stdout: Broken pipe
 ```
 
-```python
-!zcat mysumstats.gwaslab.tsv.gz | tail
-```
+!!! example
+    ```python
+    !zcat mysumstats.gwaslab.tsv.gz | tail
+    ```
 
 **stdout:**
 ```
@@ -273,9 +282,10 @@ X:152025052_A_G	23	152025052	G	A	1960099	0.2417	0.0041	0.0082	6.2220e-01	-++-	19
 
 ## output each chromosome to a single file
 
-```python
-mysumstats.to_format("./mysumstats.@",fmt="gwaslab",xymt_number=True)
-```
+!!! example
+    ```python
+    mysumstats.to_format("./mysumstats.@",fmt="gwaslab",xymt_number=True)
+    ```
 
 **stdout:**
 ```
@@ -301,10 +311,11 @@ mysumstats.to_format("./mysumstats.@",fmt="gwaslab",xymt_number=True)
 
 ## load sumstats for each chromosome
 
-```python
-mysumstats = gl.Sumstats("./mysumstats.@.gwaslab.tsv.gz",
-             fmt="gwaslab", verbose=True)
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("./mysumstats.@.gwaslab.tsv.gz",
+                 fmt="gwaslab", verbose=True)
+    ```
 
 **stdout:**
 ```
@@ -363,9 +374,10 @@ mysumstats = gl.Sumstats("./mysumstats.@.gwaslab.tsv.gz",
 
 List the formats that GWASLab supports
 
-```python
-formats = gl.list_formats()
-```
+!!! example
+    ```python
+    formats = gl.list_formats()
+    ```
 
 **stdout:**
 ```
@@ -374,9 +386,10 @@ formats = gl.list_formats()
 
 Check the contents of the specified format
 
-```python
-ssf_format_dict = gl.check_format("ssf")
-```
+!!! example
+    ```python
+    ssf_format_dict = gl.check_format("ssf")
+    ```
 
 **stdout:**
 ```
@@ -392,9 +405,10 @@ ssf_format_dict = gl.check_format("ssf")
 - `ssfmeta`: if True, output the meta file
 - `md5sum`: if True, create a file with the md5sum of the output sumstats
 
-```python
-mysumstats.to_format("./mysumstats", fmt="ssf", ssfmeta=True, md5sum=True)
-```
+!!! example
+    ```python
+    mysumstats.to_format("./mysumstats", fmt="ssf", ssfmeta=True, md5sum=True)
+    ```
 
 **stdout:**
 ```
@@ -439,9 +453,10 @@ mysumstats.to_format("./mysumstats", fmt="ssf", ssfmeta=True, md5sum=True)
 2025/12/25 21:53:09 #WARNING!   - The file has fewer than the minimum rows required: 1000 < 100000
 ```
 
-```python
-!zcat mysumstats.ssf.tsv.gz | head
-```
+!!! example
+    ```python
+    !zcat mysumstats.ssf.tsv.gz | head
+    ```
 
 **stdout:**
 ```
@@ -457,18 +472,20 @@ chromosome	base_pair_location	effect_allele	other_allele	beta	standard_error	eff
 1	14466316	G	A	-0.0042	0.0096	0.6942	6.6360e-01	1_14466316_A_G	191764
 ```
 
-```python
-!head mysumstats.ssf.tsv.gz.md5sum
-```
+!!! example
+    ```python
+    !head mysumstats.ssf.tsv.gz.md5sum
+    ```
 
 **stdout:**
 ```
 e8e9b4cf01d7b0166d0cd9a208a2808f
 ```
 
-```python
-!head ./mysumstats.ssf.tsv.gz.ssf.tsv-meta.yaml
-```
+!!! example
+    ```python
+    !head ./mysumstats.ssf.tsv.gz.ssf.tsv-meta.yaml
+    ```
 
 **stdout:**
 ```
@@ -489,9 +506,10 @@ gwaslab:
 - `hapmap3`: if True, only output hapmap3 SNPs
 - `exclude_hla`: if True, exclude variants in HLA region from output
 
-```python
-mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True,build="19")
-```
+!!! example
+    ```python
+    mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True,build="19")
+    ```
 
 **stdout:**
 ```
@@ -534,9 +552,10 @@ mysumstats.to_format("./mysumstats",fmt="ldsc",hapmap3=True,exclude_hla=True,bui
 2025/12/25 21:53:12 Finished outputting successfully!
 ```
 
-```python
-!zcat ./mysumstats.hapmap3.noMHC.ldsc.tsv.gz | head
-```
+!!! example
+    ```python
+    !zcat ./mysumstats.hapmap3.noMHC.ldsc.tsv.gz | head
+    ```
 
 **stdout:**
 ```
@@ -557,9 +576,10 @@ CHR	POS	A1	A2	Frq	Beta	P	N	SNP
 - `bgzip` : if True, bgzip the output vcf/bed
 - `tabix` : if True, index the bgzipped file with tabix
 
-```python
-mysumstats.to_format("./mysumstats",fmt="vcf",bgzip=True,tabix=True,build="19")
-```
+!!! example
+    ```python
+    mysumstats.to_format("./mysumstats",fmt="vcf",bgzip=True,tabix=True,build="19")
+    ```
 
 **stdout:**
 ```
@@ -597,16 +617,18 @@ mysumstats.to_format("./mysumstats",fmt="vcf",bgzip=True,tabix=True,build="19")
 
 ### parquet
 
-```python
-!mkdir -p mysumstats
-```
+!!! example
+    ```python
+    !mkdir -p mysumstats
+    ```
 
-```python
-mysumstats.to_format("./mysumstats",
-                     fmt="gwaslab",
-                     tab_fmt="parquet",
-                     to_tabular_kwargs={"partition_cols":["CHR"]})
-```
+!!! example
+    ```python
+    mysumstats.to_format("./mysumstats",
+                         fmt="gwaslab",
+                         tab_fmt="parquet",
+                         to_tabular_kwargs={"partition_cols":["CHR"]})
+    ```
 
 **stdout:**
 ```
@@ -629,9 +651,10 @@ mysumstats.to_format("./mysumstats",
 
 ### convert to bed format
 
-```python
-mysumstats.to_format("./mysumstats",fmt="bed")
-```
+!!! example
+    ```python
+    mysumstats.to_format("./mysumstats",fmt="bed")
+    ```
 
 **stdout:**
 ```
@@ -653,9 +676,10 @@ mysumstats.to_format("./mysumstats",fmt="bed")
 2025/12/25 21:53:13 Finished outputting successfully!
 ```
 
-```python
-!cat mysumstats.bed | head
-```
+!!! example
+    ```python
+    !cat mysumstats.bed | head
+    ```
 
 **stdout:**
 ```
@@ -673,9 +697,10 @@ mysumstats.to_format("./mysumstats",fmt="bed")
 
 ### convert to vep default format
 
-```python
-mysumstats.to_format("./mysumstats",fmt="vep")
-```
+!!! example
+    ```python
+    mysumstats.to_format("./mysumstats",fmt="vep")
+    ```
 
 **stdout:**
 ```
@@ -697,9 +722,10 @@ mysumstats.to_format("./mysumstats",fmt="vep")
 2025/12/25 21:53:13 Finished outputting successfully!
 ```
 
-```python
-!cat mysumstats.vep | head
-```
+!!! example
+    ```python
+    !cat mysumstats.vep | head
+    ```
 
 **stdout:**
 ```
@@ -717,9 +743,10 @@ mysumstats.to_format("./mysumstats",fmt="vep")
 
 ### convert to annovar default input format
 
-```python
-mysumstats.to_format("./mysumstats",fmt="annovar")
-```
+!!! example
+    ```python
+    mysumstats.to_format("./mysumstats",fmt="annovar")
+    ```
 
 **stdout:**
 ```
@@ -741,9 +768,10 @@ mysumstats.to_format("./mysumstats",fmt="annovar")
 2025/12/25 21:53:13 Finished outputting successfully!
 ```
 
-```python
-!cat mysumstats.annovar | head
-```
+!!! example
+    ```python
+    !cat mysumstats.annovar | head
+    ```
 
 **stdout:**
 ```
@@ -761,9 +789,10 @@ mysumstats.to_format("./mysumstats",fmt="annovar")
 
 ## Filter and then output
 
-```python
-mysumstats.filter_value("EAF >0.05 and EAF < 0.95").to_format("./mysumstats_maf005", fmt="ssf", ssfmeta=True, md5sum=True)
-```
+!!! example
+    ```python
+    mysumstats.filter_value("EAF >0.05 and EAF < 0.95").to_format("./mysumstats_maf005", fmt="ssf", ssfmeta=True, md5sum=True)
+    ```
 
 **stdout:**
 ```

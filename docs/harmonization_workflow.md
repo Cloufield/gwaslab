@@ -1,14 +1,16 @@
 # Harmonization
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
 ## Load test data
 
-```python
-mysumstats = gl.Sumstats("/home/yunye/work/gwaslab/examples/toy_data/to_harmonize.tsv",fmt="gwaslab",other=["NOTE"])
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("/home/yunye/work/gwaslab/examples/toy_data/to_harmonize.tsv",fmt="gwaslab",other=["NOTE"])
+    ```
 
 **stdout:**
 ```
@@ -39,9 +41,10 @@ Fri Feb  2 19:36:24 2024 Finished loading data successfully!
 
 A list of variants that needs to be harmonized. Issues are described in NOTE column.
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | EAF | BETA | SE | P | N | DIRECTION | STATUS | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -63,13 +66,14 @@ mysumstats.data
 - ref_infer : vcf file with allele frequency information for inferring strand and comparing allele frequency 
 - ref_alt_freq : field in INFO of vcf file for alternative allele frequency
 
-```python
-mysumstats.harmonize(   basic_check=True,
-                        threads=1,
-                        ref_seq=gl.get_path("ucsc_genome_hg19"),
-                        ref_infer=gl.get_path("1kg_eas_hg19"),
-                        ref_alt_freq="AF")
-```
+!!! example
+    ```python
+    mysumstats.harmonize(   basic_check=True,
+                            n_cores=1,
+                            ref_seq=gl.get_path("ucsc_genome_hg19"),
+                            ref_infer=gl.get_path("1kg_eas_hg19"),
+                            ref_alt_freq="AF")
+    ```
 
 **stdout:**
 ```
@@ -210,9 +214,10 @@ Fri Feb  2 19:36:48 2024 Finished reordering the columns.
 
 All variants were checked and harmonized based on the reference datasets. The manipulations are reflected in STATUS column.
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | EAF | BETA | SE | P | N | DIRECTION | STATUS | NOTE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -230,9 +235,10 @@ mysumstats.data
 
 ## Check summary
 
-```python
-mysumstats.summary()
-```
+!!! example
+    ```python
+    mysumstats.summary()
+    ```
 
 | Values | Percentage |
 | --- | --- |
@@ -248,9 +254,10 @@ mysumstats.summary()
 | 6.67 |  |
 | 6.67 |  |
 
-```python
-mysumstats.lookup_status()
-```
+!!! example
+    ```python
+    mysumstats.lookup_status()
+    ```
 
 | Genome_Build | rsID&SNPID | CHR&POS | Stadardize&Normalize | Align | Panlidromic_SNP&Indel | Count | Percentage(%) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -282,9 +289,10 @@ NC_000001.10    10060   rs1639544159    CT      C       .       .       RS=16395
 
  In such case, gwaslab provide built-in conversion table. 
 
-```python
-gl.get_number_to_NC(build="19")
-```
+!!! example
+    ```python
+    gl.get_number_to_NC(build="19")
+    ```
 
 ```
 {1: 'NC_000001.10',
@@ -316,9 +324,10 @@ gl.get_number_to_NC(build="19")
 
 Specify it in assignrsid_args and inferstrand_args for the all-in-one function:
 
-```python
-mysumstats.harmonize(   basic_check=False,
-                        threads=3,
-                        ref_infer="/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
-                        inferstrand_args= {"chr_dict" : gl.get_number_to_NC(build="19")})
-```
+!!! example
+    ```python
+    mysumstats.harmonize(   basic_check=False,
+                            n_cores=3,
+                            ref_infer="/home/yunye/mydata/d_disk/dbsnp/GCF_000001405.25.vcf.gz",
+                            inferstrand_args= {"chr_dict" : gl.get_number_to_NC(build="19")})
+    ```

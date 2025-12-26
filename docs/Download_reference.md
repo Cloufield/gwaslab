@@ -1,8 +1,9 @@
 # Download reference data
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
 ## Check availble reference data
 
@@ -10,9 +11,10 @@ Processed files are hosted on Dropbox. Other files will be downloaded form its o
 
 A list of keywords and urls.
 
-```python
-gl.check_available_ref()
-```
+!!! example
+    ```python
+    gl.check_available_ref()
+    ```
 
 **stdout:**
 ```
@@ -222,9 +224,10 @@ Sat Feb  3 13:45:00 2024  - testlink_tbi  :  https://www.dropbox.com/s/hdneg53t6
 
 GWASLab default directory for saving reference data is `~/.gwaslab`
 
-```python
-gl.download_ref("testlink")
-```
+!!! example
+    ```python
+    gl.download_ref("testlink")
+    ```
 
 **stdout:**
 ```
@@ -239,9 +242,10 @@ Sat Feb  3 13:46:24 2024 Downloaded  testlink  successfully!
 
 ## Check downloaded reference data 
 
-```python
-gl.check_downloaded_ref()
-```
+!!! example
+    ```python
+    gl.check_downloaded_ref()
+    ```
 
 **stdout:**
 ```
@@ -288,9 +292,10 @@ Sat Feb  3 13:46:24 2024   - testlink  :  /home/yunye/.gwaslab/EAS.chr22.split_n
 
 ## Remove downloaded reference data
 
-```python
-gl.remove_file("testlink")
-```
+!!! example
+    ```python
+    gl.remove_file("testlink")
+    ```
 
 **stdout:**
 ```
@@ -323,9 +328,10 @@ or you can simply delete files in `~/.gwaslab`
 
 Get the path using keywords. The path can be passed to other functions.
 
-```python
-gl.get_path("1kg_eas_hg19")
-```
+!!! example
+    ```python
+    gl.get_path("1kg_eas_hg19")
+    ```
 
 ```
 '/home/yunye/.gwaslab/EAS.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz'
@@ -333,9 +339,10 @@ gl.get_path("1kg_eas_hg19")
 
 If you haven't downloaded it. It will return False.
 
-```python
-gl.get_path("1kg_eur_hg19")
-```
+!!! example
+    ```python
+    gl.get_path("1kg_eur_hg19")
+    ```
 
 **stdout:**
 ```
@@ -348,9 +355,10 @@ False
 
 ## Update available reference list
 
-```python
-gl.update_available_ref()
-```
+!!! example
+    ```python
+    gl.update_available_ref()
+    ```
 
 **stdout:**
 ```

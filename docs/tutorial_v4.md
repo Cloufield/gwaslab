@@ -8,6 +8,9 @@
 
 ## Download sample data
 
+📖 **Documentation**: [Download sample data](https://cloufield.github.io/gwaslab/Download/)
+
+
 - Using a Jupyter notebook, we first download a sample dataset.
 - The sample dataset we will use as an example (File size: ~40M):
   1. Sample sumstats `bbj_t2d_hm3_chr7_variants.txt.gz`: processed sumstats (only HapMap3 variants and chr7 region) of type 2 diabetes from BBJ (K. Suzuki et al., Nature Genetics. 51, 379–386 (2019).)
@@ -16,13 +19,15 @@
   4. 1KG EAS reference VCF (only chr7:126253550-128253550) `1kg_eas_hg19.chr7_126253550_128253550.vcf.gz`
     
 
-```python
-!git clone https://github.com/Cloufield/gwaslab-sample-data.git
-```
+!!! example
+    ```python
+    #!git clone https://github.com/Cloufield/gwaslab-sample-data.git
+    ```
 
-```python
-!ls  gwaslab-sample-data
-```
+!!! example
+    ```python
+    !ls  gwaslab-sample-data
+    ```
 
 **stdout:**
 ```
@@ -45,25 +50,28 @@ eas_ldscores
 
 GWASLab can be installed using pip: 
 
-```python
-# !pip install gwaslab==4.0.0
-```
+!!! example
+    ```python
+    # !pip install gwaslab==4.0.0
+    ```
 
 If you installed gwaslab from pip, simply run the command to import the package:
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
 Alternatively, if you want to use the latest development version from GitHub, you can clone the repository and import the package by inserting your package path into the system path:
 
-```python
-#!git clone https://github.com/Cloufield/gwaslab.git
+!!! example
+    ```python
+    #!git clone https://github.com/Cloufield/gwaslab.git
 
-import sys
-sys.path.insert(0,"/home/yunye/work/gwaslab/src")
-import gwaslab as gl
-```
+    import sys
+    sys.path.insert(0,"/home/yunye/work/gwaslab/src")
+    import gwaslab as gl
+    ```
 
 ## Loading data into gwaslab Sumstats
 
@@ -72,20 +80,21 @@ import gwaslab as gl
 
 Let's import the raw sumstats into the `gwaslab.Sumstats` object by specifying the necessary columns.
 
-```python
-mysumstats = gl.Sumstats("gwaslab-sample-data/bbj_t2d_hm3_chr7_variants.txt.gz",
-             snpid="SNPID",
-             chrom="CHR",
-             pos="POS",
-             ea="EA",
-             nea="NEA",
-             neaf="EAF",
-             beta="BETA",
-             se="SE",
-             p="P",
-             n="N",
-             sep="\t")
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("gwaslab-sample-data/bbj_t2d_hm3_chr7_variants.txt.gz",
+                 snpid="SNPID",
+                 chrom="CHR",
+                 pos="POS",
+                 ea="EA",
+                 nea="NEA",
+                 neaf="EAF",
+                 beta="BETA",
+                 se="SE",
+                 p="P",
+                 n="N",
+                 sep="\t")
+    ```
 
 **stdout:**
 ```
@@ -122,9 +131,10 @@ mysumstats = gl.Sumstats("gwaslab-sample-data/bbj_t2d_hm3_chr7_variants.txt.gz",
 
 Alternatively, you can specify format keywords listed in the formatbook (https://github.com/Cloufield/formatbook):  
 
-```python
-# mysumstats = gl.Sumstats("gwaslab-sample-data/bbj_t2d_hm3_chr7_variants.txt.gz", fmt="gwaslab", verbose=True)
-```
+!!! example
+    ```python
+    # mysumstats = gl.Sumstats("gwaslab-sample-data/bbj_t2d_hm3_chr7_variants.txt.gz", fmt="gwaslab", verbose=True)
+    ```
 
 ## Sumstats.data
 
@@ -133,9 +143,10 @@ Alternatively, you can specify format keywords listed in the formatbook (https:/
 
 Sumstats are stored in `Sumstats.data` as a pandas DataFrame. You can check the data like: 
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P | N |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -164,10 +175,11 @@ It is necessary to check variant ID (SNPID), rsID, chromosome (CHR), base pair p
 
 **Note**: Sometimes you need to run this before plotting if the sumstats are not in a standard format.
 
-```python
-#check SNPID,rsID,CHR,POS,EA, NEA and statistics
-mysumstats.basic_check()
-```
+!!! example
+    ```python
+    #check SNPID,rsID,CHR,POS,EA, NEA and statistics
+    mysumstats.basic_check()
+    ```
 
 **stdout:**
 ```
@@ -257,9 +269,10 @@ mysumstats.basic_check()
 
 If the genome build is not specified, GWASLab can infer it based on HapMap3 SNPs. For more details, see: https://cloufield.github.io/gwaslab/InferBuild/
 
-```python
-mysumstats.infer_build()
-```
+!!! example
+    ```python
+    mysumstats.infer_build()
+    ```
 
 **stdout:**
 ```
@@ -281,9 +294,10 @@ mysumstats.infer_build()
 Next you’ll probably want to check is the Manhattan and Q–Q plots for your summary statistics.
 gwaslab performs a minimal QC on the data automatically when generating these plots.
 
-```python
-mysumstats.plot_mqq()
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq()
+    ```
 
 **stdout:**
 ```
@@ -337,9 +351,10 @@ Using `.plot_mqq()`, you can easily plot the Manhattan and Q–Q plots. However,
 - `skip`: skip variants with MLOG10P < `skip` for faster plotting speed
 - `cut`: rescale the MLOG10P values when MLOG10P > `cut`  
 
-```python
-mysumstats.plot_mqq(skip=2, cut=20)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=2, cut=20)
+    ```
 
 **stdout:**
 ```
@@ -391,9 +406,10 @@ mysumstats.plot_mqq(skip=2, cut=20)
 
 This looks better now. But what if we want to annotate some of the most significant loci (for example, lead variants with MLOG10P > 30) and only plot the Manhattan plot?
 
-```python
-mysumstats.plot_mqq(skip=2, cut=20, mode="m", anno=True, anno_sig_level=1e-30)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(skip=2, cut=20, mode="m", anno=True, anno_sig_level=1e-30)
+    ```
 
 **stdout:**
 ```
@@ -441,9 +457,10 @@ mysumstats.plot_mqq(skip=2, cut=20, mode="m", anno=True, anno_sig_level=1e-30)
 
 GWASLab supports a wide range of customizable options. For details on other options for Manhattan and Q–Q plots, see: https://cloufield.github.io/gwaslab/Visualization/
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P | N |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -491,9 +508,10 @@ By specifying `anno=True`, GWASLab will also annotate the lead variant with its 
 
 **Note**: GWASLab will download reference files when you run it for the first time. In this case, `ensembl_hg19_gtf_protein_coding` was downloaded and processed automatically.
 
-```python
-mysumstats.get_lead(anno=True)
-```
+!!! example
+    ```python
+    mysumstats.get_lead(anno=True)
+    ```
 
 **stdout:**
 ```
@@ -573,26 +591,27 @@ For example:
 - MAF-stratified Q–Q plot
 - Save as `my_first_mqq_plot.png` with `{"dpi":400,"facecolor":"white"}`
 
-```python
-mysumstats.plot_mqq(mode="mqq",
-                    cut=20,
-                    skip=2,
-                    anno="GENENAME",
-                    anno_sig_level=1e-20,
-                    anno_alias={"9:22134094_T_C":"some annotations"},
-                    anno_style="expand",
-                    xpad=0.01,
-                    pinpoint=["9:22134094_T_C","6:20686996_C_A"], 
-                    pinpoint_color="green",
-                    highlight=["7:127253550_C_T","11:2858440_G_A"],
-                    highlight_windowkb=1000,
-                    stratified=True,
-                    jagged=True,
-                    marker_size=(5,5),
-                    fig_kwargs={"figsize":(15,5),"dpi":300},
-                    save="my_first_mqq_plot.png", 
-                    save_kwargs={"dpi":400,"facecolor":"white"})
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(mode="mqq",
+                        cut=20,
+                        skip=2,
+                        anno="GENENAME",
+                        anno_sig_level=1e-20,
+                        anno_alias={"9:22134094_T_C":"some annotations"},
+                        anno_style="expand",
+                        xpad=0.01,
+                        pinpoint=["9:22134094_T_C","6:20686996_C_A"], 
+                        pinpoint_color="green",
+                        highlight=["7:127253550_C_T","11:2858440_G_A"],
+                        highlight_windowkb=1000,
+                        stratified=True,
+                        jagged=True,
+                        marker_size=(5,5),
+                        fig_kwargs={"figsize":(15,5),"dpi":300},
+                        save="my_first_mqq_plot.png", 
+                        save_kwargs={"dpi":400,"facecolor":"white"})
+    ```
 
 **stdout:**
 ```
@@ -683,9 +702,10 @@ For details, see: https://cloufield.github.io/gwaslab/RegionalPlot/
 
 We first create a regional plot without LD references by specifying `mode` and `region`.
 
-```python
-mysumstats.plot_mqq(mode="r",skip=2,cut=20, region=(7,126253550,128253550),region_grid=True)
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(mode="r",skip=2,cut=20, region=(7,126253550,128253550),region_grid=True)
+    ```
 
 **stdout:**
 ```
@@ -762,9 +782,10 @@ GWASLab provides preprocessed 1KG datasets for downloading.
 
 Update the available reference list first if needed:
 
-```python
-gl.check_available_ref()
-```
+!!! example
+    ```python
+    gl.check_available_ref()
+    ```
 
 **stdout:**
 ```
@@ -846,20 +867,23 @@ You can see the currently available reference files (from the original source or
 Select the keyword and use `download_ref` to download the files. The downloaded files will be placed in `~/.gwaslab` by default.
 - `1kg_eas_hg19`: processed 1000 Genomes Project EAS samples dataset (hg19; ~2.8GB). It may take several minutes to download.
 
-```python
-# ~2.8GB
-# gl.download_ref("1kg_eas_hg19")
-```
+!!! example
+    ```python
+    # ~2.8GB
+    # gl.download_ref("1kg_eas_hg19")
+    ```
 
-```python
-# gl.check_downloaded_ref()
-```
+!!! example
+    ```python
+    # gl.check_downloaded_ref()
+    ```
 
 After downloading, use `get_path` to obtain the file path by specifying the keyword.
 
-```python
-# gl.get_path("1kg_eas_hg19")
-```
+!!! example
+    ```python
+    # gl.get_path("1kg_eas_hg19")
+    ```
 
 **Note**: 
 - If `tabix` is available in PATH, the speed will be greatly improved. Otherwise, vcf files will be loaded from the head. 
@@ -875,18 +899,20 @@ To create a regional plot with LD information, you need to pass the path of the 
 - For this tutorial, we use the `1kg_eas_hg19.chr7_126253550_128253550.vcf.gz` included in the sample dataset.
 - You can also use the downloaded preprocessed file like `vcf_path = gl.get_path("1kg_eas_hg19")` or your own VCF files.
 
-```python
-# gl.download_ref("ensembl_hg19_gtf")
-```
+!!! example
+    ```python
+    # gl.download_ref("ensembl_hg19_gtf")
+    ```
 
-```python
-mysumstats.plot_mqq(mode="r",
-                    region=(7,126253550,128253550),
-                    region_grid=True,
-                    anno=True,
-                    anno_kwargs={"rotation":0,"fontsize":12},
-                    vcf_path="gwaslab-sample-data/1kg_eas_hg19.chr7_126253550_128253550.vcf.gz")
-```
+!!! example
+    ```python
+    mysumstats.plot_mqq(mode="r",
+                        region=(7,126253550,128253550),
+                        region_grid=True,
+                        anno=True,
+                        anno_kwargs={"rotation":0,"fontsize":12},
+                        vcf_path="gwaslab-sample-data/1kg_eas_hg19.chr7_126253550_128253550.vcf.gz")
+    ```
 
 **stdout:**
 ```
@@ -975,16 +1001,18 @@ rsID is assigned using two types of reference files:
 
 GWASLab provides preprocessed TSV files for 1KG variants (~80M). We can download the file using `.download_ref` with keywords. This time we will use `1kg_dbsnp151_hg19_auto`, which is the SNPID-rsID conversion table for autosomal variants in the 1KG project (hg19). This will take around a few minutes to download.
 
-```python
-# 961M
-# gl.download_ref("1kg_dbsnp151_hg19_auto")
-```
+!!! example
+    ```python
+    # 961M
+    # gl.download_ref("1kg_dbsnp151_hg19_auto")
+    ```
 
 For now, we use the `1kg_dbsnp151_hg19_auto_hm3_chr7_variants.txt.gz` included in the sample dataset.
 
-```python
-mysumstats.assign_rsid(ref_rsid_tsv="gwaslab-sample-data/1kg_dbsnp151_hg19_auto_hm3_chr7_variants.txt.gz")
-```
+!!! example
+    ```python
+    mysumstats.assign_rsid(ref_rsid_tsv="gwaslab-sample-data/1kg_dbsnp151_hg19_auto_hm3_chr7_variants.txt.gz")
+    ```
 
 **stdout:**
 ```
@@ -1025,16 +1053,18 @@ Parameters:
 
 For this tutorial, we use `b157_2564.vcf.gz` in the sample dataset, which is extracted from the b157 version of dbSNP VCF.
 
-```python
-### normal mode
-```
+!!! example
+    ```python
+    ### normal mode
+    ```
 
-```python
-mysumstats.assign_rsid(threads=1,
-                       ref_rsid_vcf="gwaslab-sample-data/b157_2564.vcf.gz"
-                       #chr_dict = gl.get_number_to_NC(build="19")
-                      )
-```
+!!! example
+    ```python
+    mysumstats.assign_rsid(threads=1,
+                           ref_rsid_vcf="gwaslab-sample-data/b157_2564.vcf.gz"
+                           #chr_dict = gl.get_number_to_NC(build="19")
+                          )
+    ```
 
 **stdout:**
 ```
@@ -1063,9 +1093,10 @@ mysumstats.assign_rsid(threads=1,
 
 After this, only 98 variants were not annotated, mostly indels that are not available in the reference VCF.
 
-```python
-mysumstats.data.loc[mysumstats.data["rsID"].isna(),:]
-```
+!!! example
+    ```python
+    mysumstats.data.loc[mysumstats.data["rsID"].isna(),:]
+    ```
 
 | SNPID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P | N | rsID |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1088,9 +1119,10 @@ mysumstats.data.loc[mysumstats.data["rsID"].isna(),:]
 📖 **Documentation**: [# fast implementation using bcftools: sweep mode...](https://cloufield.github.io/gwaslab/AssignrsID/)
 
 
-```python
-mysumstats.assign_rsid2(path="gwaslab-sample-data/b157_2564.vcf.gz",overwrite="all")
-```
+!!! example
+    ```python
+    mysumstats.assign_rsid2(path="gwaslab-sample-data/b157_2564.vcf.gz",overwrite="all")
+    ```
 
 **stdout:**
 ```
@@ -1158,13 +1190,14 @@ http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fast
 
 When calling `.harmonize()`, `.basic_check()` will be called first to make sure the dataset is ready for harmonization. Since we have already performed `basic_check`, we set `basic_check=False` here. For `ref_infer`, we pass the downloaded VCF files for 1KG EAS and specify the field for alternative allele frequency to AF by `ref_alt_freq="AF"`.  
 
-```python
-mysumstats.harmonize(basic_check=False,
-                     threads=3,
-                     ref_seq="gwaslab-sample-data/chr7.fasta.gz",
-                     ref_infer="gwaslab-sample-data/1kg_eas_hg19.chr7_126253550_128253550.vcf.gz",
-                     ref_alt_freq="AF")
-```
+!!! example
+    ```python
+    mysumstats.harmonize(basic_check=False,
+                         threads=3,
+                         ref_seq="gwaslab-sample-data/chr7.fasta.gz",
+                         ref_infer="gwaslab-sample-data/1kg_eas_hg19.chr7_126253550_128253550.vcf.gz",
+                         ref_alt_freq="AF")
+    ```
 
 **stdout:**
 ```
@@ -1260,9 +1293,10 @@ mysumstats.harmonize(basic_check=False,
 | X:154763036_A_G | rs5940466 | 23 | 154763036 | G | A | 1960090 | 0.3686 | -0.0102 | 0.0105 | 0.3302 | 191764 | False |
 | X:154816439_A_C | rs1084451 | 23 | 154816439 | C | A | 1960090 | 0.2339 | -0.0083 | 0.0100 | 0.4021 | 191764 | False |
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | rsID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P | N | ALLELE_FLIPPED |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1289,9 +1323,10 @@ Check the data again. It looks good!
 
 Check the summary of the current sumstats (see: https://cloufield.github.io/gwaslab/StatusCode/):
 
-```python
-mysumstats.summary()
-```
+!!! example
+    ```python
+    mysumstats.summary()
+    ```
 
 ```
 {'overview': {'Row_num': '1103020',
@@ -1686,9 +1721,10 @@ mysumstats.summary()
 
 Check the details of harmonization results `.lookup_status()`
 
-```python
-mysumstats.lookup_status()
-```
+!!! example
+    ```python
+    mysumstats.lookup_status()
+    ```
 
 | Genome_Build | rsID&SNPID | CHR&POS | Stadardize&Normalize | Align | Panlidromic_SNP&Indel | Count | Percentage(%) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1713,9 +1749,10 @@ You can easily format the processed sumstats and save them. For details, see: ht
 
 Let's export the sumstats in the default format used in LDSC. 
 
-```python
-mysumstats.to_format("clean_sumstats",fmt="ldsc")
-```
+!!! example
+    ```python
+    mysumstats.to_format("clean_sumstats",fmt="ldsc")
+    ```
 
 **stdout:**
 ```
@@ -1747,9 +1784,10 @@ Sometimes we only need to export part of the sumstats. For example:
 - We can specify `exclude_hla=True` to exclude variants in the HLA region when exporting
 - We can specify `md5sum=True` to calculate the MD5 checksum value for the exported sumstats
 
-```python
-mysumstats.to_format("clean_sumstats",fmt="ldsc",hapmap3=True,exclude_hla=True,md5sum=True)
-```
+!!! example
+    ```python
+    mysumstats.to_format("clean_sumstats",fmt="ldsc",hapmap3=True,exclude_hla=True,md5sum=True)
+    ```
 
 **stdout:**
 ```
@@ -1799,9 +1837,10 @@ mysumstats.to_format("clean_sumstats",fmt="ldsc",hapmap3=True,exclude_hla=True,m
 📖 **Documentation**: [# Output in GWAS-SSF format with validation...](https://cloufield.github.io/gwaslab/Format/)
 
 
-```python
-mysumstats.to_format("clean_sumstats",fmt="ssf",ssfmeta=True, md5sum=True, validate=True)
-```
+!!! example
+    ```python
+    mysumstats.to_format("clean_sumstats",fmt="ssf",ssfmeta=True, md5sum=True, validate=True)
+    ```
 
 **stdout:**
 ```
@@ -1860,9 +1899,10 @@ GWASLab can perform liftover for base pair positions.
 
 
 
-```python
-mysumstats.liftover(from_build="19", to_build="38")
-```
+!!! example
+    ```python
+    mysumstats.liftover(from_build="19", to_build="38")
+    ```
 
 **stdout:**
 ```
@@ -1907,9 +1947,10 @@ mysumstats.liftover(from_build="19", to_build="38")
 2025/12/25 20:55:37 Finished liftover.
 ```
 
-```python
-mysumstats.data
-```
+!!! example
+    ```python
+    mysumstats.data
+    ```
 
 | SNPID | rsID | CHR | POS | EA | NEA | STATUS | EAF | BETA | SE | P | N | ALLELE_FLIPPED |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1936,13 +1977,15 @@ For details, see https://cloufield.github.io/gwaslab/LiftOver/
 
 Reload the sample data and run LDSC in GWASLab:
 
-```python
-mysumstats = gl.Sumstats("gwaslab-sample-data/bbj_t2d_hm3_chr7_variants.txt.gz", fmt="gwaslab", build="19", verbose=False)
-```
+!!! example
+    ```python
+    mysumstats = gl.Sumstats("gwaslab-sample-data/bbj_t2d_hm3_chr7_variants.txt.gz", fmt="gwaslab", build="19", verbose=False)
+    ```
 
-```python
-mysumstats.filter_hapmap3(inplace=True)
-```
+!!! example
+    ```python
+    mysumstats.filter_hapmap3(inplace=True)
+    ```
 
 **stdout:**
 ```
@@ -1957,13 +2000,14 @@ mysumstats.filter_hapmap3(inplace=True)
 2025/12/25 20:55:43 Finished extracting HapMap3 SNPs.
 ```
 
-```python
-# Pass your LD score files downloaded from LDSC
-# https://github.com/bulik/ldsc
+!!! example
+    ```python
+    # Pass your LD score files downloaded from LDSC
+    # https://github.com/bulik/ldsc
 
-mysumstats.estimate_h2_by_ldsc(ref_ld_chr="gwaslab-sample-data/eas_ldscores/", 
-                                 w_ld_chr="gwaslab-sample-data/eas_ldscores/")
-```
+    mysumstats.estimate_h2_by_ldsc(ref_ld_chr="gwaslab-sample-data/eas_ldscores/", 
+                                     w_ld_chr="gwaslab-sample-data/eas_ldscores/")
+    ```
 
 **stdout:**
 ```
@@ -1998,9 +2042,10 @@ mysumstats.estimate_h2_by_ldsc(ref_ld_chr="gwaslab-sample-data/eas_ldscores/",
 2025/12/25 20:55:53 Finished running LD score regression.
 ```
 
-```python
-mysumstats.ldsc_h2
-```
+!!! example
+    ```python
+    mysumstats.ldsc_h2
+    ```
 
 | h2_obs | h2_se | Lambda_gc | Mean_chi2 | Intercept | Intercept_se | Ratio | Ratio_se | Catagories |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |

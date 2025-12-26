@@ -296,11 +296,15 @@ def read_gtf_file(gtf_path):
         ],
     )
 
+# Module-level cache for GTF data
+_GTF_CACHE = {}
+
 def get_gtf(chrom, build="19", source="ensembl"):
     """
     Get GTF data for a specific chromosome.
     
     Optimized to filter by chromosome early during file reading for speed.
+    Results are cached for faster subsequent access.
     
     Parameters
     ----------
@@ -316,6 +320,13 @@ def get_gtf(chrom, build="19", source="ensembl"):
     pandas.DataFrame
         GTF data for the specified chromosome
     """
+    # Create cache key
+    cache_key = f"{build}_{source}_{chrom}"
+    
+    # Check cache first
+    if cache_key in _GTF_CACHE:
+        return _GTF_CACHE[cache_key].copy()
+    
     gtf = None
     if source == "ensembl":
         if build == "19":
@@ -406,6 +417,10 @@ def get_gtf(chrom, build="19", source="ensembl"):
                 "gene_name",
             ]
         )
+    
+    # Cache the result for future use
+    _GTF_CACHE[cache_key] = gtf.copy()
+    
     return gtf
 
 def gtf_to_protein_coding(gtfpath, log=Log(), verbose=True):

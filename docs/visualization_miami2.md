@@ -1,19 +1,22 @@
 # Miami plot
 
-```python
-#!wget -O ../0_sample_data/bmi_male_bbj.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
-#!wget -O ../0_sample_data/bmi_female_bbj.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
-```
+!!! example
+    ```python
+    #!wget -O ../0_sample_data/bmi_male_bbj.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
+    #!wget -O ../0_sample_data/bmi_female_bbj.txt.gz http://jenger.riken.jp/4analysisresult_qtl_download/
+    ```
 
 ## Load gwaslab and sample data
 
-```python
-import gwaslab as gl
-```
+!!! example
+    ```python
+    import gwaslab as gl
+    ```
 
-```python
-gl.show_version()
-```
+!!! example
+    ```python
+    gl.show_version()
+    ```
 
 **stdout:**
 ```
@@ -21,14 +24,16 @@ gl.show_version()
 2024/12/23 13:00:30 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
 ```
 
-```python
-gl1 = gl.Sumstats("../0_sample_data/bbj_bmi_female.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t",build="19",verbose=False)
-gl2 = gl.Sumstats("../0_sample_data/bbj_bmi_male.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t",build="19",verbose=False)
-```
+!!! example
+    ```python
+    gl1 = gl.Sumstats("../0_sample_data/bbj_bmi_female.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t",build="19",verbose=False)
+    gl2 = gl.Sumstats("../0_sample_data/bbj_bmi_male.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t",build="19",verbose=False)
+    ```
 
-```python
-gl1.get_lead()
-```
+!!! example
+    ```python
+    gl1.get_lead()
+    ```
 
 **stdout:**
 ```
@@ -59,27 +64,28 @@ gl1.get_lead()
 
 ## Most options in plot_mqq() are available for plot_miami2()
 
-```python
-#simply add 1 or 2 after the option for plot_mqq() to customize the top or bottom figure in miami plot
-a = gl.plot_miami2(path1= gl1,
-                   path2= gl2,
-                   skip=2,
-                   cut1=20,
-                   cut2=15,
-                   id1="SNPID",
-                   id2="SNPID",
-                   anno1=True,
-                   anno2="GENENAME",
-                   anno_set1=["rs3798519"],
-                   pinpoint1=[["rs3798519","rs35560038"],["rs7933262","rs8098510"]],
-                   pinpoint_color1=["purple","black"],
-                   highlight1=["rs8098510"],
-                   highlight2=[["rs8098510","rs3798519"], ["rs1491850"]],
-                   highlight_color2=["red","yellow"],
-                   verbose1=False,
-                   verbose2=False
-)
-```
+!!! example
+    ```python
+    #simply add 1 or 2 after the option for plot_mqq() to customize the top or bottom figure in miami plot
+    a = gl.plot_miami2(path1= gl1,
+                       path2= gl2,
+                       skip=2,
+                       cut1=20,
+                       cut2=15,
+                       id1="SNPID",
+                       id2="SNPID",
+                       anno1=True,
+                       anno2="GENENAME",
+                       anno_set1=["rs3798519"],
+                       pinpoint1=[["rs3798519","rs35560038"],["rs7933262","rs8098510"]],
+                       pinpoint_color1=["purple","black"],
+                       highlight1=["rs8098510"],
+                       highlight2=[["rs8098510","rs3798519"], ["rs1491850"]],
+                       highlight_color2=["red","yellow"],
+                       verbose1=False,
+                       verbose2=False
+    )
+    ```
 
 **stdout:**
 ```
