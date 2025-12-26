@@ -26,23 +26,21 @@ ldsc = pd.read_csv("../0_sample_data/toy_data/input_rg.txt",sep="\t")
 ldsc
 ```
 
-```
-| p1_category | p1 | p2_category | p2 | rg | \ |
-| --- | --- | --- | --- | --- | --- |
-| 0 | Anthropometric | Height | Anthropometric | BMI -0.0587 |  |
-| 1 | Anthropometric | Height | Metabolic | TC -0.0778 |  |
-| 2 | Anthropometric | Height | Metabolic | HDL-C -0.0045 |  |
-| 3 | Anthropometric | Height | Metabolic | LDL-C -0.1245 |  |
-| 4 | Anthropometric | Height | Metabolic | TG -0.0426 |  |
-| ... | ... | ... | ... | ... | ... |
-| 3911 | 0.1433 | 2.2683 | 0.023300 | 0.187944 |  |
-| 3912 | 0.1756 | 1.2315 | 0.218100 | 0.596616 |  |
-| 3913 | 0.1794 | 0.3701 | 0.711300 | 0.903018 |  |
-| 3914 | 0.1592 -0.5159 | 0.605890 | 0.863730 |  |  |
-| 3915 | 0.1292 | 1.5324 | 0.125410 | 0.456418 |  |
+| p1_category | p1 | p2_category | p2 | rg | se | z | p | q |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Anthropometric | Height | Anthropometric | BMI | -0.0587 | 0.0240 | -2.4421 | 0.014602 | 0.136798 |
+| Anthropometric | Height | Metabolic | TC | -0.0778 | 0.0344 | -2.2634 | 0.023611 | 0.188695 |
+| Anthropometric | Height | Metabolic | HDL-C | -0.0045 | 0.0364 | -0.1230 | 0.902080 | 0.971590 |
+| Anthropometric | Height | Metabolic | LDL-C | -0.1245 | 0.0426 | -2.9228 | 0.003469 | 0.050126 |
+| Anthropometric | Height | Metabolic | TG | -0.0426 | 0.0309 | -1.3792 | 0.167820 | 0.523652 |
+| ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| Other | Pollinosis | Tumor | PrCa | 0.3250 | 0.1433 | 2.2683 | 0.023300 | 0.187944 |
+| Other | Pollinosis | Tumor | UF | 0.2163 | 0.1756 | 1.2315 | 0.218100 | 0.596616 |
+| Other | Pollinosis | Other | Urolithiasis | 0.0664 | 0.1794 | 0.3701 | 0.711300 | 0.903018 |
+| Other | Urolithiasis | Allergic disease | AD | -0.0821 | 0.1592 | -0.5159 | 0.605890 | 0.863730 |
+| Other | Urolithiasis | Tumor | UF | 0.1980 | 0.1292 | 1.5324 | 0.125410 | 0.456418 |
 
-*[3916 rows x 9 columns]*
-```
+*[11 rows x 9 columns]*
 
 ## Full heatmap
 

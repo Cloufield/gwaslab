@@ -43,57 +43,21 @@ A list of variants that needs to be harmonized. Issues are described in NOTE col
 mysumstats.data
 ```
 
-```
-| SNPID CHR | POS | EA | NEA | EAF | BETA | SE | \ |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:1066403:T:C | 1 | 1066403 | C | T | 0.5276 | 0.0043 |
-| 1 | 1:1163266:G:A | 1 | 1163266 | G | A | 0.8355 | 0.0122 |
-| 2 | 1:1213224:T:A | 1 | 1213224 | T | A | 0.3345 | 0.0071 |
-| 3 | 1:3066761:A:T | 1 | 3066761 | T | A | 0.1245 -0.0066 | 0.0157 |
-| 4 | 1:3997271:T:TTTTA | 1 | 3997271 | TTTTA | T | 0.3840 | 0.0188 |
-| 5 | 1:4007705:TC:T | 1 | 4007705 | TC | T | 0.4368 | 0.0306 |
-| 6 | 1:5164281:A:AAGAG | 1 | 5164281 | AAGAG | A | 0.9871 | 0.0167 |
-| 7 | 1:12799025:C:CCT | 1 | 12799025 | C | CCT | 0.1730 -0.0186 | 0.0118 |
-| 8 | 1:19323015:T:A | 1 | 19323015 | T | A | 0.4389 -0.0165 | 0.0088 |
-| 9 | 1:22841855:A:T | 1 | 22841855 | T | A | 0.4527 | 0.0080 |
-| 10 | 3:183629306:T:TTCTC | 3 | 183629306 | TTCTC | T | 0.0082 -0.0083 | 0.0555 |
-| 11 | 4:99731866:G:C | 4 | 99731866 | G | C | 0.3883 | 0.0052 |
-| 12 | 8:89935201:C:G | 8 | 89935201 | G | C | 0.3533 | 0.0103 |
-| 13 | X:4206466:G:C | X | 4206466 | G | C | 0.8727 -0.0055 | 0.0104 |
-| 14 | X:5053229:A:T | X | 5053229 | T | A | 0.9747 | 0.0218 |
-|  | P | N DIRECTION | STATUS | \ |  |  |  |
-| 0 | 0.68910 | 191764 | ++-+ | 9999999 |  |  |  |
-| 1 | 0.30810 | 191764 | -+++ | 9999999 |  |  |  |
-| 2 | 0.45280 | 191764 | +++- | 9999999 |  |  |  |
-| 3 | 0.67420 | 191764 | -+++ | 9999999 |  |  |  |
-| 4 | 0.16300 | 191764 | ++++ | 9999999 |  |  |  |
-| 5 | 0.01421 | 191764 | ++++ | 9999999 |  |  |  |
-| 6 | 0.71200 | 191764 | -+++ | 9999999 |  |  |  |
-| 7 | 0.11500 | 191764 | ---+ | 9999999 |  |  |  |
-| 8 | 0.05949 | 191764 | ---- | 9999999 |  |  |  |
-| 9 | 0.39980 | 191764 | -++- | 9999999 |  |  |  |
-| 10 | 0.88060 | 191764 | +--+ | 9999999 |  |  |  |
-| 11 | 0.57360 | 191764 | +-++ | 9999999 |  |  |  |
-| 12 | 0.27560 | 191764 | ++++ | 9999999 |  |  |  |
-| 13 | 0.59840 | 191764 | -+-- | 9999999 |  |  |  |
-| 14 | 0.33180 | 191764 | ++++ | 9999999 |  |  |  |
-|  | NOTE |  |  |  |  |  |  |
-| 0 | Clean |  |  |  |  |  |  |
-| 1 | Flip |  |  |  |  |  |  |
-| 2 | Flip + Palindromic |  |  |  |  |  |  |
-| 3 | Palindromic + No flip |  |  |  |  |  |  |
-| 4 | Indel + Both on genome + No flip |  |  |  |  |  |  |
-| 5 | Indel | + Both on genome + Flip |  |  |  |  |  |
-| 6 | Indel |  |  |  |  |  |  |
-| 7 | Indel + Flip |  |  |  |  |  |  |
-| 8 | Palindromic + Flip + Indistinguishable |  |  |  |  |  |  |
-| 9 | Palindromic + Indistinguishable |  |  |  |  |  |  |
-| 10 | Indel | + Both on genome + No information |  |  |  |  |  |
-| 11 | Palindromic+ Flip + Different strand (REF G, T... |  |  |  |  |  |  |
-| 12 | Palindromic + Different strand (REF A; TOMMO G... |  |  |  |  |  |  |
-| 13 | Palindromic + Flip + No information |  |  |  |  |  |  |
-| 14 | Palindromic + No information |  |  |  |  |  |  |
-```
+| SNPID | CHR | POS | EA | NEA | EAF | BETA | SE | P | N | DIRECTION | STATUS | NOTE |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1:1066403:T:C | 1 | 1066403 | C | T | 0.5276 | 0.0043 | 0.0109 | 0.68910 | 191764 | ++-+ | 9999999 | Clean |
+| 1:1163266:G:A | 1 | 1163266 | G | A | 0.8355 | 0.0122 | 0.0120 | 0.30810 | 191764 | -+++ | 9999999 | Flip |
+| 1:1213224:T:A | 1 | 1213224 | T | A | 0.3345 | 0.0071 | 0.0095 | 0.45280 | 191764 | +++- | 9999999 | Flip + Palindromic |
+| 1:3066761:A:T | 1 | 3066761 | T | A | 0.1245 | -0.0066 | 0.0157 | 0.67420 | 191764 | -+++ | 9999999 | Palindromic + No flip |
+| 1:3997271:T:TTTTA | 1 | 3997271 | TTTTA | T | 0.3840 | 0.0188 | 0.0135 | 0.16300 | 191764 | ++++ | 9999999 | Indel + Both on genome + No flip |
+| ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| 3:183629306:T:TTCTC | 3 | 183629306 | TTCTC | T | 0.0082 | -0.0083 | 0.0555 | 0.88060 | 191764 | +--+ | 9999999 | Indel  + Both on genome + No information |
+| 4:99731866:G:C | 4 | 99731866 | G | C | 0.3883 | 0.0052 | 0.0093 | 0.57360 | 191764 | +-++ | 9999999 | Palindromic+ Flip + Different strand (REF G, T... |
+| 8:89935201:C:G | 8 | 89935201 | G | C | 0.3533 | 0.0103 | 0.0094 | 0.27560 | 191764 | ++++ | 9999999 | Palindromic + Different strand (REF A; TOMMO G... |
+| X:4206466:G:C | X | 4206466 | G | C | 0.8727 | -0.0055 | 0.0104 | 0.59840 | 191764 | -+-- | 9999999 | Palindromic + Flip + No information |
+| X:5053229:A:T | X | 5053229 | T | A | 0.9747 | 0.0218 | 0.0225 | 0.33180 | 191764 | ++++ | 9999999 | Palindromic + No information |
+
+*[15 rows x 13 columns]*
 
 ## Perform harmonization
 
@@ -252,57 +216,21 @@ All variants were checked and harmonized based on the reference datasets. The ma
 mysumstats.data
 ```
 
-```
-| SNPID | CHR | POS | EA NEA | EAF | BETA | SE | \ |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 1:1066403:T:C | 1 | 1066403 | C | T | 0.5276 | 0.0043 |
-| 1 | 1:1163266:G:A | 1 | 1163266 | A | G | 0.1645 -0.0122 | 0.0120 |
-| 2 | 1:1213224:T:A | 1 | 1213224 | A | T | 0.6655 -0.0071 | 0.0095 |
-| 3 | 1:3066761:A:T | 1 | 3066761 | T | A | 0.1245 -0.0066 | 0.0157 |
-| 4 | 1:3997271:T:TTTTA | 1 | 3997271 | TTTTA | T | 0.3840 | 0.0188 |
-| 5 | 1:4007705:TC:T | 1 | 4007705 | T | TC | 0.5632 -0.0306 | 0.0125 |
-| 6 | 1:5164281:A:AAGAG | 1 | 5164281 | AAGAG | A | 0.9871 | 0.0167 |
-| 7 | 1:12799025:C:CCT | 1 | 12799025 | CCT | C | 0.8270 | 0.0186 |
-| 8 | 1:19323015:T:A | 1 | 19323015 | A | T | 0.5611 | 0.0165 |
-| 9 | 1:22841855:A:T | 1 | 22841855 | T | A | 0.4527 | 0.0080 |
-| 10 | 3:183629306:T:TTCTC | 3 | 183629306 | TTCTC | T | 0.0082 -0.0083 | 0.0555 |
-| 11 | 4:99731866:G:C | 4 | 99731866 | C | G | 0.3883 | 0.0052 |
-| 12 | 8:89935201:C:G | 8 | 89935201 | G | C | 0.6467 -0.0103 | 0.0094 |
-| 13 | X:4206466:G:C | 23 | 4206466 | C | G | 0.1273 | 0.0055 |
-| 14 | X:5053229:A:T | 23 | 5053229 | T | A | 0.9747 | 0.0218 |
-|  | P | N DIRECTION | STATUS | \ |  |  |  |
-| 0 | 0.68910 | 191764 | ++-+ | 9960000 |  |  |  |
-| 1 | 0.30810 | 191764 | +--- | 9960010 |  |  |  |
-| 2 | 0.45280 | 191764 | ---+ | 9960011 |  |  |  |
-| 3 | 0.67420 | 191764 | -+++ | 9960001 |  |  |  |
-| 4 | 0.16300 | 191764 | ++++ | 9960363 |  |  |  |
-| 5 | 0.01421 | 191764 | ---- | 9960364 |  |  |  |
-| 6 | 0.71200 | 191764 | -+++ | 9960309 |  |  |  |
-| 7 | 0.11500 | 191764 | +++- | 9960319 |  |  |  |
-| 8 | 0.05949 | 191764 | ++++ | 9960017 |  |  |  |
-| 9 | 0.39980 | 191764 | -++- | 9960007 |  |  |  |
-| 10 | 0.88060 | 191764 | +--+ | 9960368 |  |  |  |
-| 11 | 0.57360 | 191764 | +-++ | 9960012 |  |  |  |
-| 12 | 0.27560 | 191764 | ---- | 9960002 |  |  |  |
-| 13 | 0.59840 | 191764 | +-++ | 9960018 |  |  |  |
-| 14 | 0.33180 | 191764 | ++++ | 9960008 |  |  |  |
-|  | NOTE |  |  |  |  |  |  |
-| 0 | Clean |  |  |  |  |  |  |
-| 1 | Flip |  |  |  |  |  |  |
-| 2 | Flip + Palindromic |  |  |  |  |  |  |
-| 3 | Palindromic + No flip |  |  |  |  |  |  |
-| 4 | Indel + Both on genome + No flip |  |  |  |  |  |  |
-| 5 | Indel | + Both on genome + Flip |  |  |  |  |  |
-| 6 | Indel |  |  |  |  |  |  |
-| 7 | Indel + Flip |  |  |  |  |  |  |
-| 8 | Palindromic + Flip + Indistinguishable |  |  |  |  |  |  |
-| 9 | Palindromic + Indistinguishable |  |  |  |  |  |  |
-| 10 | Indel | + Both on genome + No information |  |  |  |  |  |
-| 11 | Palindromic+ Flip + Different strand (REF G, T... |  |  |  |  |  |  |
-| 12 | Palindromic + Different strand (REF A; TOMMO G... |  |  |  |  |  |  |
-| 13 | Palindromic + Flip + No information |  |  |  |  |  |  |
-| 14 | Palindromic + No information |  |  |  |  |  |  |
-```
+| SNPID | CHR | POS | EA | NEA | EAF | BETA | SE | P | N | DIRECTION | STATUS | NOTE |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1:1066403:T:C | 1 | 1066403 | C | T | 0.5276 | 0.0043 | 0.0109 | 0.68910 | 191764 | ++-+ | 9960000 | Clean |
+| 1:1163266:G:A | 1 | 1163266 | A | G | 0.1645 | -0.0122 | 0.0120 | 0.30810 | 191764 | +--- | 9960010 | Flip |
+| 1:1213224:T:A | 1 | 1213224 | A | T | 0.6655 | -0.0071 | 0.0095 | 0.45280 | 191764 | ---+ | 9960011 | Flip + Palindromic |
+| 1:3066761:A:T | 1 | 3066761 | T | A | 0.1245 | -0.0066 | 0.0157 | 0.67420 | 191764 | -+++ | 9960001 | Palindromic + No flip |
+| 1:3997271:T:TTTTA | 1 | 3997271 | TTTTA | T | 0.3840 | 0.0188 | 0.0135 | 0.16300 | 191764 | ++++ | 9960363 | Indel + Both on genome + No flip |
+| ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| 3:183629306:T:TTCTC | 3 | 183629306 | TTCTC | T | 0.0082 | -0.0083 | 0.0555 | 0.88060 | 191764 | +--+ | 9960368 | Indel  + Both on genome + No information |
+| 4:99731866:G:C | 4 | 99731866 | C | G | 0.3883 | 0.0052 | 0.0093 | 0.57360 | 191764 | +-++ | 9960012 | Palindromic+ Flip + Different strand (REF G, T... |
+| 8:89935201:C:G | 8 | 89935201 | G | C | 0.6467 | -0.0103 | 0.0094 | 0.27560 | 191764 | ---- | 9960002 | Palindromic + Different strand (REF A; TOMMO G... |
+| X:4206466:G:C | 23 | 4206466 | C | G | 0.1273 | 0.0055 | 0.0104 | 0.59840 | 191764 | +-++ | 9960018 | Palindromic + Flip + No information |
+| X:5053229:A:T | 23 | 5053229 | T | A | 0.9747 | 0.0218 | 0.0225 | 0.33180 | 191764 | ++++ | 9960008 | Palindromic + No information |
+
+*[15 rows x 13 columns]*
 
 ## Check summary
 
@@ -310,137 +238,41 @@ mysumstats.data
 mysumstats.summary()
 ```
 
-```
-| Values | \ |
+| Values | Percentage |
 | --- | --- |
-| Category Items |  |
-| META | Row_num |
-|  | Column_num |
-|  | Column_names |
-|  | Last_checked_time |
-| MISSING | Missing_total |
-| MAF | Common |
-|  | Low_frequency |
-|  | Rare |
-| P | Minimum |
-|  | Significant |
-|  | Suggestive |
-| STATUS | 9960000 |
-|  | 9960001 |
-|  | 9960002 |
-|  | 9960007 |
-|  | 9960008 |
-|  | 9960010 |
-|  | 9960011 |
-|  | 9960012 |
-|  | 9960017 |
-|  | 9960018 |
-|  | 9960309 |
-|  | 9960319 |
-|  | 9960363 |
-|  | 9960364 |
-|  | 9960368 |
-|  | Percentage |
-| Category Items |  |
-| META | Row_num |
-|  | Column_num |
-|  | Column_names |
-|  | Last_checked_time |
-| MISSING | Missing_total |
-| MAF | Common |
-|  | Low_frequency |
-|  | Rare |
-| P | Minimum |
-|  | Significant |
-|  | Suggestive |
-| STATUS | 9960000 |
-|  | 9960001 |
-|  | 9960002 |
-|  | 9960007 |
-|  | 9960008 |
-|  | 9960010 |
-|  | 9960011 |
-|  | 9960012 |
-|  | 9960017 |
-|  | 9960018 |
-|  | 9960309 |
-|  | 9960319 |
-|  | 9960363 |
-|  | 9960364 |
-|  | 9960368 |
-```
+| 15 | <NA> |
+| <NA> |  |
+| <NA> |  |
+| <NA> |  |
+| 0 | 0.0 |
+| ... | ... |
+| 6.67 |  |
+| 6.67 |  |
+| 6.67 |  |
+| 6.67 |  |
+| 6.67 |  |
+
+*[26 rows x 2 columns]*
 
 ```python
 mysumstats.lookup_status()
 ```
 
-```
-| Genome_Build | rsID&SNPID | CHR&POS | \ |
-| --- | --- | --- | --- |
-| 9960000 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960001 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960002 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960007 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960008 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960010 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960011 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960012 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960017 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960018 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960309 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960319 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960363 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960364 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-| 9960368 | Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid |
-|  | Stadardize&Normalize | \ |  |
-| 9960000 | standardized SNP |  |  |
-| 9960001 | standardized SNP |  |  |
-| 9960002 | standardized SNP |  |  |
-| 9960007 | standardized SNP |  |  |
-| 9960008 | standardized SNP |  |  |
-| 9960010 | standardized SNP |  |  |
-| 9960011 | standardized SNP |  |  |
-| 9960012 | standardized SNP |  |  |
-| 9960017 | standardized SNP |  |  |
-| 9960018 | standardized SNP |  |  |
-| 9960309 | standardized & normalized indel |  |  |
-| 9960319 | standardized & normalized indel |  |  |
-| 9960363 | standardized & normalized indel |  |  |
-| 9960364 | standardized & normalized indel |  |  |
-| 9960368 | standardized & normalized indel |  |  |
-|  | Align | Panlidromic_SNP&Indel | \ |
-| 9960000 | Match: NEA=REF | Not_palindromic_SNPs |  |
-| 9960001 | Match: NEA=REF | Palindromic+strand |  |
-| 9960002 | Match: NEA=REF | Palindromic-strand_fixed |  |
-| 9960007 | Match: NEA=REF | Indistinguishable |  |
-| 9960008 | Match: NEA=REF | No_matching_or_no_info |  |
-| 9960010 | Flipped_fixed | Not_palindromic_SNPs |  |
-| 9960011 | Flipped_fixed | Palindromic+strand |  |
-| 9960012 | Flipped_fixed | Palindromic-strand_fixed |  |
-| 9960017 | Flipped_fixed | Indistinguishable |  |
-| 9960018 | Flipped_fixed | No_matching_or_no_info |  |
-| 9960309 | Match: NEA=REF | Unchecked |  |
-| 9960319 | Flipped_fixed | Unchecked |  |
-| 9960363 | Both_alleles_on_ref+indistinguishable | Indel_match |  |
-| 9960364 | Both_alleles_on_ref+indistinguishable | Indel_flipped_fixed |  |
-| 9960368 | Both_alleles_on_ref+indistinguishable | No_matching_or_no_info |  |
-|  | Count Percentage(%) |  |  |
-| 9960000 | 1 | 6.67 |  |
-| 9960001 | 1 | 6.67 |  |
-| 9960002 | 1 | 6.67 |  |
-| 9960007 | 1 | 6.67 |  |
-| 9960008 | 1 | 6.67 |  |
-| 9960010 | 1 | 6.67 |  |
-| 9960011 | 1 | 6.67 |  |
-| 9960012 | 1 | 6.67 |  |
-| 9960017 | 1 | 6.67 |  |
-| 9960018 | 1 | 6.67 |  |
-| 9960309 | 1 | 6.67 |  |
-| 9960319 | 1 | 6.67 |  |
-| 9960363 | 1 | 6.67 |  |
-| 9960364 | 1 | 6.67 |  |
-| 9960368 | 1 | 6.67 |  |
-```
+| Genome_Build | rsID&SNPID | CHR&POS | Stadardize&Normalize | Align | Panlidromic_SNP&Indel | Count | Percentage(%) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized SNP | Match: NEA=REF | Not_palindromic_SNPs | 1 | 6.67 |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized SNP | Match: NEA=REF | Palindromic+strand | 1 | 6.67 |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized SNP | Match: NEA=REF | Palindromic-strand_fixed | 1 | 6.67 |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized SNP | Match: NEA=REF | Indistinguishable | 1 | 6.67 |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized SNP | Match: NEA=REF | No_matching_or_no_info | 1 | 6.67 |
+| ... | ... | ... | ... | ... | ... | ... | ... |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Match: NEA=REF | Unchecked | 1 | 6.67 |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Flipped_fixed | Unchecked | 1 | 6.67 |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Both_alleles_on_ref+indistinguishable | Indel_match | 1 | 6.67 |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Both_alleles_on_ref+indistinguishable | Indel_flipped_fixed | 1 | 6.67 |
+| Unchecked | rsid unknown & SNPID valid | CHR valid & POS valid | standardized & normalized indel | Both_alleles_on_ref+indistinguishable | No_matching_or_no_info | 1 | 6.67 |
+
+*[15 rows x 8 columns]*
 
 ## VCF : NCBI Sequence Identifiers
 

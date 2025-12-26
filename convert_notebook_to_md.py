@@ -18,6 +18,8 @@ import os
 import base64
 import re
 import yaml
+import html as html_module
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 import argparse
@@ -37,6 +39,200 @@ def extract_image_data(output: Dict[str, Any]) -> Optional[tuple]:
         elif 'image/svg+xml' in data:
             return ('svg', data['image/svg+xml'])
     return None
+
+
+class TableHTMLParser(HTMLParser):
+    """Parser to extract table data from HTML."""
+    def __init__(self):
+        super().__init__()
+        self.headers = []
+        self.rows = []
+        self.current_row = []
+        self.in_table = False
+        self.in_thead = False
+        self.in_tbody = False
+        self.in_tr = False
+        self.in_cell = False
+        self.current_cell = []
+    
+    def handle_starttag(self, tag, attrs):
+        tag_lower = tag.lower()
+        if tag_lower == 'table':
+            self.in_table = True
+        elif tag_lower == 'thead':
+            self.in_thead = True
+        elif tag_lower == 'tbody':
+            self.in_tbody = True
+        elif tag_lower == 'tr':
+            self.in_tr = True
+            self.current_row = []
+        elif tag_lower in ('td', 'th'):
+            self.in_cell = True
+            self.current_cell = []
+    
+    def handle_endtag(self, tag):
+        tag_lower = tag.lower()
+        if tag_lower == 'table':
+            self.in_table = False
+        elif tag_lower == 'thead':
+            self.in_thead = False
+        elif tag_lower == 'tbody':
+            self.in_tbody = False
+        elif tag_lower == 'tr':
+            if self.current_row:
+                if self.in_thead:
+                    # This is a header row
+                    if not self.headers:
+                        self.headers = self.current_row[:]
+                else:
+                    # This is a data row
+                    self.rows.append(self.current_row[:])
+            self.current_row = []
+            self.in_tr = False
+        elif tag_lower in ('td', 'th'):
+            if self.in_cell:
+                cell_text = ''.join(self.current_cell).strip()
+                self.current_row.append(cell_text)
+                self.current_cell = []
+                self.in_cell = False
+    
+    def handle_data(self, data):
+        if self.in_cell:
+            self.current_cell.append(data)
+
+
+def parse_html_table(html: str) -> Optional[Tuple[List[str], List[List[str]]]]:
+    """Parse HTML table and return (headers, rows)."""
+    parser = TableHTMLParser()
+    try:
+        parser.feed(html)
+        if parser.headers and parser.rows:
+            return (parser.headers, parser.rows)
+    except Exception:
+        pass
+    return None
+
+
+def html_table_to_markdown(html: str, max_rows: int = 10) -> Optional[str]:
+    """Convert HTML table to markdown table format."""
+    # Try to extract table size info from HTML (Jupyter format: [N rows x M columns])
+    table_size_info = None
+    size_pattern = r'\[(\d+)\s+rows?\s+x\s+(\d+)\s+columns?\]'
+    match = re.search(size_pattern, html, re.IGNORECASE)
+    if match:
+        num_rows = int(match.group(1))
+        num_cols = int(match.group(2))
+        table_size_info = f"[{num_rows} rows x {num_cols} columns]"
+    
+    table_data = parse_html_table(html)
+    if not table_data:
+        return None
+    
+    headers, rows = table_data
+    
+    if not headers or not rows:
+        return None
+    
+    # Detect and remove index column (first column if it looks like an index)
+    # Also remove any columns with empty headers (they break markdown parsing)
+    remove_first = False
+    
+    if len(headers) > 1 and len(rows) > 0:
+        # Always remove first column if header is empty (definitely an index, breaks parsing)
+        first_header = headers[0].strip()
+        if not first_header:
+            remove_first = True
+        # Check if first column contains mostly numeric values (likely index)
+        else:
+            try:
+                # Check more rows to get better sample
+                sample_rows = min(50, len(rows))
+                first_col_values = [row[0].strip() for row in rows[:sample_rows] if len(row) > 0 and row[0].strip()]
+                
+                # Also check last few rows if table is large
+                if len(rows) > sample_rows:
+                    last_col_values = [row[0].strip() for row in rows[-sample_rows:] if len(row) > 0 and row[0].strip()]
+                    first_col_values.extend(last_col_values)
+                
+                if len(first_col_values) >= 5:  # Need at least 5 values to be confident
+                    # Check if most values are numeric (integers) - at least 80%
+                    numeric_count = sum(1 for val in first_col_values if val.isdigit())
+                    if numeric_count >= len(first_col_values) * 0.8:
+                        # If mostly numeric, it's likely an index column
+                        remove_first = True
+            except (ValueError, IndexError):
+                pass
+    
+    # Remove first column if it's an index
+    if remove_first and len(headers) > 1:
+        headers = headers[1:]
+        rows = [row[1:] if len(row) > 1 else row for row in rows]
+    
+    # Remove any remaining columns with empty headers (from right to left to preserve indices)
+    # Empty headers break markdown table parsing in mkdocs
+    empty_header_indices = [i for i, header in enumerate(headers) if not header.strip()]
+    if empty_header_indices:
+        for idx in sorted(empty_header_indices, reverse=True):
+            if idx < len(headers):
+                headers.pop(idx)
+                rows = [row[:idx] + row[idx+1:] if len(row) > idx else row for row in rows]
+    
+    # Ensure we have at least one header and all headers are non-empty
+    if not headers or any(not h.strip() for h in headers):
+        # If any header is still empty, filter them out
+        valid_indices = [i for i, h in enumerate(headers) if h.strip()]
+        if not valid_indices:
+            return None
+        headers = [headers[i] for i in valid_indices]
+        rows = [[row[i] if i < len(row) else '' for i in valid_indices] for row in rows]
+    
+    # Create markdown table
+    md_lines = []
+    md_lines.append('| ' + ' | '.join(headers) + ' |')
+    md_lines.append('| ' + ' | '.join(['---'] * len(headers)) + ' |')
+    
+    # Show preview if table is large
+    if len(rows) > max_rows:
+        # Show first half
+        for row in rows[:max_rows//2]:
+            # Pad row to match header count
+            while len(row) < len(headers):
+                row.append('')
+            row = row[:len(headers)]
+            md_lines.append('| ' + ' | '.join(row) + ' |')
+        
+        # Add ellipsis row
+        ellipsis_row = ['...'] * len(headers)
+        md_lines.append('| ' + ' | '.join(ellipsis_row) + ' |')
+        
+        # Show last half
+        for row in rows[-max_rows//2:]:
+            # Pad row to match header count
+            while len(row) < len(headers):
+                row.append('')
+            row = row[:len(headers)]
+            md_lines.append('| ' + ' | '.join(row) + ' |')
+    else:
+        # Show all rows
+        for row in rows:
+            # Pad row to match header count
+            while len(row) < len(headers):
+                row.append('')
+            row = row[:len(headers)]
+            md_lines.append('| ' + ' | '.join(row) + ' |')
+    
+    # Add table size footer (like Jupyter notebooks)
+    if not table_size_info:
+        # Calculate from parsed data if not found in HTML
+        num_rows = len(rows)
+        num_cols = len(headers)
+        table_size_info = f"[{num_rows} rows x {num_cols} columns]"
+    
+    if table_size_info:
+        md_lines.append('')
+        md_lines.append(f'*{table_size_info}*')
+    
+    return '\n'.join(md_lines)
 
 
 def save_image(image_data: str, image_format: str, notebook_name: str, image_index: int, 
@@ -179,18 +375,33 @@ def convert_output(output: Dict[str, Any], notebook_name: str, image_index: int,
         result.append(f'![Output image]({image_path})')
         return '\n'.join(result)
     
+    # Prioritize HTML output (Jupyter often outputs HTML tables directly)
+    if 'text/html' in output.get('data', {}):
+        html = ''.join(output['data']['text/html'])
+        # Check if it's an HTML table
+        if '<table' in html.lower():
+            # Parse HTML table and convert to markdown
+            markdown_table = html_table_to_markdown(html, max_rows=10)
+            if markdown_table:
+                result.append(markdown_table)
+                return '\n'.join(result)
+            else:
+                # If parsing failed, fall back to using HTML directly
+                styled_html = f'<div style="font-size: 0.85em; line-height: 1.3;">\n{html}\n</div>'
+                result.append(styled_html)
+                return '\n'.join(result)
+        else:
+            # Other HTML, show as code
+            result.append('```html')
+            result.append(html)
+            result.append('```')
+            return '\n'.join(result)
+    
     # Handle text output
     if 'text/plain' in output.get('data', {}):
         text = ''.join(output['data']['text/plain'])
     elif 'text' in output:
         text = ''.join(output['text']) if isinstance(output['text'], list) else str(output['text'])
-    elif 'text/html' in output.get('data', {}):
-        # For HTML output, we'll just show it as code
-        html = ''.join(output['data']['text/html'])
-        result.append('```html')
-        result.append(html)
-        result.append('```')
-        return '\n'.join(result)
     else:
         return ''
     
@@ -199,9 +410,19 @@ def convert_output(output: Dict[str, Any], notebook_name: str, image_index: int,
     
     # Try to format as table if it looks like one
     formatted = format_table(text)
-    result.append('```')
-    result.append(formatted)
-    result.append('```')
+    
+    # Check if formatted output is a markdown table (contains | characters)
+    # If it's a table, don't wrap in code block; otherwise wrap in code block
+    is_table = formatted != text and '|' in formatted and formatted.strip().startswith('|')
+    
+    if is_table:
+        # It's a markdown table, add directly without code block
+        result.append(formatted)
+    else:
+        # Regular text output, wrap in code block
+        result.append('```')
+        result.append(formatted)
+        result.append('```')
     
     return '\n'.join(result)
 
@@ -283,7 +504,10 @@ def convert_notebook_to_markdown(notebook_path: Path, output_path: Optional[Path
                     output_md = convert_output(output, notebook_name, image_index,
                                               output_path.parent, images_dir)
                     if output_md:
-                        md_lines.append(output_md)
+                        # Split by newlines to ensure each line is separate
+                        # This is important for markdown tables to render correctly
+                        output_lines = output_md.split('\n')
+                        md_lines.extend(output_lines)
                         md_lines.append('')
                         if 'image' in output_md:
                             image_index += 1
@@ -300,11 +524,25 @@ def convert_notebook_to_markdown(notebook_path: Path, output_path: Optional[Path
     return output_path
 
 
-def get_notebooks_from_mkdocs(mkdocs_path: Path) -> List[Tuple[str, str]]:
-    """Extract notebook names from mkdocs.yml Examples section.
+def get_notebooks_from_mkdocs(mkdocs_path: Path, sections: List[str] = None) -> List[Tuple[str, str]]:
+    """Extract notebook names from mkdocs.yml sections.
     
-    Returns list of (title, filename) tuples.
+    Parameters
+    ----------
+    mkdocs_path : Path
+        Path to mkdocs.yml file
+    sections : List[str], optional
+        List of section names to extract from. If None, extracts from all sections.
+        Default: ['Examples', 'Start'] to include Examples and Start sections.
+    
+    Returns
+    -------
+    List[Tuple[str, str]]
+        List of (title, filename) tuples.
     """
+    if sections is None:
+        sections = ['Examples', 'Start']
+    
     with open(mkdocs_path, 'r', encoding='utf-8') as f:
         mkdocs = yaml.safe_load(f)
     
@@ -314,26 +552,38 @@ def get_notebooks_from_mkdocs(mkdocs_path: Path) -> List[Tuple[str, str]]:
     for section in nav:
         if isinstance(section, dict):
             for key, value in section.items():
-                if key == 'Examples' or (isinstance(value, list) and any(
-                    isinstance(item, dict) and 'Examples' in item for item in value
-                )):
-                    # Find Examples section
-                    examples_section = None
-                    if key == 'Examples':
-                        examples_section = value
-                    else:
+                # Check if this section should be processed
+                if key in sections:
+                    # Process items in this section
+                    if isinstance(value, list):
                         for item in value:
-                            if isinstance(item, dict) and 'Examples' in item:
-                                examples_section = item['Examples']
-                                break
-                    
-                    if examples_section:
-                        for item in examples_section:
                             if isinstance(item, dict):
                                 for title, filename in item.items():
                                     # Remove .md extension to get base name
                                     base_name = filename.replace('.md', '')
                                     notebooks.append((title, base_name))
+                    elif isinstance(value, str):
+                        # Direct string value (e.g., "Tutorial: tutorial_v4.md")
+                        # This format is less common but handle it
+                        if value.endswith('.md'):
+                            base_name = value.replace('.md', '')
+                            notebooks.append((key, base_name))
+                elif isinstance(value, list) and any(
+                    isinstance(item, dict) and section_name in item 
+                    for item in value for section_name in sections
+                ):
+                    # Handle nested sections (e.g., when Examples is nested)
+                    for item in value:
+                        if isinstance(item, dict):
+                            for section_name in sections:
+                                if section_name in item:
+                                    section_items = item[section_name]
+                                    if isinstance(section_items, list):
+                                        for sub_item in section_items:
+                                            if isinstance(sub_item, dict):
+                                                for title, filename in sub_item.items():
+                                                    base_name = filename.replace('.md', '')
+                                                    notebooks.append((title, base_name))
     
     return notebooks
 
@@ -349,13 +599,29 @@ def find_notebook_in_examples(notebook_name: str, examples_dir: Path) -> Optiona
     return None
 
 
-def convert_from_mkdocs(mkdocs_path: Path, examples_dir: Path, docs_dir: Path):
-    """Convert notebooks listed in mkdocs.yml Examples section from examples/ to docs/."""
-    notebooks = get_notebooks_from_mkdocs(mkdocs_path)
+def convert_from_mkdocs(mkdocs_path: Path, examples_dir: Path, docs_dir: Path, sections: List[str] = None):
+    """Convert notebooks listed in mkdocs.yml sections from examples/ to docs/.
+    
+    Parameters
+    ----------
+    mkdocs_path : Path
+        Path to mkdocs.yml file
+    examples_dir : Path
+        Directory containing notebook files
+    docs_dir : Path
+        Directory to output markdown files
+    sections : List[str], optional
+        List of section names to process. If None, processes 'Examples' and 'Start' sections.
+    """
+    notebooks = get_notebooks_from_mkdocs(mkdocs_path, sections=sections)
     
     if not notebooks:
-        print("No notebooks found in Examples section of mkdocs.yml")
+        section_names = ', '.join(sections) if sections else 'specified'
+        print(f"No notebooks found in {section_names} section(s) of mkdocs.yml")
         return
+    
+    section_names = ', '.join(sections) if sections else 'specified'
+    print(f"Found {len(notebooks)} notebooks in {section_names} section(s)")
     
     print(f"Found {len(notebooks)} notebooks in Examples section")
     
@@ -383,7 +649,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Convert notebooks from mkdocs.yml Examples section
+  # Convert notebooks from mkdocs.yml Examples and Start sections
   python convert_notebook_to_md.py --from-mkdocs
   
   # Convert a single notebook
@@ -400,7 +666,7 @@ Examples:
     parser.add_argument('-o', '--output', help='Output markdown file (only for single notebook)')
     parser.add_argument('--images-dir', help='Directory to save images (default: docs/images/notebooks/)')
     parser.add_argument('--from-mkdocs', action='store_true',
-                       help='Convert notebooks listed in mkdocs.yml Examples section from examples/ to docs/')
+                       help='Convert notebooks listed in mkdocs.yml Examples and Start sections from examples/ to docs/')
     parser.add_argument('--mkdocs-path', default='mkdocs.yml',
                        help='Path to mkdocs.yml (default: mkdocs.yml)')
     parser.add_argument('--examples-dir', default='examples',
