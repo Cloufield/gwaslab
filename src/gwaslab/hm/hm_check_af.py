@@ -800,6 +800,9 @@ def _infer_af_with_maf_annotation(
                 1 - maf_values,
                 maf_values
             ).astype(float)
+            # Cast to match original column dtype to avoid FutureWarning
+            original_dtype = annotated_sumstats[eaf].dtype
+            inferred_eaf = inferred_eaf.astype(original_dtype)
             annotated_sumstats.loc[to_process, eaf] = inferred_eaf
             log.write(" -Flipping MAF to obtain EAF for {} variants".format(is_flipped.sum()), verbose=verbose)
         

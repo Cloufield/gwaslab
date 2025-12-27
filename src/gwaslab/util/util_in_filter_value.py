@@ -782,7 +782,7 @@ def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **
     
     log.write(" - Flanking regions: {}:{}-{}".format(chrom, left, right ))
 
-    flanking = sumstats.query("CHR==@chrom & POS > @left & POS < @right ")
+    flanking = sumstats.query("CHR==@chrom & POS > @left & POS < @right ", engine='python')
     
     log.write(" - Extracted {} variants in the regions.".format(len(flanking)),verbose=verbose)
     log.write("Finished extracting variants in the flanking regions.",verbose=verbose)

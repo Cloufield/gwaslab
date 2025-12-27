@@ -374,7 +374,7 @@ def _plot_trumpet(mysumstats,
         ts=[0.3,0.5,0.8]
     
     #configure colormap##########################################################################################################
-    cmap_to_use = plt.cm.get_cmap(cmap)
+    cmap_to_use = matplotlib.colormaps.get_cmap(cmap)
     if cmap_to_use.N >100:
         rgba = cmap_to_use(ts)
     else:
@@ -868,7 +868,7 @@ def plot_power(ns=1000,
     #Print settings#############################################################################
     
     #configure colormap##########################################################################################################
-    cmap_to_use = plt.cm.get_cmap(cmap)
+    cmap_to_use = matplotlib.colormaps.get_cmap(cmap)
     if cmap_to_use.N >100:
         max_value = max(var_to_change)
         min_value = min(var_to_change)
@@ -1138,7 +1138,7 @@ def plot_power_x(
     #Print settings#############################################################################
     
     #configure colormap##########################################################################################################
-    cmap_to_use = plt.cm.get_cmap(cmap)
+    cmap_to_use = matplotlib.colormaps.get_cmap(cmap)
     if cmap_to_use.N >100:
         max_value = max(var_to_change)
         min_value = min(var_to_change)

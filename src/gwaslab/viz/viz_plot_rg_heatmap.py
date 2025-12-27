@@ -58,10 +58,11 @@ def plot_rg(ldscrg,
     log.write("Start to create ldsc genetic correlation heatmap..." ,verbose=verbose)
     # configure arguments
     if cmap is None:
-        try: #matplotlib <3.9
-            cmap = matplotlib.cm.get_cmap('RdBu')
-        except:
+        try: #matplotlib >=3.7
             cmap = matplotlib.colormaps.get_cmap('RdBu')
+        except:
+            # Fallback for older matplotlib versions
+            cmap = matplotlib.cm.get_cmap('RdBu')
     style = set_plot_style(
         plot="plot_rg",
         fig_kwargs=fig_kwargs or {"dpi":300},

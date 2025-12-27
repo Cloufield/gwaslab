@@ -416,16 +416,12 @@ def process_vcf_to_hfd5(vcf,
         
         # Process chromosomes in parallel
         log.write(" -Starting parallel processing (each chromosome writes to its own file)...", verbose=verbose)
-        pool = Pool(threads)
         total_rows = 0
-        try:
+        with Pool(threads) as pool:
             row_counts = pool.map(_process_chromosome_bcftools, tasks)
             total_rows = sum(row_counts)
             log.write(" -All chromosomes processed successfully", verbose=verbose)
             log.write(" -Total rows processed: {}".format(total_rows), verbose=verbose)
-        finally:
-            pool.close()
-            pool.join()
     else:
         # Sequential processing
         log.write(" -Processing chromosomes sequentially...", verbose=verbose)

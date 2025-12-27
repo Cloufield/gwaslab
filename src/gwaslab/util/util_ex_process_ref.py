@@ -115,7 +115,7 @@ def _process_plink_input_files(chrlist,
 def _load_single_bim_to_ref_bims(bpfile_prefix, ref_bims, log):
     bim_path =bpfile_prefix+".bim"
     single_bim = pd.read_csv(bim_path,
-                             sep="\s+",
+                             sep=r"\s+",
                              usecols=[0,1,3,4,5],
                              header=None,
                              dtype={1:"string",0:"category", 3:"int", 4:"string", 5:"string"}).rename(columns={1:"SNPID",0:"CHR_bim",3:"POS_bim",4:"EA_bim",5:"NEA_bim"})
@@ -129,7 +129,7 @@ def _load_single_pvar_to_ref_bims(bpfile_prefix, ref_bims, log):
     elif os.path.exists(bpfile_prefix+".pvar.zst"):
         bim_path =bpfile_prefix+".pvar.zst"
     single_bim = pd.read_csv(bim_path,
-                             sep="\s+",
+                             sep=r"\s+",
                              usecols=[0,1,2,3,4],
                              header=None,
                              comment="#",
@@ -300,9 +300,19 @@ def _process_vcf(ref_file_prefix,
                     conversion_success = os.path.exists(bpfile_prefix+".bed")
                 else:
                     conversion_success = os.path.exists(bpfile_prefix+".pgen")
+                # Read PLINK log file if it exists
+                plink_log_file = bpfile_prefix + ".log"
+                if os.path.exists(plink_log_file):
+                    with open(plink_log_file, 'r') as f:
+                        plink_log += f.read() + "\n"
             except subprocess.CalledProcessError as e:
                 log.write(e.output)
                 conversion_success = False
+                # Try to read PLINK log file even on error
+                plink_log_file = bpfile_prefix + ".log"
+                if os.path.exists(plink_log_file):
+                    with open(plink_log_file, 'r') as f:
+                        plink_log += f.read() + "\n"
         else:
             log.write("  -Plink {} for CHR {} exists: {}. Skipping...".format(convert ,i, bpfile_prefix))
         
@@ -412,9 +422,19 @@ def _process_bgen(ref_file_prefix,
                     conversion_success = os.path.exists(bpfile_prefix+".bed")
                 else:
                     conversion_success = os.path.exists(bpfile_prefix+".pgen")
+                # Read PLINK log file if it exists
+                plink_log_file = bpfile_prefix + ".log"
+                if os.path.exists(plink_log_file):
+                    with open(plink_log_file, 'r') as f:
+                        plink_log += f.read() + "\n"
             except subprocess.CalledProcessError as e:
                 log.write(e.output)
                 conversion_success = False
+                # Try to read PLINK log file even on error
+                plink_log_file = bpfile_prefix + ".log"
+                if os.path.exists(plink_log_file):
+                    with open(plink_log_file, 'r') as f:
+                        plink_log += f.read() + "\n"
         else:
             log.write("  -PLINK {} for CHR {} exists. Skipping...".format(convert ,i))
         

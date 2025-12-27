@@ -346,29 +346,24 @@ def _fix_ID(sumstats_obj,
             pre_number=sum(sumstats[snpid].isna())                                
             
             if overwrite is False:
-                #fix empty 
-                to_fix = sumstats[snpid].isna() & match_status(sumstats[status], r"\w\w\w[0]\w\w\w") 
-                #status_match(sumstats[status],4,0)
-                #
+                #fix empty - digit 4 = 0
+                to_fix = sumstats[snpid].isna() & status_match(sumstats[status], 4, [0])
             else:
-                #fix all
-                to_fix = match_status(sumstats[status], r"\w\w\w[0]\w\w\w") 
-                # status_match(sumstats[status],4,0)
-                #
+                #fix all - digit 4 = 0
+                to_fix = status_match(sumstats[status], 4, [0])
             
             if (ea in sumstats.columns) and (nea in sumstats.columns):
             # when ea and nea is available  -> check status -> fix to chr:pos:nea:ea 
                 
-                pattern = r"\w\w\w[0]\w\w\w"  
-                matched_index = match_status(sumstats[status], pattern)
-                #matched_index = status_match(sumstats[status],4,0) #
+                # digit 4 = 0
+                matched_index = status_match(sumstats[status], 4, [0])
                 to_part_fix = matched_index & to_fix 
                 
-                #pattern = r"\w\w\w[0][01267][01234]\w"  
-                pattern = r"\w\w\w\w[0123][01267][01234]"
-                matched_index = match_status(sumstats[status], pattern)
-                #status_match(sumstats[status],5,[0,1,2,3]) | status_match(sumstats[status],6,[0,1,2,6,7])| status_match(sumstats[status],7,[0,1,2,3,4])
-                #
+                # digit 5 in [0,1,2,3] AND digit 6 in [0,1,2,6,7] AND digit 7 in [0,1,2,3,4]
+                digit_5_match = status_match(sumstats[status], 5, [0, 1, 2, 3])
+                digit_6_match = status_match(sumstats[status], 6, [0, 1, 2, 6, 7])
+                digit_7_match = status_match(sumstats[status], 7, [0, 1, 2, 3, 4])
+                matched_index = digit_5_match & digit_6_match & digit_7_match
                 if forcefixid is True:
                     matched_index = to_fix
                 to_full_fix = matched_index & to_fix 
@@ -1193,9 +1188,8 @@ def _parallelize_normalize_allele(sumstats_obj,snpid="SNPID",rsid="rsID",pos="PO
     sumstats = sumstats_obj.data
     ############################################################################################
 
-    #variants_to_check = status_match(sumstats[status],5,[4,5]) #
-    #r'\w\w\w\w[45]\w\w'
-    variants_to_check = match_status(sumstats[status], r"\w\w\w\w[45]\w\w")
+    # digit 5 in [4,5]
+    variants_to_check = status_match(sumstats[status], 5, [4, 5])
     # Performance optimization: Compute sum once and reuse
     variants_to_check_num = variants_to_check.sum()
     if variants_to_check_num == 0:
@@ -1211,15 +1205,13 @@ def _parallelize_normalize_allele(sumstats_obj,snpid="SNPID",rsid="rsID",pos="PO
     if threads==1:
         normalized_pd, changed_index = fastnormalizeallele(variants_subset, pos=pos, nea=nea, ea=ea, status=status, chunk=chunk, log=log, verbose=verbose)
     else:
-        pool = Pool(threads)
         map_func = partial(fastnormalizeallele, pos=pos, nea=nea, ea=ea, status=status)
         df_split = _df_split(variants_subset, threads)
-        results = pool.map(map_func,df_split)
+        with Pool(threads) as pool:
+            results = pool.map(map_func,df_split)
         normalized_pd = pd.concat([i[0] for i in results])
         changed_index = np.concatenate([i[1] for i in results])
         del results
-        pool.close()
-        pool.join()
         gc.collect()
     ###############################################################################################################
     try:
@@ -1613,7 +1605,8 @@ def _flip_allele_stats(sumstats_obj,status="STATUS",verbose=True,log=Log()) -> p
         if_stats_flipped = True
     
     ###################flip ref####################
-    matched_index = match_status(sumstats[status], r"\w\w\w\w\w[35]\w")
+    # digit 6 in [3,5]
+    matched_index = status_match(sumstats[status], 6, [3, 5])
     matched_count = matched_index.sum()
     if matched_count > 0:
         log.write(f"Start to flip allele-specific stats for SNPs with status xxxxx[35]x: ALT->EA , REF->NEA ...{_get_version()}", verbose=verbose) 
@@ -1630,7 +1623,12 @@ def _flip_allele_stats(sumstats_obj,status="STATUS",verbose=True,log=Log()) -> p
         if_stats_flipped = True
         
     ###################flip ref for undistingushable indels####################
-    matched_index = match_status(sumstats[status], r"\w\w\w\w[123][67]6")
+    # Pattern: xxxx[123][67]6 means digit 5 in [1,2,3] AND digit 6 in [6,7] AND digit 7 = 6
+    # Use status_match to ensure all conditions are met (more reliable than regex pattern)
+    digit_5_match = status_match(sumstats[status], 5, [1, 2, 3])
+    digit_6_match = status_match(sumstats[status], 6, [6, 7])
+    digit_7_match = status_match(sumstats[status], 7, [6])
+    matched_index = digit_5_match & digit_6_match & digit_7_match
     matched_count = matched_index.sum()
     if matched_count > 0:
         log.write(f"Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: ALT->EA , REF->NEA...{_get_version()}", verbose=verbose) 
@@ -1647,7 +1645,11 @@ def _flip_allele_stats(sumstats_obj,status="STATUS",verbose=True,log=Log()) -> p
         if_stats_flipped = True
     
     ###################flip statistics for reverse strand panlindromic variants####################
-    matched_index = match_status(sumstats[status], r"\w\w\w\w\w[012]5")
+    # Pattern: xxxxx[012]5 means digit 6 in [0,1,2] AND digit 7 = 5
+    # Use status_match to ensure both conditions are met (more reliable than regex pattern with literal digits)
+    digit_6_match = status_match(sumstats[status], 6, [0, 1, 2])
+    digit_7_match = status_match(sumstats[status], 7, [5])
+    matched_index = digit_6_match & digit_7_match
     matched_count = matched_index.sum()
     if matched_count > 0:
         log.write(f"Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand...{_get_version()}", verbose=verbose) 

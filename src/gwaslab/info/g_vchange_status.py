@@ -134,6 +134,21 @@ def _parse_pattern_for_digit_constraints(pattern: str) -> Optional[List[Tuple[in
         (digit_positions, allowed_digits_list) if parseable, None otherwise
     """
     pattern_clean = pattern.strip('^$')
+    
+    # Check for literal digits (not in character classes) - if found, fall back to string matching
+    # This must be done BEFORE parsing, as literal digits can't be handled by digit-based matching
+    # Split by character classes and check the last part for literal digits
+    parts = re.split(r'\[[0-9]+\]', pattern_clean)
+    if len(parts) > 1:
+        # Check the last part (after the last character class)
+        last_part = parts[-1]
+        # Remove all wildcards from the last part
+        remaining = re.sub(r'\\\\w', '', last_part)
+        # If there are any digits remaining, we have literal digits
+        if remaining and re.search(r'[0-9]', remaining):
+            # Has literal digits that can't be parsed - return None to force string matching
+            return None
+    
     digit_matches = list(re.finditer(r'\[([0-9]+)\]', pattern_clean))
     wildcard_parts = re.split(r'\[[0-9]+\]', pattern_clean)
     

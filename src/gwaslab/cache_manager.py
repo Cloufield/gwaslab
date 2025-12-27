@@ -464,7 +464,6 @@ class CacheBuilder:
 
         self.log.write(f" -Building cache for category '{category}' on {threads} cores...", verbose=self.verbose)
 
-        pool = mp.Pool(threads)
         manager = mp.Manager()
         queue = manager.Queue()
         jobs = []
@@ -475,12 +474,11 @@ class CacheBuilder:
         watcher.daemon = True
         watcher.start()
         
-        for chrom in contigs:
-            job = pool.apply_async(self.build_cache, args=(chrom, queue), kwds={'filter_fn': filter_fn, 'category': category})
-            jobs.append(job)
-
-        pool.close()
-        pool.join() # wait for all processes to finish
+        with mp.Pool(threads) as pool:
+            for chrom in contigs:
+                job = pool.apply_async(self.build_cache, args=(chrom, queue), kwds={'filter_fn': filter_fn, 'category': category})
+                jobs.append(job)
+            # Pool will automatically close and join when exiting the context
 
         queue.put('kill') # send a signal to the watcher process to stop
         watcher.join()

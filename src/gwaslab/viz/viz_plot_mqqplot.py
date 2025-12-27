@@ -949,7 +949,7 @@ def _mqqplot(insumstats,
     ## r
     
     if region is not None:
-        region = _normalize_region(region, chr_dict=chr_dict, log=log, verbose=verbose)
+        region = _normalize_region(region, chr_dict=chr_dict, sumstats=sumstats, snpid=snpid, rsid="rsID", chrom_col=chrom, pos_col=pos, ea=ea, nea=nea, log=log, verbose=verbose)
         sumstats = _filter_region(sumstats, region, log=log, verbose=verbose)
   
         if len(sumstats)==0:

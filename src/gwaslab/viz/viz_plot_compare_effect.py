@@ -1150,12 +1150,12 @@ def configure_legend(fig, ax, legend_mode, is_q, is_q_mc, legend_elements, legen
             **legend_kwargs_to_use
             )
     
-    #for i, handle in enumerate(L.legendHandles):
+    #for i, handle in enumerate(L.legend_handles):
     #    handle.set_edgecolor("white")
 
     ## Move titles to the left 
     try:
-        for item, label in zip(L.legendHandles, L.texts):
+        for item, label in zip(L.legend_handles, L.texts):
             if label._text  in legend_elements:
                 item.set_edgecolor("white")
                 #item._legmarker.set_markersize(scatter_kwargs["s"]*1.5)

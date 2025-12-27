@@ -63,6 +63,7 @@ def set_plot_style(
     dpi=None,
     verbose=True,
     log=Log(),
+    **kwargs,
 ):
     """
     Configure and return a consolidated plotting style dictionary for gwaslab visualizations.
@@ -135,6 +136,7 @@ def set_plot_style(
         - `line_kwargs`, `sig_line_color`, `suggestive_sig_line_color`, `sc_linewidth`, `qq_line_color`
         - `font_family`, `fontsize`, `colors`, `marker_size`, `dpi`, `verbose`
     """
+
     if pm is None:
         pm = VizParamsManager()
         load_viz_config(pm)

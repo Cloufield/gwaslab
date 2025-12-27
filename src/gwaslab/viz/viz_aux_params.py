@@ -9,6 +9,8 @@ Key Features:
 - Centralized registry of allowed parameters and defaults per plot:mode combination
 - Parameter filtering with whitelist support and function signature fallback
 - Banned argument handling: banned args are replaced with defaults rather than removed
+- Automatic default inclusion: registered defaults are included even when not explicitly passed
+- None value handling: None values preserve defaults when defaults exist
 - Nested sub-key filtering for dict-type arguments (e.g., removing 'figsize' from fig_kwargs)
 - Registry inheritance: registry entries can inherit from other entries
 - Configuration via JSON files: `viz_aux_params.txt` (argument catalog) and
@@ -31,6 +33,8 @@ USAGE RULES AND PRIORITIES
       - Base plot defaults: `plot_mqq` → applies to all modes
       - Mode-specific defaults: `plot_mqq:r` → overrides base for mode 'r'
       - Inheritance: Mode inherits from base plot if not explicitly set
+      - ALL registered defaults are included in the base, ensuring they're available
+        even if not explicitly passed in override
    
    b) Object-level presets (via set()/update())
       - Override registered defaults
@@ -39,12 +43,16 @@ USAGE RULES AND PRIORITIES
    c) Call-time kwargs (override parameter)
       - Highest precedence
       - Banned args are replaced with defaults (see Rule 4)
+      - None values preserve defaults: if override contains None and a default exists,
+        the default is kept rather than being overridden with None
+      - If override contains None and no default exists, None is used
    
    Example:
-     registry default: {'highlight': []}
+     registry default: {'highlight': [], 'region_ld_colors': ['#E4E4E4', ...]}
      object preset: {'highlight': ['snp1']}
-     call-time: {'highlight': ['snp2']}
-     Result: {'highlight': ['snp2']}  # call-time wins
+     call-time: {'highlight': ['snp2'], 'region_ld_colors': None}
+     Result: {'highlight': ['snp2'], 'region_ld_colors': ['#E4E4E4', ...]}
+            # call-time wins for highlight, None preserves default for region_ld_colors
 
 
 2. CONFIGURATION LOADING ORDER (load_viz_config workflow)
@@ -192,14 +200,24 @@ USAGE RULES AND PRIORITIES
         * "scatter_kwargs1" matches "scatter_kwargs"
         * Works with any number of trailing digits: "arg123" → "arg"
       - Banned args with defaults are added back after filtering
+      - Registered defaults for non-banned args are added back if missing
+        (ensures defaults are available even if not in params)
    
    c) Signature fallback (if no allowed set):
       - Uses function signature to determine valid params
       - Functions with **kwargs pass everything through
+      - Registered defaults for valid function parameters are added back if missing
+        (ensures defaults are available even if not in params)
    
    d) Nested sub-key filtering:
       - banned_keys removes nested keys from dict-type args
       - Example: fig_kwargs['figsize'] removed if 'figsize' in banned_keys['fig_kwargs']
+   
+   e) Default preservation:
+      - Registered defaults are preserved for valid (non-banned) parameters
+      - Defaults are included even if the parameter wasn't in the original params dict
+      - This ensures functions receive default values from the registry when parameters
+        are not explicitly passed or are passed as None
 
 
 8. REGISTRY KEY FORMAT
@@ -410,8 +428,39 @@ class VizParamsManager:
         """Merge defaults, object presets, and call-time kwargs.
         
         Merge order: registered defaults -> object presets -> override kwargs.
-        Banned args from no_plots are replaced with their default values.
+        
+        Behavior:
+        - Banned args from no_plots are replaced with their default values (if defaults exist)
+        - Banned args without defaults are removed from the result
+        - If override contains None values and there are registered defaults, the defaults are preserved
+        - If override contains None values and there are no defaults, None is used
+        - All registered defaults for the key/mode are included in the base, ensuring they're available
+          even if not explicitly passed in override
+        
+        Parameters
+        ----------
+        key : str
+            Plot identifier (e.g., "plot_mqq", "plot_region")
+        override : dict or None
+            Call-time kwargs to merge. If None, returns only defaults and object presets.
+        mode : str or None, optional
+            Mode identifier (e.g., "r", "m", "qq")
+        
+        Returns
+        -------
+        dict
+            Merged parameters with defaults, object presets, and override values.
         """
+        # Check for deprecated *_args parameters
+        if override is not None:
+            for param_key in override:
+                if param_key.endswith("_args"):
+                    suggested_name = param_key.replace("_args", "_kwargs")
+                    raise ValueError(
+                        f"The parameter '{param_key}' is deprecated. "
+                        f"Did you mean '{suggested_name}'? Please use '{suggested_name}' instead."
+                    )
+        
         base = self.defaults(key, mode)
         base.update(self.get(key, mode))
         if override is None:
@@ -419,22 +468,101 @@ class VizParamsManager:
         
         merged = dict(base)
         filtered_override = self._apply_no_plots_filter(override, key, mode)
-        merged.update(filtered_override)
+        
+        # Remove args that were in override but removed by _apply_no_plots_filter
+        # These are banned args without defaults - they should not be in the final result
+        for k in list(merged.keys()):
+            if k in override and k not in filtered_override:
+                # This arg was removed by _apply_no_plots_filter (banned with no default)
+                # Remove it from merged to ensure it doesn't pass through
+                merged.pop(k, None)
+        
+        # Update merged dict with filtered override values
+        # Preserve defaults when override value is None (don't override defaults with None)
+        for k, v in filtered_override.items():
+            # If override value is None and there's a default in merged, keep the default
+            # If override value is not None, use it (overrides default)
+            # If override value is None and no default exists, use None
+            if v is not None or k not in merged:
+                merged[k] = v
+        
         return merged
     
     def filter(self, func, params, key=None, mode=None, log=None, verbose=True):
-        """Filter merged params by whitelist or function signature."""
+        """Filter merged params by whitelist or function signature.
+        
+        Filters parameters to only include those allowed by the whitelist (if available)
+        or those that match the function signature. Preserves registered defaults for
+        valid parameters even if they weren't in the original params dict.
+        
+        Behavior:
+        - Banned args are replaced with their default values (handled by _apply_no_plots_filter)
+        - If whitelist exists: only allowed keys pass through
+        - If no whitelist: uses function signature to determine valid parameters
+        - Registered defaults for valid (non-banned) parameters are added back if missing
+        - Banned args with defaults are handled by _add_banned_defaults and pass through
+        
+        Parameters
+        ----------
+        func : callable
+            Target function to filter parameters for
+        params : dict
+            Merged parameters (typically from merge())
+        key : str or None, optional
+            Plot identifier for context
+        mode : str or None, optional
+            Mode identifier for context
+        log : Log or None, optional
+            Logger instance for verbose output
+        verbose : bool, default True
+            Whether to log filtered parameters
+        
+        Returns
+        -------
+        dict
+            Filtered parameters that are valid for the function, with defaults preserved
+        """
         # Replace banned args with defaults
         params = self._apply_no_plots_filter(params, key, mode)
         
+        # Get defaults to preserve them after filtering
+        # This ensures registered defaults are available even if not in params
+        plot_defaults = self.defaults(key, mode)
+        
+        # Helper to check if an arg is banned (no_plots)
+        def is_banned_arg(arg_name):
+            if not self._arg_map or key is None:
+                return False
+            arg_def = self._arg_map.get(arg_name)
+            if arg_def:
+                p_key, m_key = key, mode
+                return _is_banned(p_key, m_key, arg_def.get("no_plots", set()))
+            return False
+        
         allowed_keys = self.allowed(key, mode)
         if allowed_keys is not None:
+            # Whitelist-based filtering: only allowed keys pass through
             filtered = self._filter_by_whitelist(params, allowed_keys, key, mode, log, verbose)
             # Add defaults for banned args so they pass through with default values
+            # (banned args are not in allowed_keys but should still get defaults)
             self._add_banned_defaults(filtered, allowed_keys, key, mode)
+            # Add back defaults for non-banned args that are in allowed set but missing
+            # This ensures defaults are available even if not explicitly passed
+            for arg_name, default_val in plot_defaults.items():
+                if arg_name in allowed_keys and arg_name not in filtered and not is_banned_arg(arg_name):
+                    filtered[arg_name] = default_val
             return filtered
         
-        return self._filter_by_signature(func, params, key, log, verbose)
+        # Signature-based filtering: use function signature to determine valid parameters
+        filtered = self._filter_by_signature(func, params, key, log, verbose)
+        func_signature = inspect.signature(func)
+        func_param_names = set(func_signature.parameters.keys())
+        # Add back defaults for non-banned args that are valid function parameters but missing
+        # This ensures defaults are available even if not explicitly passed
+        for arg_name, default_val in plot_defaults.items():
+            if arg_name in func_param_names and arg_name not in filtered and not is_banned_arg(arg_name):
+                filtered[arg_name] = default_val
+        return filtered
     
     def _apply_no_plots_filter(self, params, key, mode):
         """Replace banned arguments with their default values.

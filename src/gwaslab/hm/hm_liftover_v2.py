@@ -5,7 +5,7 @@ from typing import List
 import pandas as pd
 
 from gwaslab.info.g_Log import Log
-from gwaslab.info.g_vchange_status import match_status, ensure_status_int, vchange_status
+from gwaslab.info.g_vchange_status import status_match, ensure_status_int, vchange_status
 from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.bd.bd_common_data import get_chain
 from gwaslab.qc.qc_build import _process_build
@@ -148,8 +148,8 @@ def _liftover_variant(sumstats_obj,
     to_lift = None
     needs_merging = False
     if filter_by_status and status in sumstats.columns:
-        pattern = r"\w\w\w0\w\w\w"
-        to_lift = match_status(sumstats[status], pattern)
+        # digit 4 = 0
+        to_lift = status_match(sumstats[status], 4, [0])
         to_lift_count = to_lift.sum()
         
         if to_lift_count == 0:
@@ -353,7 +353,7 @@ def _liftover_variant(sumstats_obj,
         # Convert column to object dtype first if it's categorical or numeric and source has object dtype
         if mapped_mask.any():
             # If target is categorical or numeric but source is object (contains strings), convert to object
-            if (pd.api.types.is_categorical_dtype(sumstats[chrom]) or 
+            if (isinstance(sumstats[chrom].dtype, pd.CategoricalDtype) or 
                 (sumstats[chrom].dtype != 'object' and sumstats[out_chrom_col].dtype == 'object')):
                 sumstats[chrom] = sumstats[chrom].astype('object')
             sumstats.loc[mapped_mask, chrom] = sumstats.loc[mapped_mask, out_chrom_col]

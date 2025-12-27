@@ -1220,12 +1220,10 @@ def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid
             if to_assign.sum()<10000: threads=1
             #df_split = np.array_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], threads)
             df_split = _df_split(sumstats.loc[to_assign, [chr,pos,ref,alt]], threads)
-            pool = Pool(threads)
-            map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,chr_dict=chr_dict) 
-            assigned_rsid = pd.concat(pool.map(map_func,df_split))
-            sumstats.loc[to_assign,rsid] = assigned_rsid.values 
-            pool.close()
-            pool.join()
+            with Pool(threads) as pool:
+                map_func = partial(assign_rsid_single,path=path,chr=chr,pos=pos,ref=ref,alt=alt,chr_dict=chr_dict) 
+                assigned_rsid = pd.concat(pool.map(map_func,df_split))
+                sumstats.loc[to_assign,rsid] = assigned_rsid.values
         gc.collect()
         ##################################################################################################################
 
@@ -1324,6 +1322,8 @@ def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_th
         if record.pos==end and record.ref==ref and (alt in record.alts):
             if min(record.info[alt_freq][0] > ref_maf_threshold, 1- record.info[alt_freq][0]) > ref_maf_threshold:
                 return set_status_digit(status_val, 7, 8)  # Set digit 7 to 8
+            # After check_ref() and flip_allele_stats(), EA should match ALT
+            # So we compare EAF with ALT AF directly
             if  (record.info[alt_freq][0]<0.5) and (eaf<0.5):
                 return set_status_digit(status_val, 7, 1)  # Set digit 7 to 1
             elif (record.info[alt_freq][0]>0.5) and (eaf>0.5):
@@ -1369,8 +1369,8 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_ma
                 new_status = set_status_digit(status_val, 7, 8)
             else:
                 if min(record, 1- record) > ref_maf_threshold:
-                    return set_status_digit(status_val, 7, 8)
-                if (record<0.5) and (eaf<0.5):
+                    new_status = set_status_digit(status_val, 7, 8)
+                elif (record<0.5) and (eaf<0.5):
                     new_status = set_status_digit(status_val, 7, 1)
                 elif (record>0.5) and (eaf>0.5):
                     new_status = set_status_digit(status_val, 7, 1)
@@ -1615,12 +1615,10 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
             else:
                 #df_split = np.array_split(df_to_check, threads)
                 df_split = _df_split(df_to_check, threads)
-                pool = Pool(threads)
-                map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,chr_dict=chr_dict) 
-                status_inferred = pd.concat(pool.map(map_func,df_split))
-                sumstats.loc[unknow_palindromic_to_check,status] = status_inferred.values
-                pool.close()
-                pool.join()
+                with Pool(threads) as pool:
+                    map_func = partial(check_strand,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,chr_dict=chr_dict) 
+                    status_inferred = pd.concat(pool.map(map_func,df_split))
+                    sumstats.loc[unknow_palindromic_to_check,status] = status_inferred.values
             log.write(" -Finished strand inference.",verbose=verbose)
         else:
             log.warning("No palindromic variants available for checking.")
@@ -1694,12 +1692,10 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
                 else:
                     #df_split = np.array_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], threads)
                     df_split = _df_split(sumstats.loc[unknow_indel, [chr,pos,ref,alt,eaf,status]], threads)
-                    pool = Pool(threads)
-                    map_func = partial(check_indel,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,chr_dict=chr_dict,daf_tolerance=daf_tolerance) 
-                    status_inferred = pd.concat(pool.map(map_func,df_split))
-                    sumstats.loc[unknow_indel,status] = status_inferred.values 
-                    pool.close()
-                    pool.join()
+                    with Pool(threads) as pool:
+                        map_func = partial(check_indel,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,status=status,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,ref_maf_threshold=ref_maf_threshold,chr_dict=chr_dict,daf_tolerance=daf_tolerance) 
+                        status_inferred = pd.concat(pool.map(map_func,df_split))
+                        sumstats.loc[unknow_indel,status] = status_inferred.values
                 log.write(" -Finished indistinguishable indel inference.",verbose=verbose)
 
             #########################################################################################
@@ -1895,12 +1891,15 @@ def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=
             threads=1       
         #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], threads)
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]], threads)
-        pool = Pool(threads)
-        if (~sumstats[eaf].isna()).sum()>0:
-            map_func = partial(checkaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,column_name=column_name,chr_dict=chr_dict) 
-            sumstats.loc[good_chrpos,[column_name]] = pd.concat(pool.map(map_func,df_split))
-        pool.close()
-        pool.join()
+        with Pool(threads) as pool:
+            if (~sumstats[eaf].isna()).sum()>0:
+                map_func = partial(checkaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,column_name=column_name,chr_dict=chr_dict) 
+                result = pd.concat(pool.map(map_func,df_split))
+                # Cast to match original column dtype to avoid FutureWarning
+                if column_name in sumstats.columns:
+                    original_dtype = sumstats[column_name].dtype
+                    result[column_name] = result[column_name].astype(original_dtype)
+                sumstats.loc[good_chrpos,[column_name]] = result[column_name]
     ###########################
         #status_inferred = sumstats.loc[good_chrpos,[chr,pos,ref,alt,eaf]].apply(lambda x:check_daf(x[0],x[1]-1,x[1],x[2],x[3],x[4],vcf_reader,ref_alt_freq,chr_dict),axis=1)
         log.write(" -Difference in allele frequency (DAF) = EAF (sumstats) - ALT_AF (reference VCF)", verbose=verbose)  
@@ -2060,11 +2059,13 @@ def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, threads=1, chr
             threads=1       
         #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
-        pool = Pool(threads)
-        map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
-        sumstats.loc[good_chrpos,[eaf]] = pd.concat(pool.map(map_func,df_split))
-        pool.close()
-        pool.join()
+        with Pool(threads) as pool:
+            map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
+            result = pd.concat(pool.map(map_func,df_split))
+            # Cast to match original column dtype to avoid FutureWarning
+            original_dtype = sumstats[eaf].dtype
+            result[eaf] = result[eaf].astype(original_dtype)
+            sumstats.loc[good_chrpos,[eaf]] = result[eaf]
     ###########################
         
         afternumber = sumstats[eaf].isna().sum()
@@ -2205,11 +2206,13 @@ def _parallele_infer_af_with_maf(sumstats, ref_infer, ref_alt_freq=None, threads
             threads = 1       
         #df_split = np.array_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
         df_split = _df_split(sumstats.loc[good_chrpos,[chr,pos,ref,alt]], threads)
-        pool = Pool(threads)
-        map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=ref_eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
-        sumstats.loc[good_chrpos,[ref_eaf]] = pd.concat(pool.map(map_func,df_split))
-        pool.close()
-        pool.join()
+        with Pool(threads) as pool:
+            map_func = partial(inferaf,chr=chr,pos=pos,ref=ref,alt=alt,eaf=ref_eaf,ref_infer=ref_infer,ref_alt_freq=ref_alt_freq,chr_dict=chr_dict) 
+            result = pd.concat(pool.map(map_func,df_split))
+            # Cast to match original column dtype to avoid FutureWarning
+            original_dtype = sumstats[ref_eaf].dtype
+            result[ref_eaf] = result[ref_eaf].astype(original_dtype)
+            sumstats.loc[good_chrpos,[ref_eaf]] = result[ref_eaf]
         
         ###########################
         # infer sumstats EAF 

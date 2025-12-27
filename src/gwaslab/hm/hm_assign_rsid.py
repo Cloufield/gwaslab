@@ -839,12 +839,17 @@ def _extract_lookup_table_from_vcf_bcf(
         log.write(f" -Finished:",end="", verbose=verbose)
         dfs = pool.map(_worker_bcf_lookup, tasks)
         log.write(f"", verbose=verbose, show_time=False)
-        pool.close()
-        pool.join()
 
-    # Merge results
-    df = pd.concat(dfs, ignore_index=True)
-    df["CHR"] = df["CHR"].astype(str).map(inv_chr_dict).astype("category")
+    # Merge results - filter out empty DataFrames to avoid FutureWarning
+    dfs_filtered = [d for d in dfs if not d.empty]
+    if dfs_filtered:
+        df = pd.concat(dfs_filtered, ignore_index=True)
+    else:
+        # If all DataFrames are empty, create an empty DataFrame with the expected columns
+        df = pd.DataFrame(columns=["CHR","POS","REF","ALT",id_col] + info_tags)
+    
+    if not df.empty:
+        df["CHR"] = df["CHR"].astype(str).map(inv_chr_dict).astype("category")
 
     if id_col == "rsID" and "ID" in df.columns:
         df.rename(columns={"ID":"rsID"}, inplace=True)
