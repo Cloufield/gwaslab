@@ -1526,7 +1526,7 @@ def check_indel_cache(sumstats,cache,ref_infer,ref_alt_freq=None,ref_maf_thresho
     start_function=".infer_strand()",
     must_kwargs=["ref_alt_freq"]
 )
-def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,ref_maf_threshold=0.5,daf_tolerance=0.20,remove_snp="",mode="pi",threads=1,remove_indel="",
+def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold=0.40,ref_maf_threshold=0.4,daf_tolerance=0.20,remove_snp="",mode="pi",threads=1,remove_indel="",
                        chr="CHR",pos="POS",ref="NEA",alt="EA",eaf="EAF",status="STATUS",
                        chr_dict=None,cache_options={},verbose=True,log=Log()):
     """
