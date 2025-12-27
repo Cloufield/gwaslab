@@ -1397,7 +1397,7 @@ def _mqqplot(insumstats,
                 ax2 = _jagged_y(cut=cut,skip=skip,ax1=ax2,mode=2,mqqratio=mqqratio,jagged_len=jagged_len,jagged_wid=jagged_wid,log=log, verbose=verbose)
         
         # XY lim
-        if ylim is not None:
+        if ylim is not None and  ylim != []:
             ax1.set_ylim(ylim)
             if "qq" in mode:
                 ax2.set_ylim(ylim)

@@ -42,7 +42,9 @@ from gwaslab.util.util_in_fill_data import fill_extreme_mlog10p
         start_to_msg= "check SNPID/rsID",
         finished_msg= "checking SNPID/rsID",
         start_function= ".fix_id()",
-        start_cols=[]
+        start_cols=[],
+        check_dtype=False,
+        fix=False
 )
 def _fix_ID(sumstats_obj,
        snpid="SNPID",rsid="rsID",chrom="CHR",pos="POS",nea="NEA",ea="EA",status="STATUS",fixprefix=False,
@@ -662,7 +664,9 @@ def _remove_dup(sumstats_obj,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="E
         start_to_msg= "fix chromosome notation (CHR)",
         finished_msg= "fixing chromosome notation (CHR)",
         start_function= ".fix_chr()",
-        start_cols=["CHR","STATUS"]
+        start_cols=["CHR","STATUS"],
+        check_dtype=False,
+        fix=False
 )
 def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()) -> pd.DataFrame:
     """
@@ -870,7 +874,9 @@ def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y
         start_to_msg= "fix basepair positions (POS)",
         finished_msg= "fixing basepair positions (POS)",
         start_function= ".fix_pos()",
-        start_cols=["POS","STATUS"]
+        start_cols=["POS","STATUS"],
+        check_dtype=False,
+        fix=False
 )
 def _fix_pos(sumstats_obj, pos="POS", status="STATUS", remove=False, verbose=True, lower_limit=0, upper_limit=None, limit=250000000, log=Log()) -> pd.DataFrame:
     '''
@@ -988,7 +994,9 @@ def _fix_pos(sumstats_obj, pos="POS", status="STATUS", remove=False, verbose=Tru
         start_to_msg= "fix alleles (EA and NEA)",
         finished_msg= "fixing alleles (EA and NEA)",
         start_function= ".fix_allele()",
-        start_cols=["EA","NEA","STATUS"]
+        start_cols=["EA","NEA","STATUS"],
+        check_dtype=False,
+        fix=False
 )
 def _fix_allele(sumstats_obj,ea="EA", nea="NEA",status="STATUS",remove=False,verbose=True,log=Log()) -> pd.DataFrame:
     """

@@ -20,7 +20,7 @@ def with_logging(start_to_msg,
                  must_kwargs=None,
                  show_shape=True,
                  check_dtype=False,
-                 fix=False
+                 fix=True
                  ):
     """
     Decorator to add standardized logging, argument checks, and optional dtype
