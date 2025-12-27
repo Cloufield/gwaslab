@@ -943,8 +943,8 @@ def _mqqplot(insumstats,
     if "m" in mode or "r" in mode or "b" in mode: 
         # convert CHR to int
         ## CHR X,Y,MT conversion ############################
-        sumstats[pos] = _quick_fix_pos(sumstats[pos])
-        sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict)
+        sumstats[pos] = _quick_fix_pos(sumstats[pos], verbose=verbose, log=log)
+        sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict, verbose=verbose, log=log)
 
     ## r
     
@@ -959,7 +959,7 @@ def _mqqplot(insumstats,
     ## EAF
     eaf_raw = pd.Series(dtype="float64")
     if stratified is True: 
-        sumstats["MAF"] = _quick_fix_eaf(sumstats[eaf])
+        sumstats["MAF"] = _quick_fix_eaf(sumstats[eaf], verbose=verbose, log=log)
         # for stratified qq plot
         eaf_raw = sumstats["MAF"].copy()
         

@@ -78,8 +78,7 @@ def _quick_fix_eaf(seires,log=Log(), verbose=True):
     '''
     # Early exit: Check if already numeric
     if pd.api.types.is_numeric_dtype(seires):
-        if verbose:
-            log.write(" -EAF data type is already numeric. Skipping conversion...", verbose=verbose)
+        log.write(" -EAF data type is already numeric. Skipping conversion...", verbose=verbose)
         # Still need to flip values > 0.5
         flipped = seires > 0.5
         seires = seires.copy()
@@ -98,8 +97,7 @@ def _quick_fix_chr(seires, chr_dict,log=Log(), verbose=True):
     '''
     # Early exit: Check if already numeric
     if pd.api.types.is_numeric_dtype(seires):
-        if verbose:
-            log.write(" -CHR data type is already numeric. Skipping conversion...", verbose=verbose)
+        log.write(" -CHR data type is already numeric. Skipping conversion...", verbose=verbose)
         return seires.astype('Int64')
     
     if pd.api.types.is_string_dtype(seires):
@@ -115,8 +113,7 @@ def _quick_fix_pos(seires,log=Log(), verbose=True):
     '''
     # Early exit: Check if already numeric
     if pd.api.types.is_numeric_dtype(seires):
-        if verbose:
-            log.write(" -POS data type is already numeric. Skipping conversion...", verbose=verbose)
+        log.write(" -POS data type is already numeric. Skipping conversion...", verbose=verbose)
         return np.floor(seires).astype('Int64')
     
     seires = np.floor(pd.to_numeric(seires, errors='coerce')).astype('Int64')

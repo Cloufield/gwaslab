@@ -109,10 +109,10 @@ def _gwheatmap(
     
     # Data QC and format
     if check ==True:
-        sumstats[pos] = _quick_fix_pos(sumstats[pos])
-        sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict)
-        sumstats[ref_pos] = _quick_fix_pos(sumstats[ref_pos])
-        sumstats[ref_chrom] = _quick_fix_chr(sumstats[ref_chrom], chr_dict=chr_dict)
+        sumstats[pos] = _quick_fix_pos(sumstats[pos], verbose=verbose, log=log)
+        sumstats[chrom] = _quick_fix_chr(sumstats[chrom], chr_dict=chr_dict, verbose=verbose, log=log)
+        sumstats[ref_pos] = _quick_fix_pos(sumstats[ref_pos], verbose=verbose, log=log)
+        sumstats[ref_chrom] = _quick_fix_chr(sumstats[ref_chrom], chr_dict=chr_dict, verbose=verbose, log=log)
         sumstats = _dropna_in_cols(sumstats, [pos, chrom, ref_pos, ref_chrom], log=log, verbose=verbose)
     
     # dropna
