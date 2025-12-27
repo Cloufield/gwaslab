@@ -100,7 +100,7 @@ gwaslab --input sumstats.tsv --fmt auto \
   --ref-infer /path/to/inference.vcf.gz \
   --ref-alt-freq AF \
   --maf-threshold 0.40 \
-  --ref-maf-threshold 0.5 \
+  --ref-maf-threshold 0.4 \
   --sweep-mode \
   --threads 8 \
   --out harmonized.tsv \
@@ -119,7 +119,7 @@ gwaslab --input sumstats.tsv --fmt auto \
 | `--ref-rsid-vcf` | Reference rsID VCF/BCF file | None |
 | `--ref-infer` | Reference VCF/BCF file for strand inference | None |
 | `--ref-alt-freq` | Allele frequency field name in VCF INFO | `AF` |
-| `--ref-maf-threshold` | MAF threshold for reference | 0.5 |
+| `--ref-maf-threshold` | MAF threshold for reference | 0.4 |
 | `--maf-threshold` | MAF threshold for sumstats | 0.40 |
 | `--sweep-mode` | Use sweep mode for large datasets | False |
 

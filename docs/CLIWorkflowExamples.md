@@ -38,7 +38,7 @@ gwaslab --input sumstats.tsv \
   --ref-infer /data/reference/1kg.vcf.gz \
   --ref-alt-freq AF \
   --maf-threshold 0.40 \
-  --ref-maf-threshold 0.5 \
+  --ref-maf-threshold 0.4 \
   --sweep-mode \
   --threads 8 \
   --out harmonized_sumstats \
@@ -154,7 +154,7 @@ gwaslab --input raw_sumstats.tsv \
   --ref-infer /data/reference/1kg.vcf.gz \
   --ref-alt-freq AF \
   --maf-threshold 0.40 \
-  --ref-maf-threshold 0.5 \
+  --ref-maf-threshold 0.4 \
   --sweep-mode \
   --threads 8 \
   --out final_sumstats \

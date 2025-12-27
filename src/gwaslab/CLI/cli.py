@@ -153,7 +153,7 @@ Examples:
     harm_group.add_argument("--ref-rsid-vcf", help="Reference rsID VCF/BCF file")
     harm_group.add_argument("--ref-infer", help="Reference VCF/BCF file for strand inference")
     harm_group.add_argument("--ref-alt-freq", help="Allele frequency field name in VCF INFO (default: AF)")
-    harm_group.add_argument("--ref-maf-threshold", type=float, default=0.5, help="MAF threshold for reference (default: 0.5)")
+    harm_group.add_argument("--ref-maf-threshold", type=float, default=0.4, help="MAF threshold for reference (default: 0.4)")
     harm_group.add_argument("--maf-threshold", type=float, default=0.40, help="MAF threshold for sumstats (default: 0.40)")
     harm_group.add_argument("--sweep-mode", action="store_true", help="Use sweep mode for large datasets")
     

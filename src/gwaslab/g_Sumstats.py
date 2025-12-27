@@ -553,7 +553,7 @@ class Sumstats():
               ref_rsid_vcf=None,
               ref_infer=None,
               ref_alt_freq=None,
-              ref_maf_threshold = 0.5,
+              ref_maf_threshold = 0.4,
               maf_threshold=0.40,
               threads=1,
               remove=False,
