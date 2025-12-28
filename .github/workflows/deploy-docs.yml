@@ -7,7 +7,6 @@ on:
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
-      - 'zensical.toml'
       - '.github/workflows/deploy-docs.yml'
 
 permissions:
