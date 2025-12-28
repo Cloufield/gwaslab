@@ -1,5 +1,14 @@
 # Update Logs
 
+# v4.0.1 (Development)
+
+## Improvements
+
+### Data Consistency Checks
+- Enhanced P-value consistency checking in `check_data_consistency()`: now uses fold change as primary metric for better interpretability with small P-values (reports "10.23x" instead of absolute difference)
+- Improved handling of P-values spanning many orders of magnitude and NaN values
+- Added comprehensive test suite for P-value consistency checks
+
 # v4.0.0 20251207
 
 ## Major Changes

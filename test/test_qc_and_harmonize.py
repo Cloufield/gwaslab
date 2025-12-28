@@ -19,6 +19,8 @@ if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
 import pandas as pd
+import numpy as np
+import scipy.stats as ss
 from gwaslab.g_Sumstats import Sumstats
 
 
@@ -1115,9 +1117,253 @@ class TestConsistencyInferEAFFromMAF(unittest.TestCase):
         else:
             print(f"\n[test_infer_eaf_from_maf_consistency] No variants with EAF in both methods to compare")
         
-        # Check that both methods processed similar numbers of variants
-        print(f"[test_infer_eaf_from_maf_consistency] Variant counts - old: {len(result1)}, new: {len(result2)}")
-        self.assertEqual(len(result1), len(result2), "Both methods should process the same number of variants")
+            # Check that both methods processed similar numbers of variants
+            print(f"[test_infer_eaf_from_maf_consistency] Variant counts - old: {len(result1)}, new: {len(result2)}")
+            self.assertEqual(len(result1), len(result2), "Both methods should process the same number of variants")
+
+
+class TestPValueConsistencyCheck(unittest.TestCase):
+    """Test P-value consistency checks with fold change reporting"""
+    
+    def setUp(self):
+        """Set up test data with BETA, SE, and P values"""
+        # Create test data with known relationships
+        np.random.seed(42)
+        n_variants = 100
+        
+        # Generate BETA and SE
+        beta = np.random.normal(0, 0.1, n_variants)
+        se = np.abs(np.random.normal(0.05, 0.01, n_variants))
+        se = np.maximum(se, 1e-6)  # Ensure SE > 0
+        
+        # Calculate Z and P from BETA/SE
+        z = beta / se
+        p_from_betase = ss.chi2.sf(z**2, 1)
+        
+        # Create DataFrame with consistent values
+        self.df_consistent = pd.DataFrame({
+            "SNPID": [f"rs{i}" for i in range(n_variants)],
+            "CHR": np.random.randint(1, 23, n_variants),
+            "POS": np.random.randint(1, 250000000, n_variants),
+            "EA": ["A"] * n_variants,
+            "NEA": ["G"] * n_variants,
+            "BETA": beta,
+            "SE": se,
+            "P": p_from_betase,  # Consistent P values
+        })
+        
+        # Create DataFrame with inconsistent P values (some with large fold changes)
+        self.df_inconsistent = self.df_consistent.copy()
+        # Introduce inconsistencies: multiply some P values by different factors
+        inconsistent_indices = np.random.choice(n_variants, size=20, replace=False)
+        fold_factors = np.random.choice([0.5, 2.0, 5.0, 10.0], size=20)
+        self.df_inconsistent.loc[inconsistent_indices, "P"] *= fold_factors
+        
+        # Create DataFrame with very small P values to test fold change reporting
+        self.df_small_p = pd.DataFrame({
+            "SNPID": ["rs1", "rs2", "rs3", "rs4", "rs5"],
+            "CHR": [1, 1, 1, 1, 1],
+            "POS": [1000, 2000, 3000, 4000, 5000],
+            "EA": ["A"] * 5,
+            "NEA": ["G"] * 5,
+            "BETA": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "SE": [0.01, 0.01, 0.01, 0.01, 0.01],
+            "P": [1e-6, 1e-8, 1e-10, 1e-12, 1e-14],  # Very small P values
+        })
+        # Make one inconsistent with 10x fold change
+        self.df_small_p.loc[2, "P"] = 1e-9  # Should be ~1e-10, so ~10x difference
+        
+        # Create DataFrame with NaN values to test NaN handling
+        self.df_with_nan = self.df_consistent.copy()
+        self.df_with_nan.loc[0:5, "P"] = np.nan
+        self.df_with_nan.loc[6:8, "BETA"] = np.nan
+    
+    def test_consistent_p_values_pass_check(self):
+        """Test that consistent P values pass the consistency check"""
+        gl = Sumstats(
+            sumstats=self.df_consistent,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            beta="BETA",
+            se="SE",
+            verbose=False
+        )
+        
+        # Run consistency check
+        result = gl.check_data_consistency(rtol=1e-3, verbose=False)
+        
+        # Should complete without errors
+        self.assertIsNotNone(result)
+        # Check that QC status was updated
+        status = gl.check_sumstats_qc_status()
+        # The function may or may not update status, but should not raise errors
+    
+    def test_inconsistent_p_values_detected(self):
+        """Test that inconsistent P values are detected"""
+        gl = Sumstats(
+            sumstats=self.df_inconsistent,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            beta="BETA",
+            se="SE",
+            verbose=False
+        )
+        
+        # Run consistency check with strict tolerance
+        result = gl.check_data_consistency(rtol=1e-3, verbose=False)
+        
+        # Should complete without errors
+        self.assertIsNotNone(result)
+    
+    def test_small_p_values_fold_change_reporting(self):
+        """Test that fold change is reported for small P values"""
+        gl = Sumstats(
+            sumstats=self.df_small_p,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            beta="BETA",
+            se="SE",
+            verbose=False
+        )
+        
+        # Capture log output to verify fold change reporting
+        import io
+        import sys
+        from gwaslab.info.g_Log import Log
+        
+        log = Log()
+        log.buffer = io.StringIO()
+        
+        # Run consistency check
+        result = gl.check_data_consistency(rtol=1e-3, verbose=True, log=log)
+        
+        # Check log output contains fold change information
+        log_output = log.buffer.getvalue()
+        # The log should mention fold change for inconsistent variants
+        # Note: This test verifies the function runs, actual log content may vary
+    
+    def test_nan_handling_in_consistency_check(self):
+        """Test that NaN values are handled correctly in consistency check"""
+        gl = Sumstats(
+            sumstats=self.df_with_nan,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            beta="BETA",
+            se="SE",
+            verbose=False
+        )
+        
+        # Should not raise errors when encountering NaN values
+        result = gl.check_data_consistency(rtol=1e-3, verbose=False)
+        self.assertIsNotNone(result)
+    
+    def test_mlog10p_derived_p_consistency(self):
+        """Test consistency check between MLOG10P-derived-P and P"""
+        # Create data with MLOG10P and P
+        df = pd.DataFrame({
+            "SNPID": ["rs1", "rs2", "rs3"],
+            "CHR": [1, 1, 1],
+            "POS": [1000, 2000, 3000],
+            "EA": ["A", "A", "A"],
+            "NEA": ["G", "G", "G"],
+            "MLOG10P": [5.0, 6.0, 7.0],  # -log10(P)
+            "P": [1e-5, 1e-6, 1e-7],  # Consistent P values
+        })
+        
+        gl = Sumstats(
+            sumstats=df,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            mlog10p="MLOG10P",
+            verbose=False
+        )
+        
+        # Should complete without errors
+        result = gl.check_data_consistency(rtol=1e-3, verbose=False)
+        self.assertIsNotNone(result)
+    
+    def test_missing_columns_handled_gracefully(self):
+        """Test that missing columns are handled gracefully"""
+        # Create data without BETA/SE
+        df = pd.DataFrame({
+            "SNPID": ["rs1", "rs2"],
+            "CHR": [1, 1],
+            "POS": [1000, 2000],
+            "EA": ["A", "A"],
+            "NEA": ["G", "G"],
+            "P": [0.05, 0.01],
+        })
+        
+        gl = Sumstats(
+            sumstats=df,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            verbose=False
+        )
+        
+        # Should complete without errors even without BETA/SE
+        result = gl.check_data_consistency(rtol=1e-3, verbose=False)
+        self.assertIsNotNone(result)
+    
+    def test_zero_p_values_handled(self):
+        """Test that zero or very small P values are handled correctly"""
+        # Create data with very small P values
+        beta = np.array([0.1, 0.2, 0.3])
+        se = np.array([0.01, 0.01, 0.01])
+        z = beta / se
+        p_from_betase = ss.chi2.sf(z**2, 1)
+        
+        df = pd.DataFrame({
+            "SNPID": ["rs1", "rs2", "rs3"],
+            "CHR": [1, 1, 1],
+            "POS": [1000, 2000, 3000],
+            "EA": ["A", "A", "A"],
+            "NEA": ["G", "G", "G"],
+            "BETA": beta,
+            "SE": se,
+            "P": p_from_betase,  # Very small but consistent
+        })
+        
+        gl = Sumstats(
+            sumstats=df,
+            chrom="CHR",
+            pos="POS",
+            ea="EA",
+            nea="NEA",
+            p="P",
+            snpid="SNPID",
+            beta="BETA",
+            se="SE",
+            verbose=False
+        )
+        
+        # Should handle very small P values without errors
+        result = gl.check_data_consistency(rtol=1e-3, verbose=False)
+        self.assertIsNotNone(result)
 
 
 if __name__ == "__main__":

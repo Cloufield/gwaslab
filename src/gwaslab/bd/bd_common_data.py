@@ -11,177 +11,268 @@ from gwaslab.bd.bd_download import check_and_download
 from gwaslab.bd.bd_download import update_formatbook
 from gwaslab.bd.bd_config import options
 from gwaslab.bd.bd_sex_chromosomes import Chromosomes
+from gwaslab.qc.qc_build import _process_build
+
+# Species-specific NCBI RefSeq accession ID mappings
+# Format: {(species, build_code): {chromosome: ncbi_accession_id, ...}}
+# Currently only human mappings are available. Other species will return empty dicts.
+_NCBI_ACCESSION_IDS = {
+    # Human (homo sapiens) - GRCh37/hg19
+    ("homo sapiens", "19"): {
+        "1": "NC_000001.10", "2": "NC_000002.11", "3": "NC_000003.11", "4": "NC_000004.11",
+        "5": "NC_000005.9", "6": "NC_000006.11", "7": "NC_000007.13", "8": "NC_000008.10",
+        "9": "NC_000009.11", "10": "NC_000010.10", "11": "NC_000011.9", "12": "NC_000012.11",
+        "13": "NC_000013.10", "14": "NC_000014.8", "15": "NC_000015.9", "16": "NC_000016.9",
+        "17": "NC_000017.10", "18": "NC_000018.9", "19": "NC_000019.9", "20": "NC_000020.10",
+        "21": "NC_000021.8", "22": "NC_000022.10", "X": "NC_000023.10", "Y": "NC_000024.9",
+        "MT": "NC_012920.1"
+    },
+    ("human", "19"): {
+        "1": "NC_000001.10", "2": "NC_000002.11", "3": "NC_000003.11", "4": "NC_000004.11",
+        "5": "NC_000005.9", "6": "NC_000006.11", "7": "NC_000007.13", "8": "NC_000008.10",
+        "9": "NC_000009.11", "10": "NC_000010.10", "11": "NC_000011.9", "12": "NC_000012.11",
+        "13": "NC_000013.10", "14": "NC_000014.8", "15": "NC_000015.9", "16": "NC_000016.9",
+        "17": "NC_000017.10", "18": "NC_000018.9", "19": "NC_000019.9", "20": "NC_000020.10",
+        "21": "NC_000021.8", "22": "NC_000022.10", "X": "NC_000023.10", "Y": "NC_000024.9",
+        "MT": "NC_012920.1"
+    },
+    # Human (homo sapiens) - GRCh38/hg38
+    ("homo sapiens", "38"): {
+        "1": "NC_000001.11", "2": "NC_000002.12", "3": "NC_000003.12", "4": "NC_000004.12",
+        "5": "NC_000005.10", "6": "NC_000006.12", "7": "NC_000007.14", "8": "NC_000008.11",
+        "9": "NC_000009.12", "10": "NC_000010.11", "11": "NC_000011.10", "12": "NC_000012.12",
+        "13": "NC_000013.11", "14": "NC_000014.9", "15": "NC_000015.10", "16": "NC_000016.10",
+        "17": "NC_000017.11", "18": "NC_000018.10", "19": "NC_000019.10", "20": "NC_000020.11",
+        "21": "NC_000021.9", "22": "NC_000022.11", "X": "NC_000023.11", "Y": "NC_000024.1",
+        "MT": "NC_012920.1"
+    },
+    ("human", "38"): {
+        "1": "NC_000001.11", "2": "NC_000002.12", "3": "NC_000003.12", "4": "NC_000004.12",
+        "5": "NC_000005.10", "6": "NC_000006.12", "7": "NC_000007.14", "8": "NC_000008.11",
+        "9": "NC_000009.12", "10": "NC_000010.11", "11": "NC_000011.10", "12": "NC_000012.12",
+        "13": "NC_000013.11", "14": "NC_000014.9", "15": "NC_000015.10", "16": "NC_000016.10",
+        "17": "NC_000017.11", "18": "NC_000018.10", "19": "NC_000019.10", "20": "NC_000020.11",
+        "21": "NC_000021.9", "22": "NC_000022.11", "X": "NC_000023.11", "Y": "NC_000024.1",
+        "MT": "NC_012920.1"
+    },
+    # Human (homo sapiens) - T2T-CHM13
+    ("homo sapiens", "13"): {
+        "1": "CM000663.2", "2": "CM000664.2", "3": "CM000665.2", "4": "CM000666.2",
+        "5": "CM000667.2", "6": "CM000668.2", "7": "CM000669.2", "8": "CM000670.2",
+        "9": "CM000671.2", "10": "CM000672.2", "11": "CM000673.2", "12": "CM000674.2",
+        "13": "CM000675.2", "14": "CM000676.2", "15": "CM000677.2", "16": "CM000678.2",
+        "17": "CM000679.2", "18": "CM000680.2", "19": "CM000681.2", "20": "CM000682.2",
+        "21": "CM000683.2", "22": "CM000684.2", "X": "CM000685.2", "Y": "CM000686.2",
+        "MT": "NC_012920.1"
+    },
+    ("human", "13"): {
+        "1": "CM000663.2", "2": "CM000664.2", "3": "CM000665.2", "4": "CM000666.2",
+        "5": "CM000667.2", "6": "CM000668.2", "7": "CM000669.2", "8": "CM000670.2",
+        "9": "CM000671.2", "10": "CM000672.2", "11": "CM000673.2", "12": "CM000674.2",
+        "13": "CM000675.2", "14": "CM000676.2", "15": "CM000677.2", "16": "CM000678.2",
+        "17": "CM000679.2", "18": "CM000680.2", "19": "CM000681.2", "20": "CM000682.2",
+        "21": "CM000683.2", "22": "CM000684.2", "X": "CM000685.2", "Y": "CM000686.2",
+        "MT": "NC_012920.1"
+    },
+}
+
+def _get_ncbi_accession_mapping(species, build, log=None, verbose=True):
+    """
+    Get NCBI RefSeq accession ID mapping for a species and build.
+    
+    Parameters
+    ----------
+    species : str
+        Species name (case-insensitive)
+    build : str
+        Genome build identifier (will be processed to normalized build code)
+    log : Log, optional
+        Logging object
+    verbose : bool, default True
+        Whether to print warnings
+    
+    Returns
+    -------
+    dict or None
+        Dictionary mapping chromosome identifiers to NCBI accession IDs,
+        or None if not available
+    """
+    if species is None:
+        species = "homo sapiens"
+    
+    species_lower = species.lower()
+    
+    # Process build to get normalized build code
+    try:
+        processed_build = _process_build(build, log=log or Log(), verbose=False, species=species)
+    except (ValueError, KeyError):
+        # If build processing fails, try using the original build string
+        processed_build = str(build)
+    
+    # Check if mapping exists
+    key = (species_lower, processed_build)
+    if key in _NCBI_ACCESSION_IDS:
+        return _NCBI_ACCESSION_IDS[key].copy()
+    
+    # Check for aliases
+    species_aliases = {
+        "homo sapiens": "human",
+        "human": "homo sapiens",
+    }
+    
+    # Try alias
+    alias = species_aliases.get(species_lower)
+    if alias:
+        key = (alias, processed_build)
+        if key in _NCBI_ACCESSION_IDS:
+            return _NCBI_ACCESSION_IDS[key].copy()
+    
+    # Not found - return None (caller should handle this)
+    return None
 
 #hard-coded data
-def get_chr_to_NC(build, inverse=False):
+def get_chr_to_NC(build, inverse=False, species="homo sapiens", log=None, verbose=True):
     """
-    Create a dictionary mapping chromosome numbers to NCBI accession IDs.
+    Create a dictionary mapping chromosome identifiers to NCBI RefSeq accession IDs.
     
-    Parameters:
-    build (str): Genome build version ('19' or '38')
-    inverse (bool): If True, return NCBI ID to chromosome mapping
+    Parameters
+    ----------
+    build : str
+        Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
+    inverse : bool, default False
+        If True, return NCBI ID to chromosome mapping
+    species : str, default "homo sapiens"
+        Species name (case-insensitive). Currently only human mappings are fully supported.
+    log : Log, optional
+        Logging object for warnings
+    verbose : bool, default True
+        Whether to print warnings
     
-    Returns:
-    dict: Dictionary mapping chromosome identifiers (string) to NCBI accession IDs (string)
+    Returns
+    -------
+    dict
+        Dictionary mapping chromosome identifiers (string) to NCBI accession IDs (string).
+        Returns empty dict for unsupported species/build combinations.
     """
-    #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
-    if build =="19":
-        dic={
-        "1":"NC_000001.10",
-        "2":"NC_000002.11",
-        "3":"NC_000003.11",
-        "4":"NC_000004.11",
-        "5":"NC_000005.9",
-        "6":"NC_000006.11",
-        "7":"NC_000007.13",
-        "8":"NC_000008.10",
-        "9":"NC_000009.11",
-        "10":"NC_000010.10",
-        "11":"NC_000011.9",
-        "12":"NC_000012.11",
-        "13":"NC_000013.10",
-        "14":"NC_000014.8",
-        "15":"NC_000015.9",
-        "16":"NC_000016.9",
-        "17":"NC_000017.10",
-        "18":"NC_000018.9",
-        "19":"NC_000019.9",
-        "20":"NC_000020.10",
-        "21":"NC_000021.8",
-        "22":"NC_000022.10",
-        "X":"NC_000023.10",
-        "Y":"NC_000024.9",
-        "MT":"NC_012920.1"}
-    elif build=="38":
-        dic={
-        "1":"NC_000001.11",
-        "2":"NC_000002.12",
-        "3":"NC_000003.12",
-        "4":"NC_000004.12",
-        "5":"NC_000005.10",
-        "6":"NC_000006.12",
-        "7":"NC_000007.14",
-        "8":"NC_000008.11",
-        "9":"NC_000009.12",
-        "10":"NC_000010.11",
-        "11":"NC_000011.10",
-        "12":"NC_000012.12",
-        "13":"NC_000013.11",
-        "14":"NC_000014.9",
-        "15":"NC_000015.10",
-        "16":"NC_000016.10",
-        "17":"NC_000017.11",
-        "18":"NC_000018.10",
-        "19":"NC_000019.10",
-        "20":"NC_000020.11",
-        "21":"NC_000021.9",
-        "22":"NC_000022.11",
-        "X":"NC_000023.11",
-        "Y":"NC_000024.1",
-        "MT":"NC_012920.1"
-        }
+    if log is None:
+        from gwaslab.info.g_Log import Log
+        log = Log()
+    
+    # Get NCBI accession mapping
+    dic = _get_ncbi_accession_mapping(species, build, log=log, verbose=verbose)
+    
+    if dic is None:
+        # No mapping available for this species/build
+        if verbose:
+            log.warning(
+                f"NCBI RefSeq accession IDs are not available for species '{species}' "
+                f"and build '{build}'. Returning empty dictionary. "
+                f"Currently only human (homo sapiens) mappings are supported."
+            )
+        dic = {}
+    
     if inverse is True:
         inv_dic = {v: k for k, v in dic.items()}
         return inv_dic
     return dic
 
-def get_NC_to_chr(build):
+def get_NC_to_chr(build, species="homo sapiens", log=None, verbose=True):
     """
-    Create a dictionary mapping NCBI accession IDs to chromosome numbers.
+    Create a dictionary mapping NCBI RefSeq accession IDs to chromosome identifiers.
     
-    Parameters:
-    build (str): Genome build version ('19' or '38')
+    Parameters
+    ----------
+    build : str
+        Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
+    species : str, default "homo sapiens"
+        Species name (case-insensitive). Currently only human mappings are fully supported.
+    log : Log, optional
+        Logging object for warnings
+    verbose : bool, default True
+        Whether to print warnings
     
-    Returns:
-    dict: Dictionary mapping NCBI accession IDs (string) to chromosome numbers (string)
+    Returns
+    -------
+    dict
+        Dictionary mapping NCBI accession IDs (string) to chromosome identifiers (string)
     """
-    return get_chr_to_NC(build=build,inverse=True)
+    return get_chr_to_NC(build=build, inverse=True, species=species, log=log, verbose=verbose)
 
 
-def get_number_to_NC(build, inverse=False):
+def get_number_to_NC(build, inverse=False, species="homo sapiens", log=None, verbose=True):
     """
-    Create a dictionary mapping chromosome numbers (int) to NCBI accession IDs (string).
+    Create a dictionary mapping chromosome numbers (int) to NCBI RefSeq accession IDs (string).
     
-    Parameters:
-    build (str): Genome build version ('19' or '38')
-    inverse (bool): If True, return NCBI ID to chromosome mapping
+    Parameters
+    ----------
+    build : str
+        Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
+    inverse : bool, default False
+        If True, return NCBI ID to chromosome number mapping
+    species : str, default "homo sapiens"
+        Species name (case-insensitive). Currently only human mappings are fully supported.
+    log : Log, optional
+        Logging object for warnings
+    verbose : bool, default True
+        Whether to print warnings
     
-    Returns:
-    dict: Dictionary mapping chromosome identifiers (int) to NCBI accession IDs
+    Returns
+    -------
+    dict
+        Dictionary mapping chromosome numbers (int) to NCBI accession IDs (string).
+        Returns empty dict for unsupported species/build combinations.
     """
-    #https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.13
-    if build =="19":
-        dic={
-        1:"NC_000001.10",
-        2:"NC_000002.11",
-        3:"NC_000003.11",
-        4:"NC_000004.11",
-        5:"NC_000005.9",
-        6:"NC_000006.11",
-        7:"NC_000007.13",
-        8:"NC_000008.10",
-        9:"NC_000009.11",
-        10:"NC_000010.10",
-        11:"NC_000011.9",
-        12:"NC_000012.11",
-        13:"NC_000013.10",
-        14:"NC_000014.8",
-        15:"NC_000015.9",
-        16:"NC_000016.9",
-        17:"NC_000017.10",
-        18:"NC_000018.9",
-        19:"NC_000019.9",
-        20:"NC_000020.10",
-        21:"NC_000021.8",
-        22:"NC_000022.10",
-        23:"NC_000023.10",
-        24:"NC_000024.9",
-        25:"NC_012920.1"}
-    elif build=="38":
-        dic={
-        1:"NC_000001.11",
-        2:"NC_000002.12",
-        3:"NC_000003.12",
-        4:"NC_000004.12",
-        5:"NC_000005.10",
-        6:"NC_000006.12",
-        7:"NC_000007.14",
-        8:"NC_000008.11",
-        9:"NC_000009.12",
-        10:"NC_000010.11",
-        11:"NC_000011.10",
-        12:"NC_000012.12",
-        13:"NC_000013.11",
-        14:"NC_000014.9",
-        15:"NC_000015.10",
-        16:"NC_000016.10",
-        17:"NC_000017.11",
-        18:"NC_000018.10",
-        19:"NC_000019.10",
-        20:"NC_000020.11",
-        21:"NC_000021.9",
-        22:"NC_000022.11",
-        23:"NC_000023.11",
-        24:"NC_000024.1",
-        25:"NC_012920.1"
-        }
+    if log is None:
+        from gwaslab.info.g_Log import Log
+        log = Log()
+    
+    # Get string-based mapping first
+    chr_to_nc = get_chr_to_NC(build=build, inverse=False, species=species, log=log, verbose=verbose)
+    
+    if not chr_to_nc:
+        # Return empty dict if no mapping available
+        return {}
+    
+    # Convert to number-based mapping
+    # Get chromosome to number mapping for this species
+    chromosomes_obj = Chromosomes(species=species)
+    chr_to_num = chromosomes_obj.get_chr_to_number_dict(out_chr=False, xymt_num=[23, 24, 25])
+    
+    # Build number to NC mapping
+    dic = {}
+    for chrom_str, nc_id in chr_to_nc.items():
+        # Get numeric value for this chromosome
+        if chrom_str in chr_to_num:
+            chrom_num = chr_to_num[chrom_str]
+            dic[chrom_num] = nc_id
+    
     if inverse is True:
         inv_dic = {v: k for k, v in dic.items()}
         return inv_dic
     return dic
 
 
-def get_NC_to_number(build):
+def get_NC_to_number(build, species="homo sapiens", log=None, verbose=True):
     """
-    Create a dictionary mapping NCBI accession IDs to chromosome numbers (int).
+    Create a dictionary mapping NCBI RefSeq accession IDs to chromosome numbers (int).
     
-    Parameters:
-    build (str): Genome build version ('19' or '38')
+    Parameters
+    ----------
+    build : str
+        Genome build version (e.g., '19', '38', 'mm10', 'rn6'). Will be normalized based on species.
+    species : str, default "homo sapiens"
+        Species name (case-insensitive). Currently only human mappings are fully supported.
+    log : Log, optional
+        Logging object for warnings
+    verbose : bool, default True
+        Whether to print warnings
     
-    Returns:
-    dict: Dictionary mapping NCBI accession IDs to chromosome numbers (int)
+    Returns
+    -------
+    dict
+        Dictionary mapping NCBI accession IDs to chromosome numbers (int)
     """
-    return get_number_to_NC(build=build,inverse=True)
+    return get_number_to_NC(build=build, inverse=True, species=species, log=log, verbose=verbose)
 
 def get_chr_list(add_number=False, n=25, only_number=False, species="homo sapiens"):
     """

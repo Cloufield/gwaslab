@@ -11,7 +11,7 @@ from gwaslab.info.g_version import _get_version
 
 from gwaslab.qc.qc_check_datatype import check_datatype_for_cols
 from gwaslab.qc.qc_check_datatype import check_dataframe_shape
-from gwaslab.qc.qc_build import _process_build
+from gwaslab.qc.qc_build import _process_build, check_species_compatibility
 
 def with_logging(start_to_msg, 
                  finished_msg,
@@ -20,7 +20,8 @@ def with_logging(start_to_msg,
                  must_kwargs=None,
                  show_shape=True,
                  check_dtype=False,
-                 fix=True
+                 fix=True,
+                 required_species=None
                  ):
     """
     Decorator to add standardized logging, argument checks, and optional dtype
@@ -44,12 +45,17 @@ def with_logging(start_to_msg,
         If True, verify dtypes for `start_cols` using `check_datatype_for_cols`.
     fix : bool, default True
         If True and `check_dtype` is enabled, attempt dtype fixes where possible.
+    required_species : str or list or None, default None
+        Required species name(s) for the operation. If provided, checks species compatibility
+        before executing the function. Can be a single string (e.g., "homo sapiens") or a list
+        of strings for multiple allowed species.
 
     Behavior
     --------
     - Logs references (threads, VCF/FASTA/TSV) and start/end messages.
     - Validates required args and columns; skips execution if columns missing.
     - Optionally checks DataFrame dtypes and applies fixes.
+    - Optionally checks species compatibility if `required_species` is provided.
     - Preserves original function metadata via `functools.wraps`.
     """
     if fix ==True:
@@ -131,6 +137,30 @@ def with_logging(start_to_msg,
                 # If import fails, try log reference as fallback
                 if sumstats_obj is None:
                     sumstats_obj = getattr(log, '_sumstats_obj', None)
+            
+            # Check species compatibility if required_species is specified
+            if required_species is not None:
+                # Try to extract species from various sources
+                species = bound_kwargs.arguments.get('species', None)
+                
+                # If species not in kwargs, try to get from Sumstats object
+                if species is None and sumstats_obj is not None:
+                    try:
+                        species = sumstats_obj.meta.get("gwaslab", {}).get("species", None)
+                    except (AttributeError, KeyError):
+                        pass
+                
+                # Use function name as operation name if start_function not provided
+                operation_name = start_function if start_function is not None else func.__name__
+                
+                # Check species compatibility
+                check_species_compatibility(
+                    species=species,
+                    required_species=required_species,
+                    operation_name=operation_name,
+                    log=log,
+                    verbose=verbose
+                )
             
             # Extract sumstats DataFrame from sumstats_obj if sumstats is None
             if sumstats is None and sumstats_obj is not None:

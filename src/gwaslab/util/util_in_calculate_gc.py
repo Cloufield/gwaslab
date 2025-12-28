@@ -2,9 +2,7 @@ import pandas as pd
 import numpy as np
 import scipy as sp
 from gwaslab.info.g_Log import Log
-from gwaslab.io.io_input_type import handle_sumstats_input
 #20220312
-@handle_sumstats_input()
 def _lambda_GC(insumstats_or_dataframe,include_chrXYMT=True, x=23 ,y=24, mt=25, mode=None,level=0.5,verbose=True,log=Log()):
     """
     Calculate the Genomic Inflation Factor (LambdaGC) for genomic control in GWAS.
@@ -38,7 +36,16 @@ def _lambda_GC(insumstats_or_dataframe,include_chrXYMT=True, x=23 ,y=24, mt=25, 
     Devlin, B., & Roeder, K. (1999). Genomic control for association studies. 
     Biometrics, 55(4), 964-975.
     """
-    insumstats = insumstats_or_dataframe
+    # Extract DataFrame if Sumstats object
+    if isinstance(insumstats_or_dataframe, pd.DataFrame):
+        insumstats = insumstats_or_dataframe
+    else:
+        # Assume it's a Sumstats object
+        try:
+            insumstats = insumstats_or_dataframe.data
+        except AttributeError:
+            # Not a Sumstats object, pass through as-is
+            insumstats = insumstats_or_dataframe
 
     # Auto-detect mode if not provided
     if mode is None:

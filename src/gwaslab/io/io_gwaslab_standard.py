@@ -637,12 +637,9 @@ def load_gsf(
     sumstats_obj.id = id(sumstats_obj)
     sumstats_obj.tmp_path = _path(pid=sumstats_obj.id, log=sumstats_obj.log, verbose=False)
     
-    # Initialize downstream analysis attributes
-    sumstats_obj.ldsc_h2 = None
-    sumstats_obj.ldsc_h2_results = None
-    sumstats_obj.ldsc_rg = pd.DataFrame()
-    sumstats_obj.ldsc_h2_cts = None
-    sumstats_obj.ldsc_partitioned_h2_summary = None
+    # Initialize downstream analysis result manager
+    from gwaslab.downstream.ds_result_manager import DownstreamResultManager
+    sumstats_obj.downstream = DownstreamResultManager()
     
     # Show version info if verbose
     if verbose:

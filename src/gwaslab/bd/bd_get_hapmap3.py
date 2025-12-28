@@ -15,7 +15,8 @@ from gwaslab.util.util_in_filter_value import _get_hapmap_full_polars
 @with_logging(
         start_to_msg="extract HapMap3 SNPs",
         finished_msg="extracting HapMap3 SNPs",
-        start_function=".gethapmap3"
+        start_function=".gethapmap3",
+        required_species="homo sapiens"
 )
 def _get_hapmap3(sumstats_or_dataframe,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
     """

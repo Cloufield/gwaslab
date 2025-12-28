@@ -1,52 +1,123 @@
 # GWASLab Development Principles
 
-## Data Prioritization
-- **SNPID over rsID**: Prioritize SNPID (CHR:POS:NEA:EA or CHR:POS:REF:ALT) when checking variant identifiers
-  - rsID may contain duplicates or missing values
-- **MLOG10P over P**: Prioritize MLOG10P since P values can become 0 when exceeding float64 precision limits
+## Core Architecture
 
-## Code Quality & Architecture
+### Sumstats Object
+- **Sumstats object is the core of GWASLab**
+- Stores data with metadata
+- Provides methods for GWAS sumstats related QC, harmonization, and visualization functions
+- **GWASLab is now completely based on Sumstats object**: For functions using multiple sumstats, Sumstats object should be passed to avoid loading issues
+
+### Multi-Sumstats Objects
+- **SumstatsPair**: For functions using two datasets
+  - Wraps two Sumstats objects and manages their combined metadata
+  - Handles column suffixing (e.g., `_1`, `_2`) to distinguish statistics from each dataset
+  - Prevents loading issues by keeping Sumstats objects in memory rather than reloading from files
+- **SumstatsMulti**: For functions using multiple datasets (3+)
+  - Wraps multiple Sumstats objects and manages their combined metadata
+  - Supports both pandas and polars engines for efficient data handling
+  - Handles merging multiple datasets with configurable merge modes (outer, inner, etc.)
+  - Prevents loading issues by keeping Sumstats objects in memory rather than reloading from files
+
+### Manager Classes
+- **DownstreamResultManager**: Centralized management of downstream analysis results
+  - Located in `gwaslab.downstream.ds_result_manager`
+  - Integrated into Sumstats objects via `sumstats_obj.downstream` attribute
+  - Manages all downstream analysis results including:
+    - LDSC results: `ldsc_h2`, `ldsc_h2_results`, `ldsc_rg`, `ldsc_h2_cts`, `ldsc_partitioned_h2_summary`, `ldsc_partitioned_h2_results`
+    - Finemapping results: `finemapping` dictionary (keys: "path", "file", "plink_log", "pipcs")
+    - Clumping results: `clumps` dictionary (keys: "clumps", "clumps_raw", "plink_log")
+    - PIPCS results: `pipcs` DataFrame
+  - Provides helper methods: `has_*()`, `clear_*()`, `get_*()`, `set_*()` for each result type
+  - Provides `get_summary()` to check available results and `clear_all()` to clear all results
+  - **Backward compatibility**: Direct property accessors on Sumstats object (e.g., `sumstats_obj.ldsc_h2`) delegate to the manager
+  - When creating new downstream analysis methods, store results in the manager rather than as direct attributes
+  - Example usage: `sumstats_obj.downstream.set_ldsc_h2(value)` or `sumstats_obj.ldsc_h2 = value` (both work)
+
+### Function Design
+- **Input handling**: Functions should accept both DataFrame and Sumstats object inputs
+  - Accept `sumstats_obj` as first parameter (pd.DataFrame or Sumstats)
+  - Check type: `isinstance(sumstats_obj, pd.DataFrame)` or `is_dataframe = isinstance(sumstats_obj, pd.DataFrame)`
+  - Extract DataFrame: `sumstats = sumstats_obj.data` for Sumstats objects
+  - Update Sumstats object after processing: `sumstats_obj.data = sumstats` (when `inplace=True` or modifying in-place)
+  - Return appropriately: `sumstats_obj.data` for Sumstats, or `sumstats` for DataFrame
+- **Code quality**:
+  - Preserve function metadata using `functools.wraps` in decorators
+  - Standardize parameter names across functions (e.g., use 'inplace' consistently)
+
+## Code Quality & Best Practices
 
 ### Logging & Monitoring
 - Use `@with_logging` decorator for all QC/processing functions
 - Use `Log()` class for all logging operations (write, warning, log)
 - Log operation start/finish with version information
 - Provide `verbose` parameter for controlling log output
-- Decorator automatically handles:
+- **Decorator automatically handles**:
   - DataFrame shape changes (show_shape=True by default)
   - Data type checking (check_dtype=True)
   - Data type fixing (fix=True, automatically enables check_dtype)
   - No manual shape/dtype checks needed when using decorator
 
 ### Validation & Error Handling
-- Use `@with_logging` with `start_cols` to validate required columns before execution
+- **Column validation**: Use `@with_logging` with `start_cols` to validate required columns before execution
   - Specify columns: `start_cols=["EA","NEA","STATUS"]`
   - Decorator validates and skips execution if missing
-- Use `must_kwargs` to validate required arguments
-- Handle missing columns gracefully (skip execution, return early)
-- Use standardized error messages with function context
+- **Argument validation**: Use `must_kwargs` to validate required arguments
+- **Error handling**: 
+  - Handle missing columns gracefully (skip execution, return early)
+  - Use standardized error messages with function context
 
-### Function Design
-- Preserve function metadata using `functools.wraps` in decorators
-- Handle both DataFrame and Sumstats object inputs:
-  - Accept `sumstats_obj` as first parameter (pd.DataFrame or Sumstats)
-  - Check `isinstance(sumstats_obj, pd.DataFrame)` to determine type
-  - Extract `sumstats = sumstats_obj.data` for Sumstats objects
-  - Return `sumstats_obj.data` for Sumstats, or `sumstats` for DataFrame
-- Standardize parameter names across functions (e.g., use 'inplace' consistently)
+### Testing
+- **When creating new major functions, add test cases to verify correctness**:
+  - Create test files in `test/` directory following naming convention `test_*.py`
+  - Use `unittest.TestCase` for test classes
+  - Test both typical use cases and edge cases
+  - Verify expected outputs, data types, and behavior
+  - Include tests for error handling and validation
+  - Run tests before submitting code changes
 
 ## Data Standards
+
+### Data Prioritization
+- **SNPID over rsID**: Prioritize SNPID (CHR:POS:NEA:EA or CHR:POS:REF:ALT) when checking variant identifiers
+  - rsID may contain duplicates or missing values
+- **MLOG10P over P**: Prioritize MLOG10P since P values can become 0 when exceeding float64 precision limits
 
 ### Variant Identification
 - Use 7-digit status code system for variant quality tracking (traceable)
 - Follow status code principle: higher value = higher uncertainty
 
-### Data Format
-- Validate genome build format before processing (_process_build)
-- Follow standardized column order (DEFAULT_COLUMN_ORDER)
-- Use standardized chromosome notation (integers for autosomes, X=23, Y=24, MT=25)
+### Data Format & Type Management
+- **Reserved headers manage datatypes**:
+  - Reserved headers JSON file (`qc_researved_header_json`) serves as the single source of truth for all column datatypes
+  - Each reserved header defines:
+    - `Datatype`: Preferred/standard datatype
+    - `ValidDtypes`: Acceptable pandas types for validation
+    - `ValidDtypesPolars`: Polars type identifiers
+    - `ValidRange`: Value ranges for sanity checking
+  - Use `_get_headers(mode="info|stats|others")` to get headers by category
+  - Datatype validation uses `dtype_dict` (from reserved headers) to check and fix column types
+  - Reserved headers also define DEFAULT_COLUMN_ORDER and provide ValidRange for `_sanity_check_stats()`
+- **Chromosome notations are managed using the `Chromosomes` class**:
+  - Sumstats objects have a `chromosomes` attribute (Chromosomes instance) that manages species-specific chromosome information
+  - Provides chromosome mappings, conversions, and validation for different species
+  - Handles autosomes, sex chromosomes (X/Y or Z/W), and mitochondrial chromosomes
+  - Use `sumstats_obj.chromosomes.get_chromosome_mappings()` to get standardized mappings
+  - Supports multiple species (human, mouse, chicken, etc.) with appropriate chromosome conventions
+  - Standard notation: integers for autosomes, X=23, Y=24, MT=25 for human (species-specific for others)
+- **General format requirements**:
+  - Validate genome build format before processing (_process_build)
+  - Follow standardized column order (DEFAULT_COLUMN_ORDER)
 
-### File Handling
+### Memory Management
+- **When calling third-party tools** (e.g., PLINK, MTAG, MAGMA, R packages), unload sumstats data to save memory:
+  - Call `sumstats_obj.offload()` before executing the third-party tool
+  - Execute the third-party tool
+  - Call `sumstats_obj.reload()` after the tool finishes to restore data
+  - This pattern prevents memory issues when external tools require significant memory
+  - Example workflow: `sumstats_obj.offload()` → run external tool → `sumstats_obj.reload()`
+
+## File Handling
 - Use `tempfile` module for temporary files/directories:
   - `tempfile.mkdtemp()` for directories (with prefix/suffix)
   - `tempfile.NamedTemporaryFile()` or `tempfile.mkstemp()` for files

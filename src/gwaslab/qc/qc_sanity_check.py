@@ -459,14 +459,71 @@ def _check_data_consistency(sumstats_obj, beta="BETA", se="SE", p="P",mlog10p="M
         if has_p:
             log.write(" -Checking if BETA/SE-derived-P is consistent with P...",verbose=verbose)
             betase_derived_p =  _convert_betase_to_p(sumstats["BETA"], sumstats["SE"])
-            is_close = np.isclose(betase_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
-            # Performance optimization: Use .any() instead of sum() > 0 for boolean check
-            inconsistent = ~is_close
+            
+            # For P-values, use fold change as the primary consistency metric
+            # since P-values span many orders of magnitude (e.g., 1e-300 to 1)
+            p_values = sumstats["P"].copy()
+            # Ensure derived_p_values is a pandas Series with same index
+            if isinstance(betase_derived_p, pd.Series):
+                derived_p_values = betase_derived_p.copy()
+            else:
+                derived_p_values = pd.Series(betase_derived_p, index=sumstats.index)
+            
+            # Handle NaN values - treat as consistent if both are NaN
+            both_na = p_values.isna() & derived_p_values.isna()
+            one_na = p_values.isna() | derived_p_values.isna()
+            valid_mask = ~one_na & (p_values > 0) & (derived_p_values > 0)
+            
+            # Initialize consistency check: NaN pairs are considered consistent
+            is_close = pd.Series(both_na, index=sumstats.index)
+            
+            # Initialize fold_change Series for all indices
+            fold_change = pd.Series(index=sumstats.index, dtype=float)
+            
+            if valid_mask.any():
+                # Calculate fold change: max(derived_p/p, p/derived_p) for symmetric measure
+                # 1.0 = identical, >1.0 = different
+                valid_p = p_values[valid_mask]
+                valid_derived_p = derived_p_values[valid_mask]
+                fold_change[valid_mask] = np.maximum(valid_derived_p / valid_p, valid_p / valid_derived_p)
+                
+                # Convert rtol to fold change threshold (e.g., rtol=0.001 → 1.001x acceptable)
+                fold_threshold = 1.0 + rtol
+                
+                # Check consistency based on fold change
+                is_close[valid_mask] = fold_change[valid_mask] <= fold_threshold
+                
+                # For variants where fold change check fails, also verify with np.isclose
+                # as a secondary check (handles edge cases with very small values)
+                fold_inconsistent = valid_mask & ~is_close
+                if fold_inconsistent.any():
+                    np_close_secondary = np.isclose(
+                        derived_p_values[fold_inconsistent], 
+                        p_values[fold_inconsistent], 
+                        rtol=rtol, 
+                        atol=atol, 
+                        equal_nan=equal_nan
+                    )
+                    is_close[fold_inconsistent] = np_close_secondary
+            
+            inconsistent = ~is_close & ~one_na  # Exclude single NaN cases from inconsistent count
             if inconsistent.any():
                 inconsistent_num = inconsistent.sum()
-                diff = betase_derived_p - sumstats["P"]
-                log.write("  -Potentially inconsistent (likely due to rounding): {} variant(s)".format(inconsistent_num),verbose=verbose)
-                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
+                # Calculate fold change for reporting (only for valid pairs)
+                inconsistent_valid = inconsistent & valid_mask
+                if inconsistent_valid.any():
+                    inconsistent_fold_change = fold_change[inconsistent_valid]
+                    max_fold_idx = inconsistent_fold_change.idxmax()
+                    max_fold_change = inconsistent_fold_change.max()
+                    log.write("  -Potentially inconsistent (likely due to rounding): {} variant(s)".format(inconsistent_num),verbose=verbose)
+                    log.write("  -Variant {} with max fold change: {} with {:.2f}x".format(id_to_use, sumstats.loc[max_fold_idx,id_to_use], max_fold_change),verbose=verbose)
+                else:
+                    # Fallback: report absolute difference for edge cases
+                    diff = (derived_p_values - p_values).abs()
+                    max_diff_idx = diff[inconsistent].idxmax()
+                    max_diff = diff[inconsistent].max()
+                    log.write("  -Potentially inconsistent (likely due to rounding): {} variant(s)".format(inconsistent_num),verbose=verbose)
+                    log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[max_diff_idx,id_to_use], max_diff),verbose=verbose)
             else:
                 log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
             check_status=1
@@ -474,14 +531,71 @@ def _check_data_consistency(sumstats_obj, beta="BETA", se="SE", p="P",mlog10p="M
     if has_mlog10p and has_p:
         log.write(" -Checking if MLOG10P-derived-P is consistent with P...",verbose=verbose)
         mlog10p_derived_p = _convert_mlog10p_to_p(sumstats["MLOG10P"])
-        is_close = np.isclose(mlog10p_derived_p, sumstats["P"], rtol=rtol, atol=atol, equal_nan=equal_nan)
-        # Performance optimization: Use .any() instead of sum() > 0 for boolean check
-        inconsistent = ~is_close
+        
+        # For P-values, use fold change as the primary consistency metric
+        # since P-values span many orders of magnitude (e.g., 1e-300 to 1)
+        p_values = sumstats["P"].copy()
+        # Ensure derived_p_values is a pandas Series with same index
+        if isinstance(mlog10p_derived_p, pd.Series):
+            derived_p_values = mlog10p_derived_p.copy()
+        else:
+            derived_p_values = pd.Series(mlog10p_derived_p, index=sumstats.index)
+        
+        # Handle NaN values - treat as consistent if both are NaN
+        both_na = p_values.isna() & derived_p_values.isna()
+        one_na = p_values.isna() | derived_p_values.isna()
+        valid_mask = ~one_na & (p_values > 0) & (derived_p_values > 0)
+        
+        # Initialize consistency check: NaN pairs are considered consistent
+        is_close = pd.Series(both_na, index=sumstats.index)
+        
+        # Initialize fold_change Series for all indices
+        fold_change = pd.Series(index=sumstats.index, dtype=float)
+        
+        if valid_mask.any():
+            # Calculate fold change: max(derived_p/p, p/derived_p) for symmetric measure
+            # 1.0 = identical, >1.0 = different
+            valid_p = p_values[valid_mask]
+            valid_derived_p = derived_p_values[valid_mask]
+            fold_change[valid_mask] = np.maximum(valid_derived_p / valid_p, valid_p / valid_derived_p)
+            
+            # Convert rtol to fold change threshold (e.g., rtol=0.001 → 1.001x acceptable)
+            fold_threshold = 1.0 + rtol
+            
+            # Check consistency based on fold change
+            is_close[valid_mask] = fold_change[valid_mask] <= fold_threshold
+            
+            # For variants where fold change check fails, also verify with np.isclose
+            # as a secondary check (handles edge cases with very small values)
+            fold_inconsistent = valid_mask & ~is_close
+            if fold_inconsistent.any():
+                np_close_secondary = np.isclose(
+                    derived_p_values[fold_inconsistent], 
+                    p_values[fold_inconsistent], 
+                    rtol=rtol, 
+                    atol=atol, 
+                    equal_nan=equal_nan
+                )
+                is_close[fold_inconsistent] = np_close_secondary
+        
+        inconsistent = ~is_close & ~one_na  # Exclude single NaN cases from inconsistent count
         if inconsistent.any():
             inconsistent_num = inconsistent.sum()
-            diff = mlog10p_derived_p - sumstats["P"]
-            log.write("  -Potentially inconsistent (likely due to rounding): {} variant(s)".format(inconsistent_num),verbose=verbose)
-            log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[diff.idxmax(),id_to_use], diff.max()),verbose=verbose)
+            # Calculate fold change for reporting (only for valid pairs)
+            inconsistent_valid = inconsistent & valid_mask
+            if inconsistent_valid.any():
+                inconsistent_fold_change = fold_change[inconsistent_valid]
+                max_fold_idx = inconsistent_fold_change.idxmax()
+                max_fold_change = inconsistent_fold_change.max()
+                log.write("  -Potentially inconsistent (likely due to rounding): {} variant(s)".format(inconsistent_num),verbose=verbose)
+                log.write("  -Variant {} with max fold change: {} with {:.2f}x".format(id_to_use, sumstats.loc[max_fold_idx,id_to_use], max_fold_change),verbose=verbose)
+            else:
+                # Fallback: report absolute difference for edge cases
+                diff = (derived_p_values - p_values).abs()
+                max_diff_idx = diff[inconsistent].idxmax()
+                max_diff = diff[inconsistent].max()
+                log.write("  -Potentially inconsistent (likely due to rounding): {} variant(s)".format(inconsistent_num),verbose=verbose)
+                log.write("  -Variant {} with max difference: {} with {}".format(id_to_use, sumstats.loc[max_diff_idx,id_to_use], max_diff),verbose=verbose)
         else:
             log.write("  -Variants with inconsistent values were not detected." ,verbose=verbose)
         check_status=1

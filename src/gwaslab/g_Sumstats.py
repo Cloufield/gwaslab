@@ -144,6 +144,9 @@ from gwaslab.viz.viz_plot_regional2 import _plot_regional
 from gwaslab.viz.viz_plot_trumpetplot import _plot_trumpet
 from gwaslab.viz.viz_aux_params import VizParamsManager, load_viz_config
 
+# ----- Downstream Analysis -----
+from gwaslab.downstream.ds_result_manager import DownstreamResultManager
+
 # ----- IO: Reading / Writing -----
 from gwaslab.io.io_load_ld import _to_finemapping_using_ld
 from gwaslab.io.io_preformat_input import _preformat
@@ -306,17 +309,8 @@ class Sumstats():
         self.id = id(self)
         self.tmp_path = _path(pid=self.id, log = self.log, verbose=False)
         
-        #for downstream analysis
-        self.ldsc_h2 = None
-        self.ldsc_h2_results = None
-        self.ldsc_rg = pd.DataFrame()
-        self.ldsc_h2_cts = None
-        self.ldsc_partitioned_h2_summary = None
-        self.ldsc_partitioned_h2_results = None
-        self.finemapping = dict()
-        # clumps / clumps_raw / plink_log
-        self.clumps = dict()
-        self.pipcs = pd.DataFrame()
+        # Initialize downstream analysis result manager
+        self.downstream = DownstreamResultManager()
         
         # Initialize Chromosomes instance based on species
         self.chromosomes = Chromosomes(species=species)
@@ -349,6 +343,100 @@ class Sumstats():
         processed_build = _process_build(value, log=self.log, verbose=False, species=species)
         self._build = processed_build
         self.meta["gwaslab"]["genome_build"] = processed_build
+    
+    # ============================================================================
+    # Downstream Analysis Result Properties (backward compatibility)
+    # ============================================================================
+    
+    @property
+    def ldsc_h2(self):
+        """LDSC heritability estimate (backward compatibility)."""
+        return self.downstream.ldsc_h2
+    
+    @ldsc_h2.setter
+    def ldsc_h2(self, value):
+        """Set LDSC heritability estimate (backward compatibility)."""
+        self.downstream.ldsc_h2 = value
+    
+    @property
+    def ldsc_h2_results(self):
+        """Detailed LDSC heritability results (backward compatibility)."""
+        return self.downstream.ldsc_h2_results
+    
+    @ldsc_h2_results.setter
+    def ldsc_h2_results(self, value):
+        """Set detailed LDSC heritability results (backward compatibility)."""
+        self.downstream.ldsc_h2_results = value
+    
+    @property
+    def ldsc_rg(self):
+        """LDSC genetic correlation results (backward compatibility)."""
+        return self.downstream.ldsc_rg
+    
+    @ldsc_rg.setter
+    def ldsc_rg(self, value):
+        """Set LDSC genetic correlation results (backward compatibility)."""
+        self.downstream.ldsc_rg = value
+    
+    @property
+    def ldsc_h2_cts(self):
+        """LDSC cell-type-specific heritability results (backward compatibility)."""
+        return self.downstream.ldsc_h2_cts
+    
+    @ldsc_h2_cts.setter
+    def ldsc_h2_cts(self, value):
+        """Set LDSC cell-type-specific heritability results (backward compatibility)."""
+        self.downstream.ldsc_h2_cts = value
+    
+    @property
+    def ldsc_partitioned_h2_summary(self):
+        """LDSC partitioned heritability summary (backward compatibility)."""
+        return self.downstream.ldsc_partitioned_h2_summary
+    
+    @ldsc_partitioned_h2_summary.setter
+    def ldsc_partitioned_h2_summary(self, value):
+        """Set LDSC partitioned heritability summary (backward compatibility)."""
+        self.downstream.ldsc_partitioned_h2_summary = value
+    
+    @property
+    def ldsc_partitioned_h2_results(self):
+        """Detailed LDSC partitioned heritability results (backward compatibility)."""
+        return self.downstream.ldsc_partitioned_h2_results
+    
+    @ldsc_partitioned_h2_results.setter
+    def ldsc_partitioned_h2_results(self, value):
+        """Set detailed LDSC partitioned heritability results (backward compatibility)."""
+        self.downstream.ldsc_partitioned_h2_results = value
+    
+    @property
+    def finemapping(self):
+        """Finemapping results dictionary (backward compatibility)."""
+        return self.downstream.finemapping
+    
+    @finemapping.setter
+    def finemapping(self, value):
+        """Set finemapping results dictionary (backward compatibility)."""
+        self.downstream.finemapping = value
+    
+    @property
+    def clumps(self):
+        """Clumping results dictionary (backward compatibility)."""
+        return self.downstream.clumps
+    
+    @clumps.setter
+    def clumps(self, value):
+        """Set clumping results dictionary (backward compatibility)."""
+        self.downstream.clumps = value
+    
+    @property
+    def pipcs(self):
+        """PIPCS results (backward compatibility)."""
+        return self.downstream.pipcs
+    
+    @pipcs.setter
+    def pipcs(self, value):
+        """Set PIPCS results (backward compatibility)."""
+        self.downstream.pipcs = value
 
     def _apply_viz_params(self, func, kwargs, key=None, mode=None):
         params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
