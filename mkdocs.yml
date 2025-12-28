@@ -35,6 +35,7 @@ nav:
        - "Standardization and Normalization": Standardization.md
        - "QC and Filtering": QC&Filtering.md
        - Harmonization: Harmonization.md
+       - "Harmoniser Comparison": HarmoniserComparison.md
        - "Assigning rsID" : AssignrsID.md
        - "Assign CHR/POS using rsID" : AssignCHRPOS.md
        - Liftover: LiftOver.md
