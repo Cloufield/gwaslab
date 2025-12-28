@@ -252,7 +252,7 @@ There will be no gap if `use_rank = True`
 
 #### anno=True
 
-`anno=True` : annoatate all lead variants with chr:pos
+`anno=True` : annotate all lead variants with chr:pos
 
 !!! example
     ```python
@@ -308,9 +308,9 @@ Since there are a large number of novel loci, if we annotate all loci, it will b
 
 #### anno="GENENAME"
 
-- `anno="GENENAME"` : automatically annoatate the nearest gene name
+- `anno="GENENAME"` : automatically annotate the nearest gene name
 
-Note: remerber to set `build=19` or `build=38` when loading or plotting.
+Note: remember to set `build=19` or `build=38` when loading or plotting.
 
 !!! example
     ```python
@@ -325,7 +325,7 @@ Note: remerber to set `build=19` or `build=38` when loading or plotting.
 
 ![Output image](images/notebooks/visualization_mqq_img_13.png)
 
-You can specify `anno_gtf_path` to use you own GTF file for GENENAME annotation
+You can specify `anno_gtf_path` to use your own GTF file for GENENAME annotation
 
 !!! example
     ```python
@@ -452,7 +452,7 @@ Let's check all lead variants and select only two to annotate.
 
 *[89 rows x 8 columns]*
 
-This time, let's annotate 1:154309595_TA_T and 2:27734972_G_A with its nearest gene names!
+This time, let's annotate 1:154309595_TA_T and 2:27734972_G_A with their nearest gene names!
 
 
 `anno_set` : the set of variants you want to annotate
@@ -472,7 +472,7 @@ This time, let's annotate 1:154309595_TA_T and 2:27734972_G_A with its nearest g
 
 #### anno_alias
 
-anno_alias accepts a dictionary of `SNPID`:`string`. You can use this to customized the text for annotation.
+anno_alias accepts a dictionary of `SNPID`:`string`. You can use this to customize the text for annotation.
 
 !!! example
     ```python

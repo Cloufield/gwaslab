@@ -551,7 +551,7 @@ def _set_yticklabels(cut,
     matplotlib.axes.Axes
         The modified axes object
     """
-    log.write(" -Processing Y tick lables...",verbose=False)
+    log.write(" -Processing Y tick labels...",verbose=False)
     
     # Step 1: Handle case with no cut transformation
     # If cut==0, no compression was applied, so just set simple y-axis limits

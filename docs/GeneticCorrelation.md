@@ -22,19 +22,19 @@ gl.plot_rg(ldsc)
 **Options:**
 
 - `ldscrg` : `DataFrame`, results from ldsc-rg. 4 columns are required, `p1`,`p2`,`p`,`rg`.
-- `p1`: `string`, column name for trait1, defaul: `p1`
-- `p2`: `string`, column name for trait2 defaul: `p2`
-- `rg`: `string`, column name for rg defaul: `rg`
-- `p`: `string`, column name for p defaul: `p`
+- `p1`: `string`, column name for trait1, default: `p1`
+- `p2`: `string`, column name for trait2 default: `p2`
+- `rg`: `string`, column name for rg default: `rg`
+- `p`: `string`, column name for p default: `p`
 - `sig_levels`: `list`, default: `[0.05]`
 - `panno`: `boolean`, default: `True`
 - `corrections`: `list`,`non` no correction, `fdr` FDR, `bon` bonferroni , default: `["non","fdr","bom"]`
 - `panno_texts`: `list`, text to annotate significant correlations, match the number of `corrections` times the number of `sig_levels`, default: `["*","**","***"]`
 - `sort_key`: `function`, sort the columns , default: `None`
-- `equal_aspect`: ``, defaul: `True`
-- `fontsize`: ``, defaul: `10`
-- `save`: `string` or `boolean`, defaul: `None`
-- `save_kwargs`: `dict`, defaul: `None`
+- `equal_aspect`: ``, default: `True`
+- `fontsize`: ``, default: `10`
+- `save`: `string` or `boolean`, default: `None`
+- `save_kwargs`: `dict`, default: `None`
 - `full_cell`: `tuple`, threshold for full cell, default: `("fdr",0.05)`
 - `yticklabel_kwargs`: `dict`, default: `{"fontsize":10}`
 - `xticklabel_kwargs`: `dict`, default: `{"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":10}`

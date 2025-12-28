@@ -99,7 +99,7 @@ def _get_hapmap3(sumstats_or_dataframe,rsid="rsID",chrom="CHR", pos="POS", ea="E
                             | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"])) | output[ea].isna()
             output = output.loc[is_matched,:]
             output = output.drop(columns=["#CHROM","A1","A2"] )
-            log.write(f" -Filtered {raw_rsid_count - len(output)} Hapmap3 variants due to unmatech alleles...", verbose=verbose)
+            log.write(f" -Filtered {raw_rsid_count - len(output)} Hapmap3 variants due to unmatched alleles...", verbose=verbose)
         
         for i in ["#CHROM","A1","A2","POS_hapmap3"]:
             todrop=[]
@@ -156,7 +156,7 @@ def _get_hapmap3(sumstats_or_dataframe,rsid="rsID",chrom="CHR", pos="POS", ea="E
                 is_matched = ((output[ea].astype("string") == output["A1"]) & (output[nea].astype("string") == output["A2"])) \
                             | ((output[ea].astype("string") == output["A2"]) & (output[nea].astype("string") == output["A1"])) | output[ea].isna()
 
-            log.write(" -Variants with macthed alleles: {}".format(sum(is_matched)))
+            log.write(" -Variants with matched alleles: {}".format(sum(is_matched)))
             output = output.loc[is_matched,:]
             output = output.drop(columns=["A1", "A2"], errors="ignore")
         

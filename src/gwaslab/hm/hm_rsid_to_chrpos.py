@@ -95,14 +95,14 @@ def rsID2chrpos(path,
     if eaf:        sumstats["EAF_aligned"] =np.nan
     if direction:  sumstats["Direction_aligned"]=""
     #allele match code:
-        #0 macth
+        #0 match
         #1 need to be flipped
     #match ref nea 
     if ea and nea: 
         sumstats.loc[sumstats[nea]==sumstats["#Ref"],"Allele_match"]=0
         sumstats.loc[sumstats[nea]==sumstats["#Ref"],"Aligned_NEA"] = sumstats.loc[sumstats[nea]==sumstats["#Ref"],nea]
         sumstats.loc[sumstats[nea]==sumstats["#Ref"],"Aligned_EA"]  = sumstats.loc[sumstats[nea]==sumstats["#Ref"],ea]
-        print("#Ref-NEA macth:"     +str(len(sumstats.loc[sumstats[nea]==sumstats["#Ref"]])))
+        print("#Ref-NEA match:"     +str(len(sumstats.loc[sumstats[nea]==sumstats["#Ref"]])))
     #if ea -> ref , need to flip
         sumstats.loc[(sumstats[ea]==sumstats["#Ref"]),"Allele_match"]=1
         sumstats.loc[sumstats[ea]==sumstats["#Ref"],"Aligned_NEA"] = sumstats.loc[sumstats[ea]==sumstats["#Ref"],ea]

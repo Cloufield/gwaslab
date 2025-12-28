@@ -166,7 +166,7 @@ def check_available_ref(log=Log(),
             #log.write(" -",key,":",filtered_value, verbose=verbose, show_time=False)
             filtered_dicts[key] = filtered_value
 
-        log.write(" - Avaiable keywords: "," ".join(key_list), verbose=verbose)
+        log.write(" - Available keywords: "," ".join(key_list), verbose=verbose)
         return filtered_dicts if not show_all else dicts
     else:
         log.write(" -No available reference files.", verbose=verbose)

@@ -800,7 +800,7 @@ Dirty sumstats with issues specified in NOTE column
 
 *[18 rows x 21 columns]*
 
-### sort genome coordinate
+### sort genomic coordinates
 
 !!! example
     ```python

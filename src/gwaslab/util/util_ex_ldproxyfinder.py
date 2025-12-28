@@ -122,7 +122,7 @@ def _extract_with_ld_proxy( snplist=None,
         log.write(" -Extract {} variants in flanking region of {} for checking: {}:{}-{}".format(len(flanking_sumstats), snpid, chrom, start, end), verbose=verbose)
 
         if len(flanking_sumstats)==0:
-            log.write("  -No availble variants in the region...Skipping!", verbose=verbose)
+            log.write("  -No available variants in the region...Skipping!", verbose=verbose)
             continue
         
         _get_rsq_single(in_sumstats.loc[index,["POS","NEA_1","EA_1"]], 

@@ -5,7 +5,7 @@
     import gwaslab as gl
     ```
 
-## Check availble reference data
+## Check available reference data
 
 Processed files are hosted on Dropbox. Other files will be downloaded form its original source.
 

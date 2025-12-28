@@ -511,7 +511,7 @@ def _plot_trumpet(mysumstats,
                 scatter_kwargs["color"]=pinpoint_color[i%len(pinpoint_color)]
                 if sum(sumstats[snpid].isin(pinpoint_set))>0:
                     to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint_set),:]
-                    log.write(" -Pinpointing set {} target vairants...".format(i+1),verbose=verbose)
+                    log.write(" -Pinpointing set {} target variants...".format(i+1),verbose=verbose)
                     sns.scatterplot(data=to_pinpoint, 
                     x=maf,
                     y=beta,
@@ -525,12 +525,12 @@ def _plot_trumpet(mysumstats,
                     **scatter_kwargs)  
                     #ax.scatter(to_pinpoint[maf],to_pinpoint[beta],color=pinpoint_color[i%len(pinpoint_color)],zorder=100,s=to_pinpoint[size])
                 else:
-                    log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
+                    log.write(" -Target variants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
         else:
             scatter_kwargs["color"]=pinpoint_color
             if sum(sumstats[snpid].isin(pinpoint))>0:
                 to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint),:]
-                log.write(" -Pinpointing target vairants...",verbose=verbose)
+                log.write(" -Pinpointing target variants...",verbose=verbose)
                 sns.scatterplot(data=to_pinpoint, x=maf,
                     y=beta,
                     legend=legend,
@@ -543,7 +543,7 @@ def _plot_trumpet(mysumstats,
                     **scatter_kwargs)  
                 #ax.scatter(to_pinpoint[maf],to_pinpoint[beta],color=pinpoint_color[i%len(pinpoint_color)],zorder=100,s=to_pinpoint[size])
             else:
-                log.write(" -Target vairants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
+                log.write(" -Target variants to pinpoint were not found. Skip pinpointing process...",verbose=verbose)
     
     ####################################################################################################################
     

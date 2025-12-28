@@ -147,7 +147,7 @@ def _match_snpid_with_bim(chrom, chr_sumstats, bfile_prefix,filetype, id_to_use=
         
         # effect allele in NEA_bim or EA_bim
         if "NEA" in chr_sumstats.columns:
-            # match both EA nad NEA
+            # match both EA and NEA
             is_allele_perfect_match = (chr_sumstats_bim["EA"] == chr_sumstats_bim["EA_bim"]) & (chr_sumstats_bim["NEA"] == chr_sumstats_bim["NEA_bim"])
             is_allele_flipped_match = (chr_sumstats_bim["EA"] == chr_sumstats_bim["NEA_bim"])& (chr_sumstats_bim["NEA"] == chr_sumstats_bim["EA_bim"])
             is_allele_matched = is_allele_flipped_match | is_allele_perfect_match

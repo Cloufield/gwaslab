@@ -178,12 +178,12 @@ def draw_manhattan_panel(
             for i, pinpoint_set in enumerate(pinpoint):
                 if sum(sumstats[snpid].isin(pinpoint_set)) > 0:
                     to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint_set), :]
-                    log.write(" -Pinpointing set {} target vairants...".format(i + 1), verbose=verbose)
+                    log.write(" -Pinpointing set {} target variants...".format(i + 1), verbose=verbose)
                     ax1.scatter(to_pinpoint["i"], to_pinpoint["scaled_P"], color=pinpoint_color[i % len(pinpoint_color)], zorder=100, s=marker_size[1] + 1)
         else:
             if sum(sumstats[snpid].isin(pinpoint)) > 0:
                 to_pinpoint = sumstats.loc[sumstats[snpid].isin(pinpoint), :]
-                log.write(" -Pinpointing target vairants...", verbose=verbose)
+                log.write(" -Pinpointing target variants...", verbose=verbose)
                 ax1.scatter(to_pinpoint["i"], to_pinpoint["scaled_P"], color=pinpoint_color, zorder=100, s=marker_size[1] + 1)
 
     return highlight_i

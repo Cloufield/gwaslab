@@ -595,7 +595,7 @@ class Sumstats():
         verbose : bool, optional
             Whether to print progress information.
         sweep_mode:bool, optional
-            If false, use lookup (per-vairant) mode. If true, use sweep model (fast for large dataset).
+            If false, use lookup (per-variant) mode. If true, use sweep model (fast for large dataset).
         """
         saved_kwargs = {**locals()}
         # prepare status helpers

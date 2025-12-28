@@ -102,7 +102,7 @@ def plot_rg(ldscrg,
     # create unique pair column
     df["p1p2"]=df.apply(lambda x:"_".join(sorted([x[p1],x[p2]])),axis=1)
     
-    log.write("Filling diagnal line and duplicated pair for plotting..." ,verbose=verbose)
+    log.write("Filling diagonal line and duplicated pair for plotting..." ,verbose=verbose)
     # fill na
     df_fill_reverse = df.loc[(df[p2].isin(df[p1].values)) & (df[p1].isin(df[p2].values)),:].copy()
     df_fill_reverse = df_fill_reverse.rename(columns={p1:p2,p2:p1})
@@ -113,7 +113,7 @@ def plot_rg(ldscrg,
     p2_dup_list = list(df.loc[(df[p1].isin(df[p2].values)),"p1"].values)
     p_dup_list = p2_dup_list + p1_dup_list
     if len(set(p_dup_list)) > 0:
-        log.write(" -Diagnal records:", len(set(p_dup_list)) ,verbose=verbose)
+        log.write(" -Diagonal records:", len(set(p_dup_list)) ,verbose=verbose)
     df_fill_dia["p1"] = p_dup_list
     df_fill_dia["p2"] = df_fill_dia["p1"] 
     df_fill_dia["rg"] = 1

@@ -69,8 +69,8 @@ Sample data source:
 2024/12/23 12:20:37 Start to create ldsc genetic correlation heatmap...
 2024/12/23 12:20:37 Raw dataset records: 3916
 2024/12/23 12:20:37  -Raw dataset non-NA records: 3916
-2024/12/23 12:20:37 Filling diagnal line and duplicated pair for plotting...
-2024/12/23 12:20:37  -Diagnal records: 89
+2024/12/23 12:20:37 Filling diagonal line and duplicated pair for plotting...
+2024/12/23 12:20:37  -Diagonal records: 89
 2024/12/23 12:20:37 Valid unique trait pairs: 3916
 2024/12/23 12:20:37  -Valid unique trait1: 88
 2024/12/23 12:20:37  -Valid unique trait2: 88
@@ -147,7 +147,7 @@ Sample data source:
 2024/12/23 12:20:43 Start to create ldsc genetic correlation heatmap...
 2024/12/23 12:20:43 Raw dataset records: 1770
 2024/12/23 12:20:43  -Raw dataset non-NA records: 1770
-2024/12/23 12:20:43 Filling diagnal line and duplicated pair for plotting...
+2024/12/23 12:20:43 Filling diagonal line and duplicated pair for plotting...
 2024/12/23 12:20:43 Valid unique trait pairs: 1770
 2024/12/23 12:20:43  -Valid unique trait1: 59
 2024/12/23 12:20:43  -Valid unique trait2: 30

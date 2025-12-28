@@ -1129,8 +1129,8 @@ def _get_novel(insumstats_or_dataframe,
     except:
         pass
 
-    log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known vairants in current sumstats...", verbose=verbose)
-    log.write(" -Identified ",sum(allsig["NOVEL"])," novel vairants in current sumstats...", verbose=verbose)
+    log.write(" -Identified ",len(allsig)-sum(allsig["NOVEL"])," known variants in current sumstats...", verbose=verbose)
+    log.write(" -Identified ",sum(allsig["NOVEL"])," novel variants in current sumstats...", verbose=verbose)
     
     # how to return
     if only_novel is True:

@@ -927,7 +927,7 @@ def _check_path_and_header(sumstats=None,
 
     ################################################
     for key,value in rename_dictionary.items():
-        # check avaiable keys  key->raw header
+        # check available keys  key->raw header
         # usecols : a list of raw headers to load from file/DataFrame 
         if key in raw_cols:
             usecols.append(key)

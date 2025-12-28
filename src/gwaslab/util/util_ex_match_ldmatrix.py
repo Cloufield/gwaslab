@@ -338,7 +338,7 @@ def _merge_ld_map_with_sumstats_m(row,
     
     # matching by SNPID
     # preserve bim keys (use intersection of keys from both frames, similar to a SQL inner join; preserve the order of the left keys.)
-    # vairants without a match were removed
+    # variants without a match were removed
     combined_df = pd.merge(ld_map, locus_sumstats, on=["CHR","POS"],how="inner")
 
     # match allele
