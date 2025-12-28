@@ -1,0 +1,65 @@
+[project]
+site_name = "GWASLab"
+site_author = "HE Yunye"
+repo_name = "GitHub"
+repo_url = "https://github.com/Cloufield/gwaslab/"
+edit_uri = ""
+copyright = "GWASLab is licensed under the GPL-3.0-only license. See LICENSE file for details."
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = [
+  "javascripts/mathjax.js",
+  "https://polyfill.io/v3/polyfill.min.js?features=es6",
+  "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js",
+  "https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js",
+  "javascripts/tablesort.js"
+]
+
+[project.theme]
+name = "material"
+variant = "modern"
+
+[project.theme.features]
+navigation_tabs = true
+
+[project.theme.font]
+code = "Roboto Mono"
+text = "Roboto"
+
+[project.theme.palette]
+primary = "blue"
+accent = "blue"
+
+[project.theme.logo]
+logo = "assets/gwaslab.png"
+favicon = "assets/gwaslab.png"
+
+# Navigation
+# Note: Zensical is compatible with mkdocs.yml configuration files.
+# Since the navigation structure is complex and nested, it's recommended to keep
+# the navigation definition in mkdocs.yml. Zensical will read it from there.
+# Alternatively, you can define navigation here using Zensical's format if needed.
+
+# Markdown extensions
+[project.markdown_extensions.toc]
+toc_depth = 3
+
+[project.markdown_extensions]
+admonition = true
+tables = true
+abbr = true
+
+[project.markdown_extensions.pymdownx.details]
+
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
+
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+
+[project.markdown_extensions.pymdownx.superfences]
+
+[project.markdown_extensions.pymdownx.snippets]
+
+# Plugins
+[project.plugins]
+search = true

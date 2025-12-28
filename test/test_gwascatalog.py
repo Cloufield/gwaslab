@@ -1,7 +1,7 @@
 """
 Test suite for GWAS Catalog API v2 extension module.
 
-Tests are based on examples from sample.ipynb.
+Tests for GWAS Catalog API functionality.
 """
 
 import os
