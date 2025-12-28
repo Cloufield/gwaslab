@@ -419,12 +419,14 @@ def _filter_in(sumstats_obj, lt={}, gt={}, eq={}, remove=False, verbose=True, lo
     return sumstats
 
 @with_logging_filter("filter in variants if in intervals defined in bed files", "filtering variants")
-def _filter_region_in(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
+def _filter_region_in(sumstats_or_dataframe, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
     """
     Keep variants located within specified genomic regions from a BED file.
     
     Parameters:
     -----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     path : str or None, default=None
         Path to BED file containing regions of interest
         Column name for position information
@@ -443,6 +445,13 @@ def _filter_region_in(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False
     pandas.DataFrame
         Filtered summary statistics table containing only variants in the specified regions
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     sumstats = _sort_coordinate(sumstats,verbose=verbose)
     if high_ld is True:
         path = get_high_ld(build=build)
@@ -523,12 +532,14 @@ def _filter_region_in(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False
     return sumstats
 
 @with_logging_filter("filter out variants if in intervals defined in bed files", "filtering variants")
-def _filter_region_out(sumstats, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
+def _filter_region_out(sumstats_or_dataframe, path=None, chrom="CHR", pos="POS", high_ld=False, build="19", verbose=True, log=Log()):
     """
     Remove variants located within specified genomic regions from a BED file.
     
     Parameters:
     -----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     path : str or None, default=None
         Path to BED file containing regions to exclude
     high_ld : bool, default=False
@@ -546,6 +557,13 @@ def _filter_region_out(sumstats, path=None, chrom="CHR", pos="POS", high_ld=Fals
     pandas.DataFrame
         Filtered summary statistics table with variants in specified regions removed
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     sumstats = _sort_coordinate(sumstats,verbose=verbose)
     if high_ld is True:
         path = get_high_ld(build=build)
@@ -698,7 +716,7 @@ def _infer_build(sumstats, status="STATUS", chrom="CHR", pos="POS",
     # Update Sumstats object if called with one
     if not is_dataframe:
         sumstats_obj.data = sumstats_data
-        sumstats_obj.meta["gwaslab"]["genome_build"] = inferred_build
+        # Use setter to ensure consistency between self.build and meta
         sumstats_obj.build = inferred_build
     
     return sumstats_data
@@ -750,12 +768,14 @@ def _sampling(sumstats, n=1, p=None, verbose=True, log=Log(), **kwargs):
     return sampled
 
 @with_logging_filter("extract variants in the flanking regions", "extracting variants in the flanking regions")
-def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **kwargs):
+def _get_flanking(sumstats_or_dataframe, snpid, windowsizekb=500, verbose=True, log=Log(), **kwargs):
     """
     Extract variants in flanking regions around a specified variant.
     
     Parameters:
     -----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     snpid : str
         ID of the central variant (must exist in SNPID column)
     windowsizekb : int, default=500
@@ -771,6 +791,13 @@ def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **
     pandas.DataFrame
         Variants in flanking regions
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     log.write(" - Central variant: {}".format(snpid))
     
     row = sumstats.loc[sumstats["SNPID"]==snpid,:]
@@ -790,12 +817,14 @@ def _get_flanking(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **
     return flanking
 
 @with_logging_filter("extract variants in the flanking regions using rsID or SNPID", "extracting variants in the flanking regions")
-def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True, log=Log(), **kwargs):
+def _get_flanking_by_id(sumstats_or_dataframe, snpid, windowsizekb=500, verbose=True, log=Log(), **kwargs):
     """
     Extract variants in flanking regions using rsID or SNPID.
     
     Parameters:
     -----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     snpid : str or list
         Variant ID(s) to use as center (searches in rsID/SNPID columns)
     windowsizekb : int, default=500
@@ -811,6 +840,13 @@ def _get_flanking_by_id(sumstats, snpid, windowsizekb=500, verbose=True, log=Log
     pandas.DataFrame
         Variants in flanking regions
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     log.write(" - Central variants: {}".format(snpid), verbose=verbose)
     log.write(" - Flanking windowsize in kb: {}".format(windowsizekb), verbose=verbose)
 
@@ -870,6 +906,13 @@ def _get_flanking_by_chrpos(sumstats, chrpos, windowsizekb=500, verbose=True, lo
     pandas.DataFrame
         Variants in flanking regions
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     log.write(" - Central positions: {}".format(chrpos), verbose=verbose)
     log.write(" - Flanking windowsize in kb: {}".format(windowsizekb), verbose=verbose)
 
@@ -1162,12 +1205,14 @@ def _exclude(sumstats, exclude=None, id_use="SNPID", log=Log(), verbose=True ):
     return sumstats
 
 @with_logging_filter("filter variants within a specific genomic region", "filtering variants")
-def _filter_region(sumstats, region=None, chrom="CHR", pos="POS", log=Log(), verbose=True):
+def _filter_region(sumstats_or_dataframe, region=None, chrom="CHR", pos="POS", log=Log(), verbose=True):
     """
     Filter variants within a specific genomic region.
     
     Parameters:
     -----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     region : List
         Genomic region to filter [chr, start, end]
     verbose : bool, default=True
@@ -1181,6 +1226,13 @@ def _filter_region(sumstats, region=None, chrom="CHR", pos="POS", log=Log(), ver
     pandas.DataFrame
         Subset of summary statistics in the specified region
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     if region is not None:
         
         if type(region[0]) is str:

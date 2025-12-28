@@ -89,7 +89,7 @@ def _prepare_metadata(meta: Optional[Dict] = None) -> Dict[str, str]:
 
 
 def write_gsf(
-    sumstats: pd.DataFrame,
+    sumstats_or_dataframe,
     path: Union[str, Path],
     meta: Optional[Dict] = None,
     partition_cols: Optional[List[str]] = None,
@@ -98,12 +98,12 @@ def write_gsf(
     verbose: bool = True
 ) -> str:
     """
-    Write GWAS sumstats to GSF (GWASLab Standard Format) file.
+    Save sumstats to GSF (GWASLab Standard Format) file.
     
     Parameters
     ----------
-    sumstats : pd.DataFrame
-        GWAS sumstats DataFrame
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     path : str or Path
         Output path (.gsf file or directory for partitioned)
     meta : dict, optional
@@ -117,11 +117,23 @@ def write_gsf(
     verbose : bool, default True
         Print progress messages
         
+    Examples
+    --------
+    >>> write_gsf(sumstats, "sumstats.gsf")
+    >>> write_gsf(sumstats, "sumstats_partitioned", partition_cols=["CHR"])
+        
     Returns
     -------
     str
         Path to written file
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     if log is None:
         log = Log()
     

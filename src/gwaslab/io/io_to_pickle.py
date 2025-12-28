@@ -53,7 +53,7 @@ def _offload(df,path,log):
 
 def _reload(path,log, delete_files=None):
     """
-    Reload dataframe from pickle file.
+    Reload data from temporary pickle file.
     
     Parameters
     ----------

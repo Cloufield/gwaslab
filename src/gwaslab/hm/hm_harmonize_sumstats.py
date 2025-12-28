@@ -250,7 +250,11 @@ def _parallelize_rsid_to_chrpos(
     log=Log()
 ):
     """
-    Assign chromosome and position (CHR:POS) based on rsID using parallel HDF5 processing.
+    Assign CHR and POS using rsIDs (uses fast HDF5-based parallel processing).
+
+    This function uses optimized HDF5-based parallel processing which is much faster than
+    the old TSV-based approach. It requires an HDF5 reference file (generated from VCF using
+    `process_vcf_to_hfd5()`) or will auto-generate the path from a VCF reference file.
 
     This function assigns CHR and POS values to summary statistics by matching rsIDs against
     reference HDF5 files (one per chromosome) containing rsID to POS mappings. The HDF5 files
@@ -1762,7 +1766,7 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
     start_function=".check_daf()",
     must_kwargs=["ref_alt_freq"]
 )
-def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+def _parallelize_check_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, maf_threshold=0.4, column_name="DAF", suffix="", threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Check the difference between effect allele frequency (EAF) in summary statistics and alternative allele frequency in reference VCF.
 
@@ -1791,8 +1795,8 @@ def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=
 
     Parameters
     ----------
-    sumstats : pd.DataFrame
-        Summary statistics DataFrame containing variant data. Must have columns: CHR, POS, EA, NEA, EAF.
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame containing variant data. Must have columns: CHR, POS, EA, NEA, EAF.
     ref_infer : str
         Path to the reference VCF file. Must be indexed (tabix) for efficient querying.
     ref_alt_freq : str, optional
@@ -1869,6 +1873,12 @@ def _parallelize_check_af(sumstats, ref_infer, ref_alt_freq=None, maf_threshold=
     plot_daf : Visualize DAF distribution to identify outliers.
     infer_strand : Resolve strand orientation issues that may cause large DAF values.
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
 
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
 
@@ -1955,7 +1965,7 @@ def check_daf(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,chr_dict=None):
     start_function=".check_daf()",
     must_kwargs=["ref_alt_freq"]
 )
-def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
+def _parallelize_infer_af(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA", eaf="EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Infer effect allele frequency (EAF) in summary statistics using reference VCF ALT frequency.
 
@@ -1977,8 +1987,8 @@ def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, threads=1, chr
 
     Parameters
     ----------
-    sumstats : pd.DataFrame
-        Summary statistics DataFrame containing variant data. Must have columns: CHR, POS, EA, NEA.
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame containing variant data. Must have columns: CHR, POS, EA, NEA.
     ref_infer : str
         Path to the reference VCF file. Must be indexed (tabix) for efficient querying.
     ref_alt_freq : str, optional
@@ -2038,6 +2048,13 @@ def _parallelize_infer_af(sumstats, ref_infer, ref_alt_freq=None, threads=1, chr
     check_af : Calculate difference between EAF (sumstats) and ALT_AF (reference) after inference.
     infer_eaf_from_maf : Infer EAF from MAF using reference VCF (alternative method).
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
     
     if eaf not in sumstats.columns:
@@ -2116,7 +2133,7 @@ def infer_af(chr,start,end,ref,alt,vcf_reader,alt_freq,chr_dict=None):
     start_function=".infer_af()",
     must_kwargs=["ref_alt_freq"]
 )
-def _parallele_infer_af_with_maf(sumstats, ref_infer, ref_alt_freq=None, threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
+def _parallele_infer_af_with_maf(sumstats_or_dataframe, ref_infer, ref_alt_freq=None, threads=1, chr="CHR", pos="POS", ref="NEA", alt="EA",
                             eaf="EAF", maf="MAF", ref_eaf="_REF_EAF", status="STATUS", chr_dict=None, force=False, verbose=True, log=Log()):
     """
     Infer effect allele frequency (EAF) in summary statistics from MAF using reference VCF ALT frequency.
@@ -2128,8 +2145,8 @@ def _parallele_infer_af_with_maf(sumstats, ref_infer, ref_alt_freq=None, threads
 
     Parameters
     ----------
-    sumstats : pd.DataFrame
-        Summary statistics DataFrame containing variant data.
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame containing variant data.
     ref_infer : str
         Path to the reference VCF file.
     ref_alt_freq : str, optional
@@ -2177,6 +2194,13 @@ def _parallele_infer_af_with_maf(sumstats, ref_infer, ref_alt_freq=None, threads
     - The function provides statistics about the number of variants for which EAF was
       successfully inferred and those still missing EAF values.
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+
     chr_dict = auto_check_vcf_chr_dict(ref_infer, chr_dict, verbose, log)
     
     if eaf not in sumstats.columns:

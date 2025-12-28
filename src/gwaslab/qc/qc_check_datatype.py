@@ -261,7 +261,7 @@ def check_datatype_for_cols(sumstats_obj, cols=None, verbose=True, log=Log(), fi
                     _update_qc_step = None
 
                 if "CHR" in failed and _fix_chr is not None:
-                    chr_kwargs = {k:v for k,v in fix_kwargs.items() if k in ["remove","add_prefix","x","y","mt","chrom_list","minchr"]}
+                    chr_kwargs = {k:v for k,v in fix_kwargs.items() if k in ["remove","add_prefix"]}
                     sumstats_obj.data = _fix_chr(sumstats_obj, log=log, verbose=verbose, **chr_kwargs)
                     if _update_qc_step is not None:
                         _update_qc_step(sumstats_obj, "chr", chr_kwargs, True)

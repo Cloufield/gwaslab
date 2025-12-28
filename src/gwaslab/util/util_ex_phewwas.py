@@ -396,7 +396,7 @@ def _normalize_association_columns(df: pd.DataFrame) -> pd.DataFrame:
 # Main Functions
 # ============================================================================
 
-def _extract_associations(sumstats: pd.DataFrame, rsid: str = "rsID", 
+def _extract_associations(sumstats_or_dataframe, rsid: str = "rsID", 
                          log: Log = Log(), verbose: bool = True,
                          fetch_metadata: bool = False,
                          fetch_traits: Optional[bool] = None,
@@ -409,8 +409,8 @@ def _extract_associations(sumstats: pd.DataFrame, rsid: str = "rsID",
     
     Parameters
     ----------
-    sumstats : pd.DataFrame
-        Summary statistics DataFrame with rsID column. Limited to 100 unique variants.
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame with rsID column. Limited to 100 unique variants.
         If more than 100 unique variants are provided, only the first 100 will be processed.
     rsid : str, optional
         Name of the rsID column (default: "rsID")
@@ -447,6 +447,13 @@ def _extract_associations(sumstats: pd.DataFrame, rsid: str = "rsID",
         fetch_traits = fetch_metadata
     if fetch_studies is None:
         fetch_studies = fetch_metadata
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     if fetch_variants is None:
         fetch_variants = fetch_metadata
     

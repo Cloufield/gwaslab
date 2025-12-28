@@ -89,7 +89,11 @@ def _liftover_variant(sumstats_obj,
                       verbose: bool = True,
                       log: Log = Log()) -> pd.DataFrame:
     """
-    Perform liftover conversion for variants using a UCSC chain file.
+    Perform liftover of variants to a new genome build.
+    
+    Can be called with either:
+    - from_build and to_build (chain file will be automatically found)
+    - chain_path (direct path to chain file)
     
     This is a fast chain-based liftover implementation that directly parses
     UCSC chain files and performs vectorized coordinate conversion. It converts
@@ -100,6 +104,50 @@ def _liftover_variant(sumstats_obj,
     or downloaded from UCSC if not available. Built-in chain files are preferred
     for better performance and reliability.
     
+    Parameters
+    ----------
+    sumstats_obj : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame containing variant data
+    chain_path : str, optional
+        Path to UCSC chain file. If provided, from_build and to_build are optional.
+    from_build : str, optional
+        Source genome build (e.g., "19"). If None, uses sumstats_obj.build if available.
+    to_build : str, optional
+        Target genome build (e.g., "38"). Required if chain_path is not provided.
+    chrom : str, default="CHR"
+        Column name for chromosome
+    pos : str, default="POS"
+        Column name for position
+    status : str, default="STATUS"
+        Column name for status codes
+    out_chrom_col : str, default="CHR_LIFT"
+        Output column name for lifted chromosome
+    out_pos_col : str, default="POS_LIFT"
+        Output column name for lifted position
+    out_strand_col : str, default="STRAND_LIFT"
+        Output column name for strand information
+    one_based_input : bool, default=True
+        Whether input positions are 1-based
+    one_based_output : bool, default=True
+        Whether output positions should be 1-based
+    remove : bool, default=True
+        Whether to remove unmapped variants
+    filter_by_status : bool, default=True
+        Whether to filter variants by status code before liftover
+    verbose : bool, default=True
+        Whether to print progress messages
+    log : Log, default=Log()
+        Logging object
+    
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with lifted coordinates (or updated sumstats_obj.data if Sumstats object)
+    
+    Notes
+    -----
+    If called with a Sumstats object, the function will update the object's data
+    and metadata in place. If called with a DataFrame, it returns a new DataFrame.
     """
     import pandas as pd
     from pathlib import Path
@@ -161,7 +209,7 @@ def _liftover_variant(sumstats_obj,
                     sumstats_obj.meta["is_sorted"] = False
                     sumstats_obj.meta["is_harmonised"] = False
                     if to_build is not None:
-                        sumstats_obj.meta["gwaslab"]["genome_build"] = _process_build(to_build, log=log, verbose=False)
+                        # Use setter to ensure consistency between self.build and meta
                         sumstats_obj.build = to_build
                     liftover_kwargs = {
                         'from_build': from_build, 'to_build': to_build, 'remove': remove, 'chain_path': chain_path
@@ -410,7 +458,7 @@ def _liftover_variant(sumstats_obj,
         try:
             from gwaslab.info.g_meta import _update_harmonize_step
             if to_build is not None:
-                sumstats_obj.meta["gwaslab"]["genome_build"] = _process_build(to_build, log=log, verbose=False)
+                # Use setter to ensure consistency between self.build and meta
                 sumstats_obj.build = to_build
             sumstats_obj.meta["is_sorted"] = False
             sumstats_obj.meta["is_harmonised"] = False

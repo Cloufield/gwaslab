@@ -17,13 +17,14 @@ from gwaslab.util.util_in_filter_value import _get_hapmap_full_polars
         finished_msg="extracting HapMap3 SNPs",
         start_function=".gethapmap3"
 )
-def _get_hapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
+def _get_hapmap3(sumstats_or_dataframe,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA",build="19", verbose=True, match_allele= True, how="inner", log=Log()):
     """
     Extract HapMap3 SNPs from summary statistics based on rsID or genomic coordinates.
 
     Parameters
     ----------
-
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     verbose : bool, optional
         Print progress messages. Default is True.
     match_allele : bool, optional
@@ -42,8 +43,6 @@ def _get_hapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA"
 
     build : str, optional
         Genome build version ("19" or "38"). Default is "19".
-    sumstats : pd.DataFrame
-        Input summary statistics dataframe.
     rsid : str, optional
         Column name for rsID. Default is "rsID".
     chrom : str, optional
@@ -57,6 +56,13 @@ def _get_hapmap3(sumstats,rsid="rsID",chrom="CHR", pos="POS", ea="EA", nea="NEA"
     log : Log, optional
         Logging object. Default is Log().
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     log.write(" -Loading Hapmap3 variants from built-in datasets...", verbose=verbose)
     
     # Use cached Polars function for fast loading

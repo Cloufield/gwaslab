@@ -20,6 +20,7 @@ from gwaslab.bd.bd_common_data import get_format_dict
 from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_formats_list
 from gwaslab.bd.bd_get_hapmap3 import _get_hapmap3
+from gwaslab.bd.bd_sex_chromosomes import Chromosomes
 
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.util.util_in_filter_value import _exclude
@@ -32,7 +33,7 @@ from gwaslab.util.util_in_filter_value import _extract
     ## annovar
     ## general : ldsc, plink, plink2, saige, regenie 
 ###################################################################################################################################################
-def _to_format(sumstats,
+def _to_format(sumstats_or_dataframe,
               path="./sumstats",
               fmt="gwaslab",   
               tab_fmt="tsv",
@@ -141,6 +142,15 @@ def _to_format(sumstats,
     meta : dict, optional
         Metadata dictionary. Default is None
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+        chromosomes_obj = None
+    else:
+        sumstats = sumstats_or_dataframe.data
+        # Get Chromosomes instance from Sumstats object if available
+        chromosomes_obj = getattr(sumstats_or_dataframe, 'chromosomes', None)
              
     if to_csvargs is None:
         to_csvargs=dict()
@@ -153,7 +163,19 @@ def _to_format(sumstats,
     if cols is None:
         cols=[]
     if xymt is None:
-        xymt = ["X","Y","MT"]
+        # Use chromosomes from Sumstats object if available, otherwise default to human
+        if chromosomes_obj is not None:
+            # Build xymt list from chromosomes object
+            xymt_list = []
+            if len(chromosomes_obj.sex_chromosomes) >= 1:
+                xymt_list.append(chromosomes_obj.sex_chromosomes[0])
+            if len(chromosomes_obj.sex_chromosomes) >= 2:
+                xymt_list.append(chromosomes_obj.sex_chromosomes[1])
+            if chromosomes_obj.mitochondrial:
+                xymt_list.append(chromosomes_obj.mitochondrial)
+            xymt = xymt_list if xymt_list else ["X", "Y", "MT"]  # Fallback if no sex chromosomes
+        else:
+            xymt = ["X","Y","MT"]  # Default for DataFrame case
     non_gzip_tab_fmt = ["parquet"]
     non_md5sum_tab_fmt = ["parquet"]
 
@@ -401,7 +423,12 @@ def tofmt(sumstats,
     if "CHR" in sumstats.columns:
         # output X,Y,MT instead of 23,24,25
         if xymt_number is False and pd.api.types.is_integer_dtype(sumstats["CHR"]):
-            sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt,prefix=chr_prefix))
+            # Get species from metadata if available, otherwise use default
+            species = None
+            if meta is not None and isinstance(meta, dict):
+                species = meta.get("gwaslab", {}).get("species", None)
+            # Use species-aware get_number_to_chr (xymt is already set correctly from _to_format)
+            sumstats["CHR"]= sumstats["CHR"].map(get_number_to_chr(xymt=xymt, prefix=chr_prefix, species=species))
         # add prefix to CHR
         elif len(chr_prefix)>0:
             sumstats["CHR"]= chr_prefix + sumstats["CHR"].astype("string")

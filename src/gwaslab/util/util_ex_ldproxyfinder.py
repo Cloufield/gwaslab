@@ -265,6 +265,8 @@ def _extract_ld_proxy(  snplist=None,
     ----------
     snplist : list or None
         List of full SNPIDs to find proxies for.
+    common_sumstats : Sumstats or pd.DataFrame or None
+        Sumstats object or DataFrame with summary statistics for existing SNPs.
     vcf_path : str or None
         Path to the VCF file for reference genotypes.
     verbose : bool
@@ -290,9 +292,15 @@ def _extract_ld_proxy(  snplist=None,
         Logging object.
     tabix : str or None
         Path to tabix executable.
-    common_sumstats : pandas.DataFrame or None
-        DataFrame with summary statistics for existing SNPs.
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if common_sumstats is not None:
+        if isinstance(common_sumstats, pd.DataFrame):
+            common_sumstats = common_sumstats
+        else:
+            common_sumstats = common_sumstats.data
+    
     # Initialize VCF setup
     log.write("Start to load reference genotype...", verbose=verbose)
     log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)

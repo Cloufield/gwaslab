@@ -2,20 +2,24 @@ import pandas as pd
 import numpy as np
 import scipy as sp
 from gwaslab.info.g_Log import Log
+from gwaslab.io.io_input_type import handle_sumstats_input
 #20220312
-def _lambda_GC(insumstats,include_chrXYMT=True, x=23 ,y=24, mt=25, mode="P",level=0.5,verbose=True,log=Log()):
+@handle_sumstats_input()
+def _lambda_GC(insumstats_or_dataframe,include_chrXYMT=True, x=23 ,y=24, mt=25, mode=None,level=0.5,verbose=True,log=Log()):
     """
     Calculate the Genomic Inflation Factor (LambdaGC) for genomic control in GWAS.
     
     Parameters
     ----------
+    insumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process. Can be a full DataFrame or a subset with CHR and mode columns.
     include_chrXYMT : bool, optional
         If False, exclude sex chromosomes (X, Y) and mitochondrial (MT) from calculation
     x, y, mt : int or str, optional
         Identifiers for sex and mitochondrial chromosomes (default: 23, 24, 25)
-    mode : {'P', 'MLOG10P', 'Z', 'CHISQ'}, optional
-        Input data type to use for calculation:
-        - 'P': p-values (default)
+    mode : {'P', 'MLOG10P', 'Z', 'CHISQ'} or None, optional
+        Input data type to use for calculation. If None, will auto-detect based on available columns:
+        - 'P': p-values (default if available)
         - 'MLOG10P': -log10(p-values)
         - 'Z': Z-scores
         - 'CHISQ': Chi-squared statistics
@@ -34,6 +38,21 @@ def _lambda_GC(insumstats,include_chrXYMT=True, x=23 ,y=24, mt=25, mode="P",leve
     Devlin, B., & Roeder, K. (1999). Genomic control for association studies. 
     Biometrics, 55(4), 964-975.
     """
+    insumstats = insumstats_or_dataframe
+
+    # Auto-detect mode if not provided
+    if mode is None:
+        if "P" in insumstats.columns:
+            mode = "P"
+        elif "Z" in insumstats.columns:
+            mode = "Z"
+        elif "CHISQ" in insumstats.columns:
+            mode = "CHISQ"
+        elif "MLOG10P" in insumstats.columns:
+            mode = "MLOG10P"
+        else:
+            log.write("  -No available columns (P, Z, CHISQ, or MLOG10P) for calculation.", verbose=verbose)
+            return np.nan
 
     mode=mode.upper()
     sumstats=insumstats.loc[:,["CHR",mode]]

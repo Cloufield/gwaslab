@@ -8,8 +8,6 @@
 
 ## Download sample data
 
-📖 **Documentation**: [Download sample data](https://cloufield.github.io/gwaslab/Download/)
-
 
 - Using a Jupyter notebook, we first download a sample dataset.
 - The sample dataset we will use as an example (File size: ~40M):

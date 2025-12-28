@@ -10,6 +10,7 @@ from gwaslab.bd.bd_download import download_ref
 from gwaslab.bd.bd_download import check_and_download
 from gwaslab.bd.bd_download import update_formatbook
 from gwaslab.bd.bd_config import options
+from gwaslab.bd.bd_sex_chromosomes import Chromosomes
 
 #hard-coded data
 def get_chr_to_NC(build, inverse=False):
@@ -182,75 +183,137 @@ def get_NC_to_number(build):
     """
     return get_number_to_NC(build=build,inverse=True)
 
-def get_chr_list(add_number=False, n=25, only_number=False):
+def get_chr_list(add_number=False, n=25, only_number=False, species="homo sapiens"):
     """
     Generate a list of chromosome identifiers.
     
     Parameters:
-    add_number (bool): If True, include both string and numeric representations of chromosomes 1-25
-    n (int): Maximum chromosome number to include (default: 25)
-    only_number (bool): If True, return only numeric chromosome numbers
+    -----------
+    add_number : bool, default=False
+        If True, include both string and numeric representations
+    n : int, default=25
+        Maximum chromosome number to include (deprecated, now uses species-specific chromosomes)
+    only_number : bool, default=False
+        If True, return only numeric chromosome numbers
+    species : str, default="homo sapiens"
+        Species name (case-insensitive). If provided, uses species-specific chromosomes.
+        Otherwise falls back to legacy behavior with n parameter.
     
     Returns:
-    list: List of chromosome identifiers in string format by default, 
-          or numeric format if specified
+    --------
+    list
+        List of chromosome identifiers in string format by default, 
+        or numeric format if specified
     """
-    chrom_list=[str(i) for i in range(1,n+1)]+["X","Y","M","MT"]
+    # Use Chromosomes class if species is provided (or default to human)
+    if species is not None:
+        chromosomes_obj = Chromosomes(species=species)
+        return chromosomes_obj.get_chr_list(add_number=add_number, only_number=only_number)
     
-    if add_number == True:
-        chrom_list = [str(i) for i in range(1,n+1)] + ["X","Y","M","MT"] + [i for i in range(1,n+1)]
+    # Legacy behavior: fallback to old implementation if species is explicitly None
+    chrom_list = [str(i) for i in range(1, n+1)] + ["X", "Y", "M", "MT"]
+    
+    if add_number:
+        chrom_list = [str(i) for i in range(1, n+1)] + ["X", "Y", "M", "MT"] + [i for i in range(1, n+1)]
 
-    if only_number ==True:
-        chrom_list = [i for i in range(1,n+1)]
+    if only_number:
+        chrom_list = [i for i in range(1, n+1)]
     return chrom_list
-def get_chr_to_number(out_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25]):
+def get_chr_to_number(out_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], species="homo sapiens", max_chr=200):
     """
     Create a dictionary mapping chromosome identifiers to numeric representations.
     
     Parameters:
-    out_chr (bool): If True, returns dictionary with string keys and values
-    xymt (list): List of non-numeric chromosome identifiers (default: ["X","Y","MT"])
-    xymt_num (list): Corresponding numeric values for xymt (default: [23,24,25])
+    -----------
+    out_chr : bool, default=False
+        If True, returns dictionary with string keys and values
+    xymt : list, default=["X","Y","MT"]
+        List of non-numeric chromosome identifiers (deprecated, now uses species-specific chromosomes)
+    xymt_num : list, default=[23,24,25]
+        Corresponding numeric values for xymt (deprecated, now uses species-specific mappings)
+    species : str, default="homo sapiens"
+        Species name (case-insensitive). If provided, uses species-specific chromosomes.
+        Otherwise falls back to legacy behavior with xymt/xymt_num parameters.
+    max_chr : int, default=200
+        Maximum chromosome number to include in dictionary
     
     Returns:
-    dict: Dictionary mapping chromosome identifiers to numeric values or strings
-          depending on the out_chr parameter
+    --------
+    dict
+        Dictionary mapping chromosome identifiers to numeric values or strings
+        depending on the out_chr parameter
     """
-    if out_chr is True:
-        dic= {str(i):str(i) for i in range(1,200)}
-        dic[xymt[0]]=str(xymt_num[0])
-        dic[xymt[1]]=str(xymt_num[1])
-        dic[xymt[2]]=str(xymt_num[2])
+    # Use Chromosomes class if species is provided (or default to human)
+    if species is not None:
+        chromosomes_obj = Chromosomes(species=species)
+        return chromosomes_obj.get_chr_to_number_dict(out_chr=out_chr, xymt_num=xymt_num, max_chr=max_chr)
+    
+    # Legacy behavior: fallback to old implementation if species is explicitly None
+    if out_chr:
+        dic = {str(i): str(i) for i in range(1, max_chr + 1)}
+        if len(xymt) > 0:
+            dic[xymt[0]] = str(xymt_num[0])
+        if len(xymt) > 1:
+            dic[xymt[1]] = str(xymt_num[1])
+        if len(xymt) > 2:
+            dic[xymt[2]] = str(xymt_num[2])
     else:
-        dic= {str(i):i for i in range(1,200)}
-        dic[xymt[0]]= xymt_num[0]
-        dic[xymt[1]]= xymt_num[1]
-        dic[xymt[2]]= xymt_num[2]
-        dic["M"] = xymt_num[2]
+        dic = {str(i): i for i in range(1, max_chr + 1)}
+        if len(xymt) > 0:
+            dic[xymt[0]] = xymt_num[0]
+        if len(xymt) > 1:
+            dic[xymt[1]] = xymt_num[1]
+        if len(xymt) > 2:
+            dic[xymt[2]] = xymt_num[2]
+            dic["M"] = xymt_num[2]
     return dic
-def get_number_to_chr(in_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], prefix=""):
+def get_number_to_chr(in_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], prefix="", species="homo sapiens", max_chr=200):
     """
     Create a dictionary mapping chromosome numbers to string representations.
     
     Parameters:
-    in_chr (bool): If True, returns dictionary with string keys and values
-    xymt (list): List of non-numeric chromosome identifiers (default: ["X","Y","MT"])
-    xymt_num (list): Corresponding numeric values for xymt (default: [23,24,25])
-    prefix (str): Optional prefix for chromosome identifiers
+    -----------
+    in_chr : bool, default=False
+        If True, returns dictionary with string keys and values
+    xymt : list, default=["X","Y","MT"]
+        List of non-numeric chromosome identifiers (deprecated, now uses species-specific chromosomes)
+    xymt_num : list, default=[23,24,25]
+        Corresponding numeric values for xymt (deprecated, now uses species-specific mappings)
+    prefix : str, default=""
+        Optional prefix for chromosome identifiers
+    species : str, default="homo sapiens"
+        Species name (case-insensitive). If provided, uses species-specific chromosomes.
+        Otherwise falls back to legacy behavior with xymt/xymt_num parameters.
+    max_chr : int, default=200
+        Maximum chromosome number to include in dictionary
     
     Returns:
-    dict: Dictionary mapping chromosome numbers to string representations
+    --------
+    dict
+        Dictionary mapping chromosome numbers to string representations
     """
-    if in_chr is True:
-        dic= {str(i):prefix+str(i) for i in range(1,200)}
-        dic[str(xymt_num[0])]=prefix+xymt[0]
-        dic[str(xymt_num[1])]=prefix+xymt[1]
-        dic[str(xymt_num[2])]=prefix+xymt[2]
+    # Use Chromosomes class if species is provided (or default to human)
+    if species is not None:
+        chromosomes_obj = Chromosomes(species=species)
+        return chromosomes_obj.get_number_to_chr_dict(in_chr=in_chr, xymt_num=xymt_num, prefix=prefix, max_chr=max_chr)
+    
+    # Legacy behavior: fallback to old implementation if species is explicitly None
+    if in_chr:
+        dic = {str(i): prefix + str(i) for i in range(1, max_chr + 1)}
+        if len(xymt) > 0 and len(xymt_num) > 0:
+            dic[str(xymt_num[0])] = prefix + xymt[0]
+        if len(xymt) > 1 and len(xymt_num) > 1:
+            dic[str(xymt_num[1])] = prefix + xymt[1]
+        if len(xymt) > 2 and len(xymt_num) > 2:
+            dic[str(xymt_num[2])] = prefix + xymt[2]
     else:
-        dic= {i:prefix+str(i) for i in range(1,200)}
-        dic[xymt_num[0]]=prefix+xymt[0]
-        dic[xymt_num[1]]=prefix+xymt[1]
-        dic[xymt_num[2]]=prefix+xymt[2]
+        dic = {i: prefix + str(i) for i in range(1, max_chr + 1)}
+        if len(xymt) > 0 and len(xymt_num) > 0:
+            dic[xymt_num[0]] = prefix + xymt[0]
+        if len(xymt) > 1 and len(xymt_num) > 1:
+            dic[xymt_num[1]] = prefix + xymt[1]
+        if len(xymt) > 2 and len(xymt_num) > 2:
+            dic[xymt_num[2]] = prefix + xymt[2]
     return dic
 # reading from files    
 ###################################################################################################################    

@@ -41,7 +41,13 @@ def calc_PIP(insumstats,log=Log(),verbose=True,**kwargs):
     insumstats.loc[:, "PIP"] = np.exp(insumstats['log_PIP'])
     return insumstats
 
-def _abf_finemapping(insumstats,region=None,chrpos=None,snpid=None, log=Log(),**kwargs):
+def _abf_finemapping(insumstats_or_dataframe,region=None,chrpos=None,snpid=None, log=Log(),**kwargs):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(insumstats_or_dataframe, pd.DataFrame):
+        insumstats = insumstats_or_dataframe
+    else:
+        insumstats = insumstats_or_dataframe.data.copy()
 
     if region is not None:
         region_data = insumstats[(insumstats["CHR"] == region[0]) & (insumstats["POS"] >= region[1]) & (insumstats["POS"] <= region[2])]

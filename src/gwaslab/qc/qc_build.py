@@ -32,7 +32,14 @@ def _process_build(build,
         final_build = "99"
     return final_build
 
-def _set_build(sumstats, build="99", status="STATUS",verbose=True,log=Log()):
+def _set_build(sumstats_or_dataframe, build="99", status="STATUS",verbose=True,log=Log()):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     build = _process_build(build,log=log,verbose=verbose)
     sumstats[status] = vchange_status(sumstats[status], 1, "139",build[0]*3)
     sumstats[status] = vchange_status(sumstats[status], 2, "89",build[1]*3)

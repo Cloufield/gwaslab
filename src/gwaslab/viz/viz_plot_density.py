@@ -94,7 +94,7 @@ def _process_density(sumstats, mode, bwindowsizekb, chrom, pos, verbose, log):
 
     if "b" in mode and "DENSITY" not in sumstats.columns:
         
-        sumstats =  _get_signal_density2(insumstats=sumstats,
+        sumstats =  _get_signal_density2(insumstats_or_dataframe=sumstats,
                                                 snpid="SNPID",
                                                 chrom=chrom,
                                                 pos=pos,

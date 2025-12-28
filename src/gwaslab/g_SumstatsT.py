@@ -34,7 +34,7 @@ class SumstatsT( ):
     
     def cast(self, sumstatsObject, threshold=0.2, verbose=True,windowsizeb=10, ref_path=None):
 
-        molded_sumstats = _merge_mold_with_sumstats_by_chrpos(self.snp_info, sumstatsObject.data, log=sumstatsObject.log, verbose=verbose, windowsizeb=windowsizeb,ref_path=ref_path)
+        molded_sumstats = _merge_mold_with_sumstats_by_chrpos(self.snp_info, sumstats_or_dataframe=sumstatsObject.data, log=sumstatsObject.log, verbose=verbose, windowsizeb=windowsizeb,ref_path=ref_path)
 
         molded_sumstats = _align_with_mold(molded_sumstats, log=sumstatsObject.log, verbose=verbose)
         

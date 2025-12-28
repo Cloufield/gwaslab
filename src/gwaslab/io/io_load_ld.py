@@ -24,7 +24,7 @@ from gwaslab.qc.qc_decorator import with_logging
         start_cols=["SNPID","CHR","POS","EA","NEA"],
         start_function="calculate_ld_matrix"
 )
-def _to_finemapping_using_ld(sumstats, 
+def _to_finemapping_using_ld(sumstats_or_dataframe, 
                   study=None, 
                   ld_map_path=None, 
                   ld_path=None,
@@ -46,6 +46,12 @@ def _to_finemapping_using_ld(sumstats,
                   suffixes=None,
                   verbose=True,
                   **kwargs):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
 
     if suffixes is None:
         suffixes=[""]

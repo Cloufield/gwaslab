@@ -6,27 +6,36 @@ GWASLab integrates a few pre-defined datasets for quick conversion and access, w
 
 ### Full chromosome list
 
-`gl.get_chr_list()`: Get a full list of chromosomes (string datatype):
+`gl.get_chr_list()`: Get a full list of chromosomes (string datatype). Now supports species-specific chromosomes.
 
 **Parameters:**
 
 - `add_number=False`: If True, include both string and numeric representations
-- `n=25`: Maximum chromosome number to include
+- `n=25`: Maximum chromosome number to include (deprecated, now uses species-specific chromosomes)
 - `only_number=False`: If True, return only numeric chromosome numbers
+- `species="homo sapiens"`: Species name (case-insensitive). If provided, uses species-specific chromosomes.
 
 **Examples:**
 ```python
+# Human (default)
 gl.get_chr_list()
+# ['1','2','3',...,'22','X','Y','MT']
 
-['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','X','Y','M','MT']
+# Mouse
+gl.get_chr_list(species="mouse")
+# ['1','2','3',...,'19','X','Y','MT']
 
-gl.get_chr_list(n=2)
+# Chicken (uses Z, W instead of X, Y)
+gl.get_chr_list(species="chicken")
+# ['1','2','3',...,'28','Z','W','MT']
 
-['1', '2', 'X', 'Y', 'M', 'MT']
+# With numeric representations
+gl.get_chr_list(add_number=True)
+# ['1','2',...,'22','X','Y','MT',1,2,...,22]
 
+# Only numeric autosomes
 gl.get_chr_list(only_number=True)
-
-[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+# [1, 2, 3, ..., 22]
 ```
 
 ### CHR - NC conversion
@@ -91,35 +100,59 @@ gl.get_NC_to_number(build="19")
 
 ### CHR Datatype conversion (string <-> int) 
 
-**`gl.get_chr_to_number(out_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25])`**: Convert chromosome string to number
+**`gl.get_chr_to_number(out_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], species="homo sapiens", max_chr=200)`**: Convert chromosome string to number. Now supports species-specific chromosomes.
 
 **Parameters:**
 
 - `out_chr`: If True, returns dictionary with string keys and string values
-- `xymt`: List of non-numeric chromosome identifiers (default: ["X","Y","MT"])
-- `xymt_num`: Corresponding numeric values for xymt (default: [23,24,25])
+- `xymt`: List of non-numeric chromosome identifiers (deprecated, now uses species-specific chromosomes)
+- `xymt_num`: Corresponding numeric values for xymt (deprecated, now uses species-specific mappings)
+- `species`: Species name (case-insensitive). If provided, uses species-specific chromosomes. Default: "homo sapiens"
+- `max_chr`: Maximum chromosome number to include in dictionary. Default: 200
 
 **Example:**
 ```python
+# Human (default)
 gl.get_chr_to_number()
+# {'1': 1, '2': 2, ..., 'X': 23, 'Y': 24, 'MT': 25, 'M': 25}
 
-{'1': 1, '2': 2, ..., 'X': 23, 'Y': 24, 'MT': 25, 'M': 25}
+# Mouse
+gl.get_chr_to_number(species="mouse")
+# {'1': 1, '2': 2, ..., '19': 19, 'X': 23, 'Y': 24, 'MT': 25, 'M': 25}
+
+# Chicken (uses Z, W instead of X, Y)
+gl.get_chr_to_number(species="chicken")
+# {'1': 1, '2': 2, ..., '28': 28, 'Z': 23, 'W': 24, 'MT': 25, 'M': 25}
 ```
 
-**`gl.get_number_to_chr(in_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], prefix="")`**: Convert chromosome number to string
+**`gl.get_number_to_chr(in_chr=False, xymt=["X","Y","MT"], xymt_num=[23,24,25], prefix="", species="homo sapiens", max_chr=200)`**: Convert chromosome number to string. Now supports species-specific chromosomes.
 
 **Parameters:**
 
 - `in_chr`: If True, returns dictionary with string keys and values
-- `xymt`: List of non-numeric chromosome identifiers (default: ["X","Y","MT"])
-- `xymt_num`: Corresponding numeric values for xymt (default: [23,24,25])
+- `xymt`: List of non-numeric chromosome identifiers (deprecated, now uses species-specific chromosomes)
+- `xymt_num`: Corresponding numeric values for xymt (deprecated, now uses species-specific mappings)
 - `prefix`: Optional prefix for chromosome identifiers
+- `species`: Species name (case-insensitive). If provided, uses species-specific chromosomes. Default: "homo sapiens"
+- `max_chr`: Maximum chromosome number to include in dictionary. Default: 200
 
 **Example:**
 ```python
+# Human (default)
 gl.get_number_to_chr()
+# {1: '1', 2: '2', ..., 23: 'X', 24: 'Y', 25: 'MT'}
 
-{1: '1', 2: '2', ..., 23: 'X', 24: 'Y', 25: 'MT'}
+# Mouse
+gl.get_number_to_chr(species="mouse")
+# {1: '1', 2: '2', ..., 19: '19', 23: 'X', 24: 'Y', 25: 'MT'}
+
+# Chicken (uses Z, W instead of X, Y)
+gl.get_number_to_chr(species="chicken")
+# {1: '1', 2: '2', ..., 28: '28', 23: 'Z', 24: 'W', 25: 'MT'}
+
+# With prefix
+gl.get_number_to_chr(prefix="chr")
+# {1: 'chr1', 2: 'chr2', ..., 23: 'chrX', 24: 'chrY', 25: 'chrMT'}
 ```
 
 

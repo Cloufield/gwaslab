@@ -20,7 +20,7 @@ Standardization ensures that your sumstats data follows consistent formats and c
 | Method | Key Options | Description |
 |--------|------------|-------------|
 | `.fix_id()` | `fixchrpos=False`, `fixid=False`, `fixsep=False`, `overwrite=False`, `forcefixid=False` | Check and fix **rsID** or **SNPID** (chr:pos:ref:alt), or use **SNPID** to fix **CHR** and **POS** |
-| `.fix_chr()` | `remove=False`, `x=("X",23)`, `y=("Y",24)`, `mt=("MT",25)`, `chrom_list=None` | Standardize chromosome notation |
+| `.fix_chr()` | `remove=False` | Standardize chromosome notation (species-aware) |
 | `.fix_pos()` | `remove=False`, `limit=250000000`, `lower_limit=0`, `upper_limit=None` | Standardize base-pair position notation and filter out bad values |
 | `.fix_allele()` | `remove=False` | Standardize base notations to ATCG |
 | `.normalize_allele()` | `threads=1`, `mode="s"`, `chunk=3000000` | Normalize indels (left-alignment and parsimony principle) |
@@ -101,61 +101,79 @@ Standardize chromosome notation. This method:
 - Removes prefixes like "chr" from chromosome labels
 - Converts string datatype to integers for autosomes
 - Maps sex chromosomes and mitochondrial DNA to standardized integers
-- Removes variants with unrecognized chromosome notations (not in `chrom_list`)
-- Removes variants with CHR ≤ 0
+- Automatically uses species-specific chromosome mappings from the Sumstats object
+- Removes variants with unrecognized chromosome notations (if `remove=True`)
+- Removes variants with CHR < minimum autosome number
 
 **Parameters:**
 
 | Parameter | DataType | Default | Description |
 |-----------|------|---------|-------------|
 | `remove` | `bool` | `False` | If `True`, remove variants with invalid or unrecognized chromosome labels |
-| `x` | `tuple` | `("X", 23)` | Mapping for X chromosome: `(label, numeric_value)` |
-| `y` | `tuple` | `("Y", 24)` | Mapping for Y chromosome: `(label, numeric_value)` |
-| `mt` | `tuple` | `("MT", 25)` | Mapping for mitochondrial DNA: `(label, numeric_value)`. Also accepts "M" |
-| `chrom_list` | `list` | `None` (uses `gl.get_chr_list()`) | List of valid chromosome notations for filtering. Should be strings |
-| `minchr` | `int` | `1` | Minimum allowed chromosome number when interpreting numeric labels |
 | `add_prefix` | `str` | `""` | Prefix to prepend to chromosome labels (rarely used) |
 
-**Default Behavior:**
-For human chromosomes, CHR will be converted to:
+**Species-Aware Behavior:**
+Chromosome mappings are automatically derived from the Sumstats object's `chromosomes` attribute (initialized based on the `species` parameter when creating the Sumstats object).
+
+**For Human (default):**
 - Integers `1-22` for autosomes
 - `23` for X chromosome
 - `24` for Y chromosome  
 - `25` for MT (mitochondrial DNA)
 
 **For Other Species:**
-You can customize the chromosome mappings:
+The function automatically uses the correct chromosomes based on the species:
 
 ```python
-# Example for a species with different chromosome numbering
-mysumstats.fix_chr(
-    x=("X", 26),
-    y=("Y", 27),
-    mt=("MT", 28),
-    chrom_list=gl.get_chr_list(n=28)
-)
+# Human (default)
+mysumstats = gl.Sumstats("data.txt", species="homo sapiens")
+mysumstats.fix_chr()  # Uses X, Y, MT -> 23, 24, 25
+
+# Mouse
+mysumstats = gl.Sumstats("data.txt", species="mouse")
+mysumstats.fix_chr()  # Uses X, Y, MT -> 23, 24, 25 (19 autosomes)
+
+# Chicken (ZW sex determination system)
+mysumstats = gl.Sumstats("data.txt", species="chicken")
+mysumstats.fix_chr()  # Uses Z, W, MT -> 23, 24, 25 (28 autosomes)
+
+# Zebrafish (no sex chromosomes)
+mysumstats = gl.Sumstats("data.txt", species="zebrafish")
+mysumstats.fix_chr()  # Uses MT -> 25 (25 autosomes, no sex chromosomes)
 ```
+
+**Supported Species:**
+- Human (homo sapiens)
+- Mouse (mus musculus)
+- Rat (rattus norvegicus)
+- Chicken (gallus gallus) - uses Z, W instead of X, Y
+- Zebrafish (danio rerio) - no sex chromosomes
+- Fruit fly (drosophila melanogaster)
+- Pig (sus scrofa)
+- Cattle (bos taurus)
+- Dog (canis lupus familiaris)
+- Horse (equus caballus)
+- Rice (oryza sativa)
+- Arabidopsis (arabidopsis thaliana)
 
 !!! example "Standard chromosome fixing"
     ```python
-    # Use default human chromosome mappings
+    # Use species-specific chromosome mappings (automatic)
     mysumstats.fix_chr()
     
     # Remove invalid chromosomes
     mysumstats.fix_chr(remove=True)
     ```
 
-!!! tip "gl.get_chr_list()"
-    Get a chromosome list for n autosomes plus 'X', 'Y', 'M', 'MT' (string data type).
+!!! tip "Species-Specific Chromosomes"
+    Chromosome information is managed by the `Chromosomes` class, which is automatically initialized when creating a Sumstats object. The `chromosomes` attribute contains all chromosome identifiers for the species.
     
     ```python
-    # Default (human: 22 autosomes)
-    gl.get_chr_list()
-    # ['1','2','3',...,'22','23','24','25','X','Y','M','MT']
-    
-    # Custom number of autosomes
-    gl.get_chr_list(n=10)
-    # ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'X', 'Y', 'M', 'MT']
+    # Access chromosome information
+    mysumstats.chromosomes.chromosomes  # All chromosomes
+    mysumstats.chromosomes.autosomes   # Autosomes only
+    mysumstats.chromosomes.sex_chromosomes  # Sex chromosomes
+    mysumstats.chromosomes.mitochondrial    # Mitochondrial chromosome
     ```
 
 ## POS - Base-pair Positions

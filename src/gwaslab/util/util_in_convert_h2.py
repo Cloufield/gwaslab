@@ -55,7 +55,7 @@ def h2_se_to_p(h2,se):
         start_to_msg="calculate per-SNP heritibility",
         finished_msg="calculating per-SNP heritibility"
 )
-def _get_per_snp_r2(sumstats,
+def _get_per_snp_r2(sumstats_or_dataframe,
            beta="BETA",
            af="EAF",
            n = "N", 
@@ -69,6 +69,13 @@ def _get_per_snp_r2(sumstats,
            log=Log(),
            adjuested=False,
            verbose=True):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     # Pierce, B. L., Ahsan, H., & VanderWeele, T. J. (2011). Power and instrument strength requirements for Mendelian randomization studies using multiple genetic variants. International journal of epidemiology, 40(3), 740-752.
     if type(k) is int or type(k) is float:
        pass 

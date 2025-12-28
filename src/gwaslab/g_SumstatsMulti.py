@@ -5,7 +5,8 @@ import gc
 
 from gwaslab.info.g_Log import Log
 from math import floor
-from gwaslab.g_Sumstats import Sumstats, _get_id_column
+from gwaslab.g_Sumstats import Sumstats
+from gwaslab.io.io_input_type import _get_id_column
 from gwaslab.g_Sumstats_polars import Sumstatsp
 
 from gwaslab.bd.bd_path_manager import _path
@@ -222,7 +223,7 @@ class SumstatsMulti( ):
             molded_sumstats = molded_sumstats.rename({"EA_1":"EA","NEA_1":"NEA"})
         else:
             molded_sumstats = _merge_mold_with_sumstats_by_chrpos(mold=self.data, 
-                                                        sumstats=sumstatsObject2, 
+                                                        sumstats_or_dataframe=sumstatsObject2, 
                                                         log=self.log,
                                                         verbose=verbose,
                                                         merge_mode=merge_mode,

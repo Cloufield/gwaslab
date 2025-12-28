@@ -30,7 +30,7 @@ mysumstats.to_format(
 | `n`                    | `float`           | sample size to add as 'N' column.                                                                                                                                                                                                    | `None`           |
 | `no_status`            | `boolean`         | If True, exclude 'STATUS' column from output.                                                                                                                                                                                       | `False`          |
 | `xymt_number`          | `boolean`         | If True, output sex chromosomes as numeric codes (23, 24, 25 for X, Y, MT).                                                                                                                                                         | `False`          |
-| `xymt`                 | `list`            | 3-element list of sex chromosome notations to indicate how to convert integers to sex chromosome                                                                                                                                     | `["X","Y","MT"]` |
+| `xymt`                 | `list`            | 3-element list of sex chromosome notations. If `None`, automatically derived from Sumstats object's species (species-aware). Default: `None` (auto-detect from species)                                                           | `None`           |
 | `chr_prefix`           | `string`          | Add a prefix to chromosomes. For example, 6 -> chr6.                                                                                                                                                                                 | `""`             |
 | `gzip`                 | `boolean`         | If True, gzip compress the output file.                                                                                                                                                                                              | `True`           |
 | `bgzip`                | `boolean`         | If True, bgzip the output file. Only works for bed and vcf format.                                                                                                                                                                   | `False`          |
@@ -111,6 +111,22 @@ GWASLab supports commonly used tabular formats, which are listed in a companion 
     
     # Generate MD5 checksum
     mysumstats.to_format(path="./checksummed", fmt="gwaslab", md5sum=True)
+    ```
+
+!!! tip "Species-Aware Sex Chromosome Handling"
+    The `xymt` parameter is automatically derived from the Sumstats object's species when `None`:
+    
+    ```python
+    # Human (default) - automatically uses ["X", "Y", "MT"]
+    mysumstats = gl.Sumstats("data.txt", species="homo sapiens")
+    mysumstats.to_format("output.tsv")  # Uses X, Y, MT
+    
+    # Chicken - automatically uses ["Z", "W", "MT"]
+    mysumstats = gl.Sumstats("data.txt", species="chicken")
+    mysumstats.to_format("output.tsv")  # Uses Z, W, MT
+    
+    # You can still override if needed
+    mysumstats.to_format("output.tsv", xymt=["X", "Y", "MT"])  # Override to human convention
     ```
 
 !!! example "CLI usage"

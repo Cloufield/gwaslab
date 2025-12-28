@@ -17,6 +17,7 @@ from gwaslab.bd.bd_common_data import get_number_to_chr
 from gwaslab.bd.bd_common_data import get_chr_list
 from gwaslab.bd.bd_common_data import get_chain
 from gwaslab.bd.bd_common_data import NA_STRINGS
+from gwaslab.bd.bd_sex_chromosomes import Chromosomes
 
 from gwaslab.qc.qc_check_datatype import check_datatype
 from gwaslab.qc.qc_pattern import RSID_PATTERN, SNPID_PATTERN_EXTRACT, CHR_PATTERN_EXTRACT, FLAGS, SNPID_SEP_PATTERN, CHR_PREFIX_PATTERN, SNPID_PATTERN_STRIP
@@ -418,7 +419,7 @@ def _fix_ID(sumstats_obj,
         start_function= ".strip_snpid()",
         start_cols=["SNPID"]
 )
-def _strip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -> pd.DataFrame:  
+def _strip_SNPID(sumstats_or_dataframe,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -> pd.DataFrame:  
     '''
     Strip non-standard characters from SNPID values to standardize format.
     
@@ -428,6 +429,8 @@ def _strip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()) 
 
     Parameters
     ----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     overwrite : bool
         Whether to overwrite existing values.
     verbose : bool, optional
@@ -437,6 +440,13 @@ def _strip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()) 
     pd.DataFrame
         Modified sumstats with stripped SNPIDs.
     '''
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     log.write(" -Checking if SNPID is (xxx:)CHR:POS:ATCG_Allele:ATCG_Allele(:xxx)...(separator: - ,: , _)",verbose=verbose)
     is_chrposrefalt = sumstats[snpid].str.match(SNPID_PATTERN_STRIP, flags=FLAGS, na=False)
     # check if SNPID is NA
@@ -459,7 +469,7 @@ def _strip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()) 
         start_function= ".flip_snpid()",
         start_cols=["SNPID"]
 )
-def _flip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -> pd.DataFrame:  
+def _flip_SNPID(sumstats_or_dataframe,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -> pd.DataFrame:  
     '''
     Flip alleles in SNPID values without changing status codes or statistics.
     
@@ -469,6 +479,8 @@ def _flip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -
 
     Parameters
     ----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     snpid : str
         Column name for SNPID.
     overwrite : bool
@@ -481,6 +493,13 @@ def _flip_SNPID(sumstats,snpid="SNPID",overwrite=False,verbose=True,log=Log()) -
     pd.DataFrame
         Modified sumstats with flipped alleles.
     '''
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
+    
     ##start function with col checking##########################################################
     log.warning("This function only flips alleles in SNPID without changing EA, NEA, STATUS or any statistics.")
     log.write(" -Checking if SNPID is CHR:POS:ATCG_Allele:ATCG_Allele...(separator: - ,: , _)",verbose=verbose)
@@ -658,6 +677,122 @@ def _remove_dup(sumstats_obj,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="E
 
     return sumstats_obj.data
 
+def _build_chrom_list_with_numeric(chrom_list, chromosomes_obj):
+    """
+    Build a chromosome list that includes both string and numeric representations.
+    This is needed after sex chromosomes are converted to numeric values.
+    
+    Parameters:
+    -----------
+    chrom_list : list
+        Original chromosome list with string identifiers
+    chromosomes_obj : Chromosomes or None
+        Chromosomes instance to get numeric mappings
+        
+    Returns:
+    --------
+    list
+        Extended chromosome list with numeric sex chromosome values
+    """
+    chrom_list_with_numeric = chrom_list.copy()
+    
+    if chromosomes_obj is not None:
+        all_sex_chr_numeric = chromosomes_obj.get_all_sex_chromosomes_numeric()
+        # Add numeric values as strings (since sumstats[chrom] is still string at this point)
+        for num_val in all_sex_chr_numeric:
+            chrom_list_with_numeric.append(str(num_val))
+    else:
+        # Default numeric values for X, Y, MT
+        chrom_list_with_numeric.extend(["23", "24", "25"])
+    
+    return chrom_list_with_numeric
+
+
+def _convert_sex_chromosomes_to_numeric(sumstats, fixable_indices, 
+                                       x, y, mt, chrom, log, verbose):
+    """
+    Convert sex chromosome labels (X, Y, MT) to numeric values.
+    
+    Optimized version that:
+    - Uses set operations for faster lookups
+    - Pre-computes case variations
+    - Directly maps only the subset that needs conversion
+    - Checks sumstats directly after values have been assigned
+    
+    Parameters:
+    -----------
+    sumstats : pd.DataFrame
+        Summary statistics dataframe (already contains extracted chromosome values)
+    fixable_indices : pd.Index
+        Indices of variants that were fixable (where extracted values were assigned)
+    x, y, mt : tuple
+        Chromosome mappings as (label, numeric_value)
+    chrom : str
+        Column name for chromosome
+    log : Log
+        Logging object
+    verbose : bool
+        Verbosity flag
+    """
+    import pandas as pd
+    
+    # Early return if no fixable indices
+    if len(fixable_indices) == 0:
+        return
+    
+    # Pre-compute case variations for faster lookups (use set for O(1) membership testing)
+    x_label, x_num = x[0], str(x[1])
+    y_label, y_num = y[0], str(y[1])
+    mt_label, mt_num = mt[0], str(mt[1])
+    
+    x_lower, x_upper = x_label.lower(), x_label.upper()
+    y_lower, y_upper = y_label.lower(), y_label.upper()
+    mt_lower, mt_upper = mt_label.lower(), mt_label.upper()
+    
+    # Build set of all case variations for fast membership testing
+    xymt_set = {x_lower, x_upper, y_lower, y_upper, mt_lower, mt_upper}
+    
+    # Check which fixable values in sumstats are sex chromosomes (using set for O(1) lookup)
+    # Note: sumstats already contains the extracted values at these indices
+    fixable_chr_values = sumstats.loc[fixable_indices, chrom].astype(str)
+    sex_chr_mask = fixable_chr_values.isin(xymt_set)
+    
+    # Early return if no sex chromosomes found
+    sex_chr_count = sex_chr_mask.sum()
+    if sex_chr_count == 0:
+        return
+    
+    log.write(" -Identifying non-autosomal chromosomes : {}, {}, and {} ...".format(x_label, y_label, mt_label), verbose=verbose)
+    log.write(" -Identified {} variants on sex chromosomes...".format(sex_chr_count), verbose=verbose)
+    
+    # Get unique sex chromosome values present in data (as lowercase for comparison)
+    sex_chr_values = fixable_chr_values[sex_chr_mask]
+    sex_chr_values_lower = set(sex_chr_values.str.lower())
+    
+    # Build conversion dictionary only for chromosomes actually present in data
+    # Since we convert to lowercase before mapping, we only need lowercase keys
+    convert_num_to_xymt = {}
+    chromosome_mappings = [
+        (x_lower, x_num, x_label, "first sex chromosome"),
+        (y_lower, y_num, y_label, "second sex chromosome"),
+        (mt_lower, mt_num, mt_label, "mitochondrial")
+    ]
+    
+    for label_lower, numeric_str, label_orig, description in chromosome_mappings:
+        if label_lower in sex_chr_values_lower:
+            convert_num_to_xymt[label_lower] = numeric_str
+            log.write(" -Standardizing {} chromosome notations: {} to {}...".format(description, label_orig, numeric_str), verbose=verbose)
+    
+    # Directly map only the subset that needs conversion
+    sex_chr_indices = fixable_indices[sex_chr_mask]
+    if len(sex_chr_indices) > 0:
+        # Use vectorized string operations for case-insensitive mapping
+        # Convert to lowercase, map to numeric values, then assign back
+        # All values should map successfully since they're all identified sex chromosomes
+        sex_chr_values_lower = sumstats.loc[sex_chr_indices, chrom].astype(str).str.lower()
+        sumstats.loc[sex_chr_indices, chrom] = sex_chr_values_lower.map(convert_num_to_xymt)
+
+
 ###############################################################################################################
 # 20230128
 @with_logging(
@@ -668,7 +803,7 @@ def _remove_dup(sumstats_obj,mode="dm",chrom="CHR",pos="POS",snpid="SNPID",ea="E
         check_dtype=False,
         fix=False
 )
-def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y=("Y",24),mt=("MT",25), remove=False, verbose=True, chrom_list = None, minchr=1,log=Log()) -> pd.DataFrame:
+def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="", remove=False, verbose=True, log=Log()) -> pd.DataFrame:
     """
     Standardize chromosome notation and handle special chromosome cases (X, Y, MT).
     
@@ -677,6 +812,9 @@ def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y
     extracts chromosome numbers from various formats (e.g., "chr1", "1", "chrX"), maps special
     chromosomes (X, Y, mitochondrial) to standardized numeric identifiers, and optionally
     removes invalid chromosome values.
+    
+    Chromosome mappings (x, y, mt), chrom_list, and minchr are automatically derived from
+    the Sumstats object's chromosomes attribute (Chromosomes instance).
 
     Parameters
     ----------
@@ -684,182 +822,158 @@ def _fix_chr(sumstats_obj,chrom="CHR",status="STATUS",add_prefix="",x=("X",23),y
         Sumstats object containing the data to fix.
     add_prefix : str, optional, default=""
         Prefix to prepend to chromosome labels (e.g., "chr").
-    x : list of [str, int], optional
-        Mapping for the X chromosome, given as [label, numeric_value]. Default is ["X",23]
-    y : list of [str, int], optional
-        Mapping for the Y chromosome, given as [label, numeric_value]. Default is ["Y",24]
-    mt : list of [str, int], optional
-        Mapping for the mitochondrial chromosome, given as [label, numeric_value]. Default is ["MY",25]
     remove : bool, default False
         If True, remove records with invalid or unrecognized chromosome labels.
     verbose : bool, default False
         If True, print progress or diagnostic messages.
-    minchr : int, default 1
-        Minimum allowed chromosome number when interpreting numeric labels.
 
     Returns
     -------
     pandas.DataFrame
         Summary statistics table with standardized chromosome identifiers.
-
-    Less used parameters
-    -------------------------
-    chrom_list : list of str or int, optional
-        List of valid chromosome labels or numeric values. Default is ["1", ..., "25", "X", "Y", "MT"]
     """
     import pandas as pd
-    # Handle both DataFrame and Sumstats object
+    
+    # ============================================================================
+    # Step 1: Initialize and get chromosome parameters
+    # ============================================================================
     if isinstance(sumstats_obj, pd.DataFrame):
-        # Called during initialization - no Sumstats object yet
         sumstats = sumstats_obj
         is_dataframe = True
+        chromosomes_obj = None
     else:
-        # Called with Sumstats object
         sumstats = sumstats_obj.data
         is_dataframe = False
-
-    #chrom_list = get_chr_list() #bottom 
-    if chrom_list is None:
-        chrom_list = get_chr_list()
+        chromosomes_obj = getattr(sumstats_obj, 'chromosomes', None)
     
-    # convert to string datatype
+    # Get chromosome mappings from Chromosomes object or use defaults
+    if chromosomes_obj is not None:
+        x, y, mt = chromosomes_obj.get_chromosome_mappings()
+        chrom_list = chromosomes_obj.chromosomes.copy()
+        minchr = chromosomes_obj.get_min_chromosome()
+    else:
+        x, y, mt = ("X", 23), ("Y", 24), ("MT", 25)
+        chrom_list = get_chr_list()
+        minchr = 1
+    
+    # ============================================================================
+    # Step 2: Convert CHR column to string type
+    # ============================================================================
     try:
         log.write(" -Checking CHR data type...", verbose=verbose)
-        if sumstats[chrom].dtype == "string":
-            pass
-        else:
+        if sumstats[chrom].dtype != "string":
             sumstats[chrom] = sumstats[chrom].astype("string")
     except:
         log.log_datatype_change("CHR", str(sumstats[chrom].dtype), "string", status="attempt", verbose=verbose)
         sumstats[chrom] = sumstats[chrom].astype("string")
-    ########################################################################################################################################
-    # check if CHR is numeric, fill NAs with False
-    is_chr_fixed = sumstats[chrom].str.isnumeric().fillna(False)
-    log.log_variants_with_condition("standardized chromosome notation", is_chr_fixed.sum(), verbose=verbose)  
     
-    # if there are variants whose CHR need to be fixed
-    if is_chr_fixed.sum() < len(sumstats):
-        
-        #extract the CHR number or X Y M MT
-        chr_extracted = sumstats.loc[~is_chr_fixed, chrom].str.extract(CHR_PATTERN_EXTRACT,  flags=FLAGS)[1]
-
+    # ============================================================================
+    # Step 3: Identify which chromosomes need fixing
+    # ============================================================================
+    is_chr_fixed = sumstats[chrom].str.isnumeric().fillna(False)
+    log.log_variants_with_condition("standardized chromosome notation", is_chr_fixed.sum(), verbose=verbose)
+    
+    # If all chromosomes are already numeric, skip extraction
+    if is_chr_fixed.sum() == len(sumstats):
+        log.write(" -All CHR are already fixed...", verbose=verbose)
+        sumstats.loc[is_chr_fixed, status] = vchange_status(sumstats.loc[is_chr_fixed, status], 4, "986", "520")
+    else:
+        # ========================================================================
+        # Step 4: Extract and fix chromosome notations
+        # ========================================================================
+        chr_extracted = sumstats.loc[~is_chr_fixed, chrom].str.extract(CHR_PATTERN_EXTRACT, flags=FLAGS)[1]
         is_chr_fixable = ~chr_extracted.isna()
-        log.log_variants_with_condition("fixable chromosome notations", is_chr_fixable.sum(), verbose=verbose)  
-
-        # For not fixed variants, check if na
-        is_chr_na  = sumstats.loc[~is_chr_fixed, chrom].isna()
-        if is_chr_na.sum()>0: 
-            log.log_variants_with_condition("NA chromosome notations", is_chr_na.sum(), verbose=verbose)  
+        log.log_variants_with_condition("fixable chromosome notations", is_chr_fixable.sum(), verbose=verbose)
         
-        # Check variants with CHR being not NA and not fixable
-        is_chr_invalid = (~is_chr_fixable)&(~is_chr_na)
-        if is_chr_invalid.sum()>0: 
-            log.log_variants_with_condition("invalid chromosome notations", is_chr_invalid.sum(), verbose=verbose) 
+        # Check for NA and invalid chromosomes
+        is_chr_na = sumstats.loc[~is_chr_fixed, chrom].isna()
+        if is_chr_na.sum() > 0:
+            log.log_variants_with_condition("NA chromosome notations", is_chr_na.sum(), verbose=verbose)
+        
+        is_chr_invalid = (~is_chr_fixable) & (~is_chr_na)
+        if is_chr_invalid.sum() > 0:
+            log.log_variants_with_condition("invalid chromosome notations", is_chr_invalid.sum(), verbose=verbose)
             try:
-                log.write(" -A look at invalid chromosome notations:" , set(sumstats.loc[~is_chr_fixed,chrom][is_chr_invalid].head()), verbose=verbose)
+                invalid_examples = set(sumstats.loc[~is_chr_fixed, chrom][is_chr_invalid].head())
+                log.write(" -A look at invalid chromosome notations:", invalid_examples, verbose=verbose)
             except:
                 pass
         else:
             log.write(" -No unrecognized chromosome notations...", verbose=verbose)
         
-        # Assign good chr back to sumstats
-        # Convert to regular pandas Series to avoid PyArrow type issues
-        sumstats.loc[is_chr_fixable.index,chrom] = chr_extracted[is_chr_fixable.index].astype("string")
-
-        # X, Y, MT to 23,24,25
-        xymt_list = [x[0].lower(),y[0].lower(),mt[0].lower(),x[0].upper(),y[0].upper(),mt[0].upper()]
+        # ========================================================================
+        # Step 5: Assign extracted values back to sumstats
+        # ========================================================================
+        sumstats.loc[is_chr_fixable.index, chrom] = chr_extracted[is_chr_fixable.index].astype("string")
         
-        # Performance optimization: Check only extracted values instead of entire column
-        # Rationale: Already-fixed chromosomes (is_chr_fixed) are numeric and cannot be X/Y/MT.
-        # Only the newly extracted values (chr_extracted) could contain sex chromosomes.
-        # This reduces complexity from O(n) to O(m) where n=total variants, m=unfixed variants (typically m << n).
-        extracted_fixable = chr_extracted[is_chr_fixable]
-        sex_chr_extracted = extracted_fixable.isin(xymt_list)
+        # ========================================================================
+        # Step 6: Convert sex chromosomes to numeric values
+        # ========================================================================
+        _convert_sex_chromosomes_to_numeric(sumstats, is_chr_fixable.index, x, y, mt, chrom, log, verbose)
         
-        # if sumstats contain sex CHR
-        if sex_chr_extracted.sum()>0:
-            log.write(" -Identifying non-autosomal chromosomes : {}, {}, and {} ...".format(x[0],y[0],mt[0]), verbose=verbose)
-            log.write(" -Identified ", str(sex_chr_extracted.sum()), " variants on sex chromosomes...", verbose=verbose)
-            
-            # convert "X, Y, MT" to numbers
-            # Performance optimization: Get unique sex chromosome values once (as lowercase set) instead of scanning 3 times
-            sex_chr_values_lower = set(extracted_fixable[sex_chr_extracted].str.lower())
-            convert_num_to_xymt = {}
-            
-            # Build conversion dictionary based on which sex chromosomes are actually present
-            if x[0].lower() in sex_chr_values_lower:
-                convert_num_to_xymt[x[0].lower()] = str(x[1])
-                convert_num_to_xymt[x[0].upper()] = str(x[1])
-                log.write(" -Standardizing sex chromosome notations: {} to {}...".format(x[0], x[1]), verbose=verbose)
-            if y[0].lower() in sex_chr_values_lower:
-                convert_num_to_xymt[y[0].lower()] = str(y[1])
-                convert_num_to_xymt[y[0].upper()] = str(y[1])
-                log.write(" -Standardizing sex chromosome notations: {} to {}...".format(y[0], y[1]), verbose=verbose)
-            if mt[0].lower() in sex_chr_values_lower:
-                convert_num_to_xymt[mt[0].lower()] = str(mt[1])
-                convert_num_to_xymt[mt[0].upper()] = str(mt[1])
-                log.write(" -Standardizing sex chromosome notations: {} to {}...".format(mt[0], mt[1]), verbose=verbose)
-            # Create boolean mask aligned with dataframe index for mapping
-            # sex_chr_extracted has index from unfixed variants, need to map to full dataframe index
-            sex_chr = pd.Series(False, index=sumstats.index)
-            sex_chr.loc[sex_chr_extracted.index] = sex_chr_extracted
-            sumstats.loc[sex_chr,chrom] = sumstats.loc[sex_chr,chrom].map(convert_num_to_xymt)
+        # ========================================================================
+        # Step 7: Update status codes
+        # ========================================================================
+        sumstats.loc[is_chr_fixed, status] = vchange_status(sumstats.loc[is_chr_fixed, status], 4, "986", "520")
+        if len(is_chr_fixable.index) > 0:
+            sumstats.loc[is_chr_fixable.index, status] = vchange_status(
+                sumstats.loc[is_chr_fixable.index, status], 4, "986", "520"
+            )
+            sumstats.loc[is_chr_invalid.index, status] = vchange_status(
+                sumstats.loc[is_chr_invalid.index, status], 4, "986", "743"
+            )
         
-        # change status code
-        sumstats.loc[is_chr_fixed,status] = vchange_status(sumstats.loc[is_chr_fixed,status],4,"986","520")
-        if len(is_chr_fixable.index)>0:
-            sumstats.loc[is_chr_fixable.index,status] = vchange_status(sumstats.loc[is_chr_fixable.index,status],4,"986","520")
-        if len(is_chr_fixable.index)>0:
-            sumstats.loc[is_chr_invalid.index,status] = vchange_status(sumstats.loc[is_chr_invalid.index,status],4,"986","743")
-        
-        # check variants with unrecognized CHR
-        # Performance optimization: Only compute good_chr when remove=True, and reuse instead of checking entire column 3 times
-        if remove is True:
-            good_chr = sumstats[chrom].isin(chrom_list)
+        # ========================================================================
+        # Step 8: Remove invalid chromosomes if requested
+        # ========================================================================
+        if remove:
+            chrom_list_with_numeric = _build_chrom_list_with_numeric(chrom_list, chromosomes_obj)
+            good_chr = sumstats[chrom].isin(chrom_list_with_numeric)
             unrecognized_num = (~good_chr).sum()
-            if unrecognized_num>0:
-                # remove variants with unrecognized CHR 
+            
+            if unrecognized_num > 0:
                 try:
-                    log.write(" -Valid CHR list: {} - {}".format(min([int(x) for x in chrom_list if x.isnumeric()]),max([int(x) for x in chrom_list if x.isnumeric()])), verbose=verbose)
+                    numeric_chrs = [int(x) for x in chrom_list_with_numeric if x.isnumeric()]
+                    if numeric_chrs:
+                        log.write(" -Valid CHR list: {} - {}".format(min(numeric_chrs), max(numeric_chrs)), verbose=verbose)
                 except:
                     pass
-                log.log_variants_removed(unrecognized_num, reason="with chromosome notations not in CHR list", verbose=verbose) 
+                log.log_variants_removed(unrecognized_num, reason="with chromosome notations not in CHR list", verbose=verbose)
                 try:
-                    # Reuse good_chr boolean mask instead of recomputing
-                    log.write(" -A look at chromosome notations not in CHR list:" , set(sumstats.loc[~good_chr,chrom].head()), verbose=verbose)
+                    invalid_examples = set(sumstats.loc[~good_chr, chrom].head())
+                    log.write(" -A look at chromosome notations not in CHR list:", invalid_examples, verbose=verbose)
                 except:
                     pass
                 sumstats = sumstats.loc[good_chr, :].copy()
-    else:
-        log.write(" -All CHR are already fixed...", verbose=verbose) 
-        sumstats.loc[is_chr_fixed,status] = vchange_status(sumstats.loc[is_chr_fixed,status],4,"986","520")
 
-    ########################################################################################################################################
-    # Convert string to int
+    # ============================================================================
+    # Step 9: Convert chromosome column to integer type
+    # ============================================================================
     try:
         sumstats[chrom] = sumstats[chrom].astype('Int64')
     except:
-    #    # force convert
         sumstats[chrom] = np.floor(pd.to_numeric(sumstats[chrom], errors='coerce')).astype('Int64')
-    ########################################################################################################################################
-    # filter out variants with CHR < minchr
-    # Performance optimization: Combine operations and compute sum once instead of twice
+    
+    # ============================================================================
+    # Step 10: Filter out variants with CHR < minchr
+    # ============================================================================
     out_of_range_chr = (sumstats[chrom] < minchr).fillna(False)
     out_of_range_num = out_of_range_chr.sum()
     if out_of_range_num > 0:
-        log.write(" -Sanity check for CHR...", verbose=verbose) 
+        log.write(" -Sanity check for CHR...", verbose=verbose)
         log.log_variants_removed(out_of_range_num, reason="with CHR < {}".format(minchr), verbose=verbose)
         sumstats = sumstats.loc[~out_of_range_chr, :]
-
-    # Update QC status only if called with Sumstats object
+    
+    # ============================================================================
+    # Step 11: Update Sumstats object and return
+    # ============================================================================
     if not is_dataframe:
-        # Assign filtered dataframe back to the Sumstats object
         sumstats_obj.data = sumstats
         try:
             from gwaslab.info.g_meta import _update_qc_step
             chr_kwargs = {
-                'chrom': chrom, 'status': status, 'add_prefix': add_prefix, 'x': x, 'y': y, 'mt': mt,
-                'remove': remove, 'chrom_list': chrom_list, 'minchr': minchr
+                'chrom': chrom, 'status': status, 'add_prefix': add_prefix,
+                'remove': remove
             }
             _update_qc_step(sumstats_obj, "chr", chr_kwargs, True)
         except:

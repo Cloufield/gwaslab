@@ -29,7 +29,7 @@ from gwaslab.qc.qc_decorator import with_logging
         start_function=".get_lead()",
         fix=True
 )
-def _get_sig(insumstats,
+def _get_sig(insumstats_or_dataframe,
            variant_id="SNPID",
            chrom="CHR",
            pos="POS",
@@ -57,6 +57,8 @@ def _get_sig(insumstats,
 
     Parameters
     ----------
+    insumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     windowsizekb : int, default=500
         Window size in kilobases for lead variant identification, default=500
     sig_level : float, default=5e-8
@@ -86,6 +88,12 @@ def _get_sig(insumstats,
 
     When no significant variants are found, returns None after logging a message.
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(insumstats_or_dataframe, pd.DataFrame):
+        insumstats = insumstats_or_dataframe
+    else:
+        insumstats = insumstats_or_dataframe.data
 
     log.write(" -Processing "+str(len(insumstats))+" variants...", verbose=verbose)
     log.write(" -Significance threshold :", sig_level, verbose=verbose)
@@ -178,7 +186,7 @@ def _get_sig(insumstats,
         start_function=".get_top()",
         fix=True
 )
-def _get_top(insumstats,
+def _get_top(insumstats_or_dataframe,
            variant_id="SNPID",
            chrom="CHR",
            pos="POS",
@@ -203,6 +211,8 @@ def _get_top(insumstats,
 
     Parameters
     ----------
+    insumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     by : str, default="DENSITY"
         Column name whose values are maximized to choose leads.
     threshold : float or None, default=None
@@ -220,6 +230,12 @@ def _get_top(insumstats,
         DataFrame containing the selected lead variants. Returns None if
         no variants have valid values in the `by` column.
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(insumstats_or_dataframe, pd.DataFrame):
+        insumstats = insumstats_or_dataframe
+    else:
+        insumstats = insumstats_or_dataframe.data
     log.write(" -Sliding window size for extracting top:", str(windowsizekb), " kb", verbose=verbose)
     sumstats = insumstats.copy()
     if sumstats[chrom].dtype in ["object",str,pd.StringDtype]:
@@ -701,7 +717,7 @@ def closest_gene(x, data, chrom="CHR", pos="POS", source="ensembl", build="19"):
         finished_msg="annotating variants with nearest gene name(s) successfully!"
 )
 def _anno_gene(
-           insumstats,
+           insumstats_or_dataframe,
            id="SNPID",
            chrom="CHR",
            pos="POS",
@@ -710,6 +726,18 @@ def _anno_gene(
            source="ensembl",
            gtf_path=None,
            verbose=True):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(insumstats_or_dataframe, pd.DataFrame):
+        insumstats = insumstats_or_dataframe
+    else:
+        insumstats = insumstats_or_dataframe.data
+    
+    # Auto-detect ID column if using default and column doesn't exist
+    if id == "SNPID" and id not in insumstats.columns:
+        if "rsID" in insumstats.columns:
+            id = "rsID"
+    
     build = _process_build(build, log=log,verbose=verbose)
     output = insumstats.copy()
     
@@ -884,7 +912,7 @@ def _get_known_variants_from_gwascatalog(client, efo, sig_level=5e-8, verbose=Tr
         start_cols=["CHR","POS"],
         start_function=".get_novel()"
 )
-def _get_novel(insumstats,
+def _get_novel(insumstats_or_dataframe,
            variant_id="SNPID",
            chrom="CHR",
            pos="POS",
@@ -918,6 +946,8 @@ def _get_novel(insumstats,
 
     Parameters
     ----------
+    insumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     known : pd.DataFrame or str, optional
         DataFrame or path to file containing known variants with CHR/POS columns
     efo : str or list, optional
@@ -926,49 +956,6 @@ def _get_novel(insumstats,
         If True, return only novel variants
     group_key : str, optional
         Column name for grouping variants (e.g., trait/phenotype ID)
-    if_get_lead : bool, default=True
-        If True, first extract lead variants using getsig
-    windowsizekb_for_novel : int, default=1000
-        Distance threshold (kb) to define novelty
-    windowsizekb : int, default=500
-        Window size (kb) for lead variant extraction
-    sig_level : float, default=5e-8
-        Significance threshold for variant selection
-    log : gwaslab.g_Log.Log, default=Log()
-        Logger object for tracking processing steps
-    xymt : list, default=["X","Y","MT"]
-        Non-autosomal chromosome identifiers
-    anno : bool, default=False
-        If True, annotate variants with gene information
-    wc_correction : bool, default=False
-        If True, apply Winner's Curse correction
-    use_cache : bool, default=True
-        If True, use cached GWAS catalog data
-    cache_dir : str, default="./"
-        Directory for caching downloaded data
-    build : {"19", "38"}, default="19"
-        Reference genome build for GWAS catalog queries
-    source : {"ensembl", "refseq"}, default="ensembl"
-        Database source for gene annotation
-    gwascatalog_source : {"NCBI", "EBI"}, default="NCBI"
-        Source for GWAS catalog data
-    output_known : bool, default=False
-        If True, return both processed and known variants
-    verbose : bool, default=True
-        If True, print progress information
-
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame containing variants with novelty status and metadata:
-        - NOVEL : Boolean indicating novelty status
-        - DISTANCE_TO_KNOWN : Distance to nearest known variant
-        - LOCATION_OF_KNOWN : Relative position to known variant
-        - KNOWN_ID : ID of matching known variant
-        - Additional metadata from known variants
-
-    Other Parameters
-    ----------------
     if_get_lead : bool, default=True
         If True, first extract lead variants using getsig
     windowsizekb : int, default=500
@@ -988,6 +975,12 @@ def _get_novel(insumstats,
 
     When no significant variants are found, returns None after logging a message.
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(insumstats_or_dataframe, pd.DataFrame):
+        insumstats = insumstats_or_dataframe
+    else:
+        insumstats = insumstats_or_dataframe.data
 
     if "SNPID" in insumstats.columns:
         variant_id = "SNPID"
@@ -1159,11 +1152,11 @@ def _get_novel(insumstats,
         start_function=".check_cis()",
         must_kwargs=["group_key"]
 )
-def _check_cis(insumstats,
-           variant_id,
-           chrom,
-           pos,
-           p,
+def _check_cis(insumstats_or_dataframe,
+           variant_id=None,
+           chrom="CHR",
+           pos="POS",
+           p="P",
            use_p=False,
            known=False,
            group_key=None,
@@ -1176,7 +1169,23 @@ def _check_cis(insumstats,
            build="19",
            source="ensembl",
            verbose=True):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(insumstats_or_dataframe, pd.DataFrame):
+        insumstats = insumstats_or_dataframe
+    else:
+        insumstats = insumstats_or_dataframe.data
+    
     ##start function with col checking##########################################################
+    
+    # Auto-detect ID column if not provided
+    if variant_id is None:
+        if "SNPID" in insumstats.columns:
+            variant_id = "SNPID"
+        elif "rsID" in insumstats.columns:
+            variant_id = "rsID"
+        else:
+            raise ValueError("Cannot find SNPID or rsID column in sumstats")
     
     if if_get_lead == True:
         allsig = _get_sig(insumstats=insumstats,
@@ -1358,11 +1367,11 @@ def determine_if_same_chromosome(allsig, knownsig, maxpos):
         start_function=".check_novel_set()",
         must_kwargs=["group_key"]
 )
-def _check_novel_set(insumstats,
-           variant_id,
-           chrom,
-           pos,
-           p,
+def _check_novel_set(insumstats_or_dataframe,
+           variant_id=None,
+           chrom="CHR",
+           pos="POS",
+           p="P",
            use_p=False,
            known=False,
            group_key=None,
@@ -1377,8 +1386,28 @@ def _check_novel_set(insumstats,
            build="19",
            source="ensembl",
            verbose=True):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(insumstats_or_dataframe, pd.DataFrame):
+        insumstats = insumstats_or_dataframe
+    else:
+        insumstats = insumstats_or_dataframe.data
     
     ##start function with col checking##########################################################
+    
+    # Auto-detect ID column if not provided
+    if variant_id is None:
+        if "SNPID" in insumstats.columns:
+            variant_id = "SNPID"
+        elif "rsID" in insumstats.columns:
+            variant_id = "rsID"
+        else:
+            raise ValueError("Cannot find SNPID or rsID column in sumstats")
+    
+    # Auto-detect snpid for known set if using default and column doesn't exist
+    if snpid == "SNPID" and snpid not in insumstats.columns:
+        if "rsID" in insumstats.columns:
+            snpid = "rsID"
     
     if if_get_lead == True:
         allsig = _get_sig(insumstats=insumstats,

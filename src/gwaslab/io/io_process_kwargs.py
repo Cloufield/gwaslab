@@ -128,6 +128,8 @@ def normalize_series_inputs(keys=None):
             for name, value in list(bound.arguments.items()):
                 if (keys is None or name in keys) and isinstance(value, pd.Series):
                     bound.arguments[name] = value.tolist()
+            # Call function with all arguments as keyword arguments
+            # This preserves the original behavior while allowing Series conversion
             return func(**bound.arguments)
         return wrapper
     return decorator

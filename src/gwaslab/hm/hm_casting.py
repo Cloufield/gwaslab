@@ -11,13 +11,19 @@ from gwaslab.qc.qc_reserved_headers import DEFAULT_COLUMN_ORDER
 from gwaslab.util.util_in_fill_data import _fill_data
 from itertools import combinations
 
-def _merge_mold_with_sumstats_by_chrpos(mold, sumstats, ref_path=None,add_raw_index=False, stats_cols1=None, stats_cols2=None,
+def _merge_mold_with_sumstats_by_chrpos(mold, sumstats_or_dataframe, ref_path=None,add_raw_index=False, stats_cols1=None, stats_cols2=None,
                                         windowsizeb=10, 
                                         log=Log(),
                                         suffixes=("_MOLD",""),
                                         merge_mode="inner",
                                         verbose=True,
                                         return_not_matched_mold =False):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
     
     log.write("Start to merge sumstats...", verbose=verbose)
     if merge_mode=="outer":

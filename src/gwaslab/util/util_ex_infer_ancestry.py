@@ -10,7 +10,7 @@ from gwaslab.qc.qc_decorator import with_logging
         start_function="infer_ancestry",
         must_kwargs=["build"]
 )
-def _infer_ancestry(sumstats, 
+def _infer_ancestry(sumstats_or_dataframe, 
                     ancestry_af=None,
                     build=None,
                     log=Log(),
@@ -23,6 +23,8 @@ def _infer_ancestry(sumstats,
 
     Parameters
     ----------
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     ancestry_af : str, optional
         Path to allele frequency file. If None, uses 1kg_hm3_hg19_eaf for build 19 or 1kg_hm3_hg38_eaf for build 38. Default is None.
     build : str, optional
@@ -40,6 +42,12 @@ def _infer_ancestry(sumstats,
     -----
     This function internally uses `calculate_fst` to compute Fst values for each variant.
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
 
     if ancestry_af is None:
         if build=="19":

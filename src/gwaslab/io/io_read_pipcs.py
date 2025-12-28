@@ -5,7 +5,7 @@ from gwaslab.qc.qc_check_datatype import check_dataframe_memory_usage
 import re
 import os
 
-def _read_pipcs(data, 
+def _read_pipcs(data_or_dataframe, 
                 output_prefix, 
                 study=None, 
                 group=None,
@@ -13,6 +13,12 @@ def _read_pipcs(data,
                 log=Log(),
                 verbose=True,
                 **readcsv_kwargs):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(data_or_dataframe, pd.DataFrame):
+        data = data_or_dataframe
+    else:
+        data = data_or_dataframe.data
     
     log.write("Start to load PIP and CREDIBLE_SET_INDEX from file...",verbose=verbose)
     log.write(" -File:{}".format(output_prefix),verbose=verbose)

@@ -83,8 +83,6 @@ from gwaslab.util.util_in_calculate_gc import _lambda_GC
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
 from gwaslab.util.util_in_estimate_ess import _get_ess
 from gwaslab.util.util_in_get_density import (
-    _assign_density,
-    _get_signal_density,
     _get_signal_density2,
 )
 from gwaslab.util.util_in_get_sig import (
@@ -99,6 +97,7 @@ from gwaslab.util.util_in_fill_data import _fill_data
 from gwaslab.view.view_sumstats import _view_sumstats
 from gwaslab.view.view_report import generate_qc_report
 from gwaslab.util.util_ex_phewwas import _extract_associations
+from gwaslab.bd.bd_sex_chromosomes import Chromosomes
 
 # ----- Utility: LDSC / PRS / LD -----
 from gwaslab.util.util_ex_calculate_ldmatrix import _to_finemapping
@@ -154,36 +153,13 @@ from gwaslab.io.io_to_pickle import _offload, _reload, dump_pickle
 from gwaslab.io.io_gwaslab_standard import write_gsf
 from gwaslab.io.io_process_kwargs import remove_overlapping_kwargs
 from gwaslab.io.io_vcf import _get_ld_matrix_from_vcf
+from gwaslab.io.io_input_type import _get_id_column
 from gwaslab.hm.hm_assign_rsid import _assign_rsid
 from gwaslab.hm.hm_infer_with_af  import _infer_strand_with_annotation
 from gwaslab.hm.hm_check_af import _check_af_with_annotation, _infer_af_with_annotation, _infer_af_with_maf_annotation
 from datetime import datetime
 
 # ----- Internal Helper Functions -----
-def _get_id_column(sumstats_or_dataframe):
-    """
-    Internal helper function to select the appropriate ID column (SNPID or rsID).
-    
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to check for ID columns.
-    
-    Returns
-    -------
-    str
-        Column name to use: "SNPID" if available, otherwise "rsID".
-    """
-    import pandas as pd
-    if isinstance(sumstats_or_dataframe, pd.DataFrame):
-        data = sumstats_or_dataframe
-    else:
-        data = sumstats_or_dataframe.data
-    
-    if "SNPID" in data.columns:
-        return "SNPID"
-    else:
-        return "rsID"
 
 #20220309
 class Sumstats():
@@ -255,6 +231,7 @@ class Sumstats():
         # basic attributes
         self.data = pd.DataFrame()
         
+        
         # Track shape for logging optimization (skip logging if shape unchanged)
         self._last_shape = None
         
@@ -321,9 +298,8 @@ class Sumstats():
         self.meta["gwaslab"]["study_name"] = study
         self.meta["gwaslab"]["species"] = species
 
-        # set build
-        self.meta["gwaslab"]["genome_build"] = _process_build(build,  log=self.log, verbose=False, species=species)
-        self._build = self.meta["gwaslab"]["genome_build"]
+        # set build (using setter to ensure consistency)
+        self.build = build
         self.viz_params = VizParamsManager()
         load_viz_config(self.viz_params)
 
@@ -342,6 +318,8 @@ class Sumstats():
         self.clumps = dict()
         self.pipcs = pd.DataFrame()
         
+        # Initialize Chromosomes instance based on species
+        self.chromosomes = Chromosomes(species=species)
         # initialize attributes for clumping and finmapping
         #self.to_finemapping_file_path = ""
         #self.to_finemapping_file  = pd.DataFrame()
@@ -362,8 +340,15 @@ class Sumstats():
 
     @build.setter
     def build(self, value):
-        # Assign the new build
-        self._build = value
+        # Process the build value and update both _build and meta
+        from gwaslab.qc.qc_build import _process_build
+        # Ensure meta["gwaslab"] exists
+        if "gwaslab" not in self.meta:
+            self.meta["gwaslab"] = {}
+        species = self.meta.get("gwaslab", {}).get("species", "homo sapiens")
+        processed_build = _process_build(value, log=self.log, verbose=False, species=species)
+        self._build = processed_build
+        self.meta["gwaslab"]["genome_build"] = processed_build
 
     def _apply_viz_params(self, func, kwargs, key=None, mode=None):
         params = self.viz_params.merge(key or func.__name__, kwargs, mode=mode)
@@ -414,7 +399,9 @@ class Sumstats():
     
     @add_doc(_set_build)
     def set_build(self, build, verbose=True):
-        self.data, self.meta["gwaslab"]["genome_build"] = _set_build(self.data, build=build, log=self.log,verbose=verbose)
+        self.data, processed_build = _set_build(self, build=build, log=self.log,verbose=verbose)
+        # Update self.build to ensure consistency (setter will also update meta)
+        self.build = processed_build
     
     @add_doc(_infer_build)
     def infer_build(self,verbose=True,**kwargs):
@@ -424,24 +411,6 @@ class Sumstats():
 
     @add_doc(_liftover_variant)
     def liftover(self, to_build=None, from_build=None, chain_path=None, **kwargs):
-        """
-        Perform liftover of variants to a new genome build.
-        
-        Can be called with either:
-        - from_build and to_build (chain file will be automatically found)
-        - chain_path (direct path to chain file)
-        
-        Parameters
-        ----------
-        to_build : str, optional
-            Target genome build (e.g., "38"). Required if chain_path is not provided.
-        from_build : str, optional
-            Source genome build (e.g., "19"). If None, uses self.build.
-        chain_path : str, optional
-            Path to UCSC chain file. If provided, from_build and to_build are optional.
-        **kwargs
-            Additional arguments passed to _liftover_variant.
-        """
         if from_build is None:
             from_build = self.build
         kwargs = remove_overlapping_kwargs(kwargs, {"from_build", "to_build", "chain_path", "log"})
@@ -745,7 +714,7 @@ class Sumstats():
     def align_with_template(self, template, **kwargs):
         ## merge
         molded_sumstats, sumstats1 = _merge_mold_with_sumstats_by_chrpos(mold=template, 
-                                            sumstats=self.data,
+                                            sumstats_or_dataframe=self,
                                             log=self.log,
                                             suffixes=("_MOLD",""),
                                             return_not_matched_mold = True)
@@ -770,11 +739,11 @@ class Sumstats():
     @add_doc(_flip_SNPID)
     def flip_snpid(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = _flip_SNPID(self.data,log=self.log,**kwargs)
+        self.data = _flip_SNPID(self,log=self.log,**kwargs)
     @add_doc(_strip_SNPID)
     def strip_snpid(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
-        self.data = _strip_SNPID(self.data,log=self.log,**kwargs)
+        self.data = _strip_SNPID(self,log=self.log,**kwargs)
     @add_doc(_fix_chr)
     def fix_chr(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
@@ -861,14 +830,6 @@ class Sumstats():
         return self
     @add_doc(_parallelize_rsid_to_chrpos)
     def rsid_to_chrpos(self,**kwargs):
-        """
-        Assign CHR and POS using rsIDs (uses fast HDF5-based parallel processing).
-        
-        This method uses the optimized _parallelize_rsid_to_chrpos function which is
-        much faster than the old TSV-based approach. It requires an HDF5 reference file
-        (generated from VCF using process_vcf_to_hfd5) or will auto-generate the path
-        from a VCF reference file.
-        """
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         self.data = _parallelize_rsid_to_chrpos(self,log=self.log,**kwargs)
         return self
@@ -905,7 +866,7 @@ class Sumstats():
     def filter_region(self, inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _filter_region(new_Sumstats_object.data, **kwargs)
+            new_Sumstats_object.data = _filter_region(new_Sumstats_object, **kwargs)
             return new_Sumstats_object
         else:
             self.data = _filter_region(self, **kwargs)
@@ -914,7 +875,7 @@ class Sumstats():
     def filter_flanking(self, inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _get_flanking(new_Sumstats_object.data, **kwargs)
+            new_Sumstats_object.data = _get_flanking(new_Sumstats_object, **kwargs)
             return new_Sumstats_object
         else:
             self.data = _get_flanking(self, **kwargs)
@@ -923,7 +884,7 @@ class Sumstats():
     def filter_flanking_by_chrpos(self, chrpos,  inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _get_flanking_by_chrpos(new_Sumstats_object.data, chrpos, **kwargs)
+            new_Sumstats_object.data = _get_flanking_by_chrpos(new_Sumstats_object, chrpos, **kwargs)
             return new_Sumstats_object
         else:
             self.data = _get_flanking_by_chrpos(self, chrpos,**kwargs)
@@ -932,7 +893,7 @@ class Sumstats():
     def filter_flanking_by_id(self, snpid, inplace=False,**kwargs):
         if inplace is False:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _get_flanking_by_id(new_Sumstats_object.data, snpid, **kwargs)
+            new_Sumstats_object.data = _get_flanking_by_id(new_Sumstats_object, snpid, **kwargs)
             return new_Sumstats_object
         else:
             self.data = _get_flanking_by_id(self, snpid, **kwargs)
@@ -1043,7 +1004,7 @@ class Sumstats():
     @add_doc(_extract_ld_proxy)
     def get_proxy(self,snplist, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","snplist"})
-        proxy_variants = _extract_ld_proxy(common_sumstats = self.data,
+        proxy_variants = _extract_ld_proxy(common_sumstats = self,
                                                             snplist=snplist,
                                                             log=self.log,
                                                             **kwargs)
@@ -1063,10 +1024,10 @@ class Sumstats():
     def filter_hapmap3(self, inplace=False, **kwargs ):
         kwargs = remove_overlapping_kwargs(kwargs,{"build","log"})
         if inplace is True:
-            self.data = _get_hapmap3(self.data, build=self.build,log=self.log, **kwargs)
+            self.data = _get_hapmap3(self, build=self.build,log=self.log, **kwargs)
         else:
             new_Sumstats_object = copy.deepcopy(self)
-            new_Sumstats_object.data = _get_hapmap3(new_Sumstats_object.data, build=self.build,log=self.log, **kwargs)
+            new_Sumstats_object.data = _get_hapmap3(new_Sumstats_object, build=self.build,log=self.log, **kwargs)
             return new_Sumstats_object
     
     @add_doc(_get_region_start_and_end)
@@ -1077,7 +1038,7 @@ class Sumstats():
     
     def check_af(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
-        self.data = _parallelize_check_af(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+        self.data = _parallelize_check_af(self,ref_infer=ref_infer,log=self.log,**kwargs)
         # Metadata is already set by _parallelize_check_af
     
     def check_af2(self,**kwargs):
@@ -1087,7 +1048,7 @@ class Sumstats():
     
     def infer_af(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
-        self.data = _parallelize_infer_af(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+        self.data = _parallelize_infer_af(self,ref_infer=ref_infer,log=self.log,**kwargs)
         # Metadata is already set by _parallelize_infer_af
     
     def infer_af2(self,**kwargs):
@@ -1097,7 +1058,7 @@ class Sumstats():
     
     def infer_eaf_from_maf(self,ref_infer,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","ref_infer"})
-        self.data = _parallele_infer_af_with_maf(self.data,ref_infer=ref_infer,log=self.log,**kwargs)
+        self.data = _parallele_infer_af_with_maf(self,ref_infer=ref_infer,log=self.log,**kwargs)
         # Metadata is already set by _parallele_infer_af_with_maf
     
     def infer_eaf_from_maf2(self,**kwargs):
@@ -1113,7 +1074,7 @@ class Sumstats():
     @add_doc(_infer_ancestry)
     def infer_ancestry(self, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"build","log"})
-        self.meta["gwaslab"]["inferred_ancestry"] = _infer_ancestry(self.data,
+        self.meta["gwaslab"]["inferred_ancestry"] = _infer_ancestry(self,
                                                                     build=self.build, 
                                                                     log=self.log,
                                                                     **kwargs)
@@ -1178,7 +1139,7 @@ class Sumstats():
     @add_doc(_get_sig)
     def get_lead(self, gls=False, build=None, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","build"})
-        output = _get_sig(self.data,
+        output = _get_sig(self,
                         log=self.log,
                         build=self.build,
                         **kwargs)
@@ -1194,7 +1155,7 @@ class Sumstats():
     @add_doc(_get_top)
     def get_top(self, gls=False, build=None, **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","build"})
-        output = _get_top(self.data,
+        output = _get_top(self,
                         log=self.log,
                         build=self.build,
                         **kwargs)
@@ -1205,63 +1166,8 @@ class Sumstats():
             return new_Sumstats_object
         return output
     
+    @add_doc(generate_qc_report)
     def report(self, output_path="gwas_qc_report.html", **kwargs):
-        """
-        Generate a comprehensive QC report including basic QC, harmonization (optional),
-        lead variants, MQQ plots, regional plots, and output (optional).
-        
-        This is a convenience method that wraps generate_qc_report() with
-        the current Sumstats object.
-        
-        Parameters
-        ----------
-        output_path : str, optional
-            Path to save the report. Supports both HTML (.html) and PDF (.pdf) formats.
-            Default: "gwas_qc_report.html"
-        **kwargs : dict
-            Additional keyword arguments passed to generate_qc_report():
-            - basic_check_kwargs : dict, optional
-                Keyword arguments passed to basic_check()
-            - harmonize_kwargs : dict, optional
-                Keyword arguments passed to harmonize(). If provided, harmonization will be performed.
-                Set to {} to use default harmonization settings.
-            - get_lead_kwargs : dict, optional
-                Keyword arguments passed to get_lead()
-            - mqq_plot_kwargs : dict, optional
-                Keyword arguments passed to plot_mqq() for MQQ plot
-            - regional_plot_kwargs : dict, optional
-                Keyword arguments passed to plot_mqq() for regional plots
-            - output_kwargs : dict, optional
-                Keyword arguments passed to to_format() for outputting sumstats.
-                Must include 'path' key.
-            - report_title : str, optional
-                Title for the report. Default: "GWAS Quality Control Report"
-            - verbose : bool, optional
-                Whether to print progress messages. Default: True
-        
-        Returns
-        -------
-        str
-            Path to the generated report (HTML or PDF)
-        
-        Examples
-        --------
-        >>> mysumstats = gl.Sumstats("sumstats.txt.gz")
-        >>> # Generate HTML report
-        >>> mysumstats.report("my_report.html")
-        >>> # Generate PDF report
-        >>> mysumstats.report("my_report.pdf")
-        >>> # With harmonization
-        >>> mysumstats.report(
-        ...     "my_report.html",
-        ...     harmonize_kwargs={"ref_seq": "ref.fa", "ref_infer": "ref.vcf.gz"}
-        ... )
-        >>> # With output
-        >>> mysumstats.report(
-        ...     "my_report.html",
-        ...     output_kwargs={"path": "clean_sumstats", "fmt": "ldsc", "gzip": True}
-        ... )
-        """
         # Extract specific kwargs for generate_qc_report
         basic_check_kwargs = kwargs.pop("basic_check_kwargs", None)
         harmonize_kwargs = kwargs.pop("harmonize_kwargs", None)
@@ -1297,43 +1203,25 @@ class Sumstats():
         )
 
     @add_doc(_get_signal_density2)
-    def get_density(self, sig_list=None, windowsizekb=100,**kwargs):
-        
-        id_to_use = _get_id_column(self.data)
-        
-        if sig_list is None:
-            self.data = _get_signal_density2(self.data,
-                                                    snpid=id_to_use,
-                                                    chrom="CHR",
-                                                    pos="POS",
-                                                    bwindowsizekb=windowsizekb,
-                                                    log=self.log)
-        else:
-            if isinstance(sig_list, pd.DataFrame):
-                self.data["DENSITY"] = _assign_density(self.data,
-                                                    sig_list,
-                                                    variant_id=id_to_use, 
-                                                    chrom="CHR", 
-                                                    pos="POS", 
-                                                    bwindowsizekb=windowsizekb,
-                                                    log=self.log)
+    def get_density(self, sig_list=None, windowsizekb=100, **kwargs):
+        self.data = _get_signal_density2(
+            self,
+            bwindowsizekb=windowsizekb,
+            sig_sumstats=sig_list if isinstance(sig_list, pd.DataFrame) else None,
+            log=self.log
+        )
 
     @add_doc(_get_novel)
     def get_novel(self, **kwargs):
-        """ 
-        wrapper for _get_novel: 
-            gls (boolean): if True, return a new Sumstats object
-        """
-
-        output = _get_novel(self.data,
-                           build=self.meta["gwaslab"]["genome_build"],
+        kwargs = remove_overlapping_kwargs(kwargs,{"log","build"})
+        output = _get_novel(self,
+                           build=self.build,
                            log=self.log,
                            **kwargs)
-        # return sumstats object    
         return output
     
     def get_associations(self, **kwargs):
-        associations_full,associations_summary  = _extract_associations(self.data,**kwargs)
+        associations_full,associations_summary  = _extract_associations(self,**kwargs)
         self.associations = associations_full
         return associations_summary
     
@@ -1342,12 +1230,7 @@ class Sumstats():
         _plot_associations(self.associations, **self._apply_viz_params(_plot_associations, kwargs, key="plot_associations"))
 
     def check_cis(self, gls=False, **kwargs):
-        id_to_use = _get_id_column(self.data)
-        output = _check_cis(self.data,
-                           id=id_to_use,
-                           chrom="CHR",
-                           pos="POS",
-                           p="P",
+        output = _check_cis(self,
                            log=self.log,
                            **kwargs)
         
@@ -1360,67 +1243,39 @@ class Sumstats():
         return output
     
     def check_novel_set(self, **kwargs):
-        id_to_use = _get_id_column(self.data)
-        output = _check_novel_set(self.data,
-                           id=id_to_use,
-                           chrom="CHR",
-                           pos="POS",
-                           p="P",
+        output = _check_novel_set(self,
                            log=self.log,
                            **kwargs)
         # return sumstats object    
         return output
 
     def check_cs_overlap(self, **kwargs):
-        id_to_use = _get_id_column(self.pipcs)
         output = _check_novel_set(self.pipcs,
-                           id=id_to_use,
-                           chrom="CHR",
-                           pos="POS",
-                           p="P",
                            log=self.log,
                            **kwargs)
         # return sumstats object    
         return output
 
     def anno_gene(self, **kwargs):
-        id_to_use = _get_id_column(self.data)
-        output = _anno_gene(self.data,
-                           id=id_to_use,
-                           chrom="CHR",
-                           pos="POS",
+        output = _anno_gene(self,
                            log=self.log,
                            **kwargs)
         return output
     
     @add_doc(_get_per_snp_r2)
     def get_per_snp_r2(self,**kwargs):
-        self.data = _get_per_snp_r2(self.data, beta="BETA", af="EAF", n="N", log=self.log, **kwargs)
+        self.data = _get_per_snp_r2(self, beta="BETA", af="EAF", n="N", log=self.log, **kwargs)
         #add data inplace
     
     @add_doc(_get_ess)
     def get_ess(self, **kwargs):
-        self.data = _get_ess(self.data, log=self.log, **kwargs)
+        self.data = _get_ess(self, log=self.log, **kwargs)
     
     @add_doc(_lambda_GC)
     def get_gc(self, mode=None, **kwargs):
-        if mode is None:
-            if "P" in self.data.columns:
-                output = _lambda_GC(self.data[["CHR","P"]],mode="P",**kwargs)
-            elif "Z" in self.data.columns:
-                output = _lambda_GC(self.data[["CHR","Z"]],mode="Z",**kwargs)
-            elif "CHISQ" in self.data.columns:
-                output = _lambda_GC(self.data[["CHR","CHISQ"]],mode="CHISQ",**kwargs)
-            elif "MLOG10P" in self.data.columns:
-                output = _lambda_GC(self.data[["CHR","MLOG10P"]],mode="MLOG10P",**kwargs)
-            
-            #return scalar
-            self.meta["Genomic inflation factor"] = output
-            return output    
-        else:
-            output = _lambda_GC(self.data[["CHR",mode]],mode=mode,**kwargs)
-            self.meta["Genomic inflation factor"] = output
-            return output
+        output = _lambda_GC(self, mode=mode, log=self.log, **kwargs)
+        self.meta["Genomic inflation factor"] = output
+        return output
         
     def abf_finemapping(self, region=None, chrpos=None, snpid=None,**kwargs):        
         region_data = _abf_finemapping(self.data.copy(),region=region,chrpos=chrpos,snpid=snpid,log=self.log, **kwargs)
@@ -1433,8 +1288,11 @@ class Sumstats():
     def run_prscs(self, build=None, verbose=True, match_allele=True, how="inner", **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log"})
         if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+            build = self.build
+        # Create a temporary copy for hapmap3 filtering
+        temp_sumstats = copy.deepcopy(self)
+        temp_sumstats.data = self.data.copy()
+        insumstats = _get_hapmap3(temp_sumstats, build=build, verbose=verbose , match_allele=match_allele, how=how )
         _run_prscs(sst_file = insumstats[["rsID","CHR","POS","EA","NEA","BETA","SE"]], 
                    log=self.log, 
                    **kwargs)
@@ -1456,8 +1314,11 @@ class Sumstats():
     def estimate_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", **kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"insumstats","meta","log","verbose"})
         if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+            build = self.build
+        # Create a temporary copy for hapmap3 filtering
+        temp_sumstats = copy.deepcopy(self)
+        temp_sumstats.data = self.data.copy()
+        insumstats = _get_hapmap3(temp_sumstats, build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_h2, self.ldsc_h2_results = _estimate_h2_by_ldsc(insumstats=insumstats, 
                                                                   meta=self.meta,
                                                                   log=self.log, 
@@ -1468,9 +1329,12 @@ class Sumstats():
     def estimate_rg_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right", get_hm3=True,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"insumstats","meta","log","verbose"})
         if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
+            build = self.build
         if get_hm3==True:
-            insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+            # Create a temporary copy for hapmap3 filtering
+            temp_sumstats = copy.deepcopy(self)
+            temp_sumstats.data = self.data.copy()
+            insumstats = _get_hapmap3(temp_sumstats, build=build, verbose=verbose , match_allele=match_allele, how=how )
         else:
             insumstats = self.data
         ldsc_rg = _estimate_rg_by_ldsc(insumstats=insumstats,
@@ -1485,8 +1349,11 @@ class Sumstats():
     def estimate_h2_cts_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"insumstats","log","verbose"})
         if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+            build = self.build
+        # Create a temporary copy for hapmap3 filtering
+        temp_sumstats = copy.deepcopy(self)
+        temp_sumstats.data = self.data.copy()
+        insumstats = _get_hapmap3(temp_sumstats, build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_h2_cts  = _estimate_h2_cts_by_ldsc(insumstats=insumstats, 
                                                      log=self.log,
                                                        verbose=verbose, 
@@ -1497,8 +1364,11 @@ class Sumstats():
     def estimate_partitioned_h2_by_ldsc(self, build=None, verbose=True, match_allele=True, how="right",**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"insumstats","meta","log","verbose"})
         if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
-        insumstats = _get_hapmap3(self.data.copy(), build=build, verbose=verbose , match_allele=match_allele, how=how )
+            build = self.build
+        # Create a temporary copy for hapmap3 filtering
+        temp_sumstats = copy.deepcopy(self)
+        temp_sumstats.data = self.data.copy()
+        insumstats = _get_hapmap3(temp_sumstats, build=build, verbose=verbose , match_allele=match_allele, how=how )
         self.ldsc_partitioned_h2_summary, self.ldsc_partitioned_h2_results  = _estimate_partitioned_h2_by_ldsc(insumstats=insumstats, 
                                                                                                                meta=self.meta,
                                                                                                                log=self.log, 
@@ -1513,7 +1383,7 @@ class Sumstats():
         #self.to_finemapping_file_path, self.to_finemapping_file, self.plink_log  = tofinemapping(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
     
     def extract_ld_matrix(self,**kwargs):
-        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= _to_finemapping_using_ld(self.data,study = self.meta["gwaslab"]["study_name"],**kwargs)
+        self.finemapping["path"],self.finemapping["file"],self.finemapping["plink_log"]= _to_finemapping_using_ld(self,study = self.meta["gwaslab"]["study_name"],**kwargs)
 
     def run_susie_rss(self,**kwargs):
         self.pipcs=_run_susie_rss(self, self.finemapping["path"], **kwargs)
@@ -1533,7 +1403,7 @@ class Sumstats():
 
     def calculate_prs(self,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"log","study"})
-        combined_results_summary = _calculate_prs(self.data, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
+        combined_results_summary = _calculate_prs(self, log=self.log, study = self.meta["gwaslab"]["study_name"], **kwargs)
         return combined_results_summary
 
 
@@ -1541,7 +1411,9 @@ class Sumstats():
 # loading aux data
     def read_pipcs(self,prefix,**kwargs):
         kwargs = remove_overlapping_kwargs(kwargs,{"study"})
-        self.pipcs = _read_pipcs(self.data[["SNPID","CHR","POS"]],prefix, study= self.meta["gwaslab"]["study_name"], **kwargs)
+        # Create a temporary Sumstats object with just the needed columns
+        temp_data = self.data[["SNPID","CHR","POS"]].copy()
+        self.pipcs = _read_pipcs(temp_data,prefix, study= self.meta["gwaslab"]["study_name"], **kwargs)
         self.finemapping["pipcs"] = self.pipcs
 
     def plot_pipcs(self, region=None, locus=None, **kwargs):
@@ -1551,35 +1423,17 @@ class Sumstats():
     @add_doc(_to_format)
     def to_format(self, path, build=None, verbose=True, **kwargs):
         if build is None:
-            build = self.meta["gwaslab"]["genome_build"]
+            build = self.build
         kwargs = remove_overlapping_kwargs(kwargs,{"log","verbose","meta","build","path"})
-        _to_format(self.data, path, log=self.log, verbose=verbose, meta=self.meta, build=build, **kwargs)
+        _to_format(self, path, log=self.log, verbose=verbose, meta=self.meta, build=build, **kwargs)
 
     def to_pickle(self, path="~/mysumstats.pickle", overwrite=False):
         dump_pickle(self, path=path, overwrite=overwrite)
 
+    @add_doc(write_gsf)
     def to_gsf(self, path, partition_cols=None, compression="zstd", verbose=True):
-        """
-        Save sumstats to GSF (GWASLab Standard Format) file.
-        
-        Parameters
-        ----------
-        path : str
-            Output path (.gsf file or directory for partitioned)
-        partition_cols : list of str, optional
-            Columns to partition by (e.g., ["CHR"])
-        compression : str, default "zstd"
-            Compression codec: "snappy", "gzip", "brotli", "zstd", "lz4"
-        verbose : bool, default True
-            Print progress messages
-            
-        Examples
-        --------
-        >>> mysumstats.to_gsf("sumstats.gsf")
-        >>> mysumstats.to_gsf("sumstats_partitioned", partition_cols=["CHR"])
-        """
         write_gsf(
-            self.data,
+            self,
             path=path,
             meta=self.meta,
             partition_cols=partition_cols,
@@ -1596,16 +1450,9 @@ class Sumstats():
 
     @add_doc(_view_sumstats)
     def view_sumstats(self, expr=None):
-        return _view_sumstats(self.data, expr=expr)
+        return _view_sumstats(self, expr=expr)
     
     
+    @add_doc(_reload)
     def reload(self, delete_files=None):
-        """
-        Reload data from temporary pickle file.
-        
-        Parameters
-        ----------
-        delete_files : list of str, optional
-            Additional files to delete after successful reload
-        """
         self.data = _reload(self.tmp_path, self.log, delete_files=delete_files)

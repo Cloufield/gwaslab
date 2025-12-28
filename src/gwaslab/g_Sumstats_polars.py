@@ -49,8 +49,7 @@ from gwaslab.util.util_in_filter_value import _get_flanking_by_id
 from gwaslab.util.util_in_calculate_gc import _lambda_GC
 from gwaslab.util.util_in_convert_h2 import _get_per_snp_r2
 from gwaslab.util.util_in_get_sig import _get_sig
-from gwaslab.util.util_in_get_density import _get_signal_density
-from gwaslab.util.util_in_get_density import _assign_density
+from gwaslab.util.util_in_get_density import _get_signal_density2
 from gwaslab.util.util_in_get_sig import _anno_gene
 from gwaslab.util.util_in_get_sig import _get_novel
 from gwaslab.util.util_in_get_sig import _check_cis

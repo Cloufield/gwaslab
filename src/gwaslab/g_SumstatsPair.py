@@ -167,7 +167,7 @@ class SumstatsPair( ):
 
         # sumstats1 with suffix _1, sumstats2 with no suffix
         molded_sumstats, sumstats1, sumstats2 = _merge_mold_with_sumstats_by_chrpos(mold=self.data, 
-                                                    sumstats=sumstatsObject2.data, 
+                                                    sumstats_or_dataframe=sumstatsObject2.data, 
                                                     log=self.log,
                                                     verbose=verbose,
                                                     stats_cols1 = self.stats_cols,

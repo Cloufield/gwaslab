@@ -152,7 +152,7 @@ def check_vcf_chr_NC(
     return None
 
 
-def _get_ld_matrix_from_vcf(sumstats, 
+def _get_ld_matrix_from_vcf(sumstats_or_dataframe, 
                 vcf_path=None, 
                 region=None,
                 log=Log(), 
@@ -168,8 +168,8 @@ def _get_ld_matrix_from_vcf(sumstats,
     
     Parameters
     ----------
-    sumstats : pandas.DataFrame
-        Summary statistics dataframe
+    sumstats_or_dataframe : Sumstats or pd.DataFrame
+        Sumstats object or DataFrame to process.
     vcf_path : str
         Path to the VCF file
     region : tuple
@@ -200,6 +200,13 @@ def _get_ld_matrix_from_vcf(sumstats,
         - ld_matrix: Full LD matrix as numpy array (r^2 values)
         - valid_indices: Indices of variants used in LD calculation
     """
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data.copy()
+    
     log.write("Start to load reference genotype...", verbose=verbose)
     log.write(" -reference vcf path : "+ vcf_path, verbose=verbose)
     log.write(" -region : chr{}:{}-{}".format(region[0], region[1], region[2]), verbose=verbose)

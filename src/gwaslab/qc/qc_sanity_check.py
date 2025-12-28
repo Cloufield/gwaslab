@@ -34,29 +34,7 @@ from gwaslab.util.util_in_fill_data import _convert_mlog10p_to_p
 
 
 # ----- Internal Helper Functions -----
-def _get_id_column(sumstats_or_dataframe):
-    """
-    Internal helper function to select the appropriate ID column (SNPID or rsID).
-    
-    Parameters
-    ----------
-    sumstats_or_dataframe : Sumstats or pd.DataFrame
-        Sumstats object or DataFrame to check for ID columns.
-    
-    Returns
-    -------
-    str
-        Column name to use: "SNPID" if available, otherwise "rsID".
-    """
-    if isinstance(sumstats_or_dataframe, pd.DataFrame):
-        data = sumstats_or_dataframe
-    else:
-        data = sumstats_or_dataframe.data
-    
-    if "SNPID" in data.columns:
-        return "SNPID"
-    else:
-        return "rsID"
+from gwaslab.io.io_input_type import _get_id_column
 
 
 def check_na_columns(sumstats, coltocheck=None, log=Log(), verbose=True):

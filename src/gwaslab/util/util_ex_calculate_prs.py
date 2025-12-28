@@ -8,7 +8,7 @@ from gwaslab.util.util_in_get_sig import _get_sig
 from gwaslab.util.util_ex_process_ref import _process_plink_input_files
 from gwaslab.extension import _checking_plink_version
 
-def _calculate_prs(sumstats, 
+def _calculate_prs(sumstats_or_dataframe, 
           bfile=None, 
           vcf=None, 
           study=None, 
@@ -21,6 +21,12 @@ def _calculate_prs(sumstats,
           plink="plink",
           plink2="plink2",
           log=Log(),**kwargs):
+    import pandas as pd
+    # Handle both DataFrame and Sumstats object
+    if isinstance(sumstats_or_dataframe, pd.DataFrame):
+        sumstats = sumstats_or_dataframe
+    else:
+        sumstats = sumstats_or_dataframe.data
     
     #matching_alleles
         #read_bim
