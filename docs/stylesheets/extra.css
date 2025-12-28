@@ -94,4 +94,5 @@ height: auto;
 .md-typeset pre {
     max-height: 360px;
     overflow: auto;
+    max-width: 100ch;
 }
