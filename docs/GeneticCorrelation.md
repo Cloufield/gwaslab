@@ -34,11 +34,11 @@ gl.plot_rg(ldsc)
 - `equal_aspect`: ``, defaul: `True`
 - `fontsize`: ``, defaul: `10`
 - `save`: `string` or `boolean`, defaul: `None`
-- `save_args`: `dict`, defaul: `None`
+- `save_kwargs`: `dict`, defaul: `None`
 - `full_cell`: `tuple`, threshold for full cell, default: `("fdr",0.05)`
-- `yticklabel_args`: `dict`, default: `{"fontsize":10}`
-- `xticklabel_args`: `dict`, default: `{"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":10}`
-- `colorbar_args` :  `dict` , default:`{"shrink":0.82}`
+- `yticklabel_kwargs`: `dict`, default: `{"fontsize":10}`
+- `xticklabel_kwargs`: `dict`, default: `{"rotation":45,"horizontalalignment":"left", "verticalalignment":"bottom","fontsize":10}`
+- `colorbar_kwargs` :  `dict` , default:`{"shrink":0.82}`
 - `cmap`: `cmap`, default:`matplotlib.cm.get_cmap('RdBu')`
 
 
@@ -66,9 +66,9 @@ gl.plot_rg(ldsc)
                 p2="p1",
                 full_cell=("non",0.05),
                 panno_texts=["*"],
-                fig_args={"figsize":(15,15),"dpi":300},
-                colorbar_args={"shrink":0.4},
-                panno_args={"size":12,"c":"black"},fdr_method="i",
+                fig_kwargs={"figsize":(15,15),"dpi":300},
+                colorbar_kwargs={"shrink":0.4},
+                panno_kwargs={"size":12,"c":"black"},fdr_method="i",
                 fontsize=8,
                 sort_key=key
                 )

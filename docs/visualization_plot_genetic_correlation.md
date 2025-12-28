@@ -13,8 +13,8 @@
 
 **stdout:**
 ```
-2024/12/23 12:20:37 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
-2024/12/23 12:20:37 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+2024/12/23 12:20:37 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
+2024/12/23 12:20:37 (C) 2022-2026, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 ```
 
 ## Load sample data
@@ -57,9 +57,9 @@ Sample data source:
                 corrections =["non"],
                 full_cell=("non",0.05),
                 panno_texts=["*"],
-                panno_args={"size":12,"c":"black"},
-                fig_args={"figsize":(15,15),"dpi":300},
-                colorbar_args={"shrink":0.4},
+                panno_kwargs={"size":12,"c":"black"},
+                fig_kwargs={"figsize":(15,15),"dpi":300},
+                colorbar_kwargs={"shrink":0.4},
                 fontsize=8
                 )
     ```
@@ -134,9 +134,9 @@ Sample data source:
                 p2="p1",
                 full_cell=("non",0.05),
                 panno_texts=["*"],
-                fig_args={"figsize":(15,15),"dpi":300},
-                colorbar_args={"shrink":0.4},
-                panno_args={"size":12,"c":"black"},
+                fig_kwargs={"figsize":(15,15),"dpi":300},
+                colorbar_kwargs={"shrink":0.4},
+                panno_kwargs={"size":12,"c":"black"},
                 fontsize=8,
                 sort_key=key
                 )

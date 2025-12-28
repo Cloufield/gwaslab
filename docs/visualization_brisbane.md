@@ -13,8 +13,8 @@
 
 **stdout:**
 ```
-2024/12/23 12:19:09 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
-2024/12/23 12:19:09 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+2024/12/23 12:19:09 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
+2024/12/23 12:19:09 (C) 2022-2026, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 ```
 
 ## Download data
@@ -80,15 +80,15 @@ Saving to: ‘41586_2022_5275_MOESM3_ESM.xlsx.1’
 
 **stdout:**
 ```
-2024/12/23 12:19:16 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
-2024/12/23 12:19:16 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+2024/12/23 12:19:16 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
+2024/12/23 12:19:16 (C) 2022-2026, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 2024/12/23 12:19:16 Start to initialize gl.Sumstats from pandas DataFrame ...
 2024/12/23 12:19:16  -Reading columns          : BP (HG19),Chr,SNP,b P-value
 2024/12/23 12:19:16  -Renaming columns to      : POS,CHR,SNPID,P
 2024/12/23 12:19:16  -Current Dataframe shape : 12111  x  4
 2024/12/23 12:19:16  -Initiating a status column: STATUS ...
 2024/12/23 12:19:16  #WARNING! Version of genomic coordinates is unknown...
-2024/12/23 12:19:17 Start to reorder the columns...v3.5.4
+2024/12/23 12:19:17 Start to reorder the columns...v4.0.0
 2024/12/23 12:19:17  -Current Dataframe shape : 12111 x 5 ; Memory usage: 21.88 MB
 2024/12/23 12:19:17  -Reordering columns to    : SNPID,CHR,POS,P,STATUS
 2024/12/23 12:19:17 Finished reordering the columns.
@@ -111,7 +111,7 @@ Saving to: ‘41586_2022_5275_MOESM3_ESM.xlsx.1’
 
 **stdout:**
 ```
-2024/12/23 12:19:17 Start to create MQQ plot...v3.5.4:
+2024/12/23 12:19:17 Start to create MQQ plot...v4.0.0:
 2024/12/23 12:19:17  -Genomic coordinates version: 99...
 2024/12/23 12:19:17  #WARNING! Genomic coordinates version is unknown.
 2024/12/23 12:19:17  -Genome-wide significance level to plot is set to 5e-08 ...

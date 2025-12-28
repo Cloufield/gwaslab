@@ -134,7 +134,7 @@ Note: use verbose=False to stop printing log and use check=False to skip sanity 
 
 !!! example
     ```python
-    mysumstats.plot_mqq(mode="qq", fig_args= {"figsize":(1,1)},check=False,verbose=False)
+    mysumstats.plot_mqq(mode="qq", fig_kwargs= {"figsize":(1,1)},check=False,verbose=False)
     ```
 
 ![Output image](images/notebooks/visualization_mqq_img_4.png)

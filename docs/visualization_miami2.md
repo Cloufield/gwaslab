@@ -1,5 +1,23 @@
 # Miami plot
 
+!!! info "Miami Plot"
+    `gl.plot_miami2()` creates a Miami plot by comparing two GWAS summary statistics. **Both inputs must be `gl.Sumstats` objects** - file paths are not supported.
+
+## Function signature
+
+```python
+gl.plot_miami2(
+    path1=None,      # gl.Sumstats object (required) - Sumstats object for top plot
+    path2=None,      # gl.Sumstats object (required) - Sumstats object for bottom plot
+    ...
+)
+```
+
+!!! warning "Input Type Requirement"
+    - `path1` and `path2` **must** be `gl.Sumstats` objects
+    - File paths (strings) are **not** supported
+    - You must load your sumstats files into Sumstats objects first using `gl.Sumstats()`
+
 !!! example
     ```python
     #!wget -O ../0_sample_data/bmi_male_bbj.txt.gz http://jenger.riken.jp/2analysisresult_qtl_download/
@@ -20,12 +38,13 @@
 
 **stdout:**
 ```
-2024/12/23 13:00:30 GWASLab v3.5.4 https://cloufield.github.io/gwaslab/
-2024/12/23 13:00:30 (C) 2022-2024, Yunye He, Kamatani Lab, MIT License, gwaslab@gmail.com
+2024/12/23 13:00:30 GWASLab v4.0.0 https://cloufield.github.io/gwaslab/
+2024/12/23 13:00:30 (C) 2022-2026, Yunye He, Kamatani Lab, GPL-3.0 license, gwaslab@gmail.com
 ```
 
-!!! example
+!!! example "Load sumstats as Sumstats objects"
     ```python
+    # First, load your sumstats files into Sumstats objects
     gl1 = gl.Sumstats("../0_sample_data/bbj_bmi_female.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t",build="19",verbose=False)
     gl2 = gl.Sumstats("../0_sample_data/bbj_bmi_male.txt.gz",fmt="gwaslab",snpid="SNP",ea="REF",nea="ALT",sep="\t",build="19",verbose=False)
     ```
@@ -37,7 +56,7 @@
 
 **stdout:**
 ```
-2024/12/23 13:00:43 Start to extract lead variants...v3.5.4
+2024/12/23 13:00:43 Start to extract lead variants...v4.0.0
 2024/12/23 13:00:43  -Current Dataframe shape : 5961600 x 9 ; Memory usage: 328.48 MB
 2024/12/23 13:00:43  -Processing 5961600 variants...
 2024/12/23 13:00:43  -Significance threshold : 5e-08
@@ -64,16 +83,20 @@
 
 ## Most options in plot_mqq() are available for plot_miami2()
 
-!!! example
+!!! note "Input Requirements"
+    - `path1`: Must be a `gl.Sumstats` object for the top plot
+    - `path2`: Must be a `gl.Sumstats` object for the bottom plot
+    - File paths are **not** supported - you must load your data into Sumstats objects first
+
+!!! example "Create Miami plot with Sumstats objects"
     ```python
-    #simply add 1 or 2 after the option for plot_mqq() to customize the top or bottom figure in miami plot
-    a = gl.plot_miami2(path1= gl1,
-                       path2= gl2,
+    # Simply add 1 or 2 after the option for plot_mqq() to customize the top or bottom figure in miami plot
+    # Both path1 and path2 must be Sumstats objects
+    a = gl.plot_miami2(path1=gl1,
+                       path2=gl2,
                        skip=2,
                        cut1=20,
                        cut2=15,
-                       id1="SNPID",
-                       id2="SNPID",
                        anno1=True,
                        anno2="GENENAME",
                        anno_set1=["rs3798519"],
@@ -89,7 +112,7 @@
 
 **stdout:**
 ```
-2024/12/23 13:00:45 Start to create miami plot v3.5.4:
+2024/12/23 13:00:45 Start to create miami plot v4.0.0:
 2024/12/23 13:00:45  -Obtaining Sumstats1 CHR, POS, P and annotation from: ['CHR', 'POS', 'P', 'SNPID']
 2024/12/23 13:00:45  -Loading Sumstats1 from gwaslab.Sumstats Object
 2024/12/23 13:00:46  -Obtaining Sumstats2 CHR, POS, P and annotation from: ['CHR', 'POS', 'P', 'SNPID']

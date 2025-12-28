@@ -84,7 +84,7 @@ You need to run 'check_af()' first before plotting. For check_af(), see [here](h
     plot and get the outliers
     outliers = mysumstats.plot_daf(threshold=0.12, 
                                     save="af_correlation.png",
-                                    save_args={"dpi":300})
+                                    save_kwargs={"dpi":300})
     ```
     <img width=600 src="https://github.com/Cloufield/gwaslab/assets/40289485/0e9c92d4-3bea-4734-8ba6-76f7fc6e329b">
 
