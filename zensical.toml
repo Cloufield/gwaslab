@@ -40,26 +40,8 @@ favicon = "assets/gwaslab.png"
 # Alternatively, you can define navigation here using Zensical's format if needed.
 
 # Markdown extensions
-[project.markdown_extensions.toc]
-toc_depth = 3
-
-[project.markdown_extensions]
-admonition = true
-tables = true
-abbr = true
-
-[project.markdown_extensions.pymdownx.details]
-
-[project.markdown_extensions.pymdownx.arithmatex]
-generic = true
-
-[project.markdown_extensions.pymdownx.highlight]
-anchor_linenums = true
-
-[project.markdown_extensions.pymdownx.superfences]
-
-[project.markdown_extensions.pymdownx.snippets]
+# Note: Zensical will read markdown_extensions from mkdocs.yml
+# These are configured in mkdocs.yml as a list format
 
 # Plugins
-[project.plugins]
-search = true
+[project.plugins.search]
