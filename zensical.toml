@@ -44,4 +44,5 @@ favicon = "assets/gwaslab.png"
 # These are configured in mkdocs.yml as a list format
 
 # Plugins
-[project.plugins.search]
+# Note: Zensical will read plugins from mkdocs.yml
+# Plugins are configured in mkdocs.yml as a list format
