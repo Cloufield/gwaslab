@@ -389,11 +389,6 @@ class Sumstats():
         try:
             # Detect format and build sumstats layer
             self.mapper.detect_sumstats_format(self.data[chrom_col])
-            if self.verbose:
-                self.log.write(
-                    f" -Auto-detected sumstats chromosome format: {self.mapper._sumstats_format}",
-                    verbose=self.verbose
-                )
         except Exception as e:
             if self.verbose:
                 self.log.warning(f"Could not auto-detect chromosome format: {e}")

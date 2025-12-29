@@ -6,6 +6,9 @@ from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_download import check_and_download
 from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
+# GTF/GFF file suffix definitions
+GTF_GFF_SUFFIXES = ('.gtf.gz', '.gff.gz', '.gtf', '.gff')
+
 # GTF required columns
 REQUIRED_COLUMNS = [
     "seqname",

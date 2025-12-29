@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_get_sig import _get_sig
-from gwaslab.util.util_ex_process_ref import _process_plink_input_files
+from gwaslab.io.io_plink import _process_plink_input_files, _load_bim_single, _load_pvar_single
 from gwaslab.extension import _checking_plink_version
 
 def _calculate_prs(sumstats_or_dataframe, 
@@ -165,40 +165,6 @@ def _match_snpid_with_bim(chrom, chr_sumstats, bfile_prefix,filetype, id_to_use=
     return matched_sumstats
 
 
-def _load_bim_single(chrom, bfile_prefix, log):
-    if "@" in bfile_prefix:
-        bim_path = bfile_prefix.replace("@",str(chrom)) +".bim"
-    else:
-        bim_path = bfile_prefix+".bim"
-    single_bim = pd.read_csv(bim_path,
-                             sep="\s+",
-                             usecols=[0, 1,3,4,5],
-                             header=None,
-                             dtype={1:"string",0:"category", 3:"int", 4:"string", 5:"string"}).rename(columns={1:"SNPID_bim",0:"CHR_bim",3:"POS_bim",4:"NEA_bim",5:"EA_bim"})
-    single_bim = single_bim.loc[single_bim["CHR_bim"]==str(chrom),:]
-    log.write("   -#variants in ref file: {}".format(len(single_bim))) 
-    return single_bim
-
-def _load_pvar_single(chrom, bpfile_prefix, log):
-    if "@" in bpfile_prefix:
-        bim_path = bpfile_prefix.replace("@",str(chrom)) +".pvar"
-    else:
-        bim_path = bpfile_prefix+".pvar"
-    
-    if os.path.exists(bpfile_prefix):
-        bim_path =bpfile_prefix
-    elif os.path.exists(bpfile_prefix+".zst"):
-        bim_path =bpfile_prefix+".zst"
-    
-    single_bim = pd.read_csv(bim_path,
-                             sep="\s+",
-                             usecols=[0,1,2,3,4],
-                             header=None,
-                             comment="#",
-                             dtype={2:"string",0:"category", 1:"int", 3:"string", 4:"string"}).rename(columns={2:"SNPID_bim",0:"CHR_bim",1:"POS_bim",3:"NEA_bim",4:"EA_bim"})
-    single_bim = single_bim.loc[single_bim["CHR_bim"]==str(chrom),:]
-    log.write("   -#variants in ref file: {}".format(len(single_bim))) 
-    return single_bim
 
 
 

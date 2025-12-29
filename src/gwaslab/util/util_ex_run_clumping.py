@@ -5,7 +5,7 @@ import pandas as pd
 import tempfile
 import shutil
 from gwaslab.info.g_Log import Log
-from gwaslab.util.util_ex_process_ref import _process_plink_input_files
+from gwaslab.io.io_plink import _process_plink_input_files
 from gwaslab.extension import _checking_plink_version
 from gwaslab.qc.qc_decorator import with_logging
 

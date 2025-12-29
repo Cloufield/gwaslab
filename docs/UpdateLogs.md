@@ -2,12 +2,16 @@
 
 # v4.0.1 (Development)
 
-## Improvements
-
-### Data Consistency Checks
+- Added ChromosomeMapper with numeric middle layer architecture: unified chromosome format conversion system supporting numeric, string, chr-prefixed, and NCBI RefSeq formats across 12+ species
+- ChromosomeMapper supports automatic format detection from sumstats and reference files (VCF, FASTA, GTF, Chain files)
+- ChromosomeMapper can auto-detect genome build from NCBI RefSeq notation in reference files (hg19/hg38)
+- Removed legacy chr_dict in favor of ChromosomeMapper
+- Fixed infer_strand bug: added FREQ_COMPARISON_EPSILON constant (1e-6) for floating-point precision in allele frequency comparisons to handle edge cases at threshold boundaries
+- Added comprehensive test cases for floating-point precision edge cases in strand inference (e.g., EAF=0.4000003453, VCF AF=0.4000000059604645)
 - Enhanced P-value consistency checking in `check_data_consistency()`: now uses fold change as primary metric for better interpretability with small P-values (reports "10.23x" instead of absolute difference)
 - Improved handling of P-values spanning many orders of magnitude and NaN values
 - Added comprehensive test suite for P-value consistency checks
+- Created ChromosomeHandling.md documentation covering architecture, formats, species support, and usage examples
 
 # v4.0.0 20251207
 

@@ -15,6 +15,9 @@ from allel import rogers_huff_r_between
 from gwaslab.info.g_Log import Log
 from shutil import which
 
+# VCF/BCF file suffix definitions
+VCF_BCF_SUFFIXES = ('.vcf.gz', '.bcf', '.vcf')
+
 def auto_check_vcf_chr_dict(
     vcf_path: str | None, 
     vcf_chr_dict: dict | None, 
@@ -247,7 +250,8 @@ def _get_ld_matrix_from_vcf(sumstats_or_dataframe,
         mapper.detect_reference_format(vcf_path)
     
     # Convert region chromosome to reference format
-    region_chr_ref = mapper.sumstats_to_reference(region[0], reference_file=vcf_path)
+    # as_string=True for region string formatting
+    region_chr_ref = mapper.sumstats_to_reference(region[0], reference_file=vcf_path, as_string=True)
     # load genotype data of the targeted region
     region_str = f"{region_chr_ref}:{region[1]}-{region[2]}"
     log.write(" -loading VCF region: {}".format(region_str), verbose=verbose)

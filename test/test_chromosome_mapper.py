@@ -402,9 +402,13 @@ class TestChromosomeMapper(unittest.TestCase):
         mapper = ChromosomeMapper(log=self.log, verbose=False)
         mapper.detect_sumstats_format(pd.Series(["1", "2"]))
         
-        # Invalid values should raise ValueError
-        with self.assertRaises(ValueError):
-            mapper.sumstats_to_number("invalid")
+        # Invalid values should return pd.NA instead of raising ValueError
+        result = mapper.sumstats_to_number("invalid")
+        self.assertTrue(pd.isna(result))
+        
+        # Test with unconvertible chromosome like '1_KI270766v1_alt'
+        result = mapper.sumstats_to_number("1_KI270766v1_alt")
+        self.assertTrue(pd.isna(result))
 
     def test_empty_series(self):
         """Test handling of empty Series."""
@@ -561,6 +565,376 @@ class TestChromosomeMapper(unittest.TestCase):
         
         result = mapper.map(23)
         self.assertEqual(result, 23)
+
+    # ========================================================================
+    # NC Format Comprehensive Tests
+    # ========================================================================
+
+    def test_nc_format_detection_as_sumstats(self):
+        """Test detecting NC format as sumstats format."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        series = pd.Series(["NC_000001.11", "NC_000002.12", "NC_000023.11"])
+        mapper.detect_sumstats_format(series)
+        self.assertEqual(mapper._sumstats_format, "nc")
+        
+        # Test that NC format can be converted to number
+        self.assertEqual(mapper.sumstats_to_number("NC_000001.11"), 1)
+        self.assertEqual(mapper.sumstats_to_number("NC_000023.11"), 23)
+
+    def test_nc_format_all_chromosomes_hg19(self):
+        """Test NC format conversion for all chromosomes in hg19."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="19",
+            log=self.log,
+            verbose=False
+        )
+        
+        # Test autosomes
+        self.assertEqual(mapper.to_nc(1), "NC_000001.10")
+        self.assertEqual(mapper.to_nc(22), "NC_000022.10")
+        
+        # Test sex chromosomes
+        self.assertEqual(mapper.to_nc(23), "NC_000023.10")  # X
+        self.assertEqual(mapper.to_nc(24), "NC_000024.9")   # Y
+        
+        # Test mitochondrial
+        self.assertEqual(mapper.to_nc(25), "NC_012920.1")    # MT
+
+    def test_nc_format_all_chromosomes_hg38(self):
+        """Test NC format conversion for all chromosomes in hg38."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        # Test autosomes
+        self.assertEqual(mapper.to_nc(1), "NC_000001.11")
+        self.assertEqual(mapper.to_nc(22), "NC_000022.11")
+        
+        # Test sex chromosomes
+        self.assertEqual(mapper.to_nc(23), "NC_000023.11")  # X
+        self.assertEqual(mapper.to_nc(24), "NC_000024.1")   # Y
+        
+        # Test mitochondrial
+        self.assertEqual(mapper.to_nc(25), "NC_012920.1")   # MT
+
+    def test_nc_format_t2t_chm13(self):
+        """Test NC format conversion for T2T-CHM13 build."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="13",
+            log=self.log,
+            verbose=False
+        )
+        
+        # T2T-CHM13 uses CM prefix instead of NC
+        self.assertEqual(mapper.to_nc(1), "CM000663.2")
+        self.assertEqual(mapper.to_nc(22), "CM000684.2")
+        self.assertEqual(mapper.to_nc(23), "CM000685.2")  # X
+        self.assertEqual(mapper.to_nc(24), "CM000686.2")   # Y
+        self.assertEqual(mapper.to_nc(25), "NC_012920.1")  # MT (still NC)
+
+    def test_nc_format_different_species(self):
+        """Test NC format conversion for different species."""
+        # Mouse
+        mapper_mouse = ChromosomeMapper(
+            species="mus musculus",
+            build="39",
+            log=self.log,
+            verbose=False
+        )
+        mapper_mouse.detect_sumstats_format(pd.Series(["1", "19", "X", "Y"]))
+        self.assertEqual(mapper_mouse.to_nc(1), "NC_000067.7")
+        self.assertEqual(mapper_mouse.to_nc(19), "NC_000085.7")
+        # Mouse X and Y use numeric values 23, 24 (human convention)
+        x_num = mapper_mouse.sumstats_to_number("X")
+        y_num = mapper_mouse.sumstats_to_number("Y")
+        self.assertEqual(mapper_mouse.to_nc(x_num), "NC_000086.8")  # X
+        self.assertEqual(mapper_mouse.to_nc(y_num), "NC_000087.8")  # Y
+        
+        # Rat
+        mapper_rat = ChromosomeMapper(
+            species="rat",
+            build="rn6",
+            log=self.log,
+            verbose=False
+        )
+        mapper_rat.detect_sumstats_format(pd.Series(["1", "20", "X", "Y"]))
+        self.assertEqual(mapper_rat.to_nc(1), "NC_005100.4")
+        self.assertEqual(mapper_rat.to_nc(20), "NC_005119.4")
+        # Rat X and Y use numeric values 23, 24 (human convention)
+        x_num = mapper_rat.sumstats_to_number("X")
+        y_num = mapper_rat.sumstats_to_number("Y")
+        self.assertEqual(mapper_rat.to_nc(x_num), "NC_005120.4")  # X
+        self.assertEqual(mapper_rat.to_nc(y_num), "NC_005121.4")  # Y
+
+    def test_nc_format_round_trip_numeric(self):
+        """Test round-trip conversion: numeric -> NC -> numeric."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        original_values = [1, 2, 22, 23, 24, 25]
+        for val in original_values:
+            nc_id = mapper.to_nc(val)
+            result = mapper.sumstats_to_number(nc_id)
+            self.assertEqual(result, val, f"Round-trip failed for {val} -> {nc_id}")
+
+    def test_nc_format_round_trip_nc_as_sumstats(self):
+        """Test round-trip conversion with NC as sumstats format."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        # Set NC as sumstats format
+        mapper.detect_sumstats_format(pd.Series(["NC_000001.11", "NC_000023.11"]))
+        
+        original_nc = "NC_000001.11"
+        number = mapper.sumstats_to_number(original_nc)
+        result_nc = mapper.number_to_sumstats(number)
+        self.assertEqual(result_nc, original_nc)
+
+    def test_nc_format_series_conversion(self):
+        """Test NC format conversion with Series."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        # Convert numeric Series to NC
+        numeric_series = pd.Series([1, 2, 22, 23, 24, 25])
+        nc_series = mapper.to_nc(numeric_series)
+        expected = pd.Series([
+            "NC_000001.11", "NC_000002.12", "NC_000022.11",
+            "NC_000023.11", "NC_000024.1", "NC_012920.1"
+        ])
+        pd.testing.assert_series_equal(nc_series, expected)
+        
+        # Convert NC Series back to numeric
+        mapper.detect_sumstats_format(nc_series)
+        result_numeric = mapper.to_numeric(nc_series)
+        pd.testing.assert_series_equal(result_numeric, numeric_series, check_dtype=False)
+
+    def test_nc_format_to_other_formats(self):
+        """Test converting NC format to other formats."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        # Set NC as sumstats format
+        mapper.detect_sumstats_format(pd.Series(["NC_000001.11", "NC_000023.11"]))
+        
+        # NC -> numeric
+        self.assertEqual(mapper.to_numeric("NC_000001.11"), 1)
+        
+        # NC -> string
+        self.assertEqual(mapper.to_string("NC_000001.11"), "1")
+        self.assertEqual(mapper.to_string("NC_000023.11"), "X")
+        
+        # NC -> chr
+        self.assertEqual(mapper.to_chr("NC_000001.11"), "chr1")
+        self.assertEqual(mapper.to_chr("NC_000023.11"), "chrX")
+
+    def test_nc_format_from_other_formats(self):
+        """Test converting other formats to NC format."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        # numeric -> NC
+        self.assertEqual(mapper.to_nc(1), "NC_000001.11")
+        
+        # string -> NC (need to detect format first)
+        mapper.detect_sumstats_format(pd.Series(["1", "X"]))
+        number = mapper.sumstats_to_number("1")
+        self.assertEqual(mapper.to_nc(number), "NC_000001.11")
+        
+        # chr -> NC
+        mapper.detect_sumstats_format(pd.Series(["chr1", "chrX"]))
+        number = mapper.sumstats_to_number("chr1")
+        self.assertEqual(mapper.to_nc(number), "NC_000001.11")
+
+    def test_nc_format_invalid_accession(self):
+        """Test handling of invalid NCBI accession IDs."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        mapper.detect_sumstats_format(pd.Series(["NC_000001.11"]))
+        
+        # Invalid NC ID should return pd.NA
+        result = mapper.sumstats_to_number("NC_INVALID.1")
+        self.assertTrue(pd.isna(result))
+        
+        result = mapper.sumstats_to_number("INVALID_FORMAT")
+        self.assertTrue(pd.isna(result))
+
+    def test_nc_format_missing_build_error(self):
+        """Test that NC conversion raises error without build."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            log=self.log,
+            verbose=False
+        )
+        
+        # Should raise ValueError when build is not specified
+        with self.assertRaises(ValueError):
+            mapper.to_nc(1)
+
+    def test_nc_format_unsupported_species_build(self):
+        """Test NC format with unsupported species/build combination."""
+        mapper = ChromosomeMapper(
+            species="unsupported_species",
+            build="99",
+            log=self.log,
+            verbose=False
+        )
+        
+        # Should raise ValueError for unsupported combination
+        with self.assertRaises(ValueError):
+            mapper.to_nc(1)
+
+    def test_nc_format_chromosome_not_in_mapping(self):
+        """Test NC format with chromosome not in mapping."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        # Chromosome 100 doesn't exist, should raise ValueError
+        with self.assertRaises(ValueError):
+            mapper.to_nc(100)
+
+    def test_nc_format_case_insensitive(self):
+        """Test that NC format detection is case-insensitive."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        # NC format should be detected regardless of case
+        series_upper = pd.Series(["NC_000001.11", "NC_000023.11"])
+        series_lower = pd.Series(["nc_000001.11", "nc_000023.11"])
+        
+        mapper.detect_sumstats_format(series_upper)
+        self.assertEqual(mapper._sumstats_format, "nc")
+        
+        mapper.detect_sumstats_format(series_lower)
+        self.assertEqual(mapper._sumstats_format, "nc")
+
+    def test_nc_format_mixed_with_other_formats(self):
+        """Test handling NC format mixed with other formats."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        # When NC format is detected, it should handle NC IDs
+        series = pd.Series(["NC_000001.11", "NC_000002.12", "NC_000023.11"])
+        mapper.detect_sumstats_format(series)
+        
+        # All should convert to numbers
+        result = mapper.to_numeric(series)
+        expected = pd.Series([1, 2, 23])
+        pd.testing.assert_series_equal(result, expected, check_dtype=False)
+
+    def test_nc_format_build_processing(self):
+        """Test that build codes are properly processed for NC format."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="hg19",  # Should be processed to "19"
+            log=self.log,
+            verbose=False
+        )
+        
+        # Should use hg19 mappings
+        self.assertEqual(mapper.to_nc(1), "NC_000001.10")
+        
+        mapper2 = ChromosomeMapper(
+            species="homo sapiens",
+            build="GRCh38",  # Should be processed to "38"
+            log=self.log,
+            verbose=False
+        )
+        
+        # Should use hg38 mappings
+        self.assertEqual(mapper2.to_nc(1), "NC_000001.11")
+
+    def test_nc_format_species_aliases(self):
+        """Test NC format with species aliases."""
+        # Test with "human" alias
+        mapper_human = ChromosomeMapper(
+            species="human",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        self.assertEqual(mapper_human.to_nc(1), "NC_000001.11")
+        
+        # Test with "mouse" alias
+        mapper_mouse = ChromosomeMapper(
+            species="mouse",
+            build="39",
+            log=self.log,
+            verbose=False
+        )
+        self.assertEqual(mapper_mouse.to_nc(1), "NC_000067.7")
+
+    def test_nc_format_complete_chromosome_set(self):
+        """Test NC format for complete chromosome set."""
+        mapper = ChromosomeMapper(
+            species="homo sapiens",
+            build="38",
+            log=self.log,
+            verbose=False
+        )
+        
+        # Test all chromosomes 1-25
+        all_chromosomes = list(range(1, 26))
+        nc_ids = mapper.to_nc(pd.Series(all_chromosomes))
+        
+        # Verify all chromosomes have NC IDs
+        self.assertEqual(len(nc_ids), 25)
+        self.assertTrue(all(nc_ids.str.startswith(("NC_", "CM_"))))
+        
+        # Verify specific chromosomes
+        self.assertEqual(nc_ids.iloc[0], "NC_000001.11")   # chr1
+        self.assertEqual(nc_ids.iloc[21], "NC_000022.11")   # chr22
+        self.assertEqual(nc_ids.iloc[22], "NC_000023.11")   # chrX
+        self.assertEqual(nc_ids.iloc[23], "NC_000024.1")    # chrY
+        self.assertEqual(nc_ids.iloc[24], "NC_012920.1")   # chrMT
 
 
 if __name__ == '__main__':

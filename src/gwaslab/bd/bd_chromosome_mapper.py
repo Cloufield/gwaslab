@@ -34,6 +34,19 @@ class ChromosomeMapper:
     - Different sex chromosome notation (e.g., X/Y for mammals, Z/W for birds)
     - Species-specific mitochondrial notation
     
+    **Unconvertible Chromosomes:**
+    
+    When a chromosome identifier cannot be converted to a number, the mapper returns
+    `pd.NA` instead of raising an error. This includes:
+    - Alternative loci (e.g., "1_KI270766v1_alt", "KI270766.1")
+    - Unplaced sequences (e.g., "GL000195.1", "GL000009.2", "chrUn_GL000195v1")
+    - Chromosome arm notation (e.g., "1p", "1q", "chr1p")
+    - Malformed or invalid identifiers
+    - Out-of-range chromosome numbers
+    
+    This allows processing of mixed datasets with both standard and non-standard
+    chromosome identifiers without interrupting the workflow.
+    
     Parameters
     ----------
     species : str, default="homo sapiens"
@@ -43,6 +56,16 @@ class ChromosomeMapper:
         canis lupus familiaris, equus caballus, oryza sativa, arabidopsis thaliana.
     build : str, optional
         Genome build version (e.g., "19", "38") for NCBI RefSeq ID mappings.
+        If not provided or unavailable for the species/build combination, NCBI RefSeq
+        conversions will not be available (no warnings are logged).
+        
+        **Build Auto-Detection:**
+        - For **reference files** with NCBI RefSeq notation (NC_*), the build can be
+          automatically detected by matching contig IDs against known builds (hg19/hg38).
+          This happens when `detect_reference_format()` is called on a file containing
+          NC notation and build is not set.
+        - For **sumstats data** with NCBI RefSeq notation, the build parameter **must**
+          be explicitly specified. Build is not auto-detected from sumstats data alone.
     xymt_num : list, default=[23, 24, 25]
         Numeric values for sex chromosomes and mitochondrial (human convention).
         For other species, adjust based on their chromosome structure.
@@ -67,6 +90,35 @@ class ChromosomeMapper:
     
     It is **recommended** to call `detect_sumstats_format()` to ensure all
     format-specific conversions work correctly for your data format.
+    
+    **Return Values:**
+    
+    Methods that convert chromosomes to numbers (e.g., `sumstats_to_number()`,
+    `reference_to_number()`, `to_numeric()`) return:
+    - `int` for successfully converted standard chromosomes
+    - `pd.NA` for unconvertible chromosomes (alternative loci, unplaced sequences,
+      malformed identifiers, etc.)
+    
+    When working with pandas Series, unconvertible values will appear as `pd.NA`
+    in the resulting Series, allowing you to filter or handle them as needed.
+    
+    **Supported Reference File Formats:**
+    
+    The mapper can automatically detect chromosome format from:
+    - VCF files (`.vcf`, `.vcf.gz`, `.bcf`)
+    - FASTA files (`.fa`, `.fasta`, `.fa.gz`, `.fasta.gz`, `.fa.bgz`, `.fasta.bgz`)
+    - GTF/GFF files (`.gtf`, `.gff`, `.gtf.gz`, `.gff.gz`)
+    - Chain files (`.chain`, `.chain.gz`)
+    
+    Format detection is case-insensitive and handles various chromosome notations:
+    - Numeric: "1", "2", "22", "23", "24", "25"
+    - String: "1", "2", "X", "Y", "MT"
+    - Chr-prefixed: "chr1", "chr2", "chrX", "chrY", "chrMT" (case variations supported)
+    - NCBI RefSeq: "NC_000001.11", "NC_000023.11"
+      * For **reference files**: Build can be auto-detected from NC notation
+      * For **sumstats data**: Build parameter must be explicitly specified
+      * For **reference files**: Build can be auto-detected from NC notation
+      * For **sumstats data**: Build parameter must be explicitly specified
     
     Examples
     --------
@@ -98,6 +150,27 @@ class ChromosomeMapper:
     4      chrMT
     dtype: object
     
+    Handling unconvertible chromosomes:
+    
+    >>> # Unconvertible chromosomes return pd.NA
+    >>> mapper.sumstats_to_number("1_KI270766v1_alt")
+    <NA>
+    >>> mapper.sumstats_to_number("GL000195.1")
+    <NA>
+    >>> mapper.sumstats_to_number("1p")  # Chromosome arm notation
+    <NA>
+    >>> 
+    >>> # Series with mixed valid and invalid chromosomes
+    >>> series = pd.Series(["1", "2", "1_KI270766v1_alt", "X", "GL000195.1"])
+    >>> result = mapper.to_numeric(series)
+    >>> result
+    0       1
+    1       2
+    2    <NA>
+    3      23
+    4    <NA>
+    dtype: object
+    
     Working with different sumstats formats:
     
     >>> # Numeric format (1, 2, 23, 24, 25)
@@ -125,13 +198,21 @@ class ChromosomeMapper:
     >>> mapper.number_to_sumstats(1)
     'chr1'
     
-    >>> # NCBI RefSeq format (requires build parameter)
+    >>> # NCBI RefSeq format in sumstats (requires build parameter)
     >>> mapper = ChromosomeMapper(build="38")
     >>> mapper.detect_sumstats_format(pd.Series(["NC_000001.11", "NC_000023.11"]))
     'nc'
     >>> mapper.sumstats_to_number("NC_000001.11")
     1
     >>> mapper.number_to_sumstats(1)
+    'NC_000001.11'
+    
+    >>> # NCBI RefSeq format in reference file (build auto-detected)
+    >>> mapper = ChromosomeMapper()  # build not specified
+    >>> mapper.detect_reference_format("reference.vcf.gz")  # Contains NC_000001.11
+    ('nc', '')
+    >>> # Build is auto-detected as "38" from NC notation in the file
+    >>> mapper.sumstats_to_reference(1, reference_file="reference.vcf.gz")
     'NC_000001.11'
     
     Matching sumstats with reference files:
@@ -239,6 +320,14 @@ class ChromosomeMapper:
     >>> mapper.detect_reference_format("annotation.gtf.gz")
     >>> mapper.sumstats_to_reference(1, reference_file="annotation.gtf.gz")
     'chr1'
+    
+    >>> # Reference file with NCBI RefSeq notation (build auto-detected)
+    >>> mapper = ChromosomeMapper()  # build not specified
+    >>> mapper.detect_reference_format("reference_nc.vcf.gz")  # Contains NC_000001.11
+    ('nc', '')
+    >>> # Build "38" is automatically detected from NC notation
+    >>> mapper.sumstats_to_reference(1, reference_file="reference_nc.vcf.gz")
+    'NC_000001.11'
     """
     
     # Format detection patterns
@@ -307,24 +396,26 @@ class ChromosomeMapper:
         # Build middle layer mappings (number ↔ string)
         self._build_middle_layer_mappings()
         
-        # NCBI RefSeq ID mappings (if build is provided)
+        # NCBI RefSeq ID mappings (if build is provided and valid)
         self._nc_mappings = {}
         self._nc_mappings_inverse = {}
         self._num_to_nc = None
         self._nc_to_num = None
-        if self.build is not None:
+        if self.build is not None and self.build not in ("99", "Unknown"):
             self._build_nc_mappings()
         
         # Sumstats layer mappings (will be built when sumstats format is detected)
         self._sumstats_format: Optional[str] = None
         self._sumstats_to_num: Dict[Union[str, int], int] = {}
         self._num_to_sumstats: Dict[int, Union[str, int]] = {}
+        self._sumstats_to_num_lower: Dict[str, int] = {}  # Case-insensitive lookup cache
         
         # Reference layer mappings (will be built when reference format is detected)
         self._reference_format: Optional[str] = None
         self._reference_prefix: str = ""
         self._reference_to_num: Dict[Union[str, int], int] = {}
         self._num_to_reference: Dict[int, Union[str, int]] = {}
+        self._reference_to_num_lower: Dict[str, int] = {}  # Case-insensitive lookup cache
         
         # Cache for reference file format detection
         self._reference_cache: Dict[str, Tuple[str, str]] = {}
@@ -408,11 +499,6 @@ class ChromosomeMapper:
         )
         
         if not chr_to_nc:
-            if self.verbose:
-                self.log.warning(
-                    f"NCBI RefSeq accession IDs are not available for species '{self.species}' "
-                    f"and build '{self.build}'. NC format conversions will not be available."
-                )
             return
         
         # Build NC to string mapping
@@ -506,7 +592,7 @@ class ChromosomeMapper:
             numeric_sample = pd.to_numeric(sample_str, errors='coerce')
             if numeric_sample.notna().all():
                 return "numeric"
-        except:
+        except (ValueError, TypeError):
             pass
         
         # Default to string
@@ -571,18 +657,24 @@ class ChromosomeMapper:
                 self.log.warning(f"Reference file not found: {reference_file}. Using default format.")
             return "string", ""
         
+        # Lazy imports to avoid circular dependency
+        from gwaslab.io.io_vcf import VCF_BCF_SUFFIXES
+        from gwaslab.io.io_gtf import GTF_GFF_SUFFIXES
+        from gwaslab.io.io_fasta import FASTA_SUFFIXES
+        from gwaslab.io.io_chain import CHAIN_SUFFIXES
+        
         # Sample chromosomes from file based on file type
         # Handle double extensions like .vcf.gz, .gtf.gz, etc.
         file_ext_lower = reference_file.lower()
         
         # Optimized file type detection using tuple checks
-        if file_ext_lower.endswith(('.vcf.gz', '.bcf', '.vcf')):
+        if file_ext_lower.endswith(VCF_BCF_SUFFIXES):
             return self._detect_vcf_format(reference_file)
-        elif file_ext_lower.endswith(('.gtf.gz', '.gff.gz', '.gtf', '.gff')):
+        elif file_ext_lower.endswith(GTF_GFF_SUFFIXES):
             return self._detect_gtf_format(reference_file)
-        elif file_ext_lower.endswith(('.fa.gz', '.fasta.gz', '.fa.bgz', '.fasta.bgz', '.fa', '.fasta')):
+        elif file_ext_lower.endswith(FASTA_SUFFIXES):
             return self._detect_fasta_format(reference_file)
-        elif file_ext_lower.endswith(('.chain.gz', '.chain')):
+        elif file_ext_lower.endswith(CHAIN_SUFFIXES):
             return self._detect_chain_format(reference_file)
         else:
             # Default: try to detect from first few lines
@@ -590,10 +682,15 @@ class ChromosomeMapper:
     
     def _extract_contigs_from_file(self, reference_file: str) -> list:
         """Extract contig/chromosome names from reference file."""
+        # Lazy imports to avoid circular dependency
+        from gwaslab.io.io_vcf import VCF_BCF_SUFFIXES
+        from gwaslab.io.io_gtf import GTF_GFF_SUFFIXES
+        from gwaslab.io.io_fasta import FASTA_SUFFIXES
+        
         contigs = []
         file_ext_lower = reference_file.lower()
         
-        if file_ext_lower.endswith(('.vcf.gz', '.bcf', '.vcf')):
+        if file_ext_lower.endswith(VCF_BCF_SUFFIXES):
             try:
                 import pysam
                 with pysam.VariantFile(reference_file) as vcf:
@@ -602,20 +699,20 @@ class ChromosomeMapper:
                 if self.verbose:
                     self.log.warning(f"Could not extract contigs from VCF: {e}")
                 pass
-        elif file_ext_lower.endswith(('.gtf.gz', '.gff.gz', '.gtf', '.gff')):
+        elif file_ext_lower.endswith(GTF_GFF_SUFFIXES):
             try:
                 import polars as pl
                 df = pl.read_csv(reference_file, separator='\t', comment_char='#', has_header=False, n_rows=1000)
                 if df.shape[1] > 0:
                     contigs = df.select(df.columns[0]).unique().to_series().to_list()
-            except:
+            except (ImportError, Exception):
                 pass
-        elif file_ext_lower.endswith(('.fa.gz', '.fasta.gz', '.fa.bgz', '.fasta.bgz', '.fa', '.fasta')):
+        elif file_ext_lower.endswith(FASTA_SUFFIXES):
             try:
                 import pysam
                 with pysam.FastaFile(reference_file) as fasta:
                     contigs = list(fasta.references)
-            except:
+            except (ImportError, Exception):
                 pass
         
         return contigs
@@ -802,6 +899,7 @@ class ChromosomeMapper:
         self._sumstats_format = format_type
         self._sumstats_to_num = {}
         self._num_to_sumstats = {}
+        self._sumstats_to_num_lower = {}  # Clear case-insensitive cache
         
         if format_type == "numeric":
             # Direct numeric mapping - use species-specific max_chr
@@ -836,6 +934,7 @@ class ChromosomeMapper:
         self._reference_prefix = prefix
         self._reference_to_num = {}
         self._num_to_reference = {}
+        self._reference_to_num_lower = {}  # Clear case-insensitive cache
         
         # Dispatch to format-specific builders
         builders = {
@@ -888,7 +987,11 @@ class ChromosomeMapper:
             self._build_reference_nc_from_file(reference_file)
     
     def _build_reference_nc_from_file(self, reference_file: Optional[str]):
-        """Build NCBI mappings from reference file contigs."""
+        """Build NCBI mappings from reference file contigs.
+        
+        If build is not set, this method will attempt to auto-detect the build
+        by matching contigs against known NCBI RefSeq IDs for different builds.
+        """
         if not reference_file or not os.path.exists(reference_file):
             if self.verbose:
                 self.log.warning(
@@ -907,65 +1010,114 @@ class ChromosomeMapper:
                     )
                 return
             
-            # Parse NCBI IDs and build mappings
-            for nc_id in contigs:
-                chrom_num = self._parse_ncbi_id_to_number(nc_id)
-                if chrom_num is not None:
-                    self._reference_to_num[nc_id] = chrom_num
-                    # Only set reverse mapping if not already set (prefer first seen)
-                    if chrom_num not in self._num_to_reference:
-                        self._num_to_reference[chrom_num] = nc_id
+            # If build is not set, or is "99" (unknown), or NC mappings are not available,
+            # try to auto-detect it from the contigs
+            build_is_invalid = (self.build is None or 
+                               self.build == "99" or 
+                               self.build == "Unknown" or
+                               not self._nc_to_num)
+            
+            if build_is_invalid:
+                detected_build = self._detect_build_from_nc_contigs(contigs)
+                if detected_build:
+                    if self.verbose:
+                        self.log.write(f" -Auto-detected build {detected_build} from NC notation in reference file...", verbose=self.verbose)
+                    self.build = detected_build
+                    self._build_nc_mappings()
+                    # Now use the pre-built mappings
+                    self._reference_to_num = dict(self._nc_to_num)
+                    self._num_to_reference = {num: nc_id for nc_id, num in self._nc_to_num.items()}
+                    return
+                else:
+                    if self.verbose:
+                        self.log.warning(
+                            "NCBI format detected but could not auto-detect build. "
+                            "Specify build parameter for proper NC mappings."
+                        )
+                    return
+            
+            # If build is set and valid, use the pre-built mappings
+            if self._nc_to_num:
+                self._reference_to_num = dict(self._nc_to_num)
+                self._num_to_reference = {num: nc_id for nc_id, num in self._nc_to_num.items()}
+            else:
+                # Fallback: parse NCBI IDs directly (may not work for all species)
+                for nc_id in contigs:
+                    chrom_num = self._parse_ncbi_id_to_number(nc_id)
+                    if chrom_num is not None:
+                        self._reference_to_num[nc_id] = chrom_num
+                        # Only set reverse mapping if not already set (prefer first seen)
+                        if chrom_num not in self._num_to_reference:
+                            self._num_to_reference[chrom_num] = nc_id
         except Exception as e:
             if self.verbose:
                 self.log.warning(f"Could not extract contigs from {reference_file}: {e}")
     
+    def _detect_build_from_nc_contigs(self, contigs: list) -> Optional[str]:
+        """Auto-detect genome build from NCBI RefSeq contig IDs.
+        
+        Parameters
+        ----------
+        contigs : list
+            List of contig/chromosome names from the reference file.
+        
+        Returns
+        -------
+        str or None
+            Detected build (e.g., "19", "38") if found, None otherwise.
+        """
+        from gwaslab.bd.bd_common_data import get_number_to_NC
+        
+        # Check which build matches
+        for build_candidate in ["19", "38"]:
+            nc_mapping = get_number_to_NC(build=build_candidate, species=self.species, log=self.log, verbose=False)
+            if nc_mapping:
+                nc_values = set(nc_mapping.values())
+                # Check if any contig matches this build's NC IDs
+                if any(contig in nc_values for contig in contigs):
+                    return build_candidate
+        
+        return None
+    
     def _parse_ncbi_id_to_number(self, nc_id: str) -> Optional[int]:
-        """Parse NCBI RefSeq ID to chromosome number.
+        """Parse NCBI RefSeq ID to chromosome number using species-specific mapping.
+        
+        This function uses the species-specific NCBI mapping (from _nc_to_num)
+        to correctly convert NCBI RefSeq IDs to chromosome numbers for all species.
+        Direct parsing is not used because the numeric part of NCBI IDs does not
+        correspond to chromosome numbers for non-human species. For example:
+        - Human: NC_000001.10 -> 1 (numeric part happens to match)
+        - Mouse: NC_000067.7 -> 1 (numeric part is 67, but chromosome is 1)
         
         Parameters
         ----------
         nc_id : str
-            NCBI RefSeq ID (e.g., "NC_000001.10")
+            NCBI RefSeq ID (e.g., "NC_000001.10", "NC_000067.7")
         
         Returns
         -------
         int or None
-            Chromosome number if valid, None otherwise
+            Chromosome number if valid mapping exists, None otherwise
         """
         # Validate format with regex
         if not self._NCBI_PATTERN.match(nc_id):
             return None
         
-        # Extract numeric part: "NC_000001.10" -> "000001" -> 1
-        # Find first dot to split, or use whole string
-        dot_idx = nc_id.find('.')
-        nc_base = nc_id[:dot_idx] if dot_idx > 0 else nc_id
-        
-        # Remove prefix and leading zeros
-        if nc_base.startswith('NC_'):
-            num_str = nc_base[3:].lstrip('0')
-        elif nc_base.startswith('CM_'):
-            num_str = nc_base[3:].lstrip('0')
-        else:
-            return None
-        
-        if not num_str:
-            return None
-        
-        try:
-            chrom_num = int(num_str)
+        # Use species-specific mapping (required for correct conversion across all species)
+        if self._nc_to_num and nc_id in self._nc_to_num:
+            chrom_num = self._nc_to_num[nc_id]
             if 1 <= chrom_num <= self._max_chr:
                 return chrom_num
-        except ValueError:
-            pass
         
+        # No mapping available - return None
+        # This ensures we don't incorrectly parse IDs for non-human species
         return None
     
     # ============================================================================
     # Core Mapping Methods: Middle Layer
     # ============================================================================
     
-    def _to_number(self, chromosome: Union[str, int], layer: str = "sumstats") -> int:
+    def _to_number(self, chromosome: Union[str, int], layer: str = "sumstats") -> Union[int, float]:
         """
         Convert chromosome to number (middle layer).
         
@@ -978,8 +1130,8 @@ class ChromosomeMapper:
         
         Returns
         -------
-        int
-            Chromosome number.
+        int or float
+            Chromosome number, or pd.NA if conversion fails.
         """
         if isinstance(chromosome, (int, np.integer)):
             return int(chromosome)
@@ -996,18 +1148,30 @@ class ChromosomeMapper:
         if chrom_str in mapping:
             return mapping[chrom_str]
         
-        # Try case-insensitive lookup
+        # Try case-insensitive lookup using cache
         chrom_lower = chrom_str.lower()
-        for key, value in mapping.items():
-            if isinstance(key, str) and key.lower() == chrom_lower:
-                return value
+        if layer == "sumstats":
+            lower_cache = self._sumstats_to_num_lower
+        else:
+            lower_cache = self._reference_to_num_lower
+        
+        # Build cache if needed (lazy initialization)
+        # Only build if cache is empty but mapping has items
+        if len(lower_cache) == 0 and len(mapping) > 0:
+            for key, value in mapping.items():
+                if isinstance(key, str):
+                    lower_cache[key.lower()] = value
+        
+        # Use cache for fast lookup
+        if chrom_lower in lower_cache:
+            return lower_cache[chrom_lower]
         
         # Try to parse as number
         try:
             num = int(chrom_str)
             if 1 <= num <= self._max_chr:
                 return num
-        except:
+        except (ValueError, TypeError):
             pass
         
         # Try NCBI RefSeq ID
@@ -1019,8 +1183,8 @@ class ChromosomeMapper:
         if chrom_str in self._str_to_num:
             return self._str_to_num[chrom_str]
         
-        # If all else fails, raise error
-        raise ValueError(f"Could not convert chromosome '{chromosome}' to number")
+        # If all else fails, return pd.NA instead of raising error
+        return pd.NA
     
     def _from_number(self, number: int, layer: str = "sumstats") -> Union[str, int]:
         """
@@ -1064,7 +1228,7 @@ class ChromosomeMapper:
     # Public API: Main Mapping Methods
     # ============================================================================
     
-    def sumstats_to_number(self, chromosome: Union[str, int]) -> int:
+    def sumstats_to_number(self, chromosome: Union[str, int]) -> Union[int, float]:
         """
         Convert sumstats chromosome to number (middle layer).
         
@@ -1075,8 +1239,8 @@ class ChromosomeMapper:
         
         Returns
         -------
-        int
-            Chromosome number.
+        int or float
+            Chromosome number, or pd.NA if conversion fails.
         
         Notes
         -----
@@ -1123,7 +1287,7 @@ class ChromosomeMapper:
             self._build_sumstats_layer("numeric")
         return self._from_number(number, layer="sumstats")
     
-    def reference_to_number(self, chromosome: Union[str, int], reference_file: Optional[str] = None) -> int:
+    def reference_to_number(self, chromosome: Union[str, int], reference_file: Optional[str] = None) -> Union[int, float]:
         """
         Convert reference chromosome to number (middle layer).
         
@@ -1137,8 +1301,8 @@ class ChromosomeMapper:
         
         Returns
         -------
-        int
-            Chromosome number.
+        int or float
+            Chromosome number, or pd.NA if conversion fails.
         """
         if reference_file is not None:
             self.detect_reference_format(reference_file)
@@ -1167,7 +1331,8 @@ class ChromosomeMapper:
     
     def sumstats_to_reference(self, 
                              chromosome: Union[str, int], 
-                             reference_file: Optional[str] = None) -> Union[str, int]:
+                             reference_file: Optional[str] = None,
+                             as_string: bool = False) -> Union[str, int]:
         """
         Convert sumstats chromosome to reference chromosome format.
         
@@ -1180,11 +1345,15 @@ class ChromosomeMapper:
         reference_file : str, optional
             Path to reference file. If provided and reference layer not yet built,
             will detect format from file.
+        as_string : bool, default=False
+            If True, always return string (useful for VCF compatibility with pysam).
+            If False, return the original type (str or int) as determined by reference format.
         
         Returns
         -------
         str or int
             Reference chromosome identifier.
+            Returns string representation of pd.NA if conversion fails.
         
         Examples
         --------
@@ -1193,13 +1362,24 @@ class ChromosomeMapper:
         'numeric'
         >>> mapper.sumstats_to_reference(1, reference_file="reference.vcf.gz")
         'chr1'
+        >>> mapper.sumstats_to_reference(1, reference_file="reference.vcf.gz", as_string=True)
+        'chr1'
         """
         # Convert sumstats → number → reference
         # sumstats_to_number will auto-default to numeric if layer not built
         number = self.sumstats_to_number(chromosome)
         if reference_file is not None:
             self.detect_reference_format(reference_file)
-        return self.number_to_reference(number, reference_file)
+        result = self.number_to_reference(number, reference_file)
+        
+        # Convert to string if requested (for VCF compatibility with pysam)
+        if as_string:
+            if pd.isna(result):
+                return str(result)  # Returns "NA" for pd.NA
+            return str(result)
+        
+        # Return original type
+        return result
     
     def reference_to_sumstats(self, 
                              chromosome: Union[str, int], 
@@ -1378,7 +1558,7 @@ class ChromosomeMapper:
         else:
             return series.apply(lambda x: self.number_to_sumstats(self.sumstats_to_number(x)))
     
-    def to_numeric(self, chromosome: Union[str, int, pd.Series]) -> Union[int, pd.Series]:
+    def to_numeric(self, chromosome: Union[str, int, pd.Series]) -> Union[int, float, pd.Series]:
         """Convert to numeric format (backward compatibility)."""
         if isinstance(chromosome, pd.Series):
             return chromosome.apply(self.sumstats_to_number)
@@ -1422,3 +1602,77 @@ class ChromosomeMapper:
         if number in self._num_to_nc:
             return self._num_to_nc[number]
         raise ValueError(f"NCBI RefSeq ID not available for chromosome {chromosome}")
+    
+    def print(self):
+        """Print mapper configuration and state information.
+        
+        Displays:
+        - Species and build information
+        - Detected sumstats and reference formats
+        - Chromosome mappings
+        - Example conversions
+        """
+        print("=" * 70)
+        print("ChromosomeMapper Configuration")
+        print("=" * 70)
+        
+        # Basic information
+        print(f"Species: {self.species}")
+        print(f"Build: {self.build if self.build else 'Not specified'}")
+        print(f"Max chromosome number: {self._max_chr}")
+        print(f"X/Y/MT numeric values: {self.xymt_num}")
+        print()
+        
+        # Sumstats format
+        if self._sumstats_format:
+            print(f"Sumstats format: {self._sumstats_format}")
+            if self._sumstats_to_num:
+                # Show some example mappings
+                examples = list(self._sumstats_to_num.items())[:5]
+                print(f"  Example sumstats mappings: {dict(examples)}")
+        else:
+            print("Sumstats format: Not detected (will default to numeric)")
+        print()
+        
+        # Reference format
+        if self._reference_format:
+            print(f"Reference format: {self._reference_format}")
+            if self._reference_prefix:
+                print(f"  Prefix: '{self._reference_prefix}'")
+            if self._reference_to_num:
+                # Show some example mappings
+                examples = list(self._reference_to_num.items())[:5]
+                print(f"  Example reference mappings: {dict(examples)}")
+        else:
+            print("Reference format: Not detected")
+        print()
+        
+        # NCBI RefSeq mappings
+        if self._nc_to_num:
+            print(f"NCBI RefSeq mappings: Available (build {self.build})")
+            if self._num_to_nc:
+                # Show some example mappings
+                examples = list(self._num_to_nc.items())[:5]
+                print(f"  Example NC mappings: {dict(examples)}")
+        else:
+            print("NCBI RefSeq mappings: Not available (build not specified or not supported)")
+        print()
+        
+        # Middle layer (numeric) mappings
+        print(f"Middle layer (numeric) mappings: Available")
+        if self._num_to_str:
+            # Show some example mappings
+            examples = {k: v for k, v in list(self._num_to_str.items())[:5]}
+            print(f"  Example numeric→string: {examples}")
+        print()
+        
+        # Example conversions if formats are detected
+        if self._sumstats_format and self._reference_format:
+            print("Example conversions:")
+            test_chrs = [1, 2, 23] if self._max_chr >= 23 else [1, 2]
+            for num in test_chrs:
+                if num in self._num_to_sumstats and num in self._num_to_reference:
+                    sumstats_chr = self._num_to_sumstats[num]
+                    ref_chr = self._num_to_reference[num]
+                    print(f"  {sumstats_chr} (sumstats) ↔ {num} ↔ {ref_chr} (reference)")
+        print("=" * 70)

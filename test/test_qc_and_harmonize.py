@@ -21,6 +21,10 @@ if SRC not in sys.path:
 import pandas as pd
 import numpy as np
 import scipy.stats as ss
+import gzip
+import subprocess
+import tempfile
+import shutil
 from gwaslab.g_Sumstats import Sumstats
 
 
@@ -553,6 +557,353 @@ class TestConsistencyBetweenMethods(unittest.TestCase):
         # Check that both methods processed similar numbers of variants
         print(f"[test_infer_strand_consistency] Variant counts - old: {len(result1)}, new: {len(result2)}")
         self.assertEqual(len(result1), len(result2), "Both methods should process the same number of variants")
+
+    def test_infer_strand_consistency_simulated(self):
+        """Test that infer_strand (old method) and infer_strand2 (new method) produce consistent results using simulated data with edge cases"""
+        temp_dir = os.path.join(ROOT, "test", "output")
+        os.makedirs(temp_dir, exist_ok=True)
+  
+        # Test parameters
+        maf_threshold = 0.40
+        ref_maf_threshold = 0.40
+        
+        # Define test variants: (SNPID, CHR, POS, EA, NEA, EAF, BETA, SE, P)
+        variants = [
+            # Non-palindromic SNPs
+            ("1:1000_A_G", 1, 1000, "G", "A", 0.1, 0.1, 0.01, 1e-5),
+            ("1:2000_A_G", 1, 2000, "G", "A", 0.3, 0.1, 0.01, 1e-5),
+            ("1:3000_A_G", 1, 3000, "G", "A", 0.4, 0.1, 0.01, 1e-5),  # At threshold
+            ("1:4000_A_G", 1, 4000, "G", "A", 0.5, 0.1, 0.01, 1e-5),  # Ambiguous
+            ("1:5000_A_G", 1, 5000, "G", "A", 0.6, 0.1, 0.01, 1e-5),
+            ("1:6000_A_G", 1, 6000, "G", "A", 0.9, 0.1, 0.01, 1e-5),
+            
+            # Palindromic A/T SNPs
+            ("1:7000_A_T", 1, 7000, "T", "A", 0.1, 0.1, 0.01, 1e-5),
+            ("1:8000_A_T", 1, 8000, "T", "A", 0.3, 0.1, 0.01, 1e-5),
+            ("1:9000_A_T", 1, 9000, "T", "A", 0.4, 0.1, 0.01, 1e-5),  # At threshold
+            ("1:10000_A_T", 1, 10000, "T", "A", 0.5, 0.1, 0.01, 1e-5),  # Ambiguous
+            ("1:11000_A_T", 1, 11000, "T", "A", 0.6, 0.1, 0.01, 1e-5),
+            ("1:12000_A_T", 1, 12000, "T", "A", 0.9, 0.1, 0.01, 1e-5),
+            ("1:23000_A_T", 1, 23000, "T", "A", 0.41, 0.1, 0.01, 1e-5),  # MAF(EAF)=0.41 > threshold
+            ("1:24000_A_T", 1, 24000, "T", "A", 0.1, 0.1, 0.01, 1e-5),  # VCF AF=0.41, MAF(RAF)=0.41 > threshold
+            
+            # Floating point precision edge cases for A/T palindromic SNPs
+            ("1:27000_A_T", 1, 27000, "T", "A", 0.4000003453, 0.1, 0.01, 1e-5),  # EAF just above threshold (0.4 + epsilon)
+            ("1:28000_A_T", 1, 28000, "T", "A", 0.3999996547, 0.1, 0.01, 1e-5),  # EAF just below threshold (0.4 - epsilon)
+            ("1:29000_A_T", 1, 29000, "T", "A", 0.4, 0.1, 0.01, 1e-5),  # EAF exactly at threshold, VCF AF with precision issue
+            
+            # Palindromic G/C SNPs
+            ("1:13000_G_C", 1, 13000, "C", "G", 0.1, 0.1, 0.01, 1e-5),
+            ("1:14000_G_C", 1, 14000, "C", "G", 0.3, 0.1, 0.01, 1e-5),
+            ("1:15000_G_C", 1, 15000, "C", "G", 0.4, 0.1, 0.01, 1e-5),  # At threshold
+            ("1:16000_G_C", 1, 16000, "C", "G", 0.5, 0.1, 0.01, 1e-5),  # Ambiguous
+            ("1:17000_G_C", 1, 17000, "C", "G", 0.6, 0.1, 0.01, 1e-5),
+            ("1:18000_G_C", 1, 18000, "C", "G", 0.9, 0.1, 0.01, 1e-5),
+            ("1:25000_G_C", 1, 25000, "C", "G", 0.41, 0.1, 0.01, 1e-5),  # MAF(EAF)=0.41 > threshold
+            ("1:26000_G_C", 1, 26000, "C", "G", 0.1, 0.1, 0.01, 1e-5),  # VCF AF=0.41, MAF(RAF)=0.41 > threshold
+            
+            # Floating point precision edge cases for G/C palindromic SNPs
+            ("1:30000_G_C", 1, 30000, "C", "G", 0.4000003453, 0.1, 0.01, 1e-5),  # EAF just above threshold (0.4 + epsilon)
+            ("1:31000_G_C", 1, 31000, "C", "G", 0.3999996547, 0.1, 0.01, 1e-5),  # EAF just below threshold (0.4 - epsilon)
+            ("1:32000_G_C", 1, 32000, "C", "G", 0.4, 0.1, 0.01, 1e-5),  # EAF exactly at threshold, VCF AF with precision issue
+            
+            # Indels
+            ("1:19000_A_AT", 1, 19000, "AT", "A", 0.1, 0.1, 0.01, 1e-5),
+            ("1:20000_A_AT", 1, 20000, "AT", "A", 0.3, 0.1, 0.01, 1e-5),
+            ("1:21000_A_AT", 1, 21000, "AT", "A", 0.4, 0.1, 0.01, 1e-5),
+            ("1:22000_A_AT", 1, 22000, "AT", "A", 0.5, 0.1, 0.01, 1e-5),
+        ]
+        
+        # Create test files
+        sumstats_path, vcf_path_gz, fasta_path_gz = self._create_test_files(temp_dir, variants)
+        
+        # Run old method (sweep_mode=False)
+        result1, status1 = self._run_harmonize(
+            sumstats_path, fasta_path_gz, vcf_path_gz, maf_threshold, ref_maf_threshold, sweep_mode=False
+        )
+        
+        # Run new method (sweep_mode=True)
+        result2, status2 = self._run_harmonize(
+            sumstats_path, fasta_path_gz, vcf_path_gz, maf_threshold, ref_maf_threshold, sweep_mode=True
+        )
+        
+        # Compare results
+        self._compare_results(result1, result2, status1, status2, vcf_path_gz)
+    
+    
+    def _create_test_files(self, temp_dir, variants):
+        """Create sumstats, VCF, and FASTA files for testing"""
+        import gzip
+        
+        # Create sumstats
+        df = pd.DataFrame(variants, columns=['SNPID', 'CHR', 'POS', 'EA', 'NEA', 'EAF', 'BETA', 'SE', 'P'])
+        sumstats_path = os.path.join(temp_dir, "simulated_sumstats.txt")
+        df.to_csv(sumstats_path, sep='\t', index=False)
+        
+        # Create VCF with reference allele frequencies
+        vcf_path = os.path.join(temp_dir, "simulated_ref.vcf")
+        vcf_variants = []
+        for _, row in df.iterrows():
+            ref, alt, eaf, pos = row['NEA'], row['EA'], row['EAF'], row['POS']
+            
+            # Calculate RAF for VCF
+            if ref in ['A', 'T'] and alt in ['A', 'T']:
+                if pos == 24000:
+                    raf = 0.41
+                elif pos == 29000:
+                    # Floating point precision edge case: VCF AF with precision issue (like 0.4000000059604645)
+                    raf = 0.4000000059604645  # This should pass with epsilon tolerance
+                elif pos == 27000:
+                    # EAF is 0.4000003453, set VCF AF to be at threshold with epsilon
+                    raf = 0.4  # Should pass with epsilon
+                elif pos == 28000:
+                    # EAF is 0.3999996547, set VCF AF to be at threshold with epsilon
+                    raf = 0.4  # Should pass with epsilon
+                else:
+                    raf = eaf + 0.02 if eaf < 0.4 else ((1 - eaf) + 0.02 if eaf > 0.6 else eaf)
+            elif ref in ['G', 'C'] and alt in ['G', 'C']:
+                if pos == 26000:
+                    raf = 0.41
+                elif pos == 32000:
+                    # Floating point precision edge case: VCF AF with precision issue (like 0.4000000059604645)
+                    raf = 0.4000000059604645  # This should pass with epsilon tolerance
+                elif pos == 30000:
+                    # EAF is 0.4000003453, set VCF AF to be at threshold with epsilon
+                    raf = 0.4  # Should pass with epsilon
+                elif pos == 31000:
+                    # EAF is 0.3999996547, set VCF AF to be at threshold with epsilon
+                    raf = 0.4  # Should pass with epsilon
+                else:
+                    raf = eaf + 0.02 if eaf < 0.4 else ((1 - eaf) + 0.02 if eaf > 0.6 else eaf)
+            else:
+                raf = eaf
+            
+            raf = max(0.01, min(0.99, raf))
+            vcf_variants.append((row['CHR'], pos, f"rs{pos}", ref, alt, raf))
+        
+        # Sort variants by chromosome and position (required for tabix)
+        vcf_variants.sort(key=lambda x: (x[0], x[1]))
+        
+        with open(vcf_path, 'w') as f:
+            f.write("##fileformat=VCFv4.3\n")
+            f.write("##contig=<ID=1,length=33000>\n")
+            f.write("##INFO=<ID=AF,Number=A,Type=Float,Description=\"Allele Frequency\">\n")
+            f.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n")
+            for chrom, pos, rsid, ref, alt, af in vcf_variants:
+                f.write(f"{chrom}\t{pos}\t{rsid}\t{ref}\t{alt}\t.\tPASS\tAF={af}\n")
+        
+        # Compress and index VCF
+        vcf_path_gz = self._compress_file(vcf_path, use_tabix=True)
+        
+        # Create FASTA
+        fasta_path = os.path.join(temp_dir, "simulated_ref.fasta")
+        max_pos = df["POS"].max()
+        seq_length = max_pos + 1000
+        sequence = ['N'] * seq_length
+        
+        for _, row in df.iterrows():
+            pos, nea = row['POS'], row['NEA']
+            if 0 < pos <= seq_length:
+                sequence[pos - 1] = nea[0] if len(nea) > 0 else 'A'
+        
+        bases = ['A', 'T', 'G', 'C']
+        for i in range(seq_length):
+            if sequence[i] == 'N':
+                sequence[i] = bases[i % 4]
+        
+        with open(fasta_path, 'w') as f:
+            f.write(">1\n")
+            for i in range(0, seq_length, 60):
+                f.write(''.join(sequence[i:i+60]) + '\n')
+        
+        fasta_path_gz = self._compress_file(fasta_path, use_tabix=False)
+        print(sumstats_path, vcf_path_gz, fasta_path_gz)
+        return sumstats_path, vcf_path_gz, fasta_path_gz
+    
+    def _compress_file(self, file_path, use_tabix=False):
+        """Compress file with bgzip (or gzip fallback) and optionally index with tabix"""
+        import gzip
+        compressed_path = file_path + '.gz'
+        
+        # Try bgzip from specific path first (as user specified), then PATH
+        bgzip_paths = ['/home/yunye/tools/bin/bgzip', 'bgzip']
+        bgzip_success = False
+        for bgzip_cmd in bgzip_paths:
+            try:
+                subprocess.run([bgzip_cmd, '-f', file_path], check=True,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                bgzip_success = True
+                break
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                continue
+        
+        if not bgzip_success:
+            # Fallback to regular gzip
+            with open(file_path, 'rb') as f_in:
+                with gzip.open(compressed_path, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+        
+        if use_tabix:
+            # Try tabix from specific path first (as user specified), then PATH
+            tabix_paths = ['/home/yunye/tools/bin/tabix', 'tabix']
+            tabix_success = False
+            last_error = None
+            for tabix_cmd in tabix_paths:
+                try:
+                    subprocess.run([tabix_cmd, '-p', 'vcf', compressed_path], check=True,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                    tabix_success = True
+                    break
+                except (subprocess.CalledProcessError, FileNotFoundError) as e:
+                    last_error = e
+                    continue
+            if not tabix_success:
+                error_msg = f"Could not index VCF file with tabix. "
+                if last_error:
+                    if isinstance(last_error, subprocess.CalledProcessError):
+                        error_msg += f"Tabix command failed with return code {last_error.returncode}"
+                    else:
+                        error_msg += f"Tabix not found in PATH or at /home/yunye/tools/bin/tabix"
+                raise RuntimeError(error_msg)
+        
+        return compressed_path
+    
+    def _run_harmonize(self, sumstats_path, fasta_path_gz, vcf_path_gz, maf_threshold, ref_maf_threshold, sweep_mode):
+        """Run harmonize with specified parameters"""
+        gl = Sumstats(
+            sumstats=sumstats_path,
+            tab_fmt="tsv",
+            chrom="CHR", pos="POS", ea="EA", nea="NEA", p="P",
+            snpid="SNPID", eaf="EAF", verbose=False
+        )
+        gl.basic_check(verbose=False)
+        gl.harmonize(
+            basic_check=False,
+            ref_seq=fasta_path_gz,
+            ref_infer=vcf_path_gz,
+            ref_alt_freq="AF",
+            maf_threshold=maf_threshold,
+            ref_maf_threshold=ref_maf_threshold,
+            threads=2,
+            remove=False,
+            verbose=False,
+            sweep_mode=sweep_mode,
+            infer_strand_kwargs={"daf_tolerance": 0.20}
+        )
+        result = gl.data.sort_values(by=["CHR", "POS"]).reset_index(drop=True)
+        status = result["STATUS"].copy()
+        return result, status
+    
+    def _compare_results(self, result1, result2, status1, status2, vcf_path_gz):
+        """Compare results from old and new methods"""
+        def get_strand_status(status_series):
+            return status_series.astype(str).str[-1] if len(status_series) > 0 else pd.Series(dtype=str)
+        
+        strand_status1 = get_strand_status(status1)
+        strand_status2 = get_strand_status(status2)
+        
+        # Print detailed variant information
+        print(f"\n[DEBUG test] === Detailed Variant Information ===")
+        print(f"[DEBUG test] Total variants: {len(result1)}")
+        
+        for idx in range(len(result1)):
+            row1, row2 = result1.iloc[idx], result2.iloc[idx]
+            pos, eaf, ea, nea = row1["POS"], row1["EAF"], row1["EA"], row1["NEA"]
+            status1_val, status2_val = strand_status1.iloc[idx], strand_status2.iloc[idx]
+            # Note: Old method (sweep_mode=False) does not generate RAF column, only new method does
+            raf1 = row1.get("RAF") if "RAF" in row1 else None
+            raf2 = row2.get("RAF") if "RAF" in row2 else None
+            
+            is_pal = (ea in ['A', 'T'] and nea in ['A', 'T']) or (ea in ['G', 'C'] and nea in ['G', 'C'])
+            maf_eaf = min(eaf, 1 - eaf) if pd.notna(eaf) else None
+            maf_raf1 = min(raf1, 1 - raf1) if pd.notna(raf1) and isinstance(raf1, (int, float)) else None
+            maf_raf2 = min(raf2, 1 - raf2) if pd.notna(raf2) and isinstance(raf2, (int, float)) else None
+            
+            # Get VCF info
+            vcf_af = self._get_vcf_af(vcf_path_gz, row1["CHR"], pos)
+            
+            match_marker = "OK" if status1_val == status2_val else "XX"
+            maf_eaf_str = f"{maf_eaf:.3f}" if maf_eaf is not None else "N/A"
+            vcf_af_str = f"{vcf_af:.3f}" if vcf_af is not None else "N/A"
+            raf1_str = "N/A" if raf1 is None or pd.isna(raf1) else f"{raf1:.3f}"
+            raf2_str = "N/A" if raf2 is None or pd.isna(raf2) else f"{raf2:.3f}"
+            maf_raf1_str = f"{maf_raf1:.3f}" if maf_raf1 is not None else "N/A"
+            maf_raf2_str = f"{maf_raf2:.3f}" if maf_raf2 is not None else "N/A"
+            
+            print(f"[DEBUG test] {match_marker} POS={pos:5d}: EAF={eaf:.3f}, EA={ea:2s}, NEA={nea:2s}, "
+                  f"is_pal={is_pal}, MAF(EAF)={maf_eaf_str:>6s}, VCF_AF={vcf_af_str:>6s}, "
+                  f"RAF_old={raf1_str:>6s}, RAF_new={raf2_str:>6s}, "
+                  f"MAF(RAF_old)={maf_raf1_str:>6s}, MAF(RAF_new)={maf_raf2_str:>6s}, "
+                  f"STATUS_old={status1_val}, STATUS_new={status2_val}")
+        
+        # Compare STATUS codes for variants checked by both methods
+        status9_mask1 = strand_status1 == "9"
+        status9_mask2 = strand_status2 == "9"
+        both_checked = ~status9_mask1 & ~status9_mask2
+        valid_mask = (strand_status1 != "nan") & (strand_status2 != "nan") & both_checked
+        
+        if valid_mask.sum() > 0:
+            matching = (strand_status1[valid_mask] == strand_status2[valid_mask]).sum()
+            match_rate = matching / valid_mask.sum()
+            print(f"\n[test_infer_strand_consistency_simulated] Strand STATUS match rate: {match_rate:.2%} ({matching}/{valid_mask.sum()} variants)")
+            
+            status1_dist = strand_status1[valid_mask].value_counts().sort_index()
+            status2_dist = strand_status2[valid_mask].value_counts().sort_index()
+            print(f"[test_infer_strand_consistency_simulated] Old method STATUS distribution: {dict(status1_dist)}")
+            print(f"[test_infer_strand_consistency_simulated] New method STATUS distribution: {dict(status2_dist)}")
+            
+            # Report mismatches
+            mismatches = valid_mask & (strand_status1 != strand_status2)
+            if mismatches.sum() > 0:
+                print(f"\n[test_infer_strand_consistency_simulated] Mismatches found ({mismatches.sum()} variants):")
+                for idx in result1.index[mismatches]:
+                    row1, row2 = result1.loc[idx], result2.loc[idx]
+                    pos, eaf, ea, nea = row1["POS"], row1["EAF"], row1["EA"], row1["NEA"]
+                    status1_val = strand_status1.iloc[idx] if idx < len(strand_status1) else "N/A"
+                    status2_val = strand_status2.iloc[idx] if idx < len(strand_status2) else "N/A"
+                    # Note: Old method (sweep_mode=False) does not generate RAF column
+                    raf1 = row1.get("RAF") if "RAF" in row1 else None
+                    raf2 = row2.get("RAF") if "RAF" in row2 else None
+                    maf_eaf = min(eaf, 1 - eaf) if pd.notna(eaf) else None
+                    maf_raf1 = min(raf1, 1 - raf1) if pd.notna(raf1) and isinstance(raf1, (int, float)) else None
+                    maf_raf2 = min(raf2, 1 - raf2) if pd.notna(raf2) and isinstance(raf2, (int, float)) else None
+                    raf1_str = "N/A" if raf1 is None or pd.isna(raf1) else f"{raf1:.3f}"
+                    raf2_str = "N/A" if raf2 is None or pd.isna(raf2) else f"{raf2:.3f}"
+                    maf_eaf_str = f"{maf_eaf:.3f}" if maf_eaf is not None else "N/A"
+                    maf_raf1_str = f"{maf_raf1:.3f}" if maf_raf1 is not None else "N/A"
+                    maf_raf2_str = f"{maf_raf2:.3f}" if maf_raf2 is not None else "N/A"
+                    print(f"  POS={pos}, EAF={eaf:.3f}, EA={ea}, NEA={nea}, "
+                          f"RAF_old={raf1_str}, RAF_new={raf2_str}, "
+                          f"MAF(EAF)={maf_eaf_str}, "
+                          f"MAF(RAF_old)={maf_raf1_str}, "
+                          f"MAF(RAF_new)={maf_raf2_str}, "
+                          f"STATUS_old={status1_val}, STATUS_new={status2_val}")
+            
+            # Assert 100% consistency for variants found by both methods
+            self.assertGreaterEqual(match_rate, 1.0,
+                                 f"Strand inference STATUS codes should be consistent for variants found by both methods (match rate: {match_rate:.2%})")
+        else:
+            checked_old = (~status9_mask1).sum()
+            checked_new = (~status9_mask2).sum()
+            print(f"\n[test_infer_strand_consistency_simulated] No variants checked by both methods")
+            print(f"[test_infer_strand_consistency_simulated] Variants checked - old: {checked_old}, new: {checked_new}")
+        
+        self.assertEqual(len(result1), len(result2), "Both methods should process the same number of variants")
+    
+    def _get_vcf_af(self, vcf_path_gz, chrom, pos):
+        """Get allele frequency from VCF for a given position"""
+        try:
+            from pysam import VariantFile
+            vcf_reader = VariantFile(vcf_path_gz)
+            for record in vcf_reader.fetch(str(chrom), pos-1, pos):
+                if record.pos == pos:
+                    af = record.info.get("AF", [None])[0] if "AF" in record.info else None
+                    vcf_reader.close()
+                    return af
+            vcf_reader.close()
+        except:
+            pass
+        return None
 
 
 class TestCheckAF2(unittest.TestCase):

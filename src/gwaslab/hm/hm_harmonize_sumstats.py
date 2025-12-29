@@ -34,6 +34,9 @@ from gwaslab.io.io_vcf import check_vcf_chr_prefix, check_vcf_chr_NC
 #parallelecheckaf
 
 ### CONSTANTS AND MAPPINGS ###
+# Epsilon for floating point precision in frequency comparisons
+# Used to handle floating point precision issues when comparing MAF values at threshold
+FREQ_COMPARISON_EPSILON = 1e-6
 
 ### HELPER FUNCTIONS FOR STATUS OPTIMIZATION ###
 def _extract_status_digit(status_series, digit):
@@ -1108,7 +1111,8 @@ def chrposref_rsid(chr,end,ref,alt,vcf_reader,mapper=None):
     start=end-1
     if mapper is not None:
         # Convert sumstats chr to reference format for VCF lookup
-        chr = mapper.sumstats_to_reference(chr, reference_file=None)
+        # as_string=True for VCF compatibility (pysam requires string)
+        chr = mapper.sumstats_to_reference(chr, reference_file=None, as_string=True)
     
     try:
         chr_seq = vcf_reader.fetch(chr,start,end)
@@ -1238,6 +1242,7 @@ def _parallelize_assign_rsid(sumstats, path, ref_mode="vcf", snpid="SNPID", rsid
     if ref_mode=="vcf":
         # Auto-detect reference format from VCF file
         mapper.detect_reference_format(path)
+
         log.write(" -Assigning rsID based on CHR:POS and REF:ALT/ALT:REF...",verbose=verbose)
         ##############################################
         if rsid not in sumstats.columns:
@@ -1355,7 +1360,8 @@ def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_th
     ### 8 : no ref data
     if mapper is not None:
         # Convert sumstats chr to reference format for VCF lookup
-        chr = mapper.sumstats_to_reference(chr, reference_file=None)
+        # as_string=True for VCF compatibility (pysam requires string)
+        chr = mapper.sumstats_to_reference(chr, reference_file=None, as_string=True)
     # Convert status to integer
     status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
     
@@ -1367,7 +1373,7 @@ def check_strand_status(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_th
     
     for record in chr_seq:
         if record.pos==end and record.ref==ref and (alt in record.alts):
-            if min(record.info[alt_freq][0] > ref_maf_threshold, 1- record.info[alt_freq][0]) > ref_maf_threshold:
+            if min(record.info[alt_freq][0], 1- record.info[alt_freq][0]) > ref_maf_threshold + FREQ_COMPARISON_EPSILON:
                 return set_status_digit(status_val, 7, 8)  # Set digit 7 to 8
             # After check_ref() and flip_allele_stats(), EA should match ALT
             # So we compare EAF with ALT AF directly
@@ -1400,7 +1406,8 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_ma
         end = pos
         
         if mapper is not None:
-            chrom = mapper.sumstats_to_reference(chrom, reference_file=ref_infer if ref_infer else None)
+            # as_string=True for VCF compatibility (pysam requires string)
+            chrom = mapper.sumstats_to_reference(chrom, reference_file=ref_infer if ref_infer else None, as_string=True)
         
         # Convert status to integer
         status_val = int(status) if isinstance(status, (int, np.integer)) else int(str(status))
@@ -1416,7 +1423,7 @@ def check_strand_status_cache(data,cache,ref_infer=None,ref_alt_freq=None,ref_ma
             if record is None:
                 new_status = set_status_digit(status_val, 7, 8)
             else:
-                if min(record, 1- record) > ref_maf_threshold:
+                if min(record, 1- record) > ref_maf_threshold + FREQ_COMPARISON_EPSILON:
                     new_status = set_status_digit(status_val, 7, 8)
                 elif (record<0.5) and (eaf<0.5):
                     new_status = set_status_digit(status_val, 7, 1)
@@ -1453,7 +1460,7 @@ def check_unkonwn_indel(chr,start,end,ref,alt,eaf,vcf_reader,alt_freq,ref_maf_th
         return set_status_digit(status_val, 7, 8)
 
     for record in chr_seq:
-        if min(record.info[alt_freq][0] > ref_maf_threshold, 1- record.info[alt_freq][0]) > ref_maf_threshold:
+        if min(record.info[alt_freq][0], 1- record.info[alt_freq][0]) > ref_maf_threshold + FREQ_COMPARISON_EPSILON:
                 return set_status_digit(status_val, 7, 8)
         if record.pos==end and record.ref==ref and (alt in record.alts):
             if  abs(record.info[alt_freq][0] - eaf)<daf_tolerance:
@@ -1485,7 +1492,8 @@ def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_m
         chrom = _chrom
         
         if mapper is not None:
-            chrom = mapper.sumstats_to_reference(chrom, reference_file=ref_infer if ref_infer else None)
+            # as_string=True for VCF compatibility (pysam requires string)
+            chrom = mapper.sumstats_to_reference(chrom, reference_file=ref_infer if ref_infer else None, as_string=True)
         start = pos - 1
         end = pos
         
@@ -1504,7 +1512,7 @@ def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_m
             if record is None:
                 new_status = set_status_digit(status_val, 7, 8)
             else:
-                if min(record, 1- record) > ref_maf_threshold:
+                if min(record, 1- record) > ref_maf_threshold + FREQ_COMPARISON_EPSILON:
                     return set_status_digit(status_val, 7, 8)
                 if  abs(record - eaf)<daf_tolerance:
                     new_status = set_status_digit(status_val, 7, 3)
@@ -1515,7 +1523,7 @@ def check_unkonwn_indel_cache(data,cache,ref_infer=None,ref_alt_freq=None, ref_m
             if record is None:
                 new_status = set_status_digit(status_val, 7, 8)
             else:
-                if min(record, 1- record) > ref_maf_threshold:
+                if min(record, 1- record) > ref_maf_threshold + FREQ_COMPARISON_EPSILON:
                     return set_status_digit(status_val, 7, 8)
                 if  abs(record - (1 - eaf))<daf_tolerance:
                     new_status = set_status_digit(status_val, 7, 6)
@@ -1646,7 +1654,7 @@ def _parallelize_infer_strand(sumstats,ref_infer,ref_alt_freq=None,maf_threshold
         log.write(" -Identified ", palindromic.sum(), " palindromic SNPs...", verbose=verbose)
         
         #palindromic but can not infer
-        maf_can_infer   = (sumstats[eaf] < maf_threshold) | (sumstats[eaf] > 1 - maf_threshold)
+        maf_can_infer   = (sumstats[eaf] <= maf_threshold) | (sumstats[eaf] >= 1 - maf_threshold)
         
         sumstats.loc[palindromic&(~maf_can_infer),status] = vchange_status(sumstats.loc[palindromic&(~maf_can_infer),status],7,"9","7")
         

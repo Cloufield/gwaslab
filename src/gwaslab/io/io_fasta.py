@@ -13,6 +13,9 @@ from gwaslab.info.g_Log import Log
 from gwaslab.bd.bd_common_data import _maketrans
 from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
+# FASTA file suffix definitions
+FASTA_SUFFIXES = ('.fa.gz', '.fasta.gz', '.fa.bgz', '.fasta.bgz', '.fa', '.fasta')
+
 try:
     import pysam
     PYSAM_AVAILABLE = True

@@ -11,7 +11,7 @@ from gwaslab.info.g_Log import Log
 from gwaslab.extension import _checking_plink_version
 from gwaslab.hm.hm_casting import _merge_mold_with_sumstats_by_chrpos
 from gwaslab.util.util_in_get_sig import _get_sig
-from gwaslab.util.util_ex_process_ref import _process_plink_input_files
+from gwaslab.io.io_plink import _process_plink_input_files
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.util.util_ex_calculate_ldmatrix import _extract_variants_in_locus
 from gwaslab.util.util_ex_calculate_ldmatrix import _export_snplist_and_locus_sumstats

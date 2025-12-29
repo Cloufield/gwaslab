@@ -135,8 +135,15 @@ def _assign_rsid(
         if not is_dataframe and hasattr(sumstats_obj, 'mapper'):
             mapper = sumstats_obj.mapper
         else:
-            species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens") if not is_dataframe else "homo sapiens"
-            build = sumstats_obj.build if not is_dataframe and hasattr(sumstats_obj, 'build') else None
+            # Fix: safely get species and build
+            if not is_dataframe and hasattr(sumstats_obj, 'meta'):
+                species = sumstats_obj.meta.get("gwaslab", {}).get("species", "homo sapiens")
+            else:
+                species = "homo sapiens"
+            if not is_dataframe and hasattr(sumstats_obj, 'build'):
+                build = sumstats_obj.build
+            else:
+                build = None
             mapper = ChromosomeMapper(species=species, build=build, log=log, verbose=verbose)
             # Auto-detect sumstats format if data is available
             if not is_dataframe and hasattr(sumstats_obj, 'data') and not sumstats_obj.data.empty and chrom in sumstats_obj.data.columns:
@@ -745,15 +752,8 @@ def _worker_bcf_lookup(args):
     import tempfile, subprocess, os
     import pandas as pd
     from io import StringIO
-    import time
-    
-    worker_id = os.getpid()
-    start_time = time.time()
-    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] Starting, chr={chr_val}, {len(df_chr)} targets")
-
     # Convert reference chromosome back to sumstats format for logging
     orig_chr = mapper.reference_to_sumstats(chr_val, reference_file=vcf_path)
-    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] Converted chr {chr_val} -> {orig_chr}")
 
     # Create per-chr target list
     tmp_targets = tempfile.NamedTemporaryFile(
@@ -787,11 +787,7 @@ def _worker_bcf_lookup(args):
 
     
     # Run pipeline and capture text output
-    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] About to run bcftools command")
-    cmd_start = time.time()
     data = subprocess.check_output(cmd, shell=True, text=True)
-    cmd_elapsed = time.time() - cmd_start
-    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] bcftools completed in {cmd_elapsed:.2f}s, got {len(data)} chars")
     log.write(f" {orig_chr}", verbose=verbose, end="", show_time=False)
 
     # Convert to DataFrame
@@ -807,8 +803,6 @@ def _worker_bcf_lookup(args):
     except:
         pass
     
-    total_elapsed = time.time() - start_time
-    print(f"[DEBUG _worker_bcf_lookup worker {worker_id}] Completed in {total_elapsed:.2f}s, returning {len(df_out)} rows")
     return df_out
 from multiprocessing import Pool
 

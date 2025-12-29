@@ -7,6 +7,10 @@ from .hm_assign_rsid import _annotate_sumstats
 from gwaslab.qc.qc_decorator import with_logging
 from gwaslab.bd.bd_chromosome_mapper import ChromosomeMapper
 
+# Epsilon for floating point precision in frequency comparisons
+# Used to handle floating point precision issues when comparing MAF values at threshold
+FREQ_COMPARISON_EPSILON = 1e-6
+
 @with_logging(
     start_to_msg="annotate and infer strand orientation using allele frequencies",
     finished_msg="annotating and inferring strand orientation using allele frequencies",
@@ -484,7 +488,7 @@ def _infer_strand(
         if palindromic_with_eaf.any():
             # Optimize: Use cached eaf_series instead of .loc[] to avoid repeated indexing
             eaf_values = eaf_series[palindromic_with_eaf]
-            maf_can_infer = (eaf_values < maf_threshold) | (eaf_values > 1 - maf_threshold)
+            maf_can_infer = (eaf_values <= maf_threshold) | (eaf_values >= 1 - maf_threshold)
             # Create mask for variants that cannot infer MAF from EAF alone
             # Map boolean results back to full index
             maf_cannot_infer_local = ~maf_can_infer
@@ -520,12 +524,16 @@ def _infer_strand(
     # Only process variants where MAF can be inferred from EAF (matching old method)
     if valid_palindromic_mask.any():
         # Only check variants where MAF can be inferred from EAF alone
-        # (EAF < maf_threshold OR EAF > 1 - maf_threshold)
+        # (EAF <= maf_threshold OR EAF >= 1 - maf_threshold) - unified with old method
         palindromic_with_eaf = valid_palindromic_mask & eaf_notna
         if palindromic_with_eaf.any():
             # Optimize: Use cached eaf_series instead of .loc[] to avoid repeated indexing
             eaf_values = eaf_series[palindromic_with_eaf]
-            maf_can_infer = (eaf_values < maf_threshold) | (eaf_values > 1 - maf_threshold)
+            maf_can_infer = (eaf_values <= maf_threshold) | (eaf_values >= 1 - maf_threshold)
+            log.write(f"[DEBUG _infer_strand] Checking maf_can_infer for {len(eaf_values)} palindromic variants with EAF", verbose=verbose)
+            log.write(f"[DEBUG _infer_strand] maf_can_infer check: EAF <= {maf_threshold} OR EAF >= {1-maf_threshold}", verbose=verbose)
+            log.write(f"[DEBUG _infer_strand] Variants passing maf_can_infer: {maf_can_infer.sum()}/{len(eaf_values)}", verbose=verbose)
+            
             # Only process variants where MAF can be inferred
             # Map boolean results back to full index
             maf_can_infer_mask = pd.Series(False, index=sumstats.index)
@@ -544,6 +552,10 @@ def _infer_strand(
             maf_eaf = np.minimum(eaf_values, 1 - eaf_values)
             maf_raf = np.minimum(raf_values, 1 - raf_values)
             maf_mask_local = (maf_eaf <= maf_threshold) & (maf_raf <= ref_maf_threshold)
+            log.write(f"[DEBUG _infer_strand] Checking {len(eaf_values)} palindromic variants with RAF", verbose=verbose)
+            log.write(f"[DEBUG _infer_strand] MAF(EAF) <= {maf_threshold}: {(maf_eaf <= maf_threshold).sum()}, MAF(RAF) <= {ref_maf_threshold}: {(maf_raf <= ref_maf_threshold).sum()}", verbose=verbose)
+            log.write(f"[DEBUG _infer_strand] Variants passing both MAF checks: {maf_mask_local.sum()}", verbose=verbose)
+            
             # Map mask back to full index
             maf_mask = pd.Series(False, index=sumstats.index)
             maf_mask.loc[valid_palindromic_with_af_mask] = maf_mask_local.values
@@ -559,6 +571,7 @@ def _infer_strand(
             
             # Forward strand if EAF closer to RAF than to 1-RAF
             forward_palindromic = af_diff_forward <= af_diff_reverse
+            
             # Map boolean results back to full index
             forward_palindromic_full = pd.Series(False, index=sumstats.index)
             forward_palindromic_full.loc[valid_palindromic_with_af_mask] = forward_palindromic.values
@@ -586,18 +599,58 @@ def _infer_strand(
                 )
         
         # Handle palindromic SNPs with NA in EAF or RAF, or filtered out by MAF threshold
-        # Match old method behavior: status 7 for MAF > threshold, status 8 for not found in reference
+        # Match old method behavior: status 8 for MAF(RAF) > threshold OR not found in reference
         if valid_palindromic_mask.any():
-            # Variants with both EAF and RAF available but filtered out by MAF threshold -> status 7
+            # Variants with both EAF and RAF available but filtered out by MAF threshold
             maf_exceed_mask = valid_palindromic_mask & eaf_notna & raf_notna
+            log.write(f"[DEBUG _infer_strand] Total palindromic variants with EAF and RAF: {maf_exceed_mask.sum()}", verbose=verbose)
             if 'valid_palindromic_with_af_mask' in locals() and valid_palindromic_with_af_mask.any():
                 maf_exceed_mask = maf_exceed_mask & ~valid_palindromic_with_af_mask
+                log.write(f"[DEBUG _infer_strand] Variants filtered out (not in valid_palindromic_with_af_mask): {maf_exceed_mask.sum()}", verbose=verbose)
+                
+                # Check if MAF(RAF) > ref_maf_threshold for these variants
+                # Old method: check_strand_status returns STATUS=8 when MAF(RAF) > ref_maf_threshold
+                if maf_exceed_mask.any():
+                    raf_exceed_values = raf_series[maf_exceed_mask]
+                    maf_raf_exceed = np.minimum(raf_exceed_values, 1 - raf_exceed_values)
+                    # Variants with MAF(RAF) > ref_maf_threshold should get STATUS=8 (matching old method)
+                    # Use epsilon for floating point precision consistency
+                    maf_raf_exceed_bool = maf_raf_exceed > ref_maf_threshold + FREQ_COMPARISON_EPSILON
+                    maf_raf_exceed_mask = pd.Series(False, index=sumstats.index)
+                    maf_raf_exceed_mask.loc[maf_exceed_mask] = maf_raf_exceed_bool.values
+                    
+                    log.write(f"[DEBUG _infer_strand] Checking MAF(RAF) > ref_maf_threshold for {maf_exceed_mask.sum()} filtered variants", verbose=verbose)
+                    log.write(f"[DEBUG _infer_strand] Found {maf_raf_exceed_mask.sum()} variants with MAF(RAF) > {ref_maf_threshold}", verbose=verbose)
+                    
+                    if maf_raf_exceed_mask.any():
+                        # Debug: Show which variants get STATUS=8 due to MAF(RAF) > threshold
+                        if verbose:
+                            debug_indices = sumstats.index[maf_raf_exceed_mask]
+                            for idx in debug_indices[:5]:  # Show first 5
+                                row = sumstats.loc[idx]
+                                pos = row.get(pos, "N/A")
+                                eaf = row.get(eaf, "N/A")
+                                raf = row.get(raf, "N/A")
+                                maf_raf_val = min(raf, 1 - raf) if pd.notna(raf) and isinstance(raf, (int, float)) else "N/A"
+                                log.write(f"[DEBUG _infer_strand] POS={pos}: EAF={eaf}, RAF={raf}, MAF(RAF)={maf_raf_val} > {ref_maf_threshold} → STATUS=8", verbose=True)
+                        
+                        sumstats.loc[maf_raf_exceed_mask, strand_col] = "?"
+                        sumstats.loc[maf_raf_exceed_mask, status_col] = vchange_status(
+                            sumstats.loc[maf_raf_exceed_mask, status_col],
+                            7,
+                            [str(i) for i in range(10)],
+                            ["8"] * 10
+                        )
+                        log.write(f"[DEBUG _infer_strand] Assigned STATUS=8 to {maf_raf_exceed_mask.sum()} variants (MAF(RAF) > {ref_maf_threshold})", verbose=verbose)
+                        # Remove from maf_exceed_mask since they're already handled
+                        maf_exceed_mask = maf_exceed_mask & ~maf_raf_exceed_mask
             
             # Variants with EAF but no RAF (checked but not found in reference) -> status 8
             # Variants with no EAF (not checked) should remain status 9
             checked_but_not_found_mask = valid_palindromic_mask & eaf_notna & ~raf_notna
             
-            # Assign status '7' for MAF > threshold (matches old method)
+            # Assign status '7' for MAF(EAF) > threshold but MAF(RAF) <= threshold
+            # (Only for variants that weren't already assigned STATUS=8 above)
             if maf_exceed_mask.any():
                 sumstats.loc[maf_exceed_mask, strand_col] = "?"
                 sumstats.loc[maf_exceed_mask, status_col] = vchange_status(

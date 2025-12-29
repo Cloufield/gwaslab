@@ -18,7 +18,7 @@ SRC = os.path.join(ROOT, "src")
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
-from gwaslab.util.util_ex_process_ref import _process_plink_input_files
+from gwaslab.io.io_plink import _process_plink_input_files
 from gwaslab.info.g_Log import Log
 
 

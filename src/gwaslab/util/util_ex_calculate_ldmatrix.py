@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from gwaslab.info.g_Log import Log
 from gwaslab.util.util_in_get_sig import _get_sig
-from gwaslab.util.util_ex_process_ref import _process_plink_input_files
+from gwaslab.io.io_plink import _process_plink_input_files
 from gwaslab.util.util_in_filter_value import _exclude_hla
 from gwaslab.extension import _checking_plink_version
 
