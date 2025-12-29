@@ -197,10 +197,10 @@ class TestTutorialV4Workflow(unittest.TestCase):
         initial_rsid_count = mysumstats.data["rsID"].notna().sum()
         
         # Assign rsID using VCF (for remaining variants)
+        # Note: chr_dict is no longer needed - ChromosomeMapper handles chromosome conversion automatically
         mysumstats.assign_rsid(
             threads=1,
             ref_rsid_vcf=self.rsid_vcf_path,
-            chr_dict=gl.get_number_to_NC(build="19"),
             verbose=False
         )
         

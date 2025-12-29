@@ -81,7 +81,6 @@ Process the VCF file and convert it to HDF5 files (one per chromosome) using `.p
 |-------------|----------|-------------------------------------------------------------|----------------------|
 | `vcf`       | `string` | the path to dbSNP VCF file (must be indexed with .tbi/.csi) | -                    |
 | `directory` | `string` | the directory where you want output the converted HDF5 file | the same as VCF file |
-| `chr_dict`  | `dict`   | dictionary for chromosome mapping (e.g., NC_000001.10 -> 1) | `None`               |
 | `complevel` | `int`    | compression level for HDF5 (0-9, higher = more compression) | `3`                  |
 | `threads`   | `int`    | number of threads for parallel processing                   | `1`                  |
 | `chr_list`  | `list`   | list of chromosomes to process (None = all 1-25)            | `None`               |
@@ -95,17 +94,18 @@ vcf = "/home/yunye/CommonData/Reference/ncbi_dbsnp/ncbi_dbsnp/db155/GCF_00000140
 
 gl.process_vcf_to_hfd5(vcf=vcf,
                    directory=directory,
-                   chr_dict=gl.get_NC_to_number(build="19"),
                    complevel=3,
                    threads=6)
 
 # To overwrite existing HDF5 files, set overwrite=True:
 # gl.process_vcf_to_hfd5(vcf=vcf,
 #                    directory=directory,
-#                    chr_dict=gl.get_NC_to_number(build="19"),
 #                    complevel=3,
 #                    threads=6,
 #                    overwrite=True)
+
+!!! note "Chromosome Conversion"
+    Chromosome format conversion is handled automatically by `ChromosomeMapper` when processing VCF files. No manual `chr_dict` parameter is needed.
 
 2025/12/24 14:35:36 Start to process VCF file to HDF5 using bcftools:
 2025/12/24 14:35:36 -Reference VCF path: /home/yunye/CommonData/dbsnp/GCF_000001405.25.gz

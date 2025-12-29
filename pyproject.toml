@@ -46,6 +46,7 @@ gwaslab = [
   "viz/*.json",
   "data/chrX_par/*",
   "data/chrx_par/*",
+  "data/chromosomes/*",
   "data/high_ld/*",
   "data/hapmap3_SNPs/*",
   "qc/qc_researved_header.json"

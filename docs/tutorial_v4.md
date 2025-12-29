@@ -1043,7 +1043,7 @@ For the annotation of less common variants, we can use VCF files downloaded from
 
 **Note**:
 - The file size is huge (>20GB) and it might take several hours to download. (We can skip this step in this tutorial.)
-- Specify `chr_dict` to match the chromosome notations in sumstats and VCF files.
+- Chromosome format conversion is handled automatically by `ChromosomeMapper` - no manual `chr_dict` parameter is needed.
 
 Parameters:
 - `ref_rsid_vcf`: the path to the reference rsID VCF file
@@ -1060,7 +1060,6 @@ For this tutorial, we use `b157_2564.vcf.gz` in the sample dataset, which is ext
     ```python
     mysumstats.assign_rsid(threads=1,
                            ref_rsid_vcf="gwaslab-sample-data/b157_2564.vcf.gz"
-                           #chr_dict = gl.get_number_to_NC(build="19")
                           )
     ```
 

@@ -84,7 +84,9 @@ mysumstats.infer_af2(
 - `ref_infer` / `vcf_path`: Path to reference VCF/BCF file (must be tabix-indexed for ver1)
 - `ref_alt_freq`: Field name for alternative allele frequency in VCF INFO section (e.g., "AF", "AF_popmax", "gnomAD_AF")
 - `force`: If True, infer EAF for all variants regardless of STATUS codes
-- `chr_dict`: Dictionary for mapping chromosome names (e.g., {1: "chr1", 2: "chr2"})
+
+!!! note "Chromosome Conversion"
+    Chromosome format conversion is handled automatically by `ChromosomeMapper`. No manual `chr_dict` parameter is needed for high-level functions like `infer_af()`, `check_af()`, etc.
 
 **Returns:**
 
@@ -286,13 +288,13 @@ mysumstats.check_af2(vcf_path="reference.vcf.gz", ref_alt_freq="AF")
 
 **Possible causes:**
 - Variants not in reference VCF
-- Chromosome naming mismatch (use `chr_dict`)
+- Chromosome naming mismatch (ChromosomeMapper should handle this automatically)
 - Alleles don't match (check harmonization)
 - `ref_alt_freq` field missing in VCF
 
 **Solutions:**
 - Check if variants are in reference VCF region
-- Provide `chr_dict` for chromosome name mapping
+- Verify that ChromosomeMapper correctly detected chromosome format (check `mysumstats.mapper._reference_format`)
 - Run `harmonize()` to standardize alleles
 - Verify `ref_alt_freq` field exists in VCF INFO
 
@@ -331,7 +333,9 @@ mysumstats.check_af2(vcf_path="reference.vcf.gz", ref_alt_freq="AF")
 - `ref_infer` / `vcf_path`: Path to reference VCF/BCF file
 - `ref_alt_freq`: INFO field name for ALT frequency (default: "AF")
 - `force`: Process all variants regardless of STATUS (default: False)
-- `chr_dict`: Chromosome name mapping dictionary
+
+!!! note "Chromosome Conversion"
+    Chromosome format conversion is handled automatically by `ChromosomeMapper`. No manual `chr_dict` parameter is needed.
 
 **Returns:**
 - Updates EAF column in sumstats

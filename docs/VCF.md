@@ -66,6 +66,9 @@ vcf_chr_dict = auto_check_vcf_chr_dict(
 
 !!! note "Automatic Detection"
     The function automatically detects the chromosome naming convention and filters the dictionary to only include contigs present in the VCF file.
+    
+!!! note "For Users"
+    In most cases, you don't need to call this function directly. Chromosome format conversion is handled automatically by `ChromosomeMapper` when using functions like `assign_rsid()`, `infer_strand()`, etc. This function is primarily for internal use or advanced scenarios.
 
 ---
 
@@ -106,6 +109,9 @@ log = Log()
 chr_dict = check_vcf_chr_NC("variants.vcf.gz", log, verbose=True)
 if chr_dict:
     print("RefSeq IDs detected")
+
+!!! note "For Users"
+    This function is primarily for internal use. For high-level functions like `assign_rsid()`, `infer_strand()`, etc., chromosome format conversion is handled automatically by `ChromosomeMapper`. You don't need to call this function directly.
 ```
 
 | Parameter | DataType | Description | Default |

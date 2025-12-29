@@ -2,6 +2,9 @@
 
 GWASLab provides efficient functions for reading and writing FASTA format files, with support for compressed formats and optimized memory usage.
 
+!!! note "Chromosome Conversion for High-Level Functions"
+    For high-level functions like `check_ref()`, chromosome format conversion is handled automatically by `ChromosomeMapper`. No manual `chr_dict` parameter is needed. The `chr_dict` parameters shown in this documentation are for low-level utility functions that may still use them for backward compatibility.
+
 ## Supported File Formats
 
 GWASLab supports the following FASTA file extensions:

@@ -587,7 +587,7 @@
 Gene track can be customized using user-provided GTF files. 
 
 - `gtf_path`: your GTF path
-- `gtf_chr_dict`: a dictionary converting chr numbers in sumstats to chr strings in GTF
+- `gtf_chr_dict`: (optional) a dictionary converting chr numbers in sumstats to chr strings in GTF. If not provided, ChromosomeMapper will automatically detect and convert chromosome formats.
 - `gtf_gene_name`: GTF field that will be used as names for genes
 
 !!! example
@@ -596,7 +596,7 @@ Gene track can be customized using user-provided GTF files.
     #                    region=(7, 4534653 ,4734655), 
     #                    vcf_path=gl.get_path("1kg_eas_hg19"),
     #                    gtf_path="/home/yunye/.gwaslab/Canis_lupus_familiaris.ROS_Cfam_1.0.113.gtf.gz",
-    #                    gtf_chr_dict = gl.get_number_to_chr(),
+    #                    # gtf_chr_dict is optional - ChromosomeMapper handles conversion automatically
     #                    gtf_gene_name="gene_id",
     #                    region_recombination=False
     #                   )

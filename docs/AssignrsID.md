@@ -117,7 +117,6 @@ mysumstats.basic_check()
 mysumstats.assign_rsid( 
     ref_rsid_tsv=gl.get_path("1kg_dbsnp151_hg19_auto"),
     ref_rsid_vcf="/path/to/dbsnp/GCF_000001405.25.vcf.gz",
-    chr_dict=gl.get_number_to_NC(build="19"),
     threads=2
 )
 ```
@@ -128,7 +127,6 @@ mysumstats.assign_rsid(
 |-----------|------|-------------|---------|
 | `ref_rsid_tsv` | `string` | TSV file path for annotation of commonly used variants using **SNPID** (like 1:725932:G:A) as key. This is the first step and is faster for common variants. | `None` |
 | `ref_rsid_vcf` | `string` | VCF/BCF file path for annotation of variants with **rsID** not assigned. .tbi/.csi file is required for indexed VCF files. This is the second step for rare variants not in the TSV file. | `None` |
-| `chr_dict` | `dict` | A dictionary for converting chromosome numbers (1-25) to chromosome names in the VCF files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries: `gl.get_number_to_NC(build="19")` for hg19 and `gl.get_number_to_NC(build="38")` for hg38. | `None` |
 | `threads` | `int` | Number of threads to use for parallel processing. More threads can speed up processing for large VCF files. | `1` |
 | `overwrite` | `string` | Overwrite mode for **rsID** assignment. Options: `"all"`, `"invalid"`, or `"empty"`. See [Overwrite Modes](#overwrite-modes) for details. | `"empty"` |
 | `chunksize` | `int` | Size of chunks for processing large reference TSV files. Larger chunks use more memory but may be faster. | `5000000` |
@@ -141,7 +139,6 @@ mysumstats.assign_rsid(
 mysumstats.basic_check()
 mysumstats.assign_rsid2(
     vcf_path="/path/to/dbsnp/GCF_000001405.25.vcf.gz",
-    chr_dict=gl.get_number_to_NC(build="19"),
     threads=6,
     overwrite="empty"
 )
@@ -155,7 +152,6 @@ mysumstats.assign_rsid2(
 | `vcf_path` | `string` | VCF/BCF file path. Overrides `path` and `tsv_path`. For sweep mode, this is the recommended way to specify VCF/BCF files. | `None` |
 | `tsv_path` | `string` | Precomputed lookup TSV file path. If provided, will use this directly instead of extracting from VCF. | `None` |
 | `lookup_path` | `string` | Path to save/load the extracted lookup table. If the file exists and is valid, it will be reused. Useful for caching lookup tables between runs. | `None` |
-| `chr_dict` | `dict` | A dictionary for converting chromosome numbers (1-25) to chromosome names in the VCF files. For example, the notation in dbSNP vcf file is based on RefSeq (like NC_000001.10). `gwaslab` provides built-in conversion dictionaries: `gl.get_number_to_NC(build="19")` for hg19 and `gl.get_number_to_NC(build="38")` for hg38. | `None` |
 | `threads` | `int` | Number of threads for bcftools operations and parallel processing. More threads can significantly speed up lookup table extraction. | `6` |
 | `overwrite` | `string` | Overwrite mode for **rsID** assignment. Options: `"all"`, `"invalid"`, or `"empty"`. See [Overwrite Modes](#overwrite-modes) for details. | `"empty"` |
 | `convert_to_bcf` | `bool` | If True, convert VCF to BCF before processing. BCF format is more efficient for large files. | `False` |
@@ -181,21 +177,24 @@ mysumstats.assign_rsid2(
     There is NO WARRANTY, to the extent permitted by law.
     ```
 
-## Chromosome Dictionary
+## Chromosome Dictionary (Deprecated)
 
-For VCF files from dbSNP, you need to convert chromosome notation from numbers (1-25) to RefSeq names (NC_000001.10, etc.). GWASLab provides built-in conversion dictionaries:
+!!! note "Automatic Chromosome Conversion"
+    **You no longer need to manually specify chromosome dictionaries!** The `ChromosomeMapper` (accessed via `mysumstats.mapper`) automatically detects and converts chromosome formats between sumstats and reference files. This includes handling NCBI RefSeq notation (NC_000001.10, etc.) used in dbSNP VCF files.
+
+    The functions below are still available for advanced use cases, but are not needed for normal `assign_rsid()` usage:
 
 ```python
-# For hg19 (GRCh37)
+# For hg19 (GRCh37) - available but not needed
 gl.get_number_to_NC(build="19")
 # {1: 'NC_000001.10', 2: 'NC_000002.11', 3: 'NC_000003.11', ...}
 
-# For hg38 (GRCh38)
+# For hg38 (GRCh38) - available but not needed
 gl.get_number_to_NC(build="38")
 # {1: 'NC_000001.11', 2: 'NC_000002.12', 3: 'NC_000003.12', ...}
 ```
 
-These dictionaries map chromosome numbers (1-25) to RefSeq chromosome names used in dbSNP VCF files.
+These functions map chromosome numbers (1-25) to RefSeq chromosome names, but ChromosomeMapper handles this conversion automatically.
 
 ## Overwrite Modes
 
@@ -256,7 +255,6 @@ mysumstats.assign_rsid(
     threads=2,
     ref_rsid_tsv=gl.get_path("1kg_dbsnp151_hg19_auto"),
     ref_rsid_vcf="/path/to/dbsnp/GCF_000001405.25.vcf.gz",
-    chr_dict=gl.get_number_to_NC(build="19"),
     overwrite="empty"  # Only fill missing rsIDs
 )
 ```
@@ -316,7 +314,6 @@ mysumstats.basic_check()
 # Option 1: Using vcf_path (recommended)
 mysumstats.assign_rsid2(
     vcf_path="/path/to/dbsnp/GCF_000001405.25.vcf.gz",
-    chr_dict=gl.get_number_to_NC(build="19"),
     threads=8,
     overwrite="empty"
 )
@@ -324,7 +321,6 @@ mysumstats.assign_rsid2(
 # Option 2: Using path parameter
 mysumstats.assign_rsid2(
     path="/path/to/dbsnp/GCF_000001405.25.vcf.gz",
-    chr_dict=gl.get_number_to_NC(build="19"),
     threads=8
 )
 
@@ -338,7 +334,6 @@ mysumstats.assign_rsid2(
 mysumstats.assign_rsid2(
     vcf_path="/path/to/dbsnp/GCF_000001405.25.vcf.gz",
     lookup_path="/path/to/cached_lookup.tsv.gz",  # Save for reuse
-    chr_dict=gl.get_number_to_NC(build="19"),
     threads=8
 )
 ```
@@ -352,7 +347,6 @@ mysumstats.assign_rsid2(
     vcf_path="/path/to/dbsnp/GCF_000001405.25.vcf.gz",
     convert_to_bcf=True,  # Convert to BCF format
     strip_info=True,       # Strip INFO fields to reduce size
-    chr_dict=gl.get_number_to_NC(build="19"),
     threads=8
 )
 ```
@@ -378,3 +372,4 @@ mysumstats.assign_rsid2(
 - **Sweep mode (`.assign_rsid2()`) requires bcftools** - ensure it's installed and in your PATH
 - Sweep mode creates temporary lookup tables that can be cached and reused using `lookup_path`
 - For very large datasets, sweep mode can be significantly faster than standard mode
+- **Chromosome conversion is handled automatically**: The `ChromosomeMapper` (accessed via `mysumstats.mapper`) automatically detects and converts chromosome formats between sumstats and reference files. No manual `chr_dict` parameter is needed.
